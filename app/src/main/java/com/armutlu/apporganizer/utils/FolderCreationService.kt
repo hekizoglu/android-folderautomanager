@@ -54,7 +54,7 @@ class FolderCreationService(private val context: Context) {
                         
                         results[category.categoryName] = appsInCategory.size
                         
-                        if (result.isSuccess) {
+                        if (result.success) {
                             successCount += appsInCategory.size
                         } else {
                             failureCount += appsInCategory.size
@@ -109,15 +109,7 @@ class FolderCreationService(private val context: Context) {
                         val launchIntent = context.packageManager.getLaunchIntentForPackage(app.packageName)
                         
                         if (launchIntent != null) {
-                            val appIcon = try {
-                                Icon.createWithResource(
-                                    context,
-                                    context.packageManager.getApplicationIcon(app.packageName)
-                                        .let { android.graphics.drawable.BitmapDrawable::class.java }
-                                )
-                            } catch (e: Exception) {
-                                Icon.createWithResource(context, android.R.drawable.ic_menu_info_details)
-                            }
+                            val appIcon = Icon.createWithResource(context, android.R.drawable.sym_def_app_icon)
                             
                             val shortcut = ShortcutInfo.Builder(context, "$categoryId-${app.packageName}")
                                 .setShortLabel(app.appName)

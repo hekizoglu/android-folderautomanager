@@ -23,35 +23,28 @@ class PackageManagerHelper(private val context: Context) {
             try {
                 Timber.d("Scanning installed apps...")
                 
-                val packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-                
+                val packages = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
+
                 val apps = packages
-                    .filter { appInfo ->
-                        // Filter system apps if needed
-                        if (!includeSystem) {
-                            !isSystemApp(appInfo)
-                        } else {
-                            true
-                        }
+                    .filter { pkgInfo ->
+                        if (!includeSystem) !isSystemApp(pkgInfo.applicationInfo)
+                        else true
                     }
-                    .mapNotNull { appInfo ->
+                    .mapNotNull { pkgInfo ->
                         try {
+                            val appInfo = pkgInfo.applicationInfo ?: return@mapNotNull null
                             val appName = appInfo.loadLabel(packageManager).toString()
-                            val packageName = appInfo.packageName
-                            val isSystem = isSystemApp(appInfo)
-                            val icon = appInfo.loadIcon(packageManager)
-                            
                             AppInfo(
-                                packageName = packageName,
+                                packageName = pkgInfo.packageName,
                                 appName = appName,
                                 categoryId = "uncategorized",
-                                isSystemApp = isSystem,
+                                isSystemApp = isSystemApp(appInfo),
                                 isInstalled = true,
-                                installTime = appInfo.firstInstallTime,
-                                lastUpdated = appInfo.lastUpdateTime
+                                installTime = pkgInfo.firstInstallTime,
+                                lastUpdated = pkgInfo.lastUpdateTime
                             )
                         } catch (e: Exception) {
-                            Timber.w(e, "Error loading app: ${appInfo.packageName}")
+                            Timber.w(e, "Error loading package: ${pkgInfo.packageName}")
                             null
                         }
                     }
@@ -100,16 +93,16 @@ class PackageManagerHelper(private val context: Context) {
     suspend fun getAppInfo(packageName: String): AppInfo? {
         return withContext(Dispatchers.IO) {
             try {
-                val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                val pkgInfo = packageManager.getPackageInfo(packageName, 0)
+                val appInfo = pkgInfo.applicationInfo ?: return@withContext null
                 val appName = appInfo.loadLabel(packageManager).toString()
-                
                 AppInfo(
                     packageName = packageName,
                     appName = appName,
                     isSystemApp = isSystemApp(appInfo),
                     isInstalled = true,
-                    installTime = appInfo.firstInstallTime,
-                    lastUpdated = appInfo.lastUpdateTime
+                    installTime = pkgInfo.firstInstallTime,
+                    lastUpdated = pkgInfo.lastUpdateTime
                 )
             } catch (e: Exception) {
                 Timber.e(e, "Error getting app info for $packageName")
