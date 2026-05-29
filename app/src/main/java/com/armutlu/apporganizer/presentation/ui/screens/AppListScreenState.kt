@@ -188,10 +188,10 @@ private fun fuzzyScore(text: String, query: String): Int {
 /**
  * Sort options for app list
  */
-enum class SortOption {
-    NAME_ASC,
-    NAME_DESC,
-    INSTALL_DATE_NEWEST,
-    INSTALL_DATE_OLDEST,
-    CATEGORY
+enum class SortOption(val label: String) {
+    NAME_ASC("İsim A→Z"),
+    NAME_DESC("İsim Z→A"),
+    INSTALL_DATE_NEWEST("En yeni kurulum"),
+    INSTALL_DATE_OLDEST("En eski kurulum"),
+    CATEGORY("Kategoriye göre")
 }
