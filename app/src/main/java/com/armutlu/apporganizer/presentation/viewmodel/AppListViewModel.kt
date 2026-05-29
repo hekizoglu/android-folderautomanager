@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.os.Build
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
@@ -289,14 +290,33 @@ class AppListViewModel @Inject constructor(
         }
     }
     
-    /**
-     * Reset all filters
-     */
     fun resetFilters() {
         _selectedCategory.value = "all"
         _searchQuery.value = ""
         _sortOption.value = SortOption.NAME_ASC
         _showSystemApps.value = true
         clearSelection()
+    }
+
+    // In-memory debug log buffer (son 100 satır)
+    private val debugLogs = ArrayDeque<String>(100)
+
+    fun appendDebugLog(line: String) {
+        if (debugLogs.size >= 100) debugLogs.removeFirst()
+        debugLogs.addLast(line)
+    }
+
+    fun getDebugLogs(): String {
+        val state = _screenState.value
+        return buildString {
+            appendLine("=== AppOrganizer Debug ===")
+            appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})")
+            appendLine("Total apps in DB: ${state.apps.size}")
+            appendLine("Categories: ${state.categories.size}")
+            appendLine("Error state: ${state.error ?: "none"}")
+            appendLine("isLoading: ${state.isLoading}, isInitializing: ${state.isInitializing}")
+            appendLine("--- Recent Logs ---")
+            debugLogs.forEach { appendLine(it) }
+        }
     }
 }

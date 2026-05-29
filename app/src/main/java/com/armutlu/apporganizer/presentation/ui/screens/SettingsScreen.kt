@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import timber.log.Timber
@@ -19,7 +21,8 @@ import timber.log.Timber
 @Composable
 fun SettingsScreen(
     viewModel: AppListViewModel,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onSendBugReport: () -> Unit = {}
 ) {
     val showSystemApps by viewModel.showSystemApps.collectAsState()
     
@@ -81,6 +84,21 @@ fun SettingsScreen(
                 )
             }
             
+            // Debug section
+            item {
+                SectionHeader("Debug")
+            }
+
+            item {
+                val state by viewModel.screenState.collectAsState()
+                DebugInfoCard(
+                    appCount = state.apps.size,
+                    categoryCount = state.categories.size,
+                    error = state.error,
+                    onSendBugReport = onSendBugReport
+                )
+            }
+
             // About section
             item {
                 SectionHeader("About")
@@ -242,6 +260,47 @@ fun SettingInfo(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun DebugInfoCard(
+    appCount: Int,
+    categoryCount: Int,
+    error: String?,
+    onSendBugReport: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (error != null)
+                MaterialTheme.colorScheme.errorContainer
+            else
+                MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("DB'deki uygulama sayısı: $appCount", style = MaterialTheme.typography.bodyMedium)
+            Text("Kategori sayısı: $categoryCount", style = MaterialTheme.typography.bodyMedium)
+            if (error != null) {
+                Text(
+                    text = "Hata: $error",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = onSendBugReport,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.BugReport, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Hata Raporu Gönder (GitHub)")
             }
         }
     }
