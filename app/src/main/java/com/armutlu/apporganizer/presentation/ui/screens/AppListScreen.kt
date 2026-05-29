@@ -334,7 +334,7 @@ fun CategoryPickerSheet(
                 }
             }
 
-            HorizontalDivider()
+            Divider()
             Spacer(Modifier.height(8.dp))
 
             categories.forEach { category ->
@@ -351,7 +351,7 @@ fun CategoryPickerSheet(
                         ListItemDefaults.colors(),
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .combinedClickable(onClick = { onCategorySelected(category.categoryId) })
+                        .clickable { onCategorySelected(category.categoryId) }
                 )
             }
             Spacer(Modifier.height(32.dp))
