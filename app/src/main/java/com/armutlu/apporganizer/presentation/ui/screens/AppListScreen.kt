@@ -339,20 +339,25 @@ fun CategoryPickerSheet(
 
             categories.forEach { category ->
                 val isCurrentCategory = app.categoryId == category.categoryId
-                ListItem(
-                    headlineContent = { Text("${category.iconEmoji} ${category.categoryName}") },
-                    trailingContent = {
-                        if (isCurrentCategory) Icon(Icons.Default.Check, null,
-                            tint = MaterialTheme.colorScheme.primary)
-                    },
-                    colors = if (isCurrentCategory)
-                        ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                Surface(
+                    onClick = { onCategorySelected(category.categoryId) },
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (isCurrentCategory)
+                        MaterialTheme.colorScheme.primaryContainer
                     else
-                        ListItemDefaults.colors(),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onCategorySelected(category.categoryId) }
-                )
+                        MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ListItem(
+                        headlineContent = { Text("${category.iconEmoji} ${category.categoryName}") },
+                        trailingContent = {
+                            if (isCurrentCategory) Icon(
+                                Icons.Default.Check, null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                }
             }
             Spacer(Modifier.height(32.dp))
         }
