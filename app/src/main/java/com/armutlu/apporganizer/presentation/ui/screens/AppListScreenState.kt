@@ -50,13 +50,9 @@ data class AppListScreenState(
                 result = result.filter { !it.isSystemApp }
             }
             
-            // Filter by search query
+            // Search: önce prefix/contains, sonra fuzzy
             if (searchQuery.isNotBlank()) {
-                val query = searchQuery.lowercase()
-                result = result.filter { 
-                    it.appName.lowercase().contains(query) ||
-                    it.packageName.lowercase().contains(query)
-                }
+                result = fuzzySearch(result, searchQuery)
             }
             
             // Sort
@@ -130,6 +126,63 @@ data class AppListScreenState(
             )
         }
     }
+}
+
+/**
+ * Fuzzy search: önce tam eşleşme/prefix, sonra her harfin sırayla bulunması (fuzzy).
+ * Sonuçlar alaka puanına göre sıralanır.
+ *
+ *  Puan 100 → tam eşleşme
+ *  Puan  80 → baştan başlıyor (prefix)
+ *  Puan  60 → içinde geçiyor (contains)
+ *  Puan 1-59 → fuzzy (tüm harfler sırayla bulunuyor, mesafeye göre puan)
+ */
+private fun fuzzySearch(apps: List<AppInfo>, query: String): List<AppInfo> {
+    val q = query.lowercase().trim()
+    if (q.isEmpty()) return apps
+
+    data class Scored(val app: AppInfo, val score: Int)
+
+    val scored = apps.mapNotNull { app ->
+        val name = app.appName.lowercase()
+        val pkg  = app.packageName.lowercase()
+
+        val score = when {
+            name == q || pkg == q                    -> 100
+            name.startsWith(q) || pkg.startsWith(q) -> 80
+            name.contains(q) || pkg.contains(q)     -> 60
+            else -> {
+                // Fuzzy: her harf sırayla name içinde var mı?
+                val fuzzyScore = fuzzyScore(name, q).takeIf { it > 0 }
+                    ?: fuzzyScore(pkg, q).takeIf { it > 0 }
+                fuzzyScore
+            }
+        }
+        score?.let { Scored(app, it) }
+    }
+
+    return scored.sortedByDescending { it.score }.map { it.app }
+}
+
+/** Levenshtein benzeri olmayan, sıralı harf varlığı skoru (0 = eşleşme yok). */
+private fun fuzzyScore(text: String, query: String): Int {
+    var queryIdx = 0
+    var lastMatchPos = -1
+    var totalGap = 0
+
+    for (i in text.indices) {
+        if (queryIdx < query.length && text[i] == query[queryIdx]) {
+            if (lastMatchPos >= 0) totalGap += (i - lastMatchPos - 1)
+            lastMatchPos = i
+            queryIdx++
+        }
+    }
+
+    if (queryIdx < query.length) return 0  // tüm harfler bulunamadı
+
+    // Az boşluk = yüksek puan (max 59, min 1)
+    val score = (59 - totalGap.coerceAtMost(58)).coerceAtLeast(1)
+    return score
 }
 
 /**

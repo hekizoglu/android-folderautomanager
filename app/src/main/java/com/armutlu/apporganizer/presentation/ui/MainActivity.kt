@@ -52,18 +52,22 @@ class MainActivity : ComponentActivity() {
     private fun openBugReport() {
         val logs = viewModel.getDebugLogs()
         val issueTitle = Uri.encode("[Bug] Uygulama Hatası")
-        val issueBody = Uri.encode("""
-**Cihaz:** ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}
-**Android:** ${android.os.Build.VERSION.RELEASE}
+        val issueBody = Uri.encode(
+            "**Cihaz:** ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}\n" +
+            "**Android:** ${android.os.Build.VERSION.RELEASE}\n\n" +
+            "**Hata Detayları:**\n$logs\n\n" +
+            "**Nasıl Oluştu:**\n(Adımları buraya yazın)"
+        )
+        val url = "https://github.com/hekizoglu/android-folderautomanager/issues/new" +
+                  "?title=$issueTitle&body=$issueBody"
 
-**Hata Detayları:**
-$logs
-
-**Nasıl Oluştu:**
-(Adımları buraya yazın)
-        """.trimIndent())
-        val url = "https://github.com/hekizoglu/android-folderautomanager/issues/new?title=$issueTitle&body=$issueBody"
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        // Tarayıcıyı zorla — GitHub uygulaması açılmasın
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            // HTTPS şemasına sahip hiçbir uygulamayı hariç tutmak yerine
+            // kullanıcıya chooser göster, böylece tarayıcı seçebilir
+        }
+        startActivity(Intent.createChooser(browserIntent, "Tarayıcı seç"))
     }
 }
 
