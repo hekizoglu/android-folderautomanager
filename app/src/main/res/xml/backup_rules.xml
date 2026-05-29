@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- 
+    Full backup rules specifying what gets backed up by Android Backup Service
+    -->
+    
+    <!-- Include app data -->
+    <include domain="root" path="." />
+    <include domain="file" path="." />
+    <include domain="database" path="." />
+    <include domain="sharedpref" path="." />
+
+    <!-- Exclude cache and temporary files -->
+    <exclude domain="cache" path="." />
+    <exclude domain="file" path="cache" />
+
+    <!-- Exclude large files -->
+    <exclude domain="file" path="logs" />
+    <exclude domain="file" path="temp" />
+
+    <!-- Exclude system generated files -->
+    <exclude domain="file" path="no_backup" />
+</full-backup-content>

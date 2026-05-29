@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">App Organizer</string>
+    <string name="app_version">0.1.0 Beta</string>
+    
+    <!-- Screen Titles -->
+    <string name="title_app_list">Uygulamalarım</string>
+    <string name="title_categories">Kategoriler</string>
+    <string name="title_settings">Ayarlar</string>
+    <string name="title_backup">Yedekleme</string>
+    
+    <!-- Button Labels -->
+    <string name="btn_organize">Düzenle</string>
+    <string name="btn_add_category">Kategori Ekle</string>
+    <string name="btn_backup">Yedekle</string>
+    <string name="btn_restore">Geri Yükle</string>
+    <string name="btn_create_folder">Klasör Oluştur</string>
+    <string name="btn_cancel">İptal</string>
+    <string name="btn_save">Kaydet</string>
+    
+    <!-- Messages -->
+    <string name="msg_loading_apps">Uygulamalar yükleniyor...</string>
+    <string name="msg_success">İşlem başarılı</string>
+    <string name="msg_error">Bir hata oluştu</string>
+    <string name="msg_permission_required">İzin gerekli</string>
+    <string name="msg_no_apps">Hiç uygulama bulunamadı</string>
+    
+    <!-- Categories -->
+    <string name="cat_social">Sosyal Medya</string>
+    <string name="cat_productivity">Üretkenlik</string>
+    <string name="cat_games">Oyunlar</string>
+    <string name="cat_shopping">Alışveriş</string>
+    <string name="cat_news">Haber</string>
+    <string name="cat_health">Sağlık</string>
+    <string name="cat_finance">Finans</string>
+    <string name="cat_education">Eğitim</string>
+    <string name="cat_utilities">Araçlar</string>
+    <string name="cat_other">Diğer</string>
+</resources>
