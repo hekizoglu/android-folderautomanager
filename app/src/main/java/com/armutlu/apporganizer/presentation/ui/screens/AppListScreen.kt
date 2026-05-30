@@ -93,6 +93,11 @@ fun AppListScreen(
                             leadingIcon = { Icon(Icons.Default.Category, null) }
                         )
                         DropdownMenuItem(
+                            text = { Text("Kategorileri Sıfırla ve Yeniden Sınıflandır") },
+                            onClick = { showMenu = false; viewModel.resetAndReclassifyAllApps() },
+                            leadingIcon = { Icon(Icons.Default.RestartAlt, null) }
+                        )
+                        DropdownMenuItem(
                             text = { Text("Ayarlar") },
                             onClick = { showMenu = false; onNavigateToSettings() },
                             leadingIcon = { Icon(Icons.Default.Settings, null) }
@@ -115,7 +120,7 @@ fun AppListScreen(
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     // Launcher'da grupla
                     ExtendedFloatingActionButton(
-                        onClick = { showOrganizeDialog = true },
+                        onClick = { viewModel.resetOrganizeState(); showOrganizeDialog = true },
                         icon = { Icon(Icons.Default.GridView, null) },
                         text = { Text("Launcher'da Grupla") },
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -134,12 +139,12 @@ fun AppListScreen(
                         onOrganize      = { useAccessibility -> viewModel.organizeOnLauncher(useAccessibility) },
                         onOpenA11ySettings = {
                             showOrganizeDialog = false
-                            // Accessibility ayarlarını aç
                             val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
                                 flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
                             }
                             viewModel.launchIntent(intent)
                         },
+                        onRestart = { viewModel.resetOrganizeState() },
                         onDismiss = { showOrganizeDialog = false }
                     )
                 }
@@ -605,6 +610,7 @@ fun LauncherOrganizeDialog(
     organizeState: OrganizeState,
     onOrganize: (useAccessibility: Boolean) -> Unit,
     onOpenA11ySettings: () -> Unit,
+    onRestart: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -730,7 +736,16 @@ fun LauncherOrganizeDialog(
                     }
                 }
                 is OrganizeState.Done -> {
-                    Button(onClick = onDismiss) { Text("Tamam") }
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = onRestart, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Default.Refresh, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Tekrar Organize Et")
+                        }
+                        TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                            Text("Kapat")
+                        }
+                    }
                 }
                 else -> {}
             }

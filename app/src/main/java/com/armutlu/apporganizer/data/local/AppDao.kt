@@ -154,4 +154,10 @@ interface AppDao {
      */
     @Query("SELECT packageName FROM apps")
     suspend fun getAllPackageNames(): List<String>
+
+    /**
+     * Reset all app categories back to uncategorized
+     */
+    @Query("UPDATE apps SET categoryId = 'uncategorized'")
+    suspend fun resetAllAppCategories()
 }

@@ -61,7 +61,10 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 Timber.d("Scanning device apps...")
-                val apps = PackageManagerHelper(applicationContext).getInstalledApps(includeSystem = true)
+                val apps = PackageManagerHelper(applicationContext).getInstalledApps(
+                    includeSystem = true,
+                    onlyLaunchable = true  // Launcher ikonu olmayanları (sistem servisleri) hariç tut
+                )
                 Timber.d("Found ${apps.size} apps, syncing...")
                 viewModel.syncInstalledApps(apps)
             } catch (e: Exception) {

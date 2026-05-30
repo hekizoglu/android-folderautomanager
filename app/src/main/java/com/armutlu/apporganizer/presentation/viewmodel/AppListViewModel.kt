@@ -333,9 +333,14 @@ class AppListViewModel @Inject constructor(
             _organizeState.value = OrganizeState.Running("Başlatılıyor...")
             appendDebugLog("organizeOnLauncher başladı — a11y=$useAccessibility")
             try {
-                val apps = _screenState.value.apps
+                val pm = getApplication<android.app.Application>().packageManager
+                // Yalnızca launcher ikonu olan uygulamaları organize et
+                // (sistem servisleri, arka plan paketleri hariç)
+                val apps = _screenState.value.apps.filter { app ->
+                    pm.getLaunchIntentForPackage(app.packageName) != null
+                }
                 val categories = _screenState.value.categories
-                appendDebugLog("${apps.size} uygulama, ${categories.size} kategori bulundu")
+                appendDebugLog("${_screenState.value.apps.size} toplam → ${apps.size} launcher'da görünür uygulama")
                 val organizer = LauncherOrganizer(getApplication())
                 val launcher = organizer.detectLauncher()
                 appendDebugLog("Launcher: ${launcher.displayName}")
@@ -351,9 +356,15 @@ class AppListViewModel @Inject constructor(
                         )
                         return@launch
                     }
-                    // Kategori eşlemesi: packageName -> categoryId
-                    val appMap = apps.map { it.packageName to it.categoryId }
-                    service.startOrganize(appMap) { status ->
+                    // Uygulama adını da geçiyoruz — MIUI'da contentDescription araması için gerekli
+                    val appOrgList = apps.map { app ->
+                        LauncherAccessibilityService.AppOrgInfo(
+                            packageName = app.packageName,
+                            categoryId  = app.categoryId,
+                            appName     = app.appName
+                        )
+                    }
+                    service.startOrganize(appOrgList) { status ->
                         _organizeState.value = if (status.startsWith("✅"))
                             OrganizeState.Done(true, status)
                         else
@@ -402,6 +413,33 @@ class AppListViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Error launching $packageName")
+        }
+    }
+
+    fun resetOrganizeState() {
+        _organizeState.value = OrganizeState.Idle
+    }
+
+    fun resetAndReclassifyAllApps() {
+        viewModelScope.launch {
+            try {
+                _screenState.value = _screenState.value.copy(isRefreshing = true)
+                appendDebugLog("Tüm kategoriler sıfırlanıyor...")
+                repository.resetAllCategories()
+                appendDebugLog("Kategoriler sıfırlandı — yeniden sınıflandırılıyor...")
+                val apps = _screenState.value.apps
+                apps.forEach { app ->
+                    val category = classifier.classifyApp(app)
+                    if (category != "uncategorized") {
+                        repository.updateAppCategory(app.packageName, category)
+                    }
+                }
+                appendDebugLog("✅ ${apps.size} uygulama yeniden sınıflandırıldı")
+                _screenState.value = _screenState.value.copy(isRefreshing = false)
+            } catch (e: Exception) {
+                Timber.e(e, "Error resetting and reclassifying")
+                _screenState.value = _screenState.value.copy(isRefreshing = false)
+            }
         }
     }
 

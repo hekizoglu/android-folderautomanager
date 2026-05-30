@@ -16,19 +16,27 @@ class PackageManagerHelper(private val context: Context) {
     private val packageManager = context.packageManager
     
     /**
-     * Get all installed apps asynchronously
+     * Get all installed apps asynchronously.
+     * @param includeSystem Include system apps in results
+     * @param onlyLaunchable Only include apps that have a launcher icon (visible to user)
      */
-    suspend fun getInstalledApps(includeSystem: Boolean = true): List<AppInfo> {
+    suspend fun getInstalledApps(
+        includeSystem: Boolean = true,
+        onlyLaunchable: Boolean = false
+    ): List<AppInfo> {
         return withContext(Dispatchers.IO) {
             try {
                 Timber.d("Scanning installed apps...")
-                
+
                 val packages = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
 
                 val apps = packages
                     .filter { pkgInfo ->
-                        if (!includeSystem) !isSystemApp(pkgInfo.applicationInfo)
-                        else true
+                        if (!includeSystem && isSystemApp(pkgInfo.applicationInfo)) return@filter false
+                        // Launcher ikonu olmayan servisler/lib paketleri hariç tut
+                        if (onlyLaunchable) {
+                            packageManager.getLaunchIntentForPackage(pkgInfo.packageName) != null
+                        } else true
                     }
                     .mapNotNull { pkgInfo ->
                         try {
@@ -48,8 +56,8 @@ class PackageManagerHelper(private val context: Context) {
                             null
                         }
                     }
-                
-                Timber.d("Found ${apps.size} installed apps")
+
+                Timber.d("Found ${apps.size} installed apps (onlyLaunchable=$onlyLaunchable)")
                 apps
             } catch (e: Exception) {
                 Timber.e(e, "Error getting installed apps")
