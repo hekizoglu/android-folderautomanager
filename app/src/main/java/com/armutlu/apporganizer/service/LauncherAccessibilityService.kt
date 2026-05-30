@@ -74,6 +74,7 @@ class LauncherAccessibilityService : AccessibilityService() {
         currentIndex   = 0
         folderPositions.clear()
         statusCallback = onStatus
+        windowsLogged  = false
 
         log("🚀 organize başladı: ${apps.size} uygulama")
         log("Ekran: ${resources.displayMetrics.widthPixels}x${resources.displayMetrics.heightPixels}")
@@ -136,12 +137,25 @@ class LauncherAccessibilityService : AccessibilityService() {
 
     // ── İkon arama — 3 stratejili ──────────────────────────────────────────
 
+    private var windowsLogged = false
+
     private fun findAppIcon(packageName: String, appName: String): AccessibilityNodeInfo? {
         val wins = windows ?: return null
+
+        // İlk aramada tüm pencereleri logla (MIUI debug için)
+        if (!windowsLogged) {
+            windowsLogged = true
+            val pkgs = wins.mapNotNull { it.root?.packageName?.toString() }
+            log("Pencereler: ${pkgs.joinToString(", ")}")
+        }
+
         for (window in wins) {
             val root = window.root ?: continue
             val pkg  = root.packageName?.toString() ?: ""
-            if (!pkg.contains("launcher") && !pkg.contains("home")) {
+            // com.miui.home, com.android.launcher3, com.sec.android.app.launcher vb.
+            if (!pkg.contains("launcher", ignoreCase = true) &&
+                !pkg.contains("home", ignoreCase = true) &&
+                !pkg.contains("desktop", ignoreCase = true)) {
                 root.recycle(); continue
             }
 
@@ -176,27 +190,61 @@ class LauncherAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * MIUI / HyperOS için: app adını contentDescription olarak taşıyan
+     * MIUI / HyperOS için: app adını contentDescription veya text olarak taşıyan
      * node'u bul, sonra tıklanabilir/sürüklenebilir üst container'ı döndür.
      *
-     * MIUI Home'da BubbleTextView → contentDescription = "AppName" (tam eşleşme).
+     * Eşleşme önceliği (geniş → dar):
+     *   1. Tam eşleşme: desc == appName
+     *   2. Büyük/küçük harf farkı yok: desc.equals(appName, ignoreCase=true)
+     *   3. İlk kelime: desc.startsWith("$appName,") veya desc.startsWith("$appName ")
+     *      (ör. "WhatsApp, 3 bildirim")
      */
     private fun findNodeByAppName(root: AccessibilityNodeInfo, appName: String): AccessibilityNodeInfo? {
-        // findAccessibilityNodeInfosByText substring arar — sonra tam eşleşme filtrele
         val candidates = root.findAccessibilityNodeInfosByText(appName)
+        if (candidates.isEmpty()) {
+            // Debug: bu pencerede hangi text değerleri var?
+            val samples = mutableListOf<String>()
+            collectSampleTexts(root, samples, 6)
+            if (samples.isNotEmpty()) log("  '$appName' bulunamadı — örnek: ${samples.joinToString(" | ")}")
+            return null
+        }
+
         for (node in candidates) {
             val desc = node.contentDescription?.toString() ?: ""
             val text = node.text?.toString() ?: ""
-            if (desc == appName || text == appName) {
-                // Tıklanabilir üst node'u bul (ikon container)
+            val matched = desc.equals(appName, ignoreCase = true)
+                || text.equals(appName, ignoreCase = true)
+                || desc.startsWith("$appName,", ignoreCase = true)
+                || desc.startsWith("$appName ", ignoreCase = true)
+                || text.startsWith("$appName,", ignoreCase = true)
+                || text.startsWith("$appName ", ignoreCase = true)
+            if (matched) {
                 val icon = findClickableAncestor(node) ?: node
-                // Diğer adayları recycle et
                 candidates.filter { it != node && it != icon }.forEach { it.recycle() }
                 return icon
             }
+            // Eşleşmedi ama benzer — debug için logla
+            log("  '$appName' aday reddedildi: cd='$desc' txt='$text'")
             node.recycle()
         }
         return null
+    }
+
+    /** Debug: root altından en fazla max adet text/contentDescription örneği topla. */
+    private fun collectSampleTexts(node: AccessibilityNodeInfo, out: MutableList<String>, max: Int) {
+        if (out.size >= max) return
+        val desc = node.contentDescription?.toString()
+        val text = node.text?.toString()
+        when {
+            !desc.isNullOrBlank() -> out.add("cd:$desc")
+            !text.isNullOrBlank() -> out.add("txt:$text")
+        }
+        for (i in 0 until node.childCount) {
+            if (out.size >= max) break
+            val child = node.getChild(i) ?: continue
+            collectSampleTexts(child, out, max)
+            child.recycle()
+        }
     }
 
     /** Verilen node'un tıklanabilir/sürüklenebilir atalarını yukarı doğru ara (maks 5 seviye). */
