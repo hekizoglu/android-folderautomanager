@@ -53,7 +53,7 @@ class AppDatabaseTest {
     fun insertAndGetApp() = runTest {
         val app = AppInfo(packageName = "com.test.app", appName = "Test App")
         appDao.insertApp(app)
-        val result = appDao.getAppByPackage("com.test.app")
+        val result = appDao.getAppByPackageName("com.test.app")
         assertNotNull(result)
         assertEquals("Test App", result?.appName)
     }
@@ -63,7 +63,7 @@ class AppDatabaseTest {
         repeat(3) { i ->
             appDao.insertApp(AppInfo(packageName = "com.test.app$i", appName = "App $i"))
         }
-        val all = appDao.getAllApps().first()
+        val all = appDao.getAllApps()
         assertEquals(3, all.size)
     }
 
@@ -72,7 +72,7 @@ class AppDatabaseTest {
         val app = AppInfo(packageName = "com.test.app", appName = "Test", categoryId = "other")
         appDao.insertApp(app)
         appDao.updateAppCategory("com.test.app", "social")
-        val updated = appDao.getAppByPackage("com.test.app")
+        val updated = appDao.getAppByPackageName("com.test.app")
         assertEquals("social", updated?.categoryId)
     }
 
@@ -80,8 +80,8 @@ class AppDatabaseTest {
     fun deleteApp_removesFromDb() = runTest {
         val app = AppInfo(packageName = "com.test.delete", appName = "Delete Me")
         appDao.insertApp(app)
-        appDao.deleteApp("com.test.delete")
-        assertNull(appDao.getAppByPackage("com.test.delete"))
+        appDao.deleteAppByPackageName("com.test.delete")
+        assertNull(appDao.getAppByPackageName("com.test.delete"))
     }
 
     @Test
@@ -90,7 +90,7 @@ class AppDatabaseTest {
         appDao.insertApp(app)
         val updated = app.copy(appName = "New Name")
         appDao.insertApp(updated)
-        val result = appDao.getAppByPackage("com.test.app")
+        val result = appDao.getAppByPackageName("com.test.app")
         assertEquals("New Name", result?.appName)
     }
 
@@ -102,6 +102,20 @@ class AppDatabaseTest {
         val social = appDao.getAppsByCategory("social").first()
         assertEquals(2, social.size)
         assertTrue(social.all { it.categoryId == "social" })
+    }
+
+    @Test
+    fun appExists_returnsTrueAfterInsert() = runTest {
+        appDao.insertApp(AppInfo(packageName = "com.exists.app", appName = "Exists"))
+        assertTrue(appDao.appExists("com.exists.app"))
+    }
+
+    @Test
+    fun countApps_returnsCorrectCount() = runTest {
+        repeat(5) { i ->
+            appDao.insertApp(AppInfo(packageName = "com.count.app$i", appName = "App $i"))
+        }
+        assertEquals(5, appDao.countApps())
     }
 
     // ─── CategoryDao ──────────────────────────────────────────────────────────
@@ -118,7 +132,7 @@ class AppDatabaseTest {
     @Test
     fun getAllCategories_returnsAllInserted() = runTest {
         Category.getDefaultCategories().forEach { categoryDao.insertCategory(it) }
-        val all = categoryDao.getAllCategories().first()
+        val all = categoryDao.getAllCategories()
         assertEquals(11, all.size)
     }
 
@@ -126,7 +140,13 @@ class AppDatabaseTest {
     fun deleteCategory_removesFromDb() = runTest {
         val cat = Category(categoryId = "to_delete", categoryName = "Delete Me")
         categoryDao.insertCategory(cat)
-        categoryDao.deleteCategory("to_delete")
+        categoryDao.deleteCategoryById("to_delete")
         assertNull(categoryDao.getCategoryById("to_delete"))
+    }
+
+    @Test
+    fun categoryExists_returnsTrueAfterInsert() = runTest {
+        categoryDao.insertCategory(Category(categoryId = "exists_cat", categoryName = "Exists"))
+        assertTrue(categoryDao.categoryExists("exists_cat"))
     }
 }

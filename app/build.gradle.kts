@@ -34,6 +34,8 @@ android {
         debug {
             isMinifyEnabled = false
             isDebuggable = true
+            enableAndroidTestCoverage = true
+            enableUnitTestCoverage = true
         }
     }
 
@@ -60,12 +62,6 @@ android {
         }
     }
 
-    buildTypes {
-        debug {
-            enableAndroidTestCoverage = true
-            enableUnitTestCoverage = true
-        }
-    }
 }
 
 tasks.register<JacocoReport>("jacocoTestReport") {
