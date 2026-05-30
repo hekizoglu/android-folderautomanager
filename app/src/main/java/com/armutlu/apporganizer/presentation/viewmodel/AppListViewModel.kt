@@ -345,7 +345,17 @@ class AppListViewModel @Inject constructor(
                 val launcher = organizer.detectLauncher()
                 appendDebugLog("Launcher: ${launcher.displayName}")
 
-                if (useAccessibility && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // MIUI launcher'da accessibility drag & drop çalışmıyor:
+                // ikonlar accessibility tree'de packageName expose etmiyor.
+                // MIUI için doğrudan ShortcutManager yöntemine geç.
+                val isMiui = launcher is LauncherType.XIAOMI
+                if (isMiui && useAccessibility) {
+                    appendDebugLog("⚠️ MIUI Launcher: Accessibility drag & drop desteklenmiyor, Shortcut yöntemi kullanılıyor")
+                }
+
+                val useA11y = useAccessibility && !isMiui && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+                if (useA11y) {
                     val service = LauncherAccessibilityService.instance
                     appendDebugLog("A11y service: ${if (service != null) "AKTIF" else "NULL"}")
                     if (service == null) {
@@ -356,7 +366,6 @@ class AppListViewModel @Inject constructor(
                         )
                         return@launch
                     }
-                    // Kategori eşlemesi: packageName -> categoryId (sadece launchable)
                     val appMap = apps.map { it.packageName to it.categoryId }
                     service.startOrganize(appMap) { status ->
                         _organizeState.value = if (status.startsWith("✅"))
