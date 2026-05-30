@@ -1,8 +1,10 @@
 package com.armutlu.apporganizer.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.app.Application
+import android.content.Intent
 import android.os.Build
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
@@ -21,9 +23,10 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class AppListViewModel @Inject constructor(
+    application: Application,
     private val repository: AppRepository,
     private val classifier: AppClassifier
-) : ViewModel() {
+) : AndroidViewModel(application) {
     
     // Private state flows
     private val _screenState = MutableStateFlow(AppListScreenState.loading())
@@ -290,6 +293,22 @@ class AppListViewModel @Inject constructor(
         }
     }
     
+    fun launchApp(packageName: String) {
+        try {
+            val ctx = getApplication<Application>()
+            val intent = ctx.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                ctx.startActivity(intent)
+            } else {
+                Timber.w("No launch intent for $packageName")
+                _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error launching $packageName")
+        }
+    }
+
     fun resetFilters() {
         _selectedCategory.value = "all"
         _searchQuery.value = ""

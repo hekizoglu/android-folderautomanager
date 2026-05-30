@@ -198,9 +198,12 @@ fun AppListScreen(
                     categories   = screenState.categories,
                     onAppClick   = { app ->
                         if (isSelecting) viewModel.toggleAppSelection(app.packageName)
-                        else appForCategory = app
+                        else viewModel.launchApp(app.packageName)
                     },
-                    onAppLongClick = { app -> viewModel.toggleAppSelection(app.packageName) }
+                    onAppLongClick = { app ->
+                        if (isSelecting) viewModel.toggleAppSelection(app.packageName)
+                        else appForCategory = app
+                    }
                 )
             }
         }
