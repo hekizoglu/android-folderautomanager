@@ -186,6 +186,6 @@ eval "set -- $(
         xargs -n1 |
         sed ' s~[^a-zA-Z0-9/=]~\\&~g; ' |
         tr '\n' ' '
-    ) $( printf '%s\n' "$*" | sed ' s~[^a-zA-Z0-9/=]~\\&~g; ' )"
+    ) $( printf '%s\n' "$@" | sed ' s~[^a-zA-Z0-9/=]~\\&~g; ' | tr '\n' ' ' )"
 
 exec "$JAVACMD" "$@"
