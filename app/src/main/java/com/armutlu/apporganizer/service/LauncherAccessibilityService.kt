@@ -49,14 +49,24 @@ class LauncherAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         instance = this
         isRunning = true
-        Timber.d("LauncherAccessibilityService connected")
+        Timber.d("LauncherAccessibilityService connected — Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Olayları dinlemiyoruz; windows API'yi doğrudan kullanıyoruz
+    }
 
     override fun onInterrupt() {
+        Timber.w("LauncherAccessibilityService interrupted")
         isRunning = false
         instance = null
+    }
+
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        Timber.w("LauncherAccessibilityService unbound")
+        isRunning = false
+        instance = null
+        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
@@ -64,6 +74,7 @@ class LauncherAccessibilityService : AccessibilityService() {
         handler.removeCallbacksAndMessages(null)
         isRunning = false
         instance = null
+        Timber.d("LauncherAccessibilityService destroyed")
     }
 
     // ── Public API ─────────────────────────────────────────────────────────
