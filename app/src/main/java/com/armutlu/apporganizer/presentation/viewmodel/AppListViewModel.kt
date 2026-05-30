@@ -33,6 +33,10 @@ class AppListViewModel @Inject constructor(
     private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
 ) : AndroidViewModel(application) {
 
+    // ── Log sistemi — MUTLAKA ilk sırada olmalı (init'ten önce hazır) ─────────
+    private val _liveDebugLogs = MutableStateFlow<List<String>>(emptyList())
+    val liveDebugLogs: StateFlow<List<String>> = _liveDebugLogs.asStateFlow()
+
     // Launcher organize state
     private val _organizeState = MutableStateFlow<OrganizeState>(OrganizeState.Idle)
     val organizeState: StateFlow<OrganizeState> = _organizeState.asStateFlow()
@@ -409,9 +413,6 @@ class AppListViewModel @Inject constructor(
         clearSelection()
     }
 
-    // ── Canlı log sistemi ────────────────────────────────────────────────────
-    private val _liveDebugLogs = MutableStateFlow<List<String>>(emptyList())
-    val liveDebugLogs: StateFlow<List<String>> = _liveDebugLogs.asStateFlow()
 
     fun appendDebugLog(line: String) {
         val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
