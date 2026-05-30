@@ -307,20 +307,28 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
-                
-                val unclassifiedApps = _screenState.value.apps.filter { 
-                    it.categoryId == "uncategorized" 
+
+                val unclassifiedApps = _screenState.value.apps.filter {
+                    it.categoryId == "uncategorized"
                 }
-                
+
+                if (unclassifiedApps.isEmpty()) {
+                    appendDebugLog("ℹ️ Tüm uygulamalar zaten sınıflandırılmış. 'Menü → Kategorileri Sıfırla' ile baştan başlayabilirsiniz.")
+                    _screenState.value = _screenState.value.copy(isRefreshing = false)
+                    return@launch
+                }
+
+                var classified = 0
                 unclassifiedApps.forEach { app ->
                     val category = classifier.classifyApp(app)
                     if (category != "uncategorized") {
                         repository.updateAppCategory(app.packageName, category)
+                        classified++
                     }
                 }
-                
+
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
-                Timber.d("Classified ${unclassifiedApps.size} apps")
+                appendDebugLog("✅ AI sınıflandırma: $classified/${unclassifiedApps.size} uygulama kategorilendi")
             } catch (e: Exception) {
                 Timber.e(e, "Error classifying apps")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
@@ -365,6 +373,7 @@ class AppListViewModel @Inject constructor(
                         )
                     }
                     service.startOrganize(appOrgList) { status ->
+                        appendDebugLog("[A11y] $status")
                         _organizeState.value = if (status.startsWith("✅"))
                             OrganizeState.Done(true, status)
                         else
