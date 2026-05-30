@@ -6,6 +6,10 @@ import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
+import com.armutlu.apporganizer.service.LauncherAccessibilityService
+import com.armutlu.apporganizer.utils.LauncherOrganizer
+import com.armutlu.apporganizer.utils.LauncherType
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.AppClassifier
@@ -28,6 +32,14 @@ class AppListViewModel @Inject constructor(
     private val classifier: AppClassifier
 ) : AndroidViewModel(application) {
     
+    // Launcher organize state
+    private val _organizeState = MutableStateFlow<OrganizeState>(OrganizeState.Idle)
+    val organizeState: StateFlow<OrganizeState> = _organizeState.asStateFlow()
+
+    val detectedLauncher: LauncherType by lazy {
+        LauncherOrganizer(getApplication()).detectLauncher()
+    }
+
     // Private state flows
     private val _screenState = MutableStateFlow(AppListScreenState.loading())
     
@@ -293,6 +305,57 @@ class AppListViewModel @Inject constructor(
         }
     }
     
+    fun organizeOnLauncher(useAccessibility: Boolean) {
+        viewModelScope.launch {
+            _organizeState.value = OrganizeState.Running("Başlatılıyor...")
+            try {
+                val apps = _screenState.value.apps
+                val categories = _screenState.value.categories
+                val organizer = LauncherOrganizer(getApplication())
+
+                if (useAccessibility && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    val service = LauncherAccessibilityService.instance
+                    if (service == null) {
+                        _organizeState.value = OrganizeState.Done(
+                            false,
+                            "Accessibility Service aktif değil.\nAyarlardan etkinleştirin."
+                        )
+                        return@launch
+                    }
+                    // Kategori eşlemesi: packageName -> categoryId
+                    val appMap = apps.map { it.packageName to it.categoryId }
+                    service.startOrganize(appMap) { status ->
+                        _organizeState.value = if (status.startsWith("✅"))
+                            OrganizeState.Done(true, status)
+                        else
+                            OrganizeState.Running(status)
+                    }
+                } else {
+                    // Shortcut yöntemi — tüm cihazlarda çalışır
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val result = organizer.organizeByCategories(apps, categories)
+                        _organizeState.value = OrganizeState.Done(result.success, result.message)
+                    } else {
+                        _organizeState.value = OrganizeState.Done(
+                            false, "Android 8.0+ gerekli (API 26+)"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "organizeOnLauncher failed")
+                _organizeState.value = OrganizeState.Done(false, "Hata: ${e.message}")
+            }
+        }
+    }
+
+    fun launchIntent(intent: Intent) {
+        try {
+            getApplication<Application>().startActivity(intent)
+        } catch (e: Exception) {
+            Timber.e(e, "launchIntent failed")
+        }
+    }
+
     fun launchApp(packageName: String) {
         try {
             val ctx = getApplication<Application>()

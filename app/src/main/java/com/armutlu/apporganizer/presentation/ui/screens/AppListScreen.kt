@@ -109,8 +109,39 @@ fun AppListScreen(
         },
         floatingActionButton = {
             if (!isSelecting) {
-                FloatingActionButton(onClick = { viewModel.classifyUnclassifiedApps() }) {
-                    Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır")
+                var showOrganizeDialog by remember { mutableStateOf(false) }
+                val organizeState by viewModel.organizeState.collectAsState()
+
+                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Launcher'da grupla
+                    ExtendedFloatingActionButton(
+                        onClick = { showOrganizeDialog = true },
+                        icon = { Icon(Icons.Default.GridView, null) },
+                        text = { Text("Launcher'da Grupla") },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                    // Otomatik sınıflandır
+                    FloatingActionButton(onClick = { viewModel.classifyUnclassifiedApps() }) {
+                        Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır")
+                    }
+                }
+
+                if (showOrganizeDialog) {
+                    LauncherOrganizeDialog(
+                        launcherType    = viewModel.detectedLauncher,
+                        organizeState   = organizeState,
+                        onOrganize      = { useAccessibility -> viewModel.organizeOnLauncher(useAccessibility) },
+                        onOpenA11ySettings = {
+                            showOrganizeDialog = false
+                            // Accessibility ayarlarını aç
+                            val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            viewModel.launchIntent(intent)
+                        },
+                        onDismiss = { showOrganizeDialog = false }
+                    )
                 }
             }
         },
@@ -564,4 +595,156 @@ private fun CategoryList(
         }
         Spacer(Modifier.height(2.dp))
     }
+}
+
+// ── Launcher organize dialog ────────────────────────────────────────────────
+
+@Composable
+fun LauncherOrganizeDialog(
+    launcherType: com.armutlu.apporganizer.utils.LauncherType,
+    organizeState: OrganizeState,
+    onOrganize: (useAccessibility: Boolean) -> Unit,
+    onOpenA11ySettings: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { if (organizeState !is OrganizeState.Running) onDismiss() },
+        icon = { Icon(Icons.Default.GridView, null) },
+        title = { Text("Launcher'da Grupla") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                when (organizeState) {
+                    is OrganizeState.Idle -> {
+                        // Launcher bilgisi
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    if (launcherType.supportsAccessibility) Icons.Default.CheckCircle
+                                    else Icons.Default.Info,
+                                    null,
+                                    tint = if (launcherType.supportsAccessibility)
+                                        MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Column {
+                                    Text("Launcher: ${launcherType.displayName}",
+                                        style = MaterialTheme.typography.labelMedium)
+                                    Text(
+                                        if (launcherType.supportsAccessibility)
+                                            "Fiziksel drag & drop destekleniyor"
+                                        else
+                                            "Shortcut pinleme kullanılacak",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+
+                        if (launcherType.supportsAccessibility) {
+                            val a11yEnabled = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
+                            if (!a11yEnabled) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.errorContainer
+                                ) {
+                                    Row(modifier = Modifier.padding(12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.Warning, null,
+                                            tint = MaterialTheme.colorScheme.error)
+                                        Column {
+                                            Text("Accessibility izni gerekli",
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.error)
+                                            Text("Drag & drop için Erişilebilirlik Ayarları'ndan\n'App Organizer'ı etkinleştirin.",
+                                                style = MaterialTheme.typography.bodySmall)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Text(
+                            "Kategorilere göre uygulamalar ana ekranda gruplandırılacak.\n\n" +
+                            "• Shortcut yöntemi: her kategoriye kısayol ekler\n" +
+                            "• Drag & drop yöntemi: ikonları fiziksel olarak taşır (izin gerekir)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    is OrganizeState.Running -> {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(12.dp))
+                            Text(organizeState.status, style = MaterialTheme.typography.bodyMedium,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        }
+                    }
+
+                    is OrganizeState.Done -> {
+                        Surface(shape = RoundedCornerShape(8.dp),
+                            color = if (organizeState.success)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.errorContainer) {
+                            Text(organizeState.message,
+                                modifier = Modifier.padding(12.dp),
+                                style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            when (organizeState) {
+                is OrganizeState.Idle -> {
+                    val a11yEnabled = launcherType.supportsAccessibility &&
+                            com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (launcherType.supportsAccessibility && !a11yEnabled) {
+                            Button(onClick = onOpenA11ySettings, modifier = Modifier.fillMaxWidth()) {
+                                Icon(Icons.Default.Settings, null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Erişilebilirlik Ayarlarını Aç")
+                            }
+                        }
+                        if (a11yEnabled) {
+                            Button(onClick = { onOrganize(true) }, modifier = Modifier.fillMaxWidth()) {
+                                Icon(Icons.Default.DragIndicator, null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Drag & Drop ile Grupla")
+                            }
+                        }
+                        OutlinedButton(onClick = { onOrganize(false) }, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Default.AddLink, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Kısayol ile Grupla (Evrensel)")
+                        }
+                    }
+                }
+                is OrganizeState.Done -> {
+                    Button(onClick = onDismiss) { Text("Tamam") }
+                }
+                else -> {}
+            }
+        },
+        dismissButton = {
+            if (organizeState is OrganizeState.Idle) {
+                TextButton(onClick = onDismiss) { Text("Vazgeç") }
+            }
+        }
+    )
+}
+
+sealed class OrganizeState {
+    object Idle : OrganizeState()
+    data class Running(val status: String) : OrganizeState()
+    data class Done(val success: Boolean, val message: String) : OrganizeState()
 }

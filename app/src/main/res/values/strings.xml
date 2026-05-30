@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">App Organizer</string>
+    <string name="accessibility_service_description">App Organizer, uygulamalarınızı launcher\'da kategorilere göre otomatik gruplandırmak için bu izni kullanır. Hiçbir kişisel veri toplanmaz.</string>
     <string name="app_version">0.1.0 Beta</string>
     
     <!-- Screen Titles -->
