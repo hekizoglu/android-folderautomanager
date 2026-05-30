@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
-import android.content.Intent
 import android.graphics.Path
 import android.graphics.Rect
 import android.os.Build
@@ -15,35 +14,35 @@ import timber.log.Timber
 
 /**
  * Katman 2: Accessibility Service ile launcher'da fiziksel drag & drop.
- * Çalışma prensibi:
- *   1. Launcher açık değilse HOME tuşuna bas
- *   2. Ekranı tara — uygulama ikonlarını bul
- *   3. Her ikonu hedef klasöre (veya başka bir ikona üstüne) sürükle
- *   4. Klasör oluşursa devam et, oluşmazsa ShortcutManager fallback
  *
- * Desteklenen launcher'lar: Pixel Launcher, Samsung One UI Home
+ * İkon arama stratejileri (öncelik sırasıyla):
+ *   1. Package name eşleşmesi (Pixel, Samsung, Nova)
+ *   2. extras bundle'da package adı (Android 11+)
+ *   3. App adıyla contentDescription/text araması (MIUI, HyperOS)
  */
 class LauncherAccessibilityService : AccessibilityService() {
 
+    /** Organize edilecek uygulamanın tüm bilgilerini taşır. */
+    data class AppOrgInfo(
+        val packageName: String,
+        val categoryId: String,
+        val appName: String
+    )
+
     companion object {
-        // AppOrganizer'dan komut almak için intent action'lar
         const val ACTION_ORGANIZE    = "com.armutlu.apporganizer.ACTION_ORGANIZE"
         const val ACTION_STATUS      = "com.armutlu.apporganizer.ACTION_STATUS"
-        const val EXTRA_CATEGORY_MAP = "category_map" // packageName -> categoryId JSON
+        const val EXTRA_CATEGORY_MAP = "category_map"
 
-        // Servisin dışarıdan kontrol edilebilmesi için singleton referans
         @Volatile var instance: LauncherAccessibilityService? = null
         @Volatile var isRunning = false
     }
 
     private val handler = Handler(Looper.getMainLooper())
 
-    // Organize işlemi sırasında tutulan durum
-    private var pendingApps: List<Pair<String, String>> = emptyList() // (packageName, categoryId)
+    private var pendingApps: List<AppOrgInfo> = emptyList()
     private var currentIndex = 0
     private var statusCallback: ((String) -> Unit)? = null
-
-    // Klasör merkezleri: categoryId -> (x, y) — ilk ikon bırakıldıktan sonra güncellenir
     private val folderPositions = mutableMapOf<String, Pair<Float, Float>>()
 
     override fun onServiceConnected() {
@@ -53,7 +52,7 @@ class LauncherAccessibilityService : AccessibilityService() {
         Timber.d("LauncherAccessibilityService connected")
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) { /* node değişimlerini izliyoruz */ }
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
 
     override fun onInterrupt() {
         isRunning = false
@@ -62,32 +61,26 @@ class LauncherAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
         isRunning = false
         instance = null
     }
 
     // ── Public API ─────────────────────────────────────────────────────────
 
-    /**
-     * AppOrganizer'dan çağrılır. apps: List<(packageName, categoryId)>
-     */
     @RequiresApi(Build.VERSION_CODES.N)
-    fun startOrganize(
-        apps: List<Pair<String, String>>,
-        onStatus: (String) -> Unit
-    ) {
+    fun startOrganize(apps: List<AppOrgInfo>, onStatus: (String) -> Unit) {
         pendingApps    = apps
         currentIndex   = 0
         folderPositions.clear()
         statusCallback = onStatus
 
         log("🚀 organize başladı: ${apps.size} uygulama")
-        log("Ekran boyutu: ${resources.displayMetrics.widthPixels}x${resources.displayMetrics.heightPixels}")
+        log("Ekran: ${resources.displayMetrics.widthPixels}x${resources.displayMetrics.heightPixels}")
         log("Aktif pencere: ${rootInActiveWindow?.packageName}")
-        log("Ana ekrana gidiliyor...")
         goHome()
         handler.postDelayed({
-            log("HOME sonrası aktif pencere: ${rootInActiveWindow?.packageName}")
+            log("HOME sonrası pencere: ${rootInActiveWindow?.packageName}")
             processNextApp()
         }, 1500)
     }
@@ -106,12 +99,10 @@ class LauncherAccessibilityService : AccessibilityService() {
             return
         }
 
-        val (pkg, categoryId) = pendingApps[currentIndex]
-        log("(${currentIndex + 1}/${pendingApps.size}) $pkg → kategori: $categoryId")
+        val app = pendingApps[currentIndex]
+        log("(${currentIndex + 1}/${pendingApps.size}) ${app.packageName} → ${app.categoryId}")
 
-        // Aktif pencere kontrolü
         val activeWindow = rootInActiveWindow?.packageName?.toString() ?: "null"
-        log("  Aktif pencere: $activeWindow")
         if (!activeWindow.contains("launcher") && !activeWindow.contains("home")) {
             log("  ⚠️ Launcher değil, HOME'a dönülüyor...")
             goHome()
@@ -119,11 +110,11 @@ class LauncherAccessibilityService : AccessibilityService() {
             return
         }
 
-        val iconNode = findAppIcon(pkg)
+        val iconNode = findAppIcon(app.packageName, app.appName)
         if (iconNode == null) {
-            log("  ❌ İkon bulunamadı: $pkg — atlanıyor")
+            log("  ⏭ İkon görünümde değil: ${app.packageName} — atlanıyor")
             currentIndex++
-            handler.postDelayed({ processNextApp() }, 300)
+            handler.postDelayed({ processNextApp() }, 200)
             return
         }
 
@@ -131,132 +122,134 @@ class LauncherAccessibilityService : AccessibilityService() {
         iconNode.getBoundsInScreen(iconBounds)
         val fromX = iconBounds.exactCenterX()
         val fromY = iconBounds.exactCenterY()
-        log("  ✓ İkon bulundu: (${fromX.toInt()}, ${fromY.toInt()})")
+        log("  ✓ İkon bulundu (${fromX.toInt()},${fromY.toInt()}) strateji: ${iconNode.packageName}")
 
-        val target = getOrCreateFolderTarget(categoryId, fromX, fromY)
-        log("  → Hedef: (${target.first.toInt()}, ${target.second.toInt()}) [${if (folderPositions.containsKey(categoryId)) "mevcut klasör" else "yeni konum"}]")
+        val target = getOrCreateFolderTarget(app.categoryId, fromX, fromY)
+        log("  → Hedef: (${target.first.toInt()},${target.second.toInt()})")
 
         dragIconToTarget(fromX, fromY, target.first, target.second) { success ->
-            if (success) log("  ✅ drag tamamlandı")
-            else log("  ⚠️ drag iptal edildi")
+            log(if (success) "  ✅ drag tamamlandı" else "  ⚠️ drag iptal")
             currentIndex++
             handler.postDelayed({ processNextApp() }, 700)
         }
     }
 
-    // ── Yardımcı: ikon bul ─────────────────────────────────────────────────
+    // ── İkon arama — 3 stratejili ──────────────────────────────────────────
 
-    private fun findAppIcon(packageName: String): AccessibilityNodeInfo? {
-        val root = rootInActiveWindow ?: return null
-
-        // Paket adına göre ara
-        fun search(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-            if (node.packageName?.toString() == packageName) return node
-            // contentDescription veya text ile de ara
-            val desc = node.contentDescription?.toString() ?: ""
-            val text = node.text?.toString() ?: ""
-            // Launcher ikon node'larının genellikle packageName'i yoktur,
-            // contentDescription uygulama adını içerir — PackageManager'dan ismi al
-            for (i in 0 until node.childCount) {
-                val child = node.getChild(i) ?: continue
-                val found = search(child)
-                if (found != null) return found
-                child.recycle()
+    private fun findAppIcon(packageName: String, appName: String): AccessibilityNodeInfo? {
+        val wins = windows ?: return null
+        for (window in wins) {
+            val root = window.root ?: continue
+            val pkg  = root.packageName?.toString() ?: ""
+            if (!pkg.contains("launcher") && !pkg.contains("home")) {
+                root.recycle(); continue
             }
-            return null
-        }
 
-        // Launcher package'ında ara
-        val windows = windows ?: return null
-        for (window in windows) {
-            val windowRoot = window.root ?: continue
-            val launcherPkg = windowRoot.packageName?.toString() ?: ""
-            if (!launcherPkg.contains("launcher") && !launcherPkg.contains("home")) {
-                windowRoot.recycle()
-                continue
-            }
-            // contentDescription ile package bilgisi eşleşen node'u bul
-            val found = findNodeByPackage(windowRoot, packageName)
-            if (found != null) return found
-            windowRoot.recycle()
+            // Strateji 1: packageName eşleşmesi (Pixel / Samsung / Nova)
+            findNodeByPackageName(root, packageName)?.let { return it }
+
+            // Strateji 2: app adıyla contentDescription araması (MIUI / HyperOS)
+            findNodeByAppName(root, appName)?.let { return it }
+
+            root.recycle()
         }
         return null
     }
 
-    private fun findNodeByPackage(root: AccessibilityNodeInfo, pkg: String): AccessibilityNodeInfo? {
-        // Launcher'da ikon node'ları genellikle ViewGroup içinde,
-        // contentDescription uygulama adını tutar. Tag olarak package adı da tutulabilir.
+    /** packageName sahibi veya extras'ta package bilgisi olan node'u bul. */
+    private fun findNodeByPackageName(root: AccessibilityNodeInfo, pkg: String): AccessibilityNodeInfo? {
         if (root.packageName?.toString() == pkg) return root
 
-        // Android 11+ bazı launcher'lar ikon package adını node'a ekler
         val extras = root.extras
         if (extras != null) {
-            val nodePkg = extras.getString("extra_package_name")
-                ?: extras.getString("packageName")
-            if (nodePkg == pkg) return root
+            val ep = extras.getString("extra_package_name") ?: extras.getString("packageName")
+            if (ep == pkg) return root
         }
 
         for (i in 0 until root.childCount) {
             val child = root.getChild(i) ?: continue
-            val found = findNodeByPackage(child, pkg)
+            val found = findNodeByPackageName(child, pkg)
             if (found != null) return found
-            if (found == null) child.recycle()
+            child.recycle()
         }
         return null
     }
 
-    // ── Yardımcı: klasör hedefi ────────────────────────────────────────────
-
     /**
-     * Kategorinin klasörü daha önce oluşturulduysa konumunu döndür.
-     * Yoksa boş bir alan hesapla — ilk ikon orada bırakılır,
-     * ikincisi üstüne sürüklenince Android otomatik klasör oluşturur.
+     * MIUI / HyperOS için: app adını contentDescription olarak taşıyan
+     * node'u bul, sonra tıklanabilir/sürüklenebilir üst container'ı döndür.
+     *
+     * MIUI Home'da BubbleTextView → contentDescription = "AppName" (tam eşleşme).
      */
-    private fun getOrCreateFolderTarget(
-        categoryId: String,
-        fromX: Float,
-        fromY: Float
-    ): Pair<Float, Float> {
+    private fun findNodeByAppName(root: AccessibilityNodeInfo, appName: String): AccessibilityNodeInfo? {
+        // findAccessibilityNodeInfosByText substring arar — sonra tam eşleşme filtrele
+        val candidates = root.findAccessibilityNodeInfosByText(appName)
+        for (node in candidates) {
+            val desc = node.contentDescription?.toString() ?: ""
+            val text = node.text?.toString() ?: ""
+            if (desc == appName || text == appName) {
+                // Tıklanabilir üst node'u bul (ikon container)
+                val icon = findClickableAncestor(node) ?: node
+                // Diğer adayları recycle et
+                candidates.filter { it != node && it != icon }.forEach { it.recycle() }
+                return icon
+            }
+            node.recycle()
+        }
+        return null
+    }
+
+    /** Verilen node'un tıklanabilir/sürüklenebilir atalarını yukarı doğru ara (maks 5 seviye). */
+    private fun findClickableAncestor(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        var depth = 0
+        var current = node.parent
+        while (current != null && depth < 5) {
+            if (current.isClickable || current.isLongClickable) return current
+            val parent = current.parent
+            current.recycle()
+            current = parent
+            depth++
+        }
+        current?.recycle()
+        return null
+    }
+
+    // ── Klasör hedefi ─────────────────────────────────────────────────────
+
+    private fun getOrCreateFolderTarget(categoryId: String, fromX: Float, fromY: Float): Pair<Float, Float> {
         folderPositions[categoryId]?.let { return it }
 
-        // Mevcut kategori klasörlerini tara
-        val existingFolder = findFolderNode(categoryId)
-        if (existingFolder != null) {
+        findFolderNode(categoryId)?.let { folder ->
             val bounds = Rect()
-            existingFolder.getBoundsInScreen(bounds)
+            folder.getBoundsInScreen(bounds)
             val pos = Pair(bounds.exactCenterX(), bounds.exactCenterY())
             folderPositions[categoryId] = pos
-            existingFolder.recycle()
+            folder.recycle()
             return pos
         }
 
-        // Klasör yok — ilk ikon için ekranın sağ tarafına hedef belirle
-        // (launcher'ın boş alanı). İkinci ikon üstüne gelince klasör oluşur.
         val display = resources.displayMetrics
         val screenW = display.widthPixels.toFloat()
         val screenH = display.heightPixels.toFloat()
-
-        // Mevcut klasör sayısına göre satır/sütun hesapla (3'lü grid)
-        val existingCount = folderPositions.size
-        val col = existingCount % 4
-        val row = existingCount / 4
-        val cellW = screenW / 4f
-        val cellH = (screenH * 0.7f) / 4f  // ekranın üst %70'i
-        val targetX = cellW * col + cellW / 2f
-        val targetY = cellH * row + cellH / 2f + screenH * 0.08f // status bar offset
-
-        val pos = Pair(targetX, targetY)
+        val count   = folderPositions.size
+        val col     = count % 4
+        val row     = count / 4
+        val cellW   = screenW / 4f
+        val cellH   = (screenH * 0.7f) / 4f
+        val pos = Pair(
+            cellW * col + cellW / 2f,
+            cellH * row + cellH / 2f + screenH * 0.08f
+        )
         folderPositions[categoryId] = pos
         return pos
     }
 
     private fun findFolderNode(categoryId: String): AccessibilityNodeInfo? {
         val root = rootInActiveWindow ?: return null
-        // Her launcher'ın folder class adı farklı
-        return findNodeByClass(root, "com.android.launcher3.folder.FolderIcon")            // Pixel
-            ?: findNodeByClass(root, "com.sec.android.app.launcher.uninstall.FolderIcon") // Samsung
-            ?: findNodeByClass(root, "com.miui.home.launcher.FolderIcon")                  // MIUI
-            ?: findNodeByClass(root, "com.miui.home.recents.FolderIcon")                   // HyperOS
+        return findNodeByClass(root, "com.android.launcher3.folder.FolderIcon")
+            ?: findNodeByClass(root, "com.sec.android.app.launcher.uninstall.FolderIcon")
+            ?: findNodeByClass(root, "com.miui.home.launcher.FolderIcon")
+            ?: findNodeByClass(root, "com.miui.home.recents.FolderIcon")
     }
 
     private fun findNodeByClass(root: AccessibilityNodeInfo, className: String): AccessibilityNodeInfo? {
@@ -270,53 +263,33 @@ class LauncherAccessibilityService : AccessibilityService() {
         return null
     }
 
-    // ── Yardımcı: gesture'lar ─────────────────────────────────────────────
+    // ── Gesture'lar ────────────────────────────────────────────────────────
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun dragIconToTarget(
         fromX: Float, fromY: Float,
         toX: Float, toY: Float,
-        onComplete: (success: Boolean) -> Unit
+        onComplete: (Boolean) -> Unit
     ) {
-        // 1. Önce uzun bas (600ms) — drag modunu aktif et
-        // 2. Sonra o konumdan hedef konuma sürükle (800ms)
-        // İki ayrı stroke — willContinue flag'i ile birleştirilir
         val longPressPath = Path().apply { moveTo(fromX, fromY) }
         val dragPath = Path().apply {
             moveTo(fromX, fromY)
-            // Smooth eğri ile sürükle
-            quadTo(
-                (fromX + toX) / 2f, (fromY + toY) / 2f - 100f,
-                toX, toY
-            )
+            quadTo((fromX + toX) / 2f, (fromY + toY) / 2f - 100f, toX, toY)
         }
 
-        val longPress = GestureDescription.StrokeDescription(
-            longPressPath,
-            0L,       // startTime
-            600L,     // duration — uzun bas
-            true      // willContinue — drag gelecek
+        val longPress = GestureDescription.StrokeDescription(longPressPath, 0L, 600L, true)
+        val drag      = longPress.continueStroke(dragPath, 0L, 900L, false)
+
+        dispatchGesture(
+            GestureDescription.Builder().addStroke(longPress).addStroke(drag).build(),
+            object : GestureResultCallback() {
+                override fun onCompleted(g: GestureDescription) { onComplete(true) }
+                override fun onCancelled(g: GestureDescription) { log("  drag cancelled"); onComplete(false) }
+            },
+            handler
         )
-        val drag = longPress.continueStroke(dragPath, 0L, 900L, false)
-
-        val gesture = GestureDescription.Builder()
-            .addStroke(longPress)
-            .addStroke(drag)
-            .build()
-
-        dispatchGesture(gesture, object : GestureResultCallback() {
-            override fun onCompleted(gestureDescription: GestureDescription) {
-                onComplete(true)
-            }
-            override fun onCancelled(gestureDescription: GestureDescription) {
-                log("  drag cancelled by system")
-                onComplete(false)
-            }
-        }, handler)
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun goHome() {
-        performGlobalAction(GLOBAL_ACTION_HOME)
-    }
+    private fun goHome() = performGlobalAction(GLOBAL_ACTION_HOME)
 }

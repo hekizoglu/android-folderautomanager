@@ -345,17 +345,7 @@ class AppListViewModel @Inject constructor(
                 val launcher = organizer.detectLauncher()
                 appendDebugLog("Launcher: ${launcher.displayName}")
 
-                // MIUI launcher'da accessibility drag & drop çalışmıyor:
-                // ikonlar accessibility tree'de packageName expose etmiyor.
-                // MIUI için doğrudan ShortcutManager yöntemine geç.
-                val isMiui = launcher is LauncherType.XIAOMI
-                if (isMiui && useAccessibility) {
-                    appendDebugLog("⚠️ MIUI Launcher: Accessibility drag & drop desteklenmiyor, Shortcut yöntemi kullanılıyor")
-                }
-
-                val useA11y = useAccessibility && !isMiui && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-
-                if (useA11y) {
+                if (useAccessibility && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val service = LauncherAccessibilityService.instance
                     appendDebugLog("A11y service: ${if (service != null) "AKTIF" else "NULL"}")
                     if (service == null) {
@@ -366,8 +356,15 @@ class AppListViewModel @Inject constructor(
                         )
                         return@launch
                     }
-                    val appMap = apps.map { it.packageName to it.categoryId }
-                    service.startOrganize(appMap) { status ->
+                    // Uygulama adını da geçiyoruz — MIUI'da contentDescription araması için gerekli
+                    val appOrgList = apps.map { app ->
+                        LauncherAccessibilityService.AppOrgInfo(
+                            packageName = app.packageName,
+                            categoryId  = app.categoryId,
+                            appName     = app.appName
+                        )
+                    }
+                    service.startOrganize(appOrgList) { status ->
                         _organizeState.value = if (status.startsWith("✅"))
                             OrganizeState.Done(true, status)
                         else
