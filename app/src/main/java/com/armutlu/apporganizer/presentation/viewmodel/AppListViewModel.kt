@@ -416,6 +416,33 @@ class AppListViewModel @Inject constructor(
         }
     }
 
+    fun resetOrganizeState() {
+        _organizeState.value = OrganizeState.Idle
+    }
+
+    fun resetAndReclassifyAllApps() {
+        viewModelScope.launch {
+            try {
+                _screenState.value = _screenState.value.copy(isRefreshing = true)
+                appendDebugLog("Tüm kategoriler sıfırlanıyor...")
+                repository.resetAllCategories()
+                appendDebugLog("Kategoriler sıfırlandı — yeniden sınıflandırılıyor...")
+                val apps = _screenState.value.apps
+                apps.forEach { app ->
+                    val category = classifier.classifyApp(app)
+                    if (category != "uncategorized") {
+                        repository.updateAppCategory(app.packageName, category)
+                    }
+                }
+                appendDebugLog("✅ ${apps.size} uygulama yeniden sınıflandırıldı")
+                _screenState.value = _screenState.value.copy(isRefreshing = false)
+            } catch (e: Exception) {
+                Timber.e(e, "Error resetting and reclassifying")
+                _screenState.value = _screenState.value.copy(isRefreshing = false)
+            }
+        }
+    }
+
     fun resetFilters() {
         _selectedCategory.value = "all"
         _searchQuery.value = ""

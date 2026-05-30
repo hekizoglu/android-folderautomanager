@@ -230,4 +230,13 @@ class AppRepository @Inject constructor(
     suspend fun appExists(packageName: String): Boolean {
         return appDao.appExists(packageName)
     }
+
+    suspend fun resetAllCategories() {
+        try {
+            appDao.resetAllAppCategories()
+            Timber.d("Reset all app categories to uncategorized")
+        } catch (e: Exception) {
+            Timber.e(e, "Error resetting categories")
+        }
+    }
 }
