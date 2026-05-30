@@ -115,6 +115,7 @@ class AppListViewModel @Inject constructor(
      * Sync installed apps from device
      */
     fun syncInstalledApps(installedApps: List<AppInfo>) {
+        appendDebugLog("syncInstalledApps: ${installedApps.size} uygulama tarandı")
         viewModelScope.launch {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
@@ -308,14 +309,20 @@ class AppListViewModel @Inject constructor(
     fun organizeOnLauncher(useAccessibility: Boolean) {
         viewModelScope.launch {
             _organizeState.value = OrganizeState.Running("Başlatılıyor...")
+            appendDebugLog("organizeOnLauncher başladı — a11y=$useAccessibility")
             try {
                 val apps = _screenState.value.apps
                 val categories = _screenState.value.categories
+                appendDebugLog("${apps.size} uygulama, ${categories.size} kategori bulundu")
                 val organizer = LauncherOrganizer(getApplication())
+                val launcher = organizer.detectLauncher()
+                appendDebugLog("Launcher: ${launcher.displayName}")
 
                 if (useAccessibility && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val service = LauncherAccessibilityService.instance
+                    appendDebugLog("A11y service: ${if (service != null) "AKTIF" else "NULL"}")
                     if (service == null) {
+                        appendDebugLog("ERROR: Accessibility Service bulunamadı")
                         _organizeState.value = OrganizeState.Done(
                             false,
                             "Accessibility Service aktif değil.\nAyarlardan etkinleştirin."
@@ -331,17 +338,21 @@ class AppListViewModel @Inject constructor(
                             OrganizeState.Running(status)
                     }
                 } else {
-                    // Shortcut yöntemi — tüm cihazlarda çalışır
+                    appendDebugLog("Shortcut yöntemi kullanılıyor (API ${Build.VERSION.SDK_INT})")
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        appendDebugLog("ShortcutManager.isRequestPinShortcutSupported kontrol ediliyor...")
                         val result = organizer.organizeByCategories(apps, categories)
+                        appendDebugLog("Shortcut sonucu: success=${result.success} pinned=${result.pinnedCategories} skipped=${result.skippedCategories}")
                         _organizeState.value = OrganizeState.Done(result.success, result.message)
                     } else {
+                        appendDebugLog("ERROR: Android 8.0+ gerekli, mevcut: ${Build.VERSION.RELEASE}")
                         _organizeState.value = OrganizeState.Done(
                             false, "Android 8.0+ gerekli (API 26+)"
                         )
                     }
                 }
             } catch (e: Exception) {
+                appendDebugLog("ERROR: ${e::class.simpleName}: ${e.message}")
                 Timber.e(e, "organizeOnLauncher failed")
                 _organizeState.value = OrganizeState.Done(false, "Hata: ${e.message}")
             }
@@ -380,12 +391,23 @@ class AppListViewModel @Inject constructor(
         clearSelection()
     }
 
-    // In-memory debug log buffer (son 100 satır)
-    private val debugLogs = ArrayDeque<String>(100)
+    // ── Canlı log sistemi ────────────────────────────────────────────────────
+    private val _liveDebugLogs = MutableStateFlow<List<String>>(emptyList())
+    val liveDebugLogs: StateFlow<List<String>> = _liveDebugLogs.asStateFlow()
 
     fun appendDebugLog(line: String) {
-        if (debugLogs.size >= 100) debugLogs.removeFirst()
-        debugLogs.addLast(line)
+        val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+            .format(java.util.Date())
+        val entry = "[$timestamp] $line"
+        val current = _liveDebugLogs.value.toMutableList()
+        current.add(entry)
+        if (current.size > 200) current.removeAt(0)
+        _liveDebugLogs.value = current
+        Timber.d(line)
+    }
+
+    fun clearDebugLogs() {
+        _liveDebugLogs.value = emptyList()
     }
 
     fun getDebugLogs(): String {
@@ -397,8 +419,10 @@ class AppListViewModel @Inject constructor(
             appendLine("Categories: ${state.categories.size}")
             appendLine("Error state: ${state.error ?: "none"}")
             appendLine("isLoading: ${state.isLoading}, isInitializing: ${state.isInitializing}")
+            appendLine("Launcher: ${detectedLauncher.displayName}")
+            appendLine("A11y active: ${LauncherAccessibilityService.isRunning}")
             appendLine("--- Recent Logs ---")
-            debugLogs.forEach { appendLine(it) }
+            _liveDebugLogs.value.forEach { appendLine(it) }
         }
     }
 }
