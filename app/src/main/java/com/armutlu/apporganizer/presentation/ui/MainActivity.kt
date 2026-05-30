@@ -16,6 +16,7 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -53,8 +54,24 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Onboarding bittiyse direkt tara
         if (onboardingDone) scanApps()
+
+        // Kısayoldan açılma: hangi kategori kısayoluna basıldıysa o kategoriye git
+        applyOpenCategoryIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        applyOpenCategoryIntent(intent)
+    }
+
+    private fun applyOpenCategoryIntent(intent: Intent?) {
+        val categoryId = intent?.getStringExtra("open_category") ?: return
+        lifecycleScope.launch {
+            // Veriler yüklenene kadar bekle, sonra kategoriyi uygula
+            viewModel.screenState.first { !it.isLoading && !it.isInitializing }
+            viewModel.setSelectedCategory(categoryId)
+        }
     }
 
     private fun scanApps() {
@@ -63,7 +80,7 @@ class MainActivity : ComponentActivity() {
                 Timber.d("Scanning device apps...")
                 val apps = PackageManagerHelper(applicationContext).getInstalledApps(
                     includeSystem = true,
-                    onlyLaunchable = true  // Launcher ikonu olmayanları (sistem servisleri) hariç tut
+                    onlyLaunchable = true
                 )
                 Timber.d("Found ${apps.size} apps, syncing...")
                 viewModel.syncInstalledApps(apps)

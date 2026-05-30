@@ -79,9 +79,16 @@ class LauncherAccessibilityService : AccessibilityService() {
         log("🚀 organize başladı: ${apps.size} uygulama")
         log("Ekran: ${resources.displayMetrics.widthPixels}x${resources.displayMetrics.heightPixels}")
         log("Aktif pencere: ${rootInActiveWindow?.packageName}")
+        log("windows API: ${windows?.size ?: "null"} pencere")
         goHome()
         handler.postDelayed({
-            log("HOME sonrası pencere: ${rootInActiveWindow?.packageName}")
+            val activeAfterHome = rootInActiveWindow?.packageName?.toString() ?: "null"
+            log("HOME sonrası pencere: $activeAfterHome")
+            val allWins = windows?.mapNotNull { it.root?.packageName?.toString() } ?: emptyList()
+            log("Tüm pencereler: ${allWins.joinToString(", ").ifBlank { "(boş)" }}")
+            if (allWins.isEmpty() && activeAfterHome == "null") {
+                log("⛔ Pencere erişimi yok! Erişilebilirlik iznini kapatıp tekrar açın.")
+            }
             processNextApp()
         }, 1500)
     }
@@ -104,8 +111,11 @@ class LauncherAccessibilityService : AccessibilityService() {
         log("(${currentIndex + 1}/${pendingApps.size}) ${app.packageName} → ${app.categoryId}")
 
         val activeWindow = rootInActiveWindow?.packageName?.toString() ?: "null"
-        if (!activeWindow.contains("launcher") && !activeWindow.contains("home")) {
-            log("  ⚠️ Launcher değil, HOME'a dönülüyor...")
+        if (activeWindow != "null" &&
+            !activeWindow.contains("launcher", ignoreCase = true) &&
+            !activeWindow.contains("home", ignoreCase = true) &&
+            !activeWindow.contains("desktop", ignoreCase = true)) {
+            log("  ⚠️ Launcher değil ($activeWindow), HOME'a dönülüyor...")
             goHome()
             handler.postDelayed({ processNextApp() }, 1000)
             return
@@ -140,33 +150,48 @@ class LauncherAccessibilityService : AccessibilityService() {
     private var windowsLogged = false
 
     private fun findAppIcon(packageName: String, appName: String): AccessibilityNodeInfo? {
-        val wins = windows ?: return null
-
-        // İlk aramada tüm pencereleri logla (MIUI debug için)
-        if (!windowsLogged) {
-            windowsLogged = true
-            val pkgs = wins.mapNotNull { it.root?.packageName?.toString() }
-            log("Pencereler: ${pkgs.joinToString(", ")}")
-        }
-
-        for (window in wins) {
-            val root = window.root ?: continue
-            val pkg  = root.packageName?.toString() ?: ""
-            // com.miui.home, com.android.launcher3, com.sec.android.app.launcher vb.
-            if (!pkg.contains("launcher", ignoreCase = true) &&
-                !pkg.contains("home", ignoreCase = true) &&
-                !pkg.contains("desktop", ignoreCase = true)) {
-                root.recycle(); continue
+        // --- Önce windows listesinden launcher penceresini ara ---
+        val wins = windows
+        if (wins != null) {
+            if (!windowsLogged) {
+                windowsLogged = true
+                val pkgs = wins.mapNotNull { it.root?.packageName?.toString() }
+                log("Pencereler (windows): ${pkgs.joinToString(", ").ifBlank { "(boş)" }}")
             }
 
-            // Strateji 1: packageName eşleşmesi (Pixel / Samsung / Nova)
-            findNodeByPackageName(root, packageName)?.let { return it }
+            var launcherFound = false
+            for (window in wins) {
+                val root = window.root ?: continue
+                val pkg  = root.packageName?.toString() ?: ""
+                if (!pkg.contains("launcher", ignoreCase = true) &&
+                    !pkg.contains("home", ignoreCase = true) &&
+                    !pkg.contains("desktop", ignoreCase = true)) {
+                    root.recycle(); continue
+                }
+                launcherFound = true
+                findNodeByPackageName(root, packageName)?.let { return it }
+                findNodeByAppName(root, appName)?.let { return it }
+                root.recycle()
+            }
 
-            // Strateji 2: app adıyla contentDescription araması (MIUI / HyperOS)
-            findNodeByAppName(root, appName)?.let { return it }
-
-            root.recycle()
+            // Launcher penceresi yoksa tüm pencereleri tara (bazı cihazlarda package adı farklıdır)
+            if (!launcherFound) {
+                log("Launcher penceresi bulunamadı — tüm pencereler taranıyor")
+                for (window in wins) {
+                    val root = window.root ?: continue
+                    findNodeByPackageName(root, packageName)?.let { return it }
+                    findNodeByAppName(root, appName)?.let { return it }
+                    root.recycle()
+                }
+            }
         }
+
+        // --- Fallback: rootInActiveWindow (windows API boş dönerse) ---
+        val activeRoot = rootInActiveWindow ?: return null
+        log("rootInActiveWindow fallback: ${activeRoot.packageName}")
+        findNodeByPackageName(activeRoot, packageName)?.let { return it }
+        findNodeByAppName(activeRoot, appName)?.let { return it }
+        activeRoot.recycle()
         return null
     }
 
