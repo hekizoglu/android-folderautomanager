@@ -8,14 +8,44 @@ import com.armutlu.apporganizer.domain.models.Category
  * Uses a hybrid approach: keyword matching + default category mapping.
  */
 class AppClassifier {
-    
+
+    // Paket adına göre kesin kategori eşlemesi — keyword'den önce kontrol edilir
+    private val exactMatchMap = mapOf(
+        "com.facebook.katana"                       to Category.CAT_SOCIAL,
+        "com.instagram.android"                     to Category.CAT_SOCIAL,
+        "com.twitter.android"                       to Category.CAT_SOCIAL,
+        "com.whatsapp"                              to Category.CAT_SOCIAL,
+        "org.telegram.messenger"                    to Category.CAT_SOCIAL,
+        "com.discord"                               to Category.CAT_SOCIAL,
+        "com.snapchat.android"                      to Category.CAT_SOCIAL,
+        "com.zhiliaoapp.musically"                  to Category.CAT_SOCIAL,
+        "com.ss.android.ugc.trill"                  to Category.CAT_SOCIAL,
+        // AI asistanlar → Üretkenlik
+        "com.openai.chatgpt"                        to Category.CAT_PRODUCTIVITY,
+        "com.openai.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.deepseek.app"                          to Category.CAT_PRODUCTIVITY,
+        "ai.deepseek.app"                           to Category.CAT_PRODUCTIVITY,
+        "com.anthropic.claude"                      to Category.CAT_PRODUCTIVITY,
+        "com.google.android.apps.bard"              to Category.CAT_PRODUCTIVITY,
+        "com.google.android.apps.gemini"            to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.copilot"                     to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.bing"                        to Category.CAT_PRODUCTIVITY,
+        "com.perplexity.app"                        to Category.CAT_PRODUCTIVITY,
+        "io.character.ai"                           to Category.CAT_PRODUCTIVITY,
+        "com.inflection.pi"                         to Category.CAT_PRODUCTIVITY,
+        // Oyunlar
+        "com.valvesoftware.android.steam.steamlink" to Category.CAT_GAMES,
+        "com.playstation.mobilegames"               to Category.CAT_GAMES,
+    )
+
     /**
      * Classify a single app into a category
      */
     fun classifyApp(appInfo: AppInfo): String {
-        // Check against keyword database
-        val categoryId = classifyByKeywords(appInfo.appName, appInfo.packageName)
-        return categoryId ?: Category.CAT_OTHER
+        // 1. Exact match (en yüksek öncelik — paket adına göre)
+        exactMatchMap[appInfo.packageName]?.let { return it }
+        // 2. Keyword eşleşmesi
+        return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
     }
     
     /**
@@ -67,17 +97,7 @@ class AppClassifier {
      * Check if there's an exact match in package name
      */
     private fun hasExactMatch(packageName: String, categoryId: String): Boolean {
-        val exactMatches = mapOf(
-            "com.facebook.katana" to Category.CAT_SOCIAL,
-            "com.instagram.android" to Category.CAT_SOCIAL,
-            "com.twitter.android" to Category.CAT_SOCIAL,
-            "com.whatsapp" to Category.CAT_SOCIAL,
-            "com.spotify.music" to Category.CAT_PRODUCTIVITY,
-            "com.steam.steamandroid" to Category.CAT_GAMES,
-            "com.playstation.mobilegames" to Category.CAT_GAMES
-        )
-        
-        return exactMatches[packageName] == categoryId
+        return exactMatchMap[packageName] == categoryId
     }
     
     /**
@@ -109,15 +129,20 @@ object KeywordDatabase {
         Category.CAT_SOCIAL to listOf(
             "social", "facebook", "twitter", "instagram", "whatsapp", "telegram",
             "tiktok", "snapchat", "discord", "messenger", "viber", "linkedin",
-            "reddit", "quora", "mastodon", "bluesky", "chat", "messaging"
+            "reddit", "quora", "mastodon", "bluesky", "threads", "tumblr",
+            "wechat", "line", "kakaotalk", "signal"
         ),
-        
+
         Category.CAT_PRODUCTIVITY to listOf(
             "productivity", "office", "calendar", "notes", "todo", "task",
             "mail", "email", "drive", "cloud", "storage", "document",
             "sheet", "excel", "word", "presentation", "notion", "obsidian",
             "evernote", "onenote", "todoist", "asana", "trello", "slack",
-            "teams", "zoom", "meet", "google", "microsoft", "amazon"
+            "teams", "zoom", "meet", "google", "microsoft", "amazon",
+            // AI asistanlar
+            "chatgpt", "openai", "deepseek", "claude", "gemini", "copilot",
+            "perplexity", "bard", "gpt", "llm", "assistant", "ai",
+            "character.ai", "inflection", "mistral", "groq"
         ),
         
         Category.CAT_GAMES to listOf(
