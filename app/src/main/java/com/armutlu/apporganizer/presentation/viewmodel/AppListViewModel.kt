@@ -3,6 +3,8 @@ package com.armutlu.apporganizer.presentation.viewmodel
 import android.app.Application
 import android.content.Intent
 import android.os.Build
+import android.view.accessibility.AccessibilityManager
+import android.accessibilityservice.AccessibilityServiceInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
@@ -355,13 +357,24 @@ class AppListViewModel @Inject constructor(
 
                 if (useAccessibility && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val service = LauncherAccessibilityService.instance
-                    appendDebugLog("A11y service: ${if (service != null) "AKTIF" else "NULL"}")
+                    val enabledInSystem = isAccessibilityServiceEnabledInSystem()
+                    appendDebugLog("A11y service: instance=${if (service != null) "BAĞLI" else "null"}, system=$enabledInSystem")
                     if (service == null) {
-                        appendDebugLog("ERROR: Accessibility Service bulunamadı")
-                        _organizeState.value = OrganizeState.Done(
-                            false,
-                            "Accessibility Service aktif değil.\nAyarlardan etkinleştirin."
-                        )
+                        if (enabledInSystem) {
+                            appendDebugLog("⚠️ Servis ayarlarda etkin ama henüz bağlanmadı (APK güncellendi mi?)")
+                            _organizeState.value = OrganizeState.Done(
+                                false,
+                                "Servis bağlantısı yok.\n\nErişilebilirlik ayarlarına gidip servisi KAPAT → TEKRAR AÇ.\n\n" +
+                                "(APK güncellendikten sonra bu adım gereklidir.)"
+                            )
+                        } else {
+                            appendDebugLog("⛔ Servis sistem ayarlarında devre dışı")
+                            _organizeState.value = OrganizeState.Done(
+                                false,
+                                "Erişilebilirlik servisi etkin değil.\n\n" +
+                                "Ayarlar → Erişilebilirlik → App Organizer → Etkinleştir"
+                            )
+                        }
                         return@launch
                     }
                     // Uygulama adını da geçiyoruz — MIUI'da contentDescription araması için gerekli
@@ -476,8 +489,22 @@ class AppListViewModel @Inject constructor(
         _liveDebugLogs.value = emptyList()
     }
 
+    fun isAccessibilityServiceEnabledInSystem(): Boolean {
+        return try {
+            val am = getApplication<Application>()
+                .getSystemService(AccessibilityManager::class.java) ?: return false
+            val pkg = getApplication<Application>().packageName
+            am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+                .any { it.resolveInfo.serviceInfo.packageName == pkg }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun getDebugLogs(): String {
         val state = _screenState.value
+        val a11yConnected = LauncherAccessibilityService.instance != null
+        val a11yInSystem  = isAccessibilityServiceEnabledInSystem()
         return buildString {
             appendLine("=== AppOrganizer Debug ===")
             appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})")
@@ -486,7 +513,8 @@ class AppListViewModel @Inject constructor(
             appendLine("Error state: ${state.error ?: "none"}")
             appendLine("isLoading: ${state.isLoading}, isInitializing: ${state.isInitializing}")
             appendLine("Launcher: ${detectedLauncher.displayName}")
-            appendLine("A11y active: ${LauncherAccessibilityService.isRunning}")
+            appendLine("A11y in system settings: $a11yInSystem")
+            appendLine("A11y instance connected: $a11yConnected")
             appendLine("--- Recent Logs ---")
             _liveDebugLogs.value.forEach { appendLine(it) }
         }
