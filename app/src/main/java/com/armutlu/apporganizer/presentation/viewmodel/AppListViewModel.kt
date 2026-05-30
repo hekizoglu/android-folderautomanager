@@ -29,9 +29,10 @@ import javax.inject.Inject
 class AppListViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository,
-    private val classifier: AppClassifier
+    private val classifier: AppClassifier,
+    private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
 ) : AndroidViewModel(application) {
-    
+
     // Launcher organize state
     private val _organizeState = MutableStateFlow<OrganizeState>(OrganizeState.Idle)
     val organizeState: StateFlow<OrganizeState> = _organizeState.asStateFlow()
@@ -67,9 +68,26 @@ class AppListViewModel @Inject constructor(
      */
     private fun initializeScreen() {
         viewModelScope.launch {
+            // Uygulama veritabanını arka planda indir
+            launch {
+                appendDebugLog("AppDatabase indirme başlıyor...")
+                val result = appDatabaseService.fetchAndCache()
+                when (result) {
+                    is com.armutlu.apporganizer.data.remote.FetchResult.Success ->
+                        appendDebugLog("✅ AppDatabase: ${result.count} uygulama indirildi (v${result.version})")
+                    is com.armutlu.apporganizer.data.remote.FetchResult.FromCache ->
+                        appendDebugLog("AppDatabase: cache'den ${result.count} uygulama yüklendi")
+                    is com.armutlu.apporganizer.data.remote.FetchResult.Error ->
+                        appendDebugLog("⚠️ AppDatabase indirilemedi: ${result.message}")
+                    com.armutlu.apporganizer.data.remote.FetchResult.NoCache ->
+                        appendDebugLog("⚠️ AppDatabase: cache yok, internet bağlantısını kontrol edin")
+                }
+            }
+        }
+        viewModelScope.launch {
             try {
                 Timber.d("Initializing screen...")
-                
+
                 // Get categories
                 val categories = Category.getDefaultCategories()
                 

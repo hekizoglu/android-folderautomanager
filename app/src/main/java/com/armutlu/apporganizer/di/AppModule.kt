@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.usecase.AppClassifier
 import dagger.Module
 import dagger.Provides
@@ -35,5 +36,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAppClassifier(): AppClassifier = AppClassifier()
+    fun provideAppDatabaseService(@ApplicationContext context: Context): AppDatabaseService {
+        return AppDatabaseService(context).also { it.loadFromCacheSync() }
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppClassifier(appDatabaseService: AppDatabaseService): AppClassifier =
+        AppClassifier(appDatabaseService)
 }

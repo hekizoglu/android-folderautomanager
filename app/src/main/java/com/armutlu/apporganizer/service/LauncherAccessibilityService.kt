@@ -76,15 +76,25 @@ class LauncherAccessibilityService : AccessibilityService() {
         apps: List<Pair<String, String>>,
         onStatus: (String) -> Unit
     ) {
-        pendingApps   = apps
-        currentIndex  = 0
+        pendingApps    = apps
+        currentIndex   = 0
         folderPositions.clear()
         statusCallback = onStatus
 
-        onStatus("Ana ekrana gidiliyor...")
+        log("🚀 organize başladı: ${apps.size} uygulama")
+        log("Ekran boyutu: ${resources.displayMetrics.widthPixels}x${resources.displayMetrics.heightPixels}")
+        log("Aktif pencere: ${rootInActiveWindow?.packageName}")
+        log("Ana ekrana gidiliyor...")
         goHome()
-        // HOME animasyonu bitmesini bekle
-        handler.postDelayed({ processNextApp() }, 1500)
+        handler.postDelayed({
+            log("HOME sonrası aktif pencere: ${rootInActiveWindow?.packageName}")
+            processNextApp()
+        }, 1500)
+    }
+
+    private fun log(msg: String) {
+        Timber.d("[A11y] $msg")
+        statusCallback?.invoke(msg)
     }
 
     // ── İşlem döngüsü ──────────────────────────────────────────────────────
@@ -92,18 +102,28 @@ class LauncherAccessibilityService : AccessibilityService() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun processNextApp() {
         if (currentIndex >= pendingApps.size) {
-            statusCallback?.invoke("✅ Tamamlandı! ${pendingApps.size} uygulama organize edildi.")
+            log("✅ Tamamlandı! ${pendingApps.size} uygulama işlendi.")
             return
         }
 
         val (pkg, categoryId) = pendingApps[currentIndex]
-        statusCallback?.invoke("(${currentIndex + 1}/${pendingApps.size}) $pkg işleniyor...")
+        log("(${currentIndex + 1}/${pendingApps.size}) $pkg → kategori: $categoryId")
+
+        // Aktif pencere kontrolü
+        val activeWindow = rootInActiveWindow?.packageName?.toString() ?: "null"
+        log("  Aktif pencere: $activeWindow")
+        if (!activeWindow.contains("launcher") && !activeWindow.contains("home")) {
+            log("  ⚠️ Launcher değil, HOME'a dönülüyor...")
+            goHome()
+            handler.postDelayed({ processNextApp() }, 1000)
+            return
+        }
 
         val iconNode = findAppIcon(pkg)
         if (iconNode == null) {
-            Timber.w("Icon not found for $pkg, skipping")
+            log("  ❌ İkon bulunamadı: $pkg — atlanıyor")
             currentIndex++
-            handler.postDelayed({ processNextApp() }, 200)
+            handler.postDelayed({ processNextApp() }, 300)
             return
         }
 
@@ -111,14 +131,16 @@ class LauncherAccessibilityService : AccessibilityService() {
         iconNode.getBoundsInScreen(iconBounds)
         val fromX = iconBounds.exactCenterX()
         val fromY = iconBounds.exactCenterY()
+        log("  ✓ İkon bulundu: (${fromX.toInt()}, ${fromY.toInt()})")
 
-        // Hedef klasörün konumunu bul veya oluştur
         val target = getOrCreateFolderTarget(categoryId, fromX, fromY)
+        log("  → Hedef: (${target.first.toInt()}, ${target.second.toInt()}) [${if (folderPositions.containsKey(categoryId)) "mevcut klasör" else "yeni konum"}]")
 
-        dragIconToTarget(fromX, fromY, target.first, target.second) {
+        dragIconToTarget(fromX, fromY, target.first, target.second) { success ->
+            if (success) log("  ✅ drag tamamlandı")
+            else log("  ⚠️ drag iptal edildi")
             currentIndex++
-            // Klasör oluşma/yerleşme animasyonunu bekle
-            handler.postDelayed({ processNextApp() }, 600)
+            handler.postDelayed({ processNextApp() }, 700)
         }
     }
 
@@ -254,7 +276,7 @@ class LauncherAccessibilityService : AccessibilityService() {
     private fun dragIconToTarget(
         fromX: Float, fromY: Float,
         toX: Float, toY: Float,
-        onComplete: () -> Unit
+        onComplete: (success: Boolean) -> Unit
     ) {
         // 1. Önce uzun bas (600ms) — drag modunu aktif et
         // 2. Sonra o konumdan hedef konuma sürükle (800ms)
@@ -284,12 +306,11 @@ class LauncherAccessibilityService : AccessibilityService() {
 
         dispatchGesture(gesture, object : GestureResultCallback() {
             override fun onCompleted(gestureDescription: GestureDescription) {
-                Timber.d("Drag completed: ($fromX,$fromY) -> ($toX,$toY)")
-                onComplete()
+                onComplete(true)
             }
             override fun onCancelled(gestureDescription: GestureDescription) {
-                Timber.w("Drag cancelled — skipping")
-                onComplete()
+                log("  drag cancelled by system")
+                onComplete(false)
             }
         }, handler)
     }

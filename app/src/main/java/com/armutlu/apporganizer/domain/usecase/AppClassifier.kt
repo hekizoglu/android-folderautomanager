@@ -1,13 +1,15 @@
 package com.armutlu.apporganizer.domain.usecase
 
+import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import javax.inject.Inject
+import javax.inject.Singleton
 
-/**
- * Classifier that categorizes apps based on package name, app name, and keyword database.
- * Uses a hybrid approach: keyword matching + default category mapping.
- */
-class AppClassifier {
+@Singleton
+class AppClassifier @Inject constructor(
+    private val appDatabaseService: AppDatabaseService
+) {
 
     // Paket adına göre kesin kategori eşlemesi — keyword'den önce kontrol edilir
     private val exactMatchMap = mapOf(
@@ -42,9 +44,11 @@ class AppClassifier {
      * Classify a single app into a category
      */
     fun classifyApp(appInfo: AppInfo): String {
-        // 1. Exact match (en yüksek öncelik — paket adına göre)
+        // 1. Online veritabanı (Play Store kategorileri) — en yüksek öncelik
+        appDatabaseService.getCategoryForPackage(appInfo.packageName)?.let { return it }
+        // 2. Yerel exact match tablosu
         exactMatchMap[appInfo.packageName]?.let { return it }
-        // 2. Keyword eşleşmesi
+        // 3. Keyword eşleşmesi
         return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
     }
     
