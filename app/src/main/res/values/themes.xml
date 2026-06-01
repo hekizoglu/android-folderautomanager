@@ -8,4 +8,13 @@
         <item name="windowSplashScreenAnimatedIcon">@android:drawable/sym_def_app_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.AppOrganizer</item>
     </style>
+
+    <!-- Launcher teması — sistem duvar kağıdını arka planda gösterir -->
+    <style name="Theme.AppOrganizer.Launcher" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
 </resources>
