@@ -53,7 +53,7 @@ class AppListViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow("all")
     private val _searchQuery = MutableStateFlow("")
     private val _sortOption = MutableStateFlow(SortOption.NAME_ASC)
-    private val _showSystemApps = MutableStateFlow(true)
+    private val _showSystemApps = MutableStateFlow(false)
     private val _selectedApps = MutableStateFlow<Set<String>>(emptySet())
     
     // Public state flows
@@ -469,7 +469,7 @@ class AppListViewModel @Inject constructor(
         _selectedCategory.value = "all"
         _searchQuery.value = ""
         _sortOption.value = SortOption.NAME_ASC
-        _showSystemApps.value = true
+        _showSystemApps.value = false
         clearSelection()
     }
 
