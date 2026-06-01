@@ -1,28 +1,32 @@
 package com.armutlu.apporganizer.service
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.graphics.Rect
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import androidx.annotation.RequiresApi
 import timber.log.Timber
 
 /**
- * Katman 2: Accessibility Service ile launcher'da fiziksel drag & drop.
+ * Accessibility Service: launcher'da drag & drop ile ikon organizasyonu.
  *
- * İkon arama stratejileri (öncelik sırasıyla):
- *   1. Package name eşleşmesi (Pixel, Samsung, Nova)
- *   2. extras bundle'da package adı (Android 11+)
- *   3. App adıyla contentDescription/text araması (MIUI, HyperOS)
+ * Çalışma adımları:
+ *   1. startOrganize() → HOME'a git
+ *   2. dumpLauncherTree() → accessibility tree'yi tamamen logla
+ *   3. Her uygulama için: ikon bul → long press → drag → hedef
+ *
+ * Debug logları ViewModel.appendDebugLog() üzerinden Settings ekranına gider.
  */
 class LauncherAccessibilityService : AccessibilityService() {
 
-    /** Organize edilecek uygulamanın tüm bilgilerini taşır. */
     data class AppOrgInfo(
         val packageName: String,
         val categoryId: String,
@@ -30,51 +34,63 @@ class LauncherAccessibilityService : AccessibilityService() {
     )
 
     companion object {
-        const val ACTION_ORGANIZE    = "com.armutlu.apporganizer.ACTION_ORGANIZE"
-        const val ACTION_STATUS      = "com.armutlu.apporganizer.ACTION_STATUS"
-        const val EXTRA_CATEGORY_MAP = "category_map"
-
         @Volatile var instance: LauncherAccessibilityService? = null
         @Volatile var isRunning = false
+
+        // Gesture zamanlamaları (ms)
+        // Long press: ViewConfiguration'dan dinamik alınır (cihaz ayarına göre değişir)
+        // MIUI için 1.5x çarpanı uygulanır (AOSP CTS'de önerilen)
+        private const val LONG_PRESS_MULTIPLIER = 1.5f
+        private const val DRAG_MS         = 800L   // 800ms drag süresi yeterli
+        private const val HOME_WAIT_MS    = 1500L
+        private const val BETWEEN_APP_MS  = 800L
+        private const val RETRY_WAIT_MS   = 1200L
     }
 
     private val handler = Handler(Looper.getMainLooper())
+
+    // Dinamik long press süresi: sistemin ViewConfiguration'ından alınır
+    private val longPressMs: Long
+        get() = (ViewConfiguration.getLongPressTimeout() * LONG_PRESS_MULTIPLIER).toLong()
 
     private var pendingApps: List<AppOrgInfo> = emptyList()
     private var currentIndex = 0
     private var statusCallback: ((String) -> Unit)? = null
     private val folderPositions = mutableMapOf<String, Pair<Float, Float>>()
 
+    // İstatistikler
+    private var statsFound   = 0
+    private var statsMissed  = 0
+    private var statsDragged = 0
+    private var statsFailed  = 0
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
         isRunning = true
-        Timber.d("LauncherAccessibilityService connected — Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+        Timber.d("[A11y] Service connected — Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Olayları dinlemiyoruz; windows API'yi doğrudan kullanıyoruz
-    }
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
 
     override fun onInterrupt() {
-        Timber.w("LauncherAccessibilityService interrupted")
-        isRunning = false
-        instance = null
+        Timber.w("[A11y] Service interrupted")
+        isRunning = false; instance = null
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
-        Timber.w("LauncherAccessibilityService unbound")
-        isRunning = false
-        instance = null
+        Timber.w("[A11y] Service unbound")
+        isRunning = false; instance = null
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
-        isRunning = false
-        instance = null
-        Timber.d("LauncherAccessibilityService destroyed")
+        isRunning = false; instance = null
+        Timber.d("[A11y] Service destroyed")
     }
 
     // ── Public API ─────────────────────────────────────────────────────────
@@ -83,211 +99,367 @@ class LauncherAccessibilityService : AccessibilityService() {
     fun startOrganize(apps: List<AppOrgInfo>, onStatus: (String) -> Unit) {
         pendingApps    = apps
         currentIndex   = 0
-        folderPositions.clear()
         statusCallback = onStatus
-        windowsLogged  = false
+        folderPositions.clear()
+        statsFound = 0; statsMissed = 0; statsDragged = 0; statsFailed = 0
 
-        log("🚀 organize başladı: ${apps.size} uygulama")
-        log("Ekran: ${resources.displayMetrics.widthPixels}x${resources.displayMetrics.heightPixels}")
-        log("Aktif pencere: ${rootInActiveWindow?.packageName}")
-        log("windows API: ${windows?.size ?: "null"} pencere")
-        goHome()
+        log("════════════════════════════════════")
+        log("🚀 ORGANIZE BAŞLADI")
+        log("════════════════════════════════════")
+        log("📱 Cihaz: ${Build.MANUFACTURER} ${Build.MODEL}")
+        log("🤖 Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+        log("⏱ Long press eşiği: ${ViewConfiguration.getLongPressTimeout()}ms → kullanılan: ${longPressMs}ms")
+        log("⏱ Drag süresi: ${DRAG_MS}ms")
+
+        // MIUI/HyperOS özel uyarıları
+        if (Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
+            || Build.MANUFACTURER.equals("Redmi", ignoreCase = true)
+            || Build.MANUFACTURER.equals("POCO", ignoreCase = true)) {
+            log("⚠️ MIUI/HyperOS cihazı tespit edildi")
+            log("   ⚠️ ARAŞTIRMA BULGUSU: MIUI home screen ikonları")
+            log("   ⚠️ erişilebilirlik ağacında görünmeyebilir (Xiaomi kısıtlaması)")
+            log("   📋 ZORUNLU ADIMLAR:")
+            log("   1. Uygulama Bilgisi > Diğer İzinler > Arka planda açılır pencere: İZİN VER")
+            log("   2. Uygulama Bilgisi > Otomatik Başlatma: ETKİNLEŞTİR")
+            log("   3. Pil Optimizasyonu: KISITLAMA YOK")
+            log("   4. Ayarlar > APK kısıtlamaları > Bu uygulama için > Kısıtlı ayarlara izin ver")
+            log("   ℹ️ Tree dump ile ağaç yapısı kontrol edilecek...")
+        }
+
+        // Servis kabiliyetlerini logla
+        logServiceCapabilities()
+
+        log("📋 Toplam uygulama: ${apps.size}")
+        log("🏠 HOME'a gidiliyor...")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            performGlobalAction(GLOBAL_ACTION_HOME)
+        }
+
         handler.postDelayed({
-            val activeAfterHome = rootInActiveWindow?.packageName?.toString() ?: "null"
-            log("HOME sonrası pencere: $activeAfterHome")
-            val allWins = windows?.mapNotNull { it.root?.packageName?.toString() } ?: emptyList()
-            log("Tüm pencereler: ${allWins.joinToString(", ").ifBlank { "(boş)" }}")
-            if (allWins.isEmpty() && activeAfterHome == "null") {
-                log("⛔ Pencere erişimi yok! Erişilebilirlik iznini kapatıp tekrar açın.")
-            }
+            log("────────────────────────────────────")
+            log("🔍 LAUNCHER TREE DUMP başlıyor")
+            log("────────────────────────────────────")
+            dumpAllWindows()
+            log("────────────────────────────────────")
+            log("▶️  Uygulama işleme döngüsü başlıyor")
+            log("────────────────────────────────────")
             processNextApp()
-        }, 1500)
+        }, HOME_WAIT_MS)
     }
 
-    private fun log(msg: String) {
-        Timber.d("[A11y] $msg")
-        statusCallback?.invoke(msg)
+    // ── Servis diagnostik ──────────────────────────────────────────────────
+
+    private fun logServiceCapabilities() {
+        try {
+            val info = serviceInfo
+            log("⚙️ Servis özellikleri:")
+            log("   canPerformGestures    : ${info.capabilities and AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES != 0}")
+            log("   canRetrieveWindows   : ${info.capabilities and AccessibilityServiceInfo.CAPABILITY_CAN_RETRIEVE_WINDOW_CONTENT != 0}")
+            log("   canRequestFilterKeys : ${info.capabilities and AccessibilityServiceInfo.CAPABILITY_CAN_REQUEST_FILTER_KEY_EVENTS != 0}")
+            log("   feedbackType         : ${info.feedbackType}")
+            log("   eventTypes           : 0x${info.eventTypes.toString(16)}")
+        } catch (e: Exception) {
+            log("⚠️ serviceInfo alınamadı: ${e.message}")
+        }
     }
 
-    // ── İşlem döngüsü ──────────────────────────────────────────────────────
+    // ── Full accessibility tree dump ───────────────────────────────────────
+
+    private fun dumpAllWindows() {
+        val wins = windows
+        if (wins == null) {
+            log("⛔ windows API null — erişilebilirlik izni yeterli değil")
+            val activeRoot = rootInActiveWindow
+            if (activeRoot != null) {
+                log("ℹ️ rootInActiveWindow mevcut: ${activeRoot.packageName}")
+                dumpTree(activeRoot, "ROOT", 0, maxDepth = 4)
+                activeRoot.recycle()
+            } else {
+                log("⛔ rootInActiveWindow de null — servis pencereye erişemiyor")
+            }
+            return
+        }
+
+        log("🪟 Toplam pencere: ${wins.size}")
+        wins.forEachIndexed { i, window ->
+            val root = window.root
+            val typeStr = when (window.type) {
+                AccessibilityWindowInfo.TYPE_APPLICATION     -> "APPLICATION"
+                AccessibilityWindowInfo.TYPE_INPUT_METHOD    -> "INPUT_METHOD"
+                AccessibilityWindowInfo.TYPE_SYSTEM          -> "SYSTEM"
+                AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY -> "A11Y_OVERLAY"
+                else                                         -> "TYPE_${window.type}"
+            }
+            val bounds = Rect(); window.getBoundsInScreen(bounds)
+            log("  📦 Pencere[$i]: pkg=${root?.packageName} type=$typeStr bounds=$bounds")
+
+            if (root != null) {
+                val pkg = root.packageName?.toString() ?: ""
+                val isLauncher = pkg.contains("launcher", ignoreCase = true)
+                    || pkg.contains("home", ignoreCase = true)
+                    || pkg.contains("desktop", ignoreCase = true)
+
+                if (isLauncher) {
+                    log("  🎯 LAUNCHER penceresi bulundu: $pkg")
+                    log("  📊 Alt düğüm sayısı: ${root.childCount}")
+                    dumpTree(root, "LAUNCHER", 0, maxDepth = 5)
+                }
+                root.recycle()
+            } else {
+                log("  ⚠️ Pencere[$i] root null")
+            }
+        }
+    }
+
+    private fun dumpTree(node: AccessibilityNodeInfo, label: String, depth: Int, maxDepth: Int) {
+        if (depth > maxDepth) return
+        val indent = "  ".repeat(depth)
+        val cls    = node.className?.toString()?.substringAfterLast('.') ?: "?"
+        val pkg    = node.packageName?.toString() ?: ""
+        val desc   = node.contentDescription?.toString()?.take(40) ?: ""
+        val text   = node.text?.toString()?.take(40) ?: ""
+        val bounds = Rect(); node.getBoundsInScreen(bounds)
+        val flags  = buildString {
+            if (node.isClickable)     append("C")
+            if (node.isLongClickable) append("L")
+            if (node.isScrollable)    append("S")
+            if (node.isFocusable)     append("F")
+        }
+
+        val info = buildString {
+            append("${indent}[${cls}]")
+            if (pkg.isNotBlank() && pkg != "com.miui.home") append(" pkg=$pkg")
+            if (desc.isNotBlank()) append(" cd=\"$desc\"")
+            if (text.isNotBlank()) append(" txt=\"$text\"")
+            if (flags.isNotBlank()) append(" [$flags]")
+            append(" ${bounds.width()}x${bounds.height()}@(${bounds.left},${bounds.top})")
+        }
+        log(info)
+
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            dumpTree(child, "$label[$i]", depth + 1, maxDepth)
+            child.recycle()
+        }
+    }
+
+    // ── Uygulama işleme döngüsü ────────────────────────────────────────────
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun processNextApp() {
         if (currentIndex >= pendingApps.size) {
-            log("✅ Tamamlandı! ${pendingApps.size} uygulama işlendi.")
+            log("════════════════════════════════════")
+            log("✅ ORGANIZE TAMAMLANDI")
+            log("   İkon bulundu : $statsFound")
+            log("   Drag başarılı: $statsDragged")
+            log("   Drag başarısız: $statsFailed")
+            log("   Atlandı       : $statsMissed")
+            log("════════════════════════════════════")
             return
         }
 
         val app = pendingApps[currentIndex]
-        log("(${currentIndex + 1}/${pendingApps.size}) ${app.packageName} → ${app.categoryId}")
+        val progress = "${currentIndex + 1}/${pendingApps.size}"
 
+        log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        log("[$progress] ${app.appName}")
+        log("   pkg     : ${app.packageName}")
+        log("   kategori: ${app.categoryId}")
+
+        // Launcher kontrolü
         val activeWindow = rootInActiveWindow?.packageName?.toString() ?: "null"
-        if (activeWindow != "null" &&
-            !activeWindow.contains("launcher", ignoreCase = true) &&
-            !activeWindow.contains("home", ignoreCase = true) &&
-            !activeWindow.contains("desktop", ignoreCase = true)) {
-            log("  ⚠️ Launcher değil ($activeWindow), HOME'a dönülüyor...")
-            goHome()
-            handler.postDelayed({ processNextApp() }, 1000)
+        log("   aktif pencere: $activeWindow")
+        if (activeWindow != "null"
+            && !activeWindow.contains("launcher", ignoreCase = true)
+            && !activeWindow.contains("home", ignoreCase = true)
+            && !activeWindow.contains("desktop", ignoreCase = true)) {
+            log("   ⚠️ Launcher değil → HOME'a dönülüyor")
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            handler.postDelayed({ processNextApp() }, RETRY_WAIT_MS)
             return
         }
 
-        val iconNode = findAppIcon(app.packageName, app.appName)
+        // İkonu bul
+        log("   🔎 İkon aranıyor...")
+        val iconNode = findAppIconWithLog(app.packageName, app.appName)
+
         if (iconNode == null) {
-            log("  ⏭ İkon görünümde değil: ${app.packageName} — atlanıyor")
+            log("   ⏭ İkon erişilebilirlik ağacında bulunamadı → ATLANDI")
+            log("      ℹ️ MIUI/HyperOS: home screen ikonları ağaçta görünmeyebilir")
+            log("      ℹ️ Yukarıdaki tree dump'a bakın — boş geliyorsa MIUI kısıtlamasıdır")
+            statsMissed++
             currentIndex++
-            handler.postDelayed({ processNextApp() }, 200)
+            handler.postDelayed({ processNextApp() }, BETWEEN_APP_MS / 4)
             return
         }
 
+        // Bounds
         val iconBounds = Rect()
         iconNode.getBoundsInScreen(iconBounds)
         val fromX = iconBounds.exactCenterX()
         val fromY = iconBounds.exactCenterY()
-        log("  ✓ İkon bulundu (${fromX.toInt()},${fromY.toInt()}) strateji: ${iconNode.packageName}")
+        log("   📍 İkon koordinatı: (${"%.0f".format(fromX)}, ${"%.0f".format(fromY)})")
+        log("   📐 İkon boyutu: ${iconBounds.width()}x${iconBounds.height()}")
+        log("   🏷️  class: ${iconNode.className}")
+        log("   🏷️  isLongClickable: ${iconNode.isLongClickable}")
+        statsFound++
 
+        // Hedef
         val target = getOrCreateFolderTarget(app.categoryId, fromX, fromY)
-        log("  → Hedef: (${target.first.toInt()},${target.second.toInt()})")
+        log("   🎯 Hedef koordinatı: (${"%.0f".format(target.first)}, ${"%.0f".format(target.second)})")
+        log("   📏 Mesafe: ${"%.0f".format(
+            Math.hypot((target.first - fromX).toDouble(), (target.second - fromY).toDouble())
+        )} px")
+        log("   👆 Long press (${longPressMs}ms) + drag (${DRAG_MS}ms) başlatılıyor...")
 
         dragIconToTarget(fromX, fromY, target.first, target.second) { success ->
-            log(if (success) "  ✅ drag tamamlandı" else "  ⚠️ drag iptal")
+            if (success) {
+                log("   ✅ Drag tamamlandı")
+                statsDragged++
+            } else {
+                log("   ❌ Drag iptal — sistem gesture'ı reddetti")
+                statsFailed++
+            }
             currentIndex++
-            handler.postDelayed({ processNextApp() }, 700)
+            handler.postDelayed({ processNextApp() }, BETWEEN_APP_MS)
         }
     }
 
-    // ── İkon arama — 3 stratejili ──────────────────────────────────────────
+    // ── İkon arama ─────────────────────────────────────────────────────────
 
-    private var windowsLogged = false
-
-    private fun findAppIcon(packageName: String, appName: String): AccessibilityNodeInfo? {
-        // --- Önce windows listesinden launcher penceresini ara ---
+    private fun findAppIconWithLog(packageName: String, appName: String): AccessibilityNodeInfo? {
+        // Strateji 1: windows API
         val wins = windows
         if (wins != null) {
-            if (!windowsLogged) {
-                windowsLogged = true
-                val pkgs = wins.mapNotNull { it.root?.packageName?.toString() }
-                log("Pencereler (windows): ${pkgs.joinToString(", ").ifBlank { "(boş)" }}")
-            }
-
-            var launcherFound = false
+            var launcherRoot: AccessibilityNodeInfo? = null
             for (window in wins) {
                 val root = window.root ?: continue
                 val pkg  = root.packageName?.toString() ?: ""
-                if (!pkg.contains("launcher", ignoreCase = true) &&
-                    !pkg.contains("home", ignoreCase = true) &&
-                    !pkg.contains("desktop", ignoreCase = true)) {
-                    root.recycle(); continue
+                if (pkg.contains("launcher", ignoreCase = true)
+                    || pkg.contains("home", ignoreCase = true)
+                    || pkg.contains("desktop", ignoreCase = true)) {
+                    launcherRoot = root
+                    break
                 }
-                launcherFound = true
-                findNodeByPackageName(root, packageName)?.let { return it }
-                findNodeByAppName(root, appName)?.let { return it }
                 root.recycle()
             }
 
-            // Launcher penceresi yoksa tüm pencereleri tara (bazı cihazlarda package adı farklıdır)
-            if (!launcherFound) {
-                log("Launcher penceresi bulunamadı — tüm pencereler taranıyor")
+            if (launcherRoot == null) {
+                log("   ⚠️ S1: Launcher penceresi yok — tüm pencereler taranıyor (${wins.size} pencere)")
                 for (window in wins) {
                     val root = window.root ?: continue
-                    findNodeByPackageName(root, packageName)?.let { return it }
-                    findNodeByAppName(root, appName)?.let { return it }
+                    findByPackage(root, packageName)?.let {
+                        log("   ✓ S1-all: packageName ile bulundu")
+                        return it
+                    }
+                    findByName(root, appName, packageName)?.let {
+                        log("   ✓ S1-all: appName ile bulundu")
+                        return it
+                    }
                     root.recycle()
                 }
+            } else {
+                log("   🔍 S1: Launcher root: ${launcherRoot.packageName}, childCount=${launcherRoot.childCount}")
+                findByPackage(launcherRoot, packageName)?.let {
+                    log("   ✓ S1: packageName ile bulundu")
+                    launcherRoot.recycle()
+                    return it
+                }
+                findByName(launcherRoot, appName, packageName)?.let {
+                    log("   ✓ S1: appName ile bulundu")
+                    launcherRoot.recycle()
+                    return it
+                }
+                launcherRoot.recycle()
             }
+        } else {
+            log("   ⚠️ windows API null")
         }
 
-        // --- Fallback: rootInActiveWindow (windows API boş dönerse) ---
-        val activeRoot = rootInActiveWindow ?: return null
-        log("rootInActiveWindow fallback: ${activeRoot.packageName}")
-        findNodeByPackageName(activeRoot, packageName)?.let { return it }
-        findNodeByAppName(activeRoot, appName)?.let { return it }
-        activeRoot.recycle()
+        // Strateji 2: rootInActiveWindow
+        val activeRoot = rootInActiveWindow
+        if (activeRoot != null) {
+            log("   🔍 S2: rootInActiveWindow: ${activeRoot.packageName}, childCount=${activeRoot.childCount}")
+            findByPackage(activeRoot, packageName)?.let {
+                log("   ✓ S2: packageName ile bulundu")
+                activeRoot.recycle()
+                return it
+            }
+            findByName(activeRoot, appName, packageName)?.let {
+                log("   ✓ S2: appName ile bulundu")
+                activeRoot.recycle()
+                return it
+            }
+            activeRoot.recycle()
+        } else {
+            log("   ⚠️ S2: rootInActiveWindow null")
+        }
+
         return null
     }
 
-    /** packageName sahibi veya extras'ta package bilgisi olan node'u bul. */
-    private fun findNodeByPackageName(root: AccessibilityNodeInfo, pkg: String): AccessibilityNodeInfo? {
+    /** Accessibility tree'de packageName ile node ara (recursive). */
+    private fun findByPackage(root: AccessibilityNodeInfo, pkg: String): AccessibilityNodeInfo? {
         if (root.packageName?.toString() == pkg) return root
-
         val extras = root.extras
         if (extras != null) {
             val ep = extras.getString("extra_package_name") ?: extras.getString("packageName")
             if (ep == pkg) return root
         }
-
         for (i in 0 until root.childCount) {
             val child = root.getChild(i) ?: continue
-            val found = findNodeByPackageName(child, pkg)
+            val found = findByPackage(child, pkg)
             if (found != null) return found
             child.recycle()
         }
         return null
     }
 
-    /**
-     * MIUI / HyperOS için: app adını contentDescription veya text olarak taşıyan
-     * node'u bul, sonra tıklanabilir/sürüklenebilir üst container'ı döndür.
-     *
-     * Eşleşme önceliği (geniş → dar):
-     *   1. Tam eşleşme: desc == appName
-     *   2. Büyük/küçük harf farkı yok: desc.equals(appName, ignoreCase=true)
-     *   3. İlk kelime: desc.startsWith("$appName,") veya desc.startsWith("$appName ")
-     *      (ör. "WhatsApp, 3 bildirim")
-     */
-    private fun findNodeByAppName(root: AccessibilityNodeInfo, appName: String): AccessibilityNodeInfo? {
+    /** App adıyla contentDescription/text ara, sonra tıklanabilir container'ı döndür. */
+    private fun findByName(root: AccessibilityNodeInfo, appName: String, pkgHint: String): AccessibilityNodeInfo? {
         val candidates = root.findAccessibilityNodeInfosByText(appName)
         if (candidates.isEmpty()) {
-            // Debug: bu pencerede hangi text değerleri var?
+            // Bu pencerede ne görünüyor? İlk 8 node'u logla
             val samples = mutableListOf<String>()
-            collectSampleTexts(root, samples, 6)
-            if (samples.isNotEmpty()) log("  '$appName' bulunamadı — örnek: ${samples.joinToString(" | ")}")
+            collectSamples(root, samples, 8)
+            log("   📋 Pencerede görülen ilk node'lar: ${samples.joinToString(" | ").ifBlank { "(boş)" }}")
             return null
         }
 
+        log("   📋 findByText '$appName': ${candidates.size} aday bulundu")
         for (node in candidates) {
-            val desc = node.contentDescription?.toString() ?: ""
-            val text = node.text?.toString() ?: ""
+            val desc   = node.contentDescription?.toString() ?: ""
+            val text   = node.text?.toString() ?: ""
+            val cls    = node.className?.toString() ?: ""
+            val bounds = Rect(); node.getBoundsInScreen(bounds)
+            log("      aday: cls=${cls.substringAfterLast('.')} cd=\"$desc\" txt=\"$text\" ${bounds.width()}x${bounds.height()}")
+
             val matched = desc.equals(appName, ignoreCase = true)
                 || text.equals(appName, ignoreCase = true)
                 || desc.startsWith("$appName,", ignoreCase = true)
                 || desc.startsWith("$appName ", ignoreCase = true)
                 || text.startsWith("$appName,", ignoreCase = true)
                 || text.startsWith("$appName ", ignoreCase = true)
+
             if (matched) {
-                val icon = findClickableAncestor(node) ?: node
-                candidates.filter { it != node && it != icon }.forEach { it.recycle() }
-                return icon
+                log("      ✓ eşleşti!")
+                val container = findClickableContainer(node) ?: node
+                candidates.filter { it != node && it != container }.forEach { it.recycle() }
+                return container
+            } else {
+                log("      ✗ eşleşmedi (beklenildi: '$appName')")
+                node.recycle()
             }
-            // Eşleşmedi ama benzer — debug için logla
-            log("  '$appName' aday reddedildi: cd='$desc' txt='$text'")
-            node.recycle()
         }
         return null
     }
 
-    /** Debug: root altından en fazla max adet text/contentDescription örneği topla. */
-    private fun collectSampleTexts(node: AccessibilityNodeInfo, out: MutableList<String>, max: Int) {
-        if (out.size >= max) return
-        val desc = node.contentDescription?.toString()
-        val text = node.text?.toString()
-        when {
-            !desc.isNullOrBlank() -> out.add("cd:$desc")
-            !text.isNullOrBlank() -> out.add("txt:$text")
-        }
-        for (i in 0 until node.childCount) {
-            if (out.size >= max) break
-            val child = node.getChild(i) ?: continue
-            collectSampleTexts(child, out, max)
-            child.recycle()
-        }
-    }
-
-    /** Verilen node'un tıklanabilir/sürüklenebilir atalarını yukarı doğru ara (maks 5 seviye). */
-    private fun findClickableAncestor(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+    /** Node'un tıklanabilir atasını bul (max 6 seviye). */
+    private fun findClickableContainer(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         var depth = 0
         var current = node.parent
-        while (current != null && depth < 5) {
+        while (current != null && depth < 6) {
             if (current.isClickable || current.isLongClickable) return current
             val parent = current.parent
             current.recycle()
@@ -298,20 +470,40 @@ class LauncherAccessibilityService : AccessibilityService() {
         return null
     }
 
-    // ── Klasör hedefi ─────────────────────────────────────────────────────
+    /** Debug: tree'den ilk N tane text/contentDescription topla. */
+    private fun collectSamples(node: AccessibilityNodeInfo, out: MutableList<String>, max: Int) {
+        if (out.size >= max) return
+        val desc = node.contentDescription?.toString()
+        val text = node.text?.toString()
+        when {
+            !desc.isNullOrBlank() -> out.add("\"$desc\"")
+            !text.isNullOrBlank() -> out.add("txt:\"$text\"")
+        }
+        for (i in 0 until node.childCount) {
+            if (out.size >= max) break
+            val child = node.getChild(i) ?: continue
+            collectSamples(child, out, max)
+            child.recycle()
+        }
+    }
+
+    // ── Klasör hedefi ──────────────────────────────────────────────────────
 
     private fun getOrCreateFolderTarget(categoryId: String, fromX: Float, fromY: Float): Pair<Float, Float> {
         folderPositions[categoryId]?.let { return it }
 
+        // Mevcut klasör ikonunu bul
         findFolderNode(categoryId)?.let { folder ->
             val bounds = Rect()
             folder.getBoundsInScreen(bounds)
             val pos = Pair(bounds.exactCenterX(), bounds.exactCenterY())
             folderPositions[categoryId] = pos
             folder.recycle()
+            log("   📁 Mevcut klasör bulundu: (${pos.first.toInt()},${pos.second.toInt()})")
             return pos
         }
 
+        // Yeni hedef koordinatı hesapla (grid)
         val display = resources.displayMetrics
         val screenW = display.widthPixels.toFloat()
         val screenH = display.heightPixels.toFloat()
@@ -319,61 +511,98 @@ class LauncherAccessibilityService : AccessibilityService() {
         val col     = count % 4
         val row     = count / 4
         val cellW   = screenW / 4f
-        val cellH   = (screenH * 0.7f) / 4f
+        val cellH   = (screenH * 0.65f) / 4f
         val pos = Pair(
             cellW * col + cellW / 2f,
-            cellH * row + cellH / 2f + screenH * 0.08f
+            cellH * row + cellH / 2f + screenH * 0.1f
         )
         folderPositions[categoryId] = pos
+        log("   📍 Yeni hedef hesaplandı: sıra=$count col=$col row=$row pos=(${pos.first.toInt()},${pos.second.toInt()})")
         return pos
     }
 
     private fun findFolderNode(categoryId: String): AccessibilityNodeInfo? {
         val root = rootInActiveWindow ?: return null
-        return findNodeByClass(root, "com.android.launcher3.folder.FolderIcon")
-            ?: findNodeByClass(root, "com.sec.android.app.launcher.uninstall.FolderIcon")
-            ?: findNodeByClass(root, "com.miui.home.launcher.FolderIcon")
-            ?: findNodeByClass(root, "com.miui.home.recents.FolderIcon")
+        return findByClass(root, "com.android.launcher3.folder.FolderIcon")
+            ?: findByClass(root, "com.miui.home.launcher.FolderIcon")
+            ?: findByClass(root, "com.miui.home.recents.FolderIcon")
+            ?: findByClass(root, "com.sec.android.app.launcher.uninstall.FolderIcon")
     }
 
-    private fun findNodeByClass(root: AccessibilityNodeInfo, className: String): AccessibilityNodeInfo? {
+    private fun findByClass(root: AccessibilityNodeInfo, className: String): AccessibilityNodeInfo? {
         if (root.className?.toString() == className) return root
         for (i in 0 until root.childCount) {
             val child = root.getChild(i) ?: continue
-            val found = findNodeByClass(child, className)
+            val found = findByClass(child, className)
             if (found != null) return found
             child.recycle()
         }
         return null
     }
 
-    // ── Gesture'lar ────────────────────────────────────────────────────────
+    // ── Gesture ────────────────────────────────────────────────────────────
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun dragIconToTarget(
         fromX: Float, fromY: Float,
-        toX: Float, toY: Float,
+        toX: Float,   toY: Float,
         onComplete: (Boolean) -> Unit
     ) {
+        val currentLongPressMs = longPressMs
+
+        // Long press: parmak aşağı, hareket yok — willContinue=true ile parmak ekranda kalır
         val longPressPath = Path().apply { moveTo(fromX, fromY) }
+        val longPress = GestureDescription.StrokeDescription(
+            longPressPath,
+            0L,                  // startTime
+            currentLongPressMs,  // dinamik: ViewConfig.getLongPressTimeout() * 1.5
+            true                 // willContinue=true: parmak ekranda kalır, drag için zorunlu
+        )
+
+        // Drag: long press biter bitmez başlar; moveTo aynı koordinattan başlamalı (API zorunluluğu)
         val dragPath = Path().apply {
-            moveTo(fromX, fromY)
-            quadTo((fromX + toX) / 2f, (fromY + toY) / 2f - 100f, toX, toY)
+            moveTo(fromX, fromY)   // continueStroke için önceki stroke'un son noktasıyla aynı olmalı
+            lineTo(toX, toY)       // lineTo (quadTo yerine) daha güvenilir
         }
+        val drag = longPress.continueStroke(
+            dragPath,
+            0L,      // relative delay: long press biter bitmez başlar
+            DRAG_MS, // drag süresi
+            false    // willContinue=false: drag sonunda parmak kalkar
+        )
 
-        val longPress = GestureDescription.StrokeDescription(longPressPath, 0L, 600L, true)
-        val drag      = longPress.continueStroke(dragPath, 0L, 900L, false)
+        log("   🖐 Gesture gönderiliyor...")
+        log("      from: (${fromX.toInt()}, ${fromY.toInt()})")
+        log("      to  : (${toX.toInt()},   ${toY.toInt()})")
+        log("      longPress: ${currentLongPressMs}ms (ViewConfig=${ViewConfiguration.getLongPressTimeout()}ms x${LONG_PRESS_MULTIPLIER}) | drag: ${DRAG_MS}ms")
 
-        dispatchGesture(
-            GestureDescription.Builder().addStroke(longPress).addStroke(drag).build(),
+        val dispatched = dispatchGesture(
+            GestureDescription.Builder()
+                .addStroke(longPress)
+                .addStroke(drag)
+                .build(),
             object : GestureResultCallback() {
-                override fun onCompleted(g: GestureDescription) { onComplete(true) }
-                override fun onCancelled(g: GestureDescription) { log("  drag cancelled"); onComplete(false) }
+                override fun onCompleted(g: GestureDescription) {
+                    log("   🖐 Gesture: onCompleted")
+                    onComplete(true)
+                }
+                override fun onCancelled(g: GestureDescription) {
+                    log("   🖐 Gesture: onCancelled (sistem reddetti)")
+                    onComplete(false)
+                }
             },
             handler
         )
+
+        if (!dispatched) {
+            log("   ❌ dispatchGesture() false döndü — servis gesture yapamıyor")
+            log("      canPerformGestures yetkisi eksik olabilir")
+            onComplete(false)
+        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun goHome() = performGlobalAction(GLOBAL_ACTION_HOME)
+    private fun log(msg: String) {
+        Timber.d("[A11y] $msg")
+        statusCallback?.invoke(msg)
+    }
 }
