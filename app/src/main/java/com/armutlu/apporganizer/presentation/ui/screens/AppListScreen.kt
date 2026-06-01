@@ -133,9 +133,13 @@ fun AppListScreen(
                 }
 
                 if (showOrganizeDialog) {
+                    val a11yConnected = com.armutlu.apporganizer.service.LauncherAccessibilityService.instance != null
+                    val a11yInSystem  = viewModel.isAccessibilityServiceEnabledInSystem()
                     LauncherOrganizeDialog(
                         launcherType    = viewModel.detectedLauncher,
                         organizeState   = organizeState,
+                        a11yConnected   = a11yConnected,
+                        a11yInSystem    = a11yInSystem,
                         onOrganize      = { useAccessibility -> viewModel.organizeOnLauncher(useAccessibility) },
                         onOpenA11ySettings = {
                             showOrganizeDialog = false
@@ -608,6 +612,8 @@ private fun CategoryList(
 fun LauncherOrganizeDialog(
     launcherType: com.armutlu.apporganizer.utils.LauncherType,
     organizeState: OrganizeState,
+    a11yConnected: Boolean,
+    a11yInSystem: Boolean,
     onOrganize: (useAccessibility: Boolean) -> Unit,
     onOpenA11ySettings: () -> Unit,
     onRestart: () -> Unit,
@@ -653,23 +659,52 @@ fun LauncherOrganizeDialog(
                         }
 
                         if (launcherType.supportsAccessibility) {
-                            val a11yEnabled = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
-                            if (!a11yEnabled) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.errorContainer
-                                ) {
-                                    Row(modifier = Modifier.padding(12.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Default.Warning, null,
-                                            tint = MaterialTheme.colorScheme.error)
-                                        Column {
-                                            Text("Accessibility izni gerekli",
-                                                style = MaterialTheme.typography.labelMedium,
-                                                color = MaterialTheme.colorScheme.error)
-                                            Text("Drag & drop için Erişilebilirlik Ayarları'ndan\n'App Organizer'ı etkinleştirin.",
-                                                style = MaterialTheme.typography.bodySmall)
+                            when {
+                                a11yConnected -> {
+                                    // Bağlı — hiçbir uyarı gösterme
+                                }
+                                a11yInSystem -> {
+                                    // Ayarlarda var ama instance null — APK güncellendi, yeniden başlatma gerekiyor
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.tertiaryContainer
+                                    ) {
+                                        Row(modifier = Modifier.padding(12.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Refresh, null,
+                                                tint = MaterialTheme.colorScheme.tertiary)
+                                            Column {
+                                                Text("Servis yeniden başlatılmalı",
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = MaterialTheme.colorScheme.onTertiaryContainer)
+                                                Text(
+                                                    "APK güncellendikten sonra erişilebilirlik servisi bağlantısı kopuyor.\n" +
+                                                    "Ayarlardan 'App Organizer'ı KAPAT → tekrar AÇ.",
+                                                    style = MaterialTheme.typography.bodySmall)
+                                            }
+                                        }
+                                    }
+                                }
+                                else -> {
+                                    // Hiç etkin değil
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.errorContainer
+                                    ) {
+                                        Row(modifier = Modifier.padding(12.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Warning, null,
+                                                tint = MaterialTheme.colorScheme.error)
+                                            Column {
+                                                Text("Erişilebilirlik izni gerekli",
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = MaterialTheme.colorScheme.error)
+                                                Text(
+                                                    "Drag & drop için:\nAyarlar → Erişilebilirlik → Yüklü uygulamalar → App Organizer → Aç",
+                                                    style = MaterialTheme.typography.bodySmall)
+                                            }
                                         }
                                     }
                                 }
@@ -711,17 +746,15 @@ fun LauncherOrganizeDialog(
         confirmButton = {
             when (organizeState) {
                 is OrganizeState.Idle -> {
-                    val a11yEnabled = launcherType.supportsAccessibility &&
-                            com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (launcherType.supportsAccessibility && !a11yEnabled) {
+                        if (launcherType.supportsAccessibility && !a11yConnected) {
                             Button(onClick = onOpenA11ySettings, modifier = Modifier.fillMaxWidth()) {
                                 Icon(Icons.Default.Settings, null)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Erişilebilirlik Ayarlarını Aç")
+                                Text(if (a11yInSystem) "Erişilebilirlik Ayarlarını Aç (Yeniden Başlat)" else "Erişilebilirlik Ayarlarını Aç")
                             }
                         }
-                        if (a11yEnabled) {
+                        if (a11yConnected) {
                             Button(onClick = { onOrganize(true) }, modifier = Modifier.fillMaxWidth()) {
                                 Icon(Icons.Default.DragIndicator, null)
                                 Spacer(Modifier.width(8.dp))
