@@ -70,6 +70,9 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     reports {
         xml.required.set(true)
         html.required.set(true)
+        // Çıktı konumlarını açıkça belirt — CI artifact yolu ile birebir uyumlu olmalı
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/jacocoTestReport/html"))
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
     }
 
     val fileFilter = listOf(
@@ -86,8 +89,14 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     sourceDirectories.setFrom(files("src/main/java"))
     classDirectories.setFrom(files(debugTree))
+    // AGP'nin enableUnitTestCoverage ayarı .exec dosyasını
+    // build/outputs/unit_test_code_coverage/... altına koyar; düz jacoco plugin ise
+    // build/jacoco/ altına. Her iki konumu da dahil et.
     executionData.setFrom(fileTree(layout.buildDirectory.get()) {
-        include("jacoco/testDebugUnitTest.exec")
+        include(
+            "jacoco/testDebugUnitTest.exec",
+            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"
+        )
     })
 }
 
