@@ -20,7 +20,7 @@ data class AppListScreenState(
     // Filters & Search
     val selectedCategory: String = "all",
     val searchQuery: String = "",
-    val showSystemApps: Boolean = true,
+    val showSystemApps: Boolean = false,
     
     // UI behavior
     val isRefreshing: Boolean = false,
