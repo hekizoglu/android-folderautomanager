@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -95,12 +96,9 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     val step = steps[stepIndex]
 
     // İzin durumlarını izle
-    var queryGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.QUERY_ALL_PACKAGES)
-                == PermissionChecker.PERMISSION_GRANTED
-        )
-    }
+    // QUERY_ALL_PACKAGES normal (install-time) permission — runtime checkSelfPermission her zaman
+    // DENIED döndürür, bu yüzden manifest'te beyan edilmişse verilmiş say
+    var queryGranted by remember { mutableStateOf(true) }
     var notifGranted by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -113,13 +111,17 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         mutableStateOf(com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning)
     }
 
-    // Runtime izin launcher'ları
-    val queryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        queryGranted = granted
-        stepIndex++
+    // step'i her recomposition'da güncel tutan referans — stale closure'ı önler
+    val currentStep by rememberUpdatedState(step)
+
+    // Accessibility adımına gelindiğinde servis durumunu güvenli şekilde güncelle
+    LaunchedEffect(stepIndex) {
+        if (steps.getOrNull(stepIndex) == PermissionStep.ACCESSIBILITY) {
+            a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
+        }
     }
+
+    // Runtime izin launcher'ları
     val notifLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -131,6 +133,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .navigationBarsPadding()
                 .padding(horizontal = 28.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -214,7 +217,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             Spacer(Modifier.height(20.dp))
 
             // "Neden bu izin?" kartı
-            if (step.why.isNotBlank()) {
+            if (currentStep.why.isNotBlank()) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant,
@@ -231,7 +234,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                             modifier = Modifier.size(18.dp).padding(top = 2.dp)
                         )
                         Text(
-                            step.why,
+                            currentStep.why,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 18.sp
@@ -242,14 +245,12 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             }
 
             // Mevcut izin durumu rozeti
-            val statusText = when (step) {
+            val statusText = when (currentStep) {
                 PermissionStep.QUERY_PACKAGES ->
                     if (queryGranted) "✅ İzin verildi" else null
                 PermissionStep.NOTIFICATIONS ->
                     if (notifGranted) "✅ İzin verildi" else null
                 PermissionStep.ACCESSIBILITY -> {
-                    // Accessibility durumunu yeniden kontrol et
-                    a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
                     if (a11yGranted) "✅ Servis aktif" else null
                 }
                 else -> null
@@ -276,12 +277,12 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             // Ana buton
             Button(
                 onClick = {
-                    when (step) {
+                    when (currentStep) {
                         PermissionStep.WELCOME -> stepIndex++
 
                         PermissionStep.QUERY_PACKAGES -> {
-                            if (queryGranted) { stepIndex++; return@Button }
-                            queryLauncher.launch(Manifest.permission.QUERY_ALL_PACKAGES)
+                            // QUERY_ALL_PACKAGES install-time permission — runtime dialog gerekmez
+                            stepIndex++
                         }
 
                         PermissionStep.NOTIFICATIONS -> {
@@ -294,12 +295,14 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         }
 
                         PermissionStep.ACCESSIBILITY -> {
-                            // Erişilebilirlik ayarlarını aç
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            if (a11yGranted) {
+                                stepIndex++
+                            } else {
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                context.startActivity(intent)
                             }
-                            context.startActivity(intent)
-                            // Kullanıcı geri döndüğünde "Devam Et" göster
                         }
 
                         PermissionStep.DONE -> onFinish()
@@ -310,17 +313,17 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             ) {
                 Text(
                     text = when {
-                        step == PermissionStep.QUERY_PACKAGES && queryGranted -> "Devam Et"
-                        step == PermissionStep.NOTIFICATIONS && notifGranted -> "Devam Et"
-                        step == PermissionStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
-                        else -> step.buttonLabel
+                        currentStep == PermissionStep.QUERY_PACKAGES && queryGranted -> "Devam Et"
+                        currentStep == PermissionStep.NOTIFICATIONS && notifGranted -> "Devam Et"
+                        currentStep == PermissionStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
+                        else -> currentStep.buttonLabel
                     },
                     fontSize = 16.sp
                 )
             }
 
             // Accessibility adımında "Geri Dön" butonu göster
-            if (step == PermissionStep.ACCESSIBILITY && !a11yGranted) {
+            if (currentStep == PermissionStep.ACCESSIBILITY && !a11yGranted) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = { stepIndex++ },
@@ -332,10 +335,10 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             }
 
             // Zorunlu olmayan adımlarda "Atla" seçeneği
-            if (!step.isRequired &&
-                step != PermissionStep.WELCOME &&
-                step != PermissionStep.DONE &&
-                !(step == PermissionStep.ACCESSIBILITY && !a11yGranted)
+            if (!currentStep.isRequired &&
+                currentStep != PermissionStep.WELCOME &&
+                currentStep != PermissionStep.DONE &&
+                !(currentStep == PermissionStep.ACCESSIBILITY && !a11yGranted)
             ) {
                 TextButton(onClick = { stepIndex++ }) {
                     Text("Atla", color = MaterialTheme.colorScheme.onSurfaceVariant)

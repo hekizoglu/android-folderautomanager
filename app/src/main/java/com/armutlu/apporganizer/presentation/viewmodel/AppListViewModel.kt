@@ -97,11 +97,16 @@ class AppListViewModel @Inject constructor(
                 // Get categories
                 val categories = Category.getDefaultCategories()
                 
-                // Get apps from repository
-                repository.getAllAppsFlow()
-                    .combine(selectedCategory) { apps, category ->
-                        createScreenState(apps, categories, category)
-                    }
+                // Get apps from repository — tüm filtre flow'larını combine et
+                combine(
+                    repository.getAllAppsFlow(),
+                    _selectedCategory,
+                    _searchQuery,
+                    _sortOption,
+                    _showSystemApps
+                ) { apps, category, query, sort, showSystem ->
+                    createScreenState(apps, categories, category, query, sort, showSystem)
+                }
                     .collect { state ->
                         _screenState.value = state
                     }
@@ -117,19 +122,22 @@ class AppListViewModel @Inject constructor(
     /**
      * Create screen state from data and filter options
      */
-    private suspend fun createScreenState(
+    private fun createScreenState(
         apps: List<AppInfo>,
         categories: List<Category>,
-        category: String
+        category: String,
+        query: String = _searchQuery.value,
+        sort: SortOption = _sortOption.value,
+        showSystem: Boolean = _showSystemApps.value
     ): AppListScreenState {
         return AppListScreenState(
             apps = apps,
             categories = categories,
             selectedCategory = category,
-            searchQuery = searchQuery.value,
-            showSystemApps = showSystemApps.value,
-            sortBy = sortOption.value,
-            selectedApps = selectedApps.value,
+            searchQuery = query,
+            showSystemApps = showSystem,
+            sortBy = sort,
+            selectedApps = _selectedApps.value,
             isLoading = false,
             isInitializing = false
         )
