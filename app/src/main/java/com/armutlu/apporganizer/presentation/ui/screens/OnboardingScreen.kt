@@ -24,6 +24,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -119,6 +123,18 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         if (steps.getOrNull(stepIndex) == PermissionStep.ACCESSIBILITY) {
             a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
         }
+    }
+
+    // Settings'den geri dönüldüğünde (ON_RESUME) a11y durumunu yenile
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     // Runtime izin launcher'ları

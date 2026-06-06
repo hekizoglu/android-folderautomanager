@@ -38,13 +38,14 @@ class LauncherAccessibilityService : AccessibilityService() {
         @Volatile var isRunning = false
 
         // Gesture zamanlamaları (ms)
-        // Long press: ViewConfiguration'dan dinamik alınır (cihaz ayarına göre değişir)
-        // MIUI için 1.5x çarpanı uygulanır (AOSP CTS'de önerilen)
         private const val LONG_PRESS_MULTIPLIER = 1.5f
-        private const val DRAG_MS         = 800L   // 800ms drag süresi yeterli
-        private const val HOME_WAIT_MS    = 1500L
-        private const val BETWEEN_APP_MS  = 800L
-        private const val RETRY_WAIT_MS   = 1200L
+        private const val DRAG_MS          = 900L
+        private const val HOME_WAIT_MS     = 1500L
+        private const val BETWEEN_APP_MS   = 900L
+        private const val RETRY_WAIT_MS    = 1200L
+        private const val SCROLL_WAIT_MS   = 800L
+        private const val MAX_DRAG_RETRIES = 2
+        private const val MAX_SCROLL_PAGES = 3
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -63,6 +64,10 @@ class LauncherAccessibilityService : AccessibilityService() {
     private var statsMissed  = 0
     private var statsDragged = 0
     private var statsFailed  = 0
+
+    // Retry/scroll state (mevcut uygulama için sıfırlanır)
+    private var currentDragRetry  = 0
+    private var currentScrollPage = 0
 
     // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -102,6 +107,7 @@ class LauncherAccessibilityService : AccessibilityService() {
         statusCallback = onStatus
         folderPositions.clear()
         statsFound = 0; statsMissed = 0; statsDragged = 0; statsFailed = 0
+        currentDragRetry = 0; currentScrollPage = 0
 
         log("════════════════════════════════════")
         log("🚀 ORGANIZE BAŞLADI")
@@ -263,7 +269,7 @@ class LauncherAccessibilityService : AccessibilityService() {
         val progress = "${currentIndex + 1}/${pendingApps.size}"
 
         log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        log("[$progress] ${app.appName}")
+        log("[$progress] ${app.appName} (dragRetry=$currentDragRetry scrollPage=$currentScrollPage)")
         log("   pkg     : ${app.packageName}")
         log("   kategori: ${app.categoryId}")
 
@@ -285,12 +291,31 @@ class LauncherAccessibilityService : AccessibilityService() {
         val iconNode = findAppIconWithLog(app.packageName, app.appName)
 
         if (iconNode == null) {
-            log("   ⏭ İkon erişilebilirlik ağacında bulunamadı → ATLANDI")
+            // Scroll yaparak farklı sayfada ara
+            if (currentScrollPage < MAX_SCROLL_PAGES) {
+                log("   📜 İkon bulunamadı → sağa kaydırılıyor (sayfa ${currentScrollPage + 1}/$MAX_SCROLL_PAGES)")
+                currentScrollPage++
+                scrollLauncherRight()
+                handler.postDelayed({ processNextApp() }, SCROLL_WAIT_MS)
+                return
+            }
+            log("   ⏭ İkon $MAX_SCROLL_PAGES sayfa sonra da bulunamadı → ATLANDI")
             log("      ℹ️ MIUI/HyperOS: home screen ikonları ağaçta görünmeyebilir")
-            log("      ℹ️ Yukarıdaki tree dump'a bakın — boş geliyorsa MIUI kısıtlamasıdır")
             statsMissed++
             currentIndex++
-            handler.postDelayed({ processNextApp() }, BETWEEN_APP_MS / 4)
+            currentDragRetry = 0; currentScrollPage = 0
+            // HOME'a geri dön, sonraki uygulamaya geç
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            handler.postDelayed({ processNextApp() }, HOME_WAIT_MS)
+            return
+        }
+
+        // Scroll ile ikon bulunduysa HOME'a dön (ilk sayfaya dön)
+        if (currentScrollPage > 0) {
+            log("   🏠 Sayfa ${currentScrollPage}'de bulundu → HOME'a dönülüyor (ilk sayfa için)")
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            handler.postDelayed({ processNextApp() }, HOME_WAIT_MS)
+            currentScrollPage = 0
             return
         }
 
@@ -317,12 +342,22 @@ class LauncherAccessibilityService : AccessibilityService() {
             if (success) {
                 log("   ✅ Drag tamamlandı")
                 statsDragged++
+                currentDragRetry = 0; currentScrollPage = 0
+                currentIndex++
+                handler.postDelayed({ processNextApp() }, BETWEEN_APP_MS)
             } else {
-                log("   ❌ Drag iptal — sistem gesture'ı reddetti")
-                statsFailed++
+                if (currentDragRetry < MAX_DRAG_RETRIES) {
+                    currentDragRetry++
+                    log("   🔄 Drag iptal → yeniden deneniyor ($currentDragRetry/$MAX_DRAG_RETRIES)")
+                    handler.postDelayed({ processNextApp() }, RETRY_WAIT_MS)
+                } else {
+                    log("   ❌ Drag $MAX_DRAG_RETRIES denemede başarısız → ATLANDI")
+                    statsFailed++
+                    currentDragRetry = 0; currentScrollPage = 0
+                    currentIndex++
+                    handler.postDelayed({ processNextApp() }, BETWEEN_APP_MS)
+                }
             }
-            currentIndex++
-            handler.postDelayed({ processNextApp() }, BETWEEN_APP_MS)
         }
     }
 
@@ -523,10 +558,30 @@ class LauncherAccessibilityService : AccessibilityService() {
 
     private fun findFolderNode(categoryId: String): AccessibilityNodeInfo? {
         val root = rootInActiveWindow ?: return null
+        // AOSP / Pixel Launcher
         return findByClass(root, "com.android.launcher3.folder.FolderIcon")
+            // MIUI / HyperOS
             ?: findByClass(root, "com.miui.home.launcher.FolderIcon")
             ?: findByClass(root, "com.miui.home.recents.FolderIcon")
+            // Samsung One UI
             ?: findByClass(root, "com.sec.android.app.launcher.uninstall.FolderIcon")
+            ?: findByClass(root, "com.samsung.android.app.launcher.views.FolderIcon")
+            // Nova Launcher
+            ?: findByClass(root, "com.teslacoilsw.launcher.folder.FolderIcon")
+            // Generic — contentDescription'da kategori adı geçiyorsa
+            ?: findByContentDesc(root, categoryId)
+    }
+
+    private fun findByContentDesc(root: AccessibilityNodeInfo, keyword: String): AccessibilityNodeInfo? {
+        val desc = root.contentDescription?.toString() ?: ""
+        if (desc.contains(keyword, ignoreCase = true) && (root.isClickable || root.isLongClickable)) return root
+        for (i in 0 until root.childCount) {
+            val child = root.getChild(i) ?: continue
+            val found = findByContentDesc(child, keyword)
+            if (found != null) return found
+            child.recycle()
+        }
+        return null
     }
 
     private fun findByClass(root: AccessibilityNodeInfo, className: String): AccessibilityNodeInfo? {
@@ -538,6 +593,30 @@ class LauncherAccessibilityService : AccessibilityService() {
             child.recycle()
         }
         return null
+    }
+
+    // ── Scroll ────────────────────────────────────────────────────────────
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun scrollLauncherRight() {
+        val display = resources.displayMetrics
+        val w = display.widthPixels.toFloat()
+        val h = display.heightPixels.toFloat()
+        val midY = h * 0.5f
+        // Sağdan sola swipe = launcher'ı ileriye kaydırır
+        val swipePath = Path().apply {
+            moveTo(w * 0.85f, midY)
+            lineTo(w * 0.15f, midY)
+        }
+        val swipe = GestureDescription.StrokeDescription(swipePath, 0L, 300L, false)
+        dispatchGesture(
+            GestureDescription.Builder().addStroke(swipe).build(),
+            object : GestureResultCallback() {
+                override fun onCompleted(g: GestureDescription) { log("   📜 Scroll tamamlandı") }
+                override fun onCancelled(g: GestureDescription) { log("   📜 Scroll iptal") }
+            },
+            handler
+        )
     }
 
     // ── Gesture ────────────────────────────────────────────────────────────
@@ -560,9 +639,10 @@ class LauncherAccessibilityService : AccessibilityService() {
         )
 
         // Drag: long press biter bitmez başlar; moveTo aynı koordinattan başlamalı (API zorunluluğu)
+        // quadTo yerine lineTo: bazı launcher'larda quadTo gesture'ı iptal ediyor
         val dragPath = Path().apply {
-            moveTo(fromX, fromY)   // continueStroke için önceki stroke'un son noktasıyla aynı olmalı
-            lineTo(toX, toY)       // lineTo (quadTo yerine) daha güvenilir
+            moveTo(fromX, fromY)
+            lineTo(toX, toY)
         }
         val drag = longPress.continueStroke(
             dragPath,

@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                 Timber.d("Scanning device apps...")
                 val apps = PackageManagerHelper(applicationContext).getInstalledApps(
                     includeSystem = true,
-                    onlyLaunchable = true
+                    onlyLaunchable = false
                 )
                 Timber.d("Found ${apps.size} apps, syncing...")
                 viewModel.syncInstalledApps(apps)
