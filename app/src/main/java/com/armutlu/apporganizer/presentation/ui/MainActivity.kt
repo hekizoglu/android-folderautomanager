@@ -14,6 +14,7 @@ import com.armutlu.apporganizer.presentation.navigation.AppNavigation
 import com.armutlu.apporganizer.presentation.ui.screens.OnboardingScreen
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        CrashReporter.install(this)
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false)
@@ -91,12 +93,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openBugReport() {
-        val logs = viewModel.getDebugLogs()
+        val debugLogs = viewModel.getDebugLogs()
+        val crashLog  = CrashReporter.getLastCrashLog(this)?.take(1500) ?: "Crash logu yok"
+
         val title = Uri.encode("[Bug] Uygulama Hatası")
         val body  = Uri.encode(
             "**Cihaz:** ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}\n" +
-            "**Android:** ${android.os.Build.VERSION.RELEASE}\n\n" +
-            "**Hata Detayları:**\n$logs\n\n" +
+            "**Android:** ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})\n\n" +
+            "**Son Crash:**\n```\n$crashLog\n```\n\n" +
+            "**Debug Logları:**\n```\n$debugLogs\n```\n\n" +
             "**Nasıl Oluştu:**\n(Adımları buraya yazın)"
         )
         val url = "https://github.com/hekizoglu/android-folderautomanager/issues/new?title=$title&body=$body"
