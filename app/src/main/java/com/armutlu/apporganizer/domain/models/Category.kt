@@ -38,6 +38,10 @@ data class Category(
         const val CAT_FINANCE = "finance"
         const val CAT_EDUCATION = "education"
         const val CAT_UTILITIES = "utilities"
+        const val CAT_TRAVEL = "travel"
+        const val CAT_ENTERTAINMENT = "entertainment"
+        const val CAT_FOOD = "food"
+        const val CAT_PHOTOGRAPHY = "photography"
         const val CAT_OTHER = "other"
         const val CAT_UNCATEGORIZED = "uncategorized"
         
@@ -110,11 +114,39 @@ data class Category(
                     displayOrder = 9
                 ),
                 Category(
+                    categoryId = CAT_TRAVEL,
+                    categoryName = "Seyahat",
+                    iconEmoji = "✈️",
+                    colorHex = "#FF03A9F4",
+                    displayOrder = 10
+                ),
+                Category(
+                    categoryId = CAT_ENTERTAINMENT,
+                    categoryName = "Eğlence",
+                    iconEmoji = "🎬",
+                    colorHex = "#FFFF5722",
+                    displayOrder = 11
+                ),
+                Category(
+                    categoryId = CAT_FOOD,
+                    categoryName = "Yemek",
+                    iconEmoji = "🍔",
+                    colorHex = "#FFFF9800",
+                    displayOrder = 12
+                ),
+                Category(
+                    categoryId = CAT_PHOTOGRAPHY,
+                    categoryName = "Fotoğraf",
+                    iconEmoji = "📸",
+                    colorHex = "#FF9C27B0",
+                    displayOrder = 13
+                ),
+                Category(
                     categoryId = CAT_OTHER,
                     categoryName = "Diğer",
                     iconEmoji = "📦",
-                    colorHex = "#FF9C27B0",
-                    displayOrder = 10
+                    colorHex = "#FF607D8B",
+                    displayOrder = 14
                 ),
                 Category(
                     categoryId = CAT_UNCATEGORIZED,

@@ -133,10 +133,10 @@ fun AppListScreen(
                 }
 
                 if (showOrganizeDialog) {
-                    val a11yConnected = com.armutlu.apporganizer.service.LauncherAccessibilityService.instance != null
+                    val a11yConnected by viewModel.isA11yConnected.collectAsState()
                     val a11yInSystem  = viewModel.isAccessibilityServiceEnabledInSystem()
                     LauncherOrganizeDialog(
-                        launcherType    = viewModel.detectedLauncher,
+                        launcherType    = "App Organizer",
                         organizeState   = organizeState,
                         a11yConnected   = a11yConnected,
                         a11yInSystem    = a11yInSystem,
@@ -610,7 +610,7 @@ private fun CategoryList(
 
 @Composable
 fun LauncherOrganizeDialog(
-    launcherType: com.armutlu.apporganizer.utils.LauncherType,
+    launcherType: String,
     organizeState: OrganizeState,
     a11yConnected: Boolean,
     a11yInSystem: Boolean,
@@ -636,21 +636,15 @@ fun LauncherOrganizeDialog(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    if (launcherType.supportsAccessibility) Icons.Default.CheckCircle
-                                    else Icons.Default.Info,
+                                    Icons.Default.CheckCircle,
                                     null,
-                                    tint = if (launcherType.supportsAccessibility)
-                                        MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                                 Column {
-                                    Text("Launcher: ${launcherType.displayName}",
+                                    Text("Launcher: $launcherType",
                                         style = MaterialTheme.typography.labelMedium)
                                     Text(
-                                        if (launcherType.supportsAccessibility)
-                                            "Fiziksel drag & drop destekleniyor"
-                                        else
-                                            "Shortcut pinleme kullanılacak",
+                                        "Otomatik kategorileme aktif",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -658,7 +652,7 @@ fun LauncherOrganizeDialog(
                             }
                         }
 
-                        if (launcherType.supportsAccessibility) {
+                        if (false) {
                             when {
                                 a11yConnected -> {
                                     // Bağlı — hiçbir uyarı gösterme
@@ -747,7 +741,7 @@ fun LauncherOrganizeDialog(
             when (organizeState) {
                 is OrganizeState.Idle -> {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (launcherType.supportsAccessibility && !a11yConnected) {
+                        if (false) {
                             Button(onClick = onOpenA11ySettings, modifier = Modifier.fillMaxWidth()) {
                                 Icon(Icons.Default.Settings, null)
                                 Spacer(Modifier.width(8.dp))

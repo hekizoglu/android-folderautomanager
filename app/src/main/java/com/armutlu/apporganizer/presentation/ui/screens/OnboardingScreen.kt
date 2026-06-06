@@ -112,7 +112,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         )
     }
     var a11yGranted by remember {
-        mutableStateOf(com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning)
+        mutableStateOf(false)
     }
 
     // step'i her recomposition'da güncel tutan referans — stale closure'ı önler
@@ -121,7 +121,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     // Accessibility adımına gelindiğinde servis durumunu güvenli şekilde güncelle
     LaunchedEffect(stepIndex) {
         if (steps.getOrNull(stepIndex) == PermissionStep.ACCESSIBILITY) {
-            a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
+            a11yGranted = false
         }
     }
 
@@ -130,7 +130,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
+                a11yGranted = false
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

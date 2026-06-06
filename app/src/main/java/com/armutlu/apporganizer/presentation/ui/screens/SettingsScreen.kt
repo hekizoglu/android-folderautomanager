@@ -108,8 +108,8 @@ fun SettingsScreen(
                     categoryCount = state.categories.size,
                     error         = state.error,
                     logs          = logs,
-                    launcherInfo  = viewModel.detectedLauncher.displayName,
-                    a11yActive    = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning,
+                    launcherInfo  = "App Organizer Launcher",
+                    a11yActive    = false,
                     onSendBugReport = onSendBugReport,
                     onClearLogs   = { viewModel.clearDebugLogs() }
                 )

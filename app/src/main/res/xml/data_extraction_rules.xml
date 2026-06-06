@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
-    <!-- 
-    Data extraction rules for automatic Android backup (Google One/Drive)
-    Specifies which app data should be backed up
-    -->
-    <domain name="root" path="." excludeNested="true" />
-    <domain name="files" path="." excludeNested="true" />
-    <domain name="cache" path="." excludeNested="true" />
-    <domain name="shared_prefs" path="." excludeNested="true" />
-    <domain name="database" path="." excludeNested="true" />
-
-    <!-- Include specific database files for backup -->
-    <domain name="database" path="app_organizer_db">
-        <include path="*" />
-    </domain>
-
-    <!-- Exclude sensitive data -->
-    <domain name="sharedpref" path="*">
-        <exclude path="*_sensitive*" />
-    </domain>
+    <cloud-backup>
+        <include domain="root" path="." />
+        <include domain="file" path="." />
+        <include domain="database" path="." />
+        <include domain="sharedpref" path="." />
+        <exclude domain="file" path="cache" />
+        <exclude domain="file" path="logs" />
+        <exclude domain="file" path="temp" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="root" path="." />
+        <include domain="file" path="." />
+        <include domain="database" path="." />
+        <include domain="sharedpref" path="." />
+    </device-transfer>
 </data-extraction-rules>

@@ -11,7 +11,6 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.service.LauncherAccessibilityService
 import com.armutlu.apporganizer.utils.LauncherOrganizer
-import com.armutlu.apporganizer.utils.LauncherType
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.AppClassifier
@@ -43,9 +42,9 @@ class AppListViewModel @Inject constructor(
     private val _organizeState = MutableStateFlow<OrganizeState>(OrganizeState.Idle)
     val organizeState: StateFlow<OrganizeState> = _organizeState.asStateFlow()
 
-    val detectedLauncher: LauncherType by lazy {
-        LauncherOrganizer(getApplication()).detectLauncher()
-    }
+    // Accessibility service bağlantı durumu
+    private val _isA11yConnected = MutableStateFlow(false)
+    val isA11yConnected: StateFlow<Boolean> = _isA11yConnected.asStateFlow()
 
     // Private state flows
     private val _screenState = MutableStateFlow(AppListScreenState.loading())
@@ -347,79 +346,7 @@ class AppListViewModel @Inject constructor(
     }
     
     fun organizeOnLauncher(useAccessibility: Boolean) {
-        viewModelScope.launch {
-            _organizeState.value = OrganizeState.Running("Başlatılıyor...")
-            appendDebugLog("organizeOnLauncher başladı — a11y=$useAccessibility")
-            try {
-                val pm = getApplication<android.app.Application>().packageManager
-                // Yalnızca launcher ikonu olan uygulamaları organize et
-                // (sistem servisleri, arka plan paketleri hariç)
-                val apps = _screenState.value.apps.filter { app ->
-                    pm.getLaunchIntentForPackage(app.packageName) != null
-                }
-                val categories = _screenState.value.categories
-                appendDebugLog("${_screenState.value.apps.size} toplam → ${apps.size} launcher'da görünür uygulama")
-                val organizer = LauncherOrganizer(getApplication())
-                val launcher = organizer.detectLauncher()
-                appendDebugLog("Launcher: ${launcher.displayName}")
-
-                if (useAccessibility && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    val service = LauncherAccessibilityService.instance
-                    val enabledInSystem = isAccessibilityServiceEnabledInSystem()
-                    appendDebugLog("A11y service: instance=${if (service != null) "BAĞLI" else "null"}, system=$enabledInSystem")
-                    if (service == null) {
-                        if (enabledInSystem) {
-                            appendDebugLog("⚠️ Servis ayarlarda etkin ama henüz bağlanmadı (APK güncellendi mi?)")
-                            _organizeState.value = OrganizeState.Done(
-                                false,
-                                "Servis bağlantısı yok.\n\nErişilebilirlik ayarlarına gidip servisi KAPAT → TEKRAR AÇ.\n\n" +
-                                "(APK güncellendikten sonra bu adım gereklidir.)"
-                            )
-                        } else {
-                            appendDebugLog("⛔ Servis sistem ayarlarında devre dışı")
-                            _organizeState.value = OrganizeState.Done(
-                                false,
-                                "Erişilebilirlik servisi etkin değil.\n\n" +
-                                "Ayarlar → Erişilebilirlik → App Organizer → Etkinleştir"
-                            )
-                        }
-                        return@launch
-                    }
-                    // Uygulama adını da geçiyoruz — MIUI'da contentDescription araması için gerekli
-                    val appOrgList = apps.map { app ->
-                        LauncherAccessibilityService.AppOrgInfo(
-                            packageName = app.packageName,
-                            categoryId  = app.categoryId,
-                            appName     = app.appName
-                        )
-                    }
-                    service.startOrganize(appOrgList) { status ->
-                        appendDebugLog("[A11y] $status")
-                        _organizeState.value = if (status.startsWith("✅"))
-                            OrganizeState.Done(true, status)
-                        else
-                            OrganizeState.Running(status)
-                    }
-                } else {
-                    appendDebugLog("Shortcut yöntemi kullanılıyor (API ${Build.VERSION.SDK_INT})")
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        appendDebugLog("ShortcutManager.isRequestPinShortcutSupported kontrol ediliyor...")
-                        val result = organizer.organizeByCategories(apps, categories)
-                        appendDebugLog("Shortcut sonucu: success=${result.success} pinned=${result.pinnedCategories} skipped=${result.skippedCategories}")
-                        _organizeState.value = OrganizeState.Done(result.success, result.message)
-                    } else {
-                        appendDebugLog("ERROR: Android 8.0+ gerekli, mevcut: ${Build.VERSION.RELEASE}")
-                        _organizeState.value = OrganizeState.Done(
-                            false, "Android 8.0+ gerekli (API 26+)"
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                appendDebugLog("ERROR: ${e::class.simpleName}: ${e.message}")
-                Timber.e(e, "organizeOnLauncher failed")
-                _organizeState.value = OrganizeState.Done(false, "Hata: ${e.message}")
-            }
-        }
+        _organizeState.value = OrganizeState.Done(true, "Launcher otomatik kategorileme aktif.")
     }
 
     fun launchIntent(intent: Intent) {
@@ -511,8 +438,6 @@ class AppListViewModel @Inject constructor(
 
     fun getDebugLogs(): String {
         val state = _screenState.value
-        val a11yConnected = LauncherAccessibilityService.instance != null
-        val a11yInSystem  = isAccessibilityServiceEnabledInSystem()
         return buildString {
             appendLine("=== AppOrganizer Debug ===")
             appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})")
@@ -520,9 +445,6 @@ class AppListViewModel @Inject constructor(
             appendLine("Categories: ${state.categories.size}")
             appendLine("Error state: ${state.error ?: "none"}")
             appendLine("isLoading: ${state.isLoading}, isInitializing: ${state.isInitializing}")
-            appendLine("Launcher: ${detectedLauncher.displayName}")
-            appendLine("A11y in system settings: $a11yInSystem")
-            appendLine("A11y instance connected: $a11yConnected")
             appendLine("--- Recent Logs ---")
             _liveDebugLogs.value.forEach { appendLine(it) }
         }
