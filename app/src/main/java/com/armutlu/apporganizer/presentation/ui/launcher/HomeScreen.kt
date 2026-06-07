@@ -65,7 +65,8 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
-    val allApps by viewModel.allApps.collectAsState()
+    val filteredApps by viewModel.filteredAllApps.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
@@ -167,7 +168,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
         ) {
             AllAppsDrawer(
-                apps = allApps,
+                apps = filteredApps,
+                searchQuery = searchQuery,
+                onSearchQueryChange = viewModel::setSearchQuery,
                 onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
                 onClose = viewModel::closeAllApps
             )

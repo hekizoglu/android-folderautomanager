@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,21 +56,13 @@ private const val SWIPE_DOWN_THRESHOLD = 80f
 @Composable
 fun AllAppsDrawer(
     apps: List<AppInfo>,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
     onClose: () -> Unit,
     onAppClick: (String) -> Unit,
     iconSize: Dp = 56.dp
 ) {
-    var query by remember { mutableStateOf("") }
     var dragOffset by remember { mutableFloatStateOf(0f) }
-
-    val sortedApps: List<AppInfo> = remember(apps) {
-        apps.sortedBy { it.appName.lowercase() }
-    }
-
-    val displayedApps: List<AppInfo> = remember(sortedApps, query) {
-        if (query.isBlank()) sortedApps
-        else sortedApps.filter { it.appName.contains(query, ignoreCase = true) }
-    }
 
     Box(
         modifier = Modifier
@@ -120,7 +111,6 @@ fun AllAppsDrawer(
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Search bar
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -139,16 +129,16 @@ fun AllAppsDrawer(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(modifier = Modifier.weight(1f)) {
-                            if (query.isEmpty()) {
+                            if (searchQuery.isEmpty()) {
                                 Text(
-                                    text = "Google'da Ara...",
+                                    text = "Uygulama ara...",
                                     color = SearchIconColor,
                                     fontSize = 15.sp
                                 )
                             }
                             BasicTextField(
-                                value = query,
-                                onValueChange = { query = it },
+                                value = searchQuery,
+                                onValueChange = onSearchQueryChange,
                                 singleLine = true,
                                 cursorBrush = SolidColor(TextPrimary),
                                 textStyle = TextStyle(
@@ -157,10 +147,22 @@ fun AllAppsDrawer(
                                 )
                             )
                         }
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { onSearchQueryChange("") },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Temizle",
+                                    tint = SearchIconColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
-                // Close button
                 IconButton(
                     onClick = onClose,
                     modifier = Modifier.size(40.dp)
@@ -176,7 +178,6 @@ fun AllAppsDrawer(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // App grid — alphabetical, no section headers
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
                 modifier = Modifier.fillMaxSize(),
@@ -184,7 +185,7 @@ fun AllAppsDrawer(
                 horizontalArrangement = Arrangement.spacedBy(0.dp),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(items = displayedApps, key = { it.packageName }) { app ->
+                items(items = apps, key = { it.packageName }) { app ->
                     AppIconView(
                         app = app,
                         onClick = { onAppClick(app.packageName) },

@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.armutlu.apporganizer.domain.models.AppInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+// Process-level icon cache — tüm launcher composable'ları tarafından paylaşılır
+internal val iconCacheInternal = androidx.collection.LruCache<String, ImageBitmap>(200)
+private val iconCache get() = iconCacheInternal
 
 @Composable
 fun AppIconView(
@@ -38,12 +46,25 @@ fun AppIconView(
 ) {
     val context = LocalContext.current
     val px = (iconSize.value * context.resources.displayMetrics.density).toInt()
-    val icon = remember(app.packageName) {
-        runCatching {
-            context.packageManager.getApplicationIcon(app.packageName)
-                .toBitmap(px, px)
-                .asImageBitmap()
-        }.getOrNull()
+    val cacheKey = "${app.packageName}_$px"
+
+    val icon: ImageBitmap? by produceState<ImageBitmap?>(
+        initialValue = iconCache[cacheKey],
+        key1 = cacheKey
+    ) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.packageManager.getApplicationIcon(app.packageName)
+                        .toBitmap(px, px)
+                        .asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) {
+                iconCache.put(cacheKey, loaded)
+            }
+            value = loaded
+        }
     }
 
     Column(
@@ -54,7 +75,7 @@ fun AppIconView(
     ) {
         if (icon != null) {
             Image(
-                bitmap = icon,
+                bitmap = icon!!,
                 contentDescription = app.appName,
                 modifier = Modifier
                     .size(iconSize)

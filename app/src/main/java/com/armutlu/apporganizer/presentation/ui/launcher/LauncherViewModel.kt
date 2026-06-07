@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import timber.log.Timber
@@ -68,15 +69,16 @@ class LauncherViewModel @Inject constructor(
         .map { buildAllApps(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
-    val filteredAllApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
-        .map { apps ->
-            val q = _searchQuery.value.trim().lowercase()
-            if (q.isEmpty()) buildAllApps(apps)
-            else buildAllApps(apps).filter {
-                it.appName.lowercase().contains(q) || it.packageName.lowercase().contains(q)
-            }
+    val filteredAllApps: StateFlow<List<AppInfo>> = combine(
+        repository.getAllAppsFlow(),
+        _searchQuery
+    ) { apps, q ->
+        val query = q.trim().lowercase()
+        if (query.isEmpty()) buildAllApps(apps)
+        else buildAllApps(apps).filter {
+            it.appName.lowercase().contains(query) || it.packageName.lowercase().contains(query)
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     fun openFolder(folder: AppFolder) {
         _openFolder.value = folder

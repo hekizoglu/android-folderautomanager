@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+private val iconCache get() = iconCacheInternal
 
 @Composable
 fun FolderTile(
@@ -145,19 +150,30 @@ private fun MiniAppIcon(
     val context = LocalContext.current
     val density = androidx.compose.ui.platform.LocalDensity.current
     val pxSize = with(density) { size.roundToPx() }
+    val cacheKey = "${app.packageName}_$pxSize"
 
-    val bitmap: ImageBitmap? = remember(app.packageName, pxSize) {
-        runCatching {
-            context.packageManager
-                .getApplicationIcon(app.packageName)
-                .toBitmap(pxSize, pxSize)
-                .asImageBitmap()
-        }.getOrNull()
+    val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
+        initialValue = iconCache[cacheKey],
+        key1 = cacheKey
+    ) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.packageManager
+                        .getApplicationIcon(app.packageName)
+                        .toBitmap(pxSize, pxSize)
+                        .asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) iconCache.put(cacheKey, loaded)
+            value = loaded
+        }
     }
 
-    if (bitmap != null) {
+    val bitmapSnapshot = bitmap
+    if (bitmapSnapshot != null) {
         Image(
-            bitmap = bitmap,
+            bitmap = bitmapSnapshot,
             contentDescription = app.appName,
             modifier = Modifier.size(size)
         )

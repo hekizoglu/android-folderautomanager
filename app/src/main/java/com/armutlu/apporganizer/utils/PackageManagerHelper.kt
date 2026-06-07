@@ -15,6 +15,27 @@ class PackageManagerHelper(private val context: Context) {
     
     private val packageManager = context.packageManager
     
+    companion object {
+        // Kullanıcıya gösterilmemesi gereken sistem paketi önekleri
+        private val HIDDEN_PREFIXES = listOf(
+            "com.android.providers.", "com.android.server.", "com.android.systemui",
+            "com.android.inputmethod", "com.android.keychain", "com.android.cts.",
+            "com.android.statementservice", "com.android.calllogbackup",
+            "com.google.android.syncadapters", "com.google.android.backuptransport",
+            "com.google.android.gms.policy", "com.android.shell",
+            "com.android.printspooler", "com.android.bips",
+            "com.qualcomm.", "com.qti.", "com.qcom.", "org.codeaurora.",
+            "com.mediatek.", "com.samsung.android.providers.",
+            "android.autoinstalls.", "com.android.hotwordenrollment",
+            "com.android.overlay", ".overlay", "android.ext.",
+        )
+
+        fun shouldHide(packageName: String): Boolean =
+            HIDDEN_PREFIXES.any { packageName.startsWith(it) || packageName.endsWith(it) } ||
+            packageName == "android" ||
+            packageName.contains(".overlay.")
+    }
+
     /**
      * Get all installed apps asynchronously.
      * @param includeSystem Include system apps in results
@@ -22,7 +43,7 @@ class PackageManagerHelper(private val context: Context) {
      */
     suspend fun getInstalledApps(
         includeSystem: Boolean = true,
-        onlyLaunchable: Boolean = false
+        onlyLaunchable: Boolean = true
     ): List<AppInfo> {
         return withContext(Dispatchers.IO) {
             try {
@@ -32,8 +53,10 @@ class PackageManagerHelper(private val context: Context) {
 
                 val apps = packages
                     .filter { pkgInfo ->
+                        // Gizli sistem paketlerini atla
+                        if (shouldHide(pkgInfo.packageName)) return@filter false
                         if (!includeSystem && isSystemApp(pkgInfo.applicationInfo)) return@filter false
-                        // Launcher ikonu olmayan servisler/lib paketleri hariç tut
+                        // Sadece başlatılabilir uygulamaları göster
                         if (onlyLaunchable) {
                             packageManager.getLaunchIntentForPackage(pkgInfo.packageName) != null
                         } else true
