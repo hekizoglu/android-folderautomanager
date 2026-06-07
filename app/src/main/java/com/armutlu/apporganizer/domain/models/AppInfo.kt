@@ -27,7 +27,9 @@ data class AppInfo(
     
     val lastUpdated: Long = System.currentTimeMillis(),
     
-    val customNotes: String = ""
+    val customNotes: String = "",
+
+    val usageCount: Long = 0L
 ) : Serializable {
     
     companion object {

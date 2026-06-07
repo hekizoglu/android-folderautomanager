@@ -45,6 +45,8 @@ class LauncherActivity : ComponentActivity() {
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        viewModel.syncUsageStats(this)
+
         setContent {
             // Arka planı tamamen şeffaf tut — sistem duvar kağıdı görünsün
             AppOrganizerTheme(darkTheme = true) {

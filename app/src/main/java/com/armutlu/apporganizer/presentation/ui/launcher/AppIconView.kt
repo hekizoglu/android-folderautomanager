@@ -18,10 +18,17 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -35,6 +42,34 @@ import kotlinx.coroutines.withContext
 // Process-level icon cache — tüm launcher composable'ları tarafından paylaşılır
 internal val iconCacheInternal = androidx.collection.LruCache<String, ImageBitmap>(200)
 private val iconCache get() = iconCacheInternal
+
+// Label altına scrim gradient — her türlü duvar kağıdında okunabilirlik
+private val LabelScrim = Brush.verticalGradient(
+    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+)
+
+// Text shadow modifier — beyaz yazı + koyu gölge
+private fun Modifier.textShadow(
+    color: Color = Color.Black.copy(alpha = 0.6f),
+    offsetX: Float = 0f,
+    offsetY: Float = 1.5f,
+    blurRadius: Float = 4f
+): Modifier = this.drawBehind {
+    drawIntoCanvas { canvas ->
+        val paint = Paint().apply {
+            asFrameworkPaint().apply {
+                isAntiAlias = true
+                this.color = android.graphics.Color.TRANSPARENT
+                setShadowLayer(blurRadius, offsetX, offsetY, color.toArgb())
+            }
+        }
+        canvas.drawRect(
+            left = 0f, top = 0f,
+            right = size.width, bottom = size.height,
+            paint = paint
+        )
+    }
+}
 
 @Composable
 fun AppIconView(
@@ -60,9 +95,7 @@ fun AppIconView(
                         .asImageBitmap()
                 }.getOrNull()
             }
-            if (loaded != null) {
-                iconCache.put(cacheKey, loaded)
-            }
+            if (loaded != null) iconCache.put(cacheKey, loaded)
             value = loaded
         }
     }
@@ -98,16 +131,33 @@ fun AppIconView(
         }
 
         if (showLabel) {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = app.appName,
-                color = Color.White,
-                fontSize = 11.sp,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.width(iconSize + 8.dp)
-            )
+            Spacer(Modifier.height(3.dp))
+            // Scrim + text shadow ile her duvar kağıdında okunabilir label
+            Box(
+                modifier = Modifier
+                    .width(iconSize + 8.dp)
+                    .clip(RoundedCornerShape(bottomStart = 6.dp, bottomEnd = 6.dp))
+                    .background(LabelScrim)
+                    .padding(horizontal = 2.dp, vertical = 2.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = app.appName,
+                    style = TextStyle(
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center,
+                        shadow = androidx.compose.ui.graphics.Shadow(
+                            color = Color.Black.copy(alpha = 0.7f),
+                            offset = Offset(0f, 1f),
+                            blurRadius = 4f
+                        )
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.width(iconSize + 4.dp)
+                )
+            }
         }
     }
 }
