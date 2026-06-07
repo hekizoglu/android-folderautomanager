@@ -2,8 +2,10 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
@@ -39,6 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ManageSearch
 import androidx.compose.material.icons.filled.Notifications
@@ -81,6 +84,9 @@ private val AccentPurpleLight = Color(0xFF9C8FFF)
 private val ButtonGradient = Brush.horizontalGradient(
     colors = listOf(AccentPurple, AccentPurpleLight)
 )
+private val TealGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA))
+)
 
 private fun isAccessibilityServiceEnabled(context: Context): Boolean {
     val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -88,54 +94,70 @@ private fun isAccessibilityServiceEnabled(context: Context): Boolean {
     return enabledServices.any { it.resolveInfo.serviceInfo.packageName == context.packageName }
 }
 
-private enum class PermissionStep(
+private fun isDefaultLauncher(context: Context): Boolean {
+    val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+    val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+    return info?.activityInfo?.packageName == context.packageName
+}
+
+private enum class OnboardingStep(
     val icon: ImageVector,
     val title: String,
     val description: String,
     val why: String,
     val buttonLabel: String,
     val isRequired: Boolean = true,
-    val isSystemSettings: Boolean = false
+    val isSkippable: Boolean = false
 ) {
     WELCOME(
         icon = Icons.Default.Apps,
-        title = "App Organizer'a Hoş Geldiniz",
-        description = "Telefonunuzdaki uygulamaları kategorilere ayırın ve launcher'da gruplandırın.\n\nBaşlamak için birkaç izin vermeniz gerekiyor.",
+        title = "App Organizer'a Hos Geldiniz",
+        description = "Uygulamalarinizi otomatik olarak kategorilere ayiran ve ana ekraninizi duzenleyen akilli bir launcher.",
         why = "",
-        buttonLabel = "Başlayalım",
+        buttonLabel = "Baslayin",
         isRequired = false
+    ),
+    SET_LAUNCHER(
+        icon = Icons.Default.Home,
+        title = "Ana Ekran Uygulamasi Olarak Ayarla",
+        description = "App Organizer bir launcher'dir. Tam olarak calisabilmesi icin telefon ana ekrani olarak ayarlanmasi gerekiyor.\n\nAyarla butonuna tiklayin, acilan ekranda 'App Organizer'i secin.",
+        why = "Bu adim olmadan uygulama sadece yonetim ekrani olarak calisiyor. Launcher olarak ayarlandiginda tum gucunu gosterir.",
+        buttonLabel = "Ana Ekran Olarak Ayarla",
+        isRequired = true,
+        isSkippable = true
     ),
     QUERY_PACKAGES(
         icon = Icons.Default.ManageSearch,
-        title = "Uygulama Listesi İzni",
-        description = "Telefonunuzdaki kurulu uygulamaları görmek için bu izin gereklidir.",
-        why = "Bu izin olmadan hiçbir uygulama listelenemiyor. Veriler sadece cihazınızda kalır, dışarı gönderilmez.",
-        buttonLabel = "İzin Ver",
+        title = "Uygulama Listesi Izni",
+        description = "Telefonunuzdaki kurulu uygulamalari gorebilmek icin bu izin gereklidir.",
+        why = "Bu izin olmadan hicbir uygulama listelenemez. Veriler sadece cihazinizda kalir, disari gonderilmez.",
+        buttonLabel = "Izin Ver",
         isRequired = true
     ),
     NOTIFICATIONS(
         icon = Icons.Default.Notifications,
-        title = "Bildirim İzni",
-        description = "Organize işlemi tamamlandığında size bildirim göndermek için bu izin kullanılır.",
-        why = "Yalnızca organize işlemi bittikten sonra tek bir bildirim gönderilir. Reklam veya spam yoktur.",
-        buttonLabel = "İzin Ver",
-        isRequired = false
+        title = "Bildirim Izni",
+        description = "Organize islemi tamamlandiginda size bildirim gondermek icin bu izin kullanilir.",
+        why = "Yalnizca organize islemi bittikten sonra tek bir bildirim gonderilir. Reklam veya spam yoktur.",
+        buttonLabel = "Izin Ver",
+        isRequired = false,
+        isSkippable = true
     ),
     ACCESSIBILITY(
         icon = Icons.Default.Accessibility,
-        title = "Erişilebilirlik Servisi",
-        description = "Erişilebilirlik servisi arka planda çalışmak için gereklidir.",
-        why = "Bu servis şifre, mesaj veya kişisel veri okumaz. Yalnızca arka plan işlemleri için kullanılır.",
-        buttonLabel = "Ayarları Aç",
+        title = "Erisebilirlik Servisi",
+        description = "Erisebilirlik servisi arka planda calisabilmek icin gereklidir.",
+        why = "Bu servis sifre, mesaj veya kisisel veri okumaz. Yalnizca arka plan islemleri icin kullanilir.",
+        buttonLabel = "Ayarlari Ac",
         isRequired = false,
-        isSystemSettings = true
+        isSkippable = true
     ),
     DONE(
         icon = Icons.Default.CheckCircle,
-        title = "Her Şey Hazır!",
-        description = "İzinler verildi. Uygulamalarınız şimdi taranıyor.",
+        title = "Her Sey Hazir!",
+        description = "Harika! Uygulamalariniz simdi taranarak kategorilere ayrilacak.",
         why = "",
-        buttonLabel = "Uygulamayı Aç",
+        buttonLabel = "Basla",
         isRequired = false
     )
 }
@@ -144,10 +166,10 @@ private enum class PermissionStep(
 fun OnboardingScreen(onFinish: () -> Unit) {
     val context = LocalContext.current
     var stepIndex by remember { mutableStateOf(0) }
-    val steps = PermissionStep.entries.toList()
+    val steps = OnboardingStep.entries.toList()
     val step = steps[stepIndex]
 
-    var queryGranted by remember { mutableStateOf(true) }
+    var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
     var notifGranted by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -165,10 +187,23 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 a11yGranted = isAccessibilityServiceEnabled(context)
+                launcherSet = isDefaultLauncher(context)
+                // Launcher ayarlandıysa otomatik ilerle
+                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) {
+                    stepIndex++
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    // Android 10+ RoleManager launcher seçim ekranı
+    val roleRequestLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        launcherSet = isDefaultLauncher(context)
+        if (launcherSet) stepIndex++
     }
 
     val notifLauncher = rememberLauncherForActivityResult(
@@ -194,6 +229,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         ) {
             Spacer(Modifier.height(56.dp))
 
+            // İkon
             AnimatedContent(
                 targetState = stepIndex,
                 transitionSpec = {
@@ -203,6 +239,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 label = "icon"
             ) { idx ->
                 val s = steps[idx]
+                val iconBg = if (s == OnboardingStep.SET_LAUNCHER) TealGradient else null
                 Box(contentAlignment = Alignment.Center) {
                     Box(
                         modifier = Modifier
@@ -210,10 +247,17 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                             .clip(CircleShape)
                             .border(
                                 width = 1.5.dp,
-                                color = AccentPurple.copy(alpha = 0.4f),
+                                color = if (s == OnboardingStep.SET_LAUNCHER)
+                                    Color(0xFF00897B).copy(alpha = 0.6f)
+                                else AccentPurple.copy(alpha = 0.4f),
                                 shape = CircleShape
                             )
-                            .background(AccentPurple.copy(alpha = 0.25f)),
+                            .then(
+                                if (iconBg != null)
+                                    Modifier.background(iconBg)
+                                else
+                                    Modifier.background(AccentPurple.copy(alpha = 0.25f))
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -227,6 +271,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
             Spacer(Modifier.height(32.dp))
 
+            // Adım göstergesi
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 steps.indices.forEach { i ->
                     Box(
@@ -243,6 +288,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
             Spacer(Modifier.height(28.dp))
 
+            // Başlık + açıklama
             AnimatedContent(targetState = stepIndex, label = "text") { idx ->
                 val s = steps[idx]
                 Column(
@@ -268,6 +314,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
+            // Neden gerekli kutusu
             if (currentStep.why.isNotBlank()) {
                 Box(
                     modifier = Modifier
@@ -287,7 +334,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 .width(3.dp)
                                 .height(48.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(AccentPurple)
+                                .background(
+                                    if (currentStep == OnboardingStep.SET_LAUNCHER)
+                                        Color(0xFF00897B)
+                                    else AccentPurple
+                                )
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -295,7 +346,8 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         ) {
                             Icon(
                                 Icons.Default.Info, null,
-                                tint = AccentPurple,
+                                tint = if (currentStep == OnboardingStep.SET_LAUNCHER)
+                                    Color(0xFF00897B) else AccentPurple,
                                 modifier = Modifier
                                     .size(18.dp)
                                     .padding(top = 2.dp)
@@ -312,10 +364,12 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
             }
 
+            // Durum göstergesi
             val statusText = when (currentStep) {
-                PermissionStep.QUERY_PACKAGES -> if (queryGranted) "✅ İzin verildi" else null
-                PermissionStep.NOTIFICATIONS -> if (notifGranted) "✅ İzin verildi" else null
-                PermissionStep.ACCESSIBILITY -> if (a11yGranted) "✅ Servis aktif" else null
+                OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
+                OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
+                OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
+                OnboardingStep.ACCESSIBILITY -> if (a11yGranted) "Servis aktif" else null
                 else -> null
             }
             if (statusText != null) {
@@ -323,11 +377,15 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(AccentPurple.copy(alpha = 0.20f))
+                        .background(
+                            if (currentStep == OnboardingStep.SET_LAUNCHER)
+                                Color(0xFF00897B).copy(alpha = 0.25f)
+                            else AccentPurple.copy(alpha = 0.20f)
+                        )
                         .padding(12.dp)
                 ) {
                     Text(
-                        statusText,
+                        "Tamam: $statusText",
                         fontSize = 14.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -338,19 +396,45 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
             Spacer(Modifier.height(8.dp))
 
+            // Ana buton
+            val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
+                TealGradient else ButtonGradient
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(ButtonGradient)
+                    .background(buttonGradient)
                     .clickable {
                         when (currentStep) {
-                            PermissionStep.WELCOME -> stepIndex++
+                            OnboardingStep.WELCOME -> stepIndex++
 
-                            PermissionStep.QUERY_PACKAGES -> stepIndex++
+                            OnboardingStep.SET_LAUNCHER -> {
+                                if (launcherSet) {
+                                    stepIndex++
+                                    return@clickable
+                                }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    val roleManager = context.getSystemService(RoleManager::class.java)
+                                    if (roleManager != null && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
+                                        roleRequestLauncher.launch(
+                                            roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                                        )
+                                    } else {
+                                        stepIndex++
+                                    }
+                                } else {
+                                    val intent = Intent(Intent.ACTION_MAIN)
+                                        .addCategory(Intent.CATEGORY_HOME)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                }
+                            }
 
-                            PermissionStep.NOTIFICATIONS -> {
+                            OnboardingStep.QUERY_PACKAGES -> stepIndex++
+
+                            OnboardingStep.NOTIFICATIONS -> {
                                 if (notifGranted) { stepIndex++; return@clickable }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -359,27 +443,27 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 }
                             }
 
-                            PermissionStep.ACCESSIBILITY -> {
+                            OnboardingStep.ACCESSIBILITY -> {
                                 if (a11yGranted) {
                                     stepIndex++
                                 } else {
-                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    }
-                                    context.startActivity(intent)
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                            .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+                                    )
                                 }
                             }
 
-                            PermissionStep.DONE -> onFinish()
+                            OnboardingStep.DONE -> onFinish()
                         }
                     },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = when {
-                        currentStep == PermissionStep.QUERY_PACKAGES && queryGranted -> "Devam Et"
-                        currentStep == PermissionStep.NOTIFICATIONS && notifGranted -> "Devam Et"
-                        currentStep == PermissionStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
+                        currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> "Devam Et"
+                        currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> "Devam Et"
+                        currentStep == OnboardingStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
                         else -> currentStep.buttonLabel
                     },
                     fontSize = 17.sp,
@@ -388,7 +472,8 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 )
             }
 
-            if (currentStep == PermissionStep.ACCESSIBILITY && !a11yGranted) {
+            // Accessibility için özel "Atla" butonu
+            if (currentStep == OnboardingStep.ACCESSIBILITY && !a11yGranted) {
                 Spacer(Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
@@ -400,17 +485,34 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Şimdi Değil, Atla",
+                        "Simdi Degil, Atla",
                         fontSize = 15.sp,
                         color = Color.White.copy(alpha = 0.80f)
                     )
                 }
             }
 
-            if (!currentStep.isRequired &&
-                currentStep != PermissionStep.WELCOME &&
-                currentStep != PermissionStep.DONE &&
-                !(currentStep == PermissionStep.ACCESSIBILITY && !a11yGranted)
+            // Launcher adımı için atla butonu
+            if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
+                Spacer(Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .clickable { stepIndex++ }
+                        .padding(vertical = 12.dp, horizontal = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Simdi Degil",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.50f)
+                    )
+                }
+            }
+
+            // Genel atla butonu (isteğe bağlı adımlar)
+            if (currentStep.isSkippable &&
+                currentStep != OnboardingStep.SET_LAUNCHER &&
+                currentStep != OnboardingStep.ACCESSIBILITY
             ) {
                 Spacer(Modifier.height(4.dp))
                 Box(

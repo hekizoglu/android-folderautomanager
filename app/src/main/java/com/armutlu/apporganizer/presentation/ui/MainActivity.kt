@@ -1,11 +1,15 @@
 package com.armutlu.apporganizer.presentation.ui
 
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -29,10 +33,20 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: AppListViewModel by viewModels()
 
+    // Android 10+ RoleManager launcher seçim sonucu
+    private val roleRequestLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { /* Seçim yapıldı ya da iptal — devam et */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         CrashReporter.install(this)
+
+        // Henüz default launcher değilse sistem seçim ekranını aç
+        if (!isDefaultLauncher()) {
+            requestDefaultLauncher()
+        }
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false)
@@ -49,7 +63,7 @@ class MainActivity : ComponentActivity() {
                     })
                 } else {
                     AppNavigation(
-                        viewModel      = viewModel,
+                        viewModel = viewModel,
                         onSendBugReport = { openBugReport() }
                     )
                 }
@@ -58,7 +72,6 @@ class MainActivity : ComponentActivity() {
 
         if (onboardingDone) scanApps()
 
-        // Kısayoldan açılma: hangi kategori kısayoluna basıldıysa o kategoriye git
         applyOpenCategoryIntent(intent)
     }
 
@@ -67,10 +80,35 @@ class MainActivity : ComponentActivity() {
         applyOpenCategoryIntent(intent)
     }
 
+    private fun isDefaultLauncher(): Boolean {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return info?.activityInfo?.packageName == packageName
+    }
+
+    private fun requestDefaultLauncher() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10+ — RoleManager ile doğrudan "Ev ekranı uygulaması" dialog'u
+                val roleManager = getSystemService(RoleManager::class.java)
+                if (roleManager != null && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
+                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                    roleRequestLauncher.launch(intent)
+                }
+            } else {
+                // Android 9 ve altı — HOME intent gönder, sistem seçtirsin
+                val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "requestDefaultLauncher failed")
+        }
+    }
+
     private fun applyOpenCategoryIntent(intent: Intent?) {
         val categoryId = intent?.getStringExtra("open_category") ?: return
         lifecycleScope.launch {
-            // Veriler yüklenene kadar bekle, sonra kategoriyi uygula
             viewModel.screenState.first { !it.isLoading && !it.isInitializing }
             viewModel.setSelectedCategory(categoryId)
         }
@@ -82,7 +120,7 @@ class MainActivity : ComponentActivity() {
                 Timber.d("Scanning device apps...")
                 val apps = PackageManagerHelper(applicationContext).getInstalledApps(
                     includeSystem = true,
-                    onlyLaunchable = false
+                    onlyLaunchable = true
                 )
                 Timber.d("Found ${apps.size} apps, syncing...")
                 viewModel.syncInstalledApps(apps)
@@ -94,20 +132,22 @@ class MainActivity : ComponentActivity() {
 
     private fun openBugReport() {
         val debugLogs = viewModel.getDebugLogs()
-        val crashLog  = CrashReporter.getLastCrashLog(this)?.take(1500) ?: "Crash logu yok"
+        val crashLog = CrashReporter.getLastCrashLog(this)?.take(1500) ?: "Crash logu yok"
 
-        val title = Uri.encode("[Bug] Uygulama Hatası")
-        val body  = Uri.encode(
+        val title = Uri.encode("[Bug] Uygulama Hatasi")
+        val body = Uri.encode(
             "**Cihaz:** ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}\n" +
             "**Android:** ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})\n\n" +
             "**Son Crash:**\n```\n$crashLog\n```\n\n" +
-            "**Debug Logları:**\n```\n$debugLogs\n```\n\n" +
-            "**Nasıl Oluştu:**\n(Adımları buraya yazın)"
+            "**Debug Loglari:**\n```\n$debugLogs\n```\n\n" +
+            "**Nasil Olustu:**\n(Adimlar)"
         )
         val url = "https://github.com/hekizoglu/android-folderautomanager/issues/new?title=$title&body=$body"
-        startActivity(Intent.createChooser(
-            Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply { addCategory(Intent.CATEGORY_BROWSABLE) },
-            "Tarayıcı seç"
-        ))
+        startActivity(
+            Intent.createChooser(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply { addCategory(Intent.CATEGORY_BROWSABLE) },
+                "Tarayici sec"
+            )
+        )
     }
 }
