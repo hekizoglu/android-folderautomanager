@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.ui.screens
+package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -55,28 +55,28 @@ fun SettingsScreen(
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
 
-            // â”€â”€ GÃ¶rÃ¼nÃ¼m â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item { SettingsSectionTitle("GÃ¶rÃ¼nÃ¼m") }
+            // â”€â”€ Görünüm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item { SettingsSectionTitle("Görünüm") }
             item {
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Visibility,
-                        title = "Sistem UygulamalarÄ±nÄ± GÃ¶ster",
-                        subtitle = "Dahili sistem uygulamalarÄ±nÄ± listele",
+                        title = "Sistem Uygulamalarını Göster",
+                        subtitle = "Dahili sistem uygulamalarını listele",
                         checked = showSystemApps,
                         onCheckedChange = { viewModel.toggleShowSystemApps() }
                     )
                 }
             }
 
-            // â”€â”€ Uygulama YÃ¶netimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item { SettingsSectionTitle("Uygulama YÃ¶netimi") }
+            // â”€â”€ Uygulama Yönetimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
-                        title = "SÄ±nÄ±flandÄ±rÄ±lmamÄ±ÅŸlarÄ± SÄ±nÄ±flandÄ±r",
-                        subtitle = "Kategorisiz uygulamalarÄ± otomatik ata",
+                        title = "SınıflandırılmamıÅŸları Sınıflandır",
+                        subtitle = "Kategorisiz uygulamaları otomatik ata",
                         onClick = { viewModel.classifyUnclassifiedApps() }
                     )
                     Divider(
@@ -85,16 +85,16 @@ fun SettingsScreen(
                     )
                     SettingsButtonRow(
                         icon = Icons.Default.RestartAlt,
-                        title = "TÃ¼m Kategorileri SÄ±fÄ±rla",
-                        subtitle = "TÃ¼m atamalarÄ± sil ve yeniden sÄ±nÄ±flandÄ±r",
+                        title = "Tüm Kategorileri Sıfırla",
+                        subtitle = "Tüm atamaları sil ve yeniden sınıflandır",
                         iconTint = MaterialTheme.colorScheme.error,
                         onClick = { viewModel.resetAndReclassifyAllApps() }
                     )
                 }
             }
 
-            // â”€â”€ HakkÄ±nda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            item { SettingsSectionTitle("HakkÄ±nda") }
+            // â”€â”€ Hakkında â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item { SettingsSectionTitle("Hakkında") }
             item {
                 SettingsCard {
                     SettingsInfoRow(
@@ -109,7 +109,7 @@ fun SettingsScreen(
                     SettingsInfoRow(
                         icon = Icons.Default.Person,
                         title = "GeliÅŸtirici",
-                        subtitle = "HÃ¼seyin EkizoÄŸlu"
+                        subtitle = "Hüseyin EkizoÄŸlu"
                     )
                     Divider(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -126,7 +126,7 @@ fun SettingsScreen(
                     )
                     SettingsInfoRow(
                         icon = Icons.Default.Storage,
-                        title = "VeritabanÄ±",
+                        title = "Veritabanı",
                         subtitle = "${state.apps.size} uygulama Â· ${state.categories.size} kategori"
                     )
                 }
@@ -153,7 +153,7 @@ fun SettingsScreen(
                             Spacer(Modifier.width(14.dp))
                             Column(Modifier.weight(1f)) {
                                 Text("Loglar", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                                Text("${logs.size} satÄ±r", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("${logs.size} satır", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Icon(
                                 if (debugExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
@@ -211,7 +211,7 @@ fun SettingsScreen(
     }
 }
 
-// â”€â”€ YardÄ±mcÄ± bileÅŸenler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Yardımcı bileÅŸenler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun SettingsSectionTitle(title: String) {

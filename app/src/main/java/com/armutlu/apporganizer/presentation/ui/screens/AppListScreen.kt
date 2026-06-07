@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.ui.screens
+package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -54,20 +54,20 @@ fun AppListScreen(
             TopAppBar(
                 title = {
                     if (isSelecting)
-                        Text("$selectionCount seÃ§ili", fontWeight = FontWeight.SemiBold)
+                        Text("$selectionCount seçili", fontWeight = FontWeight.SemiBold)
                     else
                         Text("App Organizer", fontWeight = FontWeight.SemiBold)
                 },
                 navigationIcon = {
                     if (isSelecting) {
                         IconButton(onClick = { viewModel.clearSelection() }) {
-                            Icon(Icons.Default.Close, "SeÃ§imi temizle")
+                            Icon(Icons.Default.Close, "Seçimi temizle")
                         }
                     }
                 },
                 actions = {
                     IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.Default.SortByAlpha, "SÄ±rala")
+                        Icon(Icons.Default.SortByAlpha, "Sırala")
                     }
                     DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
                         SortOption.entries.forEach { opt ->
@@ -82,7 +82,7 @@ fun AppListScreen(
                         }
                     }
                     IconButton(onClick = { showMenu = !showMenu }) {
-                        Icon(Icons.Default.MoreVert, "MenÃ¼")
+                        Icon(Icons.Default.MoreVert, "Menü")
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
@@ -91,7 +91,7 @@ fun AppListScreen(
                             leadingIcon = { Icon(Icons.Default.Category, null) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Yeniden SÄ±nÄ±flandÄ±r") },
+                            text = { Text("Yeniden Sınıflandır") },
                             onClick = { showMenu = false; viewModel.resetAndReclassifyAllApps() },
                             leadingIcon = { Icon(Icons.Default.RestartAlt, null) }
                         )
@@ -116,7 +116,7 @@ fun AppListScreen(
                     onClick = { viewModel.classifyUnclassifiedApps() },
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(Icons.Default.AutoFixHigh, "Otomatik sÄ±nÄ±flandÄ±r", tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır", tint = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         },
@@ -131,7 +131,7 @@ fun AppListScreen(
                     TextButton(onClick = { viewModel.selectAllVisibleApps() }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.SelectAll, null)
                         Spacer(Modifier.width(4.dp))
-                        Text("TÃ¼mÃ¼nÃ¼ SeÃ§")
+                        Text("Tümünü Seç")
                     }
                     TextButton(onClick = { showBulkCategory = true }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.DriveFileMove, null)
@@ -153,7 +153,7 @@ fun AppListScreen(
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            // Arama Ã§ubuÄŸu
+            // Arama çubuÄŸu
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
@@ -182,7 +182,7 @@ fun AppListScreen(
             ) {
                 item {
                     CategoryChip(
-                        label = "TÃ¼mÃ¼",
+                        label = "Tümü",
                         emoji = "ğŸ“±",
                         count = screenState.apps.size,
                         selected = selectedCategory == "all",
@@ -205,7 +205,7 @@ fun AppListScreen(
 
             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Ä°Ã§erik
+            // İçerik
             when {
                 screenState.isProcessing -> LoadingSkeleton()
                 screenState.error != null -> AppEmptyState(
@@ -215,13 +215,13 @@ fun AppListScreen(
                 )
                 screenState.filteredApps.isEmpty() && searchQuery.isNotBlank() -> AppEmptyState(
                     icon = Icons.Default.SearchOff,
-                    title = "SonuÃ§ bulunamadÄ±",
-                    subtitle = "\"$searchQuery\" iÃ§in eÅŸleÅŸen uygulama yok"
+                    title = "Sonuç bulunamadı",
+                    subtitle = "\"$searchQuery\" için eÅŸleÅŸen uygulama yok"
                 )
                 screenState.filteredApps.isEmpty() -> AppEmptyState(
                     icon = Icons.Default.Apps,
                     title = "Uygulama yok",
-                    subtitle = "Bu kategoride henÃ¼z uygulama bulunmuyor"
+                    subtitle = "Bu kategoride henüz uygulama bulunmuyor"
                 )
                 else -> AppListContent(
                     apps = screenState.filteredApps,
@@ -292,7 +292,7 @@ private fun CategoryChip(
     )
 }
 
-// â”€â”€ App listesi iÃ§eriÄŸi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ App listesi içeriÄŸi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -359,7 +359,7 @@ private fun AppListContent(
                         }
                     }
 
-                    // Ä°sim + kategori
+                    // İsim + kategori
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             app.appName,
@@ -378,7 +378,7 @@ private fun AppListContent(
                         }
                     }
 
-                    // SeÃ§im iÅŸareti
+                    // Seçim iÅŸareti
                     if (isSelected) {
                         Icon(
                             Icons.Default.CheckCircle,
@@ -393,7 +393,7 @@ private fun AppListContent(
     }
 }
 
-// â”€â”€ YÃ¼kleniyor iskelet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Yükleniyor iskelet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 private fun LoadingSkeleton() {
@@ -428,7 +428,7 @@ private fun AppEmptyState(
     }
 }
 
-// â”€â”€ Kategori seÃ§ici dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Kategori seçici dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -440,7 +440,7 @@ private fun CategoryPickerDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Kategori SeÃ§ â€” ${app.appName}") },
+        title = { Text("Kategori Seç â€” ${app.appName}") },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
@@ -468,12 +468,12 @@ private fun CategoryPickerDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Ä°ptal") }
+            TextButton(onClick = onDismiss) { Text("İptal") }
         }
     )
 }
 
-// â”€â”€ Toplu kategori seÃ§ici â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Toplu kategori seçici â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -484,7 +484,7 @@ fun BulkCategoryPicker(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Kategori SeÃ§") },
+        title = { Text("Kategori Seç") },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
@@ -503,11 +503,11 @@ fun BulkCategoryPicker(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Ä°ptal") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } }
     )
 }
 
-// â”€â”€ Eski uyumluluk â€” LauncherOrganizeDialog artÄ±k kullanÄ±lmÄ±yor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Eski uyumluluk â€” LauncherOrganizeDialog artık kullanılmıyor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 fun LauncherOrganizeDialog(
@@ -523,11 +523,11 @@ fun LauncherOrganizeDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Otomatik Organize") },
-        text = { Text("Uygulamalar launcher'da otomatik olarak kategorilere gÃ¶re klasÃ¶rlenecek.") },
+        text = { Text("Uygulamalar launcher'da otomatik olarak kategorilere göre klasörlenecek.") },
         confirmButton = {
             Button(onClick = { onOrganize(false); onDismiss() }) { Text("BaÅŸlat") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Ä°ptal") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } }
     )
 }
 

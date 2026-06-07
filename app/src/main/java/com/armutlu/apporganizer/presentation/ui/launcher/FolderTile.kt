@@ -94,7 +94,7 @@ fun FolderTile(
         Text(
             text = folder.category.categoryName,
             color = Color.White,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
