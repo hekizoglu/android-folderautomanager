@@ -1,7 +1,9 @@
+// FILE 2: FolderSheet.kt
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,10 +25,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+private val SheetBackground = Color(0xFF1A1A2A)
+private val DividerColor    = Color(0xFFFFFFFF).copy(alpha = 0.08f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,73 +38,87 @@ fun FolderSheet(
     folder: AppFolder,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     onDismiss: () -> Unit,
-    onAppClick: (String) -> Unit
+    onAppClick: (String) -> Unit,
 ) {
-    val context = LocalContext.current
-
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = Color(0xFF1A1A2E).copy(alpha = 0.95f),
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        sheetState       = sheetState,
+        containerColor   = SheetBackground,
+        shape            = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle       = null,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 24.dp),
         ) {
-            // Başlık
+            // ── Header ────────────────────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    text = folder.category.iconEmoji,
-                    fontSize = 28.sp
+                    text     = folder.category.iconEmoji,
+                    fontSize = 36.sp,
                 )
                 Column {
                     Text(
-                        text = folder.category.categoryName,
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text       = folder.category.categoryName,
+                        color      = Color.White,
+                        fontSize   = 20.sp,
+                        fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "${folder.apps.size} uygulama",
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontSize = 13.sp
+                        text     = "${folder.apps.size} uygulama",
+                        color    = Color.White.copy(alpha = 0.6f),
+                        fontSize = 14.sp,
                     )
                 }
             }
 
-            // Divider
+            // ── Divider ───────────────────────────────────────────────────────
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .padding(horizontal = 24.dp)
-                    .background(Color.White.copy(alpha = 0.1f))
+                    .background(DividerColor),
             )
 
-            // Uygulama grid
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(folder.apps, key = { it.packageName }) { app ->
-                    AppIconView(
-                        app = app,
-                        onClick = {
-                            onAppClick(app.packageName)
-                            onDismiss()
-                        },
-                        iconSize = 52.dp
+            // ── App grid / Empty state ────────────────────────────────────────
+            if (folder.apps.isEmpty()) {
+                Box(
+                    modifier        = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 48.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text     = "Bu klasör boş",
+                        color    = Color.White.copy(alpha = 0.5f),
+                        fontSize = 16.sp,
                     )
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns        = GridCells.Fixed(4),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 16.dp),
+                    modifier       = Modifier.fillMaxWidth(),
+                ) {
+                    items(folder.apps, key = { it.packageName }) { app ->
+                        AppIconView(
+                            app       = app,
+                            onClick   = {
+                                onAppClick(app.packageName)
+                                onDismiss()
+                            },
+                            iconSize  = 56.dp,
+                            showLabel = true,
+                        )
+                    }
                 }
             }
         }

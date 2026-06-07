@@ -1,13 +1,15 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -27,64 +29,60 @@ import androidx.core.graphics.drawable.toBitmap
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
-import timber.log.Timber
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppListScreen(
     viewModel: AppListViewModel,
     onNavigateToCategories: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
-    val screenState    by viewModel.screenState.collectAsState()
+    val screenState     by viewModel.screenState.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
-    val searchQuery    by viewModel.searchQuery.collectAsState()
-    val sortOption     by viewModel.sortOption.collectAsState()
-    val selectionCount = screenState.selectedApps.size
+    val searchQuery     by viewModel.searchQuery.collectAsState()
+    val sortOption      by viewModel.sortOption.collectAsState()
+    val selectionCount  = screenState.selectedApps.size
+    val isSelecting     = selectionCount > 0
 
     var showMenu       by remember { mutableStateOf(false) }
     var showSortMenu   by remember { mutableStateOf(false) }
     var appForCategory by remember { mutableStateOf<AppInfo?>(null) }
-    val isSelecting    = selectionCount > 0
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     if (isSelecting)
-                        Text("$selectionCount seçili", fontWeight = FontWeight.Bold)
+                        Text("$selectionCount seÃ§ili", fontWeight = FontWeight.SemiBold)
                     else
-                        Text("App Organizer")
+                        Text("App Organizer", fontWeight = FontWeight.SemiBold)
                 },
                 navigationIcon = {
                     if (isSelecting) {
                         IconButton(onClick = { viewModel.clearSelection() }) {
-                            Icon(Icons.Default.Close, "Seçimi temizle")
+                            Icon(Icons.Default.Close, "SeÃ§imi temizle")
                         }
                     }
                 },
                 actions = {
-                    // Sıralama butonu
-                    Box {
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Default.SortByAlpha, "Sırala")
-                        }
-                        DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
-                            SortOption.entries.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option.label) },
-                                    onClick = { viewModel.setSortOption(option); showSortMenu = false },
-                                    leadingIcon = {
-                                        if (sortOption == option)
-                                            Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
-                                    }
-                                )
-                            }
+                    IconButton(onClick = { showSortMenu = true }) {
+                        Icon(Icons.Default.SortByAlpha, "SÄ±rala")
+                    }
+                    DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
+                        SortOption.entries.forEach { opt ->
+                            DropdownMenuItem(
+                                text = { Text(opt.label) },
+                                onClick = { viewModel.setSortOption(opt); showSortMenu = false },
+                                leadingIcon = {
+                                    if (sortOption == opt)
+                                        Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
+                                }
+                            )
                         }
                     }
-                    // Menü
                     IconButton(onClick = { showMenu = !showMenu }) {
-                        Icon(Icons.Default.MoreVert, "Menü")
+                        Icon(Icons.Default.MoreVert, "MenÃ¼")
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
@@ -93,7 +91,7 @@ fun AppListScreen(
                             leadingIcon = { Icon(Icons.Default.Category, null) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Kategorileri Sıfırla ve Yeniden Sınıflandır") },
+                            text = { Text("Yeniden SÄ±nÄ±flandÄ±r") },
                             onClick = { showMenu = false; viewModel.resetAndReclassifyAllApps() },
                             leadingIcon = { Icon(Icons.Default.RestartAlt, null) }
                         )
@@ -114,78 +112,37 @@ fun AppListScreen(
         },
         floatingActionButton = {
             if (!isSelecting) {
-                var showOrganizeDialog by remember { mutableStateOf(false) }
-                val organizeState by viewModel.organizeState.collectAsState()
-
-                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Launcher'da grupla
-                    ExtendedFloatingActionButton(
-                        onClick = { viewModel.resetOrganizeState(); showOrganizeDialog = true },
-                        icon = { Icon(Icons.Default.GridView, null) },
-                        text = { Text("Launcher'da Grupla") },
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    // Otomatik sınıflandır
-                    FloatingActionButton(onClick = { viewModel.classifyUnclassifiedApps() }) {
-                        Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır")
-                    }
-                }
-
-                if (showOrganizeDialog) {
-                    val a11yConnected by viewModel.isA11yConnected.collectAsState()
-                    val a11yInSystem  = viewModel.isAccessibilityServiceEnabledInSystem()
-                    LauncherOrganizeDialog(
-                        launcherType    = "App Organizer",
-                        organizeState   = organizeState,
-                        a11yConnected   = a11yConnected,
-                        a11yInSystem    = a11yInSystem,
-                        onOrganize      = { useAccessibility -> viewModel.organizeOnLauncher(useAccessibility) },
-                        onOpenA11ySettings = {
-                            showOrganizeDialog = false
-                            val intent = android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            viewModel.launchIntent(intent)
-                        },
-                        onRestart = { viewModel.resetOrganizeState() },
-                        onDismiss = { showOrganizeDialog = false }
-                    )
+                FloatingActionButton(
+                    onClick = { viewModel.classifyUnclassifiedApps() },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Default.AutoFixHigh, "Otomatik sÄ±nÄ±flandÄ±r", tint = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         },
-        // Toplu işlem alt bar
         bottomBar = {
             AnimatedVisibility(
                 visible = isSelecting,
                 enter = slideInVertically { it },
-                exit  = slideOutVertically { it }
+                exit = slideOutVertically { it }
             ) {
-                BottomAppBar(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
-                    TextButton(
-                        onClick = { viewModel.selectAllVisibleApps() },
-                        modifier = Modifier.weight(1f)
-                    ) {
+                var showBulkCategory by remember { mutableStateOf(false) }
+                BottomAppBar(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
+                    TextButton(onClick = { viewModel.selectAllVisibleApps() }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.SelectAll, null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Tümünü Seç")
+                        Text("TÃ¼mÃ¼nÃ¼ SeÃ§")
                     }
-                    var showBulkCategory by remember { mutableStateOf(false) }
-                    TextButton(
-                        onClick = { showBulkCategory = true },
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    TextButton(onClick = { showBulkCategory = true }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.DriveFileMove, null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Kategori Değiştir")
+                        Text("Kategori DeÄŸiÅŸtir")
                     }
                     if (showBulkCategory) {
                         BulkCategoryPicker(
                             categories = screenState.categories,
                             onCategorySelected = { catId ->
-                                viewModel.updateAppsCategory(
-                                    screenState.selectedApps.toList(), catId
-                                )
+                                viewModel.updateAppsCategory(screenState.selectedApps.toList(), catId)
                                 showBulkCategory = false
                             },
                             onDismiss = { showBulkCategory = false }
@@ -194,49 +151,83 @@ fun AppListScreen(
                 }
             }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
-        ) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { viewModel.setSearchQuery(it) },
-                onClear = { viewModel.clearSearch() }
-            )
-            CategoryTabs(
-                categories    = screenState.categories,
-                appCounts     = screenState.apps.groupBy { it.categoryId }.mapValues { it.value.size },
-                totalCount    = screenState.apps.size,
-                selectedCategory = selectedCategory,
-                onCategorySelected = { viewModel.setSelectedCategory(it) }
+    ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            // Arama Ã§ubuÄŸu
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.setSearchQuery(it) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Uygulama ara...") },
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty())
+                        IconButton(onClick = { viewModel.clearSearch() }) {
+                            Icon(Icons.Default.Close, null)
+                        }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(28.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
 
+            // Kategori sekmeleri
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+            ) {
+                item {
+                    CategoryChip(
+                        label = "TÃ¼mÃ¼",
+                        emoji = "ğŸ“±",
+                        count = screenState.apps.size,
+                        selected = selectedCategory == "all",
+                        onClick = { viewModel.setSelectedCategory("all") }
+                    )
+                }
+                items(screenState.categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                    val cnt = screenState.apps.count { it.categoryId == cat.categoryId }
+                    if (cnt > 0) {
+                        CategoryChip(
+                            label = cat.categoryName,
+                            emoji = cat.iconEmoji,
+                            count = cnt,
+                            selected = selectedCategory == cat.categoryId,
+                            onClick = { viewModel.setSelectedCategory(cat.categoryId) }
+                        )
+                    }
+                }
+            }
+
+            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+            // Ä°Ã§erik
             when {
                 screenState.isProcessing -> LoadingSkeleton()
-
-                screenState.error != null -> EmptyState(
-                    icon    = Icons.Default.ErrorOutline,
-                    title   = "Hata oluştu",
+                screenState.error != null -> AppEmptyState(
+                    icon = Icons.Default.ErrorOutline,
+                    title = "Hata oluÅŸtu",
                     subtitle = screenState.error ?: ""
                 )
-
-                screenState.filteredApps.isEmpty() && searchQuery.isNotBlank() -> EmptyState(
-                    icon     = Icons.Default.SearchOff,
-                    title    = "Sonuç bulunamadı",
-                    subtitle = "\"$searchQuery\" için eşleşen uygulama yok"
+                screenState.filteredApps.isEmpty() && searchQuery.isNotBlank() -> AppEmptyState(
+                    icon = Icons.Default.SearchOff,
+                    title = "SonuÃ§ bulunamadÄ±",
+                    subtitle = "\"$searchQuery\" iÃ§in eÅŸleÅŸen uygulama yok"
                 )
-
-                screenState.filteredApps.isEmpty() -> EmptyState(
-                    icon     = Icons.Default.Apps,
-                    title    = "Uygulama yok",
-                    subtitle = "Bu kategoride henüz uygulama bulunmuyor"
+                screenState.filteredApps.isEmpty() -> AppEmptyState(
+                    icon = Icons.Default.Apps,
+                    title = "Uygulama yok",
+                    subtitle = "Bu kategoride henÃ¼z uygulama bulunmuyor"
                 )
-
                 else -> AppListContent(
-                    apps         = screenState.filteredApps,
+                    apps = screenState.filteredApps,
                     selectedApps = screenState.selectedApps,
-                    categories   = screenState.categories,
-                    onAppClick   = { app ->
+                    categories = screenState.categories,
+                    onAppClick = { app ->
                         if (isSelecting) viewModel.toggleAppSelection(app.packageName)
                         else viewModel.launchApp(app.packageName)
                     },
@@ -249,8 +240,9 @@ fun AppListScreen(
         }
     }
 
+    // Kategori deÄŸiÅŸtir dialog
     appForCategory?.let { app ->
-        CategoryPickerSheet(
+        CategoryPickerDialog(
             app = app,
             categories = screenState.categories,
             onCategorySelected = { catId ->
@@ -262,351 +254,260 @@ fun AppListScreen(
     }
 }
 
-// ── Search bar ──────────────────────────────────────────────────────────────
-
-@Composable
-fun SearchBar(query: String, onQueryChange: (String) -> Unit, onClear: () -> Unit) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("Uygulama ara...") },
-        leadingIcon  = { Icon(Icons.Default.Search, null) },
-        trailingIcon = {
-            if (query.isNotEmpty()) IconButton(onClick = onClear) { Icon(Icons.Default.Clear, null) }
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(12.dp)
-    )
-}
-
-// ── Category tabs ───────────────────────────────────────────────────────────
+// â”€â”€ Kategori chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryTabs(
-    categories: List<Category>,
-    appCounts: Map<String, Int>,
-    totalCount: Int,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit
+private fun CategoryChip(
+    label: String,
+    emoji: String,
+    count: Int,
+    selected: Boolean,
+    onClick: () -> Unit
 ) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        item {
-            CategoryChip(
-                label    = "Tümü",
-                emoji    = "📱",
-                count    = totalCount,
-                isSelected = selectedCategory == "all",
-                onClick  = { onCategorySelected("all") }
-            )
-        }
-        items(categories) { cat ->
-            CategoryChip(
-                label    = cat.categoryName,
-                emoji    = cat.iconEmoji,
-                count    = appCounts[cat.categoryId] ?: 0,
-                isSelected = selectedCategory == cat.categoryId,
-                onClick  = { onCategorySelected(cat.categoryId) }
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CategoryChip(label: String, emoji: String, count: Int, isSelected: Boolean, onClick: () -> Unit) {
     FilterChip(
-        selected = isSelected,
-        onClick  = onClick,
-        label    = { Text("$emoji $label  $count", fontSize = 13.sp) },
-        modifier = Modifier.height(36.dp)
+        selected = selected,
+        onClick = onClick,
+        label = {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(emoji, fontSize = 14.sp)
+                Text(label, fontSize = 13.sp)
+                Surface(
+                    shape = CircleShape,
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        count.toString(),
+                        fontSize = 11.sp,
+                        color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
+        },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     )
 }
 
-// ── App list ────────────────────────────────────────────────────────────────
+// â”€â”€ App listesi iÃ§eriÄŸi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppListContent(
+private fun AppListContent(
     apps: List<AppInfo>,
     selectedApps: Set<String>,
     categories: List<Category>,
     onAppClick: (AppInfo) -> Unit,
     onAppLongClick: (AppInfo) -> Unit
 ) {
-    val catMap = remember(categories) { categories.associateBy { it.categoryId } }
+    val context = LocalContext.current
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(apps, key = { it.packageName }) { app ->
-            AppListItem(
-                app        = app,
-                category   = catMap[app.categoryId],
-                isSelected = selectedApps.contains(app.packageName),
-                onClick    = { onAppClick(app) },
-                onLongClick = { onAppLongClick(app) }
-            )
-        }
-    }
-}
+            val isSelected = app.packageName in selectedApps
+            val cat = categories.find { it.categoryId == app.categoryId }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun AppListItem(
-    app: AppInfo,
-    category: Category?,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit
-) {
-    val context = LocalContext.current
-    val icon = remember(app.packageName) {
-        runCatching {
-            context.packageManager.getApplicationIcon(app.packageName)
-                .toBitmap(96, 96).asImageBitmap()
-        }.getOrNull()
-    }
-    // Kategori rengi
-    val catColor = remember(category?.colorHex) {
-        runCatching { Color(android.graphics.Color.parseColor(category?.colorHex ?: "#9E9E9E")) }
-            .getOrDefault(Color.Gray)
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Seçim / ikon
-            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                if (isSelected) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Check, null, tint = Color.White)
-                        }
-                    }
-                } else if (icon != null) {
-                    androidx.compose.foundation.Image(
-                        bitmap = icon,
-                        contentDescription = app.appName,
-                        modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = if (isSelected)
+                    MaterialTheme.colorScheme.primaryContainer
+                else
+                    MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (isSelected) Modifier.border(
+                            1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)
+                        ) else Modifier
                     )
-                } else {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(app.appName.firstOrNull()?.uppercase() ?: "?",
-                                style = MaterialTheme.typography.titleLarge)
-                        }
+                    .combinedClickable(
+                        onClick = { onAppClick(app) },
+                        onLongClick = { onAppLongClick(app) }
+                    )
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // App ikonu
+                    val px = (48 * context.resources.displayMetrics.density).toInt()
+                    val icon = remember(app.packageName) {
+                        runCatching {
+                            context.packageManager.getApplicationIcon(app.packageName)
+                                .toBitmap(px, px).asImageBitmap()
+                        }.getOrNull()
                     }
-                }
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text  = app.appName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                // Kategori rozeti
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(catColor)
-                    )
-                    Text(
-                        text  = category?.let { "${it.iconEmoji} ${it.categoryName}" } ?: app.categoryId,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                        modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (icon != null) {
+                            androidx.compose.foundation.Image(
+                                bitmap = icon,
+                                contentDescription = app.appName,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        } else {
+                            Text(app.appName.take(1), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        }
+                    }
+
+                    // Ä°sim + kategori
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            app.appName,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        if (cat != null) {
+                            Text(
+                                "${cat.iconEmoji} ${cat.categoryName}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // SeÃ§im iÅŸareti
+                    if (isSelected) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
             }
-
-            Icon(
-                Icons.Default.ChevronRight, null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-            )
         }
     }
 }
 
-// ── Empty / loading states ──────────────────────────────────────────────────
+// â”€â”€ YÃ¼kleniyor iskelet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
-fun EmptyState(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(icon, null, modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-fun LoadingSkeleton() {
+private fun LoadingSkeleton() {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(12) {
-            Card(modifier = Modifier.fillMaxWidth().height(68.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                Row(modifier = Modifier.fillMaxSize().padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)))
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Box(modifier = Modifier.width(140.dp).height(14.dp).clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)))
-                        Box(modifier = Modifier.width(80.dp).height(10.dp).clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)))
-                    }
-                }
-            }
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.fillMaxWidth().height(68.dp)
+            ) {}
         }
     }
 }
 
-// ── Category picker sheets ──────────────────────────────────────────────────
+// â”€â”€ BoÅŸ durum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryPickerSheet(
+private fun AppEmptyState(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String
+) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(icon, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+// â”€â”€ Kategori seÃ§ici dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CategoryPickerDialog(
     app: AppInfo,
     categories: List<Category>,
     onCategorySelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-    val icon = remember(app.packageName) {
-        runCatching {
-            context.packageManager.getApplicationIcon(app.packageName)
-                .toBitmap(96, 96).asImageBitmap()
-        }.getOrNull()
-    }
-
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(bottom = 12.dp)) {
-                if (icon != null) {
-                    androidx.compose.foundation.Image(bitmap = icon, contentDescription = null,
-                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)))
-                }
-                Column {
-                    Text(app.appName, style = MaterialTheme.typography.titleMedium)
-                    Text("Kategori seç", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Kategori SeÃ§ â€” ${app.appName}") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (app.categoryId == cat.categoryId)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) })
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(cat.iconEmoji, fontSize = 20.sp)
+                            Text(cat.categoryName, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                            if (app.categoryId == cat.categoryId)
+                                Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 }
             }
-            Divider()
-            Spacer(Modifier.height(4.dp))
-            CategoryList(
-                categories = categories,
-                currentCategoryId = app.categoryId,
-                onCategorySelected = onCategorySelected
-            )
-            Spacer(Modifier.height(32.dp))
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Ä°ptal") }
         }
-    }
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// â”€â”€ Toplu kategori seÃ§ici â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BulkCategoryPicker(
     categories: List<Category>,
     onCategorySelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Seçili uygulamalar için kategori seç",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 12.dp))
-            Divider()
-            Spacer(Modifier.height(4.dp))
-            CategoryList(categories = categories, currentCategoryId = null,
-                onCategorySelected = onCategorySelected)
-            Spacer(Modifier.height(32.dp))
-        }
-    }
-}
-
-@Composable
-private fun CategoryList(
-    categories: List<Category>,
-    currentCategoryId: String?,
-    onCategorySelected: (String) -> Unit
-) {
-    categories.forEach { category ->
-        val isCurrent = category.categoryId == currentCategoryId
-        val catColor = runCatching {
-            Color(android.graphics.Color.parseColor(category.colorHex))
-        }.getOrDefault(Color.Gray)
-
-        Surface(
-            onClick = { onCategorySelected(category.categoryId) },
-            shape   = RoundedCornerShape(8.dp),
-            color   = if (isCurrent) MaterialTheme.colorScheme.primaryContainer
-                      else            MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(modifier = Modifier.size(12.dp).clip(RoundedCornerShape(50))
-                    .background(catColor))
-                Text("${category.iconEmoji} ${category.categoryName}",
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyLarge)
-                if (isCurrent) Icon(Icons.Default.Check, null,
-                    tint = MaterialTheme.colorScheme.primary)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Kategori SeÃ§") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) })
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(cat.iconEmoji, fontSize = 20.sp)
+                            Text(cat.categoryName, fontSize = 14.sp)
+                        }
+                    }
+                }
             }
-        }
-        Spacer(Modifier.height(2.dp))
-    }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Ä°ptal") } }
+    )
 }
 
-// ── Launcher organize dialog ────────────────────────────────────────────────
+// â”€â”€ Eski uyumluluk â€” LauncherOrganizeDialog artÄ±k kullanÄ±lmÄ±yor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Composable
 fun LauncherOrganizeDialog(
@@ -614,179 +515,25 @@ fun LauncherOrganizeDialog(
     organizeState: OrganizeState,
     a11yConnected: Boolean,
     a11yInSystem: Boolean,
-    onOrganize: (useAccessibility: Boolean) -> Unit,
+    onOrganize: (Boolean) -> Unit,
     onOpenA11ySettings: () -> Unit,
     onRestart: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = { if (organizeState !is OrganizeState.Running) onDismiss() },
-        icon = { Icon(Icons.Default.GridView, null) },
-        title = { Text("Launcher'da Grupla") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                when (organizeState) {
-                    is OrganizeState.Idle -> {
-                        // Launcher bilgisi
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            Row(modifier = Modifier.padding(12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.CheckCircle,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Column {
-                                    Text("Launcher: $launcherType",
-                                        style = MaterialTheme.typography.labelMedium)
-                                    Text(
-                                        "Otomatik kategorileme aktif",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        if (false) {
-                            when {
-                                a11yConnected -> {
-                                    // Bağlı — hiçbir uyarı gösterme
-                                }
-                                a11yInSystem -> {
-                                    // Ayarlarda var ama instance null — APK güncellendi, yeniden başlatma gerekiyor
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = MaterialTheme.colorScheme.tertiaryContainer
-                                    ) {
-                                        Row(modifier = Modifier.padding(12.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Refresh, null,
-                                                tint = MaterialTheme.colorScheme.tertiary)
-                                            Column {
-                                                Text("Servis yeniden başlatılmalı",
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                    color = MaterialTheme.colorScheme.onTertiaryContainer)
-                                                Text(
-                                                    "APK güncellendikten sonra erişilebilirlik servisi bağlantısı kopuyor.\n" +
-                                                    "Ayarlardan 'App Organizer'ı KAPAT → tekrar AÇ.",
-                                                    style = MaterialTheme.typography.bodySmall)
-                                            }
-                                        }
-                                    }
-                                }
-                                else -> {
-                                    // Hiç etkin değil
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = MaterialTheme.colorScheme.errorContainer
-                                    ) {
-                                        Row(modifier = Modifier.padding(12.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Warning, null,
-                                                tint = MaterialTheme.colorScheme.error)
-                                            Column {
-                                                Text("Erişilebilirlik izni gerekli",
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                    color = MaterialTheme.colorScheme.error)
-                                                Text(
-                                                    "Drag & drop için:\nAyarlar → Erişilebilirlik → Yüklü uygulamalar → App Organizer → Aç",
-                                                    style = MaterialTheme.typography.bodySmall)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Text(
-                            "Kategorilere göre uygulamalar ana ekranda gruplandırılacak.\n\n" +
-                            "• Shortcut yöntemi: her kategoriye kısayol ekler\n" +
-                            "• Drag & drop yöntemi: ikonları fiziksel olarak taşır (izin gerekir)",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    is OrganizeState.Running -> {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()) {
-                            CircularProgressIndicator()
-                            Spacer(Modifier.height(12.dp))
-                            Text(organizeState.status, style = MaterialTheme.typography.bodyMedium,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                        }
-                    }
-
-                    is OrganizeState.Done -> {
-                        Surface(shape = RoundedCornerShape(8.dp),
-                            color = if (organizeState.success)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.errorContainer) {
-                            Text(organizeState.message,
-                                modifier = Modifier.padding(12.dp),
-                                style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                }
-            }
-        },
+        onDismissRequest = onDismiss,
+        title = { Text("Otomatik Organize") },
+        text = { Text("Uygulamalar launcher'da otomatik olarak kategorilere gÃ¶re klasÃ¶rlenecek.") },
         confirmButton = {
-            when (organizeState) {
-                is OrganizeState.Idle -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (false) {
-                            Button(onClick = onOpenA11ySettings, modifier = Modifier.fillMaxWidth()) {
-                                Icon(Icons.Default.Settings, null)
-                                Spacer(Modifier.width(8.dp))
-                                Text(if (a11yInSystem) "Erişilebilirlik Ayarlarını Aç (Yeniden Başlat)" else "Erişilebilirlik Ayarlarını Aç")
-                            }
-                        }
-                        if (a11yConnected) {
-                            Button(onClick = { onOrganize(true) }, modifier = Modifier.fillMaxWidth()) {
-                                Icon(Icons.Default.DragIndicator, null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Drag & Drop ile Grupla")
-                            }
-                        }
-                        OutlinedButton(onClick = { onOrganize(false) }, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Default.AddLink, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Kısayol ile Grupla (Evrensel)")
-                        }
-                    }
-                }
-                is OrganizeState.Done -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = onRestart, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Default.Refresh, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Tekrar Organize Et")
-                        }
-                        TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                            Text("Kapat")
-                        }
-                    }
-                }
-                else -> {}
-            }
+            Button(onClick = { onOrganize(false); onDismiss() }) { Text("BaÅŸlat") }
         },
-        dismissButton = {
-            if (organizeState is OrganizeState.Idle) {
-                TextButton(onClick = onDismiss) { Text("Vazgeç") }
-            }
-        }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Ä°ptal") } }
     )
 }
 
 sealed class OrganizeState {
     object Idle : OrganizeState()
-    data class Running(val status: String) : OrganizeState()
+    data class Running(val message: String) : OrganizeState()
     data class Done(val success: Boolean, val message: String) : OrganizeState()
 }
+

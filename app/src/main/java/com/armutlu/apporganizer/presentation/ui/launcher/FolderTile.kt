@@ -3,22 +3,20 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,13 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColorInt
-import com.armutlu.apporganizer.domain.models.AppInfo
+import androidx.core.graphics.drawable.toBitmap
 
 @Composable
 fun FolderTile(
@@ -46,102 +46,46 @@ fun FolderTile(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (isPressed) 0.90f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         ),
         label = "folderTileScale"
     )
 
-    val categoryColor = remember(folder.category.colorHex) {
-        runCatching { Color(folder.category.colorHex.toColorInt()) }
-            .getOrDefault(Color.Gray)
-    }
-
-    val previewApps = folder.apps.take(9)
-    val appCount = folder.apps.size
+    val previewApps = folder.apps.take(4)
 
     Column(
         modifier = modifier
+            .width(72.dp)
             .scale(scale)
-            .pointerInput(onClick) {
-                detectTapGestures(
-                    onPress = {
-                        val pressed = tryAwaitRelease()
-                        if (pressed) onClick()
-                    }
-                )
-            },
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // 60dp circle — Pixel frosted glass style
         Box(
             modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(categoryColor.copy(alpha = 0.35f)),
+                .size(60.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.25f)),
             contentAlignment = Alignment.Center
         ) {
-            if (appCount == 0) {
-                // Show category emoji when folder is empty
+            if (folder.apps.isEmpty()) {
                 Text(
                     text = folder.category.iconEmoji,
-                    fontSize = 32.sp
+                    fontSize = 24.sp
                 )
             } else {
-                // 3x3 grid of mini icons
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    modifier = Modifier
-                        .size(72.dp)
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                    userScrollEnabled = false
-                ) {
-                    items(
-                        items = buildList {
-                            addAll(previewApps)
-                            // pad with nulls to fill up to 9 slots
-                            repeat(9 - previewApps.size) { add(null) }
-                        }
-                    ) { app: AppInfo? ->
-                        Box(
-                            modifier = Modifier.size(20.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (app != null) {
-                                AppIconView(
-                                    app = app,
-                                    onClick = {},
-                                    iconSize = 20.dp,
-                                    showLabel = false
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // App count badge in top-right corner
-            if (appCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .size(18.dp)
-                        .clip(CircleShape)
-                        .background(categoryColor),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (appCount > 99) "99+" else appCount.toString(),
-                        color = Color.White,
-                        fontSize = 8.sp,
-                        maxLines = 1,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                // 2x2 mini icon grid
+                MiniIconGrid(
+                    apps = previewApps,
+                    iconSize = 22.dp
+                )
             }
         }
 
@@ -153,7 +97,84 @@ fun FolderTile(
             fontSize = 11.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(72.dp)
         )
+    }
+}
+
+@Composable
+private fun MiniIconGrid(
+    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    iconSize: Dp
+) {
+    // Pad to 4 slots (null = empty)
+    val slots: List<com.armutlu.apporganizer.domain.models.AppInfo?> = buildList {
+        addAll(apps)
+        repeat(4 - apps.size) { add(null) }
+    }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Row 1: slots 0, 1
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            MiniAppIcon(app = slots[0], size = iconSize)
+            MiniAppIcon(app = slots[1], size = iconSize)
+        }
+        // Row 2: slots 2, 3
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            MiniAppIcon(app = slots[2], size = iconSize)
+            MiniAppIcon(app = slots[3], size = iconSize)
+        }
+    }
+}
+
+@Composable
+private fun MiniAppIcon(
+    app: com.armutlu.apporganizer.domain.models.AppInfo?,
+    size: Dp
+) {
+    if (app == null) {
+        // Empty slot — transparent placeholder
+        Box(modifier = Modifier.size(size))
+        return
+    }
+
+    val context = LocalContext.current
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val pxSize = with(density) { size.roundToPx() }
+
+    val bitmap: ImageBitmap? = remember(app.packageName, pxSize) {
+        runCatching {
+            context.packageManager
+                .getApplicationIcon(app.packageName)
+                .toBitmap(pxSize, pxSize)
+                .asImageBitmap()
+        }.getOrNull()
+    }
+
+    if (bitmap != null) {
+        Image(
+            bitmap = bitmap,
+            contentDescription = app.appName,
+            modifier = Modifier.size(size)
+        )
+    } else {
+        // Fallback: small circle with first letter
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = app.appName.take(1).uppercase(),
+                color = Color.White,
+                fontSize = 8.sp
+            )
+        }
     }
 }

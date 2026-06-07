@@ -1,33 +1,26 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
-import timber.log.Timber
 
-/**
- * SettingsScreen - App settings and preferences
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -36,379 +29,310 @@ fun SettingsScreen(
     onSendBugReport: () -> Unit = {}
 ) {
     val showSystemApps by viewModel.showSystemApps.collectAsState()
-    
+    val state          by viewModel.screenState.collectAsState()
+    val logs           by viewModel.liveDebugLogs.collectAsState()
+    val clipboard      = LocalClipboardManager.current
+    var debugExpanded  by remember { mutableStateOf(false) }
+
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Ayarlar", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(Icons.Default.ArrowBack, "Geri")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
-    ) { paddingValues ->
+    ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            // Display settings section
-            item {
-                SectionHeader("Display")
-            }
-            
-            item {
-                SettingSwitch(
-                    title = "Show System Apps",
-                    description = "Display built-in system applications",
-                    checked = showSystemApps,
-                    onCheckedChange = { viewModel.toggleShowSystemApps() }
-                )
-            }
-            
-            // Organization settings section
-            item {
-                SectionHeader("Organization")
-            }
-            
-            item {
-                SettingButton(
-                    title = "Auto-classify Apps",
-                    description = "Automatically categorize unclassified apps",
-                    onClick = {
-                        Timber.d("Auto-classify clicked")
-                        viewModel.classifyUnclassifiedApps()
-                    }
-                )
-            }
-            
-            item {
-                SettingButton(
-                    title = "Reset Categories",
-                    description = "Reset all categories to default",
-                    onClick = {
-                        Timber.d("Reset categories clicked")
-                        viewModel.resetFilters()
-                    }
-                )
-            }
-            
-            // Debug section
-            item {
-                SectionHeader("Debug")
-            }
 
+            // â”€â”€ GÃ¶rÃ¼nÃ¼m â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item { SettingsSectionTitle("GÃ¶rÃ¼nÃ¼m") }
             item {
-                val state by viewModel.screenState.collectAsState()
-                val logs  by viewModel.liveDebugLogs.collectAsState()
-                DebugInfoCard(
-                    appCount      = state.apps.size,
-                    categoryCount = state.categories.size,
-                    error         = state.error,
-                    logs          = logs,
-                    launcherInfo  = "App Organizer Launcher",
-                    a11yActive    = false,
-                    onSendBugReport = onSendBugReport,
-                    onClearLogs   = { viewModel.clearDebugLogs() }
-                )
-            }
-
-            // About section
-            item {
-                SectionHeader("About")
-            }
-            
-            item {
-                SettingInfo(
-                    title = "App Organizer",
-                    description = "v0.1.0 beta"
-                )
-            }
-            
-            item {
-                SettingInfo(
-                    title = "Developer",
-                    description = "Hüseyin (Armutlu Nabız)"
-                )
-            }
-            
-            item {
-                SettingInfo(
-                    title = "Open Source",
-                    description = "GitHub: armutlu-app-organizer"
-                )
-            }
-            
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
-}
-
-/**
- * Section header component
- */
-@Composable
-fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
-}
-
-/**
- * Toggle switch setting
- */
-@Composable
-fun SettingSwitch(
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                modifier = Modifier.padding(start = 16.dp)
-            )
-        }
-    }
-}
-
-/**
- * Clickable button setting
- */
-@Composable
-fun SettingButton(
-    title: String,
-    description: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            TextButton(
-                onClick = onClick,
-                modifier = Modifier.align(Alignment.Start)
-            ) {
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Visibility,
+                        title = "Sistem UygulamalarÄ±nÄ± GÃ¶ster",
+                        subtitle = "Dahili sistem uygulamalarÄ±nÄ± listele",
+                        checked = showSystemApps,
+                        onCheckedChange = { viewModel.toggleShowSystemApps() }
                     )
                 }
             }
-        }
-    }
-}
 
-/**
- * Info display setting (read-only)
- */
-@Composable
-fun SettingInfo(
-    title: String,
-    description: String
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DebugInfoCard(
-    appCount: Int,
-    categoryCount: Int,
-    error: String?,
-    logs: List<String>,
-    launcherInfo: String,
-    a11yActive: Boolean,
-    onSendBugReport: () -> Unit,
-    onClearLogs: () -> Unit
-) {
-    val clipboard = LocalClipboardManager.current
-    val context   = LocalContext.current
-
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
-            // ── Durum satırları ──────────────────────────────────────────
-            StatusRow("DB Uygulama",   "$appCount adet",         true)
-            StatusRow("Kategori",      "$categoryCount adet",    true)
-            StatusRow("Launcher",      launcherInfo,             true)
-            StatusRow("Accessibility", if (a11yActive) "Aktif ✅" else "Kapalı ❌", a11yActive)
-
-            if (error != null) {
-                Text(
-                    "⚠️ Hata: $error",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            // ── Canlı Log Paneli ─────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Canlı Loglar", style = MaterialTheme.typography.labelMedium)
-                Row {
-                    IconButton(onClick = onClearLogs, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Refresh, "Temizle", modifier = Modifier.size(16.dp))
-                    }
-                    IconButton(
-                        onClick = {
-                            clipboard.setText(AnnotatedString(logs.joinToString("\n")))
-                        },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(Icons.Default.ContentCopy, "Kopyala", modifier = Modifier.size(16.dp))
-                    }
+            // â”€â”€ Uygulama YÃ¶netimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item { SettingsSectionTitle("Uygulama YÃ¶netimi") }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.AutoFixHigh,
+                        title = "SÄ±nÄ±flandÄ±rÄ±lmamÄ±ÅŸlarÄ± SÄ±nÄ±flandÄ±r",
+                        subtitle = "Kategorisiz uygulamalarÄ± otomatik ata",
+                        onClick = { viewModel.classifyUnclassifiedApps() }
+                    )
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                    SettingsButtonRow(
+                        icon = Icons.Default.RestartAlt,
+                        title = "TÃ¼m Kategorileri SÄ±fÄ±rla",
+                        subtitle = "TÃ¼m atamalarÄ± sil ve yeniden sÄ±nÄ±flandÄ±r",
+                        iconTint = MaterialTheme.colorScheme.error,
+                        onClick = { viewModel.resetAndReclassifyAllApps() }
+                    )
                 }
             }
 
-            // Log scroll alanı
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = Color(0xFF1A1A2E),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                val scrollState = rememberScrollState(Int.MAX_VALUE)
-                // Yeni log gelince otomatik en alta kaydır
-                LaunchedEffect(logs.size) { scrollState.animateScrollTo(Int.MAX_VALUE) }
+            // â”€â”€ HakkÄ±nda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            item { SettingsSectionTitle("HakkÄ±nda") }
+            item {
+                SettingsCard {
+                    SettingsInfoRow(
+                        icon = Icons.Default.Apps,
+                        title = "App Organizer",
+                        subtitle = "v1.0 beta"
+                    )
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.Person,
+                        title = "GeliÅŸtirici",
+                        subtitle = "HÃ¼seyin EkizoÄŸlu"
+                    )
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.Code,
+                        title = "Kaynak Kod",
+                        subtitle = "github.com/hekizoglu/android-folderautomanager"
+                    )
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.Storage,
+                        title = "VeritabanÄ±",
+                        subtitle = "${state.apps.size} uygulama Â· ${state.categories.size} kategori"
+                    )
+                }
+            }
 
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(scrollState)
-                        .horizontalScroll(rememberScrollState())
-                        .padding(8.dp)
-                ) {
-                    if (logs.isEmpty()) {
-                        Text(
-                            "Henüz log yok...",
-                            color = Color(0xFF888888),
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 11.sp
-                        )
-                    } else {
-                        logs.forEach { line ->
-                            val color = when {
-                                line.contains("ERROR") || line.contains("❌") -> Color(0xFFFF6B6B)
-                                line.contains("WARN")  || line.contains("⚠") -> Color(0xFFFFD93D)
-                                line.contains("✅")                          -> Color(0xFF6BCB77)
-                                else -> Color(0xFFCCCCCC)
-                            }
-                            Text(
-                                text = line,
-                                color = color,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 10.sp,
-                                lineHeight = 14.sp
+            // â”€â”€ Debug â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            if (logs.isNotEmpty()) {
+                item { SettingsSectionTitle("Debug") }
+                item {
+                    SettingsCard {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { debugExpanded = !debugExpanded }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.BugReport,
+                                null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
                             )
+                            Spacer(Modifier.width(14.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text("Loglar", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                                Text("${logs.size} satÄ±r", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Icon(
+                                if (debugExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        if (debugExpanded) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateContentSize()
+                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                            ) {
+                                // Son 30 log
+                                logs.takeLast(30).forEach { line ->
+                                    Text(
+                                        line,
+                                        fontSize = 11.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 1.dp)
+                                    )
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(
+                                        onClick = {
+                                            clipboard.setText(AnnotatedString(viewModel.getDebugLogs()))
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(16.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Kopyala", fontSize = 13.sp)
+                                    }
+                                    OutlinedButton(
+                                        onClick = { viewModel.clearDebugLogs() },
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                    ) {
+                                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Temizle", fontSize = 13.sp)
+                                    }
+                                }
+                                Spacer(Modifier.height(8.dp))
+                            }
                         }
                     }
                 }
             }
-
-            Spacer(Modifier.height(4.dp))
-
-            // ── Butonlar ─────────────────────────────────────────────────
-            Button(onClick = onSendBugReport, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.BugReport, null)
-                Spacer(Modifier.width(8.dp))
-                Text("Hata Raporu Gönder (GitHub)")
-            }
         }
     }
 }
 
+// â”€â”€ YardÄ±mcÄ± bileÅŸenler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 @Composable
-private fun StatusRow(label: String, value: String, ok: Boolean) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+private fun SettingsSectionTitle(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 28.dp, top = 20.dp, bottom = 6.dp, end = 16.dp)
+    )
+}
+
+@Composable
+private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(label, style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodySmall,
-            color = if (ok) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.error,
-            fontFamily = FontFamily.Monospace)
+        Column(content = content)
     }
 }
+
+@Composable
+private fun SettingsSwitchRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        )
+    }
+}
+
+@Composable
+private fun SettingsButtonRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+    }
+}
+
+@Composable
+private fun SettingsInfoRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+// Eski uyumluluk
+@Composable
+fun SectionHeader(title: String) = SettingsSectionTitle(title)
+
+@Composable
+fun SettingSwitch(title: String, description: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) =
+    SettingsSwitchRow(Icons.Default.Settings, title, description, checked, onCheckedChange)
+
+@Composable
+fun SettingButton(title: String, description: String, onClick: () -> Unit) =
+    SettingsButtonRow(Icons.Default.ChevronRight, title, description, onClick = onClick)
+
+@Composable
+fun SettingInfo(title: String, description: String) =
+    SettingsInfoRow(Icons.Default.Info, title, description)
+
+@Composable
+fun DebugInfoCard(
+    appCount: Int, categoryCount: Int, error: String?, logs: List<String>,
+    launcherInfo: String, a11yActive: Boolean,
+    onSendBugReport: () -> Unit, onClearLogs: () -> Unit
+) {}
+

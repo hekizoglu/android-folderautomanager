@@ -1,10 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,9 +15,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -27,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,14 +38,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
 
-@OptIn(ExperimentalFoundationApi::class)
+private val DrawerBackground = Color(0xFFF8F8F8)
+private val SearchBarColor = Color(0xFFE8E8E8)
+private val SearchIconColor = Color(0xFF5F6368)
+private val TextPrimary = Color(0xFF202124)
+private val CloseIconColor = Color(0xFF5F6368)
+private val DragHandleColor = Color.Black.copy(alpha = 0.15f)
+
+private const val SWIPE_DOWN_THRESHOLD = 80f
+
 @Composable
 fun AllAppsDrawer(
     apps: List<AppInfo>,
@@ -51,174 +62,137 @@ fun AllAppsDrawer(
     iconSize: Dp = 56.dp
 ) {
     var query by remember { mutableStateOf("") }
+    var dragOffset by remember { mutableFloatStateOf(0f) }
 
-    val grouped: Map<String, List<AppInfo>> = remember(apps) {
-        apps
-            .sortedBy { it.appName.lowercase() }
-            .groupBy { app ->
-                val first = app.appName.firstOrNull()
-                if (first != null && first.isLetter()) first.uppercaseChar().toString()
-                else "#"
-            }
-            // Put "#" first, then alphabetical
-            .entries
-            .sortedWith(compareBy { if (it.key == "#") "" else it.key })
-            .associate { it.key to it.value }
+    val sortedApps: List<AppInfo> = remember(apps) {
+        apps.sortedBy { it.appName.lowercase() }
     }
 
-    val filteredApps: List<AppInfo> = remember(apps, query) {
-        if (query.isBlank()) emptyList()
-        else apps.filter { it.appName.contains(query, ignoreCase = true) }
-            .sortedBy { it.appName.lowercase() }
+    val displayedApps: List<AppInfo> = remember(sortedApps, query) {
+        if (query.isBlank()) sortedApps
+        else sortedApps.filter { it.appName.contains(query, ignoreCase = true) }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A1A).copy(alpha = 0.96f))
+            .background(DrawerBackground)
             .statusBarsPadding()
             .navigationBarsPadding()
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragEnd = {
+                        if (dragOffset > SWIPE_DOWN_THRESHOLD) onClose()
+                        dragOffset = 0f
+                    },
+                    onDragCancel = { dragOffset = 0f },
+                    onVerticalDrag = { _, delta ->
+                        if (delta > 0) dragOffset += delta
+                        else dragOffset = 0f
+                    }
+                )
+            }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Tüm Uygulamalar",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = onClose) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Kapat",
-                        tint = Color.White
-                    )
-                }
-            }
-
-            // Search bar
+            // Drag handle pill
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color.White.copy(alpha = 0.12f))
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .padding(top = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp)
-                    ) {
-                        if (query.isEmpty()) {
-                            Text(
-                                text = "Ara...",
-                                color = Color.White.copy(alpha = 0.4f),
-                                fontSize = 15.sp
-                            )
-                        }
-                        BasicTextField(
-                            value = query,
-                            onValueChange = { query = it },
-                            singleLine = true,
-                            cursorBrush = SolidColor(Color.White),
-                            textStyle = TextStyle(color = Color.White, fontSize = 15.sp)
-                        )
-                    }
-                }
+                Box(
+                    modifier = Modifier
+                        .width(32.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(DragHandleColor)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Content
-            if (query.isNotEmpty()) {
-                // Search results: flat grid (4 columns)
-                val rows = filteredApps.chunked(4)
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(rows) { rowApps ->
-                        AppRow(
-                            rowApps = rowApps,
-                            columnCount = 4,
-                            iconSize = iconSize,
-                            onAppClick = onAppClick
-                        )
-                    }
-                }
-            } else {
-                // Alphabetical grouped view
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    grouped.forEach { (letter, letterApps) ->
-                        stickyHeader(key = "header_$letter") {
-                            Text(
-                                text = letter,
-                                color = Color.White.copy(alpha = 0.6f),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFF0A0A1A).copy(alpha = 0.96f))
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                        val rows = letterApps.chunked(4)
-                        items(rows, key = { row -> "${letter}_${row.first().packageName}" }) { rowApps ->
-                            AppRow(
-                                rowApps = rowApps,
-                                columnCount = 4,
-                                iconSize = iconSize,
-                                onAppClick = onAppClick
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AppRow(
-    rowApps: List<AppInfo>,
-    columnCount: Int,
-    iconSize: Dp,
-    onAppClick: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        rowApps.forEach { app ->
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center
+            // Search bar row with close button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                AppIconView(
-                    app = app,
-                    onClick = { onAppClick(app.packageName) },
-                    iconSize = iconSize
-                )
+                // Search bar
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(SearchBarColor)
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = SearchIconColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (query.isEmpty()) {
+                                Text(
+                                    text = "Google'da Ara...",
+                                    color = SearchIconColor,
+                                    fontSize = 15.sp
+                                )
+                            }
+                            BasicTextField(
+                                value = query,
+                                onValueChange = { query = it },
+                                singleLine = true,
+                                cursorBrush = SolidColor(TextPrimary),
+                                textStyle = TextStyle(
+                                    color = TextPrimary,
+                                    fontSize = 15.sp
+                                )
+                            )
+                        }
+                    }
+                }
+
+                // Close button
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Kapat",
+                        tint = CloseIconColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
-        }
-        // Fill remaining slots so layout stays aligned
-        repeat(columnCount - rowApps.size) {
-            Spacer(modifier = Modifier.weight(1f))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // App grid — alphabetical, no section headers
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                items(items = displayedApps, key = { it.packageName }) { app ->
+                    AppIconView(
+                        app = app,
+                        onClick = { onAppClick(app.packageName) },
+                        iconSize = iconSize,
+                        showLabel = true
+                    )
+                }
+            }
         }
     }
 }
