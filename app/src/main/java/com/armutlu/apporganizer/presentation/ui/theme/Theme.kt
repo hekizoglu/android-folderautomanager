@@ -14,21 +14,23 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// ── Light Palette (Google / Pixel Launcher) ───────────────────────────────────
+// ── Light Palette (Turkuaz / Teal) ────────────────────────────────────────────
 
-private val GoogleBlue            = Color(0xFF1A73E8)
-private val GoogleBlueLightMode   = Color(0xFF8AB4F8)
-private val LightPrimaryContainer = Color(0xFFD3E3FD)
+private val Teal600               = Color(0xFF00897B) // Light primary
+private val Teal100               = Color(0xFFB2DFDB) // Light primaryContainer
+private val Cyan400               = Color(0xFF26C6DA) // Secondary
 private val LightBackground       = Color(0xFFFAFAFA)
 private val LightSurface          = Color(0xFFFFFFFF)
-private val LightSurfaceVariant   = Color(0xFFF1F3F4) // Google's light grey
-private val LightOnBackground     = Color(0xFF202124) // Google dark text
+private val LightSurfaceVariant   = Color(0xFFF1F3F4)
+private val LightOnBackground     = Color(0xFF202124)
 private val LightOnSurface        = Color(0xFF202124)
-private val LightOnSurfaceVariant = Color(0xFF5F6368) // Google secondary text
+private val LightOnSurfaceVariant = Color(0xFF5F6368)
 
-// ── Dark Palette (Google / Pixel Launcher) ────────────────────────────────────
+// ── Dark Palette (Turkuaz / Teal) ─────────────────────────────────────────────
 
-private val DarkBackground        = Color(0xFF202124) // Google dark
+private val Teal300               = Color(0xFF4DB6AC) // Dark primary
+private val Teal700               = Color(0xFF00695C) // Dark primaryContainer
+private val DarkBackground        = Color(0xFF202124)
 private val DarkSurface           = Color(0xFF2D2D2D)
 private val DarkSurfaceVariant    = Color(0xFF3C3C3C)
 private val DarkOnBackground      = Color(0xFFE8EAED)
@@ -40,11 +42,11 @@ private val ErrorColor            = Color(0xFFCF6679)
 // ── Color Schemes ─────────────────────────────────────────────────────────────
 
 private val LightColorScheme = lightColorScheme(
-    primary              = GoogleBlue,
+    primary              = Teal600,
     onPrimary            = Color.White,
-    primaryContainer     = LightPrimaryContainer,
-    onPrimaryContainer   = GoogleBlue,
-    secondary            = GoogleBlue,
+    primaryContainer     = Teal100,
+    onPrimaryContainer   = Teal700,
+    secondary            = Cyan400,
     onSecondary          = Color.White,
     background           = LightBackground,
     onBackground         = LightOnBackground,
@@ -57,12 +59,12 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary              = GoogleBlueLightMode,
-    onPrimary            = Color(0xFF002884),
-    primaryContainer     = Color(0xFF0040CB),
-    onPrimaryContainer   = LightPrimaryContainer,
-    secondary            = GoogleBlueLightMode,
-    onSecondary          = Color(0xFF002884),
+    primary              = Teal300,
+    onPrimary            = Color(0xFF003731),
+    primaryContainer     = Teal700,
+    onPrimaryContainer   = Teal100,
+    secondary            = Cyan400,
+    onSecondary          = Color(0xFF00363D),
     background           = DarkBackground,
     onBackground         = DarkOnBackground,
     surface              = DarkSurface,
