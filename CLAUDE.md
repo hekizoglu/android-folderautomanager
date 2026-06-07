@@ -35,7 +35,7 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 ## Agent Kullanım Stratejisi
 
 - **Paralel agent'lar kullan** — bağımsız görevler için aynı anda birden fazla agent başlat
-- **DeepSeek V4-Flash** — kod review, analiz, öneri için (`sk-1e1c3788040f4ac7b72a51964e99760c`)
+- **DeepSeek V4-Flash** — kod review, analiz, öneri için (key: `.env` dosyasında `DEEPSEEK_API_KEY`)
 - **Gemini** — Play Store analizi, UX önerileri (kota dolunca yeni key iste)
 - **Explore agent** — dosya arama ve codebase taraması için
 - **Plan agent** — büyük mimari kararlar için
@@ -86,8 +86,8 @@ $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
 ```
 
 ### Telegram Bot:
-- Token: `TELEGRAM_TOKEN_REMOVED`
-- Chat ID: `937179261`
+- Token: `.env` dosyasında `TELEGRAM_BOT_TOKEN`
+- Chat ID: `.env` dosyasında `TELEGRAM_CHAT_ID`
 - APK gönderimi: `C:\Users\hekizoglu\Desktop\ai_agents\` klasöründeki script
 - Bot adı: `@claudetestbotibm_bot`
 
