@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -8,17 +9,14 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
+import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import dagger.hilt.android.AndroidEntryPoint
+
+private const val PREFS_NAME = "app_organizer_prefs"
+private const val KEY_ONBOARDING_DONE = "onboarding_done"
 
 /**
  * Launcher Activity — Android HOME ekranı olarak çalışır.
@@ -38,6 +36,18 @@ class LauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Onboarding tamamlanmamışsa → setup akışına yönlendir, bu activity'yi sonlandır
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (!prefs.getBoolean(KEY_ONBOARDING_DONE, false)) {
+            startActivity(
+                Intent(this, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+            )
+            finish()
+            return
+        }
+
         // Durum ve navigasyon çubuklarını şeffaf yap
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
@@ -48,51 +58,20 @@ class LauncherActivity : ComponentActivity() {
         viewModel.syncUsageStats(this)
 
         setContent {
-            // Arka planı tamamen şeffaf tut — sistem duvar kağıdı görünsün
             AppOrganizerTheme(darkTheme = true) {
-                var showLauncherDialog by remember {
-                    mutableStateOf(!isDefaultLauncher(this@LauncherActivity))
-                }
-
-                if (showLauncherDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showLauncherDialog = false },
-                        title = { Text("Ana Ekran Uygulaması") },
-                        text = { Text("App Organizer'ı ana ekran (launcher) olarak ayarlamak ister misiniz?") },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showLauncherDialog = false
-                                val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                startActivity(intent)
-                            }) {
-                                Text("Evet, Ayarla")
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showLauncherDialog = false }) {
-                                Text("Hayır, Daha Sonra")
-                            }
-                        }
-                    )
-                }
-
                 HomeScreen(viewModel = viewModel)
             }
         }
     }
 
-    private fun isDefaultLauncher(context: android.content.Context): Boolean {
+    fun isDefaultLauncher(): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return info?.activityInfo?.packageName == context.packageName
+        val info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return info?.activityInfo?.packageName == packageName
     }
 
-    // Launcher'da geri tuşu normalde hiçbir şey yapmaz;
-    // BackHandler Compose içinde (HomeScreen) yönetir.
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // İleride BackHandler yakalamadıysa burada da handle et; şimdi intentional no-op
         @Suppress("DEPRECATION")
         super.onBackPressed()
     }
