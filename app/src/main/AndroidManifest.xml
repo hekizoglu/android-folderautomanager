@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- CRITICAL: Query all installed packages (Android 11+) -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+    <!-- Access package visibility for app enumeration -->
+    <uses-permission android:name="android.permission.GET_INSTALLED_PACKAGES" />
+
+    <!-- Internet for Google Drive sync -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Storage access for backup/restore (Android 13+ uses granular media permissions) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+
+    <!-- Google Drive specific -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+
+    <!-- Bildirim izni (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Kullanım istatistikleri (UsageStatsManager) -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:name=".AppOrganizerApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppOrganizer"
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="33">
+
+        <activity
+            android:name=".presentation.ui.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppOrganizer.Splash"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            LauncherActivity — Sistem ana ekranı (Home Screen).
+            HOME + DEFAULT category ikilisi Android'de launcher olarak tanımlar.
+            Kullanıcı "Varsayılan Başlatıcı"yı değiştirerek aktif eder.
+        -->
+        <activity
+            android:name=".presentation.ui.launcher.LauncherActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:clearTaskOnLaunch="true"
+            android:resumeWhilePausing="true"
+            android:theme="@style/Theme.AppOrganizer.Launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- Launcher Accessibility Service — drag & drop ile gruplandırma -->
+        <service
+            android:name=".service.LauncherAccessibilityService"
+            android:exported="true"
+            android:enabled="true"
+            android:stopWithTask="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:label="@string/app_name"
+            android:description="@string/accessibility_service_description">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Service for background backup sync -->
+        <service
+            android:name=".data.remote.BackupSyncService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Broadcast receiver for package change events -->
+        <receiver
+            android:name=".presentation.receivers.PackageChangeReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+    <!-- Query specific apps for shortcuts and functionality -->
+    <queries>
+        <!-- Google Drive for backup -->
+        <package android:name="com.google.android.apps.drive" />
+        <package android:name="com.google.android.gms" />
+
+        <!-- Launchers for folder creation -->
+        <package android:name="com.android.launcher" />
+        <package android:name="com.android.launcher2" />
+        <package android:name="com.android.launcher3" />
+        <package android:name="com.sec.android.app.launcher" />
+        <package android:name="com.miui.home" />
+        <package android:name="org.adw.launcher" />
+        <package android:name="org.adwfreak.launcher" />
+        <package android:name="com.teslacoilsw.launcher" />
+
+        <!-- Intent queries for general functionality -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+</manifest>

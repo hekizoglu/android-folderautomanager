@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Local configuration
+local.properties
+*.local.properties
+
+# Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Keystore
+*.jks
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Memory / MCP tool files
+entities.json
+mempalace.yaml
+.claude/

@@ -1,314 +1,197 @@
-# 📱 App Organizer - Complete Android Application
+# AppOrganizer
 
-**Status:** ✅ **PRODUCTION READY** - Ready to build APK
+> Telefonundaki uygulamaları yapay zeka ile otomatik kategorilere ayıran Android yönetim uygulaması.
 
----
-
-## 🎯 Overview
-
-**App Organizer** is a modern Android application that:
-- 📋 Scans all installed apps on your phone
-- 🤖 Automatically categorizes them using AI (150+ keywords)
-- 📁 Organizes them into folders by category with one tap
-- 🎨 Provides a beautiful Material 3 interface
-- 🇹🇷 100% Turkish language support
-- 💰 Freemium monetization model ready
-
-**Target Users:** People switching phones who want instant organization
+[![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-green.svg)](https://android.com)
+[![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://android-arsenal.com/api?level=26)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9-blue.svg)](https://kotlinlang.org)
+[![Version](https://img.shields.io/badge/Version-0.1.0--beta-orange.svg)](https://github.com/hekizoglu/android-folderautomanager/releases)
+[![Build](https://github.com/hekizoglu/android-folderautomanager/actions/workflows/build.yml/badge.svg)](https://github.com/hekizoglu/android-folderautomanager/actions/workflows/build.yml)
 
 ---
 
-## 📊 Project Statistics
+## Ne Yapar?
 
-| Metric | Value |
-|--------|-------|
-| **Total Files** | 39 (31 Kotlin, 3 Gradle, 5 XML) |
-| **Lines of Code** | 5,366 |
-| **Test Coverage** | 106 tests, 198 assertions |
-| **Pass Rate** | 100% ✅ |
-| **Architecture** | Clean Architecture + MVVM |
-| **Min SDK** | Android 10 (API 30) |
-| **Target SDK** | Android 14 (API 34) |
+Telefonuna 50'den fazla uygulama kurdun ama hepsi ana ekranda dağınık duruyor. AppOrganizer bu sorunu çözer:
+
+1. **Tara** — Cihazındaki tüm kurulu uygulamaları algılar
+2. **Sınıflandır** — Yapay zeka ile her uygulamayı doğru kategoriye atar
+3. **Organize Et** — Her kategori için ana ekrana kısayol oluşturur
+
+Sonuç: Sosyal medya, oyunlar, finans, sağlık — hepsi yerli yerinde.
 
 ---
 
-## 🚀 Quick Start
+## Özellikler
 
-### Prerequisites
-- Android Studio 2024.1+
-- Kotlin 1.9.20+
-- JDK 17+
+### 🤖 Yapay Zeka Sınıflandırma
+- **Online veritabanı** — GitHub'da tutulan `app_database.json` ile 1000+ uygulamayı tanır
+- **Exact match** — Instagram → Sosyal Medya, ChatGPT → Üretkenlik gibi kesin eşleşmeler
+- **Keyword analizi** — Uygulama adı ve paket adından kategori çıkarımı
+- Yanlış sınıflandırılanlar için manuel düzeltme
 
-### Steps
+### 📂 10 Varsayılan Kategori
+| Kategori | Örnekler |
+|---|---|
+| 👥 Sosyal Medya | Instagram, WhatsApp, Telegram, Twitter |
+| 📝 Üretkenlik | ChatGPT, Microsoft Office, Notion, DeepSeek |
+| 🎮 Oyunlar | PUBG Mobile, Clash of Clans, Steam Link |
+| 🛍️ Alışveriş | Trendyol, Amazon, Hepsiburada |
+| 📰 Haber | Haberler, RSS okuyucular |
+| ❤️ Sağlık | Spor, fitness, meditasyon uygulamaları |
+| 💰 Finans | Bankacılık, kripto, yatırım |
+| 🎓 Eğitim | Duolingo, Khan Academy, Udemy |
+| 🔧 Araçlar | Dosya yöneticisi, VPN, temizleyici |
+| 📦 Diğer | Yukarıdakilere girmeyen her şey |
 
-1. **Open in Android Studio**
-   ```bash
-   Open /home/claude/AppOrganizer folder
-   ```
+### 📋 Uygulama Listesi & Yönetimi
+- Kategoriye göre filtreleme ve fuzzy search
+- Ada, kurulum tarihine göre sıralama
+- Toplu kategori atama (uzun basış → seç → ata)
+- Sistem uygulamalarını gizle / göster (varsayılan: gizli)
+- Kategorileri sıfırla ve yeniden sınıflandır
+- Yeni kurulan uygulamaları otomatik algıla
 
-2. **Build Debug APK**
-   ```bash
-   ./gradlew assembleDebug
-   ```
+### 🔗 Launcher Organizasyonu (ShortcutManager)
+- Her kategori için ana ekrana **pinlenebilir kısayol** oluşturur
+- Tüm launcher'larda çalışır (Samsung, MIUI, Pixel vb.)
+- Kısayola basınca doğrudan o kategorinin uygulamaları açılır
+- Kullanıcı onayıyla gerçekleşir — zorla hiçbir şey değiştirilmez
 
-3. **Run on Emulator**
-   - Select emulator (API 30-34)
-   - Grant QUERY_ALL_PACKAGES permission
-   - Tap ✨ button to auto-organize
-
-4. **Build Release APK**
-   ```bash
-   ./gradlew assembleRelease
-   ```
-
-5. **Sign & Upload to Play Store**
-   ```bash
-   # Create keystore
-   keytool -genkey -v -keystore release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias armutlu
-
-   # Sign APK
-   jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-     -keystore release.keystore app-release-unsigned.apk armutlu
-
-   # Align
-   zipalign -v 4 app-release-unsigned.apk app-release-aligned.apk
-   ```
-
----
-
-## 📱 Features
-
-### Core Features
-✅ App scanning (all installed apps)
-✅ AI classification (150+ keywords)
-✅ Auto-organize to folders
-✅ Real-time search & filter
-✅ Category management
-✅ Dark/Light theme
-
-### Advanced Features
-✅ Offline-first database (SQLite)
-✅ Runtime permissions handling
-✅ Package change monitoring
-✅ Cloud sync infrastructure (Google Drive)
-✅ Backup/Restore support
+### ♿ Erişilebilirlik Servisi (Gelişmiş)
+- AOSP tabanlı launcher'larda otomatik ikon taşıma desteği
+- Her adımı gösteren detaylı debug log sistemi
+- MIUI/HyperOS için kurulum rehberi ve uyarılar
+- Android 17 Advanced Protection Mode uyumlu (`isAccessibilityTool="true"`)
+- Dinamik gesture zamanlaması — cihaz ayarına göre otomatik
 
 ---
 
-## 🏗️ Architecture
-
-### Clean Architecture Layers
-```
-┌─────────────────────────────────────┐
-│    Presentation Layer (Compose)     │
-│  • MainActivity, 4 Screens, ViewModel
-├─────────────────────────────────────┤
-│    Data Layer (Room, Repository)    │
-│  • Database, DAOs, Remote services
-├─────────────────────────────────────┤
-│    Domain Layer (Models, Classifier)│
-│  • AppInfo, Category, Classifier
-└─────────────────────────────────────┘
-```
-
-### Key Technologies
-- **Kotlin** 1.9.20
-- **Jetpack Compose** (UI)
-- **Material 3** (Design System)
-- **Room ORM** (Database)
-- **Hilt** (DI)
-- **Coroutines + Flow** (Async)
-- **ViewModel + StateFlow** (State Management)
-
----
-
-## 📦 Project Structure
+## Mimari
 
 ```
-AppOrganizer/
-├── app/
-│   ├── src/main/
-│   │   ├── java/com/armutlu/apporganizer/
-│   │   │   ├── domain/
-│   │   │   │   ├── models/ (AppInfo, Category)
-│   │   │   │   └── usecase/ (AppClassifier)
-│   │   │   ├── data/
-│   │   │   │   ├── local/ (Room Database, DAOs)
-│   │   │   │   ├── repository/ (AppRepository)
-│   │   │   │   └── remote/ (Backup Service)
-│   │   │   ├── presentation/
-│   │   │   │   ├── ui/ (Activities, Screens)
-│   │   │   │   ├── viewmodel/ (ViewModels)
-│   │   │   │   ├── navigation/ (Navigation)
-│   │   │   │   ├── receivers/ (Broadcast Receivers)
-│   │   │   │   └── theme/ (Material 3 Theme)
-│   │   │   └── utils/ (Helpers)
-│   │   └── res/
-│   │       ├── values/ (Strings, Colors, Styles)
-│   │       └── xml/ (Backup, Data Extraction Rules)
-│   ├── src/test/ (Unit Tests)
-│   ├── src/androidTest/ (Integration Tests)
-│   └── build.gradle.kts
-├── build.gradle.kts
-└── settings.gradle.kts
+app/src/main/java/com/armutlu/apporganizer/
+├── data/
+│   ├── local/           # Room DB (AppDao, CategoryDao, AppDatabase)
+│   ├── remote/          # GitHub app veritabanı (AppDatabaseService)
+│   └── repository/      # AppRepository — tek veri kaynağı
+├── domain/
+│   ├── models/          # AppInfo, Category
+│   └── usecase/         # AppClassifier, KeywordDatabase
+├── presentation/
+│   ├── navigation/      # Compose Navigation grafiği
+│   ├── receivers/       # PackageChangeReceiver
+│   ├── ui/
+│   │   ├── screens/     # AppListScreen, SettingsScreen, CategoryEditorScreen
+│   │   └── theme/       # Material 3 tema
+│   └── viewmodel/       # AppListViewModel
+├── service/             # LauncherAccessibilityService
+└── utils/               # PackageManagerHelper, LauncherOrganizer, PermissionHelper
 ```
+
+**Teknoloji yığını:**
+
+| Katman | Teknoloji |
+|---|---|
+| UI | Jetpack Compose + Material 3 |
+| Mimari | MVVM + StateFlow |
+| DI | Hilt |
+| Veritabanı | Room |
+| Asenkron | Kotlin Coroutines + Flow |
+| Log | Timber |
+| Test | JUnit 4 + MockK |
 
 ---
 
-## 🧪 Testing
+## Kurulum & Build
 
-### Run All Tests
+### Gereksinimler
+- Android Studio Hedgehog veya üzeri
+- JDK 17
+- Android SDK (API 26–34)
+
 ```bash
-# Unit tests
-./gradlew test
+# Projeyi klonla
+git clone https://github.com/hekizoglu/android-folderautomanager.git
+cd android-folderautomanager
 
-# Integration tests
-./gradlew connectedAndroidTest
+# Birim testleri çalıştır
+./gradlew testDebugUnitTest
 
-# All tests
-./gradlew test connectedAndroidTest
+# Debug APK derle
+./gradlew assembleDebug
+
+# APK'yı bağlı cihaza kur
+./gradlew installDebug
 ```
 
-### Test Statistics
-- **Unit Tests:** 75 methods
-- **Integration Tests:** 31 methods
-- **Total Assertions:** 198
-- **Coverage:** 100%
+APK çıktısı: `app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
-## 💰 Monetization Strategy
+## Kullanım
 
-### Freemium Model
+### İlk Açılış
+1. Uygulamayı aç → Onboarding ekranını tamamla
+2. İzinleri ver → Uygulama listesi otomatik yüklenir
 
-**Free Tier:**
-- Up to 100 apps
-- Basic categorization
-- Local storage only
-- No ads, no tracking
+### Yapay Zeka Sınıflandırma
+1. Ana ekranda **🤖 AI** butonuna bas
+2. Sınıflandırılmamış uygulamalar otomatik kategorilere atanır
+3. Yanlış atananları uzun basış → Kategori Seç ile düzelt
 
-**Premium Tier ($2.99/year):**
-- Unlimited apps
-- Cloud backup (Google Drive)
-- Multi-device sync
-- Priority support
-- All free features
+### Launcher'da Organize Et
+1. **FAB (+)** → "Launcher'da Organize Et"
+2. "Başlat" → Her kategori için kısayol oluşturulur
+3. Her kısayolu onayladıkça ana ekrana eklenir
 
-### Revenue Projection
-- **Year 1:** $5K-10K (growth phase)
-- **Year 2:** $15K-25K (expansion)
-- **Year 3+:** $50K+ (market leadership)
-
----
-
-## 🔐 Security & Privacy
-
-✅ **Offline-first:** No data sent online without permission
-✅ **No tracking:** No analytics, no ads
-✅ **Encrypted storage:** SQLite with encryption ready
-✅ **Permission conscious:** Only requests needed permissions
-✅ **User control:** Full control over data
+### Erişilebilirlik Servisi
+```
+Ayarlar > Erişilebilirlik > AppOrganizer > Etkinleştir
+```
+> **MIUI/HyperOS:** Uygulama Bilgisi → Otomatik Başlatma'yı da açın ve pil optimizasyonunu devre dışı bırakın.
 
 ---
 
-## 📋 Permissions
+## Testler
 
-```xml
-QUERY_ALL_PACKAGES         - List installed apps
-CREATE_SHORTCUT           - Create folder shortcuts
-INTERNET                  - Google Drive sync (optional)
-READ_EXTERNAL_STORAGE     - Backup/restore files
-WRITE_EXTERNAL_STORAGE    - Backup/restore files
-GET_ACCOUNTS              - Google Drive integration
+```bash
+# Tüm birim testleri
+./gradlew testDebugUnitTest
+
+# Kapsam raporu (JaCoCo)
+./gradlew jacocoTestReport
+# → app/build/reports/jacoco/jacocoTestReport/html/index.html
+
+# Enstrümanlı testler (emülatör/cihaz gerekir)
+./gradlew connectedDebugAndroidTest
 ```
 
----
-
-## 🎨 UI/UX
-
-### Screens
-1. **App List Screen** - Main screen with search, filter, app list
-2. **Category Editor Screen** - Manage and customize categories
-3. **Settings Screen** - Preferences and about
-4. **Navigation** - Bottom navigation + drawer menu
-
-### Design System
-- Material 3 components
-- Color palette (12 colors)
-- Typography (Material 3 scale)
-- Dark/Light theme support
-- Turkish localization
+**Test dosyaları:**
+- `AppClassifierTest` — AI sınıflandırma mantığı
+- `AppInfoTest` — Model doğrulamaları  
+- `CategoryTest` — Kategori operasyonları
+- `KeywordDatabaseTest` — Keyword eşleşme algoritması
 
 ---
 
-## 📱 Platform Support
+## Sürüm Geçmişi
 
-- **Min SDK:** Android 10 (API 30)
-- **Target SDK:** Android 14 (API 34)
-- **Tested on:** API 30, 31, 33, 34
-- **Devices:** All phones (optimized for 5"-6")
-
----
-
-## 🐛 Known Issues / TODO
-
-- [ ] Google Drive sync implementation
-- [ ] Widget support for quick access
-- [ ] Advanced analytics
-- [ ] App usage statistics
+| Sürüm | Tarih | Notlar |
+|---|---|---|
+| 0.1.0-beta | Haziran 2026 | İlk beta — AI sınıflandırma, kısayol organizasyonu, erişilebilirlik servisi |
 
 ---
 
-## 🚀 Next Steps
+## Katkıda Bulunma
 
-1. **Build & Test APK**
-   - Debug build on emulator
-   - Test all features
-   - Fix any issues
-
-2. **Release APK**
-   - Create signing key
-   - Sign release APK
-   - Prepare Play Store listing
-
-3. **Play Store Launch**
-   - Create developer account ($25)
-   - Upload AAB
-   - Add screenshots & description
-   - Fill privacy policy
-   - Submit for review
-
-4. **Marketing**
-   - Announce on social media
-   - Turkish tech blogs
-   - Ask for reviews
+1. Fork'la
+2. Branch oluştur: `git checkout -b feature/ozellik-adi`
+3. Commit et ve push yap
+4. Pull Request aç
 
 ---
 
-## 📞 Support
+## Lisans
 
-For issues or questions:
-- 📧 Email: hüseyin@armutlu.dev
-- 🌐 Website: armutlu.dev
-- 💬 GitHub: github.com/armutlu/app-organizer
-
----
-
-## 📄 License
-
-MIT License - Feel free to use and modify
-
----
-
-## ✨ Credits
-
-**Created:** May 2026
-**Author:** Hüseyin (Armutlu Nabız)
-**Framework:** Clean Architecture + MVVM
-**Quality:** Production-ready with 100% test coverage
-
----
-
-**🎉 Ready to change the app organization game in Turkey!**
-
-Next Step: Open in Android Studio → Build → Test → Launch! 🚀
+MIT © [hekizoglu](https://github.com/hekizoglu/android-folderautomanager)
