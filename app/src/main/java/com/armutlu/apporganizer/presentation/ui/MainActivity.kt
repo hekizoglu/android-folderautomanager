@@ -43,13 +43,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         CrashReporter.install(this)
 
-        // Henüz default launcher değilse sistem seçim ekranını aç
-        if (!isDefaultLauncher()) {
-            requestDefaultLauncher()
-        }
-
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false)
+
+        // Onboarding bittiyse launcher seçimini kontrol et
+        if (onboardingDone && !isDefaultLauncher()) {
+            requestDefaultLauncher()
+        }
 
         setContent {
             AppOrganizerTheme {
@@ -60,6 +60,8 @@ class MainActivity : ComponentActivity() {
                         prefs.edit().putBoolean(KEY_ONBOARDING_DONE, true).apply()
                         showOnboarding = false
                         scanApps()
+                        // Onboarding bitti, launcher seçimini tetikle
+                        if (!isDefaultLauncher()) requestDefaultLauncher()
                     })
                 } else {
                     AppNavigation(

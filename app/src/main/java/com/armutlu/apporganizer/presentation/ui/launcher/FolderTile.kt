@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -60,6 +61,7 @@ fun FolderTile(
     )
 
     val previewApps = folder.apps.take(4)
+    val totalBadge  = folder.apps.sumOf { it.notificationCount }
 
     Column(
         modifier = modifier
@@ -72,7 +74,8 @@ fun FolderTile(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 60dp circle — Pixel frosted glass style
+        // 60dp circle — Pixel frosted glass style + badge
+        Box {
         Box(
             modifier = Modifier
                 .size(60.dp)
@@ -93,6 +96,22 @@ fun FolderTile(
                 )
             }
         }
+        // Klasör badge
+        if (totalBadge > 0) {
+            val badgeText = if (totalBadge > 99) "99+" else totalBadge.toString()
+            val badgeW = if (totalBadge > 9) 20.dp else 16.dp
+            Box(
+                modifier = Modifier
+                    .size(badgeW, 16.dp)
+                    .align(Alignment.TopEnd)
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                    .background(Color(0xFFE53935)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(badgeText, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+        } // outer Box
 
         Spacer(Modifier.height(4.dp))
 

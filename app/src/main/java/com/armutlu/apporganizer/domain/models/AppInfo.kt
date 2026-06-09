@@ -29,7 +29,9 @@ data class AppInfo(
     
     val customNotes: String = "",
 
-    val usageCount: Long = 0L
+    val usageCount: Long = 0L,
+
+    val notificationCount: Int = 0
 ) : Serializable {
     
     companion object {

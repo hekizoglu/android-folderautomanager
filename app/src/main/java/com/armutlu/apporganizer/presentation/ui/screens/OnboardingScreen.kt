@@ -454,7 +454,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 }
                             }
 
-                            OnboardingStep.DONE -> onFinish()
+                            OnboardingStep.DONE -> {
+                                context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+                                    .edit().putBoolean("onboarding_complete", true).apply()
+                                onFinish()
+                            }
                         }
                     },
                 contentAlignment = Alignment.Center
