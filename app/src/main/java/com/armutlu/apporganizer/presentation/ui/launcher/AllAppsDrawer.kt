@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,12 +25,15 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,6 +64,7 @@ fun AllAppsDrawer(
     onSearchQueryChange: (String) -> Unit = {},
     onClose: () -> Unit,
     onAppClick: (String) -> Unit,
+    onAddToDock: ((String) -> Unit)? = null,
     iconSize: Dp = 56.dp
 ) {
     var dragOffset by remember { mutableFloatStateOf(0f) }
@@ -186,14 +191,70 @@ fun AllAppsDrawer(
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 items(items = apps, key = { it.packageName }) { app ->
-                    AppIconView(
+                    AppIconWithDockMenu(
                         app = app,
                         onClick = { onAppClick(app.packageName) },
-                        iconSize = iconSize,
-                        showLabel = true
+                        onAddToDock = onAddToDock?.let { handler -> { handler(app.packageName) } },
+                        iconSize = iconSize
                     )
                 }
             }
         }
+    }
+}
+
+/**
+ * App icon grid item with optional long-press dock-add dialog.
+ * When [onAddToDock] is null (dock feature disabled) it behaves like a plain AppIconView.
+ */
+@Composable
+private fun AppIconWithDockMenu(
+    app: AppInfo,
+    onClick: () -> Unit,
+    onAddToDock: (() -> Unit)?,
+    iconSize: Dp
+) {
+    var showDockDialog by remember { mutableStateOf(false) }
+
+    if (showDockDialog && onAddToDock != null) {
+        AlertDialog(
+            onDismissRequest = { showDockDialog = false },
+            title = { Text("Dock") },
+            text = { Text("\"${app.appName}\" uygulamasını dock'a eklemek ister misin?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDockDialog = false
+                    onAddToDock()
+                }) {
+                    Text("Dock'a Ekle")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDockDialog = false }) {
+                    Text("Vazgeç")
+                }
+            }
+        )
+    }
+
+    // The outer Box intercepts all gestures so that both tap (launch) and
+    // long-press (dock dialog) are handled in one place. AppIconView receives
+    // a no-op onClick so its own clickable modifier does not interfere.
+    Box(
+        modifier = Modifier.pointerInput(app.packageName, onAddToDock) {
+            detectTapGestures(
+                onTap = { onClick() },
+                onLongPress = {
+                    if (onAddToDock != null) showDockDialog = true
+                }
+            )
+        }
+    ) {
+        AppIconView(
+            app = app,
+            onClick = {},   // gesture handled by outer Box
+            iconSize = iconSize,
+            showLabel = true
+        )
     }
 }

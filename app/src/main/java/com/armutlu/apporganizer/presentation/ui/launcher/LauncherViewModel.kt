@@ -22,6 +22,10 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+private const val PREFS_NAME = "launcher_prefs"
+private const val KEY_DOCK_PACKAGES = "dock_packages"
+private const val DOCK_MAX_SIZE = 4
+
 data class AppFolder(
     val category: Category,
     val apps: List<AppInfo>
@@ -64,6 +68,10 @@ class LauncherViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    // Dock — kullanıcı tarafından özelleştirilebilir, max 4 uygulama
+    private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
+    val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
+
     val folders: StateFlow<List<AppFolder>> = repository.getAllAppsFlow()
         .map { buildFolders(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
@@ -82,6 +90,44 @@ class LauncherViewModel @Inject constructor(
             it.appName.lowercase().contains(query) || it.packageName.lowercase().contains(query)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val prefs = getApplication<Application>()
+                .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val saved = prefs.getString(KEY_DOCK_PACKAGES, "") ?: ""
+            val packages = if (saved.isBlank()) emptyList()
+                          else saved.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            _dockPackages.value = packages
+        }
+    }
+
+    /** Dock'a uygulama ekler (max 4). Zaten varsa işlem yapmaz. */
+    fun addToDock(packageName: String, context: Context) {
+        val current = _dockPackages.value
+        if (packageName in current || current.size >= DOCK_MAX_SIZE) return
+        val updated = current + packageName
+        _dockPackages.value = updated
+        saveDockPrefs(context, updated)
+        Timber.d("addToDock: $packageName — dock: $updated")
+    }
+
+    /** Dock'tan uygulama kaldırır. */
+    fun removeFromDock(packageName: String, context: Context) {
+        val updated = _dockPackages.value.filter { it != packageName }
+        _dockPackages.value = updated
+        saveDockPrefs(context, updated)
+        Timber.d("removeFromDock: $packageName — dock: $updated")
+    }
+
+    private fun saveDockPrefs(context: Context, packages: List<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_DOCK_PACKAGES, packages.joinToString(","))
+                .apply()
+        }
+    }
 
     fun openFolder(folder: AppFolder) {
         _openFolder.value = folder

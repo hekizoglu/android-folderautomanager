@@ -29,8 +29,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,10 +47,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -60,6 +60,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private const val DOCK_TOTAL_SLOTS = 4
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: LauncherViewModel) {
@@ -69,9 +71,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
     val filteredApps by viewModel.filteredAllApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val dockPackages by viewModel.dockPackages.collectAsState()
 
     val density = LocalDensity.current
-    val hapticFeedback = LocalHapticFeedback.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
 
@@ -132,10 +134,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 items(folders, key = { it.category.categoryId }) { folder ->
                     FolderTile(
                         folder = folder,
-                        onClick = {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.openFolder(folder)
-                        }
+                        onClick = { viewModel.openFolder(folder) }
                     )
                 }
             }
@@ -158,9 +157,11 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 )
             }
 
-            // Bottom dock — frosted pill
+            // Bottom dock — frosted pill, user-configurable
             PixelDock(
+                dockPackages = dockPackages,
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                onRemoveFromDock = { pkg -> viewModel.removeFromDock(pkg, context) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 12.dp)
@@ -177,11 +178,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 apps = filteredApps,
                 searchQuery = searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
-                onAppClick = { pkg ->
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    viewModel.launchApp(context, pkg)
-                },
-                onClose = viewModel::closeAllApps
+                onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                onClose = viewModel::closeAllApps,
+                onAddToDock = { pkg -> viewModel.addToDock(pkg, context) }
             )
         }
     }
@@ -192,10 +191,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             folder = folder,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             onDismiss = viewModel::closeFolder,
-            onAppClick = { pkg ->
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                viewModel.launchApp(context, pkg)
-            }
+            onAppClick = { pkg -> viewModel.launchApp(context, pkg) }
         )
     }
 }
@@ -241,36 +237,17 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
     }
 }
 
-/** Frosted pill dock with 4 fixed slots matching Pixel Launcher layout. */
+/**
+ * Frosted pill dock — user-configurable up to 4 apps.
+ * Empty slots show a "+" placeholder. Long-press on a filled slot removes it.
+ */
 @Composable
 private fun PixelDock(
+    dockPackages: List<String>,
     onLaunchApp: (String) -> Unit,
+    onRemoveFromDock: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val packageManager = context.packageManager
-
-    data class DockSlot(val label: String, val candidates: List<String>)
-
-    val slots = remember {
-        listOf(
-            DockSlot("Phone",    listOf("com.google.android.dialer", "com.android.dialer")),
-            DockSlot("Messages", listOf("com.google.android.apps.messaging", "com.android.mms")),
-            DockSlot("Camera",   listOf("com.google.android.GoogleCamera", "com.android.camera2", "com.android.camera")),
-            DockSlot("Browser",  listOf("com.android.chrome", "org.mozilla.firefox", "com.microsoft.emmx"))
-        )
-    }
-
-    // Resolve available packages — hide slot if none found
-    val resolvedSlots = remember(slots) {
-        slots.mapNotNull { slot ->
-            val pkg = slot.candidates.firstOrNull { candidate ->
-                packageManager.getLaunchIntentForPackage(candidate) != null
-            }
-            if (pkg != null) Pair(slot.label, pkg) else null
-        }
-    }
-
     Box(
         modifier = modifier
             .height(72.dp)
@@ -286,43 +263,88 @@ private fun PixelDock(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            resolvedSlots.forEach { (label, pkg) ->
-                DockIcon(
-                    packageName = pkg,
-                    label = label,
-                    iconSize = 48.dp,
-                    onClick = { onLaunchApp(pkg) }
-                )
+            // Build exactly DOCK_TOTAL_SLOTS items: filled or placeholder
+            val slots = List(DOCK_TOTAL_SLOTS) { index ->
+                dockPackages.getOrNull(index)
+            }
+
+            slots.forEach { pkg ->
+                if (pkg != null) {
+                    DockIcon(
+                        packageName = pkg,
+                        iconSize = 48.dp,
+                        onClick = { onLaunchApp(pkg) },
+                        onLongPress = { onRemoveFromDock(pkg) }
+                    )
+                } else {
+                    DockPlaceholder(iconSize = 48.dp)
+                }
             }
         }
     }
 }
 
+/** Filled dock slot — tap launches, long-press triggers remove confirmation. */
 @Composable
 private fun DockIcon(
     packageName: String,
-    label: String,
     iconSize: Dp,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongPress: () -> Unit
 ) {
     val context = LocalContext.current
-    val px = with(androidx.compose.ui.platform.LocalDensity.current) { iconSize.roundToPx() }
+    val px = with(LocalDensity.current) { iconSize.roundToPx() }
     val bitmap = remember(packageName) {
         runCatching {
             context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
         }.getOrNull()
     }
 
+    var showRemoveDialog by remember { mutableStateOf(false) }
+
+    if (showRemoveDialog) {
+        val appLabel = remember(packageName) {
+            runCatching {
+                context.packageManager.getApplicationLabel(
+                    context.packageManager.getApplicationInfo(packageName, 0)
+                ).toString()
+            }.getOrDefault(packageName)
+        }
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text("Dock'tan Kaldır") },
+            text = { Text("\"$appLabel\" dock'tan kaldırılsın mı?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRemoveDialog = false
+                    onLongPress()
+                }) {
+                    Text("Kaldır")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveDialog = false }) {
+                    Text("Vazgeç")
+                }
+            }
+        )
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .pointerInput(packageName) {
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onLongPress = { showRemoveDialog = true }
+                )
+            }
             .padding(4.dp)
     ) {
         if (bitmap != null) {
             Image(
                 bitmap = bitmap,
-                contentDescription = label,
+                contentDescription = packageName,
                 modifier = Modifier.size(iconSize)
             )
         } else {
@@ -332,5 +354,26 @@ private fun DockIcon(
                     .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
             )
         }
+    }
+}
+
+/** Empty dock slot — "+" indicator inviting the user to add an app via AllAppsDrawer. */
+@Composable
+private fun DockPlaceholder(iconSize: Dp) {
+    Box(
+        modifier = Modifier
+            .size(iconSize)
+            .background(
+                color = Color.White.copy(alpha = 0.10f),
+                shape = RoundedCornerShape(12.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "+",
+            color = Color.White.copy(alpha = 0.50f),
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Light
+        )
     }
 }
