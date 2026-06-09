@@ -1,6 +1,8 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -68,9 +70,14 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val filteredApps by viewModel.filteredAllApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
+    val haptic = LocalHapticFeedback.current
+    val dockPackages by viewModel.dockPackages.collectAsState()
+
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) { viewModel.loadDockPackages(context) }
 
     BackHandler(enabled = allAppsOpen || openFolder != null) {
         if (allAppsOpen) viewModel.closeAllApps()
@@ -129,7 +136,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 items(folders, key = { it.category.categoryId }) { folder ->
                     FolderTile(
                         folder = folder,
-                        onClick = { viewModel.openFolder(folder) }
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.openFolder(folder)
+                        }
                     )
                 }
             }
@@ -154,7 +164,11 @@ fun HomeScreen(viewModel: LauncherViewModel) {
 
             // Bottom dock — frosted pill
             PixelDock(
-                onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                packages = dockPackages,
+                onLaunchApp = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.launchApp(context, pkg)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 12.dp)
@@ -229,34 +243,17 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
     }
 }
 
-/** Frosted pill dock with 4 fixed slots matching Pixel Launcher layout. */
+/** Frosted pill dock — packages listesi DockPrefs'ten gelir, kullanıcı tarafından seçilebilir. */
 @Composable
 private fun PixelDock(
+    packages: List<String>,
     onLaunchApp: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val packageManager = context.packageManager
-
-    data class DockSlot(val label: String, val candidates: List<String>)
-
-    val slots = remember {
-        listOf(
-            DockSlot("Phone",    listOf("com.google.android.dialer", "com.android.dialer")),
-            DockSlot("Messages", listOf("com.google.android.apps.messaging", "com.android.mms")),
-            DockSlot("Camera",   listOf("com.google.android.GoogleCamera", "com.android.camera2", "com.android.camera")),
-            DockSlot("Browser",  listOf("com.android.chrome", "org.mozilla.firefox", "com.microsoft.emmx"))
-        )
-    }
-
-    // Resolve available packages — hide slot if none found
-    val resolvedSlots = remember(slots) {
-        slots.mapNotNull { slot ->
-            val pkg = slot.candidates.firstOrNull { candidate ->
-                packageManager.getLaunchIntentForPackage(candidate) != null
-            }
-            if (pkg != null) Pair(slot.label, pkg) else null
-        }
+    val pm = context.packageManager
+    val visiblePkgs = remember(packages) {
+        packages.filter { pm.getLaunchIntentForPackage(it) != null }
     }
 
     Box(
@@ -274,7 +271,10 @@ private fun PixelDock(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            resolvedSlots.forEach { (label, pkg) ->
+            visiblePkgs.forEach { pkg ->
+                val label = remember(pkg) {
+                    runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                }
                 DockIcon(
                     packageName = pkg,
                     label = label,

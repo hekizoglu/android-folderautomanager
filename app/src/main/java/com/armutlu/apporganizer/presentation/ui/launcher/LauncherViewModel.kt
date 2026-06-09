@@ -8,8 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,6 +55,9 @@ class LauncherViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository
 ) : AndroidViewModel(application) {
+
+    private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
+    val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
     private val _openFolder = MutableStateFlow<AppFolder?>(null)
     val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
@@ -119,6 +123,25 @@ class LauncherViewModel @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
         }
+    }
+
+    fun loadDockPackages(context: Context) {
+        _dockPackages.value = DockPrefs.getDockPackages(context)
+    }
+
+    fun saveDockPackages(context: Context, packages: List<String>) {
+        DockPrefs.saveDockPackages(context, packages)
+        _dockPackages.value = packages
+    }
+
+    fun addToDock(context: Context, packageName: String) {
+        if (DockPrefs.addToDock(context, packageName))
+            _dockPackages.value = DockPrefs.getDockPackages(context)
+    }
+
+    fun removeFromDock(context: Context, packageName: String) {
+        DockPrefs.removeFromDock(context, packageName)
+        _dockPackages.value = DockPrefs.getDockPackages(context)
     }
 
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */

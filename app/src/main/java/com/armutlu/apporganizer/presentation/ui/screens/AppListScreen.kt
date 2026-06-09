@@ -16,9 +16,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -335,22 +338,25 @@ private fun AppListContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // App ikonu
+                    // App ikonu — async, UI thread bloke etmez
                     val px = (48 * context.resources.displayMetrics.density).toInt()
-                    val icon = remember(app.packageName) {
-                        runCatching {
-                            context.packageManager.getApplicationIcon(app.packageName)
-                                .toBitmap(px, px).asImageBitmap()
-                        }.getOrNull()
+                    val icon by produceState<ImageBitmap?>(initialValue = null, key1 = app.packageName) {
+                        value = withContext(Dispatchers.IO) {
+                            runCatching {
+                                context.packageManager.getApplicationIcon(app.packageName)
+                                    .toBitmap(px, px).asImageBitmap()
+                            }.getOrNull()
+                        }
                     }
                     Box(
                         modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (icon != null) {
+                        val iconSnapshot = icon
+                        if (iconSnapshot != null) {
                             androidx.compose.foundation.Image(
-                                bitmap = icon,
+                                bitmap = iconSnapshot,
                                 contentDescription = app.appName,
                                 modifier = Modifier.size(48.dp)
                             )

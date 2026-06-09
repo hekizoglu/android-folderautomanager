@@ -13,7 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import android.app.role.RoleManager
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +39,20 @@ fun SettingsScreen(
     val state          by viewModel.screenState.collectAsState()
     val logs           by viewModel.liveDebugLogs.collectAsState()
     val clipboard      = LocalClipboardManager.current
+    val context        = LocalContext.current
     var debugExpanded  by remember { mutableStateOf(false) }
+
+    fun isDefaultLauncher(): Boolean {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return info?.activityInfo?.packageName == context.packageName
+    }
+
+    var isDefault by remember { mutableStateOf(isDefaultLauncher()) }
+
+    val roleRequestLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { isDefault = isDefaultLauncher() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -56,6 +76,54 @@ fun SettingsScreen(
         ) {
 
             // â”€â”€ Görünüm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Launcher ─────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Launcher") }
+            item {
+                SettingsCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Home, null,
+                            tint = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Varsayılan Launcher", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                if (isDefault) "Aktif" else "Ayarlanmadı",
+                                fontSize = 12.sp,
+                                color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        if (!isDefault) {
+                            Button(
+                                onClick = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        val rm = context.getSystemService(RoleManager::class.java)
+                                        if (rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
+                                            roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
+                                        }
+                                    } else {
+                                        val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                                        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        context.startActivity(i)
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            ) { Text("Ayarla", fontSize = 13.sp) }
+                        } else {
+                            Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        }
+                    }
+                }
+            }
+
             item { SettingsSectionTitle("Görünüm") }
             item {
                 SettingsCard {
