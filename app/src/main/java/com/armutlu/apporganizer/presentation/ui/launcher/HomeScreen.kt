@@ -45,8 +45,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -69,6 +71,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     val density = LocalDensity.current
+    val hapticFeedback = LocalHapticFeedback.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
 
@@ -129,7 +132,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 items(folders, key = { it.category.categoryId }) { folder ->
                     FolderTile(
                         folder = folder,
-                        onClick = { viewModel.openFolder(folder) }
+                        onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.openFolder(folder)
+                        }
                     )
                 }
             }
@@ -171,7 +177,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 apps = filteredApps,
                 searchQuery = searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
-                onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                onAppClick = { pkg ->
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    viewModel.launchApp(context, pkg)
+                },
                 onClose = viewModel::closeAllApps
             )
         }
@@ -183,7 +192,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             folder = folder,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             onDismiss = viewModel::closeFolder,
-            onAppClick = { pkg -> viewModel.launchApp(context, pkg) }
+            onAppClick = { pkg ->
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.launchApp(context, pkg)
+            }
         )
     }
 }
