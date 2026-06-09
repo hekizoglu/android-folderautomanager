@@ -33,6 +33,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -63,6 +65,7 @@ fun AllAppsDrawer(
     iconSize: Dp = 56.dp
 ) {
     var dragOffset by remember { mutableFloatStateOf(0f) }
+    val haptic = LocalHapticFeedback.current
 
     Box(
         modifier = Modifier
@@ -188,7 +191,10 @@ fun AllAppsDrawer(
                 items(items = apps, key = { it.packageName }) { app ->
                     AppIconView(
                         app = app,
-                        onClick = { onAppClick(app.packageName) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAppClick(app.packageName)
+                        },
                         iconSize = iconSize,
                         showLabel = true
                     )

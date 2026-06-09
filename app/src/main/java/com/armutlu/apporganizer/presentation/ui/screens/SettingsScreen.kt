@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.DockPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,27 +101,79 @@ fun SettingsScreen(
                                 color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        if (!isDefault) {
+                        val launcherAction = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val rm = context.getSystemService(RoleManager::class.java)
+                                if (rm.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                                    roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
+                                }
+                            } else {
+                                val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(i)
+                            }
+                        }
+                        if (isDefault) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                OutlinedButton(
+                                    onClick = launcherAction,
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                ) { Text("Değiştir", fontSize = 12.sp) }
+                            }
+                        } else {
                             Button(
-                                onClick = {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                        val rm = context.getSystemService(RoleManager::class.java)
-                                        if (rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
-                                            roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
-                                        }
-                                    } else {
-                                        val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-                                        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                        context.startActivity(i)
-                                    }
-                                },
+                                onClick = launcherAction,
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
                             ) { Text("Ayarla", fontSize = 13.sp) }
-                        } else {
-                            Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                         }
                     }
+                }
+            }
+
+            // ── Dock Yönetimi ─────────────────────────────────────────────────
+            item { SettingsSectionTitle("Dock Uygulamaları") }
+            item {
+                var dockPkgs by remember { mutableStateOf(DockPrefs.getDockPackages(context)) }
+                val pm = context.packageManager
+                SettingsCard {
+                    if (dockPkgs.isEmpty()) {
+                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("Dock boş", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    } else {
+                        dockPkgs.forEachIndexed { index, pkg ->
+                            val appName = remember(pkg) {
+                                runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                            }
+                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Apps, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(appName, Modifier.weight(1f), fontSize = 14.sp)
+                                IconButton(onClick = {
+                                    DockPrefs.removeFromDock(context, pkg)
+                                    dockPkgs = DockPrefs.getDockPackages(context)
+                                }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Default.Close, "Kaldır", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                    Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.RestartAlt,
+                        title = "Varsayılana Sıfırla",
+                        subtitle = "Telefon, Mesaj, Kamera, Tarayıcı",
+                        onClick = {
+                            DockPrefs.saveDockPackages(context, emptyList())
+                            dockPkgs = DockPrefs.getDockPackages(context)
+                        }
+                    )
                 }
             }
 

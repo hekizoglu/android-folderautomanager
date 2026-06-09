@@ -34,6 +34,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class LauncherActivity : ComponentActivity() {
 
     private val viewModel: LauncherViewModel by viewModels()
+    private var showLauncherDialogState: androidx.compose.runtime.MutableState<Boolean>? = null
+
+    override fun onResume() {
+        super.onResume()
+        showLauncherDialogState?.value = !isDefaultLauncher(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,9 +56,11 @@ class LauncherActivity : ComponentActivity() {
         setContent {
             // Arka planı tamamen şeffaf tut — sistem duvar kağıdı görünsün
             AppOrganizerTheme(darkTheme = true) {
-                var showLauncherDialog by remember {
+                val showLauncherDialogMutable = remember {
                     mutableStateOf(!isDefaultLauncher(this@LauncherActivity))
                 }
+                showLauncherDialogState = showLauncherDialogMutable
+                var showLauncherDialog by showLauncherDialogMutable
 
                 if (showLauncherDialog) {
                     AlertDialog(
