@@ -16,7 +16,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

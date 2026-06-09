@@ -23,3 +23,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Memory / MCP tool files
+entities.json
+mempalace.yaml
+.claude/

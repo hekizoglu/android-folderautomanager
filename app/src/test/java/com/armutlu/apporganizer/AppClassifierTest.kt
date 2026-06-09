@@ -161,6 +161,129 @@ class AppClassifierTest {
         assertTrue("Beklenen >= 70, gerçek: $conf", conf >= 70)
     }
 
+    // ─── addKeywordToCategory Runtime Ekleme ─────────────────────────────────
+
+    @Test
+    fun `addKeywordToCategory adds new keyword and it is used in classification`() {
+        // Hiçbir keyword listesinde olmayan benzersiz bir kelime kullan
+        val uniqueKeyword = "xyzuniquekw99"
+        KeywordDatabase.addKeywordToCategory(Category.CAT_EDUCATION, uniqueKeyword)
+        val after = appInfo("com.test.xyzuniquekw99", uniqueKeyword)
+        assertEquals(Category.CAT_EDUCATION, classifier.classifyApp(after))
+    }
+
+    @Test
+    fun `addKeywordToCategory does not add duplicate keyword`() {
+        val countBefore = KeywordDatabase.getTotalKeywords()
+        KeywordDatabase.addKeywordToCategory(Category.CAT_SOCIAL, "facebook") // zaten var
+        val countAfter = KeywordDatabase.getTotalKeywords()
+        assertEquals(countBefore, countAfter)
+    }
+
+    @Test
+    fun `addKeywordToCategory to unknown category increases total keyword count`() {
+        val countBefore = KeywordDatabase.getTotalKeywords()
+        KeywordDatabase.addKeywordToCategory("cat_zzzcustom_isolated", "zzzisolatedkeyword12345")
+        val countAfter = KeywordDatabase.getTotalKeywords()
+        assertTrue("Yeni keyword eklenmeli", countAfter > countBefore)
+    }
+
+    // ─── Büyük/Küçük Harf Edge Case ──────────────────────────────────────────
+
+    @Test
+    fun `ChatGPT uppercase app name still returns CAT_PRODUCTIVITY`() {
+        val app = appInfo("com.random.ai", "CHATGPT")
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `chatgpt lowercase app name returns CAT_PRODUCTIVITY`() {
+        val app = appInfo("com.random.ai", "chatgpt")
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `ChatGPT mixed case app name returns CAT_PRODUCTIVITY`() {
+        val app = appInfo("com.random.ai", "ChatGPT")
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `Telegram all uppercase app name returns CAT_SOCIAL`() {
+        val app = appInfo("com.random.messenger", "TELEGRAM")
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+    }
+
+    // ─── Boş / Null-benzeri Input Güvenliği ──────────────────────────────────
+
+    @Test
+    fun `empty app name with unknown package returns CAT_OTHER`() {
+        val app = appInfo("com.unknown.pkg", "")
+        assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `empty package name with unknown app name returns CAT_OTHER`() {
+        val app = appInfo("", "SomeRandomApp")
+        assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `both empty package and app name returns CAT_OTHER`() {
+        val app = appInfo("", "")
+        assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `whitespace-only app name returns CAT_OTHER`() {
+        val app = appInfo("com.unknown.pkg", "   ")
+        assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
+    }
+
+    // ─── exactMatchMap Önceliği (keyword override edilemez) ──────────────────
+
+    @Test
+    fun `exactMatchMap takes priority over keyword classification`() {
+        // org.telegram.messenger → exactMatchMap'de CAT_SOCIAL
+        // "messenger" keyword'ü CAT_SOCIAL'da da var, ama exactMatch daha önce çalışır
+        val app = appInfo("org.telegram.messenger", "Telegram")
+        // Online DB null döndürüyor (setup'ta ayarlı), exactMatch kazanmalı
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `exactMatchMap assigns CAT_PRODUCTIVITY to ChatGPT package despite no keyword match needed`() {
+        // com.openai.chatgpt exactMatchMap'de CAT_PRODUCTIVITY
+        // Keyword tablosunda da "chatgpt" var → hangi yoldan gelirse gelsin sonuç aynı
+        val app = appInfo("com.openai.chatgpt", "SomeApp") // app name farklı ama paket exact match
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+    }
+
+    @Test
+    fun `exactMatchMap entry with misleading app name wins over keyword`() {
+        // com.discord paketi exactMatchMap'de CAT_SOCIAL
+        // App adını "Game Arena" gibi oyun ismine çekersek — exactMatch yine kazanmalı
+        val app = appInfo("com.discord", "Game Arena Legends")
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+    }
+
+    // ─── getConfidence ek senaryolar ─────────────────────────────────────────
+
+    @Test
+    fun `getConfidence for unknown category returns 50`() {
+        val app = appInfo("com.random.app", "Random App")
+        val conf = classifier.getConfidence(app, Category.CAT_FINANCE)
+        assertEquals(50, conf)
+    }
+
+    @Test
+    fun `getConfidence package keyword match returns at least 70`() {
+        // "trendyol" paket adında geçiyor → hasPackageKeywordMatch true
+        val app = appInfo("com.trendyol.android", "Trendyol")
+        val conf = classifier.getConfidence(app, Category.CAT_SHOPPING)
+        assertTrue("Beklenen >= 70, gerçek: $conf", conf >= 70)
+    }
+
     // ─── Yardımcı ─────────────────────────────────────────────────────────────
 
     private fun appInfo(packageName: String, appName: String) = AppInfo(

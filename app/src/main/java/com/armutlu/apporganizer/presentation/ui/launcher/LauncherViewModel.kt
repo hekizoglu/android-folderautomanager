@@ -9,12 +9,16 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.armutlu.apporganizer.utils.UsageStatsHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -68,15 +72,16 @@ class LauncherViewModel @Inject constructor(
         .map { buildAllApps(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
-    val filteredAllApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
-        .map { apps ->
-            val q = _searchQuery.value.trim().lowercase()
-            if (q.isEmpty()) buildAllApps(apps)
-            else buildAllApps(apps).filter {
-                it.appName.lowercase().contains(q) || it.packageName.lowercase().contains(q)
-            }
+    val filteredAllApps: StateFlow<List<AppInfo>> = combine(
+        repository.getAllAppsFlow(),
+        _searchQuery
+    ) { apps, q ->
+        val query = q.trim().lowercase()
+        if (query.isEmpty()) buildAllApps(apps)
+        else buildAllApps(apps).filter {
+            it.appName.lowercase().contains(query) || it.packageName.lowercase().contains(query)
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     fun openFolder(folder: AppFolder) {
         _openFolder.value = folder
@@ -99,7 +104,7 @@ class LauncherViewModel @Inject constructor(
         _searchQuery.value = q
     }
 
-    /** Paketi launcher üzerinden başlatır. */
+    /** Paketi launcher üzerinden başlatır ve kullanım sayacını artırır. */
     fun launchApp(context: Context, packageName: String) {
         try {
             val intent = context.packageManager.getLaunchIntentForPackage(packageName) ?: run {
@@ -108,8 +113,23 @@ class LauncherViewModel @Inject constructor(
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.incrementUsageCount(packageName)
+            }
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
+        }
+    }
+
+    /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
+    fun syncUsageStats(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!UsageStatsHelper.hasPermission(context)) return@launch
+            val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
+            counts.forEach { (pkg, ms) ->
+                repository.updateUsageCount(pkg, ms)
+            }
+            Timber.d("UsageStats synced: ${counts.size} apps")
         }
     }
 

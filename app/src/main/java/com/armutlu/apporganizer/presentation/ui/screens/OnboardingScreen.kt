@@ -1,106 +1,175 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.role.RoleManager
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.ManageSearch
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
-// ── İzin tanımları ──────────────────────────────────────────────────────────
+private val BackgroundGradient = Brush.verticalGradient(
+    colors = listOf(
+        Color(0xFF0F0C29),
+        Color(0xFF302B63),
+        Color(0xFF24243E)
+    )
+)
 
-private enum class PermissionStep(
+private val AccentPurple = Color(0xFF6C63FF)
+private val AccentPurpleLight = Color(0xFF9C8FFF)
+private val ButtonGradient = Brush.horizontalGradient(
+    colors = listOf(AccentPurple, AccentPurpleLight)
+)
+private val TealGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA))
+)
+
+private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+    val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+    val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+    return enabledServices.any { it.resolveInfo.serviceInfo.packageName == context.packageName }
+}
+
+private fun isDefaultLauncher(context: Context): Boolean {
+    val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+    val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+    return info?.activityInfo?.packageName == context.packageName
+}
+
+private enum class OnboardingStep(
     val icon: ImageVector,
     val title: String,
     val description: String,
     val why: String,
     val buttonLabel: String,
     val isRequired: Boolean = true,
-    val isSystemSettings: Boolean = false   // normal dialog mı, Settings mi açar
+    val isSkippable: Boolean = false
 ) {
     WELCOME(
         icon = Icons.Default.Apps,
-        title = "App Organizer'a Hoş Geldiniz",
-        description = "Telefonunuzdaki uygulamaları kategorilere ayırın ve launcher'da gruplandırın.\n\nBaşlamak için birkaç izin vermeniz gerekiyor.",
+        title = "App Organizer'a Hos Geldiniz",
+        description = "Uygulamalarinizi otomatik olarak kategorilere ayiran ve ana ekraninizi duzenleyen akilli bir launcher.",
         why = "",
-        buttonLabel = "Başlayalım",
+        buttonLabel = "Baslayin",
         isRequired = false
+    ),
+    SET_LAUNCHER(
+        icon = Icons.Default.Home,
+        title = "Ana Ekran Uygulamasi Olarak Ayarla",
+        description = "App Organizer bir launcher'dir. Tam olarak calisabilmesi icin telefon ana ekrani olarak ayarlanmasi gerekiyor.\n\nAyarla butonuna tiklayin, acilan ekranda 'App Organizer'i secin.",
+        why = "Bu adim olmadan uygulama sadece yonetim ekrani olarak calisiyor. Launcher olarak ayarlandiginda tum gucunu gosterir.",
+        buttonLabel = "Ana Ekran Olarak Ayarla",
+        isRequired = true,
+        isSkippable = true
     ),
     QUERY_PACKAGES(
         icon = Icons.Default.ManageSearch,
-        title = "Uygulama Listesi İzni",
-        description = "Telefonunuzdaki kurulu uygulamaları görmek için bu izin gereklidir.",
-        why = "Bu izin olmadan hiçbir uygulama listelenemiyor. Veriler sadece cihazınızda kalır, dışarı gönderilmez.",
-        buttonLabel = "İzin Ver",
+        title = "Uygulama Listesi Izni",
+        description = "Telefonunuzdaki kurulu uygulamalari gorebilmek icin bu izin gereklidir.",
+        why = "Bu izin olmadan hicbir uygulama listelenemez. Veriler sadece cihazinizda kalir, disari gonderilmez.",
+        buttonLabel = "Izin Ver",
         isRequired = true
     ),
     NOTIFICATIONS(
         icon = Icons.Default.Notifications,
-        title = "Bildirim İzni",
-        description = "Organize işlemi tamamlandığında size bildirim göndermek için bu izin kullanılır.",
-        why = "Yalnızca organize işlemi bittikten sonra tek bir bildirim gönderilir. Reklam veya spam yoktur.",
-        buttonLabel = "İzin Ver",
-        isRequired = false
+        title = "Bildirim Izni",
+        description = "Organize islemi tamamlandiginda size bildirim gondermek icin bu izin kullanilir.",
+        why = "Yalnizca organize islemi bittikten sonra tek bir bildirim gonderilir. Reklam veya spam yoktur.",
+        buttonLabel = "Izin Ver",
+        isRequired = false,
+        isSkippable = true
     ),
     ACCESSIBILITY(
         icon = Icons.Default.Accessibility,
-        title = "Erişilebilirlik Servisi",
-        description = "Launcher'da uygulamaları klasörlere fiziksel olarak taşımak için bu servis gereklidir.",
-        why = "Bu servis ekrandaki uygulama ikonlarını bulup 'drag & drop' hareketi yaparak onları klasörlere taşır. Şifre, mesaj veya kişisel veri okumaz.",
-        buttonLabel = "Ayarları Aç",
+        title = "Erisebilirlik Servisi",
+        description = "Erisebilirlik servisi arka planda calisabilmek icin gereklidir.",
+        why = "Bu servis sifre, mesaj veya kisisel veri okumaz. Yalnizca arka plan islemleri icin kullanilir.",
+        buttonLabel = "Ayarlari Ac",
         isRequired = false,
-        isSystemSettings = true
+        isSkippable = true
     ),
     DONE(
         icon = Icons.Default.CheckCircle,
-        title = "Her Şey Hazır!",
-        description = "İzinler verildi. Uygulamalarınız şimdi taranıyor.",
+        title = "Her Sey Hazir!",
+        description = "Harika! Uygulamalariniz simdi taranarak kategorilere ayrilacak.",
         why = "",
-        buttonLabel = "Uygulamayı Aç",
+        buttonLabel = "Basla",
         isRequired = false
     )
 }
-
-// ── Ana ekran ────────────────────────────────────────────────────────────────
 
 @Composable
 fun OnboardingScreen(onFinish: () -> Unit) {
     val context = LocalContext.current
     var stepIndex by remember { mutableStateOf(0) }
-    val steps = PermissionStep.entries.toList()
+    val steps = OnboardingStep.entries.toList()
     val step = steps[stepIndex]
 
-    // İzin durumlarını izle
-    var queryGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.QUERY_ALL_PACKAGES)
-                == PermissionChecker.PERMISSION_GRANTED
-        )
-    }
+    var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
     var notifGranted by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -109,17 +178,34 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             else true
         )
     }
-    var a11yGranted by remember {
-        mutableStateOf(com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning)
+    var a11yGranted by remember { mutableStateOf(isAccessibilityServiceEnabled(context)) }
+
+    val currentStep by rememberUpdatedState(step)
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                a11yGranted = isAccessibilityServiceEnabled(context)
+                launcherSet = isDefaultLauncher(context)
+                // Launcher ayarlandıysa otomatik ilerle
+                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) {
+                    stepIndex++
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Runtime izin launcher'ları
-    val queryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        queryGranted = granted
-        stepIndex++
+    // Android 10+ RoleManager launcher seçim ekranı
+    val roleRequestLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        launcherSet = isDefaultLauncher(context)
+        if (launcherSet) stepIndex++
     }
+
     val notifLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -127,17 +213,23 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         stepIndex++
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundGradient)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = 28.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(56.dp))
 
-            // Animasyonlu ikon
+            // İkon
             AnimatedContent(
                 targetState = stepIndex,
                 transitionSpec = {
@@ -147,40 +239,48 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 label = "icon"
             ) { idx ->
                 val s = steps[idx]
-                Box(
-                    modifier = Modifier
-                        .size(110.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (s == PermissionStep.DONE)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.primaryContainer
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        s.icon, null,
-                        modifier = Modifier.size(52.dp),
-                        tint = if (s == PermissionStep.DONE) Color.White
-                               else MaterialTheme.colorScheme.primary
-                    )
+                val iconBg = if (s == OnboardingStep.SET_LAUNCHER) TealGradient else null
+                Box(contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 1.5.dp,
+                                color = if (s == OnboardingStep.SET_LAUNCHER)
+                                    Color(0xFF00897B).copy(alpha = 0.6f)
+                                else AccentPurple.copy(alpha = 0.4f),
+                                shape = CircleShape
+                            )
+                            .then(
+                                if (iconBg != null)
+                                    Modifier.background(iconBg)
+                                else
+                                    Modifier.background(AccentPurple.copy(alpha = 0.25f))
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            s.icon, null,
+                            modifier = Modifier.size(52.dp),
+                            tint = Color.White
+                        )
+                    }
                 }
             }
 
             Spacer(Modifier.height(32.dp))
 
-            // Sayfa noktaları
+            // Adım göstergesi
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 steps.indices.forEach { i ->
                     Box(
                         modifier = Modifier
-                            .size(if (i == stepIndex) 20.dp else 7.dp, 7.dp)
+                            .size(if (i == stepIndex) 24.dp else 7.dp, 7.dp)
                             .clip(RoundedCornerShape(4.dp))
                             .background(
-                                if (i < stepIndex) MaterialTheme.colorScheme.primary
-                                else if (i == stepIndex) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f)
+                                if (i == stepIndex) AccentPurple
+                                else Color.White.copy(alpha = 0.20f)
                             )
                     )
                 }
@@ -188,7 +288,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
             Spacer(Modifier.height(28.dp))
 
-            // Başlık & açıklama
+            // Başlık + açıklama
             AnimatedContent(targetState = stepIndex, label = "text") { idx ->
                 val s = steps[idx]
                 Column(
@@ -197,74 +297,97 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 ) {
                     Text(
                         s.title,
-                        style = MaterialTheme.typography.headlineSmall,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
+                        color = Color.White,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         s.description,
-                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 16.sp,
+                        color = Color.White.copy(alpha = 0.75f),
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 24.sp
+                        lineHeight = 26.sp
                     )
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // "Neden bu izin?" kartı
-            if (step.why.isNotBlank()) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
+            // Neden gerekli kutusu
+            if (currentStep.why.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White.copy(alpha = 0.08f))
                 ) {
                     Row(
-                        modifier = Modifier.padding(14.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Icon(
-                            Icons.Default.Info, null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                        Box(
+                            modifier = Modifier
+                                .width(3.dp)
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(
+                                    if (currentStep == OnboardingStep.SET_LAUNCHER)
+                                        Color(0xFF00897B)
+                                    else AccentPurple
+                                )
                         )
-                        Text(
-                            step.why,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 18.sp
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                Icons.Default.Info, null,
+                                tint = if (currentStep == OnboardingStep.SET_LAUNCHER)
+                                    Color(0xFF00897B) else AccentPurple,
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .padding(top = 2.dp)
+                            )
+                            Text(
+                                currentStep.why,
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.75f),
+                                lineHeight = 20.sp
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
             }
 
-            // Mevcut izin durumu rozeti
-            val statusText = when (step) {
-                PermissionStep.QUERY_PACKAGES ->
-                    if (queryGranted) "✅ İzin verildi" else null
-                PermissionStep.NOTIFICATIONS ->
-                    if (notifGranted) "✅ İzin verildi" else null
-                PermissionStep.ACCESSIBILITY -> {
-                    // Accessibility durumunu yeniden kontrol et
-                    a11yGranted = com.armutlu.apporganizer.service.LauncherAccessibilityService.isRunning
-                    if (a11yGranted) "✅ Servis aktif" else null
-                }
+            // Durum göstergesi
+            val statusText = when (currentStep) {
+                OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
+                OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
+                OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
+                OnboardingStep.ACCESSIBILITY -> if (a11yGranted) "Servis aktif" else null
                 else -> null
             }
             if (statusText != null) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (currentStep == OnboardingStep.SET_LAUNCHER)
+                                Color(0xFF00897B).copy(alpha = 0.25f)
+                            else AccentPurple.copy(alpha = 0.20f)
+                        )
+                        .padding(12.dp)
                 ) {
                     Text(
-                        statusText,
-                        modifier = Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        "Tamam: $statusText",
+                        fontSize = 14.sp,
+                        color = Color.White,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -274,71 +397,135 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             // Ana buton
-            Button(
-                onClick = {
-                    when (step) {
-                        PermissionStep.WELCOME -> stepIndex++
+            val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
+                TealGradient else ButtonGradient
 
-                        PermissionStep.QUERY_PACKAGES -> {
-                            if (queryGranted) { stepIndex++; return@Button }
-                            queryLauncher.launch(Manifest.permission.QUERY_ALL_PACKAGES)
-                        }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(buttonGradient)
+                    .clickable {
+                        when (currentStep) {
+                            OnboardingStep.WELCOME -> stepIndex++
 
-                        PermissionStep.NOTIFICATIONS -> {
-                            if (notifGranted) { stepIndex++; return@Button }
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                stepIndex++
+                            OnboardingStep.SET_LAUNCHER -> {
+                                if (launcherSet) {
+                                    stepIndex++
+                                    return@clickable
+                                }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    val roleManager = context.getSystemService(RoleManager::class.java)
+                                    if (roleManager != null && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
+                                        roleRequestLauncher.launch(
+                                            roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                                        )
+                                    } else {
+                                        stepIndex++
+                                    }
+                                } else {
+                                    val intent = Intent(Intent.ACTION_MAIN)
+                                        .addCategory(Intent.CATEGORY_HOME)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                }
                             }
-                        }
 
-                        PermissionStep.ACCESSIBILITY -> {
-                            // Erişilebilirlik ayarlarını aç
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            OnboardingStep.QUERY_PACKAGES -> stepIndex++
+
+                            OnboardingStep.NOTIFICATIONS -> {
+                                if (notifGranted) { stepIndex++; return@clickable }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    stepIndex++
+                                }
                             }
-                            context.startActivity(intent)
-                            // Kullanıcı geri döndüğünde "Devam Et" göster
-                        }
 
-                        PermissionStep.DONE -> onFinish()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp)
+                            OnboardingStep.ACCESSIBILITY -> {
+                                if (a11yGranted) {
+                                    stepIndex++
+                                } else {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                            .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+                                    )
+                                }
+                            }
+
+                            OnboardingStep.DONE -> onFinish()
+                        }
+                    },
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = when {
-                        step == PermissionStep.QUERY_PACKAGES && queryGranted -> "Devam Et"
-                        step == PermissionStep.NOTIFICATIONS && notifGranted -> "Devam Et"
-                        step == PermissionStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
-                        else -> step.buttonLabel
+                        currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> "Devam Et"
+                        currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> "Devam Et"
+                        currentStep == OnboardingStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
+                        else -> currentStep.buttonLabel
                     },
-                    fontSize = 16.sp
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
 
-            // Accessibility adımında "Geri Dön" butonu göster
-            if (step == PermissionStep.ACCESSIBILITY && !a11yGranted) {
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = { stepIndex++ },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(12.dp)
+            // Accessibility için özel "Atla" butonu
+            if (currentStep == OnboardingStep.ACCESSIBILITY && !a11yGranted) {
+                Spacer(Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White.copy(alpha = 0.12f))
+                        .clickable { stepIndex++ },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Şimdi Değil, Atla")
+                    Text(
+                        "Simdi Degil, Atla",
+                        fontSize = 15.sp,
+                        color = Color.White.copy(alpha = 0.80f)
+                    )
                 }
             }
 
-            // Zorunlu olmayan adımlarda "Atla" seçeneği
-            if (!step.isRequired &&
-                step != PermissionStep.WELCOME &&
-                step != PermissionStep.DONE &&
-                !(step == PermissionStep.ACCESSIBILITY && !a11yGranted)
+            // Launcher adımı için atla butonu
+            if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
+                Spacer(Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .clickable { stepIndex++ }
+                        .padding(vertical = 12.dp, horizontal = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Simdi Degil",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.50f)
+                    )
+                }
+            }
+
+            // Genel atla butonu (isteğe bağlı adımlar)
+            if (currentStep.isSkippable &&
+                currentStep != OnboardingStep.SET_LAUNCHER &&
+                currentStep != OnboardingStep.ACCESSIBILITY
             ) {
-                TextButton(onClick = { stepIndex++ }) {
-                    Text("Atla", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .clickable { stepIndex++ }
+                        .padding(vertical = 12.dp, horizontal = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Atla",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.50f)
+                    )
                 }
             } else {
                 Spacer(Modifier.height(40.dp))

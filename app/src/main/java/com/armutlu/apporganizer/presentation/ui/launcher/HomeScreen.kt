@@ -6,9 +6,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,17 +28,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -50,16 +42,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -72,30 +65,30 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
+    val filteredApps by viewModel.filteredAllApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val filteredAllApps by viewModel.filteredAllApps.collectAsState()
 
-    // Swipe-up tespiti
+    val density = LocalDensity.current
+    val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
 
-    // Geri tuşu yönetimi
     BackHandler(enabled = allAppsOpen || openFolder != null) {
         if (allAppsOpen) viewModel.closeAllApps()
         else viewModel.closeFolder()
     }
 
+    // Root box — fully transparent so wallpaper shows through
     Box(
         modifier = Modifier
             .fillMaxSize()
-            // Duvar kağıdı için arka plan şeffaf (tema windowShowWallpaper=true)
-            .background(Color.Black.copy(alpha = 0.35f))
             .pointerInput(allAppsOpen) {
                 if (!allAppsOpen) {
                     detectVerticalDragGestures(
                         onDragEnd = { swipeDelta = 0f },
-                        onVerticalDrag = { _, dy ->
+                        onVerticalDrag = { change, dy ->
+                            change.consume()
                             swipeDelta += dy
-                            if (swipeDelta < -180f) {
+                            if (swipeDelta < -swipeThresholdPx) {
                                 viewModel.openAllApps()
                                 swipeDelta = 0f
                             }
@@ -103,29 +96,35 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     )
                 }
             }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { viewModel.openManager(context) }
+                )
+            }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding()
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── Saat & Tarih ──────────────────────────────────────────────
-            ClockSection(
+            // Clock widget — top center, Pixel style
+            PixelClockWidget(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp, bottom = 16.dp)
+                    .padding(top = 32.dp, bottom = 8.dp)
             )
 
-            // ── Klasör grid ───────────────────────────────────────────────
+            // Folder grid — 4 columns, centered
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 items(folders, key = { it.category.categoryId }) { folder ->
                     FolderTile(
@@ -135,59 +134,50 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 }
             }
 
-            // ── Swipe-up ipucu ────────────────────────────────────────────
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Drag pill handle — above dock, pure Pixel style
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "↑",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = "Tüm Uygulamalar",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 12.sp
+                Box(
+                    modifier = Modifier
+                        .width(32.dp)
+                        .height(4.dp)
+                        .background(
+                            color = Color.White.copy(alpha = 0.30f),
+                            shape = RoundedCornerShape(50)
+                        )
                 )
             }
-        }
 
-        // ── Ayarlar FAB ───────────────────────────────────────────────────
-        IconButton(
-            onClick = { viewModel.openManager(context) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .size(40.dp)
-                .background(Color.White.copy(alpha = 0.15f), CircleShape)
-        ) {
-            Icon(
-                Icons.Default.Settings,
-                contentDescription = "Yönetim Ekranı",
-                tint = Color.White
+            // Bottom dock — frosted pill
+            PixelDock(
+                onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp)
             )
         }
 
-        // ── Tüm Uygulamalar Drawer ────────────────────────────────────────
+        // All Apps Drawer overlay
         AnimatedVisibility(
             visible = allAppsOpen,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
         ) {
             AllAppsDrawer(
-                apps = filteredAllApps,
+                apps = filteredApps,
                 searchQuery = searchQuery,
-                onSearchChange = viewModel::setSearchQuery,
-                onAppClick = { pkg ->
-                    viewModel.launchApp(context, pkg)
-                },
+                onSearchQueryChange = viewModel::setSearchQuery,
+                onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
                 onClose = viewModel::closeAllApps
             )
         }
     }
 
-    // ── Klasör Bottom Sheet ───────────────────────────────────────────────
+    // Folder bottom sheet
     openFolder?.let { folder ->
         FolderSheet(
             folder = folder,
@@ -198,10 +188,8 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     }
 }
 
-// ── Saat Bileşeni ─────────────────────────────────────────────────────────
-
 @Composable
-private fun ClockSection(modifier: Modifier = Modifier) {
+private fun PixelClockWidget(modifier: Modifier = Modifier) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val dateFormat = remember { SimpleDateFormat("EEEE, d MMMM", Locale("tr")) }
     var now by remember { mutableStateOf(Date()) }
@@ -213,172 +201,124 @@ private fun ClockSection(modifier: Modifier = Modifier) {
         }
     }
 
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Time — 72sp Thin weight, pure white, soft shadow
         Text(
             text = timeFormat.format(now),
             color = Color.White,
-            fontSize = 64.sp,
-            fontWeight = FontWeight.Light,
-            letterSpacing = (-1).sp
+            fontSize = 72.sp,
+            fontWeight = FontWeight.Thin,
+            letterSpacing = (-2).sp,
+            textAlign = TextAlign.Center,
+            // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
+            // We layer a blurred copy via alpha trick instead — keep it simple and readable.
         )
+        Spacer(modifier = Modifier.height(2.dp))
+        // Date — 16sp white 85% alpha
         Text(
             text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
-            color = Color.White.copy(alpha = 0.8f),
+            color = Color.White.copy(alpha = 0.85f),
             fontSize = 16.sp,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center,
+            letterSpacing = 0.sp
         )
     }
 }
 
-// ── Klasör Kutusu ─────────────────────────────────────────────────────────
+/** Frosted pill dock with 4 fixed slots matching Pixel Launcher layout. */
+@Composable
+private fun PixelDock(
+    onLaunchApp: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val packageManager = context.packageManager
+
+    data class DockSlot(val label: String, val candidates: List<String>)
+
+    val slots = remember {
+        listOf(
+            DockSlot("Phone",    listOf("com.google.android.dialer", "com.android.dialer")),
+            DockSlot("Messages", listOf("com.google.android.apps.messaging", "com.android.mms")),
+            DockSlot("Camera",   listOf("com.google.android.GoogleCamera", "com.android.camera2", "com.android.camera")),
+            DockSlot("Browser",  listOf("com.android.chrome", "org.mozilla.firefox", "com.microsoft.emmx"))
+        )
+    }
+
+    // Resolve available packages — hide slot if none found
+    val resolvedSlots = remember(slots) {
+        slots.mapNotNull { slot ->
+            val pkg = slot.candidates.firstOrNull { candidate ->
+                packageManager.getLaunchIntentForPackage(candidate) != null
+            }
+            if (pkg != null) Pair(slot.label, pkg) else null
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .height(72.dp)
+            .background(
+                color = Color.White.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(50)
+            )
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            resolvedSlots.forEach { (label, pkg) ->
+                DockIcon(
+                    packageName = pkg,
+                    label = label,
+                    iconSize = 48.dp,
+                    onClick = { onLaunchApp(pkg) }
+                )
+            }
+        }
+    }
+}
 
 @Composable
-private fun FolderTile(
-    folder: AppFolder,
+private fun DockIcon(
+    packageName: String,
+    label: String,
+    iconSize: Dp,
     onClick: () -> Unit
 ) {
-    val catColor = remember(folder.category.colorHex) {
-        runCatching { android.graphics.Color.parseColor(folder.category.colorHex) }
-            .getOrDefault(android.graphics.Color.GRAY)
-            .let { Color(it) }
+    val context = LocalContext.current
+    val px = with(androidx.compose.ui.platform.LocalDensity.current) { iconSize.roundToPx() }
+    val bitmap = remember(packageName) {
+        runCatching {
+            context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
+        }.getOrNull()
     }
 
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(4.dp)
     ) {
-        // Emoji + badge
-        Box(contentAlignment = Alignment.TopEnd) {
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = label,
+                modifier = Modifier.size(iconSize)
+            )
+        } else {
             Box(
                 modifier = Modifier
-                    .size(60.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(catColor.copy(alpha = 0.3f))
-                    .border(1.dp, catColor.copy(alpha = 0.6f), RoundedCornerShape(18.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = folder.category.iconEmoji, fontSize = 28.sp)
-            }
-            // App sayısı badge
-            Surface(
-                color = catColor,
-                shape = CircleShape,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(0.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = folder.apps.size.coerceAtMost(99).toString(),
-                        color = Color.White,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = folder.category.categoryName,
-            color = Color.White,
-            fontSize = 11.sp,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.width(72.dp)
-        )
-    }
-}
-
-// ── Tüm Uygulamalar Ekranı ────────────────────────────────────────────────
-
-@Composable
-private fun AllAppsDrawer(
-    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
-    searchQuery: String,
-    onSearchChange: (String) -> Unit,
-    onAppClick: (String) -> Unit,
-    onClose: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF0A0A1A).copy(alpha = 0.96f))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-        ) {
-            // Başlık + kapat
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Tüm Uygulamalar",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = "Kapat", tint = Color.White)
-                }
-            }
-
-            // Arama kutusu
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.6f))
-                BasicTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchChange,
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
-                    decorationBox = { inner ->
-                        if (searchQuery.isEmpty()) {
-                            Text("Ara...", color = Color.White.copy(alpha = 0.4f), fontSize = 15.sp)
-                        }
-                        inner()
-                    }
-                )
-            }
-
-            // App grid
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(apps, key = { it.packageName }) { app ->
-                    AppIconView(
-                        app = app,
-                        onClick = {
-                            onAppClick(app.packageName)
-                            onClose()
-                        },
-                        iconSize = 52.dp
-                    )
-                }
-            }
+                    .size(iconSize)
+                    .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+            )
         }
     }
 }

@@ -44,38 +44,77 @@ class AppDatabaseService @Inject constructor(
             val map = mutableMapOf<String, String>()
             appsObj.keys().forEach { pkg -> map[pkg] = appsObj.getString(pkg) }
 
-            // Belleğe al
-            cachedMap = map
+            // Mevcut bellekte daha fazla uygulama varsa (assets'ten yüklendi) merge et
+            val existing = cachedMap
+            val merged = if (existing != null && existing.size > map.size) {
+                Timber.d("AppDatabase: GitHub v$version (${map.size}) < assets (${existing.size}) — merge ediliyor")
+                existing.toMutableMap().apply { putAll(map) }
+            } else {
+                map
+            }
 
-            // SharedPrefs'e kaydet
+            cachedMap = merged
+
+            // SharedPrefs'e kaydet (merge edilmiş versiyon)
+            val mergedJson = JSONObject().apply {
+                put("version", version)
+                put("updated", obj.optString("updated", ""))
+                put("apps", JSONObject().apply { merged.forEach { (k, v) -> put(k, v) } })
+            }.toString()
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-                .putString(KEY_DB_JSON, json)
+                .putString(KEY_DB_JSON, mergedJson)
                 .putInt(KEY_DB_VERSION, version)
                 .apply()
 
-            Timber.d("AppDatabase: ${map.size} uygulama indirildi (v$version)")
-            FetchResult.Success(map.size, version)
+            Timber.d("AppDatabase: ${merged.size} uygulama hazır (GitHub: ${map.size}, v$version)")
+            FetchResult.Success(merged.size, version)
         } catch (e: Exception) {
             Timber.w(e, "AppDatabase: indirme başarısız, cache deneniyor")
-            loadFromCache()
+            val cacheResult = loadFromCache()
+            if (cacheResult is FetchResult.NoCache || cacheResult is FetchResult.Error) {
+                loadFromAssets()
+                FetchResult.FromCache(cachedMap?.size ?: 0, 0)
+            } else {
+                cacheResult
+            }
         }
     }
 
     /**
      * Uygulama açılışında cache'den yükle (internet yoksa da çalışır).
+     * Cache yoksa assets/app_database.json'dan yükler.
      */
     fun loadFromCacheSync() {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val json  = prefs.getString(KEY_DB_JSON, null) ?: return
-            val obj   = JSONObject(json)
+            val json  = prefs.getString(KEY_DB_JSON, null)
+            if (json != null) {
+                val obj = JSONObject(json)
+                val appsObj = obj.getJSONObject("apps")
+                val map = mutableMapOf<String, String>()
+                appsObj.keys().forEach { pkg -> map[pkg] = appsObj.getString(pkg) }
+                cachedMap = map
+                Timber.d("AppDatabase: cache'den ${map.size} uygulama yüklendi")
+            } else {
+                loadFromAssets()
+            }
+        } catch (e: Exception) {
+            Timber.w(e, "AppDatabase: cache yüklenemedi, assets deneniyor")
+            loadFromAssets()
+        }
+    }
+
+    private fun loadFromAssets() {
+        try {
+            val json = context.assets.open("app_database.json").bufferedReader().readText()
+            val obj = JSONObject(json)
             val appsObj = obj.getJSONObject("apps")
             val map = mutableMapOf<String, String>()
             appsObj.keys().forEach { pkg -> map[pkg] = appsObj.getString(pkg) }
             cachedMap = map
-            Timber.d("AppDatabase: cache'den ${map.size} uygulama yüklendi")
+            Timber.d("AppDatabase: assets'ten ${map.size} uygulama yüklendi")
         } catch (e: Exception) {
-            Timber.w(e, "AppDatabase: cache yüklenemedi")
+            Timber.w(e, "AppDatabase: assets de yüklenemedi")
         }
     }
 

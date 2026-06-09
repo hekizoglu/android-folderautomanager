@@ -160,4 +160,13 @@ interface AppDao {
      */
     @Query("UPDATE apps SET categoryId = 'uncategorized'")
     suspend fun resetAllAppCategories()
+
+    @Query("UPDATE apps SET usageCount = usageCount + 1 WHERE packageName = :packageName")
+    suspend fun incrementUsageCount(packageName: String)
+
+    @Query("UPDATE apps SET usageCount = :count WHERE packageName = :packageName")
+    suspend fun updateUsageCount(packageName: String, count: Long)
+
+    @Query("SELECT * FROM apps ORDER BY usageCount DESC, appName ASC")
+    fun getAllAppsSortedByUsage(): Flow<List<AppInfo>>
 }
