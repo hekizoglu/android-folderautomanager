@@ -1,12 +1,9 @@
 package com.armutlu.apporganizer
 
-import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.usecase.AppClassifier
-import com.armutlu.apporganizer.domain.usecase.KeywordDatabase
-import io.mockk.every
-import io.mockk.mockk
+import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.KeywordDatabase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -27,14 +24,11 @@ import org.junit.Test
  */
 class AppClassifierEdgeCaseTest {
 
-    private lateinit var mockDbService: AppDatabaseService
     private lateinit var classifier: AppClassifier
 
     @Before
     fun setup() {
-        mockDbService = mockk()
-        every { mockDbService.getCategoryForPackage(any()) } returns null
-        classifier = AppClassifier(mockDbService)
+        classifier = AppClassifier()
     }
 
     // ─── 1. Bilinen Doğru Sınıflandırmalar ───────────────────────────────────

@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -78,6 +79,11 @@ fun HomeScreen(viewModel: LauncherViewModel) {
 
     val haptic = LocalHapticFeedback.current
     val dockPackages by viewModel.dockPackages.collectAsState()
+
+    // Drag & drop state
+    var dragFromIndex by remember { mutableStateOf<Int?>(null) }
+    var dragToIndex   by remember { mutableStateOf<Int?>(null) }
+    var draggingFolders by remember { mutableStateOf<List<AppFolder>?>(null) }
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
@@ -175,6 +181,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // İzin uyarı banner'ı (kapatılabilir)
+            PermissionsBanner()
+
             // Clock widget — top center, Pixel style
             PixelClockWidget(
                 modifier = Modifier
@@ -192,13 +201,63 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(folders, key = { it.category.categoryId }) { folder ->
+                val displayFolders = draggingFolders ?: folders
+                items(displayFolders.size) { index ->
+                    val folder = displayFolders[index]
+                    val isDragging = dragFromIndex == index
                     FolderTile(
                         folder = folder,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.openFolder(folder)
-                        }
+                            if (dragFromIndex == null) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                viewModel.openFolder(folder)
+                            }
+                        },
+                        modifier = Modifier
+                            .pointerInput(index) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        dragFromIndex = index
+                                        draggingFolders = folders.toMutableList()
+                                    },
+                                    onDrag = { change, _ ->
+                                        change.consume()
+                                        val from = dragFromIndex ?: return@detectDragGesturesAfterLongPress
+                                        // Tahmini hedef indeks: her tile yaklaşık 90dp
+                                        val tileWidthPx = with(density) { 90.dp.toPx() }
+                                        val dx = change.position.x
+                                        val dy = change.position.y
+                                        val colCount = 4
+                                        val colOffset = (dx / tileWidthPx).toInt().coerceIn(-1, 1)
+                                        val rowOffset = (dy / tileWidthPx).toInt().coerceIn(-1, 1)
+                                        val to = (from + rowOffset * colCount + colOffset)
+                                            .coerceIn(0, (draggingFolders?.lastIndex ?: 0))
+                                        if (to != dragToIndex) {
+                                            dragToIndex = to
+                                            draggingFolders = draggingFolders?.toMutableList()?.also { list ->
+                                                if (from != to && from in list.indices && to in list.indices) {
+                                                    val item = list.removeAt(from)
+                                                    list.add(to, item)
+                                                    dragFromIndex = to
+                                                }
+                                            }
+                                        }
+                                    },
+                                    onDragEnd = {
+                                        draggingFolders?.let { viewModel.reorderFolders(context, it) }
+                                        dragFromIndex = null
+                                        dragToIndex = null
+                                        draggingFolders = null
+                                    },
+                                    onDragCancel = {
+                                        dragFromIndex = null
+                                        dragToIndex = null
+                                        draggingFolders = null
+                                    }
+                                )
+                            }
+                            .then(if (isDragging) Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp)) else Modifier)
                     )
                 }
             }

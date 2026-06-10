@@ -26,8 +26,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import com.armutlu.apporganizer.presentation.ui.theme.AppFont
+import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
+import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.DockPrefs
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +52,10 @@ fun SettingsScreen(
     val clipboard      = LocalClipboardManager.current
     val context        = LocalContext.current
     var debugExpanded  by remember { mutableStateOf(false) }
+    val scope          = rememberCoroutineScope()
+    val themePrefs     = remember { ThemePreferences(context) }
+    val currentTheme   by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
+    val currentFont    by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
 
     fun isDefaultLauncher(): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -77,6 +91,53 @@ fun SettingsScreen(
         ) {
 
             // â”€â”€ Görünüm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tema ─────────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Görünüm") }
+            item {
+                SettingsCard {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Renk Teması", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            items(AppTheme.entries.toList()) { theme ->
+                                val isSelected = currentTheme == theme
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .clickable { scope.launch { themePrefs.setTheme(theme) } }
+                                        .padding(4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(44.dp)
+                                            .clip(CircleShape)
+                                            .background(theme.primary)
+                                            .border(
+                                                width = if (isSelected) 3.dp else 1.dp,
+                                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                                shape = CircleShape
+                                            )
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(theme.label, fontSize = 11.sp, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                        Text("Yazı Tipi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            AppFont.entries.forEach { font ->
+                                val isSelected = currentFont == font
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { scope.launch { themePrefs.setFont(font) } },
+                                    label = { Text(font.label, fontSize = 12.sp) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // ── Launcher ─────────────────────────────────────────────────────
             item { SettingsSectionTitle("Launcher") }
             item {

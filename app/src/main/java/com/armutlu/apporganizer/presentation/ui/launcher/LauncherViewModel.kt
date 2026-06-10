@@ -20,12 +20,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 private const val PREFS_NAME = "launcher_prefs"
 private const val KEY_DOCK_PACKAGES = "dock_packages"
+private const val KEY_FOLDER_ORDER = "folder_order"
 private const val DOCK_MAX_SIZE = 4
 
 data class AppFolder(
@@ -61,6 +63,9 @@ class LauncherViewModel @Inject constructor(
     private val repository: AppRepository
 ) : AndroidViewModel(application) {
 
+    // Kullanıcı tarafından drag&drop ile değiştirilen klasör sırası (categoryId listesi)
+    private val _folderOrder = MutableStateFlow<List<String>>(emptyList())
+
     private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
     val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
@@ -73,9 +78,17 @@ class LauncherViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    val folders: StateFlow<List<AppFolder>> = repository.getAllAppsFlow()
-        .map { buildFolders(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    val folders: StateFlow<List<AppFolder>> = combine(
+        repository.getAllAppsFlow(),
+        _folderOrder
+    ) { apps, order ->
+        val built = buildFolders(apps)
+        if (order.isEmpty()) built
+        else {
+            val orderMap = order.mapIndexed { i, id -> id to i }.toMap()
+            built.sortedBy { orderMap[it.category.categoryId] ?: Int.MAX_VALUE }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     val allApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { buildAllApps(it) }
@@ -146,6 +159,19 @@ class LauncherViewModel @Inject constructor(
 
     fun loadDockPackages(context: Context) {
         _dockPackages.value = DockPrefs.getDockPackages(context)
+        // Kayıtlı klasör sırasını da yükle
+        val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val saved = prefs.getString(KEY_FOLDER_ORDER, null)
+        if (!saved.isNullOrBlank()) {
+            _folderOrder.value = saved.split(",").filter { it.isNotBlank() }
+        }
+    }
+
+    fun reorderFolders(context: Context, newOrder: List<AppFolder>) {
+        val ids = newOrder.map { it.category.categoryId }
+        _folderOrder.value = ids
+        context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .edit().putString(KEY_FOLDER_ORDER, ids.joinToString(",")).apply()
     }
 
     fun saveDockPackages(context: Context, packages: List<String>) {

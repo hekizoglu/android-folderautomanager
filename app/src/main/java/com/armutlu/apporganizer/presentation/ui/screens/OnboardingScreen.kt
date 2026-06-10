@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,7 +62,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import com.armutlu.apporganizer.presentation.ui.theme.AppFont
+import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
+import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
+import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -152,6 +159,15 @@ private enum class OnboardingStep(
         isRequired = true,
         isSkippable = true
     ),
+    THEME_SELECT(
+        icon = Icons.Default.Info,
+        title = "Tema Secin",
+        description = "Uygulamanin gorunumunu kisiselleştirin. Daha sonra Ayarlar ekranindan degistirebilirsiniz.",
+        why = "",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = true
+    ),
     DONE(
         icon = Icons.Default.CheckCircle,
         title = "Her Sey Hazir!",
@@ -179,6 +195,10 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         )
     }
     var a11yGranted by remember { mutableStateOf(isAccessibilityServiceEnabled(context)) }
+    var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
+    var selectedFont  by remember { mutableStateOf(AppFont.DEFAULT) }
+    val scope = rememberCoroutineScope()
+    val themePrefs = remember { ThemePreferences(context) }
 
     val currentStep by rememberUpdatedState(step)
 
@@ -394,6 +414,78 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 Spacer(Modifier.height(12.dp))
             }
 
+            // Tema seçim UI — sadece THEME_SELECT adımında göster
+            if (currentStep == OnboardingStep.THEME_SELECT) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Renk Teması",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.6f),
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(AppTheme.entries) { theme ->
+                        val isSelected = selectedTheme == theme
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clickable { selectedTheme = theme }
+                                .padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(CircleShape)
+                                    .background(theme.primary)
+                                    .border(
+                                        width = if (isSelected) 3.dp else 1.dp,
+                                        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.3f),
+                                        shape = CircleShape
+                                    )
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                theme.label,
+                                fontSize = 11.sp,
+                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Yazı Tipi",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.6f),
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AppFont.entries.forEach { font ->
+                        val isSelected = selectedFont == font
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (isSelected) AccentPurple else Color.White.copy(alpha = 0.12f)
+                                )
+                                .clickable { selectedFont = font }
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                font.label,
+                                fontSize = 13.sp,
+                                color = Color.White,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
             Spacer(Modifier.height(8.dp))
 
             // Ana buton
@@ -452,6 +544,14 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                             .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
                                     )
                                 }
+                            }
+
+                            OnboardingStep.THEME_SELECT -> {
+                                scope.launch {
+                                    themePrefs.setTheme(selectedTheme)
+                                    themePrefs.setFont(selectedFont)
+                                }
+                                stepIndex++
                             }
 
                             OnboardingStep.DONE -> {

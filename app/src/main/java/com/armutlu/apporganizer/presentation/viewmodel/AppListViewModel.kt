@@ -13,7 +13,7 @@ import com.armutlu.apporganizer.service.LauncherAccessibilityService
 import com.armutlu.apporganizer.utils.LauncherOrganizer
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.usecase.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreenState
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import dagger.hilt.android.lifecycle.HiltViewModel

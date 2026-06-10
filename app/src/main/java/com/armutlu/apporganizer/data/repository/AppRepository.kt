@@ -4,7 +4,7 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.usecase.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber

@@ -1,12 +1,9 @@
 package com.armutlu.apporganizer
 
-import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.usecase.AppClassifier
-import com.armutlu.apporganizer.domain.usecase.KeywordDatabase
-import io.mockk.every
-import io.mockk.mockk
+import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.KeywordDatabase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -23,14 +20,11 @@ import org.junit.Test
  */
 class AppClassifierTest {
 
-    private lateinit var mockDbService: AppDatabaseService
     private lateinit var classifier: AppClassifier
 
     @Before
     fun setup() {
-        mockDbService = mockk()
-        every { mockDbService.getCategoryForPackage(any()) } returns null // varsayılan: online DB'de yok
-        classifier = AppClassifier(mockDbService)
+        classifier = AppClassifier()
     }
 
     // ─── Exact Match ─────────────────────────────────────────────────────────
@@ -57,23 +51,6 @@ class AppClassifierTest {
     fun `Discord exact match returns CAT_SOCIAL`() {
         val app = appInfo("com.discord", "Discord")
         assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
-    }
-
-    // ─── Online DB Önceliği ───────────────────────────────────────────────────
-
-    @Test
-    fun `Online DB overrides exact match`() {
-        // Instagram normalde exact match ile social, ama online DB farklı diyorsa kazanır
-        every { mockDbService.getCategoryForPackage("com.instagram.android") } returns Category.CAT_OTHER
-        val app = appInfo("com.instagram.android", "Instagram")
-        assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
-    }
-
-    @Test
-    fun `Online DB result is used when available`() {
-        every { mockDbService.getCategoryForPackage("com.unknown.app") } returns Category.CAT_FINANCE
-        val app = appInfo("com.unknown.app", "Unknown App")
-        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(app))
     }
 
     // ─── Keyword Eşleşmesi ────────────────────────────────────────────────────

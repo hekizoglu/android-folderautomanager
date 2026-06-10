@@ -1,7 +1,7 @@
 package com.armutlu.apporganizer
 
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.usecase.KeywordDatabase
+import com.armutlu.apporganizer.domain.usecase.classify.KeywordDatabase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
