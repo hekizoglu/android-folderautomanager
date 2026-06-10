@@ -145,6 +145,8 @@ dependencies {
 
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    // Drawable → Compose painter (uygulama ikonu async yükleme için)
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.32.0")
     implementation("com.google.android.material:material:1.11.0")
 
     // Testing

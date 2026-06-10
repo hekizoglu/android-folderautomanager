@@ -31,7 +31,11 @@ data class AppInfo(
 
     val usageCount: Long = 0L,
 
-    val notificationCount: Int = 0
+    val lastUsedTimestamp: Long = 0L,
+
+    val notificationCount: Int = 0,
+
+    val notificationImportance: Int = 0
 ) : Serializable {
     
     companion object {
