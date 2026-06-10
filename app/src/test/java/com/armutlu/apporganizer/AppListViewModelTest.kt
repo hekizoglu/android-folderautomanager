@@ -5,7 +5,7 @@ import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.remote.FetchResult
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.armutlu.apporganizer.domain.usecase.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import io.mockk.coEvery

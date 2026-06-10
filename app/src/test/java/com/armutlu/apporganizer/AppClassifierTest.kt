@@ -201,7 +201,7 @@ class AppClassifierTest {
 
     @Test
     fun `empty package name with unknown app name returns CAT_OTHER`() {
-        val app = appInfo("", "SomeRandomApp")
+        val app = appInfo("", "ZzqXvbwrst999")
         assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
     }
 

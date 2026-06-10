@@ -37,7 +37,7 @@ object KeywordDatabase {
             "news", "newspaper", "article", "press", "tribune", "gazette",
             "daily", "breaking", "headline", "media", "journalist", "reader",
             "rss", "feed", "bbc", "cnn", "reuters", "bloomberg", "anadolu",
-            "dha", "ntvmsnbc", "haberturk", "milliyet", "hurriyet"
+            "dha", "ntvmsnbc", "haberturk", "habertürk", "milliyet", "hurriyet"
         ),
         Category.CAT_HEALTH to listOf(
             "health", "fitness", "workout", "gym", "exercise", "sport",

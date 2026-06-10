@@ -9,8 +9,8 @@ import org.junit.Test
 class CategoryTest {
 
     @Test
-    fun `getDefaultCategories returns 11 categories`() {
-        assertEquals(11, Category.getDefaultCategories().size)
+    fun `getDefaultCategories returns 15 categories`() {
+        assertEquals(15, Category.getDefaultCategories().size)
     }
 
     @Test
@@ -20,7 +20,8 @@ class CategoryTest {
             Category.CAT_SOCIAL, Category.CAT_PRODUCTIVITY, Category.CAT_GAMES,
             Category.CAT_SHOPPING, Category.CAT_NEWS, Category.CAT_HEALTH,
             Category.CAT_FINANCE, Category.CAT_EDUCATION, Category.CAT_UTILITIES,
-            Category.CAT_OTHER, Category.CAT_UNCATEGORIZED
+            Category.CAT_TRAVEL, Category.CAT_ENTERTAINMENT, Category.CAT_FOOD,
+            Category.CAT_PHOTOGRAPHY, Category.CAT_OTHER, Category.CAT_UNCATEGORIZED
         ).forEach { id ->
             assertTrue("$id eksik", ids.contains(id))
         }

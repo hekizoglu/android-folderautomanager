@@ -23,7 +23,7 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 
 ### Her görev sonunda otomatik olarak:
 1. **Build al** — `.\gradlew assembleDebug`
-2. **Emülatörde test et** — `Pixel6_AOSP33` veya `Pixel7_API33` üzerinde
+2. **Emülatörde test et** — `Pixel6_API33` (AOSP) veya `Xiaomi_HyperOS_API34` (Android 14, 395dpi) üzerinde
 3. **Hata varsa düzelt** — DeepSeek ile analiz et, düzelt, tekrar build
 4. **Test geçtiyse commit + push** — açıklayıcı commit mesajı
 5. **Telegram'a gönder** — APK + kısa durum raporu
@@ -238,11 +238,14 @@ cd "c:\Users\huseyinekizoglu\android-folderautomanager"
 .\gradlew assembleDebug
 
 # Emülatör başlat
-$em = "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe"
-Start-Process $em -ArgumentList "-avd","Pixel6_AOSP33","-no-snapshot-save"
+$em = "C:\Android\Sdk\emulator\emulator.exe"
+# Pixel 6 (API 33 AOSP):
+Start-Process $em -ArgumentList "-avd","Pixel6_API33","-no-snapshot-save"
+# Xiaomi HyperOS (API 34, Android 14, 1080x2400 395dpi):
+Start-Process $em -ArgumentList "-avd","Xiaomi_HyperOS_API34","-no-snapshot-save"
 
 # APK yükle ve başlat
-$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+$adb = "C:\Android\Sdk\platform-tools\adb.exe"
 & $adb install -r app\build\outputs\apk\debug\app-debug.apk
 & $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.launcher.LauncherActivity"
 ```
