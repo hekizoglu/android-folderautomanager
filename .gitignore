@@ -28,3 +28,4 @@ Thumbs.db
 entities.json
 mempalace.yaml
 .claude/
+.env
