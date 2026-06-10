@@ -21,6 +21,11 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 - **Tüm değişiklikler `main` branch üzerinde** — yeni branch oluşturma
 - `git add` + `git commit` + `git push origin main` — her build sonrası
 
+### Her konuşma açılışında otomatik olarak:
+1. **GitHub'dan çek** — `git fetch origin && git status` ile yerel/uzak fark kontrol et
+2. **Güncel değilse pull** — `git pull origin main` ile senkronize et
+3. **Özellik listesini doğrula** — aşağıdaki "Her Konuşmada Özellik Kontrol Listesi" tablosunu koda karşı kontrol et, ❌ olanları o konuşmada düzelt
+
 ### Her görev sonunda otomatik olarak:
 1. **Build al** — `.\gradlew assembleDebug`
 2. **Emülatörde test et** — `Pixel6_API33` (AOSP) veya `Xiaomi_HyperOS_API34` (Android 14, 395dpi) üzerinde
@@ -271,14 +276,48 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 
 ---
 
-## DeepSeek Bulgularından Bekleyen Düzeltmeler
+## Her Konuşmada Özellik Kontrol Listesi
 
-Sıradaki iterasyonda uygulanacaklar (öncelik sırasıyla):
-1. ~~**Icon loading** → async yükleme~~ ✅ `produceState(IO)` + accompanist ile tamamlandı
-2. **AppListScreen** → küçük composable'lara böl (dosya çok büyük)
-3. **Haptic feedback** → klasör açma/kapama ✅ (kısmen var), uygulama başlatma
-4. **Dock** → sabit 4 uygulama yerine kullanıcı seçimi UI (DockPrefs var, ekran yok)
-5. **Ayarlar ekranı** → launcher'ı varsayılan yapma butonu ekle
+**KURAL: Her konuşmanın başında bu listeyi koda karşı doğrula. Eksik olan varsa o konuşmada düzelt.**
+
+| # | Özellik | Dosya | Kontrol Komutu |
+|---|---------|-------|----------------|
+| 1 | Turkuaz tema `#00897B` + `#26C6DA` | `theme/Theme.kt` | `grep -n "00897B\|26C6DA" app/src/.../Theme.kt` |
+| 2 | Launcher HOME+DEFAULT manifest | `AndroidManifest.xml` | `grep -n "HOME\|DEFAULT" .../AndroidManifest.xml` |
+| 3 | Launcher dialog — RoleManager (ilk açılış + Ayarlar) | `MainActivity.kt`, `SettingsScreen.kt`, `OnboardingScreen.kt` | `grep -rn "RoleManager\|ROLE_HOME" app/src` |
+| 4 | AllAppsDrawer transparent bg + blur(20.dp) | `AllAppsDrawer.kt` | `grep -n "blur\|Transparent" .../AllAppsDrawer.kt` |
+| 5 | Icon async `produceState` + LRU cache 200 | `AppIconView.kt`, `FolderTile.kt` | `grep -rn "produceState\|iconCacheInternal" app/src` |
+| 6 | Haptic — long-press klasör/uygulama | `HomeScreen.kt`, `FolderSheet.kt`, `AllAppsDrawer.kt` | `grep -rn "HapticFeedback" app/src` |
+| 7 | Haptic — uygulama başlatma (tap) | `HomeScreen.kt`, `AllAppsDrawer.kt` | `grep -n "launchApp\|startActivity" + haptic` |
+| 8 | DockEditSheet — kullanıcı dock seçimi | `DockEditSheet.kt` | `grep -n "DockEditSheet\|DockEdit" app/src` |
+| 9 | SettingsScreen — varsayılan launcher butonu | `SettingsScreen.kt` | `grep -n "Varsayılan Launcher\|ROLE_HOME" .../SettingsScreen.kt` |
+| 10 | Bildirim badge UI | `AppIconView.kt`, `FolderTile.kt` | `grep -rn "notificationCount\|badgeText" app/src` |
+| 11 | NotificationListenerService — gerçek veri | `services/` altında servis dosyası | `find app/src -name "*Notification*Service*"` |
+| 12 | AppListScreen refactor — max 300 satır | `AppListScreen.kt` | `wc -l .../AppListScreen.kt` |
+
+### Son Kontrol Sonuçları (2026-06-10)
+| # | Durum |
+|---|-------|
+| 1 | ✅ Theme.kt doğru |
+| 2 | ✅ Manifest satır 71-72 |
+| 3 | ✅ 3 dosyada aktif |
+| 4 | ✅ blur(20.dp) satır 239 |
+| 5 | ✅ LRU(200) + produceState |
+| 6 | ✅ Long-press haptic var |
+| 7 | ❌ Tap başlatmada haptic yok |
+| 8 | ✅ DockEditSheet tam UI |
+| 9 | ✅ SettingsScreen'de var |
+| 10 | ✅ Badge UI var |
+| 11 | ❌ NotificationListenerService yok — notificationCount her zaman 0 |
+| 12 | ❌ AppListScreen.kt büyük, bölünmeli |
+
+---
+
+## Bekleyen Düzeltmeler (Öncelik Sırasıyla)
+
+1. **NotificationListenerService** → gerçek bildirim sayısını `notificationCount`'a yaz
+2. **Haptic feedback — tap** → uygulama başlatırken `TextHapticFeedback` ekle
+3. **AppListScreen refactor** → 300 satır altına indir
 
 ---
 

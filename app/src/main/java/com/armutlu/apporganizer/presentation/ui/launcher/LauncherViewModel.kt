@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.UsageStatsHelper
@@ -21,7 +22,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -108,6 +111,26 @@ class LauncherViewModel @Inject constructor(
             it.appName.lowercase().contains(query) || it.packageName.lowercase().contains(query)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    init {
+        // NotificationListenerService'ten gelen badge sayılarını DB'ye yaz
+        AppNotificationListenerService.badgeCounts
+            .onEach { counts ->
+                if (counts.isNotEmpty()) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        counts.forEach { (pkg, count) ->
+                            repository.updateNotificationCount(pkg, count)
+                        }
+                        // Servis bilgisi olmayan uygulamaların sayısını sıfırla
+                        val knownPkgs = counts.keys
+                        repository.getAllApps()
+                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                            .forEach { repository.updateNotificationCount(it.packageName, 0) }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     /** İlk açılışta DB boşsa cihazdaki uygulamaları tarar ve DB'ye yazar. */
     fun loadAppsIfEmpty(context: Context) {

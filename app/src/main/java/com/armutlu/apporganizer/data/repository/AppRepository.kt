@@ -258,5 +258,9 @@ class AppRepository @Inject constructor(
         try { appDao.updateAppHidden(packageName, hidden) } catch (e: Exception) { Timber.e(e) }
     }
 
+    suspend fun updateNotificationCount(packageName: String, count: Int) {
+        try { appDao.updateNotificationCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
+    }
+
     fun getHiddenApps(): kotlinx.coroutines.flow.Flow<List<AppInfo>> = appDao.getHiddenApps()
 }

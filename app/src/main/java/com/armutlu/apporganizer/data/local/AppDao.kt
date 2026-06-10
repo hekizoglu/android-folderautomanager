@@ -176,6 +176,9 @@ interface AppDao {
     @Query("UPDATE apps SET isHidden = :hidden WHERE packageName = :packageName")
     suspend fun updateAppHidden(packageName: String, hidden: Boolean)
 
+    @Query("UPDATE apps SET notificationCount = :count WHERE packageName = :packageName")
+    suspend fun updateNotificationCount(packageName: String, count: Int)
+
     @Query("SELECT * FROM apps WHERE isHidden = 1 ORDER BY appName ASC")
     fun getHiddenApps(): Flow<List<AppInfo>>
 }

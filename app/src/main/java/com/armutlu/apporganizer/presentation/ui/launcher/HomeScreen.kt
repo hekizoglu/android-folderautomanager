@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.content.Intent
 import android.net.Uri
@@ -97,7 +97,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
 
-    // rememberUpdatedState ile closure'lar her zaman güncel değeri okur
+    // rememberUpdatedState ile closure'lar her zaman gÃ¼ncel deÄŸeri okur
     val currentAllAppsOpen by rememberUpdatedState(allAppsOpen)
     LaunchedEffect(allAppsOpen) { if (allAppsOpen) swipeDelta = 0f }
 
@@ -129,7 +129,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         viewModel.syncAppSizes(context)
     }
 
-    // İzin verilmeden launcher seçildiyse veya veriler henüz yüklenmediyse güvenli fallback
+    // Ä°zin verilmeden launcher seÃ§ildiyse veya veriler henÃ¼z yÃ¼klenmediyse gÃ¼venli fallback
     if (isLoading) {
         Box(
             modifier = Modifier
@@ -148,7 +148,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     fontWeight = FontWeight.Light
                 )
                 Text(
-                    text = "Uygulamalar yükleniyor...",
+                    text = "Uygulamalar yÃ¼kleniyor...",
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )
@@ -161,7 +161,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00897B))
                 ) {
-                    Text("Launcher Ayarları")
+                    Text("Launcher AyarlarÄ±")
                 }
                 Button(
                     onClick = {
@@ -173,7 +173,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF37474F))
                 ) {
-                    Text("Uygulama Ayarları")
+                    Text("Uygulama AyarlarÄ±")
                 }
             }
         }
@@ -190,6 +190,32 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
+            .pointerInput(allAppsOpen) {
+                if (!allAppsOpen) {
+                    detectTapGestures(
+                        onDoubleTap = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.openAllApps()
+                        }
+                    )
+                }
+            }
+            .pointerInput(allAppsOpen) {
+                if (!allAppsOpen) {
+                    var accumulated = 0f
+                    detectVerticalDragGestures(
+                        onDragEnd = { accumulated = 0f },
+                        onDragCancel = { accumulated = 0f },
+                        onVerticalDrag = { _, dragAmount ->
+                            accumulated += dragAmount
+                            if (accumulated < -200f) {
+                                accumulated = 0f
+                                viewModel.openAllApps()
+                            }
+                        }
+                    )
+                }
+            }
     ) {
         Column(
             modifier = Modifier
@@ -198,10 +224,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // İzin uyarı banner'ı (kapatılabilir)
+            // Ä°zin uyarÄ± banner'Ä± (kapatÄ±labilir)
             PermissionsBanner()
 
-            // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
+            // Clock widget â€” top center, Pixel style (uzun bas â†’ yÃ¶netim ekranÄ±)
             PixelClockWidget(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -211,7 +237,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     }
             )
 
-            // İstatistik bandı — toplam klasör ve uygulama sayısı
+            // Ä°statistik bandÄ± â€” toplam klasÃ¶r ve uygulama sayÄ±sÄ±
             val totalApps   = folders.sumOf { it.apps.size }
             val totalFolders = folders.size
             if (totalFolders > 0) {
@@ -223,7 +249,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "$totalFolders klasör  ·  $totalApps uygulama",
+                        "$totalFolders klasÃ¶r  Â·  $totalApps uygulama",
                         color = Color.White.copy(alpha = 0.45f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal
@@ -231,7 +257,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 }
             }
 
-            // Folder grid — 4 columns, centered
+            // Folder grid â€” 4 columns, centered
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -265,7 +291,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                                     onDrag = { change, _ ->
                                         change.consume()
                                         val from = dragFromIndex ?: return@detectDragGesturesAfterLongPress
-                                        // Tahmini hedef indeks: her tile yaklaşık 90dp
+                                        // Tahmini hedef indeks: her tile yaklaÅŸÄ±k 90dp
                                         val tileWidthPx = with(density) { 90.dp.toPx() }
                                         val dx = change.position.x
                                         val dy = change.position.y
@@ -303,7 +329,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 }
             }
 
-            // Drag pill handle — above dock, pure Pixel style
+            // Drag pill handle â€” above dock, pure Pixel style
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -321,7 +347,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 )
             }
 
-            // Bottom dock — frosted pill (uzun bas → düzenle)
+            // Bottom dock â€” frosted pill (uzun bas â†’ dÃ¼zenle)
             PixelDock(
                 packages = dockPackages,
                 onLaunchApp = { pkg ->
@@ -361,7 +387,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         }
     }
 
-    // Dock düzenleme sheet
+    // Dock dÃ¼zenleme sheet
     if (dockEditOpen) {
         DockEditSheet(
             allApps = allApps,
@@ -435,7 +461,7 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Time — 72sp Thin weight, pure white, soft shadow
+        // Time â€” 72sp Thin weight, pure white, soft shadow
         Text(
             text = timeFormat.format(now),
             color = Color.White,
@@ -444,10 +470,10 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
             letterSpacing = (-2).sp,
             textAlign = TextAlign.Center,
             // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
-            // We layer a blurred copy via alpha trick instead — keep it simple and readable.
+            // We layer a blurred copy via alpha trick instead â€” keep it simple and readable.
         )
         Spacer(modifier = Modifier.height(2.dp))
-        // Date — 16sp white 85% alpha
+        // Date â€” 16sp white 85% alpha
         Text(
             text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
             color = Color.White.copy(alpha = 0.85f),
@@ -459,7 +485,7 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
     }
 }
 
-/** Frosted pill dock — packages listesi DockPrefs'ten gelir, kullanıcı tarafından seçilebilir. */
+/** Frosted pill dock â€” packages listesi DockPrefs'ten gelir, kullanÄ±cÄ± tarafÄ±ndan seÃ§ilebilir. */
 @Composable
 private fun PixelDock(
     packages: List<String>,
