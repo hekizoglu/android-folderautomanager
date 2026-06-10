@@ -1,6 +1,9 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,6 +34,25 @@ class LauncherActivity : ComponentActivity() {
                 HomeScreen(viewModel = viewModel)
             }
         }
+    }
+
+    private val packageRemovedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val pkg = intent.data?.schemeSpecificPart ?: return
+            viewModel.onPackageRemoved(pkg)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(packageRemovedReceiver, IntentFilter(Intent.ACTION_PACKAGE_REMOVED).apply {
+            addDataScheme("package")
+        })
+    }
+
+    override fun onPause() {
+        super.onPause()
+        runCatching { unregisterReceiver(packageRemovedReceiver) }
     }
 
     private fun isDefaultLauncher(context: android.content.Context): Boolean {

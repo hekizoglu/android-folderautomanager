@@ -156,10 +156,11 @@ fun DockEditSheet(
 
                     Row(
                         Modifier.fillMaxWidth().height(52.dp)
-                            .clickable(enabled = !full) {
-                                if (inDock) onRemove(app.packageName) else onAdd(app.packageName)
+                            .clickable {
+                                if (inDock) onRemove(app.packageName)
+                                else if (!full) onAdd(app.packageName)
                             }
-                            .background(if (inDock) TealColor.copy(0.10f) else Color.Transparent)
+                            .background(if (inDock) TealColor.copy(0.12f) else Color.Transparent)
                             .padding(horizontal = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -167,20 +168,27 @@ fun DockEditSheet(
                             androidx.compose.foundation.Image(
                                 painter = rememberDrawablePainter(icon),
                                 contentDescription = null,
-                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
+                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)),
+                                alpha = if (full && !inDock) 0.4f else 1f
                             )
                         } else {
                             Box(Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(TealColor.copy(0.2f)))
                         }
                         Spacer(Modifier.width(14.dp))
-                        Text(
-                            app.appName, fontSize = 15.sp, color = if (full) TextSecondary else TextPrimary,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f)
-                        )
-                        if (inDock) {
-                            Icon(Icons.Default.Check, null, tint = TealColor, modifier = Modifier.size(18.dp))
-                        } else if (!full) {
-                            Icon(Icons.Default.Add, null, tint = TextSecondary.copy(0.5f), modifier = Modifier.size(18.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                app.appName, fontSize = 15.sp,
+                                color = if (full && !inDock) TextSecondary else TextPrimary,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis
+                            )
+                            if (full && !inDock) {
+                                Text("Dock dolu — önce çıkar", fontSize = 10.sp, color = Color(0xFFE57373))
+                            }
+                        }
+                        when {
+                            inDock -> Icon(Icons.Default.Check, null, tint = TealColor, modifier = Modifier.size(20.dp))
+                            !full  -> Icon(Icons.Default.Add, null, tint = TealColor.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+                            else   -> Icon(Icons.Default.Add, null, tint = Color(0xFFE57373).copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
                         }
                     }
                 }

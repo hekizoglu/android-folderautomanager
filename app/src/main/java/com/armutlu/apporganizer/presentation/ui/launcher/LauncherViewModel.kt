@@ -205,6 +205,12 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    fun onPackageRemoved(packageName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteApp(packageName)
+        }
+    }
+
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 

@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -96,16 +97,20 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
 
+    // rememberUpdatedState ile closure'lar her zaman güncel değeri okur
+    val currentAllAppsOpen by rememberUpdatedState(allAppsOpen)
+    LaunchedEffect(allAppsOpen) { if (allAppsOpen) swipeDelta = 0f }
+
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (!allAppsOpen && available.y < -400f) {
+                if (!currentAllAppsOpen && available.y < -400f) {
                     viewModel.openAllApps()
                 }
                 return Velocity.Zero
             }
             override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
-                if (!allAppsOpen && available.y < 0f) {
+                if (!currentAllAppsOpen && available.y < 0f) {
                     swipeDelta += available.y
                     if (swipeDelta < -swipeThresholdPx) {
                         viewModel.openAllApps()

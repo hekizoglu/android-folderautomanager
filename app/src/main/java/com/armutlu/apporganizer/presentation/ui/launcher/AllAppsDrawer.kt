@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -366,21 +367,27 @@ fun AllAppsDrawer(
 
                 // ── Sağ: Contextual Sidebar ─────────────────────────────────
                 if (sidebarEntries.isNotEmpty()) {
-                    val itemHeightDp = 22.dp
+                    val sidebarPaddingDp = 56.dp
+                    val sidebarPaddingPx = with(density) { sidebarPaddingDp.toPx() }
+                    var boxHeightPx by remember { mutableStateOf(0f) }
 
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(40.dp)
-                            .padding(vertical = 56.dp)
+                            .width(44.dp)
+                            .padding(vertical = sidebarPaddingDp)
+                            .onSizeChanged { boxHeightPx = it.height.toFloat() }
                             .pointerInput(sidebarEntries) {
                                 awaitEachGesture {
                                     awaitFirstDown(requireUnconsumed = false)
                                     do {
                                         val event = awaitPointerEvent(PointerEventPass.Main)
                                         val pos = event.changes.firstOrNull()?.position ?: continue
-                                        val itemPx = with(density) { itemHeightDp.toPx() }
-                                        val idx = (pos.y / itemPx)
+                                        val n = sidebarEntries.size
+                                        if (n == 0 || boxHeightPx == 0f) continue
+                                        // pos.y is within padded box (0..boxHeightPx)
+                                        val itemSlotPx = boxHeightPx / n
+                                        val idx = (pos.y / itemSlotPx)
                                             .toInt()
                                             .coerceIn(0, sidebarEntries.lastIndex)
                                         if (activeSidebarIdx != idx) {
@@ -405,19 +412,16 @@ fun AllAppsDrawer(
                             sidebarEntries.forEachIndexed { idx, entry ->
                                 val isActive = activeSidebarIdx == idx
                                 val scale by animateFloatAsState(
-                                    targetValue = if (isActive) 1.4f else 1f,
+                                    targetValue = if (isActive) 1.5f else 1f,
                                     animationSpec = spring(stiffness = Spring.StiffnessHigh),
                                     label = "sidebar_scale_$idx"
                                 )
                                 Text(
                                     text = entry.label,
-                                    fontSize = if (isActive) 11.sp else 9.sp,
+                                    fontSize = if (isActive) 14.sp else 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isActive) SidebarActive else SidebarColor,
-                                    modifier = Modifier
-                                        .height(itemHeightDp)
-                                        .scale(scale)
-                                        .padding(horizontal = 2.dp),
+                                    modifier = Modifier.scale(scale).padding(horizontal = 2.dp),
                                     maxLines = 1
                                 )
                             }
