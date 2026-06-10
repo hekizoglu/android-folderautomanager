@@ -14,11 +14,13 @@ import com.armutlu.apporganizer.utils.UsageStatsHelper
 import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -54,9 +56,9 @@ internal fun buildFolders(apps: List<AppInfo>): List<AppFolder> =
         }
         .filter { it.apps.isNotEmpty() }
 
-/** Tüm uygulamaları ada göre sıralı döndürür. */
+/** Tüm uygulamaları ada göre sıralı döndürür. Gizli uygulamalar hariç. */
 internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
-    apps.sortedBy { it.appName }
+    apps.filter { !it.isHidden }.sortedBy { it.appName }
 
 @HiltViewModel
 class LauncherViewModel @Inject constructor(
@@ -95,9 +97,10 @@ class LauncherViewModel @Inject constructor(
         .map { buildAllApps(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
+    @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
         repository.getAllAppsFlow(),
-        _searchQuery
+        _searchQuery.debounce(300)
     ) { apps, q ->
         val query = q.trim().lowercase()
         if (query.isEmpty()) buildAllApps(apps)
@@ -189,6 +192,21 @@ class LauncherViewModel @Inject constructor(
         DockPrefs.removeFromDock(context, packageName)
         _dockPackages.value = DockPrefs.getDockPackages(context)
     }
+
+    fun updateAppCategory(packageName: String, categoryId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateAppCategory(packageName, categoryId)
+        }
+    }
+
+    fun setAppHidden(packageName: String, hidden: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateAppHidden(packageName, hidden)
+        }
+    }
+
+    val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
     fun syncUsageStats(context: Context) {

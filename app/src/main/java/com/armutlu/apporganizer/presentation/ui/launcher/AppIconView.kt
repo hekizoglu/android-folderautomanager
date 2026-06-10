@@ -23,6 +23,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asImageBitmap
@@ -109,12 +111,25 @@ fun AppIconView(
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Kullanım bazlı greyscale: 0 kullanım → tam gri, 1-4 → hafif gri, 5+ → renkli
+        val saturation = when {
+            app.usageCount == 0L -> 0f
+            app.usageCount < 5L  -> 0.4f + (app.usageCount * 0.12f)
+            else                 -> 1f
+        }
+        val iconAlpha = if (app.usageCount == 0L) 0.5f else 1f
+        val greyFilter = if (saturation < 1f)
+            ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(saturation) })
+        else null
+
         // İkon + bildirim badge
         Box {
             if (icon != null) {
                 Image(
                     bitmap = icon!!,
                     contentDescription = app.appName,
+                    colorFilter = greyFilter,
+                    alpha = iconAlpha,
                     modifier = Modifier
                         .size(iconSize)
                         .clip(RoundedCornerShape(14.dp))

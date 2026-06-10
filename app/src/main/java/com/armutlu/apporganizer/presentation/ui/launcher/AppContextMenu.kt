@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +53,7 @@ fun AppContextMenu(
     onAddToDock: () -> Unit,
     onRemoveFromDock: () -> Unit,
     onChangeCategory: () -> Unit,
+    onHideApp: ((Boolean) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
@@ -179,6 +182,14 @@ fun AppContextMenu(
                     onDismiss()
                 }
             )
+
+            onHideApp?.let { hideCallback ->
+                ContextAction(
+                    icon = if (app.isHidden) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    label = if (app.isHidden) "Gizlemeyi Kaldır" else "Gizle",
+                    onClick = { hideCallback(!app.isHidden); onDismiss() }
+                )
+            }
 
             if (!app.isSystemApp) {
                 ContextAction(

@@ -37,7 +37,9 @@ data class AppInfo(
 
     val notificationImportance: Int = 0,
 
-    val appSizeBytes: Long = 0L
+    val appSizeBytes: Long = 0L,
+
+    val isHidden: Boolean = false
 ) : Serializable {
     
     companion object {

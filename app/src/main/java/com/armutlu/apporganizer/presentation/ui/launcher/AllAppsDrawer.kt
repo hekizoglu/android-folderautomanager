@@ -478,13 +478,26 @@ fun NiagaraAppRow(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // İkon + rozet
+        // İkon + rozet (greyscale: usageCount=0 → gri+yarı saydam)
+        val saturation = when {
+            app.usageCount == 0L -> 0f
+            app.usageCount < 5L  -> 0.4f + (app.usageCount * 0.12f)
+            else                 -> 1f
+        }
+        val iconAlpha = if (app.usageCount == 0L) 0.5f else 1f
+        val greyFilter = if (saturation < 1f)
+            androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+                androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(saturation) }
+            )
+        else null
         Box(modifier = Modifier.size(iconSize + 8.dp), contentAlignment = Alignment.Center) {
             if (icon != null) {
                 androidx.compose.foundation.Image(
                     painter = rememberDrawablePainter(icon),
                     contentDescription = app.appName,
-                    modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp))
+                    modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp)),
+                    alpha = iconAlpha,
+                    colorFilter = greyFilter
                 )
             } else {
                 Box(

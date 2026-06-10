@@ -253,4 +253,10 @@ class AppRepository @Inject constructor(
             Timber.e(e, "Error resetting categories")
         }
     }
+
+    suspend fun updateAppHidden(packageName: String, hidden: Boolean) {
+        try { appDao.updateAppHidden(packageName, hidden) } catch (e: Exception) { Timber.e(e) }
+    }
+
+    fun getHiddenApps(): kotlinx.coroutines.flow.Flow<List<AppInfo>> = appDao.getHiddenApps()
 }

@@ -61,6 +61,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -81,6 +85,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val dockPackages by viewModel.dockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
+    var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -90,6 +95,27 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                if (!allAppsOpen && available.y < -400f) {
+                    viewModel.openAllApps()
+                }
+                return Velocity.Zero
+            }
+            override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                if (!allAppsOpen && available.y < 0f) {
+                    swipeDelta += available.y
+                    if (swipeDelta < -swipeThresholdPx) {
+                        viewModel.openAllApps()
+                        swipeDelta = 0f
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
 
     val isLoading = folders.isEmpty() && allApps.isEmpty()
 
@@ -158,26 +184,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(allAppsOpen) {
-                if (!allAppsOpen) {
-                    detectVerticalDragGestures(
-                        onDragEnd = { swipeDelta = 0f },
-                        onVerticalDrag = { change, dy ->
-                            change.consume()
-                            swipeDelta += dy
-                            if (swipeDelta < -swipeThresholdPx) {
-                                viewModel.openAllApps()
-                                swipeDelta = 0f
-                            }
-                        }
-                    )
-                }
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { viewModel.openManager(context) }
-                )
-            }
+            .nestedScroll(nestedScrollConnection)
     ) {
         Column(
             modifier = Modifier
@@ -189,11 +196,14 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             // İzin uyarı banner'ı (kapatılabilir)
             PermissionsBanner()
 
-            // Clock widget — top center, Pixel style
+            // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
             PixelClockWidget(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 32.dp, bottom = 8.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(onLongPress = { viewModel.openManager(context) })
+                    }
             )
 
             // İstatistik bandı — toplam klasör ve uygulama sayısı
@@ -366,7 +376,25 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             onLaunch = { viewModel.launchApp(context, app.packageName) },
             onAddToDock = { viewModel.addToDock(context, app.packageName) },
             onRemoveFromDock = { viewModel.removeFromDock(context, app.packageName) },
-            onChangeCategory = { /* TODO: kategori picker */ }
+            onChangeCategory = {
+                categoryPickerApp = app
+                contextMenuApp = null
+            },
+            onHideApp = { hidden ->
+                viewModel.setAppHidden(app.packageName, hidden)
+                contextMenuApp = null
+            }
+        )
+    }
+
+    // Kategori picker sheet
+    categoryPickerApp?.let { app ->
+        CategoryPickerSheet(
+            app = app,
+            onDismiss = { categoryPickerApp = null },
+            onCategorySelected = { catId ->
+                viewModel.updateAppCategory(app.packageName, catId)
+            }
         )
     }
 
