@@ -54,6 +54,7 @@ fun FolderSheet(
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     onDismiss: () -> Unit,
     onAppClick: (String) -> Unit,
+    onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
     var sortMode by remember { mutableStateOf(FolderSortMode.ALPHA) }
@@ -132,6 +133,7 @@ fun FolderSheet(
                                 onAppClick(app.packageName)
                                 onDismiss()
                             },
+                            onLongClick = { onAppLongClick?.invoke(app) },
                             iconSize  = 56.dp,
                             showLabel = true,
                         )

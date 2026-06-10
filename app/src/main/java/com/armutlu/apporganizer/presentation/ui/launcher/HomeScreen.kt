@@ -80,6 +80,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val haptic = LocalHapticFeedback.current
     val dockPackages by viewModel.dockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
+    var contextMenuApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -336,6 +337,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
                 },
+                onAppLongClick = { app ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    contextMenuApp = app
+                },
                 onClose = viewModel::closeAllApps
             )
         }
@@ -352,13 +357,30 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         )
     }
 
+    // App context menu (long press)
+    contextMenuApp?.let { app ->
+        AppContextMenu(
+            app = app,
+            isDocked = app.packageName in dockPackages,
+            onDismiss = { contextMenuApp = null },
+            onLaunch = { viewModel.launchApp(context, app.packageName) },
+            onAddToDock = { viewModel.addToDock(context, app.packageName) },
+            onRemoveFromDock = { viewModel.removeFromDock(context, app.packageName) },
+            onChangeCategory = { /* TODO: kategori picker */ }
+        )
+    }
+
     // Folder bottom sheet
     openFolder?.let { folder ->
         FolderSheet(
             folder = folder,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             onDismiss = viewModel::closeFolder,
-            onAppClick = { pkg -> viewModel.launchApp(context, pkg) }
+            onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+            onAppLongClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                contextMenuApp = app
+            }
         )
     }
 }

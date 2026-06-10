@@ -44,6 +44,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -163,6 +165,7 @@ fun AllAppsDrawer(
     onSearchQueryChange: (String) -> Unit = {},
     onClose: () -> Unit,
     onAppClick: (String) -> Unit,
+    onAppLongClick: ((AppInfo) -> Unit)? = null,
     iconSize: Dp = 40.dp
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
@@ -326,7 +329,8 @@ fun AllAppsDrawer(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             onAppClick(app.packageName)
-                                        }
+                                        },
+                                        onLongClick = { onAppLongClick?.invoke(app) }
                                     )
                                 }
                             }
@@ -351,7 +355,8 @@ fun AllAppsDrawer(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             onAppClick(app.packageName)
-                                        }
+                                        },
+                                        onLongClick = { onAppLongClick?.invoke(app) }
                                     )
                                 }
                             }
@@ -435,13 +440,15 @@ private fun NiagaraLetterHeader(letter: Char) {
 }
 
 // ── Uygulama satırı ───────────────────────────────────────────────────────────
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NiagaraAppRow(
     app: AppInfo,
     iconSize: Dp = 40.dp,
     isActive: Boolean = false,
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null
 ) {
     val icon = rememberAppIcon(app.packageName)
     val notifColor = when {
@@ -466,7 +473,7 @@ fun NiagaraAppRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(58.dp)
-            .clickable(onClick = onClick)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(if (isActive) RowHover else Color.Transparent)
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically

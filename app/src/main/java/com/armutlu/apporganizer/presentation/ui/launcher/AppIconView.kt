@@ -1,8 +1,9 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -71,10 +72,12 @@ private fun Modifier.textShadow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppIconView(
     app: AppInfo,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showLabel: Boolean = true,
     iconSize: Dp = 56.dp
@@ -102,7 +105,7 @@ fun AppIconView(
 
     Column(
         modifier = modifier
-            .clickable(onClick = onClick)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
