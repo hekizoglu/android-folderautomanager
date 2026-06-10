@@ -17,6 +17,25 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 
 ## Temel Çalışma Kuralları
 
+### Agent Şeffaflık Kuralı
+**Her agent çalıştırıldığında kullanıcıya bilgi ver:**
+> "X agent'ı Y görevi için çalıştırdım."
+
+Kısa, net — hangi agent, hangi görev.
+
+### Araştırma Önceliği Kuralı (KRİTİK)
+**Her yeni teknoloji, kütüphane, entegrasyon veya bilmediğim bir şey için:**
+1. **Önce WebSearch agent ile online araştır** — güncel dokümantasyon, changelog, bilinen sorunlar
+2. **Sonra uygula** — eski/yanlış bilgiyle zaman kaybetme
+
+Bu kural şunlar için zorunludur:
+- Yeni MCP sunucuları (notebooklm, telegram, vs.)
+- API entegrasyonları (Telegram Bot, GitHub Actions, vs.)
+- Yeni kütüphaneler veya versiyonlar
+- Daha önce hiç yapmadığım işlemler
+
+> **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir.
+
 ### Git Kuralları
 - **Tüm değişiklikler `main` branch üzerinde** — yeni branch oluşturma
 - `git add` + `git commit` + `git push origin main` — her build sonrası
