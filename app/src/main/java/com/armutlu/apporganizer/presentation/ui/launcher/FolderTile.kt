@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +22,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
@@ -32,7 +35,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,11 +55,15 @@ private val iconCache get() = iconCacheInternal
 fun FolderTile(
     folder: AppFolder,
     onClick: () -> Unit,
+    onSwipeUp: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val hapticFeedback = LocalHapticFeedback.current
+    val density = LocalDensity.current
+    var swipeDy by remember { mutableFloatStateOf(0f) }
+    val swipeThresholdPx = with(density) { 40.dp.toPx() }
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.90f else 1f,
@@ -72,6 +81,24 @@ fun FolderTile(
         modifier = modifier
             .width(72.dp)
             .scale(scale)
+            .pointerInput(folder) {
+                detectVerticalDragGestures(
+                    onDragEnd = { swipeDy = 0f },
+                    onDragCancel = { swipeDy = 0f },
+                    onVerticalDrag = { change, delta ->
+                        change.consume()
+                        swipeDy += delta
+                        if (swipeDy < -swipeThresholdPx) {
+                            val topApp = folder.apps.maxByOrNull { it.usageCount }
+                            if (topApp != null && onSwipeUp != null) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onSwipeUp(topApp.packageName)
+                            }
+                            swipeDy = 0f
+                        }
+                    }
+                )
+            }
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,

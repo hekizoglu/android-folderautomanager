@@ -79,6 +79,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
 
     val haptic = LocalHapticFeedback.current
     val dockPackages by viewModel.dockPackages.collectAsState()
+    var dockEditOpen by remember { mutableStateOf(false) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -191,6 +192,26 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     .padding(top = 32.dp, bottom = 8.dp)
             )
 
+            // İstatistik bandı — toplam klasör ve uygulama sayısı
+            val totalApps   = folders.sumOf { it.apps.size }
+            val totalFolders = folders.size
+            if (totalFolders > 0) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "$totalFolders klasör  ·  $totalApps uygulama",
+                        color = Color.White.copy(alpha = 0.45f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            }
+
             // Folder grid — 4 columns, centered
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
@@ -213,6 +234,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                                 viewModel.openFolder(folder)
                             }
                         },
+                        onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(
@@ -280,12 +302,16 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 )
             }
 
-            // Bottom dock — frosted pill
+            // Bottom dock — frosted pill (uzun bas → düzenle)
             PixelDock(
                 packages = dockPackages,
                 onLaunchApp = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
+                },
+                onLongPress = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    dockEditOpen = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -303,10 +329,24 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 apps = filteredApps,
                 searchQuery = searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
-                onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                onAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.launchApp(context, pkg)
+                },
                 onClose = viewModel::closeAllApps
             )
         }
+    }
+
+    // Dock düzenleme sheet
+    if (dockEditOpen) {
+        DockEditSheet(
+            allApps = allApps,
+            dockPackages = dockPackages,
+            onAdd = { viewModel.addToDock(context, it) },
+            onRemove = { viewModel.removeFromDock(context, it) },
+            onDismiss = { dockEditOpen = false }
+        )
     }
 
     // Folder bottom sheet
@@ -366,6 +406,7 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
 private fun PixelDock(
     packages: List<String>,
     onLaunchApp: (String) -> Unit,
+    onLongPress: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -381,6 +422,9 @@ private fun PixelDock(
                 color = Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(50)
             )
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { onLongPress() })
+            }
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center
     ) {
