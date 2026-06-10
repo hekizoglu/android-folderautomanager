@@ -46,6 +46,23 @@ Bu kural şunlar için zorunludur:
 
 > **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir.
 
+### Bağımlılık Güncelleme Kuralı (KRİTİK)
+**Compose BOM, AGP, Kotlin veya compileSdk güncellenecekse önce uyumluluk matrisini kontrol et:**
+
+| Güncelleme | Kontrol edilmesi gereken |
+|-----------|--------------------------|
+| Compose BOM yükselt | Minimum Kotlin versiyonu — BOM 2025+ → Kotlin 2.x gerekir |
+| AGP yükselt | Minimum Gradle versiyonu (AGP 8.6 → Gradle 8.7+) |
+| Kotlin 2.x | kapt çalışmaz → KSP gerekir; önce KSP geçişi yap |
+| Coil 3.x | compileSdk 36 gerektirir — AGP 8.6 max 35 destekler |
+| compileSdk yükselt | Yeni nullable API'ler kırılabilir (örn. SDK 35: applicationInfo nullable) |
+
+**Kontrol kaynakları:**
+- Compose BOM ↔ Kotlin uyumu: `developer.android.com/develop/ui/compose/bom/bom-mapping`
+- AGP ↔ Gradle uyumu: `developer.android.com/build/releases/gradle-plugin`
+
+> **Neden:** Bu konuşmada BOM 2026.05.00 → Kotlin 2.x çakışması, Coil 3.x → compileSdk 36 çakışması, SDK 35 nullable API kırılması ardı ardına yaşandı. Her seferinde ekstra build döngüsü harcandı.
+
 ### Git Kuralları
 - **Tüm değişiklikler `main` branch üzerinde** — yeni branch oluşturma
 - `git add` + `git commit` + `git push origin main` — her build sonrası
@@ -383,4 +400,4 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 
 ---
 
-*Son güncelleme: 2026-06-10*
+*Son güncelleme: 2026-06-11*
