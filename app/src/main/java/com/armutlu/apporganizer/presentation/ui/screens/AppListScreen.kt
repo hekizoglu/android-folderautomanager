@@ -16,8 +16,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -135,7 +139,7 @@ fun AppListScreen(
                     TextButton(onClick = { showBulkCategory = true }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.DriveFileMove, null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Kategori Değiştir")
+                        Text("Kategori DeÄŸiÅŸtir")
                     }
                     if (showBulkCategory) {
                         BulkCategoryPicker(
@@ -152,7 +156,7 @@ fun AppListScreen(
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            // Arama çubuğu
+            // Arama çubuÄŸu
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
@@ -182,7 +186,7 @@ fun AppListScreen(
                 item {
                     CategoryChip(
                         label = "Tümü",
-                        emoji = "📱",
+                        emoji = "ğŸ“±",
                         count = screenState.apps.size,
                         selected = selectedCategory == "all",
                         onClick = { viewModel.setSelectedCategory("all") }
@@ -209,13 +213,13 @@ fun AppListScreen(
                 screenState.isProcessing -> LoadingSkeleton()
                 screenState.error != null -> AppEmptyState(
                     icon = Icons.Default.ErrorOutline,
-                    title = "Hata oluştu",
+                    title = "Hata oluÅŸtu",
                     subtitle = screenState.error ?: ""
                 )
                 screenState.filteredApps.isEmpty() && searchQuery.isNotBlank() -> AppEmptyState(
                     icon = Icons.Default.SearchOff,
                     title = "Sonuç bulunamadı",
-                    subtitle = "\"$searchQuery\" için eşleşen uygulama yok"
+                    subtitle = "\"$searchQuery\" için eÅŸleÅŸen uygulama yok"
                 )
                 screenState.filteredApps.isEmpty() -> AppEmptyState(
                     icon = Icons.Default.Apps,
@@ -239,7 +243,7 @@ fun AppListScreen(
         }
     }
 
-    // Kategori değiştir dialog
+    // Kategori deÄŸiÅŸtir dialog
     appForCategory?.let { app ->
         CategoryPickerDialog(
             app = app,
@@ -253,11 +257,11 @@ fun AppListScreen(
     }
 }
 
-// ── Kategori chip ──────────────────────────────────────────────────────────
+// â”€â”€ Kategori chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun CategoryChip(
+private fun CategoryChip(
     label: String,
     emoji: String,
     count: Int,
@@ -291,11 +295,11 @@ internal fun CategoryChip(
     )
 }
 
-// ── App listesi içeriği ────────────────────────────────────────────────────
+// â”€â”€ App listesi içeriÄŸi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun AppListContent(
+private fun AppListContent(
     apps: List<AppInfo>,
     selectedApps: Set<String>,
     categories: List<Category>,
@@ -334,22 +338,25 @@ internal fun AppListContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // App ikonu
+                    // App ikonu — async, UI thread bloke etmez
                     val px = (48 * context.resources.displayMetrics.density).toInt()
-                    val icon = remember(app.packageName) {
-                        runCatching {
-                            context.packageManager.getApplicationIcon(app.packageName)
-                                .toBitmap(px, px).asImageBitmap()
-                        }.getOrNull()
+                    val icon by produceState<ImageBitmap?>(initialValue = null, key1 = app.packageName) {
+                        value = withContext(Dispatchers.IO) {
+                            runCatching {
+                                context.packageManager.getApplicationIcon(app.packageName)
+                                    .toBitmap(px, px).asImageBitmap()
+                            }.getOrNull()
+                        }
                     }
                     Box(
                         modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (icon != null) {
+                        val iconSnapshot = icon
+                        if (iconSnapshot != null) {
                             androidx.compose.foundation.Image(
-                                bitmap = icon,
+                                bitmap = iconSnapshot,
                                 contentDescription = app.appName,
                                 modifier = Modifier.size(48.dp)
                             )
@@ -377,7 +384,7 @@ internal fun AppListContent(
                         }
                     }
 
-                    // Seçim işareti
+                    // Seçim iÅŸareti
                     if (isSelected) {
                         Icon(
                             Icons.Default.CheckCircle,
@@ -391,3 +398,148 @@ internal fun AppListContent(
         }
     }
 }
+
+// â”€â”€ Yükleniyor iskelet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@Composable
+private fun LoadingSkeleton() {
+    LazyColumn(
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(12) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.fillMaxWidth().height(68.dp)
+            ) {}
+        }
+    }
+}
+
+// â”€â”€ BoÅŸ durum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@Composable
+private fun AppEmptyState(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String
+) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(icon, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+// â”€â”€ Kategori seçici dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CategoryPickerDialog(
+    app: AppInfo,
+    categories: List<Category>,
+    onCategorySelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Kategori Seç â€” ${app.appName}") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (app.categoryId == cat.categoryId)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) })
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(cat.iconEmoji, fontSize = 20.sp)
+                            Text(cat.categoryName, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                            if (app.categoryId == cat.categoryId)
+                                Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("İptal") }
+        }
+    )
+}
+
+// â”€â”€ Toplu kategori seçici â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun BulkCategoryPicker(
+    categories: List<Category>,
+    onCategorySelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Kategori Seç") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) })
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(cat.iconEmoji, fontSize = 20.sp)
+                            Text(cat.categoryName, fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } }
+    )
+}
+
+// â”€â”€ Eski uyumluluk â€” LauncherOrganizeDialog artık kullanılmıyor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@Composable
+fun LauncherOrganizeDialog(
+    launcherType: String,
+    organizeState: OrganizeState,
+    a11yConnected: Boolean,
+    a11yInSystem: Boolean,
+    onOrganize: (Boolean) -> Unit,
+    onOpenA11ySettings: () -> Unit,
+    onRestart: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Otomatik Organize") },
+        text = { Text("Uygulamalar launcher'da otomatik olarak kategorilere göre klasörlenecek.") },
+        confirmButton = {
+            Button(onClick = { onOrganize(false); onDismiss() }) { Text("BaÅŸlat") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } }
+    )
+}
+
+sealed class OrganizeState {
+    object Idle : OrganizeState()
+    data class Running(val message: String) : OrganizeState()
+    data class Done(val success: Boolean, val message: String) : OrganizeState()
+}
+

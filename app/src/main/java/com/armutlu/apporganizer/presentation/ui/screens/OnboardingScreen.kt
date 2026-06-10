@@ -117,15 +117,6 @@ private enum class OnboardingStep(
         buttonLabel = "Baslayin",
         isRequired = false
     ),
-    SET_LAUNCHER(
-        icon = Icons.Default.Home,
-        title = "Ana Ekran Uygulamasi Olarak Ayarla",
-        description = "App Organizer bir launcher'dir. Tam olarak calisabilmesi icin telefon ana ekrani olarak ayarlanmasi gerekiyor.\n\nAyarla butonuna tiklayin, acilan ekranda 'App Organizer'i secin.",
-        why = "Bu adim olmadan uygulama sadece yonetim ekrani olarak calisiyor. Launcher olarak ayarlandiginda tum gucunu gosterir.",
-        buttonLabel = "Ana Ekran Olarak Ayarla",
-        isRequired = true,
-        isSkippable = true
-    ),
     QUERY_PACKAGES(
         icon = Icons.Default.ManageSearch,
         title = "Uygulama Listesi Izni",
@@ -150,6 +141,15 @@ private enum class OnboardingStep(
         why = "Bu servis sifre, mesaj veya kisisel veri okumaz. Yalnizca arka plan islemleri icin kullanilir.",
         buttonLabel = "Ayarlari Ac",
         isRequired = false,
+        isSkippable = true
+    ),
+    SET_LAUNCHER(
+        icon = Icons.Default.Home,
+        title = "Ana Ekran Uygulamasi Olarak Ayarla",
+        description = "Harika, neredeyse hazirsiniz! App Organizer'i ana ekran (launcher) olarak ayarlayin ve tam gucu deneyimleyin.\n\nAyarla butonuna tiklayin, acilan ekranda 'App Organizer'i secin.",
+        why = "Bu adim olmadan uygulama sadece yonetim ekrani olarak calisiyor. Launcher olarak ayarlandiginda tum gucunu gosterir.",
+        buttonLabel = "Ana Ekran Olarak Ayarla",
+        isRequired = true,
         isSkippable = true
     ),
     DONE(
@@ -454,7 +454,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 }
                             }
 
-                            OnboardingStep.DONE -> onFinish()
+                            OnboardingStep.DONE -> {
+                                context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+                                    .edit().putBoolean("onboarding_complete", true).apply()
+                                onFinish()
+                            }
                         }
                     },
                 contentAlignment = Alignment.Center

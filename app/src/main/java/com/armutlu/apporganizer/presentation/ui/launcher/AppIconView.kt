@@ -106,27 +106,50 @@ fun AppIconView(
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (icon != null) {
-            Image(
-                bitmap = icon!!,
-                contentDescription = app.appName,
-                modifier = Modifier
-                    .size(iconSize)
-                    .clip(RoundedCornerShape(14.dp))
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(iconSize)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.Gray.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = app.appName.take(1).uppercase(),
-                    color = Color.White,
-                    fontSize = 22.sp
+        // İkon + bildirim badge
+        Box {
+            if (icon != null) {
+                Image(
+                    bitmap = icon!!,
+                    contentDescription = app.appName,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clip(RoundedCornerShape(14.dp))
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.Gray.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = app.appName.take(1).uppercase(),
+                        color = Color.White,
+                        fontSize = 22.sp
+                    )
+                }
+            }
+            // Bildirim badge
+            if (app.notificationCount > 0) {
+                val badgeText = if (app.notificationCount > 99) "99+" else app.notificationCount.toString()
+                val badgeWidth = if (app.notificationCount > 9) 20.dp else 16.dp
+                Box(
+                    modifier = Modifier
+                        .size(badgeWidth, 16.dp)
+                        .align(Alignment.TopEnd)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFE53935)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = badgeText,
+                        color = Color.White,
+                        fontSize = 9.sp,
+                        style = TextStyle(textAlign = TextAlign.Center)
+                    )
+                }
             }
         }
 

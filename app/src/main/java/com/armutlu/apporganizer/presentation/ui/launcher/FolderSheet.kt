@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +42,8 @@ fun FolderSheet(
     onDismiss: () -> Unit,
     onAppClick: (String) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,
@@ -112,6 +116,7 @@ fun FolderSheet(
                         AppIconView(
                             app       = app,
                             onClick   = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onAppClick(app.packageName)
                                 onDismiss()
                             },

@@ -1,10 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
-import android.app.role.RoleManager
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import android.provider.Settings
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,8 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import android.app.role.RoleManager
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.DockPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,11 +36,11 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onSendBugReport: () -> Unit = {}
 ) {
-    val context        = LocalContext.current
     val showSystemApps by viewModel.showSystemApps.collectAsState()
     val state          by viewModel.screenState.collectAsState()
     val logs           by viewModel.liveDebugLogs.collectAsState()
     val clipboard      = LocalClipboardManager.current
+    val context        = LocalContext.current
     var debugExpanded  by remember { mutableStateOf(false) }
 
     fun isDefaultLauncher(): Boolean {
@@ -49,6 +50,10 @@ fun SettingsScreen(
     }
 
     var isDefault by remember { mutableStateOf(isDefaultLauncher()) }
+
+    val roleRequestLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { isDefault = isDefaultLauncher() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -71,75 +76,108 @@ fun SettingsScreen(
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
 
-            // ── Launcher ────────────────────────────────────────────────────────
-            if (!isDefault) {
-                item { SettingsSectionTitle(“Launcher”) }
-                item {
-                    Card(
+            // â”€â”€ Görünüm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Launcher ─────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Launcher") }
+            item {
+                SettingsCard {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                        val roleManager = context.getSystemService(RoleManager::class.java)
-                                        if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME) &&
-                                            !roleManager.isRoleHeld(RoleManager.ROLE_HOME)
-                                        ) {
-                                            val roleIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-                                            context.startActivity(roleIntent)
-                                        } else {
-                                            context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
-                                        }
-                                    } else {
-                                        context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
-                                    }
-                                    isDefault = isDefaultLauncher()
+                        Icon(
+                            Icons.Default.Home, null,
+                            tint = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Varsayılan Launcher", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                if (isDefault) "Aktif" else "Ayarlanmadı",
+                                fontSize = 12.sp,
+                                color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        val launcherAction = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val rm = context.getSystemService(RoleManager::class.java)
+                                if (rm.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                                    roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
                                 }
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Home,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(26.dp)
-                            )
-                            Spacer(Modifier.width(14.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    “Launcher Olarak Ayarla”,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 15.sp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Text(
-                                    “AppOrganizer'ı varsayılan ana ekran yap”,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
-                                )
+                            } else {
+                                val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(i)
                             }
-                            Icon(
-                                Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
+                        }
+                        if (isDefault) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                OutlinedButton(
+                                    onClick = launcherAction,
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                ) { Text("Değiştir", fontSize = 12.sp) }
+                            }
+                        } else {
+                            Button(
+                                onClick = launcherAction,
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            ) { Text("Ayarla", fontSize = 13.sp) }
                         }
                     }
                 }
             }
 
-            // ── Görünüm ──────────────────────────────────────────────────────────
-            item { SettingsSectionTitle(“Görünüm”) }
+            // ── Dock Yönetimi ─────────────────────────────────────────────────
+            item { SettingsSectionTitle("Dock Uygulamaları") }
+            item {
+                var dockPkgs by remember { mutableStateOf(DockPrefs.getDockPackages(context)) }
+                val pm = context.packageManager
+                SettingsCard {
+                    if (dockPkgs.isEmpty()) {
+                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("Dock boş", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    } else {
+                        dockPkgs.forEachIndexed { index, pkg ->
+                            val appName = remember(pkg) {
+                                runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                            }
+                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Apps, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(appName, Modifier.weight(1f), fontSize = 14.sp)
+                                IconButton(onClick = {
+                                    DockPrefs.removeFromDock(context, pkg)
+                                    dockPkgs = DockPrefs.getDockPackages(context)
+                                }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Default.Close, "Kaldır", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                    Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.RestartAlt,
+                        title = "Varsayılana Sıfırla",
+                        subtitle = "Telefon, Mesaj, Kamera, Tarayıcı",
+                        onClick = {
+                            DockPrefs.saveDockPackages(context, emptyList())
+                            dockPkgs = DockPrefs.getDockPackages(context)
+                        }
+                    )
+                }
+            }
+
+            item { SettingsSectionTitle("Görünüm") }
             item {
                 SettingsCard {
                     SettingsSwitchRow(
