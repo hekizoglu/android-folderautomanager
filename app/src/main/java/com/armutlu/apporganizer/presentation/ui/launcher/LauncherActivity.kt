@@ -24,6 +24,7 @@ class LauncherActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        viewModel.loadAppsIfEmpty(this)
         viewModel.syncUsageStats(this)
         setContent {
             AppOrganizerTheme(darkTheme = true) {

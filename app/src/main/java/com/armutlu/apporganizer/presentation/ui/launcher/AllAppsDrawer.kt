@@ -3,6 +3,8 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,11 +42,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -53,7 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import kotlinx.coroutines.launch
 
-private val DrawerBackground = Color(0xFFF8F8F8)
+private val DrawerBackground = Color(0xE6F8F8F8) // %90 opak — blur efektine yer bırakır
 private val SearchBarColor   = Color(0xFFE8E8E8)
 private val SearchIconColor  = Color(0xFF5F6368)
 private val TextPrimary      = Color(0xFF202124)
@@ -81,8 +86,9 @@ fun AllAppsDrawer(
     onAppClick: (String) -> Unit,
     iconSize: Dp = 56.dp
 ) {
-    var dragOffset by remember { mutableFloatStateOf(0f) }
-    var sortMode   by remember { mutableStateOf(SortMode.ALPHA) }
+    var dragOffset       by remember { mutableFloatStateOf(0f) }
+    var sortMode         by remember { mutableStateOf(SortMode.ALPHA) }
+    var activeIndexLetter by remember { mutableStateOf<String?>(null) }
     val haptic     = LocalHapticFeedback.current
     val gridState  = rememberLazyGridState()
     val scope      = rememberCoroutineScope()
@@ -108,6 +114,7 @@ fun AllAppsDrawer(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .blur(20.dp) // wallpaper blur efekti
             .background(DrawerBackground)
             .statusBarsPadding()
             .navigationBarsPadding()
@@ -235,36 +242,63 @@ fun AllAppsDrawer(
                 }
             }
 
-            // Sağ fihrist (sadece A-Z modunda ve arama yokken)
+            // Sağ fihrist — sürükleyerek harf atla, aktif harf büyür
             if (sortMode == SortMode.ALPHA && searchQuery.isEmpty() && indexLetters.isNotEmpty()) {
-                Column(
+                val letterItemHeightDp = 24.dp
+                val density = androidx.compose.ui.platform.LocalDensity.current
+
+                Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .width(20.dp)
-                        .padding(vertical = 48.dp),
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    indexLetters.forEach { letter ->
-                        Text(
-                            text = letter,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = IndexLetterColor,
-                            modifier = Modifier
-                                .clickable {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    val idx = sortedApps.indexOfFirst {
-                                        it.appName.first().uppercaseChar().toString() == letter
-                                    }
-                                    if (idx >= 0) {
-                                        // Her satırda 4 app var
-                                        val row = idx / 4
-                                        scope.launch { gridState.animateScrollToItem(row * 4) }
-                                    }
+                        .width(28.dp)
+                        .padding(vertical = 48.dp)
+                        .pointerInput(indexLetters) {
+                            forEachGesture {
+                                awaitPointerEventScope {
+                                    val down = awaitFirstDown(requireUnconsumed = false)
+                                    do {
+                                        val event = awaitPointerEvent(PointerEventPass.Main)
+                                        val pos = event.changes.firstOrNull()?.position ?: continue
+                                        val itemHeight = with(density) { letterItemHeightDp.toPx() }
+                                        val idx = (pos.y / itemHeight)
+                                            .toInt()
+                                            .coerceIn(0, indexLetters.lastIndex)
+                                        val letter = indexLetters[idx]
+                                        if (activeIndexLetter != letter) {
+                                            activeIndexLetter = letter
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            val appIdx = sortedApps.indexOfFirst {
+                                                it.appName.first().uppercaseChar().toString() == letter
+                                            }
+                                            if (appIdx >= 0) {
+                                                scope.launch { gridState.scrollToItem(appIdx) }
+                                            }
+                                        }
+                                        event.changes.forEach { it.consume() }
+                                    } while (event.changes.none { it.changedToUp() })
+                                    activeIndexLetter = null
                                 }
-                                .padding(2.dp)
-                        )
+                            }
+                        },
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        indexLetters.forEach { letter ->
+                            val isActive = activeIndexLetter == letter
+                            Text(
+                                text = letter,
+                                fontSize = if (isActive) 16.sp else 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isActive) TealColor else IndexLetterColor,
+                                modifier = Modifier
+                                    .height(letterItemHeightDp)
+                                    .padding(horizontal = 2.dp)
+                            )
+                        }
                     }
                 }
             }

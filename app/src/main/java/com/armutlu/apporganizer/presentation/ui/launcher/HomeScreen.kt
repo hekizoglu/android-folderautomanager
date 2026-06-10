@@ -1,6 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.animation.AnimatedVisibility
@@ -68,6 +73,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
     val filteredApps by viewModel.filteredAllApps.collectAsState()
+    val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     val haptic = LocalHapticFeedback.current
@@ -77,7 +83,60 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
     var swipeDelta by remember { mutableFloatStateOf(0f) }
 
+    val isLoading = folders.isEmpty() && allApps.isEmpty()
+
     LaunchedEffect(Unit) { viewModel.loadDockPackages(context) }
+
+    // İzin verilmeden launcher seçildiyse veya veriler henüz yüklenmediyse güvenli fallback
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF1A1A2E)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "AppOrganizer",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Light
+                )
+                Text(
+                    text = "Uygulamalar yükleniyor...",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 14.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_HOME_SETTINGS)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00897B))
+                ) {
+                    Text("Launcher Ayarları")
+                }
+                Button(
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.parse("package:${context.packageName}")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF37474F))
+                ) {
+                    Text("Uygulama Ayarları")
+                }
+            }
+        }
+        return
+    }
 
     BackHandler(enabled = allAppsOpen || openFolder != null) {
         if (allAppsOpen) viewModel.closeAllApps()
