@@ -1,197 +1,152 @@
-# AppOrganizer
+# AppOrganizer — Android Launcher
 
-> Telefonundaki uygulamaları yapay zeka ile otomatik kategorilere ayıran Android yönetim uygulaması.
-
-[![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-green.svg)](https://android.com)
-[![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://android-arsenal.com/api?level=26)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9-blue.svg)](https://kotlinlang.org)
-[![Version](https://img.shields.io/badge/Version-0.1.0--beta-orange.svg)](https://github.com/hekizoglu/android-folderautomanager/releases)
-[![Build](https://github.com/hekizoglu/android-folderautomanager/actions/workflows/build.yml/badge.svg)](https://github.com/hekizoglu/android-folderautomanager/actions/workflows/build.yml)
+Uygulamalarını otomatik klasörlere bölen, Pixel Launcher hissini koruyan akıllı Android launcher'ı.
 
 ---
 
-## Ne Yapar?
+## Uygulama Nasıl Çalışır?
 
-Telefonuna 50'den fazla uygulama kurdun ama hepsi ana ekranda dağınık duruyor. AppOrganizer bu sorunu çözer:
-
-1. **Tara** — Cihazındaki tüm kurulu uygulamaları algılar
-2. **Sınıflandır** — Yapay zeka ile her uygulamayı doğru kategoriye atar
-3. **Organize Et** — Her kategori için ana ekrana kısayol oluşturur
-
-Sonuç: Sosyal medya, oyunlar, finans, sağlık — hepsi yerli yerinde.
-
----
-
-## Özellikler
-
-### 🤖 Yapay Zeka Sınıflandırma
-- **Online veritabanı** — GitHub'da tutulan `app_database.json` ile 1000+ uygulamayı tanır
-- **Exact match** — Instagram → Sosyal Medya, ChatGPT → Üretkenlik gibi kesin eşleşmeler
-- **Keyword analizi** — Uygulama adı ve paket adından kategori çıkarımı
-- Yanlış sınıflandırılanlar için manuel düzeltme
-
-### 📂 10 Varsayılan Kategori
-| Kategori | Örnekler |
-|---|---|
-| 👥 Sosyal Medya | Instagram, WhatsApp, Telegram, Twitter |
-| 📝 Üretkenlik | ChatGPT, Microsoft Office, Notion, DeepSeek |
-| 🎮 Oyunlar | PUBG Mobile, Clash of Clans, Steam Link |
-| 🛍️ Alışveriş | Trendyol, Amazon, Hepsiburada |
-| 📰 Haber | Haberler, RSS okuyucular |
-| ❤️ Sağlık | Spor, fitness, meditasyon uygulamaları |
-| 💰 Finans | Bankacılık, kripto, yatırım |
-| 🎓 Eğitim | Duolingo, Khan Academy, Udemy |
-| 🔧 Araçlar | Dosya yöneticisi, VPN, temizleyici |
-| 📦 Diğer | Yukarıdakilere girmeyen her şey |
-
-### 📋 Uygulama Listesi & Yönetimi
-- Kategoriye göre filtreleme ve fuzzy search
-- Ada, kurulum tarihine göre sıralama
-- Toplu kategori atama (uzun basış → seç → ata)
-- Sistem uygulamalarını gizle / göster (varsayılan: gizli)
-- Kategorileri sıfırla ve yeniden sınıflandır
-- Yeni kurulan uygulamaları otomatik algıla
-
-### 🔗 Launcher Organizasyonu (ShortcutManager)
-- Her kategori için ana ekrana **pinlenebilir kısayol** oluşturur
-- Tüm launcher'larda çalışır (Samsung, MIUI, Pixel vb.)
-- Kısayola basınca doğrudan o kategorinin uygulamaları açılır
-- Kullanıcı onayıyla gerçekleşir — zorla hiçbir şey değiştirilmez
-
-### ♿ Erişilebilirlik Servisi (Gelişmiş)
-- AOSP tabanlı launcher'larda otomatik ikon taşıma desteği
-- Her adımı gösteren detaylı debug log sistemi
-- MIUI/HyperOS için kurulum rehberi ve uyarılar
-- Android 17 Advanced Protection Mode uyumlu (`isAccessibilityTool="true"`)
-- Dinamik gesture zamanlaması — cihaz ayarına göre otomatik
-
----
-
-## Mimari
+### Genel Akış
 
 ```
-app/src/main/java/com/armutlu/apporganizer/
-├── data/
-│   ├── local/           # Room DB (AppDao, CategoryDao, AppDatabase)
-│   ├── remote/          # GitHub app veritabanı (AppDatabaseService)
-│   └── repository/      # AppRepository — tek veri kaynağı
-├── domain/
-│   ├── models/          # AppInfo, Category
-│   └── usecase/         # AppClassifier, KeywordDatabase
-├── presentation/
-│   ├── navigation/      # Compose Navigation grafiği
-│   ├── receivers/       # PackageChangeReceiver
-│   ├── ui/
-│   │   ├── screens/     # AppListScreen, SettingsScreen, CategoryEditorScreen
-│   │   └── theme/       # Material 3 tema
-│   └── viewmodel/       # AppListViewModel
-├── service/             # LauncherAccessibilityService
-└── utils/               # PackageManagerHelper, LauncherOrganizer, PermissionHelper
+Cihaz başlatılır
+    └── LauncherActivity açılır
+         ├── İlk kez: OnboardingScreen
+         │    ├── Karşılama
+         │    ├── İzin isteme (bildirim, kullanım istatistikleri)
+         │    ├── Launcher seçimi (varsayılan yap)
+         │    ├── Tema & font seçimi
+         │    └── Bitti → HomeScreen
+         └── Sonraki açılışlar: HomeScreen
 ```
 
-**Teknoloji yığını:**
+### HomeScreen (Ana Ekran)
 
-| Katman | Teknoloji |
-|---|---|
-| UI | Jetpack Compose + Material 3 |
-| Mimari | MVVM + StateFlow |
-| DI | Hilt |
-| Veritabanı | Room |
-| Asenkron | Kotlin Coroutines + Flow |
-| Log | Timber |
-| Test | JUnit 4 + MockK |
+- **Saat widget** — Pixel tarzı büyük saat + tarih (Türkçe)
+- **Klasör grid** — 4 sütun, uygulamalar kategoriye göre otomatik gruplanmış
+- **İzin banner** — eksik izinler varsa uyarı gösterir (kapatılabilir)
+- **Swipe up** — Tüm Uygulamalar çekmecesini açar
+- **Long press (zemin)** — Yönetim ekranını açar
+- **Dock** — Alt kısımda frosted pill, kullanıcı seçimli 4 uygulama
+- **Klasör sürükleme** — Long press ile klasör sırasını değiştir
+
+### Klasörler Nasıl Oluşur?
+
+1. Launcher ilk açıldığında `PackageManagerHelper` cihazda yüklü tüm uygulamaları tarar
+2. Her uygulama `AppClassifier` tarafından kategorize edilir:
+   - ~680 uygulama tam eşleşme haritası (paket adı → kategori)
+   - Anahtar kelime analizi (sosyal medya, oyun, verimlilik vb.)
+   - Bilinmeyen uygulamalar → "Diğer" klasörü
+3. Sonuçlar Room veritabanına kaydedilir
+4. `LauncherViewModel` veritabanındaki uygulamaları klasörlere dönüştürür
+5. Her klasör bir `FolderTile` olarak grid'de gösterilir
+
+### Tüm Uygulamalar (Niagara Stili)
+
+Swipe up veya "Tümü" ile açılır:
+
+| Özellik | Detay |
+|---------|-------|
+| **Düzen** | Tek sütun liste — isim baskın, ikon sol |
+| **Alfabetik gruplar** | Büyük Teal harf başlıkları (34sp Bold) |
+| **A-Z Sidebar** | Sağ kenarda — sürükle → anında scroll + dokunsal geri bildirim |
+| **Arama** | Anlık filtre, uygulama adı ve paket adına göre |
+| **Sıralama** | A-Z / Kullanım Sayısı / Son Açılan |
+| **Bildirim rozetleri** | Kırmızı (acil) / Yeşil (mesaj) / Sarı (güncelleme) |
+| **Async ikonlar** | UI thread bloke edilmez — `produceState(IO)` + Accompanist |
+
+### FolderSheet (Klasör Detayı)
+
+Klasöre tıklanınca alt sayfa açılır:
+- Klasördeki tüm uygulamalar grid'de
+- Uygulama ismine tıkla → direkt başlat
 
 ---
 
-## Kurulum & Build
+## Teknik Mimari
 
-### Gereksinimler
-- Android Studio Hedgehog veya üzeri
-- JDK 17
-- Android SDK (API 26–34)
-
-```bash
-# Projeyi klonla
-git clone https://github.com/hekizoglu/android-folderautomanager.git
-cd android-folderautomanager
-
-# Birim testleri çalıştır
-./gradlew testDebugUnitTest
-
-# Debug APK derle
-./gradlew assembleDebug
-
-# APK'yı bağlı cihaza kur
-./gradlew installDebug
+```
+app/
+└── src/main/java/com/armutlu/apporganizer/
+    ├── data/
+    │   ├── local/          # Room DB (AppDatabase, AppDao, CategoryDao)
+    │   └── repository/     # AppRepository — DB <-> ViewModel köprüsü
+    ├── di/                 # Hilt modülleri (AppModule)
+    ├── domain/
+    │   ├── models/         # AppInfo, Category (Room entity'leri)
+    │   └── usecase/
+    │       └── classify/   # AppClassifier, KeywordDatabase, AppCategoryRepository
+    ├── presentation/
+    │   ├── ui/
+    │   │   ├── launcher/   # HomeScreen, AllAppsDrawer, FolderTile, FolderSheet, PermissionsBanner
+    │   │   ├── screens/    # AppListScreen, SettingsScreen, OnboardingScreen
+    │   │   └── theme/      # ThemePreferences (DataStore — 5 tema, 4 font)
+    │   └── viewmodel/      # LauncherViewModel, AppListViewModel
+    └── utils/              # PackageManagerHelper, UsageStatsHelper, DockPrefs
 ```
 
-APK çıktısı: `app/build/outputs/apk/debug/app-debug.apk`
+### Kullanılan Teknolojiler
+
+| Teknoloji | Versiyon | Amaç |
+|-----------|----------|------|
+| Jetpack Compose | BOM 2023.10 | UI |
+| Room | 2.6.1 | Yerel veritabanı |
+| Hilt | 2.48 | Dependency Injection |
+| DataStore | 1.0.0 | Tema/font tercihleri |
+| Accompanist DrawablePainter | 0.32.0 | Async uygulama ikonu |
+| Coroutines + Flow | 1.7.3 | Async işlemler |
+| Timber | 5.0.1 | Loglama |
+
+### AppInfo Modeli (Veritabanı)
+
+| Alan | Tür | Açıklama |
+|------|-----|----------|
+| packageName | String | Birincil anahtar |
+| appName | String | Görünen ad |
+| categoryId | String | Klasör kategorisi |
+| usageCount | Long | Kaç kez açıldı |
+| lastUsedTimestamp | Long | Son açılış zamanı |
+| notificationCount | Int | Bekleyen bildirim sayısı |
+| notificationImportance | Int | Bildirim önceliği (renk için) |
+| isSystemApp | Boolean | Sistem uygulaması mı? |
 
 ---
 
-## Kullanım
+## Temalar
 
-### İlk Açılış
-1. Uygulamayı aç → Onboarding ekranını tamamla
-2. İzinleri ver → Uygulama listesi otomatik yüklenir
+| Tema | Primary | Secondary |
+|------|---------|-----------|
+| Turkuaz (varsayılan) | #00897B | #26C6DA |
+| Mor | #7B1FA2 | #CE93D8 |
+| Okyanus | #1565C0 | #4FC3F7 |
+| Gün Batımı | #E64A19 | #FFCA28 |
+| Mono | #424242 | #9E9E9E |
 
-### Yapay Zeka Sınıflandırma
-1. Ana ekranda **🤖 AI** butonuna bas
-2. Sınıflandırılmamış uygulamalar otomatik kategorilere atanır
-3. Yanlış atananları uzun basış → Kategori Seç ile düzelt
+---
 
-### Launcher'da Organize Et
-1. **FAB (+)** → "Launcher'da Organize Et"
-2. "Başlat" → Her kategori için kısayol oluşturulur
-3. Her kısayolu onayladıkça ana ekrana eklenir
+## Build & Çalıştırma
 
-### Erişilebilirlik Servisi
+```powershell
+# Build
+cd "c:\Users\huseyinekizoglu\android-folderautomanager"
+.\gradlew assembleDebug
+
+# Emülatör (Pixel6_AOSP33)
+$em = "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe"
+Start-Process $em -ArgumentList "-avd","Pixel6_AOSP33","-no-snapshot-save"
+
+# Cihaza yükle
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb install -r app\build\outputs\apk\debug\app-debug.apk
+& $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.launcher.LauncherActivity"
 ```
-Ayarlar > Erişilebilirlik > AppOrganizer > Etkinleştir
-```
-> **MIUI/HyperOS:** Uygulama Bilgisi → Otomatik Başlatma'yı da açın ve pil optimizasyonunu devre dışı bırakın.
 
 ---
 
-## Testler
+## Gelecek Özellikler
 
-```bash
-# Tüm birim testleri
-./gradlew testDebugUnitTest
-
-# Kapsam raporu (JaCoCo)
-./gradlew jacocoTestReport
-# → app/build/reports/jacoco/jacocoTestReport/html/index.html
-
-# Enstrümanlı testler (emülatör/cihaz gerekir)
-./gradlew connectedDebugAndroidTest
-```
-
-**Test dosyaları:**
-- `AppClassifierTest` — AI sınıflandırma mantığı
-- `AppInfoTest` — Model doğrulamaları  
-- `CategoryTest` — Kategori operasyonları
-- `KeywordDatabaseTest` — Keyword eşleşme algoritması
-
----
-
-## Sürüm Geçmişi
-
-| Sürüm | Tarih | Notlar |
-|---|---|---|
-| 0.1.0-beta | Haziran 2026 | İlk beta — AI sınıflandırma, kısayol organizasyonu, erişilebilirlik servisi |
-
----
-
-## Katkıda Bulunma
-
-1. Fork'la
-2. Branch oluştur: `git checkout -b feature/ozellik-adi`
-3. Commit et ve push yap
-4. Pull Request aç
-
----
-
-## Lisans
-
-MIT © [hekizoglu](https://github.com/hekizoglu/android-folderautomanager)
+- [ ] Online uygulama havuzu (2M+ uygulama kategori DB)
+- [ ] Contextual dock (zaman bazlı ikon değişimi — sabah/öğle/gece)
+- [ ] Klasöre swipe-up → en sık kullanılan uygulamayı direkt aç
+- [ ] Ayarlar: dock düzenleme, ikon boyutu, grid sütun sayısı
+- [ ] Play Store yayını
