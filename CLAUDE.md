@@ -17,6 +17,10 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 
 ## Temel Çalışma Kuralları
 
+### Git Kuralları
+- **Tüm değişiklikler `main` branch üzerinde** — yeni branch oluşturma
+- `git add` + `git commit` + `git push origin main` — her build sonrası
+
 ### Her görev sonunda otomatik olarak:
 1. **Build al** — `.\gradlew assembleDebug`
 2. **Emülatörde test et** — `Pixel6_AOSP33` veya `Pixel7_API33` üzerinde
@@ -267,10 +271,10 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 ## DeepSeek Bulgularından Bekleyen Düzeltmeler
 
 Sıradaki iterasyonda uygulanacaklar (öncelik sırasıyla):
-1. **Icon loading** → Coil kütüphanesi ile async yükleme (UI thread bloke ediyor)
+1. ~~**Icon loading** → async yükleme~~ ✅ `produceState(IO)` + accompanist ile tamamlandı
 2. **AppListScreen** → küçük composable'lara böl (dosya çok büyük)
-3. **Haptic feedback** → klasör açma/kapama, uygulama başlatma
-4. **Dock** → sabit 4 uygulama yerine kullanıcı seçimi
+3. **Haptic feedback** → klasör açma/kapama ✅ (kısmen var), uygulama başlatma
+4. **Dock** → sabit 4 uygulama yerine kullanıcı seçimi UI (DockPrefs var, ekran yok)
 5. **Ayarlar ekranı** → launcher'ı varsayılan yapma butonu ekle
 
 ---
