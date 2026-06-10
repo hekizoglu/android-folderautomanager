@@ -28,7 +28,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -39,11 +42,13 @@ private val TextPrimary   = Color.White
 private val TextSecondary = Color.White.copy(alpha = 0.55f)
 
 @Composable
-private fun rememberIcon(packageName: String): Drawable? {
+private fun rememberIcon(packageName: String): ImageBitmap? {
     val context = LocalContext.current
-    return produceState<Drawable?>(null, packageName) {
+    return produceState<ImageBitmap?>(null, packageName) {
         value = withContext(Dispatchers.IO) {
-            runCatching { context.packageManager.getApplicationIcon(packageName) }.getOrNull()
+            runCatching {
+                context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+            }.getOrNull()
         }
     }.value
 }
@@ -100,8 +105,8 @@ fun DockEditSheet(
                         val icon = rememberIcon(pkg)
                         Box(contentAlignment = Alignment.TopEnd) {
                             if (icon != null) {
-                                androidx.compose.foundation.Image(
-                                    painter = rememberDrawablePainter(icon),
+                                Image(
+                                    bitmap = icon,
                                     contentDescription = null,
                                     modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
                                 )
@@ -165,8 +170,8 @@ fun DockEditSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (icon != null) {
-                            androidx.compose.foundation.Image(
-                                painter = rememberDrawablePainter(icon),
+                            Image(
+                                bitmap = icon,
                                 contentDescription = null,
                                 modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)),
                                 alpha = if (full && !inDock) 0.4f else 1f

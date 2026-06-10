@@ -55,7 +55,7 @@ class PackageManagerHelper(private val context: Context) {
                     .filter { pkgInfo ->
                         // Gizli sistem paketlerini atla
                         if (shouldHide(pkgInfo.packageName)) return@filter false
-                        if (!includeSystem && isSystemApp(pkgInfo.applicationInfo)) return@filter false
+                        if (!includeSystem && (pkgInfo.applicationInfo?.let { isSystemApp(it) } == true)) return@filter false
                         // Sadece başlatılabilir uygulamaları göster
                         if (onlyLaunchable) {
                             packageManager.getLaunchIntentForPackage(pkgInfo.packageName) != null

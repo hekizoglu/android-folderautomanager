@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.armutlu.apporganizer"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "0.1.0-beta"
 
@@ -64,7 +64,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {
@@ -120,14 +120,14 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3:1.1.2")
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.8.9")
 
     // Room Database
     implementation("androidx.room:room-runtime:2.6.1")
@@ -135,9 +135,9 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Hilt Dependency Injection
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-compiler:2.48")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
@@ -145,8 +145,8 @@ dependencies {
 
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
-    // Drawable → Compose painter (uygulama ikonu async yükleme için)
-    implementation("com.google.accompanist:accompanist-drawablepainter:0.32.0")
+    // Coil — async image loading (uygulama ikonu) — coil3 compileSdk36 gerektirir, coil2 kullan
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.android.material:material:1.11.0")
 
     // Testing
@@ -157,7 +157,7 @@ dependencies {
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.03"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

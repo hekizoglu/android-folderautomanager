@@ -25,7 +25,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -58,11 +60,13 @@ fun AppContextMenu(
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
 
-    val icon = produceState<android.graphics.drawable.Drawable?>(null, app.packageName) {
+    val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
         value = withContext(Dispatchers.IO) {
-            runCatching { context.packageManager.getApplicationIcon(app.packageName) }.getOrNull()
+            runCatching {
+                context.packageManager.getApplicationIcon(app.packageName).toBitmap(128, 128).asImageBitmap()
+            }.getOrNull()
         }
-    }.value
+    }
 
     // APK versiyonu
     val version = remember(app.packageName) {
@@ -91,8 +95,8 @@ fun AppContextMenu(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (icon != null) {
-                    androidx.compose.foundation.Image(
-                        painter = rememberDrawablePainter(icon),
+                    Image(
+                        bitmap = icon!!,
                         contentDescription = null,
                         modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp))
                     )

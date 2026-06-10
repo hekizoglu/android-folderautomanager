@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import android.graphics.drawable.Drawable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -49,7 +48,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,11 +98,13 @@ enum class AllAppsSortMode(val label: String) {
 
 // ── Async ikon yükleme ────────────────────────────────────────────────────────
 @Composable
-private fun rememberAppIcon(packageName: String): Drawable? {
+private fun rememberAppIcon(packageName: String): ImageBitmap? {
     val context = LocalContext.current
-    return produceState<Drawable?>(initialValue = null, packageName) {
+    return produceState<ImageBitmap?>(initialValue = null, packageName) {
         value = withContext(Dispatchers.IO) {
-            runCatching { context.packageManager.getApplicationIcon(packageName) }.getOrNull()
+            runCatching {
+                context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+            }.getOrNull()
         }
     }.value
 }
@@ -496,8 +500,8 @@ fun NiagaraAppRow(
         else null
         Box(modifier = Modifier.size(iconSize + 8.dp), contentAlignment = Alignment.Center) {
             if (icon != null) {
-                androidx.compose.foundation.Image(
-                    painter = rememberDrawablePainter(icon),
+                Image(
+                    bitmap = icon!!,
                     contentDescription = app.appName,
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp)),
                     alpha = iconAlpha,
