@@ -20,6 +20,8 @@ class LauncherActivity : ComponentActivity() {
 
     private val viewModel: LauncherViewModel by viewModels()
 
+    private var lastHomePressMs = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
@@ -33,6 +35,19 @@ class LauncherActivity : ComponentActivity() {
             AppOrganizerTheme(darkTheme = true) {
                 HomeScreen(viewModel = viewModel)
             }
+        }
+    }
+
+    // Home tuşuna iki kez hızlıca basılınca (≤500ms) AllApps açılır.
+    // Launcher zaten ön planda iken HOME → onNewIntent tetiklenir.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val now = System.currentTimeMillis()
+        if (now - lastHomePressMs <= 500L) {
+            viewModel.openAllApps()
+            lastHomePressMs = 0L
+        } else {
+            lastHomePressMs = now
         }
     }
 

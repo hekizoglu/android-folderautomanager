@@ -108,7 +108,8 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (!currentAllAppsOpen && available.y < -400f) {
+                // Eşiği düşürdük: -200f (eskiden -400f) — daha az hız gerekli
+                if (!currentAllAppsOpen && available.y < -200f) {
                     viewModel.openAllApps()
                 }
                 return Velocity.Zero
@@ -226,7 +227,8 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                         onDragCancel = { accumulated = 0f },
                         onVerticalDrag = { _, dragAmount ->
                             accumulated += dragAmount
-                            if (accumulated < -200f) {
+                            // Eşiği düşürdük: -120f (eskiden -200f) — daha kısa kaydırma yeterli
+                            if (accumulated < -120f) {
                                 accumulated = 0f
                                 viewModel.openAllApps()
                             }
