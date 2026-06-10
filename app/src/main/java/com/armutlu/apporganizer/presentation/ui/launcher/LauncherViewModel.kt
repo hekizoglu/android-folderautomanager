@@ -11,6 +11,7 @@ import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -198,6 +199,22 @@ class LauncherViewModel @Inject constructor(
                 repository.updateUsageCount(pkg, ms)
             }
             Timber.d("UsageStats synced: ${counts.size} apps")
+        }
+    }
+
+    /** Yüklü uygulamaların APK boyutlarını DB'ye senkronize eder (arka planda). */
+    fun syncAppSizes(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pm = context.packageManager
+            repository.getAllApps()
+                .filter { it.appSizeBytes == 0L }
+                .forEach { app ->
+                    runCatching {
+                        val info = pm.getApplicationInfo(app.packageName, 0)
+                        val size = File(info.sourceDir).length()
+                        if (size > 0L) repository.updateAppSize(app.packageName, size)
+                    }
+                }
         }
     }
 

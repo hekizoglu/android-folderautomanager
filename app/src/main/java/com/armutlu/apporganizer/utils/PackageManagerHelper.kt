@@ -65,6 +65,9 @@ class PackageManagerHelper(private val context: Context) {
                         try {
                             val appInfo = pkgInfo.applicationInfo ?: return@mapNotNull null
                             val appName = appInfo.loadLabel(packageManager).toString()
+                            val sizeBytes = runCatching {
+                                java.io.File(appInfo.sourceDir).length()
+                            }.getOrDefault(0L)
                             AppInfo(
                                 packageName = pkgInfo.packageName,
                                 appName = appName,
@@ -72,7 +75,8 @@ class PackageManagerHelper(private val context: Context) {
                                 isSystemApp = isSystemApp(appInfo),
                                 isInstalled = true,
                                 installTime = pkgInfo.firstInstallTime,
-                                lastUpdated = pkgInfo.lastUpdateTime
+                                lastUpdated = pkgInfo.lastUpdateTime,
+                                appSizeBytes = sizeBytes
                             )
                         } catch (e: Exception) {
                             Timber.w(e, "Error loading package: ${pkgInfo.packageName}")

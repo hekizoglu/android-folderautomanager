@@ -169,4 +169,7 @@ interface AppDao {
 
     @Query("SELECT * FROM apps ORDER BY usageCount DESC, appName ASC")
     fun getAllAppsSortedByUsage(): Flow<List<AppInfo>>
+
+    @Query("UPDATE apps SET appSizeBytes = :sizeBytes WHERE packageName = :packageName")
+    suspend fun updateAppSize(packageName: String, sizeBytes: Long)
 }

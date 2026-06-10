@@ -92,7 +92,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
 
     val isLoading = folders.isEmpty() && allApps.isEmpty()
 
-    LaunchedEffect(Unit) { viewModel.loadDockPackages(context) }
+    LaunchedEffect(Unit) {
+        viewModel.loadDockPackages(context)
+        viewModel.syncAppSizes(context)
+    }
 
     // İzin verilmeden launcher seçildiyse veya veriler henüz yüklenmediyse güvenli fallback
     if (isLoading) {

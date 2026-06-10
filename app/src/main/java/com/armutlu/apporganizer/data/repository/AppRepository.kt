@@ -241,6 +241,10 @@ class AppRepository @Inject constructor(
 
     fun getAllAppsSortedByUsage(): Flow<List<AppInfo>> = appDao.getAllAppsSortedByUsage()
 
+    suspend fun updateAppSize(packageName: String, sizeBytes: Long) {
+        try { appDao.updateAppSize(packageName, sizeBytes) } catch (e: Exception) { Timber.e(e) }
+    }
+
     suspend fun resetAllCategories() {
         try {
             appDao.resetAllAppCategories()

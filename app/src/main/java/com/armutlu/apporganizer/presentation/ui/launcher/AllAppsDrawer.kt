@@ -6,9 +6,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -44,16 +44,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.math.abs
 
 // ── Renkler ──────────────────────────────────────────────────────────────────
-private val BgColor       = Color(0xCC000000)   // %80 siyah — duvar kağıdı görünür
-private val HeaderColor   = Color(0xFF00897B)   // Teal — harf başlıkları
-private val SidebarColor  = Color(0xFF26C6DA)   // Cyan — sidebar harfleri
+private val BgColor       = Color(0xCC000000)
+private val HeaderColor   = Color(0xFF00897B)
+private val SidebarColor  = Color(0xFF26C6DA)
 private val SidebarActive = Color.White
 private val TextPrimary   = Color.White
 private val TextSecondary = Color.White.copy(alpha = 0.55f)
@@ -66,8 +71,24 @@ private val BadgeYellow   = Color(0xFFFDD835)
 
 private const val SWIPE_DOWN_THRESHOLD = 90f
 
-enum class SortMode(val label: String) {
-    ALPHA("A–Z"), USAGE("Kullanım"), RECENT("Son Açılan")
+// ── Yardımcı fonksiyonlar ─────────────────────────────────────────────────────
+fun formatBytes(bytes: Long): String = when {
+    bytes <= 0          -> "—"
+    bytes < 1_048_576   -> "${bytes / 1024} KB"
+    bytes < 1_073_741_824 -> "${"%.1f".format(bytes / 1_048_576.0)} MB"
+    else                -> "${"%.2f".format(bytes / 1_073_741_824.0)} GB"
+}
+
+private val monthFmt = SimpleDateFormat("MMM yy", Locale("tr"))
+private fun fmtMonth(ts: Long): String =
+    if (ts == 0L) "?" else monthFmt.format(Date(ts))
+
+enum class AllAppsSortMode(val label: String) {
+    ALPHA("A–Z"),
+    USAGE("Kullanım"),
+    SIZE_DESC("Boyut ↓"),
+    SIZE_ASC("Boyut ↑"),
+    INSTALL_DATE("Yükleme")
 }
 
 // ── Async ikon yükleme ────────────────────────────────────────────────────────
@@ -81,6 +102,59 @@ private fun rememberAppIcon(packageName: String): Drawable? {
     }.value
 }
 
+// ── Sidebar label hesaplama ───────────────────────────────────────────────────
+private data class SidebarEntry(val label: String, val scrollIndex: Int)
+
+private fun buildSidebarEntries(
+    apps: List<AppInfo>,
+    mode: AllAppsSortMode
+): List<SidebarEntry> {
+    if (apps.isEmpty()) return emptyList()
+    return when (mode) {
+        AllAppsSortMode.ALPHA -> {
+            // Her harf grubu için bir entry
+            val grouped = apps.groupBy { app ->
+                val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'
+                if (c.isLetter()) c else '#'
+            }.toSortedMap(compareBy { if (it == '#') Char.MAX_VALUE else it })
+            var idx = 0
+            grouped.map { (letter, list) ->
+                val entry = SidebarEntry(letter.toString(), idx)
+                idx += 1 + list.size
+                entry
+            }
+        }
+        AllAppsSortMode.USAGE -> {
+            // Her benzersiz usageCount basamağı için bir entry (en yüksek → en düşük)
+            val steps = listOf(1000L, 500L, 200L, 100L, 50L, 20L, 10L, 5L, 1L, 0L)
+            steps.mapNotNull { threshold ->
+                val idx = apps.indexOfFirst { it.usageCount <= threshold }
+                if (idx >= 0) SidebarEntry("${threshold}×", idx) else null
+            }.distinctBy { it.scrollIndex }
+        }
+        AllAppsSortMode.SIZE_DESC -> {
+            val steps = listOf(500L, 200L, 100L, 50L, 20L, 10L, 5L, 1L).map { it * 1_048_576 }
+            steps.mapNotNull { threshold ->
+                val idx = apps.indexOfFirst { it.appSizeBytes <= threshold }
+                if (idx >= 0) SidebarEntry(formatBytes(threshold), idx) else null
+            }.distinctBy { it.scrollIndex }
+        }
+        AllAppsSortMode.SIZE_ASC -> {
+            val steps = listOf(1L, 5L, 10L, 20L, 50L, 100L, 200L, 500L).map { it * 1_048_576 }
+            steps.mapNotNull { threshold ->
+                val idx = apps.indexOfFirst { it.appSizeBytes >= threshold }
+                if (idx >= 0) SidebarEntry(formatBytes(threshold), idx) else null
+            }.distinctBy { it.scrollIndex }
+        }
+        AllAppsSortMode.INSTALL_DATE -> {
+            // Her ay için bir entry
+            apps.mapIndexed { idx, app -> idx to fmtMonth(app.installTime) }
+                .distinctBy { (_, month) -> month }
+                .map { (idx, month) -> SidebarEntry(month, idx) }
+        }
+    }
+}
+
 // ── Ana Drawer ────────────────────────────────────────────────────────────────
 @Composable
 fun AllAppsDrawer(
@@ -92,8 +166,8 @@ fun AllAppsDrawer(
     iconSize: Dp = 40.dp
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
-    var sortMode        by remember { mutableStateOf(SortMode.ALPHA) }
-    var activeLetter    by remember { mutableStateOf<Char?>(null) }
+    var sortMode        by remember { mutableStateOf(AllAppsSortMode.ALPHA) }
+    var activeSidebarIdx by remember { mutableIntStateOf(-1) }
     val haptic          = LocalHapticFeedback.current
     val listState       = rememberLazyListState()
     val scope           = rememberCoroutineScope()
@@ -104,15 +178,17 @@ fun AllAppsDrawer(
         val base = if (searchQuery.isBlank()) apps
         else apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
         when (sortMode) {
-            SortMode.ALPHA   -> base.sortedBy { it.appName.lowercase() }
-            SortMode.USAGE   -> base.sortedByDescending { it.usageCount }
-            SortMode.RECENT  -> base.sortedByDescending { it.lastUsedTimestamp }
+            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase() }
+            AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
+            AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
+            AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
+            AllAppsSortMode.INSTALL_DATE -> base.sortedByDescending { it.installTime }
         }
     }
 
-    // A-Z gruplama (sadece ALPHA + arama yok)
+    // Alfa gruplama sadece ALPHA modunda
     val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery) {
-        if (sortMode == SortMode.ALPHA && searchQuery.isBlank())
+        if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
             sortedApps.groupBy { app ->
                 val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'
                 if (c.isLetter()) c else '#'
@@ -120,18 +196,26 @@ fun AllAppsDrawer(
         else emptyMap()
     }
 
-    // Sidebar harfleri + scroll-offset hesabı
-    val sidebarLetters = remember(grouped) { grouped.keys.toList() }
-
-    // grouped'dan her harfin LazyColumn indeksi: header + item sayıları
     val letterScrollIndex = remember(grouped) {
         val map = mutableMapOf<Char, Int>()
         var idx = 0
         grouped.forEach { (letter, list) ->
             map[letter] = idx
-            idx += 1 + list.size  // 1 header + N item
+            idx += 1 + list.size
         }
         map
+    }
+
+    // Sidebar entries (contextual)
+    val sidebarEntries = remember(sortedApps, sortMode, searchQuery) {
+        if (searchQuery.isNotBlank()) emptyList()
+        else if (sortMode == AllAppsSortMode.ALPHA) {
+            grouped.keys.mapIndexed { i, letter ->
+                SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0)
+            }
+        } else {
+            buildSidebarEntries(sortedApps, sortMode)
+        }
     }
 
     Box(
@@ -147,10 +231,9 @@ fun AllAppsDrawer(
                 )
             }
     ) {
-        // Katman 1: arka plan blur
+        // Arka plan
         Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(BgColor))
 
-        // Katman 2: içerik
         Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
 
@@ -158,35 +241,20 @@ fun AllAppsDrawer(
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
 
                     // Drag handle
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(36.dp).height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(DragHandle)
-                        )
+                    Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
+                        Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(DragHandle))
                     }
 
                     Spacer(Modifier.height(10.dp))
 
-                    // Arama + kapat satırı
+                    // Arama + kapat
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(44.dp)
-                                .clip(RoundedCornerShape(22.dp))
-                                .background(SearchBg)
+                            modifier = Modifier.weight(1f).height(44.dp)
+                                .clip(RoundedCornerShape(22.dp)).background(SearchBg)
                                 .padding(horizontal = 14.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
@@ -194,22 +262,15 @@ fun AllAppsDrawer(
                                 Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
                                 Box(modifier = Modifier.weight(1f)) {
-                                    if (searchQuery.isEmpty()) {
-                                        Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
-                                    }
+                                    if (searchQuery.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
                                     BasicTextField(
-                                        value = searchQuery,
-                                        onValueChange = onSearchQueryChange,
-                                        singleLine = true,
-                                        cursorBrush = SolidColor(HeaderColor),
+                                        value = searchQuery, onValueChange = onSearchQueryChange,
+                                        singleLine = true, cursorBrush = SolidColor(HeaderColor),
                                         textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp)
                                     )
                                 }
                                 if (searchQuery.isNotEmpty()) {
-                                    IconButton(
-                                        onClick = { onSearchQueryChange("") },
-                                        modifier = Modifier.size(24.dp)
-                                    ) {
+                                    IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(24.dp)) {
                                         Icon(Icons.Default.Close, "Temizle", tint = TextSecondary, modifier = Modifier.size(15.dp))
                                     }
                                 }
@@ -222,27 +283,22 @@ fun AllAppsDrawer(
 
                     Spacer(Modifier.height(8.dp))
 
-                    // Sıralama chip'leri
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    // Sıralama chip'leri (5 mod)
+                    androidx.compose.foundation.lazy.LazyRow(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        SortMode.entries.forEach { mode ->
+                        itemsIndexed(AllAppsSortMode.entries) { _, mode ->
                             val active = sortMode == mode
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(
-                                        if (active) HeaderColor else Color.White.copy(alpha = 0.12f)
-                                    )
+                                    .background(if (active) HeaderColor else Color.White.copy(alpha = 0.12f))
                                     .clickable { sortMode = mode }
-                                    .padding(horizontal = 12.dp, vertical = 5.dp)
+                                    .padding(horizontal = 11.dp, vertical = 5.dp)
                             ) {
                                 Text(
-                                    mode.label,
-                                    fontSize = 12.sp,
+                                    mode.label, fontSize = 11.sp,
                                     fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
                                     color = if (active) Color.White else TextSecondary
                                 )
@@ -252,24 +308,21 @@ fun AllAppsDrawer(
 
                     Spacer(Modifier.height(4.dp))
 
-                    // ── Niagara-stili liste ──────────────────────────────────
+                    // ── Liste ──────────────────────────────────────────────────
                     if (grouped.isNotEmpty()) {
-                        // Gruplu alfabetik liste — sticky harfler
                         LazyColumn(
                             state = listState,
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 32.dp)
                         ) {
                             grouped.forEach { (letter, letterApps) ->
-                                // Harf başlığı (sticky değil — stickyHeader API stable değil tüm versiyonlarda)
                                 item(key = "header_$letter") {
                                     NiagaraLetterHeader(letter = letter)
                                 }
                                 items(items = letterApps, key = { it.packageName }) { app ->
                                     NiagaraAppRow(
-                                        app = app,
-                                        iconSize = iconSize,
-                                        isActive = activeLetter == app.appName.firstOrNull()?.uppercaseChar(),
+                                        app = app, iconSize = iconSize, isActive = false,
+                                        sortMode = sortMode,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             onAppClick(app.packageName)
@@ -279,7 +332,6 @@ fun AllAppsDrawer(
                             }
                         }
                     } else {
-                        // Arama sonucu veya kullanım/son sıralaması — düz liste
                         LazyColumn(
                             state = listState,
                             modifier = Modifier.fillMaxSize(),
@@ -287,19 +339,15 @@ fun AllAppsDrawer(
                         ) {
                             if (sortedApps.isEmpty()) {
                                 item {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
+                                    Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
                                         Text("Sonuç bulunamadı", color = TextSecondary, fontSize = 14.sp)
                                     }
                                 }
                             } else {
                                 items(items = sortedApps, key = { it.packageName }) { app ->
                                     NiagaraAppRow(
-                                        app = app,
-                                        iconSize = iconSize,
-                                        isActive = false,
+                                        app = app, iconSize = iconSize, isActive = false,
+                                        sortMode = sortMode,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             onAppClick(app.packageName)
@@ -311,16 +359,16 @@ fun AllAppsDrawer(
                     }
                 }
 
-                // ── Sağ: A-Z Sidebar ────────────────────────────────────────
-                if (sortMode == SortMode.ALPHA && searchQuery.isEmpty() && sidebarLetters.isNotEmpty()) {
+                // ── Sağ: Contextual Sidebar ─────────────────────────────────
+                if (sidebarEntries.isNotEmpty()) {
                     val itemHeightDp = 22.dp
 
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(30.dp)
+                            .width(40.dp)
                             .padding(vertical = 56.dp)
-                            .pointerInput(sidebarLetters) {
+                            .pointerInput(sidebarEntries) {
                                 awaitEachGesture {
                                     awaitFirstDown(requireUnconsumed = false)
                                     do {
@@ -329,17 +377,17 @@ fun AllAppsDrawer(
                                         val itemPx = with(density) { itemHeightDp.toPx() }
                                         val idx = (pos.y / itemPx)
                                             .toInt()
-                                            .coerceIn(0, sidebarLetters.lastIndex)
-                                        val letter = sidebarLetters[idx]
-                                        if (activeLetter != letter) {
-                                            activeLetter = letter
+                                            .coerceIn(0, sidebarEntries.lastIndex)
+                                        if (activeSidebarIdx != idx) {
+                                            activeSidebarIdx = idx
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            val scrollIdx = letterScrollIndex[letter] ?: 0
-                                            scope.launch { listState.scrollToItem(scrollIdx) }
+                                            scope.launch {
+                                                listState.scrollToItem(sidebarEntries[idx].scrollIndex)
+                                            }
                                         }
                                         event.changes.forEach { it.consume() }
                                     } while (event.changes.none { it.changedToUp() })
-                                    activeLetter = null
+                                    activeSidebarIdx = -1
                                 }
                             },
                         contentAlignment = Alignment.TopCenter
@@ -349,22 +397,23 @@ fun AllAppsDrawer(
                             verticalArrangement = Arrangement.SpaceEvenly,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            sidebarLetters.forEach { letter ->
-                                val isActive = activeLetter == letter
+                            sidebarEntries.forEachIndexed { idx, entry ->
+                                val isActive = activeSidebarIdx == idx
                                 val scale by animateFloatAsState(
-                                    targetValue = if (isActive) 1.5f else 1f,
+                                    targetValue = if (isActive) 1.4f else 1f,
                                     animationSpec = spring(stiffness = Spring.StiffnessHigh),
-                                    label = "sidebar_scale"
+                                    label = "sidebar_scale_$idx"
                                 )
                                 Text(
-                                    text = letter.toString(),
-                                    fontSize = if (isActive) 13.sp else 10.sp,
+                                    text = entry.label,
+                                    fontSize = if (isActive) 11.sp else 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isActive) SidebarActive else SidebarColor,
                                     modifier = Modifier
                                         .height(itemHeightDp)
                                         .scale(scale)
-                                        .padding(horizontal = 2.dp)
+                                        .padding(horizontal = 2.dp),
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -380,12 +429,8 @@ fun AllAppsDrawer(
 private fun NiagaraLetterHeader(letter: Char) {
     Text(
         text = letter.toString(),
-        fontSize = 34.sp,
-        fontWeight = FontWeight.Black,
-        color = HeaderColor,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, top = 18.dp, bottom = 2.dp)
+        fontSize = 34.sp, fontWeight = FontWeight.Black, color = HeaderColor,
+        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 18.dp, bottom = 2.dp)
     )
 }
 
@@ -395,14 +440,26 @@ fun NiagaraAppRow(
     app: AppInfo,
     iconSize: Dp = 40.dp,
     isActive: Boolean = false,
+    sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
     onClick: () -> Unit
 ) {
     val icon = rememberAppIcon(app.packageName)
     val notifColor = when {
-        (app.notificationCount ?: 0) == 0 -> null
-        (app.notificationImportance ?: 0) >= 4 -> BadgeRed
-        (app.notificationImportance ?: 0) >= 3 -> BadgeGreen
+        app.notificationCount == 0 -> null
+        app.notificationImportance >= 4 -> BadgeRed
+        app.notificationImportance >= 3 -> BadgeGreen
         else -> BadgeYellow
+    }
+
+    // Sağ taraf bilgisi — moda göre değişir
+    val trailingText: String? = when (sortMode) {
+        AllAppsSortMode.SIZE_DESC, AllAppsSortMode.SIZE_ASC ->
+            if (app.appSizeBytes > 0) formatBytes(app.appSizeBytes) else null
+        AllAppsSortMode.INSTALL_DATE ->
+            if (app.installTime > 0) fmtMonth(app.installTime) else null
+        AllAppsSortMode.USAGE ->
+            if (app.usageCount > 0) "${app.usageCount}×" else null
+        AllAppsSortMode.ALPHA -> null
     }
 
     Row(
@@ -414,7 +471,7 @@ fun NiagaraAppRow(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // İkon + renk kodlu badge
+        // İkon + rozet
         Box(modifier = Modifier.size(iconSize + 8.dp), contentAlignment = Alignment.Center) {
             if (icon != null) {
                 androidx.compose.foundation.Image(
@@ -424,72 +481,48 @@ fun NiagaraAppRow(
                 )
             } else {
                 Box(
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(RoundedCornerShape(10.dp))
+                    modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp))
                         .background(HeaderColor.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = app.appName.firstOrNull()?.toString() ?: "?",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(app.appName.firstOrNull()?.toString() ?: "?", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            // Renk kodlu bildirim rozeti
             if (notifColor != null) {
-                val count = app.notificationCount ?: 0
+                val count = app.notificationCount
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .size(if (count > 9) 18.dp else 14.dp)
-                        .clip(CircleShape)
-                        .background(notifColor),
+                        .clip(CircleShape).background(notifColor),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (count > 0) {
-                        Text(
-                            text = if (count > 99) "99+" else count.toString(),
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
+                    if (count > 0) Text(if (count > 99) "99+" else count.toString(), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
 
         Spacer(Modifier.width(14.dp))
 
-        // Uygulama adı — Niagara'da dominant
+        // İsim + alt bilgi
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = app.appName,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            if (app.categoryId.isNotBlank() && app.categoryId != "other") {
+            if (app.categoryId.isNotBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
                 Text(
-                    text = app.categoryId.replaceFirstChar { it.uppercase() },
-                    fontSize = 11.sp,
-                    color = TextSecondary,
-                    maxLines = 1
+                    app.categoryId.replaceFirstChar { it.uppercase() },
+                    fontSize = 11.sp, color = TextSecondary, maxLines = 1
                 )
             }
         }
 
-        // Kullanım sayacı (USAGE modunda bilgi)
-        if (app.usageCount > 0) {
+        // Sağ bilgi (boyut / tarih / kullanım)
+        if (trailingText != null) {
             Text(
-                text = "${app.usageCount}×",
-                fontSize = 11.sp,
-                color = TextSecondary,
-                modifier = Modifier.padding(end = 4.dp)
+                trailingText, fontSize = 11.sp, color = SidebarColor, fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(start = 8.dp)
             )
         }
     }
