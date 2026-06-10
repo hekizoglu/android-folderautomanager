@@ -114,10 +114,6 @@ fun AllAppsDrawer(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .blur(20.dp) // wallpaper blur efekti
-            .background(DrawerBackground)
-            .statusBarsPadding()
-            .navigationBarsPadding()
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
                     onDragEnd = {
@@ -131,6 +127,20 @@ fun AllAppsDrawer(
                 )
             }
     ) {
+        // Katman 1: sadece arka plan blur (içerik bu Box dışında)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(24.dp)
+                .background(DrawerBackground)
+        )
+        // Katman 2: içerik — blur etkilemez
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+        ) {
         Row(modifier = Modifier.fillMaxSize()) {
             // Ana içerik (grid + header)
             Column(modifier = Modifier.weight(1f)) {
@@ -303,5 +313,6 @@ fun AllAppsDrawer(
                 }
             }
         }
-    }
+        } // Katman 2 Box kapanış
+    } // Ana Box kapanış
 }

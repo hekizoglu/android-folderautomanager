@@ -39,9 +39,9 @@ class LauncherActivity : ComponentActivity() {
         return info?.activityInfo?.packageName == context.packageName
     }
 
+    // Launcher'da back tuşu uygulamayı kapatmamalı
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        @Suppress("DEPRECATION")
-        super.onBackPressed()
+        // intentionally no-op: HomeScreen'deki BackHandler halleder
     }
 }
