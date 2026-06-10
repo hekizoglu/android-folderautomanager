@@ -61,12 +61,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -85,7 +87,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val haptic = LocalHapticFeedback.current
     val dockPackages by viewModel.dockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
-    var contextMenuApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
+    var contextMenuPkg by remember { mutableStateOf<String?>(null) }
+    // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
+    val contextMenuApp = contextMenuPkg?.let { pkg -> allApps.find { it.packageName == pkg } }
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
 
     // Drag & drop state
@@ -127,6 +131,12 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     LaunchedEffect(Unit) {
         viewModel.loadDockPackages(context)
         viewModel.syncAppSizes(context)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.toastMessage.collect { msg ->
+            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
 
     // Ä°zin verilmeden launcher seÃ§ildiyse veya veriler henÃ¼z yÃ¼klenmediyse gÃ¼venli fallback
@@ -180,9 +190,17 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         return
     }
 
+    val scope = rememberCoroutineScope()
+    val folderSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     BackHandler(enabled = allAppsOpen || openFolder != null) {
         if (allAppsOpen) viewModel.closeAllApps()
-        else viewModel.closeFolder()
+        else {
+            scope.launch {
+                folderSheetState.hide()
+                viewModel.closeFolder()
+            }
+        }
     }
 
     // Root box — fully transparent so wallpaper shows through
@@ -380,7 +398,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 },
                 onAppLongClick = { app ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    contextMenuApp = app
+                    contextMenuPkg = app.packageName
                 },
                 onClose = viewModel::closeAllApps
             )
@@ -403,17 +421,17 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         AppContextMenu(
             app = app,
             isDocked = app.packageName in dockPackages,
-            onDismiss = { contextMenuApp = null },
+            onDismiss = { contextMenuPkg = null },
             onLaunch = { viewModel.launchApp(context, app.packageName) },
             onAddToDock = { viewModel.addToDock(context, app.packageName) },
             onRemoveFromDock = { viewModel.removeFromDock(context, app.packageName) },
             onChangeCategory = {
                 categoryPickerApp = app
-                contextMenuApp = null
+                contextMenuPkg = null
             },
             onHideApp = { hidden ->
                 viewModel.setAppHidden(app.packageName, hidden)
-                contextMenuApp = null
+                contextMenuPkg = null
             }
         )
     }
@@ -433,12 +451,17 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     openFolder?.let { folder ->
         FolderSheet(
             folder = folder,
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            onDismiss = viewModel::closeFolder,
+            sheetState = folderSheetState,
+            onDismiss = {
+                scope.launch {
+                    folderSheetState.hide()
+                    viewModel.closeFolder()
+                }
+            },
             onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
             onAppLongClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                contextMenuApp = app
+                contextMenuPkg = app.packageName
             }
         )
     }
@@ -568,3 +591,4 @@ private fun DockIcon(
         }
     }
 }
+

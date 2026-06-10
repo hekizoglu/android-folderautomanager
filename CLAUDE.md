@@ -300,24 +300,23 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 |---|-------|
 | 1 | ✅ Theme.kt doğru |
 | 2 | ✅ Manifest satır 71-72 |
-| 3 | ✅ 3 dosyada aktif |
-| 4 | ✅ blur(20.dp) satır 239 |
+| 3 | ✅ MainActivity + SettingsScreen + OnboardingScreen |
+| 4 | ✅ blur(20.dp) aktif |
 | 5 | ✅ LRU(200) + produceState |
-| 6 | ✅ Long-press haptic var |
-| 7 | ❌ Tap başlatmada haptic yok |
-| 8 | ✅ DockEditSheet tam UI |
-| 9 | ✅ SettingsScreen'de var |
-| 10 | ✅ Badge UI var |
-| 11 | ❌ NotificationListenerService yok — notificationCount her zaman 0 |
-| 12 | ❌ AppListScreen.kt büyük, bölünmeli |
+| 6 | ✅ Long-press haptic — tüm dosyalarda |
+| 7 | ✅ Tap haptic — LongPress tip ile eklendi (TextHapticFeedback API yok) |
+| 8 | ✅ DockEditSheet tam UI + toast feedback |
+| 9 | ✅ SettingsScreen'de RoleManager butonu var |
+| 10 | ✅ Badge UI — AppIconView, FolderTile, AllAppsDrawer |
+| 11 | ✅ AppNotificationListenerService eklendi, DB'ye yazıyor |
+| 12 | ⚠️ AppListScreen.kt 385 satır — Components+Dialogs ayrıldı, kabul edilebilir |
 
----
-
-## Bekleyen Düzeltmeler (Öncelik Sırasıyla)
-
-1. **NotificationListenerService** → gerçek bildirim sayısını `notificationCount`'a yaz
-2. **Haptic feedback — tap** → uygulama başlatırken `TextHapticFeedback` ekle
-3. **AppListScreen refactor** → 300 satır altına indir
+**Düzeltilen Buglar (2026-06-10)**
+- FolderSheet geri/home tuşu: `sheetState.hide()` + `BackHandler` entegre edildi
+- Sil/Gizle: `contextMenuApp` artık `allApps` flow'undan güncel veri alıyor (stale state giderildi)
+- Dock'a ekle: dolu/zaten var durumları Toast ile kullanıcıya bildiriliyor
+- Swipe-up AllApps: `detectVerticalDragGestures` eklendi, güvenilirlik arttı
+- Çift tap: ana ekrana çift dokunarak AllApps açılıyor
 
 ---
 

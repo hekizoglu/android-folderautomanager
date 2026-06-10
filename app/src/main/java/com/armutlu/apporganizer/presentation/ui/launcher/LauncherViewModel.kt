@@ -16,9 +16,12 @@ import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -68,6 +71,9 @@ class LauncherViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository
 ) : AndroidViewModel(application) {
+
+    private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
 
     // Kullanıcı tarafından drag&drop ile değiştirilen klasör sırası (categoryId listesi)
     private val _folderOrder = MutableStateFlow<List<String>>(emptyList())
@@ -207,8 +213,16 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun addToDock(context: Context, packageName: String) {
-        if (DockPrefs.addToDock(context, packageName))
-            _dockPackages.value = DockPrefs.getDockPackages(context)
+        val current = DockPrefs.getDockPackages(context)
+        when {
+            current.contains(packageName) -> _toastMessage.tryEmit("Uygulama zaten Dock'ta")
+            current.size >= 4 -> _toastMessage.tryEmit("Dock dolu (max 4) — önce bir uygulama çıkar")
+            else -> {
+                DockPrefs.addToDock(context, packageName)
+                _dockPackages.value = DockPrefs.getDockPackages(context)
+                _toastMessage.tryEmit("Dock'a eklendi")
+            }
+        }
     }
 
     fun removeFromDock(context: Context, packageName: String) {
