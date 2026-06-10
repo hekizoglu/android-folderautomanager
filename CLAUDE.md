@@ -335,13 +335,22 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | Özellik | Durum | Not |
 |---------|-------|-----|
 | Paralel Subagents | ✅ Stabil | VS Code 1.109+ |
-| Agent Teams / Swarm | 🧪 Experimental | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
+| Agent Teams / Swarm | ✅ Config hazır | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` → `.vscode/settings.json` |
 | VS Code Agent Sessions View | ✅ Stabil | 1.109+ |
-| Custom Agents + Handoffs | ✅ GA | `.vscode/agents/` |
-| NotebookLM MCP (npx) | ✅ Aktif | Çerez 2–4 hf'da bir yenilenir |
-| NotebookLM MCP (uv) | ✅ Aktif | Daha hafif kurulum |
-| Nested Agent Teams | ❌ Yok | v2.1.69'da düzeltildi ama devre dışı |
+| Custom Agents + Handoffs | ✅ Kuruldu | `.claude/agents/` — 3 agent: code-reviewer, deepseek-analyst, android-builder |
+| DeepSeek API | ✅ Çalışıyor | `deepseek-v4-flash`, key `.env`'de, test edildi |
+| NotebookLM MCP (config) | ✅ Config hazır | `claude_desktop_config.json` + `.vscode/settings.json` oluşturuldu |
+| NotebookLM MCP (auth) | ⚠️ Manuel adım | `npx notebooklm-mcp@latest auth` → sen çalıştır → Google ile giriş yap |
+| Gemini / Google LLM | ❌ API key yok | Sen key sağlarsan `.env`'e ekleriz |
+| Nested Agent Teams | ❌ Yok | Roadmap'te |
 | Session Resumption (Teams) | ❌ Yok | Roadmap'te |
+
+### Kurulu Agent'lar (`.claude/agents/`)
+| Agent | Model | Görev |
+|-------|-------|-------|
+| `code-reviewer` | Sonnet 4.6 | Kotlin/Compose güvenlik + performans review |
+| `android-builder` | Haiku 4.5 | `assembleDebug` build + hata raporu |
+| `deepseek-analyst` | Sonnet 4.6 | DeepSeek API ile derin kod analizi |
 
 ---
 
