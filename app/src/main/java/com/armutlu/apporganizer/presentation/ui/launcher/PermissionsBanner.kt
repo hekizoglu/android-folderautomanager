@@ -62,10 +62,21 @@ private fun isDefaultLauncher(context: Context): Boolean {
 
 data class PermissionIssue(val label: String, val action: () -> Unit)
 
+private fun isBannerSnoozed(context: Context): Boolean {
+    val prefs = context.getSharedPreferences("app_organizer_prefs", Context.MODE_PRIVATE)
+    val snoozedUntil = prefs.getLong("banner_snoozed_until", 0L)
+    return System.currentTimeMillis() < snoozedUntil
+}
+
+private fun snoozeBanner(context: Context) {
+    val prefs = context.getSharedPreferences("app_organizer_prefs", Context.MODE_PRIVATE)
+    prefs.edit().putLong("banner_snoozed_until", System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000).apply()
+}
+
 @Composable
 fun PermissionsBanner() {
     val context = LocalContext.current
-    var dismissed by remember { mutableStateOf(false) }
+    var dismissed by remember { mutableStateOf(isBannerSnoozed(context)) }
 
     var notifGranted  by remember { mutableStateOf(isNotifGranted(context)) }
     var launcherSet   by remember { mutableStateOf(isDefaultLauncher(context)) }
@@ -130,7 +141,10 @@ fun PermissionsBanner() {
                     tint = Color.White.copy(alpha = 0.5f),
                     modifier = Modifier
                         .size(16.dp)
-                        .clickable { dismissed = true }
+                        .clickable {
+                            snoozeBanner(context)
+                            dismissed = true
+                        }
                 )
             }
             issues.forEach { issue ->
