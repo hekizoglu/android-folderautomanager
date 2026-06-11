@@ -139,7 +139,7 @@ fun AppListScreen(
                     TextButton(onClick = { showBulkCategory = true }, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Default.DriveFileMove, null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Kategori DeÄŸiÅŸtir")
+                        Text("Kategori Değiştir")
                     }
                     if (showBulkCategory) {
                         BulkCategoryPicker(
@@ -156,7 +156,7 @@ fun AppListScreen(
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            // Arama çubuÄŸu
+            // Arama çubuğu
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
@@ -213,13 +213,13 @@ fun AppListScreen(
                 screenState.isProcessing -> LoadingSkeleton()
                 screenState.error != null -> AppEmptyState(
                     icon = Icons.Default.ErrorOutline,
-                    title = "Hata oluÅŸtu",
+                    title = "Hata oluştu",
                     subtitle = screenState.error ?: ""
                 )
                 screenState.filteredApps.isEmpty() && searchQuery.isNotBlank() -> AppEmptyState(
                     icon = Icons.Default.SearchOff,
                     title = "Sonuç bulunamadı",
-                    subtitle = "\"$searchQuery\" için eÅŸleÅŸen uygulama yok"
+                    subtitle = "\"$searchQuery\" için eşleşen uygulama yok"
                 )
                 screenState.filteredApps.isEmpty() -> AppEmptyState(
                     icon = Icons.Default.Apps,
@@ -243,7 +243,7 @@ fun AppListScreen(
         }
     }
 
-    // Kategori deÄŸiÅŸtir dialog
+    // Kategori değiştir dialog
     appForCategory?.let { app ->
         CategoryPickerDialog(
             app = app,
@@ -295,7 +295,7 @@ private fun CategoryChip(
     )
 }
 
-// â”€â”€ App listesi içeriÄŸi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── App listesi içeriği ────────────────────────────────────────────────────
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -384,7 +384,7 @@ private fun AppListContent(
                         }
                     }
 
-                    // Seçim iÅŸareti
+                    // Seçim işareti
                     if (isSelected) {
                         Icon(
                             Icons.Default.CheckCircle,

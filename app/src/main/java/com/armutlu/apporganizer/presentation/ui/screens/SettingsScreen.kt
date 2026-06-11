@@ -257,7 +257,7 @@ fun SettingsScreen(
                 SettingsCard {
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
-                        title = "SınıflandırılmamıÅŸları Sınıflandır",
+                        title = "Sınıflandırılmamışları Sınıflandır",
                         subtitle = "Kategorisiz uygulamaları otomatik ata",
                         onClick = { viewModel.classifyUnclassifiedApps() }
                     )
@@ -290,8 +290,8 @@ fun SettingsScreen(
                     )
                     SettingsInfoRow(
                         icon = Icons.Default.Person,
-                        title = "GeliÅŸtirici",
-                        subtitle = "Hüseyin EkizoÄŸlu"
+                        title = "Geliştirici",
+                        subtitle = "Hüseyin Ekizoğlu"
                     )
                     Divider(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -393,7 +393,7 @@ fun SettingsScreen(
     }
 }
 
-// â”€â”€ Yardımcı bileÅŸenler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Yardımcı bileşenler ────────────────────────────────────────────────────
 
 @Composable
 private fun SettingsSectionTitle(title: String) {
