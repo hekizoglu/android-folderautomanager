@@ -177,13 +177,17 @@ fun AllAppsDrawer(
     iconSize: Dp = 40.dp
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
-    var sortMode        by remember { mutableStateOf(AllAppsSortMode.ALPHA) }
+    val context         = LocalContext.current
+    var sortMode        by remember {
+        val saved = context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
+            .getString("all_apps_sort_mode", AllAppsSortMode.ALPHA.name)
+        mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
+    }
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }
     val haptic          = LocalHapticFeedback.current
     val listState       = rememberLazyListState()
     val scope           = rememberCoroutineScope()
     val density         = LocalDensity.current
-    val context         = LocalContext.current
     var searchHistory   by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
 
     // Arama geçmişini güncelle: sorgu boşken drawer kapanmadan önce kaydet
@@ -355,7 +359,11 @@ fun AllAppsDrawer(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(14.dp))
                                     .background(if (active) HeaderColor else Color.White.copy(alpha = 0.12f))
-                                    .clickable { sortMode = mode }
+                                    .clickable {
+                                        sortMode = mode
+                                        context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
+                                            .edit().putString("all_apps_sort_mode", mode.name).apply()
+                                    }
                                     .padding(horizontal = 11.dp, vertical = 5.dp)
                             ) {
                                 Text(
