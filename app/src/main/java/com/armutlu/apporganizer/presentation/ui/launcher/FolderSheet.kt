@@ -84,12 +84,24 @@ fun FolderSheet(
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 24.dp),
         ) {
             // ── Header ────────────────────────────────────────────────────────
+            val catColor = remember(folder.category.colorHex) {
+                runCatching { Color(android.graphics.Color.parseColor(folder.category.colorHex)) }
+                    .getOrDefault(TealColor)
+            }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(text = folder.category.iconEmoji, fontSize = 36.sp)
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(catColor.copy(alpha = 0.25f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = folder.category.iconEmoji, fontSize = 28.sp)
+                }
                 Column {
                     Text(folder.category.categoryName, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("${folder.apps.size} uygulama", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)

@@ -109,13 +109,17 @@ fun FolderTile(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 60dp circle — Pixel frosted glass style + badge
+        // 60dp circle — kategori renginde frosted glass + badge
+        val catColor = remember(folder.category.colorHex) {
+            runCatching { Color(android.graphics.Color.parseColor(folder.category.colorHex)) }
+                .getOrDefault(Color.White)
+        }
         Box {
         Box(
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.25f)),
+                .background(catColor.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
         ) {
             if (folder.apps.isEmpty()) {
