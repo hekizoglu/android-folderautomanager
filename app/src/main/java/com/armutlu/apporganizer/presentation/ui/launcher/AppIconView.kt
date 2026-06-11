@@ -127,6 +127,12 @@ fun AppIconView(
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
         else null
 
+        // 7 gün içinde kurulduysa "YENİ" badge
+        val isNew = remember(app.installTime) {
+            app.installTime > 0L &&
+            (System.currentTimeMillis() - app.installTime) < 7L * 24 * 60 * 60 * 1000
+        }
+
         // İkon + bildirim badge
         Box {
             if (icon != null) {
@@ -151,6 +157,25 @@ fun AppIconView(
                         text = app.appName.take(1).uppercase(),
                         color = Color.White,
                         fontSize = 22.sp
+                    )
+                }
+            }
+            // "YENİ" badge — bildirim yoksa ve 7 gün içinde kurulmuşsa göster
+            if (isNew && app.notificationCount == 0) {
+                Box(
+                    modifier = Modifier
+                        .height(14.dp)
+                        .align(Alignment.TopEnd)
+                        .clip(RoundedCornerShape(7.dp))
+                        .background(Color(0xFF00897B))
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "YENİ",
+                        color = Color.White,
+                        fontSize = 7.sp,
+                        style = TextStyle(textAlign = TextAlign.Center)
                     )
                 }
             }
