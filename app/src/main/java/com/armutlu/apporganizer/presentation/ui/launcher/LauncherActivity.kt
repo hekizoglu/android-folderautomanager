@@ -65,6 +65,7 @@ class LauncherActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.reconcileIfNeeded(this)
+        viewModel.syncUsageStats(this)
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_ADDED)
