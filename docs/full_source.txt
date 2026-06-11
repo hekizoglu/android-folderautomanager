@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-11 21:38 UTC
-# Commit: ce35b31b6b4411c7e126c168ea116840815ea211
+# Generated: 2026-06-11 22:03 UTC
+# Commit: fb3610a0a19f7e9741cd40ef11d7942c73a0d76e
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2763,15 +2763,15 @@ fun NiagaraAppRow(
             )
         else null
         Box(modifier = Modifier.size(iconSize + 8.dp), contentAlignment = Alignment.Center) {
-            if (icon != null) {
+            icon?.let { bmp ->
                 Image(
-                    bitmap = icon!!,
+                    bitmap = bmp,
                     contentDescription = app.appName,
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp)),
                     alpha = iconAlpha,
                     colorFilter = greyFilter
                 )
-            } else {
+            } ?: run {
                 Box(
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp))
                         .background(HeaderColor.copy(alpha = 0.3f)),
@@ -2919,13 +2919,13 @@ fun AppContextMenu(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (icon != null) {
+                icon?.let { bmp ->
                     Image(
-                        bitmap = icon!!,
+                        bitmap = bmp,
                         contentDescription = null,
                         modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp))
                     )
-                } else {
+                } ?: run {
                     Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(TealColor.copy(0.3f)),
                         contentAlignment = Alignment.Center) {
                         Text(app.appName.take(1), fontSize = 22.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
@@ -3215,9 +3215,9 @@ fun AppIconView(
 
         // İkon + bildirim badge
         Box {
-            if (icon != null) {
+            icon?.let { bmp ->
                 Image(
-                    bitmap = icon!!,
+                    bitmap = bmp,
                     contentDescription = app.appName,
                     colorFilter = greyFilter,
                     alpha = iconAlpha,
@@ -3225,7 +3225,7 @@ fun AppIconView(
                         .size(iconSize)
                         .clip(RoundedCornerShape(14.dp))
                 )
-            } else {
+            } ?: run {
                 Box(
                     modifier = Modifier
                         .size(iconSize)
