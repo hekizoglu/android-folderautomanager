@@ -138,6 +138,24 @@ class LauncherViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    /**
+     * onResume'da çağrılır: yüklü paket sayısı DB ile uyuşmuyorsa tam reconcile tetikler.
+     * Paket sayısı eşitse sıfır IO — launcher hızı korunur.
+     */
+    fun reconcileIfNeeded(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pm = context.packageManager
+            val installedCount = pm.getInstalledPackages(0)
+                .count { it.applicationInfo != null &&
+                    pm.getLaunchIntentForPackage(it.packageName) != null }
+            val dbCount = repository.countApps()
+            if (installedCount != dbCount) {
+                Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
+                loadAppsIfEmpty(context)
+            }
+        }
+    }
+
     /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
     fun loadAppsIfEmpty(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
