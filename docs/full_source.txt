@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-11 22:39 UTC
-# Commit: a5cbfa7b20d75024d48a19aa51ef5061a0e5a89d
+# Generated: 2026-06-11 22:52 UTC
+# Commit: 549baa8443fb2016c347b751d0b43a7f552faf7e
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3207,8 +3207,10 @@ fun AppIconView(
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
         else null
 
-        // 7 gün içinde kurulduysa "YENİ" badge
+        // 7 gün içinde kurulduysa "YENİ" badge — Ayarlar'dan kapatılabilir
+        val newBadgeEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context) }
         val isNew = remember(app.installTime) {
+            newBadgeEnabled &&
             app.installTime > 0L &&
             (System.currentTimeMillis() - app.installTime) < 7L * 24 * 60 * 60 * 1000
         }
@@ -3999,15 +4001,20 @@ fun FolderTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(72.dp)
         )
-        Text(
-            text = "${folder.apps.size}",
-            color = Color.White.copy(alpha = 0.50f),
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center
-        )
+        val context = LocalContext.current
+        val folderCountVisible = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context) }
+        if (folderCountVisible) {
+            Text(
+                text = "${folder.apps.size}",
+                color = Color.White.copy(alpha = 0.50f),
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center
+            )
+        }
         // Swipe-up ile açılacak uygulamanın adı — en çok kullanılan
+        val folderSwipeHintEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context) }
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
-        if (topApp != null && onSwipeUp != null) {
+        if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
                 text = "↑ ${topApp.appName}",
                 color = Color.White.copy(alpha = 0.28f),
@@ -4796,7 +4803,8 @@ private fun DockIcon(
 
 @Composable
 private fun SwipeHint(context: android.content.Context, visible: Boolean) {
-    val showSwipeHint = remember { com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
+    val swipeHintFeatureEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context) }
+    val showSwipeHint = remember { swipeHintFeatureEnabled && com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
     val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -7663,6 +7671,60 @@ fun SettingsScreen(
             }
 
             // â”€â”€ Uygulama Yönetimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Ana Ekran Özellikleri ─────────────────────────────────────────
+            item { SettingsSectionTitle("Ana Ekran Özellikleri") }
+            item {
+                var swipeHintEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
+                var newBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
+                var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
+                var folderSwipeHint by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.SwipeUp,
+                        title = "Swipe-up İpucu",
+                        subtitle = "Ana ekranda yukarı kaydırma animasyonu göster",
+                        checked = swipeHintEnabled,
+                        onCheckedChange = {
+                            swipeHintEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.NewReleases,
+                        title = "YENİ Badge",
+                        subtitle = "7 gün içinde kurulan uygulamalara rozet göster",
+                        checked = newBadgeEnabled,
+                        onCheckedChange = {
+                            newBadgeEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.FormatListNumbered,
+                        title = "Klasör Uygulama Sayısı",
+                        subtitle = "Klasör simgesinin altında uygulama adedini göster",
+                        checked = folderCountVisible,
+                        onCheckedChange = {
+                            folderCountVisible = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Folder,
+                        title = "Klasör Swipe İpucu",
+                        subtitle = "Klasörde en çok kullanılan uygulamayı göster",
+                        checked = folderSwipeHint,
+                        onCheckedChange = {
+                            folderSwipeHint = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setFolderSwipeHintEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {
@@ -8684,6 +8746,24 @@ object AppPrefs {
         val current = prefs.getInt(KEY_SWIPE_HINT_COUNT, 0)
         prefs.edit().putInt(KEY_SWIPE_HINT_COUNT, current + 1).apply()
     }
+
+    // Özellik toggle'ları — SettingsScreen'den yönetilir
+    const val KEY_SWIPE_HINT_ENABLED   = "swipe_hint_enabled"
+    const val KEY_NEW_BADGE_ENABLED    = "new_badge_enabled"
+    const val KEY_FOLDER_COUNT_VISIBLE = "folder_count_visible"
+    const val KEY_FOLDER_SWIPE_HINT    = "folder_swipe_hint_enabled"
+
+    fun isSwipeHintEnabled(context: Context)   = prefs(context).getBoolean(KEY_SWIPE_HINT_ENABLED, true)
+    fun isNewBadgeEnabled(context: Context)    = prefs(context).getBoolean(KEY_NEW_BADGE_ENABLED, true)
+    fun isFolderCountVisible(context: Context) = prefs(context).getBoolean(KEY_FOLDER_COUNT_VISIBLE, true)
+    fun isFolderSwipeHintEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_SWIPE_HINT, true)
+
+    fun setSwipeHintEnabled(context: Context, v: Boolean)   = prefs(context).edit().putBoolean(KEY_SWIPE_HINT_ENABLED, v).apply()
+    fun setNewBadgeEnabled(context: Context, v: Boolean)    = prefs(context).edit().putBoolean(KEY_NEW_BADGE_ENABLED, v).apply()
+    fun setFolderCountVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_COUNT_VISIBLE, v).apply()
+    fun setFolderSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SWIPE_HINT, v).apply()
+
+    private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
 
 ========================================
