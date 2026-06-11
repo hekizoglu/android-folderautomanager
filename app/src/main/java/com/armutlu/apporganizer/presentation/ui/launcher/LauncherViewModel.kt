@@ -138,16 +138,30 @@ class LauncherViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    /** İlk açılışta DB boşsa cihazdaki uygulamaları tarar ve DB'ye yazar. */
+    /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
     fun loadAppsIfEmpty(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
+            val helper = PackageManagerHelper(context)
+            val installed = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
             val existing = repository.getAllApps()
             if (existing.isEmpty()) {
-                Timber.d("DB boş — uygulama taranıyor")
-                val helper = PackageManagerHelper(context)
-                val apps = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
-                repository.insertApps(apps)
-                Timber.d("${apps.size} uygulama DB'ye yazıldı")
+                Timber.d("DB boş — ${installed.size} uygulama yazılıyor")
+                repository.insertApps(installed)
+            } else {
+                // Cihazda olmayan ama DB'de kalan uygulamaları temizle
+                val installedPkgs = installed.map { it.packageName }.toSet()
+                val stale = existing.filter { it.packageName !in installedPkgs }
+                if (stale.isNotEmpty()) {
+                    stale.forEach { repository.deleteApp(it.packageName) }
+                    Timber.d("Reconcile: ${stale.size} eski uygulama silindi")
+                }
+                // DB'de olmayan yeni uygulamaları ekle
+                val existingPkgs = existing.map { it.packageName }.toSet()
+                val newApps = installed.filter { it.packageName !in existingPkgs }
+                if (newApps.isNotEmpty()) {
+                    repository.insertApps(newApps)
+                    Timber.d("Reconcile: ${newApps.size} yeni uygulama eklendi")
+                }
             }
         }
     }
