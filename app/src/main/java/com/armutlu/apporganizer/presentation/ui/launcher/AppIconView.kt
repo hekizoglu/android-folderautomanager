@@ -112,17 +112,19 @@ fun AppIconView(
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Kullanım bazlı greyscale — kullanıcı ayarına bağlı (unusedGreyDays > 0 ise aktif)
+        // Kullanım bazlı greyscale — unusedGreyDays > 0 ise son kullanım tarihine göre gri
         val unusedGreyDays = remember { com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context) }
-        val isUnused = unusedGreyDays > 0 && app.usageCount == 0L
-        val saturation = when {
-            isUnused             -> 0f
-            app.usageCount < 5L && unusedGreyDays > 0 -> 0.4f + (app.usageCount * 0.12f).coerceAtMost(0.6f)
-            else                 -> 1f
+        val isUnused = remember(app.lastUsedTimestamp, unusedGreyDays) {
+            if (unusedGreyDays <= 0) false
+            else if (app.lastUsedTimestamp == 0L) true  // hiç kullanılmamış
+            else {
+                val daysSinceUse = (System.currentTimeMillis() - app.lastUsedTimestamp) / (1000L * 60 * 60 * 24)
+                daysSinceUse >= unusedGreyDays
+            }
         }
         val iconAlpha = if (isUnused) 0.45f else 1f
-        val greyFilter = if (saturation < 1f)
-            ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(saturation) })
+        val greyFilter = if (isUnused)
+            ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
         else null
 
         // İkon + bildirim badge

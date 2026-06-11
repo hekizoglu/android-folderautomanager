@@ -301,10 +301,10 @@ class LauncherViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             if (!UsageStatsHelper.hasPermission(context)) return@launch
             val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
-            counts.forEach { (pkg, ms) ->
-                repository.updateUsageCount(pkg, ms)
-            }
-            Timber.d("UsageStats synced: ${counts.size} apps")
+            counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
+            val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
+            lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
+            Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
         }
     }
 

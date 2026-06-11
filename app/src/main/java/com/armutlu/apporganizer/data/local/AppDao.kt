@@ -181,4 +181,7 @@ interface AppDao {
 
     @Query("SELECT * FROM apps WHERE isHidden = 1 ORDER BY appName ASC")
     fun getHiddenApps(): Flow<List<AppInfo>>
+
+    @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName")
+    suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long)
 }

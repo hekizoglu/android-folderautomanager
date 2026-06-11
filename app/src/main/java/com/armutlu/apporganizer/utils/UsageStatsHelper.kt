@@ -27,6 +27,22 @@ object UsageStatsHelper {
         )
     }
 
+    // Her uygulamanın son kullanım zamanı (epoch ms) — packageName → lastTimeUsed
+    fun getLastUsedTimes(context: Context, days: Int = 90): Map<String, Long> {
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val cal = Calendar.getInstance()
+            val end = cal.timeInMillis
+            cal.add(Calendar.DAY_OF_YEAR, -days)
+            val stats = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, cal.timeInMillis, end)
+            stats?.groupBy { it.packageName }
+                ?.mapValues { (_, list) -> list.maxOf { it.lastTimeUsed } }
+                ?: emptyMap()
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
     // Son N gündeki kullanım süresi (ms) — packageName → totalForegroundMs
     fun getUsageCounts(context: Context, days: Int = 30): Map<String, Long> {
         return try {
