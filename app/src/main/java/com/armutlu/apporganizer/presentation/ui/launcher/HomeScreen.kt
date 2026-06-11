@@ -3,6 +3,8 @@
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -257,6 +259,13 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     }
             )
 
+            // Google arama çubuğu — Pixel Launcher stili, tıklayınca Google'ı açar
+            GoogleSearchBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+
             // İstatistik bandı — toplam klasör ve uygulama sayısı
             val totalApps   = folders.sumOf { it.apps.size }
             val totalFolders = folders.size
@@ -506,6 +515,59 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Normal,
             textAlign = TextAlign.Center,
             letterSpacing = 0.sp
+        )
+    }
+}
+
+/** Pixel Launcher stili Google arama çubuğu — tıklayınca Google web araması açar. */
+@Composable
+private fun GoogleSearchBar(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    Row(
+        modifier = modifier
+            .height(50.dp)
+            .background(
+                color = Color.White.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(25.dp)
+            )
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com")).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                runCatching { context.startActivity(intent) }
+            }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Google "G" logosu — renkli noktalar
+        Row(horizontalArrangement = Arrangement.spacedBy(1.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("G", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("o", color = Color(0xFFEA4335), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("o", color = Color(0xFFFBBC04), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("g", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("l", color = Color(0xFF34A853), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("e", color = Color(0xFFEA4335), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+        Text(
+            "Ara veya URL gir",
+            color = Color.White.copy(alpha = 0.55f),
+            fontSize = 14.sp,
+            modifier = Modifier.weight(1f)
+        )
+        // Mikrofon ikonu
+        androidx.compose.material3.Icon(
+            imageVector = Icons.Default.Mic,
+            contentDescription = "Sesli ara",
+            tint = Color.White.copy(alpha = 0.7f),
+            modifier = Modifier
+                .size(22.dp)
+                .clickable {
+                    val voiceIntent = Intent("android.speech.action.WEB_SEARCH").apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(voiceIntent) }
+                }
         )
     }
 }
