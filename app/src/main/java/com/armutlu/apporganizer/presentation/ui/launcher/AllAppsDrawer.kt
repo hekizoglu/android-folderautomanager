@@ -48,6 +48,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -180,6 +181,16 @@ fun AllAppsDrawer(
     val listState       = rememberLazyListState()
     val scope           = rememberCoroutineScope()
     val density         = LocalDensity.current
+    val context         = LocalContext.current
+    var searchHistory   by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
+
+    // Arama geçmişini güncelle: sorgu boşken drawer kapanmadan önce kaydet
+    val saveSearchIfNeeded = {
+        if (searchQuery.trim().length >= 2) {
+            SearchHistoryPrefs.addQuery(context, searchQuery)
+            searchHistory = SearchHistoryPrefs.getHistory(context)
+        }
+    }
 
     // Sırala + filtrele
     val sortedApps = remember(apps, sortMode, searchQuery) {
@@ -291,6 +302,53 @@ fun AllAppsDrawer(
 
                     Spacer(Modifier.height(8.dp))
 
+                    // Son aramalar — sadece arama boşken ve geçmiş varken göster
+                    if (searchQuery.isEmpty() && searchHistory.isNotEmpty()) {
+                        androidx.compose.foundation.lazy.LazyRow(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            item {
+                                Icon(
+                                    Icons.Default.Search,
+                                    null,
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                            items(searchHistory.size) { i ->
+                                val q = searchHistory[i]
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(Color.White.copy(alpha = 0.10f))
+                                        .clickable {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            onSearchQueryChange(q)
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(q, fontSize = 12.sp, color = TextSecondary, maxLines = 1)
+                                }
+                            }
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(Color.Transparent)
+                                        .clickable {
+                                            SearchHistoryPrefs.clear(context)
+                                            searchHistory = emptyList()
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 5.dp)
+                                ) {
+                                    Text("Temizle", fontSize = 11.sp, color = Color.White.copy(alpha = 0.3f))
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(6.dp))
+                    }
+
                     // Sıralama chip'leri (5 mod)
                     androidx.compose.foundation.lazy.LazyRow(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -333,6 +391,7 @@ fun AllAppsDrawer(
                                         sortMode = sortMode,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            saveSearchIfNeeded()
                                             onAppClick(app.packageName)
                                         },
                                         onLongClick = { onAppLongClick?.invoke(app) }
@@ -359,6 +418,7 @@ fun AllAppsDrawer(
                                         sortMode = sortMode,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            saveSearchIfNeeded()
                                             onAppClick(app.packageName)
                                         },
                                         onLongClick = { onAppLongClick?.invoke(app) }
