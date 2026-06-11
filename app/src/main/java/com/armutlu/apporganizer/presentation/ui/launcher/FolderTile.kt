@@ -169,6 +169,19 @@ fun FolderTile(
             fontSize = 10.sp,
             textAlign = TextAlign.Center
         )
+        // Swipe-up ile açılacak uygulamanın adı — en çok kullanılan
+        val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
+        if (topApp != null && onSwipeUp != null) {
+            Text(
+                text = "↑ ${topApp.appName}",
+                color = Color.White.copy(alpha = 0.28f),
+                fontSize = 9.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(72.dp)
+            )
+        }
     }
 }
 
