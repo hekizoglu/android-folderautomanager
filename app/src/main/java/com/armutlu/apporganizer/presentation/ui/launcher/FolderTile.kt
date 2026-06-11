@@ -163,6 +163,12 @@ fun FolderTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(72.dp)
         )
+        Text(
+            text = "${folder.apps.size}",
+            color = Color.White.copy(alpha = 0.50f),
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
