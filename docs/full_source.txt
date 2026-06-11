@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-11 17:51 UTC
-# Commit: 2f145b82be170a9256b05de1b5c67e4507129038
+# Generated: 2026-06-11 18:34 UTC
+# Commit: b84502f1cf795705e9da183ab7b74fc7b51a0936
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3965,6 +3965,12 @@ fun FolderTile(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             modifier = Modifier.width(72.dp)
+        )
+        Text(
+            text = "${folder.apps.size}",
+            color = Color.White.copy(alpha = 0.50f),
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center
         )
     }
 }
