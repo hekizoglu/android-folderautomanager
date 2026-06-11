@@ -562,15 +562,15 @@ fun NiagaraAppRow(
             )
         else null
         Box(modifier = Modifier.size(iconSize + 8.dp), contentAlignment = Alignment.Center) {
-            if (icon != null) {
+            icon?.let { bmp ->
                 Image(
-                    bitmap = icon!!,
+                    bitmap = bmp,
                     contentDescription = app.appName,
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp)),
                     alpha = iconAlpha,
                     colorFilter = greyFilter
                 )
-            } else {
+            } ?: run {
                 Box(
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp))
                         .background(HeaderColor.copy(alpha = 0.3f)),

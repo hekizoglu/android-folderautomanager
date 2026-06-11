@@ -135,9 +135,9 @@ fun AppIconView(
 
         // İkon + bildirim badge
         Box {
-            if (icon != null) {
+            icon?.let { bmp ->
                 Image(
-                    bitmap = icon!!,
+                    bitmap = bmp,
                     contentDescription = app.appName,
                     colorFilter = greyFilter,
                     alpha = iconAlpha,
@@ -145,7 +145,7 @@ fun AppIconView(
                         .size(iconSize)
                         .clip(RoundedCornerShape(14.dp))
                 )
-            } else {
+            } ?: run {
                 Box(
                     modifier = Modifier
                         .size(iconSize)

@@ -94,13 +94,13 @@ fun AppContextMenu(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (icon != null) {
+                icon?.let { bmp ->
                     Image(
-                        bitmap = icon!!,
+                        bitmap = bmp,
                         contentDescription = null,
                         modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp))
                     )
-                } else {
+                } ?: run {
                     Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(TealColor.copy(0.3f)),
                         contentAlignment = Alignment.Center) {
                         Text(app.appName.take(1), fontSize = 22.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
