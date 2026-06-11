@@ -79,6 +79,52 @@ Bu kural şunlar için zorunludur:
 3. **Hata varsa düzelt** — DeepSeek ile analiz et, düzelt, tekrar build
 4. **Test geçtiyse commit + push** — açıklayıcı commit mesajı
 5. **Telegram'a gönder** — APK + kısa durum raporu
+6. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
+7. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
+
+### CLAUDE.md Otomatik Güncelleme Kuralı (KRİTİK)
+**Her döngü sonunda, aşağıdaki bilgiler öğrenilmişse CLAUDE.md'ye ekle:**
+
+Eklenmesi ZORUNLU olan şeyler:
+- Yeni keşfedilen build hatası ve çözümü (Bağımlılık tablosuna veya ayrı madde olarak)
+- Değişen dosya sorumluluğu (hangi dosya ne işe yarıyor — Proje Yapısı'na)
+- Özellik kontrol listesindeki yeni ✅/❌ durumları (Son Kontrol Sonuçları güncellenir)
+- Yeni eklenen agent veya MCP araç (Agent tablosuna)
+- Öğrenilen kalıcı bir davranış kuralı (Temel Çalışma Kuralları'na)
+
+**Güncelleme formatı:** Dosyayı Edit tool ile aç, ilgili bölüme ekle, `*Son güncelleme*` tarihini yenile.
+**Ne zaman:** Build + push tamamlandıktan hemen sonra, Telegram'dan önce.
+
+> **Neden:** CLAUDE.md her konuşmada sıfırdan okunur. Öğrenilen şeyler buraya yazılmazsa bir sonraki konuşmada unutulur ve aynı hatalar tekrarlanır.
+
+### Döngü Sonu Özet Kuralı (KRİTİK)
+**Her döngü (veya 5-döngü bloğu) bitince kullanıcıya şu formatı ver:**
+
+```
+## Döngü [N] Özeti — [SAAT]
+
+### Ne Yapıldı
+- [Değişiklik 1 — hangi dosya, ne değişti, neden]
+- [Değişiklik 2 ...]
+
+### Çalışan Agent'lar
+| Agent | Görev | Sonuç |
+|-------|-------|-------|
+| Explore | X araştırma | Y bulgusu |
+| WebSearch | Z hatası | W çözümü |
+
+### NotebookLM'e Sorulan Sorular
+(Bu döngüde NotebookLM kullanıldıysa soruları ve özet cevapları listele)
+- Soru: "..." → Özet cevap: "..."
+
+### CLAUDE.md'ye Eklenenler
+- [Bu döngüde CLAUDE.md'ye eklenen/güncellenen maddeler]
+
+### Sonraki Döngü Önerisi
+- [En öncelikli yapılacak şey]
+```
+
+**Kural:** Agent çalışmadıysa veya NotebookLM kullanılmadıysa o satırı "—" olarak bırak, boş tablo gösterme.
 
 ### Asla yapma:
 - Küçük bir değişiklik için "onaylıyor musun?" diye sorma — yap, test et, bildir
@@ -401,4 +447,4 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 
 ---
 
-*Son güncelleme: 2026-06-11*
+*Son güncelleme: 2026-06-12*
