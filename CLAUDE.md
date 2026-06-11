@@ -46,6 +46,11 @@ Bu kural şunlar için zorunludur:
 
 > **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir.
 
+### Kotlin Smart Cast Kuralı
+**`by` delegate property (örn. `val icon by produceState(...)`) `if (x != null)` bloğu içinde bile smart cast yapılamaz.**
+- ❌ `bitmap = icon` → derleme hatası: "Smart cast impossible"
+- ✅ `icon?.let { bmp -> Image(bitmap = bmp) }` kullan
+
 ### Bağımlılık Güncelleme Kuralı (KRİTİK)
 **Compose BOM, AGP, Kotlin veya compileSdk güncellenecekse önce uyumluluk matrisini kontrol et:**
 
