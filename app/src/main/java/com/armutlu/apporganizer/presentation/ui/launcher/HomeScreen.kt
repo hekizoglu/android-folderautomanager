@@ -11,6 +11,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -32,6 +37,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -40,7 +46,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -360,7 +368,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 }
             }
 
-            // Drag pill handle â€” above dock, pure Pixel style
+            // Swipe-up ipucu — ilk 5 açılışta göster
+            SwipeHint(context = context, visible = !allAppsOpen)
+
+            // Drag pill handle — above dock, pure Pixel style
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -665,6 +676,44 @@ private fun DockIcon(
                 modifier = Modifier
                     .size(iconSize)
                     .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+            )
+        }
+    }
+}
+
+@Composable
+private fun SwipeHint(context: android.content.Context, visible: Boolean) {
+    val showSwipeHint = remember { com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
+    val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
+    val offsetY by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(700),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "swipe_y"
+    )
+    LaunchedEffect(showSwipeHint) {
+        if (showSwipeHint) {
+            com.armutlu.apporganizer.utils.AppPrefs.incrementSwipeHintCount(context)
+        }
+    }
+    if (showSwipeHint && visible) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.55f),
+                modifier = Modifier.size(20.dp).offset(y = offsetY.dp)
+            )
+            Text(
+                text = "Tüm uygulamalar",
+                color = Color.White.copy(alpha = 0.40f),
+                fontSize = 11.sp
             )
         }
     }
