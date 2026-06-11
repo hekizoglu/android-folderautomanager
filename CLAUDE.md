@@ -66,6 +66,7 @@ Bu kural şunlar için zorunludur:
 ### Git Kuralları
 - **Tüm değişiklikler `main` branch üzerinde** — yeni branch oluşturma
 - `git add` + `git commit` + `git push origin main` — her build sonrası
+- **Rutin döngü bitince push zorunlu** — Telegram raporu göndermeden önce push yapılmalı
 
 ### Her konuşma açılışında otomatik olarak:
 1. **GitHub'dan çek** — `git fetch origin && git status` ile yerel/uzak fark kontrol et
@@ -302,7 +303,7 @@ $adb = "C:\Android\Sdk\platform-tools\adb.exe"
 ```
 
 ### Telegram Bot:
-- Token: `.env` → `TELEGRAM_BOT_TOKEN`
+- Token: `8811346243:AAEp28STOJTTIzcZLEZsX07yxsWLOfaoDGg` (GitHub secret: `TELEGRAM_BOT_TOKEN`)
 - Chat ID: `.env` → `TELEGRAM_CHAT_ID` (937179261)
 - Bot: `@claudetestbotibm_bot`
 - APK gönderim komutu:
