@@ -49,6 +49,7 @@ fun SettingsScreen(
     val showSystemApps by viewModel.showSystemApps.collectAsState()
     val state          by viewModel.screenState.collectAsState()
     val logs           by viewModel.liveDebugLogs.collectAsState()
+    val hiddenApps     by viewModel.hiddenApps.collectAsState()
     val clipboard      = LocalClipboardManager.current
     val context        = LocalContext.current
     var debugExpanded  by remember { mutableStateOf(false) }
@@ -385,6 +386,30 @@ fun SettingsScreen(
             }
 
             // â”€â”€ Hakkında â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Gizli Uygulamalar ─────────────────────────────────────────────
+            if (hiddenApps.isNotEmpty()) {
+                item { SettingsSectionTitle("Gizli Uygulamalar (${hiddenApps.size})") }
+                item {
+                    SettingsCard {
+                        hiddenApps.forEachIndexed { index, app ->
+                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(app.appName, Modifier.weight(1f), fontSize = 14.sp)
+                                OutlinedButton(
+                                    onClick = { viewModel.unhideApp(app.packageName) },
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                ) { Text("Göster", fontSize = 12.sp) }
+                            }
+                        }
+                    }
+                }
+            }
+
             item { SettingsSectionTitle("Hakkında") }
             item {
                 SettingsCard {
