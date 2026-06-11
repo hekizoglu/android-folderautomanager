@@ -87,6 +87,23 @@ Bu kural şunlar için zorunludur:
 6. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
 7. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
 
+### Yeni Özellik = Ayarlar Kuralı (KRİTİK)
+**Her yeni UI özelliği SettingsScreen'den kapatılıp açılabilir olmalıdır.**
+
+Uygulama kuralı:
+1. `AppPrefs.kt`'ye `KEY_xxx` + getter/setter ekle (varsayılan: açık)
+2. `SettingsScreen.kt`'ye ilgili bölüme toggle/chip ekle
+3. Özellik kodunda `AppPrefs.getXxx(context)` ile oku, kapalıysa render etme
+
+Örnekler:
+- Swipe-up hint → `KEY_SWIPE_HINT_ENABLED` → Görünüm bölümüne toggle
+- YENİ badge → `KEY_NEW_BADGE_ENABLED` → Görünüm bölümüne toggle
+- Kullanılmayan uygulamalar gri → `KEY_UNUSED_GREY_DAYS` → zaten var ✅
+- Klasör uygulama sayısı → `KEY_FOLDER_COUNT_VISIBLE` → Görünüm bölümüne toggle
+- Swipe-up hint (klasör tile) → `KEY_FOLDER_SWIPE_HINT_ENABLED` → Görünüm bölümüne toggle
+
+> **Neden:** Kullanıcılar farklı tercihlere sahip. Bir özelliği beğenmeyenin tüm launcher'ı bırakmaması gerekir.
+
 ### CLAUDE.md Otomatik Güncelleme Kuralı (KRİTİK)
 **Her döngü sonunda, aşağıdaki bilgiler öğrenilmişse CLAUDE.md'ye ekle:**
 
@@ -438,7 +455,7 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | Custom Agents + Handoffs | ✅ Kuruldu | `.claude/agents/` — 3 agent: code-reviewer, deepseek-analyst, android-builder |
 | DeepSeek API | ✅ Çalışıyor | `deepseek-v4-flash`, key `.env`'de, test edildi |
 | NotebookLM MCP (config) | ✅ Config hazır | `claude_desktop_config.json` + `.vscode/settings.json` oluşturuldu |
-| NotebookLM MCP (auth) | ⚠️ Manuel adım | `npx notebooklm-mcp@latest auth` → sen çalıştır → Google ile giriş yap |
+| NotebookLM MCP (auth) | ⚠️ Manuel adım | `npx notebooklm-mcp@latest auth` → **SEN çalıştır** → Chrome açılır → Google ile giriş yap → çerezler kaydedilir → Claude yeniden başlatılır |
 | Gemini / Google LLM | ❌ API key yok | Sen key sağlarsan `.env`'e ekleriz |
 | Nested Agent Teams | ❌ Yok | Roadmap'te |
 | Session Resumption (Teams) | ❌ Yok | Roadmap'te |
