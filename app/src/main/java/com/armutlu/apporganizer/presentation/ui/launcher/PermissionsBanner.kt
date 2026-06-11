@@ -54,6 +54,11 @@ private fun isNotifGranted(context: Context): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PermissionChecker.PERMISSION_GRANTED
     else true
 
+private fun isNotificationListenerGranted(context: Context): Boolean {
+    val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: return false
+    return flat.contains(context.packageName)
+}
+
 private fun isDefaultLauncher(context: Context): Boolean {
     val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
     val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
@@ -78,15 +83,17 @@ fun PermissionsBanner() {
     val context = LocalContext.current
     var dismissed by remember { mutableStateOf(isBannerSnoozed(context)) }
 
-    var notifGranted  by remember { mutableStateOf(isNotifGranted(context)) }
-    var launcherSet   by remember { mutableStateOf(isDefaultLauncher(context)) }
+    var notifGranted       by remember { mutableStateOf(isNotifGranted(context)) }
+    var launcherSet        by remember { mutableStateOf(isDefaultLauncher(context)) }
+    var notifListenerOk    by remember { mutableStateOf(isNotificationListenerGranted(context)) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                notifGranted = isNotifGranted(context)
-                launcherSet  = isDefaultLauncher(context)
+                notifGranted    = isNotifGranted(context)
+                launcherSet     = isDefaultLauncher(context)
+                notifListenerOk = isNotificationListenerGranted(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -107,6 +114,11 @@ fun PermissionsBanner() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
+        })
+        if (!notifListenerOk) add(PermissionIssue("Bildirim badge'leri için izin gerekli") {
+            context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            })
         })
     }
 

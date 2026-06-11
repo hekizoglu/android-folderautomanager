@@ -31,6 +31,7 @@ class LauncherActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         viewModel.loadAppsIfEmpty(this)
         viewModel.syncUsageStats(this)
+        viewModel.syncAppSizes(this)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
                 HomeScreen(viewModel = viewModel)
