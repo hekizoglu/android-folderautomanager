@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-11 23:26 UTC
-# Commit: 5060b540bf3ab20d450452ae0b6881a0050b57d4
+# Generated: 2026-06-11 23:42 UTC
+# Commit: d2970e3fc4c2597c8b4a29ec567491de6b78c926
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2390,6 +2390,7 @@ fun AllAppsDrawer(
     val scope           = rememberCoroutineScope()
     val density         = LocalDensity.current
     var searchHistory   by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
+    var quickFilter     by remember { mutableStateOf(0) } // 0=Tümü 1=Kullanıcı 2=Sistem 3=Son7gün
 
     // Arama geçmişini güncelle: sorgu boşken drawer kapanmadan önce kaydet
     val saveSearchIfNeeded = {
@@ -2399,10 +2400,19 @@ fun AllAppsDrawer(
         }
     }
 
+    val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
+
     // Sırala + filtrele
-    val sortedApps = remember(apps, sortMode, searchQuery) {
-        val base = if (searchQuery.isBlank()) apps
-        else apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+    val sortedApps = remember(apps, sortMode, searchQuery, quickFilter) {
+        val now = System.currentTimeMillis()
+        val afterQuickFilter = when (quickFilter) {
+            1 -> apps.filter { !it.isSystemApp }
+            2 -> apps.filter { it.isSystemApp }
+            3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
+            else -> apps
+        }
+        val base = if (searchQuery.isBlank()) afterQuickFilter
+        else afterQuickFilter.filter { it.appName.contains(searchQuery, ignoreCase = true) }
         when (sortMode) {
             AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase() }
             AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
@@ -2413,7 +2423,7 @@ fun AllAppsDrawer(
     }
 
     // Alfa gruplama sadece ALPHA modunda
-    val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery) {
+    val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery, quickFilter) {
         if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
             sortedApps.groupBy { app ->
                 val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'
@@ -2433,7 +2443,7 @@ fun AllAppsDrawer(
     }
 
     // Sidebar entries (contextual)
-    val sidebarEntries = remember(sortedApps, sortMode, searchQuery) {
+    val sidebarEntries = remember(sortedApps, sortMode, searchQuery, quickFilter) {
         if (searchQuery.isNotBlank()) emptyList()
         else if (sortMode == AllAppsSortMode.ALPHA) {
             grouped.keys.mapIndexed { i, letter ->
@@ -2547,6 +2557,43 @@ fun AllAppsDrawer(
                             }
                         }
                         Spacer(Modifier.height(6.dp))
+                    }
+
+                    // Hızlı filtre chip'leri
+                    androidx.compose.foundation.lazy.LazyRow(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        itemsIndexed(quickFilterLabels) { idx, label ->
+                            val active = quickFilter == idx
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(if (active) SidebarColor.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.08f))
+                                    .clickable {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        quickFilter = idx
+                                    }
+                                    .padding(horizontal = 11.dp, vertical = 5.dp)
+                            ) {
+                                val countLabel = when (idx) {
+                                    0 -> " (${apps.size})"
+                                    1 -> " (${apps.count { !it.isSystemApp }})"
+                                    2 -> " (${apps.count { it.isSystemApp }})"
+                                    3 -> {
+                                        val cutoff = System.currentTimeMillis() - 7L*24*60*60*1000
+                                        " (${apps.count { it.lastUsedTimestamp > cutoff }})"
+                                    }
+                                    else -> ""
+                                }
+                                Text(
+                                    label + if (active) countLabel else "",
+                                    fontSize = 11.sp,
+                                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (active) Color.White else TextSecondary
+                                )
+                            }
+                        }
                     }
 
                     // Sıralama chip'leri (5 mod)
