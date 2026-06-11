@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-11 18:43 UTC
-# Commit: 3b8e2549589537d18e41fa0cda3fadcd30f8be4d
+# Generated: 2026-06-11 18:46 UTC
+# Commit: 324e6d2563e0934e0ecf1268bf670898722432d6
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4890,6 +4890,7 @@ class LauncherActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.reconcileIfNeeded(this)
+        viewModel.syncUsageStats(this)
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_ADDED)
