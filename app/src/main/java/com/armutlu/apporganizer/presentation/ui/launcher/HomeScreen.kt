@@ -103,6 +103,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
     val contextMenuApp = contextMenuPkg?.let { pkg -> allApps.find { it.packageName == pkg } }
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
+    var folderContextMenu by remember { mutableStateOf<AppFolder?>(null) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -318,6 +319,12 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                                 viewModel.openFolder(folder)
                             }
                         },
+                        onLongClick = {
+                            if (dragFromIndex == null) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                folderContextMenu = folder
+                            }
+                        },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         modifier = Modifier
                             .pointerInput(index) {
@@ -490,6 +497,22 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             onAppLongClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 contextMenuPkg = app.packageName
+            }
+        )
+    }
+
+    // Klasör uzun basınca context menu
+    folderContextMenu?.let { folder ->
+        FolderContextMenuSheet(
+            folder = folder,
+            onDismiss = { folderContextMenu = null },
+            onOpenFolder = {
+                folderContextMenu = null
+                viewModel.openFolder(folder)
+            },
+            onOpenAllApps = {
+                folderContextMenu = null
+                viewModel.openAllApps()
             }
         )
     }

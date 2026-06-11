@@ -55,6 +55,7 @@ private val iconCache get() = iconCacheInternal
 fun FolderTile(
     folder: AppFolder,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -105,6 +106,7 @@ fun FolderTile(
                 onClick = onClick,
                 onLongClick = {
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick?.invoke()
                 }
             ),
         horizontalAlignment = Alignment.CenterHorizontally

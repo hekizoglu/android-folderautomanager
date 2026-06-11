@@ -3,6 +3,9 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -32,6 +35,73 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FolderContextMenuSheet(
+    folder: AppFolder,
+    onDismiss: () -> Unit,
+    onOpenFolder: () -> Unit,
+    onOpenAllApps: () -> Unit,
+) {
+    val catColor = runCatching {
+        Color(android.graphics.Color.parseColor(folder.category.colorHex))
+    }.getOrDefault(Color(0xFF00897B))
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1A1A2A),
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        dragHandle = {
+            Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(0.2f)))
+            }
+        }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)
+        ) {
+            // Başlık
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(44.dp).clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(catColor.copy(alpha = 0.25f)),
+                    contentAlignment = Alignment.Center
+                ) { Text(folder.category.iconEmoji, fontSize = 22.sp) }
+                Column {
+                    Text(folder.category.categoryName, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Text("${folder.apps.size} uygulama", color = Color.White.copy(0.55f), fontSize = 12.sp)
+                }
+            }
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+            // Klasörü Aç
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenFolder)
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.FolderOpen, null, tint = Color(0xFF00897B), modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(16.dp))
+                Text("Klasörü Aç", color = Color.White, fontSize = 15.sp)
+            }
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+            // Tüm Uygulamalar
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenAllApps)
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Apps, null, tint = Color.White.copy(0.7f), modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(16.dp))
+                Text("Tüm Uygulamalara Git", color = Color.White, fontSize = 15.sp)
+            }
+        }
+    }
+}
 
 private val SheetBackground = Color(0xFF1A1A2A)
 private val DividerColor    = Color(0xFFFFFFFF).copy(alpha = 0.08f)
