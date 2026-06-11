@@ -17,7 +17,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -387,6 +389,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     dockEditOpen = true
                 },
+                onAppLongPress = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    contextMenuPkg = pkg
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 12.dp)
@@ -573,11 +579,13 @@ private fun GoogleSearchBar(modifier: Modifier = Modifier) {
 }
 
 /** Frosted pill dock — packages listesi DockPrefs'ten gelir, kullanıcı tarafından seçilebilir. */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PixelDock(
     packages: List<String>,
     onLaunchApp: (String) -> Unit,
     onLongPress: () -> Unit = {},
+    onAppLongPress: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -612,19 +620,22 @@ private fun PixelDock(
                     packageName = pkg,
                     label = label,
                     iconSize = 48.dp,
-                    onClick = { onLaunchApp(pkg) }
+                    onClick = { onLaunchApp(pkg) },
+                    onLongClick = { onAppLongPress(pkg) }
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DockIcon(
     packageName: String,
     label: String,
     iconSize: Dp,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val px = with(androidx.compose.ui.platform.LocalDensity.current) { iconSize.roundToPx() }
@@ -637,7 +648,10 @@ private fun DockIcon(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(4.dp)
     ) {
         if (bitmap != null) {
