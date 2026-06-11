@@ -9,7 +9,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -19,8 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,8 +65,13 @@ fun FolderSheet(
 ) {
     val haptic = LocalHapticFeedback.current
     var sortMode by remember { mutableStateOf(FolderSortMode.ALPHA) }
+    var searchQuery by remember { mutableStateOf("") }
 
-    val sortedApps = remember(folder.apps, sortMode) { folder.apps.sortedBy(sortMode) }
+    val sortedApps = remember(folder.apps, sortMode, searchQuery) {
+        val base = if (searchQuery.isBlank()) folder.apps
+                   else folder.apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+        base.sortedBy(sortMode)
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -81,6 +93,40 @@ fun FolderSheet(
                 Column {
                     Text(folder.category.categoryName, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("${folder.apps.size} uygulama", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
+                }
+            }
+
+            // ── Arama çubuğu ─────────────────────────────────────────────────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.White.copy(alpha = 0.10f))
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    if (searchQuery.isEmpty()) {
+                        Text("${folder.category.categoryName} içinde ara...", color = TextSecondary, fontSize = 13.sp)
+                    }
+                    BasicTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        singleLine = true,
+                        cursorBrush = SolidColor(TealColor),
+                        textStyle = TextStyle(color = Color.White, fontSize = 13.sp)
+                    )
+                }
+                if (searchQuery.isNotEmpty()) {
+                    Icon(
+                        Icons.Default.Close, null,
+                        tint = TextSecondary,
+                        modifier = Modifier.size(16.dp).clickable { searchQuery = "" }
+                    )
                 }
             }
 
@@ -117,7 +163,11 @@ fun FolderSheet(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Bu klasör boş", color = Color.White.copy(alpha = 0.5f), fontSize = 16.sp)
+                    Text(
+                        if (searchQuery.isNotEmpty()) "\"$searchQuery\" bulunamadı"
+                        else "Bu klasör boş",
+                        color = Color.White.copy(alpha = 0.5f), fontSize = 16.sp
+                    )
                 }
             } else {
                 LazyVerticalGrid(
