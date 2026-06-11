@@ -248,6 +248,19 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
+    fun onPackageAdded(context: Context, packageName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val helper = PackageManagerHelper(context)
+                val apps = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
+                val app = apps.firstOrNull { it.packageName == packageName } ?: return@launch
+                repository.insertApps(listOf(app))
+                Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
+            }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
+        }
+    }
+
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 

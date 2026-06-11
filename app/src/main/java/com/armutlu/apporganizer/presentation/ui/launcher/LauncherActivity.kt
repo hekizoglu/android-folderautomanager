@@ -51,23 +51,31 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
-    private val packageRemovedReceiver = object : BroadcastReceiver() {
+    private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val pkg = intent.data?.schemeSpecificPart ?: return
-            viewModel.onPackageRemoved(pkg)
+            when (intent.action) {
+                Intent.ACTION_PACKAGE_REMOVED -> viewModel.onPackageRemoved(pkg)
+                Intent.ACTION_PACKAGE_ADDED,
+                Intent.ACTION_PACKAGE_REPLACED -> viewModel.onPackageAdded(context, pkg)
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(packageRemovedReceiver, IntentFilter(Intent.ACTION_PACKAGE_REMOVED).apply {
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
             addDataScheme("package")
-        })
+        }
+        registerReceiver(packageReceiver, filter)
     }
 
     override fun onPause() {
         super.onPause()
-        runCatching { unregisterReceiver(packageRemovedReceiver) }
+        runCatching { unregisterReceiver(packageReceiver) }
     }
 
     private fun isDefaultLauncher(context: android.content.Context): Boolean {
