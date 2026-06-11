@@ -127,8 +127,10 @@ fun AppIconView(
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
         else null
 
-        // 7 gün içinde kurulduysa "YENİ" badge
+        // 7 gün içinde kurulduysa "YENİ" badge — Ayarlar'dan kapatılabilir
+        val newBadgeEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context) }
         val isNew = remember(app.installTime) {
+            newBadgeEnabled &&
             app.installTime > 0L &&
             (System.currentTimeMillis() - app.installTime) < 7L * 24 * 60 * 60 * 1000
         }

@@ -307,6 +307,60 @@ fun SettingsScreen(
             }
 
             // â”€â”€ Uygulama Yönetimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Ana Ekran Özellikleri ─────────────────────────────────────────
+            item { SettingsSectionTitle("Ana Ekran Özellikleri") }
+            item {
+                var swipeHintEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
+                var newBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
+                var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
+                var folderSwipeHint by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.SwipeUp,
+                        title = "Swipe-up İpucu",
+                        subtitle = "Ana ekranda yukarı kaydırma animasyonu göster",
+                        checked = swipeHintEnabled,
+                        onCheckedChange = {
+                            swipeHintEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.NewReleases,
+                        title = "YENİ Badge",
+                        subtitle = "7 gün içinde kurulan uygulamalara rozet göster",
+                        checked = newBadgeEnabled,
+                        onCheckedChange = {
+                            newBadgeEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.FormatListNumbered,
+                        title = "Klasör Uygulama Sayısı",
+                        subtitle = "Klasör simgesinin altında uygulama adedini göster",
+                        checked = folderCountVisible,
+                        onCheckedChange = {
+                            folderCountVisible = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Folder,
+                        title = "Klasör Swipe İpucu",
+                        subtitle = "Klasörde en çok kullanılan uygulamayı göster",
+                        checked = folderSwipeHint,
+                        onCheckedChange = {
+                            folderSwipeHint = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setFolderSwipeHintEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {

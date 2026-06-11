@@ -33,4 +33,22 @@ object AppPrefs {
         val current = prefs.getInt(KEY_SWIPE_HINT_COUNT, 0)
         prefs.edit().putInt(KEY_SWIPE_HINT_COUNT, current + 1).apply()
     }
+
+    // Özellik toggle'ları — SettingsScreen'den yönetilir
+    const val KEY_SWIPE_HINT_ENABLED   = "swipe_hint_enabled"
+    const val KEY_NEW_BADGE_ENABLED    = "new_badge_enabled"
+    const val KEY_FOLDER_COUNT_VISIBLE = "folder_count_visible"
+    const val KEY_FOLDER_SWIPE_HINT    = "folder_swipe_hint_enabled"
+
+    fun isSwipeHintEnabled(context: Context)   = prefs(context).getBoolean(KEY_SWIPE_HINT_ENABLED, true)
+    fun isNewBadgeEnabled(context: Context)    = prefs(context).getBoolean(KEY_NEW_BADGE_ENABLED, true)
+    fun isFolderCountVisible(context: Context) = prefs(context).getBoolean(KEY_FOLDER_COUNT_VISIBLE, true)
+    fun isFolderSwipeHintEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_SWIPE_HINT, true)
+
+    fun setSwipeHintEnabled(context: Context, v: Boolean)   = prefs(context).edit().putBoolean(KEY_SWIPE_HINT_ENABLED, v).apply()
+    fun setNewBadgeEnabled(context: Context, v: Boolean)    = prefs(context).edit().putBoolean(KEY_NEW_BADGE_ENABLED, v).apply()
+    fun setFolderCountVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_COUNT_VISIBLE, v).apply()
+    fun setFolderSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SWIPE_HINT, v).apply()
+
+    private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

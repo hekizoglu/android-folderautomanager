@@ -435,6 +435,21 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 
 ---
 
+## Gelecek Yol Haritası — Rekabet Döngüsü (Uzun Vadeli)
+
+Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döngülerde uygulanacak.
+
+| # | Özellik | Rakip Fırsat | Öncelik |
+|---|---------|--------------|---------|
+| 3 | Ana ekrana dönüşte hız iyileştirmesi | Smart Launcher şikayeti: "yavaş geri dönüş" | Yüksek |
+| 4 | Gesture navigation uyumsuzluk fix | Xiaomi/Samsung sistem navigasyonu çakışması | Yüksek |
+| 6 | Icon pack desteği | Nova kullanıcıları "icon pack yok" diyor | Orta |
+| 7 | Widget desteği | Niagara kullanıcıları "widget eksik" diyor | Orta |
+
+**Döngülere eklenme zamanı:** Rakip analizi tamamlandıktan sonra (bkz. Özellik Durum Tablosu)
+
+---
+
 ## Play Store Hazırlık (Bekleyen)
 
 - [ ] Privacy policy URL

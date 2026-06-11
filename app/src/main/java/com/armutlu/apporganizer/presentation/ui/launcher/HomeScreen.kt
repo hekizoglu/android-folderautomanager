@@ -683,7 +683,8 @@ private fun DockIcon(
 
 @Composable
 private fun SwipeHint(context: android.content.Context, visible: Boolean) {
-    val showSwipeHint = remember { com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
+    val swipeHintFeatureEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context) }
+    val showSwipeHint = remember { swipeHintFeatureEnabled && com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
     val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,

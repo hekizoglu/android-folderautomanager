@@ -163,15 +163,20 @@ fun FolderTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(72.dp)
         )
-        Text(
-            text = "${folder.apps.size}",
-            color = Color.White.copy(alpha = 0.50f),
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center
-        )
+        val context = LocalContext.current
+        val folderCountVisible = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context) }
+        if (folderCountVisible) {
+            Text(
+                text = "${folder.apps.size}",
+                color = Color.White.copy(alpha = 0.50f),
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center
+            )
+        }
         // Swipe-up ile açılacak uygulamanın adı — en çok kullanılan
+        val folderSwipeHintEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context) }
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
-        if (topApp != null && onSwipeUp != null) {
+        if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
                 text = "↑ ${topApp.appName}",
                 color = Color.White.copy(alpha = 0.28f),
