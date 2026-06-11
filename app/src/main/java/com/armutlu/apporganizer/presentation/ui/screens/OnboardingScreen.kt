@@ -1,14 +1,12 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -40,8 +38,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -95,12 +93,6 @@ private val TealGradient = Brush.horizontalGradient(
     colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA))
 )
 
-private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-    val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-    val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-    return enabledServices.any { it.resolveInfo.serviceInfo.packageName == context.packageName }
-}
-
 private fun isDefaultLauncher(context: Context): Boolean {
     val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
     val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
@@ -141,12 +133,12 @@ private enum class OnboardingStep(
         isRequired = false,
         isSkippable = true
     ),
-    ACCESSIBILITY(
-        icon = Icons.Default.Accessibility,
-        title = "Erisebilirlik Servisi",
-        description = "Erisebilirlik servisi arka planda calisabilmek icin gereklidir.",
-        why = "Bu servis sifre, mesaj veya kisisel veri okumaz. Yalnizca arka plan islemleri icin kullanilir.",
-        buttonLabel = "Ayarlari Ac",
+    UNUSED_GREY(
+        icon = Icons.Default.Visibility,
+        title = "Kullanilmayan Uygulamalar",
+        description = "Hic acilmamis uygulamalar ana ekranda soluk/gri gorunsun mu? Kalabalik azalir, odak artar.",
+        why = "Hic kullanmadiginiz uygulamalar soluk gozukur — silmeden once fark edersiniz.",
+        buttonLabel = "Ayarla",
         isRequired = false,
         isSkippable = true
     ),
@@ -194,7 +186,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             else true
         )
     }
-    var a11yGranted by remember { mutableStateOf(isAccessibilityServiceEnabled(context)) }
+    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
     var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
     var selectedFont  by remember { mutableStateOf(AppFont.DEFAULT) }
     val scope = rememberCoroutineScope()
@@ -206,7 +198,6 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                a11yGranted = isAccessibilityServiceEnabled(context)
                 launcherSet = isDefaultLauncher(context)
                 // Launcher ayarlandıysa otomatik ilerle
                 if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) {
@@ -389,7 +380,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
                 OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
                 OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
-                OnboardingStep.ACCESSIBILITY -> if (a11yGranted) "Servis aktif" else null
+                OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gün ayarlandı" else null
                 else -> null
             }
             if (statusText != null) {
@@ -535,15 +526,10 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 }
                             }
 
-                            OnboardingStep.ACCESSIBILITY -> {
-                                if (a11yGranted) {
-                                    stepIndex++
-                                } else {
-                                    context.startActivity(
-                                        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                                            .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
-                                    )
-                                }
+                            OnboardingStep.UNUSED_GREY -> {
+                                // Seçim yapıldıysa kaydet, kaydedilmediyse kapalı bırak
+                                com.armutlu.apporganizer.utils.AppPrefs.setUnusedGreyDays(context, unusedGreyDays)
+                                stepIndex++
                             }
 
                             OnboardingStep.THEME_SELECT -> {
@@ -567,7 +553,6 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> "Devam Et"
                         currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> "Devam Et"
-                        currentStep == OnboardingStep.ACCESSIBILITY && a11yGranted -> "Devam Et"
                         else -> currentStep.buttonLabel
                     },
                     fontSize = 17.sp,
@@ -576,23 +561,30 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 )
             }
 
-            // Accessibility için özel "Atla" butonu
-            if (currentStep == OnboardingStep.ACCESSIBILITY && !a11yGranted) {
+            // UNUSED_GREY için gün seçici chip'leri
+            if (currentStep == OnboardingStep.UNUSED_GREY) {
                 Spacer(Modifier.height(12.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.12f))
-                        .clickable { stepIndex++ },
-                    contentAlignment = Alignment.Center
+                val options = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                 ) {
-                    Text(
-                        "Simdi Degil, Atla",
-                        fontSize = 15.sp,
-                        color = Color.White.copy(alpha = 0.80f)
-                    )
+                    options.forEach { (days, label) ->
+                        val selected = unusedGreyDays == days
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (selected) Color(0xFF00897B) else Color.White.copy(alpha = 0.15f))
+                                .clickable {
+                                    unusedGreyDays = days
+                                    com.armutlu.apporganizer.utils.AppPrefs.setUnusedGreyDays(context, days)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(label, color = Color.White, fontSize = 14.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                        }
+                    }
                 }
             }
 
@@ -616,7 +608,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             // Genel atla butonu (isteğe bağlı adımlar)
             if (currentStep.isSkippable &&
                 currentStep != OnboardingStep.SET_LAUNCHER &&
-                currentStep != OnboardingStep.ACCESSIBILITY
+                currentStep != OnboardingStep.UNUSED_GREY
             ) {
                 Spacer(Modifier.height(4.dp))
                 Box(

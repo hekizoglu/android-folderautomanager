@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -111,13 +112,15 @@ fun AppIconView(
             .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Kullanım bazlı greyscale: 0 kullanım → tam gri, 1-4 → hafif gri, 5+ → renkli
+        // Kullanım bazlı greyscale — kullanıcı ayarına bağlı (unusedGreyDays > 0 ise aktif)
+        val unusedGreyDays = remember { com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context) }
+        val isUnused = unusedGreyDays > 0 && app.usageCount == 0L
         val saturation = when {
-            app.usageCount == 0L -> 0f
-            app.usageCount < 5L  -> 0.4f + (app.usageCount * 0.12f)
+            isUnused             -> 0f
+            app.usageCount < 5L && unusedGreyDays > 0 -> 0.4f + (app.usageCount * 0.12f).coerceAtMost(0.6f)
             else                 -> 1f
         }
-        val iconAlpha = if (app.usageCount == 0L) 0.5f else 1f
+        val iconAlpha = if (isUnused) 0.45f else 1f
         val greyFilter = if (saturation < 1f)
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(saturation) })
         else null

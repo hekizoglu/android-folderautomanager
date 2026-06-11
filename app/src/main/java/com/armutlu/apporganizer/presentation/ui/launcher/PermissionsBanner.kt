@@ -1,13 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.Manifest
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -56,12 +54,6 @@ private fun isNotifGranted(context: Context): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PermissionChecker.PERMISSION_GRANTED
     else true
 
-private fun isA11yEnabled(context: Context): Boolean {
-    val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-    return am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-        .any { it.resolveInfo.serviceInfo.packageName == context.packageName }
-}
-
 private fun isDefaultLauncher(context: Context): Boolean {
     val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
     val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
@@ -76,7 +68,6 @@ fun PermissionsBanner() {
     var dismissed by remember { mutableStateOf(false) }
 
     var notifGranted  by remember { mutableStateOf(isNotifGranted(context)) }
-    var a11yEnabled   by remember { mutableStateOf(isA11yEnabled(context)) }
     var launcherSet   by remember { mutableStateOf(isDefaultLauncher(context)) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -84,7 +75,6 @@ fun PermissionsBanner() {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 notifGranted = isNotifGranted(context)
-                a11yEnabled  = isA11yEnabled(context)
                 launcherSet  = isDefaultLauncher(context)
             }
         }

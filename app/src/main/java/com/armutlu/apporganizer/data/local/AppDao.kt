@@ -14,13 +14,13 @@ interface AppDao {
     /**
      * Insert a single app
      */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertApp(app: AppInfo)
-    
+
     /**
-     * Insert multiple apps
+     * Insert multiple apps — IGNORE: mevcut satır korunur, installTime bozulmaz
      */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertApps(apps: List<AppInfo>)
     
     /**

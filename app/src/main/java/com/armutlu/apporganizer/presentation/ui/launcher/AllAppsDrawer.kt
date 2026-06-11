@@ -5,6 +5,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -304,20 +306,16 @@ fun AllAppsDrawer(
 
                     // Son aramalar — sadece arama boşken ve geçmiş varken göster
                     if (searchQuery.isEmpty() && searchHistory.isNotEmpty()) {
-                        androidx.compose.foundation.lazy.LazyRow(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            item {
-                                Icon(
-                                    Icons.Default.Search,
-                                    null,
-                                    tint = TextSecondary,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                            items(searchHistory.size) { i ->
-                                val q = searchHistory[i]
+                            Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(14.dp))
+                            searchHistory.forEach { q ->
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(14.dp))
@@ -331,19 +329,16 @@ fun AllAppsDrawer(
                                     Text(q, fontSize = 12.sp, color = TextSecondary, maxLines = 1)
                                 }
                             }
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(Color.Transparent)
-                                        .clickable {
-                                            SearchHistoryPrefs.clear(context)
-                                            searchHistory = emptyList()
-                                        }
-                                        .padding(horizontal = 8.dp, vertical = 5.dp)
-                                ) {
-                                    Text("Temizle", fontSize = 11.sp, color = Color.White.copy(alpha = 0.3f))
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .clickable {
+                                        SearchHistoryPrefs.clear(context)
+                                        searchHistory = emptyList()
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 5.dp)
+                            ) {
+                                Text("Temizle", fontSize = 11.sp, color = Color.White.copy(alpha = 0.3f))
                             }
                         }
                         Spacer(Modifier.height(6.dp))
