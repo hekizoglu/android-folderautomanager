@@ -688,21 +688,31 @@ fun NiagaraAppRow(
 
         Spacer(Modifier.width(14.dp))
 
-        // İsim + alt bilgi
+        // Isim + alt bilgi
+        val appRowContext = LocalContext.current
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            val catLabel = remember(app.categoryId) {
-                com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
-                    .firstOrNull { it.categoryId == app.categoryId }?.categoryName
-            }
-            if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
+            val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(appRowContext)
+            if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
-                    catLabel,
-                    fontSize = 11.sp, color = TextSecondary, maxLines = 1
+                    app.notificationText,
+                    fontSize = 11.sp, color = TextSecondary.copy(alpha = 0.8f), maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+            } else {
+                val catLabel = remember(app.categoryId) {
+                    com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
+                        .firstOrNull { it.categoryId == app.categoryId }?.categoryName
+                }
+                if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
+                    Text(
+                        catLabel,
+                        fontSize = 11.sp, color = TextSecondary, maxLines = 1
+                    )
+                }
             }
         }
 

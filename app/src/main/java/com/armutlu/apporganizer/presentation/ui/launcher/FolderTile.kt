@@ -175,12 +175,12 @@ fun FolderTile(
                 textAlign = TextAlign.Center
             )
         }
-        // Swipe-up ile açılacak uygulamanın adı — en çok kullanılan
+        // Swipe-up ile acilacak uygulamanin adi — en cok kullanilan
         val folderSwipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
-                text = "↑ ${topApp.appName}",
+                text = "^ ${topApp.appName}",
                 color = Color.White.copy(alpha = 0.28f),
                 fontSize = 9.sp,
                 maxLines = 1,
@@ -188,6 +188,25 @@ fun FolderTile(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.width(72.dp)
             )
+        }
+        // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
+        val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+        if (notifTextEnabled) {
+            val latestNotifApp = remember(folder.apps) {
+                folder.apps.filter { it.notificationText.isNotBlank() }
+                    .maxByOrNull { it.notificationCount }
+            }
+            if (latestNotifApp != null) {
+                Text(
+                    text = latestNotifApp.notificationText,
+                    color = Color.White.copy(alpha = 0.55f),
+                    fontSize = 9.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.width(72.dp)
+                )
+            }
         }
     }
 }

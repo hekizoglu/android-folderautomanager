@@ -119,7 +119,7 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     init {
-        // NotificationListenerService'ten gelen badge sayılarını DB'ye yaz
+        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
                 if (counts.isNotEmpty()) {
@@ -127,11 +127,24 @@ class LauncherViewModel @Inject constructor(
                         counts.forEach { (pkg, count) ->
                             repository.updateNotificationCount(pkg, count)
                         }
-                        // Servis bilgisi olmayan uygulamaların sayısını sıfırla
+                        // Servis bilgisi olmayan uygulamalarin sayisini sifirla
                         val knownPkgs = counts.keys
                         repository.getAllApps()
                             .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
                             .forEach { repository.updateNotificationCount(it.packageName, 0) }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+
+        // Son bildirim metnini DB'ye yaz
+        AppNotificationListenerService.latestTexts
+            .onEach { texts ->
+                if (texts.isNotEmpty()) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        texts.forEach { (pkg, text) ->
+                            repository.updateNotificationText(pkg, text)
+                        }
                     }
                 }
             }

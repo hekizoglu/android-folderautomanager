@@ -262,6 +262,10 @@ class AppRepository @Inject constructor(
         try { appDao.updateNotificationCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
     }
 
+    suspend fun updateNotificationText(packageName: String, text: String) {
+        try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) { Timber.e(e) }
+    }
+
     fun getHiddenApps(): kotlinx.coroutines.flow.Flow<List<AppInfo>> = appDao.getHiddenApps()
 
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {

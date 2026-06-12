@@ -37,6 +37,8 @@ data class AppInfo(
 
     val notificationImportance: Int = 0,
 
+    val notificationText: String = "",
+
     val appSizeBytes: Long = 0L,
 
     val isHidden: Boolean = false
