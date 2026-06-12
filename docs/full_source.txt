@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-12 23:23 UTC
-# Commit: 5043b037f20504ac5646a1df44533feca6c93bcd
+# Generated: 2026-06-12 23:34 UTC
+# Commit: 76b28b35cb4923b9dccb514627be9bf05d049c47
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5411,6 +5411,17 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Onboarding bitmemişse MainActivity'ye yönlendir
+        val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        if (!prefs.getBoolean(AppPrefs.KEY_ONBOARDING_DONE, false)) {
+            startActivity(
+                android.content.Intent(this, com.armutlu.apporganizer.presentation.ui.MainActivity::class.java)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            return
+        }
+
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
