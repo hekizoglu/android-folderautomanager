@@ -36,6 +36,7 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.BackupManager
 import com.armutlu.apporganizer.utils.DockPrefs
 import kotlinx.coroutines.launch
 
@@ -91,7 +92,7 @@ fun SettingsScreen(
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
 
-            // â”€â”€ Görünüm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // â"€â"€ Görünüm â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
             // ── Tema ─────────────────────────────────────────────────────────
             item { SettingsSectionTitle("Görünüm") }
             item {
@@ -307,7 +308,7 @@ fun SettingsScreen(
                 }
             }
 
-            // â”€â”€ Uygulama Yönetimi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // â"€â"€ Uygulama Yönetimi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
             // ── Ana Ekran Özellikleri ─────────────────────────────────────────
             item { SettingsSectionTitle("Ana Ekran Özellikleri") }
             item {
@@ -385,7 +386,7 @@ fun SettingsScreen(
                 }
             }
 
-            // â”€â”€ Hakkında â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // â"€â"€ Hakkında â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
             // ── Gizli Uygulamalar ─────────────────────────────────────────────
             if (hiddenApps.isNotEmpty()) {
                 item { SettingsSectionTitle("Gizli Uygulamalar (${hiddenApps.size})") }
@@ -448,7 +449,80 @@ fun SettingsScreen(
                 }
             }
 
-            // â”€â”€ Debug â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // Backup & Restore
+            item { SettingsSectionTitle("Yedek / Geri Yukle") }
+            item {
+                var backupLoading by remember { mutableStateOf(false) }
+                val filePickerLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.GetContent()
+                ) { uri ->
+                    if (uri == null) return@rememberLauncherForActivityResult
+                    scope.launch {
+                        backupLoading = true
+                        runCatching {
+                            val json = context.contentResolver.openInputStream(uri)
+                                ?.bufferedReader()?.readText() ?: return@runCatching
+                            val result = viewModel.importBackup(json)
+                            android.widget.Toast.makeText(
+                                context,
+                                if (result.success) "${result.updatedCount} uygulama geri yuklendi"
+                                else "Geri yukleme basarisiz: ${result.error}",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        backupLoading = false
+                    }
+                }
+                val shareLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.StartActivityForResult()
+                ) {}
+
+                SettingsCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = !backupLoading) {
+                                scope.launch {
+                                    backupLoading = true
+                                    val intent = viewModel.exportBackup(context)
+                                    if (intent != null) {
+                                        shareLauncher.launch(Intent.createChooser(intent, "Yedegi paylas"))
+                                    } else {
+                                        android.widget.Toast.makeText(context, "Disa aktarma basarisiz", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                    backupLoading = false
+                                }
+                            }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Upload, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Yedek Al", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("Kategori atamalarini JSON olarak disa aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        if (backupLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    }
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = !backupLoading) { filePickerLauncher.launch("application/json") }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Download, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Geri Yukle", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("JSON yedek dosyasindan kategorileri ice aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+
+            // ── Debug ────────────────────────────────────────────────────────
             if (logs.isNotEmpty()) {
                 item { SettingsSectionTitle("Debug") }
                 item {
