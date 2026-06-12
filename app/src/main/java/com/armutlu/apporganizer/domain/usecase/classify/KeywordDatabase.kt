@@ -31,7 +31,10 @@ object KeywordDatabase {
             "shop", "shopping", "store", "market", "buy", "sell", "cart",
             "payment", "checkout", "price", "discount", "amazon", "ebay",
             "aliexpress", "trendyol", "hepsiburada", "n11", "sahibinden",
-            "letgo", "mercari", "walmart", "target", "costco", "alibaba"
+            "letgo", "mercari", "walmart", "target", "costco", "alibaba",
+            "ciceksepeti", "cicek", "dolap", "gittigidiyor", "pttavm",
+            "teknosa", "mediamarkt", "vatanbilgisayar", "koton", "defacto",
+            "lcwaikiki", "boyner", "modanisa", "mavi", "alışveriş"
         ),
         Category.CAT_NEWS to listOf(
             "news", "newspaper", "article", "press", "tribune", "gazette",
@@ -68,7 +71,9 @@ object KeywordDatabase {
             "vacation", "holiday", "tour", "map", "navigation", "gps", "route",
             "taxi", "uber", "lyft", "bus", "train", "subway", "airline",
             "airport", "passport", "visa", "seyahat", "ucus", "otel",
-            "flightradar", "tripadvisor", "expedia", "skyscanner", "kayak"
+            "flightradar", "tripadvisor", "expedia", "skyscanner", "kayak",
+            "bitaksi", "obilet", "enuygun", "pegasus", "thy", "tcdd",
+            "istanbulkart", "kentkart", "marti", "scooter", "bisiklet"
         ),
         Category.CAT_ENTERTAINMENT to listOf(
             "entertainment", "movie", "film", "video", "stream", "watch",
@@ -76,12 +81,16 @@ object KeywordDatabase {
             "music", "spotify", "podcast", "radio", "audio", "sound",
             "tv", "series", "show", "cinema", "theater", "concert",
             "tiktok", "reels", "shorts", "anime", "manga", "webtoon",
-            "eglence", "dizi", "muzik"
+            "eglence", "dizi", "muzik",
+            "blutv", "exxen", "puhutv", "tabii", "gain", "trt",
+            "dsmart", "digiturk", "fizy", "muud"
         ),
         Category.CAT_FOOD to listOf(
             "food", "restaurant", "delivery", "eat", "meal", "recipe",
             "cook", "kitchen", "yemek", "siparis", "pizza", "burger",
-            "cafe", "coffee", "grocery", "market"
+            "cafe", "coffee", "grocery", "market",
+            "getir", "yemeksepeti", "migros", "a101", "bim", "carrefour",
+            "trendyolexpress", "express", "mutfak", "tarif"
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
