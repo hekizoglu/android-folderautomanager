@@ -623,7 +623,7 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Time â€” 72sp Thin weight, pure white, soft shadow
+        // Time â€" 72sp Thin weight, pure white, soft shadow
         Text(
             text = timeFormat.format(now),
             color = Color.White,
@@ -632,10 +632,10 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
             letterSpacing = (-2).sp,
             textAlign = TextAlign.Center,
             // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
-            // We layer a blurred copy via alpha trick instead â€” keep it simple and readable.
+            // We layer a blurred copy via alpha trick instead â€" keep it simple and readable.
         )
         Spacer(modifier = Modifier.height(2.dp))
-        // Date â€” 16sp white 85% alpha
+        // Date â€" 16sp white 85% alpha
         Text(
             text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
             color = Color.White.copy(alpha = 0.85f),
