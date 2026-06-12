@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-12 01:14 UTC
-# Commit: f737a4b936a450e7bd4d44bd43aa76d6fc2862eb
+# Generated: 2026-06-12 05:06 UTC
+# Commit: 37b50e1289f774bea433a088ebcfdb5ecd7b8a59
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2061,10 +2061,20 @@ class PackageChangeReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
-                // Sadece zaten DB'de varsa güncelle (kategori korunur)
-                if (repo.appExists(packageName)) {
-                    Timber.d("App updated, keeping category: $packageName")
-                }
+                if (!repo.appExists(packageName)) return@launch
+                // Mevcut kaydı koru (kategori, gizlilik), sadece PM'den gelen taze veriyi güncelle
+                val existing = repo.getAppByPackageName(packageName) ?: return@launch
+                val helper = PackageManagerHelper(context)
+                val fresh = helper.getAppInfo(packageName) ?: return@launch
+                val merged = fresh.copy(
+                    categoryId   = existing.categoryId,
+                    isHidden     = existing.isHidden,
+                    usageCount   = existing.usageCount,
+                    lastUsedTimestamp = existing.lastUsedTimestamp,
+                    notificationCount = existing.notificationCount
+                )
+                repo.insertApps(listOf(merged))
+                Timber.d("App updated (category preserved): $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error handling app change: $packageName")
             }
