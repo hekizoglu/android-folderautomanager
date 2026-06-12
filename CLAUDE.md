@@ -492,4 +492,31 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 
 ---
 
-*Son güncelleme: 2026-06-12 (10 döngü tamamlandı)*
+### Encoding Kuralı (KRİTİK)
+**Edit tool bazen curly quote (`"` `"`) karakterleri yazar — Kotlin string literal hatası verir.**
+- Belirtisi: `SettingsScreen.kt:453 Expecting an expression` tarzı hatalar
+- Fix: `python3 -c "f='dosya.kt'; open(f,'w').write(open(f).read().replace(chr(0x201c),'\"').replace(chr(0x201d),'\"'))"` ile düzelt
+- Önlem: Büyük Edit işlemlerinden sonra `xxd | grep e280` ile kontrol et
+
+### AppPrefs Yeni Anahtarlar (2026-06-12)
+- `KEY_AUTO_BACKUP_ENABLED` — otomatik yedekleme toggle
+- `KEY_HIDE_NAV_BUTTONS` — sistem navigasyon gizleme
+- `KEY_ALLAPPS_BG_ALPHA` — AllApps arka plan opakligi (float)
+- `KEY_NOTIFICATION_TEXT_ENABLED` — bildirim metni gosterme
+- `KEY_LAST_RECONCILE` — reconcile throttle (5dk)
+
+### Tema Sistemi Notu
+**Theme.kt'de AppOrganizerTheme artik ThemePreferences'i dinliyor** — `context.themeDataStore` Flow'undan `AppTheme` ve `AppFont` okuyarak `buildColorScheme` ve `buildTypography` olusturuyor. Tema secimi artik aninda uygulanir.
+
+### HorizontalPager Sayfalama
+**HomeScreen'de 8 klasor/sayfa** — `pageSize = 8`, `HorizontalPager` + sayfa noktaciklari. LazyVerticalGrid `userScrollEnabled = false` ile sayfa icinde scroll engellendi.
+
+### Rutin Dongu Kurali Guncellendi
+**Her dongude once agent ile arastirma raporla, sonra uygulamaya gec.**
+
+### Bildirim Metni Mimarisi (Döngü 8)
+**`AppNotificationListenerService`**: `latestTexts: StateFlow<Map<String, String>>` — her `onNotificationPosted`'da `EXTRA_TITLE + EXTRA_TEXT` birleştirilerek güncelleniyor.
+**`AppInfo`**: `notificationText: String = ""` field eklendi — DB v6 (fallbackToDestructiveMigration).
+**Gösterim:** `AppPrefs.isNotificationTextEnabled()` = true → FolderTile'da klasör altı, AllAppsDrawer'da kategori etiketi yerine.
+
+*Son güncelleme: 2026-06-12 (Döngü 8 tamamlandı)*
