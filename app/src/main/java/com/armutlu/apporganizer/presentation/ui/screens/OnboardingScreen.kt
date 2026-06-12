@@ -173,6 +173,15 @@ private enum class OnboardingStep(
         isRequired = false,
         isSkippable = false
     ),
+    NOTIF_ACCESS(
+        icon = Icons.Default.Notifications,
+        title = "Bildirim Erisimi",
+        description = "Bildirim metnini gosterebilmek icin sistem bildirim erisimi gereklidir.\n\nAcilan ekranda 'App Organizer'i bulun ve etkinlestirin.",
+        why = "Bu izin olmadan bildirim metni hic gosterilmez. Veriler cihazinizda kalir, disari gonderilmez.",
+        buttonLabel = "Izin Ver",
+        isRequired = false,
+        isSkippable = true
+    ),
     SWIPE_HINT(
         icon = Icons.Default.SwipeUp,
         title = "Swipe-Up Ipucu",
@@ -247,6 +256,13 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
     var autoBackupEnabled by remember { mutableStateOf(true) }
     var notifTextEnabled by remember { mutableStateOf(true) }
+    var notifAccessGranted by remember {
+        mutableStateOf(
+            android.provider.Settings.Secure.getString(
+                context.contentResolver, "enabled_notification_listeners"
+            )?.contains(context.packageName) == true
+        )
+    }
     var swipeHintEnabled by remember { mutableStateOf(true) }
     var newBadgeEnabled by remember { mutableStateOf(true) }
     var folderCountEnabled by remember { mutableStateOf(true) }
@@ -263,10 +279,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 launcherSet = isDefaultLauncher(context)
-                // Launcher ayarlandıysa otomatik ilerle
-                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) {
-                    stepIndex++
-                }
+                notifAccessGranted = android.provider.Settings.Secure.getString(
+                    context.contentResolver, "enabled_notification_listeners"
+                )?.contains(context.packageName) == true
+                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) stepIndex++
+                if (notifAccessGranted && currentStep == OnboardingStep.NOTIF_ACCESS) stepIndex++
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -444,7 +461,8 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
                 OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
                 OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
-                OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gün ayarlandı" else null
+                OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) "Bildirim erisimi verildi" else null
+                OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gun ayarlandi" else null
                 else -> null
             }
             if (statusText != null) {
@@ -657,6 +675,14 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 stepIndex++
                             }
 
+                            OnboardingStep.NOTIF_ACCESS -> {
+                                if (notifAccessGranted) { stepIndex++; return@clickable }
+                                context.startActivity(
+                                    android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            }
+
                             OnboardingStep.SWIPE_HINT -> {
                                 com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled)
                                 stepIndex++
@@ -702,6 +728,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> "Devam Et"
                         currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> "Devam Et"
+                        currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> "Devam Et"
                         else -> currentStep.buttonLabel
                     },
                     fontSize = 17.sp,
