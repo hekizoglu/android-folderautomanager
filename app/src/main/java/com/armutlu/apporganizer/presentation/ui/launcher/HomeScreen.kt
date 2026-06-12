@@ -104,6 +104,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val contextMenuApp = contextMenuPkg?.let { pkg -> allApps.find { it.packageName == pkg } }
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
     var folderContextMenu by remember { mutableStateOf<AppFolder?>(null) }
+    var homeLongPressOpen by remember { mutableStateOf(false) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -228,6 +229,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                         onDoubleTap = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             viewModel.openAllApps()
+                        },
+                        onLongPress = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            homeLongPressOpen = true
                         }
                     )
                 }
@@ -497,6 +502,30 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             onAppLongClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 contextMenuPkg = app.packageName
+            }
+        )
+    }
+
+    // Ana ekran uzun basma menüsü
+    if (homeLongPressOpen) {
+        HomeLongPressSheet(
+            onDismiss = { homeLongPressOpen = false },
+            onWallpaper = {
+                homeLongPressOpen = false
+                val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                runCatching { context.startActivity(Intent.createChooser(intent, "Duvar Kağıdı Seç").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }) }
+            },
+            onSettings = {
+                homeLongPressOpen = false
+                viewModel.openManager(context)
+            },
+            onDockEdit = {
+                homeLongPressOpen = false
+                dockEditOpen = true
             }
         )
     }
