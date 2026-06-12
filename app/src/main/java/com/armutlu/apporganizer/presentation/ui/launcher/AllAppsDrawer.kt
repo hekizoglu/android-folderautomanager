@@ -37,9 +37,12 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -178,6 +181,16 @@ fun AllAppsDrawer(
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val searchFocusRequester = remember { FocusRequester() }
+
+    // Drawer açıldığında 300ms sonra klavyeyi aç (animasyon bitmeden açma)
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(300)
+        runCatching { searchFocusRequester.requestFocus() }
+        keyboardController?.show()
+    }
+
     var sortMode        by remember {
         val saved = context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
             .getString("all_apps_sort_mode", AllAppsSortMode.ALPHA.name)
@@ -258,7 +271,14 @@ fun AllAppsDrawer(
             .fillMaxSize()
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
-                    onDragEnd = { if (dragOffset > SWIPE_DOWN_THRESHOLD) onClose(); dragOffset = 0f },
+                    onDragEnd = {
+                        if (dragOffset > SWIPE_DOWN_THRESHOLD) {
+                            saveSearchIfNeeded()
+                            keyboardController?.hide()
+                            onClose()
+                        }
+                        dragOffset = 0f
+                    },
                     onDragCancel = { dragOffset = 0f },
                     onVerticalDrag = { _, delta ->
                         if (delta > 0) dragOffset += delta else dragOffset = 0f
@@ -318,7 +338,8 @@ fun AllAppsDrawer(
                                     BasicTextField(
                                         value = searchQuery, onValueChange = onSearchQueryChange,
                                         singleLine = true, cursorBrush = SolidColor(HeaderColor),
-                                        textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp)
+                                        textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
+                                        modifier = Modifier.focusRequester(searchFocusRequester)
                                     )
                                 }
                                 if (searchQuery.isNotEmpty()) {
@@ -328,7 +349,14 @@ fun AllAppsDrawer(
                                 }
                             }
                         }
-                        IconButton(onClick = onClose, modifier = Modifier.size(40.dp)) {
+                        IconButton(
+                            onClick = {
+                                saveSearchIfNeeded()
+                                keyboardController?.hide()
+                                onClose()
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
                             Icon(Icons.Default.Close, "Kapat", tint = TextSecondary, modifier = Modifier.size(20.dp))
                         }
                     }
