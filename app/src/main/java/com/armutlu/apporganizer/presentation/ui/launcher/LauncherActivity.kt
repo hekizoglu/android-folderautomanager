@@ -6,6 +6,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -64,9 +67,38 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
+    private fun applyNavBarVisibility() {
+        if (AppPrefs.isNavButtonsHidden(this)) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                window.insetsController?.let {
+                    it.hide(WindowInsets.Type.navigationBars())
+                    it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                )
+            }
+        } else {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                window.insetsController?.show(WindowInsets.Type.navigationBars())
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        viewModel.reconcileIfNeeded(this)
+        applyNavBarVisibility()
+        // Reconcile 5 dakikada bir — geri tuşunda her seferinde PM sorgusu yapmasın
+        if (AppPrefs.shouldReconcile(this)) {
+            viewModel.reconcileIfNeeded(this)
+            AppPrefs.markReconciled(this)
+        }
         // Usage stats pahalı bir sorgu — 30 dakikada bir senkronize et
         if (AppPrefs.shouldSyncUsageStats(this)) {
             viewModel.syncUsageStats(this)

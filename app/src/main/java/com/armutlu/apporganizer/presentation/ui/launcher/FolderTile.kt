@@ -166,7 +166,7 @@ fun FolderTile(
             modifier = Modifier.width(72.dp)
         )
         val context = LocalContext.current
-        val folderCountVisible = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context) }
+        val folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
         if (folderCountVisible) {
             Text(
                 text = "${folder.apps.size}",
@@ -176,7 +176,7 @@ fun FolderTile(
             )
         }
         // Swipe-up ile açılacak uygulamanın adı — en çok kullanılan
-        val folderSwipeHintEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context) }
+        val folderSwipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(

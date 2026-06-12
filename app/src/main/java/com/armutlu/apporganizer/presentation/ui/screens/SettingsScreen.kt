@@ -316,11 +316,14 @@ fun SettingsScreen(
                 var newBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
                 var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
                 var folderSwipeHint by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
+                var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+                var hideNavButtons by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
+                var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.SwipeUp,
-                        title = "Swipe-up İpucu",
-                        subtitle = "Ana ekranda yukarı kaydırma animasyonu göster",
+                        title = "Swipe-up Ipucu",
+                        subtitle = "Ana ekranda yukari kaydirma animasyonu goster",
                         checked = swipeHintEnabled,
                         onCheckedChange = {
                             swipeHintEnabled = it
@@ -330,8 +333,8 @@ fun SettingsScreen(
                     Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.NewReleases,
-                        title = "YENİ Badge",
-                        subtitle = "7 gün içinde kurulan uygulamalara rozet göster",
+                        title = "YENI Badge",
+                        subtitle = "7 gun icinde kurulan uygulamalara rozet goster",
                         checked = newBadgeEnabled,
                         onCheckedChange = {
                             newBadgeEnabled = it
@@ -341,8 +344,8 @@ fun SettingsScreen(
                     Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.FormatListNumbered,
-                        title = "Klasör Uygulama Sayısı",
-                        subtitle = "Klasör simgesinin altında uygulama adedini göster",
+                        title = "Klasor Uygulama Sayisi",
+                        subtitle = "Klasor simgesinin altinda uygulama adedini goster",
                         checked = folderCountVisible,
                         onCheckedChange = {
                             folderCountVisible = it
@@ -352,14 +355,57 @@ fun SettingsScreen(
                     Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Folder,
-                        title = "Klasör Swipe İpucu",
-                        subtitle = "Klasörde en çok kullanılan uygulamayı göster",
+                        title = "Klasor Swipe Ipucu",
+                        subtitle = "Klasorde en cok kullanilan uygulamayi goster",
                         checked = folderSwipeHint,
                         onCheckedChange = {
                             folderSwipeHint = it
                             com.armutlu.apporganizer.utils.AppPrefs.setFolderSwipeHintEnabled(context, it)
                         }
                     )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Notifications,
+                        title = "Bildirim Metni",
+                        subtitle = "Klasor ve uygulamalarin altinda son bildirimi goster",
+                        checked = notifTextEnabled,
+                        onCheckedChange = {
+                            notifTextEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.HideSource,
+                        title = "Sistem Navigasyonunu Gizle",
+                        subtitle = "Tam ekran launcher - geri/home/recents butonsuz",
+                        checked = hideNavButtons,
+                        onCheckedChange = {
+                            hideNavButtons = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setNavButtonsHidden(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Opacity, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text("Tum Uygulamalar Arka Plan", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                                Text("Opaklık: ${(allAppsBgAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Slider(
+                            value = allAppsBgAlpha,
+                            onValueChange = {
+                                allAppsBgAlpha = it
+                                com.armutlu.apporganizer.utils.AppPrefs.setAllAppsBgAlpha(context, it)
+                            },
+                            valueRange = 0.1f..1.0f,
+                            steps = 8
+                        )
+                    }
                 }
             }
 
@@ -451,6 +497,26 @@ fun SettingsScreen(
 
             // Backup & Restore
             item { SettingsSectionTitle("Yedek / Geri Yukle") }
+            item {
+                var autoBackup by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoBackupEnabled(context)) }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Autorenew, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Otomatik Yedekleme", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("Uygulama acildiginda otomatik JSON yedegi al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(checked = autoBackup, onCheckedChange = {
+                            autoBackup = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, it)
+                        })
+                    }
+                }
+            }
             item {
                 var backupLoading by remember { mutableStateOf(false) }
                 val filePickerLauncher = rememberLauncherForActivityResult(

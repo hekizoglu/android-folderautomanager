@@ -181,6 +181,7 @@ fun AllAppsDrawer(
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
+    val bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchFocusRequester = remember { FocusRequester() }
 
@@ -287,7 +288,7 @@ fun AllAppsDrawer(
             }
     ) {
         // Arka plan
-        Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(BgColor))
+        Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(Color.Black.copy(alpha = bgAlpha)))
 
         Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {

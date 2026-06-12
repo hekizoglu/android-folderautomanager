@@ -50,6 +50,39 @@ object AppPrefs {
     fun setFolderCountVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_COUNT_VISIBLE, v).apply()
     fun setFolderSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SWIPE_HINT, v).apply()
 
+    // Otomatik yedekleme — uygulama ilk acildiginda otomatik JSON yedegi al
+    const val KEY_AUTO_BACKUP_ENABLED = "auto_backup_enabled"
+    fun isAutoBackupEnabled(context: Context) = prefs(context).getBoolean(KEY_AUTO_BACKUP_ENABLED, false)
+    fun setAutoBackupEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_AUTO_BACKUP_ENABLED, v).apply()
+
+    // Navigasyon/sistem butonlarini gizle
+    const val KEY_HIDE_NAV_BUTTONS = "hide_nav_buttons"
+    fun isNavButtonsHidden(context: Context) = prefs(context).getBoolean(KEY_HIDE_NAV_BUTTONS, false)
+    fun setNavButtonsHidden(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HIDE_NAV_BUTTONS, v).apply()
+
+    // AllAppsDrawer arka plan opakligi (0.0 - 1.0)
+    const val KEY_ALLAPPS_BG_ALPHA = "allapps_bg_alpha"
+    fun getAllAppsBgAlpha(context: Context) = prefs(context).getFloat(KEY_ALLAPPS_BG_ALPHA, 0.85f)
+    fun setAllAppsBgAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_ALLAPPS_BG_ALPHA, v).apply()
+
+    // Bildirim metni goster (FolderTile + AllApps altinda)
+    const val KEY_NOTIFICATION_TEXT_ENABLED = "notification_text_enabled"
+    fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
+    fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
+
+    // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
+    private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
+    private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika
+
+    fun shouldReconcile(context: Context): Boolean {
+        val last = prefs(context).getLong(KEY_LAST_RECONCILE, 0L)
+        return System.currentTimeMillis() - last > RECONCILE_INTERVAL_MS
+    }
+
+    fun markReconciled(context: Context) {
+        prefs(context).edit().putLong(KEY_LAST_RECONCILE, System.currentTimeMillis()).apply()
+    }
+
     // Usage stats sync throttle — her 30 dakikada bir senkronize et
     private const val KEY_LAST_USAGE_SYNC = "last_usage_sync_ms"
     private const val USAGE_SYNC_INTERVAL_MS = 30L * 60 * 1000 // 30 dakika

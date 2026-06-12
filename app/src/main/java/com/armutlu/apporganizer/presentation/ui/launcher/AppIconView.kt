@@ -136,27 +136,24 @@ fun AppIconView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Kullanım bazlı greyscale — unusedGreyDays > 0 ise son kullanım tarihine göre gri
-        val unusedGreyDays = remember { com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context) }
-        val isUnused = remember(app.lastUsedTimestamp, unusedGreyDays) {
-            if (unusedGreyDays <= 0) false
-            else if (app.lastUsedTimestamp == 0L) true  // hiç kullanılmamış
+        // remember olmadan oku: ayarlar değişince hemen yansısın
+        val unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+        val isUnused = if (unusedGreyDays <= 0) false
+            else if (app.lastUsedTimestamp == 0L) false  // hiç kullanılmamış = gri değil
             else {
                 val daysSinceUse = (System.currentTimeMillis() - app.lastUsedTimestamp) / (1000L * 60 * 60 * 24)
                 daysSinceUse >= unusedGreyDays
             }
-        }
         val iconAlpha = if (isUnused) 0.45f else 1f
         val greyFilter = if (isUnused)
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
         else null
 
         // 7 gün içinde kurulduysa "YENİ" badge — Ayarlar'dan kapatılabilir
-        val newBadgeEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context) }
-        val isNew = remember(app.installTime) {
-            newBadgeEnabled &&
+        val newBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)
+        val isNew = newBadgeEnabled &&
             app.installTime > 0L &&
             (System.currentTimeMillis() - app.installTime) < 7L * 24 * 60 * 60 * 1000
-        }
 
         // İkon + bildirim badge
         Box {

@@ -3,6 +3,8 @@
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.activity.compose.BackHandler
@@ -315,19 +317,29 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 }
             }
 
-            // Folder grid â€” 4 columns, centered
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
-            ) {
-                val displayFolders = draggingFolders ?: folders
-                items(displayFolders.size) { index ->
-                    val folder = displayFolders[index]
+            // Folder grid — sayfa basina 8 klasor (4 sutun x 2 satir), fazlasi sonraki sayfaya
+            val displayFolders = draggingFolders ?: folders
+            val pageSize = 8
+            val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
+            val pagerState = rememberPagerState(pageCount = { pageCount })
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth().weight(1f)
+            ) { page ->
+                val pageStart = page * pageSize
+                val pageFolders = displayFolders.drop(pageStart).take(pageSize)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp),
+                    userScrollEnabled = false
+                ) {
+                items(pageFolders.size) { pageIndex ->
+                    val index = pageStart + pageIndex
+                    val folder = pageFolders[pageIndex]
                     val isDragging = dragFromIndex == index
                     FolderTile(
                         folder = folder,
@@ -355,7 +367,6 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                                     onDrag = { change, _ ->
                                         change.consume()
                                         val from = dragFromIndex ?: return@detectDragGesturesAfterLongPress
-                                        // Tahmini hedef indeks: her tile yaklaşık 90dp
                                         val tileWidthPx = with(density) { 90.dp.toPx() }
                                         val dx = change.position.x
                                         val dy = change.position.y
@@ -391,9 +402,32 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                             .then(if (isDragging) Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp)) else Modifier)
                     )
                 }
+                } // LazyVerticalGrid
+            } // HorizontalPager
+
+            // Sayfa noktaciklari — birden fazla sayfa varsa goster
+            if (pageCount > 1) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(pageCount) { idx ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 3.dp)
+                                .size(if (pagerState.currentPage == idx) 8.dp else 5.dp)
+                                .background(
+                                    if (pagerState.currentPage == idx) Color.White.copy(alpha = 0.9f)
+                                    else Color.White.copy(alpha = 0.3f),
+                                    androidx.compose.foundation.shape.CircleShape
+                                )
+                        )
+                    }
+                }
             }
 
-            // Swipe-up ipucu — ilk 5 açılışta göster
+            // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen)
 
             // Drag pill handle — above dock, pure Pixel style
@@ -789,7 +823,7 @@ private fun SwipeHint(context: android.content.Context, visible: Boolean) {
                 modifier = Modifier.size(20.dp).offset(y = offsetY.dp)
             )
             Text(
-                text = "Tüm uygulamalar",
+                text = "Tum uygulamalar",
                 color = Color.White.copy(alpha = 0.40f),
                 fontSize = 11.sp
             )

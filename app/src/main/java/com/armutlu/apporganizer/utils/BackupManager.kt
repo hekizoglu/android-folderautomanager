@@ -18,11 +18,11 @@ object BackupManager {
 
     private val dateFmt = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
 
-    /** Tüm uygulama kategori atamalarını JSON olarak dışa aktarır. */
+    /** Uygulama kategori atamalari, gizlilik durumu ve kullanim istatistiklerini JSON olarak disari aktarir. */
     suspend fun exportToJson(repository: AppRepository): String = withContext(Dispatchers.IO) {
         val apps = repository.getAllApps()
         val root = JSONObject().apply {
-            put("version", 1)
+            put("version", 2)
             put("exportedAt", System.currentTimeMillis())
             put("apps", JSONArray().apply {
                 apps.forEach { app ->
@@ -30,11 +30,11 @@ object BackupManager {
                         put("packageName", app.packageName)
                         put("categoryId", app.categoryId)
                         put("isHidden", app.isHidden)
+                        put("usageCount", app.usageCount)
+                        put("lastUsedTimestamp", app.lastUsedTimestamp)
+                        put("notificationCount", app.notificationCount)
                     })
                 }
-            })
-            put("dockOrder", JSONArray().apply {
-                // DockPrefs is context-dependent, added separately
             })
         }
         root.toString(2)
@@ -80,6 +80,10 @@ object BackupManager {
                     if (repository.appExists(pkg)) {
                         repository.updateAppCategory(pkg, cat)
                         repository.updateAppHidden(pkg, hidden)
+                        val usageCount = obj.optLong("usageCount", 0L)
+                        val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
+                        if (usageCount > 0) repository.updateUsageCount(pkg, usageCount)
+                        if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
                         updated++
                     }
                 }
