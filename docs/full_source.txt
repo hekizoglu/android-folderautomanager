@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-12 22:14 UTC
-# Commit: 9d12127b05bd18e86320591357c206cd3548da1a
+# Generated: 2026-06-12 22:38 UTC
+# Commit: 12c46e912d35022e1babf9f77d567542630e8f0c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5153,7 +5153,7 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Time â€” 72sp Thin weight, pure white, soft shadow
+        // Time â€" 72sp Thin weight, pure white, soft shadow
         Text(
             text = timeFormat.format(now),
             color = Color.White,
@@ -5162,10 +5162,10 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
             letterSpacing = (-2).sp,
             textAlign = TextAlign.Center,
             // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
-            // We layer a blurred copy via alpha trick instead â€” keep it simple and readable.
+            // We layer a blurred copy via alpha trick instead â€" keep it simple and readable.
         )
         Spacer(modifier = Modifier.height(2.dp))
-        // Date â€” 16sp white 85% alpha
+        // Date â€" 16sp white 85% alpha
         Text(
             text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
             color = Color.White.copy(alpha = 0.85f),
@@ -6575,7 +6575,7 @@ fun AppListScreen(
                 item {
                     CategoryChip(
                         label = "Tümü",
-                        emoji = "ğŸ“±",
+                        emoji = "📱",
                         count = screenState.apps.size,
                         selected = selectedCategory == "all",
                         onClick = { viewModel.setSelectedCategory("all") }
