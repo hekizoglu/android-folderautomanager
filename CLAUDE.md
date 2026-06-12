@@ -433,6 +433,14 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 - Swipe-up AllApps: `detectVerticalDragGestures` eklendi, güvenilirlik arttı
 - Çift tap: ana ekrana çift dokunarak AllApps açılıyor
 
+**Eklenen Özellikler (2026-06-12)**
+- AppClassifier: +30 Türk uygulaması (Getir, Çiçeksepeti, D-Smart, Puhutv, Tabii, TRT, Marti, TCDD vb.)
+- KeywordDatabase: Türkçe keyword'ler eklendi (yemeksepeti, getir, blutv, bitaksi vb.)
+- AppIconView: tap sırasında spring bounce scale animasyonu (ripple kaldırıldı, Pixel hissi)
+- HomeLongPressSheet: ana ekrana uzun basınca Duvar Kağıdı / Dock Düzenle / Ayarlar menüsü
+- AllAppsDrawer: açılınca 300ms sonra klavye otomatik açılıyor (FocusRequester)
+- AllAppsDrawer: kapat/swipe-down sırasında arama geçmişe kaydediliyor + klavye kapanıyor
+
 ---
 
 ## Gelecek Yol Haritası — Rekabet Döngüsü (Uzun Vadeli)
@@ -484,4 +492,4 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 
 ---
 
-*Son güncelleme: 2026-06-12*
+*Son güncelleme: 2026-06-12 (10 döngü tamamlandı)*
