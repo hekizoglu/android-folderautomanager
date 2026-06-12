@@ -50,5 +50,18 @@ object AppPrefs {
     fun setFolderCountVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_COUNT_VISIBLE, v).apply()
     fun setFolderSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SWIPE_HINT, v).apply()
 
+    // Usage stats sync throttle — her 30 dakikada bir senkronize et
+    private const val KEY_LAST_USAGE_SYNC = "last_usage_sync_ms"
+    private const val USAGE_SYNC_INTERVAL_MS = 30L * 60 * 1000 // 30 dakika
+
+    fun shouldSyncUsageStats(context: Context): Boolean {
+        val last = prefs(context).getLong(KEY_LAST_USAGE_SYNC, 0L)
+        return System.currentTimeMillis() - last > USAGE_SYNC_INTERVAL_MS
+    }
+
+    fun markUsageStatsSynced(context: Context) {
+        prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
+    }
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
+import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -66,7 +67,11 @@ class LauncherActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.reconcileIfNeeded(this)
-        viewModel.syncUsageStats(this)
+        // Usage stats pahalı bir sorgu — 30 dakikada bir senkronize et
+        if (AppPrefs.shouldSyncUsageStats(this)) {
+            viewModel.syncUsageStats(this)
+            AppPrefs.markUsageStatsSynced(this)
+        }
         viewModel.loadDockPackages(this)
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
