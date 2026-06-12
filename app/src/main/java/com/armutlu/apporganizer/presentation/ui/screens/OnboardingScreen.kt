@@ -151,10 +151,28 @@ private enum class OnboardingStep(
         isRequired = true,
         isSkippable = true
     ),
+    AUTO_BACKUP(
+        icon = Icons.Default.Info,
+        title = "Otomatik Yedekleme",
+        description = "Her gun uygulama duzenlemeniz otomatik olarak yedeklensin mi? Telefon degistirdiginizde tek tikla geri yukleyin.",
+        why = "Yedekleme sadece cihazinizda JSON dosyasi olarak saklanir, hicbir yere gonderilmez.",
+        buttonLabel = "Etkinlestir",
+        isRequired = false,
+        isSkippable = true
+    ),
+    NOTIF_TEXT(
+        icon = Icons.Default.Notifications,
+        title = "Bildirim Metni",
+        description = "Klasorlerin altinda ve tum uygulamalar ekraninda son gelen bildirimin metnini goruntulemek ister misiniz?",
+        why = "WhatsApp veya mesajlasma uygulamalarinda son mesaji ana ekrandan gorebilirsiniz.",
+        buttonLabel = "Goster",
+        isRequired = false,
+        isSkippable = true
+    ),
     THEME_SELECT(
         icon = Icons.Default.Info,
         title = "Tema Secin",
-        description = "Uygulamanin gorunumunu kisiselleştirin. Daha sonra Ayarlar ekranindan degistirebilirsiniz.",
+        description = "Uygulamanin gorunumunu kisisellestirebilirsiniz. Daha sonra Ayarlar ekranindan degistirebilirsiniz.",
         why = "",
         buttonLabel = "Devam Et",
         isRequired = false,
@@ -532,6 +550,16 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                                 stepIndex++
                             }
 
+                            OnboardingStep.AUTO_BACKUP -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, true)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.NOTIF_TEXT -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, true)
+                                stepIndex++
+                            }
+
                             OnboardingStep.THEME_SELECT -> {
                                 scope.launch {
                                     themePrefs.setTheme(selectedTheme)
@@ -541,8 +569,12 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                             }
 
                             OnboardingStep.DONE -> {
-                                context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
-                                    .edit().putBoolean("onboarding_complete", true).apply()
+                                context.getSharedPreferences(
+                                    com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME,
+                                    android.content.Context.MODE_PRIVATE
+                                ).edit().putBoolean(
+                                    com.armutlu.apporganizer.utils.AppPrefs.KEY_ONBOARDING_DONE, true
+                                ).apply()
                                 onFinish()
                             }
                         }
