@@ -521,6 +521,15 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 **`AppInfo`**: `notificationText: String = ""` field eklendi — DB v6 (fallbackToDestructiveMigration).
 **Gösterim:** `AppPrefs.isNotificationTextEnabled()` = true → FolderTile'da klasör altı, AllAppsDrawer'da kategori etiketi yerine.
 
+### LauncherActivity Onboarding Kontrolu
+**LauncherActivity, onCreate basinda onboarding bitmemisse MainActivity'ye yonlendirir.**
+- Kontrol:  false ise  + 
+- Neden: pm clear / fresh install sonrasi LauncherActivity direkt acilinca onboarding atlaniyordu
+
+### Onboarding Adim Listesi (2026-06-13 itibari)
+WELCOME → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → SET_LAUNCHER → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → DONE (14 adim)
+Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
+
 ### OnboardingScreen Bug Fix + Yeni Adımlar (Döngü 9)
 **BUG:** `OnboardingScreen.kt:544` — `"app_prefs"/"onboarding_complete"` yanlış key/prefs kullanıyordu → her açılışta onboarding tekrar gösteriliyordu.
 **FIX:** `AppPrefs.PREFS_NAME` + `AppPrefs.KEY_ONBOARDING_DONE` kullanımına geçildi.
@@ -554,4 +563,4 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 - PixelClockWidget yorumlarindaki bozuk UTF-8 sekanslar (`C3 A2 E2 82 AC 22`) duzgun em-dash ile degistirildi
 - Python `open(f, 'rb')` + `.replace(bad, good)` yontemiyle guvende duzeltildi
 
-*Son güncelleme: 2026-06-12 (Döngü 12 tamamlandı)*
+*Son güncelleme: 2026-06-13 (Döngü 14 — Onboarding 13 adım test edildi)*
