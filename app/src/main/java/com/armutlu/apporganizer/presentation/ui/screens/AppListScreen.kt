@@ -2,33 +2,18 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
@@ -257,144 +242,3 @@ fun AppListScreen(
     }
 }
 
-// â”€â”€ Kategori chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CategoryChip(
-    label: String,
-    emoji: String,
-    count: Int,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(emoji, fontSize = 14.sp)
-                Text(label, fontSize = 13.sp)
-                Surface(
-                    shape = CircleShape,
-                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        count.toString(),
-                        fontSize = 11.sp,
-                        color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
-            }
-        },
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    )
-}
-
-// ── App listesi içeriği ────────────────────────────────────────────────────
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun AppListContent(
-    apps: List<AppInfo>,
-    selectedApps: Set<String>,
-    categories: List<Category>,
-    onAppClick: (AppInfo) -> Unit,
-    onAppLongClick: (AppInfo) -> Unit
-) {
-    val context = LocalContext.current
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(apps, key = { it.packageName }) { app ->
-            val isSelected = app.packageName in selectedApps
-            val cat = categories.find { it.categoryId == app.categoryId }
-
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (isSelected)
-                    MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.surface,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (isSelected) Modifier.border(
-                            1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)
-                        ) else Modifier
-                    )
-                    .combinedClickable(
-                        onClick = { onAppClick(app) },
-                        onLongClick = { onAppLongClick(app) }
-                    )
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // App ikonu — async, UI thread bloke etmez
-                    val px = (48 * context.resources.displayMetrics.density).toInt()
-                    val icon by produceState<ImageBitmap?>(initialValue = null, key1 = app.packageName) {
-                        value = withContext(Dispatchers.IO) {
-                            runCatching {
-                                context.packageManager.getApplicationIcon(app.packageName)
-                                    .toBitmap(px, px).asImageBitmap()
-                            }.getOrNull()
-                        }
-                    }
-                    Box(
-                        modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val iconSnapshot = icon
-                        if (iconSnapshot != null) {
-                            androidx.compose.foundation.Image(
-                                bitmap = iconSnapshot,
-                                contentDescription = app.appName,
-                                modifier = Modifier.size(48.dp)
-                            )
-                        } else {
-                            Text(app.appName.take(1), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        }
-                    }
-
-                    // İsim + kategori
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            app.appName,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        if (cat != null) {
-                            Text(
-                                "${cat.iconEmoji} ${cat.categoryName}",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    // Seçim işareti
-                    if (isSelected) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
