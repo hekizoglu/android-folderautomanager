@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
@@ -25,6 +26,7 @@ class LauncherActivity : ComponentActivity() {
     private val viewModel: LauncherViewModel by viewModels()
 
     private var lastHomePressMs = 0L
+    private var receiverRegistered = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,12 +69,24 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
+    // Xiaomi/Samsung gesture navigation'da SHOW_TRANSIENT_BARS_BY_SWIPE çakışır.
+    // config_navBarInteractionMode: 0=3-button, 1=2-button, 2=gesture
+    private fun isGestureNavEnabled(): Boolean {
+        val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
+        return resId > 0 && resources.getInteger(resId) == 2
+    }
+
     private fun applyNavBarVisibility() {
         if (AppPrefs.isNavButtonsHidden(this)) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.insetsController?.let {
                     it.hide(WindowInsets.Type.navigationBars())
-                    it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    // Gesture nav aktifse SHOW_TRANSIENT_BARS home gesture ile çakışır
+                    it.systemBarsBehavior = if (isGestureNavEnabled()) {
+                        WindowInsetsController.BEHAVIOR_DEFAULT
+                    } else {
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    }
                 }
             } else {
                 @Suppress("DEPRECATION")
@@ -82,7 +96,7 @@ class LauncherActivity : ComponentActivity() {
                 )
             }
         } else {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.insetsController?.show(WindowInsets.Type.navigationBars())
             } else {
                 @Suppress("DEPRECATION")
@@ -105,18 +119,18 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REPLACED)
-            addDataScheme("package")
+        if (!receiverRegistered) {
+            registerReceiver(packageReceiver, PACKAGE_FILTER)
+            receiverRegistered = true
         }
-        registerReceiver(packageReceiver, filter)
     }
 
     override fun onPause() {
         super.onPause()
-        runCatching { unregisterReceiver(packageReceiver) }
+        if (receiverRegistered) {
+            runCatching { unregisterReceiver(packageReceiver) }
+            receiverRegistered = false
+        }
     }
 
     private fun isDefaultLauncher(context: android.content.Context): Boolean {
@@ -129,5 +143,14 @@ class LauncherActivity : ComponentActivity() {
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // intentionally no-op: HomeScreen'deki BackHandler halleder
+    }
+
+    companion object {
+        private val PACKAGE_FILTER = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }
     }
 }

@@ -160,11 +160,6 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val isLoading = folders.isEmpty() && allApps.isEmpty()
 
     LaunchedEffect(Unit) {
-        viewModel.loadDockPackages(context)
-        viewModel.syncAppSizes(context)
-    }
-
-    LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { msg ->
             android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
@@ -256,14 +251,23 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             .pointerInput(allAppsOpen) {
                 if (!allAppsOpen) {
                     var accumulated = 0f
+                    var dragStartY = 0f
+                    // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
+                    val gestureZonePx = with(density) { 80.dp.toPx() }
                     detectVerticalDragGestures(
+                        onDragStart = { offset ->
+                            dragStartY = offset.y
+                            accumulated = 0f
+                        },
                         onDragEnd = { accumulated = 0f },
                         onDragCancel = { accumulated = 0f },
                         onVerticalDrag = { _, dragAmount ->
-                            accumulated += dragAmount
-                            if (!swipeLock && accumulated < -120f) {
-                                accumulated = 0f
-                                viewModel.openAllApps()
+                            if (dragStartY < size.height - gestureZonePx) {
+                                accumulated += dragAmount
+                                if (!swipeLock && accumulated < -120f) {
+                                    accumulated = 0f
+                                    viewModel.openAllApps()
+                                }
                             }
                         }
                     )
