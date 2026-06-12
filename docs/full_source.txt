@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-11 23:57 UTC
-# Commit: 4f372bbd5c71ce587b059a0e7d57497368d2dfc8
+# Generated: 2026-06-12 00:13 UTC
+# Commit: 94445c21d06234a72cd89bd658fa14974f8be4ce
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2483,6 +2483,23 @@ fun AllAppsDrawer(
 
                     Spacer(Modifier.height(10.dp))
 
+                    // Başlık — uygulama sayısı
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Uygulamalar",
+                            fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary
+                        )
+                        val countText = if (searchQuery.isNotBlank() || quickFilter != 0)
+                            "${sortedApps.size} / ${apps.size}"
+                        else
+                            "${apps.size} uygulama"
+                        Text(countText, fontSize = 12.sp, color = TextSecondary)
+                    }
+
                     // Arama + kapat
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -2849,9 +2866,13 @@ fun NiagaraAppRow(
                 app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            if (app.categoryId.isNotBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
+            val catLabel = remember(app.categoryId) {
+                com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
+                    .firstOrNull { it.categoryId == app.categoryId }?.categoryName
+            }
+            if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
                 Text(
-                    app.categoryId.replaceFirstChar { it.uppercase() },
+                    catLabel,
                     fontSize = 11.sp, color = TextSecondary, maxLines = 1
                 )
             }
@@ -4663,7 +4684,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
         ) {
             AllAppsDrawer(
-                apps = filteredApps,
+                apps = allApps,
                 searchQuery = searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
                 onAppClick = { pkg ->
