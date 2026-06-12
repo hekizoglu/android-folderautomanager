@@ -524,4 +524,7 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 **FIX:** `AppPrefs.PREFS_NAME` + `AppPrefs.KEY_ONBOARDING_DONE` kullanımına geçildi.
 **Yeni adımlar:** `AUTO_BACKUP` (otomatik yedekleme) + `NOTIF_TEXT` (bildirim metni) — her ikisi `isSkippable=true`, genel "Atla" butonu devreye giriyor.
 
-*Son güncelleme: 2026-06-13 (Döngü 9 tamamlandı)*
+### MainActivity Refactor (Döngü 10)
+**Kaldırıldı:** `private const val PREFS_NAME` ve `KEY_ONBOARDING_DONE` — `AppPrefs.PREFS_NAME` / `AppPrefs.KEY_ONBOARDING_DONE` olarak değiştirildi. DRY ihlali giderildi.
+
+*Son güncelleme: 2026-06-13 (Döngü 10 tamamlandı)*
