@@ -543,4 +543,15 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 
 **Uzak Ortam Notu:** `dl.google.com` ve `maven.google.com` bu remote ortamda erişim listesinde yok — Android AGP indirilemediginden APK build edilemiyor. Build dogrulama yerel makinede yapilmali.
 
-*Son güncelleme: 2026-06-12 (Döngü 11 tamamlandı)*
+### DockIcon Async Yukleme (Döngü 12)
+**HomeScreen.kt - DockIcon composable degistirildi:**
+- Onceki: `remember(packageName)` ile senkron `toBitmap()` — main thread'i bloke ediyordu
+- Yeni: `produceState<ImageBitmap?>` ile IO thread async yukleme + `iconCacheInternal` (LRU 200) paylasimiyla
+- `bitmap?.let { bmp -> ... }` pattern: `by` delegate'lerde smart cast sorununu onler
+- Yeni import'lar: `produceState`, `ImageBitmap`, `Dispatchers`, `withContext`
+
+**Encoding Duzeltmesi (Döngü 12):**
+- PixelClockWidget yorumlarindaki bozuk UTF-8 sekanslar (`C3 A2 E2 82 AC 22`) duzgun em-dash ile degistirildi
+- Python `open(f, 'rb')` + `.replace(bad, good)` yontemiyle guvende duzeltildi
+
+*Son güncelleme: 2026-06-12 (Döngü 12 tamamlandı)*
