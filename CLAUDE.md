@@ -24,11 +24,13 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 Kısa, net — hangi agent, hangi görev.
 
 ### Hata Çözüm Kuralı (KRİTİK)
-**Bir işlem hata verdiğinde ve çözümden %85'in altında eminsen:**
-1. Hemen bir agent ile online araştırma yap — hatanın tam metnini ara
-2. Gelen sonucu yorumla, çözümü uygula
-3. Yine başarısız olursa farklı bir AI modeli ile agent tekrar araştır
-4. **Minimum 3 deneme** — her seferinde farklı model/kaynak kullan (WebSearch, GitHub Issues, Stack Overflow)
+**Bir işlem hata verdiğinde:**
+- **1. denemede çözüm bulamazsan → HEMEN agent görevlendir, vakit kaybetme**
+- Agent türünü duruma göre seç: WebSearch (online hata arama), Explore (kod tarama), Plan (mimari sorun)
+- Yine başarısız olursa farklı model/kaynak ile tekrar: DeepSeek → Gemini → Claude Opus sırasıyla
+- **Minimum 3 deneme** — her seferinde farklı model/kaynak kullan (WebSearch, GitHub Issues, Stack Overflow)
+
+**%85 eşiği YOK** — çözümden emin olsan da olmasan da 1 denemeden sonra agent devreye girer.
 
 Agent görevlendirme formatı:
 > "X hatası için [DeepSeek/Gemini/Claude Opus] agent araştırma yapıyor..."
