@@ -39,12 +39,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ManageSearch
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.SwipeUp
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -165,9 +169,45 @@ private enum class OnboardingStep(
         title = "Bildirim Metni",
         description = "Klasorlerin altinda ve tum uygulamalar ekraninda son gelen bildirimin metnini goruntulemek ister misiniz?",
         why = "WhatsApp veya mesajlasma uygulamalarinda son mesaji ana ekrandan gorebilirsiniz.",
-        buttonLabel = "Goster",
+        buttonLabel = "Devam Et",
         isRequired = false,
-        isSkippable = true
+        isSkippable = false
+    ),
+    SWIPE_HINT(
+        icon = Icons.Default.SwipeUp,
+        title = "Swipe-Up Ipucu",
+        description = "Klasorun altinda en cok kullanilan uygulamanin adi gorunsun mu? Yukari kaydirarak o uygulamaya hizlica ulasabilirsiniz.",
+        why = "Klasorden tek hareketle favori uygulamanizi acacaksiniz — aciklama olmadan kesfetmek zor.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    NEW_BADGE(
+        icon = Icons.Default.Badge,
+        title = "Yeni Uygulama Rozeti",
+        description = "Son 7 gunde yuklenen uygulamalara 'YENI' rozeti gorunsun mu?",
+        why = "Yeni yuklediginiz uygulamalari kolay fark edersiniz.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    FOLDER_COUNT(
+        icon = Icons.Default.Folder,
+        title = "Klasor Uygulama Sayisi",
+        description = "Klasorun altinda kac uygulama oldugu gorunsun mu?",
+        why = "Klasorun icine bakmadan hizlica dolu mu bos mu anlayabilirsiniz.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    NAV_HIDE(
+        icon = Icons.Default.Navigation,
+        title = "Sistem Navigasyonu",
+        description = "Ana ekranda geri/home/recent tuslarini gizleyin, tam ekran launcher deneyimi yasayin.",
+        why = "Geri tulari gizlemek ekrani buyutür. Sistem navigate'i yine de swipe gesture ile kullanilabilir.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
     ),
     THEME_SELECT(
         icon = Icons.Default.Info,
@@ -205,6 +245,12 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         )
     }
     var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var autoBackupEnabled by remember { mutableStateOf(true) }
+    var notifTextEnabled by remember { mutableStateOf(true) }
+    var swipeHintEnabled by remember { mutableStateOf(true) }
+    var newBadgeEnabled by remember { mutableStateOf(true) }
+    var folderCountEnabled by remember { mutableStateOf(true) }
+    var navHideEnabled by remember { mutableStateOf(false) }
     var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
     var selectedFont  by remember { mutableStateOf(AppFont.DEFAULT) }
     val scope = rememberCoroutineScope()
@@ -423,6 +469,57 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 Spacer(Modifier.height(12.dp))
             }
 
+            // Toggle seçici — AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
+            val toggleState: Boolean? = when (currentStep) {
+                OnboardingStep.AUTO_BACKUP -> autoBackupEnabled
+                OnboardingStep.NOTIF_TEXT -> notifTextEnabled
+                OnboardingStep.SWIPE_HINT -> swipeHintEnabled
+                OnboardingStep.NEW_BADGE -> newBadgeEnabled
+                OnboardingStep.FOLDER_COUNT -> folderCountEnabled
+                OnboardingStep.NAV_HIDE -> navHideEnabled
+                else -> null
+            }
+            if (toggleState != null) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
+                ) {
+                    listOf(true to "Acik", false to "Kapali").forEach { (value, label) ->
+                        val selected = toggleState == value
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (selected) Color(0xFF00897B)
+                                    else Color.White.copy(alpha = 0.15f)
+                                )
+                                .clickable {
+                                    when (currentStep) {
+                                        OnboardingStep.AUTO_BACKUP -> autoBackupEnabled = value
+                                        OnboardingStep.NOTIF_TEXT -> notifTextEnabled = value
+                                        OnboardingStep.SWIPE_HINT -> swipeHintEnabled = value
+                                        OnboardingStep.NEW_BADGE -> newBadgeEnabled = value
+                                        OnboardingStep.FOLDER_COUNT -> folderCountEnabled = value
+                                        OnboardingStep.NAV_HIDE -> navHideEnabled = value
+                                        else -> {}
+                                    }
+                                }
+                                .padding(horizontal = 32.dp, vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                label,
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+
             // Tema seçim UI — sadece THEME_SELECT adımında göster
             if (currentStep == OnboardingStep.THEME_SELECT) {
                 Spacer(Modifier.height(8.dp))
@@ -551,12 +648,32 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                             }
 
                             OnboardingStep.AUTO_BACKUP -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, true)
+                                com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled)
                                 stepIndex++
                             }
 
                             OnboardingStep.NOTIF_TEXT -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, true)
+                                com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, notifTextEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.SWIPE_HINT -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.NEW_BADGE -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, newBadgeEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.FOLDER_COUNT -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, folderCountEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.NAV_HIDE -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setNavButtonsHidden(context, navHideEnabled)
                                 stepIndex++
                             }
 
