@@ -527,4 +527,18 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 ### MainActivity Refactor (Döngü 10)
 **Kaldırıldı:** `private const val PREFS_NAME` ve `KEY_ONBOARDING_DONE` — `AppPrefs.PREFS_NAME` / `AppPrefs.KEY_ONBOARDING_DONE` olarak değiştirildi. DRY ihlali giderildi.
 
-*Son güncelleme: 2026-06-13 (Döngü 10 tamamlandı)*
+### onResume Performans + Gesture Navigation Fix (Döngü 11)
+**LauncherActivity.kt degisiklikleri:**
+- `PACKAGE_FILTER` companion object sabiti — her `onResume`'da `IntentFilter` nesnesi olusturulmaz
+- `receiverRegistered` bayragi — `onResume`/`onPause` dongusunde cift kayit onlendi
+- `isGestureNavEnabled()` — `config_navBarInteractionMode == 2` ile gesture nav algilama
+- `applyNavBarVisibility`: gesture nav aktifse `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` yerine `BEHAVIOR_DEFAULT` kullan (Xiaomi/Samsung home gesture cakismasi giderildi)
+
+**HomeScreen.kt degisiklikleri:**
+- `LaunchedEffect(Unit)` icindeki cift `loadDockPackages` + `syncAppSizes` cagrilari kaldirildi (`onCreate` + `onResume` zaten handle ediyor)
+- `detectVerticalDragGestures`'a `onDragStart` eklendi: baslangic Y pozisyonu izleniyor
+- Alt 80dp sistem gesture zone'undan baslayan swipe AllApps'i tetiklemez (Xiaomi/Samsung alt kenar gesture cakismasi giderildi)
+
+**Uzak Ortam Notu:** `dl.google.com` ve `maven.google.com` bu remote ortamda erişim listesinde yok — Android AGP indirilemediginden APK build edilemiyor. Build dogrulama yerel makinede yapilmali.
+
+*Son güncelleme: 2026-06-12 (Döngü 11 tamamlandı)*
