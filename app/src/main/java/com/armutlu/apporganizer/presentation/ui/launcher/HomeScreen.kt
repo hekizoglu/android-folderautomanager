@@ -79,14 +79,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -627,7 +631,7 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Time â€" 72sp Thin weight, pure white, soft shadow
+        // Time — 72sp Thin weight, pure white, soft shadow
         Text(
             text = timeFormat.format(now),
             color = Color.White,
@@ -636,10 +640,10 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
             letterSpacing = (-2).sp,
             textAlign = TextAlign.Center,
             // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
-            // We layer a blurred copy via alpha trick instead â€" keep it simple and readable.
+            // We layer a blurred copy via alpha trick instead — keep it simple and readable.
         )
         Spacer(modifier = Modifier.height(2.dp))
-        // Date â€" 16sp white 85% alpha
+        // Date — 16sp white 85% alpha
         Text(
             text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
             color = Color.White.copy(alpha = 0.85f),
@@ -765,10 +769,22 @@ private fun DockIcon(
 ) {
     val context = LocalContext.current
     val px = with(androidx.compose.ui.platform.LocalDensity.current) { iconSize.roundToPx() }
-    val bitmap = remember(packageName) {
-        runCatching {
-            context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
-        }.getOrNull()
+    // Dock ikonlarini AppIconView ile ayni LRU cache uzerinden async yukle —
+    // main thread kompozisyonu bloke etmez, process omru boyunca cache'te kalan
+    val cacheKey = "${packageName}_$px"
+    val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
+        initialValue = iconCacheInternal[cacheKey],
+        key1 = cacheKey
+    ) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
+            value = loaded
+        }
     }
 
     Column(
@@ -780,19 +796,17 @@ private fun DockIcon(
             )
             .padding(4.dp)
     ) {
-        if (bitmap != null) {
+        bitmap?.let { bmp ->
             Image(
-                bitmap = bitmap,
+                bitmap = bmp,
                 contentDescription = label,
                 modifier = Modifier.size(iconSize)
             )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(iconSize)
-                    .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-            )
-        }
+        } ?: Box(
+            modifier = Modifier
+                .size(iconSize)
+                .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+        )
     }
 }
 
