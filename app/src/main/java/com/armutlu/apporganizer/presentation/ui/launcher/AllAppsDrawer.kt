@@ -282,6 +282,23 @@ fun AllAppsDrawer(
 
                     Spacer(Modifier.height(10.dp))
 
+                    // Başlık — uygulama sayısı
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Uygulamalar",
+                            fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary
+                        )
+                        val countText = if (searchQuery.isNotBlank() || quickFilter != 0)
+                            "${sortedApps.size} / ${apps.size}"
+                        else
+                            "${apps.size} uygulama"
+                        Text(countText, fontSize = 12.sp, color = TextSecondary)
+                    }
+
                     // Arama + kapat
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -648,9 +665,13 @@ fun NiagaraAppRow(
                 app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            if (app.categoryId.isNotBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
+            val catLabel = remember(app.categoryId) {
+                com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
+                    .firstOrNull { it.categoryId == app.categoryId }?.categoryName
+            }
+            if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
                 Text(
-                    app.categoryId.replaceFirstChar { it.uppercase() },
+                    catLabel,
                     fontSize = 11.sp, color = TextSecondary, maxLines = 1
                 )
             }

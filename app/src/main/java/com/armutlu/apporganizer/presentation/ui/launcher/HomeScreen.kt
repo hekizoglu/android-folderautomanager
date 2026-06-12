@@ -424,7 +424,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
         ) {
             AllAppsDrawer(
-                apps = filteredApps,
+                apps = allApps,
                 searchQuery = searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
                 onAppClick = { pkg ->
