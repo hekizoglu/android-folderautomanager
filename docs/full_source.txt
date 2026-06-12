@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-12 06:17 UTC
-# Commit: 2913a8161a21246a73064839c009b9d729b58399
+# Generated: 2026-06-12 07:21 UTC
+# Commit: e42a39577dec4c73f72f9f7ce21fa30e15d6e8e5
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5282,6 +5282,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
+import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -5335,7 +5336,11 @@ class LauncherActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.reconcileIfNeeded(this)
-        viewModel.syncUsageStats(this)
+        // Usage stats pahalı bir sorgu — 30 dakikada bir senkronize et
+        if (AppPrefs.shouldSyncUsageStats(this)) {
+            viewModel.syncUsageStats(this)
+            AppPrefs.markUsageStatsSynced(this)
+        }
         viewModel.loadDockPackages(this)
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
@@ -9229,6 +9234,19 @@ object AppPrefs {
     fun setNewBadgeEnabled(context: Context, v: Boolean)    = prefs(context).edit().putBoolean(KEY_NEW_BADGE_ENABLED, v).apply()
     fun setFolderCountVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_COUNT_VISIBLE, v).apply()
     fun setFolderSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SWIPE_HINT, v).apply()
+
+    // Usage stats sync throttle — her 30 dakikada bir senkronize et
+    private const val KEY_LAST_USAGE_SYNC = "last_usage_sync_ms"
+    private const val USAGE_SYNC_INTERVAL_MS = 30L * 60 * 1000 // 30 dakika
+
+    fun shouldSyncUsageStats(context: Context): Boolean {
+        val last = prefs(context).getLong(KEY_LAST_USAGE_SYNC, 0L)
+        return System.currentTimeMillis() - last > USAGE_SYNC_INTERVAL_MS
+    }
+
+    fun markUsageStatsSynced(context: Context) {
+        prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
+    }
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
