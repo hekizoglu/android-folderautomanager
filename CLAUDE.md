@@ -408,7 +408,7 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | 9 | SettingsScreen — varsayılan launcher butonu | `SettingsScreen.kt` | `grep -n "Varsayılan Launcher\|ROLE_HOME" .../SettingsScreen.kt` |
 | 10 | Bildirim badge UI | `AppIconView.kt`, `FolderTile.kt` | `grep -rn "notificationCount\|badgeText" app/src` |
 | 11 | NotificationListenerService — gerçek veri | `services/` altında servis dosyası | `find app/src -name "*Notification*Service*"` |
-| 12 | AppListScreen refactor — max 300 satır | `AppListScreen.kt` | `wc -l .../AppListScreen.kt` |
+| 12 | AppListScreen refactor — max 300 satır | `AppListScreen.kt`, `AppListComponents.kt` | `wc -l .../AppListScreen.kt` |
 
 ### Son Kontrol Sonuçları (2026-06-10)
 | # | Durum |
@@ -424,7 +424,7 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | 9 | ✅ SettingsScreen'de RoleManager butonu var |
 | 10 | ✅ Badge UI — AppIconView, FolderTile, AllAppsDrawer |
 | 11 | ✅ AppNotificationListenerService eklendi, DB'ye yazıyor |
-| 12 | ⚠️ AppListScreen.kt 385 satır — Components+Dialogs ayrıldı, kabul edilebilir |
+| 12 | ✅ AppListScreen.kt 244 satır — CategoryChip+AppListContent AppListComponents'a taşındı |
 
 **Düzeltilen Buglar (2026-06-10)**
 - FolderSheet geri/home tuşu: `sheetState.hide()` + `BackHandler` entegre edildi
