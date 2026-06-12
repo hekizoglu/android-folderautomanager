@@ -18,6 +18,7 @@ import com.armutlu.apporganizer.presentation.navigation.AppNavigation
 import com.armutlu.apporganizer.presentation.ui.screens.OnboardingScreen
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,8 +26,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-private const val PREFS_NAME = "app_organizer_prefs"
-private const val KEY_ONBOARDING_DONE = "onboarding_done"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -43,8 +42,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         CrashReporter.install(this)
 
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, false)
+        val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val onboardingDone = prefs.getBoolean(AppPrefs.KEY_ONBOARDING_DONE, false)
 
         // Onboarding bittiyse launcher seçimini kontrol et
         if (onboardingDone && !isDefaultLauncher()) {
@@ -57,7 +56,7 @@ class MainActivity : ComponentActivity() {
 
                 if (showOnboarding) {
                     OnboardingScreen(onFinish = {
-                        prefs.edit().putBoolean(KEY_ONBOARDING_DONE, true).apply()
+                        prefs.edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
                         showOnboarding = false
                         scanApps()
                         // Onboarding bitti, launcher seçimini tetikle
