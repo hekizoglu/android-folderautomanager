@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-12 17:15 UTC
-# Commit: c9b82729a4b76570c69142e95f677755b5bfabb3
+# Generated: 2026-06-12 17:58 UTC
+# Commit: 8279a103cf48a2fea1523ac8be829a777df8472b
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -204,6 +204,9 @@ interface AppDao {
     @Query("UPDATE apps SET notificationCount = :count WHERE packageName = :packageName")
     suspend fun updateNotificationCount(packageName: String, count: Int)
 
+    @Query("UPDATE apps SET notificationText = :text WHERE packageName = :packageName")
+    suspend fun updateNotificationText(packageName: String, text: String)
+
     @Query("SELECT * FROM apps WHERE isHidden = 1 ORDER BY appName ASC")
     fun getHiddenApps(): Flow<List<AppInfo>>
 
@@ -232,7 +235,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -920,6 +923,10 @@ class AppRepository @Inject constructor(
         try { appDao.updateNotificationCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
     }
 
+    suspend fun updateNotificationText(packageName: String, text: String) {
+        try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) { Timber.e(e) }
+    }
+
     fun getHiddenApps(): kotlinx.coroutines.flow.Flow<List<AppInfo>> = appDao.getHiddenApps()
 
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {
@@ -1018,6 +1025,8 @@ data class AppInfo(
     val notificationCount: Int = 0,
 
     val notificationImportance: Int = 0,
+
+    val notificationText: String = "",
 
     val appSizeBytes: Long = 0L,
 
@@ -2942,21 +2951,31 @@ fun NiagaraAppRow(
 
         Spacer(Modifier.width(14.dp))
 
-        // İsim + alt bilgi
+        // Isim + alt bilgi
+        val appRowContext = LocalContext.current
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            val catLabel = remember(app.categoryId) {
-                com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
-                    .firstOrNull { it.categoryId == app.categoryId }?.categoryName
-            }
-            if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
+            val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(appRowContext)
+            if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
-                    catLabel,
-                    fontSize = 11.sp, color = TextSecondary, maxLines = 1
+                    app.notificationText,
+                    fontSize = 11.sp, color = TextSecondary.copy(alpha = 0.8f), maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+            } else {
+                val catLabel = remember(app.categoryId) {
+                    com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
+                        .firstOrNull { it.categoryId == app.categoryId }?.categoryName
+                }
+                if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
+                    Text(
+                        catLabel,
+                        fontSize = 11.sp, color = TextSecondary, maxLines = 1
+                    )
+                }
             }
         }
 
@@ -4253,12 +4272,12 @@ fun FolderTile(
                 textAlign = TextAlign.Center
             )
         }
-        // Swipe-up ile açılacak uygulamanın adı — en çok kullanılan
+        // Swipe-up ile acilacak uygulamanin adi — en cok kullanilan
         val folderSwipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
-                text = "↑ ${topApp.appName}",
+                text = "^ ${topApp.appName}",
                 color = Color.White.copy(alpha = 0.28f),
                 fontSize = 9.sp,
                 maxLines = 1,
@@ -4266,6 +4285,25 @@ fun FolderTile(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.width(72.dp)
             )
+        }
+        // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
+        val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+        if (notifTextEnabled) {
+            val latestNotifApp = remember(folder.apps) {
+                folder.apps.filter { it.notificationText.isNotBlank() }
+                    .maxByOrNull { it.notificationCount }
+            }
+            if (latestNotifApp != null) {
+                Text(
+                    text = latestNotifApp.notificationText,
+                    color = Color.White.copy(alpha = 0.55f),
+                    fontSize = 9.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.width(72.dp)
+                )
+            }
         }
     }
 }
@@ -5582,7 +5620,7 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     init {
-        // NotificationListenerService'ten gelen badge sayılarını DB'ye yaz
+        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
                 if (counts.isNotEmpty()) {
@@ -5590,11 +5628,24 @@ class LauncherViewModel @Inject constructor(
                         counts.forEach { (pkg, count) ->
                             repository.updateNotificationCount(pkg, count)
                         }
-                        // Servis bilgisi olmayan uygulamaların sayısını sıfırla
+                        // Servis bilgisi olmayan uygulamalarin sayisini sifirla
                         val knownPkgs = counts.keys
                         repository.getAllApps()
                             .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
                             .forEach { repository.updateNotificationCount(it.packageName, 0) }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+
+        // Son bildirim metnini DB'ye yaz
+        AppNotificationListenerService.latestTexts
+            .onEach { texts ->
+                if (texts.isNotEmpty()) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        texts.forEach { (pkg, text) ->
+                            repository.updateNotificationText(pkg, text)
+                        }
                     }
                 }
             }
@@ -9354,19 +9405,36 @@ package com.armutlu.apporganizer.service
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Aktif bildirimleri sayar ve package -> count map'i yayınlar.
- * LauncherViewModel bu flow'u dinleyerek AppInfo.notificationCount'u günceller.
+ * Aktif bildirimleri sayar ve son bildirim metnini (package -> text) yayinlar.
+ * LauncherViewModel bu flow'u dinleyerek AppInfo.notificationCount ve notificationText'i gunceller.
  */
 class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
         rebuildCounts()
+        // Son gelen bildirimin metnini kaydet
+        if (!sbn.isOngoing) {
+            val extras = sbn.notification?.extras
+            val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
+            val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
+            val combined = when {
+                title.isNotBlank() && text.isNotBlank() -> "$title: $text"
+                title.isNotBlank() -> title
+                else -> text
+            }
+            if (combined.isNotBlank()) {
+                val current = _latestTexts.value.toMutableMap()
+                current[sbn.packageName] = combined
+                _latestTexts.value = current
+            }
+        }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
@@ -9392,6 +9460,9 @@ class AppNotificationListenerService : NotificationListenerService() {
     companion object {
         private val _badgeCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
         val badgeCounts: StateFlow<Map<String, Int>> = _badgeCounts.asStateFlow()
+
+        private val _latestTexts = MutableStateFlow<Map<String, String>>(emptyMap())
+        val latestTexts: StateFlow<Map<String, String>> = _latestTexts.asStateFlow()
     }
 }
 
