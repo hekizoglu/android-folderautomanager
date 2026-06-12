@@ -64,8 +64,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import android.os.Build
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -97,6 +101,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     val haptic = LocalHapticFeedback.current
+    val composeView = LocalView.current
     val dockPackages by viewModel.dockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
@@ -119,17 +124,26 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val currentAllAppsOpen by rememberUpdatedState(allAppsOpen)
     LaunchedEffect(allAppsOpen) { if (allAppsOpen) swipeDelta = 0f }
 
+    // Çift tetikleme önlemi: nestedScroll ve pointerInput aynı gesture'ı tetiklemesin
+    var swipeLock by remember { mutableStateOf(false) }
+    LaunchedEffect(allAppsOpen) {
+        if (allAppsOpen) {
+            swipeLock = true
+            delay(300)
+            swipeLock = false
+        }
+    }
+
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                // Eşiği düşürdük: -200f (eskiden -400f) — daha az hız gerekli
-                if (!currentAllAppsOpen && available.y < -200f) {
+                if (!currentAllAppsOpen && !swipeLock && available.y < -200f) {
                     viewModel.openAllApps()
                 }
                 return Velocity.Zero
             }
             override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
-                if (!currentAllAppsOpen && available.y < 0f) {
+                if (!currentAllAppsOpen && !swipeLock && available.y < 0f) {
                     swipeDelta += available.y
                     if (swipeDelta < -swipeThresholdPx) {
                         viewModel.openAllApps()
@@ -245,8 +259,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                         onDragCancel = { accumulated = 0f },
                         onVerticalDrag = { _, dragAmount ->
                             accumulated += dragAmount
-                            // Eşiği düşürdük: -120f (eskiden -200f) — daha kısa kaydırma yeterli
-                            if (accumulated < -120f) {
+                            if (!swipeLock && accumulated < -120f) {
                                 accumulated = 0f
                                 viewModel.openAllApps()
                             }
@@ -419,6 +432,18 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 12.dp)
+                    .onGloballyPositioned { coords ->
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            val pos = coords.positionInWindow()
+                            val rect = android.graphics.Rect(
+                                pos.x.toInt(),
+                                pos.y.toInt(),
+                                (pos.x + coords.size.width).toInt(),
+                                (pos.y + coords.size.height).toInt()
+                            )
+                            composeView.systemGestureExclusionRects = listOf(rect)
+                        }
+                    }
             )
         }
 
