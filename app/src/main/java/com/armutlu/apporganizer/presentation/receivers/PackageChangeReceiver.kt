@@ -64,10 +64,20 @@ class PackageChangeReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
-                // Sadece zaten DB'de varsa güncelle (kategori korunur)
-                if (repo.appExists(packageName)) {
-                    Timber.d("App updated, keeping category: $packageName")
-                }
+                if (!repo.appExists(packageName)) return@launch
+                // Mevcut kaydı koru (kategori, gizlilik), sadece PM'den gelen taze veriyi güncelle
+                val existing = repo.getAppByPackageName(packageName) ?: return@launch
+                val helper = PackageManagerHelper(context)
+                val fresh = helper.getAppInfo(packageName) ?: return@launch
+                val merged = fresh.copy(
+                    categoryId   = existing.categoryId,
+                    isHidden     = existing.isHidden,
+                    usageCount   = existing.usageCount,
+                    lastUsedTimestamp = existing.lastUsedTimestamp,
+                    notificationCount = existing.notificationCount
+                )
+                repo.insertApps(listOf(merged))
+                Timber.d("App updated (category preserved): $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error handling app change: $packageName")
             }
