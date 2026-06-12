@@ -519,4 +519,9 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 **`AppInfo`**: `notificationText: String = ""` field eklendi — DB v6 (fallbackToDestructiveMigration).
 **Gösterim:** `AppPrefs.isNotificationTextEnabled()` = true → FolderTile'da klasör altı, AllAppsDrawer'da kategori etiketi yerine.
 
-*Son güncelleme: 2026-06-12 (Döngü 8 tamamlandı)*
+### OnboardingScreen Bug Fix + Yeni Adımlar (Döngü 9)
+**BUG:** `OnboardingScreen.kt:544` — `"app_prefs"/"onboarding_complete"` yanlış key/prefs kullanıyordu → her açılışta onboarding tekrar gösteriliyordu.
+**FIX:** `AppPrefs.PREFS_NAME` + `AppPrefs.KEY_ONBOARDING_DONE` kullanımına geçildi.
+**Yeni adımlar:** `AUTO_BACKUP` (otomatik yedekleme) + `NOTIF_TEXT` (bildirim metni) — her ikisi `isSkippable=true`, genel "Atla" butonu devreye giriyor.
+
+*Son güncelleme: 2026-06-13 (Döngü 9 tamamlandı)*
