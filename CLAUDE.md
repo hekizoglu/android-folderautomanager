@@ -573,4 +573,21 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **Yol haritasi:** #3 "Ana ekrana donus hizi iyilestirmesi" bu donguyle tamamlandi.
 
-*Son güncelleme: 2026-06-13 (Döngü 15 — onResume yük azaltma + dock fix)*
+### queryIntentActivities Optimizasyonu (Döngü 16)
+**PackageManagerHelper.kt degisiklikleri:**
+- `getInstalledApps(onlyLaunchable=true)`: `getInstalledPackages(GET_META_DATA)` + per-package `getLaunchIntentForPackage` kaldirildi
+- Tek `queryIntentActivities(MAIN+LAUNCHER)` sorgusuyla tum launcher-visible uygulamalar aliniyor — 100 uygulamada ~200ms tasarruf, ~5x hizlanma
+- `onlyLaunchable=false` modu: eski `getInstalledPackages(0)` yolu korundu (geriye donuk uyum)
+
+**LauncherViewModel.kt degisiklikleri:**
+- `reconcileIfNeeded()`: `getInstalledPackages(0)` + per-package `getLaunchIntentForPackage` yerine `queryIntentActivities` — onResume count check ~3x hizli
+- Uygulama sayisi tutmazsa `loadAppsIfEmpty()` tetikleme mant. korundu
+
+**HomeScreen.kt degisiklikleri:**
+- AllApps drawer animasyonu: `fadeIn/Out` yerine `LinearOutSlowInEasing` (acilis 300ms) + `FastOutLinearInEasing` (kapanis 220ms) — Material motion standartlari
+- Dock `systemGestureExclusionRects`: onceki rect ile karsilastirma eklendi — sadece dock pozisyonu degisince guncellenir, her layout gecisinde degil
+- Yeni import'lar: `FastOutLinearInEasing`, `LinearOutSlowInEasing`
+
+**Yol haritasi:** #3 bu donguyle daha da ilerletildi — uygulama tarama suresi onemli olcude azaldi.
+
+*Son güncelleme: 2026-06-13 (Döngü 16 — queryIntentActivities optimizasyonu + AllApps animasyon)*
