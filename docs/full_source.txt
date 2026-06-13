@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 06:07 UTC
-# Commit: 0b12c706777a51bcbdfc8ee35ec921be67a0c609
+# Generated: 2026-06-13 07:07 UTC
+# Commit: ef6fad81d9de0a5f39c003d86e970a2f97d9213d
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3934,20 +3934,12 @@ private val DividerColor    = Color(0xFFFFFFFF).copy(alpha = 0.08f)
 private val TealColor       = Color(0xFF00897B)
 private val TextSecondary   = Color.White.copy(alpha = 0.55f)
 
-enum class FolderSortMode(val label: String) {
-    ALPHA("A–Z"),
-    USAGE("Kullanım"),
-    SIZE_DESC("Boyut ↓"),
-    SIZE_ASC("Boyut ↑"),
-    INSTALL_DATE("Yükleme")
-}
-
-private fun List<AppInfo>.sortedBy(mode: FolderSortMode): List<AppInfo> = when (mode) {
-    FolderSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
-    FolderSortMode.USAGE        -> sortedByDescending { it.usageCount }
-    FolderSortMode.SIZE_DESC    -> sortedByDescending { it.appSizeBytes }
-    FolderSortMode.SIZE_ASC     -> sortedBy { it.appSizeBytes }
-    FolderSortMode.INSTALL_DATE -> sortedByDescending { it.installTime }
+private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
+    AllAppsSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
+    AllAppsSortMode.USAGE        -> sortedByDescending { it.usageCount }
+    AllAppsSortMode.SIZE_DESC    -> sortedByDescending { it.appSizeBytes }
+    AllAppsSortMode.SIZE_ASC     -> sortedBy { it.appSizeBytes }
+    AllAppsSortMode.INSTALL_DATE -> sortedByDescending { it.installTime }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -3960,13 +3952,13 @@ fun FolderSheet(
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
-    var sortMode by remember { mutableStateOf(FolderSortMode.ALPHA) }
+    var sortMode by remember { mutableStateOf(AllAppsSortMode.ALPHA) }
     var searchQuery by remember { mutableStateOf("") }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
         val base = if (searchQuery.isBlank()) folder.apps
                    else folder.apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
-        base.sortedBy(sortMode)
+        base.sortedByMode(sortMode)
     }
 
     ModalBottomSheet(
@@ -4044,7 +4036,7 @@ fun FolderSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
             ) {
-                itemsIndexed(FolderSortMode.entries) { _, mode ->
+                itemsIndexed(AllAppsSortMode.entries) { _, mode ->
                     val active = sortMode == mode
                     Box(
                         modifier = Modifier
@@ -5661,7 +5653,7 @@ class LauncherViewModel @Inject constructor(
 
     // Klasör sırası ve dock paketleri ilk yüklemede SharedPrefs'ten okunur;
     // sonraki resume'larda sadece değer değişmişse güncellenir.
-    private var dockLoaded = false
+    @Volatile private var dockLoaded = false
 
     private val _openFolder = MutableStateFlow<AppFolder?>(null)
     val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
@@ -5889,6 +5881,10 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun onPackageRemoved(packageName: String) {
+        // Icon cache'ten bu pakete ait tüm boyut varyantlarını temizle
+        iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { iconCacheInternal.remove(it) }
         // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
         val current = _dockPackages.value
         if (packageName in current) {
@@ -5901,11 +5897,15 @@ class LauncherViewModel @Inject constructor(
 
     /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
     fun onPackageAdded(context: Context, packageName: String) {
+        // Uygulama güncellemelerinde ikon değişmiş olabilir — cache'i temizle
+        iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { iconCacheInternal.remove(it) }
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                // Tam tarama yerine tek paket fetch: ~5x daha hızlı
                 val helper = PackageManagerHelper(context)
-                val apps = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
-                val app = apps.firstOrNull { it.packageName == packageName } ?: return@launch
+                val app = helper.getAppInfo(packageName) ?: return@launch
                 repository.insertApps(listOf(app))
                 Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
