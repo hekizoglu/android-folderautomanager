@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 23:55 UTC
-# Commit: 1a70b052838d0acd97f7796ba25811a030f7d7eb
+# Generated: 2026-06-13 23:57 UTC
+# Commit: 491b8cf5a8b99b5334604249b5a7db7d7b724d2c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4640,7 +4640,7 @@ fun AppContextMenu(
                             data = Uri.parse("package:${app.packageName}")
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                         onDismiss()
                     }
                 )
@@ -10417,7 +10417,8 @@ fun OnboardingScreen(
 
             // Geri yükleme sonucu mesajı
             if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
-                val isSuccess = restoreResult!!.contains("geri yuklendi")
+                val result = restoreResult ?: ""
+                val isSuccess = result.contains("geri yuklendi")
                 Spacer(Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
@@ -10430,7 +10431,7 @@ fun OnboardingScreen(
                         .padding(12.dp)
                 ) {
                     Text(
-                        restoreResult!!,
+                        result,
                         fontSize = 14.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -11177,7 +11178,7 @@ fun SettingsScreen(
                             } else {
                                 val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                context.startActivity(i)
+                                runCatching { context.startActivity(i) }
                             }
                         }
                         if (isDefault) {
