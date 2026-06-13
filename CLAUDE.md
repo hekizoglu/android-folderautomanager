@@ -590,4 +590,21 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **Yol haritasi:** #3 bu donguyle daha da ilerletildi — uygulama tarama suresi onemli olcude azaldi.
 
-*Son güncelleme: 2026-06-13 (Döngü 16 — queryIntentActivities optimizasyonu + AllApps animasyon)*
+### AllAppsDrawer Rekomposisyon Optimizasyonu (Döngü 17)
+**AllAppsDrawer.kt degisiklikleri:**
+- `rememberAppIcon`: `iconCacheInternal[cacheKey]` ile `initialValue` set edildi — cache hit'te aninda gosterir, IO tetiklemez
+  - Onceki: `initialValue = null` → her drawer acilisinda 100+ ikon diskten yeniden yukluyordu
+  - Yeni: FolderTile/AppIconView ile ayni LRU-200 cache paylasilir; key format: `"packageName_96"`
+- `quickFilterCounts`: `remember(apps)` ile memoize edildi — `intArrayOf(size, userCount, systemCount, recent7Days)`
+  - Onceki: `itemsIndexed` icerisinde `apps.count { }` her chip rekomposisyonunda 4x hesapliyordu
+  - Yeni: Sadece `apps` degisince yeniden hesaplar
+- `notifTextEnabled`: `remember { AppPrefs.isNotificationTextEnabled(context) }` ile AllAppsDrawer seviyesine ciktirildi
+  - `NiagaraAppRow` imzasina `notifTextEnabled: Boolean = false` parametresi eklendi
+  - Onceki: Her satir rekomposisyonunda SharedPrefs okuyordu (100+ satir = 100+ okuma)
+
+**LauncherActivity.kt degisiklikleri:**
+- `onCreate`'de `syncUsageStats` sonrasina `AppPrefs.markUsageStatsSynced(this)` eklendi
+  - Onceki: `onCreate` + hemen ardindan `onResume` iki kez senkronizasyon tetikliyordu
+  - Yeni: Ilk oturumda tek senkronizasyon; sonraki 30 dakika throttle korunur
+
+*Son güncelleme: 2026-06-13 (Döngü 17 — AllAppsDrawer icon cache + rekomposisyon optimizasyonu)*
