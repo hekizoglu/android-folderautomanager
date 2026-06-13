@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 22:49 UTC
-# Commit: c031f60b9280c7a4521aed455c66b04cd21ceda9
+# Generated: 2026-06-13 23:04 UTC
+# Commit: ccb82cd4194f8544257f055ef4cd73c2005808ba
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2819,6 +2819,61 @@ class AppClassifier @Inject constructor() {
         "com.swiftkey.android"                       to Category.CAT_UTILITIES,
         "com.touchpal.keyboard"                      to Category.CAT_UTILITIES,
         "com.grammarly.android"                      to Category.CAT_UTILITIES,
+        // Loop46: Spor / E-spor
+        "com.dazn.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.espn.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.beinsports.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.nba.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.nfl.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.mlb.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.nhl.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.sofascore.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.flashscore.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.livescore.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.onefootball.android"                    to Category.CAT_ENTERTAINMENT,
+        "com.365scores.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.fotomac.android"                        to Category.CAT_NEWS,
+        "com.fanatik.android"                        to Category.CAT_NEWS,
+        "com.fotospor.android"                       to Category.CAT_NEWS,
+        "com.trtspor.mobile"                         to Category.CAT_NEWS,
+        "com.bjk.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.fenerbahce.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.galatasaray.android"                    to Category.CAT_ENTERTAINMENT,
+        "com.trabzonspor.android"                    to Category.CAT_ENTERTAINMENT,
+        // Loop46: Ev / Dekorasyon / Emlak
+        "com.ikea.brapp"                             to Category.CAT_SHOPPING,
+        "com.homedepot.android"                      to Category.CAT_SHOPPING,
+        "com.wayfair.android"                        to Category.CAT_SHOPPING,
+        "com.houzz.android"                          to Category.CAT_SHOPPING,
+        "com.pinterest.android"                      to Category.CAT_SHOPPING,
+        "com.homeaway.android"                       to Category.CAT_TRAVEL,
+        "com.zillow.android"                         to Category.CAT_SHOPPING,
+        "com.trulia.android"                         to Category.CAT_SHOPPING,
+        "com.redfin.android"                         to Category.CAT_SHOPPING,
+        "com.rightmove.android"                      to Category.CAT_SHOPPING,
+        "com.zoopla.android"                         to Category.CAT_SHOPPING,
+        // Loop46: Global Oyun ek (hyper-casual / strateji)
+        "com.voodoo.paper"                           to Category.CAT_GAMES,
+        "com.voodoo.helix"                           to Category.CAT_GAMES,
+        "com.ketchapp.stack"                         to Category.CAT_GAMES,
+        "com.ubisoft.android.rainbowsix"             to Category.CAT_GAMES,
+        "com.ea.game.pvzfree_row"                    to Category.CAT_GAMES,
+        "com.ea.game.simcitymobile_row"              to Category.CAT_GAMES,
+        "com.zynga.words"                            to Category.CAT_GAMES,
+        "com.zynga.farmville"                        to Category.CAT_GAMES,
+        "com.scopely.yatzy"                          to Category.CAT_GAMES,
+        "com.hasbro.monopoly"                        to Category.CAT_GAMES,
+        "com.marmalade.boom"                         to Category.CAT_GAMES,
+        "com.naturalmotion.clashofclans"             to Category.CAT_GAMES,
+        "com.gamedevltd.modernstrike"                to Category.CAT_GAMES,
+        "com.plarium.raidsl"                         to Category.CAT_GAMES,
+        "com.bigfishgames.mysterymansion"            to Category.CAT_GAMES,
+        // Loop46: Evcil Hayvan
+        "com.rover.android"                          to Category.CAT_UTILITIES,
+        "com.wag.android"                            to Category.CAT_UTILITIES,
+        "com.petco.android"                          to Category.CAT_SHOPPING,
+        "com.petsmart.android"                       to Category.CAT_SHOPPING,
+        "com.chewy.android"                          to Category.CAT_SHOPPING,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
