@@ -25,7 +25,14 @@ object KeywordDatabase {
             "game", "games", "gaming", "play", "battle", "royal", "chess",
             "candy", "clash", "strike", "legends", "mobile", "puzzle",
             "racing", "shooting", "action", "adventure", "rpg", "mmo",
-            "fortnite", "minecraft", "roblox", "steam", "epic"
+            "fortnite", "minecraft", "roblox", "steam", "epic",
+            "supercell", "gameloft", "rockstar", "habby", "voodoo",
+            "madfingergames", "pixonic", "noodlecake", "fingersoft",
+            "township", "archero", "hillclimb", "subway", "helix",
+            "blizzard", "diablo", "warcraft", "overwatch",
+            "brawl", "squad", "arena", "dungeon", "quest", "hero", "war",
+            "zombie", "sniper", "fighter", "empire", "kingdom", "dragon",
+            "oyun", "oyunu"
         ),
         Category.CAT_SHOPPING to listOf(
             "shop", "shopping", "store", "market", "buy", "sell", "cart",
@@ -46,13 +53,21 @@ object KeywordDatabase {
             "health", "fitness", "workout", "gym", "exercise", "sport",
             "medical", "doctor", "hospital", "clinic", "medicine", "pharma",
             "wellness", "yoga", "diet", "nutrition", "calorie", "step",
-            "heart", "run", "walk", "cycle", "bike", "swim"
+            "heart", "run", "walk", "cycle", "bike", "swim",
+            "meditation", "sleep", "mental", "therapy", "dentist",
+            "weight", "bmi", "period", "pregnancy", "fertility",
+            "blood", "glucose", "pressure", "oximeter",
+            "saglik", "hastane", "doktor", "spor", "egzersiz"
         ),
         Category.CAT_FINANCE to listOf(
             "finance", "bank", "payment", "money", "invest", "stock",
             "crypto", "bitcoin", "wallet", "card", "credit", "loan",
             "tax", "accounting", "trading", "forex", "commodity",
-            "ethereum", "ripple", "thinkorswim"
+            "ethereum", "ripple", "thinkorswim",
+            "finans", "banka", "odeme", "yatirim", "borsa", "kripto",
+            "insurance", "sigorta", "pension", "emeklilik",
+            "debit", "transfer", "remittance", "exchange",
+            "bybit", "okex", "kucoin", "etoro", "webull"
         ),
         Category.CAT_EDUCATION to listOf(
             "education", "learn", "course", "class", "school", "university",
@@ -95,7 +110,10 @@ object KeywordDatabase {
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
             "filter", "selfie", "video", "record", "capture", "lens",
-            "lightroom", "photoshop", "canva", "vsco", "snapseed"
+            "lightroom", "photoshop", "canva", "vsco", "snapseed",
+            "facetune", "retouch", "beautify", "portrait", "collage",
+            "sticker", "gif", "reel", "clip", "trim", "crop",
+            "foto", "kamera", "resim", "fotograf"
         ),
         Category.CAT_OTHER to listOf()
     )
