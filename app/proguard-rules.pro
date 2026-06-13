@@ -34,3 +34,28 @@
 
 # DataStore / Preferences
 -keep class androidx.datastore.** { *; }
+
+# Kotlin Serialization / JSON (org.json kullanıyoruz)
+-keep class org.json.** { *; }
+
+# AppWidget (widget desteği)
+-keep class android.appwidget.** { *; }
+-keep class * extends android.appwidget.AppWidgetProvider { *; }
+
+# Coil image loader
+-keep class coil.** { *; }
+-dontwarn coil.**
+
+# Launcher shortcut API
+-keep class android.content.pm.ShortcutInfo { *; }
+-keep class android.content.pm.ShortcutManager { *; }
+
+# Enum sınıflarının values()/valueOf() korunması
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Stack trace için satır numaralarını koru
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

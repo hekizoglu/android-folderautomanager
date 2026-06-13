@@ -13,9 +13,10 @@ local.properties
 *.iws
 *.ipr
 
-# Keystore
+# Keystore ve imzalama bilgileri — ASLA commit etme
 *.jks
 *.keystore
+keystore.properties
 
 # OS
 .DS_Store

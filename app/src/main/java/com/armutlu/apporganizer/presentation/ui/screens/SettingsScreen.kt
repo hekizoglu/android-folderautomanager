@@ -51,7 +51,8 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit = {},
-    onSendBugReport: () -> Unit = {}
+    onSendBugReport: () -> Unit = {},
+    onNavigateToPrivacyPolicy: () -> Unit = {}
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
     val state           by viewModel.screenState.collectAsState()
@@ -959,6 +960,25 @@ fun SettingsScreen(
                             Text("JSON yedek dosyasindan kategorileri ice aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
+                }
+            }
+
+            // ── Hakkinda ─────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Hakkında") }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.PrivacyTip,
+                        title = "Gizlilik Politikasi",
+                        subtitle = "Veri toplama ve kullanim hakkinizda bilgi alin",
+                        onClick = onNavigateToPrivacyPolicy
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(
+                        icon = Icons.Default.Info,
+                        title = "Versiyon",
+                        subtitle = "AppOrganizer 1.0.0 — Haziran 2026"
+                    )
                 }
             }
 

@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
+import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
@@ -13,6 +14,7 @@ object Routes {
     const val APP_LIST = "app_list"
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
+    const val PRIVACY_POLICY = "privacy_policy"
 }
 
 @Composable
@@ -37,8 +39,12 @@ fun AppNavigation(viewModel: AppListViewModel, onSendBugReport: () -> Unit = {})
             SettingsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onSendBugReport = onSendBugReport
+                onSendBugReport = onSendBugReport,
+                onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) }
             )
+        }
+        composable(Routes.PRIVACY_POLICY) {
+            PrivacyPolicyScreen(onBack = { navController.popBackStack() })
         }
     }
 }
