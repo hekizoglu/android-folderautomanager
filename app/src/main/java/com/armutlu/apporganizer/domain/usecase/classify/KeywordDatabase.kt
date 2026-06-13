@@ -9,7 +9,11 @@ object KeywordDatabase {
             "social", "facebook", "twitter", "instagram", "whatsapp", "telegram",
             "tiktok", "snapchat", "discord", "messenger", "viber", "linkedin",
             "reddit", "quora", "mastodon", "bluesky", "threads", "tumblr",
-            "wechat", "line", "kakaotalk", "signal"
+            "wechat", "line", "kakaotalk", "signal", "vk", "odnoklassniki",
+            "badoo", "tinder", "bumble", "hinge", "grindr", "skout", "meetup",
+            "pinterest", "flickr", "behance", "deviantart", "weibo", "naver",
+            "zalo", "imo", "textme", "tantan", "tagged", "hi5", "myspace",
+            "chat", "sohbet", "arkadas", "sosyal", "topluluk", "bip"
         ),
         Category.CAT_PRODUCTIVITY to listOf(
             "productivity", "office", "calendar", "notes", "todo", "task",
@@ -46,25 +50,48 @@ object KeywordDatabase {
             "health", "fitness", "workout", "gym", "exercise", "sport",
             "medical", "doctor", "hospital", "clinic", "medicine", "pharma",
             "wellness", "yoga", "diet", "nutrition", "calorie", "step",
-            "heart", "run", "walk", "cycle", "bike", "swim"
+            "heart", "run", "walk", "cycle", "bike", "swim",
+            "strava", "garmin", "fitbit", "nike", "adidas", "peloton",
+            "calm", "headspace", "meditation", "sleep", "mindfulness",
+            "myfitnesspal", "loseit", "noom", "weight", "bmi",
+            "saglik", "spor", "antrenman", "kosu", "doktor", "hastane",
+            "eczane", "ilac", "randevu", "sigorta", "sağlık"
         ),
         Category.CAT_FINANCE to listOf(
             "finance", "bank", "payment", "money", "invest", "stock",
             "crypto", "bitcoin", "wallet", "card", "credit", "loan",
             "tax", "accounting", "trading", "forex", "commodity",
-            "ethereum", "ripple", "thinkorswim"
+            "ethereum", "ripple", "thinkorswim", "paypal", "venmo",
+            "cashapp", "zelle", "revolut", "n26", "monzo", "wise",
+            "transferwise", "coinbase", "binance", "kraken", "robinhood",
+            "banka", "mobil", "cebi", "cüzdan", "fatura", "kart",
+            "kredi", "borç", "faiz", "yatirim", "borsa", "dolar",
+            "euro", "altin", "doviz", "param", "papara", "enpara",
+            "garanti", "isbank", "akbank", "vakifbank", "ziraat",
+            "halkbank", "denizbank", "fibabanka", "ykb", "finansbank"
         ),
         Category.CAT_EDUCATION to listOf(
             "education", "learn", "course", "class", "school", "university",
             "exam", "test", "quiz", "study", "lesson", "tutorial",
             "udemy", "coursera", "skillshare", "duolingo", "babbel",
-            "memrise", "brilliant", "codecademy", "edx", "khan"
+            "memrise", "brilliant", "codecademy", "edx", "khan",
+            "rosetta", "busuu", "quizlet", "ted", "encyclopedia",
+            "dictionary", "thesaurus", "language", "grammar", "math",
+            "egitim", "okul", "universite", "sinav", "odev", "ders",
+            "ogren", "kurs", "sertifika", "yds", "tyt", "ayt", "yks",
+            "meb", "dershane", "hazirlik", "lgs", "kpss", "ales"
         ),
         Category.CAT_UTILITIES to listOf(
             "utility", "tools", "tool", "manager", "cleaner", "antivirus",
             "security", "lock", "safe", "backup", "restore", "file",
             "explorer", "download", "torrent", "vpn", "proxy", "browser",
-            "keyboard", "launcher", "theme", "widget"
+            "keyboard", "launcher", "theme", "widget",
+            "scanner", "barcode", "qr", "translate", "clock", "alarm",
+            "calculator", "flashlight", "compass", "weather", "battery",
+            "booster", "optimizer", "wifi", "bluetooth", "nfc", "airdrop",
+            "password", "authenticator", "2fa", "remote", "cast", "screen",
+            "araç", "hesap", "çeviri", "tarayıcı", "dosya", "yönetici",
+            "temizle", "hız", "pil", "fener", "pusula", "hava"
         ),
         Category.CAT_TRAVEL to listOf(
             "travel", "trip", "flight", "hotel", "booking", "airbnb", "hostel",
