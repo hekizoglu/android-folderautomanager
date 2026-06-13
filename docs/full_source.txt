@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 23:18 UTC
-# Commit: 17792d175fe06c74ad285624c140244617e27e4a
+# Generated: 2026-06-13 23:24 UTC
+# Commit: fd5c1328001e866b395eff4b05d11ae3dcbf4a7a
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4130,6 +4130,7 @@ fun AppContextMenu(
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
     var showNoteDialog by remember { mutableStateOf(false) }
+    var isFav by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavorite(context, app.packageName)) }
 
     val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
         value = withContext(Dispatchers.IO) {
@@ -4291,6 +4292,17 @@ fun AppContextMenu(
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     context.startActivity(intent)
+                    onDismiss()
+                }
+            )
+
+            ContextAction(
+                icon = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
+                label = if (isFav) "Favorilerden Çıkar" else "Favorilere Ekle",
+                onClick = {
+                    if (isFav) com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, app.packageName)
+                    else com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, app.packageName)
+                    isFav = !isFav
                     onDismiss()
                 }
             )
@@ -6154,7 +6166,9 @@ fun HomeScreen(
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
     var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
+    var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
+    val favoriteApps by remember { viewModel.getFavoriteApps(context) }.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
@@ -6183,6 +6197,8 @@ fun HomeScreen(
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_APPS_ENABLED ->
                     recentAppsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_ENABLED ->
+                    favoritesEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
                     customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
@@ -6405,6 +6421,18 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
+
+            // Favori uygulamalar satiri
+            if (favoritesEnabled && favoriteApps.isNotEmpty()) {
+                FavoritesRow(
+                    apps = favoriteApps,
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { pkg ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, pkg)
+                    }
+                )
+            }
 
             // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
             if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
@@ -7160,6 +7188,62 @@ private fun SuggestionAppItem(
 }
 
 @Composable
+internal fun FavoritesRow(
+    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    iconPackPkg: String = "",
+    onAppClick: (String) -> Unit,
+) {
+    if (apps.isEmpty()) return
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Text(
+            "Favoriler",
+            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.55f),
+            fontSize = 11.sp,
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        androidx.compose.foundation.lazy.LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            androidx.compose.foundation.lazy.items(apps) { app ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .width(56.dp)
+                        .clickable { onAppClick(app.packageName) }
+                ) {
+                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        value = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
+                            iconCacheInternal[cacheKey] ?: run {
+                                val bmp = app.icon?.toBitmap()?.asImageBitmap()
+                                if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                bmp
+                            }
+                        }
+                    }
+                    bitmap?.let {
+                        androidx.compose.foundation.Image(
+                            bitmap = it,
+                            contentDescription = app.appName,
+                            modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                        )
+                    } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        app.appName,
+                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
+                        fontSize = 10.sp,
+                        maxLines = 1,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 internal fun RecentAppsRow(
     apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
     iconPackPkg: String = "",
@@ -7873,6 +7957,15 @@ class LauncherViewModel @Inject constructor(
 
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    // Favori uygulamalar — SharedPrefs Set ile saklanir, allApps flow'undan filtrelenir
+    fun getFavoriteApps(context: Context): StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            val favPkgs = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
+            apps.filter { it.packageName in favPkgs && !it.isHidden }
+                .sortedBy { it.appName.lowercase(java.util.Locale("tr")) }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
     val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
@@ -10882,7 +10975,19 @@ fun SettingsScreen(
                 var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
                 var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
                 var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
+                var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
                 SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Star,
+                        title = "Favoriler",
+                        subtitle = "Uzun basinca favoriye eklenen uygulamalar ana ekranda gosterilir (varsayilan: kapali)",
+                        checked = favoritesEnabled,
+                        onCheckedChange = {
+                            favoritesEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setFavoritesEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.AutoAwesome,
                         title = "Uygulama Onerileri",
