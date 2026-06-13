@@ -261,7 +261,7 @@ fun HomeScreen(
                     onClick = {
                         val intent = Intent(Settings.ACTION_HOME_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00897B))
                 ) {
@@ -273,7 +273,7 @@ fun HomeScreen(
                             data = Uri.parse("package:${context.packageName}")
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF37474F))
                 ) {

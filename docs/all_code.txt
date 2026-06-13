@@ -2966,6 +2966,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
+import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
@@ -2973,6 +2974,7 @@ object Routes {
     const val APP_LIST = "app_list"
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
+    const val PRIVACY_POLICY = "privacy_policy"
 }
 
 @Composable
@@ -2997,8 +2999,12 @@ fun AppNavigation(viewModel: AppListViewModel, onSendBugReport: () -> Unit = {})
             SettingsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onSendBugReport = onSendBugReport
+                onSendBugReport = onSendBugReport,
+                onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) }
             )
+        }
+        composable(Routes.PRIVACY_POLICY) {
+            PrivacyPolicyScreen(onBack = { navController.popBackStack() })
         }
     }
 }
@@ -4111,7 +4117,7 @@ fun AppContextMenu(
                         data = Uri.parse("package:${app.packageName}")
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    context.startActivity(intent)
+                    runCatching { context.startActivity(intent) }
                     onDismiss()
                 }
             )
@@ -6122,7 +6128,7 @@ fun HomeScreen(
                     onClick = {
                         val intent = Intent(Settings.ACTION_HOME_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00897B))
                 ) {
@@ -6134,7 +6140,7 @@ fun HomeScreen(
                             data = Uri.parse("package:${context.packageName}")
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF37474F))
                 ) {
@@ -7525,33 +7531,35 @@ class LauncherViewModel @Inject constructor(
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    counts.forEach { (pkg, count) ->
-                        repository.updateNotificationCount(pkg, count)
-                    }
-                    // Servis listesinde olmayan ama DB'de sayisi > 0 olan uygulamalari sifirla
-                    val knownPkgs = counts.keys
-                    val toReset = repository.getAllApps()
-                        .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
-                    if (toReset.isNotEmpty()) {
-                        toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
-                    }
+                    runCatching {
+                        counts.forEach { (pkg, count) ->
+                            repository.updateNotificationCount(pkg, count)
+                        }
+                        val knownPkgs = counts.keys
+                        val toReset = repository.getAllApps()
+                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                        if (toReset.isNotEmpty()) {
+                            toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
+                        }
+                    }.onFailure { Timber.e(it, "badgeCounts observer hatası") }
                 }
             }
             .launchIn(viewModelScope)
 
-        // Son bildirim metnini DB'ye yaz; kaybolan bildirim metinlerini de temizle.
         AppNotificationListenerService.latestTexts
             .onEach { texts ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    texts.forEach { (pkg, text) ->
-                        repository.updateNotificationText(pkg, text)
-                    }
-                    val knownPkgs = texts.keys
-                    val toClean = repository.getAllApps()
-                        .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
-                    if (toClean.isNotEmpty()) {
-                        toClean.forEach { repository.updateNotificationText(it.packageName, "") }
-                    }
+                    runCatching {
+                        texts.forEach { (pkg, text) ->
+                            repository.updateNotificationText(pkg, text)
+                        }
+                        val knownPkgs = texts.keys
+                        val toClean = repository.getAllApps()
+                            .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
+                        if (toClean.isNotEmpty()) {
+                            toClean.forEach { repository.updateNotificationText(it.packageName, "") }
+                        }
+                    }.onFailure { Timber.e(it, "latestTexts observer hatası") }
                 }
             }
             .launchIn(viewModelScope)
@@ -7563,17 +7571,18 @@ class LauncherViewModel @Inject constructor(
      */
     fun reconcileIfNeeded(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            val pm = context.packageManager
-            // mapTo(mutableSetOf()): distinctBy + count yerine tek geçişli set deduplication
-            val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-            val installedCount = pm.queryIntentActivities(launchIntent, 0)
-                .mapTo(mutableSetOf()) { it.activityInfo.packageName }
-                .count { !PackageManagerHelper.shouldHide(it) }
-            val dbCount = repository.countApps()
-            if (installedCount != dbCount) {
-                Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
-                loadAppsIfEmpty(context)
-            }
+            runCatching {
+                val pm = context.packageManager
+                val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                val installedCount = pm.queryIntentActivities(launchIntent, 0)
+                    .mapTo(mutableSetOf()) { it.activityInfo.packageName }
+                    .count { !PackageManagerHelper.shouldHide(it) }
+                val dbCount = repository.countApps()
+                if (installedCount != dbCount) {
+                    Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
+                    loadAppsIfEmpty(context)
+                }
+            }.onFailure { Timber.e(it, "reconcileIfNeeded hatası") }
         }
     }
 
@@ -7790,11 +7799,13 @@ class LauncherViewModel @Inject constructor(
     fun syncUsageStats(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             if (!UsageStatsHelper.hasPermission(context)) return@launch
-            val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
-            counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
-            val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
-            lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
-            Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+            runCatching {
+                val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
+                counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
+                val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
+                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
+                Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+            }.onFailure { Timber.e(it, "syncUsageStats hatası") }
         }
     }
 
@@ -10468,6 +10479,87 @@ fun OnboardingScreen(
 }
 
 
+// ===== com\armutlu\apporganizer\presentation\ui\screens\PrivacyPolicyScreen.kt =====
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PrivacyPolicyScreen(onBack: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Gizlilik Politikası") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            PolicySection(
+                title = "AppOrganizer Gizlilik Politikası",
+                body = "Son güncelleme: Haziran 2026\n\nBu gizlilik politikası, AppOrganizer uygulamasının kişisel verilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar."
+            )
+            PolicySection(
+                title = "Toplanan Veriler",
+                body = "• Yüklü uygulama listesi: Uygulamaları kategorilere ayırmak için cihazınızdaki uygulamalar okunur. Bu veriler yalnızca cihazınızda saklanır, hiçbir sunucuya gönderilmez.\n\n• Kullanım istatistikleri: Hangi uygulamaları ne sıklıkta kullandığınız (UsageStats API). Yalnızca ana ekranda öneriler için kullanılır, cihaz dışına çıkmaz.\n\n• Bildirim erişimi: Bildirim sayılarını (badge) görüntülemek için. Bildirim içerikleri saklanmaz.\n\n• Ayarlar ve tercihler: Cihazınızdaki SharedPreferences'te saklanır."
+            )
+            PolicySection(
+                title = "Toplanmayan Veriler",
+                body = "• Kişisel kimlik bilgisi (ad, e-posta, telefon numarası)\n• Konum verisi\n• Kamera veya mikrofon erişimi\n• Fotoğraf veya dosya içerikleri\n• Reklam tanımlayıcıları"
+            )
+            PolicySection(
+                title = "Üçüncü Taraflar",
+                body = "AppOrganizer, kullanıcı verilerini hiçbir üçüncü tarafla paylaşmaz, satmaz veya kiralamaz.\n\nİsteğe bağlı olarak etkinleştirilen DeepSeek API entegrasyonu (bilinmeyen uygulamaları kategorize etmek için), yalnızca uygulama adı ve paket adını anonim olarak gönderir. Kişisel veri içermez."
+            )
+            PolicySection(
+                title = "Veri Güvenliği",
+                body = "Tüm veriler cihazınızda yerel olarak saklanır. Uygulama internet bağlantısı yalnızca isteğe bağlı DeepSeek kategorize özelliği için kullanılır ve HTTPS ile şifrelenir."
+            )
+            PolicySection(
+                title = "Veri Silme",
+                body = "Tüm uygulama verilerini silmek için: Ayarlar → Uygulamalar → AppOrganizer → Depolamayı Temizle seçeneğini kullanabilirsiniz. Uygulama kaldırıldığında tüm veriler otomatik olarak silinir."
+            )
+            PolicySection(
+                title = "İletişim",
+                body = "Gizlilik ile ilgili sorularınız için: huseyinekizoglu@gmail.com"
+            )
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun PolicySection(title: String, body: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        Text(body, fontSize = 13.sp, lineHeight = 20.sp)
+        Divider()
+    }
+}
+
+
 // ===== com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt =====
 package com.armutlu.apporganizer.presentation.ui.screens
 
@@ -10522,7 +10614,8 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit = {},
-    onSendBugReport: () -> Unit = {}
+    onSendBugReport: () -> Unit = {},
+    onNavigateToPrivacyPolicy: () -> Unit = {}
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
     val state           by viewModel.screenState.collectAsState()
@@ -11430,6 +11523,25 @@ fun SettingsScreen(
                             Text("JSON yedek dosyasindan kategorileri ice aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
+                }
+            }
+
+            // ── Hakkinda ─────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Hakkında") }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.PrivacyTip,
+                        title = "Gizlilik Politikasi",
+                        subtitle = "Veri toplama ve kullanim hakkinizda bilgi alin",
+                        onClick = onNavigateToPrivacyPolicy
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(
+                        icon = Icons.Default.Info,
+                        title = "Versiyon",
+                        subtitle = "AppOrganizer 1.0.0 — Haziran 2026"
+                    )
                 }
             }
 
@@ -12376,34 +12488,36 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
-        rebuildCounts()
-        // Son gelen bildirimin metnini kaydet
-        if (!sbn.isOngoing) {
-            val extras = sbn.notification?.extras
-            val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
-            val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
-            val combined = when {
-                title.isNotBlank() && text.isNotBlank() -> "$title: $text"
-                title.isNotBlank() -> title
-                else -> text
-            }
-            if (combined.isNotBlank()) {
-                val current = _latestTexts.value.toMutableMap()
-                current[sbn.packageName] = combined
-                _latestTexts.value = current
+        runCatching {
+            rebuildCounts()
+            if (!sbn.isOngoing) {
+                val extras = sbn.notification?.extras
+                val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
+                val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
+                val combined = when {
+                    title.isNotBlank() && text.isNotBlank() -> "$title: $text"
+                    title.isNotBlank() -> title
+                    else -> text
+                }
+                if (combined.isNotBlank()) {
+                    val current = _latestTexts.value.toMutableMap()
+                    current[sbn.packageName] = combined
+                    _latestTexts.value = current
+                }
             }
         }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        rebuildCounts()
-        // Uygulamanin artik aktif bildirimi yoksa metni de temizle
-        sbn?.packageName?.let { pkg ->
-            val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
-            if (!hasActive) {
-                val current = _latestTexts.value.toMutableMap()
-                if (current.remove(pkg) != null) {
-                    _latestTexts.value = current
+        runCatching {
+            rebuildCounts()
+            sbn?.packageName?.let { pkg ->
+                val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
+                if (!hasActive) {
+                    val current = _latestTexts.value.toMutableMap()
+                    if (current.remove(pkg) != null) {
+                        _latestTexts.value = current
+                    }
                 }
             }
         }

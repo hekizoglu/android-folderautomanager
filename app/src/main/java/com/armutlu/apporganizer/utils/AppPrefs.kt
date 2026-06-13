@@ -151,6 +151,22 @@ object AppPrefs {
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
 
+    // Favori uygulamalar — paket adlari Set olarak saklanir
+    const val KEY_FAVORITES_ENABLED = "favorites_enabled"
+    const val KEY_FAVORITES_SET     = "favorites_set"
+    fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, false)
+    fun setFavoritesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED, v).apply()
+    fun getFavorites(context: Context): Set<String> = prefs(context).getStringSet(KEY_FAVORITES_SET, emptySet()) ?: emptySet()
+    fun addFavorite(context: Context, pkg: String) {
+        val set = getFavorites(context).toMutableSet().also { it.add(pkg) }
+        prefs(context).edit().putStringSet(KEY_FAVORITES_SET, set).apply()
+    }
+    fun removeFavorite(context: Context, pkg: String) {
+        val set = getFavorites(context).toMutableSet().also { it.remove(pkg) }
+        prefs(context).edit().putStringSet(KEY_FAVORITES_SET, set).apply()
+    }
+    fun isFavorite(context: Context, pkg: String) = getFavorites(context).contains(pkg)
+
     // Son kullanilan uygulamalar satiri
     const val KEY_RECENT_APPS_ENABLED = "recent_apps_enabled"
     fun isRecentAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED, false)

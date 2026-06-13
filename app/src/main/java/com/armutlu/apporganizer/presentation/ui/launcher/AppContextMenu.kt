@@ -228,7 +228,7 @@ fun AppContextMenu(
                         data = Uri.parse("package:${app.packageName}")
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    context.startActivity(intent)
+                    runCatching { context.startActivity(intent) }
                     onDismiss()
                 }
             )

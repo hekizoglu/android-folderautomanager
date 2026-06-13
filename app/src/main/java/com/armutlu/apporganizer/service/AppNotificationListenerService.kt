@@ -15,34 +15,36 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
-        rebuildCounts()
-        // Son gelen bildirimin metnini kaydet
-        if (!sbn.isOngoing) {
-            val extras = sbn.notification?.extras
-            val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
-            val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
-            val combined = when {
-                title.isNotBlank() && text.isNotBlank() -> "$title: $text"
-                title.isNotBlank() -> title
-                else -> text
-            }
-            if (combined.isNotBlank()) {
-                val current = _latestTexts.value.toMutableMap()
-                current[sbn.packageName] = combined
-                _latestTexts.value = current
+        runCatching {
+            rebuildCounts()
+            if (!sbn.isOngoing) {
+                val extras = sbn.notification?.extras
+                val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
+                val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
+                val combined = when {
+                    title.isNotBlank() && text.isNotBlank() -> "$title: $text"
+                    title.isNotBlank() -> title
+                    else -> text
+                }
+                if (combined.isNotBlank()) {
+                    val current = _latestTexts.value.toMutableMap()
+                    current[sbn.packageName] = combined
+                    _latestTexts.value = current
+                }
             }
         }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        rebuildCounts()
-        // Uygulamanin artik aktif bildirimi yoksa metni de temizle
-        sbn?.packageName?.let { pkg ->
-            val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
-            if (!hasActive) {
-                val current = _latestTexts.value.toMutableMap()
-                if (current.remove(pkg) != null) {
-                    _latestTexts.value = current
+        runCatching {
+            rebuildCounts()
+            sbn?.packageName?.let { pkg ->
+                val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
+                if (!hasActive) {
+                    val current = _latestTexts.value.toMutableMap()
+                    if (current.remove(pkg) != null) {
+                        _latestTexts.value = current
+                    }
                 }
             }
         }

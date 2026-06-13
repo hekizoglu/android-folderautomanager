@@ -142,33 +142,35 @@ class LauncherViewModel @Inject constructor(
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    counts.forEach { (pkg, count) ->
-                        repository.updateNotificationCount(pkg, count)
-                    }
-                    // Servis listesinde olmayan ama DB'de sayisi > 0 olan uygulamalari sifirla
-                    val knownPkgs = counts.keys
-                    val toReset = repository.getAllApps()
-                        .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
-                    if (toReset.isNotEmpty()) {
-                        toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
-                    }
+                    runCatching {
+                        counts.forEach { (pkg, count) ->
+                            repository.updateNotificationCount(pkg, count)
+                        }
+                        val knownPkgs = counts.keys
+                        val toReset = repository.getAllApps()
+                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                        if (toReset.isNotEmpty()) {
+                            toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
+                        }
+                    }.onFailure { Timber.e(it, "badgeCounts observer hatası") }
                 }
             }
             .launchIn(viewModelScope)
 
-        // Son bildirim metnini DB'ye yaz; kaybolan bildirim metinlerini de temizle.
         AppNotificationListenerService.latestTexts
             .onEach { texts ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    texts.forEach { (pkg, text) ->
-                        repository.updateNotificationText(pkg, text)
-                    }
-                    val knownPkgs = texts.keys
-                    val toClean = repository.getAllApps()
-                        .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
-                    if (toClean.isNotEmpty()) {
-                        toClean.forEach { repository.updateNotificationText(it.packageName, "") }
-                    }
+                    runCatching {
+                        texts.forEach { (pkg, text) ->
+                            repository.updateNotificationText(pkg, text)
+                        }
+                        val knownPkgs = texts.keys
+                        val toClean = repository.getAllApps()
+                            .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
+                        if (toClean.isNotEmpty()) {
+                            toClean.forEach { repository.updateNotificationText(it.packageName, "") }
+                        }
+                    }.onFailure { Timber.e(it, "latestTexts observer hatası") }
                 }
             }
             .launchIn(viewModelScope)
@@ -180,17 +182,18 @@ class LauncherViewModel @Inject constructor(
      */
     fun reconcileIfNeeded(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            val pm = context.packageManager
-            // mapTo(mutableSetOf()): distinctBy + count yerine tek geçişli set deduplication
-            val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-            val installedCount = pm.queryIntentActivities(launchIntent, 0)
-                .mapTo(mutableSetOf()) { it.activityInfo.packageName }
-                .count { !PackageManagerHelper.shouldHide(it) }
-            val dbCount = repository.countApps()
-            if (installedCount != dbCount) {
-                Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
-                loadAppsIfEmpty(context)
-            }
+            runCatching {
+                val pm = context.packageManager
+                val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                val installedCount = pm.queryIntentActivities(launchIntent, 0)
+                    .mapTo(mutableSetOf()) { it.activityInfo.packageName }
+                    .count { !PackageManagerHelper.shouldHide(it) }
+                val dbCount = repository.countApps()
+                if (installedCount != dbCount) {
+                    Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
+                    loadAppsIfEmpty(context)
+                }
+            }.onFailure { Timber.e(it, "reconcileIfNeeded hatası") }
         }
     }
 
@@ -407,11 +410,13 @@ class LauncherViewModel @Inject constructor(
     fun syncUsageStats(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             if (!UsageStatsHelper.hasPermission(context)) return@launch
-            val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
-            counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
-            val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
-            lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
-            Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+            runCatching {
+                val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
+                counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
+                val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
+                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
+                Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+            }.onFailure { Timber.e(it, "syncUsageStats hatası") }
         }
     }
 
