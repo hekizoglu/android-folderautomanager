@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 23:13 UTC
-# Commit: 77ae4a95391f5309c6194da8f70e8b63f988e85c
+# Generated: 2026-06-13 23:18 UTC
+# Commit: 17792d175fe06c74ad285624c140244617e27e4a
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5087,6 +5087,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -5344,6 +5345,56 @@ fun FolderSheet(
                         modifier = Modifier.size(16.dp).clickable { searchQuery = "" }
                     )
                 }
+            }
+
+            // ── Bildirim Satırı ───────────────────────────────────────────────
+            val notifService = com.armutlu.apporganizer.service.AppNotificationListenerService.instance
+            val badgeCounts by (notifService?.badgeCounts ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
+            val latestTexts by (notifService?.latestTexts ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
+            val appsWithNotifs = remember(folder.apps, badgeCounts) {
+                folder.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
+            }
+            if (appsWithNotifs.isNotEmpty()) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(appsWithNotifs, key = { it.packageName }) { app ->
+                        val count = badgeCounts[app.packageName] ?: 0
+                        val text = latestTexts[app.packageName] ?: ""
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White.copy(alpha = 0.10f))
+                                .clickable {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onAppClick(app.packageName)
+                                    onDismiss()
+                                }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clip(androidx.compose.foundation.shape.CircleShape)
+                                        .background(TealColor),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("$count", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Column {
+                                    Text(app.appName, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                                    if (text.isNotEmpty()) {
+                                        Text(text, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.fillMaxWidth().height(1.dp).background(DividerColor))
             }
 
             // ── Sıralama chip'leri ────────────────────────────────────────────
@@ -6102,6 +6153,7 @@ fun HomeScreen(
     var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
@@ -6129,6 +6181,8 @@ fun HomeScreen(
                     widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_APPS_ENABLED ->
+                    recentAppsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
                     customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
@@ -6364,6 +6418,18 @@ fun HomeScreen(
                     onAppLongClick = { app ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         contextMenuPkg = app.packageName
+                    }
+                )
+            }
+
+            // Son kullanılan uygulamalar satırı (varsayılan kapalı)
+            if (recentAppsEnabled && suggestedApps.isNotEmpty()) {
+                RecentAppsRow(
+                    apps = suggestedApps.sortedByDescending { it.lastUsedTimestamp }.take(8),
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { pkg ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, pkg)
                     }
                 )
             }
@@ -7090,6 +7156,62 @@ private fun SuggestionAppItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.width(60.dp)
         )
+    }
+}
+
+@Composable
+internal fun RecentAppsRow(
+    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    iconPackPkg: String = "",
+    onAppClick: (String) -> Unit,
+) {
+    if (apps.isEmpty()) return
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Text(
+            "Son Kullanılanlar",
+            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.55f),
+            fontSize = 11.sp,
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        androidx.compose.foundation.lazy.LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            androidx.compose.foundation.lazy.items(apps.take(8)) { app ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .width(56.dp)
+                        .clickable { onAppClick(app.packageName) }
+                ) {
+                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        value = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
+                            iconCacheInternal[cacheKey] ?: run {
+                                val bmp = app.icon?.toBitmap()?.asImageBitmap()
+                                if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                bmp
+                            }
+                        }
+                    }
+                    bitmap?.let {
+                        androidx.compose.foundation.Image(
+                            bitmap = it,
+                            contentDescription = app.appName,
+                            modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                        )
+                    } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        app.appName,
+                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
+                        fontSize = 10.sp,
+                        maxLines = 1,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -8004,8 +8126,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -8060,9 +8185,16 @@ private fun WidgetCard(
     val context = LocalContext.current
     var showRemoveButton by remember { mutableStateOf(false) }
     var hostView by remember { mutableStateOf<android.appwidget.AppWidgetHostView?>(null) }
+    var minHeightDp by remember { mutableIntStateOf(100) }
 
     LaunchedEffect(widgetId) {
         hostView = WidgetHostManager.createView(context, widgetId)
+        // Widget'ın minimum yüksekliğini AppWidgetProviderInfo'dan oku
+        val awm = context.getSystemService(android.content.Context.APPWIDGET_SERVICE) as? android.appwidget.AppWidgetManager
+        awm?.getAppWidgetInfo(widgetId)?.let { info ->
+            val density = context.resources.displayMetrics.density
+            minHeightDp = (info.minHeight / density).toInt().coerceAtLeast(80)
+        }
     }
 
     // hostView null iken placeholder, hazir oldugunda widget goster
@@ -8082,6 +8214,7 @@ private fun WidgetCard(
                 factory = { view },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = minHeightDp.dp)
                     .wrapContentHeight()
             )
 
@@ -10748,6 +10881,7 @@ fun SettingsScreen(
                 var hideNavButtons by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
                 var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
                 var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+                var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.AutoAwesome,
@@ -10757,6 +10891,17 @@ fun SettingsScreen(
                         onCheckedChange = {
                             suggestionsEnabled = it
                             com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.History,
+                        title = "Son Kullanılanlar",
+                        subtitle = "Ana ekranda son 8 uygulamayi buyuk ikonlarla goster (varsayilan: kapali)",
+                        checked = recentAppsEnabled,
+                        onCheckedChange = {
+                            recentAppsEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setRecentAppsEnabled(context, it)
                         }
                     )
                     Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -12410,6 +12555,11 @@ object AppPrefs {
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
+
+    // Son kullanilan uygulamalar satiri
+    const val KEY_RECENT_APPS_ENABLED = "recent_apps_enabled"
+    fun isRecentAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED, false)
+    fun setRecentAppsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED, v).apply()
 
     // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
     const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"
