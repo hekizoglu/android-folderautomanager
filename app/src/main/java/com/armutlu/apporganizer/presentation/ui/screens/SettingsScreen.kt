@@ -314,7 +314,7 @@ fun SettingsScreen(
                             } else {
                                 val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                context.startActivity(i)
+                                runCatching { context.startActivity(i) }
                             }
                         }
                         if (isDefault) {

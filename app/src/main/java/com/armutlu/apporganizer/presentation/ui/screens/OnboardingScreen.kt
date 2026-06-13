@@ -542,7 +542,8 @@ fun OnboardingScreen(
 
             // Geri yükleme sonucu mesajı
             if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
-                val isSuccess = restoreResult!!.contains("geri yuklendi")
+                val result = restoreResult ?: ""
+                val isSuccess = result.contains("geri yuklendi")
                 Spacer(Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
@@ -555,7 +556,7 @@ fun OnboardingScreen(
                         .padding(12.dp)
                 ) {
                     Text(
-                        restoreResult!!,
+                        result,
                         fontSize = 14.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Medium
