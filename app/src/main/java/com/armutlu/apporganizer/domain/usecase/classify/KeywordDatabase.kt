@@ -29,7 +29,14 @@ object KeywordDatabase {
             "game", "games", "gaming", "play", "battle", "royal", "chess",
             "candy", "clash", "strike", "legends", "mobile", "puzzle",
             "racing", "shooting", "action", "adventure", "rpg", "mmo",
-            "fortnite", "minecraft", "roblox", "steam", "epic"
+            "fortnite", "minecraft", "roblox", "steam", "epic",
+            "supercell", "gameloft", "rockstar", "habby", "voodoo",
+            "madfingergames", "pixonic", "noodlecake", "fingersoft",
+            "township", "archero", "hillclimb", "subway", "helix",
+            "blizzard", "diablo", "warcraft", "overwatch",
+            "brawl", "squad", "arena", "dungeon", "quest", "hero", "war",
+            "zombie", "sniper", "fighter", "empire", "kingdom", "dragon",
+            "oyun", "oyunu"
         ),
         Category.CAT_SHOPPING to listOf(
             "shop", "shopping", "store", "market", "buy", "sell", "cart",
@@ -54,8 +61,10 @@ object KeywordDatabase {
             "strava", "garmin", "fitbit", "nike", "adidas", "peloton",
             "calm", "headspace", "meditation", "sleep", "mindfulness",
             "myfitnesspal", "loseit", "noom", "weight", "bmi",
+            "mental", "therapy", "dentist", "period", "pregnancy", "fertility",
+            "blood", "glucose", "pressure", "oximeter",
             "saglik", "spor", "antrenman", "kosu", "doktor", "hastane",
-            "eczane", "ilac", "randevu", "sigorta", "sağlık"
+            "eczane", "ilac", "randevu", "sigorta", "sağlık", "egzersiz"
         ),
         Category.CAT_FINANCE to listOf(
             "finance", "bank", "payment", "money", "invest", "stock",
@@ -64,9 +73,12 @@ object KeywordDatabase {
             "ethereum", "ripple", "thinkorswim", "paypal", "venmo",
             "cashapp", "zelle", "revolut", "n26", "monzo", "wise",
             "transferwise", "coinbase", "binance", "kraken", "robinhood",
-            "banka", "mobil", "cebi", "cüzdan", "fatura", "kart",
-            "kredi", "borç", "faiz", "yatirim", "borsa", "dolar",
-            "euro", "altin", "doviz", "param", "papara", "enpara",
+            "bybit", "okex", "kucoin", "etoro", "webull",
+            "insurance", "sigorta", "pension", "emeklilik",
+            "debit", "transfer", "remittance", "exchange",
+            "banka", "finans", "odeme", "yatirim", "borsa", "kripto", "mobil",
+            "cebi", "cüzdan", "fatura", "kart", "kredi", "borç", "faiz",
+            "dolar", "euro", "altin", "doviz", "param", "papara", "enpara",
             "garanti", "isbank", "akbank", "vakifbank", "ziraat",
             "halkbank", "denizbank", "fibabanka", "ykb", "finansbank"
         ),
@@ -122,7 +134,10 @@ object KeywordDatabase {
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
             "filter", "selfie", "video", "record", "capture", "lens",
-            "lightroom", "photoshop", "canva", "vsco", "snapseed"
+            "lightroom", "photoshop", "canva", "vsco", "snapseed",
+            "facetune", "retouch", "beautify", "portrait", "collage",
+            "sticker", "gif", "reel", "clip", "trim", "crop",
+            "foto", "kamera", "resim", "fotograf"
         ),
         Category.CAT_OTHER to listOf()
     )
