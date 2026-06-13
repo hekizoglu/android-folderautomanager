@@ -119,6 +119,8 @@ fun HomeScreen(
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
+    var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
@@ -136,6 +138,10 @@ fun HomeScreen(
                     widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
+                    customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
+                    customFolderEmojis = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -434,6 +440,8 @@ fun HomeScreen(
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         textAlpha = textAlpha,
+                        customName = customFolderNames[folder.category.categoryId],
+                        customEmoji = customFolderEmojis[folder.category.categoryId],
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(

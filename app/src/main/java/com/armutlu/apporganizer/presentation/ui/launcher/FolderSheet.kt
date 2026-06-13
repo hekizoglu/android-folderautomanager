@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -16,11 +17,15 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -133,6 +138,14 @@ fun FolderSheet(
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
     }
     var searchQuery by remember { mutableStateOf("") }
+    val catId = folder.category.categoryId
+    var customName by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)[catId] ?: "")
+    }
+    var customEmoji by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)[catId] ?: "")
+    }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
         val base = if (searchQuery.isBlank()) folder.apps
@@ -167,12 +180,47 @@ fun FolderSheet(
                         .background(catColor.copy(alpha = 0.25f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = folder.category.iconEmoji, fontSize = 28.sp)
+                    Text(
+                        text = customEmoji.ifBlank { folder.category.iconEmoji },
+                        fontSize = 28.sp
+                    )
                 }
-                Column {
-                    Text(folder.category.categoryName, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = customName.ifBlank { folder.category.categoryName },
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Text("${folder.apps.size} uygulama", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .clickable { showEditDialog = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Edit, null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
+                }
+            }
+
+            if (showEditDialog) {
+                FolderRenameDialog(
+                    currentName = customName.ifBlank { folder.category.categoryName },
+                    currentEmoji = customEmoji.ifBlank { folder.category.iconEmoji },
+                    onDismiss = { showEditDialog = false },
+                    onSave = { newName, newEmoji ->
+                        val nameToSave = if (newName == folder.category.categoryName) "" else newName
+                        val emojiToSave = if (newEmoji == folder.category.iconEmoji) "" else newEmoji
+                        customName = nameToSave
+                        customEmoji = emojiToSave
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomName(context, catId, nameToSave)
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomEmoji(context, catId, emojiToSave)
+                        showEditDialog = false
+                    }
+                )
             }
 
             // ── Arama çubuğu ─────────────────────────────────────────────────
@@ -190,7 +238,10 @@ fun FolderSheet(
                 Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                 Box(modifier = Modifier.weight(1f)) {
                     if (searchQuery.isEmpty()) {
-                        Text("${folder.category.categoryName} içinde ara...", color = TextSecondary, fontSize = 13.sp)
+                        Text(
+                            "${customName.ifBlank { folder.category.categoryName }} icinde ara...",
+                            color = TextSecondary, fontSize = 13.sp
+                        )
                     }
                     BasicTextField(
                         value = searchQuery,
@@ -274,4 +325,76 @@ fun FolderSheet(
             }
         }
     }
+}
+
+private val EMOJI_PICKER = listOf(
+    "📁","📝","🎮","👥","🛍️","📰","❤️","💰","🎓","🔧",
+    "✈️","🎬","🍔","📸","📦","⭐","🏠","🎵","💼","🎯",
+    "🔑","📱","💻","🎁","🌟","🚀","🎪","🏆","💡","📚",
+    "🌙","☀️","🎨","🏋️","🐶","🌿","🔔","💬","🗓️","🧩"
+)
+
+@Composable
+private fun FolderRenameDialog(
+    currentName: String,
+    currentEmoji: String,
+    onDismiss: () -> Unit,
+    onSave: (name: String, emoji: String) -> Unit,
+) {
+    var nameField by remember { mutableStateOf(currentName) }
+    var selectedEmoji by remember { mutableStateOf(currentEmoji) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1E1E2E),
+        title = {
+            Text("Klasoru Duzenle", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                OutlinedTextField(
+                    value = nameField,
+                    onValueChange = { nameField = it },
+                    label = { Text("Klasor adi", color = Color.White.copy(0.6f)) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF00897B),
+                        unfocusedBorderColor = Color.White.copy(0.25f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Color(0xFF00897B),
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Emoji sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    itemsIndexed(EMOJI_PICKER) { _, emoji ->
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    if (emoji == selectedEmoji) Color(0xFF00897B).copy(0.35f)
+                                    else Color.White.copy(0.08f)
+                                )
+                                .clickable { selectedEmoji = emoji },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(emoji, fontSize = 20.sp)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji) }) {
+                Text("Kaydet", color = Color(0xFF00897B), fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Iptal", color = Color.White.copy(0.6f))
+            }
+        }
+    )
 }

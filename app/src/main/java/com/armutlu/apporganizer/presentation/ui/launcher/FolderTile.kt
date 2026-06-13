@@ -58,7 +58,9 @@ fun FolderTile(
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
-    textAlpha: Float = 1f
+    textAlpha: Float = 1f,
+    customName: String? = null,
+    customEmoji: String? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -127,7 +129,7 @@ fun FolderTile(
         ) {
             if (folder.apps.isEmpty()) {
                 Text(
-                    text = folder.category.iconEmoji,
+                    text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
                     fontSize = 24.sp
                 )
             } else {
@@ -158,7 +160,7 @@ fun FolderTile(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            text = folder.category.categoryName,
+            text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
             color = Color.White.copy(alpha = textAlpha),
             fontSize = 12.sp,
             maxLines = 1,
