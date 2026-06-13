@@ -52,6 +52,7 @@ fun SettingsScreen(
     val state          by viewModel.screenState.collectAsState()
     val logs           by viewModel.liveDebugLogs.collectAsState()
     val hiddenApps     by viewModel.hiddenApps.collectAsState()
+    val otherApps      by viewModel.otherApps.collectAsState()
     val clipboard      = LocalClipboardManager.current
     val context        = LocalContext.current
     var debugExpanded  by remember { mutableStateOf(false) }
@@ -697,6 +698,44 @@ fun SettingsScreen(
                                     onClick = { viewModel.unhideApp(app.packageName) },
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                                 ) { Text("Göster", fontSize = 12.sp) }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Diğer Klasörü (Bilinmeyen Uygulamalar) ───────────────────────
+            if (otherApps.isNotEmpty()) {
+                item { SettingsSectionTitle("Diğer Klasörü — Bilinmeyenler (${otherApps.size})") }
+                item {
+                    SettingsCard {
+                        Column(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                            Text(
+                                "Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. " +
+                                "İleride web sorgusu ile otomatik atanacak.",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        otherApps.take(20).forEachIndexed { index, app ->
+                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(app.appName, fontSize = 14.sp, maxLines = 1)
+                                    Text(app.packageName, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                                }
+                            }
+                        }
+                        if (otherApps.size > 20) {
+                            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                            Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                                Text("...ve ${otherApps.size - 20} uygulama daha", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }

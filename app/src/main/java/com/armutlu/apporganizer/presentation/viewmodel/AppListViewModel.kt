@@ -442,6 +442,10 @@ class AppListViewModel @Inject constructor(
         repository.getHiddenApps()
             .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())
 
+    val otherApps: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.models.AppInfo>> =
+        repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER)
+            .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())
+
     fun unhideApp(packageName: String) {
         viewModelScope.launch {
             repository.updateAppHidden(packageName, false)
