@@ -14,26 +14,26 @@ class AppClassifier @Inject constructor() {
     // Üretici prefix → kategori: exactMap'ten sonra, keyword'den önce kontrol edilir
     private val MANUFACTURER_PREFIX_MAP = mapOf(
         // Samsung sistem uygulamaları
-        "com.samsung.android.app.galaxyfinder"  to Category.CAT_TOOLS,
-        "com.samsung.android.themestore"        to Category.CAT_TOOLS,
-        "com.samsung.android.personalpage"      to Category.CAT_TOOLS,
+        "com.samsung.android.app.galaxyfinder"  to Category.CAT_UTILITIES,
+        "com.samsung.android.themestore"        to Category.CAT_UTILITIES,
+        "com.samsung.android.personalpage"      to Category.CAT_UTILITIES,
         // Samsung medya/eğlence
         "com.samsung.android.video"             to Category.CAT_ENTERTAINMENT,
         "com.samsung.android.music"             to Category.CAT_ENTERTAINMENT,
-        "com.samsung.android.gallery3d"         to Category.CAT_PHOTO,
+        "com.samsung.android.gallery3d"         to Category.CAT_PHOTOGRAPHY,
         // Huawei
         "com.huawei.himovie"                    to Category.CAT_ENTERTAINMENT,
         "com.huawei.music"                      to Category.CAT_ENTERTAINMENT,
-        "com.huawei.gallery"                    to Category.CAT_PHOTO,
+        "com.huawei.gallery"                    to Category.CAT_PHOTOGRAPHY,
         // Xiaomi/MIUI
-        "com.miui.gallery"                      to Category.CAT_PHOTO,
+        "com.miui.gallery"                      to Category.CAT_PHOTOGRAPHY,
         "com.miui.videoplayer"                  to Category.CAT_ENTERTAINMENT,
         "com.miui.music"                        to Category.CAT_ENTERTAINMENT,
         // Sony
-        "com.sonyericsson.album"                to Category.CAT_PHOTO,
+        "com.sonyericsson.album"                to Category.CAT_PHOTOGRAPHY,
         "com.sonymobile.music"                  to Category.CAT_ENTERTAINMENT,
         // LG
-        "com.lge.gallery"                       to Category.CAT_PHOTO,
+        "com.lge.gallery"                       to Category.CAT_PHOTOGRAPHY,
         "com.lge.music"                         to Category.CAT_ENTERTAINMENT,
     )
 
