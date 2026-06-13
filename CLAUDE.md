@@ -710,4 +710,14 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **Kullanım akışı:** Ana ekran uzun bas → "Widget Ekle" → sistem widget seçici açılır → seçim yapılınca WidgetArea'da gösterilir → Uzun bas → X ile silinir
 
-*Son güncelleme: 2026-06-13 (Döngü 24 — Widget destegi, Yol Haritasi #7 tamamlandi)*
+### AllAppsDrawer Greyscale Fix (Döngü 25)
+**Hata:** `unusedGreyDays=0` (kapalı) olsa bile tüm uygulamalar gri geliyordu.
+**Fix:** `NiagaraAppRow`'a `unusedGreyDays: Int = 0` parametresi eklendi; `<= 0` ise `saturation=1f`.
+
+### Klasör Sort Mode Kalıcılık (Döngü 25)
+`AppPrefs.KEY_FOLDER_SORT_MODE` eklendi. FolderSheet kapanıp açılınca sıralama sıfırlanıyor sorunu giderildi.
+
+### Onboarding RESTORE_BACKUP Adımı (Döngü 25)
+WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçici ile geri yükleme, `hiltViewModel` ile `AppListViewModel` inject edildi.
+
+*Son güncelleme: 2026-06-13 (Döngü 25 — greyscale fix, sort kalıcı, onboarding yedek)*
