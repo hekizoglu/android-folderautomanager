@@ -413,7 +413,7 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | 11 | NotificationListenerService — gerçek veri | `services/` altında servis dosyası | `find app/src -name "*Notification*Service*"` |
 | 12 | AppListScreen refactor — max 300 satır | `AppListScreen.kt`, `AppListComponents.kt` | `wc -l .../AppListScreen.kt` |
 
-### Son Kontrol Sonuçları (2026-06-10)
+### Son Kontrol Sonuçları (2026-06-13)
 | # | Durum |
 |---|-------|
 | 1 | ✅ Theme.kt doğru |
@@ -760,4 +760,19 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 **Davranış:** Launcher rolü olmadığında (pm clear / izin iptali) `runCatching` boş liste döndürür — kısayol bölümü gizlenir.
 
-*Son güncelleme: 2026-06-13 (Döngü 28 — Uygulama Kısayolları)*
+### Uygulama Onerileri Satiri (Dongu 29)
+**"Son Kullanilanlar" — arama cubugu altinda 4 ikon, Pixel Launcher suggestions tarzinda.**
+
+**`AppPrefs.kt`**: `KEY_SUGGESTIONS_ENABLED` + `isSuggestionsEnabled`/`setSuggestionsEnabled` eklendi (varsayilan: acik)
+
+**`LauncherViewModel.kt`**: `suggestedApps: StateFlow<List<AppInfo>>` — `lastUsedTimestamp` oncelikli, `usageCount` ikincil siralama, gizli uygulamalar haric, `take(4)`, `SharingStarted.Eagerly`
+
+**`HomeScreenComponents.kt`**: `AppSuggestionsRow` (Column+Row+baslik) + `SuggestionAppItem` (private) composable — `iconCacheInternal` LRU-200 paylasimiyla, ikon paketi destekli
+
+**`HomeScreen.kt`**: `suggestionIconPack` remember (conditional remember'i onlemek icin disari alindi), `suggestionsEnabled` state + `DisposableEffect` SharedPrefs listener, `AppSuggestionsRow` GoogleSearchBar altina eklendi
+
+**`SettingsScreen.kt`**: "Ana Ekran Ozellikleri" bolumune "Uygulama Onerileri" toggle (`Icons.Default.AutoAwesome`) eklendi — ilk sira
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 29 — Uygulama Önerileri Satırı)*
