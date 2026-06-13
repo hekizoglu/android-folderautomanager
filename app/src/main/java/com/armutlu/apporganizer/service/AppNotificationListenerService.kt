@@ -36,6 +36,16 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         rebuildCounts()
+        // Uygulamanin artik aktif bildirimi yoksa metni de temizle
+        sbn?.packageName?.let { pkg ->
+            val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
+            if (!hasActive) {
+                val current = _latestTexts.value.toMutableMap()
+                if (current.remove(pkg) != null) {
+                    _latestTexts.value = current
+                }
+            }
+        }
     }
 
     override fun onListenerConnected() {

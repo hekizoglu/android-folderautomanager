@@ -123,32 +123,37 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     init {
-        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz
+        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz.
+        // Tum bildirimler silindiginde counts bos map gelir — guard olmadan her durumda temizle.
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
-                if (counts.isNotEmpty()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        counts.forEach { (pkg, count) ->
-                            repository.updateNotificationCount(pkg, count)
-                        }
-                        // Servis bilgisi olmayan uygulamalarin sayisini sifirla
-                        val knownPkgs = counts.keys
-                        repository.getAllApps()
-                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
-                            .forEach { repository.updateNotificationCount(it.packageName, 0) }
+                viewModelScope.launch(Dispatchers.IO) {
+                    counts.forEach { (pkg, count) ->
+                        repository.updateNotificationCount(pkg, count)
+                    }
+                    // Servis listesinde olmayan ama DB'de sayisi > 0 olan uygulamalari sifirla
+                    val knownPkgs = counts.keys
+                    val toReset = repository.getAllApps()
+                        .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                    if (toReset.isNotEmpty()) {
+                        toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
                     }
                 }
             }
             .launchIn(viewModelScope)
 
-        // Son bildirim metnini DB'ye yaz
+        // Son bildirim metnini DB'ye yaz; kaybolan bildirim metinlerini de temizle.
         AppNotificationListenerService.latestTexts
             .onEach { texts ->
-                if (texts.isNotEmpty()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        texts.forEach { (pkg, text) ->
-                            repository.updateNotificationText(pkg, text)
-                        }
+                viewModelScope.launch(Dispatchers.IO) {
+                    texts.forEach { (pkg, text) ->
+                        repository.updateNotificationText(pkg, text)
+                    }
+                    val knownPkgs = texts.keys
+                    val toClean = repository.getAllApps()
+                        .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
+                    if (toClean.isNotEmpty()) {
+                        toClean.forEach { repository.updateNotificationText(it.packageName, "") }
                     }
                 }
             }
