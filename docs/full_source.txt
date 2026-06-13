@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 23:35 UTC
-# Commit: f866516a5db61a45bb49384be2bfb0c2d72b9c90
+# Generated: 2026-06-13 23:37 UTC
+# Commit: 72afdb246388acd6a72c99b0b84801d1306b2465
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4297,7 +4297,7 @@ fun AppContextMenu(
                         data = Uri.parse("package:${app.packageName}")
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    context.startActivity(intent)
+                    runCatching { context.startActivity(intent) }
                     onDismiss()
                 }
             )
@@ -6315,7 +6315,7 @@ fun HomeScreen(
                     onClick = {
                         val intent = Intent(Settings.ACTION_HOME_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00897B))
                 ) {
@@ -6327,7 +6327,7 @@ fun HomeScreen(
                             data = Uri.parse("package:${context.packageName}")
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
-                        context.startActivity(intent)
+                        runCatching { context.startActivity(intent) }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF37474F))
                 ) {
@@ -7721,33 +7721,35 @@ class LauncherViewModel @Inject constructor(
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    counts.forEach { (pkg, count) ->
-                        repository.updateNotificationCount(pkg, count)
-                    }
-                    // Servis listesinde olmayan ama DB'de sayisi > 0 olan uygulamalari sifirla
-                    val knownPkgs = counts.keys
-                    val toReset = repository.getAllApps()
-                        .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
-                    if (toReset.isNotEmpty()) {
-                        toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
-                    }
+                    runCatching {
+                        counts.forEach { (pkg, count) ->
+                            repository.updateNotificationCount(pkg, count)
+                        }
+                        val knownPkgs = counts.keys
+                        val toReset = repository.getAllApps()
+                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                        if (toReset.isNotEmpty()) {
+                            toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
+                        }
+                    }.onFailure { Timber.e(it, "badgeCounts observer hatası") }
                 }
             }
             .launchIn(viewModelScope)
 
-        // Son bildirim metnini DB'ye yaz; kaybolan bildirim metinlerini de temizle.
         AppNotificationListenerService.latestTexts
             .onEach { texts ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    texts.forEach { (pkg, text) ->
-                        repository.updateNotificationText(pkg, text)
-                    }
-                    val knownPkgs = texts.keys
-                    val toClean = repository.getAllApps()
-                        .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
-                    if (toClean.isNotEmpty()) {
-                        toClean.forEach { repository.updateNotificationText(it.packageName, "") }
-                    }
+                    runCatching {
+                        texts.forEach { (pkg, text) ->
+                            repository.updateNotificationText(pkg, text)
+                        }
+                        val knownPkgs = texts.keys
+                        val toClean = repository.getAllApps()
+                            .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
+                        if (toClean.isNotEmpty()) {
+                            toClean.forEach { repository.updateNotificationText(it.packageName, "") }
+                        }
+                    }.onFailure { Timber.e(it, "latestTexts observer hatası") }
                 }
             }
             .launchIn(viewModelScope)
@@ -7759,17 +7761,18 @@ class LauncherViewModel @Inject constructor(
      */
     fun reconcileIfNeeded(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            val pm = context.packageManager
-            // mapTo(mutableSetOf()): distinctBy + count yerine tek geçişli set deduplication
-            val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-            val installedCount = pm.queryIntentActivities(launchIntent, 0)
-                .mapTo(mutableSetOf()) { it.activityInfo.packageName }
-                .count { !PackageManagerHelper.shouldHide(it) }
-            val dbCount = repository.countApps()
-            if (installedCount != dbCount) {
-                Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
-                loadAppsIfEmpty(context)
-            }
+            runCatching {
+                val pm = context.packageManager
+                val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                val installedCount = pm.queryIntentActivities(launchIntent, 0)
+                    .mapTo(mutableSetOf()) { it.activityInfo.packageName }
+                    .count { !PackageManagerHelper.shouldHide(it) }
+                val dbCount = repository.countApps()
+                if (installedCount != dbCount) {
+                    Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
+                    loadAppsIfEmpty(context)
+                }
+            }.onFailure { Timber.e(it, "reconcileIfNeeded hatası") }
         }
     }
 
@@ -7986,11 +7989,13 @@ class LauncherViewModel @Inject constructor(
     fun syncUsageStats(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             if (!UsageStatsHelper.hasPermission(context)) return@launch
-            val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
-            counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
-            val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
-            lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
-            Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+            runCatching {
+                val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
+                counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
+                val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
+                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
+                Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+            }.onFailure { Timber.e(it, "syncUsageStats hatası") }
         }
     }
 
@@ -12531,34 +12536,36 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
-        rebuildCounts()
-        // Son gelen bildirimin metnini kaydet
-        if (!sbn.isOngoing) {
-            val extras = sbn.notification?.extras
-            val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
-            val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
-            val combined = when {
-                title.isNotBlank() && text.isNotBlank() -> "$title: $text"
-                title.isNotBlank() -> title
-                else -> text
-            }
-            if (combined.isNotBlank()) {
-                val current = _latestTexts.value.toMutableMap()
-                current[sbn.packageName] = combined
-                _latestTexts.value = current
+        runCatching {
+            rebuildCounts()
+            if (!sbn.isOngoing) {
+                val extras = sbn.notification?.extras
+                val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
+                val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
+                val combined = when {
+                    title.isNotBlank() && text.isNotBlank() -> "$title: $text"
+                    title.isNotBlank() -> title
+                    else -> text
+                }
+                if (combined.isNotBlank()) {
+                    val current = _latestTexts.value.toMutableMap()
+                    current[sbn.packageName] = combined
+                    _latestTexts.value = current
+                }
             }
         }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        rebuildCounts()
-        // Uygulamanin artik aktif bildirimi yoksa metni de temizle
-        sbn?.packageName?.let { pkg ->
-            val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
-            if (!hasActive) {
-                val current = _latestTexts.value.toMutableMap()
-                if (current.remove(pkg) != null) {
-                    _latestTexts.value = current
+        runCatching {
+            rebuildCounts()
+            sbn?.packageName?.let { pkg ->
+                val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
+                if (!hasActive) {
+                    val current = _latestTexts.value.toMutableMap()
+                    if (current.remove(pkg) != null) {
+                        _latestTexts.value = current
+                    }
                 }
             }
         }
@@ -12768,6 +12775,22 @@ object AppPrefs {
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
+
+    // Favori uygulamalar — paket adlari Set olarak saklanir
+    const val KEY_FAVORITES_ENABLED = "favorites_enabled"
+    const val KEY_FAVORITES_SET     = "favorites_set"
+    fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, false)
+    fun setFavoritesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED, v).apply()
+    fun getFavorites(context: Context): Set<String> = prefs(context).getStringSet(KEY_FAVORITES_SET, emptySet()) ?: emptySet()
+    fun addFavorite(context: Context, pkg: String) {
+        val set = getFavorites(context).toMutableSet().also { it.add(pkg) }
+        prefs(context).edit().putStringSet(KEY_FAVORITES_SET, set).apply()
+    }
+    fun removeFavorite(context: Context, pkg: String) {
+        val set = getFavorites(context).toMutableSet().also { it.remove(pkg) }
+        prefs(context).edit().putStringSet(KEY_FAVORITES_SET, set).apply()
+    }
+    fun isFavorite(context: Context, pkg: String) = getFavorites(context).contains(pkg)
 
     // Son kullanilan uygulamalar satiri
     const val KEY_RECENT_APPS_ENABLED = "recent_apps_enabled"
