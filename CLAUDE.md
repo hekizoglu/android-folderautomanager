@@ -456,6 +456,27 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 
 ---
 
+## Akıllı Kategorizasyon Yol Haritası (Hüseyin Talebi)
+
+**Hedef:** Sistem bilinen 1000+ uygulamayı hafızasında tutsun; bilinmeyenleri "Diğer" klasörüne atacak ve web sorgusuna hazır bekletecek.
+
+**Aşama 1 (Öncelikli) — Offline Top-1000 Veritabanı:**
+- `exactMatchMap` + `KeywordDatabase`'i küresel top-1000 + Türkiye top-500 uygulamasına genişlet
+- Veri: kaynak kodda sabit — Play Store izni gerekmez, offline çalışır
+- Kaynak: APKPure/AppBrain aylık top listelerinden manuel veya script ile derleme
+
+**Aşama 2 — "Diğer" Klasörü Web Sorgulama:**
+- Seçenek A (Önerilen): **Kendi sunucu API'si** → `packageName → category` endpoint'i
+  - Sunucu: basit Python Flask + SQLite; kullanıcı bilinmeyen paket gönderir, cevap alır
+  - Play Store ToS'u ihlal etmez — kendi veri tabanımız
+- Seçenek B (Fallback): LLM çağrısı → paket adı + uygulama adı → kategori tahmini (DeepSeek API)
+- Seçenek C (Reddedildi): Play Store scraping → Google bunu blokluyor, ToS ihlali
+
+**Uygulama planı:**
+1. `AppClassifier` → bilinmeyen uygulama `CAT_UNCATEGORIZED` döndürünce "Diğer" klasörüne yazar
+2. `LauncherActivity`/`SettingsScreen` → "Bilinmeyen uygulamaları sorgula" butonu
+3. API çağrısı → cevap gelince DB güncelleme + klasörden çıkarma
+
 ## Gelecek Yol Haritası — Rekabet Döngüsü (Uzun Vadeli)
 
 Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döngülerde uygulanacak.
@@ -822,4 +843,22 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 **LauncherViewModel.kt:** `_openFolder` → `_openFolderId` refactor — openFolder, folders flow'undan combine ile türetiliyor; klasör DB güncellenince FolderSheet anında yansıtıyor.
 **HomeScreen.kt + AppPrefs.kt:** KEY_BG_TYPE/COLOR/TEXT_ALPHA + DisposableEffect listener eklendi.
 
-*Son güncelleme: 2026-06-13 (Döngü 31 — Klasor Renk Ozellestirme + Döngü 24 yerel eklemeler)*
+### Döngü 25-30 Değişiklikleri
+- **Döngü 25:** AllAppsDrawer — `Locale("tr")` ile arama + alfabetik sıralama. Türkçe Ş/İ/Ğ/Ü/Ö/Ç artık doğru sıralanıyor/bulunuyor.
+- **Döngü 26:** FolderTile — `folderSizeDp` parametresi (56-96dp arası). AppPrefs KEY_FOLDER_SIZE. SettingsScreen slider eklendi.
+- **Döngü 27:** AppClassifier — `MANUFACTURER_PREFIX_MAP` (Samsung/Huawei/Xiaomi/Sony/LG prefix → kategori). AppPrefs KEY_MANUFACTURER_CLASSIFY toggle. SettingsScreen Uygulama Yönetimi bölümüne switch eklendi.
+- **Döngü 28:** AppPrefs KEY_LABEL_COLOR. FolderTile labelColor parametresi. SettingsScreen yazı rengi paleti (6 renk). HomeScreen DisposableEffect listener.
+- **Döngü 29:** OnboardingScreen — steps listesi açık sıralamaya alındı. SET_LAUNCHER THEME_SELECT'ten sonraya taşındı (tüm ayarlar bittikten sonra varsayılan launcher soruluyor).
+- **Döngü 30 (Build):** AppClassifier derleme hatası fix — CAT_TOOLS→CAT_UTILITIES, CAT_PHOTO→CAT_PHOTOGRAPHY.
+
+### Döngü Stratejisi (2026-06-13 güncellemesi)
+- **Her döngü:** kod değişikliği + commit + push + Telegram kısa bilgi
+- **Her 6 döngüde bir:** build + APK Telegram'a gönder
+- **Her 18 döngüde bir:** emülatörde tam test
+
+### Akıllı Kategorizasyon (Hüseyin Talebi — Yapılacak)
+- Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet (offline, izin gerektirmez)
+- Aşama 2: "Diğer" klasöründeki uygulamalar için kendi sunucu API'si veya LLM fallback
+- Detay: CLAUDE.md "Akıllı Kategorizasyon Yol Haritası" bölümünde
+
+*Son güncelleme: 2026-06-13 (Döngü 30 — Build 25-30 tamamlandı)*
