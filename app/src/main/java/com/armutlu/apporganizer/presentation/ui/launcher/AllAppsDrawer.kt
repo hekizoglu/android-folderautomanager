@@ -267,10 +267,14 @@ fun AllAppsDrawer(
             3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
             else -> apps
         }
+        val trLocale = Locale("tr")
         val base = if (searchQuery.isBlank()) afterQuickFilter
-        else afterQuickFilter.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+        else {
+            val q = searchQuery.lowercase(trLocale)
+            afterQuickFilter.filter { it.appName.lowercase(trLocale).contains(q) }
+        }
         when (sortMode) {
-            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase() }
+            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
             AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
             AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
             AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
@@ -282,9 +286,12 @@ fun AllAppsDrawer(
     val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery, quickFilter) {
         if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
             sortedApps.groupBy { app ->
-                val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'
-                if (c.isLetter()) c else '#'
-            }.toSortedMap(compareBy { if (it == '#') Char.MAX_VALUE else it })
+                val first = app.appName.firstOrNull()?.toString()?.uppercase(Locale("tr"))?.firstOrNull() ?: '#'
+                if (first.isLetter()) first else '#'
+            }.toSortedMap(Comparator { a, b ->
+                if (a == '#') 1 else if (b == '#') -1
+                else java.text.Collator.getInstance(Locale("tr")).compare(a.toString(), b.toString())
+            })
         else emptyMap()
     }
 

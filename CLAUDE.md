@@ -92,7 +92,11 @@ Agent görevlendirme formatı:
 3. **Hata varsa düzelt** — DeepSeek ile analiz et, düzelt, tekrar build
 4. **Test geçtiyse commit + push** — açıklayıcı commit mesajı
 5. **NotebookLM dosyasını güncelle** — `python scripts/update_notebooklm.py` (Masaüstü/notebooklm_apporganizer/app_source.txt)
-6. **Telegram'a gönder** — APK + kısa durum raporu
+6. **Telegram'a gönder** — APK + **detaylı değişiklik raporu** (her döngüde):
+   - Bug fix: sebep + fix + sonuç
+   - Yeni özellik: ne eklendi, hangi dosya
+   - Refactor: eski davranış → yeni davranış
+   - Sonraki döngü planı
 7. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
 8. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
 
