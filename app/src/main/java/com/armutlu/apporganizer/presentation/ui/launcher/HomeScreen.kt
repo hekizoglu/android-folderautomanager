@@ -99,7 +99,10 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: LauncherViewModel) {
+fun HomeScreen(
+    viewModel: LauncherViewModel,
+    onLaunchWidgetPicker: () -> Unit = {}
+) {
     val context = LocalContext.current
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
@@ -107,6 +110,8 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val filteredApps by viewModel.filteredAllApps.collectAsState()
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val widgetIds by viewModel.widgetIds.collectAsState()
+    val widgetAreaEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context) }
 
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
@@ -309,6 +314,15 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
+
+            // Widget alanı — arama çubuğu ile klasör gridi arasında
+            if (widgetAreaEnabled && widgetIds.isNotEmpty()) {
+                WidgetArea(
+                    widgetIds = widgetIds,
+                    onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             // İstatistik bandı — toplam klasör ve uygulama sayısı
             val totalApps   = folders.sumOf { it.apps.size }
@@ -615,7 +629,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                runCatching { context.startActivity(Intent.createChooser(intent, "Duvar Kağıdı Seç").apply {
+                runCatching { context.startActivity(Intent.createChooser(intent, "Duvar Kagidi Sec").apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }) }
             },
@@ -626,6 +640,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             onDockEdit = {
                 homeLongPressOpen = false
                 dockEditOpen = true
+            },
+            onAddWidget = {
+                homeLongPressOpen = false
+                onLaunchWidgetPicker()
             }
         )
     }

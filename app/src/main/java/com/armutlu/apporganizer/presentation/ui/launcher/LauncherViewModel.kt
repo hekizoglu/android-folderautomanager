@@ -12,6 +12,8 @@ import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import com.armutlu.apporganizer.utils.WidgetHostManager
+import com.armutlu.apporganizer.utils.WidgetPrefs
 import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -353,6 +355,25 @@ class LauncherViewModel @Inject constructor(
                 Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
         }
+    }
+
+    // Widget ID listesi — SharedPrefs'ten yüklenir, ekleme/silmede güncellenir
+    private val _widgetIds = MutableStateFlow<List<Int>>(emptyList())
+    val widgetIds: StateFlow<List<Int>> = _widgetIds.asStateFlow()
+
+    fun loadWidgetIds(context: Context) {
+        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
+    }
+
+    fun addWidgetId(context: Context, id: Int) {
+        WidgetPrefs.addWidgetId(context, id)
+        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
+    }
+
+    fun removeWidgetId(context: Context, id: Int) {
+        WidgetHostManager.deleteId(context, id)
+        WidgetPrefs.removeWidgetId(context, id)
+        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
     }
 
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()

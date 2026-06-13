@@ -85,6 +85,11 @@ object AppPrefs {
     fun setFolderSortMode(context: Context, mode: String) =
         prefs(context).edit().putString(KEY_FOLDER_SORT_MODE, mode).apply()
 
+    // Widget alanı — ana ekranda widget göster
+    const val KEY_WIDGET_AREA_ENABLED = "widget_area_enabled"
+    fun isWidgetAreaEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AREA_ENABLED, true)
+    fun setWidgetAreaEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WIDGET_AREA_ENABLED, v).apply()
+
     // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
     private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika

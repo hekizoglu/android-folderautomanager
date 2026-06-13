@@ -409,6 +409,24 @@ fun SettingsScreen(
                 }
             }
 
+            // ── Widget Alani ──────────────────────────────────────────────────
+            item { SettingsSectionTitle("Widget") }
+            item {
+                var widgetAreaEnabledLocal by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Widgets,
+                        title = "Widget Alani",
+                        subtitle = "Ana ekranda widget gosterimine izin ver",
+                        checked = widgetAreaEnabledLocal,
+                        onCheckedChange = {
+                            widgetAreaEnabledLocal = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setWidgetAreaEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
             // ── İkon Paketi ───────────────────────────────────────────────────
             item { SettingsSectionTitle("İkon Paketi") }
             item {
