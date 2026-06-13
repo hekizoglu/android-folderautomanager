@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 16:10 UTC
-# Commit: cf10ce133d1edc6db89c76e4b40447c7d253d420
+# Generated: 2026-06-13 17:11 UTC
+# Commit: c8a798c6301d2741f4c38a0fd777f49f1ee09c6c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3952,6 +3952,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -3963,11 +3964,15 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -4080,6 +4085,14 @@ fun FolderSheet(
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
     }
     var searchQuery by remember { mutableStateOf("") }
+    val catId = folder.category.categoryId
+    var customName by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)[catId] ?: "")
+    }
+    var customEmoji by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)[catId] ?: "")
+    }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
         val base = if (searchQuery.isBlank()) folder.apps
@@ -4114,12 +4127,47 @@ fun FolderSheet(
                         .background(catColor.copy(alpha = 0.25f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = folder.category.iconEmoji, fontSize = 28.sp)
+                    Text(
+                        text = customEmoji.ifBlank { folder.category.iconEmoji },
+                        fontSize = 28.sp
+                    )
                 }
-                Column {
-                    Text(folder.category.categoryName, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = customName.ifBlank { folder.category.categoryName },
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Text("${folder.apps.size} uygulama", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .clickable { showEditDialog = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Edit, null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
+                }
+            }
+
+            if (showEditDialog) {
+                FolderRenameDialog(
+                    currentName = customName.ifBlank { folder.category.categoryName },
+                    currentEmoji = customEmoji.ifBlank { folder.category.iconEmoji },
+                    onDismiss = { showEditDialog = false },
+                    onSave = { newName, newEmoji ->
+                        val nameToSave = if (newName == folder.category.categoryName) "" else newName
+                        val emojiToSave = if (newEmoji == folder.category.iconEmoji) "" else newEmoji
+                        customName = nameToSave
+                        customEmoji = emojiToSave
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomName(context, catId, nameToSave)
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomEmoji(context, catId, emojiToSave)
+                        showEditDialog = false
+                    }
+                )
             }
 
             // ── Arama çubuğu ─────────────────────────────────────────────────
@@ -4137,7 +4185,10 @@ fun FolderSheet(
                 Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                 Box(modifier = Modifier.weight(1f)) {
                     if (searchQuery.isEmpty()) {
-                        Text("${folder.category.categoryName} içinde ara...", color = TextSecondary, fontSize = 13.sp)
+                        Text(
+                            "${customName.ifBlank { folder.category.categoryName }} icinde ara...",
+                            color = TextSecondary, fontSize = 13.sp
+                        )
                     }
                     BasicTextField(
                         value = searchQuery,
@@ -4223,6 +4274,78 @@ fun FolderSheet(
     }
 }
 
+private val EMOJI_PICKER = listOf(
+    "📁","📝","🎮","👥","🛍️","📰","❤️","💰","🎓","🔧",
+    "✈️","🎬","🍔","📸","📦","⭐","🏠","🎵","💼","🎯",
+    "🔑","📱","💻","🎁","🌟","🚀","🎪","🏆","💡","📚",
+    "🌙","☀️","🎨","🏋️","🐶","🌿","🔔","💬","🗓️","🧩"
+)
+
+@Composable
+private fun FolderRenameDialog(
+    currentName: String,
+    currentEmoji: String,
+    onDismiss: () -> Unit,
+    onSave: (name: String, emoji: String) -> Unit,
+) {
+    var nameField by remember { mutableStateOf(currentName) }
+    var selectedEmoji by remember { mutableStateOf(currentEmoji) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1E1E2E),
+        title = {
+            Text("Klasoru Duzenle", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                OutlinedTextField(
+                    value = nameField,
+                    onValueChange = { nameField = it },
+                    label = { Text("Klasor adi", color = Color.White.copy(0.6f)) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF00897B),
+                        unfocusedBorderColor = Color.White.copy(0.25f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Color(0xFF00897B),
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Emoji sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    itemsIndexed(EMOJI_PICKER) { _, emoji ->
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    if (emoji == selectedEmoji) Color(0xFF00897B).copy(0.35f)
+                                    else Color.White.copy(0.08f)
+                                )
+                                .clickable { selectedEmoji = emoji },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(emoji, fontSize = 20.sp)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji) }) {
+                Text("Kaydet", color = Color(0xFF00897B), fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Iptal", color = Color.White.copy(0.6f))
+            }
+        }
+    )
+}
+
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/FolderTile.kt
 ========================================
@@ -4286,7 +4409,9 @@ fun FolderTile(
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
-    textAlpha: Float = 1f
+    textAlpha: Float = 1f,
+    customName: String? = null,
+    customEmoji: String? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -4355,7 +4480,7 @@ fun FolderTile(
         ) {
             if (folder.apps.isEmpty()) {
                 Text(
-                    text = folder.category.iconEmoji,
+                    text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
                     fontSize = 24.sp
                 )
             } else {
@@ -4386,7 +4511,7 @@ fun FolderTile(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            text = folder.category.categoryName,
+            text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
             color = Color.White.copy(alpha = textAlpha),
             fontSize = 12.sp,
             maxLines = 1,
@@ -4788,6 +4913,8 @@ fun HomeScreen(
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
+    var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
@@ -4805,6 +4932,10 @@ fun HomeScreen(
                     widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
+                    customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
+                    customFolderEmojis = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -5103,6 +5234,8 @@ fun HomeScreen(
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         textAlpha = textAlpha,
+                        customName = customFolderNames[folder.category.categoryId],
+                        customEmoji = customFolderEmojis[folder.category.categoryId],
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(
@@ -10805,6 +10938,42 @@ object AppPrefs {
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
+
+    // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
+    const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"
+    const val KEY_FOLDER_CUSTOM_EMOJIS = "folder_custom_emojis"
+
+    fun getFolderCustomNames(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_NAMES, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomName(context: Context, catId: String, name: String) {
+        val map = getFolderCustomNames(context).toMutableMap()
+        if (name.isBlank()) map.remove(catId) else map[catId] = name.trim()
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_NAMES, map.toJsonString()).apply()
+    }
+
+    fun getFolderCustomEmojis(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_EMOJIS, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomEmoji(context: Context, catId: String, emoji: String) {
+        val map = getFolderCustomEmojis(context).toMutableMap()
+        if (emoji.isBlank()) map.remove(catId) else map[catId] = emoji
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_EMOJIS, map.toJsonString()).apply()
+    }
+
+    private fun String.parseJsonMap(): Map<String, String> {
+        if (isBlank()) return emptyMap()
+        return runCatching {
+            val json = org.json.JSONObject(this)
+            json.keys().asSequence().associateWith { json.getString(it) }
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun Map<String, String>.toJsonString(): String {
+        val json = org.json.JSONObject()
+        forEach { (k, v) -> json.put(k, v) }
+        return json.toString()
+    }
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
