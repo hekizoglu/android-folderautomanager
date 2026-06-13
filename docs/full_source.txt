@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 13:12 UTC
-# Commit: 89dcf19b683de93dc19c73e990903f02f719beef
+# Generated: 2026-06-13 14:07 UTC
+# Commit: 326d1e0fcceaa45c14ce67fb86da106dee4dc0b5
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2365,10 +2365,10 @@ enum class AllAppsSortMode(val label: String) {
 }
 
 // ── Async ikon yükleme — global LRU cache paylaşılır, ikon paketi destekler ──
+// iconPackPkg dışarıdan verilir: reactive state olarak yönetilir, burada remember kullanılmaz.
 @Composable
-private fun rememberAppIcon(packageName: String): ImageBitmap? {
+private fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): ImageBitmap? {
     val context = LocalContext.current
-    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
     return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
         if (value == null) {
@@ -2498,9 +2498,10 @@ fun AllAppsDrawer(
         )
     }
 
-    // Bildirim metni ve gri gün ayarları — Settings değişince anında güncellenir
+    // Ayarlar — Settings değişince anında güncellenir (SharedPrefs listener)
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
             com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
@@ -2511,6 +2512,8 @@ fun AllAppsDrawer(
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
                     unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -2780,6 +2783,7 @@ fun AllAppsDrawer(
                                         sortMode = sortMode,
                                         notifTextEnabled = notifTextEnabled,
                                         unusedGreyDays = unusedGreyDays,
+                                        iconPackPkg = iconPackPkg,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -2809,6 +2813,7 @@ fun AllAppsDrawer(
                                         sortMode = sortMode,
                                         notifTextEnabled = notifTextEnabled,
                                         unusedGreyDays = unusedGreyDays,
+                                        iconPackPkg = iconPackPkg,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -2910,10 +2915,11 @@ fun NiagaraAppRow(
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
     notifTextEnabled: Boolean = false,
     unusedGreyDays: Int = 0,
+    iconPackPkg: String = "",
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
-    val icon = rememberAppIcon(app.packageName)
+    val icon = rememberAppIcon(app.packageName, iconPackPkg)
     val notifColor = when {
         app.notificationCount == 0 -> null
         app.notificationImportance >= 4 -> BadgeRed
@@ -5840,6 +5846,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 private const val PREFS_NAME = "launcher_prefs"
@@ -5893,8 +5900,8 @@ class LauncherViewModel @Inject constructor(
     // sonraki resume'larda _dockPackages ViewModel metotlarıyla güncel tutulur — yeniden okuma gerekmez.
     @Volatile private var dockLoaded = false
 
-    // Eş zamanlı çift loadAppsIfEmpty engelleyici
-    @Volatile private var isLoadingApps = false
+    // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
+    private val isLoadingApps = AtomicBoolean(false)
 
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
@@ -6001,8 +6008,7 @@ class LauncherViewModel @Inject constructor(
 
     /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
     fun loadAppsIfEmpty(context: Context) {
-        if (isLoadingApps) return  // onCreate + onResume eş zamanlı tetiklenmesin
-        isLoadingApps = true
+        if (!isLoadingApps.compareAndSet(false, true)) return  // atomik: zaten çalışıyorsa dön
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val helper = PackageManagerHelper(context)
@@ -6028,7 +6034,7 @@ class LauncherViewModel @Inject constructor(
                     }
                 }
             } finally {
-                isLoadingApps = false
+                isLoadingApps.set(false)
             }
         }
     }
@@ -10378,6 +10384,13 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         rebuildCounts()
+    }
+
+    // Servis bağlantısı kesilince (sistem yeniden başlatma, izin iptali vs.)
+    // stale badge ve metin verilerini temizle.
+    override fun onListenerDisconnected() {
+        _badgeCounts.value = emptyMap()
+        _latestTexts.value = emptyMap()
     }
 
     private fun rebuildCounts() {
