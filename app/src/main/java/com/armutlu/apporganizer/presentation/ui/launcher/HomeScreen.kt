@@ -415,6 +415,24 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                             .then(if (isDragging) Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp)) else Modifier)
                     )
                 }
+                // Bos slotlar — folder'lardan sonra, uzun basinca HomeLongPressSheet ac
+                val emptySlots = pageSize - pageFolders.size
+                if (emptySlots > 0) {
+                    items(emptySlots) { _ ->
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            homeLongPressOpen = true
+                                        }
+                                    )
+                                }
+                        )
+                    }
+                }
                 } // LazyVerticalGrid
             } // HorizontalPager
 
