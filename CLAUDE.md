@@ -788,4 +788,22 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 **Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
 
-*Son güncelleme: 2026-06-13 (Döngü 30 — Klasor Ozellestirme)*
+### Klasor Renk Ozellestirme (Dongu 31)
+**Klasor ad + emoji trio'suna renk tamamlandi.**
+
+**`AppPrefs.kt`**: `KEY_FOLDER_CUSTOM_COLORS` + `getFolderCustomColors`/`setFolderCustomColor` eklendi — JSON map (categoryId -> "#RRGGBB").
+
+**`FolderSheet.kt`**: 
+- `customColor` state eklendi (catId bazli SharedPrefs'ten okunur)
+- Header `catColor` hesabi: `customColor.ifBlank { null } ?: folder.category.colorHex` — custom renk varsa onu kullanir
+- `FolderRenameDialog` imzasi guncellendi: `currentColor: String = ""` + `onSave: (name, emoji, color) -> Unit`
+- Dialog'a "Renk sec" bolumu eklendi: 10 preset (Varsayilan/Turkuaz/Mavi/Mor/Kirmizi/Turuncu/Yesil/Pembe/Sari/Lacivert) — dolu dairesel swatchler, secili olanda CheckCircle + beyaz border
+- `COLOR_PRESETS: List<Pair<String,String>>` — `"" to "Varsayilan"` secilince custom renk silinir, kategori default'una doner
+
+**`FolderTile.kt`**: `customColor: String? = null` parametresi eklendi; `catColor = remember(colorHex, customColor)` ile custom renk oncelikli hesaplanir.
+
+**`HomeScreen.kt`**: `customFolderColors` state + `KEY_FOLDER_CUSTOM_COLORS` icin DisposableEffect listener; `FolderTile`'a `customColor` gecilir.
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 31 — Klasor Renk Ozellestirme)*
