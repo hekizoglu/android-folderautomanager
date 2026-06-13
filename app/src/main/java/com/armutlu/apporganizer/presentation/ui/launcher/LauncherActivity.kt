@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -142,12 +141,6 @@ class LauncherActivity : ComponentActivity() {
             runCatching { unregisterReceiver(packageReceiver) }
             receiverRegistered = false
         }
-    }
-
-    private fun isDefaultLauncher(context: android.content.Context): Boolean {
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return info?.activityInfo?.packageName == context.packageName
     }
 
     // Launcher'da back tuşu uygulamayı kapatmamalı

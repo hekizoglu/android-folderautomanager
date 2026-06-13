@@ -291,21 +291,24 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun addToDock(context: Context, packageName: String) {
-        val current = DockPrefs.getDockPackages(context)
+        // SharedPrefs okumak yerine bellekteki listeyi kullan — dockLoaded sonrasi her zaman güncel
+        val current = _dockPackages.value
         when {
             current.contains(packageName) -> _toastMessage.tryEmit("Uygulama zaten Dock'ta")
-            current.size >= 4 -> _toastMessage.tryEmit("Dock dolu (max 4) — önce bir uygulama çıkar")
+            current.size >= DOCK_MAX_SIZE -> _toastMessage.tryEmit("Dock dolu (max $DOCK_MAX_SIZE) — önce bir uygulama çıkar")
             else -> {
-                DockPrefs.addToDock(context, packageName)
-                _dockPackages.value = DockPrefs.getDockPackages(context)
+                val updated = current + packageName
+                DockPrefs.saveDockPackages(context, updated)
+                _dockPackages.value = updated
                 _toastMessage.tryEmit("Dock'a eklendi")
             }
         }
     }
 
     fun removeFromDock(context: Context, packageName: String) {
-        DockPrefs.removeFromDock(context, packageName)
-        _dockPackages.value = DockPrefs.getDockPackages(context)
+        val updated = _dockPackages.value - packageName
+        DockPrefs.saveDockPackages(context, updated)
+        _dockPackages.value = updated
     }
 
     fun updateAppCategory(packageName: String, categoryId: String) {

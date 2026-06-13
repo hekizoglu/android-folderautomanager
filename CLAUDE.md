@@ -651,4 +651,25 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 - `reconcileIfNeeded`: `distinctBy { ... } .count { ... }` → `mapTo(mutableSetOf()) { packageName } .count { shouldHide(it) }`
   - Tek gecisli set deduplication — ara liste olusturulmuyor
 
-*Son güncelleme: 2026-06-13 (Döngü 20 — Eagerly flows, isLoadingApps guard, dock SharedPrefs skip, set dedup)*
+### Dock In-Memory Operasyonlar + HomeScreen Refactor (Döngü 21)
+**LauncherViewModel.kt degisiklikleri:**
+- `addToDock`: `DockPrefs.getDockPackages(context)` (SharedPrefs okuma) yerine `_dockPackages.value` kullaniliyor
+  - Onceki: Her dock ekleme isleminde 2x SharedPrefs okuma yapiliyordu
+  - Yeni: `dockLoaded` sonrasinda `_dockPackages.value` her zaman guncel — sifir disk IO
+- `removeFromDock`: ayni desen — `DockPrefs.removeFromDock` yerine `_dockPackages.value - packageName` + `saveDockPackages`
+- Hardcoded `4` → `DOCK_MAX_SIZE` sabitiyle (`max $DOCK_MAX_SIZE`) gecerli
+
+**LauncherActivity.kt degisiklikleri:**
+- `isDefaultLauncher(context)` fonksiyonu kaldirildi — hicbir yerde cagirilmiyordu (olu kod)
+- `import android.content.pm.PackageManager` gereksiz import kaldirildi
+
+**HomeScreen.kt → HomeScreenComponents.kt refactor:**
+- `PixelClockWidget`, `GoogleSearchBar`, `PixelDock`, `DockIcon`, `SwipeHint` private composable'lar yeni dosyaya taşındı
+- `private` → `internal` görünürlük — aynı modülden erişim korunuyor
+- HomeScreen.kt: 866 → 634 satır (232 satır azaldı)
+- HomeScreenComponents.kt: yeni dosya, 288 satır
+- `iconCacheInternal` internal visibility — aynı paketten doğrudan erişim korunuyor
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 21 — dock in-memory ops, ölü kod temizliği, HomeScreen refactor)*
