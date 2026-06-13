@@ -812,4 +812,10 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 **Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
 
-*Son güncelleme: 2026-06-13 (Döngü 31 — Klasor Renk Ozellestirme)*
+### AllApps Greyscale Fix + RESTORE_BACKUP Onboarding (Döngü 24 — yerel)
+**AllAppsDrawer.kt:** `unusedGreyDays` drawer seviyesinde AppPrefs'ten okunuyor; NiagaraAppRow'a parametre olarak geçiyor. Greyscale ayarı kapalıysa tüm ikonlar renkli görünüyor (önceki: her zaman filtre uygulanıyordu).
+**OnboardingScreen.kt:** RESTORE_BACKUP adımı eklendi — JSON yedek dosyası seçici + importBackup entegrasyonu.
+**LauncherViewModel.kt:** `_openFolder` → `_openFolderId` refactor — openFolder, folders flow'undan combine ile türetiliyor; klasör DB güncellenince FolderSheet anında yansıtıyor.
+**HomeScreen.kt + AppPrefs.kt:** KEY_BG_TYPE/COLOR/TEXT_ALPHA + DisposableEffect listener eklendi.
+
+*Son güncelleme: 2026-06-13 (Döngü 31 — Klasor Renk Ozellestirme + Döngü 24 yerel eklemeler)*
