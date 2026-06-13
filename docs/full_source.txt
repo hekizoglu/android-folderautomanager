@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 22:19 UTC
-# Commit: 742ab23d947b64350b02b630dc60e257d7e97c32
+# Generated: 2026-06-13 22:49 UTC
+# Commit: c031f60b9280c7a4521aed455c66b04cd21ceda9
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2753,6 +2753,72 @@ class AppClassifier @Inject constructor() {
         "com.instapaper.android"                     to Category.CAT_NEWS,
         "com.apple.news"                             to Category.CAT_NEWS,
         "com.google.android.apps.magazines"          to Category.CAT_NEWS,
+        // Loop44: Global Fotograf / Tasarim ek
+        "com.google.android.apps.camera"             to Category.CAT_PHOTOGRAPHY,
+        "com.huawei.camera"                          to Category.CAT_PHOTOGRAPHY,
+        "com.oneplus.camera"                         to Category.CAT_PHOTOGRAPHY,
+        "com.xiaomi.camera"                          to Category.CAT_PHOTOGRAPHY,
+        "net.sourceforge.opencamera"                 to Category.CAT_PHOTOGRAPHY,
+        "com.lapse.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.photoroom.app"                          to Category.CAT_PHOTOGRAPHY,
+        "com.remove.bg.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.google.android.apps.wallpaper"          to Category.CAT_PHOTOGRAPHY,
+        "com.zedge.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.backdrops.wallpapers"                   to Category.CAT_PHOTOGRAPHY,
+        "com.urbandroid.sleep"                       to Category.CAT_HEALTH,
+        "com.sleepcycle.android"                     to Category.CAT_HEALTH,
+        "com.pillow.app"                             to Category.CAT_HEALTH,
+        "com.bose.app"                               to Category.CAT_HEALTH,
+        // Loop44: Fintech / Kripto ek
+        "com.ledger.live"                            to Category.CAT_FINANCE,
+        "io.metamask.android"                        to Category.CAT_FINANCE,
+        "com.trustwallet.app"                        to Category.CAT_FINANCE,
+        "com.blockchain.android"                     to Category.CAT_FINANCE,
+        "com.phantom.app"                            to Category.CAT_FINANCE,
+        "com.exodus.android"                         to Category.CAT_FINANCE,
+        "com.atomic.wallet"                          to Category.CAT_FINANCE,
+        "com.shakepay.android"                       to Category.CAT_FINANCE,
+        "com.strike.android"                         to Category.CAT_FINANCE,
+        "com.cashapp.android"                        to Category.CAT_FINANCE,
+        "com.chime.mobile"                           to Category.CAT_FINANCE,
+        "com.current.app"                            to Category.CAT_FINANCE,
+        "com.dave.android"                           to Category.CAT_FINANCE,
+        "com.albert.android"                         to Category.CAT_FINANCE,
+        "com.acorns.android"                         to Category.CAT_FINANCE,
+        "com.stash.android"                          to Category.CAT_FINANCE,
+        // Loop45: Global Uretkenlik / Not uyg ek
+        "com.simplenote.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.bear.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.ulysses.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.drafts.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.inkdrop.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.joplin.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.logseq.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.roamresearch.android"                   to Category.CAT_PRODUCTIVITY,
+        "com.remnote.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.anki.flashcards"                        to Category.CAT_EDUCATION,
+        "com.ankidroid.anki"                         to Category.CAT_EDUCATION,
+        "com.forestapp.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.pomofocus.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.be.focused.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.pomodoro.android"                       to Category.CAT_PRODUCTIVITY,
+        // Loop45: TR Eglence / Muzik ek
+        "com.fizy.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.muud.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.yayinla.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.trtmuzik.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.radyod.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.powerapp.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.kral.fm"                                to Category.CAT_ENTERTAINMENT,
+        "com.turkuaz.fm"                             to Category.CAT_ENTERTAINMENT,
+        "com.number1.fm"                             to Category.CAT_ENTERTAINMENT,
+        "com.virgin.radio.turkey"                    to Category.CAT_ENTERTAINMENT,
+        "com.joypixels.android"                      to Category.CAT_SOCIAL,
+        "com.emojidex.android"                       to Category.CAT_SOCIAL,
+        "com.gboard.android"                         to Category.CAT_UTILITIES,
+        "com.swiftkey.android"                       to Category.CAT_UTILITIES,
+        "com.touchpal.keyboard"                      to Category.CAT_UTILITIES,
+        "com.grammarly.android"                      to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
@@ -2918,7 +2984,10 @@ object KeywordDatabase {
             "airport", "passport", "visa", "seyahat", "ucus", "otel",
             "flightradar", "tripadvisor", "expedia", "skyscanner", "kayak",
             "bitaksi", "obilet", "enuygun", "pegasus", "thy", "tcdd",
-            "istanbulkart", "kentkart", "marti", "scooter", "bisiklet"
+            "istanbulkart", "kentkart", "marti", "scooter", "bisiklet",
+            "kart", "ulasim", "metro", "tramvay", "vapur", "feribot",
+            "rent", "kiralama", "araba", "araç", "transfer", "shuttle",
+            "iett", "eshot", "ego", "izulas", "buski", "belbim"
         ),
         Category.CAT_ENTERTAINMENT to listOf(
             "entertainment", "movie", "film", "video", "stream", "watch",
@@ -2935,7 +3004,11 @@ object KeywordDatabase {
             "cook", "kitchen", "yemek", "siparis", "pizza", "burger",
             "cafe", "coffee", "grocery", "market",
             "getir", "yemeksepeti", "migros", "a101", "bim", "carrefour",
-            "trendyolexpress", "express", "mutfak", "tarif"
+            "trendyolexpress", "express", "mutfak", "tarif",
+            "siparis", "paket", "market", "manav", "kasap", "pastane",
+            "kafe", "restoran", "lokanta", "fast", "döner", "kebap",
+            "sok", "kiler", "macro", "metro", "tekel", "icecek",
+            "smoothie", "vegan", "organik", "gluten", "diyet"
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
