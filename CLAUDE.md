@@ -36,17 +36,23 @@ Agent görevlendirme formatı:
 > "X hatası için [DeepSeek/Gemini/Claude Opus] agent araştırma yapıyor..."
 
 ### Araştırma Önceliği Kuralı (KRİTİK)
-**Her yeni teknoloji, kütüphane, entegrasyon veya bilmediğim bir şey için:**
-1. **Önce WebSearch agent ile online araştır** — güncel dokümantasyon, changelog, bilinen sorunlar
-2. **Sonra uygula** — eski/yanlış bilgiyle zaman kaybetme
+**Her değişiklik, hata çözümü veya planlama öncesinde: önce araştır, sonra uygula.**
 
-Bu kural şunlar için zorunludur:
-- Yeni MCP sunucuları (notebooklm, telegram, vs.)
-- API entegrasyonları (Telegram Bot, GitHub Actions, vs.)
-- Yeni kütüphaneler veya versiyonlar
-- Daha önce hiç yapmadığım işlemler
+#### ZORUNLU — WebSearch agent başlat:
+- Yeni API, MCP sunucusu, kütüphane veya entegrasyon (Telegram, NotebookLM, Compose yeni API, vs.)
+- Versiyon uyumluluğu gerektiren değişiklikler (BOM, AGP, Kotlin, compileSdk)
+- Derleme veya çalışma zamanı hatası — önce WebSearch, 1 denemede çözülmezse agent
+- Daha önce hiç yapılmamış işlemler
 
-> **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir.
+#### OPSİYONEL — Kendi kodumuzda değişiklik:
+- Mevcut kodda görünen bug fix (flow türetme, state yönetimi, UI düzeltme)
+- Pure Kotlin/Compose mantık değişiklikleri
+- Refactor, extract, rename işlemleri
+
+**Format:**
+> "X için WebSearch agent araştırıyor..." → bulguyu özetle → uygula
+
+> **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir. Kendi kodumuzu okumak araştırmadan daha hızlı — agent sadece gerektiğinde devreye girmeli.
 
 ### Kotlin Smart Cast Kuralı
 **`by` delegate property (örn. `val icon by produceState(...)`) `if (x != null)` bloğu içinde bile smart cast yapılamaz.**
