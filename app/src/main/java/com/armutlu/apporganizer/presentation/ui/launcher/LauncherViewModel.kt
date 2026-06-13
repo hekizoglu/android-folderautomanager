@@ -162,9 +162,12 @@ class LauncherViewModel @Inject constructor(
     fun reconcileIfNeeded(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             val pm = context.packageManager
-            val installedCount = pm.getInstalledPackages(0)
-                .count { it.applicationInfo != null &&
-                    pm.getLaunchIntentForPackage(it.packageName) != null }
+            // queryIntentActivities: getInstalledPackages(0) + per-package getLaunchIntentForPackage
+            // yerine tek sorgu — onResume count check ~3x daha hizli
+            val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val installedCount = pm.queryIntentActivities(launchIntent, 0)
+                .distinctBy { it.activityInfo.packageName }
+                .count { !PackageManagerHelper.shouldHide(it.activityInfo.packageName) }
             val dbCount = repository.countApps()
             if (installedCount != dbCount) {
                 Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")

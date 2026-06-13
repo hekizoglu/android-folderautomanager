@@ -13,6 +13,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -121,6 +123,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
     var dragToIndex   by remember { mutableStateOf<Int?>(null) }
     var draggingFolders by remember { mutableStateOf<List<AppFolder>?>(null) }
+
+    // Dock sistem gesture exclusion rect — sadece deger degisince guncellenir, her layout'ta degil
+    val dockRectHolder = remember { object { var rect: android.graphics.Rect? = null } }
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
@@ -477,23 +482,33 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     .onGloballyPositioned { coords ->
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             val pos = coords.positionInWindow()
-                            val rect = android.graphics.Rect(
-                                pos.x.toInt(),
-                                pos.y.toInt(),
-                                (pos.x + coords.size.width).toInt(),
-                                (pos.y + coords.size.height).toInt()
-                            )
-                            composeView.systemGestureExclusionRects = listOf(rect)
+                            val l = pos.x.toInt()
+                            val t = pos.y.toInt()
+                            val r = (pos.x + coords.size.width).toInt()
+                            val b = (pos.y + coords.size.height).toInt()
+                            val prev = dockRectHolder.rect
+                            if (prev == null || prev.left != l || prev.top != t || prev.right != r || prev.bottom != b) {
+                                val newRect = android.graphics.Rect(l, t, r, b)
+                                dockRectHolder.rect = newRect
+                                composeView.systemGestureExclusionRects = listOf(newRect)
+                            }
                         }
                     }
             )
         }
 
-        // All Apps Drawer overlay
+        // All Apps Drawer overlay — LinearOutSlowIn acilirken ani baslatip yavaslatir,
+        // FastOutLinearIn kapatirken hizli bitis verir (Material motion standardlari)
         AnimatedVisibility(
             visible = allAppsOpen,
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+            enter = slideInVertically(
+                animationSpec = tween(300, easing = LinearOutSlowInEasing),
+                initialOffsetY = { it }
+            ) + fadeIn(animationSpec = tween(200)),
+            exit = slideOutVertically(
+                animationSpec = tween(220, easing = FastOutLinearInEasing),
+                targetOffsetY = { it }
+            ) + fadeOut(animationSpec = tween(180))
         ) {
             AllAppsDrawer(
                 apps = allApps,
