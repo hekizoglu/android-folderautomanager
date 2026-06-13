@@ -890,4 +890,38 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - BUILD #6: 28MB APK Telegram'a gonderildi
 - Loop 37-41: oyun platformlari/TR egitim-eglence/global is araclari/saglik eklendi
 
-*Son güncelleme: 2026-06-14 (Loop 41 — AppClassifier ~1300 entry, Asama 1+2 tamamlandi)*
+### Loop 46 Özeti (2026-06-13 — remote agent)
+**AppClassifier.kt büyük temizlik + genişletme:**
+- 186 duplicate entry temizlendi (1407 → 1182 benzersiz, ardından +93 yeni = 1275 toplam)
+- +93 yeni uygulama: PHOTOGRAPHY (Google Photos, B612, Snow, Meitu, Fotor), NEWS (Fox, NBC, HuffPost, Axios, Politico), FOOD (HelloFresh, OpenTable, Resy, Kroger, Wegmans), EDUCATION (MasterClass, Mimo, Datacamp, LinkedIn Learning, Google Classroom)
+- Sistem uygulamaları: Google Kamera, Takvim, Keep, Gmail, Drive, Docs/Sheets/Slides, Chrome, Hesap Makinesi
+
+**KeywordDatabase güçlendirildi:**
+- NEWS: foxnews, nbcnews, huffpost, axios, politico, türkçe haber keywords
+- FOOD: doordash, zomato, swiggy, blinkit, sipariş keywords
+- PHOTOGRAPHY: b612, snow, meitu, capcut, adobe keywords
+
+**AppContextMenu iyileştirmeleri:**
+- Bug fix: `usageCount` (ms) artık "2.5 sa" / "45 dk" formatında gösteriliyor (önceki: "${usageCount}×" yanlıştı)
+- Yeni özellik: **App Not** — uzun basınca "Not Ekle / Notu Düzenle" seçeneği
+  - AppNoteDialog: OutlinedTextField ile not yazma/düzenleme
+  - Mevcut not AppContextMenu'de küçük metin olarak görünür
+  - `AppDao.updateCustomNotes()` + `AppRepository.updateCustomNotes()` + `LauncherViewModel.saveAppNote()`
+  - `AppInfo.customNotes` alanı Room DB'de zaten vardı ama hiç kullanılmıyordu — aktif edildi
+
+### App Not Özelliği Mimarisi (Loop 46)
+`AppInfo.customNotes: String` — Room entity field (DB v6'dan beri var, aktif edilmedi)
+`AppDao.updateCustomNotes()` — `@Query("UPDATE apps SET customNotes = :note WHERE packageName = :packageName")`
+`AppRepository.updateCustomNotes()` — runCatching + Timber hata yönetimi
+`LauncherViewModel.saveAppNote(packageName, note)` — viewModelScope + Dispatchers.IO
+`AppContextMenu` — `onSaveNote: ((String) -> Unit)? = null` nullable parametre (geriye uyumlu)
+`AppNoteDialog` — private composable, AlertDialog + OutlinedTextField
+`formatUsageTime(ms: Long): String` — private fun, ms → "sn/dk/sa/gün" formatı
+
+### AppClassifier Duplicate Kuralı (Loop 46)
+**Duplicate entry eklenirse Kotlin mapOf() sessizce override eder — hata vermez ama son entry kazanır.**
+- Önlem: `python3 -c "grep + uniq -d"` ile periyodik kontrol
+- Temizlik scripti: `python3 << 'EOF' ... seen_pkgs ... EOF` (CLAUDE.md'de kayıtlı)
+- Şu an: 1275 benzersiz paket, 0 duplicate
+
+*Son güncelleme: 2026-06-13 (Loop 46 — AppClassifier 1275 benzersiz, App Not özelliği, usageTime bug fix)*
