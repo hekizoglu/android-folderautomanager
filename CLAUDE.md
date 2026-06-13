@@ -857,8 +857,8 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Her 18 döngüde bir:** emülatörde tam test
 
 ### Akıllı Kategorizasyon (Hüseyin Talebi — Yapılacak)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ ~1170 eşleme (479'dan, +691) — Loop 31-35'te eklendi
-- Aşama 2: "Diğer" klasöründeki uygulamalar için kendi sunucu API'si veya LLM fallback
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ ~1300+ eşleme (479'dan, +800+) — Loop 31-41'de eklendi
+- ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü > "DeepSeek ile Kategorize Et"
 - Detay: CLAUDE.md "Akıllı Kategorizasyon Yol Haritası" bölümünde
 
 ### Akıllı Kategorizasyon Genişletme (Döngü 31 — remote)
@@ -870,12 +870,24 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 ### Diger Klasoru UI (Loop 35)
 **AppListViewModel**: `otherApps: StateFlow<List<AppInfo>>` — `CAT_OTHER` kategorisindeki uygulamalar.
-**SettingsScreen**: "Diger Klasoru — Bilinmeyenler (N)" bolumu — ilk 20 uygulama listesi (ad + paket adi) + "X uygulama daha" taşma mesajı + Asama 2 bilgi notu.
+**SettingsScreen**: "Diger Klasoru — Bilinmeyenler (N)" bolumu — ilk 20 uygulama listesi (ad + paket adi) + "X uygulama daha" taşma mesajı.
 
-### Loop 31-36 Ozeti (2026-06-14)
-- KeywordDatabase merge conflict cozuldu — health/finance iki tarafin eklemeleri birlesti
-- AppClassifier exactMatchMap: 479 → ~1170 (+691): TR kamu/saglik/finans/haber + global sosyal/AI/eglence/VPN/uretkenlik/oyun
-- SettingsScreen "Diger Klasoru" bolumu: bilinmeyen uygulamalari listeler
-- BUILD #6: assembleDebug basarili, 28MB APK Telegram'a gonderildi
+### Akıllı Kategorizasyon Aşama 2 (remote Döngü 32)
+**CategoryLLMFallback.kt** (yeni dosya):
+- `categorize(apps, apiKey, onProgress)` — batch 15 uygulama/istek, `HttpURLConnection` ile DeepSeek API
+- `categorizeBatch()` — JSON array cevap parse, `deepseek-chat` model, sıcaklık 0.1
+- VALID_CATEGORIES set: 14 kategori, bilinmeyen → "other"
 
-*Son güncelleme: 2026-06-14 (Loop 36 BUILD — AppClassifier ~1170 entry, Diger Klasoru UI)*
+**AppPrefs.kt**: `KEY_DEEPSEEK_API_KEY` + getter/setter eklendi.
+
+**AppListViewModel.kt**: `_llmCategorizing` + `_llmProgress` StateFlow; `categorizeDigerWithLLM(apiKey)`.
+
+**SettingsScreen.kt** — Diğer Klasörü bölümüne: DeepSeek API key input + "DeepSeek ile Kategorize Et" butonu + canlı ilerleme mesajı.
+
+### Loop 31-41 + BUILD #6 Ozeti (2026-06-14)
+- exactMatchMap: 479 → ~1300+ entry
+- SettingsScreen "Diger Klasoru" + DeepSeek LLM fallback (Asama 2 tamamlandi)
+- BUILD #6: 28MB APK Telegram'a gonderildi
+- Loop 37-41: oyun platformlari/TR egitim-eglence/global is araclari/saglik eklendi
+
+*Son güncelleme: 2026-06-14 (Loop 41 — AppClassifier ~1300 entry, Asama 1+2 tamamlandi)*

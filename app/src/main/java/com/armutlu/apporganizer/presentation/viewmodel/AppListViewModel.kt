@@ -62,6 +62,12 @@ class AppListViewModel @Inject constructor(
     val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
+
+    // LLM kategorize durumu — DeepSeek fallback
+    private val _llmCategorizing = MutableStateFlow(false)
+    val llmCategorizing: StateFlow<Boolean> = _llmCategorizing.asStateFlow()
+    private val _llmProgress = MutableStateFlow("")
+    val llmProgress: StateFlow<String> = _llmProgress.asStateFlow()
     
     // Initialization
     init {
@@ -347,6 +353,52 @@ class AppListViewModel @Inject constructor(
         }
     }
     
+    /**
+     * "Diger" klasorundeki uygulamalari DeepSeek LLM ile kategorize eder.
+     */
+    fun categorizeDigerWithLLM(apiKey: String) {
+        viewModelScope.launch {
+            if (_llmCategorizing.value) return@launch
+            _llmCategorizing.value = true
+            try {
+                val ctx = getApplication<android.app.Application>()
+                val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).first()
+                if (otherAppsList.isEmpty()) {
+                    _llmProgress.value = "Diger klasoru bos — kategorize edilecek uygulama yok."
+                    appendDebugLog("LLM: Diger klasoru bos.")
+                    return@launch
+                }
+                _llmProgress.value = "Hazirlaniyor (${otherAppsList.size} uygulama)..."
+                appendDebugLog("LLM kategorize basliyor: ${otherAppsList.size} uygulama")
+                val appsMap = otherAppsList.associate { it.packageName to it.appName }
+                val results = com.armutlu.apporganizer.utils.CategoryLLMFallback.categorize(
+                    apps = appsMap,
+                    apiKey = apiKey,
+                    onProgress = { done, total ->
+                        _llmProgress.value = "Kategorize ediliyor: $done/$total"
+                    }
+                )
+                var updated = 0
+                results.forEach { (pkg, catId) ->
+                    if (catId != "other") {
+                        repository.updateAppCategory(pkg, catId)
+                        updated++
+                    }
+                }
+                val msg = "LLM kategorize tamamlandi: $updated/${otherAppsList.size} uygulama yeniden kategorilendirildi"
+                _llmProgress.value = msg
+                appendDebugLog("LLM: $msg")
+            } catch (e: Exception) {
+                val err = "LLM kategorize hatasi: ${e.message}"
+                _llmProgress.value = err
+                appendDebugLog(err)
+                Timber.e(e, "categorizeDigerWithLLM error")
+            } finally {
+                _llmCategorizing.value = false
+            }
+        }
+    }
+
     fun organizeOnLauncher(useAccessibility: Boolean) {
         _organizeState.value = OrganizeState.Done(true, "Launcher otomatik kategorileme aktif.")
     }

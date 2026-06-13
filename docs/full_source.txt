@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 19:35 UTC
-# Commit: 228d97883be6a8a9ad229af53e8c67fc74f9bae8
+# Generated: 2026-06-13 22:10 UTC
+# Commit: 4531fa5566c7ebd7695786142c70dd3bf0144950
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -10020,8 +10020,13 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.BackupManager
 import com.armutlu.apporganizer.utils.DockPrefs
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -10031,17 +10036,20 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onSendBugReport: () -> Unit = {}
 ) {
-    val showSystemApps by viewModel.showSystemApps.collectAsState()
-    val state          by viewModel.screenState.collectAsState()
-    val logs           by viewModel.liveDebugLogs.collectAsState()
-    val hiddenApps     by viewModel.hiddenApps.collectAsState()
-    val clipboard      = LocalClipboardManager.current
-    val context        = LocalContext.current
-    var debugExpanded  by remember { mutableStateOf(false) }
-    val scope          = rememberCoroutineScope()
-    val themePrefs     = remember { ThemePreferences(context) }
-    val currentTheme   by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
-    val currentFont    by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
+    val showSystemApps  by viewModel.showSystemApps.collectAsState()
+    val state           by viewModel.screenState.collectAsState()
+    val logs            by viewModel.liveDebugLogs.collectAsState()
+    val hiddenApps      by viewModel.hiddenApps.collectAsState()
+    val otherApps       by viewModel.otherApps.collectAsState()
+    val llmCategorizing by viewModel.llmCategorizing.collectAsState()
+    val llmProgress     by viewModel.llmProgress.collectAsState()
+    val clipboard       = LocalClipboardManager.current
+    val context         = LocalContext.current
+    var debugExpanded   by remember { mutableStateOf(false) }
+    val scope           = rememberCoroutineScope()
+    val themePrefs      = remember { ThemePreferences(context) }
+    val currentTheme    by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
+    val currentFont     by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
 
     fun isDefaultLauncher(): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -10686,6 +10694,102 @@ fun SettingsScreen(
                 }
             }
 
+            // ── Diğer Klasörü (Bilinmeyen Uygulamalar) ───────────────────────
+            if (otherApps.isNotEmpty()) {
+                item { SettingsSectionTitle("Diğer Klasörü — Bilinmeyenler (${otherApps.size})") }
+                item {
+                    SettingsCard {
+                        // DeepSeek LLM kategorize paneli
+                        var apiKeyInput by remember { mutableStateOf(AppPrefs.getDeepSeekApiKey(context)) }
+                        var showApiKey  by remember { mutableStateOf(false) }
+                        Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                            Text(
+                                "Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. " +
+                                "DeepSeek AI ile otomatik olarak kategorilendirilebilir.",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = apiKeyInput,
+                                onValueChange = {
+                                    apiKeyInput = it
+                                    AppPrefs.setDeepSeekApiKey(context, it)
+                                },
+                                label = { Text("DeepSeek API Key", fontSize = 12.sp) },
+                                placeholder = { Text("sk-...", fontSize = 12.sp) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                trailingIcon = {
+                                    IconButton(onClick = { showApiKey = !showApiKey }) {
+                                        Icon(
+                                            if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                },
+                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp)
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
+                                enabled = !llmCategorizing && apiKeyInput.isNotBlank(),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (llmCategorizing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Kategorize ediliyor...", fontSize = 13.sp)
+                                } else {
+                                    Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("DeepSeek ile Kategorize Et", fontSize = 13.sp)
+                                }
+                            }
+                            if (llmProgress.isNotBlank()) {
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    llmProgress,
+                                    fontSize = 12.sp,
+                                    color = if (llmProgress.startsWith("Hata") || llmProgress.contains("hata"))
+                                        MaterialTheme.colorScheme.error
+                                    else
+                                        MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        otherApps.take(20).forEachIndexed { index, app ->
+                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(app.appName, fontSize = 14.sp, maxLines = 1)
+                                    Text(app.packageName, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                                }
+                            }
+                        }
+                        if (otherApps.size > 20) {
+                            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                            Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                                Text("...ve ${otherApps.size - 20} uygulama daha", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+
             item { SettingsSectionTitle("Hakkında") }
             item {
                 SettingsCard {
@@ -11281,6 +11385,12 @@ class AppListViewModel @Inject constructor(
     val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
+
+    // LLM kategorize durumu — DeepSeek fallback
+    private val _llmCategorizing = MutableStateFlow(false)
+    val llmCategorizing: StateFlow<Boolean> = _llmCategorizing.asStateFlow()
+    private val _llmProgress = MutableStateFlow("")
+    val llmProgress: StateFlow<String> = _llmProgress.asStateFlow()
     
     // Initialization
     init {
@@ -11566,6 +11676,52 @@ class AppListViewModel @Inject constructor(
         }
     }
     
+    /**
+     * "Diger" klasorundeki uygulamalari DeepSeek LLM ile kategorize eder.
+     */
+    fun categorizeDigerWithLLM(apiKey: String) {
+        viewModelScope.launch {
+            if (_llmCategorizing.value) return@launch
+            _llmCategorizing.value = true
+            try {
+                val ctx = getApplication<android.app.Application>()
+                val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).first()
+                if (otherAppsList.isEmpty()) {
+                    _llmProgress.value = "Diger klasoru bos — kategorize edilecek uygulama yok."
+                    appendDebugLog("LLM: Diger klasoru bos.")
+                    return@launch
+                }
+                _llmProgress.value = "Hazirlaniyor (${otherAppsList.size} uygulama)..."
+                appendDebugLog("LLM kategorize basliyor: ${otherAppsList.size} uygulama")
+                val appsMap = otherAppsList.associate { it.packageName to it.appName }
+                val results = com.armutlu.apporganizer.utils.CategoryLLMFallback.categorize(
+                    apps = appsMap,
+                    apiKey = apiKey,
+                    onProgress = { done, total ->
+                        _llmProgress.value = "Kategorize ediliyor: $done/$total"
+                    }
+                )
+                var updated = 0
+                results.forEach { (pkg, catId) ->
+                    if (catId != "other") {
+                        repository.updateAppCategory(pkg, catId)
+                        updated++
+                    }
+                }
+                val msg = "LLM kategorize tamamlandi: $updated/${otherAppsList.size} uygulama yeniden kategorilendirildi"
+                _llmProgress.value = msg
+                appendDebugLog("LLM: $msg")
+            } catch (e: Exception) {
+                val err = "LLM kategorize hatasi: ${e.message}"
+                _llmProgress.value = err
+                appendDebugLog(err)
+                Timber.e(e, "categorizeDigerWithLLM error")
+            } finally {
+                _llmCategorizing.value = false
+            }
+        }
+    }
+
     fun organizeOnLauncher(useAccessibility: Boolean) {
         _organizeState.value = OrganizeState.Done(true, "Launcher otomatik kategorileme aktif.")
     }
@@ -11659,6 +11815,10 @@ class AppListViewModel @Inject constructor(
 
     val hiddenApps: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.models.AppInfo>> =
         repository.getHiddenApps()
+            .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    val otherApps: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.models.AppInfo>> =
+        repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER)
             .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     fun unhideApp(packageName: String) {
@@ -11994,6 +12154,13 @@ object AppPrefs {
         return json.toString()
     }
 
+    // DeepSeek API anahtari — LLM fallback kategorize icin
+    const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
+    fun getDeepSeekApiKey(context: Context): String =
+        prefs(context).getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
+    fun setDeepSeekApiKey(context: Context, key: String) =
+        prefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, key.trim()).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
 
@@ -12101,6 +12268,120 @@ object BackupManager {
         val updatedCount: Int = 0,
         val error: String? = null
     )
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/utils/CategoryLLMFallback.kt
+========================================
+package com.armutlu.apporganizer.utils
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+
+object CategoryLLMFallback {
+
+    private const val DEEPSEEK_ENDPOINT = "https://api.deepseek.com/chat/completions"
+    private const val BATCH_SIZE = 15
+
+    private val VALID_CATEGORIES = setOf(
+        "social", "productivity", "games", "shopping", "news", "health",
+        "finance", "education", "utilities", "travel", "entertainment",
+        "food", "photography", "other"
+    )
+
+    /**
+     * Verilen uygulamalari DeepSeek API ile toplu kategorize eder.
+     * @param apps packageName -> appName eslesme haritasi
+     * @param apiKey DeepSeek API anahtari
+     * @param onProgress (islenmisSayisi, toplamSayi) geri donus
+     * @return packageName -> categoryId haritasi (basarisiz olanlar donmez)
+     */
+    suspend fun categorize(
+        apps: Map<String, String>,
+        apiKey: String,
+        onProgress: (classified: Int, total: Int) -> Unit = { _, _ -> }
+    ): Map<String, String> = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) return@withContext emptyMap()
+        val result = mutableMapOf<String, String>()
+        val entries = apps.entries.toList()
+        var processed = 0
+        entries.chunked(BATCH_SIZE).forEach { batch ->
+            runCatching {
+                val batchResult = categorizeBatch(batch.associate { it.key to it.value }, apiKey)
+                result.putAll(batchResult)
+            }
+            processed += batch.size
+            onProgress(processed, entries.size)
+        }
+        result
+    }
+
+    private fun categorizeBatch(batch: Map<String, String>, apiKey: String): Map<String, String> {
+        val appListText = batch.entries.joinToString("\n") { (pkg, name) -> "- $name ($pkg)" }
+        val categoryList = VALID_CATEGORIES.joinToString(", ")
+        val prompt = """
+            Asagidaki Android uygulamalarini kategorize et. Her uygulama icin JSON formatinda cevap ver.
+
+            Gecerli kategoriler: $categoryList
+
+            Uygulamalar:
+            $appListText
+
+            Cevabi SADECE JSON array olarak ver, baska hicbir sey yazma:
+            [{"pkg":"paket.adi","cat":"kategori"},...]
+        """.trimIndent()
+
+        val requestBody = JSONObject().apply {
+            put("model", "deepseek-chat")
+            put("max_tokens", 600)
+            put("temperature", 0.1)
+            put("messages", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("role", "user")
+                    put("content", prompt)
+                })
+            })
+        }.toString()
+
+        val url = URL(DEEPSEEK_ENDPOINT)
+        val connection = url.openConnection() as HttpURLConnection
+        try {
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Authorization", "Bearer $apiKey")
+            connection.doOutput = true
+            connection.connectTimeout = 30_000
+            connection.readTimeout = 60_000
+
+            OutputStreamWriter(connection.outputStream, Charsets.UTF_8).use { it.write(requestBody) }
+
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) return emptyMap()
+
+            val response = connection.inputStream.bufferedReader(Charsets.UTF_8).readText()
+            val content = JSONObject(response)
+                .getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getString("content")
+                .trim()
+                .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
+
+            val jsonArray = JSONArray(content)
+            return (0 until jsonArray.length()).associate { i ->
+                val obj = jsonArray.getJSONObject(i)
+                val pkg = obj.getString("pkg")
+                val cat = obj.optString("cat", "other").lowercase()
+                pkg to (if (cat in VALID_CATEGORIES) cat else "other")
+            }
+        } finally {
+            connection.disconnect()
+        }
+    }
 }
 
 ========================================
