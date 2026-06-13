@@ -60,6 +60,7 @@ fun FolderTile(
     modifier: Modifier = Modifier,
     textAlpha: Float = 1f,
     folderSizeDp: Int = 72,
+    labelColor: Color = Color.White,
     customName: String? = null,
     customEmoji: String? = null,
     customColor: String? = null,
@@ -168,7 +169,7 @@ fun FolderTile(
 
         Text(
             text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
-            color = Color.White.copy(alpha = textAlpha),
+            color = labelColor.copy(alpha = textAlpha),
             fontSize = 12.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

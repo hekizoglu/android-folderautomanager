@@ -237,6 +237,41 @@ fun SettingsScreen(
                 }
             }
 
+            // Yazı rengi paleti
+            item {
+                SettingsCard {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        val labelColorPresets = listOf(
+                            "#FFFFFF" to "Beyaz",
+                            "#F5F5F5" to "Açık Gri",
+                            "#FFD700" to "Altın",
+                            "#80DEEA" to "Turkuaz",
+                            "#FFAB40" to "Turuncu",
+                            "#EF9A9A" to "Pembe"
+                        )
+                        var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+                        Text("Yazı Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                        Spacer(Modifier.height(8.dp))
+                        androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(labelColorPresets) { (hex, name) ->
+                                val color = runCatching { androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(androidx.compose.ui.graphics.Color.White)
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                        .then(if (selectedLabel == hex) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier)
+                                        .clickable {
+                                            selectedLabel = hex
+                                            com.armutlu.apporganizer.utils.AppPrefs.setLabelColor(context, hex)
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // ── Launcher ─────────────────────────────────────────────────────
             item { SettingsSectionTitle("Launcher") }
             item {

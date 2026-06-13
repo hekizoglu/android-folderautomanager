@@ -78,6 +78,11 @@ object AppPrefs {
         IconPackManager.clearCache()
     }
 
+    // Klasör/uygulama label rengi — hex string (varsayılan beyaz "#FFFFFF")
+    const val KEY_LABEL_COLOR = "label_color"
+    fun getLabelColor(context: Context): String = prefs(context).getString(KEY_LABEL_COLOR, "#FFFFFF") ?: "#FFFFFF"
+    fun setLabelColor(context: Context, hex: String) = prefs(context).edit().putString(KEY_LABEL_COLOR, hex).apply()
+
     // Üretici bazlı sınıflandırma — Samsung/Huawei/Xiaomi uygulamaları otomatik kategorilensin mi?
     const val KEY_MANUFACTURER_CLASSIFY = "manufacturer_classify"
     fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
