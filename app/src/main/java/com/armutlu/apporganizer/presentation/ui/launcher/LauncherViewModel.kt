@@ -83,7 +83,7 @@ class LauncherViewModel @Inject constructor(
 
     // Klasör sırası ve dock paketleri ilk yüklemede SharedPrefs'ten okunur;
     // sonraki resume'larda sadece değer değişmişse güncellenir.
-    private var dockLoaded = false
+    @Volatile private var dockLoaded = false
 
     private val _openFolder = MutableStateFlow<AppFolder?>(null)
     val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
@@ -311,6 +311,10 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun onPackageRemoved(packageName: String) {
+        // Icon cache'ten bu pakete ait tüm boyut varyantlarını temizle
+        iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { iconCacheInternal.remove(it) }
         // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
         val current = _dockPackages.value
         if (packageName in current) {
@@ -323,11 +327,15 @@ class LauncherViewModel @Inject constructor(
 
     /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
     fun onPackageAdded(context: Context, packageName: String) {
+        // Uygulama güncellemelerinde ikon değişmiş olabilir — cache'i temizle
+        iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { iconCacheInternal.remove(it) }
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                // Tam tarama yerine tek paket fetch: ~5x daha hızlı
                 val helper = PackageManagerHelper(context)
-                val apps = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
-                val app = apps.firstOrNull { it.packageName == packageName } ?: return@launch
+                val app = helper.getAppInfo(packageName) ?: return@launch
                 repository.insertApps(listOf(app))
                 Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
