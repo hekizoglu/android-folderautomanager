@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-12 23:35 UTC
-# Commit: 2bead338a3c465a0d4479be6bf802763b4aa9bf6
+# Generated: 2026-06-13 00:07 UTC
+# Commit: 620c61d00341a5ecb660d693693bc43b464c5703
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5409,6 +5409,12 @@ class LauncherActivity : ComponentActivity() {
     private var lastHomePressMs = 0L
     private var receiverRegistered = false
 
+    // config_navBarInteractionMode cihaz yeniden başlamadan değişmez — bir kere okumak yeterli
+    private val gestureNavEnabled: Boolean by lazy {
+        val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
+        resId > 0 && resources.getInteger(resId) == 2
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -5461,20 +5467,13 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
-    // Xiaomi/Samsung gesture navigation'da SHOW_TRANSIENT_BARS_BY_SWIPE çakışır.
-    // config_navBarInteractionMode: 0=3-button, 1=2-button, 2=gesture
-    private fun isGestureNavEnabled(): Boolean {
-        val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
-        return resId > 0 && resources.getInteger(resId) == 2
-    }
-
     private fun applyNavBarVisibility() {
         if (AppPrefs.isNavButtonsHidden(this)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.insetsController?.let {
                     it.hide(WindowInsets.Type.navigationBars())
                     // Gesture nav aktifse SHOW_TRANSIENT_BARS home gesture ile çakışır
-                    it.systemBarsBehavior = if (isGestureNavEnabled()) {
+                    it.systemBarsBehavior = if (gestureNavEnabled) {
                         WindowInsetsController.BEHAVIOR_DEFAULT
                     } else {
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -5633,6 +5632,10 @@ class LauncherViewModel @Inject constructor(
     private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
     val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
+    // Klasör sırası ve dock paketleri ilk yüklemede SharedPrefs'ten okunur;
+    // sonraki resume'larda sadece değer değişmişse güncellenir.
+    private var dockLoaded = false
+
     private val _openFolder = MutableStateFlow<AppFolder?>(null)
     val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
 
@@ -5788,12 +5791,23 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun loadDockPackages(context: Context) {
-        _dockPackages.value = DockPrefs.getDockPackages(context)
-        // Kayıtlı klasör sırasını da yükle
-        val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        val saved = prefs.getString(KEY_FOLDER_ORDER, null)
-        if (!saved.isNullOrBlank()) {
-            _folderOrder.value = saved.split(",").filter { it.isNotBlank() }
+        // Değer değişmemişse StateFlow güncellenmez — gereksiz rekomposisyon önlenir
+        val newPackages = DockPrefs.getDockPackages(context)
+        if (newPackages != _dockPackages.value) {
+            _dockPackages.value = newPackages
+        }
+        // Klasör sırası sadece ilk yüklemede SharedPrefs'ten okunur;
+        // reorderFolders() çağrıları _folderOrder'ı zaten güncel tutar
+        if (!dockLoaded) {
+            dockLoaded = true
+            val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            val saved = prefs.getString(KEY_FOLDER_ORDER, null)
+            if (!saved.isNullOrBlank()) {
+                val newOrder = saved.split(",").filter { it.isNotBlank() }
+                if (newOrder != _folderOrder.value) {
+                    _folderOrder.value = newOrder
+                }
+            }
         }
     }
 
@@ -5840,6 +5854,11 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun onPackageRemoved(packageName: String) {
+        // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
+        val current = _dockPackages.value
+        if (packageName in current) {
+            _dockPackages.value = current - packageName
+        }
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteApp(packageName)
         }
