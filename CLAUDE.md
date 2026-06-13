@@ -563,4 +563,14 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 - PixelClockWidget yorumlarindaki bozuk UTF-8 sekanslar (`C3 A2 E2 82 AC 22`) duzgun em-dash ile degistirildi
 - Python `open(f, 'rb')` + `.replace(bad, good)` yontemiyle guvende duzeltildi
 
-*Son güncelleme: 2026-06-13 (Döngü 14 — Onboarding 13 adım test edildi)*
+### onResume Yuk Azaltma + Dock Kırık İkon Fix (Döngü 15)
+**LauncherViewModel.kt degisiklikleri:**
+- `dockLoaded` bayragi eklendi — klasor sirasi sadece ilk `loadDockPackages()` cagrisinda SharedPrefs'ten okunur; `reorderFolders()` sonraki guncellemeleri bellekte tutar
+- `loadDockPackages()`: `newPackages != _dockPackages.value` karsilastirmasi — deger degismemisse `StateFlow` guncellenmez, gereksiz dock rekomposisyonu onlendi
+- `onPackageRemoved()`: silinen uygulama dock'taysa aninda `_dockPackages` guncelleniyor — bir sonraki resume'a kadar kirik ikon gosterilmez
+**LauncherActivity.kt degisiklikleri:**
+- `isGestureNavEnabled()` fonksiyonu kaldirildi → `gestureNavEnabled: Boolean by lazy { ... }` property'ye donusturuldu — `resources.getIdentifier()` artik bir kere calisir, her `onResume`'da tekrar edilmez
+
+**Yol haritasi:** #3 "Ana ekrana donus hizi iyilestirmesi" bu donguyle tamamlandi.
+
+*Son güncelleme: 2026-06-13 (Döngü 15 — onResume yük azaltma + dock fix)*
