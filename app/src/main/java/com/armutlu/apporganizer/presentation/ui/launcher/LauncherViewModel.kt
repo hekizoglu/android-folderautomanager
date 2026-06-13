@@ -81,6 +81,10 @@ class LauncherViewModel @Inject constructor(
     private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
     val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
+    // Klasör sırası ve dock paketleri ilk yüklemede SharedPrefs'ten okunur;
+    // sonraki resume'larda sadece değer değişmişse güncellenir.
+    private var dockLoaded = false
+
     private val _openFolder = MutableStateFlow<AppFolder?>(null)
     val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
 
@@ -236,12 +240,23 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun loadDockPackages(context: Context) {
-        _dockPackages.value = DockPrefs.getDockPackages(context)
-        // Kayıtlı klasör sırasını da yükle
-        val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        val saved = prefs.getString(KEY_FOLDER_ORDER, null)
-        if (!saved.isNullOrBlank()) {
-            _folderOrder.value = saved.split(",").filter { it.isNotBlank() }
+        // Değer değişmemişse StateFlow güncellenmez — gereksiz rekomposisyon önlenir
+        val newPackages = DockPrefs.getDockPackages(context)
+        if (newPackages != _dockPackages.value) {
+            _dockPackages.value = newPackages
+        }
+        // Klasör sırası sadece ilk yüklemede SharedPrefs'ten okunur;
+        // reorderFolders() çağrıları _folderOrder'ı zaten güncel tutar
+        if (!dockLoaded) {
+            dockLoaded = true
+            val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            val saved = prefs.getString(KEY_FOLDER_ORDER, null)
+            if (!saved.isNullOrBlank()) {
+                val newOrder = saved.split(",").filter { it.isNotBlank() }
+                if (newOrder != _folderOrder.value) {
+                    _folderOrder.value = newOrder
+                }
+            }
         }
     }
 
@@ -288,6 +303,11 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun onPackageRemoved(packageName: String) {
+        // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
+        val current = _dockPackages.value
+        if (packageName in current) {
+            _dockPackages.value = current - packageName
+        }
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteApp(packageName)
         }
