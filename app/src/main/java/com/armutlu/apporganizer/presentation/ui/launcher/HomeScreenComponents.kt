@@ -358,6 +358,62 @@ private fun SuggestionAppItem(
 }
 
 @Composable
+internal fun RecentAppsRow(
+    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    iconPackPkg: String = "",
+    onAppClick: (String) -> Unit,
+) {
+    if (apps.isEmpty()) return
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Text(
+            "Son Kullanılanlar",
+            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.55f),
+            fontSize = 11.sp,
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        androidx.compose.foundation.lazy.LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            androidx.compose.foundation.lazy.items(apps.take(8)) { app ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .width(56.dp)
+                        .clickable { onAppClick(app.packageName) }
+                ) {
+                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        value = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
+                            iconCacheInternal[cacheKey] ?: run {
+                                val bmp = app.icon?.toBitmap()?.asImageBitmap()
+                                if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                bmp
+                            }
+                        }
+                    }
+                    bitmap?.let {
+                        androidx.compose.foundation.Image(
+                            bitmap = it,
+                            contentDescription = app.appName,
+                            modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                        )
+                    } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        app.appName,
+                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
+                        fontSize = 10.sp,
+                        maxLines = 1,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 internal fun SwipeHint(context: Context, visible: Boolean) {
     val swipeHintFeatureEnabled = remember { AppPrefs.isSwipeHintEnabled(context) }
     val showSwipeHint = remember { swipeHintFeatureEnabled && AppPrefs.shouldShowSwipeHint(context) }

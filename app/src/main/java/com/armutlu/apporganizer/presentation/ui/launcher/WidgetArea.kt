@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -63,9 +66,16 @@ private fun WidgetCard(
     val context = LocalContext.current
     var showRemoveButton by remember { mutableStateOf(false) }
     var hostView by remember { mutableStateOf<android.appwidget.AppWidgetHostView?>(null) }
+    var minHeightDp by remember { mutableIntStateOf(100) }
 
     LaunchedEffect(widgetId) {
         hostView = WidgetHostManager.createView(context, widgetId)
+        // Widget'ın minimum yüksekliğini AppWidgetProviderInfo'dan oku
+        val awm = context.getSystemService(android.content.Context.APPWIDGET_SERVICE) as? android.appwidget.AppWidgetManager
+        awm?.getAppWidgetInfo(widgetId)?.let { info ->
+            val density = context.resources.displayMetrics.density
+            minHeightDp = (info.minHeight / density).toInt().coerceAtLeast(80)
+        }
     }
 
     // hostView null iken placeholder, hazir oldugunda widget goster
@@ -85,6 +95,7 @@ private fun WidgetCard(
                 factory = { view },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = minHeightDp.dp)
                     .wrapContentHeight()
             )
 

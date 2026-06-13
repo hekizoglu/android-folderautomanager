@@ -460,6 +460,7 @@ fun SettingsScreen(
                 var hideNavButtons by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
                 var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
                 var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+                var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.AutoAwesome,
@@ -469,6 +470,17 @@ fun SettingsScreen(
                         onCheckedChange = {
                             suggestionsEnabled = it
                             com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.History,
+                        title = "Son Kullanılanlar",
+                        subtitle = "Ana ekranda son 8 uygulamayi buyuk ikonlarla goster (varsayilan: kapali)",
+                        checked = recentAppsEnabled,
+                        onCheckedChange = {
+                            recentAppsEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setRecentAppsEnabled(context, it)
                         }
                     )
                     Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

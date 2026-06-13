@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -267,6 +268,56 @@ fun FolderSheet(
                         modifier = Modifier.size(16.dp).clickable { searchQuery = "" }
                     )
                 }
+            }
+
+            // ── Bildirim Satırı ───────────────────────────────────────────────
+            val notifService = com.armutlu.apporganizer.service.AppNotificationListenerService.instance
+            val badgeCounts by (notifService?.badgeCounts ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
+            val latestTexts by (notifService?.latestTexts ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
+            val appsWithNotifs = remember(folder.apps, badgeCounts) {
+                folder.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
+            }
+            if (appsWithNotifs.isNotEmpty()) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(appsWithNotifs, key = { it.packageName }) { app ->
+                        val count = badgeCounts[app.packageName] ?: 0
+                        val text = latestTexts[app.packageName] ?: ""
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White.copy(alpha = 0.10f))
+                                .clickable {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onAppClick(app.packageName)
+                                    onDismiss()
+                                }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clip(androidx.compose.foundation.shape.CircleShape)
+                                        .background(TealColor),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("$count", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Column {
+                                    Text(app.appName, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                                    if (text.isNotEmpty()) {
+                                        Text(text, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.fillMaxWidth().height(1.dp).background(DividerColor))
             }
 
             // ── Sıralama chip'leri ────────────────────────────────────────────

@@ -151,6 +151,11 @@ object AppPrefs {
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
 
+    // Son kullanilan uygulamalar satiri
+    const val KEY_RECENT_APPS_ENABLED = "recent_apps_enabled"
+    fun isRecentAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED, false)
+    fun setRecentAppsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED, v).apply()
+
     // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
     const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"
     const val KEY_FOLDER_CUSTOM_EMOJIS = "folder_custom_emojis"

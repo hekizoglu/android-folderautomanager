@@ -117,6 +117,7 @@ fun HomeScreen(
     var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
@@ -144,6 +145,8 @@ fun HomeScreen(
                     widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_APPS_ENABLED ->
+                    recentAppsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
                     customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
@@ -379,6 +382,18 @@ fun HomeScreen(
                     onAppLongClick = { app ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         contextMenuPkg = app.packageName
+                    }
+                )
+            }
+
+            // Son kullanılan uygulamalar satırı (varsayılan kapalı)
+            if (recentAppsEnabled && suggestedApps.isNotEmpty()) {
+                RecentAppsRow(
+                    apps = suggestedApps.sortedByDescending { it.lastUsedTimestamp }.take(8),
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { pkg ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, pkg)
                     }
                 )
             }
