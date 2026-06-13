@@ -271,4 +271,8 @@ class AppRepository @Inject constructor(
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {
         try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
     }
+
+    suspend fun updateCustomNotes(packageName: String, note: String) {
+        try { appDao.updateCustomNotes(packageName, note) } catch (e: Exception) { Timber.e(e) }
+    }
 }

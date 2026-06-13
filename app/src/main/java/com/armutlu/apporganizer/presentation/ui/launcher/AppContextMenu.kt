@@ -62,9 +62,11 @@ fun AppContextMenu(
     onRemoveFromDock: () -> Unit,
     onChangeCategory: () -> Unit,
     onHideApp: ((Boolean) -> Unit)? = null,
+    onSaveNote: ((String) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
+    var showNoteDialog by remember { mutableStateOf(false) }
 
     val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
         value = withContext(Dispatchers.IO) {
@@ -143,7 +145,7 @@ fun AppContextMenu(
                 )
                 InfoChip(
                     label = "Kullanım",
-                    value = if (app.usageCount > 0) "${app.usageCount}×" else "—",
+                    value = formatUsageTime(app.usageCount),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -238,6 +240,41 @@ fun AppContextMenu(
                 )
             }
 
+            onSaveNote?.let {
+                Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+
+                // Mevcut not varsa göster
+                if (app.customNotes.isNotBlank()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Default.StickyNote2,
+                            null,
+                            tint = TealColor.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = app.customNotes,
+                            fontSize = 12.sp,
+                            color = TextSecondary,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                ContextAction(
+                    icon = Icons.Default.EditNote,
+                    label = if (app.customNotes.isBlank()) "Not Ekle" else "Notu Düzenle",
+                    color = TealColor,
+                    onClick = { showNoteDialog = true }
+                )
+            }
+
             if (!app.isSystemApp) {
                 ContextAction(
                     icon = Icons.Default.Delete,
@@ -255,6 +292,71 @@ fun AppContextMenu(
             }
         }
     }
+
+    // Not düzenleme dialogu
+    if (showNoteDialog) {
+        AppNoteDialog(
+            initialNote = app.customNotes,
+            onDismiss = { showNoteDialog = false },
+            onSave = { note ->
+                onSaveNote?.invoke(note)
+                showNoteDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun AppNoteDialog(
+    initialNote: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var noteText by remember { mutableStateOf(initialNote) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1A1A2A),
+        title = {
+            Text("Uygulama Notu", color = Color.White, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            OutlinedTextField(
+                value = noteText,
+                onValueChange = { noteText = it },
+                placeholder = { Text("Not girin...", color = Color.White.copy(0.4f)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = TealColor,
+                    unfocusedBorderColor = Color.White.copy(0.3f),
+                    cursorColor = TealColor
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 4,
+                singleLine = false
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(noteText) }) {
+                Text("Kaydet", color = TealColor, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal", color = Color.White.copy(0.6f))
+            }
+        }
+    )
+}
+
+// usageCount = toplam ön plan süresi (ms) — 30 günlük
+private fun formatUsageTime(ms: Long): String = when {
+    ms <= 0L          -> "—"
+    ms < 60_000L      -> "${ms / 1000} sn"
+    ms < 3_600_000L   -> "${ms / 60_000} dk"
+    ms < 86_400_000L  -> "${"%.1f".format(ms / 3_600_000.0)} sa"
+    else              -> "${ms / 86_400_000} gün"
 }
 
 // ── Yardımcı composable'lar ───────────────────────────────────────────────────

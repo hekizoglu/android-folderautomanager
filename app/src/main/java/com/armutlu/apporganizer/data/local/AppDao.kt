@@ -187,4 +187,7 @@ interface AppDao {
 
     @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName")
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long)
+
+    @Query("UPDATE apps SET customNotes = :note WHERE packageName = :packageName")
+    suspend fun updateCustomNotes(packageName: String, note: String)
 }

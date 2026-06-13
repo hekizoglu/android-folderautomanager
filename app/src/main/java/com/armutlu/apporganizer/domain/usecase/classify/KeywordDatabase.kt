@@ -51,7 +51,14 @@ object KeywordDatabase {
             "news", "newspaper", "article", "press", "tribune", "gazette",
             "daily", "breaking", "headline", "media", "journalist", "reader",
             "rss", "feed", "bbc", "cnn", "reuters", "bloomberg", "anadolu",
-            "dha", "ntvmsnbc", "haberturk", "habertürk", "milliyet", "hurriyet"
+            "dha", "ntvmsnbc", "haberturk", "habertürk", "milliyet", "hurriyet",
+            "foxnews", "nbcnews", "abcnews", "cbsnews", "npr", "huffpost",
+            "politico", "axios", "vox", "guardian", "independent", "times",
+            "washingtonpost", "wsj", "financialtimes", "telegraph", "economist",
+            "techcrunch", "verge", "wired", "engadget", "cnet", "arstechnica",
+            "haber", "manset", "son dakika", "gazetesi", "gazete", "dergi",
+            "bianet", "diken", "t24", "cumhuriyet", "sozcu", "posta", "sabah",
+            "haberler", "basın", "medya", "ajans"
         ),
         Category.CAT_HEALTH to listOf(
             "health", "fitness", "workout", "gym", "exercise", "sport",
@@ -133,10 +140,17 @@ object KeywordDatabase {
             "cafe", "coffee", "grocery", "market",
             "getir", "yemeksepeti", "migros", "a101", "bim", "carrefour",
             "trendyolexpress", "express", "mutfak", "tarif",
-            "siparis", "paket", "market", "manav", "kasap", "pastane",
+            "paket", "manav", "kasap", "pastane",
             "kafe", "restoran", "lokanta", "fast", "döner", "kebap",
-            "sok", "kiler", "macro", "metro", "tekel", "icecek",
-            "smoothie", "vegan", "organik", "gluten", "diyet"
+            "sok", "kiler", "macro", "tekel", "icecek",
+            "smoothie", "vegan", "organik", "gluten", "diyet",
+            "doordash", "ubereats", "grubhub", "postmates", "instacart",
+            "hellofresh", "gopuff", "opentable", "resy", "seamless",
+            "zomato", "swiggy", "blinkit", "zepto", "bigbasket",
+            "talabat", "deliveroo", "rappi", "pedidosya",
+            "supermarket", "supermarkt", "hypermarket", "hypermarkt",
+            "mealplan", "nutrition", "calorie", "macro", "diet",
+            "catering", "takeaway", "takeout", "order", "sipariş"
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
@@ -144,7 +158,12 @@ object KeywordDatabase {
             "lightroom", "photoshop", "canva", "vsco", "snapseed",
             "facetune", "retouch", "beautify", "portrait", "collage",
             "sticker", "gif", "reel", "clip", "trim", "crop",
-            "foto", "kamera", "resim", "fotograf"
+            "foto", "kamera", "resim", "fotograf",
+            "beauty", "b612", "snow", "meitu", "cymera", "retrica",
+            "fotor", "pixlr", "picsart", "afterlight", "prequel",
+            "efectum", "capcut", "filmora", "kinemaster", "inshot",
+            "remove.bg", "background", "eraser", "cutout", "ai photo",
+            "photoroom", "canva", "designer", "adobe"
         ),
         Category.CAT_OTHER to listOf()
     )
