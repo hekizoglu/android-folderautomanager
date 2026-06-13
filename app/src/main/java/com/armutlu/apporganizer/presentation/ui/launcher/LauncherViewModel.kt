@@ -90,9 +90,6 @@ class LauncherViewModel @Inject constructor(
     // Eş zamanlı çift loadAppsIfEmpty engelleyici
     @Volatile private var isLoadingApps = false
 
-    private val _openFolder = MutableStateFlow<AppFolder?>(null)
-    val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
-
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
 
@@ -112,6 +109,15 @@ class LauncherViewModel @Inject constructor(
             built.sortedBy { orderMap[it.category.categoryId] ?: Int.MAX_VALUE }
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _openFolderId = MutableStateFlow<String?>(null)
+    // folders flow'undan türetilir — kategori değişince FolderSheet anlık güncellenir
+    val openFolder: StateFlow<AppFolder?> = combine(
+        _openFolderId,
+        folders
+    ) { id, folderList ->
+        if (id == null) null else folderList.firstOrNull { it.category.categoryId == id }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val allApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { buildAllApps(it) }
@@ -222,11 +228,11 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun openFolder(folder: AppFolder) {
-        _openFolder.value = folder
+        _openFolderId.value = folder.category.categoryId
     }
 
     fun closeFolder() {
-        _openFolder.value = null
+        _openFolderId.value = null
     }
 
     fun openAllApps() {
