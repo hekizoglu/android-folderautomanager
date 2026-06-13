@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 22:49 UTC
-# Commit: c031f60b9280c7a4521aed455c66b04cd21ceda9
+# Generated: 2026-06-13 23:13 UTC
+# Commit: 77ae4a95391f5309c6194da8f70e8b63f988e85c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -212,6 +212,9 @@ interface AppDao {
 
     @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName")
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long)
+
+    @Query("UPDATE apps SET customNotes = :note WHERE packageName = :packageName")
+    suspend fun updateCustomNotes(packageName: String, note: String)
 }
 
 ========================================
@@ -931,6 +934,10 @@ class AppRepository @Inject constructor(
 
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {
         try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
+    }
+
+    suspend fun updateCustomNotes(packageName: String, note: String) {
+        try { appDao.updateCustomNotes(packageName, note) } catch (e: Exception) { Timber.e(e) }
     }
 }
 
@@ -1807,7 +1814,6 @@ class AppClassifier @Inject constructor() {
         "com.subway.mobile"                          to Category.CAT_FOOD,
 
         // ── PHOTOGRAPHY ──────────────────────────────────────────────────────
-        "com.samsung.android.gallery3d"              to Category.CAT_PHOTOGRAPHY,
         "com.adobe.lightroom"                        to Category.CAT_PHOTOGRAPHY,
         "com.adobe.photoshop"                        to Category.CAT_PHOTOGRAPHY,
         "com.canva.android"                          to Category.CAT_PHOTOGRAPHY,
@@ -1931,7 +1937,6 @@ class AppClassifier @Inject constructor() {
         "com.mix.android"                            to Category.CAT_SOCIAL,
         "com.yikyak.android"                         to Category.CAT_SOCIAL,
         "com.taringa.android"                        to Category.CAT_SOCIAL,
-        "com.medium.android"                         to Category.CAT_SOCIAL,
         "com.getdots.android"                        to Category.CAT_SOCIAL,
         "com.locket.widget"                          to Category.CAT_SOCIAL,
 
@@ -1941,8 +1946,6 @@ class AppClassifier @Inject constructor() {
         "com.mubi.android"                           to Category.CAT_ENTERTAINMENT,
         "com.philo.android"                          to Category.CAT_ENTERTAINMENT,
         "com.slingtv.android"                        to Category.CAT_ENTERTAINMENT,
-        "com.google.android.videos"                  to Category.CAT_ENTERTAINMENT,
-        "com.apple.android.music"                    to Category.CAT_ENTERTAINMENT,
         "com.bbc.sounds"                             to Category.CAT_ENTERTAINMENT,
         "com.iheartradio.android"                    to Category.CAT_ENTERTAINMENT,
         "com.mixcloud.android"                       to Category.CAT_ENTERTAINMENT,
@@ -1975,7 +1978,6 @@ class AppClassifier @Inject constructor() {
         "com.google.android.apps.photos"             to Category.CAT_PRODUCTIVITY,
         "com.google.android.apps.nbu.files"          to Category.CAT_PRODUCTIVITY,
         "com.affinity.photo"                         to Category.CAT_PRODUCTIVITY,
-        "com.linear.app"                             to Category.CAT_PRODUCTIVITY,
         "com.superhuman.android"                     to Category.CAT_PRODUCTIVITY,
         "com.anydo.android"                          to Category.CAT_PRODUCTIVITY,
         "com.ticktick.task"                          to Category.CAT_PRODUCTIVITY,
@@ -1991,7 +1993,6 @@ class AppClassifier @Inject constructor() {
         "com.acorns.android"                         to Category.CAT_FINANCE,
         "com.betterment.android"                     to Category.CAT_FINANCE,
         "com.wealthfront.android"                    to Category.CAT_FINANCE,
-        "com.sofi.android"                           to Category.CAT_FINANCE,
         "com.ally.android"                           to Category.CAT_FINANCE,
         "com.discover.android"                       to Category.CAT_FINANCE,
         "com.barclays.android"                       to Category.CAT_FINANCE,
@@ -2011,7 +2012,6 @@ class AppClassifier @Inject constructor() {
         "com.fastpay.android"                        to Category.CAT_FINANCE,
         "com.param.android"                          to Category.CAT_FINANCE,
         "com.goldenpay.android"                      to Category.CAT_FINANCE,
-        "com.kraken.invest.app"                      to Category.CAT_FINANCE,
         "com.okex.android"                           to Category.CAT_FINANCE,
         "com.bybit.android"                          to Category.CAT_FINANCE,
         "com.gate.io"                                to Category.CAT_FINANCE,
@@ -2275,94 +2275,43 @@ class AppClassifier @Inject constructor() {
         "com.startvgazete.android"                   to Category.CAT_NEWS,
         // Global Sosyal
         "com.pinterest.android"                      to Category.CAT_SOCIAL,
-        "com.tumblr"                                 to Category.CAT_SOCIAL,
-        "com.quora.android"                          to Category.CAT_SOCIAL,
         "com.meetup"                                 to Category.CAT_SOCIAL,
-        "com.badoo.mobile"                           to Category.CAT_SOCIAL,
-        "com.tinder"                                 to Category.CAT_SOCIAL,
-        "com.bumble.app"                             to Category.CAT_SOCIAL,
         "co.hinge.app"                               to Category.CAT_SOCIAL,
-        "com.grindr.android"                         to Category.CAT_SOCIAL,
-        "com.okcupid.okcupid"                        to Category.CAT_SOCIAL,
         "vk.com"                                     to Category.CAT_SOCIAL,
-        "ru.ok.android"                              to Category.CAT_SOCIAL,
         "com.zalo.android"                           to Category.CAT_SOCIAL,
         "com.nhn.android.naverapp"                   to Category.CAT_SOCIAL,
-        "jp.naver.line.android"                      to Category.CAT_SOCIAL,
-        "com.kakao.talk"                             to Category.CAT_SOCIAL,
         "com.bip"                                    to Category.CAT_SOCIAL,
         // Global Uretkenlik / AI
-        "com.openai.chatgpt"                         to Category.CAT_PRODUCTIVITY,
-        "com.anthropic.claude"                       to Category.CAT_PRODUCTIVITY,
-        "com.google.android.apps.bard"               to Category.CAT_PRODUCTIVITY,
-        "com.microsoft.copilot"                      to Category.CAT_PRODUCTIVITY,
-        "ai.perplexity.app.android"                  to Category.CAT_PRODUCTIVITY,
         "com.deepseek.ai"                            to Category.CAT_PRODUCTIVITY,
-        "com.notion.id"                              to Category.CAT_PRODUCTIVITY,
         "com.obsidian.md"                            to Category.CAT_PRODUCTIVITY,
-        "com.evernote"                               to Category.CAT_PRODUCTIVITY,
         "com.microsoft.launcher.enterprises"         to Category.CAT_PRODUCTIVITY,
         "com.todoist"                                to Category.CAT_PRODUCTIVITY,
         "com.asana.app"                              to Category.CAT_PRODUCTIVITY,
-        "com.atlassian.android.jira.core"            to Category.CAT_PRODUCTIVITY,
         "com.basecamp.bc3.android"                   to Category.CAT_PRODUCTIVITY,
         "io.linear"                                  to Category.CAT_PRODUCTIVITY,
         "com.clickup.tasks"                          to Category.CAT_PRODUCTIVITY,
         // Global Eglence (video/muzik)
-        "com.netflix.mediaclient"                    to Category.CAT_ENTERTAINMENT,
-        "com.amazon.avod.thirdpartyclient"           to Category.CAT_ENTERTAINMENT,
-        "com.disney.disneyplus"                      to Category.CAT_ENTERTAINMENT,
-        "com.hulu.plus"                              to Category.CAT_ENTERTAINMENT,
         "com.apple.tv"                               to Category.CAT_ENTERTAINMENT,
-        "com.hbo.hbonow"                             to Category.CAT_ENTERTAINMENT,
         "com.max.android"                            to Category.CAT_ENTERTAINMENT,
-        "com.peacocktv.peacockandroid"               to Category.CAT_ENTERTAINMENT,
-        "com.crunchyroll.crunchyroid"                to Category.CAT_ENTERTAINMENT,
         "com.funimation.android"                     to Category.CAT_ENTERTAINMENT,
-        "com.twitch.android.viewer"                  to Category.CAT_ENTERTAINMENT,
-        "com.spotify.music"                          to Category.CAT_ENTERTAINMENT,
-        "com.apple.android.music"                    to Category.CAT_ENTERTAINMENT,
-        "com.pandora.android"                        to Category.CAT_ENTERTAINMENT,
-        "com.soundcloud.android"                     to Category.CAT_ENTERTAINMENT,
-        "com.deezer.android"                         to Category.CAT_ENTERTAINMENT,
-        "com.tidal.android"                          to Category.CAT_ENTERTAINMENT,
         "com.audiomack"                              to Category.CAT_ENTERTAINMENT,
         "com.amazon.mp3"                             to Category.CAT_ENTERTAINMENT,
         "com.vevo"                                   to Category.CAT_ENTERTAINMENT,
         "fm.last.android"                            to Category.CAT_ENTERTAINMENT,
         // Global Saglik / Spor
-        "com.strava"                                 to Category.CAT_HEALTH,
-        "com.garmin.android.apps.connectmobile"      to Category.CAT_HEALTH,
         "com.fitbit.FitbitMobile"                    to Category.CAT_HEALTH,
-        "com.samsung.android.shealth"                to Category.CAT_HEALTH,
-        "com.nike.plusgps"                           to Category.CAT_HEALTH,
-        "com.adidas.running"                         to Category.CAT_HEALTH,
-        "com.peloton.android"                        to Category.CAT_HEALTH,
-        "com.calm.android"                           to Category.CAT_HEALTH,
         "com.getsomeheadspace.android"               to Category.CAT_HEALTH,
-        "com.myfitnesspal.android"                   to Category.CAT_HEALTH,
         "com.noom.app"                               to Category.CAT_HEALTH,
         "com.loseit"                                 to Category.CAT_HEALTH,
-        "com.runkeeper.android"                      to Category.CAT_HEALTH,
-        "com.mapmyrun.android"                       to Category.CAT_HEALTH,
         "com.polar.polarbeatapp"                     to Category.CAT_HEALTH,
         "com.withings.healthmate"                    to Category.CAT_HEALTH,
-        "com.oura.ring"                              to Category.CAT_HEALTH,
         "com.whoop"                                  to Category.CAT_HEALTH,
         "com.robinhoodie"                            to Category.CAT_HEALTH,
         // Global Finans
-        "com.paypal.android.p2pmobile"               to Category.CAT_FINANCE,
-        "com.venmo"                                  to Category.CAT_FINANCE,
         "com.squareup.cash"                          to Category.CAT_FINANCE,
         "com.zellepay.zelle"                         to Category.CAT_FINANCE,
-        "com.revolut.revolut"                        to Category.CAT_FINANCE,
-        "com.n26.android"                            to Category.CAT_FINANCE,
-        "com.monzo.android"                          to Category.CAT_FINANCE,
         "com.wise"                                   to Category.CAT_FINANCE,
-        "com.coinbase.android"                       to Category.CAT_FINANCE,
-        "com.binance.dev"                            to Category.CAT_FINANCE,
         "com.kraken.trade"                           to Category.CAT_FINANCE,
-        "com.robinhood.android"                      to Category.CAT_FINANCE,
         "com.bybit.BTCUSDT"                          to Category.CAT_FINANCE,
         "com.okex.app"                               to Category.CAT_FINANCE,
         "com.kucoin.exchange"                        to Category.CAT_FINANCE,
@@ -2372,105 +2321,50 @@ class AppClassifier @Inject constructor() {
         "com.enpara.android"                         to Category.CAT_FINANCE,
         // Global Alisveris
         "com.amazon.mShop.android.shopping"          to Category.CAT_SHOPPING,
-        "com.ebay.mobile"                            to Category.CAT_SHOPPING,
-        "com.alibaba.aliexpresshd"                   to Category.CAT_SHOPPING,
-        "com.walmart.android"                        to Category.CAT_SHOPPING,
         "com.target.android"                         to Category.CAT_SHOPPING,
         "com.shein.android"                          to Category.CAT_SHOPPING,
-        "com.wish.android"                           to Category.CAT_SHOPPING,
-        "com.etsy.android"                           to Category.CAT_SHOPPING,
-        "com.mercari.android"                        to Category.CAT_SHOPPING,
         "jp.co.rakuten.ichiba"                       to Category.CAT_SHOPPING,
         "com.poshmark.android"                       to Category.CAT_SHOPPING,
         "com.depop.depop"                            to Category.CAT_SHOPPING,
-        "com.vinted.android"                         to Category.CAT_SHOPPING,
         // Global Seyahat
-        "com.airbnb.android"                         to Category.CAT_TRAVEL,
-        "com.booking"                                to Category.CAT_TRAVEL,
         "com.expedia.bookings"                       to Category.CAT_TRAVEL,
-        "com.hotels.android"                         to Category.CAT_TRAVEL,
-        "com.tripadvisor.tripadvisor"                to Category.CAT_TRAVEL,
         "com.skyscanner.android.main"                to Category.CAT_TRAVEL,
-        "com.kayak.android"                          to Category.CAT_TRAVEL,
-        "com.google.android.apps.maps"               to Category.CAT_TRAVEL,
-        "com.waze"                                   to Category.CAT_TRAVEL,
-        "com.ubercab"                                to Category.CAT_TRAVEL,
-        "com.lyft.android"                           to Category.CAT_TRAVEL,
         "com.gett.android"                           to Category.CAT_TRAVEL,
         "com.bolt.app"                               to Category.CAT_TRAVEL,
         "com.flightradar24"                          to Category.CAT_TRAVEL,
         "com.rome2rio"                               to Category.CAT_TRAVEL,
         // Global Egitim
-        "com.duolingo"                               to Category.CAT_EDUCATION,
         "com.babbel.mobile.android.ui"               to Category.CAT_EDUCATION,
-        "com.busuu.android.sc"                       to Category.CAT_EDUCATION,
         "com.memrise.android.memrisecompanion"       to Category.CAT_EDUCATION,
         "com.rosetta.android"                        to Category.CAT_EDUCATION,
         "com.brainly"                                to Category.CAT_EDUCATION,
-        "com.quizlet.quizletandroid"                 to Category.CAT_EDUCATION,
         "com.ted"                                    to Category.CAT_EDUCATION,
-        "com.udemy.android"                          to Category.CAT_EDUCATION,
-        "com.coursera.android"                       to Category.CAT_EDUCATION,
-        "com.edx.mobile"                             to Category.CAT_EDUCATION,
-        "org.khanacademy.android"                    to Category.CAT_EDUCATION,
         "com.skillshare.Skillshare"                  to Category.CAT_EDUCATION,
-        "com.codecademy.android"                     to Category.CAT_EDUCATION,
-        "com.sololearn"                              to Category.CAT_EDUCATION,
         // Global Yemek
         "com.doordash.droid"                         to Category.CAT_FOOD,
-        "com.ubereats"                               to Category.CAT_FOOD,
-        "com.grubhub.android"                        to Category.CAT_FOOD,
         "com.instacart"                              to Category.CAT_FOOD,
-        "com.postmates.android"                      to Category.CAT_FOOD,
         "com.deliveroo.orderapp"                     to Category.CAT_FOOD,
-        "com.just.eat.android"                       to Category.CAT_FOOD,
         "com.takeaway.android"                       to Category.CAT_FOOD,
         "com.glovo"                                  to Category.CAT_FOOD,
-        "com.rappi.android"                          to Category.CAT_FOOD,
         "com.allrecipes.chef"                        to Category.CAT_FOOD,
-        "com.yummly.android"                         to Category.CAT_FOOD,
         // Global Fotograf
-        "com.instagram.android"                      to Category.CAT_PHOTOGRAPHY,
-        "com.snapchat.android"                       to Category.CAT_PHOTOGRAPHY,
-        "com.vsco.cam"                               to Category.CAT_PHOTOGRAPHY,
         "com.adobe.lrmobile"                         to Category.CAT_PHOTOGRAPHY,
         "com.adobe.psmobile"                         to Category.CAT_PHOTOGRAPHY,
         "com.canva.editor"                           to Category.CAT_PHOTOGRAPHY,
-        "com.snapseed"                               to Category.CAT_PHOTOGRAPHY,
         "com.facetune2"                              to Category.CAT_PHOTOGRAPHY,
         "com.lightx"                                 to Category.CAT_PHOTOGRAPHY,
-        "com.picsart.studio"                         to Category.CAT_PHOTOGRAPHY,
         "com.niksoftware.snapseed"                   to Category.CAT_PHOTOGRAPHY,
-        "com.google.android.apps.photos"             to Category.CAT_PHOTOGRAPHY,
         "com.apple.android.photos"                   to Category.CAT_PHOTOGRAPHY,
         // Global Oyun (ek)
-        "com.activision.callofduty.shooter"          to Category.CAT_GAMES,
-        "com.garena.game.freefire"                   to Category.CAT_GAMES,
-        "com.pubg.krmobile"                          to Category.CAT_GAMES,
-        "com.roblox.client"                          to Category.CAT_GAMES,
-        "com.mojang.minecraftpe"                     to Category.CAT_GAMES,
-        "com.epicgames.fortnite"                     to Category.CAT_GAMES,
         "com.ea.game.fifamobile_row"                 to Category.CAT_GAMES,
         "com.ea.sport.fc.android"                    to Category.CAT_GAMES,
-        "com.supercell.clashofclans"                 to Category.CAT_GAMES,
-        "com.supercell.clashroyale"                  to Category.CAT_GAMES,
-        "com.supercell.brawlstars"                   to Category.CAT_GAMES,
-        "com.king.candycrushsaga"                    to Category.CAT_GAMES,
-        "com.king.candycrushsodasaga"                to Category.CAT_GAMES,
         "com.rovio.baba"                             to Category.CAT_GAMES,
-        "com.imangi.templerun2"                      to Category.CAT_GAMES,
-        "com.kiloo.subwaysurf"                       to Category.CAT_GAMES,
-        "com.miniclip.eightballpool"                 to Category.CAT_GAMES,
         "com.chess.app"                              to Category.CAT_GAMES,
-        "com.lichess.mobileapp"                      to Category.CAT_GAMES,
         "com.playdots.dots"                          to Category.CAT_GAMES,
-        "com.nianticlabs.pokemongo"                  to Category.CAT_GAMES,
-        "com.dts.freefireth"                         to Category.CAT_GAMES,
         // Turkiye - Finans ek
         "com.hsbc.hsbcturkiye"                       to Category.CAT_FINANCE,
         "com.ingbank.android"                        to Category.CAT_FINANCE,
         "com.albaraka.mobile"                        to Category.CAT_FINANCE,
-        "com.kuveytturk.android"                     to Category.CAT_FINANCE,
         "com.turkiyefinans.android"                  to Category.CAT_FINANCE,
         "com.isyatirim"                              to Category.CAT_FINANCE,
         "com.matriks.android"                        to Category.CAT_FINANCE,
@@ -2483,7 +2377,6 @@ class AppClassifier @Inject constructor() {
         // Turkiye - Saglik
         "com.doktortakvimi.android"                  to Category.CAT_HEALTH,
         "com.medipol.android"                        to Category.CAT_HEALTH,
-        "com.acibadem.android"                       to Category.CAT_HEALTH,
         "com.memorial.android"                       to Category.CAT_HEALTH,
         "com.diyetkolik.android"                     to Category.CAT_HEALTH,
         "com.iyilik.android"                         to Category.CAT_HEALTH,
@@ -2491,8 +2384,6 @@ class AppClassifier @Inject constructor() {
         "com.sgk.edevlet"                            to Category.CAT_HEALTH,
         "com.mhrs.android"                           to Category.CAT_HEALTH,
         // Turkiye - Haber ek
-        "com.sozcu.android"                          to Category.CAT_NEWS,
-        "com.sabah.android"                          to Category.CAT_NEWS,
         "com.posta.android"                          to Category.CAT_NEWS,
         "com.haberler.android"                       to Category.CAT_NEWS,
         "com.mynet.android"                          to Category.CAT_NEWS,
@@ -2523,67 +2414,40 @@ class AppClassifier @Inject constructor() {
         "com.ibb.ibbuygulamalari"                    to Category.CAT_UTILITIES,
         "tr.gov.turkiye"                             to Category.CAT_UTILITIES,
         // Turkiye - Alisveris ek
-        "com.boyner.android"                         to Category.CAT_SHOPPING,
-        "com.koton.android"                          to Category.CAT_SHOPPING,
         "com.lcwaikiki.android"                      to Category.CAT_SHOPPING,
-        "com.modanisa.android"                       to Category.CAT_SHOPPING,
-        "com.mavi.android"                           to Category.CAT_SHOPPING,
-        "com.zara.android"                           to Category.CAT_SHOPPING,
-        "com.hm.android"                             to Category.CAT_SHOPPING,
         "com.pullbear.android"                       to Category.CAT_SHOPPING,
         "com.bershka.android"                        to Category.CAT_SHOPPING,
         "com.massimoDutti.android"                   to Category.CAT_SHOPPING,
-        "com.dolap.android"                          to Category.CAT_SHOPPING,
-        "com.sahibinden.android"                     to Category.CAT_SHOPPING,
         "com.emlakjet.android"                       to Category.CAT_SHOPPING,
         "com.hurriyetemlak.android"                  to Category.CAT_SHOPPING,
         "com.zingat.android"                         to Category.CAT_SHOPPING,
         // Global - Uretkenlik ek
-        "com.dropbox.android"                        to Category.CAT_PRODUCTIVITY,
         "com.box.android"                            to Category.CAT_PRODUCTIVITY,
         "com.adobe.reader"                           to Category.CAT_PRODUCTIVITY,
         "com.polaris.office"                         to Category.CAT_PRODUCTIVITY,
         "com.kingsoft.office"                        to Category.CAT_PRODUCTIVITY,
         "com.xodo.pdf.reader"                        to Category.CAT_PRODUCTIVITY,
-        "com.adobe.scan.android"                     to Category.CAT_PRODUCTIVITY,
         "com.camscanner"                             to Category.CAT_PRODUCTIVITY,
         "com.microsoft.todos"                        to Category.CAT_PRODUCTIVITY,
         "com.any.do"                                 to Category.CAT_PRODUCTIVITY,
-        "com.ticktick.task"                          to Category.CAT_PRODUCTIVITY,
         "com.habitica"                               to Category.CAT_PRODUCTIVITY,
         "com.forestapp"                              to Category.CAT_PRODUCTIVITY,
         // Global - Araclar ek
-        "com.google.android.apps.authenticator2"     to Category.CAT_UTILITIES,
-        "com.authy.authy"                            to Category.CAT_UTILITIES,
-        "com.lastpass.lpandroid"                     to Category.CAT_UTILITIES,
         "com.onepassword.android"                    to Category.CAT_UTILITIES,
         "org.keepassxc"                              to Category.CAT_UTILITIES,
-        "com.bitwarden.mobile"                       to Category.CAT_UTILITIES,
-        "com.nordvpn.android"                        to Category.CAT_UTILITIES,
-        "com.expressvpn.vpn"                         to Category.CAT_UTILITIES,
         "com.privateinternetaccess.android"          to Category.CAT_UTILITIES,
-        "com.surfshark.vpnclient.android"            to Category.CAT_UTILITIES,
-        "org.mozilla.firefox"                        to Category.CAT_UTILITIES,
         "com.microsoft.bing"                         to Category.CAT_UTILITIES,
-        "com.opera.browser"                          to Category.CAT_UTILITIES,
-        "com.brave.browser"                          to Category.CAT_UTILITIES,
-        "com.duckduckgo.mobile.android"              to Category.CAT_UTILITIES,
         "com.mi.filemanager"                         to Category.CAT_UTILITIES,
         "com.ghisler.android.totalcommander"         to Category.CAT_UTILITIES,
         "com.rarlab.rar"                             to Category.CAT_UTILITIES,
         "com.utilityinc.solidexplorer2"              to Category.CAT_UTILITIES,
         // Loop37: Global Habercilik / Sosyal ek
-        "com.google.android.talk"                    to Category.CAT_SOCIAL,
         "com.google.android.apps.messaging"          to Category.CAT_SOCIAL,
-        "com.microsoft.teams"                        to Category.CAT_SOCIAL,
-        "com.skype.raider"                           to Category.CAT_SOCIAL,
-        "us.zoom.videomeetings"                      to Category.CAT_SOCIAL,
         "com.cisco.webex.meetings"                   to Category.CAT_SOCIAL,
         "com.gotomeeting"                            to Category.CAT_SOCIAL,
         "com.ringcentral.android"                    to Category.CAT_SOCIAL,
         "com.houseparty.android"                     to Category.CAT_SOCIAL,
         "com.clubhouse.app"                          to Category.CAT_SOCIAL,
-        "com.github.android"                         to Category.CAT_PRODUCTIVITY,
         "com.gitlab.android"                         to Category.CAT_PRODUCTIVITY,
         "com.bitbucket.android"                      to Category.CAT_PRODUCTIVITY,
         "com.jetbrains.space"                        to Category.CAT_PRODUCTIVITY,
@@ -2601,13 +2465,8 @@ class AppClassifier @Inject constructor() {
         "com.hoyoverse.hkrpg"                        to Category.CAT_GAMES,
         "com.pubg.imobile"                           to Category.CAT_GAMES,
         "com.activision.cod.warzone"                 to Category.CAT_GAMES,
-        "com.tencent.ig"                             to Category.CAT_GAMES,
-        "com.vng.pubgmobile"                         to Category.CAT_GAMES,
         "com.netease.onmyoji"                        to Category.CAT_GAMES,
         "com.lilithgames.hgame"                      to Category.CAT_GAMES,
-        "com.innersloth.spacemafia"                  to Category.CAT_GAMES,
-        "com.halfbrick.fruitninjafree"               to Category.CAT_GAMES,
-        "com.outfit7.mytalkingtom"                   to Category.CAT_GAMES,
         "com.google.android.play.games"              to Category.CAT_GAMES,
         // Loop39: Turkiye ozeli ek
         "com.turkcell.tv"                            to Category.CAT_ENTERTAINMENT,
@@ -2617,7 +2476,6 @@ class AppClassifier @Inject constructor() {
         "com.radyoturkiye.android"                   to Category.CAT_ENTERTAINMENT,
         "com.ntvradio.android"                       to Category.CAT_ENTERTAINMENT,
         "com.superonline.tv"                         to Category.CAT_ENTERTAINMENT,
-        "com.eba.android"                            to Category.CAT_EDUCATION,
         "com.khanacademy.tr"                         to Category.CAT_EDUCATION,
         "com.acik.universite"                        to Category.CAT_EDUCATION,
         "com.yokatlas.android"                       to Category.CAT_EDUCATION,
@@ -2632,7 +2490,6 @@ class AppClassifier @Inject constructor() {
         "com.ininal.android"                         to Category.CAT_FINANCE,
         "com.nkolay.android"                         to Category.CAT_FINANCE,
         "com.ozan.android"                           to Category.CAT_FINANCE,
-        "com.iyzico.android"                         to Category.CAT_FINANCE,
         // Loop40: Global uretkenlik + is araclari
         "com.hubspot.android"                        to Category.CAT_PRODUCTIVITY,
         "com.salesforce.android"                     to Category.CAT_PRODUCTIVITY,
@@ -2640,11 +2497,9 @@ class AppClassifier @Inject constructor() {
         "com.freshdesk.helpdesk"                     to Category.CAT_PRODUCTIVITY,
         "com.intercom.android"                       to Category.CAT_PRODUCTIVITY,
         "com.pipedrive.android"                      to Category.CAT_PRODUCTIVITY,
-        "com.monday.android"                         to Category.CAT_PRODUCTIVITY,
         "com.wrike.android"                          to Category.CAT_PRODUCTIVITY,
         "com.smartsheet.android"                     to Category.CAT_PRODUCTIVITY,
         "com.airtable.android"                       to Category.CAT_PRODUCTIVITY,
-        "com.figma.android"                          to Category.CAT_PHOTOGRAPHY,
         "com.adobe.xd"                               to Category.CAT_PHOTOGRAPHY,
         "com.sketch.android"                         to Category.CAT_PHOTOGRAPHY,
         "com.invisionapp.android"                    to Category.CAT_PHOTOGRAPHY,
@@ -2655,17 +2510,14 @@ class AppClassifier @Inject constructor() {
         // Loop41: Global saglik + spor ek
         "com.jawbone.up"                             to Category.CAT_HEALTH,
         "com.underarmour.record"                     to Category.CAT_HEALTH,
-        "com.runtastic.android"                      to Category.CAT_HEALTH,
         "com.endomondo.endomondo"                    to Category.CAT_HEALTH,
         "com.jefit.jefit"                            to Category.CAT_HEALTH,
         "com.strongapp.android"                      to Category.CAT_HEALTH,
         "com.7minuteworkout.android"                 to Category.CAT_HEALTH,
         "com.noom.android"                           to Category.CAT_HEALTH,
-        "com.cronometer.android"                     to Category.CAT_HEALTH,
         "com.lifesum.android"                        to Category.CAT_HEALTH,
         "com.waterminder.android"                    to Category.CAT_HEALTH,
         "com.sleepfoundation.android"                to Category.CAT_HEALTH,
-        "com.insight.timer"                          to Category.CAT_HEALTH,
         "com.calm.android2"                          to Category.CAT_HEALTH,
         "com.woebot.android"                         to Category.CAT_HEALTH,
         "com.happify.android"                        to Category.CAT_HEALTH,
@@ -2676,36 +2528,23 @@ class AppClassifier @Inject constructor() {
         // Loop43: TR Seyahat + Ulasim ek
         "com.bigbus.android"                         to Category.CAT_TRAVEL,
         "com.turizmfirmasi.android"                  to Category.CAT_TRAVEL,
-        "com.obilet.android"                         to Category.CAT_TRAVEL,
-        "com.enuygun.android"                        to Category.CAT_TRAVEL,
         "com.pegasusairlines.android"                to Category.CAT_TRAVEL,
         "com.turkishairlines.android"                to Category.CAT_TRAVEL,
-        "com.sunexpress.android"                     to Category.CAT_TRAVEL,
         "com.atlasjet.android"                       to Category.CAT_TRAVEL,
-        "com.tcdd.bilet"                             to Category.CAT_TRAVEL,
         "com.tcddtasimacilik.android"                to Category.CAT_TRAVEL,
-        "com.iett.android"                           to Category.CAT_TRAVEL,
         "com.metro.istanbul"                         to Category.CAT_TRAVEL,
         "com.belbim.android"                         to Category.CAT_TRAVEL,
         "com.ankakart.android"                       to Category.CAT_TRAVEL,
         "com.izmir.kart"                             to Category.CAT_TRAVEL,
-        "com.martiscooter.android"                   to Category.CAT_TRAVEL,
         "com.iscooterbike.android"                   to Category.CAT_TRAVEL,
         "com.volt.android"                           to Category.CAT_TRAVEL,
         "com.bird.android"                           to Category.CAT_TRAVEL,
         "com.lime.android"                           to Category.CAT_TRAVEL,
         "com.taxilo.android"                         to Category.CAT_TRAVEL,
         // Loop43: TR Yemek ek
-        "com.yemeksepeti.android"                    to Category.CAT_FOOD,
-        "com.getir.android"                          to Category.CAT_FOOD,
-        "com.trendyolexpress.android"                to Category.CAT_FOOD,
         "com.fuudy.android"                          to Category.CAT_FOOD,
         "com.scotty.android"                         to Category.CAT_FOOD,
         "com.migros.online"                          to Category.CAT_FOOD,
-        "com.carrefoursa.android"                    to Category.CAT_FOOD,
-        "com.bim.android"                            to Category.CAT_FOOD,
-        "com.a101.android"                           to Category.CAT_FOOD,
-        "com.sok.android"                            to Category.CAT_FOOD,
         "com.macrocenter.android"                    to Category.CAT_FOOD,
         "com.kiler.android"                          to Category.CAT_FOOD,
         "com.galaxy.android"                         to Category.CAT_FOOD,
@@ -2719,8 +2558,6 @@ class AppClassifier @Inject constructor() {
         "com.english.home"                           to Category.CAT_SHOPPING,
         "com.ikea.android"                           to Category.CAT_SHOPPING,
         "com.mediamarkt.android"                     to Category.CAT_SHOPPING,
-        "com.teknosa.android"                        to Category.CAT_SHOPPING,
-        "com.vatanbilgisayar.android"                to Category.CAT_SHOPPING,
         "com.goldmaster.android"                     to Category.CAT_SHOPPING,
         "com.amazon.tr"                              to Category.CAT_SHOPPING,
         // Loop43: Global Muzik / Podcast ek
@@ -2729,28 +2566,19 @@ class AppClassifier @Inject constructor() {
         "com.pocketcasts.android"                    to Category.CAT_ENTERTAINMENT,
         "com.iheart.android"                         to Category.CAT_ENTERTAINMENT,
         "com.tunein.radio"                           to Category.CAT_ENTERTAINMENT,
-        "com.shazam.android"                         to Category.CAT_ENTERTAINMENT,
         "com.musixmatch.android"                     to Category.CAT_ENTERTAINMENT,
         "com.genius.android"                         to Category.CAT_ENTERTAINMENT,
         "com.bandsintown.android"                    to Category.CAT_ENTERTAINMENT,
-        "com.audible.application"                    to Category.CAT_ENTERTAINMENT,
         "com.storytel.android"                       to Category.CAT_ENTERTAINMENT,
-        "com.blinkist.android"                       to Category.CAT_ENTERTAINMENT,
         "com.scribd.android"                         to Category.CAT_ENTERTAINMENT,
         "com.kindle.android"                         to Category.CAT_ENTERTAINMENT,
         "com.wattpad.android"                        to Category.CAT_ENTERTAINMENT,
         // Loop43: Global Haber ek
         "com.guardian.android"                       to Category.CAT_NEWS,
-        "com.nytimes.android"                        to Category.CAT_NEWS,
         "com.washingtonpost.android"                 to Category.CAT_NEWS,
-        "com.economist.android"                      to Category.CAT_NEWS,
         "com.forbes.android"                         to Category.CAT_NEWS,
         "com.time.android"                           to Category.CAT_NEWS,
-        "com.flipboard.app"                          to Category.CAT_NEWS,
-        "com.feedly.android"                         to Category.CAT_NEWS,
-        "com.inoreader.android"                      to Category.CAT_NEWS,
         "com.pocket.android"                         to Category.CAT_NEWS,
-        "com.instapaper.android"                     to Category.CAT_NEWS,
         "com.apple.news"                             to Category.CAT_NEWS,
         "com.google.android.apps.magazines"          to Category.CAT_NEWS,
         // Loop44: Global Fotograf / Tasarim ek
@@ -2758,11 +2586,9 @@ class AppClassifier @Inject constructor() {
         "com.huawei.camera"                          to Category.CAT_PHOTOGRAPHY,
         "com.oneplus.camera"                         to Category.CAT_PHOTOGRAPHY,
         "com.xiaomi.camera"                          to Category.CAT_PHOTOGRAPHY,
-        "net.sourceforge.opencamera"                 to Category.CAT_PHOTOGRAPHY,
         "com.lapse.android"                          to Category.CAT_PHOTOGRAPHY,
         "com.photoroom.app"                          to Category.CAT_PHOTOGRAPHY,
         "com.remove.bg.android"                      to Category.CAT_PHOTOGRAPHY,
-        "com.google.android.apps.wallpaper"          to Category.CAT_PHOTOGRAPHY,
         "com.zedge.android"                          to Category.CAT_PHOTOGRAPHY,
         "com.backdrops.wallpapers"                   to Category.CAT_PHOTOGRAPHY,
         "com.urbandroid.sleep"                       to Category.CAT_HEALTH,
@@ -2772,7 +2598,6 @@ class AppClassifier @Inject constructor() {
         // Loop44: Fintech / Kripto ek
         "com.ledger.live"                            to Category.CAT_FINANCE,
         "io.metamask.android"                        to Category.CAT_FINANCE,
-        "com.trustwallet.app"                        to Category.CAT_FINANCE,
         "com.blockchain.android"                     to Category.CAT_FINANCE,
         "com.phantom.app"                            to Category.CAT_FINANCE,
         "com.exodus.android"                         to Category.CAT_FINANCE,
@@ -2784,7 +2609,6 @@ class AppClassifier @Inject constructor() {
         "com.current.app"                            to Category.CAT_FINANCE,
         "com.dave.android"                           to Category.CAT_FINANCE,
         "com.albert.android"                         to Category.CAT_FINANCE,
-        "com.acorns.android"                         to Category.CAT_FINANCE,
         "com.stash.android"                          to Category.CAT_FINANCE,
         // Loop45: Global Uretkenlik / Not uyg ek
         "com.simplenote.android"                     to Category.CAT_PRODUCTIVITY,
@@ -2803,8 +2627,6 @@ class AppClassifier @Inject constructor() {
         "com.be.focused.android"                     to Category.CAT_PRODUCTIVITY,
         "com.pomodoro.android"                       to Category.CAT_PRODUCTIVITY,
         // Loop45: TR Eglence / Muzik ek
-        "com.fizy.android"                           to Category.CAT_ENTERTAINMENT,
-        "com.muud.android"                           to Category.CAT_ENTERTAINMENT,
         "com.yayinla.android"                        to Category.CAT_ENTERTAINMENT,
         "com.trtmuzik.android"                       to Category.CAT_ENTERTAINMENT,
         "com.radyod.android"                         to Category.CAT_ENTERTAINMENT,
@@ -2818,7 +2640,105 @@ class AppClassifier @Inject constructor() {
         "com.gboard.android"                         to Category.CAT_UTILITIES,
         "com.swiftkey.android"                       to Category.CAT_UTILITIES,
         "com.touchpal.keyboard"                      to Category.CAT_UTILITIES,
-        "com.grammarly.android"                      to Category.CAT_UTILITIES,
+        // ── Loop46: Eksik uygulamalar — PHOTOGRAPHY ──────────────────────────
+        "com.google.android.GoogleCamera"            to Category.CAT_PHOTOGRAPHY,
+        "com.sec.android.app.camera"                 to Category.CAT_PHOTOGRAPHY,
+        "com.motorola.camera2"                       to Category.CAT_PHOTOGRAPHY,
+        "com.nothing.camera"                         to Category.CAT_PHOTOGRAPHY,
+        "jp.co.cyberlink.youcam"                     to Category.CAT_PHOTOGRAPHY,
+        "com.cyberlink.youperfect"                   to Category.CAT_PHOTOGRAPHY,
+        "com.snow.z"                                 to Category.CAT_PHOTOGRAPHY,
+        "com.b612.camera"                            to Category.CAT_PHOTOGRAPHY,
+        "com.meitu.beautplus"                        to Category.CAT_PHOTOGRAPHY,
+        "com.meitu.mtxx"                             to Category.CAT_PHOTOGRAPHY,
+        "com.moltencore.android"                     to Category.CAT_PHOTOGRAPHY,
+        "com.pixaloop.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.ufoto.with.camera"                      to Category.CAT_PHOTOGRAPHY,
+        "com.lightX.photo.editor"                    to Category.CAT_PHOTOGRAPHY,
+        "com.lightricks.videoleap"                   to Category.CAT_PHOTOGRAPHY,
+        "com.lightricks.photoleap"                   to Category.CAT_PHOTOGRAPHY,
+        "com.facetune.app"                           to Category.CAT_PHOTOGRAPHY,
+        "com.backgrounderaser"                       to Category.CAT_PHOTOGRAPHY,
+        "com.bitmoji"                                to Category.CAT_PHOTOGRAPHY,
+        // ── Loop46: Eksik uygulamalar — NEWS ─────────────────────────────────
+        "com.msnbc.android"                          to Category.CAT_NEWS,
+        "com.msn.android.news"                       to Category.CAT_NEWS,
+        "com.npr.android"                            to Category.CAT_NEWS,
+        "com.voxmedia.vox"                           to Category.CAT_NEWS,
+        "com.newsweek.android"                       to Category.CAT_NEWS,
+        "com.politico.android"                       to Category.CAT_NEWS,
+        "com.theatlantic.android"                    to Category.CAT_NEWS,
+        "com.axios.android"                          to Category.CAT_NEWS,
+        "com.thehill.android"                        to Category.CAT_NEWS,
+        "com.engadget.android"                       to Category.CAT_NEWS,
+        "com.cnet.android"                           to Category.CAT_NEWS,
+        "com.slashdot.android"                       to Category.CAT_NEWS,
+        "com.theinformation.android"                 to Category.CAT_NEWS,
+        "com.substack.android"                       to Category.CAT_NEWS,
+        "com.smartnews.android"                      to Category.CAT_NEWS,
+        "jp.gocro.smartnews.android"                 to Category.CAT_NEWS,
+        "com.groundnews.android"                     to Category.CAT_NEWS,
+        "com.newsdiffbot.android"                    to Category.CAT_NEWS,
+        "com.haber7.android"                         to Category.CAT_NEWS,
+        "com.haber3.android"                         to Category.CAT_NEWS,
+        "com.diken.android"                          to Category.CAT_NEWS,
+        "tr.gov.diyanet.diyanet"                     to Category.CAT_NEWS,
+        // ── Loop46: Eksik uygulamalar — FOOD ─────────────────────────────────
+        "com.hellofresh.android"                     to Category.CAT_FOOD,
+        "com.factor75.android"                       to Category.CAT_FOOD,
+        "com.instacart.android"                      to Category.CAT_FOOD,
+        "com.gopuff.android"                         to Category.CAT_FOOD,
+        "com.opentable.android"                      to Category.CAT_FOOD,
+        "com.resy.android"                           to Category.CAT_FOOD,
+        "com.yelp.yelp"                              to Category.CAT_FOOD,
+        "com.foodpantry.android"                     to Category.CAT_FOOD,
+        "com.wholefoodsmarket.android"               to Category.CAT_FOOD,
+        "com.albertsons.android"                     to Category.CAT_FOOD,
+        "com.safeway.android"                        to Category.CAT_FOOD,
+        "com.wegmans.android"                        to Category.CAT_FOOD,
+        "com.plantoeat.android"                      to Category.CAT_FOOD,
+        "com.bigbasket.android"                      to Category.CAT_FOOD,
+        "com.blinkit.consumer"                       to Category.CAT_FOOD,
+        "com.zepto.android"                          to Category.CAT_FOOD,
+        "com.metro.android"                          to Category.CAT_SHOPPING,
+        "com.migrosonline.android"                   to Category.CAT_FOOD,
+        "com.sokmarket.android"                      to Category.CAT_FOOD,
+        "com.banabi.android"                         to Category.CAT_FOOD,
+        // ── Loop46: Eksik uygulamalar — EDUCATION ────────────────────────────
+        "com.grasshopper.app"                        to Category.CAT_EDUCATION,
+        "com.datacamp.android"                       to Category.CAT_EDUCATION,
+        "com.pluralsight.android"                    to Category.CAT_EDUCATION,
+        "com.linkedin.learning"                      to Category.CAT_EDUCATION,
+        "com.memrise.android"                        to Category.CAT_EDUCATION,
+        "com.lingvist.android"                       to Category.CAT_EDUCATION,
+        "com.drops.android.drops"                    to Category.CAT_EDUCATION,
+        "com.elvocab.android"                        to Category.CAT_EDUCATION,
+        "com.clozemaster.android"                    to Category.CAT_EDUCATION,
+        "com.tandem.android"                         to Category.CAT_EDUCATION,
+        "com.hellotalk.android"                      to Category.CAT_EDUCATION,
+        "com.wlingua.android"                        to Category.CAT_EDUCATION,
+        "com.speechify.android"                      to Category.CAT_EDUCATION,
+        "com.beelinguapp.android"                    to Category.CAT_EDUCATION,
+        "com.lumosity.android"                       to Category.CAT_EDUCATION,
+        "com.fitbrains.android"                      to Category.CAT_EDUCATION,
+        "com.cambly.android"                         to Category.CAT_EDUCATION,
+        "com.italki.android"                         to Category.CAT_EDUCATION,
+        "com.superapp.android"                       to Category.CAT_EDUCATION,
+        "com.verbix.android"                         to Category.CAT_EDUCATION,
+        "com.microsoft.teams.android"                to Category.CAT_PRODUCTIVITY,
+        "com.google.android.apps.tachyon"            to Category.CAT_SOCIAL,
+        "com.google.android.dialer"                  to Category.CAT_UTILITIES,
+        "com.google.android.contacts"                to Category.CAT_UTILITIES,
+        "com.android.settings"                       to Category.CAT_UTILITIES,
+        "com.android.calculator2"                    to Category.CAT_UTILITIES,
+        "com.android.clock"                          to Category.CAT_UTILITIES,
+        "com.android.gallery3d"                      to Category.CAT_PHOTOGRAPHY,
+        "com.android.email"                          to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.office.onenote"               to Category.CAT_PRODUCTIVITY,
+        "com.notion.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.obsidianmd.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.capacities.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.zettelkasten.android"                   to Category.CAT_PRODUCTIVITY,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
@@ -2923,7 +2843,14 @@ object KeywordDatabase {
             "news", "newspaper", "article", "press", "tribune", "gazette",
             "daily", "breaking", "headline", "media", "journalist", "reader",
             "rss", "feed", "bbc", "cnn", "reuters", "bloomberg", "anadolu",
-            "dha", "ntvmsnbc", "haberturk", "habertürk", "milliyet", "hurriyet"
+            "dha", "ntvmsnbc", "haberturk", "habertürk", "milliyet", "hurriyet",
+            "foxnews", "nbcnews", "abcnews", "cbsnews", "npr", "huffpost",
+            "politico", "axios", "vox", "guardian", "independent", "times",
+            "washingtonpost", "wsj", "financialtimes", "telegraph", "economist",
+            "techcrunch", "verge", "wired", "engadget", "cnet", "arstechnica",
+            "haber", "manset", "son dakika", "gazetesi", "gazete", "dergi",
+            "bianet", "diken", "t24", "cumhuriyet", "sozcu", "posta", "sabah",
+            "haberler", "basın", "medya", "ajans"
         ),
         Category.CAT_HEALTH to listOf(
             "health", "fitness", "workout", "gym", "exercise", "sport",
@@ -3005,10 +2932,17 @@ object KeywordDatabase {
             "cafe", "coffee", "grocery", "market",
             "getir", "yemeksepeti", "migros", "a101", "bim", "carrefour",
             "trendyolexpress", "express", "mutfak", "tarif",
-            "siparis", "paket", "market", "manav", "kasap", "pastane",
+            "paket", "manav", "kasap", "pastane",
             "kafe", "restoran", "lokanta", "fast", "döner", "kebap",
-            "sok", "kiler", "macro", "metro", "tekel", "icecek",
-            "smoothie", "vegan", "organik", "gluten", "diyet"
+            "sok", "kiler", "macro", "tekel", "icecek",
+            "smoothie", "vegan", "organik", "gluten", "diyet",
+            "doordash", "ubereats", "grubhub", "postmates", "instacart",
+            "hellofresh", "gopuff", "opentable", "resy", "seamless",
+            "zomato", "swiggy", "blinkit", "zepto", "bigbasket",
+            "talabat", "deliveroo", "rappi", "pedidosya",
+            "supermarket", "supermarkt", "hypermarket", "hypermarkt",
+            "mealplan", "nutrition", "calorie", "macro", "diet",
+            "catering", "takeaway", "takeout", "order", "sipariş"
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
@@ -3016,7 +2950,12 @@ object KeywordDatabase {
             "lightroom", "photoshop", "canva", "vsco", "snapseed",
             "facetune", "retouch", "beautify", "portrait", "collage",
             "sticker", "gif", "reel", "clip", "trim", "crop",
-            "foto", "kamera", "resim", "fotograf"
+            "foto", "kamera", "resim", "fotograf",
+            "beauty", "b612", "snow", "meitu", "cymera", "retrica",
+            "fotor", "pixlr", "picsart", "afterlight", "prequel",
+            "efectum", "capcut", "filmora", "kinemaster", "inshot",
+            "remove.bg", "background", "eraser", "cutout", "ai photo",
+            "photoroom", "canva", "designer", "adobe"
         ),
         Category.CAT_OTHER to listOf()
     )
@@ -4186,9 +4125,11 @@ fun AppContextMenu(
     onRemoveFromDock: () -> Unit,
     onChangeCategory: () -> Unit,
     onHideApp: ((Boolean) -> Unit)? = null,
+    onSaveNote: ((String) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
+    var showNoteDialog by remember { mutableStateOf(false) }
 
     val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
         value = withContext(Dispatchers.IO) {
@@ -4267,7 +4208,7 @@ fun AppContextMenu(
                 )
                 InfoChip(
                     label = "Kullanım",
-                    value = if (app.usageCount > 0) "${app.usageCount}×" else "—",
+                    value = formatUsageTime(app.usageCount),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -4362,6 +4303,41 @@ fun AppContextMenu(
                 )
             }
 
+            onSaveNote?.let {
+                Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+
+                // Mevcut not varsa göster
+                if (app.customNotes.isNotBlank()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Default.StickyNote2,
+                            null,
+                            tint = TealColor.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = app.customNotes,
+                            fontSize = 12.sp,
+                            color = TextSecondary,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                ContextAction(
+                    icon = Icons.Default.EditNote,
+                    label = if (app.customNotes.isBlank()) "Not Ekle" else "Notu Düzenle",
+                    color = TealColor,
+                    onClick = { showNoteDialog = true }
+                )
+            }
+
             if (!app.isSystemApp) {
                 ContextAction(
                     icon = Icons.Default.Delete,
@@ -4379,6 +4355,71 @@ fun AppContextMenu(
             }
         }
     }
+
+    // Not düzenleme dialogu
+    if (showNoteDialog) {
+        AppNoteDialog(
+            initialNote = app.customNotes,
+            onDismiss = { showNoteDialog = false },
+            onSave = { note ->
+                onSaveNote?.invoke(note)
+                showNoteDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun AppNoteDialog(
+    initialNote: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var noteText by remember { mutableStateOf(initialNote) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1A1A2A),
+        title = {
+            Text("Uygulama Notu", color = Color.White, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            OutlinedTextField(
+                value = noteText,
+                onValueChange = { noteText = it },
+                placeholder = { Text("Not girin...", color = Color.White.copy(0.4f)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = TealColor,
+                    unfocusedBorderColor = Color.White.copy(0.3f),
+                    cursorColor = TealColor
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 4,
+                singleLine = false
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(noteText) }) {
+                Text("Kaydet", color = TealColor, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal", color = Color.White.copy(0.6f))
+            }
+        }
+    )
+}
+
+// usageCount = toplam ön plan süresi (ms) — 30 günlük
+private fun formatUsageTime(ms: Long): String = when {
+    ms <= 0L          -> "—"
+    ms < 60_000L      -> "${ms / 1000} sn"
+    ms < 3_600_000L   -> "${ms / 60_000} dk"
+    ms < 86_400_000L  -> "${"%.1f".format(ms / 3_600_000.0)} sa"
+    else              -> "${ms / 86_400_000} gün"
 }
 
 // ── Yardımcı composable'lar ───────────────────────────────────────────────────
@@ -6604,6 +6645,9 @@ fun HomeScreen(
             onHideApp = { hidden ->
                 viewModel.setAppHidden(app.packageName, hidden)
                 contextMenuPkg = null
+            },
+            onSaveNote = { note ->
+                viewModel.saveAppNote(app.packageName, note)
             }
         )
     }
@@ -7742,6 +7786,13 @@ class LauncherViewModel @Inject constructor(
                         if (size > 0L) repository.updateAppSize(app.packageName, size)
                     }
                 }
+        }
+    }
+
+    /** Bir uygulamaya kişisel not ekler/günceller. */
+    fun saveAppNote(packageName: String, note: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateCustomNotes(packageName, note.trim())
         }
     }
 

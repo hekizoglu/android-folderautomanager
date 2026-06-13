@@ -422,6 +422,13 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /** Bir uygulamaya kişisel not ekler/günceller. */
+    fun saveAppNote(packageName: String, note: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateCustomNotes(packageName, note.trim())
+        }
+    }
+
     /** Yönetim ekranını (MainActivity) açar. */
     fun openManager(context: Context) {
         try {

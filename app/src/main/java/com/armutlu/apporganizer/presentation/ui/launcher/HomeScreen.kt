@@ -675,6 +675,9 @@ fun HomeScreen(
             onHideApp = { hidden ->
                 viewModel.setAppHidden(app.packageName, hidden)
                 contextMenuPkg = null
+            },
+            onSaveNote = { note ->
+                viewModel.saveAppNote(app.packageName, note)
             }
         )
     }
