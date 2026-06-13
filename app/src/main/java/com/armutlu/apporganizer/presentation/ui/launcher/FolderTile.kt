@@ -57,7 +57,8 @@ fun FolderTile(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textAlpha: Float = 1f
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -158,7 +159,7 @@ fun FolderTile(
 
         Text(
             text = folder.category.categoryName,
-            color = Color.White,
+            color = Color.White.copy(alpha = textAlpha),
             fontSize = 12.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

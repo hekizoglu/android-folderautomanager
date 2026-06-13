@@ -236,10 +236,24 @@ fun AllAppsDrawer(
         )
     }
 
-    // Bildirim metni ayarı — drawer açıldığında bir kere oku, her satırda değil
-    val notifTextEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context) }
-    // Kullanılmayan uygulama gri ayarı — 0 = kapalı (renkli göster)
-    val unusedGreyDays = remember { com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context) }
+    // Bildirim metni ve gri gün ayarları — Settings değişince anında güncellenir
+    var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(
+            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
+                    notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
+                    unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     // Sırala + filtrele
     val sortedApps = remember(apps, sortMode, searchQuery, quickFilter) {
