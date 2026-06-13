@@ -52,6 +52,13 @@ class AppNotificationListenerService : NotificationListenerService() {
         rebuildCounts()
     }
 
+    // Servis bağlantısı kesilince (sistem yeniden başlatma, izin iptali vs.)
+    // stale badge ve metin verilerini temizle.
+    override fun onListenerDisconnected() {
+        _badgeCounts.value = emptyMap()
+        _latestTexts.value = emptyMap()
+    }
+
     private fun rebuildCounts() {
         val counts = mutableMapOf<String, Int>()
         runCatching {

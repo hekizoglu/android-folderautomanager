@@ -103,10 +103,10 @@ enum class AllAppsSortMode(val label: String) {
 }
 
 // ── Async ikon yükleme — global LRU cache paylaşılır, ikon paketi destekler ──
+// iconPackPkg dışarıdan verilir: reactive state olarak yönetilir, burada remember kullanılmaz.
 @Composable
-private fun rememberAppIcon(packageName: String): ImageBitmap? {
+private fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): ImageBitmap? {
     val context = LocalContext.current
-    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
     return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
         if (value == null) {
@@ -236,9 +236,10 @@ fun AllAppsDrawer(
         )
     }
 
-    // Bildirim metni ve gri gün ayarları — Settings değişince anında güncellenir
+    // Ayarlar — Settings değişince anında güncellenir (SharedPrefs listener)
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
             com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
@@ -249,6 +250,8 @@ fun AllAppsDrawer(
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
                     unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -518,6 +521,7 @@ fun AllAppsDrawer(
                                         sortMode = sortMode,
                                         notifTextEnabled = notifTextEnabled,
                                         unusedGreyDays = unusedGreyDays,
+                                        iconPackPkg = iconPackPkg,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -547,6 +551,7 @@ fun AllAppsDrawer(
                                         sortMode = sortMode,
                                         notifTextEnabled = notifTextEnabled,
                                         unusedGreyDays = unusedGreyDays,
+                                        iconPackPkg = iconPackPkg,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -648,10 +653,11 @@ fun NiagaraAppRow(
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
     notifTextEnabled: Boolean = false,
     unusedGreyDays: Int = 0,
+    iconPackPkg: String = "",
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
-    val icon = rememberAppIcon(app.packageName)
+    val icon = rememberAppIcon(app.packageName, iconPackPkg)
     val notifColor = when {
         app.notificationCount == 0 -> null
         app.notificationImportance >= 4 -> BadgeRed
