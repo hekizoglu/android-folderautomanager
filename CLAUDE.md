@@ -720,4 +720,12 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 ### Onboarding RESTORE_BACKUP Adımı (Döngü 25)
 WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçici ile geri yükleme, `hiltViewModel` ile `AppListViewModel` inject edildi.
 
-*Son güncelleme: 2026-06-13 (Döngü 25 — greyscale fix, sort kalıcı, onboarding yedek)*
+### Settings Reaktiflik Fix (Döngü 26)
+**Hata:** `remember {}` ile okunan AppPrefs değerleri (bgType, bgColor, textAlpha, widgetAreaEnabled, notifTextEnabled, unusedGreyDays) Settings'den dönerken güncellenmiyordu — launcher yeniden başlatmak gerekiyordu.
+**Fix:** `mutableStateOf` + `DisposableEffect(context)` + `SharedPreferences.OnSharedPreferenceChangeListener` kombinasyonu ile reaktif hale getirildi:
+- `HomeScreen.kt`: bgType, bgColor, textAlpha, widgetAreaEnabled — Settings'de değişince anında yansır
+- `AllAppsDrawer.kt`: notifTextEnabled, unusedGreyDays — drawer açıkken dahi güncellenir
+**Ek:** `FolderTile.kt`'ye `textAlpha: Float = 1f` parametresi eklendi; kategori adı metnine uygulandı (textAlpha özelliği daha önce hiç FolderTile'a geçirilmiyordu).
+**Uzak Ortam Notu:** APK build bu remote ortamda yapılamıyor — yerel makinede doğrulanmalı.
+
+*Son güncelleme: 2026-06-13 (Döngü 26 — Settings reaktiflik fix, textAlpha FolderTile)*
