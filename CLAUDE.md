@@ -607,4 +607,18 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
   - Onceki: `onCreate` + hemen ardindan `onResume` iki kez senkronizasyon tetikliyordu
   - Yeni: Ilk oturumda tek senkronizasyon; sonraki 30 dakika throttle korunur
 
-*Son güncelleme: 2026-06-13 (Döngü 17 — AllAppsDrawer icon cache + rekomposisyon optimizasyonu)*
+### Bildirim Badge/Metin Temizleme Bug Fix (Döngü 18)
+**Hata:** Tum bildirimler silindiginde badge sayilari ve bildirim metinleri DB'de kaliyor, UI yanlis badge gosteriyordu.
+
+**AppNotificationListenerService.kt degisiklikleri:**
+- `onNotificationRemoved`: `_latestTexts` map'inden uygulamanin entry'si kaldiriliyor — o uygulama icin baska aktif bildirim yoksa
+- Mekanizma: `activeNotifications?.any { it.packageName == pkg && !it.isOngoing }` kontroluyle calisiyor
+
+**LauncherViewModel.kt degisiklikleri:**
+- `badgeCounts` observer: `if (counts.isNotEmpty())` guardi kaldirildi — bos map geldiginde (tum bildirimler silindi) DB temizleme kodu calismiyordu
+- `latestTexts` observer: `if (texts.isNotEmpty())` guardi kaldirildi + DB'deki eski metinleri temizleyen blok eklendi
+- Her iki observer `toReset`/`toClean` listeleri bos oldugunda yazma yapmaz — sifir gereksiz DB IO
+
+**Sonuc:** Badge sayisi ve bildirim metni artik gercek zamani yansitiyor. Bildirim silindiginde badge aninda kalkiyor.
+
+*Son güncelleme: 2026-06-13 (Döngü 18 — bildirim badge/metin temizleme bug fix)*
