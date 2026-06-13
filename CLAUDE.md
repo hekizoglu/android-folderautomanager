@@ -452,10 +452,10 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 
 | # | Özellik | Rakip Fırsat | Öncelik |
 |---|---------|--------------|---------|
-| 3 | Ana ekrana dönüşte hız iyileştirmesi | Smart Launcher şikayeti: "yavaş geri dönüş" | Yüksek |
-| 4 | Gesture navigation uyumsuzluk fix | Xiaomi/Samsung sistem navigasyonu çakışması | Yüksek |
+| 3 | ~~Ana ekrana dönüşte hız iyileştirmesi~~ ✅ | Smart Launcher şikayeti: "yavaş geri dönüş" — **Döngü 15, 16, 20, 21'de tamamlandı** | Yüksek |
+| 4 | ~~Gesture navigation uyumsuzluk fix~~ ✅ | Xiaomi/Samsung sistem navigasyonu çakışması — **Döngü 11'de tamamlandı** | Yüksek |
 | 6 | ~~Icon pack desteği~~ ✅ | Nova kullanıcıları "icon pack yok" diyor — **Döngü 22'de tamamlandı** | Orta |
-| 7 | Widget desteği | Niagara kullanıcıları "widget eksik" diyor | Orta |
+| 7 | ~~Widget desteği~~ ✅ | Niagara kullanıcıları "widget eksik" diyor — **Döngü 24'te tamamlandı** | Orta |
 
 **Döngülere eklenme zamanı:** Rakip analizi tamamlandıktan sonra (bkz. Özellik Durum Tablosu)
 
@@ -693,4 +693,21 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 **Fix:** Boş slotlar `items(pageFolders.size)` blokundan **sonra** eklendi. Uzun bas ile "Ana Ekran" menüsü (Duvar Kağıdı / Dock Düzenle / Launcher Ayarları) artık doğru çalışıyor.
 **Test:** Üst boş alan (y≈180, clock widget bölgesi) uzun basılarak doğrulandı.
 
-*Son güncelleme: 2026-06-13 (Döngü 23 — HomeLongPressSheet fix, IconPackManager merge)*
+### Widget Desteği (Döngü 24) — Yol Haritası #7 Tamamlandı
+**Yeni dosyalar:**
+- `utils/WidgetPrefs.kt` — widget ID'leri (int listesi) SharedPrefs'te `widget_prefs` altında saklanır
+- `utils/WidgetHostManager.kt` — `AppWidgetHost` singleton; `startListening`/`stopListening` lifecycle yönetimi
+- `presentation/ui/launcher/WidgetArea.kt` — `AppWidgetHostView` Compose `AndroidView` ile gösterilir; uzun basınca kırmızı X silme butonu belirir
+
+**Değiştirilen dosyalar:**
+- `LauncherActivity`: `widgetPickerLauncher` + `widgetConfigureLauncher` (`registerForActivityResult`); `launchWidgetPicker()`; `onResume` → `startListening`, `onPause` → `stopListening`; `onCreate` → `loadWidgetIds`
+- `LauncherViewModel`: `widgetIds: StateFlow<List<Int>>` + `addWidgetId`/`removeWidgetId`/`loadWidgetIds`
+- `HomeScreen`: `onLaunchWidgetPicker` lambda parametresi; `WidgetArea` Google search bar ile klasör grid arası
+- `HomeLongPressSheet`: "Widget Ekle" seçeneği (`Icons.Default.Widgets`)
+- `AppPrefs`: `KEY_WIDGET_AREA_ENABLED` — widget alanını açıp kapama
+- `SettingsScreen`: "Widget" bölümü eklendi — toggle
+- `AndroidManifest`: `BIND_APPWIDGET` izni (launcher rolüyle otomatik bind edilebilir)
+
+**Kullanım akışı:** Ana ekran uzun bas → "Widget Ekle" → sistem widget seçici açılır → seçim yapılınca WidgetArea'da gösterilir → Uzun bas → X ile silinir
+
+*Son güncelleme: 2026-06-13 (Döngü 24 — Widget destegi, Yol Haritasi #7 tamamlandi)*
