@@ -688,4 +688,9 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **`SettingsScreen.kt`**: "İkon Paketi" bolumu eklendi — kurulu paketleri listele, secili secenegi CheckCircle goster; paket yoksa Play Store yonlendirmesi
 
-*Son güncelleme: 2026-06-13 (Döngü 22 — ikon paketi desteği, Yol Haritası #6 tamamlandı)*
+### HomeLongPressSheet Grid Sıralaması (Döngü 23)
+**Hata:** `items(emptySlots)` FolderTile'lardan önce eklenmişti — boş Box'lar grid başına render edildiğinden koordinat kaymasıyla FolderSheet açılıyordu.
+**Fix:** Boş slotlar `items(pageFolders.size)` blokundan **sonra** eklendi. Uzun bas ile "Ana Ekran" menüsü (Duvar Kağıdı / Dock Düzenle / Launcher Ayarları) artık doğru çalışıyor.
+**Test:** Üst boş alan (y≈180, clock widget bölgesi) uzun basılarak doğrulandı.
+
+*Son güncelleme: 2026-06-13 (Döngü 23 — HomeLongPressSheet fix, IconPackManager merge)*
