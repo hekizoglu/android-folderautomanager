@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
@@ -136,6 +137,87 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            // ── Arka Plan ────────────────────────────────────────────────────
+            item {
+                SettingsCard {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Ana Ekran Arka Planı", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        // Duvar kağıdı / Düz renk seçimi
+                        var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("wallpaper" to "Duvar Kağıdı", "solid" to "Düz Renk").forEach { (type, label) ->
+                                FilterChip(
+                                    selected = bgType == type,
+                                    onClick = {
+                                        bgType = type
+                                        com.armutlu.apporganizer.utils.AppPrefs.setBgType(context, type)
+                                    },
+                                    label = { Text(label, fontSize = 12.sp) }
+                                )
+                            }
+                        }
+                        // Düz renk arka plan rengi seçimi
+                        if (bgType == "solid") {
+                            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                            Text("Arka Plan Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                            val bgColors = listOf(
+                                0xFF1A1A2E.toInt() to "Koyu Lacivert",
+                                0xFF121212.toInt() to "Siyah",
+                                0xFF0A1628.toInt() to "Gece Mavisi",
+                                0xFF1C1008.toInt() to "Koyu Kahve",
+                                0xFF0F2027.toInt() to "Derin Okyanus",
+                                0xFF1A1025.toInt() to "Derin Mor"
+                            )
+                            var selectedBgColor by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                items(bgColors) { (colorInt, colorLabel) ->
+                                    val isSelected = selectedBgColor == colorInt
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .clickable {
+                                                selectedBgColor = colorInt
+                                                com.armutlu.apporganizer.utils.AppPrefs.setBgColor(context, colorInt)
+                                            }
+                                            .padding(4.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(colorInt))
+                                                .border(
+                                                    width = if (isSelected) 3.dp else 1.dp,
+                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                                                    shape = CircleShape
+                                                )
+                                        )
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(colorLabel, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.width(52.dp))
+                                    }
+                                }
+                            }
+                        }
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                        // Yazı transparanlığı
+                        var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Yazı Opaklığı", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                            Text("${(textAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                        androidx.compose.material3.Slider(
+                            value = textAlpha,
+                            onValueChange = {
+                                textAlpha = it
+                                com.armutlu.apporganizer.utils.AppPrefs.setTextAlpha(context, it)
+                            },
+                            valueRange = 0.4f..1.0f,
+                            steps = 11
+                        )
                     }
                 }
             }

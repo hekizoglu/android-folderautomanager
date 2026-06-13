@@ -112,6 +112,9 @@ fun HomeScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
     val widgetAreaEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context) }
+    val bgType = remember { com.armutlu.apporganizer.utils.AppPrefs.getBgType(context) }
+    val bgColorInt = remember { com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context) }
+    val textAlpha = remember { com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context) }
 
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
@@ -243,10 +246,15 @@ fun HomeScreen(
         }
     }
 
-    // Root box — fully transparent so wallpaper shows through
+    // Root box — duvar kağıdı (transparent) veya düz renk arka plan
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .then(
+                if (bgType == "solid")
+                    Modifier.background(Color(bgColorInt))
+                else Modifier
+            )
             .nestedScroll(nestedScrollConnection)
             .pointerInput(allAppsOpen) {
                 if (!allAppsOpen) {

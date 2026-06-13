@@ -90,6 +90,21 @@ object AppPrefs {
     fun isWidgetAreaEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AREA_ENABLED, true)
     fun setWidgetAreaEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WIDGET_AREA_ENABLED, v).apply()
 
+    // Arka plan tipi — "wallpaper" (duvar kağıdı) | "solid" (düz renk)
+    const val KEY_BG_TYPE = "bg_type"
+    fun getBgType(context: Context): String = prefs(context).getString(KEY_BG_TYPE, "wallpaper") ?: "wallpaper"
+    fun setBgType(context: Context, type: String) = prefs(context).edit().putString(KEY_BG_TYPE, type).apply()
+
+    // Düz renk arka plan rengi — ARGB int
+    const val KEY_BG_COLOR = "bg_color"
+    fun getBgColor(context: Context): Int = prefs(context).getInt(KEY_BG_COLOR, 0xFF1A1A2E.toInt())
+    fun setBgColor(context: Context, color: Int) = prefs(context).edit().putInt(KEY_BG_COLOR, color).apply()
+
+    // Yazı/ikon etiket transparanlığı — 0.0-1.0 (1.0 = tam opak)
+    const val KEY_TEXT_ALPHA = "text_alpha"
+    fun getTextAlpha(context: Context): Float = prefs(context).getFloat(KEY_TEXT_ALPHA, 1.0f)
+    fun setTextAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_TEXT_ALPHA, v).apply()
+
     // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
     private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika
