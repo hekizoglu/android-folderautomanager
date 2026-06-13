@@ -28,6 +28,12 @@ class LauncherActivity : ComponentActivity() {
     private var lastHomePressMs = 0L
     private var receiverRegistered = false
 
+    // config_navBarInteractionMode cihaz yeniden başlamadan değişmez — bir kere okumak yeterli
+    private val gestureNavEnabled: Boolean by lazy {
+        val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
+        resId > 0 && resources.getInteger(resId) == 2
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,6 +54,7 @@ class LauncherActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         viewModel.loadAppsIfEmpty(this)
         viewModel.syncUsageStats(this)
+        AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin
         viewModel.syncAppSizes(this)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
@@ -80,20 +87,13 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
-    // Xiaomi/Samsung gesture navigation'da SHOW_TRANSIENT_BARS_BY_SWIPE çakışır.
-    // config_navBarInteractionMode: 0=3-button, 1=2-button, 2=gesture
-    private fun isGestureNavEnabled(): Boolean {
-        val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
-        return resId > 0 && resources.getInteger(resId) == 2
-    }
-
     private fun applyNavBarVisibility() {
         if (AppPrefs.isNavButtonsHidden(this)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.insetsController?.let {
                     it.hide(WindowInsets.Type.navigationBars())
                     // Gesture nav aktifse SHOW_TRANSIENT_BARS home gesture ile çakışır
-                    it.systemBarsBehavior = if (isGestureNavEnabled()) {
+                    it.systemBarsBehavior = if (gestureNavEnabled) {
                         WindowInsetsController.BEHAVIOR_DEFAULT
                     } else {
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE

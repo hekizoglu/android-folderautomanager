@@ -102,15 +102,20 @@ enum class AllAppsSortMode(val label: String) {
     INSTALL_DATE("Yükleme")
 }
 
-// ── Async ikon yükleme ────────────────────────────────────────────────────────
+// ── Async ikon yükleme — global LRU cache paylaşılır ─────────────────────────
 @Composable
 private fun rememberAppIcon(packageName: String): ImageBitmap? {
     val context = LocalContext.current
-    return produceState<ImageBitmap?>(initialValue = null, packageName) {
-        value = withContext(Dispatchers.IO) {
-            runCatching {
-                context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
-            }.getOrNull()
+    val cacheKey = "${packageName}_96"
+    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
+            value = loaded
         }
     }.value
 }
@@ -214,6 +219,20 @@ fun AllAppsDrawer(
     }
 
     val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
+
+    // Her chip'in sayımı — apps değişince yeniden hesapla, scroll/rekomposisyonda değil
+    val quickFilterCounts = remember(apps) {
+        val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
+        intArrayOf(
+            apps.size,
+            apps.count { !it.isSystemApp },
+            apps.count { it.isSystemApp },
+            apps.count { it.lastUsedTimestamp > cutoff }
+        )
+    }
+
+    // Bildirim metni ayarı — drawer açıldığında bir kere oku, her satırda değil
+    val notifTextEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context) }
 
     // Sırala + filtrele
     val sortedApps = remember(apps, sortMode, searchQuery, quickFilter) {
@@ -421,16 +440,7 @@ fun AllAppsDrawer(
                                     }
                                     .padding(horizontal = 11.dp, vertical = 5.dp)
                             ) {
-                                val countLabel = when (idx) {
-                                    0 -> " (${apps.size})"
-                                    1 -> " (${apps.count { !it.isSystemApp }})"
-                                    2 -> " (${apps.count { it.isSystemApp }})"
-                                    3 -> {
-                                        val cutoff = System.currentTimeMillis() - 7L*24*60*60*1000
-                                        " (${apps.count { it.lastUsedTimestamp > cutoff }})"
-                                    }
-                                    else -> ""
-                                }
+                                val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
                                 Text(
                                     label + if (active) countLabel else "",
                                     fontSize = 11.sp,
@@ -485,6 +495,7 @@ fun AllAppsDrawer(
                                     NiagaraAppRow(
                                         app = app, iconSize = iconSize, isActive = false,
                                         sortMode = sortMode,
+                                        notifTextEnabled = notifTextEnabled,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -512,6 +523,7 @@ fun AllAppsDrawer(
                                     NiagaraAppRow(
                                         app = app, iconSize = iconSize, isActive = false,
                                         sortMode = sortMode,
+                                        notifTextEnabled = notifTextEnabled,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -611,6 +623,7 @@ fun NiagaraAppRow(
     iconSize: Dp = 40.dp,
     isActive: Boolean = false,
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
+    notifTextEnabled: Boolean = false,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
@@ -689,13 +702,11 @@ fun NiagaraAppRow(
         Spacer(Modifier.width(14.dp))
 
         // Isim + alt bilgi
-        val appRowContext = LocalContext.current
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(appRowContext)
             if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
                     app.notificationText,

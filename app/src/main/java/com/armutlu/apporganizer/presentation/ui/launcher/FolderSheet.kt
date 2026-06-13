@@ -108,20 +108,12 @@ private val DividerColor    = Color(0xFFFFFFFF).copy(alpha = 0.08f)
 private val TealColor       = Color(0xFF00897B)
 private val TextSecondary   = Color.White.copy(alpha = 0.55f)
 
-enum class FolderSortMode(val label: String) {
-    ALPHA("A–Z"),
-    USAGE("Kullanım"),
-    SIZE_DESC("Boyut ↓"),
-    SIZE_ASC("Boyut ↑"),
-    INSTALL_DATE("Yükleme")
-}
-
-private fun List<AppInfo>.sortedBy(mode: FolderSortMode): List<AppInfo> = when (mode) {
-    FolderSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
-    FolderSortMode.USAGE        -> sortedByDescending { it.usageCount }
-    FolderSortMode.SIZE_DESC    -> sortedByDescending { it.appSizeBytes }
-    FolderSortMode.SIZE_ASC     -> sortedBy { it.appSizeBytes }
-    FolderSortMode.INSTALL_DATE -> sortedByDescending { it.installTime }
+private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
+    AllAppsSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
+    AllAppsSortMode.USAGE        -> sortedByDescending { it.usageCount }
+    AllAppsSortMode.SIZE_DESC    -> sortedByDescending { it.appSizeBytes }
+    AllAppsSortMode.SIZE_ASC     -> sortedBy { it.appSizeBytes }
+    AllAppsSortMode.INSTALL_DATE -> sortedByDescending { it.installTime }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,13 +126,13 @@ fun FolderSheet(
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
-    var sortMode by remember { mutableStateOf(FolderSortMode.ALPHA) }
+    var sortMode by remember { mutableStateOf(AllAppsSortMode.ALPHA) }
     var searchQuery by remember { mutableStateOf("") }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
         val base = if (searchQuery.isBlank()) folder.apps
                    else folder.apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
-        base.sortedBy(sortMode)
+        base.sortedByMode(sortMode)
     }
 
     ModalBottomSheet(
@@ -218,7 +210,7 @@ fun FolderSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
             ) {
-                itemsIndexed(FolderSortMode.entries) { _, mode ->
+                itemsIndexed(AllAppsSortMode.entries) { _, mode ->
                     val active = sortMode == mode
                     Box(
                         modifier = Modifier

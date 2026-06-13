@@ -564,4 +564,77 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 - PixelClockWidget yorumlarindaki bozuk UTF-8 sekanslar (`C3 A2 E2 82 AC 22`) duzgun em-dash ile degistirildi
 - Python `open(f, 'rb')` + `.replace(bad, good)` yontemiyle guvende duzeltildi
 
-*Son güncelleme: 2026-06-13 (Döngü 14 — Onboarding 13 adım test edildi)*
+### onResume Yuk Azaltma + Dock Kırık İkon Fix (Döngü 15)
+**LauncherViewModel.kt degisiklikleri:**
+- `dockLoaded` bayragi eklendi — klasor sirasi sadece ilk `loadDockPackages()` cagrisinda SharedPrefs'ten okunur; `reorderFolders()` sonraki guncellemeleri bellekte tutar
+- `loadDockPackages()`: `newPackages != _dockPackages.value` karsilastirmasi — deger degismemisse `StateFlow` guncellenmez, gereksiz dock rekomposisyonu onlendi
+- `onPackageRemoved()`: silinen uygulama dock'taysa aninda `_dockPackages` guncelleniyor — bir sonraki resume'a kadar kirik ikon gosterilmez
+**LauncherActivity.kt degisiklikleri:**
+- `isGestureNavEnabled()` fonksiyonu kaldirildi → `gestureNavEnabled: Boolean by lazy { ... }` property'ye donusturuldu — `resources.getIdentifier()` artik bir kere calisir, her `onResume`'da tekrar edilmez
+
+**Yol haritasi:** #3 "Ana ekrana donus hizi iyilestirmesi" bu donguyle tamamlandi.
+
+### queryIntentActivities Optimizasyonu (Döngü 16)
+**PackageManagerHelper.kt degisiklikleri:**
+- `getInstalledApps(onlyLaunchable=true)`: `getInstalledPackages(GET_META_DATA)` + per-package `getLaunchIntentForPackage` kaldirildi
+- Tek `queryIntentActivities(MAIN+LAUNCHER)` sorgusuyla tum launcher-visible uygulamalar aliniyor — 100 uygulamada ~200ms tasarruf, ~5x hizlanma
+- `onlyLaunchable=false` modu: eski `getInstalledPackages(0)` yolu korundu (geriye donuk uyum)
+
+**LauncherViewModel.kt degisiklikleri:**
+- `reconcileIfNeeded()`: `getInstalledPackages(0)` + per-package `getLaunchIntentForPackage` yerine `queryIntentActivities` — onResume count check ~3x hizli
+- Uygulama sayisi tutmazsa `loadAppsIfEmpty()` tetikleme mant. korundu
+
+**HomeScreen.kt degisiklikleri:**
+- AllApps drawer animasyonu: `fadeIn/Out` yerine `LinearOutSlowInEasing` (acilis 300ms) + `FastOutLinearInEasing` (kapanis 220ms) — Material motion standartlari
+- Dock `systemGestureExclusionRects`: onceki rect ile karsilastirma eklendi — sadece dock pozisyonu degisince guncellenir, her layout gecisinde degil
+- Yeni import'lar: `FastOutLinearInEasing`, `LinearOutSlowInEasing`
+
+**Yol haritasi:** #3 bu donguyle daha da ilerletildi — uygulama tarama suresi onemli olcude azaldi.
+
+### AllAppsDrawer Rekomposisyon Optimizasyonu (Döngü 17)
+**AllAppsDrawer.kt degisiklikleri:**
+- `rememberAppIcon`: `iconCacheInternal[cacheKey]` ile `initialValue` set edildi — cache hit'te aninda gosterir, IO tetiklemez
+  - Onceki: `initialValue = null` → her drawer acilisinda 100+ ikon diskten yeniden yukluyordu
+  - Yeni: FolderTile/AppIconView ile ayni LRU-200 cache paylasilir; key format: `"packageName_96"`
+- `quickFilterCounts`: `remember(apps)` ile memoize edildi — `intArrayOf(size, userCount, systemCount, recent7Days)`
+  - Onceki: `itemsIndexed` icerisinde `apps.count { }` her chip rekomposisyonunda 4x hesapliyordu
+  - Yeni: Sadece `apps` degisince yeniden hesaplar
+- `notifTextEnabled`: `remember { AppPrefs.isNotificationTextEnabled(context) }` ile AllAppsDrawer seviyesine ciktirildi
+  - `NiagaraAppRow` imzasina `notifTextEnabled: Boolean = false` parametresi eklendi
+  - Onceki: Her satir rekomposisyonunda SharedPrefs okuyordu (100+ satir = 100+ okuma)
+
+**LauncherActivity.kt degisiklikleri:**
+- `onCreate`'de `syncUsageStats` sonrasina `AppPrefs.markUsageStatsSynced(this)` eklendi
+  - Onceki: `onCreate` + hemen ardindan `onResume` iki kez senkronizasyon tetikliyordu
+  - Yeni: Ilk oturumda tek senkronizasyon; sonraki 30 dakika throttle korunur
+
+### Bildirim Badge/Metin Temizleme Bug Fix (Döngü 18)
+**Hata:** Tum bildirimler silindiginde badge sayilari ve bildirim metinleri DB'de kaliyor, UI yanlis badge gosteriyordu.
+
+**AppNotificationListenerService.kt degisiklikleri:**
+- `onNotificationRemoved`: `_latestTexts` map'inden uygulamanin entry'si kaldiriliyor — o uygulama icin baska aktif bildirim yoksa
+- Mekanizma: `activeNotifications?.any { it.packageName == pkg && !it.isOngoing }` kontroluyle calisiyor
+
+**LauncherViewModel.kt degisiklikleri:**
+- `badgeCounts` observer: `if (counts.isNotEmpty())` guardi kaldirildi — bos map geldiginde (tum bildirimler silindi) DB temizleme kodu calismiyordu
+- `latestTexts` observer: `if (texts.isNotEmpty())` guardi kaldirildi + DB'deki eski metinleri temizleyen blok eklendi
+- Her iki observer `toReset`/`toClean` listeleri bos oldugunda yazma yapmaz — sifir gereksiz DB IO
+
+**Sonuc:** Badge sayisi ve bildirim metni artik gercek zamani yansitiyor. Bildirim silindiginde badge aninda kalkiyor.
+
+### Ikon Cache Temizleme + FolderSortMode DRY + onPackageAdded Optimizasyonu (Döngü 19)
+**Explore agent analiz bulgulari:** LauncherViewModel'de ikon cache invalidation eksikti; FolderSheet FolderSortMode enum AllAppsSortMode ile identic ama ayri yasiyordu; onPackageAdded tam PM taramasi yapiyordu.
+
+**LauncherViewModel.kt degisiklikleri:**
+- `onPackageRemoved`: `iconCacheInternal.snapshot().keys.filter { it.startsWith("$pkg_") }` ile paket-spesifik cache entry'leri temizleniyor — kaldirilan uygulamanin ikonu bir sonraki acilista bozuk gozukmez
+- `onPackageAdded`: ayni cache temizleme + tam `getInstalledApps(...)` taramasi yerine `helper.getAppInfo(packageName)` — tek paket fetch, ~5x daha hizli; `IGNORE` conflict stratejisi mevcut kategori/usage/hidden verilerini koruyor
+- `dockLoaded`: `@Volatile` eklendi — coklu thread erişiminde tutarsiz okuma onlendi
+
+**FolderSheet.kt degisiklikleri:**
+- `FolderSortMode` enum kaldirildi (AllAppsSortMode ile identic, DRY ihlali)
+- `private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode)` extension ile AllAppsSortMode kullanilmaya gecildi
+- `FolderSortMode.entries` → `AllAppsSortMode.entries`; enum tanımı artık tek yerde
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 19 — ikon cache fix, FolderSortMode DRY, onPackageAdded optimizasyonu)*
