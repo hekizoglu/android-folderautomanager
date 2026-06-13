@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 18:27 UTC
-# Commit: add1e7d499908d15294983bfd19c4d24cc115a73
+# Generated: 2026-06-13 18:28 UTC
+# Commit: eb0cc8006898edfe7261eb04d821e3f12b508e37
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8543,7 +8543,24 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     var stepIndex by remember { mutableStateOf(0) }
-    val steps = OnboardingStep.entries.toList()
+    // SET_LAUNCHER sona alındı — tüm ayarlar bittikten sonra sorulsun
+    val steps = listOf(
+        OnboardingStep.WELCOME,
+        OnboardingStep.RESTORE_BACKUP,
+        OnboardingStep.QUERY_PACKAGES,
+        OnboardingStep.NOTIFICATIONS,
+        OnboardingStep.UNUSED_GREY,
+        OnboardingStep.AUTO_BACKUP,
+        OnboardingStep.NOTIF_TEXT,
+        OnboardingStep.NOTIF_ACCESS,
+        OnboardingStep.SWIPE_HINT,
+        OnboardingStep.NEW_BADGE,
+        OnboardingStep.FOLDER_COUNT,
+        OnboardingStep.NAV_HIDE,
+        OnboardingStep.THEME_SELECT,
+        OnboardingStep.SET_LAUNCHER,
+        OnboardingStep.DONE,
+    )
     val step = steps[stepIndex]
 
     var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
