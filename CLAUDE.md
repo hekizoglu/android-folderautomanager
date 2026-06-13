@@ -857,8 +857,8 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Her 18 döngüde bir:** emülatörde tam test
 
 ### Akıllı Kategorizasyon (Hüseyin Talebi — Yapılacak)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ 892 eşleme (479'dan, +413)
-- Aşama 2: "Diğer" klasöründeki uygulamalar için kendi sunucu API'si veya LLM fallback
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ 1116+ eşleme (479'dan)
+- ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü > "DeepSeek ile Kategorize Et"
 - Detay: CLAUDE.md "Akıllı Kategorizasyon Yol Haritası" bölümünde
 
 ### Akıllı Kategorizasyon Genişletme (Döngü 31 — remote)
@@ -868,4 +868,22 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - Yeni kategoriler kapsananlar: Türkiye GSM operatörleri, bankalar (9 yeni Türk banka paketi), eğlence platformları, 90+ yeni oyun, Ekşi Sözlük, Yandex servisleri
 - **Build Notu:** Remote ortamda APK derlenemiyor (dl.google.com erişim yasağı) — yerel makinede doğrulanmalı
 
-*Son güncelleme: 2026-06-13 (Döngü 31 — AppClassifier top-1000 genişletme)*
+### Akıllı Kategorizasyon Aşama 2 (Döngü 32 — remote)
+**CategoryLLMFallback.kt** (yeni dosya):
+- `categorize(apps, apiKey, onProgress)` — batch 15 uygulama/istek, `HttpURLConnection` ile DeepSeek API
+- `categorizeBatch()` — JSON array cevap parse, `deepseek-chat` model, sıcaklık 0.1
+- Markdown kod bloğu temizleme (```json prefix kaldırılır)
+- VALID_CATEGORIES set: 14 kategori, bilinmeyen → "other"
+
+**AppPrefs.kt**: `KEY_DEEPSEEK_API_KEY` + getter/setter eklendi (SharedPrefs'te saklı)
+
+**AppListViewModel.kt**:
+- `_llmCategorizing: MutableStateFlow<Boolean>` + `_llmProgress: MutableStateFlow<String>`
+- `categorizeDigerWithLLM(apiKey)`: CAT_OTHER flow'dan `.first()`, batch LLM çağrısı, DB güncelleme
+
+**SettingsScreen.kt** — Diğer Klasörü bölümüne:
+- DeepSeek API key input (PasswordVisualTransformation + göster/gizle butonu)
+- "DeepSeek ile Kategorize Et" butonu (llmCategorizing false ve key boş değilse aktif)
+- Canlı ilerleme mesajı (kırmızı=hata, mavi=başarı)
+
+*Son güncelleme: 2026-06-13 (Döngü 32 — Akıllı Kategorizasyon Aşama 2 tamamlandı)*
