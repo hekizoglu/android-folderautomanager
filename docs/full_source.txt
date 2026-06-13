@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 10:12 UTC
-# Commit: d393f5520f64a117f1bc79e45e0f2a26a1da9cbc
+# Generated: 2026-06-13 10:31 UTC
+# Commit: 9396f83e06153e809d06cd9bb459c55aae342a1c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4952,6 +4952,24 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                             .then(if (isDragging) Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp)) else Modifier)
                     )
                 }
+                // Bos slotlar — folder'lardan sonra, uzun basinca HomeLongPressSheet ac
+                val emptySlots = pageSize - pageFolders.size
+                if (emptySlots > 0) {
+                    items(emptySlots) { _ ->
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            homeLongPressOpen = true
+                                        }
+                                    )
+                                }
+                        )
+                    }
+                }
                 } // LazyVerticalGrid
             } // HorizontalPager
 
@@ -8862,7 +8880,7 @@ fun SettingsScreen(
                     SettingsInfoRow(
                         icon = Icons.Default.Storage,
                         title = "Veritabanı",
-                        subtitle = "${state.apps.size} uygulama Â· ${state.categories.size} kategori"
+                        subtitle = "${state.apps.size} uygulama · ${state.categories.size} kategori"
                     )
                 }
             }
