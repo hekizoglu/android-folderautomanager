@@ -118,7 +118,9 @@ fun HomeScreen(
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
     var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
+    var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
+    val favoriteApps by remember { viewModel.getFavoriteApps(context) }.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
@@ -147,6 +149,8 @@ fun HomeScreen(
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_APPS_ENABLED ->
                     recentAppsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_ENABLED ->
+                    favoritesEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
                     customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
@@ -369,6 +373,18 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
+
+            // Favori uygulamalar satiri
+            if (favoritesEnabled && favoriteApps.isNotEmpty()) {
+                FavoritesRow(
+                    apps = favoriteApps,
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { pkg ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, pkg)
+                    }
+                )
+            }
 
             // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
             if (suggestionsEnabled && suggestedApps.isNotEmpty()) {

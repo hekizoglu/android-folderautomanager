@@ -67,6 +67,7 @@ fun AppContextMenu(
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
     var showNoteDialog by remember { mutableStateOf(false) }
+    var isFav by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavorite(context, app.packageName)) }
 
     val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
         value = withContext(Dispatchers.IO) {
@@ -228,6 +229,17 @@ fun AppContextMenu(
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     context.startActivity(intent)
+                    onDismiss()
+                }
+            )
+
+            ContextAction(
+                icon = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
+                label = if (isFav) "Favorilerden Çıkar" else "Favorilere Ekle",
+                onClick = {
+                    if (isFav) com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, app.packageName)
+                    else com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, app.packageName)
+                    isFav = !isFav
                     onDismiss()
                 }
             )

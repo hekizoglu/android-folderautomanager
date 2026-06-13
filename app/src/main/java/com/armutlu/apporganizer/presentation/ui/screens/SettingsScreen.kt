@@ -461,7 +461,19 @@ fun SettingsScreen(
                 var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
                 var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
                 var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
+                var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
                 SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Star,
+                        title = "Favoriler",
+                        subtitle = "Uzun basinca favoriye eklenen uygulamalar ana ekranda gosterilir (varsayilan: kapali)",
+                        checked = favoritesEnabled,
+                        onCheckedChange = {
+                            favoritesEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setFavoritesEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.AutoAwesome,
                         title = "Uygulama Onerileri",

@@ -385,6 +385,15 @@ class LauncherViewModel @Inject constructor(
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
+    // Favori uygulamalar — SharedPrefs Set ile saklanir, allApps flow'undan filtrelenir
+    fun getFavoriteApps(context: Context): StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            val favPkgs = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
+            apps.filter { it.packageName in favPkgs && !it.isHidden }
+                .sortedBy { it.appName.lowercase(java.util.Locale("tr")) }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
     val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { apps ->
