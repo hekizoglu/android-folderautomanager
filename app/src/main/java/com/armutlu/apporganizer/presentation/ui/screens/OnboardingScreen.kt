@@ -256,7 +256,24 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     var stepIndex by remember { mutableStateOf(0) }
-    val steps = OnboardingStep.entries.toList()
+    // SET_LAUNCHER sona alındı — tüm ayarlar bittikten sonra sorulsun
+    val steps = listOf(
+        OnboardingStep.WELCOME,
+        OnboardingStep.RESTORE_BACKUP,
+        OnboardingStep.QUERY_PACKAGES,
+        OnboardingStep.NOTIFICATIONS,
+        OnboardingStep.UNUSED_GREY,
+        OnboardingStep.AUTO_BACKUP,
+        OnboardingStep.NOTIF_TEXT,
+        OnboardingStep.NOTIF_ACCESS,
+        OnboardingStep.SWIPE_HINT,
+        OnboardingStep.NEW_BADGE,
+        OnboardingStep.FOLDER_COUNT,
+        OnboardingStep.NAV_HIDE,
+        OnboardingStep.THEME_SELECT,
+        OnboardingStep.SET_LAUNCHER,
+        OnboardingStep.DONE,
+    )
     val step = steps[stepIndex]
 
     var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
