@@ -59,6 +59,7 @@ fun FolderTile(
     onSwipeUp: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     textAlpha: Float = 1f,
+    folderSizeDp: Int = 72,
     customName: String? = null,
     customEmoji: String? = null,
     customColor: String? = null,
@@ -82,9 +83,13 @@ fun FolderTile(
     val previewApps = folder.apps.take(4)
     val totalBadge  = folder.apps.sumOf { it.notificationCount }
 
+    val tileWidth = folderSizeDp.dp
+    val circleSize = (folderSizeDp * 5 / 6).dp  // 60/72 oranı korunuyor
+    val miniIconSize = (folderSizeDp / 3).dp     // 22/72 yaklaşık
+
     Column(
         modifier = modifier
-            .width(72.dp)
+            .width(tileWidth)
             .scale(scale)
             .pointerInput(folder) {
                 detectVerticalDragGestures(
@@ -124,7 +129,7 @@ fun FolderTile(
         Box {
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(circleSize)
                 .clip(CircleShape)
                 .background(catColor.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
@@ -138,7 +143,7 @@ fun FolderTile(
                 // 2x2 mini icon grid
                 MiniIconGrid(
                     apps = previewApps,
-                    iconSize = 22.dp
+                    iconSize = miniIconSize
                 )
             }
         }
@@ -168,7 +173,7 @@ fun FolderTile(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.width(72.dp)
+            modifier = Modifier.width(tileWidth)
         )
         val context = LocalContext.current
         val folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
@@ -191,7 +196,7 @@ fun FolderTile(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.width(72.dp)
+                modifier = Modifier.width(tileWidth)
             )
         }
         // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
@@ -209,7 +214,7 @@ fun FolderTile(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.width(72.dp)
+                    modifier = Modifier.width(tileWidth)
                 )
             }
         }

@@ -78,6 +78,11 @@ object AppPrefs {
         IconPackManager.clearCache()
     }
 
+    // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
+    const val KEY_FOLDER_SIZE = "folder_size_dp"
+    fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
+    fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
+
     // Klasör sıralama modu — tüm klasörler için global
     const val KEY_FOLDER_SORT_MODE = "folder_sort_mode"
     fun getFolderSortMode(context: Context): String =

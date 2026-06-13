@@ -218,6 +218,21 @@ fun SettingsScreen(
                             valueRange = 0.4f..1.0f,
                             steps = 11
                         )
+                        androidx.compose.material3.HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Klasör Boyutu", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                            Text("${folderSizeDp}dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                        androidx.compose.material3.Slider(
+                            value = folderSizeDp.toFloat(),
+                            onValueChange = {
+                                folderSizeDp = it.toInt()
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderSizeDp(context, it.toInt())
+                            },
+                            valueRange = 56f..96f,
+                            steps = 7
+                        )
                     }
                 }
             }

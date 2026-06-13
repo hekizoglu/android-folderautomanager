@@ -122,6 +122,7 @@ fun HomeScreen(
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
+    var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
     // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
@@ -145,6 +146,8 @@ fun HomeScreen(
                     customFolderEmojis = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_COLORS ->
                     customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SIZE ->
+                    folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -443,6 +446,7 @@ fun HomeScreen(
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         textAlpha = textAlpha,
+                        folderSizeDp = folderSizeDp,
                         customName = customFolderNames[folder.category.categoryId],
                         customEmoji = customFolderEmojis[folder.category.categoryId],
                         customColor = customFolderColors[folder.category.categoryId],
