@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 08:10 UTC
-# Commit: 3c8e73ab2bdf58c12b3a884cc533003cf007b675
+# Generated: 2026-06-13 09:11 UTC
+# Commit: a89b2b05475348fe64fa00afe286d87478d8bb8a
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5158,8 +5158,76 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     }
 }
 
+// PixelClockWidget, GoogleSearchBar, PixelDock, DockIcon, SwipeHint
+// HomeScreenComponents.kt dosyasına taşındı — aynı paket, internal görünürlük.
+
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreenComponents.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.launcher
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
+import com.armutlu.apporganizer.utils.AppPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 @Composable
-private fun PixelClockWidget(modifier: Modifier = Modifier) {
+internal fun PixelClockWidget(modifier: Modifier = Modifier) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val dateFormat = remember { SimpleDateFormat("EEEE, d MMMM", Locale("tr")) }
     var now by remember { mutableStateOf(Date()) }
@@ -5175,7 +5243,6 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Time — 72sp Thin weight, pure white, soft shadow
         Text(
             text = timeFormat.format(now),
             color = Color.White,
@@ -5183,11 +5250,8 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Thin,
             letterSpacing = (-2).sp,
             textAlign = TextAlign.Center,
-            // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
-            // We layer a blurred copy via alpha trick instead — keep it simple and readable.
         )
         Spacer(modifier = Modifier.height(2.dp))
-        // Date — 16sp white 85% alpha
         Text(
             text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
             color = Color.White.copy(alpha = 0.85f),
@@ -5199,9 +5263,9 @@ private fun PixelClockWidget(modifier: Modifier = Modifier) {
     }
 }
 
-/** Pixel Launcher stili Google arama çubuğu — tıklayınca Google web araması açar. */
+/** Pixel Launcher stili Google arama cubugu — tikklayinca Google web aramasi acar. */
 @Composable
-private fun GoogleSearchBar(modifier: Modifier = Modifier) {
+internal fun GoogleSearchBar(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     Row(
         modifier = modifier
@@ -5220,7 +5284,6 @@ private fun GoogleSearchBar(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Google "G" logosu — renkli noktalar
         Row(horizontalArrangement = Arrangement.spacedBy(1.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("G", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Text("o", color = Color(0xFFEA4335), fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -5235,8 +5298,7 @@ private fun GoogleSearchBar(modifier: Modifier = Modifier) {
             fontSize = 14.sp,
             modifier = Modifier.weight(1f)
         )
-        // Mikrofon ikonu
-        androidx.compose.material3.Icon(
+        Icon(
             imageVector = Icons.Default.Mic,
             contentDescription = "Sesli ara",
             tint = Color.White.copy(alpha = 0.7f),
@@ -5252,10 +5314,10 @@ private fun GoogleSearchBar(modifier: Modifier = Modifier) {
     }
 }
 
-/** Frosted pill dock — packages listesi DockPrefs'ten gelir, kullanıcı tarafından seçilebilir. */
+/** Frosted pill dock — packages listesi DockPrefs'ten gelir, kullanici tarafindan secilebilir. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PixelDock(
+internal fun PixelDock(
     packages: List<String>,
     onLaunchApp: (String) -> Unit,
     onLongPress: () -> Unit = {},
@@ -5304,7 +5366,7 @@ private fun PixelDock(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DockIcon(
+internal fun DockIcon(
     packageName: String,
     label: String,
     iconSize: Dp,
@@ -5312,9 +5374,8 @@ private fun DockIcon(
     onLongClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val px = with(androidx.compose.ui.platform.LocalDensity.current) { iconSize.roundToPx() }
-    // Dock ikonlarini AppIconView ile ayni LRU cache uzerinden async yukle —
-    // main thread kompozisyonu bloke etmez, process omru boyunca cache'te kalan
+    val px = with(LocalDensity.current) { iconSize.roundToPx() }
+    // AppIconView ile ayni LRU cache — main thread bloke etmez, process omru boyunca cache'te kalir
     val cacheKey = "${packageName}_$px"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
@@ -5355,9 +5416,9 @@ private fun DockIcon(
 }
 
 @Composable
-private fun SwipeHint(context: android.content.Context, visible: Boolean) {
-    val swipeHintFeatureEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context) }
-    val showSwipeHint = remember { swipeHintFeatureEnabled && com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
+internal fun SwipeHint(context: Context, visible: Boolean) {
+    val swipeHintFeatureEnabled = remember { AppPrefs.isSwipeHintEnabled(context) }
+    val showSwipeHint = remember { swipeHintFeatureEnabled && AppPrefs.shouldShowSwipeHint(context) }
     val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -5370,7 +5431,7 @@ private fun SwipeHint(context: android.content.Context, visible: Boolean) {
     )
     LaunchedEffect(showSwipeHint) {
         if (showSwipeHint) {
-            com.armutlu.apporganizer.utils.AppPrefs.incrementSwipeHintCount(context)
+            AppPrefs.incrementSwipeHintCount(context)
         }
     }
     if (showSwipeHint && visible) {
@@ -5393,7 +5454,6 @@ private fun SwipeHint(context: android.content.Context, visible: Boolean) {
     }
 }
 
-
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherActivity.kt
 ========================================
@@ -5403,7 +5463,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -5541,12 +5600,6 @@ class LauncherActivity : ComponentActivity() {
             runCatching { unregisterReceiver(packageReceiver) }
             receiverRegistered = false
         }
-    }
-
-    private fun isDefaultLauncher(context: android.content.Context): Boolean {
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return info?.activityInfo?.packageName == context.packageName
     }
 
     // Launcher'da back tuşu uygulamayı kapatmamalı
@@ -5861,21 +5914,24 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun addToDock(context: Context, packageName: String) {
-        val current = DockPrefs.getDockPackages(context)
+        // SharedPrefs okumak yerine bellekteki listeyi kullan — dockLoaded sonrasi her zaman güncel
+        val current = _dockPackages.value
         when {
             current.contains(packageName) -> _toastMessage.tryEmit("Uygulama zaten Dock'ta")
-            current.size >= 4 -> _toastMessage.tryEmit("Dock dolu (max 4) — önce bir uygulama çıkar")
+            current.size >= DOCK_MAX_SIZE -> _toastMessage.tryEmit("Dock dolu (max $DOCK_MAX_SIZE) — önce bir uygulama çıkar")
             else -> {
-                DockPrefs.addToDock(context, packageName)
-                _dockPackages.value = DockPrefs.getDockPackages(context)
+                val updated = current + packageName
+                DockPrefs.saveDockPackages(context, updated)
+                _dockPackages.value = updated
                 _toastMessage.tryEmit("Dock'a eklendi")
             }
         }
     }
 
     fun removeFromDock(context: Context, packageName: String) {
-        DockPrefs.removeFromDock(context, packageName)
-        _dockPackages.value = DockPrefs.getDockPackages(context)
+        val updated = _dockPackages.value - packageName
+        DockPrefs.saveDockPackages(context, updated)
+        _dockPackages.value = updated
     }
 
     fun updateAppCategory(packageName: String, categoryId: String) {
