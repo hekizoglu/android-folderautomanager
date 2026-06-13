@@ -728,4 +728,19 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 **Ek:** `FolderTile.kt`'ye `textAlpha: Float = 1f` parametresi eklendi; kategori adı metnine uygulandı (textAlpha özelliği daha önce hiç FolderTile'a geçirilmiyordu).
 **Uzak Ortam Notu:** APK build bu remote ortamda yapılamıyor — yerel makinede doğrulanmalı.
 
-*Son güncelleme: 2026-06-13 (Döngü 26 — Settings reaktiflik fix, textAlpha FolderTile)*
+### Robustlik İyileştirmeleri (Döngü 27)
+**LauncherViewModel.kt degisiklikleri:**
+- `isLoadingApps`: `@Volatile Boolean` → `AtomicBoolean` — `compareAndSet(false, true)` ile atomik check-then-set; `Volatile` sadece görünürlük sağlar, bileşik operasyonu korumaz
+- `finally { isLoadingApps.set(false) }` — AtomicBoolean API'si ile
+
+**AppNotificationListenerService.kt degisiklikleri:**
+- `onListenerDisconnected()` override eklendi — bağlantı kesilince `_badgeCounts` ve `_latestTexts` temizleniyor; pm clear / izin iptali / sistem yeniden başlatma sonrası stale badge gösterilmesi önlendi
+
+**AllAppsDrawer.kt degisiklikleri:**
+- `iconPackPkg`: `remember { AppPrefs.getIconPack() }` → `mutableStateOf + DisposableEffect + KEY_ICON_PACK listener`
+  - Onceki: Icon pack Settings'ten değiştirilince AllAppsDrawer yeniden oluşturulmadan ikone güncellenmiyordu
+  - Yeni: SharedPrefs listener tetikleyince `iconPackPkg` state güncellenir → `NiagaraAppRow` yeniden render → `rememberAppIcon` yeni cacheKey ile ikonu diskten yükler
+- `rememberAppIcon(packageName, iconPackPkg)` — `iconPackPkg` artık parametre (içeride `remember {}` ile hesaplanmıyor)
+- `NiagaraAppRow(..., iconPackPkg: String = "")` — yeni parametre, `rememberAppIcon`'a iletilir
+
+*Son güncelleme: 2026-06-13 (Döngü 27 — AtomicBoolean, bildirim temizleme, ikon paketi reaktifliği)*
