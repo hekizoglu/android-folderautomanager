@@ -51,6 +51,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.style.TextOverflow
+import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -248,6 +251,108 @@ internal fun DockIcon(
             modifier = Modifier
                 .size(iconSize)
                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+        )
+    }
+}
+
+/** Pixel Launcher tarz sonKullanilan/onerileri satiri — 4 ikon yatay dizilir. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun AppSuggestionsRow(
+    apps: List<AppInfo>,
+    iconPackPkg: String = "",
+    onAppClick: (AppInfo) -> Unit,
+    onAppLongClick: (AppInfo) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (apps.isEmpty()) return
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Son Kullanilanlar",
+            color = Color.White.copy(alpha = 0.45f),
+            fontSize = 11.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, bottom = 6.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            apps.forEach { app ->
+                SuggestionAppItem(
+                    app = app,
+                    iconPackPkg = iconPackPkg,
+                    onClick = { onAppClick(app) },
+                    onLongClick = { onAppLongClick(app) }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun SuggestionAppItem(
+    app: AppInfo,
+    iconPackPkg: String,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val iconSize = 48.dp
+    val px = with(LocalDensity.current) { iconSize.roundToPx() }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
+    val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
+        initialValue = iconCacheInternal[cacheKey],
+        key1 = cacheKey
+    ) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
+            value = loaded
+        }
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(horizontal = 6.dp, vertical = 4.dp)
+    ) {
+        bitmap?.let { bmp ->
+            Image(
+                bitmap = bmp,
+                contentDescription = app.appName,
+                modifier = Modifier.size(iconSize)
+            )
+        } ?: Box(
+            modifier = Modifier
+                .size(iconSize)
+                .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = app.appName,
+            color = Color.White.copy(alpha = 0.85f),
+            fontSize = 11.sp,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.width(60.dp)
         )
     }
 }

@@ -116,6 +116,9 @@ fun HomeScreen(
     var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
     var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
+    var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    val suggestedApps by viewModel.suggestedApps.collectAsState()
+    val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
@@ -131,6 +134,8 @@ fun HomeScreen(
                     textAlpha = com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AREA_ENABLED ->
                     widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
+                    suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -343,6 +348,22 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
+
+            // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
+            if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
+                AppSuggestionsRow(
+                    apps = suggestedApps,
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { app ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, app.packageName)
+                    },
+                    onAppLongClick = { app ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        contextMenuPkg = app.packageName
+                    }
+                )
+            }
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
             if (widgetAreaEnabled && widgetIds.isNotEmpty()) {

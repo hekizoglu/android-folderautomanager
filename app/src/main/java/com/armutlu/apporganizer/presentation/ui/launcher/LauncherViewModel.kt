@@ -385,6 +385,15 @@ class LauncherViewModel @Inject constructor(
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
+    // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
+    val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            apps.filter { !it.isHidden && it.usageCount > 0 }
+                .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                .take(4)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
     fun syncUsageStats(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {

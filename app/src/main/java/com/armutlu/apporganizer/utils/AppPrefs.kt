@@ -131,5 +131,10 @@ object AppPrefs {
         prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
     }
 
+    // Uygulama onerileri — en sik kullanilan 4 uygulama ana ekranda gosterilir
+    const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
+    fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
+    fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
