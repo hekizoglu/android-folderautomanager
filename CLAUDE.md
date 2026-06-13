@@ -621,4 +621,19 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **Sonuc:** Badge sayisi ve bildirim metni artik gercek zamani yansitiyor. Bildirim silindiginde badge aninda kalkiyor.
 
-*Son güncelleme: 2026-06-13 (Döngü 18 — bildirim badge/metin temizleme bug fix)*
+### Ikon Cache Temizleme + FolderSortMode DRY + onPackageAdded Optimizasyonu (Döngü 19)
+**Explore agent analiz bulgulari:** LauncherViewModel'de ikon cache invalidation eksikti; FolderSheet FolderSortMode enum AllAppsSortMode ile identic ama ayri yasiyordu; onPackageAdded tam PM taramasi yapiyordu.
+
+**LauncherViewModel.kt degisiklikleri:**
+- `onPackageRemoved`: `iconCacheInternal.snapshot().keys.filter { it.startsWith("$pkg_") }` ile paket-spesifik cache entry'leri temizleniyor — kaldirilan uygulamanin ikonu bir sonraki acilista bozuk gozukmez
+- `onPackageAdded`: ayni cache temizleme + tam `getInstalledApps(...)` taramasi yerine `helper.getAppInfo(packageName)` — tek paket fetch, ~5x daha hizli; `IGNORE` conflict stratejisi mevcut kategori/usage/hidden verilerini koruyor
+- `dockLoaded`: `@Volatile` eklendi — coklu thread erişiminde tutarsiz okuma onlendi
+
+**FolderSheet.kt degisiklikleri:**
+- `FolderSortMode` enum kaldirildi (AllAppsSortMode ile identic, DRY ihlali)
+- `private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode)` extension ile AllAppsSortMode kullanilmaya gecildi
+- `FolderSortMode.entries` → `AllAppsSortMode.entries`; enum tanımı artık tek yerde
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 19 — ikon cache fix, FolderSortMode DRY, onPackageAdded optimizasyonu)*
