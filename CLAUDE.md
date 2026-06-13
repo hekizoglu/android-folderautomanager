@@ -775,4 +775,17 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 **Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
 
-*Son güncelleme: 2026-06-13 (Döngü 29 — Uygulama Önerileri Satırı)*
+### Klasor Ozellestirme (Dongu 30)
+**FolderSheet header'ina kalem (Edit) ikonu eklendi — tiklaninca FolderRenameDialog aciyor.**
+
+**`AppPrefs.kt`**: `KEY_FOLDER_CUSTOM_NAMES` + `KEY_FOLDER_CUSTOM_EMOJIS` — JSON map olarak saklanir (categoryId -> deger). `parseJsonMap()` ve `toJsonString()` private extension fonksiyonlari ile serialize/deserialize edilir.
+
+**`FolderTile.kt`**: `customName: String? = null` + `customEmoji: String? = null` opsiyonel parametreler eklendi (geriye donuk uyumlu). Gosterimde `customName.takeIf { it.isNotEmpty() } ?: category.categoryName` mantigi.
+
+**`FolderSheet.kt`**: Header Row'una sag tarafta `Box + Edit ikonu` butonu eklendi. `showEditDialog` state ile `FolderRenameDialog` gosterilir. `FolderRenameDialog`: `OutlinedTextField` (ad) + `LazyRow` (40 emoji secici) + Kaydet/Iptal. Kayit aninda hem lokal state hem SharedPrefs guncellenir.
+
+**`HomeScreen.kt`**: `customFolderNames`/`customFolderEmojis` state + `DisposableEffect` SharedPrefs listener; `FolderTile`'a `customName` ve `customEmoji` gecirilir. FolderSheet kapatildiktan sonra ana ekran otomatik guncellenir.
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 30 — Klasor Ozellestirme)*
