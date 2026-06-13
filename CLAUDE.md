@@ -857,8 +857,15 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Her 18 döngüde bir:** emülatörde tam test
 
 ### Akıllı Kategorizasyon (Hüseyin Talebi — Yapılacak)
-- Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet (offline, izin gerektirmez)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ 892 eşleme (479'dan, +413)
 - Aşama 2: "Diğer" klasöründeki uygulamalar için kendi sunucu API'si veya LLM fallback
 - Detay: CLAUDE.md "Akıllı Kategorizasyon Yol Haritası" bölümünde
 
-*Son güncelleme: 2026-06-13 (Döngü 30 — Build 25-30 tamamlandı)*
+### Akıllı Kategorizasyon Genişletme (Döngü 31 — remote)
+**AppClassifier.kt: 479 → 892 eşleme** — Aşama 1 büyük ölçüde tamamlandı.
+- exactMatchMap: +413 yeni paket eklendi (iki aşamada: kendi +301, remote merge +112)
+- KeywordDatabase: Oyun/Sağlık/Finans/Fotoğraf kategorilerine Türkçe terimler eklendi
+- Yeni kategoriler kapsananlar: Türkiye GSM operatörleri, bankalar (9 yeni Türk banka paketi), eğlence platformları, 90+ yeni oyun, Ekşi Sözlük, Yandex servisleri
+- **Build Notu:** Remote ortamda APK derlenemiyor (dl.google.com erişim yasağı) — yerel makinede doğrulanmalı
+
+*Son güncelleme: 2026-06-13 (Döngü 31 — AppClassifier top-1000 genişletme)*
