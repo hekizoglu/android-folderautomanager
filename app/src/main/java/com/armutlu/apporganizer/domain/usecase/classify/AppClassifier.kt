@@ -8,6 +8,35 @@ import javax.inject.Singleton
 @Singleton
 class AppClassifier @Inject constructor() {
 
+    // Üretici bazlı sınıflandırma toggle — AppListViewModel tarafından set edilir
+    var manufacturerClassifyEnabled: Boolean = true
+
+    // Üretici prefix → kategori: exactMap'ten sonra, keyword'den önce kontrol edilir
+    private val MANUFACTURER_PREFIX_MAP = mapOf(
+        // Samsung sistem uygulamaları
+        "com.samsung.android.app.galaxyfinder"  to Category.CAT_TOOLS,
+        "com.samsung.android.themestore"        to Category.CAT_TOOLS,
+        "com.samsung.android.personalpage"      to Category.CAT_TOOLS,
+        // Samsung medya/eğlence
+        "com.samsung.android.video"             to Category.CAT_ENTERTAINMENT,
+        "com.samsung.android.music"             to Category.CAT_ENTERTAINMENT,
+        "com.samsung.android.gallery3d"         to Category.CAT_PHOTO,
+        // Huawei
+        "com.huawei.himovie"                    to Category.CAT_ENTERTAINMENT,
+        "com.huawei.music"                      to Category.CAT_ENTERTAINMENT,
+        "com.huawei.gallery"                    to Category.CAT_PHOTO,
+        // Xiaomi/MIUI
+        "com.miui.gallery"                      to Category.CAT_PHOTO,
+        "com.miui.videoplayer"                  to Category.CAT_ENTERTAINMENT,
+        "com.miui.music"                        to Category.CAT_ENTERTAINMENT,
+        // Sony
+        "com.sonyericsson.album"                to Category.CAT_PHOTO,
+        "com.sonymobile.music"                  to Category.CAT_ENTERTAINMENT,
+        // LG
+        "com.lge.gallery"                       to Category.CAT_PHOTO,
+        "com.lge.music"                         to Category.CAT_ENTERTAINMENT,
+    )
+
     // Paket adına göre kesin kategori eşlemesi — keyword'den önce kontrol edilir
     private val exactMatchMap = mapOf(
         // ── SOCIAL ──────────────────────────────────────────────────────────
@@ -502,6 +531,9 @@ class AppClassifier @Inject constructor() {
 
     fun classifyApp(appInfo: AppInfo): String {
         exactMatchMap[appInfo.packageName]?.let { return it }
+        if (manufacturerClassifyEnabled) {
+            classifyByManufacturerPrefix(appInfo.packageName)?.let { return it }
+        }
         return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
     }
 
@@ -514,6 +546,12 @@ class AppClassifier @Inject constructor() {
         hasKeywordMatch(appInfo.appName, categoryId) -> 80
         hasPackageKeywordMatch(appInfo.packageName, categoryId) -> 70
         else -> 50
+    }
+
+    // Üretici paket prefix'i → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
+    private fun classifyByManufacturerPrefix(packageName: String): String? {
+        val pkg = packageName.lowercase()
+        return MANUFACTURER_PREFIX_MAP.entries.firstOrNull { (prefix, _) -> pkg.startsWith(prefix) }?.value
     }
 
     private fun classifyByKeywords(appName: String, packageName: String): String? {

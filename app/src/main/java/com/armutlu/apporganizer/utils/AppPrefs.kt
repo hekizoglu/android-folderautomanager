@@ -78,6 +78,11 @@ object AppPrefs {
         IconPackManager.clearCache()
     }
 
+    // Üretici bazlı sınıflandırma — Samsung/Huawei/Xiaomi uygulamaları otomatik kategorilensin mi?
+    const val KEY_MANUFACTURER_CLASSIFY = "manufacturer_classify"
+    fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
+    fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
+
     // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
     const val KEY_FOLDER_SIZE = "folder_size_dp"
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
