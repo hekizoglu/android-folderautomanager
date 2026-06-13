@@ -54,6 +54,7 @@ class LauncherActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         viewModel.loadAppsIfEmpty(this)
         viewModel.syncUsageStats(this)
+        AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin
         viewModel.syncAppSizes(this)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
