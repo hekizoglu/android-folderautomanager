@@ -454,7 +454,7 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 |---|---------|--------------|---------|
 | 3 | Ana ekrana dönüşte hız iyileştirmesi | Smart Launcher şikayeti: "yavaş geri dönüş" | Yüksek |
 | 4 | Gesture navigation uyumsuzluk fix | Xiaomi/Samsung sistem navigasyonu çakışması | Yüksek |
-| 6 | Icon pack desteği | Nova kullanıcıları "icon pack yok" diyor | Orta |
+| 6 | ~~Icon pack desteği~~ ✅ | Nova kullanıcıları "icon pack yok" diyor — **Döngü 22'de tamamlandı** | Orta |
 | 7 | Widget desteği | Niagara kullanıcıları "widget eksik" diyor | Orta |
 
 **Döngülere eklenme zamanı:** Rakip analizi tamamlandıktan sonra (bkz. Özellik Durum Tablosu)
@@ -672,4 +672,20 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
 
-*Son güncelleme: 2026-06-13 (Döngü 21 — dock in-memory ops, ölü kod temizliği, HomeScreen refactor)*
+### İkon Paketi Desteği (Döngü 22)
+**Nova/ADW/Lawnchair/GO Launcher uyumlu ikon paketi altyapısı — Yol Haritası #6 tamamlandı:**
+
+**`utils/IconPackManager.kt`** (yeni dosya):
+- 5 intent filter ile kurulu ikon paketlerini tarar: `com.novalauncher.THEME`, `org.adw.launcher.THEMES`, `com.gau.go.launcherex.theme`, `app.lawnchair.ICON_PACK`, `com.teslacoilsw.launcher.THEME`
+- `parseAppFilter()`: paket resources'indan `appfilter.xml` parse ederek `packageName -> drawableName` eslestirmesi
+- `filterCache: ConcurrentHashMap` — thread-safe; `clearCache()` ikon paketi degisince cagrilir
+
+**`utils/AppPrefs.kt`**: `KEY_ICON_PACK` + `getIconPack`/`setIconPack` eklendi; set'te otomatik cache temizleme
+
+**`AppIconView.kt`, `AllAppsDrawer.rememberAppIcon`, `HomeScreenComponents.DockIcon`**:
+- Cache key: ikon paketi seciliyse `"${pkg}_${px}_${iconPackPkg}"`, yoksa `"${pkg}_${px}"` (geriye uyumlu)
+- Yukleme onceligi: once ikon paketinden dene, bulamazsan sistem ikonuna don
+
+**`SettingsScreen.kt`**: "İkon Paketi" bolumu eklendi — kurulu paketleri listele, secili secenegi CheckCircle goster; paket yoksa Play Store yonlendirmesi
+
+*Son güncelleme: 2026-06-13 (Döngü 22 — ikon paketi desteği, Yol Haritası #6 tamamlandı)*
