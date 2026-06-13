@@ -208,8 +208,8 @@ internal fun DockIcon(
 ) {
     val context = LocalContext.current
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
-    // AppIconView ile ayni LRU cache — main thread bloke etmez, process omru boyunca cache'te kalir
-    val cacheKey = "${packageName}_$px"
+    val iconPackPkg = remember { AppPrefs.getIconPack(context) }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_$px" else "${packageName}_${px}_$iconPackPkg"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
         key1 = cacheKey
@@ -217,7 +217,11 @@ internal fun DockIcon(
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, px)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)

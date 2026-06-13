@@ -409,6 +409,78 @@ fun SettingsScreen(
                 }
             }
 
+            // ── İkon Paketi ───────────────────────────────────────────────────
+            item { SettingsSectionTitle("İkon Paketi") }
+            item {
+                val iconPacks = remember {
+                    com.armutlu.apporganizer.utils.IconPackManager.getInstalledIconPacks(context)
+                }
+                var selectedPack by remember {
+                    mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context))
+                }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedPack = ""
+                                com.armutlu.apporganizer.utils.AppPrefs.setIconPack(context, "")
+                            }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Android, null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Sistem İkonları", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("Varsayılan uygulama ikonları", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        if (selectedPack.isEmpty()) {
+                            Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        }
+                    }
+                    if (iconPacks.isEmpty()) {
+                        Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Kurulu ikon paketi bulunamadı. Play Store'dan bir ikon paketi yükleyin.",
+                                fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        iconPacks.forEach { pack ->
+                            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedPack = pack.packageName
+                                        com.armutlu.apporganizer.utils.AppPrefs.setIconPack(context, pack.packageName)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Palette, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(pack.label, Modifier.weight(1f), fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                                if (selectedPack == pack.packageName) {
+                                    Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {
