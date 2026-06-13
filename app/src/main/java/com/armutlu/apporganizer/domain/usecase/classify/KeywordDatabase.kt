@@ -112,7 +112,10 @@ object KeywordDatabase {
             "airport", "passport", "visa", "seyahat", "ucus", "otel",
             "flightradar", "tripadvisor", "expedia", "skyscanner", "kayak",
             "bitaksi", "obilet", "enuygun", "pegasus", "thy", "tcdd",
-            "istanbulkart", "kentkart", "marti", "scooter", "bisiklet"
+            "istanbulkart", "kentkart", "marti", "scooter", "bisiklet",
+            "kart", "ulasim", "metro", "tramvay", "vapur", "feribot",
+            "rent", "kiralama", "araba", "araç", "transfer", "shuttle",
+            "iett", "eshot", "ego", "izulas", "buski", "belbim"
         ),
         Category.CAT_ENTERTAINMENT to listOf(
             "entertainment", "movie", "film", "video", "stream", "watch",
@@ -129,7 +132,11 @@ object KeywordDatabase {
             "cook", "kitchen", "yemek", "siparis", "pizza", "burger",
             "cafe", "coffee", "grocery", "market",
             "getir", "yemeksepeti", "migros", "a101", "bim", "carrefour",
-            "trendyolexpress", "express", "mutfak", "tarif"
+            "trendyolexpress", "express", "mutfak", "tarif",
+            "siparis", "paket", "market", "manav", "kasap", "pastane",
+            "kafe", "restoran", "lokanta", "fast", "döner", "kebap",
+            "sok", "kiler", "macro", "metro", "tekel", "icecek",
+            "smoothie", "vegan", "organik", "gluten", "diyet"
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
