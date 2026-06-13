@@ -158,6 +158,18 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_FOLDER_CUSTOM_EMOJIS, map.toJsonString()).apply()
     }
 
+    // Klasor ozel renkleri -- JSON map (categoryId -> colorHex "#RRGGBB")
+    const val KEY_FOLDER_CUSTOM_COLORS = "folder_custom_colors"
+
+    fun getFolderCustomColors(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_COLORS, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomColor(context: Context, catId: String, colorHex: String) {
+        val map = getFolderCustomColors(context).toMutableMap()
+        if (colorHex.isBlank()) map.remove(catId) else map[catId] = colorHex
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_COLORS, map.toJsonString()).apply()
+    }
+
     private fun String.parseJsonMap(): Map<String, String> {
         if (isBlank()) return emptyMap()
         return runCatching {

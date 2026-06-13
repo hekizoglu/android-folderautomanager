@@ -61,6 +61,7 @@ fun FolderTile(
     textAlpha: Float = 1f,
     customName: String? = null,
     customEmoji: String? = null,
+    customColor: String? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -115,8 +116,9 @@ fun FolderTile(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 60dp circle — kategori renginde frosted glass + badge
-        val catColor = remember(folder.category.colorHex) {
-            runCatching { Color(android.graphics.Color.parseColor(folder.category.colorHex)) }
+        val catColor = remember(folder.category.colorHex, customColor) {
+            val hex = customColor?.takeIf { it.isNotEmpty() } ?: folder.category.colorHex
+            runCatching { Color(android.graphics.Color.parseColor(hex)) }
                 .getOrDefault(Color.White)
         }
         Box {

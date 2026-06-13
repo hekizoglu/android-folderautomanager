@@ -3,6 +3,8 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Edit
@@ -145,6 +147,9 @@ fun FolderSheet(
     var customEmoji by remember(catId) {
         mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)[catId] ?: "")
     }
+    var customColor by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)[catId] ?: "")
+    }
     var showEditDialog by remember { mutableStateOf(false) }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
@@ -164,8 +169,9 @@ fun FolderSheet(
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 24.dp),
         ) {
             // ── Header ────────────────────────────────────────────────────────
-            val catColor = remember(folder.category.colorHex) {
-                runCatching { Color(android.graphics.Color.parseColor(folder.category.colorHex)) }
+            val catColor = remember(folder.category.colorHex, customColor) {
+                val hex = customColor.ifBlank { null } ?: folder.category.colorHex
+                runCatching { Color(android.graphics.Color.parseColor(hex)) }
                     .getOrDefault(TealColor)
             }
             Row(
@@ -210,14 +216,17 @@ fun FolderSheet(
                 FolderRenameDialog(
                     currentName = customName.ifBlank { folder.category.categoryName },
                     currentEmoji = customEmoji.ifBlank { folder.category.iconEmoji },
+                    currentColor = customColor,
                     onDismiss = { showEditDialog = false },
-                    onSave = { newName, newEmoji ->
+                    onSave = { newName, newEmoji, newColor ->
                         val nameToSave = if (newName == folder.category.categoryName) "" else newName
                         val emojiToSave = if (newEmoji == folder.category.iconEmoji) "" else newEmoji
                         customName = nameToSave
                         customEmoji = emojiToSave
+                        customColor = newColor
                         com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomName(context, catId, nameToSave)
                         com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomEmoji(context, catId, emojiToSave)
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomColor(context, catId, newColor)
                         showEditDialog = false
                     }
                 )
@@ -334,15 +343,30 @@ private val EMOJI_PICKER = listOf(
     "🌙","☀️","🎨","🏋️","🐶","🌿","🔔","💬","🗓️","🧩"
 )
 
+private val COLOR_PRESETS = listOf(
+    "" to "Varsayilan",
+    "#00897B" to "Turkuaz",
+    "#1976D2" to "Mavi",
+    "#7B1FA2" to "Mor",
+    "#D32F2F" to "Kirmizi",
+    "#F57C00" to "Turuncu",
+    "#388E3C" to "Yesil",
+    "#C2185B" to "Pembe",
+    "#FBC02D" to "Sari",
+    "#303F9F" to "Lacivert",
+)
+
 @Composable
 private fun FolderRenameDialog(
     currentName: String,
     currentEmoji: String,
+    currentColor: String = "",
     onDismiss: () -> Unit,
-    onSave: (name: String, emoji: String) -> Unit,
+    onSave: (name: String, emoji: String, color: String) -> Unit,
 ) {
     var nameField by remember { mutableStateOf(currentName) }
     var selectedEmoji by remember { mutableStateOf(currentEmoji) }
+    var selectedColor by remember { mutableStateOf(currentColor) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -384,10 +408,39 @@ private fun FolderRenameDialog(
                         }
                     }
                 }
+                Text("Renk sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    itemsIndexed(COLOR_PRESETS) { _, preset ->
+                        val hex = preset.first
+                        val isSelected = selectedColor == hex
+                        val resolvedColor = if (hex.isBlank()) Color.White.copy(0.2f)
+                            else runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(Color.White)
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(resolvedColor)
+                                .then(
+                                    if (isSelected) Modifier.border(2.dp, Color.White, androidx.compose.foundation.shape.CircleShape)
+                                    else Modifier
+                                )
+                                .clickable { selectedColor = hex },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isSelected) {
+                                Icon(
+                                    Icons.Default.CheckCircle, null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji) }) {
+            TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji, selectedColor) }) {
                 Text("Kaydet", color = Color(0xFF00897B), fontWeight = FontWeight.Bold)
             }
         },
