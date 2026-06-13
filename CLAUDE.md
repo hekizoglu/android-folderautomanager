@@ -743,4 +743,21 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - `rememberAppIcon(packageName, iconPackPkg)` — `iconPackPkg` artık parametre (içeride `remember {}` ile hesaplanmıyor)
 - `NiagaraAppRow(..., iconPackPkg: String = "")` — yeni parametre, `rememberAppIcon`'a iletilir
 
-*Son güncelleme: 2026-06-13 (Döngü 27 — AtomicBoolean, bildirim temizleme, ikon paketi reaktifliği)*
+### Uygulama Kısayolları (App Shortcuts) (Döngü 28)
+**Uzun basınca açılan AppContextMenu'ye Pixel Launcher tarzı app shortcuts eklendi.**
+
+**`utils/ShortcutHelper.kt`** (yeni dosya):
+- `getShortcuts(context, packageName)`: `LauncherApps.getShortcuts()` ile DYNAMIC + MANIFEST kısayollarını sorgular; `runCatching` ile güvenli — launcher rolü yoksa boş liste döner
+- `getShortcutIcon(context, shortcut, sizePx)`: `LauncherApps.getShortcutIconDrawable()` ile ikon alır, `Bitmap`'e çevirir, `ImageBitmap` döner
+- `launchShortcut(context, shortcut)`: `LauncherApps.startShortcut()` ile kısayolu başlatır
+
+**`AppContextMenu.kt`** değişiklikleri:
+- `shortcuts by produceState<List<ShortcutInfo>>` — IO thread'de yüklenir, max 4 kısayol
+- Kısayollar bölümü bilgi chip'lerinin altında, yatay kaydırılabilir `Row` içinde
+- `ShortcutItem` composable: 48dp ikon kutusu + 2 satır etiket (shortLabel/longLabel)
+- İkon yüklenemezse `OpenInNew` fallback ikonu
+- Kısayola tıklayınca haptic + `ShortcutHelper.launchShortcut()` + sheet dismiss
+
+**Davranış:** Launcher rolü olmadığında (pm clear / izin iptali) `runCatching` boş liste döndürür — kısayol bölümü gizlenir.
+
+*Son güncelleme: 2026-06-13 (Döngü 28 — Uygulama Kısayolları)*
