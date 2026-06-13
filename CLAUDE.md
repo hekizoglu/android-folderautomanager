@@ -85,9 +85,10 @@ Bu kural şunlar için zorunludur:
 2. **Emülatörde test et** — `Pixel6_API33` (AOSP) veya `Xiaomi_HyperOS_API34` (Android 14, 395dpi) üzerinde
 3. **Hata varsa düzelt** — DeepSeek ile analiz et, düzelt, tekrar build
 4. **Test geçtiyse commit + push** — açıklayıcı commit mesajı
-5. **Telegram'a gönder** — APK + kısa durum raporu
-6. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
-7. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
+5. **NotebookLM dosyasını güncelle** — `python scripts/update_notebooklm.py` (Masaüstü/notebooklm_apporganizer/app_source.txt)
+6. **Telegram'a gönder** — APK + kısa durum raporu
+7. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
+8. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
 
 ### Yeni Özellik = Ayarlar Kuralı (KRİTİK)
 **Her yeni UI özelliği SettingsScreen'den kapatılıp açılabilir olmalıdır.**
