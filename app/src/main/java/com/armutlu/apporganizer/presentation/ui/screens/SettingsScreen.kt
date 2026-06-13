@@ -490,7 +490,7 @@ fun SettingsScreen(
                     SettingsInfoRow(
                         icon = Icons.Default.Storage,
                         title = "Veritabanı",
-                        subtitle = "${state.apps.size} uygulama Â· ${state.categories.size} kategori"
+                        subtitle = "${state.apps.size} uygulama · ${state.categories.size} kategori"
                     )
                 }
             }
