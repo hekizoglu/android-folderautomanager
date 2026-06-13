@@ -1,5 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.app.Activity
+import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,10 +15,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.WidgetHostManager
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -31,6 +35,62 @@ class LauncherActivity : ComponentActivity() {
     private val gestureNavEnabled: Boolean by lazy {
         val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
         resId > 0 && resources.getInteger(resId) == 2
+    }
+
+    // Widget picker result handler — allocate edilen tentative ID'yi takip eder
+    private var pendingWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
+
+    val widgetPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val widgetId = result.data?.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID
+        ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
+
+        if (result.resultCode == Activity.RESULT_OK && widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            // Widget bind başarılı: konfigürasyon aktivitesi varsa başlat
+            val manager = AppWidgetManager.getInstance(this)
+            val info = manager.getAppWidgetInfo(widgetId)
+            if (info?.configure != null) {
+                val configIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).apply {
+                    component = info.configure
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                }
+                widgetConfigureLauncher.launch(configIntent)
+            } else {
+                viewModel.addWidgetId(this, widgetId)
+            }
+            pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+        } else {
+            // İptal — tahsis edilen ID'yi serbest bırak
+            if (pendingWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                WidgetHostManager.deleteId(this, pendingWidgetId)
+                pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+            }
+        }
+    }
+
+    // Widget konfigürasyon aktivitesi sonucu
+    private val widgetConfigureLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val widgetId = result.data?.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID
+        ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
+        if (result.resultCode == Activity.RESULT_OK && widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            viewModel.addWidgetId(this, widgetId)
+        } else if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            WidgetHostManager.deleteId(this, widgetId)
+        }
+    }
+
+    /** HomeScreen'den çağrılır — kullanıcıya widget seçtirme akışını başlatır. */
+    fun launchWidgetPicker() {
+        pendingWidgetId = WidgetHostManager.allocateId(this)
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, pendingWidgetId)
+        }
+        widgetPickerLauncher.launch(intent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,9 +115,13 @@ class LauncherActivity : ComponentActivity() {
         viewModel.syncUsageStats(this)
         AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin
         viewModel.syncAppSizes(this)
+        viewModel.loadWidgetIds(this)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
-                HomeScreen(viewModel = viewModel)
+                HomeScreen(
+                    viewModel = viewModel,
+                    onLaunchWidgetPicker = { launchWidgetPicker() }
+                )
             }
         }
     }
@@ -117,6 +181,7 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        WidgetHostManager.startListening(this)
         applyNavBarVisibility()
         // Reconcile 5 dakikada bir — geri tuşunda her seferinde PM sorgusu yapmasın
         if (AppPrefs.shouldReconcile(this)) {
@@ -137,6 +202,7 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+        WidgetHostManager.stopListening()
         if (receiverRegistered) {
             runCatching { unregisterReceiver(packageReceiver) }
             receiverRegistered = false
