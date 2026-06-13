@@ -131,5 +131,58 @@ object AppPrefs {
         prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
     }
 
+    // Uygulama onerileri — en sik kullanilan 4 uygulama ana ekranda gosterilir
+    const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
+    fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
+    fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
+
+    // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
+    const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"
+    const val KEY_FOLDER_CUSTOM_EMOJIS = "folder_custom_emojis"
+
+    fun getFolderCustomNames(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_NAMES, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomName(context: Context, catId: String, name: String) {
+        val map = getFolderCustomNames(context).toMutableMap()
+        if (name.isBlank()) map.remove(catId) else map[catId] = name.trim()
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_NAMES, map.toJsonString()).apply()
+    }
+
+    fun getFolderCustomEmojis(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_EMOJIS, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomEmoji(context: Context, catId: String, emoji: String) {
+        val map = getFolderCustomEmojis(context).toMutableMap()
+        if (emoji.isBlank()) map.remove(catId) else map[catId] = emoji
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_EMOJIS, map.toJsonString()).apply()
+    }
+
+    // Klasor ozel renkleri -- JSON map (categoryId -> colorHex "#RRGGBB")
+    const val KEY_FOLDER_CUSTOM_COLORS = "folder_custom_colors"
+
+    fun getFolderCustomColors(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_COLORS, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomColor(context: Context, catId: String, colorHex: String) {
+        val map = getFolderCustomColors(context).toMutableMap()
+        if (colorHex.isBlank()) map.remove(catId) else map[catId] = colorHex
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_COLORS, map.toJsonString()).apply()
+    }
+
+    private fun String.parseJsonMap(): Map<String, String> {
+        if (isBlank()) return emptyMap()
+        return runCatching {
+            val json = org.json.JSONObject(this)
+            json.keys().asSequence().associateWith { json.getString(it) }
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun Map<String, String>.toJsonString(): String {
+        val json = org.json.JSONObject()
+        forEach { (k, v) -> json.put(k, v) }
+        return json.toString()
+    }
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

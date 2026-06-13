@@ -419,7 +419,7 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | 11 | NotificationListenerService — gerçek veri | `services/` altında servis dosyası | `find app/src -name "*Notification*Service*"` |
 | 12 | AppListScreen refactor — max 300 satır | `AppListScreen.kt`, `AppListComponents.kt` | `wc -l .../AppListScreen.kt` |
 
-### Son Kontrol Sonuçları (2026-06-10)
+### Son Kontrol Sonuçları (2026-06-13)
 | # | Durum |
 |---|-------|
 | 1 | ✅ Theme.kt doğru |
@@ -726,4 +726,90 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 ### Onboarding RESTORE_BACKUP Adımı (Döngü 25)
 WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçici ile geri yükleme, `hiltViewModel` ile `AppListViewModel` inject edildi.
 
-*Son güncelleme: 2026-06-13 (Döngü 25 — greyscale fix, sort kalıcı, onboarding yedek)*
+### Settings Reaktiflik Fix (Döngü 26)
+**Hata:** `remember {}` ile okunan AppPrefs değerleri (bgType, bgColor, textAlpha, widgetAreaEnabled, notifTextEnabled, unusedGreyDays) Settings'den dönerken güncellenmiyordu — launcher yeniden başlatmak gerekiyordu.
+**Fix:** `mutableStateOf` + `DisposableEffect(context)` + `SharedPreferences.OnSharedPreferenceChangeListener` kombinasyonu ile reaktif hale getirildi:
+- `HomeScreen.kt`: bgType, bgColor, textAlpha, widgetAreaEnabled — Settings'de değişince anında yansır
+- `AllAppsDrawer.kt`: notifTextEnabled, unusedGreyDays — drawer açıkken dahi güncellenir
+**Ek:** `FolderTile.kt`'ye `textAlpha: Float = 1f` parametresi eklendi; kategori adı metnine uygulandı (textAlpha özelliği daha önce hiç FolderTile'a geçirilmiyordu).
+**Uzak Ortam Notu:** APK build bu remote ortamda yapılamıyor — yerel makinede doğrulanmalı.
+
+### Robustlik İyileştirmeleri (Döngü 27)
+**LauncherViewModel.kt degisiklikleri:**
+- `isLoadingApps`: `@Volatile Boolean` → `AtomicBoolean` — `compareAndSet(false, true)` ile atomik check-then-set; `Volatile` sadece görünürlük sağlar, bileşik operasyonu korumaz
+- `finally { isLoadingApps.set(false) }` — AtomicBoolean API'si ile
+
+**AppNotificationListenerService.kt degisiklikleri:**
+- `onListenerDisconnected()` override eklendi — bağlantı kesilince `_badgeCounts` ve `_latestTexts` temizleniyor; pm clear / izin iptali / sistem yeniden başlatma sonrası stale badge gösterilmesi önlendi
+
+**AllAppsDrawer.kt degisiklikleri:**
+- `iconPackPkg`: `remember { AppPrefs.getIconPack() }` → `mutableStateOf + DisposableEffect + KEY_ICON_PACK listener`
+  - Onceki: Icon pack Settings'ten değiştirilince AllAppsDrawer yeniden oluşturulmadan ikone güncellenmiyordu
+  - Yeni: SharedPrefs listener tetikleyince `iconPackPkg` state güncellenir → `NiagaraAppRow` yeniden render → `rememberAppIcon` yeni cacheKey ile ikonu diskten yükler
+- `rememberAppIcon(packageName, iconPackPkg)` — `iconPackPkg` artık parametre (içeride `remember {}` ile hesaplanmıyor)
+- `NiagaraAppRow(..., iconPackPkg: String = "")` — yeni parametre, `rememberAppIcon`'a iletilir
+
+### Uygulama Kısayolları (App Shortcuts) (Döngü 28)
+**Uzun basınca açılan AppContextMenu'ye Pixel Launcher tarzı app shortcuts eklendi.**
+
+**`utils/ShortcutHelper.kt`** (yeni dosya):
+- `getShortcuts(context, packageName)`: `LauncherApps.getShortcuts()` ile DYNAMIC + MANIFEST kısayollarını sorgular; `runCatching` ile güvenli — launcher rolü yoksa boş liste döner
+- `getShortcutIcon(context, shortcut, sizePx)`: `LauncherApps.getShortcutIconDrawable()` ile ikon alır, `Bitmap`'e çevirir, `ImageBitmap` döner
+- `launchShortcut(context, shortcut)`: `LauncherApps.startShortcut()` ile kısayolu başlatır
+
+**`AppContextMenu.kt`** değişiklikleri:
+- `shortcuts by produceState<List<ShortcutInfo>>` — IO thread'de yüklenir, max 4 kısayol
+- Kısayollar bölümü bilgi chip'lerinin altında, yatay kaydırılabilir `Row` içinde
+- `ShortcutItem` composable: 48dp ikon kutusu + 2 satır etiket (shortLabel/longLabel)
+- İkon yüklenemezse `OpenInNew` fallback ikonu
+- Kısayola tıklayınca haptic + `ShortcutHelper.launchShortcut()` + sheet dismiss
+
+**Davranış:** Launcher rolü olmadığında (pm clear / izin iptali) `runCatching` boş liste döndürür — kısayol bölümü gizlenir.
+
+### Uygulama Onerileri Satiri (Dongu 29)
+**"Son Kullanilanlar" — arama cubugu altinda 4 ikon, Pixel Launcher suggestions tarzinda.**
+
+**`AppPrefs.kt`**: `KEY_SUGGESTIONS_ENABLED` + `isSuggestionsEnabled`/`setSuggestionsEnabled` eklendi (varsayilan: acik)
+
+**`LauncherViewModel.kt`**: `suggestedApps: StateFlow<List<AppInfo>>` — `lastUsedTimestamp` oncelikli, `usageCount` ikincil siralama, gizli uygulamalar haric, `take(4)`, `SharingStarted.Eagerly`
+
+**`HomeScreenComponents.kt`**: `AppSuggestionsRow` (Column+Row+baslik) + `SuggestionAppItem` (private) composable — `iconCacheInternal` LRU-200 paylasimiyla, ikon paketi destekli
+
+**`HomeScreen.kt`**: `suggestionIconPack` remember (conditional remember'i onlemek icin disari alindi), `suggestionsEnabled` state + `DisposableEffect` SharedPrefs listener, `AppSuggestionsRow` GoogleSearchBar altina eklendi
+
+**`SettingsScreen.kt`**: "Ana Ekran Ozellikleri" bolumune "Uygulama Onerileri" toggle (`Icons.Default.AutoAwesome`) eklendi — ilk sira
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### Klasor Ozellestirme (Dongu 30)
+**FolderSheet header'ina kalem (Edit) ikonu eklendi — tiklaninca FolderRenameDialog aciyor.**
+
+**`AppPrefs.kt`**: `KEY_FOLDER_CUSTOM_NAMES` + `KEY_FOLDER_CUSTOM_EMOJIS` — JSON map olarak saklanir (categoryId -> deger). `parseJsonMap()` ve `toJsonString()` private extension fonksiyonlari ile serialize/deserialize edilir.
+
+**`FolderTile.kt`**: `customName: String? = null` + `customEmoji: String? = null` opsiyonel parametreler eklendi (geriye donuk uyumlu). Gosterimde `customName.takeIf { it.isNotEmpty() } ?: category.categoryName` mantigi.
+
+**`FolderSheet.kt`**: Header Row'una sag tarafta `Box + Edit ikonu` butonu eklendi. `showEditDialog` state ile `FolderRenameDialog` gosterilir. `FolderRenameDialog`: `OutlinedTextField` (ad) + `LazyRow` (40 emoji secici) + Kaydet/Iptal. Kayit aninda hem lokal state hem SharedPrefs guncellenir.
+
+**`HomeScreen.kt`**: `customFolderNames`/`customFolderEmojis` state + `DisposableEffect` SharedPrefs listener; `FolderTile`'a `customName` ve `customEmoji` gecirilir. FolderSheet kapatildiktan sonra ana ekran otomatik guncellenir.
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### Klasor Renk Ozellestirme (Dongu 31)
+**Klasor ad + emoji trio'suna renk tamamlandi.**
+
+**`AppPrefs.kt`**: `KEY_FOLDER_CUSTOM_COLORS` + `getFolderCustomColors`/`setFolderCustomColor` eklendi — JSON map (categoryId -> "#RRGGBB").
+
+**`FolderSheet.kt`**: 
+- `customColor` state eklendi (catId bazli SharedPrefs'ten okunur)
+- Header `catColor` hesabi: `customColor.ifBlank { null } ?: folder.category.colorHex` — custom renk varsa onu kullanir
+- `FolderRenameDialog` imzasi guncellendi: `currentColor: String = ""` + `onSave: (name, emoji, color) -> Unit`
+- Dialog'a "Renk sec" bolumu eklendi: 10 preset (Varsayilan/Turkuaz/Mavi/Mor/Kirmizi/Turuncu/Yesil/Pembe/Sari/Lacivert) — dolu dairesel swatchler, secili olanda CheckCircle + beyaz border
+- `COLOR_PRESETS: List<Pair<String,String>>` — `"" to "Varsayilan"` secilince custom renk silinir, kategori default'una doner
+
+**`FolderTile.kt`**: `customColor: String? = null` parametresi eklendi; `catColor = remember(colorHex, customColor)` ile custom renk oncelikli hesaplanir.
+
+**`HomeScreen.kt`**: `customFolderColors` state + `KEY_FOLDER_CUSTOM_COLORS` icin DisposableEffect listener; `FolderTile`'a `customColor` gecilir.
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+*Son güncelleme: 2026-06-13 (Döngü 31 — Klasor Renk Ozellestirme)*

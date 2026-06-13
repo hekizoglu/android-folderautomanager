@@ -56,6 +56,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -111,10 +112,44 @@ fun HomeScreen(
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
-    val widgetAreaEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context) }
-    val bgType = remember { com.armutlu.apporganizer.utils.AppPrefs.getBgType(context) }
-    val bgColorInt = remember { com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context) }
-    val textAlpha = remember { com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context) }
+    var widgetAreaEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
+    var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
+    var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
+    var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
+    var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    val suggestedApps by viewModel.suggestedApps.collectAsState()
+    val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
+    var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
+    var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
+    // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(
+            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_TYPE ->
+                    bgType = com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_COLOR ->
+                    bgColorInt = com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_TEXT_ALPHA ->
+                    textAlpha = com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AREA_ENABLED ->
+                    widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
+                    suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
+                    customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
+                    customFolderEmojis = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_COLORS ->
+                    customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
@@ -323,6 +358,22 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
+            // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
+            if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
+                AppSuggestionsRow(
+                    apps = suggestedApps,
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { app ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, app.packageName)
+                    },
+                    onAppLongClick = { app ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        contextMenuPkg = app.packageName
+                    }
+                )
+            }
+
             // Widget alanı — arama çubuğu ile klasör gridi arasında
             if (widgetAreaEnabled && widgetIds.isNotEmpty()) {
                 WidgetArea(
@@ -391,6 +442,10 @@ fun HomeScreen(
                             }
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
+                        textAlpha = textAlpha,
+                        customName = customFolderNames[folder.category.categoryId],
+                        customEmoji = customFolderEmojis[folder.category.categoryId],
+                        customColor = customFolderColors[folder.category.categoryId],
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(

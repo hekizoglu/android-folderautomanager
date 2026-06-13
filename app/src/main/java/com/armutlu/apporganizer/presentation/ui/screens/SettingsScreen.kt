@@ -401,7 +401,19 @@ fun SettingsScreen(
                 var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
                 var hideNavButtons by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
                 var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
+                var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
                 SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.AutoAwesome,
+                        title = "Uygulama Onerileri",
+                        subtitle = "Arama cubugununun altinda son kullanilan 4 uygulama",
+                        checked = suggestionsEnabled,
+                        onCheckedChange = {
+                            suggestionsEnabled = it
+                            com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsEnabled(context, it)
+                        }
+                    )
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.SwipeUp,
                         title = "Swipe-up Ipucu",

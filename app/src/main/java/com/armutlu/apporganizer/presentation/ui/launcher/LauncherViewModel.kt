@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 private const val PREFS_NAME = "launcher_prefs"
@@ -87,8 +88,8 @@ class LauncherViewModel @Inject constructor(
     // sonraki resume'larda _dockPackages ViewModel metotlarıyla güncel tutulur — yeniden okuma gerekmez.
     @Volatile private var dockLoaded = false
 
-    // Eş zamanlı çift loadAppsIfEmpty engelleyici
-    @Volatile private var isLoadingApps = false
+    // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
+    private val isLoadingApps = AtomicBoolean(false)
 
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
@@ -195,8 +196,7 @@ class LauncherViewModel @Inject constructor(
 
     /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
     fun loadAppsIfEmpty(context: Context) {
-        if (isLoadingApps) return  // onCreate + onResume eş zamanlı tetiklenmesin
-        isLoadingApps = true
+        if (!isLoadingApps.compareAndSet(false, true)) return  // atomik: zaten çalışıyorsa dön
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val helper = PackageManagerHelper(context)
@@ -222,7 +222,7 @@ class LauncherViewModel @Inject constructor(
                     }
                 }
             } finally {
-                isLoadingApps = false
+                isLoadingApps.set(false)
             }
         }
     }
@@ -384,6 +384,15 @@ class LauncherViewModel @Inject constructor(
 
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
+    val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            apps.filter { !it.isHidden && it.usageCount > 0 }
+                .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                .take(4)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
     fun syncUsageStats(context: Context) {
