@@ -40,6 +40,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
@@ -77,8 +78,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 private val BackgroundGradient = Brush.verticalGradient(
     colors = listOf(
@@ -119,6 +122,15 @@ private enum class OnboardingStep(
         why = "",
         buttonLabel = "Baslayin",
         isRequired = false
+    ),
+    RESTORE_BACKUP(
+        icon = Icons.Default.Restore,
+        title = "Onceki Yedeginiz Var Mi?",
+        description = "Daha once App Organizer kullandiyseniz, uygulama duzenlemenizi JSON yedek dosyasindan geri yukleyebilirsiniz.",
+        why = "Yedek bulunmazsa bu adimi atlayabilirsiniz. Geri yukleme kategori ve klasor duzenlemenizi korur.",
+        buttonLabel = "Yedegi Geri Yukle",
+        isRequired = false,
+        isSkippable = true
     ),
     QUERY_PACKAGES(
         icon = Icons.Default.ManageSearch,
@@ -238,7 +250,10 @@ private enum class OnboardingStep(
 }
 
 @Composable
-fun OnboardingScreen(onFinish: () -> Unit) {
+fun OnboardingScreen(
+    onFinish: () -> Unit,
+    viewModel: AppListViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     var stepIndex by remember { mutableStateOf(0) }
     val steps = OnboardingStep.entries.toList()
@@ -263,6 +278,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             )?.contains(context.packageName) == true
         )
     }
+    var restoreResult by remember { mutableStateOf<String?>(null) }
     var swipeHintEnabled by remember { mutableStateOf(true) }
     var newBadgeEnabled by remember { mutableStateOf(true) }
     var folderCountEnabled by remember { mutableStateOf(true) }
@@ -271,6 +287,26 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     var selectedFont  by remember { mutableStateOf(AppFont.DEFAULT) }
     val scope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferences(context) }
+
+    val restoreFilePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                runCatching {
+                    val json = context.contentResolver.openInputStream(uri)
+                        ?.bufferedReader()?.readText() ?: return@launch
+                    val result = viewModel.importBackup(json)
+                    restoreResult = if (result.success)
+                        "${result.updatedCount} uygulama geri yuklendi"
+                    else
+                        "Geri yukleme basarisiz: ${result.error}"
+                }.onFailure {
+                    restoreResult = "Dosya okunamadi: ${it.message}"
+                }
+            }
+        }
+    }
 
     val currentStep by rememberUpdatedState(step)
 
@@ -487,6 +523,44 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 Spacer(Modifier.height(12.dp))
             }
 
+            // Geri yükleme sonucu mesajı
+            if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
+                val isSuccess = restoreResult!!.contains("geri yuklendi")
+                Spacer(Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isSuccess) Color(0xFF00897B).copy(alpha = 0.25f)
+                            else Color(0xFFB00020).copy(alpha = 0.25f)
+                        )
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        restoreResult!!,
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                if (isSuccess) {
+                    Spacer(Modifier.height(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(TealGradient)
+                            .clickable { stepIndex++ },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Devam Et", color = Color.White, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+
             // Toggle seçici — AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
             val toggleState: Boolean? = when (currentStep) {
                 OnboardingStep.AUTO_BACKUP -> autoBackupEnabled
@@ -625,6 +699,10 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     .clickable {
                         when (currentStep) {
                             OnboardingStep.WELCOME -> stepIndex++
+
+                            OnboardingStep.RESTORE_BACKUP -> {
+                                restoreFilePicker.launch("application/json")
+                            }
 
                             OnboardingStep.SET_LAUNCHER -> {
                                 if (launcherSet) {

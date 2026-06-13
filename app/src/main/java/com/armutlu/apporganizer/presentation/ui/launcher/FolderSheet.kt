@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -126,7 +127,11 @@ fun FolderSheet(
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
-    var sortMode by remember { mutableStateOf(AllAppsSortMode.ALPHA) }
+    val context = LocalContext.current
+    var sortMode by remember {
+        val saved = com.armutlu.apporganizer.utils.AppPrefs.getFolderSortMode(context)
+        mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
+    }
     var searchQuery by remember { mutableStateOf("") }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
@@ -216,7 +221,10 @@ fun FolderSheet(
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
                             .background(if (active) TealColor else Color.White.copy(alpha = 0.12f))
-                            .clickable { sortMode = mode }
+                            .clickable {
+                                sortMode = mode
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderSortMode(context, mode.name)
+                            }
                             .padding(horizontal = 11.dp, vertical = 5.dp)
                     ) {
                         Text(

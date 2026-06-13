@@ -78,6 +78,13 @@ object AppPrefs {
         IconPackManager.clearCache()
     }
 
+    // Klasör sıralama modu — tüm klasörler için global
+    const val KEY_FOLDER_SORT_MODE = "folder_sort_mode"
+    fun getFolderSortMode(context: Context): String =
+        prefs(context).getString(KEY_FOLDER_SORT_MODE, "ALPHA") ?: "ALPHA"
+    fun setFolderSortMode(context: Context, mode: String) =
+        prefs(context).edit().putString(KEY_FOLDER_SORT_MODE, mode).apply()
+
     // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
     private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika
