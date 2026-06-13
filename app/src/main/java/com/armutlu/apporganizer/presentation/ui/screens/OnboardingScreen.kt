@@ -39,12 +39,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ManageSearch
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.SwipeUp
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,8 +78,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 private val BackgroundGradient = Brush.verticalGradient(
     colors = listOf(
@@ -115,6 +122,15 @@ private enum class OnboardingStep(
         why = "",
         buttonLabel = "Baslayin",
         isRequired = false
+    ),
+    RESTORE_BACKUP(
+        icon = Icons.Default.Restore,
+        title = "Onceki Yedeginiz Var Mi?",
+        description = "Daha once App Organizer kullandiyseniz, uygulama duzenlemenizi JSON yedek dosyasindan geri yukleyebilirsiniz.",
+        why = "Yedek bulunmazsa bu adimi atlayabilirsiniz. Geri yukleme kategori ve klasor duzenlemenizi korur.",
+        buttonLabel = "Yedegi Geri Yukle",
+        isRequired = false,
+        isSkippable = true
     ),
     QUERY_PACKAGES(
         icon = Icons.Default.ManageSearch,
@@ -165,9 +181,54 @@ private enum class OnboardingStep(
         title = "Bildirim Metni",
         description = "Klasorlerin altinda ve tum uygulamalar ekraninda son gelen bildirimin metnini goruntulemek ister misiniz?",
         why = "WhatsApp veya mesajlasma uygulamalarinda son mesaji ana ekrandan gorebilirsiniz.",
-        buttonLabel = "Goster",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    NOTIF_ACCESS(
+        icon = Icons.Default.Notifications,
+        title = "Bildirim Erisimi",
+        description = "Bildirim metnini gosterebilmek icin sistem bildirim erisimi gereklidir.\n\nAcilan ekranda 'App Organizer'i bulun ve etkinlestirin.",
+        why = "Bu izin olmadan bildirim metni hic gosterilmez. Veriler cihazinizda kalir, disari gonderilmez.",
+        buttonLabel = "Izin Ver",
         isRequired = false,
         isSkippable = true
+    ),
+    SWIPE_HINT(
+        icon = Icons.Default.SwipeUp,
+        title = "Swipe-Up Ipucu",
+        description = "Klasorun altinda en cok kullanilan uygulamanin adi gorunsun mu? Yukari kaydirarak o uygulamaya hizlica ulasabilirsiniz.",
+        why = "Klasorden tek hareketle favori uygulamanizi acacaksiniz — aciklama olmadan kesfetmek zor.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    NEW_BADGE(
+        icon = Icons.Default.Badge,
+        title = "Yeni Uygulama Rozeti",
+        description = "Son 7 gunde yuklenen uygulamalara 'YENI' rozeti gorunsun mu?",
+        why = "Yeni yuklediginiz uygulamalari kolay fark edersiniz.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    FOLDER_COUNT(
+        icon = Icons.Default.Folder,
+        title = "Klasor Uygulama Sayisi",
+        description = "Klasorun altinda kac uygulama oldugu gorunsun mu?",
+        why = "Klasorun icine bakmadan hizlica dolu mu bos mu anlayabilirsiniz.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
+    ),
+    NAV_HIDE(
+        icon = Icons.Default.Navigation,
+        title = "Sistem Navigasyonu",
+        description = "Ana ekranda geri/home/recent tuslarini gizleyin, tam ekran launcher deneyimi yasayin.",
+        why = "Geri tulari gizlemek ekrani buyutür. Sistem navigate'i yine de swipe gesture ile kullanilabilir.",
+        buttonLabel = "Devam Et",
+        isRequired = false,
+        isSkippable = false
     ),
     THEME_SELECT(
         icon = Icons.Default.Info,
@@ -189,10 +250,30 @@ private enum class OnboardingStep(
 }
 
 @Composable
-fun OnboardingScreen(onFinish: () -> Unit) {
+fun OnboardingScreen(
+    onFinish: () -> Unit,
+    viewModel: AppListViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     var stepIndex by remember { mutableStateOf(0) }
-    val steps = OnboardingStep.entries.toList()
+    // SET_LAUNCHER sona alındı — tüm ayarlar bittikten sonra sorulsun
+    val steps = listOf(
+        OnboardingStep.WELCOME,
+        OnboardingStep.RESTORE_BACKUP,
+        OnboardingStep.QUERY_PACKAGES,
+        OnboardingStep.NOTIFICATIONS,
+        OnboardingStep.UNUSED_GREY,
+        OnboardingStep.AUTO_BACKUP,
+        OnboardingStep.NOTIF_TEXT,
+        OnboardingStep.NOTIF_ACCESS,
+        OnboardingStep.SWIPE_HINT,
+        OnboardingStep.NEW_BADGE,
+        OnboardingStep.FOLDER_COUNT,
+        OnboardingStep.NAV_HIDE,
+        OnboardingStep.THEME_SELECT,
+        OnboardingStep.SET_LAUNCHER,
+        OnboardingStep.DONE,
+    )
     val step = steps[stepIndex]
 
     var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
@@ -205,10 +286,44 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         )
     }
     var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var autoBackupEnabled by remember { mutableStateOf(true) }
+    var notifTextEnabled by remember { mutableStateOf(true) }
+    var notifAccessGranted by remember {
+        mutableStateOf(
+            android.provider.Settings.Secure.getString(
+                context.contentResolver, "enabled_notification_listeners"
+            )?.contains(context.packageName) == true
+        )
+    }
+    var restoreResult by remember { mutableStateOf<String?>(null) }
+    var swipeHintEnabled by remember { mutableStateOf(true) }
+    var newBadgeEnabled by remember { mutableStateOf(true) }
+    var folderCountEnabled by remember { mutableStateOf(true) }
+    var navHideEnabled by remember { mutableStateOf(false) }
     var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
     var selectedFont  by remember { mutableStateOf(AppFont.DEFAULT) }
     val scope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferences(context) }
+
+    val restoreFilePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                runCatching {
+                    val json = context.contentResolver.openInputStream(uri)
+                        ?.bufferedReader()?.readText() ?: return@launch
+                    val result = viewModel.importBackup(json)
+                    restoreResult = if (result.success)
+                        "${result.updatedCount} uygulama geri yuklendi"
+                    else
+                        "Geri yukleme basarisiz: ${result.error}"
+                }.onFailure {
+                    restoreResult = "Dosya okunamadi: ${it.message}"
+                }
+            }
+        }
+    }
 
     val currentStep by rememberUpdatedState(step)
 
@@ -217,10 +332,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 launcherSet = isDefaultLauncher(context)
-                // Launcher ayarlandıysa otomatik ilerle
-                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) {
-                    stepIndex++
-                }
+                notifAccessGranted = android.provider.Settings.Secure.getString(
+                    context.contentResolver, "enabled_notification_listeners"
+                )?.contains(context.packageName) == true
+                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) stepIndex++
+                if (notifAccessGranted && currentStep == OnboardingStep.NOTIF_ACCESS) stepIndex++
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -398,7 +514,8 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
                 OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
                 OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
-                OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gün ayarlandı" else null
+                OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) "Bildirim erisimi verildi" else null
+                OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gun ayarlandi" else null
                 else -> null
             }
             if (statusText != null) {
@@ -421,6 +538,95 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     )
                 }
                 Spacer(Modifier.height(12.dp))
+            }
+
+            // Geri yükleme sonucu mesajı
+            if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
+                val isSuccess = restoreResult!!.contains("geri yuklendi")
+                Spacer(Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isSuccess) Color(0xFF00897B).copy(alpha = 0.25f)
+                            else Color(0xFFB00020).copy(alpha = 0.25f)
+                        )
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        restoreResult!!,
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                if (isSuccess) {
+                    Spacer(Modifier.height(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(TealGradient)
+                            .clickable { stepIndex++ },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Devam Et", color = Color.White, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+
+            // Toggle seçici — AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
+            val toggleState: Boolean? = when (currentStep) {
+                OnboardingStep.AUTO_BACKUP -> autoBackupEnabled
+                OnboardingStep.NOTIF_TEXT -> notifTextEnabled
+                OnboardingStep.SWIPE_HINT -> swipeHintEnabled
+                OnboardingStep.NEW_BADGE -> newBadgeEnabled
+                OnboardingStep.FOLDER_COUNT -> folderCountEnabled
+                OnboardingStep.NAV_HIDE -> navHideEnabled
+                else -> null
+            }
+            if (toggleState != null) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
+                ) {
+                    listOf(true to "Acik", false to "Kapali").forEach { (value, label) ->
+                        val selected = toggleState == value
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (selected) Color(0xFF00897B)
+                                    else Color.White.copy(alpha = 0.15f)
+                                )
+                                .clickable {
+                                    when (currentStep) {
+                                        OnboardingStep.AUTO_BACKUP -> autoBackupEnabled = value
+                                        OnboardingStep.NOTIF_TEXT -> notifTextEnabled = value
+                                        OnboardingStep.SWIPE_HINT -> swipeHintEnabled = value
+                                        OnboardingStep.NEW_BADGE -> newBadgeEnabled = value
+                                        OnboardingStep.FOLDER_COUNT -> folderCountEnabled = value
+                                        OnboardingStep.NAV_HIDE -> navHideEnabled = value
+                                        else -> {}
+                                    }
+                                }
+                                .padding(horizontal = 32.dp, vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                label,
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
             }
 
             // Tema seçim UI — sadece THEME_SELECT adımında göster
@@ -511,6 +717,10 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         when (currentStep) {
                             OnboardingStep.WELCOME -> stepIndex++
 
+                            OnboardingStep.RESTORE_BACKUP -> {
+                                restoreFilePicker.launch("application/json")
+                            }
+
                             OnboardingStep.SET_LAUNCHER -> {
                                 if (launcherSet) {
                                     stepIndex++
@@ -551,12 +761,40 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                             }
 
                             OnboardingStep.AUTO_BACKUP -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, true)
+                                com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled)
                                 stepIndex++
                             }
 
                             OnboardingStep.NOTIF_TEXT -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, true)
+                                com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, notifTextEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.NOTIF_ACCESS -> {
+                                if (notifAccessGranted) { stepIndex++; return@clickable }
+                                context.startActivity(
+                                    android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            }
+
+                            OnboardingStep.SWIPE_HINT -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.NEW_BADGE -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, newBadgeEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.FOLDER_COUNT -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, folderCountEnabled)
+                                stepIndex++
+                            }
+
+                            OnboardingStep.NAV_HIDE -> {
+                                com.armutlu.apporganizer.utils.AppPrefs.setNavButtonsHidden(context, navHideEnabled)
                                 stepIndex++
                             }
 
@@ -585,6 +823,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> "Devam Et"
                         currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> "Devam Et"
+                        currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> "Devam Et"
                         else -> currentStep.buttonLabel
                     },
                     fontSize = 17.sp,

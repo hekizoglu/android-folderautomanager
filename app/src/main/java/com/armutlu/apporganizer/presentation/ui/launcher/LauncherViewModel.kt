@@ -12,6 +12,8 @@ import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import com.armutlu.apporganizer.utils.WidgetHostManager
+import com.armutlu.apporganizer.utils.WidgetPrefs
 import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 private const val PREFS_NAME = "launcher_prefs"
@@ -81,8 +84,12 @@ class LauncherViewModel @Inject constructor(
     private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
     val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
-    private val _openFolder = MutableStateFlow<AppFolder?>(null)
-    val openFolder: StateFlow<AppFolder?> = _openFolder.asStateFlow()
+    // Klasör sırası ve dock paketleri ilk yüklemede SharedPrefs'ten okunur;
+    // sonraki resume'larda _dockPackages ViewModel metotlarıyla güncel tutulur — yeniden okuma gerekmez.
+    @Volatile private var dockLoaded = false
+
+    // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
+    private val isLoadingApps = AtomicBoolean(false)
 
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
@@ -90,6 +97,8 @@ class LauncherViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    // Eagerly: launcher her zaman arka planda çalışır — akış hiç durmamalı.
+    // WhileSubscribed(5s) ile 5+ saniye sonra dönüşte kısa "yükleniyor" flaşı oluyordu.
     val folders: StateFlow<List<AppFolder>> = combine(
         repository.getAllAppsFlow(),
         _folderOrder
@@ -100,11 +109,20 @@ class LauncherViewModel @Inject constructor(
             val orderMap = order.mapIndexed { i, id -> id to i }.toMap()
             built.sortedBy { orderMap[it.category.categoryId] ?: Int.MAX_VALUE }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _openFolderId = MutableStateFlow<String?>(null)
+    // folders flow'undan türetilir — kategori değişince FolderSheet anlık güncellenir
+    val openFolder: StateFlow<AppFolder?> = combine(
+        _openFolderId,
+        folders
+    ) { id, folderList ->
+        if (id == null) null else folderList.firstOrNull { it.category.categoryId == id }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val allApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { buildAllApps(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
@@ -116,35 +134,40 @@ class LauncherViewModel @Inject constructor(
         else buildAllApps(apps).filter {
             it.appName.lowercase().contains(query) || it.packageName.lowercase().contains(query)
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
-        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz
+        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz.
+        // Tum bildirimler silindiginde counts bos map gelir — guard olmadan her durumda temizle.
         AppNotificationListenerService.badgeCounts
             .onEach { counts ->
-                if (counts.isNotEmpty()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        counts.forEach { (pkg, count) ->
-                            repository.updateNotificationCount(pkg, count)
-                        }
-                        // Servis bilgisi olmayan uygulamalarin sayisini sifirla
-                        val knownPkgs = counts.keys
-                        repository.getAllApps()
-                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
-                            .forEach { repository.updateNotificationCount(it.packageName, 0) }
+                viewModelScope.launch(Dispatchers.IO) {
+                    counts.forEach { (pkg, count) ->
+                        repository.updateNotificationCount(pkg, count)
+                    }
+                    // Servis listesinde olmayan ama DB'de sayisi > 0 olan uygulamalari sifirla
+                    val knownPkgs = counts.keys
+                    val toReset = repository.getAllApps()
+                        .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                    if (toReset.isNotEmpty()) {
+                        toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
                     }
                 }
             }
             .launchIn(viewModelScope)
 
-        // Son bildirim metnini DB'ye yaz
+        // Son bildirim metnini DB'ye yaz; kaybolan bildirim metinlerini de temizle.
         AppNotificationListenerService.latestTexts
             .onEach { texts ->
-                if (texts.isNotEmpty()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        texts.forEach { (pkg, text) ->
-                            repository.updateNotificationText(pkg, text)
-                        }
+                viewModelScope.launch(Dispatchers.IO) {
+                    texts.forEach { (pkg, text) ->
+                        repository.updateNotificationText(pkg, text)
+                    }
+                    val knownPkgs = texts.keys
+                    val toClean = repository.getAllApps()
+                        .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
+                    if (toClean.isNotEmpty()) {
+                        toClean.forEach { repository.updateNotificationText(it.packageName, "") }
                     }
                 }
             }
@@ -158,9 +181,11 @@ class LauncherViewModel @Inject constructor(
     fun reconcileIfNeeded(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             val pm = context.packageManager
-            val installedCount = pm.getInstalledPackages(0)
-                .count { it.applicationInfo != null &&
-                    pm.getLaunchIntentForPackage(it.packageName) != null }
+            // mapTo(mutableSetOf()): distinctBy + count yerine tek geçişli set deduplication
+            val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val installedCount = pm.queryIntentActivities(launchIntent, 0)
+                .mapTo(mutableSetOf()) { it.activityInfo.packageName }
+                .count { !PackageManagerHelper.shouldHide(it) }
             val dbCount = repository.countApps()
             if (installedCount != dbCount) {
                 Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
@@ -171,38 +196,43 @@ class LauncherViewModel @Inject constructor(
 
     /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
     fun loadAppsIfEmpty(context: Context) {
+        if (!isLoadingApps.compareAndSet(false, true)) return  // atomik: zaten çalışıyorsa dön
         viewModelScope.launch(Dispatchers.IO) {
-            val helper = PackageManagerHelper(context)
-            val installed = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
-            val existing = repository.getAllApps()
-            if (existing.isEmpty()) {
-                Timber.d("DB boş — ${installed.size} uygulama yazılıyor")
-                repository.insertApps(installed)
-            } else {
-                // Cihazda olmayan ama DB'de kalan uygulamaları temizle
-                val installedPkgs = installed.map { it.packageName }.toSet()
-                val stale = existing.filter { it.packageName !in installedPkgs }
-                if (stale.isNotEmpty()) {
-                    stale.forEach { repository.deleteApp(it.packageName) }
-                    Timber.d("Reconcile: ${stale.size} eski uygulama silindi")
+            try {
+                val helper = PackageManagerHelper(context)
+                val installed = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
+                val existing = repository.getAllApps()
+                if (existing.isEmpty()) {
+                    Timber.d("DB boş — ${installed.size} uygulama yazılıyor")
+                    repository.insertApps(installed)
+                } else {
+                    // Cihazda olmayan ama DB'de kalan uygulamaları temizle
+                    val installedPkgs = installed.map { it.packageName }.toSet()
+                    val stale = existing.filter { it.packageName !in installedPkgs }
+                    if (stale.isNotEmpty()) {
+                        stale.forEach { repository.deleteApp(it.packageName) }
+                        Timber.d("Reconcile: ${stale.size} eski uygulama silindi")
+                    }
+                    // DB'de olmayan yeni uygulamaları ekle
+                    val existingPkgs = existing.map { it.packageName }.toSet()
+                    val newApps = installed.filter { it.packageName !in existingPkgs }
+                    if (newApps.isNotEmpty()) {
+                        repository.insertApps(newApps)
+                        Timber.d("Reconcile: ${newApps.size} yeni uygulama eklendi")
+                    }
                 }
-                // DB'de olmayan yeni uygulamaları ekle
-                val existingPkgs = existing.map { it.packageName }.toSet()
-                val newApps = installed.filter { it.packageName !in existingPkgs }
-                if (newApps.isNotEmpty()) {
-                    repository.insertApps(newApps)
-                    Timber.d("Reconcile: ${newApps.size} yeni uygulama eklendi")
-                }
+            } finally {
+                isLoadingApps.set(false)
             }
         }
     }
 
     fun openFolder(folder: AppFolder) {
-        _openFolder.value = folder
+        _openFolderId.value = folder.category.categoryId
     }
 
     fun closeFolder() {
-        _openFolder.value = null
+        _openFolderId.value = null
     }
 
     fun openAllApps() {
@@ -236,12 +266,23 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun loadDockPackages(context: Context) {
-        _dockPackages.value = DockPrefs.getDockPackages(context)
-        // Kayıtlı klasör sırasını da yükle
-        val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        val saved = prefs.getString(KEY_FOLDER_ORDER, null)
-        if (!saved.isNullOrBlank()) {
-            _folderOrder.value = saved.split(",").filter { it.isNotBlank() }
+        // İlk yüklemede hem dock paketleri hem klasör sırası SharedPrefs'ten okunur.
+        // Sonraki resume'larda _dockPackages, saveDockPackages/addToDock/removeFromDock ile
+        // her zaman güncel — tekrar SharedPrefs okumaya gerek yok.
+        if (!dockLoaded) {
+            dockLoaded = true
+            val newPackages = DockPrefs.getDockPackages(context)
+            if (newPackages != _dockPackages.value) {
+                _dockPackages.value = newPackages
+            }
+            val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            val saved = prefs.getString(KEY_FOLDER_ORDER, null)
+            if (!saved.isNullOrBlank()) {
+                val newOrder = saved.split(",").filter { it.isNotBlank() }
+                if (newOrder != _folderOrder.value) {
+                    _folderOrder.value = newOrder
+                }
+            }
         }
     }
 
@@ -258,21 +299,24 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun addToDock(context: Context, packageName: String) {
-        val current = DockPrefs.getDockPackages(context)
+        // SharedPrefs okumak yerine bellekteki listeyi kullan — dockLoaded sonrasi her zaman güncel
+        val current = _dockPackages.value
         when {
             current.contains(packageName) -> _toastMessage.tryEmit("Uygulama zaten Dock'ta")
-            current.size >= 4 -> _toastMessage.tryEmit("Dock dolu (max 4) — önce bir uygulama çıkar")
+            current.size >= DOCK_MAX_SIZE -> _toastMessage.tryEmit("Dock dolu (max $DOCK_MAX_SIZE) — önce bir uygulama çıkar")
             else -> {
-                DockPrefs.addToDock(context, packageName)
-                _dockPackages.value = DockPrefs.getDockPackages(context)
+                val updated = current + packageName
+                DockPrefs.saveDockPackages(context, updated)
+                _dockPackages.value = updated
                 _toastMessage.tryEmit("Dock'a eklendi")
             }
         }
     }
 
     fun removeFromDock(context: Context, packageName: String) {
-        DockPrefs.removeFromDock(context, packageName)
-        _dockPackages.value = DockPrefs.getDockPackages(context)
+        val updated = _dockPackages.value - packageName
+        DockPrefs.saveDockPackages(context, updated)
+        _dockPackages.value = updated
     }
 
     fun updateAppCategory(packageName: String, categoryId: String) {
@@ -288,6 +332,15 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun onPackageRemoved(packageName: String) {
+        // Icon cache'ten bu pakete ait tüm boyut varyantlarını temizle
+        iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { iconCacheInternal.remove(it) }
+        // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
+        val current = _dockPackages.value
+        if (packageName in current) {
+            _dockPackages.value = current - packageName
+        }
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteApp(packageName)
         }
@@ -295,19 +348,51 @@ class LauncherViewModel @Inject constructor(
 
     /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
     fun onPackageAdded(context: Context, packageName: String) {
+        // Uygulama güncellemelerinde ikon değişmiş olabilir — cache'i temizle
+        iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { iconCacheInternal.remove(it) }
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                // Tam tarama yerine tek paket fetch: ~5x daha hızlı
                 val helper = PackageManagerHelper(context)
-                val apps = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
-                val app = apps.firstOrNull { it.packageName == packageName } ?: return@launch
+                val app = helper.getAppInfo(packageName) ?: return@launch
                 repository.insertApps(listOf(app))
                 Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
         }
     }
 
+    // Widget ID listesi — SharedPrefs'ten yüklenir, ekleme/silmede güncellenir
+    private val _widgetIds = MutableStateFlow<List<Int>>(emptyList())
+    val widgetIds: StateFlow<List<Int>> = _widgetIds.asStateFlow()
+
+    fun loadWidgetIds(context: Context) {
+        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
+    }
+
+    fun addWidgetId(context: Context, id: Int) {
+        WidgetPrefs.addWidgetId(context, id)
+        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
+    }
+
+    fun removeWidgetId(context: Context, id: Int) {
+        WidgetHostManager.deleteId(context, id)
+        WidgetPrefs.removeWidgetId(context, id)
+        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
+    }
+
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
+    val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            apps.filter { !it.isHidden && it.usageCount > 0 }
+                .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                .take(4)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
     fun syncUsageStats(context: Context) {

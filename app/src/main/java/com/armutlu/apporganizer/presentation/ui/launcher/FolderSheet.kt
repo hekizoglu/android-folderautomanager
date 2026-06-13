@@ -3,8 +3,11 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -16,11 +19,15 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -108,20 +116,12 @@ private val DividerColor    = Color(0xFFFFFFFF).copy(alpha = 0.08f)
 private val TealColor       = Color(0xFF00897B)
 private val TextSecondary   = Color.White.copy(alpha = 0.55f)
 
-enum class FolderSortMode(val label: String) {
-    ALPHA("A–Z"),
-    USAGE("Kullanım"),
-    SIZE_DESC("Boyut ↓"),
-    SIZE_ASC("Boyut ↑"),
-    INSTALL_DATE("Yükleme")
-}
-
-private fun List<AppInfo>.sortedBy(mode: FolderSortMode): List<AppInfo> = when (mode) {
-    FolderSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
-    FolderSortMode.USAGE        -> sortedByDescending { it.usageCount }
-    FolderSortMode.SIZE_DESC    -> sortedByDescending { it.appSizeBytes }
-    FolderSortMode.SIZE_ASC     -> sortedBy { it.appSizeBytes }
-    FolderSortMode.INSTALL_DATE -> sortedByDescending { it.installTime }
+private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
+    AllAppsSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
+    AllAppsSortMode.USAGE        -> sortedByDescending { it.usageCount }
+    AllAppsSortMode.SIZE_DESC    -> sortedByDescending { it.appSizeBytes }
+    AllAppsSortMode.SIZE_ASC     -> sortedBy { it.appSizeBytes }
+    AllAppsSortMode.INSTALL_DATE -> sortedByDescending { it.installTime }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,13 +134,28 @@ fun FolderSheet(
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
-    var sortMode by remember { mutableStateOf(FolderSortMode.ALPHA) }
+    val context = LocalContext.current
+    var sortMode by remember {
+        val saved = com.armutlu.apporganizer.utils.AppPrefs.getFolderSortMode(context)
+        mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
+    }
     var searchQuery by remember { mutableStateOf("") }
+    val catId = folder.category.categoryId
+    var customName by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)[catId] ?: "")
+    }
+    var customEmoji by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)[catId] ?: "")
+    }
+    var customColor by remember(catId) {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)[catId] ?: "")
+    }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
         val base = if (searchQuery.isBlank()) folder.apps
                    else folder.apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
-        base.sortedBy(sortMode)
+        base.sortedByMode(sortMode)
     }
 
     ModalBottomSheet(
@@ -154,8 +169,9 @@ fun FolderSheet(
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 24.dp),
         ) {
             // ── Header ────────────────────────────────────────────────────────
-            val catColor = remember(folder.category.colorHex) {
-                runCatching { Color(android.graphics.Color.parseColor(folder.category.colorHex)) }
+            val catColor = remember(folder.category.colorHex, customColor) {
+                val hex = customColor.ifBlank { null } ?: folder.category.colorHex
+                runCatching { Color(android.graphics.Color.parseColor(hex)) }
                     .getOrDefault(TealColor)
             }
             Row(
@@ -170,12 +186,50 @@ fun FolderSheet(
                         .background(catColor.copy(alpha = 0.25f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = folder.category.iconEmoji, fontSize = 28.sp)
+                    Text(
+                        text = customEmoji.ifBlank { folder.category.iconEmoji },
+                        fontSize = 28.sp
+                    )
                 }
-                Column {
-                    Text(folder.category.categoryName, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = customName.ifBlank { folder.category.categoryName },
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Text("${folder.apps.size} uygulama", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
                 }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .clickable { showEditDialog = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Edit, null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
+                }
+            }
+
+            if (showEditDialog) {
+                FolderRenameDialog(
+                    currentName = customName.ifBlank { folder.category.categoryName },
+                    currentEmoji = customEmoji.ifBlank { folder.category.iconEmoji },
+                    currentColor = customColor,
+                    onDismiss = { showEditDialog = false },
+                    onSave = { newName, newEmoji, newColor ->
+                        val nameToSave = if (newName == folder.category.categoryName) "" else newName
+                        val emojiToSave = if (newEmoji == folder.category.iconEmoji) "" else newEmoji
+                        customName = nameToSave
+                        customEmoji = emojiToSave
+                        customColor = newColor
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomName(context, catId, nameToSave)
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomEmoji(context, catId, emojiToSave)
+                        com.armutlu.apporganizer.utils.AppPrefs.setFolderCustomColor(context, catId, newColor)
+                        showEditDialog = false
+                    }
+                )
             }
 
             // ── Arama çubuğu ─────────────────────────────────────────────────
@@ -193,7 +247,10 @@ fun FolderSheet(
                 Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                 Box(modifier = Modifier.weight(1f)) {
                     if (searchQuery.isEmpty()) {
-                        Text("${folder.category.categoryName} içinde ara...", color = TextSecondary, fontSize = 13.sp)
+                        Text(
+                            "${customName.ifBlank { folder.category.categoryName }} icinde ara...",
+                            color = TextSecondary, fontSize = 13.sp
+                        )
                     }
                     BasicTextField(
                         value = searchQuery,
@@ -218,13 +275,16 @@ fun FolderSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
             ) {
-                itemsIndexed(FolderSortMode.entries) { _, mode ->
+                itemsIndexed(AllAppsSortMode.entries) { _, mode ->
                     val active = sortMode == mode
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
                             .background(if (active) TealColor else Color.White.copy(alpha = 0.12f))
-                            .clickable { sortMode = mode }
+                            .clickable {
+                                sortMode = mode
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderSortMode(context, mode.name)
+                            }
                             .padding(horizontal = 11.dp, vertical = 5.dp)
                     ) {
                         Text(
@@ -274,4 +334,120 @@ fun FolderSheet(
             }
         }
     }
+}
+
+private val EMOJI_PICKER = listOf(
+    "📁","📝","🎮","👥","🛍️","📰","❤️","💰","🎓","🔧",
+    "✈️","🎬","🍔","📸","📦","⭐","🏠","🎵","💼","🎯",
+    "🔑","📱","💻","🎁","🌟","🚀","🎪","🏆","💡","📚",
+    "🌙","☀️","🎨","🏋️","🐶","🌿","🔔","💬","🗓️","🧩"
+)
+
+private val COLOR_PRESETS = listOf(
+    "" to "Varsayilan",
+    "#00897B" to "Turkuaz",
+    "#1976D2" to "Mavi",
+    "#7B1FA2" to "Mor",
+    "#D32F2F" to "Kirmizi",
+    "#F57C00" to "Turuncu",
+    "#388E3C" to "Yesil",
+    "#C2185B" to "Pembe",
+    "#FBC02D" to "Sari",
+    "#303F9F" to "Lacivert",
+)
+
+@Composable
+private fun FolderRenameDialog(
+    currentName: String,
+    currentEmoji: String,
+    currentColor: String = "",
+    onDismiss: () -> Unit,
+    onSave: (name: String, emoji: String, color: String) -> Unit,
+) {
+    var nameField by remember { mutableStateOf(currentName) }
+    var selectedEmoji by remember { mutableStateOf(currentEmoji) }
+    var selectedColor by remember { mutableStateOf(currentColor) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1E1E2E),
+        title = {
+            Text("Klasoru Duzenle", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                OutlinedTextField(
+                    value = nameField,
+                    onValueChange = { nameField = it },
+                    label = { Text("Klasor adi", color = Color.White.copy(0.6f)) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF00897B),
+                        unfocusedBorderColor = Color.White.copy(0.25f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Color(0xFF00897B),
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Emoji sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    itemsIndexed(EMOJI_PICKER) { _, emoji ->
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    if (emoji == selectedEmoji) Color(0xFF00897B).copy(0.35f)
+                                    else Color.White.copy(0.08f)
+                                )
+                                .clickable { selectedEmoji = emoji },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(emoji, fontSize = 20.sp)
+                        }
+                    }
+                }
+                Text("Renk sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    itemsIndexed(COLOR_PRESETS) { _, preset ->
+                        val hex = preset.first
+                        val isSelected = selectedColor == hex
+                        val resolvedColor = if (hex.isBlank()) Color.White.copy(0.2f)
+                            else runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(Color.White)
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(resolvedColor)
+                                .then(
+                                    if (isSelected) Modifier.border(2.dp, Color.White, androidx.compose.foundation.shape.CircleShape)
+                                    else Modifier
+                                )
+                                .clickable { selectedColor = hex },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isSelected) {
+                                Icon(
+                                    Icons.Default.CheckCircle, null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji, selectedColor) }) {
+                Text("Kaydet", color = Color(0xFF00897B), fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Iptal", color = Color.White.copy(0.6f))
+            }
+        }
+    )
 }

@@ -315,6 +315,8 @@ class AppListViewModel @Inject constructor(
     fun classifyUnclassifiedApps() {
         viewModelScope.launch {
             try {
+                val ctx = getApplication<Application>()
+                classifier.manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(ctx)
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
 
                 val unclassifiedApps = _screenState.value.apps.filter {

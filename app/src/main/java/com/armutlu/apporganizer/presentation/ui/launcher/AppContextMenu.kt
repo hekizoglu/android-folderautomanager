@@ -1,11 +1,14 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.content.Intent
+import android.content.pm.ShortcutInfo
 import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,20 +20,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.ShortcutHelper
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -65,6 +71,13 @@ fun AppContextMenu(
             runCatching {
                 context.packageManager.getApplicationIcon(app.packageName).toBitmap(128, 128).asImageBitmap()
             }.getOrNull()
+        }
+    }
+
+    // Uygulama kısayolları — LauncherApps API (API 25+, launcher rolü gerekir)
+    val shortcuts by produceState<List<ShortcutInfo>>(emptyList(), app.packageName) {
+        value = withContext(Dispatchers.IO) {
+            ShortcutHelper.getShortcuts(context, app.packageName).take(4)
         }
     }
 
@@ -133,6 +146,36 @@ fun AppContextMenu(
                     value = if (app.usageCount > 0) "${app.usageCount}×" else "—",
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            // ── Kısayollar ────────────────────────────────────────────────────
+            if (shortcuts.isNotEmpty()) {
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    "Kısayollar",
+                    fontSize = 11.sp,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    shortcuts.forEach { shortcut ->
+                        ShortcutItem(
+                            shortcut = shortcut,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                ShortcutHelper.launchShortcut(context, shortcut)
+                                onDismiss()
+                            }
+                        )
+                    }
+                }
             }
 
             Spacer(Modifier.height(12.dp))
@@ -247,5 +290,49 @@ private fun ContextAction(
         Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(16.dp))
         Text(label, fontSize = 15.sp, color = color)
+    }
+}
+
+@Composable
+private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val iconBmp by produceState<ImageBitmap?>(null, shortcut.id) {
+        value = withContext(Dispatchers.IO) {
+            ShortcutHelper.getShortcutIcon(context, shortcut, 96)
+        }
+    }
+    Column(
+        modifier = Modifier
+            .width(72.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White.copy(alpha = 0.10f)),
+            contentAlignment = Alignment.Center
+        ) {
+            iconBmp?.let { bmp ->
+                Image(bitmap = bmp, contentDescription = null, modifier = Modifier.size(32.dp))
+            } ?: Icon(
+                Icons.Default.OpenInNew,
+                contentDescription = null,
+                tint = TealColor,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Text(
+            text = shortcut.shortLabel?.toString() ?: shortcut.longLabel?.toString() ?: "",
+            fontSize = 10.sp,
+            color = TextSecondary,
+            maxLines = 2,
+            textAlign = TextAlign.Center,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

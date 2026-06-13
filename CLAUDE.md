@@ -24,27 +24,35 @@ Bu dosya her konuşmanın başında okunur. Hüseyin ile çalışma şeklini, pr
 Kısa, net — hangi agent, hangi görev.
 
 ### Hata Çözüm Kuralı (KRİTİK)
-**Bir işlem hata verdiğinde ve çözümden %85'in altında eminsen:**
-1. Hemen bir agent ile online araştırma yap — hatanın tam metnini ara
-2. Gelen sonucu yorumla, çözümü uygula
-3. Yine başarısız olursa farklı bir AI modeli ile agent tekrar araştır
-4. **Minimum 3 deneme** — her seferinde farklı model/kaynak kullan (WebSearch, GitHub Issues, Stack Overflow)
+**Bir işlem hata verdiğinde:**
+- **1. denemede çözüm bulamazsan → HEMEN agent görevlendir, vakit kaybetme**
+- Agent türünü duruma göre seç: WebSearch (online hata arama), Explore (kod tarama), Plan (mimari sorun)
+- Yine başarısız olursa farklı model/kaynak ile tekrar: DeepSeek → Gemini → Claude Opus sırasıyla
+- **Minimum 3 deneme** — her seferinde farklı model/kaynak kullan (WebSearch, GitHub Issues, Stack Overflow)
+
+**%85 eşiği YOK** — çözümden emin olsan da olmasan da 1 denemeden sonra agent devreye girer.
 
 Agent görevlendirme formatı:
 > "X hatası için [DeepSeek/Gemini/Claude Opus] agent araştırma yapıyor..."
 
 ### Araştırma Önceliği Kuralı (KRİTİK)
-**Her yeni teknoloji, kütüphane, entegrasyon veya bilmediğim bir şey için:**
-1. **Önce WebSearch agent ile online araştır** — güncel dokümantasyon, changelog, bilinen sorunlar
-2. **Sonra uygula** — eski/yanlış bilgiyle zaman kaybetme
+**Her değişiklik, hata çözümü veya planlama öncesinde: önce araştır, sonra uygula.**
 
-Bu kural şunlar için zorunludur:
-- Yeni MCP sunucuları (notebooklm, telegram, vs.)
-- API entegrasyonları (Telegram Bot, GitHub Actions, vs.)
-- Yeni kütüphaneler veya versiyonlar
-- Daha önce hiç yapmadığım işlemler
+#### ZORUNLU — WebSearch agent başlat:
+- Yeni API, MCP sunucusu, kütüphane veya entegrasyon (Telegram, NotebookLM, Compose yeni API, vs.)
+- Versiyon uyumluluğu gerektiren değişiklikler (BOM, AGP, Kotlin, compileSdk)
+- Derleme veya çalışma zamanı hatası — önce WebSearch, 1 denemede çözülmezse agent
+- Daha önce hiç yapılmamış işlemler
 
-> **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir.
+#### OPSİYONEL — Kendi kodumuzda değişiklik:
+- Mevcut kodda görünen bug fix (flow türetme, state yönetimi, UI düzeltme)
+- Pure Kotlin/Compose mantık değişiklikleri
+- Refactor, extract, rename işlemleri
+
+**Format:**
+> "X için WebSearch agent araştırıyor..." → bulguyu özetle → uygula
+
+> **Neden:** Bilgi kesim tarihi var, kütüphaneler değişiyor. Güncel olmayan yöntemle saatler kaybedilebilir. Kendi kodumuzu okumak araştırmadan daha hızlı — agent sadece gerektiğinde devreye girmeli.
 
 ### Kotlin Smart Cast Kuralı
 **`by` delegate property (örn. `val icon by produceState(...)`) `if (x != null)` bloğu içinde bile smart cast yapılamaz.**
@@ -83,9 +91,14 @@ Bu kural şunlar için zorunludur:
 2. **Emülatörde test et** — `Pixel6_API33` (AOSP) veya `Xiaomi_HyperOS_API34` (Android 14, 395dpi) üzerinde
 3. **Hata varsa düzelt** — DeepSeek ile analiz et, düzelt, tekrar build
 4. **Test geçtiyse commit + push** — açıklayıcı commit mesajı
-5. **Telegram'a gönder** — APK + kısa durum raporu
-6. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
-7. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
+5. **NotebookLM dosyasını güncelle** — `python scripts/update_notebooklm.py` (Masaüstü/notebooklm_apporganizer/app_source.txt)
+6. **Telegram'a gönder** — APK + **detaylı değişiklik raporu** (her döngüde):
+   - Bug fix: sebep + fix + sonuç
+   - Yeni özellik: ne eklendi, hangi dosya
+   - Refactor: eski davranış → yeni davranış
+   - Sonraki döngü planı
+7. **CLAUDE.md'yi güncelle** — (aşağıdaki kurala göre)
+8. **Döngü sonu özeti ver** — (aşağıdaki formata göre)
 
 ### Yeni Özellik = Ayarlar Kuralı (KRİTİK)
 **Her yeni UI özelliği SettingsScreen'den kapatılıp açılabilir olmalıdır.**
@@ -410,7 +423,7 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 | 11 | NotificationListenerService — gerçek veri | `services/` altında servis dosyası | `find app/src -name "*Notification*Service*"` |
 | 12 | AppListScreen refactor — max 300 satır | `AppListScreen.kt`, `AppListComponents.kt` | `wc -l .../AppListScreen.kt` |
 
-### Son Kontrol Sonuçları (2026-06-10)
+### Son Kontrol Sonuçları (2026-06-13)
 | # | Durum |
 |---|-------|
 | 1 | ✅ Theme.kt doğru |
@@ -443,16 +456,37 @@ Sistem rate limit'e takıldığında veya context kesildiğinde:
 
 ---
 
+## Akıllı Kategorizasyon Yol Haritası (Hüseyin Talebi)
+
+**Hedef:** Sistem bilinen 1000+ uygulamayı hafızasında tutsun; bilinmeyenleri "Diğer" klasörüne atacak ve web sorgusuna hazır bekletecek.
+
+**Aşama 1 (Öncelikli) — Offline Top-1000 Veritabanı:**
+- `exactMatchMap` + `KeywordDatabase`'i küresel top-1000 + Türkiye top-500 uygulamasına genişlet
+- Veri: kaynak kodda sabit — Play Store izni gerekmez, offline çalışır
+- Kaynak: APKPure/AppBrain aylık top listelerinden manuel veya script ile derleme
+
+**Aşama 2 — "Diğer" Klasörü Web Sorgulama:**
+- Seçenek A (Önerilen): **Kendi sunucu API'si** → `packageName → category` endpoint'i
+  - Sunucu: basit Python Flask + SQLite; kullanıcı bilinmeyen paket gönderir, cevap alır
+  - Play Store ToS'u ihlal etmez — kendi veri tabanımız
+- Seçenek B (Fallback): LLM çağrısı → paket adı + uygulama adı → kategori tahmini (DeepSeek API)
+- Seçenek C (Reddedildi): Play Store scraping → Google bunu blokluyor, ToS ihlali
+
+**Uygulama planı:**
+1. `AppClassifier` → bilinmeyen uygulama `CAT_UNCATEGORIZED` döndürünce "Diğer" klasörüne yazar
+2. `LauncherActivity`/`SettingsScreen` → "Bilinmeyen uygulamaları sorgula" butonu
+3. API çağrısı → cevap gelince DB güncelleme + klasörden çıkarma
+
 ## Gelecek Yol Haritası — Rekabet Döngüsü (Uzun Vadeli)
 
 Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döngülerde uygulanacak.
 
 | # | Özellik | Rakip Fırsat | Öncelik |
 |---|---------|--------------|---------|
-| 3 | Ana ekrana dönüşte hız iyileştirmesi | Smart Launcher şikayeti: "yavaş geri dönüş" | Yüksek |
-| 4 | Gesture navigation uyumsuzluk fix | Xiaomi/Samsung sistem navigasyonu çakışması | Yüksek |
-| 6 | Icon pack desteği | Nova kullanıcıları "icon pack yok" diyor | Orta |
-| 7 | Widget desteği | Niagara kullanıcıları "widget eksik" diyor | Orta |
+| 3 | ~~Ana ekrana dönüşte hız iyileştirmesi~~ ✅ | Smart Launcher şikayeti: "yavaş geri dönüş" — **Döngü 15, 16, 20, 21'de tamamlandı** | Yüksek |
+| 4 | ~~Gesture navigation uyumsuzluk fix~~ ✅ | Xiaomi/Samsung sistem navigasyonu çakışması — **Döngü 11'de tamamlandı** | Yüksek |
+| 6 | ~~Icon pack desteği~~ ✅ | Nova kullanıcıları "icon pack yok" diyor — **Döngü 22'de tamamlandı** | Orta |
+| 7 | ~~Widget desteği~~ ✅ | Niagara kullanıcıları "widget eksik" diyor — **Döngü 24'te tamamlandı** | Orta |
 
 **Döngülere eklenme zamanı:** Rakip analizi tamamlandıktan sonra (bkz. Özellik Durum Tablosu)
 
@@ -519,6 +553,15 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 **`AppInfo`**: `notificationText: String = ""` field eklendi — DB v6 (fallbackToDestructiveMigration).
 **Gösterim:** `AppPrefs.isNotificationTextEnabled()` = true → FolderTile'da klasör altı, AllAppsDrawer'da kategori etiketi yerine.
 
+### LauncherActivity Onboarding Kontrolu
+**LauncherActivity, onCreate basinda onboarding bitmemisse MainActivity'ye yonlendirir.**
+- Kontrol:  false ise  + 
+- Neden: pm clear / fresh install sonrasi LauncherActivity direkt acilinca onboarding atlaniyordu
+
+### Onboarding Adim Listesi (2026-06-13 itibari)
+WELCOME → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → SET_LAUNCHER → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → DONE (14 adim)
+Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
+
 ### OnboardingScreen Bug Fix + Yeni Adımlar (Döngü 9)
 **BUG:** `OnboardingScreen.kt:544` — `"app_prefs"/"onboarding_complete"` yanlış key/prefs kullanıyordu → her açılışta onboarding tekrar gösteriliyordu.
 **FIX:** `AppPrefs.PREFS_NAME` + `AppPrefs.KEY_ONBOARDING_DONE` kullanımına geçildi.
@@ -527,4 +570,295 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 ### MainActivity Refactor (Döngü 10)
 **Kaldırıldı:** `private const val PREFS_NAME` ve `KEY_ONBOARDING_DONE` — `AppPrefs.PREFS_NAME` / `AppPrefs.KEY_ONBOARDING_DONE` olarak değiştirildi. DRY ihlali giderildi.
 
-*Son güncelleme: 2026-06-13 (Döngü 10 tamamlandı)*
+### onResume Performans + Gesture Navigation Fix (Döngü 11)
+**LauncherActivity.kt degisiklikleri:**
+- `PACKAGE_FILTER` companion object sabiti — her `onResume`'da `IntentFilter` nesnesi olusturulmaz
+- `receiverRegistered` bayragi — `onResume`/`onPause` dongusunde cift kayit onlendi
+- `isGestureNavEnabled()` — `config_navBarInteractionMode == 2` ile gesture nav algilama
+- `applyNavBarVisibility`: gesture nav aktifse `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` yerine `BEHAVIOR_DEFAULT` kullan (Xiaomi/Samsung home gesture cakismasi giderildi)
+
+**HomeScreen.kt degisiklikleri:**
+- `LaunchedEffect(Unit)` icindeki cift `loadDockPackages` + `syncAppSizes` cagrilari kaldirildi (`onCreate` + `onResume` zaten handle ediyor)
+- `detectVerticalDragGestures`'a `onDragStart` eklendi: baslangic Y pozisyonu izleniyor
+- Alt 80dp sistem gesture zone'undan baslayan swipe AllApps'i tetiklemez (Xiaomi/Samsung alt kenar gesture cakismasi giderildi)
+
+**Uzak Ortam Notu:** `dl.google.com` ve `maven.google.com` bu remote ortamda erişim listesinde yok — Android AGP indirilemediginden APK build edilemiyor. Build dogrulama yerel makinede yapilmali.
+
+### DockIcon Async Yukleme (Döngü 12)
+**HomeScreen.kt - DockIcon composable degistirildi:**
+- Onceki: `remember(packageName)` ile senkron `toBitmap()` — main thread'i bloke ediyordu
+- Yeni: `produceState<ImageBitmap?>` ile IO thread async yukleme + `iconCacheInternal` (LRU 200) paylasimiyla
+- `bitmap?.let { bmp -> ... }` pattern: `by` delegate'lerde smart cast sorununu onler
+- Yeni import'lar: `produceState`, `ImageBitmap`, `Dispatchers`, `withContext`
+
+**Encoding Duzeltmesi (Döngü 12):**
+- PixelClockWidget yorumlarindaki bozuk UTF-8 sekanslar (`C3 A2 E2 82 AC 22`) duzgun em-dash ile degistirildi
+- Python `open(f, 'rb')` + `.replace(bad, good)` yontemiyle guvende duzeltildi
+
+### onResume Yuk Azaltma + Dock Kırık İkon Fix (Döngü 15)
+**LauncherViewModel.kt degisiklikleri:**
+- `dockLoaded` bayragi eklendi — klasor sirasi sadece ilk `loadDockPackages()` cagrisinda SharedPrefs'ten okunur; `reorderFolders()` sonraki guncellemeleri bellekte tutar
+- `loadDockPackages()`: `newPackages != _dockPackages.value` karsilastirmasi — deger degismemisse `StateFlow` guncellenmez, gereksiz dock rekomposisyonu onlendi
+- `onPackageRemoved()`: silinen uygulama dock'taysa aninda `_dockPackages` guncelleniyor — bir sonraki resume'a kadar kirik ikon gosterilmez
+**LauncherActivity.kt degisiklikleri:**
+- `isGestureNavEnabled()` fonksiyonu kaldirildi → `gestureNavEnabled: Boolean by lazy { ... }` property'ye donusturuldu — `resources.getIdentifier()` artik bir kere calisir, her `onResume`'da tekrar edilmez
+
+**Yol haritasi:** #3 "Ana ekrana donus hizi iyilestirmesi" bu donguyle tamamlandi.
+
+### queryIntentActivities Optimizasyonu (Döngü 16)
+**PackageManagerHelper.kt degisiklikleri:**
+- `getInstalledApps(onlyLaunchable=true)`: `getInstalledPackages(GET_META_DATA)` + per-package `getLaunchIntentForPackage` kaldirildi
+- Tek `queryIntentActivities(MAIN+LAUNCHER)` sorgusuyla tum launcher-visible uygulamalar aliniyor — 100 uygulamada ~200ms tasarruf, ~5x hizlanma
+- `onlyLaunchable=false` modu: eski `getInstalledPackages(0)` yolu korundu (geriye donuk uyum)
+
+**LauncherViewModel.kt degisiklikleri:**
+- `reconcileIfNeeded()`: `getInstalledPackages(0)` + per-package `getLaunchIntentForPackage` yerine `queryIntentActivities` — onResume count check ~3x hizli
+- Uygulama sayisi tutmazsa `loadAppsIfEmpty()` tetikleme mant. korundu
+
+**HomeScreen.kt degisiklikleri:**
+- AllApps drawer animasyonu: `fadeIn/Out` yerine `LinearOutSlowInEasing` (acilis 300ms) + `FastOutLinearInEasing` (kapanis 220ms) — Material motion standartlari
+- Dock `systemGestureExclusionRects`: onceki rect ile karsilastirma eklendi — sadece dock pozisyonu degisince guncellenir, her layout gecisinde degil
+- Yeni import'lar: `FastOutLinearInEasing`, `LinearOutSlowInEasing`
+
+**Yol haritasi:** #3 bu donguyle daha da ilerletildi — uygulama tarama suresi onemli olcude azaldi.
+
+### AllAppsDrawer Rekomposisyon Optimizasyonu (Döngü 17)
+**AllAppsDrawer.kt degisiklikleri:**
+- `rememberAppIcon`: `iconCacheInternal[cacheKey]` ile `initialValue` set edildi — cache hit'te aninda gosterir, IO tetiklemez
+  - Onceki: `initialValue = null` → her drawer acilisinda 100+ ikon diskten yeniden yukluyordu
+  - Yeni: FolderTile/AppIconView ile ayni LRU-200 cache paylasilir; key format: `"packageName_96"`
+- `quickFilterCounts`: `remember(apps)` ile memoize edildi — `intArrayOf(size, userCount, systemCount, recent7Days)`
+  - Onceki: `itemsIndexed` icerisinde `apps.count { }` her chip rekomposisyonunda 4x hesapliyordu
+  - Yeni: Sadece `apps` degisince yeniden hesaplar
+- `notifTextEnabled`: `remember { AppPrefs.isNotificationTextEnabled(context) }` ile AllAppsDrawer seviyesine ciktirildi
+  - `NiagaraAppRow` imzasina `notifTextEnabled: Boolean = false` parametresi eklendi
+  - Onceki: Her satir rekomposisyonunda SharedPrefs okuyordu (100+ satir = 100+ okuma)
+
+**LauncherActivity.kt degisiklikleri:**
+- `onCreate`'de `syncUsageStats` sonrasina `AppPrefs.markUsageStatsSynced(this)` eklendi
+  - Onceki: `onCreate` + hemen ardindan `onResume` iki kez senkronizasyon tetikliyordu
+  - Yeni: Ilk oturumda tek senkronizasyon; sonraki 30 dakika throttle korunur
+
+### Bildirim Badge/Metin Temizleme Bug Fix (Döngü 18)
+**Hata:** Tum bildirimler silindiginde badge sayilari ve bildirim metinleri DB'de kaliyor, UI yanlis badge gosteriyordu.
+
+**AppNotificationListenerService.kt degisiklikleri:**
+- `onNotificationRemoved`: `_latestTexts` map'inden uygulamanin entry'si kaldiriliyor — o uygulama icin baska aktif bildirim yoksa
+- Mekanizma: `activeNotifications?.any { it.packageName == pkg && !it.isOngoing }` kontroluyle calisiyor
+
+**LauncherViewModel.kt degisiklikleri:**
+- `badgeCounts` observer: `if (counts.isNotEmpty())` guardi kaldirildi — bos map geldiginde (tum bildirimler silindi) DB temizleme kodu calismiyordu
+- `latestTexts` observer: `if (texts.isNotEmpty())` guardi kaldirildi + DB'deki eski metinleri temizleyen blok eklendi
+- Her iki observer `toReset`/`toClean` listeleri bos oldugunda yazma yapmaz — sifir gereksiz DB IO
+
+**Sonuc:** Badge sayisi ve bildirim metni artik gercek zamani yansitiyor. Bildirim silindiginde badge aninda kalkiyor.
+
+### Ikon Cache Temizleme + FolderSortMode DRY + onPackageAdded Optimizasyonu (Döngü 19)
+**Explore agent analiz bulgulari:** LauncherViewModel'de ikon cache invalidation eksikti; FolderSheet FolderSortMode enum AllAppsSortMode ile identic ama ayri yasiyordu; onPackageAdded tam PM taramasi yapiyordu.
+
+**LauncherViewModel.kt degisiklikleri:**
+- `onPackageRemoved`: `iconCacheInternal.snapshot().keys.filter { it.startsWith("$pkg_") }` ile paket-spesifik cache entry'leri temizleniyor — kaldirilan uygulamanin ikonu bir sonraki acilista bozuk gozukmez
+- `onPackageAdded`: ayni cache temizleme + tam `getInstalledApps(...)` taramasi yerine `helper.getAppInfo(packageName)` — tek paket fetch, ~5x daha hizli; `IGNORE` conflict stratejisi mevcut kategori/usage/hidden verilerini koruyor
+- `dockLoaded`: `@Volatile` eklendi — coklu thread erişiminde tutarsiz okuma onlendi
+
+**FolderSheet.kt degisiklikleri:**
+- `FolderSortMode` enum kaldirildi (AllAppsSortMode ile identic, DRY ihlali)
+- `private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode)` extension ile AllAppsSortMode kullanilmaya gecildi
+- `FolderSortMode.entries` → `AllAppsSortMode.entries`; enum tanımı artık tek yerde
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### Ana Ekrana Dönüş Hızı — Flow Eagerly + Çift Yükleme Koruması (Döngü 20)
+**LauncherViewModel.kt degisiklikleri:**
+- `folders`, `allApps`, `filteredAllApps`: `WhileSubscribed(5_000L)` → `SharingStarted.Eagerly`
+  - Onceki: Kullanici 5+ saniye baska uygulamada kalip donunce akis durmus oluyordu; DB yeniden sorgulanana kadar kisa "Yükleniyor..." flasi goruluyordu
+  - Yeni: Launcher her zaman arka planda calisir — akis hic durmuyor, donus aninda veri hazir
+- `isLoadingApps: @Volatile Boolean` flag eklendi — `loadAppsIfEmpty` guard
+  - Onceki: `onCreate` + hemen ardindan `onResume` (ilk acilis) iki kez PM taramasi tetikleyebiliyordu
+  - Yeni: Eger tarama devam ediyorsa ikinci cagri return eder; `finally` blogu ile flag temizleniyor
+- `loadDockPackages`: Dock paketleri SharedPrefs sadece ilk yüklemede (`!dockLoaded`) okunur
+  - Onceki: Her `onResume`'da `DockPrefs.getDockPackages()` cagrisi — SharedPrefs string parse
+  - Yeni: `dockLoaded=true` sonrasinda `_dockPackages`, ViewModel metotlariyla (saveDockPackages/addToDock/removeFromDock) her zaman guncel — disk okuma yok
+- `reconcileIfNeeded`: `distinctBy { ... } .count { ... }` → `mapTo(mutableSetOf()) { packageName } .count { shouldHide(it) }`
+  - Tek gecisli set deduplication — ara liste olusturulmuyor
+
+### Dock In-Memory Operasyonlar + HomeScreen Refactor (Döngü 21)
+**LauncherViewModel.kt degisiklikleri:**
+- `addToDock`: `DockPrefs.getDockPackages(context)` (SharedPrefs okuma) yerine `_dockPackages.value` kullaniliyor
+  - Onceki: Her dock ekleme isleminde 2x SharedPrefs okuma yapiliyordu
+  - Yeni: `dockLoaded` sonrasinda `_dockPackages.value` her zaman guncel — sifir disk IO
+- `removeFromDock`: ayni desen — `DockPrefs.removeFromDock` yerine `_dockPackages.value - packageName` + `saveDockPackages`
+- Hardcoded `4` → `DOCK_MAX_SIZE` sabitiyle (`max $DOCK_MAX_SIZE`) gecerli
+
+**LauncherActivity.kt degisiklikleri:**
+- `isDefaultLauncher(context)` fonksiyonu kaldirildi — hicbir yerde cagirilmiyordu (olu kod)
+- `import android.content.pm.PackageManager` gereksiz import kaldirildi
+
+**HomeScreen.kt → HomeScreenComponents.kt refactor:**
+- `PixelClockWidget`, `GoogleSearchBar`, `PixelDock`, `DockIcon`, `SwipeHint` private composable'lar yeni dosyaya taşındı
+- `private` → `internal` görünürlük — aynı modülden erişim korunuyor
+- HomeScreen.kt: 866 → 634 satır (232 satır azaldı)
+- HomeScreenComponents.kt: yeni dosya, 288 satır
+- `iconCacheInternal` internal visibility — aynı paketten doğrudan erişim korunuyor
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### İkon Paketi Desteği (Döngü 22)
+**Nova/ADW/Lawnchair/GO Launcher uyumlu ikon paketi altyapısı — Yol Haritası #6 tamamlandı:**
+
+**`utils/IconPackManager.kt`** (yeni dosya):
+- 5 intent filter ile kurulu ikon paketlerini tarar: `com.novalauncher.THEME`, `org.adw.launcher.THEMES`, `com.gau.go.launcherex.theme`, `app.lawnchair.ICON_PACK`, `com.teslacoilsw.launcher.THEME`
+- `parseAppFilter()`: paket resources'indan `appfilter.xml` parse ederek `packageName -> drawableName` eslestirmesi
+- `filterCache: ConcurrentHashMap` — thread-safe; `clearCache()` ikon paketi degisince cagrilir
+
+**`utils/AppPrefs.kt`**: `KEY_ICON_PACK` + `getIconPack`/`setIconPack` eklendi; set'te otomatik cache temizleme
+
+**`AppIconView.kt`, `AllAppsDrawer.rememberAppIcon`, `HomeScreenComponents.DockIcon`**:
+- Cache key: ikon paketi seciliyse `"${pkg}_${px}_${iconPackPkg}"`, yoksa `"${pkg}_${px}"` (geriye uyumlu)
+- Yukleme onceligi: once ikon paketinden dene, bulamazsan sistem ikonuna don
+
+**`SettingsScreen.kt`**: "İkon Paketi" bolumu eklendi — kurulu paketleri listele, secili secenegi CheckCircle goster; paket yoksa Play Store yonlendirmesi
+
+### HomeLongPressSheet Grid Sıralaması (Döngü 23)
+**Hata:** `items(emptySlots)` FolderTile'lardan önce eklenmişti — boş Box'lar grid başına render edildiğinden koordinat kaymasıyla FolderSheet açılıyordu.
+**Fix:** Boş slotlar `items(pageFolders.size)` blokundan **sonra** eklendi. Uzun bas ile "Ana Ekran" menüsü (Duvar Kağıdı / Dock Düzenle / Launcher Ayarları) artık doğru çalışıyor.
+**Test:** Üst boş alan (y≈180, clock widget bölgesi) uzun basılarak doğrulandı.
+
+### Widget Desteği (Döngü 24) — Yol Haritası #7 Tamamlandı
+**Yeni dosyalar:**
+- `utils/WidgetPrefs.kt` — widget ID'leri (int listesi) SharedPrefs'te `widget_prefs` altında saklanır
+- `utils/WidgetHostManager.kt` — `AppWidgetHost` singleton; `startListening`/`stopListening` lifecycle yönetimi
+- `presentation/ui/launcher/WidgetArea.kt` — `AppWidgetHostView` Compose `AndroidView` ile gösterilir; uzun basınca kırmızı X silme butonu belirir
+
+**Değiştirilen dosyalar:**
+- `LauncherActivity`: `widgetPickerLauncher` + `widgetConfigureLauncher` (`registerForActivityResult`); `launchWidgetPicker()`; `onResume` → `startListening`, `onPause` → `stopListening`; `onCreate` → `loadWidgetIds`
+- `LauncherViewModel`: `widgetIds: StateFlow<List<Int>>` + `addWidgetId`/`removeWidgetId`/`loadWidgetIds`
+- `HomeScreen`: `onLaunchWidgetPicker` lambda parametresi; `WidgetArea` Google search bar ile klasör grid arası
+- `HomeLongPressSheet`: "Widget Ekle" seçeneği (`Icons.Default.Widgets`)
+- `AppPrefs`: `KEY_WIDGET_AREA_ENABLED` — widget alanını açıp kapama
+- `SettingsScreen`: "Widget" bölümü eklendi — toggle
+- `AndroidManifest`: `BIND_APPWIDGET` izni (launcher rolüyle otomatik bind edilebilir)
+
+**Kullanım akışı:** Ana ekran uzun bas → "Widget Ekle" → sistem widget seçici açılır → seçim yapılınca WidgetArea'da gösterilir → Uzun bas → X ile silinir
+
+### AllAppsDrawer Greyscale Fix (Döngü 25)
+**Hata:** `unusedGreyDays=0` (kapalı) olsa bile tüm uygulamalar gri geliyordu.
+**Fix:** `NiagaraAppRow`'a `unusedGreyDays: Int = 0` parametresi eklendi; `<= 0` ise `saturation=1f`.
+
+### Klasör Sort Mode Kalıcılık (Döngü 25)
+`AppPrefs.KEY_FOLDER_SORT_MODE` eklendi. FolderSheet kapanıp açılınca sıralama sıfırlanıyor sorunu giderildi.
+
+### Onboarding RESTORE_BACKUP Adımı (Döngü 25)
+WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçici ile geri yükleme, `hiltViewModel` ile `AppListViewModel` inject edildi.
+
+### Settings Reaktiflik Fix (Döngü 26)
+**Hata:** `remember {}` ile okunan AppPrefs değerleri (bgType, bgColor, textAlpha, widgetAreaEnabled, notifTextEnabled, unusedGreyDays) Settings'den dönerken güncellenmiyordu — launcher yeniden başlatmak gerekiyordu.
+**Fix:** `mutableStateOf` + `DisposableEffect(context)` + `SharedPreferences.OnSharedPreferenceChangeListener` kombinasyonu ile reaktif hale getirildi:
+- `HomeScreen.kt`: bgType, bgColor, textAlpha, widgetAreaEnabled — Settings'de değişince anında yansır
+- `AllAppsDrawer.kt`: notifTextEnabled, unusedGreyDays — drawer açıkken dahi güncellenir
+**Ek:** `FolderTile.kt`'ye `textAlpha: Float = 1f` parametresi eklendi; kategori adı metnine uygulandı (textAlpha özelliği daha önce hiç FolderTile'a geçirilmiyordu).
+**Uzak Ortam Notu:** APK build bu remote ortamda yapılamıyor — yerel makinede doğrulanmalı.
+
+### Robustlik İyileştirmeleri (Döngü 27)
+**LauncherViewModel.kt degisiklikleri:**
+- `isLoadingApps`: `@Volatile Boolean` → `AtomicBoolean` — `compareAndSet(false, true)` ile atomik check-then-set; `Volatile` sadece görünürlük sağlar, bileşik operasyonu korumaz
+- `finally { isLoadingApps.set(false) }` — AtomicBoolean API'si ile
+
+**AppNotificationListenerService.kt degisiklikleri:**
+- `onListenerDisconnected()` override eklendi — bağlantı kesilince `_badgeCounts` ve `_latestTexts` temizleniyor; pm clear / izin iptali / sistem yeniden başlatma sonrası stale badge gösterilmesi önlendi
+
+**AllAppsDrawer.kt degisiklikleri:**
+- `iconPackPkg`: `remember { AppPrefs.getIconPack() }` → `mutableStateOf + DisposableEffect + KEY_ICON_PACK listener`
+  - Onceki: Icon pack Settings'ten değiştirilince AllAppsDrawer yeniden oluşturulmadan ikone güncellenmiyordu
+  - Yeni: SharedPrefs listener tetikleyince `iconPackPkg` state güncellenir → `NiagaraAppRow` yeniden render → `rememberAppIcon` yeni cacheKey ile ikonu diskten yükler
+- `rememberAppIcon(packageName, iconPackPkg)` — `iconPackPkg` artık parametre (içeride `remember {}` ile hesaplanmıyor)
+- `NiagaraAppRow(..., iconPackPkg: String = "")` — yeni parametre, `rememberAppIcon`'a iletilir
+
+### Uygulama Kısayolları (App Shortcuts) (Döngü 28)
+**Uzun basınca açılan AppContextMenu'ye Pixel Launcher tarzı app shortcuts eklendi.**
+
+**`utils/ShortcutHelper.kt`** (yeni dosya):
+- `getShortcuts(context, packageName)`: `LauncherApps.getShortcuts()` ile DYNAMIC + MANIFEST kısayollarını sorgular; `runCatching` ile güvenli — launcher rolü yoksa boş liste döner
+- `getShortcutIcon(context, shortcut, sizePx)`: `LauncherApps.getShortcutIconDrawable()` ile ikon alır, `Bitmap`'e çevirir, `ImageBitmap` döner
+- `launchShortcut(context, shortcut)`: `LauncherApps.startShortcut()` ile kısayolu başlatır
+
+**`AppContextMenu.kt`** değişiklikleri:
+- `shortcuts by produceState<List<ShortcutInfo>>` — IO thread'de yüklenir, max 4 kısayol
+- Kısayollar bölümü bilgi chip'lerinin altında, yatay kaydırılabilir `Row` içinde
+- `ShortcutItem` composable: 48dp ikon kutusu + 2 satır etiket (shortLabel/longLabel)
+- İkon yüklenemezse `OpenInNew` fallback ikonu
+- Kısayola tıklayınca haptic + `ShortcutHelper.launchShortcut()` + sheet dismiss
+
+**Davranış:** Launcher rolü olmadığında (pm clear / izin iptali) `runCatching` boş liste döndürür — kısayol bölümü gizlenir.
+
+### Uygulama Onerileri Satiri (Dongu 29)
+**"Son Kullanilanlar" — arama cubugu altinda 4 ikon, Pixel Launcher suggestions tarzinda.**
+
+**`AppPrefs.kt`**: `KEY_SUGGESTIONS_ENABLED` + `isSuggestionsEnabled`/`setSuggestionsEnabled` eklendi (varsayilan: acik)
+
+**`LauncherViewModel.kt`**: `suggestedApps: StateFlow<List<AppInfo>>` — `lastUsedTimestamp` oncelikli, `usageCount` ikincil siralama, gizli uygulamalar haric, `take(4)`, `SharingStarted.Eagerly`
+
+**`HomeScreenComponents.kt`**: `AppSuggestionsRow` (Column+Row+baslik) + `SuggestionAppItem` (private) composable — `iconCacheInternal` LRU-200 paylasimiyla, ikon paketi destekli
+
+**`HomeScreen.kt`**: `suggestionIconPack` remember (conditional remember'i onlemek icin disari alindi), `suggestionsEnabled` state + `DisposableEffect` SharedPrefs listener, `AppSuggestionsRow` GoogleSearchBar altina eklendi
+
+**`SettingsScreen.kt`**: "Ana Ekran Ozellikleri" bolumune "Uygulama Onerileri" toggle (`Icons.Default.AutoAwesome`) eklendi — ilk sira
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### Klasor Ozellestirme (Dongu 30)
+**FolderSheet header'ina kalem (Edit) ikonu eklendi — tiklaninca FolderRenameDialog aciyor.**
+
+**`AppPrefs.kt`**: `KEY_FOLDER_CUSTOM_NAMES` + `KEY_FOLDER_CUSTOM_EMOJIS` — JSON map olarak saklanir (categoryId -> deger). `parseJsonMap()` ve `toJsonString()` private extension fonksiyonlari ile serialize/deserialize edilir.
+
+**`FolderTile.kt`**: `customName: String? = null` + `customEmoji: String? = null` opsiyonel parametreler eklendi (geriye donuk uyumlu). Gosterimde `customName.takeIf { it.isNotEmpty() } ?: category.categoryName` mantigi.
+
+**`FolderSheet.kt`**: Header Row'una sag tarafta `Box + Edit ikonu` butonu eklendi. `showEditDialog` state ile `FolderRenameDialog` gosterilir. `FolderRenameDialog`: `OutlinedTextField` (ad) + `LazyRow` (40 emoji secici) + Kaydet/Iptal. Kayit aninda hem lokal state hem SharedPrefs guncellenir.
+
+**`HomeScreen.kt`**: `customFolderNames`/`customFolderEmojis` state + `DisposableEffect` SharedPrefs listener; `FolderTile`'a `customName` ve `customEmoji` gecirilir. FolderSheet kapatildiktan sonra ana ekran otomatik guncellenir.
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### Klasor Renk Ozellestirme (Dongu 31)
+**Klasor ad + emoji trio'suna renk tamamlandi.**
+
+**`AppPrefs.kt`**: `KEY_FOLDER_CUSTOM_COLORS` + `getFolderCustomColors`/`setFolderCustomColor` eklendi — JSON map (categoryId -> "#RRGGBB").
+
+**`FolderSheet.kt`**: 
+- `customColor` state eklendi (catId bazli SharedPrefs'ten okunur)
+- Header `catColor` hesabi: `customColor.ifBlank { null } ?: folder.category.colorHex` — custom renk varsa onu kullanir
+- `FolderRenameDialog` imzasi guncellendi: `currentColor: String = ""` + `onSave: (name, emoji, color) -> Unit`
+- Dialog'a "Renk sec" bolumu eklendi: 10 preset (Varsayilan/Turkuaz/Mavi/Mor/Kirmizi/Turuncu/Yesil/Pembe/Sari/Lacivert) — dolu dairesel swatchler, secili olanda CheckCircle + beyaz border
+- `COLOR_PRESETS: List<Pair<String,String>>` — `"" to "Varsayilan"` secilince custom renk silinir, kategori default'una doner
+
+**`FolderTile.kt`**: `customColor: String? = null` parametresi eklendi; `catColor = remember(colorHex, customColor)` ile custom renk oncelikli hesaplanir.
+
+**`HomeScreen.kt`**: `customFolderColors` state + `KEY_FOLDER_CUSTOM_COLORS` icin DisposableEffect listener; `FolderTile`'a `customColor` gecilir.
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
+
+### AllApps Greyscale Fix + RESTORE_BACKUP Onboarding (Döngü 24 — yerel)
+**AllAppsDrawer.kt:** `unusedGreyDays` drawer seviyesinde AppPrefs'ten okunuyor; NiagaraAppRow'a parametre olarak geçiyor. Greyscale ayarı kapalıysa tüm ikonlar renkli görünüyor (önceki: her zaman filtre uygulanıyordu).
+**OnboardingScreen.kt:** RESTORE_BACKUP adımı eklendi — JSON yedek dosyası seçici + importBackup entegrasyonu.
+**LauncherViewModel.kt:** `_openFolder` → `_openFolderId` refactor — openFolder, folders flow'undan combine ile türetiliyor; klasör DB güncellenince FolderSheet anında yansıtıyor.
+**HomeScreen.kt + AppPrefs.kt:** KEY_BG_TYPE/COLOR/TEXT_ALPHA + DisposableEffect listener eklendi.
+
+### Döngü 25-30 Değişiklikleri
+- **Döngü 25:** AllAppsDrawer — `Locale("tr")` ile arama + alfabetik sıralama. Türkçe Ş/İ/Ğ/Ü/Ö/Ç artık doğru sıralanıyor/bulunuyor.
+- **Döngü 26:** FolderTile — `folderSizeDp` parametresi (56-96dp arası). AppPrefs KEY_FOLDER_SIZE. SettingsScreen slider eklendi.
+- **Döngü 27:** AppClassifier — `MANUFACTURER_PREFIX_MAP` (Samsung/Huawei/Xiaomi/Sony/LG prefix → kategori). AppPrefs KEY_MANUFACTURER_CLASSIFY toggle. SettingsScreen Uygulama Yönetimi bölümüne switch eklendi.
+- **Döngü 28:** AppPrefs KEY_LABEL_COLOR. FolderTile labelColor parametresi. SettingsScreen yazı rengi paleti (6 renk). HomeScreen DisposableEffect listener.
+- **Döngü 29:** OnboardingScreen — steps listesi açık sıralamaya alındı. SET_LAUNCHER THEME_SELECT'ten sonraya taşındı (tüm ayarlar bittikten sonra varsayılan launcher soruluyor).
+- **Döngü 30 (Build):** AppClassifier derleme hatası fix — CAT_TOOLS→CAT_UTILITIES, CAT_PHOTO→CAT_PHOTOGRAPHY.
+
+### Döngü Stratejisi (2026-06-13 güncellemesi)
+- **Her döngü:** kod değişikliği + commit + push + Telegram kısa bilgi
+- **Her 6 döngüde bir:** build + APK Telegram'a gönder
+- **Her 18 döngüde bir:** emülatörde tam test
+
+### Akıllı Kategorizasyon (Hüseyin Talebi — Yapılacak)
+- Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet (offline, izin gerektirmez)
+- Aşama 2: "Diğer" klasöründeki uygulamalar için kendi sunucu API'si veya LLM fallback
+- Detay: CLAUDE.md "Akıllı Kategorizasyon Yol Haritası" bölümünde
+
+*Son güncelleme: 2026-06-13 (Döngü 30 — Build 25-30 tamamlandı)*

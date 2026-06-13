@@ -102,15 +102,25 @@ enum class AllAppsSortMode(val label: String) {
     INSTALL_DATE("Yükleme")
 }
 
-// ── Async ikon yükleme ────────────────────────────────────────────────────────
+// ── Async ikon yükleme — global LRU cache paylaşılır, ikon paketi destekler ──
+// iconPackPkg dışarıdan verilir: reactive state olarak yönetilir, burada remember kullanılmaz.
 @Composable
-private fun rememberAppIcon(packageName: String): ImageBitmap? {
+private fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): ImageBitmap? {
     val context = LocalContext.current
-    return produceState<ImageBitmap?>(initialValue = null, packageName) {
-        value = withContext(Dispatchers.IO) {
-            runCatching {
-                context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
-            }.getOrNull()
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
+    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, 96)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
+            value = loaded
         }
     }.value
 }
@@ -215,6 +225,39 @@ fun AllAppsDrawer(
 
     val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
 
+    // Her chip'in sayımı — apps değişince yeniden hesapla, scroll/rekomposisyonda değil
+    val quickFilterCounts = remember(apps) {
+        val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
+        intArrayOf(
+            apps.size,
+            apps.count { !it.isSystemApp },
+            apps.count { it.isSystemApp },
+            apps.count { it.lastUsedTimestamp > cutoff }
+        )
+    }
+
+    // Ayarlar — Settings değişince anında güncellenir (SharedPrefs listener)
+    var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(
+            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
+                    notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
+                    unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     // Sırala + filtrele
     val sortedApps = remember(apps, sortMode, searchQuery, quickFilter) {
         val now = System.currentTimeMillis()
@@ -224,10 +267,14 @@ fun AllAppsDrawer(
             3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
             else -> apps
         }
+        val trLocale = Locale("tr")
         val base = if (searchQuery.isBlank()) afterQuickFilter
-        else afterQuickFilter.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+        else {
+            val q = searchQuery.lowercase(trLocale)
+            afterQuickFilter.filter { it.appName.lowercase(trLocale).contains(q) }
+        }
         when (sortMode) {
-            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase() }
+            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
             AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
             AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
             AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
@@ -239,9 +286,12 @@ fun AllAppsDrawer(
     val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery, quickFilter) {
         if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
             sortedApps.groupBy { app ->
-                val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'
-                if (c.isLetter()) c else '#'
-            }.toSortedMap(compareBy { if (it == '#') Char.MAX_VALUE else it })
+                val first = app.appName.firstOrNull()?.toString()?.uppercase(Locale("tr"))?.firstOrNull() ?: '#'
+                if (first.isLetter()) first else '#'
+            }.toSortedMap(Comparator { a, b ->
+                if (a == '#') 1 else if (b == '#') -1
+                else java.text.Collator.getInstance(Locale("tr")).compare(a.toString(), b.toString())
+            })
         else emptyMap()
     }
 
@@ -421,16 +471,7 @@ fun AllAppsDrawer(
                                     }
                                     .padding(horizontal = 11.dp, vertical = 5.dp)
                             ) {
-                                val countLabel = when (idx) {
-                                    0 -> " (${apps.size})"
-                                    1 -> " (${apps.count { !it.isSystemApp }})"
-                                    2 -> " (${apps.count { it.isSystemApp }})"
-                                    3 -> {
-                                        val cutoff = System.currentTimeMillis() - 7L*24*60*60*1000
-                                        " (${apps.count { it.lastUsedTimestamp > cutoff }})"
-                                    }
-                                    else -> ""
-                                }
+                                val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
                                 Text(
                                     label + if (active) countLabel else "",
                                     fontSize = 11.sp,
@@ -485,6 +526,9 @@ fun AllAppsDrawer(
                                     NiagaraAppRow(
                                         app = app, iconSize = iconSize, isActive = false,
                                         sortMode = sortMode,
+                                        notifTextEnabled = notifTextEnabled,
+                                        unusedGreyDays = unusedGreyDays,
+                                        iconPackPkg = iconPackPkg,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -512,6 +556,9 @@ fun AllAppsDrawer(
                                     NiagaraAppRow(
                                         app = app, iconSize = iconSize, isActive = false,
                                         sortMode = sortMode,
+                                        notifTextEnabled = notifTextEnabled,
+                                        unusedGreyDays = unusedGreyDays,
+                                        iconPackPkg = iconPackPkg,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -611,10 +658,13 @@ fun NiagaraAppRow(
     iconSize: Dp = 40.dp,
     isActive: Boolean = false,
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
+    notifTextEnabled: Boolean = false,
+    unusedGreyDays: Int = 0,
+    iconPackPkg: String = "",
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
-    val icon = rememberAppIcon(app.packageName)
+    val icon = rememberAppIcon(app.packageName, iconPackPkg)
     val notifColor = when {
         app.notificationCount == 0 -> null
         app.notificationImportance >= 4 -> BadgeRed
@@ -642,13 +692,14 @@ fun NiagaraAppRow(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // İkon + rozet (greyscale: usageCount=0 → gri+yarı saydam)
+        // İkon + rozet (greyscale: sadece unusedGreyDays > 0 ise aktif)
         val saturation = when {
+            unusedGreyDays <= 0  -> 1f   // ayar kapalı → her zaman renkli
             app.usageCount == 0L -> 0f
             app.usageCount < 5L  -> 0.4f + (app.usageCount * 0.12f)
             else                 -> 1f
         }
-        val iconAlpha = if (app.usageCount == 0L) 0.5f else 1f
+        val iconAlpha = if (unusedGreyDays > 0 && app.usageCount == 0L) 0.5f else 1f
         val greyFilter = if (saturation < 1f)
             androidx.compose.ui.graphics.ColorFilter.colorMatrix(
                 androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(saturation) }
@@ -689,13 +740,11 @@ fun NiagaraAppRow(
         Spacer(Modifier.width(14.dp))
 
         // Isim + alt bilgi
-        val appRowContext = LocalContext.current
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
-            val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(appRowContext)
             if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
                     app.notificationText,

@@ -57,7 +57,13 @@ fun FolderTile(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textAlpha: Float = 1f,
+    folderSizeDp: Int = 72,
+    labelColor: Color = Color.White,
+    customName: String? = null,
+    customEmoji: String? = null,
+    customColor: String? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -78,9 +84,13 @@ fun FolderTile(
     val previewApps = folder.apps.take(4)
     val totalBadge  = folder.apps.sumOf { it.notificationCount }
 
+    val tileWidth = folderSizeDp.dp
+    val circleSize = (folderSizeDp * 5 / 6).dp  // 60/72 oranı korunuyor
+    val miniIconSize = (folderSizeDp / 3).dp     // 22/72 yaklaşık
+
     Column(
         modifier = modifier
-            .width(72.dp)
+            .width(tileWidth)
             .scale(scale)
             .pointerInput(folder) {
                 detectVerticalDragGestures(
@@ -112,28 +122,29 @@ fun FolderTile(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 60dp circle — kategori renginde frosted glass + badge
-        val catColor = remember(folder.category.colorHex) {
-            runCatching { Color(android.graphics.Color.parseColor(folder.category.colorHex)) }
+        val catColor = remember(folder.category.colorHex, customColor) {
+            val hex = customColor?.takeIf { it.isNotEmpty() } ?: folder.category.colorHex
+            runCatching { Color(android.graphics.Color.parseColor(hex)) }
                 .getOrDefault(Color.White)
         }
         Box {
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(circleSize)
                 .clip(CircleShape)
                 .background(catColor.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
         ) {
             if (folder.apps.isEmpty()) {
                 Text(
-                    text = folder.category.iconEmoji,
+                    text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
                     fontSize = 24.sp
                 )
             } else {
                 // 2x2 mini icon grid
                 MiniIconGrid(
                     apps = previewApps,
-                    iconSize = 22.dp
+                    iconSize = miniIconSize
                 )
             }
         }
@@ -157,13 +168,13 @@ fun FolderTile(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            text = folder.category.categoryName,
-            color = Color.White,
+            text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
+            color = labelColor.copy(alpha = textAlpha),
             fontSize = 12.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.width(72.dp)
+            modifier = Modifier.width(tileWidth)
         )
         val context = LocalContext.current
         val folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
@@ -186,7 +197,7 @@ fun FolderTile(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.width(72.dp)
+                modifier = Modifier.width(tileWidth)
             )
         }
         // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
@@ -204,7 +215,7 @@ fun FolderTile(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.width(72.dp)
+                    modifier = Modifier.width(tileWidth)
                 )
             }
         }

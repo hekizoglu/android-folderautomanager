@@ -36,10 +36,27 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         rebuildCounts()
+        // Uygulamanin artik aktif bildirimi yoksa metni de temizle
+        sbn?.packageName?.let { pkg ->
+            val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
+            if (!hasActive) {
+                val current = _latestTexts.value.toMutableMap()
+                if (current.remove(pkg) != null) {
+                    _latestTexts.value = current
+                }
+            }
+        }
     }
 
     override fun onListenerConnected() {
         rebuildCounts()
+    }
+
+    // Servis bağlantısı kesilince (sistem yeniden başlatma, izin iptali vs.)
+    // stale badge ve metin verilerini temizle.
+    override fun onListenerDisconnected() {
+        _badgeCounts.value = emptyMap()
+        _latestTexts.value = emptyMap()
     }
 
     private fun rebuildCounts() {

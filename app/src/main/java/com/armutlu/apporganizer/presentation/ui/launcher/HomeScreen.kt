@@ -13,6 +13,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -54,6 +56,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -79,21 +82,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: LauncherViewModel) {
+fun HomeScreen(
+    viewModel: LauncherViewModel,
+    onLaunchWidgetPicker: () -> Unit = {}
+) {
     val context = LocalContext.current
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
@@ -101,6 +111,54 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     val filteredApps by viewModel.filteredAllApps.collectAsState()
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val widgetIds by viewModel.widgetIds.collectAsState()
+    var widgetAreaEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
+    var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
+    var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
+    var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
+    var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    val suggestedApps by viewModel.suggestedApps.collectAsState()
+    val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
+    var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
+    var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
+    var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
+    var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+    val labelColor = remember(labelColorHex) {
+        runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
+    }
+    // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(
+            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_TYPE ->
+                    bgType = com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_COLOR ->
+                    bgColorInt = com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_TEXT_ALPHA ->
+                    textAlpha = com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AREA_ENABLED ->
+                    widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
+                    suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
+                    customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
+                    customFolderEmojis = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_COLORS ->
+                    customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SIZE ->
+                    folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
+                    labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
@@ -117,6 +175,9 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
     var dragToIndex   by remember { mutableStateOf<Int?>(null) }
     var draggingFolders by remember { mutableStateOf<List<AppFolder>?>(null) }
+
+    // Dock sistem gesture exclusion rect — sadece deger degisince guncellenir, her layout'ta degil
+    val dockRectHolder = remember { object { var rect: android.graphics.Rect? = null } }
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
@@ -158,11 +219,6 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     }
 
     val isLoading = folders.isEmpty() && allApps.isEmpty()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadDockPackages(context)
-        viewModel.syncAppSizes(context)
-    }
 
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { msg ->
@@ -234,10 +290,15 @@ fun HomeScreen(viewModel: LauncherViewModel) {
         }
     }
 
-    // Root box — fully transparent so wallpaper shows through
+    // Root box — duvar kağıdı (transparent) veya düz renk arka plan
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .then(
+                if (bgType == "solid")
+                    Modifier.background(Color(bgColorInt))
+                else Modifier
+            )
             .nestedScroll(nestedScrollConnection)
             .pointerInput(allAppsOpen) {
                 if (!allAppsOpen) {
@@ -256,14 +317,23 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             .pointerInput(allAppsOpen) {
                 if (!allAppsOpen) {
                     var accumulated = 0f
+                    var dragStartY = 0f
+                    // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
+                    val gestureZonePx = with(density) { 80.dp.toPx() }
                     detectVerticalDragGestures(
+                        onDragStart = { offset ->
+                            dragStartY = offset.y
+                            accumulated = 0f
+                        },
                         onDragEnd = { accumulated = 0f },
                         onDragCancel = { accumulated = 0f },
                         onVerticalDrag = { _, dragAmount ->
-                            accumulated += dragAmount
-                            if (!swipeLock && accumulated < -120f) {
-                                accumulated = 0f
-                                viewModel.openAllApps()
+                            if (dragStartY < size.height - gestureZonePx) {
+                                accumulated += dragAmount
+                                if (!swipeLock && accumulated < -120f) {
+                                    accumulated = 0f
+                                    viewModel.openAllApps()
+                                }
                             }
                         }
                     )
@@ -296,6 +366,31 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
+
+            // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
+            if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
+                AppSuggestionsRow(
+                    apps = suggestedApps,
+                    iconPackPkg = suggestionIconPack,
+                    onAppClick = { app ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, app.packageName)
+                    },
+                    onAppLongClick = { app ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        contextMenuPkg = app.packageName
+                    }
+                )
+            }
+
+            // Widget alanı — arama çubuğu ile klasör gridi arasında
+            if (widgetAreaEnabled && widgetIds.isNotEmpty()) {
+                WidgetArea(
+                    widgetIds = widgetIds,
+                    onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             // İstatistik bandı — toplam klasör ve uygulama sayısı
             val totalApps   = folders.sumOf { it.apps.size }
@@ -356,6 +451,12 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                             }
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
+                        textAlpha = textAlpha,
+                        folderSizeDp = folderSizeDp,
+                        labelColor = labelColor,
+                        customName = customFolderNames[folder.category.categoryId],
+                        customEmoji = customFolderEmojis[folder.category.categoryId],
+                        customColor = customFolderColors[folder.category.categoryId],
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(
@@ -401,6 +502,24 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                             }
                             .then(if (isDragging) Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp)) else Modifier)
                     )
+                }
+                // Bos slotlar — folder'lardan sonra, uzun basinca HomeLongPressSheet ac
+                val emptySlots = pageSize - pageFolders.size
+                if (emptySlots > 0) {
+                    items(emptySlots) { _ ->
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            homeLongPressOpen = true
+                                        }
+                                    )
+                                }
+                        )
+                    }
                 }
                 } // LazyVerticalGrid
             } // HorizontalPager
@@ -469,23 +588,33 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                     .onGloballyPositioned { coords ->
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             val pos = coords.positionInWindow()
-                            val rect = android.graphics.Rect(
-                                pos.x.toInt(),
-                                pos.y.toInt(),
-                                (pos.x + coords.size.width).toInt(),
-                                (pos.y + coords.size.height).toInt()
-                            )
-                            composeView.systemGestureExclusionRects = listOf(rect)
+                            val l = pos.x.toInt()
+                            val t = pos.y.toInt()
+                            val r = (pos.x + coords.size.width).toInt()
+                            val b = (pos.y + coords.size.height).toInt()
+                            val prev = dockRectHolder.rect
+                            if (prev == null || prev.left != l || prev.top != t || prev.right != r || prev.bottom != b) {
+                                val newRect = android.graphics.Rect(l, t, r, b)
+                                dockRectHolder.rect = newRect
+                                composeView.systemGestureExclusionRects = listOf(newRect)
+                            }
                         }
                     }
             )
         }
 
-        // All Apps Drawer overlay
+        // All Apps Drawer overlay — LinearOutSlowIn acilirken ani baslatip yavaslatir,
+        // FastOutLinearIn kapatirken hizli bitis verir (Material motion standardlari)
         AnimatedVisibility(
             visible = allAppsOpen,
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+            enter = slideInVertically(
+                animationSpec = tween(300, easing = LinearOutSlowInEasing),
+                initialOffsetY = { it }
+            ) + fadeIn(animationSpec = tween(200)),
+            exit = slideOutVertically(
+                animationSpec = tween(220, easing = FastOutLinearInEasing),
+                targetOffsetY = { it }
+            ) + fadeOut(animationSpec = tween(180))
         ) {
             AllAppsDrawer(
                 apps = allApps,
@@ -574,7 +703,7 @@ fun HomeScreen(viewModel: LauncherViewModel) {
                 val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                runCatching { context.startActivity(Intent.createChooser(intent, "Duvar Kağıdı Seç").apply {
+                runCatching { context.startActivity(Intent.createChooser(intent, "Duvar Kagidi Sec").apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }) }
             },
@@ -585,6 +714,10 @@ fun HomeScreen(viewModel: LauncherViewModel) {
             onDockEdit = {
                 homeLongPressOpen = false
                 dockEditOpen = true
+            },
+            onAddWidget = {
+                homeLongPressOpen = false
+                onLaunchWidgetPicker()
             }
         )
     }
@@ -606,228 +739,6 @@ fun HomeScreen(viewModel: LauncherViewModel) {
     }
 }
 
-@Composable
-private fun PixelClockWidget(modifier: Modifier = Modifier) {
-    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val dateFormat = remember { SimpleDateFormat("EEEE, d MMMM", Locale("tr")) }
-    var now by remember { mutableStateOf(Date()) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = Date()
-            delay(1_000)
-        }
-    }
-
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Time â€” 72sp Thin weight, pure white, soft shadow
-        Text(
-            text = timeFormat.format(now),
-            color = Color.White,
-            fontSize = 72.sp,
-            fontWeight = FontWeight.Thin,
-            letterSpacing = (-2).sp,
-            textAlign = TextAlign.Center,
-            // Soft drop shadow via modifier is not available directly; shadow() is for elevation.
-            // We layer a blurred copy via alpha trick instead â€” keep it simple and readable.
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        // Date â€” 16sp white 85% alpha
-        Text(
-            text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
-            color = Color.White.copy(alpha = 0.85f),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.Center,
-            letterSpacing = 0.sp
-        )
-    }
-}
-
-/** Pixel Launcher stili Google arama çubuğu — tıklayınca Google web araması açar. */
-@Composable
-private fun GoogleSearchBar(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    Row(
-        modifier = modifier
-            .height(50.dp)
-            .background(
-                color = Color.White.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(25.dp)
-            )
-            .clickable {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com")).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                runCatching { context.startActivity(intent) }
-            }
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        // Google "G" logosu — renkli noktalar
-        Row(horizontalArrangement = Arrangement.spacedBy(1.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("G", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("o", color = Color(0xFFEA4335), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("o", color = Color(0xFFFBBC04), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("g", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("l", color = Color(0xFF34A853), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("e", color = Color(0xFFEA4335), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
-        Text(
-            "Ara veya URL gir",
-            color = Color.White.copy(alpha = 0.55f),
-            fontSize = 14.sp,
-            modifier = Modifier.weight(1f)
-        )
-        // Mikrofon ikonu
-        androidx.compose.material3.Icon(
-            imageVector = Icons.Default.Mic,
-            contentDescription = "Sesli ara",
-            tint = Color.White.copy(alpha = 0.7f),
-            modifier = Modifier
-                .size(22.dp)
-                .clickable {
-                    val voiceIntent = Intent("android.speech.action.WEB_SEARCH").apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    runCatching { context.startActivity(voiceIntent) }
-                }
-        )
-    }
-}
-
-/** Frosted pill dock — packages listesi DockPrefs'ten gelir, kullanıcı tarafından seçilebilir. */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun PixelDock(
-    packages: List<String>,
-    onLaunchApp: (String) -> Unit,
-    onLongPress: () -> Unit = {},
-    onAppLongPress: (String) -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val pm = context.packageManager
-    val visiblePkgs = remember(packages) {
-        packages.filter { pm.getLaunchIntentForPackage(it) != null }
-    }
-
-    Box(
-        modifier = modifier
-            .height(72.dp)
-            .background(
-                color = Color.White.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(50)
-            )
-            .pointerInput(Unit) {
-                detectTapGestures(onLongPress = { onLongPress() })
-            }
-            .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            visiblePkgs.forEach { pkg ->
-                val label = remember(pkg) {
-                    runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
-                }
-                DockIcon(
-                    packageName = pkg,
-                    label = label,
-                    iconSize = 48.dp,
-                    onClick = { onLaunchApp(pkg) },
-                    onLongClick = { onAppLongPress(pkg) }
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun DockIcon(
-    packageName: String,
-    label: String,
-    iconSize: Dp,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit = {}
-) {
-    val context = LocalContext.current
-    val px = with(androidx.compose.ui.platform.LocalDensity.current) { iconSize.roundToPx() }
-    val bitmap = remember(packageName) {
-        runCatching {
-            context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
-        }.getOrNull()
-    }
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            )
-            .padding(4.dp)
-    ) {
-        if (bitmap != null) {
-            Image(
-                bitmap = bitmap,
-                contentDescription = label,
-                modifier = Modifier.size(iconSize)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(iconSize)
-                    .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-            )
-        }
-    }
-}
-
-@Composable
-private fun SwipeHint(context: android.content.Context, visible: Boolean) {
-    val swipeHintFeatureEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context) }
-    val showSwipeHint = remember { swipeHintFeatureEnabled && com.armutlu.apporganizer.utils.AppPrefs.shouldShowSwipeHint(context) }
-    val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
-    val offsetY by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = -8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(700),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "swipe_y"
-    )
-    LaunchedEffect(showSwipeHint) {
-        if (showSwipeHint) {
-            com.armutlu.apporganizer.utils.AppPrefs.incrementSwipeHintCount(context)
-        }
-    }
-    if (showSwipeHint && visible) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.55f),
-                modifier = Modifier.size(20.dp).offset(y = offsetY.dp)
-            )
-            Text(
-                text = "Tum uygulamalar",
-                color = Color.White.copy(alpha = 0.40f),
-                fontSize = 11.sp
-            )
-        }
-    }
-}
+// PixelClockWidget, GoogleSearchBar, PixelDock, DockIcon, SwipeHint
+// HomeScreenComponents.kt dosyasına taşındı — aynı paket, internal görünürlük.
 

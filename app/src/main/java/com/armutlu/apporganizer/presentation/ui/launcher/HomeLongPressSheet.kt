@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewModule
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -30,6 +31,7 @@ fun HomeLongPressSheet(
     onWallpaper: () -> Unit,
     onSettings: () -> Unit,
     onDockEdit: () -> Unit,
+    onAddWidget: () -> Unit = {},
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -67,9 +69,17 @@ fun HomeLongPressSheet(
 
             HomeLongPressAction(
                 icon = Icons.Default.Image,
-                label = "Duvar Kağıdı",
-                subtitle = "Arka plan resmini değiştir",
+                label = "Duvar Kagidi",
+                subtitle = "Arka plan gorselini degistir",
                 onClick = onWallpaper
+            )
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+
+            HomeLongPressAction(
+                icon = Icons.Default.Widgets,
+                label = "Widget Ekle",
+                subtitle = "Ana ekrana widget ekle",
+                onClick = onAddWidget
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 

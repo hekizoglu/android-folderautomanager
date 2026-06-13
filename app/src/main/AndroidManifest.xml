@@ -29,6 +29,10 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- Widget desteği — launcher rolü sayesinde sistem onayı olmadan bind edilebilir -->
+    <uses-permission android:name="android.permission.BIND_APPWIDGET"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:name=".AppOrganizerApp"
         android:allowBackup="true"

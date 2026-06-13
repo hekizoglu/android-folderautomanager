@@ -171,7 +171,7 @@ fun AppListScreen(
                 item {
                     CategoryChip(
                         label = "Tümü",
-                        emoji = "ğŸ“±",
+                        emoji = "📱",
                         count = screenState.apps.size,
                         selected = selectedCategory == "all",
                         onClick = { viewModel.setSelectedCategory("all") }

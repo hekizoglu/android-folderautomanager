@@ -70,6 +70,56 @@ object AppPrefs {
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
     fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
 
+    // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
+    const val KEY_ICON_PACK = "icon_pack_package"
+    fun getIconPack(context: Context): String = prefs(context).getString(KEY_ICON_PACK, "") ?: ""
+    fun setIconPack(context: Context, pkg: String) {
+        prefs(context).edit().putString(KEY_ICON_PACK, pkg).apply()
+        IconPackManager.clearCache()
+    }
+
+    // Klasör/uygulama label rengi — hex string (varsayılan beyaz "#FFFFFF")
+    const val KEY_LABEL_COLOR = "label_color"
+    fun getLabelColor(context: Context): String = prefs(context).getString(KEY_LABEL_COLOR, "#FFFFFF") ?: "#FFFFFF"
+    fun setLabelColor(context: Context, hex: String) = prefs(context).edit().putString(KEY_LABEL_COLOR, hex).apply()
+
+    // Üretici bazlı sınıflandırma — Samsung/Huawei/Xiaomi uygulamaları otomatik kategorilensin mi?
+    const val KEY_MANUFACTURER_CLASSIFY = "manufacturer_classify"
+    fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
+    fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
+
+    // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
+    const val KEY_FOLDER_SIZE = "folder_size_dp"
+    fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
+    fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
+
+    // Klasör sıralama modu — tüm klasörler için global
+    const val KEY_FOLDER_SORT_MODE = "folder_sort_mode"
+    fun getFolderSortMode(context: Context): String =
+        prefs(context).getString(KEY_FOLDER_SORT_MODE, "ALPHA") ?: "ALPHA"
+    fun setFolderSortMode(context: Context, mode: String) =
+        prefs(context).edit().putString(KEY_FOLDER_SORT_MODE, mode).apply()
+
+    // Widget alanı — ana ekranda widget göster
+    const val KEY_WIDGET_AREA_ENABLED = "widget_area_enabled"
+    fun isWidgetAreaEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AREA_ENABLED, true)
+    fun setWidgetAreaEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WIDGET_AREA_ENABLED, v).apply()
+
+    // Arka plan tipi — "wallpaper" (duvar kağıdı) | "solid" (düz renk)
+    const val KEY_BG_TYPE = "bg_type"
+    fun getBgType(context: Context): String = prefs(context).getString(KEY_BG_TYPE, "wallpaper") ?: "wallpaper"
+    fun setBgType(context: Context, type: String) = prefs(context).edit().putString(KEY_BG_TYPE, type).apply()
+
+    // Düz renk arka plan rengi — ARGB int
+    const val KEY_BG_COLOR = "bg_color"
+    fun getBgColor(context: Context): Int = prefs(context).getInt(KEY_BG_COLOR, 0xFF1A1A2E.toInt())
+    fun setBgColor(context: Context, color: Int) = prefs(context).edit().putInt(KEY_BG_COLOR, color).apply()
+
+    // Yazı/ikon etiket transparanlığı — 0.0-1.0 (1.0 = tam opak)
+    const val KEY_TEXT_ALPHA = "text_alpha"
+    fun getTextAlpha(context: Context): Float = prefs(context).getFloat(KEY_TEXT_ALPHA, 1.0f)
+    fun setTextAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_TEXT_ALPHA, v).apply()
+
     // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
     private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika
@@ -94,6 +144,59 @@ object AppPrefs {
 
     fun markUsageStatsSynced(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
+    }
+
+    // Uygulama onerileri — en sik kullanilan 4 uygulama ana ekranda gosterilir
+    const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
+    fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
+    fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
+
+    // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
+    const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"
+    const val KEY_FOLDER_CUSTOM_EMOJIS = "folder_custom_emojis"
+
+    fun getFolderCustomNames(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_NAMES, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomName(context: Context, catId: String, name: String) {
+        val map = getFolderCustomNames(context).toMutableMap()
+        if (name.isBlank()) map.remove(catId) else map[catId] = name.trim()
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_NAMES, map.toJsonString()).apply()
+    }
+
+    fun getFolderCustomEmojis(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_EMOJIS, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomEmoji(context: Context, catId: String, emoji: String) {
+        val map = getFolderCustomEmojis(context).toMutableMap()
+        if (emoji.isBlank()) map.remove(catId) else map[catId] = emoji
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_EMOJIS, map.toJsonString()).apply()
+    }
+
+    // Klasor ozel renkleri -- JSON map (categoryId -> colorHex "#RRGGBB")
+    const val KEY_FOLDER_CUSTOM_COLORS = "folder_custom_colors"
+
+    fun getFolderCustomColors(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_FOLDER_CUSTOM_COLORS, null) ?: "").parseJsonMap()
+
+    fun setFolderCustomColor(context: Context, catId: String, colorHex: String) {
+        val map = getFolderCustomColors(context).toMutableMap()
+        if (colorHex.isBlank()) map.remove(catId) else map[catId] = colorHex
+        prefs(context).edit().putString(KEY_FOLDER_CUSTOM_COLORS, map.toJsonString()).apply()
+    }
+
+    private fun String.parseJsonMap(): Map<String, String> {
+        if (isBlank()) return emptyMap()
+        return runCatching {
+            val json = org.json.JSONObject(this)
+            json.keys().asSequence().associateWith { json.getString(it) }
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun Map<String, String>.toJsonString(): String {
+        val json = org.json.JSONObject()
+        forEach { (k, v) -> json.put(k, v) }
+        return json.toString()
     }
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
