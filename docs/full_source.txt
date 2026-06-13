@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 18:25 UTC
-# Commit: 097024e944b8d14345eedd177f807377f1b173fd
+# Generated: 2026-06-13 18:27 UTC
+# Commit: add1e7d499908d15294983bfd19c4d24cc115a73
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4509,6 +4509,7 @@ fun FolderTile(
     modifier: Modifier = Modifier,
     textAlpha: Float = 1f,
     folderSizeDp: Int = 72,
+    labelColor: Color = Color.White,
     customName: String? = null,
     customEmoji: String? = null,
     customColor: String? = null,
@@ -4617,7 +4618,7 @@ fun FolderTile(
 
         Text(
             text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
-            color = Color.White.copy(alpha = textAlpha),
+            color = labelColor.copy(alpha = textAlpha),
             fontSize = 12.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -5022,6 +5023,10 @@ fun HomeScreen(
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
     var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
+    var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+    val labelColor = remember(labelColorHex) {
+        runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
+    }
     // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
@@ -5047,6 +5052,8 @@ fun HomeScreen(
                     customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SIZE ->
                     folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
+                    labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -5346,6 +5353,7 @@ fun HomeScreen(
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         textAlpha = textAlpha,
                         folderSizeDp = folderSizeDp,
+                        labelColor = labelColor,
                         customName = customFolderNames[folder.category.categoryId],
                         customEmoji = customFolderEmojis[folder.category.categoryId],
                         customColor = customFolderColors[folder.category.categoryId],
@@ -9405,6 +9413,41 @@ fun SettingsScreen(
                 }
             }
 
+            // Yazı rengi paleti
+            item {
+                SettingsCard {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        val labelColorPresets = listOf(
+                            "#FFFFFF" to "Beyaz",
+                            "#F5F5F5" to "Açık Gri",
+                            "#FFD700" to "Altın",
+                            "#80DEEA" to "Turkuaz",
+                            "#FFAB40" to "Turuncu",
+                            "#EF9A9A" to "Pembe"
+                        )
+                        var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+                        Text("Yazı Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                        Spacer(Modifier.height(8.dp))
+                        androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(labelColorPresets) { (hex, name) ->
+                                val color = runCatching { androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(androidx.compose.ui.graphics.Color.White)
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                        .then(if (selectedLabel == hex) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier)
+                                        .clickable {
+                                            selectedLabel = hex
+                                            com.armutlu.apporganizer.utils.AppPrefs.setLabelColor(context, hex)
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // ── Launcher ─────────────────────────────────────────────────────
             item { SettingsSectionTitle("Launcher") }
             item {
@@ -11022,6 +11065,11 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_ICON_PACK, pkg).apply()
         IconPackManager.clearCache()
     }
+
+    // Klasör/uygulama label rengi — hex string (varsayılan beyaz "#FFFFFF")
+    const val KEY_LABEL_COLOR = "label_color"
+    fun getLabelColor(context: Context): String = prefs(context).getString(KEY_LABEL_COLOR, "#FFFFFF") ?: "#FFFFFF"
+    fun setLabelColor(context: Context, hex: String) = prefs(context).edit().putString(KEY_LABEL_COLOR, hex).apply()
 
     // Üretici bazlı sınıflandırma — Samsung/Huawei/Xiaomi uygulamaları otomatik kategorilensin mi?
     const val KEY_MANUFACTURER_CLASSIFY = "manufacturer_classify"
