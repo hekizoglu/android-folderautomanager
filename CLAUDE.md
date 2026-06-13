@@ -637,4 +637,18 @@ Toggle chip (Acik/Kapali) olan adimlar: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW
 
 **Uzak Ortam Notu:** APK build bu remote ortamda yapilamiyor — yerel makinede build dogrulanmali.
 
-*Son güncelleme: 2026-06-13 (Döngü 19 — ikon cache fix, FolderSortMode DRY, onPackageAdded optimizasyonu)*
+### Ana Ekrana Dönüş Hızı — Flow Eagerly + Çift Yükleme Koruması (Döngü 20)
+**LauncherViewModel.kt degisiklikleri:**
+- `folders`, `allApps`, `filteredAllApps`: `WhileSubscribed(5_000L)` → `SharingStarted.Eagerly`
+  - Onceki: Kullanici 5+ saniye baska uygulamada kalip donunce akis durmus oluyordu; DB yeniden sorgulanana kadar kisa "Yükleniyor..." flasi goruluyordu
+  - Yeni: Launcher her zaman arka planda calisir — akis hic durmuyor, donus aninda veri hazir
+- `isLoadingApps: @Volatile Boolean` flag eklendi — `loadAppsIfEmpty` guard
+  - Onceki: `onCreate` + hemen ardindan `onResume` (ilk acilis) iki kez PM taramasi tetikleyebiliyordu
+  - Yeni: Eger tarama devam ediyorsa ikinci cagri return eder; `finally` blogu ile flag temizleniyor
+- `loadDockPackages`: Dock paketleri SharedPrefs sadece ilk yüklemede (`!dockLoaded`) okunur
+  - Onceki: Her `onResume`'da `DockPrefs.getDockPackages()` cagrisi — SharedPrefs string parse
+  - Yeni: `dockLoaded=true` sonrasinda `_dockPackages`, ViewModel metotlariyla (saveDockPackages/addToDock/removeFromDock) her zaman guncel — disk okuma yok
+- `reconcileIfNeeded`: `distinctBy { ... } .count { ... }` → `mapTo(mutableSetOf()) { packageName } .count { shouldHide(it) }`
+  - Tek gecisli set deduplication — ara liste olusturulmuyor
+
+*Son güncelleme: 2026-06-13 (Döngü 20 — Eagerly flows, isLoadingApps guard, dock SharedPrefs skip, set dedup)*
