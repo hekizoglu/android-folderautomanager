@@ -238,6 +238,8 @@ fun AllAppsDrawer(
 
     // Bildirim metni ayarı — drawer açıldığında bir kere oku, her satırda değil
     val notifTextEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context) }
+    // Kullanılmayan uygulama gri ayarı — 0 = kapalı (renkli göster)
+    val unusedGreyDays = remember { com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context) }
 
     // Sırala + filtrele
     val sortedApps = remember(apps, sortMode, searchQuery, quickFilter) {
@@ -501,6 +503,7 @@ fun AllAppsDrawer(
                                         app = app, iconSize = iconSize, isActive = false,
                                         sortMode = sortMode,
                                         notifTextEnabled = notifTextEnabled,
+                                        unusedGreyDays = unusedGreyDays,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -529,6 +532,7 @@ fun AllAppsDrawer(
                                         app = app, iconSize = iconSize, isActive = false,
                                         sortMode = sortMode,
                                         notifTextEnabled = notifTextEnabled,
+                                        unusedGreyDays = unusedGreyDays,
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
@@ -629,6 +633,7 @@ fun NiagaraAppRow(
     isActive: Boolean = false,
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
     notifTextEnabled: Boolean = false,
+    unusedGreyDays: Int = 0,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
@@ -660,13 +665,14 @@ fun NiagaraAppRow(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // İkon + rozet (greyscale: usageCount=0 → gri+yarı saydam)
+        // İkon + rozet (greyscale: sadece unusedGreyDays > 0 ise aktif)
         val saturation = when {
+            unusedGreyDays <= 0  -> 1f   // ayar kapalı → her zaman renkli
             app.usageCount == 0L -> 0f
             app.usageCount < 5L  -> 0.4f + (app.usageCount * 0.12f)
             else                 -> 1f
         }
-        val iconAlpha = if (app.usageCount == 0L) 0.5f else 1f
+        val iconAlpha = if (unusedGreyDays > 0 && app.usageCount == 0L) 0.5f else 1f
         val greyFilter = if (saturation < 1f)
             androidx.compose.ui.graphics.ColorFilter.colorMatrix(
                 androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(saturation) }
