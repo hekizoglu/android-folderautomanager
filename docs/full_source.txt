@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 18:20 UTC
-# Commit: 8e7506166dc60bb765b99da9fd06350257d41648
+# Generated: 2026-06-13 18:22 UTC
+# Commit: c9cbdff11aff30fb6a10aed854716c380339a2dc
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4470,6 +4470,7 @@ fun FolderTile(
     onSwipeUp: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     textAlpha: Float = 1f,
+    folderSizeDp: Int = 72,
     customName: String? = null,
     customEmoji: String? = null,
     customColor: String? = null,
@@ -4493,9 +4494,13 @@ fun FolderTile(
     val previewApps = folder.apps.take(4)
     val totalBadge  = folder.apps.sumOf { it.notificationCount }
 
+    val tileWidth = folderSizeDp.dp
+    val circleSize = (folderSizeDp * 5 / 6).dp  // 60/72 oranı korunuyor
+    val miniIconSize = (folderSizeDp / 3).dp     // 22/72 yaklaşık
+
     Column(
         modifier = modifier
-            .width(72.dp)
+            .width(tileWidth)
             .scale(scale)
             .pointerInput(folder) {
                 detectVerticalDragGestures(
@@ -4535,7 +4540,7 @@ fun FolderTile(
         Box {
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(circleSize)
                 .clip(CircleShape)
                 .background(catColor.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
@@ -4549,7 +4554,7 @@ fun FolderTile(
                 // 2x2 mini icon grid
                 MiniIconGrid(
                     apps = previewApps,
-                    iconSize = 22.dp
+                    iconSize = miniIconSize
                 )
             }
         }
@@ -4579,7 +4584,7 @@ fun FolderTile(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.width(72.dp)
+            modifier = Modifier.width(tileWidth)
         )
         val context = LocalContext.current
         val folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
@@ -4602,7 +4607,7 @@ fun FolderTile(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.width(72.dp)
+                modifier = Modifier.width(tileWidth)
             )
         }
         // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
@@ -4620,7 +4625,7 @@ fun FolderTile(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.width(72.dp)
+                    modifier = Modifier.width(tileWidth)
                 )
             }
         }
@@ -4978,6 +4983,7 @@ fun HomeScreen(
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
+    var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
     // Settings'de değiştirilen arka plan/widget ayarları launcher'a dönerken anında yansısın
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(
@@ -5001,6 +5007,8 @@ fun HomeScreen(
                     customFolderEmojis = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_COLORS ->
                     customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SIZE ->
+                    folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -5299,6 +5307,7 @@ fun HomeScreen(
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         textAlpha = textAlpha,
+                        folderSizeDp = folderSizeDp,
                         customName = customFolderNames[folder.category.categoryId],
                         customEmoji = customFolderEmojis[folder.category.categoryId],
                         customColor = customFolderColors[folder.category.categoryId],
@@ -9339,6 +9348,21 @@ fun SettingsScreen(
                             valueRange = 0.4f..1.0f,
                             steps = 11
                         )
+                        androidx.compose.material3.HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Klasör Boyutu", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                            Text("${folderSizeDp}dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                        androidx.compose.material3.Slider(
+                            value = folderSizeDp.toFloat(),
+                            onValueChange = {
+                                folderSizeDp = it.toInt()
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderSizeDp(context, it.toInt())
+                            },
+                            valueRange = 56f..96f,
+                            steps = 7
+                        )
                     }
                 }
             }
@@ -10946,6 +10970,11 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_ICON_PACK, pkg).apply()
         IconPackManager.clearCache()
     }
+
+    // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
+    const val KEY_FOLDER_SIZE = "folder_size_dp"
+    fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
+    fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
 
     // Klasör sıralama modu — tüm klasörler için global
     const val KEY_FOLDER_SORT_MODE = "folder_sort_mode"
