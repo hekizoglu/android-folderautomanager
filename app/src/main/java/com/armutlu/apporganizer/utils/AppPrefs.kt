@@ -70,6 +70,14 @@ object AppPrefs {
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
     fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
 
+    // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
+    const val KEY_ICON_PACK = "icon_pack_package"
+    fun getIconPack(context: Context): String = prefs(context).getString(KEY_ICON_PACK, "") ?: ""
+    fun setIconPack(context: Context, pkg: String) {
+        prefs(context).edit().putString(KEY_ICON_PACK, pkg).apply()
+        IconPackManager.clearCache()
+    }
+
     // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
     private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika

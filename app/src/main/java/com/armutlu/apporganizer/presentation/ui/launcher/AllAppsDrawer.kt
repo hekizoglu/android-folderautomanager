@@ -102,16 +102,21 @@ enum class AllAppsSortMode(val label: String) {
     INSTALL_DATE("Yükleme")
 }
 
-// ── Async ikon yükleme — global LRU cache paylaşılır ─────────────────────────
+// ── Async ikon yükleme — global LRU cache paylaşılır, ikon paketi destekler ──
 @Composable
 private fun rememberAppIcon(packageName: String): ImageBitmap? {
     val context = LocalContext.current
-    val cacheKey = "${packageName}_96"
-    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName) {
+    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
+    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, 96)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)

@@ -93,7 +93,8 @@ fun AppIconView(
 ) {
     val context = LocalContext.current
     val px = (iconSize.value * context.resources.displayMetrics.density).toInt()
-    val cacheKey = "${app.packageName}_$px"
+    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
 
     val icon: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCache[cacheKey],
@@ -102,9 +103,11 @@ fun AppIconView(
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.packageManager.getApplicationIcon(app.packageName)
-                        .toBitmap(px, px)
-                        .asImageBitmap()
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCache.put(cacheKey, loaded)

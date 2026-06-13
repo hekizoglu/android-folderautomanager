@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-13 09:11 UTC
-# Commit: a89b2b05475348fe64fa00afe286d87478d8bb8a
+# Generated: 2026-06-13 10:12 UTC
+# Commit: d393f5520f64a117f1bc79e45e0f2a26a1da9cbc
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2364,16 +2364,21 @@ enum class AllAppsSortMode(val label: String) {
     INSTALL_DATE("Yükleme")
 }
 
-// ── Async ikon yükleme — global LRU cache paylaşılır ─────────────────────────
+// ── Async ikon yükleme — global LRU cache paylaşılır, ikon paketi destekler ──
 @Composable
 private fun rememberAppIcon(packageName: String): ImageBitmap? {
     val context = LocalContext.current
-    val cacheKey = "${packageName}_96"
-    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName) {
+    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
+    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, 96)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -3352,7 +3357,8 @@ fun AppIconView(
 ) {
     val context = LocalContext.current
     val px = (iconSize.value * context.resources.displayMetrics.density).toInt()
-    val cacheKey = "${app.packageName}_$px"
+    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
 
     val icon: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCache[cacheKey],
@@ -3361,9 +3367,11 @@ fun AppIconView(
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.packageManager.getApplicationIcon(app.packageName)
-                        .toBitmap(px, px)
-                        .asImageBitmap()
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCache.put(cacheKey, loaded)
@@ -5375,8 +5383,8 @@ internal fun DockIcon(
 ) {
     val context = LocalContext.current
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
-    // AppIconView ile ayni LRU cache — main thread bloke etmez, process omru boyunca cache'te kalir
-    val cacheKey = "${packageName}_$px"
+    val iconPackPkg = remember { AppPrefs.getIconPack(context) }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_$px" else "${packageName}_${px}_$iconPackPkg"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
         key1 = cacheKey
@@ -5384,7 +5392,11 @@ internal fun DockIcon(
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, px)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -8697,6 +8709,78 @@ fun SettingsScreen(
                 }
             }
 
+            // ── İkon Paketi ───────────────────────────────────────────────────
+            item { SettingsSectionTitle("İkon Paketi") }
+            item {
+                val iconPacks = remember {
+                    com.armutlu.apporganizer.utils.IconPackManager.getInstalledIconPacks(context)
+                }
+                var selectedPack by remember {
+                    mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context))
+                }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedPack = ""
+                                com.armutlu.apporganizer.utils.AppPrefs.setIconPack(context, "")
+                            }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Android, null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Sistem İkonları", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("Varsayılan uygulama ikonları", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        if (selectedPack.isEmpty()) {
+                            Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        }
+                    }
+                    if (iconPacks.isEmpty()) {
+                        Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Kurulu ikon paketi bulunamadı. Play Store'dan bir ikon paketi yükleyin.",
+                                fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        iconPacks.forEach { pack ->
+                            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedPack = pack.packageName
+                                        com.armutlu.apporganizer.utils.AppPrefs.setIconPack(context, pack.packageName)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Palette, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(pack.label, Modifier.weight(1f), fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                                if (selectedPack == pack.packageName) {
+                                    Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {
@@ -9915,6 +9999,14 @@ object AppPrefs {
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
     fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
 
+    // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
+    const val KEY_ICON_PACK = "icon_pack_package"
+    fun getIconPack(context: Context): String = prefs(context).getString(KEY_ICON_PACK, "") ?: ""
+    fun setIconPack(context: Context, pkg: String) {
+        prefs(context).edit().putString(KEY_ICON_PACK, pkg).apply()
+        IconPackManager.clearCache()
+    }
+
     // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
     private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika
@@ -10418,6 +10510,102 @@ data class FolderCreationResult(
     val appCount: Int = 0,
     val error: String? = null
 )
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/utils/IconPackManager.kt
+========================================
+package com.armutlu.apporganizer.utils
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import androidx.core.graphics.drawable.toBitmap
+import org.xmlpull.v1.XmlPullParser
+import java.util.concurrent.ConcurrentHashMap
+
+object IconPackManager {
+
+    private val filterCache = ConcurrentHashMap<String, Map<String, String>>()
+
+    data class IconPackInfo(val packageName: String, val label: String)
+
+    private val ICON_PACK_INTENTS = listOf(
+        "com.novalauncher.THEME",
+        "org.adw.launcher.THEMES",
+        "com.gau.go.launcherex.theme",
+        "app.lawnchair.ICON_PACK",
+        "com.teslacoilsw.launcher.THEME"
+    )
+
+    fun getInstalledIconPacks(context: Context): List<IconPackInfo> {
+        val pm = context.packageManager
+        return ICON_PACK_INTENTS.flatMap { action ->
+            runCatching {
+                pm.queryIntentActivities(Intent(action), PackageManager.GET_META_DATA)
+                    .map { it.activityInfo.packageName }
+            }.getOrDefault(emptyList())
+        }.distinct().mapNotNull { pkg ->
+            runCatching {
+                val info = pm.getApplicationInfo(pkg, 0)
+                IconPackInfo(pkg, pm.getApplicationLabel(info).toString())
+            }.getOrNull()
+        }
+    }
+
+    fun loadIcon(context: Context, iconPackPkg: String, appPkg: String, sizePx: Int = 96): Bitmap? {
+        if (iconPackPkg.isEmpty()) return null
+        val drawableName = getMapping(context, iconPackPkg)[appPkg] ?: return null
+        return loadDrawableByName(context, iconPackPkg, drawableName, sizePx)
+    }
+
+    fun clearCache() {
+        filterCache.clear()
+    }
+
+    private fun getMapping(context: Context, iconPackPkg: String): Map<String, String> {
+        filterCache[iconPackPkg]?.let { return it }
+        val mapping = parseAppFilter(context, iconPackPkg)
+        filterCache[iconPackPkg] = mapping
+        return mapping
+    }
+
+    private fun parseAppFilter(context: Context, iconPackPkg: String): Map<String, String> {
+        val result = mutableMapOf<String, String>()
+        runCatching {
+            val res = context.packageManager.getResourcesForApplication(iconPackPkg)
+            val resId = res.getIdentifier("appfilter", "xml", iconPackPkg)
+            if (resId == 0) return result
+            val parser = res.getXml(resId)
+            while (parser.next() != XmlPullParser.END_DOCUMENT) {
+                if (parser.eventType != XmlPullParser.START_TAG) continue
+                if (parser.name != "item") continue
+                val component = parser.getAttributeValue(null, "component") ?: continue
+                val drawable = parser.getAttributeValue(null, "drawable") ?: continue
+                val pkg = component
+                    .removePrefix("ComponentInfo{")
+                    .removeSuffix("}")
+                    .substringBefore("/")
+                    .trim()
+                if (pkg.isNotEmpty()) result[pkg] = drawable
+            }
+            parser.close()
+        }
+        return result
+    }
+
+    private fun loadDrawableByName(
+        context: Context,
+        iconPackPkg: String,
+        drawableName: String,
+        sizePx: Int
+    ): Bitmap? = runCatching {
+        val res = context.packageManager.getResourcesForApplication(iconPackPkg)
+        val resId = res.getIdentifier(drawableName, "drawable", iconPackPkg)
+        if (resId == 0) return null
+        res.getDrawable(resId, null)?.toBitmap(sizePx, sizePx)
+    }.getOrNull()
+}
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/utils/LauncherOrganizer.kt
