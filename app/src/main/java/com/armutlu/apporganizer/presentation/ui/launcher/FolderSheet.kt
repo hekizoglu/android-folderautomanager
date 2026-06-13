@@ -271,9 +271,8 @@ fun FolderSheet(
             }
 
             // ── Bildirim Satırı ───────────────────────────────────────────────
-            val notifService = com.armutlu.apporganizer.service.AppNotificationListenerService.instance
-            val badgeCounts by (notifService?.badgeCounts ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
-            val latestTexts by (notifService?.latestTexts ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
+            val badgeCounts by com.armutlu.apporganizer.service.AppNotificationListenerService.badgeCounts.collectAsState()
+            val latestTexts by com.armutlu.apporganizer.service.AppNotificationListenerService.latestTexts.collectAsState()
             val appsWithNotifs = remember(folder.apps, badgeCounts) {
                 folder.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
             }

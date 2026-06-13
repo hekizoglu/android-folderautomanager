@@ -52,6 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -359,54 +362,44 @@ private fun SuggestionAppItem(
 
 @Composable
 internal fun FavoritesRow(
-    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    apps: List<AppInfo>,
     iconPackPkg: String = "",
     onAppClick: (String) -> Unit,
 ) {
     if (apps.isEmpty()) return
+    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
         Text(
             "Favoriler",
-            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.55f),
+            color = Color.White.copy(alpha = 0.55f),
             fontSize = 11.sp,
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        androidx.compose.foundation.lazy.LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            androidx.compose.foundation.lazy.items(apps) { app ->
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(apps) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .width(56.dp)
-                        .clickable { onAppClick(app.packageName) }
+                    modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
                 ) {
-                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
-                        value = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    val bitmap by produceState<ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        value = withContext(Dispatchers.IO) {
                             val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
-                                val bmp = app.icon?.toBitmap()?.asImageBitmap()
+                                val bmp = runCatching {
+                                    context.packageManager.getApplicationIcon(app.packageName).toBitmap(96, 96).asImageBitmap()
+                                }.getOrNull()
                                 if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                 bmp
                             }
                         }
                     }
                     bitmap?.let {
-                        androidx.compose.foundation.Image(
-                            bitmap = it,
-                            contentDescription = app.appName,
-                            modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
-                        )
-                    } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                        Image(bitmap = it, contentDescription = app.appName,
+                            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)))
+                    } ?: Box(Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        app.appName,
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
-                        fontSize = 10.sp,
-                        maxLines = 1,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Text(app.appName, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp,
+                        maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
             }
         }
@@ -415,54 +408,44 @@ internal fun FavoritesRow(
 
 @Composable
 internal fun RecentAppsRow(
-    apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    apps: List<AppInfo>,
     iconPackPkg: String = "",
     onAppClick: (String) -> Unit,
 ) {
     if (apps.isEmpty()) return
+    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
         Text(
             "Son Kullanılanlar",
-            color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.55f),
+            color = Color.White.copy(alpha = 0.55f),
             fontSize = 11.sp,
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        androidx.compose.foundation.lazy.LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            androidx.compose.foundation.lazy.items(apps.take(8)) { app ->
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(apps.take(8)) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .width(56.dp)
-                        .clickable { onAppClick(app.packageName) }
+                    modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
                 ) {
-                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
-                        value = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    val bitmap by produceState<ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        value = withContext(Dispatchers.IO) {
                             val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
-                                val bmp = app.icon?.toBitmap()?.asImageBitmap()
+                                val bmp = runCatching {
+                                    context.packageManager.getApplicationIcon(app.packageName).toBitmap(96, 96).asImageBitmap()
+                                }.getOrNull()
                                 if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                 bmp
                             }
                         }
                     }
                     bitmap?.let {
-                        androidx.compose.foundation.Image(
-                            bitmap = it,
-                            contentDescription = app.appName,
-                            modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
-                        )
-                    } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                        Image(bitmap = it, contentDescription = app.appName,
+                            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)))
+                    } ?: Box(Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        app.appName,
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f),
-                        fontSize = 10.sp,
-                        maxLines = 1,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Text(app.appName, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp,
+                        maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
             }
         }
