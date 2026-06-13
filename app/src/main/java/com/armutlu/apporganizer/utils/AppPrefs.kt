@@ -199,5 +199,12 @@ object AppPrefs {
         return json.toString()
     }
 
+    // DeepSeek API anahtari — LLM fallback kategorize icin
+    const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
+    fun getDeepSeekApiKey(context: Context): String =
+        prefs(context).getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
+    fun setDeepSeekApiKey(context: Context, key: String) =
+        prefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, key.trim()).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

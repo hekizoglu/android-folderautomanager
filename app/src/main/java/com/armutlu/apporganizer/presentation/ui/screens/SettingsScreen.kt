@@ -37,8 +37,13 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.BackupManager
 import com.armutlu.apporganizer.utils.DockPrefs
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,18 +53,20 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onSendBugReport: () -> Unit = {}
 ) {
-    val showSystemApps by viewModel.showSystemApps.collectAsState()
-    val state          by viewModel.screenState.collectAsState()
-    val logs           by viewModel.liveDebugLogs.collectAsState()
-    val hiddenApps     by viewModel.hiddenApps.collectAsState()
-    val otherApps      by viewModel.otherApps.collectAsState()
-    val clipboard      = LocalClipboardManager.current
-    val context        = LocalContext.current
-    var debugExpanded  by remember { mutableStateOf(false) }
-    val scope          = rememberCoroutineScope()
-    val themePrefs     = remember { ThemePreferences(context) }
-    val currentTheme   by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
-    val currentFont    by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
+    val showSystemApps  by viewModel.showSystemApps.collectAsState()
+    val state           by viewModel.screenState.collectAsState()
+    val logs            by viewModel.liveDebugLogs.collectAsState()
+    val hiddenApps      by viewModel.hiddenApps.collectAsState()
+    val otherApps       by viewModel.otherApps.collectAsState()
+    val llmCategorizing by viewModel.llmCategorizing.collectAsState()
+    val llmProgress     by viewModel.llmProgress.collectAsState()
+    val clipboard       = LocalClipboardManager.current
+    val context         = LocalContext.current
+    var debugExpanded   by remember { mutableStateOf(false) }
+    val scope           = rememberCoroutineScope()
+    val themePrefs      = remember { ThemePreferences(context) }
+    val currentTheme    by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
+    val currentFont     by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
 
     fun isDefaultLauncher(): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -709,13 +716,71 @@ fun SettingsScreen(
                 item { SettingsSectionTitle("Diğer Klasörü — Bilinmeyenler (${otherApps.size})") }
                 item {
                     SettingsCard {
-                        Column(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                        // DeepSeek LLM kategorize paneli
+                        var apiKeyInput by remember { mutableStateOf(AppPrefs.getDeepSeekApiKey(context)) }
+                        var showApiKey  by remember { mutableStateOf(false) }
+                        Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Text(
                                 "Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. " +
-                                "İleride web sorgusu ile otomatik atanacak.",
+                                "DeepSeek AI ile otomatik olarak kategorilendirilebilir.",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Spacer(Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = apiKeyInput,
+                                onValueChange = {
+                                    apiKeyInput = it
+                                    AppPrefs.setDeepSeekApiKey(context, it)
+                                },
+                                label = { Text("DeepSeek API Key", fontSize = 12.sp) },
+                                placeholder = { Text("sk-...", fontSize = 12.sp) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                trailingIcon = {
+                                    IconButton(onClick = { showApiKey = !showApiKey }) {
+                                        Icon(
+                                            if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                },
+                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp)
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
+                                enabled = !llmCategorizing && apiKeyInput.isNotBlank(),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (llmCategorizing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Kategorize ediliyor...", fontSize = 13.sp)
+                                } else {
+                                    Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("DeepSeek ile Kategorize Et", fontSize = 13.sp)
+                                }
+                            }
+                            if (llmProgress.isNotBlank()) {
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    llmProgress,
+                                    fontSize = 12.sp,
+                                    color = if (llmProgress.startsWith("Hata") || llmProgress.contains("hata"))
+                                        MaterialTheme.colorScheme.error
+                                    else
+                                        MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                         Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                         otherApps.take(20).forEachIndexed { index, app ->
