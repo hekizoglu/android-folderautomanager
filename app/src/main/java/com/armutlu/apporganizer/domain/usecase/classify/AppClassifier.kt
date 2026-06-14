@@ -3109,6 +3109,64 @@ class AppClassifier @Inject constructor() {
         "com.adidas.app"                             to Category.CAT_SHOPPING,
         "com.underarmour.android"                    to Category.CAT_SHOPPING,
         "com.newbalance.android"                     to Category.CAT_SHOPPING,
+
+        // Loop 75 — Gaming Platforms & Communities
+        "com.valve.steam.android"                    to Category.CAT_GAMES,
+        "com.gog.android"                            to Category.CAT_GAMES,
+        "com.itch.android"                           to Category.CAT_GAMES,
+        "com.playstation.android"                    to Category.CAT_GAMES,
+        "com.nintendo.znma"                          to Category.CAT_GAMES,
+        "com.playgendary.kids"                       to Category.CAT_GAMES,
+        "com.bigfishgames.android"                   to Category.CAT_GAMES,
+        "com.gameloft.android"                       to Category.CAT_GAMES,
+        "com.ea.android"                             to Category.CAT_GAMES,
+        "com.zynga.android"                          to Category.CAT_GAMES,
+        "com.ubisoft.android"                        to Category.CAT_GAMES,
+        "com.2k.android"                             to Category.CAT_GAMES,
+        "com.bethesda.android"                       to Category.CAT_GAMES,
+        "com.squareenix.android"                     to Category.CAT_GAMES,
+        "com.capcom.android"                         to Category.CAT_GAMES,
+        "com.konami.android"                         to Category.CAT_GAMES,
+        "com.bandainamco.android"                    to Category.CAT_GAMES,
+        "com.sega.android"                           to Category.CAT_GAMES,
+
+        // Loop 75 — Social Media Management
+        "com.buffer.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.hootsuite.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.sproutsocial.android"                   to Category.CAT_PRODUCTIVITY,
+        "com.later.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.planoly.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.tailwindapp.android"                    to Category.CAT_PRODUCTIVITY,
+        "com.metricool.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.sendible.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.agorapulse.android"                     to Category.CAT_PRODUCTIVITY,
+
+        // Loop 75 — Reading & Books
+        "com.google.android.apps.books"              to Category.CAT_EDUCATION,
+        "com.libbyapp.android"                       to Category.CAT_EDUCATION,
+        "com.wattpad.tap"                            to Category.CAT_ENTERTAINMENT,
+        "com.novelupdates.android"                   to Category.CAT_ENTERTAINMENT,
+        "com.inkitt.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.radish.fiction"                         to Category.CAT_ENTERTAINMENT,
+
+        // Loop 75 — Crypto & Web3 Extended
+        "com.gnosis.safe.android"                    to Category.CAT_FINANCE,
+        "com.coinmarketcap.android"                  to Category.CAT_FINANCE,
+        "com.coingecko.android"                      to Category.CAT_FINANCE,
+        "com.blockfolio.android"                     to Category.CAT_FINANCE,
+        "com.delta.android"                          to Category.CAT_FINANCE,
+
+        // Loop 75 — Accessibility & Assistive Tech
+        "com.google.android.marvin.talkback"         to Category.CAT_UTILITIES,
+        "com.samsung.android.accessibility.checker"  to Category.CAT_UTILITIES,
+        "com.envision.app"                           to Category.CAT_UTILITIES,
+        "com.seeing.ai.android"                      to Category.CAT_UTILITIES,
+        "com.orcam.myeye.android"                    to Category.CAT_UTILITIES,
+        "com.aispeech.android"                       to Category.CAT_UTILITIES,
+        "com.acapela.mobile"                         to Category.CAT_UTILITIES,
+        "com.voiceitt.android"                       to Category.CAT_UTILITIES,
+        "com.nuance.android"                         to Category.CAT_UTILITIES,
+        "com.hearingaidapps.android"                 to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
