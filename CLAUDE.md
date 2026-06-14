@@ -1039,7 +1039,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3116 benzersiz** (479'dan, Loop 84 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3191 benzersiz** (479'dan, Loop 90 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
@@ -1139,4 +1139,20 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - Türkçe İ/ı, Ş/ş, Ğ/ğ, Ö/ö, Ü/ü, Ç/ç karakterleri artık doğru eşleşiyor
 - Önceki: Java varsayılan locale I harfini İngilizce kuralıyla küçültüyordu (I→i, İ→I değil)
 
-*Son güncelleme: 2026-06-14 (Loop 84 — AppClassifier 3116 benzersiz, FolderSheet TR arama fix)*
+### Loop 90 Özeti (2026-06-14 — remote agent, bu oturum)
+**KeywordDatabase 14 → 32 kategori (+18 yeni kategori keyword kapsami):**
+- Yeni eklenen kategoriler: COMMUNICATION, MUSIC, VIDEO, MAPS, SPORTS, BOOKS, LIFESTYLE, BUSINESS, DATING, ART, BEAUTY, AUTO, HOUSE, WEATHER, PARENTING, EVENTS, COMICS, PERSONALIZATION
+- Her kategori icin 20-50 keyword (Turkce + English + paket parcalari)
+- Artik bilinmeyen uygulamalar keyword matching ile tum 32 Google Play kategorisine eslesebilir
+- Onceki durumda bu 19 kategori tamamen keyword kapsamsizdi — tum bilinmeyen uygulamalar CAT_OTHER'a dusuyordu
+
+**AppClassifier 3116 → 3191 benzersiz (+75 net, 0 duplicate):**
+- **CAT_PERSONALIZATION**: 1 → 56 entry — launcher (Nova, Lawnchair, Action, Niagara, Go), klavye (SwiftKey, Gboard), duvar kagidi uyg., tema yoneticileri, Kustom/KWGT/KLWP, Zedge
+- **CAT_ART**: 7 → 35 entry — Adobe suite (XD, Express, Illustrator, Animate), Procreate, SketchBook, ibisPaint, MediBang, Figma, Canva, Zeplin, Miro, InVision, Behance, Dribbble, Unsplash, Pexels
+- **CAT_BEAUTY**: 2 → 28 entry — Sephora, Ulta, YouCam Makeup, Perfect365, L'Oreal, Avon, Maybelline, Clinique, Chanel, Dior, Watsons + diger global kozmetik markalar
+- **CAT_WEATHER**: 6 → 25 entry — AccuWeather, Weather Underground, Dark Sky, Windy, Ventusky, BBC Weather, MGM/NOAA, MetOffice, MeteoFrance
+- **20 duplicate temizlendi**: eski CAT_UTILITIES/PHOTOGRAPHY/FOOD/PRODUCTIVITY girisleri dogru yeni kategorilere tasindi
+
+**Uzak Ortam Notu:** APK build yapılamıyor (dl.google.com yasak) — yerel makinede dogrulanmali.
+
+*Son güncelleme: 2026-06-14 (Loop 90 — KeywordDatabase 32 kategori, AppClassifier 3191 benzersiz)*
