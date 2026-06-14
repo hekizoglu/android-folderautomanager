@@ -195,6 +195,7 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
+        viewModel.initFavorites(this)
         if (!receiverRegistered) {
             registerReceiver(packageReceiver, PACKAGE_FILTER)
             receiverRegistered = true
