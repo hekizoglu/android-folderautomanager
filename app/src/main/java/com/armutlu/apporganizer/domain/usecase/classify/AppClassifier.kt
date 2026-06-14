@@ -3056,6 +3056,59 @@ class AppClassifier @Inject constructor() {
         "com.opet.android"                           to Category.CAT_TRAVEL,
         "com.shell.android"                          to Category.CAT_TRAVEL,
         "com.bp.android"                             to Category.CAT_TRAVEL,
+
+        // Loop 74 — Productivity: Note-Taking & Writing
+        "com.ia.writer"                              to Category.CAT_PRODUCTIVITY,
+        "com.standardnotes.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.zoho.notebook.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.supernotes.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.notesnook.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.reflect.android"                        to Category.CAT_PRODUCTIVITY,
+
+        // Loop 74 — Communication: Email Clients
+        "com.yahoo.mobile.client.android.mail"       to Category.CAT_PRODUCTIVITY,
+        "ch.protonmail.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.fastmail.app"                           to Category.CAT_PRODUCTIVITY,
+        "com.hey.android"                            to Category.CAT_PRODUCTIVITY,
+        "com.airmail.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.spike.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.edison.android.mail"                    to Category.CAT_PRODUCTIVITY,
+        "com.polymail.android"                       to Category.CAT_PRODUCTIVITY,
+
+        // Loop 74 — Lifestyle & Personal Finance
+        "com.copilot.android"                        to Category.CAT_FINANCE,
+        "com.monarchmoney.android"                   to Category.CAT_FINANCE,
+        "com.tiller.android"                         to Category.CAT_FINANCE,
+        "com.pocketguard.android"                    to Category.CAT_FINANCE,
+        "com.dollarbird.android"                     to Category.CAT_FINANCE,
+        "com.spendee.android"                        to Category.CAT_FINANCE,
+        "com.goodbudget.android"                     to Category.CAT_FINANCE,
+        "com.monefy.android"                         to Category.CAT_FINANCE,
+        "com.trail.android"                          to Category.CAT_FINANCE,
+        "com.pennies.android"                        to Category.CAT_FINANCE,
+
+        // Loop 74 — Home & DIY
+        "com.living.spaces.android"                  to Category.CAT_SHOPPING,
+        "com.crate.barrel.android"                   to Category.CAT_SHOPPING,
+        "com.lowes.android"                          to Category.CAT_SHOPPING,
+        "com.menards.android"                        to Category.CAT_SHOPPING,
+        "com.acehardware.android"                    to Category.CAT_SHOPPING,
+
+        // Loop 74 — Sports & Outdoor
+        "com.viewranger.android"                     to Category.CAT_TRAVEL,
+        "com.hikingproject.android"                  to Category.CAT_TRAVEL,
+        "com.mtbproject.android"                     to Category.CAT_TRAVEL,
+        "com.fishbrain.android"                      to Category.CAT_HEALTH,
+        "com.huntstand.android"                      to Category.CAT_HEALTH,
+        "com.onxmaps.android"                        to Category.CAT_TRAVEL,
+        "com.decathlon.android"                      to Category.CAT_SHOPPING,
+        "com.intersport.android"                     to Category.CAT_SHOPPING,
+        "com.sportsdirect.android"                   to Category.CAT_SHOPPING,
+        "com.macys.android"                          to Category.CAT_SHOPPING,
+        "com.nordstrom.android"                      to Category.CAT_SHOPPING,
+        "com.adidas.app"                             to Category.CAT_SHOPPING,
+        "com.underarmour.android"                    to Category.CAT_SHOPPING,
+        "com.newbalance.android"                     to Category.CAT_SHOPPING,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
