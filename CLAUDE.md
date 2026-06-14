@@ -1013,4 +1013,21 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - CAT_PHOTOGRAPHY: 104 → 134 (+30)
 - CAT_SOCIAL: 136 → 153 (+17)
 
-*Son güncelleme: 2026-06-14 (Loop 62 — AppClassifier 2185 benzersiz, 0 duplicate)*
+### Loop 66 Özeti (2026-06-14 — remote agent)
+**AppClassifier bug fix + 2351 → 2386 benzersiz (+35 net, 0 duplicate):**
+- **Bug Fix:** TR Futbol Kulübü uygulamaları (Galatasaray/Fenerbahce/Besiktas vb.) `CAT_HEALTH` → `CAT_ENTERTAINMENT` olarak düzeltildi (fan app'ler sağlık değil, eğlence)
+- **Medical & Pharmacy (+10):** GoodRx, Walgreens, CVS, RiteAid, WebMD, Medscape, Medisafe, SGK Mobil, TR eczane uygulamaları
+- **Baby & Parenting (+12):** BabyCenter, What to Expect, Ovia, Sprout, Huckleberry, TR annebebek/bebeksaatleri
+- **QR Code & Barcode (+10):** Çeşitli QR/barcode tarayıcı uygulamaları → CAT_UTILITIES
+- **Parking & EV Charging (+12):** ParkWhiz, SpotHero, ParkMobile, ChargePoint, Electrify America, PlugShare, EVgo
+- **Dating & Relationship (+12):** Match.com, Happn, TanTan, Mamba, Pairs, Meetic (önceki entrylerin yanına)
+- **Loyalty & Fast Food (+13):** Subway, McDonald's, Sam's Club, Kohl's, JCPenney, PetSuppliesPlus
+- **Pomodoro & Time Tracking (+12):** Engross, FocusFlow, Toggl, Harvest, Clockify, ATracker
+- **Weather (+12):** Foreca, FlowX, RadarScope, Windy (yeni paket), Clime
+- **Crypto Wallets (+13):** MetaMask (yeni paket), Phantom, Exodus, Rainbow, Argent, UniSwap, Aave, Compound
+- **TR Fashion & Shopping (+13):** Hepsiburada, Trendyol, N11, Gittigidiyor, Migros, Carrefour, A101, BIM, Gratis
+- **Wearables & IoT (+12):** Google Wear, Samsung Watch, Fitbit, Garmin, COROS, Oura Ring, Huawei Health, Xiaomi Wearable
+- **Event & Ticketing (+12):** Ticketmaster, SeatGeek, StubHub, Dice, Songkick, Bandsintown, Eventbrite, TR Biletix/Passo
+- **43 duplicate temizlendi** (önceki döngülerden kalan)
+
+*Son güncelleme: 2026-06-14 (Loop 66 — AppClassifier 2386 benzersiz, 0 duplicate)*
