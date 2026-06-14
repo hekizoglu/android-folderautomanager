@@ -996,4 +996,21 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **BUILD #13**: Debug APK 28.1MB Telegram'a gönderildi
 - **AppClassifier: 2074+ benzersiz paket** (başlangıç: 479)
 
-*Son güncelleme: 2026-06-14 (Loop 60 — BUILD #13 Debug APK, AppClassifier 2074+ benzersiz)*
+### Loop 62 Özeti (2026-06-14 — remote agent)
+**AppClassifier 2057 → 2185 benzersiz (+128 net, 0 duplicate):**
+- **TR Haber (yeni)**: ahaber, trthaber, fanatik, ntvspor, bianet, medyascope, diken, gazeteduvar, birgun, odatv, yenicaggazetesi, cnnturktv, anadoluajansi (+16)
+- **Avrupa Haberleri**: Die Zeit, Spiegel, Bild, Le Monde, Le Figaro, 20 Minutes, BFM TV, El Pais, El Mundo, Marca, La Repubblica, Corriere, Globo, Folha, HuffPost, BuzzFeed, Vice, Axios, Slate, The Atlantic (+20)
+- **Asya/Pasifik/Uluslararası Haber**: Times of India, Hindustan Times, NDTV, SCMP, NHK World, Mail Online, The Sun, CBC, NZ Herald, RT, TASS, ABC News AU (+12), BBC mobile ayrı paket (+1)
+- **Restoran Zincirleri**: Taco Bell, Chipotle, Papa John's, Five Guys, Tim Hortons, Dunkin, Chick-fil-A, Blue Apron, EveryPlate, Marley Spoon, Dinnerly, Wendy's, Buffalo Wild Wings, Applebee's, Olive Garden (+15)
+- **Yemek Teslimat**: Wolt, HungryPanda, Just Eat, Menulog, PedidosYa, iFood, GoPuff (zaten var), BBC Food, Plantd, Woolworths, Coles, Aldi, Caferio (+13)
+- **Fotoğraf/Kamera**: GoPro, DJI Go v5, DJI Pilot, Remini, Reface, YouCam Makeup, YouCam Perfect, Perfect365, BeFunky, Retrica, Adobe Fresco, Adobe Express, Layout (IG), Boomerang, Hyperlapse, Photoleap, A Color Story, Pic Collage, Manual Camera, ProShot, Camera MX, Camera FV-5, Pixelmator, Over, Krita, GIMP, VN Editor (+27)
+- **Sosyal Medya**: Life360, Marco Polo, Zoosk, eHarmony, Coffee Meets Bagel, MeetYou/MeetMe, NGL, Gas, Jerboa (Lemmy), Truth Social, Minds, HER, Lovoo, POF (ayrı paket), Zenly, Citizen (+16)
+- **KeywordDatabase**: NEWS bölümüne fanatik/ntvspor/spiegel/buzzfeed/vice/trt/ahaber/lemonde eklendi; FOOD bölümüne wolt/grubhub/doordash/tacobell/hellofresh/allrecipes eklendi
+
+**Kategori dağılımı (Loop 62 sonrası):**
+- CAT_NEWS: 95 → 147 (+52)
+- CAT_FOOD: 102 → 131 (+29)
+- CAT_PHOTOGRAPHY: 104 → 134 (+30)
+- CAT_SOCIAL: 136 → 153 (+17)
+
+*Son güncelleme: 2026-06-14 (Loop 62 — AppClassifier 2185 benzersiz, 0 duplicate)*

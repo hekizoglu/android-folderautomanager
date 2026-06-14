@@ -58,7 +58,9 @@ object KeywordDatabase {
             "techcrunch", "verge", "wired", "engadget", "cnet", "arstechnica",
             "haber", "manset", "son dakika", "gazetesi", "gazete", "dergi",
             "bianet", "diken", "t24", "cumhuriyet", "sozcu", "posta", "sabah",
-            "haberler", "basın", "medya", "ajans"
+            "haberler", "basın", "medya", "ajans", "fanatik", "ntvspor",
+            "spiegel", "buzzfeed", "vice", "trt", "ahaber", "ensonhaber",
+            "lemonde", "lefigaro", "elpais", "corriere", "repubblica"
         ),
         Category.CAT_HEALTH to listOf(
             "health", "fitness", "workout", "gym", "exercise", "sport",
@@ -142,6 +144,9 @@ object KeywordDatabase {
             "trendyolexpress", "express", "mutfak", "tarif",
             "paket", "manav", "kasap", "pastane",
             "kafe", "restoran", "lokanta", "fast", "döner", "kebap",
+            "wolt", "grubhub", "doordash", "ubereats", "justeat", "ifood",
+            "tacobell", "chipotle", "wendys", "dunkin", "chick", "dominos",
+            "hellofresh", "blueapron", "yummly", "allrecipes", "cookpad",
             "sok", "kiler", "macro", "tekel", "icecek",
             "smoothie", "vegan", "organik", "gluten", "diyet",
             "doordash", "ubereats", "grubhub", "postmates", "instacart",
