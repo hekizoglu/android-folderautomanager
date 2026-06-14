@@ -2922,6 +2922,44 @@ class AppClassifier @Inject constructor() {
         "com.moomoo.android"                         to Category.CAT_FINANCE,
         "com.publicinvest.android"                   to Category.CAT_FINANCE,
         "com.ellevest.android"                       to Category.CAT_FINANCE,
+
+        // Loop 70 — Social & Messaging Extended
+        "com.gotomeeting.android"                    to Category.CAT_SOCIAL,
+        "com.paltalk.android"                        to Category.CAT_SOCIAL,
+        "com.meetme.android"                         to Category.CAT_SOCIAL,
+
+        // Loop 70 — Entertainment & Streaming
+        "com.facebook.gaming"                        to Category.CAT_GAMES,
+        "com.mixer.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.dlive.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.trovo.live"                             to Category.CAT_ENTERTAINMENT,
+        "com.nimo.live.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.bigo.live"                              to Category.CAT_ENTERTAINMENT,
+        "com.nonolive.android"                       to Category.CAT_ENTERTAINMENT,
+        "sg.bigo.like"                               to Category.CAT_ENTERTAINMENT,
+        "com.vmate.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.kmplayer.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.xsoftstudio.videoplayer"                to Category.CAT_ENTERTAINMENT,
+        "com.rocks.video.player"                     to Category.CAT_ENTERTAINMENT,
+
+        // Loop 70 — Shopping & Marketplace Extended
+        "com.temu.android"                           to Category.CAT_SHOPPING,
+        "com.vova.android"                           to Category.CAT_SHOPPING,
+        "com.joom.android"                           to Category.CAT_SHOPPING,
+        "com.geek.android"                           to Category.CAT_SHOPPING,
+        "com.banggood.android"                       to Category.CAT_SHOPPING,
+        "com.ovo.android"                            to Category.CAT_FINANCE,
+        "com.dana.android"                           to Category.CAT_FINANCE,
+
+        // Loop 70 — Health & Fitness Extended
+        "com.ouraring.android"                       to Category.CAT_HEALTH,
+        "com.xiaomi.hm.health"                       to Category.CAT_HEALTH,
+        "com.nike.training.android"                  to Category.CAT_HEALTH,
+
+        // Loop 70 — TR Banking & Fintech Extended
+        "com.finansbank.mobile.ceplum"               to Category.CAT_FINANCE,
+        "com.hsbc.android.tr"                        to Category.CAT_FINANCE,
+        "com.masterpass.android"                     to Category.CAT_FINANCE,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
