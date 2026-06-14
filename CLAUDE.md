@@ -1042,4 +1042,13 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2623 benzersiz** (479'dan, Loop 69 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
-*Son güncelleme: 2026-06-14 (Loop 69 — AppClassifier 2623 benzersiz, encoding fix, merge conflict çözüldü)*
+### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
+- **Loop 67:** FolderTile bildirim metni "AppAdi: mesaj" formatına çevrildi + onNotificationTap callback, BackupWorker (WorkManager haftalık), AppPrefs backup zamanlama anahtarları, build.gradle work-runtime-ktx:2.9.0
+- **Loop 68:** HomeScreen onNotificationTap bağlandı (bildirime tap → uygulama aç), AppClassifier +80 (oyunlar: Clash/PUBG/Minecraft, fintech: Monzo/N26, mental health, TR gov: e-Devlet/PTT, moda, fotoğraf)
+- **Loop 69:** AppClassifier +75 (e-öğrenme: Udemy/Duolingo/Anki, harita: Waze/OsmAnd/Here, proje yönetimi: Monday/Figma/Canva, yatırım: Fidelity/Betterment)
+- **Loop 70:** AppClassifier +80 (KakaoTalk/Teams/Zoom, Twitch/VLC, Temu/Shopee/Tokopedia, MyFitnessPal/Whoop/Peloton, TR fintech: BKM/Masterpass/Paycell)
+- **Loop 71:** AppClassifier +80 (Spotify/Tidal/Deezer, Avast/1Password/Authy, Airbnb/Uber/Bolt/Moovit, YouTube Kids/Khan Academy Kids/Toca Boca)
+- **BUILD #15:** Debug APK 28.5MB Telegram'a gönderildi
+- **AppClassifier: 2624 benzersiz paket** (başlangıç: 479)
+
+*Son güncelleme: 2026-06-14 (Loop 72 — BUILD #15 Debug APK 28.5MB, AppClassifier 2624 benzersiz)*
