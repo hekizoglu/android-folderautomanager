@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 05:35 UTC
-# Commit: cb2535489b93bd5def252007a139f76559745a8d
+# Generated: 2026-06-14 05:49 UTC
+# Commit: 8aa2ffcb4e14d235f0dd02006e60f223c442e7a2
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3921,6 +3921,82 @@ class AppClassifier @Inject constructor() {
         "com.yale.android"                           to Category.CAT_UTILITIES,
         "com.ecobee.android"                         to Category.CAT_UTILITIES,
         "com.honeywell.android"                      to Category.CAT_UTILITIES,
+
+        // Loop 65 — TR Football Clubs
+        "com.galatasaray.app"                        to Category.CAT_HEALTH,
+        "com.fenerbahce.app"                         to Category.CAT_HEALTH,
+        "com.besiktas.app"                           to Category.CAT_HEALTH,
+        "com.trabzonspor.app"                        to Category.CAT_HEALTH,
+        "com.bursaspor.android"                      to Category.CAT_HEALTH,
+        "com.basaksehir.android"                     to Category.CAT_HEALTH,
+        "com.konyaspor.android"                      to Category.CAT_HEALTH,
+        "com.antalyaspor.android"                    to Category.CAT_HEALTH,
+        "com.gaziantepfk.android"                    to Category.CAT_HEALTH,
+        "com.sivasspor.android"                      to Category.CAT_HEALTH,
+
+        // Loop 65 — Music Creation & Instruments
+        "com.apple.garageband"                       to Category.CAT_ENTERTAINMENT,
+        "com.walkband.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.yousician.android"                      to Category.CAT_EDUCATION,
+        "com.smule.singapp"                          to Category.CAT_ENTERTAINMENT,
+        "com.starmaker.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.voloco.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.acapella.app"                           to Category.CAT_ENTERTAINMENT,
+        "com.musicolet.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.neutronmp3.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.poweramp.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.retroarch.android"                      to Category.CAT_GAMES,
+        "com.fender.android"                         to Category.CAT_EDUCATION,
+        "com.gibson.android"                         to Category.CAT_EDUCATION,
+        "com.flowkey.android"                        to Category.CAT_EDUCATION,
+        "com.playground.android"                     to Category.CAT_EDUCATION,
+
+        // Loop 65 — Hobbies & Crafts
+        "com.ravelry.android"                        to Category.CAT_SHOPPING,
+        "com.craftsy.android"                        to Category.CAT_EDUCATION,
+        "com.letterboxd.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.goodreads.app"                          to Category.CAT_EDUCATION,
+        "com.librarything.android"                   to Category.CAT_EDUCATION,
+        "com.stocard.android"                        to Category.CAT_SHOPPING,
+        "com.cardpointers.android"                   to Category.CAT_FINANCE,
+        "com.maxrewards.android"                     to Category.CAT_FINANCE,
+        "com.awardwallet.android"                    to Category.CAT_FINANCE,
+
+        // Loop 65 — Podcast & Audio Content (TR)
+        "com.spotify.podcast.android"                to Category.CAT_ENTERTAINMENT,
+        "com.radyospor.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.trtradyo.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.radyonet.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.radyo7.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.kral.radyo"                             to Category.CAT_ENTERTAINMENT,
+        "com.ntv.radyo"                              to Category.CAT_ENTERTAINMENT,
+        "com.virgin.radyo"                           to Category.CAT_ENTERTAINMENT,
+
+        // Loop 65 — Print & Scan
+        "com.hp.printercontrol"                      to Category.CAT_UTILITIES,
+        "com.epson.android"                          to Category.CAT_UTILITIES,
+        "com.canon.android"                          to Category.CAT_UTILITIES,
+        "com.brother.android"                        to Category.CAT_UTILITIES,
+        "com.lexmark.android"                        to Category.CAT_UTILITIES,
+        "com.abbyy.finescanner"                      to Category.CAT_UTILITIES,
+        "com.intsig.camscanner"                      to Category.CAT_UTILITIES,
+        "com.adobe.scan"                             to Category.CAT_UTILITIES,
+        "com.genius.scan"                            to Category.CAT_UTILITIES,
+        "com.turboScan.android"                      to Category.CAT_UTILITIES,
+
+        // Loop 65 — Language & Translation
+        "com.reverso.android"                        to Category.CAT_UTILITIES,
+        "com.spanishdict.android"                    to Category.CAT_EDUCATION,
+        "com.linguee.android"                        to Category.CAT_UTILITIES,
+        "com.dict.cc.android"                        to Category.CAT_EDUCATION,
+        "com.pons.android"                           to Category.CAT_EDUCATION,
+        "com.wordreference.android"                  to Category.CAT_EDUCATION,
+        "com.dictionary.android"                     to Category.CAT_EDUCATION,
+        "com.oxforddictionaries.android"             to Category.CAT_EDUCATION,
+        "com.cambridge.android"                      to Category.CAT_EDUCATION,
+        "com.tureng.android"                         to Category.CAT_EDUCATION,
+        "com.seslisozcuk.android"                    to Category.CAT_EDUCATION,
+        "com.zargan.android"                         to Category.CAT_EDUCATION,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
