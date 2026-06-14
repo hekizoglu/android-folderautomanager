@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 18:14 UTC
-# Commit: 147eecc73d38a900ddcb5f1c7628ff3914253391
+# Generated: 2026-06-14 19:08 UTC
+# Commit: 230b518b0e06277ea2276f87c98bc29e74ac826c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -6343,7 +6343,6 @@ fun AllAppsDrawer(
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
-    val bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchFocusRequester = remember { FocusRequester() }
 
@@ -6389,6 +6388,7 @@ fun AllAppsDrawer(
     }
 
     // Ayarlar — Settings değişince anında güncellenir (SharedPrefs listener)
+    var bgAlpha by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
     var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
@@ -6398,6 +6398,8 @@ fun AllAppsDrawer(
         )
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ALLAPPS_BG_ALPHA ->
+                    bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
@@ -9553,6 +9555,7 @@ fun HomeScreen(
             // Bottom dock — frosted pill (uzun bas → düzenle)
             PixelDock(
                 packages = dockPackages,
+                iconPackPkg = suggestionIconPack,
                 onLaunchApp = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
@@ -9900,6 +9903,7 @@ internal fun GoogleSearchBar(modifier: Modifier = Modifier) {
 @Composable
 internal fun PixelDock(
     packages: List<String>,
+    iconPackPkg: String = "",
     onLaunchApp: (String) -> Unit,
     onLongPress: () -> Unit = {},
     onAppLongPress: (String) -> Unit = {},
@@ -9936,6 +9940,7 @@ internal fun PixelDock(
                 DockIcon(
                     packageName = pkg,
                     label = label,
+                    iconPackPkg = iconPackPkg,
                     iconSize = 48.dp,
                     onClick = { onLaunchApp(pkg) },
                     onLongClick = { onAppLongPress(pkg) }
@@ -9950,13 +9955,13 @@ internal fun PixelDock(
 internal fun DockIcon(
     packageName: String,
     label: String,
+    iconPackPkg: String = "",
     iconSize: Dp,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
-    val iconPackPkg = remember { AppPrefs.getIconPack(context) }
     val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_$px" else "${packageName}_${px}_$iconPackPkg"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
@@ -10230,7 +10235,7 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
                 modifier = Modifier.size(20.dp).offset(y = offsetY.dp)
             )
             Text(
-                text = "Tum uygulamalar",
+                text = "Tüm uygulamalar",
                 color = Color.White.copy(alpha = 0.40f),
                 fontSize = 11.sp
             )
