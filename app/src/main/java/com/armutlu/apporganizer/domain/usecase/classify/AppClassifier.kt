@@ -3513,6 +3513,88 @@ class AppClassifier @Inject constructor() {
         "com.filmbox.android"                        to Category.CAT_ENTERTAINMENT,
         "com.dizibox.android"                        to Category.CAT_ENTERTAINMENT,
         "com.turktv.android"                         to Category.CAT_ENTERTAINMENT,
+
+        // Loop 84 — Gacha / Action RPG (2024-2025 yeni oyunlar)
+        "com.kurogames.wutheringwaves"               to Category.CAT_GAMES,
+        "com.shiftup.nikke"                          to Category.CAT_GAMES,
+        "com.nextgames.android.nikke"                to Category.CAT_GAMES,
+        "com.cloudy.snowgale"                        to Category.CAT_GAMES,
+        "com.bluepoch.reverse1999"                   to Category.CAT_GAMES,
+        "com.yostar.aethergazer"                     to Category.CAT_GAMES,
+        "com.nexon.m.maplestorym"                    to Category.CAT_GAMES,
+        "com.efun.dragonraja"                        to Category.CAT_GAMES,
+        "com.com2us.summonerswar.global"             to Category.CAT_GAMES,
+        "com.smilegate.stove.summoners_war_chronicles" to Category.CAT_GAMES,
+        "com.com2usglobal.hadesstar"                 to Category.CAT_GAMES,
+        "com.kabam.mff"                              to Category.CAT_GAMES,
+
+        // Loop 84 — Power User / Root Araclari
+        "com.aurora.store"                           to Category.CAT_UTILITIES,
+        "moe.shizuku.privileged.api"                 to Category.CAT_UTILITIES,
+        "eu.faircode.netguard"                       to Category.CAT_UTILITIES,
+        "app.blokada"                                to Category.CAT_UTILITIES,
+        "org.blokada.fem.android"                    to Category.CAT_UTILITIES,
+        "net.dinglisch.android.taskerm"              to Category.CAT_UTILITIES,
+        "com.arlosoft.macrodroid"                    to Category.CAT_UTILITIES,
+        "org.kde.kdeconnect_tp"                      to Category.CAT_UTILITIES,
+        "com.nutomic.syncthingandroid"               to Category.CAT_UTILITIES,
+        "com.pushbullet.android"                     to Category.CAT_UTILITIES,
+        "com.delphicoder.flud"                       to Category.CAT_UTILITIES,
+        "org.proninyaroslav.libretorrent"            to Category.CAT_UTILITIES,
+        "com.joaomgcd.join"                          to Category.CAT_UTILITIES,
+        "com.llamalab.automate"                      to Category.CAT_UTILITIES,
+        "dk.tacit.android.foldersync.full"           to Category.CAT_UTILITIES,
+        "com.draco.ladb"                             to Category.CAT_UTILITIES,
+        "com.termux.api"                             to Category.CAT_UTILITIES,
+        "com.termux.boot"                            to Category.CAT_UTILITIES,
+        "eu.chainfire.supersu"                       to Category.CAT_UTILITIES,
+        "com.kingouser.com"                          to Category.CAT_UTILITIES,
+        "com.tencent.mobileqq"                       to Category.CAT_SOCIAL,
+
+        // Loop 84 — Yeni Nesil Sosyal Platformlar
+        "com.lemon.lv"                               to Category.CAT_SOCIAL,
+        "xyz.blueskyweb.app"                         to Category.CAT_SOCIAL,
+        "co.yubo.app"                                to Category.CAT_SOCIAL,
+        "com.gas.app"                                to Category.CAT_SOCIAL,
+        "com.poparazzi.app"                          to Category.CAT_SOCIAL,
+        "com.post.app"                               to Category.CAT_SOCIAL,
+        "com.spill.app"                              to Category.CAT_SOCIAL,
+
+        // Loop 84 — PKM / Bilgi Yonetimi Araclari
+        "io.anytype.app"                             to Category.CAT_PRODUCTIVITY,
+        "io.appflowy.appflowy"                       to Category.CAT_PRODUCTIVITY,
+        "com.workflowy.android"                      to Category.CAT_PRODUCTIVITY,
+        "io.dynalist.app"                            to Category.CAT_PRODUCTIVITY,
+        "com.milanote.app"                           to Category.CAT_PRODUCTIVITY,
+        "com.mindmeister.android"                    to Category.CAT_PRODUCTIVITY,
+        "com.thinkingphone.thinkingspace"            to Category.CAT_PRODUCTIVITY,
+
+        // Loop 84 — Ruh Sagligi & Mental Wellness
+        "br.com.youper"                              to Category.CAT_HEALTH,
+        "com.brightside.health"                      to Category.CAT_HEALTH,
+        "com.sevencups.android"                      to Category.CAT_HEALTH,
+        "com.daylio.mobile"                          to Category.CAT_HEALTH,
+        "com.moodfit.android"                        to Category.CAT_HEALTH,
+        "com.moodistory.android"                     to Category.CAT_HEALTH,
+        "com.verywellmind.android"                   to Category.CAT_HEALTH,
+
+        // Loop 84 — Web3 & Kripto Cuzdanlar
+        "me.rainbow"                                 to Category.CAT_FINANCE,
+        "app.phantom"                                to Category.CAT_FINANCE,
+        "io.solflare.solflare"                       to Category.CAT_FINANCE,
+        "com.gem.wallet"                             to Category.CAT_FINANCE,
+        "io.magiceden.app"                           to Category.CAT_FINANCE,
+
+        // Loop 84 — TR Haber / Icerik / Is
+        "com.onedio.android"                         to Category.CAT_NEWS,
+        "com.webtekno.android"                       to Category.CAT_NEWS,
+        "com.donanimhaber.android"                   to Category.CAT_NEWS,
+        "com.bionluk.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.hopi.app"                               to Category.CAT_SHOPPING,
+        "com.kariyernet.kariyer"                     to Category.CAT_PRODUCTIVITY,
+        "com.armut.com"                              to Category.CAT_UTILITIES,
+        "com.youthall.android"                       to Category.CAT_SOCIAL,
+        "com.lidyadergi.android"                     to Category.CAT_NEWS,
     )
 
     fun classifyApp(appInfo: AppInfo): String {

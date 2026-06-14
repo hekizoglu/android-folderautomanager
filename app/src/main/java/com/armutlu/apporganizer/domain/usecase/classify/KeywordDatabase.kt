@@ -18,7 +18,9 @@ object KeywordDatabase {
             "zalo", "imo", "textme", "tantan", "tagged", "hi5", "myspace",
             "chat", "sohbet", "arkadas", "sosyal", "topluluk", "bip",
             // Loop 77 — India social
-            "sharechat", "roposo", "mojapp", "mxtakatak", "koo", "josh"
+            "sharechat", "roposo", "mojapp", "mxtakatak", "koo", "josh",
+            // Loop 84 — yeni nesil platformlar
+            "lemon8", "bluesky", "yubo", "gas", "poparazzi", "spill", "post"
         ),
         Category.CAT_PRODUCTIVITY to listOf(
             "productivity", "office", "calendar", "notes", "todo", "task",
@@ -28,7 +30,10 @@ object KeywordDatabase {
             "teams", "zoom", "meet", "google", "microsoft", "amazon",
             "chatgpt", "openai", "deepseek", "claude", "gemini", "copilot",
             "perplexity", "bard", "gpt", "llm", "assistant", "ai",
-            "character.ai", "inflection", "mistral", "groq"
+            "character.ai", "inflection", "mistral", "groq",
+            // Loop 84 — PKM / bilgi yonetimi
+            "anytype", "appflowy", "workflowy", "dynalist", "milanote", "mindmeister",
+            "roam", "logseq", "obsidian", "foam", "pkm", "zettelkasten", "taskade"
         ),
         Category.CAT_GAMES to listOf(
             "game", "games", "gaming", "play", "battle", "royal", "chess",
@@ -41,7 +46,10 @@ object KeywordDatabase {
             "blizzard", "diablo", "warcraft", "overwatch",
             "brawl", "squad", "arena", "dungeon", "quest", "hero", "war",
             "zombie", "sniper", "fighter", "empire", "kingdom", "dragon",
-            "oyun", "oyunu"
+            "oyun", "oyunu",
+            // Loop 84 — gacha / anime RPG
+            "wuthering", "nikke", "punishing", "reverse1999", "aether", "gazer",
+            "maplestory", "dragonraja", "summoners", "genshin", "honkai", "zenless"
         ),
         Category.CAT_SHOPPING to listOf(
             // Genel
@@ -81,7 +89,10 @@ object KeywordDatabase {
             "bianet", "diken", "t24", "cumhuriyet", "sozcu", "posta", "sabah",
             "haberler", "basin", "medya", "ajans", "fanatik", "ntvspor",
             "spiegel", "buzzfeed", "vice", "trt", "ahaber", "ensonhaber",
-            "lemonde", "lefigaro", "elpais", "corriere", "repubblica"
+            "lemonde", "lefigaro", "elpais", "corriere", "repubblica",
+            // Loop 84 — TR dijital medya
+            "onedio", "webtekno", "donanimhaber", "haberler", "lidya", "teknoblog",
+            "webrazzi", "chip", "pcworld", "shiftdelete", "log", "bilisim"
         ),
         Category.CAT_HEALTH to listOf(
             // Genel
@@ -102,7 +113,10 @@ object KeywordDatabase {
             "cronometer", "lifesum", "yazio", "weightwatchers",
             "mysugr", "dexcom", "abbott", "omada", "livongo",
             "clue", "flo", "glow", "cycle",
-            "acibademsaglik", "medikal"
+            "acibademsaglik", "medikal",
+            // Loop 84 — mental wellness
+            "youper", "brightside", "sevencups", "7cups", "daylio", "moodfit",
+            "moodistory", "happify", "sanvello", "reflectly", "finch", "woebot"
         ),
         Category.CAT_FINANCE to listOf(
             // Genel
@@ -140,7 +154,11 @@ object KeywordDatabase {
             // Loop 77 — MENA fintech
             "tamara", "tabby",
             // Loop 77 — LATAM
-            "picpay", "banco inter", "clip"
+            "picpay", "banco inter", "clip",
+            // Loop 84 — Web3 / kripto cuzdanlar
+            "rainbow", "phantom", "solflare", "solana", "magic eden", "nft", "defi",
+            "metamask", "trustwallet", "ledger", "trezor", "uniswap", "aave",
+            "compound", "opensea", "blur", "gem wallet", "argent", "zerion"
         ),
         Category.CAT_EDUCATION to listOf(
             "education", "learn", "course", "class", "school", "university",
@@ -175,7 +193,12 @@ object KeywordDatabase {
             "malwarebytes", "filemanager", "esfile", "totalcommander",
             // Loop 77 — India/Africa gov utilities
             "maadhaar", "digilocker", "mygov", "umang",
-            "safaricom", "mtn", "airtel", "stc", "zain"
+            "safaricom", "mtn", "airtel", "stc", "zain",
+            // Loop 84 — guc kullanici araclari
+            "aurora", "shizuku", "netguard", "blokada", "tasker", "macrodroid",
+            "kdeconnect", "syncthing", "pushbullet", "flud", "libretorrent",
+            "automate", "foldersync", "ladb", "termux", "supersu", "kingoroot",
+            "root", "adb", "wireless", "automation", "macro", "trigger"
         ),
         Category.CAT_TRAVEL to listOf(
             // Genel
