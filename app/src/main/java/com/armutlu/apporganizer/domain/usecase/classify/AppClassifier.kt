@@ -2117,6 +2117,55 @@ class AppClassifier @Inject constructor() {
         "com.chedot.com.langrisser"                  to Category.CAT_UTILITIES,
         "com.ifit.android"                           to Category.CAT_HEALTH,
         "com.vitadock.android"                       to Category.CAT_HEALTH,
+
+        // Loop 58 — Photo & Video Editing
+        "com.adobe.premiere.rush"                    to Category.CAT_PHOTOGRAPHY,
+        "com.adobe.adobeillustratordraw"             to Category.CAT_PHOTOGRAPHY,
+        "com.bandicam.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.filmorago"                              to Category.CAT_PHOTOGRAPHY,
+        "com.kinemaster.android"                     to Category.CAT_PHOTOGRAPHY,
+        "com.apple.quicktime"                        to Category.CAT_PHOTOGRAPHY,
+        "com.unfoldapp.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.motionleap.android"                     to Category.CAT_PHOTOGRAPHY,
+        "com.prequel.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.splice.android"                         to Category.CAT_PHOTOGRAPHY,
+        "com.lomotif.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.vivavideo.android"                      to Category.CAT_PHOTOGRAPHY,
+
+        // Loop 58 — Design & Creativity
+        "com.procreate.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.autodesk.sketchbook"                    to Category.CAT_PHOTOGRAPHY,
+        "com.ibis.paint.x"                           to Category.CAT_PHOTOGRAPHY,
+        "com.medibang.paint"                         to Category.CAT_PHOTOGRAPHY,
+        "com.tayasui.sketches"                       to Category.CAT_PHOTOGRAPHY,
+        "com.mindnode.android"                       to Category.CAT_PRODUCTIVITY,
+
+        // Loop 58 — Global E-Commerce
+        "com.shopee.android"                         to Category.CAT_SHOPPING,
+        "com.jd.android"                             to Category.CAT_SHOPPING,
+        "com.mercari.app"                            to Category.CAT_SHOPPING,
+        "com.offerup"                                to Category.CAT_SHOPPING,
+        "com.craigslist.android"                     to Category.CAT_SHOPPING,
+        "com.costco.android"                         to Category.CAT_SHOPPING,
+        "com.homedepot.android"                      to Category.CAT_SHOPPING,
+
+        // Loop 58 — TR News & Media
+        "com.star.android"                           to Category.CAT_NEWS,
+        "com.showtv.android"                         to Category.CAT_NEWS,
+        "com.kanal7.android"                         to Category.CAT_NEWS,
+        "com.teve2.android"                          to Category.CAT_NEWS,
+        "com.t24.android"                            to Category.CAT_NEWS,
+
+        // Loop 58 — Book & Reading
+        "com.goodreads.android"                      to Category.CAT_EDUCATION,
+        "com.apple.books"                            to Category.CAT_EDUCATION,
+        "com.kobo.android"                           to Category.CAT_EDUCATION,
+        "com.libby.android"                          to Category.CAT_EDUCATION,
+        "com.bookmate.android"                       to Category.CAT_EDUCATION,
+        "com.fictionpress.android"                   to Category.CAT_EDUCATION,
+        "com.webnovel.android"                       to Category.CAT_EDUCATION,
+        "com.pocket.app"                             to Category.CAT_PRODUCTIVITY,
+        "com.readwise.android"                       to Category.CAT_PRODUCTIVITY,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
