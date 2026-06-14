@@ -3285,6 +3285,100 @@ class AppClassifier @Inject constructor() {
         "com.atv.android"                            to Category.CAT_ENTERTAINMENT,
         "com.fox.tv.android"                         to Category.CAT_ENTERTAINMENT,
         "com.trt1.android"                           to Category.CAT_ENTERTAINMENT,
+
+        // Loop 77 — India E-Commerce & Shopping
+        "com.flipkart.android"                       to Category.CAT_SHOPPING,
+        "com.meesho.supply"                          to Category.CAT_SHOPPING,
+        "com.myntra.android"                         to Category.CAT_SHOPPING,
+        "com.nykaa.android"                          to Category.CAT_SHOPPING,
+        "com.tatacliq.shopping"                      to Category.CAT_SHOPPING,
+        "com.jiomart.android"                        to Category.CAT_SHOPPING,
+        "com.snapdeal.android"                       to Category.CAT_SHOPPING,
+        "com.udaan.in"                               to Category.CAT_SHOPPING,
+
+        // Loop 77 — India Finance & Fintech
+        "com.zerodha.kite3"                          to Category.CAT_FINANCE,
+        "com.groww.app"                              to Category.CAT_FINANCE,
+        "com.cred.club"                              to Category.CAT_FINANCE,
+        "com.hdfcbank.android"                       to Category.CAT_FINANCE,
+        "com.axis.mobile"                            to Category.CAT_FINANCE,
+        "com.icicibank.imobile"                      to Category.CAT_FINANCE,
+        "com.kotak.mobile2"                          to Category.CAT_FINANCE,
+        "com.sbi.yono"                               to Category.CAT_FINANCE,
+        "com.upstox.app"                             to Category.CAT_FINANCE,
+        "com.angelbroking.app"                       to Category.CAT_FINANCE,
+        "com.smallcase.android"                      to Category.CAT_FINANCE,
+        "in.iifl.markets"                            to Category.CAT_FINANCE,
+        "com.jazzcash.android"                       to Category.CAT_FINANCE,
+        "com.bkash.android"                          to Category.CAT_FINANCE,
+
+        // Loop 77 — India Travel & Rides
+        "com.rapido.passenger"                       to Category.CAT_TRAVEL,
+        "in.gov.irctc.connect"                       to Category.CAT_TRAVEL,
+        "com.goibibo"                                to Category.CAT_TRAVEL,
+        "com.redbus.android"                         to Category.CAT_TRAVEL,
+        "com.cleartrip.android"                      to Category.CAT_TRAVEL,
+        "com.ixigo.android"                          to Category.CAT_TRAVEL,
+        "com.easemytrip.android"                     to Category.CAT_TRAVEL,
+
+        // Loop 77 — India Social & Entertainment
+        "in.sharechat.sharechat"                     to Category.CAT_SOCIAL,
+        "com.roposo.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.mojapp.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.kuku.fm"                                to Category.CAT_ENTERTAINMENT,
+        "com.pratilipi.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.mxmtakatak"                             to Category.CAT_ENTERTAINMENT,
+
+        // Loop 77 — India Utilities
+        "in.gov.uidai.maadhaar"                      to Category.CAT_UTILITIES,
+        "com.digilocker.android"                     to Category.CAT_UTILITIES,
+        "com.dunzo.user"                             to Category.CAT_FOOD,
+
+        // Loop 77 — Africa Finance & Fintech
+        "com.safaricom.mpesa"                        to Category.CAT_FINANCE,
+        "com.vodacom.mpesa"                          to Category.CAT_FINANCE,
+        "com.opay.oservice"                          to Category.CAT_FINANCE,
+        "com.palmpay.app"                            to Category.CAT_FINANCE,
+        "com.kuda.android"                           to Category.CAT_FINANCE,
+        "com.flutterwave.android"                    to Category.CAT_FINANCE,
+        "com.paystack.checkout"                      to Category.CAT_FINANCE,
+        "com.tala.android"                           to Category.CAT_FINANCE,
+        "com.sendwave.android"                       to Category.CAT_FINANCE,
+        "com.chipper.cash"                           to Category.CAT_FINANCE,
+        "com.gtbank.android"                         to Category.CAT_FINANCE,
+        "com.mtn.android.myapp"                      to Category.CAT_UTILITIES,
+        "ke.co.safaricom.MySafaricom"                to Category.CAT_UTILITIES,
+        "com.airtel.android.africa"                  to Category.CAT_UTILITIES,
+        "com.kilimall.android"                       to Category.CAT_SHOPPING,
+        "com.bykea.android"                          to Category.CAT_TRAVEL,
+
+        // Loop 77 — Southeast Asia
+        "com.shopback.app"                           to Category.CAT_SHOPPING,
+        "com.traveloka.android"                      to Category.CAT_TRAVEL,
+        "com.tiket.android"                          to Category.CAT_TRAVEL,
+        "com.blibli.mobileapp"                       to Category.CAT_SHOPPING,
+        "com.truemoney.wallet"                       to Category.CAT_FINANCE,
+        "com.linkaja.android"                        to Category.CAT_FINANCE,
+        "com.gopay.android"                          to Category.CAT_FINANCE,
+        "com.shopeepay.android"                      to Category.CAT_FINANCE,
+
+        // Loop 77 — Middle East & North Africa
+        "com.noon.buyerapp"                          to Category.CAT_SHOPPING,
+        "com.namshi.android"                         to Category.CAT_SHOPPING,
+        "com.opensooq.android"                       to Category.CAT_SHOPPING,
+        "com.haraj.android"                          to Category.CAT_SHOPPING,
+        "com.dubizzle.android"                       to Category.CAT_SHOPPING,
+        "com.tamara.app"                             to Category.CAT_FINANCE,
+        "com.tabby.android"                          to Category.CAT_FINANCE,
+        "com.wego.android"                           to Category.CAT_TRAVEL,
+        "com.stc.myapp"                              to Category.CAT_UTILITIES,
+        "com.zain.android"                           to Category.CAT_UTILITIES,
+
+        // Loop 77 — Latin America additions
+        "com.99app.android"                          to Category.CAT_TRAVEL,
+        "com.inter.android"                          to Category.CAT_FINANCE,
+        "com.picpay"                                 to Category.CAT_FINANCE,
+        "com.clip.android"                           to Category.CAT_FINANCE,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
