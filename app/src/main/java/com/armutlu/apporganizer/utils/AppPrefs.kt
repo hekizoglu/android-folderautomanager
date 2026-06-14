@@ -220,6 +220,18 @@ object AppPrefs {
         return json.toString()
     }
 
+    // Otomatik yedekleme zamanlama — WorkManager periyodik gorev
+    const val KEY_BACKUP_DAY_OF_WEEK = "backup_day_of_week"   // 1=Pzt, 7=Paz
+    const val KEY_BACKUP_HOUR        = "backup_hour"           // 0-23
+    const val KEY_BACKUP_MINUTE      = "backup_minute"         // 0-59
+
+    fun getBackupDayOfWeek(context: Context): Int = prefs(context).getInt(KEY_BACKUP_DAY_OF_WEEK, 1)
+    fun setBackupDayOfWeek(context: Context, day: Int) = prefs(context).edit().putInt(KEY_BACKUP_DAY_OF_WEEK, day).apply()
+    fun getBackupHour(context: Context): Int = prefs(context).getInt(KEY_BACKUP_HOUR, 3)
+    fun setBackupHour(context: Context, hour: Int) = prefs(context).edit().putInt(KEY_BACKUP_HOUR, hour).apply()
+    fun getBackupMinute(context: Context): Int = prefs(context).getInt(KEY_BACKUP_MINUTE, 0)
+    fun setBackupMinute(context: Context, minute: Int) = prefs(context).edit().putInt(KEY_BACKUP_MINUTE, minute).apply()
+
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
     fun getDeepSeekApiKey(context: Context): String =

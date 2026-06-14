@@ -1,0 +1,52 @@
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
+> Task :app:generateReleaseResources UP-TO-DATE
+> Task :app:mergeReleaseResources UP-TO-DATE
+> Task :app:packageReleaseResources UP-TO-DATE
+> Task :app:parseReleaseLocalResources UP-TO-DATE
+> Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :app:processReleaseMainManifest UP-TO-DATE
+> Task :app:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseManifestForPackage UP-TO-DATE
+> Task :app:processReleaseResources UP-TO-DATE
+> Task :app:kaptGenerateStubsReleaseKotlin UP-TO-DATE
+> Task :app:kaptReleaseKotlin UP-TO-DATE
+> Task :app:compileReleaseKotlin UP-TO-DATE
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :app:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:hiltAggregateDepsRelease UP-TO-DATE
+> Task :app:hiltJavaCompileRelease FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:hiltJavaCompileRelease'.
+> java.io.IOException: Unable to delete directory 'C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release'
+    Failed to delete some children. This might happen because a process has files open or has its working directory set in the target directory.
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\com\armutlu\apporganizer
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\com\armutlu
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\com
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger\hilt\internal\aggregatedroot\codegen
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger\hilt\internal\aggregatedroot
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger\hilt\internal\processedrootsentinel\codegen
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger\hilt\internal\processedrootsentinel
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger\hilt\internal
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger\hilt
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\dagger
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\hilt\component_classes\release\hilt_aggregated_deps
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUÝLD FAILED in 8s
+23 actionable tasks: 2 executed, 21 up-to-date

@@ -2785,6 +2785,53 @@ class AppClassifier @Inject constructor() {
         "com.songkick.android"                       to Category.CAT_ENTERTAINMENT,
         "com.eventbrite.android"                     to Category.CAT_ENTERTAINMENT,
         "com.mobilet.android"                        to Category.CAT_ENTERTAINMENT,
+
+        // Loop 67 — AI & Productivity Tools
+        "com.perplexity.ai.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.character.ai.android"                   to Category.CAT_PRODUCTIVITY,
+        "com.poe.android"                            to Category.CAT_PRODUCTIVITY,
+        "com.fireflies.ai.android"                   to Category.CAT_PRODUCTIVITY,
+
+        // Loop 67 — Code & Developer Tools
+        "com.replit.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.codepoint.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.acode.editor"                           to Category.CAT_UTILITIES,
+        "com.quickedit.android"                      to Category.CAT_UTILITIES,
+        "io.spck.editor"                             to Category.CAT_UTILITIES,
+        "com.rhmsoft.code"                           to Category.CAT_UTILITIES,
+
+        // Loop 67 — Video Streaming Global
+        "com.paramountnetwork.android"               to Category.CAT_ENTERTAINMENT,
+        "com.discovery.discoveryplus.android"        to Category.CAT_ENTERTAINMENT,
+        "com.sky.go.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.showtime.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.starz.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.mgo.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.hooq.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.iflix.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.viu.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.tving.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.wavve.android"                          to Category.CAT_ENTERTAINMENT,
+
+        // Loop 67 — TR E-Commerce & Marketplace
+        "com.flo.moda"                               to Category.CAT_SHOPPING,
+        "com.mango.android"                          to Category.CAT_SHOPPING,
+        "com.pullandbear.android"                    to Category.CAT_SHOPPING,
+        "com.stradivarius.android"                   to Category.CAT_SHOPPING,
+        "com.oysho.android"                          to Category.CAT_SHOPPING,
+        "com.celio.android"                          to Category.CAT_SHOPPING,
+
+        // Loop 67 — Fitness & Sports Tracking
+        "com.adidas.training"                        to Category.CAT_HEALTH,
+        "com.mapmywalk.android"                      to Category.CAT_HEALTH,
+        "com.mapmycycle.android"                     to Category.CAT_HEALTH,
+        "com.endomondo.android"                      to Category.CAT_HEALTH,
+        "com.jefit.android"                          to Category.CAT_HEALTH,
+        "com.bodybuilding.android"                   to Category.CAT_HEALTH,
+        "com.fitbod.android"                         to Category.CAT_HEALTH,
+
+        // Loop 67 — TR News & Media (more)
+        "com.gazeteoku.android"                      to Category.CAT_NEWS,
     )
 
     fun classifyApp(appInfo: AppInfo): String {

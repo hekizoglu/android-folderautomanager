@@ -152,6 +152,9 @@ dependencies {
 
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // WorkManager — zamanlanmis yedekleme gorevi
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     // Coil — async image loading (uygulama ikonu) — coil3 compileSdk36 gerektirir, coil2 kullan
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.android.material:material:1.11.0")

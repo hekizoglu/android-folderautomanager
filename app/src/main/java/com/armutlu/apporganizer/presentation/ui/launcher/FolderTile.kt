@@ -57,6 +57,7 @@ fun FolderTile(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
+    onNotificationTap: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     textAlpha: Float = 1f,
     folderSizeDp: Int = 72,
@@ -200,7 +201,7 @@ fun FolderTile(
                 modifier = Modifier.width(tileWidth)
             )
         }
-        // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
+        // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
         val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
         if (notifTextEnabled) {
             val latestNotifApp = remember(folder.apps) {
@@ -208,14 +209,26 @@ fun FolderTile(
                     .maxByOrNull { it.notificationCount }
             }
             if (latestNotifApp != null) {
+                val notifDisplayText = "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
                 Text(
-                    text = latestNotifApp.notificationText,
-                    color = Color.White.copy(alpha = 0.55f),
+                    text = notifDisplayText,
+                    color = Color.White.copy(alpha = 0.65f),
                     fontSize = 9.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.width(tileWidth)
+                    modifier = Modifier
+                        .width(tileWidth)
+                        .then(
+                            if (onNotificationTap != null) {
+                                Modifier.combinedClickable(
+                                    onClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        onNotificationTap(latestNotifApp.packageName)
+                                    }
+                                )
+                            } else Modifier
+                        )
                 )
             }
         }

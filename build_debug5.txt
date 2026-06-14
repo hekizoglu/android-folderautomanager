@@ -1,0 +1,151 @@
+Starting a Gradle Daemon, 4 stopped Daemons could not be reused, use --status for details
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kaptGenerateStubsDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:generateDebugJacocoPropertiesFile UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+
+> Task :app:kaptDebugKotlin
+C:\Users\hekizoglu\Documents\AppOrganizer\app\build\tmp\kapt3\stubs\debug\com\armutlu\apporganizer\data\local\AppDatabase.java:9: warning: Schema export directory was not provided to the annotation processor so Room cannot export the schema. You can either provide `room.schemaLocation` annotation processor argument by applying the Room Gradle plugin (id 'androidx.room') OR set exportSchema to false.
+public abstract class AppDatabase extends androidx.room.RoomDatabase {
+                ^
+
+> Task :app:compileDebugKotlin
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AllAppsDrawer.kt:314:39 Parameter 'i' is never used, could be renamed to _
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AllAppsDrawer.kt:589:25 Variable 'sidebarPaddingPx' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:186:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:190:38 'OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.OpenInNew
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:200:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:210:42 'AddToHomeScreen: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.AddToHomeScreen
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:222:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:258:17 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:269:43 'StickyNote2: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.StickyNote2
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt:439:31 'OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.OpenInNew
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/CategoryPickerSheet.kt:67:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/DockEditSheet.kt:128:17 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreen.kt:111:9 Variable 'filteredApps' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/PermissionsBanner.kt:90:26 'LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListDialogs.kt:55:5 Parameter 'launcherType' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListDialogs.kt:56:5 Parameter 'organizeState' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListDialogs.kt:57:5 Parameter 'a11yConnected' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListDialogs.kt:58:5 Parameter 'a11yInSystem' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListDialogs.kt:60:5 Parameter 'onOpenA11ySettings' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListDialogs.kt:61:5 Parameter 'onRestart' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListScreen.kt:125:44 'DriveFileMove: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.DriveFileMove
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/AppListScreen.kt:194:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/CategoryEditorScreen.kt:40:44 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/CategoryEditorScreen.kt:82:29 Parameter 'emoji' is never used, could be renamed to _
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingScreen.kt:136:30 'ManageSearch: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ManageSearch
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingScreen.kt:330:26 'LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/PrivacyPolicyScreen.kt:24:44 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/PrivacyPolicyScreen.kt:76:9 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:54:5 Parameter 'onSendBugReport' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:91:44 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:137:25 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:174:29 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:214:25 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:265:62 Destructured parameter 'name' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:355:44 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:372:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:395:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:478:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:489:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:500:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:511:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:522:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:533:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:544:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:555:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:566:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:643:25 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:657:29 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:694:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:701:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:722:44 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:811:25 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:813:44 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:818:52 'Help: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Help
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:827:29 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:844:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:853:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:862:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:949:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:977:21 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1185:5 Parameter 'appCount' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1185:20 Parameter 'categoryCount' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1185:40 Parameter 'error' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1185:56 Parameter 'logs' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1186:5 Parameter 'launcherInfo' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1186:27 Parameter 'a11yActive' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1187:5 Parameter 'onSendBugReport' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt:1187:34 Parameter 'onClearLogs' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/ui/theme/Theme.kt:71:5 Parameter 'darkTheme' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt:364:21 Variable 'ctx' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt:402:28 Parameter 'useAccessibility' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/utils/FolderCreationService.kt:103:21 Variable 'shortcutLabel' is never used
+w: file:///C:/Users/hekizoglu/Documents/AppOrganizer/app/src/main/java/com/armutlu/apporganizer/utils/FolderCreationService.kt:107:39 Parameter 'index' is never used, could be renamed to _
+
+> Task :app:compileDebugJavaWithJavac FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugJavaWithJavac'.
+> java.io.IOException: Unable to delete directory 'C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes'
+    Failed to delete some children. This might happen because a process has files open or has its working directory set in the target directory.
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\data\local
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\data\remote
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\data\repository
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\data
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\di
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\domain\usecase\classify
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\domain\usecase
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\domain
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\presentation\ui\launcher
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\presentation\ui\theme
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\presentation\ui
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\presentation\viewmodel
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\presentation
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer\utils
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu\apporganizer
+    - C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes\com\armutlu
+    - and more ...
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUÝLD FAILED in 1m 16s
+33 actionable tasks: 4 executed, 29 up-to-date
