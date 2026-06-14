@@ -2962,6 +2962,44 @@ class AppClassifier @Inject constructor() {
         "com.finansbank.mobile.ceplum"               to Category.CAT_FINANCE,
         "com.hsbc.android.tr"                        to Category.CAT_FINANCE,
         "com.masterpass.android"                     to Category.CAT_FINANCE,
+
+        // Loop 71 — Music & Podcast Platforms
+        "com.google.android.music"                   to Category.CAT_ENTERTAINMENT,
+        "com.overcast.podcast"                       to Category.CAT_ENTERTAINMENT,
+        "com.boomplay.android"                       to Category.CAT_ENTERTAINMENT,
+
+        // Loop 71 — Utilities & System Tools Extended
+        "com.eset.ems2.gp"                           to Category.CAT_UTILITIES,
+        "com.mcafee.vsm.android"                     to Category.CAT_UTILITIES,
+        "com.trendmicro.mobile.security"             to Category.CAT_UTILITIES,
+        "com.drweb.pro"                              to Category.CAT_UTILITIES,
+        "org.malwarebytes.antimalware"               to Category.CAT_UTILITIES,
+        "com.lookout"                                to Category.CAT_UTILITIES,
+        "com.zscaler.android"                        to Category.CAT_UTILITIES,
+        "com.telesign.android"                       to Category.CAT_UTILITIES,
+        "com.dashlane.passwordmanager"               to Category.CAT_UTILITIES,
+        "com.bitwarden.authenticator"                to Category.CAT_UTILITIES,
+
+        // Loop 71 — Travel & Transportation Extended
+        "com.hoteltonight.android.prod"              to Category.CAT_TRAVEL,
+        "com.priceline.android.negotiator"           to Category.CAT_TRAVEL,
+        "com.travelport.android"                     to Category.CAT_TRAVEL,
+        "com.citymapper.commuter"                    to Category.CAT_TRAVEL,
+        "com.moovitapp.android"                      to Category.CAT_TRAVEL,
+        "com.bolt.android"                           to Category.CAT_TRAVEL,
+        "com.liftago.android"                        to Category.CAT_TRAVEL,
+        "com.freenow.android"                        to Category.CAT_TRAVEL,
+
+        // Loop 71 — Kids & Family Apps
+        "com.netflix.kids"                           to Category.CAT_ENTERTAINMENT,
+        "com.nick.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.pbs.kids.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.abc.mouse.android"                      to Category.CAT_EDUCATION,
+        "com.starfall.android"                       to Category.CAT_EDUCATION,
+        "com.khan.academy.kids"                      to Category.CAT_EDUCATION,
+        "com.toca.boca.android"                      to Category.CAT_GAMES,
+        "com.sago.mini.android"                      to Category.CAT_GAMES,
+        "com.originator.endless.alphabet"            to Category.CAT_EDUCATION,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
