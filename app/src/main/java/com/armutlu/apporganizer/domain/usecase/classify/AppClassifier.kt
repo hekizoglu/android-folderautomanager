@@ -995,7 +995,6 @@ class AppClassifier @Inject constructor() {
         "com.vevo"                                   to Category.CAT_ENTERTAINMENT,
         "fm.last.android"                            to Category.CAT_ENTERTAINMENT,
         // Global Saglik / Spor
-        "com.fitbit.FitbitMobile"                    to Category.CAT_HEALTH,
         "com.getsomeheadspace.android"               to Category.CAT_HEALTH,
         "com.noom.app"                               to Category.CAT_HEALTH,
         "com.loseit"                                 to Category.CAT_HEALTH,
@@ -1016,7 +1015,6 @@ class AppClassifier @Inject constructor() {
         "tr.com.papara.android"                      to Category.CAT_FINANCE,
         "com.enpara.android"                         to Category.CAT_FINANCE,
         // Global Alisveris
-        "com.amazon.mShop.android.shopping"          to Category.CAT_SHOPPING,
         "com.target.android"                         to Category.CAT_SHOPPING,
         "com.shein.android"                          to Category.CAT_SHOPPING,
         "jp.co.rakuten.ichiba"                       to Category.CAT_SHOPPING,
@@ -1035,7 +1033,6 @@ class AppClassifier @Inject constructor() {
         "com.rosetta.android"                        to Category.CAT_EDUCATION,
         "com.brainly"                                to Category.CAT_EDUCATION,
         "com.ted"                                    to Category.CAT_EDUCATION,
-        "com.skillshare.Skillshare"                  to Category.CAT_EDUCATION,
         // Global Yemek
         "com.doordash.droid"                         to Category.CAT_FOOD,
         "com.instacart"                              to Category.CAT_FOOD,
@@ -1155,7 +1152,6 @@ class AppClassifier @Inject constructor() {
         "com.blizzard.mobile"                        to Category.CAT_GAMES,
         "com.riot.games"                             to Category.CAT_GAMES,
         "com.netease.mobile"                         to Category.CAT_GAMES,
-        "com.miHoYo.GenshinImpact"                  to Category.CAT_GAMES,
         "com.hoyoverse.hkrpg"                        to Category.CAT_GAMES,
         "com.pubg.imobile"                           to Category.CAT_GAMES,
         "com.activision.cod.warzone"                 to Category.CAT_GAMES,
@@ -1335,7 +1331,6 @@ class AppClassifier @Inject constructor() {
         "com.swiftkey.android"                       to Category.CAT_UTILITIES,
         "com.touchpal.keyboard"                      to Category.CAT_UTILITIES,
         // â”€â”€ Loop46: Eksik uygulamalar â€” PHOTOGRAPHY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        "com.google.android.GoogleCamera"            to Category.CAT_PHOTOGRAPHY,
         "com.sec.android.app.camera"                 to Category.CAT_PHOTOGRAPHY,
         "com.motorola.camera2"                       to Category.CAT_PHOTOGRAPHY,
         "com.nothing.camera"                         to Category.CAT_PHOTOGRAPHY,
@@ -1479,7 +1474,6 @@ class AppClassifier @Inject constructor() {
         "com.rentalcars.android"                     to Category.CAT_TRAVEL,
 
         // SHOPPING
-        "com.amazon.mShop.android.shopping"          to Category.CAT_SHOPPING,
         "com.shein.app"                              to Category.CAT_SHOPPING,
         "com.shopee.global"                          to Category.CAT_SHOPPING,
         "ru.wildberries.android"                     to Category.CAT_SHOPPING,
@@ -1919,6 +1913,79 @@ class AppClassifier @Inject constructor() {
         "com.token.android"                          to Category.CAT_FINANCE,
         "com.bitlo.android"                          to Category.CAT_FINANCE,
         "com.icrypex.android"                        to Category.CAT_FINANCE,
+
+        // Loop 50 — TR Lifestyle & Fashion
+        "com.dresslife.android"                      to Category.CAT_SHOPPING,
+        "com.bebek.android"                          to Category.CAT_SHOPPING,
+        "com.flormar.android"                        to Category.CAT_SHOPPING,
+        "com.peak.brain"                             to Category.CAT_EDUCATION,
+        "com.elevate.labs"                           to Category.CAT_EDUCATION,
+        "com.cognito.android"                        to Category.CAT_EDUCATION,
+
+        // Loop 50 — Global Streaming
+        "com.hbo.android.app"                        to Category.CAT_ENTERTAINMENT,
+        "com.paramount.plus"                         to Category.CAT_ENTERTAINMENT,
+        "com.curiositystream.android"                to Category.CAT_EDUCATION,
+        "com.skillshare.android"                     to Category.CAT_EDUCATION,
+        "com.khanacademy.android.khanacademy"        to Category.CAT_EDUCATION,
+
+        // Loop 51 — Global Finance & Banking
+        "com.ally.mobile"                            to Category.CAT_FINANCE,
+        "com.barclays.android.barclaysmobilebanking" to Category.CAT_FINANCE,
+        "com.lloydsbank.mobile.android.c1"           to Category.CAT_FINANCE,
+        "com.hsbc.hsbcnet.android"                   to Category.CAT_FINANCE,
+        "com.bbva.bbvacontigo"                       to Category.CAT_FINANCE,
+        "de.number26.android"                        to Category.CAT_FINANCE,
+        "com.mercadolibre"                           to Category.CAT_SHOPPING,
+        "br.com.santander.way"                       to Category.CAT_FINANCE,
+        "com.bitpay.wallet"                          to Category.CAT_FINANCE,
+        "com.trezor.suite"                           to Category.CAT_FINANCE,
+
+        // Loop 51 — Health & Fitness
+        "com.under_armour.record"                    to Category.CAT_HEALTH,
+        "com.map.my.run"                             to Category.CAT_HEALTH,
+        "com.bighealth.sleepio"                      to Category.CAT_HEALTH,
+        "com.ovia.android"                           to Category.CAT_HEALTH,
+
+        // Loop 52 — Productivity & Work
+        "notion.id"                                  to Category.CAT_PRODUCTIVITY,
+        "com.obsidian.mobile"                        to Category.CAT_PRODUCTIVITY,
+        "com.taskade.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.clickup.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.mondaycom.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.coda.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.linear.app.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.todoist.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.any.do.prod"                            to Category.CAT_PRODUCTIVITY,
+        "com.streaks.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.fabulous.android"                       to Category.CAT_PRODUCTIVITY,
+
+        // Loop 52 — Social & Communication
+        "org.briarproject.briar.android"             to Category.CAT_SOCIAL,
+        "org.joinmastodon.android"                   to Category.CAT_SOCIAL,
+        "com.jeroensmeets.fritter"                   to Category.CAT_SOCIAL,
+        "com.vk.vkclient"                            to Category.CAT_SOCIAL,
+        "com.match.android.matchapp"                 to Category.CAT_SOCIAL,
+
+        // Loop 53 — TR Local Apps
+        "com.turkcell.lifecell"                      to Category.CAT_UTILITIES,
+        "com.turkcell.yaanimail"                     to Category.CAT_PRODUCTIVITY,
+        "com.turkcell.tv2"                           to Category.CAT_ENTERTAINMENT,
+        "com.vodafone.android.myvodafone"            to Category.CAT_UTILITIES,
+        "com.turk_telekom.mobilapp"                  to Category.CAT_UTILITIES,
+        "com.ttrehberi.android"                      to Category.CAT_UTILITIES,
+        "com.pttmobil.android"                       to Category.CAT_UTILITIES,
+        "com.ptt.kargo"                              to Category.CAT_UTILITIES,
+        "com.arasKargo.android"                      to Category.CAT_UTILITIES,
+        "com.yurtici.android"                        to Category.CAT_UTILITIES,
+        "com.mng.android"                            to Category.CAT_UTILITIES,
+        "com.horoz.kuryem"                           to Category.CAT_UTILITIES,
+        "com.kolaybi.android"                        to Category.CAT_UTILITIES,
+        "com.eksisozu.android"                       to Category.CAT_SOCIAL,
+        "com.sozluk.eksisozluk"                      to Category.CAT_SOCIAL,
+        "com.incisozluk.android"                     to Category.CAT_SOCIAL,
+        "com.uludagsozluk.android"                   to Category.CAT_SOCIAL,
+        "com.letgo.tr"                               to Category.CAT_SHOPPING,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
