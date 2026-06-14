@@ -2870,6 +2870,58 @@ class AppClassifier @Inject constructor() {
         "com.szalabs.pixelup"                        to Category.CAT_PHOTOGRAPHY,
         "com.lyrebird.android"                       to Category.CAT_PHOTOGRAPHY,
         "com.lightricks.enlight"                     to Category.CAT_PHOTOGRAPHY,
+
+        // Loop 69 — Education & E-Learning Platforms
+        "org.edx.mobile"                             to Category.CAT_EDUCATION,
+        "com.busuu.android.enc"                      to Category.CAT_EDUCATION,
+        "com.babbel.mobile.android.en"               to Category.CAT_EDUCATION,
+        "com.rosettastone.mobile.courseware"         to Category.CAT_EDUCATION,
+        "com.pimsleur.android"                       to Category.CAT_EDUCATION,
+        "com.drops.android.dropsapp"                 to Category.CAT_EDUCATION,
+        "com.brainly.android"                        to Category.CAT_EDUCATION,
+        "com.wolframalpha.android"                   to Category.CAT_EDUCATION,
+        "com.photomath.app.android"                  to Category.CAT_EDUCATION,
+        "com.socratic.android"                       to Category.CAT_EDUCATION,
+        "com.cymath.android"                         to Category.CAT_EDUCATION,
+        "com.varsitytutors.android"                  to Category.CAT_EDUCATION,
+        "com.flashcardmachine.android"               to Category.CAT_EDUCATION,
+
+        // Loop 69 — TR Education
+        "com.turkcell.oku"                           to Category.CAT_EDUCATION,
+        "com.onlinesinavlar.android"                 to Category.CAT_EDUCATION,
+        "com.kolayayt.android"                       to Category.CAT_EDUCATION,
+        "com.ybsistem.android"                       to Category.CAT_EDUCATION,
+        "com.testbankasi.android"                    to Category.CAT_EDUCATION,
+        "com.dijitalders.android"                    to Category.CAT_EDUCATION,
+        "com.egitimsen.android"                      to Category.CAT_EDUCATION,
+        "com.abcyapi.android"                        to Category.CAT_EDUCATION,
+
+        // Loop 69 — Maps & Navigation Extended
+        "com.tomtom.android.navigation"              to Category.CAT_TRAVEL,
+        "com.navfree.android"                        to Category.CAT_TRAVEL,
+        "com.trailforks.android"                     to Category.CAT_TRAVEL,
+        "com.strava.android.maps"                    to Category.CAT_TRAVEL,
+        "com.maps.me"                                to Category.CAT_TRAVEL,
+        "ru.yandex.yandexnavi"                       to Category.CAT_TRAVEL,
+        "ru.yandex.mobile.maps"                      to Category.CAT_TRAVEL,
+
+        // Loop 69 — Productivity & Project Management Extended
+        "com.teamwork.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.zoho.projects.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.podio.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.targetprocess.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.liquidplanner.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.hive.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.invision.android"                       to Category.CAT_PHOTOGRAPHY,
+
+        // Loop 69 — Finance: Stock & Crypto
+        "com.fidelity.netbenefits"                   to Category.CAT_FINANCE,
+        "com.tdameritrade.mobile"                    to Category.CAT_FINANCE,
+        "com.interactive.brokers"                    to Category.CAT_FINANCE,
+        "com.tastytrade.android"                     to Category.CAT_FINANCE,
+        "com.moomoo.android"                         to Category.CAT_FINANCE,
+        "com.publicinvest.android"                   to Category.CAT_FINANCE,
+        "com.ellevest.android"                       to Category.CAT_FINANCE,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
