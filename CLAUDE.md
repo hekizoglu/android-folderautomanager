@@ -510,9 +510,10 @@ Bu özellikler **şu an değil**, rakiplerden öne geçmek için ilerleyen döng
 | Agent Teams / Swarm | ✅ Config hazır | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` → `.vscode/settings.json` |
 | VS Code Agent Sessions View | ✅ Stabil | 1.109+ |
 | Custom Agents + Handoffs | ✅ Kuruldu | `.claude/agents/` — 3 agent: code-reviewer, deepseek-analyst, android-builder |
-| DeepSeek API | ✅ Çalışıyor | `deepseek-v4-flash`, key `.env`'de, test edildi |
+| DeepSeek API | ✅ Çalışıyor | `deepseek-v4-flash`, key `.env`'de, 2026-06-15 test edildi ✅ |
 | NotebookLM MCP (config) | ✅ Config hazır | `claude_desktop_config.json` + `.vscode/settings.json` oluşturuldu |
-| NotebookLM MCP (auth) | ⚠️ Manuel adım | `npx notebooklm-mcp@latest auth` → **SEN çalıştır** → Chrome açılır → Google ile giriş yap → çerezler kaydedilir → Claude yeniden başlatılır |
+| NotebookLM MCP (auth) | ✅ Auth tamam | 2 notebook yüklü (`apporganizer` aktif), 20 tool hazır, 2026-06-15 ✅ |
+| Telegram Bot | ✅ Yeni token | Token rotasyonu yapıldı, 2026-06-15 test edildi (msg_id: 694) ✅ |
 | Gemini / Google LLM | ❌ API key yok | Sen key sağlarsan `.env`'e ekleriz |
 | Nested Agent Teams | ❌ Yok | Roadmap'te |
 | Session Resumption (Teams) | ❌ Yok | Roadmap'te |
