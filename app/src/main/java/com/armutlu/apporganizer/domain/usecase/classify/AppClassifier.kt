@@ -3285,6 +3285,52 @@ class AppClassifier @Inject constructor() {
         "com.atv.android"                            to Category.CAT_ENTERTAINMENT,
         "com.fox.tv.android"                         to Category.CAT_ENTERTAINMENT,
         "com.trt1.android"                           to Category.CAT_ENTERTAINMENT,
+
+        // Loop 79 — Global Fintech & Banking
+        "com.schwab.android"                         to Category.CAT_FINANCE,
+        "com.vanguard.android"                       to Category.CAT_FINANCE,
+        "com.chime.android"                          to Category.CAT_FINANCE,
+        "com.earnin.android"                         to Category.CAT_FINANCE,
+        "com.klarna.android"                         to Category.CAT_FINANCE,
+        "com.afterpay.android"                       to Category.CAT_FINANCE,
+        "com.affirm.android"                         to Category.CAT_FINANCE,
+        "com.sofi.invest.android"                    to Category.CAT_FINANCE,
+
+        // Loop 79 — Cloud Storage & Productivity
+        "com.sugarsync.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.mediafire.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.mega.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.koofr.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.icedrive.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.idrive.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.backblaze.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.egnyte.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.planner"                      to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.todo"                         to Category.CAT_PRODUCTIVITY,
+        "com.obsidian.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.craft.docs.android"                     to Category.CAT_PRODUCTIVITY,
+
+        // Loop 79 — TR Health & Fitness
+        "com.hastanemobil.android"                   to Category.CAT_HEALTH,
+        "com.nefesapp.android"                       to Category.CAT_HEALTH,
+        "com.fittr.android"                          to Category.CAT_HEALTH,
+        "com.nike.ntc"                               to Category.CAT_HEALTH,
+        "com.gymshark.android"                       to Category.CAT_HEALTH,
+
+        // Loop 79 — Time Tracking & Notes
+        "com.rescuetime.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.hubstaff.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.timecamp.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.desktime.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.activitywatch.android"                  to Category.CAT_UTILITIES,
+        "com.dendron.android"                        to Category.CAT_PRODUCTIVITY,
+
+        // Loop 79 — TR Education
+        "com.morpa.android"                          to Category.CAT_EDUCATION,
+        "com.sinavhane.android"                      to Category.CAT_EDUCATION,
+        "com.okulmatik.android"                      to Category.CAT_EDUCATION,
+        "com.kidslearn.android"                      to Category.CAT_EDUCATION,
+        "com.bkmkitap.android"                       to Category.CAT_EDUCATION,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
