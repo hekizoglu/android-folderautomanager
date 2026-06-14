@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:20 UTC
-# Commit: 6ff369b336d950c455a51afefa87715dd4daa689
+# Generated: 2026-06-14 00:35 UTC
+# Commit: a2e26942da1f7af82cb46b82c830b67671a6bd1d
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3053,6 +3053,75 @@ class AppClassifier @Inject constructor() {
         "com.coursehero.android"                     to Category.CAT_EDUCATION,
         "com.12min.android"                          to Category.CAT_EDUCATION,
         "com.getabstract.android"                    to Category.CAT_EDUCATION,
+
+        // ── Loop 44: Communication / Music / Food / Weather / Misc ───────────
+        // COMMUNICATION — video call / messaging
+        "com.google.android.apps.meetings"           to Category.CAT_COMMUNICATION,
+        "com.bluejeans.android"                      to Category.CAT_COMMUNICATION,
+        "com.whereby.android"                        to Category.CAT_COMMUNICATION,
+        "com.microsoft.skype.teams"                  to Category.CAT_COMMUNICATION,
+        "com.facebook.calls"                         to Category.CAT_COMMUNICATION,
+        "com.apple.facetime"                         to Category.CAT_COMMUNICATION,
+        "im.vector.app"                              to Category.CAT_COMMUNICATION,
+        "org.matrix.android.sdk.sample"             to Category.CAT_COMMUNICATION,
+        "com.wire.android"                           to Category.CAT_COMMUNICATION,
+        "jp.naver.line.android.lite"                 to Category.CAT_COMMUNICATION,
+        "com.nhn.android.naverline"                  to Category.CAT_COMMUNICATION,
+        "com.rocketchat.android"                     to Category.CAT_COMMUNICATION,
+        "com.mattermost.rn"                          to Category.CAT_COMMUNICATION,
+        "com.element.android"                        to Category.CAT_COMMUNICATION,
+        "chat.simplex.app"                           to Category.CAT_COMMUNICATION,
+        "com.briar.briarproject"                     to Category.CAT_COMMUNICATION,
+
+        // MUSIC — streaming + instruments
+        "ru.zaycev.site"                             to Category.CAT_ENTERTAINMENT,
+        "com.zvuk.app"                               to Category.CAT_ENTERTAINMENT,
+        "com.napster.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.gaana"                                  to Category.CAT_ENTERTAINMENT,
+        "com.hungama.myplay"                         to Category.CAT_ENTERTAINMENT,
+        "com.jio.media.jiomusic"                     to Category.CAT_ENTERTAINMENT,
+        "com.saavn.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.resso.app"                              to Category.CAT_ENTERTAINMENT,
+        "com.beatstars.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.bandlab.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.smule.singandroid"                      to Category.CAT_ENTERTAINMENT,
+        "com.starmaker.sing.music"                   to Category.CAT_ENTERTAINMENT,
+        "com.yalla.sing"                             to Category.CAT_ENTERTAINMENT,
+        "com.garageband4.android"                    to Category.CAT_ENTERTAINMENT,
+
+        // FOOD — delivery + restaurants
+        "com.instacart.client"                       to Category.CAT_FOOD,
+        "com.freshly.android"                        to Category.CAT_FOOD,
+        "com.drizly.android"                         to Category.CAT_FOOD,
+        "com.minibar.android"                        to Category.CAT_FOOD,
+        "com.google.android.apps.maps.dining"        to Category.CAT_FOOD,
+        "com.foursquare.foursquare"                  to Category.CAT_FOOD,
+        "in.zomato.android"                          to Category.CAT_FOOD,
+        "com.blinkit.android"                        to Category.CAT_FOOD,
+        "com.urbanpiper.android"                     to Category.CAT_FOOD,
+
+        // WEATHER
+        "com.google.android.apps.weather"            to Category.CAT_UTILITIES,
+        "com.weather.Weather"                        to Category.CAT_UTILITIES,
+        "com.wunderground.android.weather"           to Category.CAT_UTILITIES,
+        "net.weatherbug.android"                     to Category.CAT_UTILITIES,
+        "com.forecastbar.android"                    to Category.CAT_UTILITIES,
+        "com.carrot.android.weather"                 to Category.CAT_UTILITIES,
+        "com.darksky.android"                        to Category.CAT_UTILITIES,
+        "com.climacell.android"                      to Category.CAT_UTILITIES,
+        "com.tomorrow.io.android"                    to Category.CAT_UTILITIES,
+        "com.windy.android"                          to Category.CAT_UTILITIES,
+        "pl.twojapogoda.android"                     to Category.CAT_UTILITIES,
+        "com.mgelmana.weatherradar"                  to Category.CAT_UTILITIES,
+
+        // PHOTOGRAPHY — editing tools
+        "com.vochi.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.bazaart.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.polarr.android"                         to Category.CAT_PHOTOGRAPHY,
+        "com.darkroom.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.halide.android"                         to Category.CAT_PHOTOGRAPHY,
+        "com.moment.android"                         to Category.CAT_PHOTOGRAPHY,
+        "com.afterlight.android"                     to Category.CAT_PHOTOGRAPHY,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
