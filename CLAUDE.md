@@ -957,4 +957,13 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - `clickable` → `combinedClickable(onClick, onLongClick)` ile değiştirildi
 - `@OptIn(ExperimentalFoundationApi::class)` annotation eklendi
 
-*Son güncelleme: 2026-06-14 (Loop 43 — favoriteApps mimarisi, BUILD#9/#10, AppClassifier 1448 benzersiz)*
+### Loop 47 Özeti (2026-06-14 — remote agent)
+**AppClassifier büyük SPORTS + COMMUNICATION genislemesi:**
+- SPORTS: 13 → 49 (+36 entry) — Kuzey Amerika ligleri (NBA/NFL/MLB/NHL), soccer global (LaLiga/Bundesliga/Ligue1/OneFootball/Goal), F1, Tenis/Golf (ATP/PGA), Cricbuzz/World Rugby/UFC, yayın (DAZN/beIN/BBC/Eurosport/Sky/NBC/Fox), Türkiye (Fanatik/NTV Spor/Besiktas/Bursaspor/TRT Spor/Bilyoner/Nesine), fitness (Polar/Wahoo)
+- COMMUNICATION: 16 → 35 (+19 entry) — E-posta (Yahoo Mail/Tutanota/Fastmail), video (Jitsi/8x8), VoIP (Vonage/Avaya/Talkatone/TextPlus/TextNow/Hushed/Grasshopper/OpenPhone), takim (Flock/Olvid/Nextcloud Talk/Zoho Cliq/Revolt/Wire)
+- Rebase ile Loop 46-47 remote commit ile birlestirildi (1695 → 1784 toplam)
+- Remote Loop 46-47 eklentileri: DevTools/Banking/Crypto/Maps/TRFintech (+80)
+- **Toplam: 1784 benzersiz entry** (onceki 1695)
+- 6 pre-existing duplicate var (Döngü 34'ten beri) — benden degil
+
+*Son güncelleme: 2026-06-14 (Loop 47 — AppClassifier 1784 benzersiz, SPORTS+COMMUNICATION genisleme)*
