@@ -3379,6 +3379,54 @@ class AppClassifier @Inject constructor() {
         "com.floryday.android"                       to Category.CAT_SHOPPING,
         "com.navlungo.android"                       to Category.CAT_SHOPPING,
         "com.lc.waikiki.android"                     to Category.CAT_SHOPPING,
+
+        // Loop 81 — Security & Privacy
+        "com.surfshark.android"                      to Category.CAT_UTILITIES,
+        "com.cyberghost.android"                     to Category.CAT_UTILITIES,
+        "com.ipvanish.android"                       to Category.CAT_UTILITIES,
+        "com.mullvad.android"                        to Category.CAT_UTILITIES,
+        "com.windscribe.android"                     to Category.CAT_UTILITIES,
+        "com.tunnelbear.android"                     to Category.CAT_UTILITIES,
+        "com.hotspotshield.android"                  to Category.CAT_UTILITIES,
+        "com.keepassium.android"                     to Category.CAT_UTILITIES,
+        "com.enpass.android"                         to Category.CAT_UTILITIES,
+
+        // Loop 81 — Social Discovery & Dating
+        "com.hinge.android"                          to Category.CAT_SOCIAL,
+        "com.bumble.android"                         to Category.CAT_SOCIAL,
+        "com.tinder.android"                         to Category.CAT_SOCIAL,
+        "com.okcupid.android"                        to Category.CAT_SOCIAL,
+        "com.match.android"                          to Category.CAT_SOCIAL,
+        "com.badoo.android"                          to Category.CAT_SOCIAL,
+        "com.her.android"                            to Category.CAT_SOCIAL,
+        "com.feeld.android"                          to Category.CAT_SOCIAL,
+        "com.spark.android"                          to Category.CAT_SOCIAL,
+
+        // Loop 81 — Developer & Tech Tools
+        "com.termux.android"                         to Category.CAT_UTILITIES,
+        "com.juicessh.android"                       to Category.CAT_UTILITIES,
+        "com.serverauditor.android"                  to Category.CAT_UTILITIES,
+        "com.panic.prompt.android"                   to Category.CAT_UTILITIES,
+        "com.httpbot.android"                        to Category.CAT_UTILITIES,
+        "com.sololearn.android"                      to Category.CAT_EDUCATION,
+        "com.encode.android"                         to Category.CAT_EDUCATION,
+        "com.grasshopper.android"                    to Category.CAT_EDUCATION,
+        "com.programming.hub.android"                to Category.CAT_EDUCATION,
+        "com.w3schools.android"                      to Category.CAT_EDUCATION,
+        "com.developer.android.studio"               to Category.CAT_UTILITIES,
+
+        // Loop 81 — TR Gov & Public Services
+        "com.igdas.android"                          to Category.CAT_UTILITIES,
+        "com.bedas.android"                          to Category.CAT_UTILITIES,
+        "com.bursaulasimlari.android"                to Category.CAT_TRAVEL,
+        "com.izulas.android"                         to Category.CAT_TRAVEL,
+        "com.ankarakart.android"                     to Category.CAT_TRAVEL,
+        "com.izmiregitim.android"                    to Category.CAT_EDUCATION,
+        "com.meb.android"                            to Category.CAT_EDUCATION,
+        "com.turkiye.gov.android"                    to Category.CAT_UTILITIES,
+        "com.ssk.android"                            to Category.CAT_UTILITIES,
+        "com.takaful.android"                        to Category.CAT_FINANCE,
+        "com.ipragaz.android"                        to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
