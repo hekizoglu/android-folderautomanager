@@ -2010,6 +2010,55 @@ class AppClassifier @Inject constructor() {
         "com.garena.freefire"                        to Category.CAT_GAMES,
         "com.ea.game.fifa14_row"                     to Category.CAT_GAMES,
         "com.outfit7.talkingtom2"                    to Category.CAT_GAMES,
+
+        // Loop 56 — Music & Audio
+        "com.anghami.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.gaana.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.jiosaavn.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.naver.music.phone"                      to Category.CAT_ENTERTAINMENT,
+        "com.kakao.melon"                            to Category.CAT_ENTERTAINMENT,
+        "com.anchor.fm"                              to Category.CAT_ENTERTAINMENT,
+        "com.castbox.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.scribd.android.readerapp"               to Category.CAT_EDUCATION,
+
+        // Loop 56 — Maps & Navigation
+        "com.here.android.premium"                   to Category.CAT_TRAVEL,
+        "ru.yandex.yandexmaps"                       to Category.CAT_TRAVEL,
+        "com.huawei.maps"                            to Category.CAT_TRAVEL,
+        "com.baidu.BaiduMap"                         to Category.CAT_TRAVEL,
+        "com.naver.maps"                             to Category.CAT_TRAVEL,
+        "com.kakao.navi"                             to Category.CAT_TRAVEL,
+        "com.citymapper.commute.tripplanner"         to Category.CAT_TRAVEL,
+        "com.moovit.android"                         to Category.CAT_TRAVEL,
+        "de.hafas.android.db"                        to Category.CAT_TRAVEL,
+        "com.sncf.android"                           to Category.CAT_TRAVEL,
+        "com.vianavigo.android"                      to Category.CAT_TRAVEL,
+        "com.iavl.android"                           to Category.CAT_TRAVEL,
+
+        // Loop 56 — TR eCommerce & Retail
+        "com.macro.android"                          to Category.CAT_FOOD,
+        "com.bauhaus.android"                        to Category.CAT_SHOPPING,
+        "com.idefix.android"                         to Category.CAT_SHOPPING,
+        "com.kitapyurdu.android"                     to Category.CAT_SHOPPING,
+        "com.dnr.kitap"                              to Category.CAT_SHOPPING,
+        "com.d_and_r.android"                        to Category.CAT_SHOPPING,
+
+        // Loop 56 — Communication & VoIP
+        "com.webex.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.eight.android"                          to Category.CAT_SOCIAL,
+        "com.talkatone.android"                      to Category.CAT_SOCIAL,
+        "com.textfree"                               to Category.CAT_SOCIAL,
+        "com.hushed.hushed"                          to Category.CAT_SOCIAL,
+        "com.skype.android"                          to Category.CAT_SOCIAL,
+        "com.skype.android.access"                   to Category.CAT_SOCIAL,
+        "com.microsoft.skype.teams.android"          to Category.CAT_PRODUCTIVITY,
+
+        // Loop 56 — Security & VPN
+        "net.mullvad.mullvadvpn"                     to Category.CAT_UTILITIES,
+        "com.tunnelbear.android.main"                to Category.CAT_UTILITIES,
+        "com.keepersecurity.android"                 to Category.CAT_UTILITIES,
+        "org.shadowsocks.android"                    to Category.CAT_UTILITIES,
+        "com.twilio.authy"                           to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
