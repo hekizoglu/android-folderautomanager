@@ -132,10 +132,11 @@ class LauncherViewModel @Inject constructor(
         repository.getAllAppsFlow(),
         _searchQuery.debounce(300)
     ) { apps, q ->
-        val query = q.trim().lowercase()
+        val query = q.trim().lowercase(java.util.Locale("tr"))
         if (query.isEmpty()) buildAllApps(apps)
         else buildAllApps(apps).filter {
-            it.appName.lowercase().contains(query) || it.packageName.lowercase().contains(query)
+            it.appName.lowercase(java.util.Locale("tr")).contains(query) ||
+            it.packageName.lowercase().contains(query)
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

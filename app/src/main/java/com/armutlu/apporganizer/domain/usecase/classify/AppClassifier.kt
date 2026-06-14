@@ -3811,6 +3811,104 @@ class AppClassifier @Inject constructor() {
         "com.spritmonitor.android"                   to Category.CAT_AUTO,
         "com.fuellogger.android"                     to Category.CAT_AUTO,
         "com.parkingpanda.android"                   to Category.CAT_AUTO,
+
+        // ─── AI VIDEO / YARATICI ARACLARI (Loop 93) ─────────────────────────
+        "com.runwayml.android"                       to Category.CAT_VIDEO,
+        "app.kling.ai"                               to Category.CAT_VIDEO,
+        "com.kling.android"                          to Category.CAT_VIDEO,
+        "com.pika.app"                               to Category.CAT_VIDEO,
+        "com.pikaart.app"                            to Category.CAT_VIDEO,
+        "ai.haiper.video"                            to Category.CAT_VIDEO,
+        "com.hailuoai.android"                       to Category.CAT_VIDEO,
+        "com.mojo.android"                           to Category.CAT_VIDEO,
+        "com.mojostories.android"                    to Category.CAT_VIDEO,
+        "co.unfold.unfold"                           to Category.CAT_VIDEO,
+        "com.zoomerang.app"                          to Category.CAT_VIDEO,
+        "com.vita.video"                             to Category.CAT_VIDEO,
+
+        // ─── AI SANAT / GORUNTU URETIMI (Loop 93) ───────────────────────────
+        "com.adobe.firefly"                          to Category.CAT_ART,
+        "com.adobe.firefly.mobile"                   to Category.CAT_ART,
+        "ai.adobe.firefly"                           to Category.CAT_ART,
+        "com.ideogram.ai"                            to Category.CAT_ART,
+        "com.ideogram.android"                       to Category.CAT_ART,
+        "com.leonardoai.android"                     to Category.CAT_ART,
+        "com.nightcafe.studio"                       to Category.CAT_ART,
+        "com.wombo.dream"                            to Category.CAT_ART,
+        "com.getimg.android"                         to Category.CAT_ART,
+        "com.stability.point"                        to Category.CAT_ART,
+        "com.dreambyimagica.android"                 to Category.CAT_ART,
+
+        // ─── AI MUZIK URETIMI (Loop 93) ──────────────────────────────────────
+        "com.suno.android"                           to Category.CAT_MUSIC,
+        "com.suno.app"                               to Category.CAT_MUSIC,
+        "com.udio.android"                           to Category.CAT_MUSIC,
+        "com.udio.app"                               to Category.CAT_MUSIC,
+        "com.loudly.android"                         to Category.CAT_MUSIC,
+        "com.beatoven.android"                       to Category.CAT_MUSIC,
+
+        // ─── MUZIK OYNATICILARI (Loop 93) ────────────────────────────────────
+        "com.bandcamp.android"                       to Category.CAT_MUSIC,
+        "com.aimp.android"                           to Category.CAT_MUSIC,
+        "com.neutroncode.mp"                         to Category.CAT_MUSIC,
+        "com.hiby.music"                             to Category.CAT_MUSIC,
+        "net.sourceforge.subsonic.androidapp"        to Category.CAT_MUSIC,
+        "com.bsplayer.bsplay.android"                to Category.CAT_MUSIC,
+        "com.plexamp.android"                        to Category.CAT_MUSIC,
+
+        // ─── CIZGI ROMAN / MANGA (Loop 93) ───────────────────────────────────
+        "com.piccoma.android"                        to Category.CAT_COMICS,
+        "com.piccoma.global"                         to Category.CAT_COMICS,
+        "com.kakao.webtoon"                          to Category.CAT_COMICS,
+        "com.toomics.global"                         to Category.CAT_COMICS,
+        "com.comico.android"                         to Category.CAT_COMICS,
+        "com.mrblue.android"                         to Category.CAT_COMICS,
+        "com.lezhin.comics.global"                   to Category.CAT_COMICS,
+
+        // ─── ETKINLIKLER (Loop 93) ────────────────────────────────────────────
+        "com.viagogo.android"                        to Category.CAT_EVENTS,
+        "com.eventim.android"                        to Category.CAT_EVENTS,
+        "com.biletinial.android"                     to Category.CAT_EVENTS,
+        "com.etix.android"                           to Category.CAT_EVENTS,
+        "com.showpass.android"                       to Category.CAT_EVENTS,
+        "com.lastfm.android"                         to Category.CAT_EVENTS,
+
+        // ─── ELEKTRIKLI ARAC / AUTO (Loop 93) ────────────────────────────────
+        "com.rivian.consumer"                        to Category.CAT_AUTO,
+        "com.rivianmotors.app"                       to Category.CAT_AUTO,
+        "com.lucidmotors.android"                    to Category.CAT_AUTO,
+        "com.polestar.android"                       to Category.CAT_AUTO,
+        "com.polestarnorth.app"                      to Category.CAT_AUTO,
+        "com.nio.android"                            to Category.CAT_AUTO,
+        "com.byd.android"                            to Category.CAT_AUTO,
+        "com.byd.ecarconnect"                        to Category.CAT_AUTO,
+        "com.volvo.cars.app"                         to Category.CAT_AUTO,
+        "com.zeekr.android"                          to Category.CAT_AUTO,
+        "com.xpeng.android"                          to Category.CAT_AUTO,
+
+        // ─── YASAM TARZI / MEDITASYON (Loop 93) ──────────────────────────────
+        "com.smiling.mind.android"                   to Category.CAT_LIFESTYLE,
+        "com.aura.health.android"                    to Category.CAT_LIFESTYLE,
+        "com.aura.health"                            to Category.CAT_LIFESTYLE,
+        "com.daily.stoic.android"                    to Category.CAT_LIFESTYLE,
+        "com.stoicapp.android"                       to Category.CAT_LIFESTYLE,
+        "com.bloomapp.android"                       to Category.CAT_LIFESTYLE,
+        "com.plnt.android"                           to Category.CAT_LIFESTYLE,
+        "com.oak.meditation"                         to Category.CAT_LIFESTYLE,
+        "com.jodel.app"                              to Category.CAT_SOCIAL,
+        "com.jodel.android"                          to Category.CAT_SOCIAL,
+
+        // ─── YAPAY ZEKA SUNUM / URETKENLIK (Loop 93) ─────────────────────────
+        "com.gamma.app"                              to Category.CAT_PRODUCTIVITY,
+        "com.gamma.app.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.pitch.io.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.pitch.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.beautiful.ai.android"                   to Category.CAT_PRODUCTIVITY,
+        "com.beautiful.ai"                           to Category.CAT_PRODUCTIVITY,
+        "com.tome.app"                               to Category.CAT_PRODUCTIVITY,
+        "com.elicit.app"                             to Category.CAT_PRODUCTIVITY,
+        "com.consensus.app.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.scite.android"                          to Category.CAT_PRODUCTIVITY,
     )
 
     fun classifyApp(appInfo: AppInfo): String {

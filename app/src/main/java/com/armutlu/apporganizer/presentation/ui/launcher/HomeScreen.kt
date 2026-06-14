@@ -108,7 +108,6 @@ fun HomeScreen(
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
-    val filteredApps by viewModel.filteredAllApps.collectAsState()
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
