@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 05:20 UTC
-# Commit: 3493e2209d5a036b617889d3c7f3b8eb307b31af
+# Generated: 2026-06-14 05:35 UTC
+# Commit: cb2535489b93bd5def252007a139f76559745a8d
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3851,6 +3851,76 @@ class AppClassifier @Inject constructor() {
         "com.plenty.of.fish.android"                 to Category.CAT_SOCIAL,
         "fr.zenly.localizationapp"                   to Category.CAT_SOCIAL,
         "com.citizen.android"                        to Category.CAT_SOCIAL,
+
+        // Loop 64 — Environment & Sustainability
+        "com.goodonyou.android"                      to Category.CAT_SHOPPING,
+        "com.tentree.android"                        to Category.CAT_SHOPPING,
+        "com.ecosia.android"                         to Category.CAT_UTILITIES,
+        "org.kiwix.kiwimobile"                       to Category.CAT_EDUCATION,
+        "com.joulebug.android"                       to Category.CAT_UTILITIES,
+        "com.oroeco.android"                         to Category.CAT_UTILITIES,
+        "com.pawprint.android"                       to Category.CAT_UTILITIES,
+        "com.klima.android"                          to Category.CAT_UTILITIES,
+        "com.earthhero.android"                      to Category.CAT_UTILITIES,
+        "com.patch.android"                          to Category.CAT_UTILITIES,
+
+        // Loop 64 — Accessibility & Assistive Tech
+        "com.google.android.apps.talkback"           to Category.CAT_UTILITIES,
+        "com.samsung.android.accessibility.indicate" to Category.CAT_UTILITIES,
+        "com.microsoft.seeing_ai"                    to Category.CAT_UTILITIES,
+        "com.aira.android"                           to Category.CAT_UTILITIES,
+        "com.bemyeyes.android"                       to Category.CAT_UTILITIES,
+        "com.orcam.android"                          to Category.CAT_UTILITIES,
+        "com.biglaunch.android"                      to Category.CAT_UTILITIES,
+        "com.simplephonelauncher.android"            to Category.CAT_UTILITIES,
+        "com.greatcall.android"                      to Category.CAT_UTILITIES,
+        "com.proloquo2.android"                      to Category.CAT_EDUCATION,
+
+        // Loop 64 — TR Government & Public Services
+        "com.diyanet.android"                        to Category.CAT_UTILITIES,
+        "com.afad.android"                           to Category.CAT_UTILITIES,
+        "com.jandarma.android"                       to Category.CAT_UTILITIES,
+        "com.emniyet.android"                        to Category.CAT_UTILITIES,
+        "com.ankara.belediye"                        to Category.CAT_UTILITIES,
+        "com.izmir.belediye"                         to Category.CAT_UTILITIES,
+        "com.iski.android"                           to Category.CAT_UTILITIES,
+        "com.aski.android"                           to Category.CAT_UTILITIES,
+        "com.eua.android"                            to Category.CAT_UTILITIES,
+        "com.tedas.android"                          to Category.CAT_UTILITIES,
+        "com.toroslar.android"                       to Category.CAT_UTILITIES,
+        "com.akdeniz.elektrik"                       to Category.CAT_UTILITIES,
+
+        // Loop 64 — Browser & Internet Tools
+        "org.mozilla.firefox_beta"                   to Category.CAT_UTILITIES,
+        "com.opera.gx.mobile"                        to Category.CAT_GAMES,
+        "com.kiwibrowser.browser"                    to Category.CAT_UTILITIES,
+        "org.bromite.bromite"                        to Category.CAT_UTILITIES,
+        "com.yandex.browser"                         to Category.CAT_UTILITIES,
+        "com.microsoft.bing.search"                  to Category.CAT_UTILITIES,
+        "com.baidu.browser.inter"                    to Category.CAT_UTILITIES,
+        "com.uc.browser.en"                          to Category.CAT_UTILITIES,
+
+        // Loop 64 — Parental Control & Family Safety
+        "com.qustodio.android.app"                   to Category.CAT_UTILITIES,
+        "net.familysafety.familytime"                to Category.CAT_UTILITIES,
+        "com.bark.android.app"                       to Category.CAT_UTILITIES,
+        "com.famisafe.android"                       to Category.CAT_UTILITIES,
+        "com.kaspersky.safekids"                     to Category.CAT_UTILITIES,
+        "com.googlebabysitter.android"               to Category.CAT_UTILITIES,
+        "com.screentime.android"                     to Category.CAT_UTILITIES,
+
+        // Loop 64 — Home Automation & Security
+        "com.blink.android"                          to Category.CAT_UTILITIES,
+        "com.eufysecurity.android"                   to Category.CAT_UTILITIES,
+        "com.reolink.android"                        to Category.CAT_UTILITIES,
+        "com.simplisafe.android"                     to Category.CAT_UTILITIES,
+        "com.vivint.android"                         to Category.CAT_UTILITIES,
+        "com.ademco.android"                         to Category.CAT_UTILITIES,
+        "com.august.android"                         to Category.CAT_UTILITIES,
+        "com.schlage.android"                        to Category.CAT_UTILITIES,
+        "com.yale.android"                           to Category.CAT_UTILITIES,
+        "com.ecobee.android"                         to Category.CAT_UTILITIES,
+        "com.honeywell.android"                      to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
