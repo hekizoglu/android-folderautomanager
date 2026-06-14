@@ -3000,6 +3000,62 @@ class AppClassifier @Inject constructor() {
         "com.toca.boca.android"                      to Category.CAT_GAMES,
         "com.sago.mini.android"                      to Category.CAT_GAMES,
         "com.originator.endless.alphabet"            to Category.CAT_EDUCATION,
+
+        // Loop 73 — Food Delivery & Grocery Global
+        "com.deliveryhero.android"                   to Category.CAT_FOOD,
+        "com.jumia.android"                          to Category.CAT_SHOPPING,
+        "com.glovo.android"                          to Category.CAT_FOOD,
+        "com.deliveroo.consumer.android"             to Category.CAT_FOOD,
+        "com.gorillas.android"                       to Category.CAT_FOOD,
+        "com.flink.android"                          to Category.CAT_FOOD,
+
+        // Loop 73 — Telecom & ISP Apps Global
+        "com.verizon.myverizon"                      to Category.CAT_UTILITIES,
+        "com.sprint.mysprint"                        to Category.CAT_UTILITIES,
+        "com.three.android"                          to Category.CAT_UTILITIES,
+        "com.swisscom.android"                       to Category.CAT_UTILITIES,
+        "com.telekom.android"                        to Category.CAT_UTILITIES,
+        "com.turktelekom.android"                    to Category.CAT_UTILITIES,
+        "com.avea.android"                           to Category.CAT_UTILITIES,
+        "com.vodafone.tr.android"                    to Category.CAT_UTILITIES,
+        "com.superonline.android"                    to Category.CAT_UTILITIES,
+
+        // Loop 73 — Real Estate & Housing
+        "com.zillow.android"                         to Category.CAT_SHOPPING,
+        "com.apartments.android"                     to Category.CAT_SHOPPING,
+        "com.immobilienscout24.android"              to Category.CAT_SHOPPING,
+
+        // Loop 73 — Government & Civic Apps TR Extended
+        "com.nvi.kimlik"                             to Category.CAT_UTILITIES,
+        "tr.gov.meb.android"                         to Category.CAT_EDUCATION,
+        "com.saglik.bakanligi"                       to Category.CAT_HEALTH,
+        "com.cbiko.android"                          to Category.CAT_UTILITIES,
+        "com.turkiye.belediye"                       to Category.CAT_UTILITIES,
+        "com.turkiye.mahalle"                        to Category.CAT_UTILITIES,
+        "com.jandarmagenel.android"                  to Category.CAT_UTILITIES,
+        "com.kgm.android"                            to Category.CAT_TRAVEL,
+        "com.tcmb.android"                           to Category.CAT_FINANCE,
+        "com.spk.android"                            to Category.CAT_FINANCE,
+        "com.bddk.android"                           to Category.CAT_FINANCE,
+
+        // Loop 73 — Automotive & Vehicle
+        "com.tesla.android"                          to Category.CAT_TRAVEL,
+        "com.mercedes.mbapps"                        to Category.CAT_TRAVEL,
+        "com.audi.android"                           to Category.CAT_TRAVEL,
+        "com.volkswagen.wecarmid"                    to Category.CAT_TRAVEL,
+        "com.ford.fcc.android"                       to Category.CAT_TRAVEL,
+        "com.toyota.oneapp.android"                  to Category.CAT_TRAVEL,
+        "com.honda.android"                          to Category.CAT_TRAVEL,
+        "com.hyundai.bluelink"                       to Category.CAT_TRAVEL,
+        "com.kia.uvo.android"                        to Category.CAT_TRAVEL,
+        "com.renault.myrenault"                      to Category.CAT_TRAVEL,
+        "com.peugeot.myPeugeot"                      to Category.CAT_TRAVEL,
+        "com.citroen.mycitroen"                      to Category.CAT_TRAVEL,
+        "com.togg.android"                           to Category.CAT_TRAVEL,
+        "com.gasbil.android"                         to Category.CAT_TRAVEL,
+        "com.opet.android"                           to Category.CAT_TRAVEL,
+        "com.shell.android"                          to Category.CAT_TRAVEL,
+        "com.bp.android"                             to Category.CAT_TRAVEL,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
