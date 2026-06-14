@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 05:35 UTC
-# Commit: cb2535489b93bd5def252007a139f76559745a8d
+# Generated: 2026-06-14 06:10 UTC
+# Commit: 805620724bf45fb17661c814212670941a7d5fd1
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3921,6 +3921,216 @@ class AppClassifier @Inject constructor() {
         "com.yale.android"                           to Category.CAT_UTILITIES,
         "com.ecobee.android"                         to Category.CAT_UTILITIES,
         "com.honeywell.android"                      to Category.CAT_UTILITIES,
+
+        // Loop 65 — TR Football Clubs (fan apps = entertainment)
+        "com.galatasaray.app"                        to Category.CAT_ENTERTAINMENT,
+        "com.fenerbahce.app"                         to Category.CAT_ENTERTAINMENT,
+        "com.besiktas.app"                           to Category.CAT_ENTERTAINMENT,
+        "com.trabzonspor.app"                        to Category.CAT_ENTERTAINMENT,
+        "com.bursaspor.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.basaksehir.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.konyaspor.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.antalyaspor.android"                    to Category.CAT_ENTERTAINMENT,
+        "com.gaziantepfk.android"                    to Category.CAT_ENTERTAINMENT,
+        "com.sivasspor.android"                      to Category.CAT_ENTERTAINMENT,
+
+        // Loop 65 — Music Creation & Instruments
+        "com.apple.garageband"                       to Category.CAT_ENTERTAINMENT,
+        "com.walkband.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.yousician.android"                      to Category.CAT_EDUCATION,
+        "com.smule.singapp"                          to Category.CAT_ENTERTAINMENT,
+        "com.starmaker.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.voloco.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.acapella.app"                           to Category.CAT_ENTERTAINMENT,
+        "com.musicolet.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.neutronmp3.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.poweramp.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.retroarch.android"                      to Category.CAT_GAMES,
+        "com.fender.android"                         to Category.CAT_EDUCATION,
+        "com.gibson.android"                         to Category.CAT_EDUCATION,
+        "com.flowkey.android"                        to Category.CAT_EDUCATION,
+        "com.playground.android"                     to Category.CAT_EDUCATION,
+
+        // Loop 65 — Hobbies & Crafts
+        "com.ravelry.android"                        to Category.CAT_SHOPPING,
+        "com.craftsy.android"                        to Category.CAT_EDUCATION,
+        "com.letterboxd.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.goodreads.app"                          to Category.CAT_EDUCATION,
+        "com.librarything.android"                   to Category.CAT_EDUCATION,
+        "com.stocard.android"                        to Category.CAT_SHOPPING,
+        "com.cardpointers.android"                   to Category.CAT_FINANCE,
+        "com.maxrewards.android"                     to Category.CAT_FINANCE,
+        "com.awardwallet.android"                    to Category.CAT_FINANCE,
+
+        // Loop 65 — Podcast & Audio Content (TR)
+        "com.spotify.podcast.android"                to Category.CAT_ENTERTAINMENT,
+        "com.radyospor.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.trtradyo.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.radyonet.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.radyo7.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.kral.radyo"                             to Category.CAT_ENTERTAINMENT,
+        "com.ntv.radyo"                              to Category.CAT_ENTERTAINMENT,
+        "com.virgin.radyo"                           to Category.CAT_ENTERTAINMENT,
+
+        // Loop 65 — Print & Scan
+        "com.hp.printercontrol"                      to Category.CAT_UTILITIES,
+        "com.epson.android"                          to Category.CAT_UTILITIES,
+        "com.canon.android"                          to Category.CAT_UTILITIES,
+        "com.brother.android"                        to Category.CAT_UTILITIES,
+        "com.lexmark.android"                        to Category.CAT_UTILITIES,
+        "com.abbyy.finescanner"                      to Category.CAT_UTILITIES,
+        "com.intsig.camscanner"                      to Category.CAT_UTILITIES,
+        "com.adobe.scan"                             to Category.CAT_UTILITIES,
+        "com.genius.scan"                            to Category.CAT_UTILITIES,
+        "com.turboScan.android"                      to Category.CAT_UTILITIES,
+
+        // Loop 65 — Language & Translation
+        "com.reverso.android"                        to Category.CAT_UTILITIES,
+        "com.spanishdict.android"                    to Category.CAT_EDUCATION,
+        "com.linguee.android"                        to Category.CAT_UTILITIES,
+        "com.dict.cc.android"                        to Category.CAT_EDUCATION,
+        "com.pons.android"                           to Category.CAT_EDUCATION,
+        "com.wordreference.android"                  to Category.CAT_EDUCATION,
+        "com.dictionary.android"                     to Category.CAT_EDUCATION,
+        "com.oxforddictionaries.android"             to Category.CAT_EDUCATION,
+        "com.cambridge.android"                      to Category.CAT_EDUCATION,
+        "com.tureng.android"                         to Category.CAT_EDUCATION,
+        "com.seslisozcuk.android"                    to Category.CAT_EDUCATION,
+        "com.zargan.android"                         to Category.CAT_EDUCATION,
+
+        // Loop 66 — Medical & Pharmacy
+        "com.goodrx.android"                         to Category.CAT_HEALTH,
+        "com.walgreens.RxRefill"                     to Category.CAT_HEALTH,
+        "com.cvs.launchers.cvs"                      to Category.CAT_HEALTH,
+        "com.riteaid.mobile"                         to Category.CAT_HEALTH,
+        "com.drfirst.android"                        to Category.CAT_HEALTH,
+        "com.infermedica.android"                    to Category.CAT_HEALTH,
+        "com.pillboxie.android"                      to Category.CAT_HEALTH,
+        "com.medisafe.android"                       to Category.CAT_HEALTH,
+        "com.roundhealth.android"                    to Category.CAT_HEALTH,
+        "com.sgk.mobil"                              to Category.CAT_HEALTH,
+        "com.eczanebul.android"                      to Category.CAT_HEALTH,
+        "com.eczaneler.android"                      to Category.CAT_HEALTH,
+
+        // Loop 66 — Baby & Parenting
+        "com.babycenter.android"                     to Category.CAT_HEALTH,
+        "com.whattoexpect.android"                   to Category.CAT_HEALTH,
+        "com.pregnancyplus.android"                  to Category.CAT_HEALTH,
+        "com.sprout.android"                         to Category.CAT_HEALTH,
+        "com.kinedu.android"                         to Category.CAT_EDUCATION,
+        "com.huckleberry.android"                    to Category.CAT_HEALTH,
+        "com.whitenoise.android"                     to Category.CAT_HEALTH,
+        "com.nanit.android"                          to Category.CAT_UTILITIES,
+        "com.owlet.android"                          to Category.CAT_HEALTH,
+        "com.annebebek.android"                      to Category.CAT_HEALTH,
+        "com.bebeksaatleri.android"                  to Category.CAT_HEALTH,
+
+        // Loop 66 — QR Code & Barcode Scanner
+        "me.qrscanner.android"                       to Category.CAT_UTILITIES,
+        "com.qrcodereader.android"                   to Category.CAT_UTILITIES,
+        "com.scanner.qr.barcode.reader"              to Category.CAT_UTILITIES,
+        "com.scan.barcode.qrcode"                    to Category.CAT_UTILITIES,
+        "com.teacapps.barcodescanner"                to Category.CAT_UTILITIES,
+        "com.gamma.scan"                             to Category.CAT_UTILITIES,
+        "com.cognex.mobilebarcode"                   to Category.CAT_UTILITIES,
+        "com.neutron.qrcode"                         to Category.CAT_UTILITIES,
+        "com.kaywa.qr"                               to Category.CAT_UTILITIES,
+        "com.qrreader.barcode.scanner"               to Category.CAT_UTILITIES,
+
+        // Loop 66 — Parking & EV Charging
+        "com.parkmobile.android"                     to Category.CAT_TRAVEL,
+        "com.laparking.android"                      to Category.CAT_TRAVEL,
+        "com.bestparking.android"                    to Category.CAT_TRAVEL,
+        "com.tesla.supercharger"                     to Category.CAT_TRAVEL,
+        "com.chargepoint.android"                    to Category.CAT_TRAVEL,
+        "com.blink.android.ev"                       to Category.CAT_TRAVEL,
+        "com.electrifyamerica.android"               to Category.CAT_TRAVEL,
+        "com.greenlots.android"                      to Category.CAT_TRAVEL,
+        "net.plugshare.android"                      to Category.CAT_TRAVEL,
+        "com.evgo.android"                           to Category.CAT_TRAVEL,
+
+        // Loop 66 — Dating & Relationship
+        "com.match.android.matchmobile"              to Category.CAT_SOCIAL,
+        "com.scruff.android"                         to Category.CAT_SOCIAL,
+        "com.meetic.android"                         to Category.CAT_SOCIAL,
+        "com.tastebuds.android"                      to Category.CAT_SOCIAL,
+        "com.vibe.android"                           to Category.CAT_SOCIAL,
+        "com.dating.app.android"                     to Category.CAT_SOCIAL,
+        "com.happn.android"                          to Category.CAT_SOCIAL,
+        "com.tantan.android"                         to Category.CAT_SOCIAL,
+        "com.mamba.android"                          to Category.CAT_SOCIAL,
+        "com.pairs.android"                          to Category.CAT_SOCIAL,
+
+        // Loop 66 — Loyalty, Points & Rewards
+        "com.mcdonalds.mobileapp"                    to Category.CAT_FOOD,
+        "com.subway.myway.android"                   to Category.CAT_FOOD,
+        "com.samsclub.android"                       to Category.CAT_SHOPPING,
+        "com.meijer.android"                         to Category.CAT_SHOPPING,
+        "com.bjs.android"                            to Category.CAT_SHOPPING,
+        "com.kohl.android"                           to Category.CAT_SHOPPING,
+        "com.jcpenney.android"                       to Category.CAT_SHOPPING,
+        "com.dillards.android"                       to Category.CAT_SHOPPING,
+        "com.petsuppliesplus.android"                to Category.CAT_SHOPPING,
+
+        // Loop 66 — Pomodoro & Time Tracking
+        "com.engrossapp.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.focusflow.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.pomodoro.timer.android"                 to Category.CAT_PRODUCTIVITY,
+        "cn.dpar.pomodoro"                           to Category.CAT_PRODUCTIVITY,
+        "com.maximova.focuskeeper"                   to Category.CAT_PRODUCTIVITY,
+        "com.toggl.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.harvest.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.clockify.android"                       to Category.CAT_PRODUCTIVITY,
+        "net.appwork.timesheet"                      to Category.CAT_PRODUCTIVITY,
+        "com.timely.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.atracker.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.goodtime.android"                       to Category.CAT_PRODUCTIVITY,
+
+        // Loop 66 — Weather (more)
+        "com.foreca.android"                         to Category.CAT_UTILITIES,
+        "com.aweatherapp.android"                    to Category.CAT_UTILITIES,
+        "com.weather.forecast.android"               to Category.CAT_UTILITIES,
+        "com.carrot.weather.android"                 to Category.CAT_UTILITIES,
+        "com.appy.weather"                           to Category.CAT_UTILITIES,
+        "com.flowx.android"                          to Category.CAT_UTILITIES,
+        "com.radarscope.android"                     to Category.CAT_UTILITIES,
+        "com.dcinside.weather"                       to Category.CAT_UTILITIES,
+        "com.mgis.meteoearth"                        to Category.CAT_UTILITIES,
+        "com.mgcs.meteored"                          to Category.CAT_UTILITIES,
+        "com.mgcs.clime"                             to Category.CAT_UTILITIES,
+
+        // Loop 66 — Crypto Wallets & DeFi
+        "com.lobstr.android"                         to Category.CAT_FINANCE,
+        "com.blockfi.android"                        to Category.CAT_FINANCE,
+        "com.nexo.android"                           to Category.CAT_FINANCE,
+        "com.celsius.android"                        to Category.CAT_FINANCE,
+        "com.uniswap.android"                        to Category.CAT_FINANCE,
+        "com.aave.android"                           to Category.CAT_FINANCE,
+        "com.compound.android"                       to Category.CAT_FINANCE,
+
+        // Loop 66 — TR Fashion & Lifestyle
+        "com.markafoni.android"                      to Category.CAT_SHOPPING,
+        "com.lidoshoping.android"                    to Category.CAT_SHOPPING,
+        "com.rossmann.turkey"                        to Category.CAT_SHOPPING,
+
+        // Loop 66 — Wearables & IoT
+        "com.google.android.wearable.app"            to Category.CAT_UTILITIES,
+        "com.samsung.android.app.watchmanager"       to Category.CAT_UTILITIES,
+        "com.polar.android.app"                      to Category.CAT_HEALTH,
+        "com.coros.activity"                         to Category.CAT_HEALTH,
+        "io.oura.android"                            to Category.CAT_HEALTH,
+        "com.xiaomi.wearable"                        to Category.CAT_HEALTH,
+        "com.oneplus.health"                         to Category.CAT_HEALTH,
+
+        // Loop 66 — Event & Ticketing
+        "com.ticketmaster.mobile.android.na"         to Category.CAT_ENTERTAINMENT,
+        "com.seatgeek.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.stubhub.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.vivid.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.dice.fm.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.songkick.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.eventbrite.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.mobilet.android"                        to Category.CAT_ENTERTAINMENT,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
