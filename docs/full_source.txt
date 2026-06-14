@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:02 UTC
-# Commit: 66f6959419c0ea135a1899052fcd644489ea4d6c
+# Generated: 2026-06-14 00:07 UTC
+# Commit: 7c229e653408bb20f1128d943a3585ed41c25cf4
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -6411,7 +6411,8 @@ fun HomeScreen(
     var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
-    val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val recentApps by viewModel.recentApps.collectAsState()
+    var suggestionIconPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
@@ -6451,6 +6452,8 @@ fun HomeScreen(
                     folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    suggestionIconPack = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -6672,6 +6675,10 @@ fun HomeScreen(
                     onAppClick = { pkg ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         viewModel.launchApp(context, pkg)
+                    },
+                    onAppLongClick = { pkg ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        contextMenuPkg = pkg
                     }
                 )
             }
@@ -6693,9 +6700,9 @@ fun HomeScreen(
             }
 
             // Son kullanılan uygulamalar satırı (varsayılan kapalı)
-            if (recentAppsEnabled && suggestedApps.isNotEmpty()) {
+            if (recentAppsEnabled && recentApps.isNotEmpty()) {
                 RecentAppsRow(
-                    apps = suggestedApps.sortedByDescending { it.lastUsedTimestamp }.take(8),
+                    apps = recentApps,
                     iconPackPkg = suggestionIconPack,
                     onAppClick = { pkg ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
@@ -7435,11 +7442,13 @@ private fun SuggestionAppItem(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FavoritesRow(
     apps: List<AppInfo>,
     iconPackPkg: String = "",
     onAppClick: (String) -> Unit,
+    onAppLongClick: ((String) -> Unit)? = null,
 ) {
     if (apps.isEmpty()) return
     val context = LocalContext.current
@@ -7454,7 +7463,10 @@ internal fun FavoritesRow(
             items(apps) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
+                    modifier = Modifier.width(56.dp).combinedClickable(
+                        onClick = { onAppClick(app.packageName) },
+                        onLongClick = { onAppLongClick?.invoke(app.packageName) }
+                    )
                 ) {
                     val bitmap by produceState<ImageBitmap?>(null, app.packageName, iconPackPkg) {
                         value = withContext(Dispatchers.IO) {
@@ -8223,6 +8235,15 @@ class LauncherViewModel @Inject constructor(
             apps.filter { !it.isHidden && it.usageCount > 0 }
                 .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
                 .take(4)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Son kullanilan 8 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
+    val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
+                .sortedByDescending { it.lastUsedTimestamp }
+                .take(8)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
