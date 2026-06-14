@@ -195,7 +195,7 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
-        viewModel.initFavorites(this)
+        // initFavorites sadece onCreate'de; toggleFavorite reaktif günceller, onResume'da gerek yok
         if (!receiverRegistered) {
             registerReceiver(packageReceiver, PACKAGE_FILTER)
             receiverRegistered = true

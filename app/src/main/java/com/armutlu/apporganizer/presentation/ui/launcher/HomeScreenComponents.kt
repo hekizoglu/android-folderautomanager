@@ -229,7 +229,7 @@ internal fun DockIcon(
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, px)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, packageName, px)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -325,7 +325,7 @@ private fun SuggestionAppItem(
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -380,7 +380,7 @@ internal fun FavoritesRow(
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(apps) { app ->
+            items(apps, key = { it.packageName }) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.width(56.dp).combinedClickable(
@@ -393,7 +393,7 @@ internal fun FavoritesRow(
                             val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
                                 val bmp = runCatching {
-                                    context.packageManager.getApplicationIcon(app.packageName).toBitmap(96, 96).asImageBitmap()
+                                    com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap()
                                 }.getOrNull()
                                 if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                 bmp
@@ -429,7 +429,7 @@ internal fun RecentAppsRow(
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(apps.take(8)) { app ->
+            items(apps.take(8), key = { it.packageName }) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
@@ -439,7 +439,7 @@ internal fun RecentAppsRow(
                             val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
                                 val bmp = runCatching {
-                                    context.packageManager.getApplicationIcon(app.packageName).toBitmap(96, 96).asImageBitmap()
+                                    com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap()
                                 }.getOrNull()
                                 if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                 bmp
@@ -461,8 +461,8 @@ internal fun RecentAppsRow(
 
 @Composable
 internal fun SwipeHint(context: Context, visible: Boolean) {
-    val swipeHintFeatureEnabled = remember { AppPrefs.isSwipeHintEnabled(context) }
-    val showSwipeHint = remember { swipeHintFeatureEnabled && AppPrefs.shouldShowSwipeHint(context) }
+    // swipeHintEnabled — HomeScreen'den `visible` parametresi zaten bunu taşıyor
+    val showSwipeHint = visible && remember { AppPrefs.shouldShowSwipeHint(context) }
     val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,

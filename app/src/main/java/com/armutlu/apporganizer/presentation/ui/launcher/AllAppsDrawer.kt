@@ -116,7 +116,7 @@ private fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): Imag
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, 96)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, packageName, 96)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -189,7 +189,11 @@ fun AllAppsDrawer(
     onAppLongClick: ((AppInfo) -> Unit)? = null,
     iconSize: Dp = 40.dp,
     favoriteApps: List<AppInfo> = emptyList(),
+    favoritesEnabled: Boolean = false,
     onFavoriteAppClick: (String) -> Unit = {},
+    recentApps: List<AppInfo> = emptyList(),
+    recentAppsEnabled: Boolean = false,
+    onRecentAppClick: (String) -> Unit = {},
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
@@ -522,12 +526,21 @@ fun AllAppsDrawer(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 32.dp)
                         ) {
-                            if (searchQuery.isEmpty() && favoriteApps.isNotEmpty()) {
+                            if (searchQuery.isEmpty() && favoritesEnabled && favoriteApps.isNotEmpty()) {
                                 item(key = "favorites_row") {
                                     FavoritesRow(
                                         apps = favoriteApps,
                                         iconPackPkg = iconPackPkg,
                                         onAppClick = onFavoriteAppClick
+                                    )
+                                }
+                            }
+                            if (searchQuery.isEmpty() && recentAppsEnabled && recentApps.isNotEmpty()) {
+                                item(key = "recent_row") {
+                                    RecentAppsRow(
+                                        apps = recentApps,
+                                        iconPackPkg = iconPackPkg,
+                                        onAppClick = onRecentAppClick
                                     )
                                 }
                             }

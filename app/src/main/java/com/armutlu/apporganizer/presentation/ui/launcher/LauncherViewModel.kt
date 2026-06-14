@@ -425,12 +425,12 @@ class LauncherViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // Son kullanilan 8 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
+    // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
     val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { apps ->
             apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
                 .sortedByDescending { it.lastUsedTimestamp }
-                .take(8)
+                .take(4)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

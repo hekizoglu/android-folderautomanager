@@ -65,12 +65,15 @@ fun FolderTile(
     customName: String? = null,
     customEmoji: String? = null,
     customColor: String? = null,
+    folderCountVisible: Boolean = true,
+    folderSwipeHintEnabled: Boolean = true,
+    notifTextEnabled: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val hapticFeedback = LocalHapticFeedback.current
     val density = LocalDensity.current
-    var swipeDy by remember { mutableFloatStateOf(0f) }
+    var swipeDy = 0f  // mutableFloatStateOf değil — drag callback'te accumulator, UI'a yansımaz
     val swipeThresholdPx = with(density) { 40.dp.toPx() }
 
     val scale by animateFloatAsState(
@@ -161,7 +164,16 @@ fun FolderTile(
                     .background(Color(0xFFE53935)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(badgeText, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    badgeText,
+                    color = Color.White,
+                    fontSize = 9.sp,
+                    lineHeight = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = androidx.compose.ui.text.TextStyle(
+                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                    )
+                )
             }
         }
         } // outer Box
@@ -178,7 +190,7 @@ fun FolderTile(
             modifier = Modifier.width(tileWidth)
         )
         val context = LocalContext.current
-        val folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
+        // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
         if (folderCountVisible) {
             Text(
                 text = "${folder.apps.size}",
@@ -188,7 +200,7 @@ fun FolderTile(
             )
         }
         // Swipe-up ile acilacak uygulamanin adi — en cok kullanilan
-        val folderSwipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
+        // folderSwipeHintEnabled — HomeScreen'den reaktif parametre olarak gelir
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
@@ -202,14 +214,23 @@ fun FolderTile(
             )
         }
         // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
-        val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+        // notifTextEnabled — HomeScreen'den reaktif parametre olarak gelir
         if (notifTextEnabled) {
+            // Önce bildirim metni olan uygulamayı bul; yoksa badge > 0 olan uygulamayı al
             val latestNotifApp = remember(folder.apps) {
                 folder.apps.filter { it.notificationText.isNotBlank() }
                     .maxByOrNull { it.notificationCount }
+                    ?: folder.apps.filter { it.notificationCount > 0 }
+                        .maxByOrNull { it.notificationCount }
             }
             if (latestNotifApp != null) {
-                val notifDisplayText = "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
+                val notifDisplayText = when {
+                    latestNotifApp.notificationText.isNotBlank() ->
+                        "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
+                    totalBadge == 1 -> "${latestNotifApp.appName}: 1 yeni bildirim"
+                    totalBadge > 1  -> "$totalBadge yeni bildirim"
+                    else -> "${latestNotifApp.appName}: yeni bildirim"
+                }
                 Text(
                     text = notifDisplayText,
                     color = Color.White.copy(alpha = 0.65f),

@@ -127,6 +127,12 @@ fun HomeScreen(
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
     var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
     var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+    // Ayar toggle'ları — DisposableEffect listener ile reaktif
+    var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
+    var newBadgeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
+    var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
+    var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
+    var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -163,6 +169,16 @@ fun HomeScreen(
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
                     suggestionIconPack = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SWIPE_HINT_ENABLED ->
+                    swipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NEW_BADGE_ENABLED ->
+                    newBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_COUNT_VISIBLE ->
+                    folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SWIPE_HINT_ENABLED ->
+                    folderSwipeHint = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
+                    notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -190,7 +206,7 @@ fun HomeScreen(
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
-    var swipeDelta by remember { mutableFloatStateOf(0f) }
+    var swipeDelta = 0f  // mutableFloatStateOf değil — sadece scroll callback'te kullanılır, recomposition tetiklemez
 
     // rememberUpdatedState ile closure'lar her zaman güncel değeri okur
     val currentAllAppsOpen by rememberUpdatedState(allAppsOpen)
@@ -495,6 +511,9 @@ fun HomeScreen(
                         customName = customFolderNames[folder.category.categoryId],
                         customEmoji = customFolderEmojis[folder.category.categoryId],
                         customColor = customFolderColors[folder.category.categoryId],
+                        folderCountVisible = folderCountVisible,
+                        folderSwipeHintEnabled = folderSwipeHint,
+                        notifTextEnabled = notifTextEnabled,
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(
@@ -585,7 +604,7 @@ fun HomeScreen(
             }
 
             // Swipe-up ipucu — ilk 5 acilista goster
-            SwipeHint(context = context, visible = !allAppsOpen)
+            SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
 
             // Drag pill handle — above dock, pure Pixel style
             Box(
@@ -669,7 +688,14 @@ fun HomeScreen(
                 },
                 onClose = viewModel::closeAllApps,
                 favoriteApps = favoriteApps,
+                favoritesEnabled = favoritesEnabled,
                 onFavoriteAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.launchApp(context, pkg)
+                },
+                recentApps = recentApps,
+                recentAppsEnabled = recentAppsEnabled,
+                onRecentAppClick = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
                 }

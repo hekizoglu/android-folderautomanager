@@ -136,6 +136,11 @@
             </intent-filter>
         </receiver>
 
+        <!-- Play Store: Gizlilik Politikası URL -->
+        <meta-data
+            android:name="android.app.PRIVACY_POLICY_URL"
+            android:value="https://hekizoglu.github.io/android-folderautomanager/privacy_policy.html" />
+
     </application>
 
     <!-- Query specific apps for shortcuts and functionality -->

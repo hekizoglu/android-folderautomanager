@@ -89,7 +89,8 @@ fun AppIconView(
     onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showLabel: Boolean = true,
-    iconSize: Dp = 56.dp
+    iconSize: Dp = 56.dp,
+    newBadgeEnabled: Boolean = true,
 ) {
     val context = LocalContext.current
     val px = (iconSize.value * context.resources.displayMetrics.density).toInt()
@@ -107,7 +108,7 @@ fun AppIconView(
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCache.put(cacheKey, loaded)
@@ -153,7 +154,7 @@ fun AppIconView(
         else null
 
         // 7 gün içinde kurulduysa "YENİ" badge — Ayarlar'dan kapatılabilir
-        val newBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)
+        // newBadgeEnabled — çağıran composable'dan reaktif parametre olarak gelir
         val isNew = newBadgeEnabled &&
             app.installTime > 0L &&
             (System.currentTimeMillis() - app.installTime) < 7L * 24 * 60 * 60 * 1000
@@ -220,7 +221,11 @@ fun AppIconView(
                         text = badgeText,
                         color = Color.White,
                         fontSize = 9.sp,
-                        style = TextStyle(textAlign = TextAlign.Center)
+                        lineHeight = 9.sp,
+                        style = TextStyle(
+                            textAlign = TextAlign.Center,
+                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                        )
                     )
                 }
             }
