@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:15 UTC
-# Commit: f0f684599bd378973222d6b371be6d7711f4d86b
+# Generated: 2026-06-14 00:16 UTC
+# Commit: 6517893f0ae6002df4e3b94fe037b14eb5417d6a
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -7848,6 +7848,7 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
+        viewModel.initFavorites(this)
         if (!receiverRegistered) {
             registerReceiver(packageReceiver, PACKAGE_FILTER)
             receiverRegistered = true
