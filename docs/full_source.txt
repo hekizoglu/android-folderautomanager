@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 21:14 UTC
-# Commit: 987f2a00e8a49fbbd7acf3b676c81c333e11a27b
+# Generated: 2026-06-14 23:36 UTC
+# Commit: 9806fbf553024e34edefed2932431b614b2b3a69
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -6488,7 +6488,7 @@ private fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): Imag
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, 96)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(96, 96).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, packageName, 96)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -6561,7 +6561,11 @@ fun AllAppsDrawer(
     onAppLongClick: ((AppInfo) -> Unit)? = null,
     iconSize: Dp = 40.dp,
     favoriteApps: List<AppInfo> = emptyList(),
+    favoritesEnabled: Boolean = false,
     onFavoriteAppClick: (String) -> Unit = {},
+    recentApps: List<AppInfo> = emptyList(),
+    recentAppsEnabled: Boolean = false,
+    onRecentAppClick: (String) -> Unit = {},
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
@@ -6894,12 +6898,21 @@ fun AllAppsDrawer(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 32.dp)
                         ) {
-                            if (searchQuery.isEmpty() && favoriteApps.isNotEmpty()) {
+                            if (searchQuery.isEmpty() && favoritesEnabled && favoriteApps.isNotEmpty()) {
                                 item(key = "favorites_row") {
                                     FavoritesRow(
                                         apps = favoriteApps,
                                         iconPackPkg = iconPackPkg,
                                         onAppClick = onFavoriteAppClick
+                                    )
+                                }
+                            }
+                            if (searchQuery.isEmpty() && recentAppsEnabled && recentApps.isNotEmpty()) {
+                                item(key = "recent_row") {
+                                    RecentAppsRow(
+                                        apps = recentApps,
+                                        iconPackPkg = iconPackPkg,
+                                        onAppClick = onRecentAppClick
                                     )
                                 }
                             }
@@ -7712,7 +7725,8 @@ fun AppIconView(
     onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showLabel: Boolean = true,
-    iconSize: Dp = 56.dp
+    iconSize: Dp = 56.dp,
+    newBadgeEnabled: Boolean = true,
 ) {
     val context = LocalContext.current
     val px = (iconSize.value * context.resources.displayMetrics.density).toInt()
@@ -7730,7 +7744,7 @@ fun AppIconView(
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCache.put(cacheKey, loaded)
@@ -7776,7 +7790,7 @@ fun AppIconView(
         else null
 
         // 7 gün içinde kurulduysa "YENİ" badge — Ayarlar'dan kapatılabilir
-        val newBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)
+        // newBadgeEnabled — çağıran composable'dan reaktif parametre olarak gelir
         val isNew = newBadgeEnabled &&
             app.installTime > 0L &&
             (System.currentTimeMillis() - app.installTime) < 7L * 24 * 60 * 60 * 1000
@@ -7843,7 +7857,11 @@ fun AppIconView(
                         text = badgeText,
                         color = Color.White,
                         fontSize = 9.sp,
-                        style = TextStyle(textAlign = TextAlign.Center)
+                        lineHeight = 9.sp,
+                        style = TextStyle(
+                            textAlign = TextAlign.Center,
+                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                        )
                     )
                 }
             }
@@ -8769,12 +8787,15 @@ fun FolderTile(
     customName: String? = null,
     customEmoji: String? = null,
     customColor: String? = null,
+    folderCountVisible: Boolean = true,
+    folderSwipeHintEnabled: Boolean = true,
+    notifTextEnabled: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val hapticFeedback = LocalHapticFeedback.current
     val density = LocalDensity.current
-    var swipeDy by remember { mutableFloatStateOf(0f) }
+    var swipeDy = 0f  // mutableFloatStateOf değil — drag callback'te accumulator, UI'a yansımaz
     val swipeThresholdPx = with(density) { 40.dp.toPx() }
 
     val scale by animateFloatAsState(
@@ -8865,7 +8886,16 @@ fun FolderTile(
                     .background(Color(0xFFE53935)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(badgeText, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    badgeText,
+                    color = Color.White,
+                    fontSize = 9.sp,
+                    lineHeight = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = androidx.compose.ui.text.TextStyle(
+                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                    )
+                )
             }
         }
         } // outer Box
@@ -8882,7 +8912,7 @@ fun FolderTile(
             modifier = Modifier.width(tileWidth)
         )
         val context = LocalContext.current
-        val folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
+        // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
         if (folderCountVisible) {
             Text(
                 text = "${folder.apps.size}",
@@ -8892,7 +8922,7 @@ fun FolderTile(
             )
         }
         // Swipe-up ile acilacak uygulamanin adi — en cok kullanilan
-        val folderSwipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
+        // folderSwipeHintEnabled — HomeScreen'den reaktif parametre olarak gelir
         val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
@@ -8906,14 +8936,23 @@ fun FolderTile(
             )
         }
         // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
-        val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+        // notifTextEnabled — HomeScreen'den reaktif parametre olarak gelir
         if (notifTextEnabled) {
+            // Önce bildirim metni olan uygulamayı bul; yoksa badge > 0 olan uygulamayı al
             val latestNotifApp = remember(folder.apps) {
                 folder.apps.filter { it.notificationText.isNotBlank() }
                     .maxByOrNull { it.notificationCount }
+                    ?: folder.apps.filter { it.notificationCount > 0 }
+                        .maxByOrNull { it.notificationCount }
             }
             if (latestNotifApp != null) {
-                val notifDisplayText = "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
+                val notifDisplayText = when {
+                    latestNotifApp.notificationText.isNotBlank() ->
+                        "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
+                    totalBadge == 1 -> "${latestNotifApp.appName}: 1 yeni bildirim"
+                    totalBadge > 1  -> "$totalBadge yeni bildirim"
+                    else -> "${latestNotifApp.appName}: yeni bildirim"
+                }
                 Text(
                     text = notifDisplayText,
                     color = Color.White.copy(alpha = 0.65f),
@@ -9295,6 +9334,12 @@ fun HomeScreen(
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
     var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
     var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+    // Ayar toggle'ları — DisposableEffect listener ile reaktif
+    var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
+    var newBadgeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
+    var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
+    var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
+    var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -9331,6 +9376,16 @@ fun HomeScreen(
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
                     suggestionIconPack = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SWIPE_HINT_ENABLED ->
+                    swipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NEW_BADGE_ENABLED ->
+                    newBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_COUNT_VISIBLE ->
+                    folderCountVisible = com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SWIPE_HINT_ENABLED ->
+                    folderSwipeHint = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
+                    notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -9358,7 +9413,7 @@ fun HomeScreen(
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
-    var swipeDelta by remember { mutableFloatStateOf(0f) }
+    var swipeDelta = 0f  // mutableFloatStateOf değil — sadece scroll callback'te kullanılır, recomposition tetiklemez
 
     // rememberUpdatedState ile closure'lar her zaman güncel değeri okur
     val currentAllAppsOpen by rememberUpdatedState(allAppsOpen)
@@ -9663,6 +9718,9 @@ fun HomeScreen(
                         customName = customFolderNames[folder.category.categoryId],
                         customEmoji = customFolderEmojis[folder.category.categoryId],
                         customColor = customFolderColors[folder.category.categoryId],
+                        folderCountVisible = folderCountVisible,
+                        folderSwipeHintEnabled = folderSwipeHint,
+                        notifTextEnabled = notifTextEnabled,
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(
@@ -9753,7 +9811,7 @@ fun HomeScreen(
             }
 
             // Swipe-up ipucu — ilk 5 acilista goster
-            SwipeHint(context = context, visible = !allAppsOpen)
+            SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
 
             // Drag pill handle — above dock, pure Pixel style
             Box(
@@ -9837,7 +9895,14 @@ fun HomeScreen(
                 },
                 onClose = viewModel::closeAllApps,
                 favoriteApps = favoriteApps,
+                favoritesEnabled = favoritesEnabled,
                 onFavoriteAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.launchApp(context, pkg)
+                },
+                recentApps = recentApps,
+                recentAppsEnabled = recentAppsEnabled,
+                onRecentAppClick = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
                 }
@@ -10195,7 +10260,7 @@ internal fun DockIcon(
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, packageName, px)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(packageName).toBitmap(px, px).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, packageName, px)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -10291,7 +10356,7 @@ private fun SuggestionAppItem(
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
                     else null
                     packBitmap?.asImageBitmap()
-                        ?: context.packageManager.getApplicationIcon(app.packageName).toBitmap(px, px).asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
                 }.getOrNull()
             }
             if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
@@ -10346,7 +10411,7 @@ internal fun FavoritesRow(
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(apps) { app ->
+            items(apps, key = { it.packageName }) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.width(56.dp).combinedClickable(
@@ -10359,7 +10424,7 @@ internal fun FavoritesRow(
                             val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
                                 val bmp = runCatching {
-                                    context.packageManager.getApplicationIcon(app.packageName).toBitmap(96, 96).asImageBitmap()
+                                    com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap()
                                 }.getOrNull()
                                 if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                 bmp
@@ -10395,7 +10460,7 @@ internal fun RecentAppsRow(
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(apps.take(8)) { app ->
+            items(apps.take(8), key = { it.packageName }) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
@@ -10405,7 +10470,7 @@ internal fun RecentAppsRow(
                             val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
                                 val bmp = runCatching {
-                                    context.packageManager.getApplicationIcon(app.packageName).toBitmap(96, 96).asImageBitmap()
+                                    com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap()
                                 }.getOrNull()
                                 if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                 bmp
@@ -10427,8 +10492,8 @@ internal fun RecentAppsRow(
 
 @Composable
 internal fun SwipeHint(context: Context, visible: Boolean) {
-    val swipeHintFeatureEnabled = remember { AppPrefs.isSwipeHintEnabled(context) }
-    val showSwipeHint = remember { swipeHintFeatureEnabled && AppPrefs.shouldShowSwipeHint(context) }
+    // swipeHintEnabled — HomeScreen'den `visible` parametresi zaten bunu taşıyor
+    val showSwipeHint = visible && remember { AppPrefs.shouldShowSwipeHint(context) }
     val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -10463,6 +10528,131 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
         }
     }
 }
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/IconPackManager.kt
+========================================
+package com.armutlu.apporganizer.utils
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import androidx.core.graphics.drawable.toBitmap
+import org.xmlpull.v1.XmlPullParser
+import java.util.concurrent.ConcurrentHashMap
+
+object IconPackManager {
+
+    private val filterCache = ConcurrentHashMap<String, Map<String, String>>()
+
+    data class IconPackInfo(val packageName: String, val label: String)
+
+    private val ICON_PACK_INTENTS = listOf(
+        "com.novalauncher.THEME",
+        "org.adw.launcher.THEMES",
+        "com.gau.go.launcherex.theme",
+        "app.lawnchair.ICON_PACK",
+        "com.teslacoilsw.launcher.THEME"
+    )
+
+    fun getInstalledIconPacks(context: Context): List<IconPackInfo> {
+        val pm = context.packageManager
+        return ICON_PACK_INTENTS.flatMap { action ->
+            runCatching {
+                pm.queryIntentActivities(Intent(action), PackageManager.GET_META_DATA)
+                    .map { it.activityInfo.packageName }
+            }.getOrDefault(emptyList())
+        }.distinct().mapNotNull { pkg ->
+            runCatching {
+                val info = pm.getApplicationInfo(pkg, 0)
+                IconPackInfo(pkg, pm.getApplicationLabel(info).toString())
+            }.getOrNull()
+        }
+    }
+
+    fun loadIcon(context: Context, iconPackPkg: String, appPkg: String, sizePx: Int = 96): Bitmap? {
+        if (iconPackPkg.isEmpty()) return null
+        val drawableName = getMapping(context, iconPackPkg)[appPkg] ?: return null
+        return loadDrawableByName(context, iconPackPkg, drawableName, sizePx)
+    }
+
+    fun clearCache() {
+        filterCache.clear()
+    }
+
+    private fun getMapping(context: Context, iconPackPkg: String): Map<String, String> {
+        filterCache[iconPackPkg]?.let { return it }
+        val mapping = parseAppFilter(context, iconPackPkg)
+        filterCache[iconPackPkg] = mapping
+        return mapping
+    }
+
+    private fun parseAppFilter(context: Context, iconPackPkg: String): Map<String, String> {
+        val result = mutableMapOf<String, String>()
+        runCatching {
+            val res = context.packageManager.getResourcesForApplication(iconPackPkg)
+            val resId = res.getIdentifier("appfilter", "xml", iconPackPkg)
+            if (resId == 0) return result
+            val parser = res.getXml(resId)
+            while (parser.next() != XmlPullParser.END_DOCUMENT) {
+                if (parser.eventType != XmlPullParser.START_TAG) continue
+                if (parser.name != "item") continue
+                val component = parser.getAttributeValue(null, "component") ?: continue
+                val drawable = parser.getAttributeValue(null, "drawable") ?: continue
+                val pkg = component
+                    .removePrefix("ComponentInfo{")
+                    .removeSuffix("}")
+                    .substringBefore("/")
+                    .trim()
+                if (pkg.isNotEmpty()) result[pkg] = drawable
+            }
+            parser.close()
+        }
+        return result
+    }
+
+    private fun loadDrawableByName(
+        context: Context,
+        iconPackPkg: String,
+        drawableName: String,
+        sizePx: Int
+    ): Bitmap? = runCatching {
+        val res = context.packageManager.getResourcesForApplication(iconPackPkg)
+        val resId = res.getIdentifier(drawableName, "drawable", iconPackPkg)
+        if (resId == 0) return null
+        res.getDrawable(resId, null)?.toBitmap(sizePx, sizePx)
+    }.getOrNull()
+}
+
+// ----- Adaptive Icon Loader -----
+// AdaptiveIconDrawable (API 26+) için squircle mask uygular
+// Legacy drawable'larda direkt toBitmap kullanır
+// Kullanım: loadAppIcon(context, packageName, 96)
+
+fun loadAppIcon(context: android.content.Context, packageName: String, sizePx: Int): android.graphics.Bitmap? =
+    runCatching {
+        val drawable = context.packageManager.getApplicationIcon(packageName)
+        if (android.os.Build.VERSION.SDK_INT >= 26 &&
+            drawable is android.graphics.drawable.AdaptiveIconDrawable) {
+            val bmp = android.graphics.Bitmap.createBitmap(sizePx, sizePx, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bmp)
+            // Squircle mask — Android default adaptive icon shape approximation
+            val path = android.graphics.Path()
+            val r = sizePx * 0.22f  // 22% corner radius ≈ squircle
+            path.addRoundRect(
+                android.graphics.RectF(0f, 0f, sizePx.toFloat(), sizePx.toFloat()),
+                r, r,
+                android.graphics.Path.Direction.CW
+            )
+            canvas.clipPath(path)
+            drawable.setBounds(0, 0, sizePx, sizePx)
+            drawable.draw(canvas)
+            bmp
+        } else {
+            drawable.toBitmap(sizePx, sizePx)
+        }
+    }.getOrNull()
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherActivity.kt
@@ -10664,7 +10854,7 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
-        viewModel.initFavorites(this)
+        // initFavorites sadece onCreate'de; toggleFavorite reaktif günceller, onResume'da gerek yok
         if (!receiverRegistered) {
             registerReceiver(packageReceiver, PACKAGE_FILTER)
             receiverRegistered = true
@@ -11126,12 +11316,12 @@ class LauncherViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // Son kullanilan 8 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
+    // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
     val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { apps ->
             apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
                 .sortedByDescending { it.lastUsedTimestamp }
-                .take(8)
+                .take(4)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -12765,84 +12955,183 @@ fun LauncherSetupScreen(
 }
 
 ========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingModels.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+
+// ── Renkler ve gradyanlar ────────────────────────────────────────────────────
+
+internal val OnboardingBackgroundGradient = Brush.verticalGradient(
+    colors = listOf(Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E))
+)
+internal val OnboardingAccentPurple      = Color(0xFF6C63FF)
+internal val OnboardingAccentPurpleLight = Color(0xFF9C8FFF)
+internal val OnboardingButtonGradient = Brush.horizontalGradient(
+    colors = listOf(OnboardingAccentPurple, OnboardingAccentPurpleLight)
+)
+internal val OnboardingTealGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA))
+)
+
+// ── Yardımcı fonksiyon ───────────────────────────────────────────────────────
+
+internal fun isDefaultLauncherApp(context: Context): Boolean {
+    val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+    val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+    return info?.activityInfo?.packageName == context.packageName
+}
+
+// ── Onboarding adım modeli ────────────────────────────────────────────────────
+
+internal enum class OnboardingStep(
+    val title: String,
+    val description: String,
+    val icon: ImageVector,
+    val buttonLabel: String,
+    val why: String = "",
+    val isSkippable: Boolean = false
+) {
+    WELCOME(
+        title = "AppOrganizer'a Hoş Geldiniz",
+        description = "Uygulamalarınızı otomatik olarak düzenleyen akıllı launcher.",
+        icon = Icons.Default.Apps,
+        buttonLabel = "Başla"
+    ),
+    RESTORE_BACKUP(
+        title = "Önceki Yedeğiniz Var Mı?",
+        description = "Daha önce AppOrganizer kullandıysanız, kategori ayarlarınızı geri yükleyebilirsiniz.",
+        icon = Icons.Default.Restore,
+        buttonLabel = "Yedekten Geri Yükle",
+        isSkippable = true
+    ),
+    QUERY_PACKAGES(
+        title = "Uygulama Listesi İzni",
+        description = "Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.",
+        icon = Icons.Default.ManageSearch,
+        buttonLabel = "İzin Ver",
+        why = "Bu izin olmadan launcher çalışamaz."
+    ),
+    NOTIFICATIONS(
+        title = "Bildirim İzni",
+        description = "Uygulama ikonlarında bildirim sayısını göstermek için izin gerekli.",
+        icon = Icons.Default.Notifications,
+        buttonLabel = "İzin Ver",
+        why = "Badge sayıları bu izinle çalışır.",
+        isSkippable = true
+    ),
+    UNUSED_GREY(
+        title = "Kullanılmayan Uygulamalar",
+        description = "Hiç açmadığınız uygulamalar soluk renkte gösterilsin mi?",
+        icon = Icons.Default.Visibility,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    AUTO_BACKUP(
+        title = "Otomatik Yedekleme",
+        description = "Her açılışta kategori atamalarınızın JSON yedeğini alsın mı?",
+        icon = Icons.Default.Badge,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    NOTIF_TEXT(
+        title = "Bildirim Metni",
+        description = "Klasör ve uygulamaların altında son bildirimi göstersin mi?",
+        icon = Icons.Default.Notifications,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    NOTIF_ACCESS(
+        title = "Bildirim Erişimi",
+        description = "Uygulama ikonlarında gerçek bildirim sayısını göstermek için tam erişim gerekli.",
+        icon = Icons.Default.Notifications,
+        buttonLabel = "Erişime İzin Ver",
+        why = "Android kısıtlamaları nedeniyle ayrı izin gerekiyor.",
+        isSkippable = true
+    ),
+    SWIPE_HINT(
+        title = "Swipe-up İpucu",
+        description = "Ana ekranda yukarı kaydırma animasyonu gösterilsin mi?",
+        icon = Icons.Default.SwipeUp,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    NEW_BADGE(
+        title = "YENİ Badge",
+        description = "7 gün içinde kurulan uygulamalara 'YENİ' rozeti gösterilsin mi?",
+        icon = Icons.Default.Badge,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    FOLDER_COUNT(
+        title = "Klasör Uygulama Sayısı",
+        description = "Klasör simgesinin altında uygulama adedi gösterilsin mi?",
+        icon = Icons.Default.Folder,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    NAV_HIDE(
+        title = "Sistem Navigasyonunu Gizle",
+        description = "Geri/Home/Recents butonlarını gizle, tam ekran launcher.",
+        icon = Icons.Default.Navigation,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
+    THEME_SELECT(
+        title = "Renk Teması Seçin",
+        description = "Beğendiğiniz renk temasını ve yazı tipini seçin.",
+        icon = Icons.Default.CheckCircle,
+        buttonLabel = "Uygula"
+    ),
+    SET_LAUNCHER(
+        title = "Ana Ekran Uygulaması",
+        description = "AppOrganizer'ı varsayılan launcher olarak ayarlayın.",
+        icon = Icons.Default.Home,
+        buttonLabel = "Varsayılan Yap",
+        why = "Launcher olarak ayarlanmadan ana ekran gösterilmez."
+    ),
+    DONE(
+        title = "Hazırsınız!",
+        description = "AppOrganizer kurulumu tamamlandı. İyi kullanımlar!",
+        icon = Icons.Default.CheckCircle,
+        buttonLabel = "Başla"
+    )
+}
+
+========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingScreen.kt
 ========================================
 package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
-import android.app.role.RoleManager
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.ManageSearch
-import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.SwipeUp
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import com.armutlu.apporganizer.presentation.ui.theme.AppFont
-import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
-import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
-import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -12850,260 +13139,80 @@ import androidx.core.content.PermissionChecker
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.presentation.ui.theme.AppFont
+import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
+import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
-
-private val BackgroundGradient = Brush.verticalGradient(
-    colors = listOf(
-        Color(0xFF0F0C29),
-        Color(0xFF302B63),
-        Color(0xFF24243E)
-    )
-)
-
-private val AccentPurple = Color(0xFF6C63FF)
-private val AccentPurpleLight = Color(0xFF9C8FFF)
-private val ButtonGradient = Brush.horizontalGradient(
-    colors = listOf(AccentPurple, AccentPurpleLight)
-)
-private val TealGradient = Brush.horizontalGradient(
-    colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA))
-)
-
-private fun isDefaultLauncher(context: Context): Boolean {
-    val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-    val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-    return info?.activityInfo?.packageName == context.packageName
-}
-
-private enum class OnboardingStep(
-    val icon: ImageVector,
-    val title: String,
-    val description: String,
-    val why: String,
-    val buttonLabel: String,
-    val isRequired: Boolean = true,
-    val isSkippable: Boolean = false
-) {
-    WELCOME(
-        icon = Icons.Default.Apps,
-        title = "App Organizer'a Hos Geldiniz",
-        description = "Uygulamalarinizi otomatik olarak kategorilere ayiran ve ana ekraninizi duzenleyen akilli bir launcher.",
-        why = "",
-        buttonLabel = "Baslayin",
-        isRequired = false
-    ),
-    RESTORE_BACKUP(
-        icon = Icons.Default.Restore,
-        title = "Onceki Yedeginiz Var Mi?",
-        description = "Daha once App Organizer kullandiyseniz, uygulama duzenlemenizi JSON yedek dosyasindan geri yukleyebilirsiniz.",
-        why = "Yedek bulunmazsa bu adimi atlayabilirsiniz. Geri yukleme kategori ve klasor duzenlemenizi korur.",
-        buttonLabel = "Yedegi Geri Yukle",
-        isRequired = false,
-        isSkippable = true
-    ),
-    QUERY_PACKAGES(
-        icon = Icons.Default.ManageSearch,
-        title = "Uygulama Listesi Izni",
-        description = "Telefonunuzdaki kurulu uygulamalari gorebilmek icin bu izin gereklidir.",
-        why = "Bu izin olmadan hicbir uygulama listelenemez. Veriler sadece cihazinizda kalir, disari gonderilmez.",
-        buttonLabel = "Izin Ver",
-        isRequired = true
-    ),
-    NOTIFICATIONS(
-        icon = Icons.Default.Notifications,
-        title = "Bildirim Izni",
-        description = "Organize islemi tamamlandiginda size bildirim gondermek icin bu izin kullanilir.",
-        why = "Yalnizca organize islemi bittikten sonra tek bir bildirim gonderilir. Reklam veya spam yoktur.",
-        buttonLabel = "Izin Ver",
-        isRequired = false,
-        isSkippable = true
-    ),
-    UNUSED_GREY(
-        icon = Icons.Default.Visibility,
-        title = "Kullanilmayan Uygulamalar",
-        description = "Hic acilmamis uygulamalar ana ekranda soluk/gri gorunsun mu? Kalabalik azalir, odak artar.",
-        why = "Hic kullanmadiginiz uygulamalar soluk gozukur — silmeden once fark edersiniz.",
-        buttonLabel = "Ayarla",
-        isRequired = false,
-        isSkippable = true
-    ),
-    SET_LAUNCHER(
-        icon = Icons.Default.Home,
-        title = "Ana Ekran Uygulamasi Olarak Ayarla",
-        description = "Harika, neredeyse hazirsiniz! App Organizer'i ana ekran (launcher) olarak ayarlayin ve tam gucu deneyimleyin.\n\nAyarla butonuna tiklayin, acilan ekranda 'App Organizer'i secin.",
-        why = "Bu adim olmadan uygulama sadece yonetim ekrani olarak calisiyor. Launcher olarak ayarlandiginda tum gucunu gosterir.",
-        buttonLabel = "Ana Ekran Olarak Ayarla",
-        isRequired = true,
-        isSkippable = true
-    ),
-    AUTO_BACKUP(
-        icon = Icons.Default.Info,
-        title = "Otomatik Yedekleme",
-        description = "Her gun uygulama duzenlemeniz otomatik olarak yedeklensin mi? Telefon degistirdiginizde tek tikla geri yukleyin.",
-        why = "Yedekleme sadece cihazinizda JSON dosyasi olarak saklanir, hicbir yere gonderilmez.",
-        buttonLabel = "Etkinlestir",
-        isRequired = false,
-        isSkippable = true
-    ),
-    NOTIF_TEXT(
-        icon = Icons.Default.Notifications,
-        title = "Bildirim Metni",
-        description = "Klasorlerin altinda ve tum uygulamalar ekraninda son gelen bildirimin metnini goruntulemek ister misiniz?",
-        why = "WhatsApp veya mesajlasma uygulamalarinda son mesaji ana ekrandan gorebilirsiniz.",
-        buttonLabel = "Devam Et",
-        isRequired = false,
-        isSkippable = false
-    ),
-    NOTIF_ACCESS(
-        icon = Icons.Default.Notifications,
-        title = "Bildirim Erisimi",
-        description = "Bildirim metnini gosterebilmek icin sistem bildirim erisimi gereklidir.\n\nAcilan ekranda 'App Organizer'i bulun ve etkinlestirin.",
-        why = "Bu izin olmadan bildirim metni hic gosterilmez. Veriler cihazinizda kalir, disari gonderilmez.",
-        buttonLabel = "Izin Ver",
-        isRequired = false,
-        isSkippable = true
-    ),
-    SWIPE_HINT(
-        icon = Icons.Default.SwipeUp,
-        title = "Swipe-Up Ipucu",
-        description = "Klasorun altinda en cok kullanilan uygulamanin adi gorunsun mu? Yukari kaydirarak o uygulamaya hizlica ulasabilirsiniz.",
-        why = "Klasorden tek hareketle favori uygulamanizi acacaksiniz — aciklama olmadan kesfetmek zor.",
-        buttonLabel = "Devam Et",
-        isRequired = false,
-        isSkippable = false
-    ),
-    NEW_BADGE(
-        icon = Icons.Default.Badge,
-        title = "Yeni Uygulama Rozeti",
-        description = "Son 7 gunde yuklenen uygulamalara 'YENI' rozeti gorunsun mu?",
-        why = "Yeni yuklediginiz uygulamalari kolay fark edersiniz.",
-        buttonLabel = "Devam Et",
-        isRequired = false,
-        isSkippable = false
-    ),
-    FOLDER_COUNT(
-        icon = Icons.Default.Folder,
-        title = "Klasor Uygulama Sayisi",
-        description = "Klasorun altinda kac uygulama oldugu gorunsun mu?",
-        why = "Klasorun icine bakmadan hizlica dolu mu bos mu anlayabilirsiniz.",
-        buttonLabel = "Devam Et",
-        isRequired = false,
-        isSkippable = false
-    ),
-    NAV_HIDE(
-        icon = Icons.Default.Navigation,
-        title = "Sistem Navigasyonu",
-        description = "Ana ekranda geri/home/recent tuslarini gizleyin, tam ekran launcher deneyimi yasayin.",
-        why = "Geri tulari gizlemek ekrani buyutür. Sistem navigate'i yine de swipe gesture ile kullanilabilir.",
-        buttonLabel = "Devam Et",
-        isRequired = false,
-        isSkippable = false
-    ),
-    THEME_SELECT(
-        icon = Icons.Default.Info,
-        title = "Tema Secin",
-        description = "Uygulamanin gorunumunu kisisellestirebilirsiniz. Daha sonra Ayarlar ekranindan degistirebilirsiniz.",
-        why = "",
-        buttonLabel = "Devam Et",
-        isRequired = false,
-        isSkippable = true
-    ),
-    DONE(
-        icon = Icons.Default.CheckCircle,
-        title = "Her Sey Hazir!",
-        description = "Harika! Uygulamalariniz simdi taranarak kategorilere ayrilacak.",
-        why = "",
-        buttonLabel = "Basla",
-        isRequired = false
-    )
-}
+import com.armutlu.apporganizer.utils.AppPrefs
+import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit,
     viewModel: AppListViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    var stepIndex by remember { mutableStateOf(0) }
-    // SET_LAUNCHER sona alındı — tüm ayarlar bittikten sonra sorulsun
+    val context    = LocalContext.current
+    var stepIndex  by remember { mutableStateOf(0) }
     val steps = listOf(
-        OnboardingStep.WELCOME,
-        OnboardingStep.RESTORE_BACKUP,
-        OnboardingStep.QUERY_PACKAGES,
-        OnboardingStep.NOTIFICATIONS,
-        OnboardingStep.UNUSED_GREY,
-        OnboardingStep.AUTO_BACKUP,
-        OnboardingStep.NOTIF_TEXT,
-        OnboardingStep.NOTIF_ACCESS,
-        OnboardingStep.SWIPE_HINT,
-        OnboardingStep.NEW_BADGE,
-        OnboardingStep.FOLDER_COUNT,
-        OnboardingStep.NAV_HIDE,
-        OnboardingStep.THEME_SELECT,
-        OnboardingStep.SET_LAUNCHER,
-        OnboardingStep.DONE,
+        OnboardingStep.WELCOME, OnboardingStep.RESTORE_BACKUP, OnboardingStep.QUERY_PACKAGES,
+        OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
+        OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
+        OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
+        OnboardingStep.THEME_SELECT, OnboardingStep.SET_LAUNCHER, OnboardingStep.DONE,
     )
-    val step = steps[stepIndex]
+    val currentStep by rememberUpdatedState(steps[stepIndex])
 
-    var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
-    var notifGranted by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                    == PermissionChecker.PERMISSION_GRANTED
-            else true
-        )
+    // ── State ────────────────────────────────────────────────────────────
+    var launcherSet       by remember { mutableStateOf(isDefaultLauncherApp(context)) }
+    var notifGranted      by remember {
+        mutableStateOf(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PermissionChecker.PERMISSION_GRANTED
+            else true)
     }
-    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
-    var autoBackupEnabled by remember { mutableStateOf(true) }
-    var notifTextEnabled by remember { mutableStateOf(true) }
     var notifAccessGranted by remember {
-        mutableStateOf(
-            android.provider.Settings.Secure.getString(
-                context.contentResolver, "enabled_notification_listeners"
-            )?.contains(context.packageName) == true
-        )
+        mutableStateOf(Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+            ?.contains(context.packageName) == true)
     }
-    var restoreResult by remember { mutableStateOf<String?>(null) }
-    var swipeHintEnabled by remember { mutableStateOf(true) }
-    var newBadgeEnabled by remember { mutableStateOf(true) }
+    var unusedGreyDays    by remember { mutableStateOf(AppPrefs.getUnusedGreyDays(context)) }
+    var autoBackupEnabled by remember { mutableStateOf(true) }
+    var notifTextEnabled  by remember { mutableStateOf(true) }
+    var swipeHintEnabled  by remember { mutableStateOf(true) }
+    var newBadgeEnabled   by remember { mutableStateOf(true) }
     var folderCountEnabled by remember { mutableStateOf(true) }
-    var navHideEnabled by remember { mutableStateOf(false) }
-    var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
-    var selectedFont  by remember { mutableStateOf(AppFont.DEFAULT) }
-    val scope = rememberCoroutineScope()
-    val themePrefs = remember { ThemePreferences(context) }
+    var navHideEnabled    by remember { mutableStateOf(false) }
+    var selectedTheme     by remember { mutableStateOf(AppTheme.TEAL) }
+    var selectedFont      by remember { mutableStateOf(AppFont.DEFAULT) }
+    var restoreResult     by remember { mutableStateOf<String?>(null) }
+    val scope         = rememberCoroutineScope()
+    val themePrefs    = remember { ThemePreferences(context) }
 
-    val restoreFilePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        if (uri != null) {
-            scope.launch {
-                runCatching {
-                    val json = context.contentResolver.openInputStream(uri)
-                        ?.bufferedReader()?.readText() ?: return@launch
-                    val result = viewModel.importBackup(json)
-                    restoreResult = if (result.success)
-                        "${result.updatedCount} uygulama geri yuklendi"
-                    else
-                        "Geri yukleme basarisiz: ${result.error}"
-                }.onFailure {
-                    restoreResult = "Dosya okunamadi: ${it.message}"
-                }
-            }
+    // ── Launchers ────────────────────────────────────────────────────────
+    val restoreFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) scope.launch {
+            runCatching {
+                val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return@launch
+                val result = viewModel.importBackup(json)
+                restoreResult = if (result.success) "${result.updatedCount} uygulama geri yuklendi"
+                                else "Geri yukleme basarisiz: ${result.error}"
+            }.onFailure { restoreResult = "Dosya okunamadi: ${it.message}" }
         }
     }
+    val roleRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        launcherSet = isDefaultLauncherApp(context)
+        if (launcherSet) stepIndex++
+    }
+    val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        notifGranted = granted; stepIndex++
+    }
 
-    val currentStep by rememberUpdatedState(step)
-
+    // ── Lifecycle observer ───────────────────────────────────────────────
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                launcherSet = isDefaultLauncher(context)
-                notifAccessGranted = android.provider.Settings.Secure.getString(
-                    context.contentResolver, "enabled_notification_listeners"
-                )?.contains(context.packageName) == true
+                launcherSet = isDefaultLauncherApp(context)
+                notifAccessGranted = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+                    ?.contains(context.packageName) == true
                 if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) stepIndex++
                 if (notifAccessGranted && currentStep == OnboardingStep.NOTIF_ACCESS) stepIndex++
             }
@@ -13112,481 +13221,126 @@ fun OnboardingScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Android 10+ RoleManager launcher seçim ekranı
-    val roleRequestLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        launcherSet = isDefaultLauncher(context)
-        if (launcherSet) stepIndex++
-    }
-
-    val notifLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notifGranted = granted
-        stepIndex++
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundGradient)
-    ) {
+    // ── UI ───────────────────────────────────────────────────────────────
+    Box(Modifier.fillMaxSize().background(OnboardingBackgroundGradient)) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
+            modifier = Modifier.fillMaxSize()
+                .statusBarsPadding().navigationBarsPadding()
                 .padding(horizontal = 28.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(56.dp))
 
-            // İkon
-            AnimatedContent(
-                targetState = stepIndex,
-                transitionSpec = {
-                    fadeIn() + slideInHorizontally { it / 3 } togetherWith
-                    fadeOut() + slideOutHorizontally { -it / 3 }
-                },
-                label = "icon"
-            ) { idx ->
-                val s = steps[idx]
-                val iconBg = if (s == OnboardingStep.SET_LAUNCHER) TealGradient else null
-                Box(contentAlignment = Alignment.Center) {
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                            .border(
-                                width = 1.5.dp,
-                                color = if (s == OnboardingStep.SET_LAUNCHER)
-                                    Color(0xFF00897B).copy(alpha = 0.6f)
-                                else AccentPurple.copy(alpha = 0.4f),
-                                shape = CircleShape
-                            )
-                            .then(
-                                if (iconBg != null)
-                                    Modifier.background(iconBg)
-                                else
-                                    Modifier.background(AccentPurple.copy(alpha = 0.25f))
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            s.icon, null,
-                            modifier = Modifier.size(52.dp),
-                            tint = Color.White
-                        )
-                    }
-                }
-            }
-
+            OnboardingStepIcon(steps, stepIndex)
             Spacer(Modifier.height(32.dp))
-
-            // Adım göstergesi
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                steps.indices.forEach { i ->
-                    Box(
-                        modifier = Modifier
-                            .size(if (i == stepIndex) 24.dp else 7.dp, 7.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                if (i == stepIndex) AccentPurple
-                                else Color.White.copy(alpha = 0.20f)
-                            )
-                    )
-                }
-            }
-
+            OnboardingStepDots(steps, stepIndex)
             Spacer(Modifier.height(28.dp))
-
-            // Başlık + açıklama
-            AnimatedContent(targetState = stepIndex, label = "text") { idx ->
-                val s = steps[idx]
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        s.title,
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        s.description,
-                        fontSize = 16.sp,
-                        color = Color.White.copy(alpha = 0.75f),
-                        textAlign = TextAlign.Center,
-                        lineHeight = 26.sp
-                    )
-                }
-            }
-
+            OnboardingStepHeader(steps, stepIndex)
             Spacer(Modifier.height(24.dp))
+            OnboardingWhyBox(currentStep)
+            if (currentStep.why.isNotBlank()) Spacer(Modifier.height(16.dp))
 
-            // Neden gerekli kutusu
-            if (currentStep.why.isNotBlank()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.08f))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(3.dp)
-                                .height(48.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(
-                                    if (currentStep == OnboardingStep.SET_LAUNCHER)
-                                        Color(0xFF00897B)
-                                    else AccentPurple
-                                )
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Icon(
-                                Icons.Default.Info, null,
-                                tint = if (currentStep == OnboardingStep.SET_LAUNCHER)
-                                    Color(0xFF00897B) else AccentPurple,
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .padding(top = 2.dp)
-                            )
-                            Text(
-                                currentStep.why,
-                                fontSize = 14.sp,
-                                color = Color.White.copy(alpha = 0.75f),
-                                lineHeight = 20.sp
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-
-            // Durum göstergesi
-            val statusText = when (currentStep) {
-                OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
-                OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
-                OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
-                OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) "Bildirim erisimi verildi" else null
-                OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gun ayarlandi" else null
-                else -> null
-            }
-            if (statusText != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (currentStep == OnboardingStep.SET_LAUNCHER)
-                                Color(0xFF00897B).copy(alpha = 0.25f)
-                            else AccentPurple.copy(alpha = 0.20f)
-                        )
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        "Tamam: $statusText",
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+            OnboardingStatusBadge(currentStep, launcherSet, notifGranted, notifAccessGranted, unusedGreyDays)
+            if (currentStep in listOf(OnboardingStep.SET_LAUNCHER, OnboardingStep.QUERY_PACKAGES,
+                    OnboardingStep.NOTIFICATIONS, OnboardingStep.NOTIF_ACCESS, OnboardingStep.UNUSED_GREY))
                 Spacer(Modifier.height(12.dp))
-            }
 
-            // Geri yükleme sonucu mesajı
+            // RESTORE_BACKUP sonucu
             if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
                 val result = restoreResult ?: ""
                 val isSuccess = result.contains("geri yuklendi")
                 Spacer(Modifier.height(8.dp))
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (isSuccess) Color(0xFF00897B).copy(alpha = 0.25f)
-                            else Color(0xFFB00020).copy(alpha = 0.25f)
-                        )
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                        .background(if (isSuccess) Color(0xFF00897B).copy(0.25f) else Color(0xFFB00020).copy(0.25f))
                         .padding(12.dp)
-                ) {
-                    Text(
-                        result,
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                ) { Text(result, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium) }
                 if (isSuccess) {
                     Spacer(Modifier.height(12.dp))
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(TealGradient)
-                            .clickable { stepIndex++ },
+                        modifier = Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(12.dp))
+                            .background(OnboardingTealGradient).clickable { stepIndex++ },
                         contentAlignment = Alignment.Center
-                    ) {
-                        Text("Devam Et", color = Color.White, fontWeight = FontWeight.SemiBold)
-                    }
+                    ) { Text("Devam Et", color = Color.White, fontWeight = FontWeight.SemiBold) }
                 }
                 Spacer(Modifier.height(12.dp))
             }
 
-            // Toggle seçici — AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
+            // Toggle seçici (AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT vb.)
             val toggleState: Boolean? = when (currentStep) {
-                OnboardingStep.AUTO_BACKUP -> autoBackupEnabled
-                OnboardingStep.NOTIF_TEXT -> notifTextEnabled
-                OnboardingStep.SWIPE_HINT -> swipeHintEnabled
-                OnboardingStep.NEW_BADGE -> newBadgeEnabled
-                OnboardingStep.FOLDER_COUNT -> folderCountEnabled
-                OnboardingStep.NAV_HIDE -> navHideEnabled
+                OnboardingStep.AUTO_BACKUP    -> autoBackupEnabled
+                OnboardingStep.NOTIF_TEXT     -> notifTextEnabled
+                OnboardingStep.SWIPE_HINT     -> swipeHintEnabled
+                OnboardingStep.NEW_BADGE      -> newBadgeEnabled
+                OnboardingStep.FOLDER_COUNT   -> folderCountEnabled
+                OnboardingStep.NAV_HIDE       -> navHideEnabled
                 else -> null
             }
             if (toggleState != null) {
                 Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
-                ) {
-                    listOf(true to "Acik", false to "Kapali").forEach { (value, label) ->
-                        val selected = toggleState == value
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    if (selected) Color(0xFF00897B)
-                                    else Color.White.copy(alpha = 0.15f)
-                                )
-                                .clickable {
-                                    when (currentStep) {
-                                        OnboardingStep.AUTO_BACKUP -> autoBackupEnabled = value
-                                        OnboardingStep.NOTIF_TEXT -> notifTextEnabled = value
-                                        OnboardingStep.SWIPE_HINT -> swipeHintEnabled = value
-                                        OnboardingStep.NEW_BADGE -> newBadgeEnabled = value
-                                        OnboardingStep.FOLDER_COUNT -> folderCountEnabled = value
-                                        OnboardingStep.NAV_HIDE -> navHideEnabled = value
-                                        else -> {}
-                                    }
-                                }
-                                .padding(horizontal = 32.dp, vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                label,
-                                color = Color.White,
-                                fontSize = 15.sp,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
+                OnboardingToggleRow(toggleState) { value ->
+                    when (currentStep) {
+                        OnboardingStep.AUTO_BACKUP    -> autoBackupEnabled  = value
+                        OnboardingStep.NOTIF_TEXT     -> notifTextEnabled   = value
+                        OnboardingStep.SWIPE_HINT     -> swipeHintEnabled   = value
+                        OnboardingStep.NEW_BADGE      -> newBadgeEnabled    = value
+                        OnboardingStep.FOLDER_COUNT   -> folderCountEnabled = value
+                        OnboardingStep.NAV_HIDE       -> navHideEnabled     = value
+                        else -> {}
                     }
                 }
                 Spacer(Modifier.height(8.dp))
             }
 
-            // Tema seçim UI — sadece THEME_SELECT adımında göster
+            // Tema / yazı tipi seçici
             if (currentStep == OnboardingStep.THEME_SELECT) {
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "Renk Teması",
-                    fontSize = 13.sp,
-                    color = Color.White.copy(alpha = 0.6f),
-                    modifier = Modifier.align(Alignment.Start)
+                OnboardingThemeSelector(
+                    selectedTheme = selectedTheme, selectedFont = selectedFont,
+                    onThemeChange = { selectedTheme = it }, onFontChange = { selectedFont = it }
                 )
-                Spacer(Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(AppTheme.entries) { theme ->
-                        val isSelected = selectedTheme == theme
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clickable { selectedTheme = theme }
-                                .padding(4.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(52.dp)
-                                    .clip(CircleShape)
-                                    .background(theme.primary)
-                                    .border(
-                                        width = if (isSelected) 3.dp else 1.dp,
-                                        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.3f),
-                                        shape = CircleShape
-                                    )
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                theme.label,
-                                fontSize = 11.sp,
-                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    "Yazı Tipi",
-                    fontSize = 13.sp,
-                    color = Color.White.copy(alpha = 0.6f),
-                    modifier = Modifier.align(Alignment.Start)
-                )
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AppFont.entries.forEach { font ->
-                        val isSelected = selectedFont == font
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (isSelected) AccentPurple else Color.White.copy(alpha = 0.12f)
-                                )
-                                .clickable { selectedFont = font }
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                font.label,
-                                fontSize = 13.sp,
-                                color = Color.White,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
             }
 
             Spacer(Modifier.height(8.dp))
 
-            // Ana buton
+            // ── Ana buton ────────────────────────────────────────────────
             val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
-                TealGradient else ButtonGradient
-
+                OnboardingTealGradient else OnboardingButtonGradient
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(buttonGradient)
-                    .clickable {
-                        when (currentStep) {
-                            OnboardingStep.WELCOME -> stepIndex++
-
-                            OnboardingStep.RESTORE_BACKUP -> {
-                                restoreFilePicker.launch("application/json")
+                modifier = Modifier.fillMaxWidth().height(56.dp)
+                    .clip(RoundedCornerShape(16.dp)).background(buttonGradient)
+                    .clickable { handleOnboardingStep(
+                        step = currentStep, context = context, scope = scope,
+                        themePrefs = themePrefs, viewModel = viewModel,
+                        launcherSet = launcherSet, notifGranted = notifGranted, notifAccessGranted = notifAccessGranted,
+                        unusedGreyDays = unusedGreyDays, autoBackupEnabled = autoBackupEnabled,
+                        notifTextEnabled = notifTextEnabled, swipeHintEnabled = swipeHintEnabled,
+                        newBadgeEnabled = newBadgeEnabled, folderCountEnabled = folderCountEnabled,
+                        navHideEnabled = navHideEnabled, selectedTheme = selectedTheme, selectedFont = selectedFont,
+                        restoreFilePicker = { restoreFilePicker.launch("application/json") },
+                        onRequestRole = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val rm = context.getSystemService(android.app.role.RoleManager::class.java)
+                                if (rm?.isRoleAvailable(android.app.role.RoleManager.ROLE_HOME) == true)
+                                    roleRequestLauncher.launch(rm.createRequestRoleIntent(android.app.role.RoleManager.ROLE_HOME))
+                                else stepIndex++
+                            } else {
+                                context.startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                             }
-
-                            OnboardingStep.SET_LAUNCHER -> {
-                                if (launcherSet) {
-                                    stepIndex++
-                                    return@clickable
-                                }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    val roleManager = context.getSystemService(RoleManager::class.java)
-                                    if (roleManager != null && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
-                                        roleRequestLauncher.launch(
-                                            roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-                                        )
-                                    } else {
-                                        stepIndex++
-                                    }
-                                } else {
-                                    val intent = Intent(Intent.ACTION_MAIN)
-                                        .addCategory(Intent.CATEGORY_HOME)
-                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(intent)
-                                }
-                            }
-
-                            OnboardingStep.QUERY_PACKAGES -> stepIndex++
-
-                            OnboardingStep.NOTIFICATIONS -> {
-                                if (notifGranted) { stepIndex++; return@clickable }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                } else {
-                                    stepIndex++
-                                }
-                            }
-
-                            OnboardingStep.UNUSED_GREY -> {
-                                // Seçim yapıldıysa kaydet, kaydedilmediyse kapalı bırak
-                                com.armutlu.apporganizer.utils.AppPrefs.setUnusedGreyDays(context, unusedGreyDays)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.AUTO_BACKUP -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.NOTIF_TEXT -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, notifTextEnabled)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.NOTIF_ACCESS -> {
-                                if (notifAccessGranted) { stepIndex++; return@clickable }
-                                context.startActivity(
-                                    android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                )
-                            }
-
-                            OnboardingStep.SWIPE_HINT -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.NEW_BADGE -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, newBadgeEnabled)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.FOLDER_COUNT -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, folderCountEnabled)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.NAV_HIDE -> {
-                                com.armutlu.apporganizer.utils.AppPrefs.setNavButtonsHidden(context, navHideEnabled)
-                                stepIndex++
-                            }
-
-                            OnboardingStep.THEME_SELECT -> {
-                                scope.launch {
-                                    themePrefs.setTheme(selectedTheme)
-                                    themePrefs.setFont(selectedFont)
-                                }
-                                stepIndex++
-                            }
-
-                            OnboardingStep.DONE -> {
-                                context.getSharedPreferences(
-                                    com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME,
-                                    android.content.Context.MODE_PRIVATE
-                                ).edit().putBoolean(
-                                    com.armutlu.apporganizer.utils.AppPrefs.KEY_ONBOARDING_DONE, true
-                                ).apply()
-                                onFinish()
-                            }
-                        }
-                    },
+                        },
+                        onRequestNotif = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            else stepIndex++
+                        },
+                        onNotifAccess = {
+                            context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        },
+                        onFinish = onFinish,
+                        onNextStep = { stepIndex++ }
+                    )},
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -13596,78 +13350,336 @@ fun OnboardingScreen(
                         currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> "Devam Et"
                         else -> currentStep.buttonLabel
                     },
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
                 )
             }
 
-            // UNUSED_GREY için gün seçici chip'leri
+            // UNUSED_GREY gün chip'leri
             if (currentStep == OnboardingStep.UNUSED_GREY) {
                 Spacer(Modifier.height(12.dp))
-                val options = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                ) {
-                    options.forEach { (days, label) ->
-                        val selected = unusedGreyDays == days
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(if (selected) Color(0xFF00897B) else Color.White.copy(alpha = 0.15f))
-                                .clickable {
-                                    unusedGreyDays = days
-                                    com.armutlu.apporganizer.utils.AppPrefs.setUnusedGreyDays(context, days)
-                                }
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(label, color = Color.White, fontSize = 14.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
-                        }
-                    }
+                OnboardingGreyDayChips(unusedGreyDays) { days ->
+                    unusedGreyDays = days
+                    AppPrefs.setUnusedGreyDays(context, days)
                 }
             }
 
-            // Launcher adımı için atla butonu
+            // SET_LAUNCHER için "Şimdi Değil"
             if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
                 Spacer(Modifier.height(12.dp))
                 Box(
-                    modifier = Modifier
-                        .clickable { stepIndex++ }
-                        .padding(vertical = 12.dp, horizontal = 24.dp),
+                    modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
                     contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "Simdi Degil",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.50f)
-                    )
-                }
+                ) { Text("Simdi Degil", fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             }
 
-            // Genel atla butonu (isteğe bağlı adımlar)
-            if (currentStep.isSkippable &&
-                currentStep != OnboardingStep.SET_LAUNCHER &&
-                currentStep != OnboardingStep.UNUSED_GREY
-            ) {
+            // İsteğe bağlı adımlar için "Atla"
+            if (currentStep.isSkippable && currentStep != OnboardingStep.SET_LAUNCHER && currentStep != OnboardingStep.UNUSED_GREY) {
                 Spacer(Modifier.height(4.dp))
                 Box(
-                    modifier = Modifier
-                        .clickable { stepIndex++ }
-                        .padding(vertical = 12.dp, horizontal = 24.dp),
+                    modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
                     contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "Atla",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.50f)
-                    )
-                }
+                ) { Text("Atla", fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             } else {
                 Spacer(Modifier.height(40.dp))
             }
         }
+    }
+}
+
+// ── Buton aksiyonu yardımcısı ────────────────────────────────────────────────
+
+private fun handleOnboardingStep(
+    step: OnboardingStep,
+    context: android.content.Context,
+    scope: kotlinx.coroutines.CoroutineScope,
+    themePrefs: ThemePreferences,
+    viewModel: AppListViewModel,
+    launcherSet: Boolean,
+    notifGranted: Boolean,
+    notifAccessGranted: Boolean,
+    unusedGreyDays: Int,
+    autoBackupEnabled: Boolean,
+    notifTextEnabled: Boolean,
+    swipeHintEnabled: Boolean,
+    newBadgeEnabled: Boolean,
+    folderCountEnabled: Boolean,
+    navHideEnabled: Boolean,
+    selectedTheme: AppTheme,
+    selectedFont: AppFont,
+    restoreFilePicker: () -> Unit,
+    onRequestRole: () -> Unit,
+    onRequestNotif: () -> Unit,
+    onNotifAccess: () -> Unit,
+    onFinish: () -> Unit,
+    onNextStep: () -> Unit
+) {
+    when (step) {
+        OnboardingStep.WELCOME        -> onNextStep()
+        OnboardingStep.RESTORE_BACKUP -> restoreFilePicker()
+        OnboardingStep.QUERY_PACKAGES -> onNextStep()
+        OnboardingStep.NOTIFICATIONS  -> if (notifGranted) onNextStep() else onRequestNotif()
+        OnboardingStep.UNUSED_GREY    -> { AppPrefs.setUnusedGreyDays(context, unusedGreyDays); onNextStep() }
+        OnboardingStep.AUTO_BACKUP    -> { AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled); onNextStep() }
+        OnboardingStep.NOTIF_TEXT     -> { AppPrefs.setNotificationTextEnabled(context, notifTextEnabled); onNextStep() }
+        OnboardingStep.NOTIF_ACCESS   -> if (notifAccessGranted) onNextStep() else onNotifAccess()
+        OnboardingStep.SWIPE_HINT     -> { AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled); onNextStep() }
+        OnboardingStep.NEW_BADGE      -> { AppPrefs.setNewBadgeEnabled(context, newBadgeEnabled); onNextStep() }
+        OnboardingStep.FOLDER_COUNT   -> { AppPrefs.setFolderCountVisible(context, folderCountEnabled); onNextStep() }
+        OnboardingStep.NAV_HIDE       -> { AppPrefs.setNavButtonsHidden(context, navHideEnabled); onNextStep() }
+        OnboardingStep.THEME_SELECT   -> { scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }; onNextStep() }
+        OnboardingStep.SET_LAUNCHER   -> if (launcherSet) onNextStep() else onRequestRole()
+        OnboardingStep.DONE           -> {
+            context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
+            onFinish()
+        }
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingStepContent.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.presentation.ui.theme.AppFont
+import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
+
+/** Adım ikonu — AnimatedContent ile geçiş animasyonlu */
+@Composable
+internal fun OnboardingStepIcon(steps: List<OnboardingStep>, stepIndex: Int) {
+    AnimatedContent(
+        targetState = stepIndex,
+        transitionSpec = {
+            fadeIn() + slideInHorizontally { it / 3 } togetherWith fadeOut() + slideOutHorizontally { -it / 3 }
+        },
+        label = "icon"
+    ) { idx ->
+        val s = steps[idx]
+        val isLauncher = s == OnboardingStep.SET_LAUNCHER
+        val iconBg = if (isLauncher) OnboardingTealGradient else null
+        Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .border(1.5.dp,
+                        if (isLauncher) Color(0xFF00897B).copy(0.6f) else OnboardingAccentPurple.copy(0.4f),
+                        CircleShape)
+                    .then(
+                        if (iconBg != null) Modifier.background(iconBg)
+                        else Modifier.background(OnboardingAccentPurple.copy(0.25f))
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(s.icon, null, modifier = Modifier.size(52.dp), tint = Color.White)
+            }
+        }
+    }
+}
+
+/** İlerleme noktaları */
+@Composable
+internal fun OnboardingStepDots(steps: List<OnboardingStep>, stepIndex: Int) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        steps.indices.forEach { i ->
+            Box(
+                modifier = Modifier
+                    .size(if (i == stepIndex) 24.dp else 7.dp, 7.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(
+                        if (i == stepIndex) OnboardingAccentPurple
+                        else Color.White.copy(0.20f)
+                    )
+            )
+        }
+    }
+}
+
+/** Başlık + açıklama animasyonlu */
+@Composable
+internal fun OnboardingStepHeader(steps: List<OnboardingStep>, stepIndex: Int) {
+    AnimatedContent(targetState = stepIndex, label = "text") { idx ->
+        val s = steps[idx]
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(s.title, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
+            Text(s.description, fontSize = 16.sp, color = Color.White.copy(0.75f), textAlign = TextAlign.Center, lineHeight = 26.sp)
+        }
+    }
+}
+
+/** "Neden gerekli" açıklama kutusu */
+@Composable
+internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
+    if (currentStep.why.isBlank()) return
+    val isLauncher = currentStep == OnboardingStep.SET_LAUNCHER
+    val accentColor = if (isLauncher) Color(0xFF00897B) else OnboardingAccentPurple
+    Box(
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(0.08f))
+    ) {
+        Row(Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+            Box(Modifier.width(3.dp).height(48.dp).clip(RoundedCornerShape(2.dp)).background(accentColor))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+                Icon(Icons.Default.Info, null, tint = accentColor, modifier = Modifier.size(18.dp).padding(top = 2.dp))
+                Text(currentStep.why, fontSize = 14.sp, color = Color.White.copy(0.75f), lineHeight = 20.sp)
+            }
+        }
+    }
+}
+
+/** Durum göstergesi (izin verildi / ayarlandı vb.) */
+@Composable
+internal fun OnboardingStatusBadge(
+    currentStep: OnboardingStep,
+    launcherSet: Boolean,
+    notifGranted: Boolean,
+    notifAccessGranted: Boolean,
+    unusedGreyDays: Int
+) {
+    val isLauncher = currentStep == OnboardingStep.SET_LAUNCHER
+    val statusText = when (currentStep) {
+        OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
+        OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
+        OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
+        OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) "Bildirim erisimi verildi" else null
+        OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gun ayarlandi" else null
+        else -> null
+    } ?: return
+    Box(
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isLauncher) Color(0xFF00897B).copy(0.25f) else OnboardingAccentPurple.copy(0.20f))
+            .padding(12.dp)
+    ) {
+        Text("Tamam: $statusText", fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
+    }
+}
+
+/** THEME_SELECT adımı UI */
+@Composable
+internal fun OnboardingThemeSelector(
+    selectedTheme: AppTheme,
+    selectedFont: AppFont,
+    onThemeChange: (AppTheme) -> Unit,
+    onFontChange: (AppFont) -> Unit
+) {
+    Text("Renk Teması", fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
+    Spacer(Modifier.height(8.dp))
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        items(AppTheme.entries) { theme ->
+            val isSelected = selectedTheme == theme
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.clickable { onThemeChange(theme) }.padding(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(52.dp).clip(CircleShape)
+                        .background(theme.primary)
+                        .border(if (isSelected) 3.dp else 1.dp,
+                            if (isSelected) Color.White else Color.White.copy(0.3f), CircleShape)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(theme.label, fontSize = 11.sp, color = if (isSelected) Color.White else Color.White.copy(0.5f))
+            }
+        }
+    }
+    Spacer(Modifier.height(16.dp))
+    Text("Yazı Tipi", fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
+    Spacer(Modifier.height(8.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        AppFont.entries.forEach { font ->
+            val isSelected = selectedFont == font
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isSelected) OnboardingAccentPurple else Color.White.copy(0.12f))
+                    .clickable { onFontChange(font) }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(font.label, fontSize = 13.sp, color = Color.White,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+            }
+        }
+    }
+    Spacer(Modifier.height(16.dp))
+}
+
+/** UNUSED_GREY gün seçici chip'leri */
+@Composable
+internal fun OnboardingGreyDayChips(unusedGreyDays: Int, onSelect: (Int) -> Unit) {
+    val options = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+    ) {
+        options.forEach { (days, label) ->
+            val selected = unusedGreyDays == days
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (selected) Color(0xFF00897B) else Color.White.copy(0.15f))
+                    .clickable { onSelect(days) }
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(label, color = Color.White, fontSize = 14.sp,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+            }
+        }
+    }
+}
+
+/** Toggle switch — AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE */
+@Composable
+internal fun OnboardingToggleRow(value: Boolean, onValueChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(0.08f))
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(if (value) "Açık" else "Kapalı", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        androidx.compose.material3.Switch(
+            checked = value, onCheckedChange = onValueChange,
+            colors = androidx.compose.material3.SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = OnboardingAccentPurple
+            )
+        )
     }
 }
 
@@ -13750,6 +13762,1004 @@ private fun PolicySection(title: String, body: String) {
         Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
         Text(body, fontSize = 13.sp, lineHeight = 20.sp)
         Divider()
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsAppearanceSection.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.presentation.ui.theme.AppFont
+import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
+import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
+import com.armutlu.apporganizer.utils.AppPrefs
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+/**
+ * Görünüm ayarları: tema, yazı tipi, arka plan, renk, metin saydamlığı,
+ * klasör boyutu, yazı rengi.
+ */
+internal fun LazyListScope.settingsAppearanceSection(
+    themePrefs: ThemePreferences,
+    scope: CoroutineScope
+) {
+    item { SettingsSectionTitle("Görünüm") }
+
+    // ── Tema & Yazı Tipi ────────────────────────────────────────────────
+    item {
+        val currentTheme by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
+        val currentFont  by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
+        SettingsCard {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Renk Teması", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(AppTheme.entries.toList()) { theme ->
+                        val isSelected = currentTheme == theme
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { scope.launch { themePrefs.setTheme(theme) } }.padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(theme.primary)
+                                    .border(
+                                        width = if (isSelected) 3.dp else 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        shape = CircleShape
+                                    )
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                theme.label, fontSize = 11.sp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                Text("Yazı Tipi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AppFont.entries.forEach { font ->
+                        FilterChip(
+                            selected = currentFont == font,
+                            onClick = { scope.launch { themePrefs.setFont(font) } },
+                            label = { Text(font.label, fontSize = 12.sp) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Arka Plan ────────────────────────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        SettingsCard {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Ana Ekran Arka Planı", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                var bgType by remember { mutableStateOf(AppPrefs.getBgType(context)) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("wallpaper" to "Duvar Kağıdı", "solid" to "Düz Renk").forEach { (type, label) ->
+                        FilterChip(
+                            selected = bgType == type,
+                            onClick = { bgType = type; AppPrefs.setBgType(context, type) },
+                            label = { Text(label, fontSize = 12.sp) }
+                        )
+                    }
+                }
+                if (bgType == "solid") {
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                    Text("Arka Plan Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                    val bgColors = listOf(
+                        0xFF1A1A2E.toInt() to "Koyu Lacivert",
+                        0xFF121212.toInt() to "Siyah",
+                        0xFF0A1628.toInt() to "Gece Mavisi",
+                        0xFF1C1008.toInt() to "Koyu Kahve",
+                        0xFF0F2027.toInt() to "Derin Okyanus",
+                        0xFF1A1025.toInt() to "Derin Mor"
+                    )
+                    var selectedBgColor by remember { mutableStateOf(AppPrefs.getBgColor(context)) }
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        items(bgColors) { (colorInt, colorLabel) ->
+                            val isSelected = selectedBgColor == colorInt
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .clickable {
+                                        selectedBgColor = colorInt
+                                        AppPrefs.setBgColor(context, colorInt)
+                                    }
+                                    .padding(4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(colorInt.toLong() or 0xFF000000L))
+                                        .border(
+                                            width = if (isSelected) 3.dp else 1.dp,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                                            shape = CircleShape
+                                        )
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(colorLabel, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                // Metin saydamlığı
+                var textAlpha by remember { mutableStateOf(AppPrefs.getTextAlpha(context)) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.TextFields, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Metin Saydamlığı", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text("Klasör adı opaklığı: ${(textAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Slider(value = textAlpha, onValueChange = { textAlpha = it; AppPrefs.setTextAlpha(context, it) }, valueRange = 0.3f..1.0f, steps = 6)
+            }
+        }
+    }
+
+    // ── Klasör Boyutu & Yazı Rengi ───────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        SettingsCard {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Klasör boyutu slider
+                var folderSize by remember { mutableStateOf(AppPrefs.getFolderSize(context).toFloat()) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Folder, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Klasör Simge Boyutu", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text("${folderSize.toInt()} dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Slider(value = folderSize, onValueChange = { folderSize = it; AppPrefs.setFolderSize(context, it.toInt()) }, valueRange = 56f..96f, steps = 4)
+                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                // Yazı rengi
+                var labelColor by remember { mutableStateOf(AppPrefs.getLabelColor(context)) }
+                val labelColors = listOf(
+                    "#FFFFFF" to "Beyaz", "#000000" to "Siyah",
+                    "#E0E0E0" to "Gri", "#00897B" to "Turkuaz",
+                    "#FFD54F" to "Sarı", "#EF9A9A" to "Pembe"
+                )
+                Text("Yazı Rengi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    labelColors.forEach { (hex, label) ->
+                        val isSelected = labelColor == hex
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { labelColor = hex; AppPrefs.setLabelColor(context, hex) }.padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(Color.White))
+                                    .border(if (isSelected) 3.dp else 1.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray, CircleShape)
+                            )
+                            Text(label, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsAppsSection.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
+
+/**
+ * Kullanılmayan gri chip'leri + Uygulama Yönetimi + Gizli Uygulamalar + Diğer Klasörü
+ */
+internal fun LazyListScope.settingsAppsSection(
+    showSystemApps: Boolean,
+    viewModel: AppListViewModel,
+    hiddenApps: List<AppInfo>,
+    otherApps: List<AppInfo>,
+    llmCategorizing: Boolean,
+    llmProgress: String
+) {
+    // ── Görünüm → Sistem Uygulamaları ─────────────────────────────────
+    item { SettingsSectionTitle("Görünüm") }
+    item {
+        val context = LocalContext.current
+        SettingsCard {
+            SettingsSwitchRow(
+                icon = Icons.Default.Visibility,
+                title = "Sistem Uygulamalarını Göster",
+                subtitle = "Dahili sistem uygulamalarını listele",
+                checked = showSystemApps,
+                onCheckedChange = { viewModel.toggleShowSystemApps() }
+            )
+        }
+    }
+
+    // ── Kullanılmayan gri seçeneği ───────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        var unusedGreyDays by remember { mutableStateOf(AppPrefs.getUnusedGreyDays(context)) }
+        val greyOptions = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
+        SettingsCard {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
+                        Text("Hiç açılmamış uygulamalar soluk gösterilir", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    greyOptions.forEach { (days, label) ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (days == unusedGreyDays) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { unusedGreyDays = days; AppPrefs.setUnusedGreyDays(context, days) }
+                                .padding(horizontal = 12.dp, vertical = 7.dp)
+                        ) {
+                            Text(label, fontSize = 12.sp,
+                                color = if (days == unusedGreyDays) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = if (days == unusedGreyDays) FontWeight.Bold else FontWeight.Normal)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Uygulama Yönetimi ───────────────────────────────────────────────
+    item { SettingsSectionTitle("Uygulama Yönetimi") }
+    item {
+        val context = LocalContext.current
+        SettingsCard {
+            var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
+            SettingsSwitchRow(
+                icon = Icons.Default.PhoneAndroid,
+                title = "Üretici Sınıflandırması",
+                subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilendir",
+                checked = manufacturerClassify,
+                onCheckedChange = { manufacturerClassify = it; AppPrefs.setManufacturerClassifyEnabled(context, it) }
+            )
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsButtonRow(icon = Icons.Default.AutoFixHigh,
+                title = "Sınıflandırılmamışları Sınıflandır",
+                subtitle = "Kategorisiz uygulamaları otomatik ata",
+                onClick = { viewModel.classifyUnclassifiedApps() })
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsButtonRow(icon = Icons.Default.RestartAlt,
+                title = "Tüm Kategorileri Sıfırla",
+                subtitle = "Tüm atamaları sil ve yeniden sınıflandır",
+                iconTint = MaterialTheme.colorScheme.error,
+                onClick = { viewModel.resetAndReclassifyAllApps() })
+        }
+    }
+
+    // ── Gizli Uygulamalar ───────────────────────────────────────────────
+    if (hiddenApps.isNotEmpty()) {
+        item { SettingsSectionTitle("Gizli Uygulamalar (${hiddenApps.size})") }
+        item {
+            SettingsCard {
+                hiddenApps.forEachIndexed { index, app ->
+                    if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Text(app.appName, Modifier.weight(1f), fontSize = 14.sp)
+                        OutlinedButton(onClick = { viewModel.unhideApp(app.packageName) },
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)) {
+                            Text("Göster", fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Diğer Klasörü ───────────────────────────────────────────────────
+    if (otherApps.isNotEmpty()) {
+        item { SettingsSectionTitle("Diğer Klasörü — Bilinmeyenler (${otherApps.size})") }
+        item {
+            val context = LocalContext.current
+            SettingsCard {
+                var apiKeyInput by remember { mutableStateOf(AppPrefs.getDeepSeekApiKey(context)) }
+                var showApiKey  by remember { mutableStateOf(false) }
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Text("Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. DeepSeek AI ile kategorilendirilebilir.",
+                        fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = apiKeyInput,
+                        onValueChange = { apiKeyInput = it; AppPrefs.setDeepSeekApiKey(context, it) },
+                        label = { Text("DeepSeek API Key", fontSize = 12.sp) },
+                        placeholder = { Text("sk-...", fontSize = 12.sp) },
+                        singleLine = true, modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { showApiKey = !showApiKey }) {
+                                Icon(if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility, null, modifier = Modifier.size(18.dp))
+                            }
+                        },
+                        textStyle = TextStyle(fontSize = 13.sp)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
+                        enabled = !llmCategorizing && apiKeyInput.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth()) {
+                        if (llmCategorizing) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Kategorize ediliyor...", fontSize = 13.sp)
+                        } else {
+                            Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("DeepSeek ile Kategorize Et", fontSize = 13.sp)
+                        }
+                    }
+                    if (llmProgress.isNotBlank()) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(llmProgress, fontSize = 12.sp,
+                            color = if (llmProgress.startsWith("Hata") || llmProgress.contains("hata"))
+                                MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                    }
+                }
+                Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                otherApps.take(20).forEachIndexed { index, app ->
+                    if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(app.appName, fontSize = 14.sp, maxLines = 1)
+                            Text(app.packageName, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                        }
+                    }
+                }
+                if (otherApps.size > 20) {
+                    Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                    Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                        Text("...ve ${otherApps.size - 20} uygulama daha", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
+import kotlinx.coroutines.launch
+
+/**
+ * Hakkında (bilgi) + Yedek/Geri Yükle + Hakkında (gizlilik/versiyon) + Debug bölümleri
+ */
+internal fun LazyListScope.settingsBackupAboutSection(
+    viewModel: AppListViewModel,
+    appCount: Int,
+    categoryCount: Int,
+    logs: List<String>,
+    onNavigateToPrivacyPolicy: () -> Unit
+) {
+    val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
+
+    // ── Hakkında (üst) ──────────────────────────────────────────────────
+    item { SettingsSectionTitle("Hakkında") }
+    item {
+        SettingsCard {
+            SettingsInfoRow(Icons.Default.Apps, "App Organizer", "v1.0 beta")
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsInfoRow(Icons.Default.Person, "Geliştirici", "Hüseyin Ekizoğlu")
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsInfoRow(Icons.Default.Code, "Kaynak Kod", "github.com/hekizoglu/android-folderautomanager")
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsInfoRow(Icons.Default.Storage, "Veritabanı", "$appCount uygulama · $categoryCount kategori")
+        }
+    }
+
+    // ── Yedek / Geri Yükle ─────────────────────────────────────────────
+    item { SettingsSectionTitle("Yedek / Geri Yükle") }
+    item {
+        val context = LocalContext.current
+        var autoBackup by remember { mutableStateOf(AppPrefs.isAutoBackupEnabled(context)) }
+        SettingsCard {
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Autorenew, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Otomatik Yedekleme", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("Uygulama açıldığında otomatik JSON yedeği al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = autoBackup, onCheckedChange = { autoBackup = it; AppPrefs.setAutoBackupEnabled(context, it) })
+            }
+        }
+    }
+    item {
+        val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
+        var backupLoading by remember { mutableStateOf(false) }
+        val filePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
+            coroutineScope.launch {
+                backupLoading = true
+                runCatching {
+                    val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return@runCatching
+                    val result = viewModel.importBackup(json)
+                    android.widget.Toast.makeText(context,
+                        if (result.success) "${result.updatedCount} uygulama geri yüklendi"
+                        else "Geri yükleme başarısız: ${result.error}",
+                        android.widget.Toast.LENGTH_LONG).show()
+                }
+                backupLoading = false
+            }
+        }
+        val shareLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+        SettingsCard {
+            Row(modifier = Modifier.fillMaxWidth()
+                    .clickable(enabled = !backupLoading) {
+                        coroutineScope.launch {
+                            backupLoading = true
+                            val intent = viewModel.exportBackup(context)
+                            if (intent != null) shareLauncher.launch(Intent.createChooser(intent, "Yedeği paylaş"))
+                            else android.widget.Toast.makeText(context, "Dışa aktarma başarısız", android.widget.Toast.LENGTH_SHORT).show()
+                            backupLoading = false
+                        }
+                    }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Upload, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Yedek Al", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("Kategori atamalarını JSON olarak dışa aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (backupLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            Row(modifier = Modifier.fillMaxWidth()
+                    .clickable(enabled = !backupLoading) { filePickerLauncher.launch("application/json") }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Download, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Geri Yükle", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("JSON yedek dosyasından kategorileri içe aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+
+    // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
+    item { SettingsSectionTitle("Hakkında") }
+    item {
+        SettingsCard {
+            SettingsButtonRow(Icons.Default.PrivacyTip, "Gizlilik Politikası",
+                "Veri toplama ve kullanım hakkınızda bilgi alın",
+                onClick = onNavigateToPrivacyPolicy)
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsInfoRow(Icons.Default.Info, "Versiyon", "AppOrganizer 1.0.0 — Haziran 2026")
+        }
+    }
+
+    // ── Debug ────────────────────────────────────────────────────────────
+    if (logs.isNotEmpty()) {
+        item { SettingsSectionTitle("Debug") }
+        item {
+            val coroutineScope = rememberCoroutineScope()
+            val clipboard = LocalClipboardManager.current
+            var debugExpanded by remember { mutableStateOf(false) }
+            SettingsCard {
+                Row(modifier = Modifier.fillMaxWidth()
+                        .clickable { debugExpanded = !debugExpanded }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.BugReport, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Loglar", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text("${logs.size} satır", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(if (debugExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (debugExpanded) {
+                    Column(modifier = Modifier.fillMaxWidth().animateContentSize().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                        logs.takeLast(30).forEach { line ->
+                            Text(line, fontSize = 11.sp, fontFamily = FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 1.dp))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = { clipboard.setText(AnnotatedString(viewModel.getDebugLogs())) },
+                                modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Kopyala", fontSize = 13.sp)
+                            }
+                            OutlinedButton(onClick = { viewModel.clearDebugLogs() }, modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                                Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Temizle", fontSize = 13.sp)
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsComponents.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+// ── Bölüm başlığı ─────────────────────────────────────────────────────────
+
+@Composable
+internal fun SettingsSectionTitle(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 28.dp, top = 20.dp, bottom = 6.dp, end = 16.dp)
+    )
+}
+
+// ── Kart sarmalayıcı ───────────────────────────────────────────────────────
+
+@Composable
+internal fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) { Column(content = content) }
+}
+
+// ── Switch satırı ──────────────────────────────────────────────────────────
+
+@Composable
+internal fun SettingsSwitchRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        )
+    }
+}
+
+// ── Tıklanabilir satır (chevron) ──────────────────────────────────────────
+
+@Composable
+internal fun SettingsButtonRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Icon(Icons.Default.ChevronRight, null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+    }
+}
+
+// ── Bilgi satırı (tıklanamaz) ────────────────────────────────────────────
+
+@Composable
+internal fun SettingsInfoRow(icon: ImageVector, title: String, subtitle: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+// ── Geriye dönük uyumluluk (dış API) ─────────────────────────────────────
+
+@Composable
+fun SectionHeader(title: String) = SettingsSectionTitle(title)
+
+@Composable
+fun SettingSwitch(title: String, description: String, checked: Boolean,
+                  onCheckedChange: (Boolean) -> Unit) =
+    SettingsSwitchRow(Icons.Default.Settings, title, description, checked, onCheckedChange)
+
+@Composable
+fun SettingButton(title: String, description: String, onClick: () -> Unit) =
+    SettingsButtonRow(Icons.Default.ChevronRight, title, description, onClick = onClick)
+
+@Composable
+fun SettingInfo(title: String, description: String) =
+    SettingsInfoRow(Icons.Default.Info, title, description)
+
+@Composable
+fun DebugInfoCard(
+    appCount: Int, categoryCount: Int, error: String?, logs: List<String>,
+    launcherInfo: String, a11yActive: Boolean,
+    onSendBugReport: () -> Unit, onClearLogs: () -> Unit
+) {}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsHomeSection.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.screens
+
+import android.content.Intent
+import android.os.Build
+import android.app.role.RoleManager
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.DockPrefs
+import com.armutlu.apporganizer.utils.IconPackManager
+
+/**
+ * Launcher + Dock + Ana Ekran Özellikleri + Widget + İkon Paketi bölümleri
+ */
+internal fun LazyListScope.settingsHomeSection(
+    isDefault: Boolean,
+    onRequestRole: () -> Unit
+) {
+    // ── Launcher ────────────────────────────────────────────────────────
+    item { SettingsSectionTitle("Launcher") }
+    item {
+        val context = LocalContext.current
+        SettingsCard {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Home, null,
+                    tint = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Varsayılan Launcher", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text(if (isDefault) "Aktif" else "Ayarlanmadı", fontSize = 12.sp,
+                        color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (isDefault) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        OutlinedButton(onClick = onRequestRole, contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)) {
+                            Text("Değiştir", fontSize = 12.sp)
+                        }
+                    }
+                } else {
+                    Button(onClick = onRequestRole,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)) {
+                        Text("Ayarla", fontSize = 13.sp)
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Dock Uygulamaları ───────────────────────────────────────────────
+    item { SettingsSectionTitle("Dock Uygulamaları") }
+    item {
+        val context = LocalContext.current
+        val pm = context.packageManager
+        var dockPkgs by remember { mutableStateOf(DockPrefs.getDockPackages(context)) }
+        SettingsCard {
+            if (dockPkgs.isEmpty()) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Dock boş", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                dockPkgs.forEachIndexed { index, pkg ->
+                    val appName = remember(pkg) {
+                        runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                    }
+                    if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Apps, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Text(appName, Modifier.weight(1f), fontSize = 14.sp)
+                        IconButton(onClick = {
+                            DockPrefs.removeFromDock(context, pkg)
+                            dockPkgs = DockPrefs.getDockPackages(context)
+                        }, modifier = Modifier.size(32.dp)) {
+                            Icon(Icons.Default.Close, "Kaldır", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            SettingsButtonRow(icon = Icons.Default.RestartAlt,
+                title = "Varsayılana Sıfırla",
+                subtitle = "Telefon, Mesaj, Kamera, Tarayıcı",
+                onClick = {
+                    DockPrefs.saveDockPackages(context, emptyList())
+                    dockPkgs = DockPrefs.getDockPackages(context)
+                })
+        }
+    }
+
+    // ── Ana Ekran Özellikleri ───────────────────────────────────────────
+    item { SettingsSectionTitle("Ana Ekran Özellikleri") }
+    item {
+        val context = LocalContext.current
+        var favoritesEnabled    by remember { mutableStateOf(AppPrefs.isFavoritesEnabled(context)) }
+        var suggestionsEnabled  by remember { mutableStateOf(AppPrefs.isSuggestionsEnabled(context)) }
+        var recentAppsEnabled   by remember { mutableStateOf(AppPrefs.isRecentAppsEnabled(context)) }
+        var swipeHintEnabled    by remember { mutableStateOf(AppPrefs.isSwipeHintEnabled(context)) }
+        var newBadgeEnabled     by remember { mutableStateOf(AppPrefs.isNewBadgeEnabled(context)) }
+        var folderCountVisible  by remember { mutableStateOf(AppPrefs.isFolderCountVisible(context)) }
+        var folderSwipeHint     by remember { mutableStateOf(AppPrefs.isFolderSwipeHintEnabled(context)) }
+        var notifTextEnabled    by remember { mutableStateOf(AppPrefs.isNotificationTextEnabled(context)) }
+        var hideNavButtons      by remember { mutableStateOf(AppPrefs.isNavButtonsHidden(context)) }
+        var allAppsBgAlpha      by remember { mutableStateOf(AppPrefs.getAllAppsBgAlpha(context)) }
+        SettingsCard {
+            SettingsSwitchRow(Icons.Default.Star, "Favoriler",
+                "Uzun basınca favoriye eklenen uygulamalar ana ekranda gösterilir",
+                favoritesEnabled) { favoritesEnabled = it; AppPrefs.setFavoritesEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.AutoAwesome, "Uygulama Önerileri",
+                "Arama çubuğunun altında son kullanılan 4 uygulama",
+                suggestionsEnabled) { suggestionsEnabled = it; AppPrefs.setSuggestionsEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.History, "Son Kullanılanlar",
+                "Ana ekranda + tüm uygulamalarda son 4 uygulamayı göster",
+                recentAppsEnabled) { recentAppsEnabled = it; AppPrefs.setRecentAppsEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.SwipeUp, "Swipe-up İpucu",
+                "Ana ekranda yukarı kaydırma animasyonu göster",
+                swipeHintEnabled) { swipeHintEnabled = it; AppPrefs.setSwipeHintEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.NewReleases, "YENİ Badge",
+                "7 gün içinde kurulan uygulamalara rozet göster",
+                newBadgeEnabled) { newBadgeEnabled = it; AppPrefs.setNewBadgeEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.FormatListNumbered, "Klasör Uygulama Sayısı",
+                "Klasör simgesinin altında uygulama adedini göster",
+                folderCountVisible) { folderCountVisible = it; AppPrefs.setFolderCountVisible(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.Folder, "Klasör Swipe İpucu",
+                "Klasörde en çok kullanılan uygulamayı göster",
+                folderSwipeHint) { folderSwipeHint = it; AppPrefs.setFolderSwipeHintEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.Notifications, "Bildirim Metni",
+                "Klasör ve uygulamaların altında son bildirimi göster",
+                notifTextEnabled) { notifTextEnabled = it; AppPrefs.setNotificationTextEnabled(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(Icons.Default.HideSource, "Sistem Navigasyonunu Gizle",
+                "Tam ekran launcher — geri/home/recents butonsuz",
+                hideNavButtons) { hideNavButtons = it; AppPrefs.setNavButtonsHidden(context, it) }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Opacity, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Tüm Uygulamalar Arka Plan", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text("Opaklık: ${(allAppsBgAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Slider(value = allAppsBgAlpha,
+                    onValueChange = { allAppsBgAlpha = it; AppPrefs.setAllAppsBgAlpha(context, it) },
+                    valueRange = 0.1f..1.0f, steps = 8)
+            }
+        }
+    }
+
+    // ── Widget Alanı ────────────────────────────────────────────────────
+    item { SettingsSectionTitle("Widget") }
+    item {
+        val context = LocalContext.current
+        var widgetAreaEnabled by remember { mutableStateOf(AppPrefs.isWidgetAreaEnabled(context)) }
+        SettingsCard {
+            SettingsSwitchRow(Icons.Default.Widgets, "Widget Alanı",
+                "Ana ekranda widget gösterimine izin ver",
+                widgetAreaEnabled) { widgetAreaEnabled = it; AppPrefs.setWidgetAreaEnabled(context, it) }
+        }
+    }
+
+    // ── İkon Paketi ─────────────────────────────────────────────────────
+    item { SettingsSectionTitle("İkon Paketi") }
+    item {
+        val context = LocalContext.current
+        val iconPacks = remember { IconPackManager.getInstalledIconPacks(context) }
+        var selectedPack by remember { mutableStateOf(AppPrefs.getIconPack(context)) }
+        SettingsCard {
+            Row(modifier = Modifier.fillMaxWidth()
+                    .clickable { selectedPack = ""; AppPrefs.setIconPack(context, "") }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Android, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Sistem İkonları", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("Varsayılan uygulama ikonları", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (selectedPack.isEmpty()) Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            }
+            if (iconPacks.isEmpty()) {
+                Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Text("Kurulu ikon paketi bulunamadı. Play Store'dan bir ikon paketi yükleyin.",
+                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                iconPacks.forEach { pack ->
+                    Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    Row(modifier = Modifier.fillMaxWidth()
+                            .clickable { selectedPack = pack.packageName; AppPrefs.setIconPack(context, pack.packageName) }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Palette, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Text(pack.label, Modifier.weight(1f), fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        if (selectedPack == pack.packageName) Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -16699,6 +17709,35 @@ object IconPackManager {
         res.getDrawable(resId, null)?.toBitmap(sizePx, sizePx)
     }.getOrNull()
 }
+
+// ----- Adaptive Icon Loader -----
+// AdaptiveIconDrawable (API 26+) için squircle mask uygular
+// Legacy drawable'larda direkt toBitmap kullanır
+// Kullanım: loadAppIcon(context, packageName, 96)
+
+fun loadAppIcon(context: android.content.Context, packageName: String, sizePx: Int): android.graphics.Bitmap? =
+    runCatching {
+        val drawable = context.packageManager.getApplicationIcon(packageName)
+        if (android.os.Build.VERSION.SDK_INT >= 26 &&
+            drawable is android.graphics.drawable.AdaptiveIconDrawable) {
+            val bmp = android.graphics.Bitmap.createBitmap(sizePx, sizePx, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bmp)
+            // Squircle mask — Android default adaptive icon shape approximation
+            val path = android.graphics.Path()
+            val r = sizePx * 0.22f  // 22% corner radius ≈ squircle
+            path.addRoundRect(
+                android.graphics.RectF(0f, 0f, sizePx.toFloat(), sizePx.toFloat()),
+                r, r,
+                android.graphics.Path.Direction.CW
+            )
+            canvas.clipPath(path)
+            drawable.setBounds(0, 0, sizePx, sizePx)
+            drawable.draw(canvas)
+            bmp
+        } else {
+            drawable.toBitmap(sizePx, sizePx)
+        }
+    }.getOrNull()
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/utils/LauncherOrganizer.kt
