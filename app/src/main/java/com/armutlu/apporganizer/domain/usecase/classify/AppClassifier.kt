@@ -3427,6 +3427,46 @@ class AppClassifier @Inject constructor() {
         "com.ssk.android"                            to Category.CAT_UTILITIES,
         "com.takaful.android"                        to Category.CAT_FINANCE,
         "com.ipragaz.android"                        to Category.CAT_UTILITIES,
+
+        // Loop 82 — Kids & Family
+        "com.youtube.kids.android"                   to Category.CAT_ENTERTAINMENT,
+        "com.disney.junior.android"                  to Category.CAT_ENTERTAINMENT,
+        "com.abcmouse.android"                       to Category.CAT_EDUCATION,
+        "com.khanacademykids.android"                to Category.CAT_EDUCATION,
+        "com.tinylab.android"                        to Category.CAT_GAMES,
+        "com.budgemonster.android"                   to Category.CAT_EDUCATION,
+        "com.pocoyo.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.peppa.pig.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.bluey.android"                          to Category.CAT_ENTERTAINMENT,
+
+        // Loop 82 — Music Production & DJ
+        "com.fl.studio.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.acapella.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.soulseek.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.cross.dj.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.djay.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.edjing.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.virtual.dj.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.groovepad.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.walk.band.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.guitar.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.piano.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.simply.piano.android"                   to Category.CAT_EDUCATION,
+
+        // Loop 82 — Sports & Fitness Tracking
+        "com.stryd.android"                          to Category.CAT_HEALTH,
+        "com.sports.tracker.android"                 to Category.CAT_HEALTH,
+        "com.pacer.android"                          to Category.CAT_HEALTH,
+        "com.stepz.android"                          to Category.CAT_HEALTH,
+        "com.pedometer.android"                      to Category.CAT_HEALTH,
+        "com.actfit.android"                         to Category.CAT_HEALTH,
+        "com.healthifyme.android"                    to Category.CAT_HEALTH,
+
+        // Loop 82 — Crypto & Web3
+        "com.coinbase.nft.android"                   to Category.CAT_FINANCE,
+        "com.ledger.live.android"                    to Category.CAT_FINANCE,
+        "com.trezor.android"                         to Category.CAT_FINANCE,
+        "com.safepal.android"                        to Category.CAT_FINANCE,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
