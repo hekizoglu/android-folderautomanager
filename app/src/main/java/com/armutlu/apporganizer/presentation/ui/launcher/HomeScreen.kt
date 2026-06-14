@@ -120,7 +120,7 @@ fun HomeScreen(
     var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
     var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
-    val favoriteApps by remember { viewModel.getFavoriteApps(context) }.collectAsState()
+    val favoriteApps by viewModel.favoriteApps.collectAsState()
     val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
@@ -694,6 +694,9 @@ fun HomeScreen(
             },
             onSaveNote = { note ->
                 viewModel.saveAppNote(app.packageName, note)
+            },
+            onToggleFavorite = { _ ->
+                viewModel.initFavorites(context)
             }
         )
     }

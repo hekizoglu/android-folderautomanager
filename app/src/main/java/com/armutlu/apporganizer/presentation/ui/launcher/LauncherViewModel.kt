@@ -91,6 +91,9 @@ class LauncherViewModel @Inject constructor(
     // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
     private val isLoadingApps = AtomicBoolean(false)
 
+    // Favori paket seti — toggleFavorite() ile güncellenir, allApps ile combine edilir
+    private val _favoritePkgs = MutableStateFlow<Set<String>>(emptySet())
+
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
 
@@ -388,14 +391,29 @@ class LauncherViewModel @Inject constructor(
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
-    // Favori uygulamalar — SharedPrefs Set ile saklanir, allApps flow'undan filtrelenir
-    fun getFavoriteApps(context: Context): StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
-        .map { apps ->
-            val favPkgs = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
+    // Favori uygulamalar — _favoritePkgs + allApps combine ile reaktif StateFlow
+    val favoriteApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .combine(_favoritePkgs) { apps, favPkgs ->
             apps.filter { it.packageName in favPkgs && !it.isHidden }
                 .sortedBy { it.appName.lowercase(java.util.Locale("tr")) }
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** LauncherActivity.onCreate'de bir kez çağrılır; SharedPrefs'ten favori seti yüklenir. */
+    fun initFavorites(context: Context) {
+        _favoritePkgs.value = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
+    }
+
+    /** Favori toggle — SharedPrefs + reaktif StateFlow birlikte güncellenir. */
+    fun toggleFavorite(context: Context, packageName: String) {
+        val isFav = com.armutlu.apporganizer.utils.AppPrefs.isFavorite(context, packageName)
+        if (isFav) {
+            com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, packageName)
+        } else {
+            com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, packageName)
+        }
+        _favoritePkgs.value = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
+    }
 
     // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
     val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()

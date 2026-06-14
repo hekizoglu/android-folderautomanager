@@ -63,6 +63,7 @@ fun AppContextMenu(
     onChangeCategory: () -> Unit,
     onHideApp: ((Boolean) -> Unit)? = null,
     onSaveNote: ((String) -> Unit)? = null,
+    onToggleFavorite: ((isFavNow: Boolean) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
@@ -240,6 +241,7 @@ fun AppContextMenu(
                     if (isFav) com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, app.packageName)
                     else com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, app.packageName)
                     isFav = !isFav
+                    onToggleFavorite?.invoke(isFav)
                     onDismiss()
                 }
             )

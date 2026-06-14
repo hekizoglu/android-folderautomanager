@@ -112,6 +112,7 @@ class LauncherActivity : ComponentActivity() {
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
         viewModel.loadAppsIfEmpty(this)
+        viewModel.initFavorites(this)
         viewModel.syncUsageStats(this)
         AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin
         viewModel.syncAppSizes(this)
