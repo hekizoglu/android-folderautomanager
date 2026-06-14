@@ -305,7 +305,7 @@ fun SettingsScreen(
                                 color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        val launcherAction = {
+                        val launcherAction: () -> Unit = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 val rm = context.getSystemService(RoleManager::class.java)
                                 if (rm.isRoleAvailable(RoleManager.ROLE_HOME)) {
@@ -315,6 +315,7 @@ fun SettingsScreen(
                                 val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 runCatching { context.startActivity(i) }
+                                Unit
                             }
                         }
                         if (isDefault) {
