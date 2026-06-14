@@ -13,8 +13,8 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
 ## 🔥 Aktif Sprint
 
 ### 🔒 Güvenlik (Önce Bu)
-- [ ] 🔒 **Telegram bot token rotasyonu** — Eski token CLAUDE.md'de plaintext yazılıydı (repo'ya sızmış olabilir). BotFather'dan yeni token al → `.env` + GitHub secret'a koy → eski token'ı revoke et. Yeni CLAUDE.md'de token YOK, sadece referans var. ⚠️ Sen yapmalısın (BotFather erişimi)
-- [ ] 🔒 `.gitignore` doğrula — `.env`, `release.jks`, `*.aab` repo'da OLMAMALI
+- [x] ~~🔒 Telegram bot token rotasyonu~~ ✅ Yeni token alındı, `.env` güncellendi, test edildi (2026-06-15)
+- [x] ~~🔒 `.gitignore` doğrula~~ ✅ `.env`, `*.jks`, `keystore.properties`, `*.aab` korunuyor (2026-06-15)
 
 ### Play Store Yayını (Kritik)
 - [x] ~~app-release.aab oluştur + imzala~~ ✅ v1.0.0 (6.3MB, `Desktop/AppOrganizer_PlayStore/`)
@@ -31,8 +31,8 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
 - [x] ~~Encoding fix scripti~~ ✅ `scripts/fix_encoding.py`
 - [x] ~~Telegram bildirim helper~~ ✅ `scripts/telegram_notify.ps1`
 - [ ] `cycle.ps1` yerel makinede uçtan uca test (build → push → Telegram)
-- [ ] Git pre-commit hook → `check_duplicates.py` otomatik çalışsın (AppClassifier değişince commit'i blokla)
-- [ ] `scripts/update_notebooklm.py` — NotebookLM kaynak senkron (varsa doğrula, yoksa oluştur)
+- [x] ~~Git pre-commit hook~~ ✅ `.github/hooks/pre-commit` + `scripts/install_hooks.ps1` (2026-06-15)
+- [x] ~~`scripts/update_notebooklm.py`~~ ✅ 68 Kotlin dosyası → 488KB, Masaüstü/notebooklm_apporganizer/ (2026-06-15)
 
 ---
 

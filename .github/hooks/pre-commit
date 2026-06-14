@@ -1,0 +1,40 @@
+#!/bin/sh
+# pre-commit hook: AppClassifier değişince duplicate kontrolü yap, varsa commit'i blokla.
+# Kurulum: scripts/install_hooks.ps1 veya manuel:
+#   cp .github/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+
+CLASSIFIER="app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/AppClassifier.kt"
+
+# AppClassifier bu commit'te değişiyor mu?
+if git diff --cached --name-only | grep -q "$CLASSIFIER"; then
+  echo "🔍 AppClassifier değişti — duplicate kontrolü yapılıyor..."
+
+  # Python bul
+  if command -v python3 >/dev/null 2>&1; then
+    PY=python3
+  elif command -v python >/dev/null 2>&1; then
+    PY=python
+  else
+    echo "⚠️  Python bulunamadı, duplicate kontrolü atlandı."
+    exit 0
+  fi
+
+  # check_duplicates.py çalıştır
+  if [ -f "scripts/check_duplicates.py" ]; then
+    $PY scripts/check_duplicates.py "$CLASSIFIER"
+    EXIT=$?
+    if [ $EXIT -ne 0 ]; then
+      echo ""
+      echo "❌ COMMIT ENGELLENDI: AppClassifier'da duplicate paket var!"
+      echo "   Düzeltmek için: python3 scripts/dedup_classifier.py"
+      echo "   Sonra tekrar: git add app/src/.../AppClassifier.kt && git commit"
+      exit 1
+    fi
+    echo "✅ Duplicate yok — commit devam ediyor."
+  else
+    echo "⚠️  scripts/check_duplicates.py bulunamadı, kontrol atlandı."
+  fi
+fi
+
+exit 0
