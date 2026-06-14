@@ -53,6 +53,8 @@ class PackageChangeReceiver : BroadcastReceiver() {
             try {
                 val repo = getRepository(context)
                 repo.deleteApp(packageName)
+                // Favori listesinden de temizle — silinen uygulama favorilerde kalmasın
+                com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, packageName)
                 Timber.d("Removed app from DB: $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error removing app: $packageName")
