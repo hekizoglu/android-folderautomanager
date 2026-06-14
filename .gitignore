@@ -32,3 +32,7 @@ mempalace.yaml
 .env
 
 nul
+
+# docs klasöründeki geçici dosyalar (full_source.txt CI tarafından yönetilir)
+docs/all_code.txt
+docs/task/
