@@ -3231,6 +3231,60 @@ class AppClassifier @Inject constructor() {
         "com.matbet.android"                         to Category.CAT_ENTERTAINMENT,
         "com.bahsegel.android"                       to Category.CAT_ENTERTAINMENT,
         "com.betturkey.android"                      to Category.CAT_ENTERTAINMENT,
+
+        // Loop 77 — Anime & Manga
+        "com.crunchyroll.android"                    to Category.CAT_ENTERTAINMENT,
+        "com.hidive.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.anime.planet.android"                   to Category.CAT_ENTERTAINMENT,
+        "com.animelab.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.niconico.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.mangaplus.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.shonenjump.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.tachiyomi.android"                      to Category.CAT_ENTERTAINMENT,
+        "eu.kanade.tachiyomi"                        to Category.CAT_ENTERTAINMENT,
+        "com.webtoon.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.tapas.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.lezhin.android"                         to Category.CAT_ENTERTAINMENT,
+
+        // Loop 77 — Smart Home & IoT
+        "com.amazon.echo.android"                    to Category.CAT_UTILITIES,
+        "com.philips.hue.android"                    to Category.CAT_UTILITIES,
+        "com.lifx.android"                           to Category.CAT_UTILITIES,
+        "com.govee.android"                          to Category.CAT_UTILITIES,
+        "com.smartthings.android"                    to Category.CAT_UTILITIES,
+        "com.wink.android"                           to Category.CAT_UTILITIES,
+        "com.stringify.android"                      to Category.CAT_UTILITIES,
+        "net.ifttt.android"                          to Category.CAT_UTILITIES,
+        "com.asus.router.android"                    to Category.CAT_UTILITIES,
+        "com.eero.android"                           to Category.CAT_UTILITIES,
+        "com.dlink.android"                          to Category.CAT_UTILITIES,
+        "com.miui.smart.android"                     to Category.CAT_UTILITIES,
+
+        // Loop 77 — Meditation & Sleep
+        "com.insight.timer.android"                  to Category.CAT_HEALTH,
+        "com.buddhify.android"                       to Category.CAT_HEALTH,
+        "com.breethe.android"                        to Category.CAT_HEALTH,
+        "com.simple.habit.android"                   to Category.CAT_HEALTH,
+        "com.meditopia.android"                      to Category.CAT_HEALTH,
+        "com.prana.android"                          to Category.CAT_HEALTH,
+        "com.sleep.cycle.android"                    to Category.CAT_HEALTH,
+        "com.sleepasandroid"                         to Category.CAT_HEALTH,
+        "com.pzizz.android"                          to Category.CAT_HEALTH,
+        "com.sleepsounds.android"                    to Category.CAT_HEALTH,
+        "com.noisli.android"                         to Category.CAT_HEALTH,
+        "com.mynoise.android"                        to Category.CAT_HEALTH,
+
+        // Loop 77 — TR Culture & Art
+        "com.seturperformans.android"                to Category.CAT_ENTERTAINMENT,
+        "com.haberler.com.android"                   to Category.CAT_NEWS,
+        "com.gunes.android"                          to Category.CAT_NEWS,
+        "com.takvim.android"                         to Category.CAT_NEWS,
+        "com.star.tv.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.kanal.d.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.show.tv.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.atv.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.fox.tv.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.trt1.android"                           to Category.CAT_ENTERTAINMENT,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
