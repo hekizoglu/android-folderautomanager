@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:18 UTC
-# Commit: d4c5399c4fd67498ae7ba850e3802f4411a3a1d8
+# Generated: 2026-06-14 00:20 UTC
+# Commit: 6ff369b336d950c455a51afefa87715dd4daa689
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2974,6 +2974,85 @@ class AppClassifier @Inject constructor() {
         "com.acibademsaglik.android"                 to Category.CAT_HEALTH,
         "com.medikal.android"                        to Category.CAT_HEALTH,
         "com.mhealth.android"                        to Category.CAT_HEALTH,
+
+        // ── Loop 43: GAME + TR Kurumsal + Global Eksikler ────────────────────
+        // GAMES — Mobile global top
+        "com.ea.game.pvzfree_row"                    to Category.CAT_GAMES,
+        "com.ea.game.simsfreeplay_row"               to Category.CAT_GAMES,
+        "com.naturalmotion.clashofgangs"             to Category.CAT_GAMES,
+        "com.playdots.two"                           to Category.CAT_GAMES,
+        "com.vector.tap.two"                         to Category.CAT_GAMES,
+        "com.zeptolab.cuttherope.paid"               to Category.CAT_GAMES,
+        "com.devsisters.ck"                          to Category.CAT_GAMES,
+        "com.outfit7.talkingtomgoldrun2"             to Category.CAT_GAMES,
+        "com.yodo1games.minesweeper"                 to Category.CAT_GAMES,
+        "com.bandainamcogames.dragonballlegends"      to Category.CAT_GAMES,
+        "com.bandainamcogames.naruto"                to Category.CAT_GAMES,
+        "com.square_enix.android_googleplay.ffbe"    to Category.CAT_GAMES,
+        "com.nexon.bluearchive"                      to Category.CAT_GAMES,
+        "com.kingsgroup.sos"                         to Category.CAT_GAMES,
+        "com.lilithgames.roc.gp"                     to Category.CAT_GAMES,
+        "com.loco.game"                              to Category.CAT_GAMES,
+        "com.bigfish.gourmetranch"                   to Category.CAT_GAMES,
+        "com.rovio.abclassic"                        to Category.CAT_GAMES,
+        "com.rovio.ab2"                              to Category.CAT_GAMES,
+        "com.gameloft.android.anmp.glofsam8"         to Category.CAT_GAMES,
+        "com.gameloft.android.anmp.glofgt8"          to Category.CAT_GAMES,
+        "com.kabam.marvelbattlegrounds"              to Category.CAT_GAMES,
+        "com.hypergryph.arknights"                   to Category.CAT_GAMES,
+        "io.innersloth.amongus"                      to Category.CAT_GAMES,
+        "com.innersloth.project.z"                   to Category.CAT_GAMES,
+        "com.bosskey.lawbreakers"                    to Category.CAT_GAMES,
+        "com.netease.letswintr"                      to Category.CAT_GAMES,
+        "com.mobilelegends.and"                      to Category.CAT_GAMES,
+        "com.tencent.iglite"                         to Category.CAT_GAMES,
+
+        // TR KURUMSAL / KAMU
+        "com.turkiye.edevlet"                        to Category.CAT_PRODUCTIVITY,
+        "com.nvi.turkiye.kimlik"                     to Category.CAT_PRODUCTIVITY,
+        "tr.gov.diyanet.kuranimerim"                 to Category.CAT_PRODUCTIVITY,
+        "com.mobven.egm"                             to Category.CAT_PRODUCTIVITY,
+        "com.turkiye.meb"                            to Category.CAT_PRODUCTIVITY,
+        "com.sgk.android"                            to Category.CAT_PRODUCTIVITY,
+        "com.bimer.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.belediye.istanbul"                      to Category.CAT_TRAVEL,
+        "tr.gov.saglik.aile"                         to Category.CAT_HEALTH,
+        "com.hayatevesigar.app"                      to Category.CAT_HEALTH,
+        "com.mobillium.arabam"                       to Category.CAT_SHOPPING,
+
+        // PRODUCTIVITY — global eksikler
+        "com.hemingwayapp.android"                   to Category.CAT_PRODUCTIVITY,
+        "com.nuclino.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.craft.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.affine.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.readwise.reader"                        to Category.CAT_PRODUCTIVITY,
+        "com.pocket.cast"                            to Category.CAT_ENTERTAINMENT,
+        "au.com.shiftyjelly.pocketcasts"             to Category.CAT_ENTERTAINMENT,
+        "com.overcast.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.google.android.apps.podcasts"           to Category.CAT_ENTERTAINMENT,
+        "com.acast.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.stitcher.app"                           to Category.CAT_ENTERTAINMENT,
+        "com.spreaker.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.buzzsprout.android"                     to Category.CAT_ENTERTAINMENT,
+
+        // SOCIAL — eksik platformlar
+        "com.gab.social"                             to Category.CAT_SOCIAL,
+        "com.parler.android"                         to Category.CAT_SOCIAL,
+        "com.mewe.android"                           to Category.CAT_SOCIAL,
+        "com.minds.android"                          to Category.CAT_SOCIAL,
+        "com.diaspora.android"                       to Category.CAT_SOCIAL,
+        "com.pixelfed.android"                       to Category.CAT_SOCIAL,
+        "com.lemmy.android"                          to Category.CAT_SOCIAL,
+        "com.kbin.android"                           to Category.CAT_SOCIAL,
+        "com.nostr.android"                          to Category.CAT_SOCIAL,
+        "com.damus.android"                          to Category.CAT_SOCIAL,
+        "com.primal.android"                         to Category.CAT_SOCIAL,
+
+        // EDUCATION — eksikler
+        "com.wolfram.alpha"                          to Category.CAT_EDUCATION,
+        "com.coursehero.android"                     to Category.CAT_EDUCATION,
+        "com.12min.android"                          to Category.CAT_EDUCATION,
+        "com.getabstract.android"                    to Category.CAT_EDUCATION,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
