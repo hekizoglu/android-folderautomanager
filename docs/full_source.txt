@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 10:15 UTC
-# Commit: 4ec499728ea44c993f74bd4ff9bb794262235028
+# Generated: 2026-06-14 10:20 UTC
+# Commit: fb0430c01d878414da841717b2e47595609e22aa
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4677,6 +4677,54 @@ class AppClassifier @Inject constructor() {
         "com.okulmatik.android"                      to Category.CAT_EDUCATION,
         "com.kidslearn.android"                      to Category.CAT_EDUCATION,
         "com.bkmkitap.android"                       to Category.CAT_EDUCATION,
+
+        // Loop 80 — Global Streaming & Entertainment
+        "com.mgm.plus.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.amc.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.shudder.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.criterion.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.sundancenow.android"                    to Category.CAT_ENTERTAINMENT,
+        "com.acorn.tv.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.britbox.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.nebula.tv.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.dropout.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.revision3.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.vix.android"                            to Category.CAT_ENTERTAINMENT,
+
+        // Loop 80 — Gaming Platforms & Publishers
+        "com.ea.android.launcher"                    to Category.CAT_GAMES,
+        "com.glu.android"                            to Category.CAT_GAMES,
+        "com.jam.city.android"                       to Category.CAT_GAMES,
+        "com.scopely.android"                        to Category.CAT_GAMES,
+        "com.kabam.android"                          to Category.CAT_GAMES,
+        "com.plarium.android"                        to Category.CAT_GAMES,
+        "com.socialpoint.android"                    to Category.CAT_GAMES,
+        "com.bigfish.android"                        to Category.CAT_GAMES,
+        "com.funplus.android"                        to Category.CAT_GAMES,
+        "com.nexon.android"                          to Category.CAT_GAMES,
+        "com.netmarble.android"                      to Category.CAT_GAMES,
+        "com.com2us.android"                         to Category.CAT_GAMES,
+        "com.wemade.android"                         to Category.CAT_GAMES,
+        "com.smilegate.android"                      to Category.CAT_GAMES,
+
+        // Loop 80 — Navigation & Transportation
+        "com.omio.android"                           to Category.CAT_TRAVEL,
+        "com.raileurope.android"                     to Category.CAT_TRAVEL,
+        "com.flixbus.android"                        to Category.CAT_TRAVEL,
+        "com.busbud.android"                         to Category.CAT_TRAVEL,
+        "com.wanderu.android"                        to Category.CAT_TRAVEL,
+        "com.hipmunk.android"                        to Category.CAT_TRAVEL,
+        "com.hopper.android"                         to Category.CAT_TRAVEL,
+        "com.skyscanner.android"                     to Category.CAT_TRAVEL,
+        "com.priceline.android"                      to Category.CAT_TRAVEL,
+
+        // Loop 80 — TR E-commerce & Marketplace
+        "com.evidea.android"                         to Category.CAT_SHOPPING,
+        "com.vitaminler.android"                     to Category.CAT_SHOPPING,
+        "com.farmasi.android"                        to Category.CAT_SHOPPING,
+        "com.floryday.android"                       to Category.CAT_SHOPPING,
+        "com.navlungo.android"                       to Category.CAT_SHOPPING,
+        "com.lc.waikiki.android"                     to Category.CAT_SHOPPING,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
