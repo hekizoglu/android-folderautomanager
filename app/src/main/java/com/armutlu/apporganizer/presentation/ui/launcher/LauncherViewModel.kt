@@ -424,6 +424,15 @@ class LauncherViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    // Son kullanilan 8 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
+    val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .map { apps ->
+            apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
+                .sortedByDescending { it.lastUsedTimestamp }
+                .take(8)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
     fun syncUsageStats(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {

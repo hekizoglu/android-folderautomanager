@@ -360,11 +360,13 @@ private fun SuggestionAppItem(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FavoritesRow(
     apps: List<AppInfo>,
     iconPackPkg: String = "",
     onAppClick: (String) -> Unit,
+    onAppLongClick: ((String) -> Unit)? = null,
 ) {
     if (apps.isEmpty()) return
     val context = LocalContext.current
@@ -379,7 +381,10 @@ internal fun FavoritesRow(
             items(apps) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
+                    modifier = Modifier.width(56.dp).combinedClickable(
+                        onClick = { onAppClick(app.packageName) },
+                        onLongClick = { onAppLongClick?.invoke(app.packageName) }
+                    )
                 ) {
                     val bitmap by produceState<ImageBitmap?>(null, app.packageName, iconPackPkg) {
                         value = withContext(Dispatchers.IO) {

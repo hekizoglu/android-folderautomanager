@@ -121,7 +121,8 @@ fun HomeScreen(
     var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
-    val suggestionIconPack = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val recentApps by viewModel.recentApps.collectAsState()
+    var suggestionIconPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
@@ -161,6 +162,8 @@ fun HomeScreen(
                     folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    suggestionIconPack = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -382,6 +385,10 @@ fun HomeScreen(
                     onAppClick = { pkg ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         viewModel.launchApp(context, pkg)
+                    },
+                    onAppLongClick = { pkg ->
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        contextMenuPkg = pkg
                     }
                 )
             }
@@ -403,9 +410,9 @@ fun HomeScreen(
             }
 
             // Son kullanılan uygulamalar satırı (varsayılan kapalı)
-            if (recentAppsEnabled && suggestedApps.isNotEmpty()) {
+            if (recentAppsEnabled && recentApps.isNotEmpty()) {
                 RecentAppsRow(
-                    apps = suggestedApps.sortedByDescending { it.lastUsedTimestamp }.take(8),
+                    apps = recentApps,
                     iconPackPkg = suggestionIconPack,
                     onAppClick = { pkg ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
