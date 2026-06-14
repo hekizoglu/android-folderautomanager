@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:10 UTC
-# Commit: 8df131c94d89bd8454af6a34ce923ff05abf92db
+# Generated: 2026-06-14 00:12 UTC
+# Commit: 0349e91ed8ab4d40d08b78fbdc42846061b6cfc7
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3711,7 +3711,9 @@ fun AllAppsDrawer(
     onClose: () -> Unit,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)? = null,
-    iconSize: Dp = 40.dp
+    iconSize: Dp = 40.dp,
+    favoriteApps: List<AppInfo> = emptyList(),
+    onFavoriteAppClick: (String) -> Unit = {},
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
@@ -4042,6 +4044,15 @@ fun AllAppsDrawer(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 32.dp)
                         ) {
+                            if (searchQuery.isEmpty() && favoriteApps.isNotEmpty()) {
+                                item(key = "favorites_row") {
+                                    FavoritesRow(
+                                        apps = favoriteApps,
+                                        iconPackPkg = iconPackPkg,
+                                        onAppClick = onFavoriteAppClick
+                                    )
+                                }
+                            }
                             grouped.forEach { (letter, letterApps) ->
                                 item(key = "header_$letter") {
                                     NiagaraLetterHeader(letter = letter)
@@ -6956,7 +6967,12 @@ fun HomeScreen(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     contextMenuPkg = app.packageName
                 },
-                onClose = viewModel::closeAllApps
+                onClose = viewModel::closeAllApps,
+                favoriteApps = favoriteApps,
+                onFavoriteAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.launchApp(context, pkg)
+                }
             )
         }
     }
@@ -6993,7 +7009,7 @@ fun HomeScreen(
                 viewModel.saveAppNote(app.packageName, note)
             },
             onToggleFavorite = { _ ->
-                viewModel.initFavorites(context)
+                viewModel.toggleFavorite(context, app.packageName)
             }
         )
     }
