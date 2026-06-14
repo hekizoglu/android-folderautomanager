@@ -918,11 +918,24 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 `AppNoteDialog` — private composable, AlertDialog + OutlinedTextField
 `formatUsageTime(ms: Long): String` — private fun, ms → "sn/dk/sa/gün" formatı
 
-### AppClassifier Duplicate Kuralı (Loop 46)
+### AppClassifier Duplicate Kuralı (Loop 46 → temizlendi Loop 34)
 **Duplicate entry eklenirse Kotlin mapOf() sessizce override eder — hata vermez ama son entry kazanır.**
 - Önlem: `python3 -c "grep + uniq -d"` ile periyodik kontrol
 - Temizlik scripti: `python3 << 'EOF' ... seen_pkgs ... EOF` (CLAUDE.md'de kayıtlı)
-- Şu an: 1275 benzersiz paket, 0 duplicate
+- **Şu an: 1448 benzersiz paket, 0 duplicate** (Loop 34'te 107+25 duplicate temizlendi)
+
+### favoriteApps Mimarisi (Loop 35+)
+**`favoriteApps: StateFlow<List<AppInfo>>`** — `_favoritePkgs: MutableStateFlow<Set<String>>` ile `combine` reaktif.
+- `initFavorites(context)` → `LauncherActivity.onCreate` + `onResume`'da çağrılmalı
+- `toggleFavorite(context, pkg)` → ViewModel üzerinden, `onToggleFavorite` callback AppContextMenu'ye bağlı
+- `PackageChangeReceiver.onPackageRemoved` → `AppPrefs.removeFavorite()` otomatik temizleme
+- **Dikkat:** `getFavoriteApps(context)` fonksiyonu KALDIRILDI — `viewModel.favoriteApps` val kullan
+
+### BUILD #9 ve #10 (Loop 36, 42)
+- **BUILD #9:** SettingsScreen lambda `() -> Unit` tip hatası fix — `runCatching { }` expression içinde `Unit` explicit gerekti
+- **BUILD #10:** Tüm favoriler/keyword/cleanup değişiklikleri temiz build ✅
+- **AAB 6.3MB** Play Store hazır — `Desktop/AppOrganizer_PlayStore/app-release-v1.0.0.aab`
+- **Mapping:** `Desktop/AppOrganizer_PlayStore/mapping-v1.0.0.txt`
 
 ### Loop 36 Özeti (2026-06-14 — remote agent)
 **RecentAppsRow bug fix + icon pack reaktifliği + FavoritesRow uzun bas desteği:**
@@ -944,4 +957,4 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - `clickable` → `combinedClickable(onClick, onLongClick)` ile değiştirildi
 - `@OptIn(ExperimentalFoundationApi::class)` annotation eklendi
 
-*Son güncelleme: 2026-06-14 (Loop 36 — RecentAppsRow fix, icon pack reaktiflik, FavoritesRow uzun bas)*
+*Son güncelleme: 2026-06-14 (Loop 43 — favoriteApps mimarisi, BUILD#9/#10, AppClassifier 1448 benzersiz)*
