@@ -3467,6 +3467,52 @@ class AppClassifier @Inject constructor() {
         "com.ledger.live.android"                    to Category.CAT_FINANCE,
         "com.trezor.android"                         to Category.CAT_FINANCE,
         "com.safepal.android"                        to Category.CAT_FINANCE,
+
+        // Loop 83 — Food Delivery Global
+        "com.ifood.android"                          to Category.CAT_FOOD,
+        "com.grofers.android"                        to Category.CAT_FOOD,
+        "com.jiomart.android"                        to Category.CAT_SHOPPING,
+        "com.licious.android"                        to Category.CAT_FOOD,
+        "com.freshmenu.android"                      to Category.CAT_FOOD,
+        "com.faasos.android"                         to Category.CAT_FOOD,
+        "com.box8.android"                           to Category.CAT_FOOD,
+        "com.rebel.foods.android"                    to Category.CAT_FOOD,
+
+        // Loop 83 — Utilities & System Tools
+        "com.piriform.ccleaner.android"              to Category.CAT_UTILITIES,
+        "com.iobit.mobilecare.android"               to Category.CAT_UTILITIES,
+        "com.dude.cleaner.android"                   to Category.CAT_UTILITIES,
+        "com.files.android"                          to Category.CAT_UTILITIES,
+        "com.fx.file.explorer.android"               to Category.CAT_UTILITIES,
+        "com.solidexplorer.android"                  to Category.CAT_UTILITIES,
+        "com.ghost.commander.android"                to Category.CAT_UTILITIES,
+        "com.root.explorer.android"                  to Category.CAT_UTILITIES,
+        "com.mb3.android"                            to Category.CAT_UTILITIES,
+        "com.nfc.tools.android"                      to Category.CAT_UTILITIES,
+        "com.wifi.analyzer.android"                  to Category.CAT_UTILITIES,
+        "com.network.analyzer.android"               to Category.CAT_UTILITIES,
+        "com.ping.tools.android"                     to Category.CAT_UTILITIES,
+
+        // Loop 83 — Language Learning
+        "com.babbel.android"                         to Category.CAT_EDUCATION,
+        "com.rosettastone.android"                   to Category.CAT_EDUCATION,
+        "com.busuu.android"                          to Category.CAT_EDUCATION,
+        "com.lingoda.android"                        to Category.CAT_EDUCATION,
+        "com.preply.android"                         to Category.CAT_EDUCATION,
+        "com.speechling.android"                     to Category.CAT_EDUCATION,
+        "com.lingbe.android"                         to Category.CAT_EDUCATION,
+        "com.speaky.android"                         to Category.CAT_EDUCATION,
+        "com.drops.android"                          to Category.CAT_EDUCATION,
+
+        // Loop 83 — TR Social & Messaging
+        "com.bip.android"                            to Category.CAT_SOCIAL,
+        "com.lifecell.android"                       to Category.CAT_UTILITIES,
+        "com.turkcell.platinum.android"              to Category.CAT_UTILITIES,
+        "com.turktelekom.tr.android"                 to Category.CAT_UTILITIES,
+        "com.mubi.tr.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.filmbox.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.dizibox.android"                        to Category.CAT_ENTERTAINMENT,
+        "com.turktv.android"                         to Category.CAT_ENTERTAINMENT,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
