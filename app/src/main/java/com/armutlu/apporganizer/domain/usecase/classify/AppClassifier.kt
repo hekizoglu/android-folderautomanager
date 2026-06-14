@@ -2832,6 +2832,44 @@ class AppClassifier @Inject constructor() {
 
         // Loop 67 — TR News & Media (more)
         "com.gazeteoku.android"                      to Category.CAT_NEWS,
+
+        // Loop 68 — Mobile Gaming Top Charts
+        "com.supercell.boombeach"                    to Category.CAT_GAMES,
+        "com.king.farmheroes"                        to Category.CAT_GAMES,
+        "com.pubg.mobile"                            to Category.CAT_GAMES,
+        "com.garena.free.fire"                       to Category.CAT_GAMES,
+        "com.voodoo.helix.jump"                      to Category.CAT_GAMES,
+        "com.voodoo.hole.io"                         to Category.CAT_GAMES,
+
+        // Loop 68 — Fintech & Neobanks Global
+        "com.paysera.android"                        to Category.CAT_FINANCE,
+        "com.transfergo.android"                     to Category.CAT_FINANCE,
+
+        // Loop 68 — Mental Health & Mindfulness
+        "com.daylio.android"                         to Category.CAT_HEALTH,
+        "com.reflectly.android"                      to Category.CAT_HEALTH,
+        "com.finch.selfcare.android"                 to Category.CAT_HEALTH,
+
+        // Loop 68 — Cloud Storage & File Sharing
+        "com.pcloud.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.mega.privacy.android.app"               to Category.CAT_PRODUCTIVITY,
+        "ch.protonmail.android.drive"                to Category.CAT_PRODUCTIVITY,
+        "com.wetransfer.android"                     to Category.CAT_PRODUCTIVITY,
+
+        // Loop 68 — TR Gov & Public Services
+        "tr.gov.sgk.mobileapp"                       to Category.CAT_UTILITIES,
+        "com.turkiye.eokul"                          to Category.CAT_UTILITIES,
+        "com.gib.mobilodeme"                         to Category.CAT_UTILITIES,
+        "com.ibb.istanbul"                           to Category.CAT_UTILITIES,
+        "com.pttt.android"                           to Category.CAT_UTILITIES,
+
+        // Loop 68 — TR Fashion & More Shopping
+
+        // Loop 68 — Video/Photo Editing
+        "com.dji.go.v4"                              to Category.CAT_PHOTOGRAPHY,
+        "com.szalabs.pixelup"                        to Category.CAT_PHOTOGRAPHY,
+        "com.lyrebird.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.lightricks.enlight"                     to Category.CAT_PHOTOGRAPHY,
     )
 
     fun classifyApp(appInfo: AppInfo): String {

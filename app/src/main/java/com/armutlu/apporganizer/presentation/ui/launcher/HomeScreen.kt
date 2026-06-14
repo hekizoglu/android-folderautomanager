@@ -489,6 +489,7 @@ fun HomeScreen(
                             }
                         },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
+                        onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
                         textAlpha = textAlpha,
                         folderSizeDp = folderSizeDp,
                         labelColor = labelColor,
