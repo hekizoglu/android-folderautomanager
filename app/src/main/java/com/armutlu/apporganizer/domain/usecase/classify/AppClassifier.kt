@@ -2311,6 +2311,62 @@ class AppClassifier @Inject constructor() {
         "com.coldwellbanker.android"                 to Category.CAT_SHOPPING,
         "com.ucuzabilet.android"                     to Category.CAT_TRAVEL,
         "com.thy.android"                            to Category.CAT_TRAVEL,
+
+        // Loop 62 — Medical & Telemedicine
+        "com.teladoc.android"                        to Category.CAT_HEALTH,
+        "com.mdlive.android"                         to Category.CAT_HEALTH,
+        "com.doctorondemand.android"                 to Category.CAT_HEALTH,
+        "com.amwell.android"                         to Category.CAT_HEALTH,
+        "com.headway.android"                        to Category.CAT_HEALTH,
+        "com.drugs.android"                          to Category.CAT_HEALTH,
+        "com.epocrates.android"                      to Category.CAT_HEALTH,
+        "com.everlywell.android"                     to Category.CAT_HEALTH,
+        "com.letsgetchecked.android"                 to Category.CAT_HEALTH,
+        "com.labcorp.android"                        to Category.CAT_HEALTH,
+        "com.questdiagnostics.android"               to Category.CAT_HEALTH,
+        "com.cvs.android"                            to Category.CAT_SHOPPING,
+        "com.riteaid.android"                        to Category.CAT_SHOPPING,
+
+        // Loop 62 — TR Health
+        "com.saglikbakanligi.android"                to Category.CAT_HEALTH,
+        "com.medikotek.android"                      to Category.CAT_HEALTH,
+        "com.nobetci.eczane.android"                 to Category.CAT_HEALTH,
+        "com.turkiyelilacrota.android"               to Category.CAT_HEALTH,
+        "com.hayateve.android"                       to Category.CAT_HEALTH,
+
+        // Loop 62 — Asian Apps & Platforms
+        "com.baidu.searchbox"                        to Category.CAT_UTILITIES,
+        "com.taobao.taobao"                          to Category.CAT_SHOPPING,
+        "com.tencent.qqlite"                         to Category.CAT_SOCIAL,
+        "com.weibo.weibointernational"               to Category.CAT_SOCIAL,
+        "com.bytedance.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.naver.android"                          to Category.CAT_UTILITIES,
+        "com.kakao.android"                          to Category.CAT_SOCIAL,
+        "com.linecorp.linelite"                      to Category.CAT_SOCIAL,
+        "com.cyworld.android"                        to Category.CAT_SOCIAL,
+        "jp.gocro.smartnews"                         to Category.CAT_NEWS,
+        "com.gunosy.android"                         to Category.CAT_NEWS,
+        "com.pixiv.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.nicovideo.android"                      to Category.CAT_ENTERTAINMENT,
+        "com.bilibili.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.iqiyi.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.youku.phone"                            to Category.CAT_ENTERTAINMENT,
+        "com.lazada.android.shop"                    to Category.CAT_SHOPPING,
+        "com.grab.passenger"                         to Category.CAT_TRAVEL,
+        "com.gojek.app"                              to Category.CAT_TRAVEL,
+        "com.ola.cabs"                               to Category.CAT_TRAVEL,
+        "in.swiggy.android"                          to Category.CAT_FOOD,
+        "com.zomato.consumer"                        to Category.CAT_FOOD,
+        "com.paytm.app"                              to Category.CAT_FINANCE,
+        "com.phonepe.app"                            to Category.CAT_FINANCE,
+        "com.gpay.android"                           to Category.CAT_FINANCE,
+
+        // Loop 62 — Crypto & Web3
+        "io.zerion.android"                          to Category.CAT_FINANCE,
+        "com.ftx.android"                            to Category.CAT_FINANCE,
+        "com.bitexen.android"                        to Category.CAT_FINANCE,
+        "com.koinim.android"                         to Category.CAT_FINANCE,
+        "com.coinzo.android"                         to Category.CAT_FINANCE,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
