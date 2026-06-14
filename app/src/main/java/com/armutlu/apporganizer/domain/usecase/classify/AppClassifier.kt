@@ -3513,6 +3513,46 @@ class AppClassifier @Inject constructor() {
         "com.filmbox.android"                        to Category.CAT_ENTERTAINMENT,
         "com.dizibox.android"                        to Category.CAT_ENTERTAINMENT,
         "com.turktv.android"                         to Category.CAT_ENTERTAINMENT,
+
+        // Loop 85 — Business & Productivity
+        "com.zendesk.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.freshdesk.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.redbooth.android"                       to Category.CAT_PRODUCTIVITY,
+
+        // Loop 85 — Photography Editing
+        "com.lightroom.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.darktable.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.rawtherapee.android"                    to Category.CAT_PHOTOGRAPHY,
+        "com.picsart.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.moldiv.android"                         to Category.CAT_PHOTOGRAPHY,
+        "com.vsco.android"                           to Category.CAT_PHOTOGRAPHY,
+        "com.snapseed.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.facetune.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.airbrush.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.photoroom.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.removebg.android"                       to Category.CAT_PHOTOGRAPHY,
+
+        // Loop 85 — Games Top Mobile
+        "com.rovio.angrybirds"                       to Category.CAT_GAMES,
+        "com.innersloth.amongus"                     to Category.CAT_GAMES,
+        "com.ea.game.pvzfree"                        to Category.CAT_GAMES,
+        "com.ea.game.pvz2"                           to Category.CAT_GAMES,
+
+        // Loop 85 — Health Monitoring & Medical
+        "com.empatica.android"                       to Category.CAT_HEALTH,
+        "com.omron.android"                          to Category.CAT_HEALTH,
+        "com.beurer.android"                         to Category.CAT_HEALTH,
+        "com.microlife.android"                      to Category.CAT_HEALTH,
+        "com.ihealth.android"                        to Category.CAT_HEALTH,
+        "com.fora.android"                           to Category.CAT_HEALTH,
+        "com.dexcom.g6.android"                      to Category.CAT_HEALTH,
+        "com.medtronic.android"                      to Category.CAT_HEALTH,
+        "com.qardio.android"                         to Category.CAT_HEALTH,
+        "com.kardia.android"                         to Category.CAT_HEALTH,
+        "com.checkme.android"                        to Category.CAT_HEALTH,
+        "com.alivecor.android"                       to Category.CAT_HEALTH,
+        "com.biosign.android"                        to Category.CAT_HEALTH,
+        "com.breathe.android"                        to Category.CAT_HEALTH,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
