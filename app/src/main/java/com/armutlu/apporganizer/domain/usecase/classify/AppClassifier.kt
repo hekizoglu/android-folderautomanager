@@ -2367,6 +2367,69 @@ class AppClassifier @Inject constructor() {
         "com.bitexen.android"                        to Category.CAT_FINANCE,
         "com.koinim.android"                         to Category.CAT_FINANCE,
         "com.coinzo.android"                         to Category.CAT_FINANCE,
+
+        // Loop 63 — Latin America
+        "com.mercadolibre.android"                   to Category.CAT_SHOPPING,
+        "com.ifood.android"                          to Category.CAT_FOOD,
+        "com.pedidosya.android"                      to Category.CAT_FOOD,
+        "com.uber.android.latam"                     to Category.CAT_TRAVEL,
+        "com.99app.android"                          to Category.CAT_TRAVEL,
+        "com.interbank.android"                      to Category.CAT_FINANCE,
+        "com.bancolombia.android"                    to Category.CAT_FINANCE,
+        "com.itau.android"                           to Category.CAT_FINANCE,
+        "com.bradesco.android"                       to Category.CAT_FINANCE,
+        "com.bb.android"                             to Category.CAT_FINANCE,
+        "com.santander.br.android"                   to Category.CAT_FINANCE,
+        "com.neon.android"                           to Category.CAT_FINANCE,
+        "com.inter.android"                          to Category.CAT_FINANCE,
+        "com.c6bank.android"                         to Category.CAT_FINANCE,
+        "com.globo.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.tv.android.netflix.latam"               to Category.CAT_ENTERTAINMENT,
+        "com.claro.android"                          to Category.CAT_UTILITIES,
+        "com.telcel.android"                         to Category.CAT_UTILITIES,
+
+        // Loop 63 — Middle East & Africa
+        "com.talabat.android"                        to Category.CAT_FOOD,
+        "com.noon.android"                           to Category.CAT_SHOPPING,
+        "com.swvl.android"                           to Category.CAT_TRAVEL,
+        "com.jahez.android"                          to Category.CAT_FOOD,
+        "com.namshi.android"                         to Category.CAT_SHOPPING,
+        "com.awok.android"                           to Category.CAT_SHOPPING,
+        "com.jumia.android"                          to Category.CAT_SHOPPING,
+        "com.konga.android"                          to Category.CAT_SHOPPING,
+        "com.flutterwave.android"                    to Category.CAT_FINANCE,
+        "com.paystack.android"                       to Category.CAT_FINANCE,
+        "com.mtn.android"                            to Category.CAT_UTILITIES,
+        "com.airtel.android"                         to Category.CAT_UTILITIES,
+        "com.safaricom.android"                      to Category.CAT_UTILITIES,
+        "com.mpesa.android"                          to Category.CAT_FINANCE,
+
+        // Loop 63 — TR Education & Gov
+        "com.meb.android"                            to Category.CAT_EDUCATION,
+        "com.yok.android"                            to Category.CAT_EDUCATION,
+        "com.ibb.android"                            to Category.CAT_UTILITIES,
+        "com.ekabis.android"                         to Category.CAT_UTILITIES,
+        "com.turkiye.gov.tr"                         to Category.CAT_UTILITIES,
+        "com.vergi.android"                          to Category.CAT_UTILITIES,
+
+        // Loop 63 — Productivity & Note-Taking
+        "com.supernotes.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.amplenote.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.joplinapp.android"                      to Category.CAT_PRODUCTIVITY,
+        "org.standardnotes.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.zoho.crm"                               to Category.CAT_PRODUCTIVITY,
+        "com.freshdesk.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.zendesk.android"                        to Category.CAT_PRODUCTIVITY,
+
+        // Loop 63 — File & Cloud Storage
+        "com.sync.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.pcloud.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.tresorit.android"                       to Category.CAT_UTILITIES,
+        "com.proton.drive"                           to Category.CAT_UTILITIES,
+        "com.mega.privacy.android.app"               to Category.CAT_UTILITIES,
+        "com.nextcloud.client"                       to Category.CAT_UTILITIES,
+        "com.seafile.seadroid2"                      to Category.CAT_UTILITIES,
+        "ru.yandex.disk"                             to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
