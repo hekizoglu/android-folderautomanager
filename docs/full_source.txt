@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 03:35 UTC
-# Commit: 8e52774fac5307be0c4d2b3bef973912e3a9374c
+# Generated: 2026-06-14 03:50 UTC
+# Commit: a9ef2f01f13380d2d0a0ee25e118929d13c3a2e5
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3405,6 +3405,64 @@ class AppClassifier @Inject constructor() {
         "com.keepersecurity.android"                 to Category.CAT_UTILITIES,
         "org.shadowsocks.android"                    to Category.CAT_UTILITIES,
         "com.twilio.authy"                           to Category.CAT_UTILITIES,
+
+        // Loop 57 — Smart Home & IoT
+        "com.amazon.echo"                            to Category.CAT_UTILITIES,
+        "com.philips.lighting.hue2"                  to Category.CAT_UTILITIES,
+        "com.tuya.smartlife"                         to Category.CAT_UTILITIES,
+        "com.mihome.android"                         to Category.CAT_UTILITIES,
+        "com.ring.android"                           to Category.CAT_UTILITIES,
+        "com.tplink.android"                         to Category.CAT_UTILITIES,
+        "com.netgear.android"                        to Category.CAT_UTILITIES,
+        "com.idevices.android"                       to Category.CAT_UTILITIES,
+
+        // Loop 57 — Kids & Family
+        "com.pinkfong.app.babyshark"                 to Category.CAT_EDUCATION,
+        "com.touchpress.android.hopscotch"           to Category.CAT_EDUCATION,
+        "com.toca.life.world"                        to Category.CAT_EDUCATION,
+        "com.toca.boca.hair.salon.me"                to Category.CAT_EDUCATION,
+        "com.budgestudios.android.peppa"             to Category.CAT_EDUCATION,
+        "com.youtube.kids"                           to Category.CAT_EDUCATION,
+        "air.com.fingerlab.fingerprint.security"     to Category.CAT_EDUCATION,
+        "com.fox.kids.android"                       to Category.CAT_EDUCATION,
+        "com.nickelodeon.android"                    to Category.CAT_ENTERTAINMENT,
+
+        // Loop 57 — Developer & Tech Tools
+        "com.acode.android"                          to Category.CAT_UTILITIES,
+        "com.droidvim"                               to Category.CAT_UTILITIES,
+        "com.androbuntu.codeassist"                  to Category.CAT_UTILITIES,
+        "com.postman.postmanandroid"                 to Category.CAT_PRODUCTIVITY,
+        "com.httpie.android"                         to Category.CAT_UTILITIES,
+        "io.swagger.android"                         to Category.CAT_UTILITIES,
+        "com.grafana.android"                        to Category.CAT_UTILITIES,
+        "com.opsgenie.android"                       to Category.CAT_UTILITIES,
+
+        // Loop 57 — TR Finance (eksik bankalar)
+        "com.isbank.isbankmobil"                     to Category.CAT_FINANCE,
+        "com.garanti.android"                        to Category.CAT_FINANCE,
+        "com.ziraatmobil"                            to Category.CAT_FINANCE,
+        "com.qnb.finansmobil"                        to Category.CAT_FINANCE,
+        "com.ziraatkatilim.android"                  to Category.CAT_FINANCE,
+        "com.odeabank.android"                       to Category.CAT_FINANCE,
+        "com.bkmexpress.android"                     to Category.CAT_FINANCE,
+        "com.midas.android"                          to Category.CAT_FINANCE,
+        "com.tacirler.android"                       to Category.CAT_FINANCE,
+        "com.araciyatirim.android"                   to Category.CAT_FINANCE,
+
+        // Loop 57 — Weather & Utilities
+        "com.weather.channel"                        to Category.CAT_UTILITIES,
+        "com.weather.us"                             to Category.CAT_UTILITIES,
+        "com.accuweather.android"                    to Category.CAT_UTILITIES,
+        "cz.meteogroup.meteoearth"                   to Category.CAT_UTILITIES,
+        "ru.yandex.weatherplugin"                    to Category.CAT_UTILITIES,
+        "net.weatherunderground.android"             to Category.CAT_UTILITIES,
+        "com.ntv.hava"                               to Category.CAT_UTILITIES,
+        "com.mgm.android"                            to Category.CAT_UTILITIES,
+        "com.robinweather.android"                   to Category.CAT_UTILITIES,
+        "com.apalon.myclockfree"                     to Category.CAT_UTILITIES,
+        "com.chedot.com.langrisser"                  to Category.CAT_UTILITIES,
+        "com.ifit.android"                           to Category.CAT_HEALTH,
+        "com.vitadock.android"                       to Category.CAT_HEALTH,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
