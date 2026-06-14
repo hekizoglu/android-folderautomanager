@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 13:13 UTC
-# Commit: c99e7a4418e746118574112929282051d1cd0dfa
+# Generated: 2026-06-14 13:14 UTC
+# Commit: d4d4c7e0851a65c345f94b3dc068bda80a8b5c72
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4859,6 +4859,88 @@ class AppClassifier @Inject constructor() {
         "com.filmbox.android"                        to Category.CAT_ENTERTAINMENT,
         "com.dizibox.android"                        to Category.CAT_ENTERTAINMENT,
         "com.turktv.android"                         to Category.CAT_ENTERTAINMENT,
+
+        // Loop 84 — Gacha / Action RPG (2024-2025 yeni oyunlar)
+        "com.kurogames.wutheringwaves"               to Category.CAT_GAMES,
+        "com.shiftup.nikke"                          to Category.CAT_GAMES,
+        "com.nextgames.android.nikke"                to Category.CAT_GAMES,
+        "com.cloudy.snowgale"                        to Category.CAT_GAMES,
+        "com.bluepoch.reverse1999"                   to Category.CAT_GAMES,
+        "com.yostar.aethergazer"                     to Category.CAT_GAMES,
+        "com.nexon.m.maplestorym"                    to Category.CAT_GAMES,
+        "com.efun.dragonraja"                        to Category.CAT_GAMES,
+        "com.com2us.summonerswar.global"             to Category.CAT_GAMES,
+        "com.smilegate.stove.summoners_war_chronicles" to Category.CAT_GAMES,
+        "com.com2usglobal.hadesstar"                 to Category.CAT_GAMES,
+        "com.kabam.mff"                              to Category.CAT_GAMES,
+
+        // Loop 84 — Power User / Root Araclari
+        "com.aurora.store"                           to Category.CAT_UTILITIES,
+        "moe.shizuku.privileged.api"                 to Category.CAT_UTILITIES,
+        "eu.faircode.netguard"                       to Category.CAT_UTILITIES,
+        "app.blokada"                                to Category.CAT_UTILITIES,
+        "org.blokada.fem.android"                    to Category.CAT_UTILITIES,
+        "net.dinglisch.android.taskerm"              to Category.CAT_UTILITIES,
+        "com.arlosoft.macrodroid"                    to Category.CAT_UTILITIES,
+        "org.kde.kdeconnect_tp"                      to Category.CAT_UTILITIES,
+        "com.nutomic.syncthingandroid"               to Category.CAT_UTILITIES,
+        "com.pushbullet.android"                     to Category.CAT_UTILITIES,
+        "com.delphicoder.flud"                       to Category.CAT_UTILITIES,
+        "org.proninyaroslav.libretorrent"            to Category.CAT_UTILITIES,
+        "com.joaomgcd.join"                          to Category.CAT_UTILITIES,
+        "com.llamalab.automate"                      to Category.CAT_UTILITIES,
+        "dk.tacit.android.foldersync.full"           to Category.CAT_UTILITIES,
+        "com.draco.ladb"                             to Category.CAT_UTILITIES,
+        "com.termux.api"                             to Category.CAT_UTILITIES,
+        "com.termux.boot"                            to Category.CAT_UTILITIES,
+        "eu.chainfire.supersu"                       to Category.CAT_UTILITIES,
+        "com.kingouser.com"                          to Category.CAT_UTILITIES,
+        "com.tencent.mobileqq"                       to Category.CAT_SOCIAL,
+
+        // Loop 84 — Yeni Nesil Sosyal Platformlar
+        "com.lemon.lv"                               to Category.CAT_SOCIAL,
+        "xyz.blueskyweb.app"                         to Category.CAT_SOCIAL,
+        "co.yubo.app"                                to Category.CAT_SOCIAL,
+        "com.gas.app"                                to Category.CAT_SOCIAL,
+        "com.poparazzi.app"                          to Category.CAT_SOCIAL,
+        "com.post.app"                               to Category.CAT_SOCIAL,
+        "com.spill.app"                              to Category.CAT_SOCIAL,
+
+        // Loop 84 — PKM / Bilgi Yonetimi Araclari
+        "io.anytype.app"                             to Category.CAT_PRODUCTIVITY,
+        "io.appflowy.appflowy"                       to Category.CAT_PRODUCTIVITY,
+        "com.workflowy.android"                      to Category.CAT_PRODUCTIVITY,
+        "io.dynalist.app"                            to Category.CAT_PRODUCTIVITY,
+        "com.milanote.app"                           to Category.CAT_PRODUCTIVITY,
+        "com.mindmeister.android"                    to Category.CAT_PRODUCTIVITY,
+        "com.thinkingphone.thinkingspace"            to Category.CAT_PRODUCTIVITY,
+
+        // Loop 84 — Ruh Sagligi & Mental Wellness
+        "br.com.youper"                              to Category.CAT_HEALTH,
+        "com.brightside.health"                      to Category.CAT_HEALTH,
+        "com.sevencups.android"                      to Category.CAT_HEALTH,
+        "com.daylio.mobile"                          to Category.CAT_HEALTH,
+        "com.moodfit.android"                        to Category.CAT_HEALTH,
+        "com.moodistory.android"                     to Category.CAT_HEALTH,
+        "com.verywellmind.android"                   to Category.CAT_HEALTH,
+
+        // Loop 84 — Web3 & Kripto Cuzdanlar
+        "me.rainbow"                                 to Category.CAT_FINANCE,
+        "app.phantom"                                to Category.CAT_FINANCE,
+        "io.solflare.solflare"                       to Category.CAT_FINANCE,
+        "com.gem.wallet"                             to Category.CAT_FINANCE,
+        "io.magiceden.app"                           to Category.CAT_FINANCE,
+
+        // Loop 84 — TR Haber / Icerik / Is
+        "com.onedio.android"                         to Category.CAT_NEWS,
+        "com.webtekno.android"                       to Category.CAT_NEWS,
+        "com.donanimhaber.android"                   to Category.CAT_NEWS,
+        "com.bionluk.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.hopi.app"                               to Category.CAT_SHOPPING,
+        "com.kariyernet.kariyer"                     to Category.CAT_PRODUCTIVITY,
+        "com.armut.com"                              to Category.CAT_UTILITIES,
+        "com.youthall.android"                       to Category.CAT_SOCIAL,
+        "com.lidyadergi.android"                     to Category.CAT_NEWS,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
@@ -4932,7 +5014,9 @@ object KeywordDatabase {
             "zalo", "imo", "textme", "tantan", "tagged", "hi5", "myspace",
             "chat", "sohbet", "arkadas", "sosyal", "topluluk", "bip",
             // Loop 77 — India social
-            "sharechat", "roposo", "mojapp", "mxtakatak", "koo", "josh"
+            "sharechat", "roposo", "mojapp", "mxtakatak", "koo", "josh",
+            // Loop 84 — yeni nesil platformlar
+            "lemon8", "bluesky", "yubo", "gas", "poparazzi", "spill", "post"
         ),
         Category.CAT_PRODUCTIVITY to listOf(
             "productivity", "office", "calendar", "notes", "todo", "task",
@@ -4942,7 +5026,10 @@ object KeywordDatabase {
             "teams", "zoom", "meet", "google", "microsoft", "amazon",
             "chatgpt", "openai", "deepseek", "claude", "gemini", "copilot",
             "perplexity", "bard", "gpt", "llm", "assistant", "ai",
-            "character.ai", "inflection", "mistral", "groq"
+            "character.ai", "inflection", "mistral", "groq",
+            // Loop 84 — PKM / bilgi yonetimi
+            "anytype", "appflowy", "workflowy", "dynalist", "milanote", "mindmeister",
+            "roam", "logseq", "obsidian", "foam", "pkm", "zettelkasten", "taskade"
         ),
         Category.CAT_GAMES to listOf(
             "game", "games", "gaming", "play", "battle", "royal", "chess",
@@ -4955,7 +5042,10 @@ object KeywordDatabase {
             "blizzard", "diablo", "warcraft", "overwatch",
             "brawl", "squad", "arena", "dungeon", "quest", "hero", "war",
             "zombie", "sniper", "fighter", "empire", "kingdom", "dragon",
-            "oyun", "oyunu"
+            "oyun", "oyunu",
+            // Loop 84 — gacha / anime RPG
+            "wuthering", "nikke", "punishing", "reverse1999", "aether", "gazer",
+            "maplestory", "dragonraja", "summoners", "genshin", "honkai", "zenless"
         ),
         Category.CAT_SHOPPING to listOf(
             // Genel
@@ -4995,7 +5085,10 @@ object KeywordDatabase {
             "bianet", "diken", "t24", "cumhuriyet", "sozcu", "posta", "sabah",
             "haberler", "basin", "medya", "ajans", "fanatik", "ntvspor",
             "spiegel", "buzzfeed", "vice", "trt", "ahaber", "ensonhaber",
-            "lemonde", "lefigaro", "elpais", "corriere", "repubblica"
+            "lemonde", "lefigaro", "elpais", "corriere", "repubblica",
+            // Loop 84 — TR dijital medya
+            "onedio", "webtekno", "donanimhaber", "haberler", "lidya", "teknoblog",
+            "webrazzi", "chip", "pcworld", "shiftdelete", "log", "bilisim"
         ),
         Category.CAT_HEALTH to listOf(
             // Genel
@@ -5016,7 +5109,10 @@ object KeywordDatabase {
             "cronometer", "lifesum", "yazio", "weightwatchers",
             "mysugr", "dexcom", "abbott", "omada", "livongo",
             "clue", "flo", "glow", "cycle",
-            "acibademsaglik", "medikal"
+            "acibademsaglik", "medikal",
+            // Loop 84 — mental wellness
+            "youper", "brightside", "sevencups", "7cups", "daylio", "moodfit",
+            "moodistory", "happify", "sanvello", "reflectly", "finch", "woebot"
         ),
         Category.CAT_FINANCE to listOf(
             // Genel
@@ -5054,7 +5150,11 @@ object KeywordDatabase {
             // Loop 77 — MENA fintech
             "tamara", "tabby",
             // Loop 77 — LATAM
-            "picpay", "banco inter", "clip"
+            "picpay", "banco inter", "clip",
+            // Loop 84 — Web3 / kripto cuzdanlar
+            "rainbow", "phantom", "solflare", "solana", "magic eden", "nft", "defi",
+            "metamask", "trustwallet", "ledger", "trezor", "uniswap", "aave",
+            "compound", "opensea", "blur", "gem wallet", "argent", "zerion"
         ),
         Category.CAT_EDUCATION to listOf(
             "education", "learn", "course", "class", "school", "university",
@@ -5089,7 +5189,12 @@ object KeywordDatabase {
             "malwarebytes", "filemanager", "esfile", "totalcommander",
             // Loop 77 — India/Africa gov utilities
             "maadhaar", "digilocker", "mygov", "umang",
-            "safaricom", "mtn", "airtel", "stc", "zain"
+            "safaricom", "mtn", "airtel", "stc", "zain",
+            // Loop 84 — guc kullanici araclari
+            "aurora", "shizuku", "netguard", "blokada", "tasker", "macrodroid",
+            "kdeconnect", "syncthing", "pushbullet", "flud", "libretorrent",
+            "automate", "foldersync", "ladb", "termux", "supersu", "kingoroot",
+            "root", "adb", "wireless", "automation", "macro", "trigger"
         ),
         Category.CAT_TRAVEL to listOf(
             // Genel
@@ -7471,8 +7576,12 @@ fun FolderSheet(
     var showEditDialog by remember { mutableStateOf(false) }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
+        val trLocale = java.util.Locale("tr")
         val base = if (searchQuery.isBlank()) folder.apps
-                   else folder.apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+                   else {
+                       val q = searchQuery.lowercase(trLocale)
+                       folder.apps.filter { it.appName.lowercase(trLocale).contains(q) }
+                   }
         base.sortedByMode(sortMode)
     }
 
