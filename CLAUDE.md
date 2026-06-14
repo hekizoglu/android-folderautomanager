@@ -1173,4 +1173,18 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3308 benzersiz** (479'dan, Loop 91 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
-*Son güncelleme: 2026-06-14 (Loop 91 — AppClassifier 3308 benzersiz, 11 kategori genisletildi)*
+### Reaktiflik ve Performans Düzeltmeleri (Loop 92)
+**DockIcon ikon paketi reaktifliği:**
+- Önceki: `DockIcon` SharedPrefs'ten bir kez `remember {}` ile ikon paketi okuyordu — Settings'te ikon paketi değişince dock ikonları güncellenmiyor
+- Yeni: `PixelDock(iconPackPkg)` ve `DockIcon(iconPackPkg)` parametreleri eklendi; `HomeScreen.kt`'daki `suggestionIconPack` state (DisposableEffect listener'lı) artık dock'a da geçiyor
+
+**AllAppsDrawer bgAlpha reaktifliği:**
+- Önceki: `val bgAlpha = AppPrefs.getAllAppsBgAlpha(context)` — her rekomposisyonda doğrudan SharedPrefs okuma (main thread I/O)
+- Yeni: `var bgAlpha by remember { mutableFloatStateOf(...) }` + `DisposableEffect` listener `KEY_ALLAPPS_BG_ALPHA` key'ini dinliyor
+
+**SwipeHint encoding fix:**
+- `"Tum uygulamalar"` → `"Tüm uygulamalar"` (eksik ü harfi düzeltildi)
+
+**Uzak Ortam Notu:** APK build bu remote ortamda yapılamıyor — yerel makinede doğrulanmalı.
+
+*Son güncelleme: 2026-06-14 (Loop 92 — DockIcon reaktiflik, AllAppsDrawer bgAlpha fix, SwipeHint encoding)*
