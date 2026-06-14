@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 09:05 UTC
-# Commit: bb851c512646ea9b105a4337a7c75d11858595bd
+# Generated: 2026-06-14 09:09 UTC
+# Commit: 155e1b0b87f88e85a00461c327f076a1d24069ad
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4402,6 +4402,111 @@ class AppClassifier @Inject constructor() {
         "com.opet.android"                           to Category.CAT_TRAVEL,
         "com.shell.android"                          to Category.CAT_TRAVEL,
         "com.bp.android"                             to Category.CAT_TRAVEL,
+
+        // Loop 73 — Social Platforms Extended
+        "com.patreon.android"                        to Category.CAT_SOCIAL,
+        "co.vero.app"                                to Category.CAT_SOCIAL,
+        "com.polywork.android"                       to Category.CAT_SOCIAL,
+        "org.telegram.plus"                          to Category.CAT_SOCIAL,
+        "com.clubhouse.android"                      to Category.CAT_SOCIAL,
+        "app.ngl.android"                            to Category.CAT_SOCIAL,
+        "com.poparazzi.app"                          to Category.CAT_SOCIAL,
+        "com.yubo.live.android"                      to Category.CAT_SOCIAL,
+
+        // Loop 73 — Photography & Video AI
+        "ai.remini.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.lensa.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.magisto.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.photostudio.editor"                     to Category.CAT_PHOTOGRAPHY,
+        "com.prismaai.lensa"                         to Category.CAT_PHOTOGRAPHY,
+        "com.pixelcut.android"                       to Category.CAT_PHOTOGRAPHY,
+        "com.picstitch.android"                      to Category.CAT_PHOTOGRAPHY,
+        "com.artifact.app"                           to Category.CAT_NEWS,
+
+        // Loop 73 — News & Media Aggregators
+        "com.ground.news"                            to Category.CAT_NEWS,
+        "app.inshorts"                               to Category.CAT_NEWS,
+        "com.theweek.android"                        to Category.CAT_NEWS,
+        "de.axelspringer.upday"                      to Category.CAT_NEWS,
+        "com.allsides.android"                       to Category.CAT_NEWS,
+        "com.newsnow.android"                        to Category.CAT_NEWS,
+        "com.dailybeast.android"                     to Category.CAT_NEWS,
+        "com.salon.android"                          to Category.CAT_NEWS,
+        "com.jacobin.android"                        to Category.CAT_NEWS,
+
+        // Loop 73 — Health & Women's Health
+        "com.flo.ovulation.android"                  to Category.CAT_HEALTH,
+        "com.naturalcycles.android"                  to Category.CAT_HEALTH,
+        "com.clue.plus"                              to Category.CAT_HEALTH,
+        "com.happyscale.android"                     to Category.CAT_HEALTH,
+        "com.teladoc.members"                        to Category.CAT_HEALTH,
+
+        // Loop 73 — Utilities & System
+        "com.ookla.speedtest"                        to Category.CAT_UTILITIES,
+        "com.soundhound.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.avg.mobilation"                         to Category.CAT_UTILITIES,
+        "com.hiya.android"                           to Category.CAT_UTILITIES,
+        "com.piriform.ccleaner"                      to Category.CAT_UTILITIES,
+        "com.callrecorder.acr"                       to Category.CAT_UTILITIES,
+        "com.nll.ace"                                to Category.CAT_UTILITIES,
+        "com.superuser.standard"                     to Category.CAT_UTILITIES,
+        "com.topjohnwu.magisk"                       to Category.CAT_UTILITIES,
+
+        // Loop 73 — Travel Hotels & Car Rentals
+        "com.marriott.android"                       to Category.CAT_TRAVEL,
+        "com.hilton.android"                         to Category.CAT_TRAVEL,
+        "com.ihg.apps.android"                       to Category.CAT_TRAVEL,
+        "com.accorhotels.android"                    to Category.CAT_TRAVEL,
+        "com.bestwestern.android"                    to Category.CAT_TRAVEL,
+        "com.radisson.android"                       to Category.CAT_TRAVEL,
+        "com.wyndham.android"                        to Category.CAT_TRAVEL,
+
+        // Loop 73 — Food Chains
+        "com.migrosone.android"                      to Category.CAT_FOOD,
+        "com.littlecaesars.android"                  to Category.CAT_FOOD,
+        "com.jackinthebox.android"                   to Category.CAT_FOOD,
+        "com.arbys.android"                          to Category.CAT_FOOD,
+        "com.popeyes.android"                        to Category.CAT_FOOD,
+        "com.whataburger.android"                    to Category.CAT_FOOD,
+        "com.culvers.android"                        to Category.CAT_FOOD,
+        "com.panera.android"                         to Category.CAT_FOOD,
+        "com.cafepressocoffee.android"               to Category.CAT_FOOD,
+        "com.crackerbarrelmobile.android"            to Category.CAT_FOOD,
+        "com.dennys.android"                         to Category.CAT_FOOD,
+        "com.ihop.android"                           to Category.CAT_FOOD,
+        "com.bojangles.android"                      to Category.CAT_FOOD,
+
+        // Loop 73 — Finance (BNPL & Neobanks)
+        "com.afterpay.android"                       to Category.CAT_FINANCE,
+        "com.affirm.in.app"                          to Category.CAT_FINANCE,
+        "com.splitit.android"                        to Category.CAT_FINANCE,
+        "com.sezzle.android"                         to Category.CAT_FINANCE,
+        "com.chime.spending"                         to Category.CAT_FINANCE,
+        "com.brigit.app"                             to Category.CAT_FINANCE,
+        "com.current.android"                        to Category.CAT_FINANCE,
+
+        // Loop 73 — Shopping (TR chains)
+        "com.carrefoursa.csa"                        to Category.CAT_SHOPPING,
+        "com.bim.bimcel"                             to Category.CAT_SHOPPING,
+        "com.a101.mobile"                            to Category.CAT_SHOPPING,
+        "com.teknosa.teknosa"                        to Category.CAT_SHOPPING,
+
+        // Loop 73 — Education (Math & Science)
+        "com.wolfram.android.alpha"                  to Category.CAT_EDUCATION,
+        "com.mathletics.android"                     to Category.CAT_EDUCATION,
+        "org.geogebra.android"                       to Category.CAT_EDUCATION,
+        "com.bartleby.android"                       to Category.CAT_EDUCATION,
+
+        // Loop 73 — Games (EA & Gameloft)
+        "com.ea.games.fifa_row"                      to Category.CAT_GAMES,
+        "com.ea.game.nfs13_row"                      to Category.CAT_GAMES,
+        "com.gameloft.android.ANMP.GloftNMHM"       to Category.CAT_GAMES,
+        "com.igg.castle"                             to Category.CAT_GAMES,
+        "com.farlightgames.igame.gp"                 to Category.CAT_GAMES,
+        "com.bytedance.android.liveme"               to Category.CAT_ENTERTAINMENT,
+        "com.nexon.android.nxgames"                  to Category.CAT_GAMES,
+        "com.levelinfinite.sgame"                    to Category.CAT_GAMES,
+
     )
 
     fun classifyApp(appInfo: AppInfo): String {
