@@ -154,8 +154,12 @@ fun FolderSheet(
     var showEditDialog by remember { mutableStateOf(false) }
 
     val sortedApps = remember(folder.apps, sortMode, searchQuery) {
+        val trLocale = java.util.Locale("tr")
         val base = if (searchQuery.isBlank()) folder.apps
-                   else folder.apps.filter { it.appName.contains(searchQuery, ignoreCase = true) }
+                   else {
+                       val q = searchQuery.lowercase(trLocale)
+                       folder.apps.filter { it.appName.lowercase(trLocale).contains(q) }
+                   }
         base.sortedByMode(sortMode)
     }
 

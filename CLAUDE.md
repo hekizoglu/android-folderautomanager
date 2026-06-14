@@ -1039,7 +1039,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2938 benzersiz** (479'dan, Loop 79 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3116 benzersiz** (479'dan, Loop 84 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
@@ -1114,4 +1114,29 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **BUILD #17**: Debug APK 28.5MB Telegram'a gönderildi (mesaj ID: 657)
 - **AppClassifier: 3047 benzersiz paket** (3000 sınırı aşıldı!)
 
-*Son güncelleme: 2026-06-14 (Loop 84 — BUILD #17 Debug APK, AppClassifier 3047 benzersiz)*
+### Loop 84 Özeti (2026-06-14 — remote agent, bu oturum)
+**AppClassifier 3047 → 3116 benzersiz entry (+69 net, 0 duplicate):**
+- **Oyunlar (Gacha/ARPG 2024-2025)**: Wuthering Waves, NIKKE, Punishing Gray Raven, Reverse 1999, Aether Gazer, MapleStory M, Dragon Raja, Summoners War Chronicles, Hades' Star, Marvel Future Fight (+12)
+- **Güç Kullanıcı Araçları**: Aurora Store, Shizuku, NetGuard, Blokada 5+legacy, Tasker, MacroDroid, KDE Connect, Syncthing, Pushbullet, Flud, LibreTorrent, Join, Automate, FolderSync, LADB, Termux:API/Boot, SuperSU, Kingo Root (+17)
+- **Yeni Nesil Sosyal Platformlar**: Lemon8, Bluesky, Yubo, Gas, Poparazzi, Post, Spill (+7)
+- **PKM / Bilgi Yönetimi**: Anytype, AppFlowy, Workflowy, Dynalist, Milanote, MindMeister (+6)
+- **Mental Wellness**: Youper, Brightside, 7 Cups, Daylio, MoodFit, Moodistory, Verywell Mind (+7)
+- **Web3 Cüzdanlar**: Rainbow, Phantom, Solflare, Gem Wallet, Magic Eden (+5)
+- **TR Dijital Medya/İş**: Onedio, Webtekno, DonanımHaber, Bionluk, Hopi, Kariyer.net, Armut.com, Youthall, Lidya Dergi (+9)
+- 2 duplicate temizlendi (taskade, haberturk önceden vardı)
+
+**KeywordDatabase.kt (+37 satır):**
+- CAT_SOCIAL: lemon8, bluesky, yubo, gas, poparazzi, spill, post
+- CAT_PRODUCTIVITY: anytype, appflowy, workflowy, dynalist, milanote, mindmeister, pkm, zettelkasten, taskade
+- CAT_GAMES: wuthering, nikke, punishing, reverse1999, aether, gazer, maplestory, dragonraja, summoners, genshin, honkai, zenless
+- CAT_HEALTH: youper, brightside, sevencups, 7cups, daylio, moodfit, happify, sanvello, reflectly, finch, woebot
+- CAT_FINANCE: rainbow, phantom, solflare, solana, magic eden, nft, defi, uniswap, aave, opensea, zerion
+- CAT_UTILITIES: aurora, shizuku, netguard, blokada, tasker, macrodroid, kdeconnect, syncthing, pushbullet, flud, libretorrent, automate, foldersync, ladb, termux, supersu, root, adb, automation, macro, trigger
+- CAT_NEWS: onedio, webtekno, donanimhaber, haberler, lidya, teknoblog, webrazzi, chip, shiftdelete, log, bilisim
+
+**FolderSheet.kt — Türkçe Arama Fix:**
+- Klasör içi arama `contains(query, ignoreCase = true)` → `lowercase(Locale("tr")).contains(q)` ile değiştirildi
+- Türkçe İ/ı, Ş/ş, Ğ/ğ, Ö/ö, Ü/ü, Ç/ç karakterleri artık doğru eşleşiyor
+- Önceki: Java varsayılan locale I harfini İngilizce kuralıyla küçültüyordu (I→i, İ→I değil)
+
+*Son güncelleme: 2026-06-14 (Loop 84 — AppClassifier 3116 benzersiz, FolderSheet TR arama fix)*
