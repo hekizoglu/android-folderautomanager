@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:35 UTC
-# Commit: a2e26942da1f7af82cb46b82c830b67671a6bd1d
+# Generated: 2026-06-14 00:50 UTC
+# Commit: 328544b1ec929ad40faaaa52d2318779a6cfe51c
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -3122,6 +3122,58 @@ class AppClassifier @Inject constructor() {
         "com.halide.android"                         to Category.CAT_PHOTOGRAPHY,
         "com.moment.android"                         to Category.CAT_PHOTOGRAPHY,
         "com.afterlight.android"                     to Category.CAT_PHOTOGRAPHY,
+
+        // ── Loop 45: News / Sports / Kids / Smart Home ───────────────────────
+        // NEWS
+        "com.newsbreak.android.citizen"              to Category.CAT_NEWS,
+        "com.bbc.android.news"                       to Category.CAT_NEWS,
+        "com.reuters.android"                        to Category.CAT_NEWS,
+        "com.ap.mobile"                              to Category.CAT_NEWS,
+        "com.bloomberg.android.plus"                 to Category.CAT_NEWS,
+        "com.arstechnica.android"                    to Category.CAT_NEWS,
+        // TR Haberler
+        "com.trtworld.android"                       to Category.CAT_NEWS,
+
+        // SPORTS
+        "com.espn.score"                             to Category.CAT_SPORTS,
+        "com.cbssports.android"                      to Category.CAT_SPORTS,
+        "com.fotmob.android"                         to Category.CAT_SPORTS,
+        "com.sofascore.android"                      to Category.CAT_SPORTS,
+        "com.flashscore.android"                     to Category.CAT_SPORTS,
+        "com.livescore.android"                      to Category.CAT_SPORTS,
+        "com.mapmyfitness.android2"                  to Category.CAT_SPORTS,
+        "com.bjk.android"                            to Category.CAT_SPORTS,
+        "com.galatasaray.android"                    to Category.CAT_SPORTS,
+        "com.fenerbahce.android"                     to Category.CAT_SPORTS,
+        "com.trabzonspor.android"                    to Category.CAT_SPORTS,
+        "com.mackolik.android"                       to Category.CAT_SPORTS,
+        "com.sporx.android"                          to Category.CAT_SPORTS,
+
+        // KIDS
+        "com.duolingo.kids"                          to Category.CAT_EDUCATION,
+        "com.khanacademy.kids"                       to Category.CAT_EDUCATION,
+        "com.toca.boca.world"                        to Category.CAT_EDUCATION,
+        "com.toca.life.school"                       to Category.CAT_EDUCATION,
+        "com.pinkfong.singsing"                      to Category.CAT_EDUCATION,
+        "com.nickjr.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.cartoonnetwork.android"                 to Category.CAT_ENTERTAINMENT,
+        "com.pbs.kids.video"                         to Category.CAT_ENTERTAINMENT,
+        "air.com.disney.disneymagickingdoms"         to Category.CAT_ENTERTAINMENT,
+
+        // SMART HOME / IoT
+        "com.google.android.apps.chromecast.app"     to Category.CAT_UTILITIES,
+        "com.sonos.acr"                              to Category.CAT_UTILITIES,
+        "com.nest.android"                           to Category.CAT_UTILITIES,
+        "com.ring.answer"                            to Category.CAT_UTILITIES,
+        "com.arlo.android"                           to Category.CAT_UTILITIES,
+        "com.wyze.android"                           to Category.CAT_UTILITIES,
+        "com.eufy.home"                              to Category.CAT_UTILITIES,
+        "com.tuya.smart"                             to Category.CAT_UTILITIES,
+        "com.mi.global.smarthome"                    to Category.CAT_UTILITIES,
+        "com.lifx.app"                               to Category.CAT_UTILITIES,
+        "com.nanoleaf.android"                       to Category.CAT_UTILITIES,
+        "com.belkin.wemo.android"                    to Category.CAT_UTILITIES,
+        "com.tp_link.android"                        to Category.CAT_UTILITIES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
