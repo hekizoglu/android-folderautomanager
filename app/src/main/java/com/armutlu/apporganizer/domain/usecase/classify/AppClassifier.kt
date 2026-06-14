@@ -1986,6 +1986,30 @@ class AppClassifier @Inject constructor() {
         "com.incisozluk.android"                     to Category.CAT_SOCIAL,
         "com.uludagsozluk.android"                   to Category.CAT_SOCIAL,
         "com.letgo.tr"                               to Category.CAT_SHOPPING,
+
+        // Loop 55 — Global Top-100 (eksik olanlar)
+        "com.google.android.apps.cloudprint"         to Category.CAT_UTILITIES,
+        "com.amazon.shopping"                        to Category.CAT_SHOPPING,
+        "com.amazon.kindle"                          to Category.CAT_EDUCATION,
+        "com.amazon.music"                           to Category.CAT_ENTERTAINMENT,
+        "com.amazon.video"                           to Category.CAT_ENTERTAINMENT,
+        "com.amazon.alexa"                           to Category.CAT_UTILITIES,
+        "com.tiktok.android"                         to Category.CAT_SOCIAL,
+        "com.ubercab.eats"                           to Category.CAT_FOOD,
+        "com.microsoft.outlook"                      to Category.CAT_PRODUCTIVITY,
+        "com.samsung.android.messaging"              to Category.CAT_SOCIAL,
+        "com.samsung.android.email.provider"         to Category.CAT_PRODUCTIVITY,
+        "com.samsung.android.calendar"               to Category.CAT_PRODUCTIVITY,
+        "com.samsung.android.contacts"               to Category.CAT_UTILITIES,
+        "com.samsung.android.dialer"                 to Category.CAT_UTILITIES,
+        "com.samsung.android.app.notes"              to Category.CAT_PRODUCTIVITY,
+        "com.samsung.android.knox.containeragent"    to Category.CAT_UTILITIES,
+        "com.doordash.diner"                         to Category.CAT_FOOD,
+        "com.chegg"                                  to Category.CAT_EDUCATION,
+        "com.valve.android.steam"                    to Category.CAT_GAMES,
+        "com.garena.freefire"                        to Category.CAT_GAMES,
+        "com.ea.game.fifa14_row"                     to Category.CAT_GAMES,
+        "com.outfit7.talkingtom2"                    to Category.CAT_GAMES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
