@@ -187,7 +187,9 @@ fun AllAppsDrawer(
     onClose: () -> Unit,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)? = null,
-    iconSize: Dp = 40.dp
+    iconSize: Dp = 40.dp,
+    favoriteApps: List<AppInfo> = emptyList(),
+    onFavoriteAppClick: (String) -> Unit = {},
 ) {
     var dragOffset      by remember { mutableFloatStateOf(0f) }
     val context         = LocalContext.current
@@ -518,6 +520,15 @@ fun AllAppsDrawer(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 32.dp)
                         ) {
+                            if (searchQuery.isEmpty() && favoriteApps.isNotEmpty()) {
+                                item(key = "favorites_row") {
+                                    FavoritesRow(
+                                        apps = favoriteApps,
+                                        iconPackPkg = iconPackPkg,
+                                        onAppClick = onFavoriteAppClick
+                                    )
+                                }
+                            }
                             grouped.forEach { (letter, letterApps) ->
                                 item(key = "header_$letter") {
                                     NiagaraLetterHeader(letter = letter)

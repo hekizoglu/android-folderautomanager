@@ -666,7 +666,12 @@ fun HomeScreen(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     contextMenuPkg = app.packageName
                 },
-                onClose = viewModel::closeAllApps
+                onClose = viewModel::closeAllApps,
+                favoriteApps = favoriteApps,
+                onFavoriteAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.launchApp(context, pkg)
+                }
             )
         }
     }
@@ -703,7 +708,7 @@ fun HomeScreen(
                 viewModel.saveAppNote(app.packageName, note)
             },
             onToggleFavorite = { _ ->
-                viewModel.initFavorites(context)
+                viewModel.toggleFavorite(context, app.packageName)
             }
         )
     }
