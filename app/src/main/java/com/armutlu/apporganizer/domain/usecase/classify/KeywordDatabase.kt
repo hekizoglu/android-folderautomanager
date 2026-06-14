@@ -344,7 +344,19 @@ object KeywordDatabase {
             "daily.calm", "headspace", "waking.up", "aware", "meditopia",
             "habit", "tracker", "morning", "routine", "ritual", "affirmation",
             "vision.board", "motivation", "self.care", "self.improvement",
-            "life.coach", "therapist", "counselor", "yasamtarzi"
+            "life.coach", "therapist", "counselor", "yasamtarzi",
+            // Loop 94 — Dini / Manevi uygulamalar
+            "muslim", "muslimpro", "quran", "kuran", "islamicfinder", "athan",
+            "adhan", "prayer", "salah", "namaz", "mosque", "islamic", "islam",
+            "allah", "ramadan", "hajj", "umrah", "zakat", "halal", "hijab",
+            "bible", "biblical", "gospel", "scripture", "devotional", "church",
+            "jesus", "christian", "catholic", "orthodox", "protestant", "worship",
+            "torah", "jewish", "synagogue", "sabbath", "shabbat", "hebrew",
+            "buddhist", "buddhism", "dharma", "sangha", "nirvana", "mantra",
+            "hindu", "hinduism", "puja", "vedic", "yoga.spiritual",
+            "diyanet", "ilahi", "dini", "ibadet", "dua", "tesbih", "secde",
+            "youversion", "biblegateway", "olivetree", "logos.bible",
+            "jwlibrary", "watchtower", "jehovah"
         ),
         Category.CAT_BUSINESS to listOf(
             "business", "crm", "erp", "invoice", "sales", "hr", "hiring",

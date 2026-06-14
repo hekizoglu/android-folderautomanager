@@ -361,7 +361,6 @@ class AppListViewModel @Inject constructor(
             if (_llmCategorizing.value) return@launch
             _llmCategorizing.value = true
             try {
-                val ctx = getApplication<android.app.Application>()
                 val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).first()
                 if (otherAppsList.isEmpty()) {
                     _llmProgress.value = "Diger klasoru bos — kategorize edilecek uygulama yok."
@@ -399,7 +398,7 @@ class AppListViewModel @Inject constructor(
         }
     }
 
-    fun organizeOnLauncher(useAccessibility: Boolean) {
+    fun organizeOnLauncher(@Suppress("UNUSED_PARAMETER") useAccessibility: Boolean) {
         _organizeState.value = OrganizeState.Done(true, "Launcher otomatik kategorileme aktif.")
     }
 

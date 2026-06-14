@@ -3909,6 +3909,118 @@ class AppClassifier @Inject constructor() {
         "com.elicit.app"                             to Category.CAT_PRODUCTIVITY,
         "com.consensus.app.android"                  to Category.CAT_PRODUCTIVITY,
         "com.scite.android"                          to Category.CAT_PRODUCTIVITY,
+
+        // ─── Loop 94: Dini / Manevi uygulamalar ──────────────────────────────
+        "com.bitsmedia.android.muslimpro"            to Category.CAT_LIFESTYLE,  // Muslim Pro
+        "com.quran.labs.androidquran"                to Category.CAT_LIFESTYLE,  // Quran for Android
+        "com.islamicfinder.android"                  to Category.CAT_LIFESTYLE,  // Athan - Prayer Times
+        "com.globalreachtech.athan"                  to Category.CAT_LIFESTYLE,  // Athan Pro
+        "com.hm.quranandroid"                        to Category.CAT_LIFESTYLE,  // Quran (Hm)
+        "com.ayah.quran"                             to Category.CAT_LIFESTYLE,  // Ayah Quran
+        "com.quranreading.app"                       to Category.CAT_LIFESTYLE,  // Quran Reading
+        "com.alquran.mobile"                         to Category.CAT_LIFESTYLE,  // Al-Quran Mobile
+        "com.noor.quran.mobile"                      to Category.CAT_LIFESTYLE,  // Noor Quran
+        "com.youversion.bible"                       to Category.CAT_LIFESTYLE,  // YouVersion Bible
+        "com.lifechurch.youversion"                  to Category.CAT_LIFESTYLE,  // YouVersion (Life.Church)
+        "com.olive.tree.bible.android"               to Category.CAT_LIFESTYLE,  // OliveTree Bible Study
+        "com.logos.android"                          to Category.CAT_LIFESTYLE,  // Logos Bible Study
+        "org.biblegateway.app"                       to Category.CAT_LIFESTYLE,  // Bible Gateway
+        "com.glo.bible"                              to Category.CAT_LIFESTYLE,  // Glo Bible
+        "com.jwpublishing.jwlibrary"                 to Category.CAT_LIFESTYLE,  // JW Library
+        "com.jesusdaily.android"                     to Category.CAT_LIFESTYLE,  // Jesus Daily
+        "com.upperroom.app"                          to Category.CAT_LIFESTYLE,  // Upper Room devotional
+        "com.faithlife.verse"                        to Category.CAT_LIFESTYLE,  // Verse of the Day
+        "com.catholicapp.android"                    to Category.CAT_LIFESTYLE,  // Catholic Bible
+        "com.torahportions.android"                  to Category.CAT_LIFESTYLE,  // Torah Portion
+        "com.jewishprayer.android"                   to Category.CAT_LIFESTYLE,  // Jewish Prayer
+        "com.buddhistapp.android"                    to Category.CAT_LIFESTYLE,  // Buddhist Meditation
+
+        // ─── Loop 94: Giyilebilir cihaz eşlikçi uygulamaları ─────────────────
+        "com.huami.watch.hmwatchmanager"             to Category.CAT_HEALTH,     // Amazfit/Zepp legacy
+        "com.amazfit.app"                            to Category.CAT_HEALTH,     // Amazfit
+        "com.amazfit.android"                        to Category.CAT_HEALTH,     // Amazfit alternate
+        "com.mobvoi.companion.ticwatch"              to Category.CAT_HEALTH,     // TicWatch (Mobvoi)
+        "com.fossil.wearos.fap"                      to Category.CAT_HEALTH,     // Fossil Wear OS
+        "com.fossil.wear.android"                    to Category.CAT_HEALTH,     // Fossil companion
+        "com.misfit.android"                         to Category.CAT_HEALTH,     // Misfit (Fossil brand)
+        "com.wahooFitness.cyclecomputer"             to Category.CAT_HEALTH,     // Wahoo Fitness
+        "com.dexcom.g7"                              to Category.CAT_HEALTH,     // Dexcom G7 CGM
+        "com.abbott.android.librelink"               to Category.CAT_HEALTH,     // FreeStyle Libre
+        "com.omron.healthcare.android"               to Category.CAT_HEALTH,     // Omron Health
+        "com.asus.android.stepcount"                 to Category.CAT_HEALTH,     // Asus ZenFit
+
+        // ─── Loop 94: ABD Bankacılık ─────────────────────────────────────────
+        "com.pnc.android.banking"                    to Category.CAT_FINANCE,    // PNC Bank
+        "com.discover.mobile.banking"                to Category.CAT_FINANCE,    // Discover Bank
+        "com.fiftythird.android"                     to Category.CAT_FINANCE,    // Fifth Third Bank
+        "com.truist.android"                         to Category.CAT_FINANCE,    // Truist (SunTrust+BB&T)
+        "com.huntington.android"                     to Category.CAT_FINANCE,    // Huntington Bank
+        "com.citizens.android"                       to Category.CAT_FINANCE,    // Citizens Bank
+        "com.bbvausa.app"                            to Category.CAT_FINANCE,    // BBVA USA
+        "com.santanderus.banking"                    to Category.CAT_FINANCE,    // Santander US
+        "com.suntrust.android"                       to Category.CAT_FINANCE,    // SunTrust (pre-Truist)
+        "com.keybank.android"                        to Category.CAT_FINANCE,    // KeyBank
+        "com.comerica.android"                       to Category.CAT_FINANCE,    // Comerica
+        "com.synovus.android"                        to Category.CAT_FINANCE,    // Synovus Bank
+        "com.pinnacle.android.banking"               to Category.CAT_FINANCE,    // Pinnacle Financial
+
+        // ─── Loop 94: Sağlık Sigortası / Telehealth ─────────────────────────
+        "com.mychart.android"                        to Category.CAT_HEALTH,     // MyChart (Epic)
+        "com.mychart.patient"                        to Category.CAT_HEALTH,     // MyChart Patient
+        "com.cigna.android"                          to Category.CAT_HEALTH,     // Cigna Health
+        "com.aetna.android"                          to Category.CAT_HEALTH,     // Aetna
+        "com.uhone.android"                          to Category.CAT_HEALTH,     // UnitedHealthcare
+        "com.unitedhealthcare.app"                   to Category.CAT_HEALTH,     // UHC alternate
+        "com.anthem.android"                         to Category.CAT_HEALTH,     // Anthem BCBS
+        "com.hcsc.android"                           to Category.CAT_HEALTH,     // BCBS Illinois
+        "com.hims.android"                           to Category.CAT_HEALTH,     // Hims/Hers
+        "com.ro.health.android"                      to Category.CAT_HEALTH,     // Ro Health
+        "com.noomapp.android"                        to Category.CAT_HEALTH,     // Noom Weight
+        "com.virtuwell.android"                      to Category.CAT_HEALTH,     // Virtuwell telehealth
+        "com.lemonaid.android"                       to Category.CAT_HEALTH,     // Lemonaid Health
+
+        // ─── Loop 94: VR / AR / Metaverse ────────────────────────────────────
+        "com.oculus.explore"                         to Category.CAT_ENTERTAINMENT, // Meta Quest
+        "com.facebook.arvr.quill"                   to Category.CAT_ART,           // Quill (VR art)
+        "com.meta.spatial.android"                   to Category.CAT_ENTERTAINMENT, // Meta Spatial
+        "com.snapchat.lens.studio"                   to Category.CAT_ART,           // Lens Studio
+        "com.google.android.apps.arcore"             to Category.CAT_UTILITIES,     // ARCore
+        "com.nianticlabs.lightship"                  to Category.CAT_UTILITIES,     // Niantic Lightship AR
+
+        // ─── Loop 94: Çocuk TV / Eğitim ─────────────────────────────────────
+        "com.disneyjunior.android"                   to Category.CAT_PARENTING,  // Disney Junior
+        "com.pbs.kids.play"                          to Category.CAT_PARENTING,  // PBS Kids Play
+        "com.nick.android.kidstv"                    to Category.CAT_PARENTING,  // Nick Jr.
+        "com.dc.superpets.android"                   to Category.CAT_PARENTING,  // DC Super Pets
+        "com.brainpop.android"                       to Category.CAT_EDUCATION,  // BrainPOP
+        "com.ixl.math.android"                       to Category.CAT_EDUCATION,  // IXL Learning
+        "com.starfall.phonics"                       to Category.CAT_EDUCATION,  // Starfall Phonics
+        "com.funbrain.android"                       to Category.CAT_EDUCATION,  // Funbrain
+        "com.coolmath.android"                       to Category.CAT_EDUCATION,  // Cool Math Games
+
+        // ─── Loop 94: Baskı / Tarayıcı / Ofis ───────────────────────────────
+        "com.hp.android.print"                       to Category.CAT_UTILITIES,  // HP Smart Print
+        "com.epson.eprint.android"                   to Category.CAT_UTILITIES,  // Epson iPrint
+        "com.canon.ij.mobile"                        to Category.CAT_UTILITIES,  // Canon PRINT
+        "com.brother.mfc.android"                    to Category.CAT_UTILITIES,  // Brother iPrint
+        "com.xerox.mobile.android"                   to Category.CAT_UTILITIES,  // Xerox Print
+        "com.camscanner.android"                     to Category.CAT_UTILITIES,  // CamScanner (exists?)
+        "com.microsoft.office.officelens"            to Category.CAT_UTILITIES,  // Office Lens
+        "com.geniusscan.android"                     to Category.CAT_UTILITIES,  // Genius Scan
+        "com.abbyy.mobile.finereader.smartphone"     to Category.CAT_UTILITIES,  // FineReader PDF
+
+        // ─── Loop 94: Akilli Ev Ek ───────────────────────────────────────────
+        "com.wemo.android"                           to Category.CAT_HOUSE,      // Wemo Smart Home
+        "com.ecobee.android.app"                     to Category.CAT_HOUSE,      // Ecobee thermostat
+        "com.honeywell.lyric"                        to Category.CAT_HOUSE,      // Honeywell Home
+        "com.lennox.icomfort"                        to Category.CAT_HOUSE,      // Lennox iComfort
+        "com.schlage.home.android"                   to Category.CAT_HOUSE,      // Schlage Home
+        "com.kwikset.android"                        to Category.CAT_HOUSE,      // Kwikset Halo
+        "com.lockitron.android"                      to Category.CAT_HOUSE,      // Lockitron
+        "com.alarm.com"                              to Category.CAT_HOUSE,      // Alarm.com
+        "com.adt.pulse.android"                      to Category.CAT_HOUSE,      // ADT Pulse
+        "com.simplisafe.app"                         to Category.CAT_HOUSE,      // SimpliSafe
+        "com.vivint.smarthome"                       to Category.CAT_HOUSE,      // Vivint Smart Home
     )
 
     fun classifyApp(appInfo: AppInfo): String {

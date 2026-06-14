@@ -99,12 +99,8 @@ class FolderCreationService(private val context: Context) {
                     )
                 }
                 
-                // Create folder shortcut
-                val shortcutLabel = "$categoryEmoji $categoryName (${apps.size})"
                 val shortcuts = mutableListOf<ShortcutInfo>()
-                
-                // Create shortcuts for each app in the category
-                apps.forEachIndexed { index, app ->
+                apps.forEachIndexed { _, app ->
                     try {
                         val launchIntent = context.packageManager.getLaunchIntentForPackage(app.packageName)
                         

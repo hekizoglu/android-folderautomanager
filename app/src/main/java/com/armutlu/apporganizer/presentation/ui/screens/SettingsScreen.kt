@@ -1180,6 +1180,7 @@ fun SettingButton(title: String, description: String, onClick: () -> Unit) =
 fun SettingInfo(title: String, description: String) =
     SettingsInfoRow(Icons.Default.Info, title, description)
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun DebugInfoCard(
     appCount: Int, categoryCount: Int, error: String?, logs: List<String>,

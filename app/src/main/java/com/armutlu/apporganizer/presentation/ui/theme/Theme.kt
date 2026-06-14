@@ -68,7 +68,7 @@ private val FONT_KEY  = stringPreferencesKey("app_font")
 
 @Composable
 fun AppOrganizerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    @Suppress("UNUSED_PARAMETER") darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
