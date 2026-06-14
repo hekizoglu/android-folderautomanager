@@ -857,7 +857,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Her 18 döngüde bir:** emülatörde tam test
 
 ### Akıllı Kategorizasyon (Hüseyin Talebi — Yapılacak)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ ~1300+ eşleme (479'dan, +800+) — Loop 31-41'de eklendi
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2074 benzersiz** (479'dan, Loop 31-58'de eklendi)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü > "DeepSeek ile Kategorize Et"
 - Detay: CLAUDE.md "Akıllı Kategorizasyon Yol Haritası" bölümünde
 
@@ -966,4 +966,22 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Toplam: 1784 benzersiz entry** (onceki 1695)
 - 6 pre-existing duplicate var (Döngü 34'ten beri) — benden degil
 
-*Son güncelleme: 2026-06-14 (Loop 47 — AppClassifier 1784 benzersiz, SPORTS+COMMUNICATION genisleme)*
+### Loop 58 Özeti (2026-06-14 — remote agent)
+**AppClassifier 2074 benzersiz entry (+183 net, birleşik Loop 58 remote+local):**
+- **Automotive**: Tesla, BMW, Mercedes, Ford, Toyota, Honda, Volvo, Hyundai, KIA, GM, Nissan, GasBuddy, AAA, Sixt, Enterprise, Hertz
+- **Sigorta**: Allstate, Geico, Progressive, StateFarm, Lemonade, Root, AXA, Allianz, MetLife, Zurich, Nationwide, Liberty Mutual, Cigna, Aetna, Anthem, Bupa + TR sigortacılar (Anadolu, Aksigorta, Mapfre, Allianz TR)
+- **Gayrimenkul**: Zillow, Redfin, Realtor.com, Trulia, Apartments.com, VRBO, HomeAway, WeWork, Loopnet
+- **Evcil Hayvan**: Rover, Chewy, PetSmart, PetCo, BarkBox, Wag!
+- **Ev Hizmetleri**: Thumbtack, TaskRabbit, HomeAdvisor, Angi, Handy, Lugg
+- **OEM Apps**: OPPO (gallery/music/ColorOS), Realme (community/store/launcher), Vivo (gallery/music/launcher), Nothing (settings/launcher), Asus (launcher/filemanager), Motorola (launcher/moto actions), OnePlus (filemanager/gallery/weather)
+- **Seyahat**: BlaBlaCar, FlixBus, Hopper, Momondo, Kiwi.com, HotelTonight, DiscoverCars
+- **Streaming**: Discovery+, AMC+, Showtime, Starz, Hayu, FuboTV, Sling, Pluto, Fandango, Mubi, Shudder, Plex
+- **TR Transit & Yerel**: IstanbulKart, IBB, ESHOT, Obilet, Biletix, Patika.dev, Kodluyoruz, BIMeks, MediaMarkt, Koton, Boyner, DeFacto, Mavi, Colin, LC Waikiki
+- **Grocery/Kazanç**: Shipt, Flipp, Ibotta, Fetch Rewards
+- **Fotoğraf/Video (remote)**: Adobe Premiere Rush, Filmorago, KineMaster, Unfold, Prequel, Splice, Lomotif, VivaVideo, Procreate, SketchBook, ibisPaint, MediBang
+- **E-Commerce (remote)**: Shopee, JD.com, OfferUp, Craigslist, Costco, Home Depot
+- **Kitap (remote)**: GoodReads, Kobo, Libby, Bookmate, Pocket, Readwise
+- 15 duplicate temizlendi; merge conflict çözüldü (remote Loop 58 + local Loop 58 birleşti)
+- **Toplam: 2074 benzersiz entry** (onceki 1891)
+
+*Son güncelleme: 2026-06-14 (Loop 58 — AppClassifier 2074 benzersiz, Araba/Sigorta/Gayrimenkul/Evcil/OEM/Seyahat/Streaming)*
