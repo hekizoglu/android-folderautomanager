@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 06:12 UTC
-# Commit: 99816fbcb52de964eed062b5a0936a8b7249e06e
+# Generated: 2026-06-14 06:20 UTC
+# Commit: 40aadf66248237e0d59a8794d310af17a642fdfe
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -4131,6 +4131,53 @@ class AppClassifier @Inject constructor() {
         "com.songkick.android"                       to Category.CAT_ENTERTAINMENT,
         "com.eventbrite.android"                     to Category.CAT_ENTERTAINMENT,
         "com.mobilet.android"                        to Category.CAT_ENTERTAINMENT,
+
+        // Loop 67 — AI & Productivity Tools
+        "com.perplexity.ai.android"                  to Category.CAT_PRODUCTIVITY,
+        "com.character.ai.android"                   to Category.CAT_PRODUCTIVITY,
+        "com.poe.android"                            to Category.CAT_PRODUCTIVITY,
+        "com.fireflies.ai.android"                   to Category.CAT_PRODUCTIVITY,
+
+        // Loop 67 — Code & Developer Tools
+        "com.replit.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.codepoint.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.acode.editor"                           to Category.CAT_UTILITIES,
+        "com.quickedit.android"                      to Category.CAT_UTILITIES,
+        "io.spck.editor"                             to Category.CAT_UTILITIES,
+        "com.rhmsoft.code"                           to Category.CAT_UTILITIES,
+
+        // Loop 67 — Video Streaming Global
+        "com.paramountnetwork.android"               to Category.CAT_ENTERTAINMENT,
+        "com.discovery.discoveryplus.android"        to Category.CAT_ENTERTAINMENT,
+        "com.sky.go.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.showtime.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.starz.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.mgo.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.hooq.android"                           to Category.CAT_ENTERTAINMENT,
+        "com.iflix.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.viu.android"                            to Category.CAT_ENTERTAINMENT,
+        "com.tving.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.wavve.android"                          to Category.CAT_ENTERTAINMENT,
+
+        // Loop 67 — TR E-Commerce & Marketplace
+        "com.flo.moda"                               to Category.CAT_SHOPPING,
+        "com.mango.android"                          to Category.CAT_SHOPPING,
+        "com.pullandbear.android"                    to Category.CAT_SHOPPING,
+        "com.stradivarius.android"                   to Category.CAT_SHOPPING,
+        "com.oysho.android"                          to Category.CAT_SHOPPING,
+        "com.celio.android"                          to Category.CAT_SHOPPING,
+
+        // Loop 67 — Fitness & Sports Tracking
+        "com.adidas.training"                        to Category.CAT_HEALTH,
+        "com.mapmywalk.android"                      to Category.CAT_HEALTH,
+        "com.mapmycycle.android"                     to Category.CAT_HEALTH,
+        "com.endomondo.android"                      to Category.CAT_HEALTH,
+        "com.jefit.android"                          to Category.CAT_HEALTH,
+        "com.bodybuilding.android"                   to Category.CAT_HEALTH,
+        "com.fitbod.android"                         to Category.CAT_HEALTH,
+
+        // Loop 67 — TR News & Media (more)
+        "com.gazeteoku.android"                      to Category.CAT_NEWS,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
@@ -7125,6 +7172,7 @@ fun FolderTile(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
     onSwipeUp: ((String) -> Unit)? = null,
+    onNotificationTap: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     textAlpha: Float = 1f,
     folderSizeDp: Int = 72,
@@ -7268,7 +7316,7 @@ fun FolderTile(
                 modifier = Modifier.width(tileWidth)
             )
         }
-        // Son bildirim metni — en cok bildirimi olan uygulamanin mesaji
+        // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
         val notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
         if (notifTextEnabled) {
             val latestNotifApp = remember(folder.apps) {
@@ -7276,14 +7324,26 @@ fun FolderTile(
                     .maxByOrNull { it.notificationCount }
             }
             if (latestNotifApp != null) {
+                val notifDisplayText = "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
                 Text(
-                    text = latestNotifApp.notificationText,
-                    color = Color.White.copy(alpha = 0.55f),
+                    text = notifDisplayText,
+                    color = Color.White.copy(alpha = 0.65f),
                     fontSize = 9.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.width(tileWidth)
+                    modifier = Modifier
+                        .width(tileWidth)
+                        .then(
+                            if (onNotificationTap != null) {
+                                Modifier.combinedClickable(
+                                    onClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        onNotificationTap(latestNotifApp.packageName)
+                                    }
+                                )
+                            } else Modifier
+                        )
                 )
             }
         }
@@ -14344,6 +14404,18 @@ object AppPrefs {
         return json.toString()
     }
 
+    // Otomatik yedekleme zamanlama — WorkManager periyodik gorev
+    const val KEY_BACKUP_DAY_OF_WEEK = "backup_day_of_week"   // 1=Pzt, 7=Paz
+    const val KEY_BACKUP_HOUR        = "backup_hour"           // 0-23
+    const val KEY_BACKUP_MINUTE      = "backup_minute"         // 0-59
+
+    fun getBackupDayOfWeek(context: Context): Int = prefs(context).getInt(KEY_BACKUP_DAY_OF_WEEK, 1)
+    fun setBackupDayOfWeek(context: Context, day: Int) = prefs(context).edit().putInt(KEY_BACKUP_DAY_OF_WEEK, day).apply()
+    fun getBackupHour(context: Context): Int = prefs(context).getInt(KEY_BACKUP_HOUR, 3)
+    fun setBackupHour(context: Context, hour: Int) = prefs(context).edit().putInt(KEY_BACKUP_HOUR, hour).apply()
+    fun getBackupMinute(context: Context): Int = prefs(context).getInt(KEY_BACKUP_MINUTE, 0)
+    fun setBackupMinute(context: Context, minute: Int) = prefs(context).edit().putInt(KEY_BACKUP_MINUTE, minute).apply()
+
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
     fun getDeepSeekApiKey(context: Context): String =
@@ -15650,6 +15722,79 @@ object WidgetPrefs {
 
     fun removeWidgetId(context: Context, id: Int) {
         saveWidgetIds(context, getWidgetIds(context).filter { it != id })
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/workers/BackupWorker.kt
+========================================
+package com.armutlu.apporganizer.workers
+
+import android.content.Context
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.BackupManager
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import dagger.hilt.EntryPoint
+import timber.log.Timber
+import java.io.File
+import java.util.concurrent.TimeUnit
+
+class BackupWorker(
+    appContext: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(appContext, workerParams) {
+
+    @EntryPoint
+    @dagger.hilt.InstallIn(SingletonComponent::class)
+    interface BackupWorkerEntryPoint {
+        fun appRepository(): AppRepository
+    }
+
+    override suspend fun doWork(): Result {
+        return runCatching {
+            val repo = EntryPointAccessors.fromApplication(
+                applicationContext,
+                BackupWorkerEntryPoint::class.java
+            ).appRepository()
+            val json = BackupManager.exportToJson(repo)
+            val file = File(applicationContext.filesDir, "auto_backup.json")
+            file.writeText(json)
+            Timber.d("Otomatik yedekleme tamamlandi: ${file.absolutePath}")
+            Result.success()
+        }.getOrElse { e ->
+            Timber.e(e, "Otomatik yedekleme hatasi")
+            Result.retry()
+        }
+    }
+
+    companion object {
+        private const val WORK_NAME = "auto_backup_weekly"
+
+        fun schedule(context: Context) {
+            if (!AppPrefs.isAutoBackupEnabled(context)) {
+                WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+                return
+            }
+            // Her 7 gunde bir calisdiran periyodik gorev
+            val request = PeriodicWorkRequestBuilder<BackupWorker>(7, TimeUnit.DAYS)
+                .build()
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                WORK_NAME,
+                ExistingPeriodicWorkPolicy.UPDATE,
+                request
+            )
+        }
+
+        fun cancel(context: Context) {
+            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+        }
     }
 }
 
