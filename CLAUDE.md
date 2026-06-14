@@ -1013,4 +1013,13 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - CAT_PHOTOGRAPHY: 104 → 134 (+30)
 - CAT_SOCIAL: 136 → 153 (+17)
 
-*Son güncelleme: 2026-06-14 (Loop 62 — AppClassifier 2185 benzersiz, 0 duplicate)*
+### Loop 61-66 Özeti (2026-06-14 — BUILD #14)
+- Loop 61: Otomotiv(Tesla/BMW/Ford), AI(ChatGPT/Claude/Gemini/DeepSeek), Sigorta(Lemonade/CreditKarma) +82
+- Loop 62: Telemedicine(Teladoc/WebMD), Asya(WeChat/Grab/Paytm), TR Kripto(BTCTurk/Paribu) +73
+- Loop 63: LatAm(MercadoLibre/Rappi), Orta Dogu(Talabat/Careem), TR Gov(e-Devlet/SGK), Cloud(Dropbox/Proton) +74
+- Loop 64: Cevre(Ecosia/Klima), Erisebilirlik(BeMyEyes/TalkBack), Browser(Brave/Firefox/Tor), Ev Guvenlik(Wyze/Ring) +92
+- Loop 65: TR Kulupler(GS/FB/BJK+7), Muzik(Yousician/Smule/Fender), TR Radyo(Radyo7/Kral), Sozluk(Tureng/Oxford) +69
+- **BUILD #14**: Debug APK 28.2MB Telegram'a gonderildi
+- **AppClassifier: 2351 benzersiz paket** (baslangic 479, +1872 bu proje boyunca)
+
+*Son güncelleme: 2026-06-14 (Loop 66 — BUILD #14 Debug APK, AppClassifier 2351 benzersiz)*
