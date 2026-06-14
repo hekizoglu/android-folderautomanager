@@ -1039,7 +1039,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2623 benzersiz** (479'dan, Loop 69 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2753 benzersiz** (479'dan, Loop 73 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
@@ -1051,4 +1051,23 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **BUILD #15:** Debug APK 28.5MB Telegram'a gönderildi
 - **AppClassifier: 2624 benzersiz paket** (başlangıç: 479)
 
-*Son güncelleme: 2026-06-14 (Loop 72 — BUILD #15 Debug APK 28.5MB, AppClassifier 2624 benzersiz)*
+### Loop 73 Özeti (2026-06-14 — remote agent)
+**AppClassifier 2486 → 2753 benzersiz entry (+267 net, remote+local merge):**
+- **SOCIAL:** Patreon, Vero, Polywork, Telegram Plus, Clubhouse, NGL, Poparazzi, Yubo
+- **PHOTOGRAPHY:** Remini AI, Lensa AI, Magisto, PixelCut, PicStitch, Prisma Lensa
+- **NEWS:** Ground News, InShorts, The Week, upday (Axel Springer), AllSides, Artifact, Daily Beast
+- **HEALTH:** Flo (period), Natural Cycles, Clue, Happy Scale, Teladoc, ACR Call Recorder
+- **UTILITIES:** Speedtest (Ookla), SoundHound, AVG Antivirus, Hiya Caller ID, CCleaner, Magisk, SuperUser
+- **TRAVEL Hotels:** Marriott, Hilton, IHG, AccorHotels, Best Western, Radisson, Wyndham
+- **TRAVEL Automotive:** Tesla, Mercedes, Audi, VW, Ford, Toyota, Honda, Hyundai, Kia, Renault, Peugeot, Togg, BP, Shell, Opet
+- **FOOD Chains:** Migros One, Little Caesars, Jack in the Box, Arby's, Popeyes, Whataburger, Culver's, Panera, Denny's, IHOP, Bojangles
+- **FINANCE BNPL:** Afterpay, Affirm, Sezzle, Chime, Brigit, Current
+- **SHOPPING TR:** CarrefourSA, BIM, A101, Teknosa
+- **EDUCATION:** Wolfram Alpha, Mathletics, GeoGebra, Bartleby
+- **GAMES:** FIFA Mobile, NFS No Limits, Modern Combat 5 (Gameloft), Castle Clash, Farlight 84, Level Infinite
+- **FOOD/TELECOM (remote):** Deliveroo, Delivery Hero, Glovo, Verizon, Sprint, Turk Telekom, Vodafone TR
+- **GOV TR (remote):** NVI Kimlik, MEB, Sağlık Bakanlığı, KGM, TCMB, SPK, BDDK
+- Merge conflict başarıyla çözüldü (remote Loop 73 + local Loop 73 birleşti), 0 duplicate
+- **Uzak Ortam Notu:** APK build yapılamıyor, Telegram'a gönderilemedi — yerel makineden yapılmalı
+
+*Son güncelleme: 2026-06-14 (Loop 73 — AppClassifier 2753 benzersiz, remote push)*
