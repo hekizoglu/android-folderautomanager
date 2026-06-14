@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-14 00:07 UTC
-# Commit: d81beab4bcc52e606f1138df8737e22a5722b36d
+# Generated: 2026-06-14 00:08 UTC
+# Commit: 8131b99a76a5a4613e7b760a9f0f310273906b3b
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -11175,7 +11175,7 @@ fun SettingsScreen(
                                 color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        val launcherAction = {
+                        val launcherAction: () -> Unit = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 val rm = context.getSystemService(RoleManager::class.java)
                                 if (rm.isRoleAvailable(RoleManager.ROLE_HOME)) {
@@ -11185,6 +11185,7 @@ fun SettingsScreen(
                                 val i = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 runCatching { context.startActivity(i) }
+                                Unit
                             }
                         }
                         if (isDefault) {
