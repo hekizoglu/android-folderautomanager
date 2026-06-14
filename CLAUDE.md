@@ -1039,7 +1039,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2753 benzersiz** (479'dan, Loop 73 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2938 benzersiz** (479'dan, Loop 79 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
@@ -1078,4 +1078,29 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - Python dedup: 20 duplicate temizlendi → **2861 benzersiz paket**
 - **BUILD #16**: Debug APK 28.5MB Telegram'a gönderildi (mesaj ID: 629)
 
-*Son güncelleme: 2026-06-14 (Loop 78 — BUILD #16 Debug APK, AppClassifier 2861 benzersiz)*
+### Loop 79 Özeti (2026-06-14 — remote agent, bu oturum)
+**AppClassifier 2861 → 2938 benzersiz entry (+77 net, remote+local merge çözüldü):**
+
+**KeywordDatabase.kt BUG FIX:**
+- `mapOf()` içinde duplicate key sorunu giderildi: CAT_TRAVEL, CAT_SHOPPING, CAT_FINANCE, CAT_HEALTH, CAT_UTILITIES iki kez tanımlıydı
+- Kotlin'de mapOf() duplicate key'lerde son tanım kazanır — ilk (daha kapsamlı) listeler Loop 40'tan beri kayboluyordu
+- Tüm kategoriler tek listede birleştirildi (14 kategori, 0 duplicate)
+- Loop 79 bölgesel keyword'ler eklendi: Hindistan fintech/e-ticaret, Afrika (mpesa/safaricom/opay), Orta Doğu (tamara/tabby), Güneydoğu Asya (gopay/linkaja/truemoney)
+
+**AppClassifier.kt +77 yeni paket:**
+- **Hindistan E-Ticaret (+8):** Flipkart, Meesho, Myntra, Nykaa, TataCliq, JioMart, Snapdeal, Udaan
+- **Hindistan Fintech (+14):** Zerodha, Groww, CRED, HDFC/ICICI/Kotak/Axis/SBI banka, Upstox, Angel One, Smallcase, IIFL, JazzCash, bKash
+- **Hindistan Seyahat (+7):** Rapido, IRCTC, Goibibo, RedBus, ClearTrip, Ixigo, EaseMyTrip
+- **Hindistan Sosyal/Eğlence (+6):** ShareChat, Roposo, Moj, Kuku FM, Pratilipi, MX TakaTak
+- **Hindistan Araçlar (+3):** mAadhaar, DigiLocker, Dunzo
+- **Afrika Fintech (+11):** M-Pesa (Safaricom/Vodacom), OPay, PalmPay, Kuda, Flutterwave, Paystack, Tala, Sendwave, Chipper Cash, GTBank
+- **Afrika Telekom/Alışveriş (+4):** MTN, Safaricom, Airtel Africa, Kilimall
+- **Pakistan/Bangladeş (+2):** JazzCash, bKash
+- **Güneydoğu Asya (+8):** ShopBack, Traveloka, Tiket.com, Blibli, TrueMoney, LinkAja, GoPay, ShopeePay
+- **Orta Doğu/Kuzey Afrika (+10):** Noon, Namshi, OpenSooq, Haraj, Dubizzle, Tamara, Tabby, Wego, STC, Zain
+- **LATAM (+4):** 99 (Brezilya), Banco Inter, PicPay, Clip (Meksika)
+- **Bykea (+1):** Pakistan ulaşım
+- Merge conflict: remote Loop 77 (Anime/SmartHome/Meditasyon/TR Medya +54) + local Loop 77 (Hindistan/Afrika +76) Python ile birleştirildi
+- **Uzak Ortam Notu:** APK build yapılamıyor, Telegram'a gönderilemedi — yerel makineden yapılmalı
+
+*Son güncelleme: 2026-06-14 (Loop 79 — AppClassifier 2938 benzersiz, KeywordDatabase duplicate fix)*
