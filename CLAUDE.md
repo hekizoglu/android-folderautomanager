@@ -924,4 +924,24 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - Temizlik scripti: `python3 << 'EOF' ... seen_pkgs ... EOF` (CLAUDE.md'de kayıtlı)
 - Şu an: 1275 benzersiz paket, 0 duplicate
 
-*Son güncelleme: 2026-06-13 (Loop 46 — AppClassifier 1275 benzersiz, App Not özelliği, usageTime bug fix)*
+### Loop 36 Özeti (2026-06-14 — remote agent)
+**RecentAppsRow bug fix + icon pack reaktifliği + FavoritesRow uzun bas desteği:**
+
+**LauncherViewModel.kt:**
+- `recentApps: StateFlow<List<AppInfo>>` eklendi — `lastUsedTimestamp` sıralamasıyla 8 uygulama
+  - Onceki: `suggestedApps` yalnızca 4 uygulama döndürüyor, `RecentAppsRow`'daki `take(8)` işlevsizdi
+  - Yeni: Ayrı akış ile gerçekten 8 son kullanılan uygulama gösterilir
+
+**HomeScreen.kt:**
+- `suggestionIconPack`: `val remember {}` → `var mutableStateOf` + `KEY_ICON_PACK` DisposableEffect listener
+  - Onceki: icon pack Settings'te değişince FavoritesRow/RecentAppsRow/AppSuggestionsRow ikonları güncellenmiyor
+  - Yeni: SharedPrefs listener ile anında güncelleme
+- `recentApps by viewModel.recentApps.collectAsState()` eklendi — RecentAppsRow doğru StateFlow'a bağlandı
+- `FavoritesRow` çağrısına `onAppLongClick` eklendi → context menu açılıyor
+
+**HomeScreenComponents.kt (FavoritesRow):**
+- `onAppLongClick: ((String) -> Unit)? = null` parametresi eklendi (geriye uyumlu)
+- `clickable` → `combinedClickable(onClick, onLongClick)` ile değiştirildi
+- `@OptIn(ExperimentalFoundationApi::class)` annotation eklendi
+
+*Son güncelleme: 2026-06-14 (Loop 36 — RecentAppsRow fix, icon pack reaktiflik, FavoritesRow uzun bas)*
