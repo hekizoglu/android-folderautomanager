@@ -1022,4 +1022,24 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **BUILD #14**: Debug APK 28.2MB Telegram'a gonderildi
 - **AppClassifier: 2351 benzersiz paket** (baslangic 479, +1872 bu proje boyunca)
 
-*Son güncelleme: 2026-06-14 (Loop 66 — BUILD #14 Debug APK, AppClassifier 2351 benzersiz)*
+### Loop 67-68 Özeti (2026-06-14 — remote agent)
+- Loop 67: AppClassifier +70 (AI/dev/streaming/TR haber), FolderTile bildirim detayı, BackupWorker/WorkManager
+- Loop 68: HomeScreen bildirim tap handler, +80 yeni paket (mobile gaming/fintech/mental health/cloud storage/TR gov)
+- **AppClassifier: 2562 benzersiz** (loop 67-68 remote commit'leri main'de)
+
+### Loop 69 Özeti (2026-06-14 — remote agent, bu oturum)
+- AppClassifier: 2562 → 2623 benzersiz entry (+61 net, merge conflict çözüldü)
+- Encoding fix: com.tonguc.app + com.kigili.android paket adı bozukluğu düzeltildi
+- +93 yeni paket eklendi: Productivity(Jira/ClickUp/Obsidian/Airtable), Dev(Termux/AIDE/JuiceSSH),
+  TR Eğitim(BenimHocam/Otsimo/Bilsem), Games(Temple Run/PvZ/NFS/FIFA/FarmVille/Alto),
+  Crypto/Finance(Binance/Kraken/Bybit/OKX/Degiro), TR Bankalar(Akbank/Garanti/İş/YK/Ziraat/Vakıf),
+  Health(Whoop/Garmin/Withings/Dexcom), Smart Home(Philips Hue/IKEA/Nanoleaf/Govee/Roborock/Eufy),
+  Navigation(Waze/HERE/OsmAnd/Komoot/AllTrails), Business(Salesforce/HubSpot/Zendesk/ServiceNow)
+- Merge conflict: 2 Loop 69 commit (remote + local) Python ile birleştirildi, 0 duplicate
+- **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
+
+### Akıllı Kategorizasyon (güncel durum)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **2623 benzersiz** (479'dan, Loop 69 sonrası)
+- ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
+
+*Son güncelleme: 2026-06-14 (Loop 69 — AppClassifier 2623 benzersiz, encoding fix, merge conflict çözüldü)*
