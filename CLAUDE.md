@@ -1039,7 +1039,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3191 benzersiz** (479'dan, Loop 90 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3308 benzersiz** (479'dan, Loop 91 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
@@ -1155,4 +1155,22 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 **Uzak Ortam Notu:** APK build yapılamıyor (dl.google.com yasak) — yerel makinede dogrulanmali.
 
-*Son güncelleme: 2026-06-14 (Loop 90 — KeywordDatabase 32 kategori, AppClassifier 3191 benzersiz)*
+### Loop 91 Özeti (2026-06-14 — remote agent)
+**AppClassifier 3191 → 3308 benzersiz (+117 net, 0 duplicate):**
+- **LIFESTYLE**: 11 → 33 (+22) — Co-Star astroloji, The Pattern, Vogue/GQ/Elle/Cosmopolitan moda dergileri, Harper's Bazaar, Allure, Women's Health, Men's Health, Finch öz-bakım, Welltory, PlantSnap, Blossom, Greg (bitki bakımı), MindBodyGreen
+- **EVENTS**: 11 → 21 (+10) — Fever, TimeOut, TicketSwap, Vivid Seats, AXS, Seated, Resident Advisor (RA), Skiddle, Gametime, Viagogo
+- **COMICS**: 12 → 22 (+10) — Marvel Unlimited, DC Universe Infinite, ComiXology, LINE Manga (jp.naver), WEBTOON (Naver), INKR, Mangamo, Mihon (Tachiyomi fork), MangaToon, Aniyomi
+- **PARENTING**: 15 → 26 (+11) — Glow Baby, Sprout Baby, The Bump, Google Family Link, Circle (ebeveyn kontrolü), Kidslox, Norton Family, Sesame Street, CoComelon, LeapFrog, ABC Kids
+- **VIDEO**: 17 → 24 (+7) — PowerDirector, Action Director, VideoShow, Funimate, DU Recorder, Odysee, Stop Motion Studio
+- **BOOKS**: 17 → 26 (+9) — ReadEra, FBReader, Moon+ Reader, Aldiko, BookBub, LibriVox, OverDrive, BookWalker, CloudLibrary
+- **DATING**: 21 → 32 (+11) — Hily, Inner Circle, HER (LGBTQ+), Pure, Chispa, Kippo (oyuncu), Azar, Clover Dating, Tagged, Once, POF
+- **HOUSE**: 22 → 29 (+7) — Ring, Homestyler, Planner 5D, August Smart Lock, Mysa, Insteon, Loxone
+- **BUSINESS**: 24 → 34 (+10) — QuickBooks, ADP, Kronos, Zoho CRM, Microsoft Dynamics 365, SAP Fiori, Oracle HCM, Ceridian Dayforce, Sage, NetSuite
+- **SPORTS**: 25 → 35 (+10) — BBC Sport, Yahoo Sports, FanDuel, DraftKings, The Athletic, Beachbody, TrainerRoad, Formula 1, Golf Channel, NRL
+- **AUTO**: 25 → 35 (+10) — BMW Connected, Audi MyAudi, Chrysler Uconnect, MySubaru, Jeep, Torque Lite, Drivvo, Spritmonitor, Fuel Logger, Parking Panda
+
+### Akıllı Kategorizasyon (güncel durum)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3308 benzersiz** (479'dan, Loop 91 sonrası)
+- ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
+
+*Son güncelleme: 2026-06-14 (Loop 91 — AppClassifier 3308 benzersiz, 11 kategori genisletildi)*
