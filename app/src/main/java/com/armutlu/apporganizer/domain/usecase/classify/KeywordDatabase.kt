@@ -273,6 +273,190 @@ object KeywordDatabase {
             "remove.bg", "background", "eraser", "cutout", "ai photo",
             "photoroom", "designer", "adobe"
         ),
+        // ─── YENİ KATEGORİLER (Loop 90 — Google Play eslesmesi) ─────────────────
+        Category.CAT_COMMUNICATION to listOf(
+            "whatsapp", "telegram", "signal", "viber", "skype", "messenger",
+            "call", "voice", "sms", "text", "chat", "mail", "email", "inbox",
+            "zoom", "meet", "webex", "jitsi", "gotomeeting", "teams", "slack",
+            "discord", "hangouts", "imo", "textme", "textplus", "textnow",
+            "vonage", "avaya", "ringcentral", "twilio", "8x8", "whereby",
+            "hushed", "openphone", "grasshopper", "talkatone", "nextcloud.talk",
+            "zoho.cliq", "flock", "revolt", "wire", "olvid",
+            "tutanota", "fastmail", "protonmail", "yahoo.mail", "outlook",
+            "spark.mail", "airmail", "edison.mail", "spike.email", "superhuman",
+            "bip", "turkcell", "iletisim", "mesaj", "arama", "gorusme"
+        ),
+        Category.CAT_MUSIC to listOf(
+            "spotify", "deezer", "tidal", "apple.music", "youtube.music",
+            "soundcloud", "bandcamp", "napster", "qobuz", "amazon.music",
+            "pandora", "iheart", "tunein", "podcast", "music", "audio",
+            "kuku.fm", "gaana", "jiosaavn", "wynk", "resso", "anghami",
+            "boomplay", "yandex.music", "shazam", "musixmatch", "genius",
+            "soundhound", "beats", "audiomack", "livexlive", "radyo", "fm",
+            "fl.studio", "bandlab", "voloco", "groovepad", "cross.dj",
+            "djay", "edjing", "virtual.dj", "simply.piano", "flowkey",
+            "yousician", "smule", "fender", "guitar", "piano", "muzik",
+            "radyo7", "kral.fm", "powerapp.fm", "enerji.fm", "muud", "fizy"
+        ),
+        Category.CAT_VIDEO to listOf(
+            "vlc", "mx.player", "kodi", "plex", "bsplayer", "nplayer",
+            "video", "player", "stream", "watch", "netflix", "youtube",
+            "capcut", "kinemaster", "inshot", "filmorago", "vn.video",
+            "premiere.rush", "lomotif", "vivavideo", "splice", "magisto",
+            "unfold", "prequel", "videoleap", "actiondirector", "powerdirector",
+            "filmmaker", "recut", "vizmato", "quik", "gopro", "edit"
+        ),
+        Category.CAT_MAPS to listOf(
+            "maps", "navigation", "navigate", "gps", "route", "direction",
+            "waze", "here.maps", "osmand", "komoot", "alltrails", "citymapper",
+            "transit.app", "moovit", "rome2rio", "omio", "trainline", "wanderu",
+            "sygic", "tomtom", "copilot.gps", "navmii", "maps.me",
+            "openstreetmap", "organic.maps", "radar", "compass",
+            "iett", "ankarakart", "izulas", "bursaulasimlari",
+            "mapy.cz", "geocaching", "harita", "yol", "rota", "navigasyon"
+        ),
+        Category.CAT_SPORTS to listOf(
+            "sport", "football", "soccer", "basketball", "baseball", "tennis",
+            "golf", "cricket", "rugby", "nfl", "nba", "mlb", "nhl", "espn",
+            "score", "athlete", "league", "team", "match", "fixture",
+            "onesoccer", "laliga", "bundesliga", "ligue1", "premierleague",
+            "formula1", "f1", "ufc", "mma", "fighting", "wrestling",
+            "cycling", "triathlon", "skiing", "snowboard", "surfing",
+            "dazn", "bein", "sky.sports", "nbc.sports", "fox.sports",
+            "fanatik", "ntvspor", "trtspor", "futbol", "basketbol",
+            "spor", "lig", "mac", "gol", "takim", "nesine", "bilyoner"
+        ),
+        Category.CAT_BOOKS to listOf(
+            "book", "ebook", "read", "kindle", "epub", "library", "literature",
+            "novel", "story", "audiobook", "reader", "tome", "page",
+            "goodreads", "kobo", "libby", "bookmate", "pocket", "readwise",
+            "scribd", "overdrive", "moonreader", "cool.reader", "aldiko",
+            "fbreader", "wattpad", "radish", "tapas", "webtoon",
+            "comixology", "marvel.unlimited", "dc.universe",
+            "audible", "blinkist", "storytel", "nextory", "bookbub",
+            "turkcell.yayin", "dergi", "okuma", "roman", "hikaye", "gazete"
+        ),
+        Category.CAT_LIFESTYLE to listOf(
+            "lifestyle", "horoscope", "astrology", "zodiac", "tarot",
+            "meditation", "mindfulness", "relax", "breath", "calm",
+            "yoga", "zen", "spiritual", "wellness", "gratitude", "journal",
+            "insight.timer", "ten.percent", "breethe", "buddhify",
+            "daily.calm", "headspace", "waking.up", "aware", "meditopia",
+            "habit", "tracker", "morning", "routine", "ritual", "affirmation",
+            "vision.board", "motivation", "self.care", "self.improvement",
+            "life.coach", "therapist", "counselor", "yasamtarzi"
+        ),
+        Category.CAT_BUSINESS to listOf(
+            "business", "crm", "erp", "invoice", "sales", "hr", "hiring",
+            "payroll", "expense", "receipt", "timesheet", "attendance",
+            "salesforce", "hubspot", "zendesk", "freshdesk", "intercom",
+            "pipedrive", "zoho.crm", "monday.com", "basecamp", "wrike",
+            "teamwork", "smartsheet", "podio", "servicenow", "workday",
+            "concur", "expensify", "bamboohr", "adp", "gusto",
+            "docusign", "hellosign", "pandadoc", "adobe.sign", "dropbox.sign",
+            "bionluk", "youthall", "kariyer.net", "linkedin.jobs",
+            "xing", "glassdoor", "indeed", "monster", "ziprecruiter",
+            "asana", "jira", "clickup", "linear", "notion", "confluence",
+            "kanban", "agile", "scrum", "sprint", "iş", "sirket", "proje"
+        ),
+        Category.CAT_DATING to listOf(
+            "dating", "match", "tinder", "bumble", "hinge", "grindr",
+            "okcupid", "love", "couple", "romance", "swipe", "profile",
+            "blind.date", "zoosk", "eharmony", "coffee.meets.bagel",
+            "meetyou", "meetme", "ngl", "her", "lovoo", "badoo",
+            "mamba", "once", "happn", "pure", "feeld", "pair",
+            "askeri", "flirt", "cift", "partner", "eslesme", "randevu"
+        ),
+        Category.CAT_ART to listOf(
+            "art", "design", "draw", "paint", "sketch", "creative",
+            "illustration", "graphic", "digital.art", "procreate", "figma",
+            "canva", "adobe", "affinity", "photoshop", "illustrator",
+            "lightroom", "premiere", "after.effects", "animate", "xd",
+            "sketchbook", "autodesk", "medibangpaint", "ibis.paint",
+            "pixel.art", "tayasui", "concepts", "mischief", "pixelmator",
+            "gimp", "krita", "inkscape", "vector", "artboard", "artflow",
+            "sanat", "cizim", "tasarim", "grafik", "renk", "boya"
+        ),
+        Category.CAT_BEAUTY to listOf(
+            "beauty", "makeup", "cosmetic", "skincare", "nail", "hair",
+            "salon", "lipstick", "foundation", "blush", "mascara",
+            "brow", "glam", "sephora", "ulta", "youcam", "perfect365",
+            "avon", "loreal", "maybelline", "mac.cosmetics", "nyx",
+            "fenty", "kylie", "morphe", "too.faced", "tarte",
+            "flormar", "farmasi", "elidor", "watsons",
+            "guzellik", "makyaj", "cilt", "sac", "tirnak", "krem"
+        ),
+        Category.CAT_AUTO to listOf(
+            "car", "auto", "vehicle", "drive", "parking", "garage",
+            "fuel", "gas", "petrol", "oil", "tire", "engine", "mechanic",
+            "tesla", "bmw.connected", "mercedes", "audi.connect", "volkswagen",
+            "ford.pass", "toyota", "honda", "hyundai", "kia.connect",
+            "renault", "peugeot", "togg", "gasbuddy", "opet", "shell",
+            "bp.app", "sixt", "enterprise.rent", "hertz", "avis", "budget",
+            "turo", "getaround", "zipcar", "otopark", "epark", "parkopedia",
+            "araba", "otomobil", "lastik", "akaryakit", "servis", "sigorta"
+        ),
+        Category.CAT_HOUSE to listOf(
+            "home", "house", "smart.home", "interior", "furniture", "decor",
+            "remodel", "garden", "plant", "nest", "thermostat", "alarm",
+            "security", "camera", "doorbell", "lock", "smart",
+            "ikea", "houzz", "wayfair", "overstock", "homeaway",
+            "philips.hue", "lifx", "nanoleaf", "govee", "wemo", "kasa",
+            "ring", "arlo", "nest.cam", "wyze", "eufy", "blink",
+            "roomba", "roborock", "ecovacs", "dyson",
+            "ev", "bahce", "guvenlik", "kamera", "kapi", "akilli",
+            "elektrik", "su", "dogalgaz", "fatura", "sayac"
+        ),
+        Category.CAT_WEATHER to listOf(
+            "weather", "forecast", "temperature", "rain", "snow", "wind",
+            "storm", "humidity", "pressure", "uv", "sun", "cloud",
+            "lightning", "thunder", "accuweather", "meteo", "clima",
+            "weather.channel", "weather.underground", "dark.sky", "carrot",
+            "weatherpro", "windy", "ventusky", "meteoblue", "hava",
+            "yagmur", "gunes", "bulut", "firtina", "hava.durumu",
+            "mgm", "meteoroloji", "sicaklik", "nem", "ruzgar"
+        ),
+        Category.CAT_PARENTING to listOf(
+            "parent", "baby", "child", "kid", "toddler", "pregnancy",
+            "birth", "newborn", "school", "educational.game", "cartoon",
+            "story.book", "bedtime", "babysit", "nanny", "daycare",
+            "toca.boca", "youtube.kids", "pbs.kids", "nickelodeon",
+            "cartoon.network", "disney.junior", "daniel.tiger",
+            "cocomelon", "peppa.pig", "bluey", "paw.patrol",
+            "khan.kids", "abc.mouse", "starfall", "monkey.junior",
+            "cocuk", "bebek", "anne", "baba", "aile", "okul.oncesi",
+            "hikaye", "masal", "oyun.cocuk", "egitici"
+        ),
+        Category.CAT_EVENTS to listOf(
+            "event", "ticket", "concert", "festival", "show", "theater",
+            "cinema", "movie", "music.event", "venue", "booking", "reservation",
+            "ticketmaster", "stubhub", "eventbrite", "bandsintown", "songkick",
+            "seatgeek", "viagogo", "axs", "dice.fm", "resident.advisor",
+            "biletix", "biletinial", "iksv", "bilet", "konser", "tiyatro",
+            "sinema", "festival", "etkinlik", "gece", "sahne", "kulup"
+        ),
+        Category.CAT_COMICS to listOf(
+            "comic", "manga", "webtoon", "manhwa", "anime", "cartoon",
+            "graphic.novel", "strip", "comixology", "marvel", "dc.comics",
+            "image.comics", "dark.horse", "idw", "heavy.metal",
+            "crunchyroll", "funimation", "vrv", "hidive", "animelab",
+            "bilibili", "tapas", "webtoon", "lezhin", "pocket.comics",
+            "izneo", "readera", "mangaplus", "shonen.jump",
+            "anime", "manga", "cizgiroman", "animasyon", "kahraman"
+        ),
+        Category.CAT_PERSONALIZATION to listOf(
+            "launcher", "wallpaper", "theme", "icon.pack", "widget",
+            "ringtone", "lock.screen", "keyboard", "font", "customize",
+            "tweak", "style", "nova", "action.launcher", "niagara",
+            "lawnchair", "rootless", "poco.launcher", "oneui", "miui",
+            "kustom", "kwgt", "klwp", "klch", "zooper", "conky",
+            "zedge", "backgrounds", "amoled", "dark.wallpaper",
+            "live.wallpaper", "video.wallpaper", "parallax",
+            "good.lock", "one.ui", "samsung.theme", "miui.theme",
+            "substratum", "pixelify", "magisk.module", "xposed",
+            "tasker", "shortcut.maker", "back.button",
+            "tema", "duvar.kagidi", "ikon", "kilit.ekrani", "zil.sesi"
+        ),
         Category.CAT_OTHER to listOf()
     )
 
