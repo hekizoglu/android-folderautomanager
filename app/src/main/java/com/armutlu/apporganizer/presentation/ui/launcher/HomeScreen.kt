@@ -609,6 +609,7 @@ fun HomeScreen(
             // Bottom dock — frosted pill (uzun bas → düzenle)
             PixelDock(
                 packages = dockPackages,
+                iconPackPkg = suggestionIconPack,
                 onLaunchApp = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)

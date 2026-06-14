@@ -158,6 +158,7 @@ internal fun GoogleSearchBar(modifier: Modifier = Modifier) {
 @Composable
 internal fun PixelDock(
     packages: List<String>,
+    iconPackPkg: String = "",
     onLaunchApp: (String) -> Unit,
     onLongPress: () -> Unit = {},
     onAppLongPress: (String) -> Unit = {},
@@ -194,6 +195,7 @@ internal fun PixelDock(
                 DockIcon(
                     packageName = pkg,
                     label = label,
+                    iconPackPkg = iconPackPkg,
                     iconSize = 48.dp,
                     onClick = { onLaunchApp(pkg) },
                     onLongClick = { onAppLongPress(pkg) }
@@ -208,13 +210,13 @@ internal fun PixelDock(
 internal fun DockIcon(
     packageName: String,
     label: String,
+    iconPackPkg: String = "",
     iconSize: Dp,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
-    val iconPackPkg = remember { AppPrefs.getIconPack(context) }
     val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_$px" else "${packageName}_${px}_$iconPackPkg"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
@@ -488,7 +490,7 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
                 modifier = Modifier.size(20.dp).offset(y = offsetY.dp)
             )
             Text(
-                text = "Tum uygulamalar",
+                text = "Tüm uygulamalar",
                 color = Color.White.copy(alpha = 0.40f),
                 fontSize = 11.sp
             )
