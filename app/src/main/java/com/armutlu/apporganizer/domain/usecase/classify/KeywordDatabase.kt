@@ -165,7 +165,59 @@ object KeywordDatabase {
             "remove.bg", "background", "eraser", "cutout", "ai photo",
             "photoroom", "canva", "designer", "adobe"
         ),
-        Category.CAT_OTHER to listOf()
+        Category.CAT_OTHER to listOf(),
+
+        // Loop 40: Ek keyword'ler — paket adi eslesme olmayan uygulamalar icin
+        Category.CAT_TRAVEL to listOf(
+            "uber", "lyft", "bolt", "cabify", "gett", "curb", "taxi", "ride",
+            "airbnb", "booking", "hostel", "hotel", "tripadvisor", "expedia",
+            "skyscanner", "kayak", "flight", "cheapflights", "rome2rio",
+            "citymapper", "moovit", "transit", "waze", "navigation", "maps",
+            "train", "tren", "otobus", "bilet", "seyahat", "ucak", "airline",
+            "thyajans", "pegasus", "sunexpress", "anadolujet", "ets", "tatil",
+            "flightradar", "flightaware", "rental", "hertz", "enterprise",
+            "istanbulkart", "kentkart", "obilet", "biletix"
+        ),
+        Category.CAT_SHOPPING to listOf(
+            "amazon", "ebay", "etsy", "wish", "shein", "shopee", "lazada",
+            "wildberries", "ozon", "jd", "pinduoduo", "walmart", "target",
+            "bestbuy", "ikea", "zara", "hm", "gap", "nike", "adidas", "puma",
+            "farfetch", "zalando", "vinted", "depop", "poshmark", "thredup",
+            "migros", "bim", "a101", "sok", "carrefour", "metro", "koctas",
+            "mediamarkt", "teknosa", "vatan", "ikinciyeni", "sahibinden",
+            "arabam", "emlakjet", "zingat", "hepsiemlak", "gittigidiyor",
+            "letgo", "dolap", "koton", "lcw", "defacto", "mavi", "ipekyol", "boyner"
+        ),
+        Category.CAT_FINANCE to listOf(
+            "paypal", "venmo", "cashapp", "zelle", "chime", "sofi", "ally",
+            "marcus", "stripe", "robinhood", "tdameritrade", "schwab", "fidelity",
+            "wealthfront", "acorns", "stash", "coinbase", "binance", "kraken",
+            "gemini", "metamask", "trustwallet", "moonpay", "exodus",
+            "mint", "ynab", "personalcapital", "quicken", "nubank", "mercadopago",
+            "finansbank", "aktifbank", "ingbank", "hsbc", "qnbfinansbank",
+            "sekerbank", "albaraka", "kuveytturk", "vakifkatilim", "ziraatkatilim",
+            "bkmexpress", "papara", "fastpay", "ininal", "paycell", "masterpass",
+            "midas", "gedik", "banka", "kredi", "borsa", "yatirim", "wallet"
+        ),
+        Category.CAT_HEALTH to listOf(
+            "whoop", "oura", "polar", "suunto", "coros", "wahoo", "zwift",
+            "trainingpeaks", "freeletics", "sworkit", "noom", "loseit",
+            "cronometer", "lifesum", "yazio", "weightwatchers", "headspace",
+            "calm", "meditation", "mindfulness", "mysugr", "dexcom", "abbott",
+            "omada", "livongo", "clue", "flo", "glow", "period", "cycle",
+            "doktor", "saglik", "hastane", "recete", "ilac", "eczane",
+            "acibademsaglik", "medikal", "fitness", "gym", "antrenman"
+        ),
+        Category.CAT_UTILITIES to listOf(
+            "authenticator", "authy", "2fa", "otp", "lastpass", "dashlane",
+            "bitwarden", "1password", "nordvpn", "expressvpn", "purevpn",
+            "surfshark", "privateinternetaccess", "protonvpn", "mullvad", "vpn",
+            "translate", "deepl", "translator", "alexa", "siri", "assistant",
+            "chatgpt", "claude", "bard", "copilot", "perplexity", "mistral",
+            "cleanmaster", "avast", "bitdefender", "kaspersky", "norton",
+            "malwarebytes", "antivirus", "security", "filemanager", "explorer",
+            "esfile", "totalcommander", "qr", "scanner", "barcode"
+        )
     )
 
     fun getKeywordMap(): Map<String, List<String>> = keywordMap
