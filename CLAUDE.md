@@ -1039,7 +1039,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **Uzak Ortam Notu:** Telegram/APK gönderilemedi (api.telegram.org engelli) — yerel makineden gönder
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3308 benzersiz** (479'dan, Loop 91 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3388 benzersiz** (479'dan, Loop 93 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Loop 67-72 Özeti (2026-06-14 — BUILD #15)
@@ -1170,7 +1170,7 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 - **AUTO**: 25 → 35 (+10) — BMW Connected, Audi MyAudi, Chrysler Uconnect, MySubaru, Jeep, Torque Lite, Drivvo, Spritmonitor, Fuel Logger, Parking Panda
 
 ### Akıllı Kategorizasyon (güncel durum)
-- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3308 benzersiz** (479'dan, Loop 91 sonrası)
+- ~~Aşama 1: exactMatchMap'i top-1000 uygulamaya genişlet~~ ✅ **3388 benzersiz** (479'dan, Loop 93 sonrası)
 - ~~Aşama 2: "Diğer" klasörü LLM fallback~~ ✅ DeepSeek API ile kategorize — Settings > Diğer Klasörü
 
 ### Reaktiflik ve Performans Düzeltmeleri (Loop 92)
@@ -1187,4 +1187,28 @@ WELCOME'dan sonra yeni adım: "Önceki Yedeğiniz Var Mı?" — JSON dosya seçi
 
 **Uzak Ortam Notu:** APK build bu remote ortamda yapılamıyor — yerel makinede doğrulanmalı.
 
-*Son güncelleme: 2026-06-14 (Loop 92 — DockIcon reaktiflik, AllAppsDrawer bgAlpha fix, SwipeHint encoding)*
+### Loop 93 Özeti (2026-06-14 — remote agent, bu oturum)
+**Kod kalite + AppClassifier 3308 → 3388 benzersiz (+80 net, 0 duplicate):**
+
+**HomeScreen.kt:**
+- `val filteredApps by viewModel.filteredAllApps.collectAsState()` satırı kaldırıldı — AllAppsDrawer kendi filtreliyor, bu değişken hiç kullanılmıyordu (dead code)
+
+**LauncherViewModel.kt:**
+- `filteredAllApps` StateFlow'da arama `lowercase()` → `lowercase(Locale("tr"))` düzeltildi
+- `Ş/İ/Ğ/Ü/Ö/Ç` artık ViewModel seviyesinde de doğru eşleşiyor
+
+**AppClassifier.kt — +80 yeni paket:**
+- **AI Video/Yaratıcı**: Runway, Kling, Pika, Haiper, Hailuo, Mojo Stories, Unfold, Zoomerang, Vita
+- **AI Sanat/Görüntü**: Adobe Firefly (3 paket), Ideogram (2), Leonardo AI, Night Cafe, Wombo Dream, Getimg, Dream by Imagica
+- **AI Müzik**: Suno (2), Udio (2), Loudly, Beatoven
+- **Müzik Oynatıcı**: Bandcamp, AIMP, Neutron Music Player, HiBy Music, Subsonic, BS Player, Plexamp
+- **Çizgi Roman**: Piccoma (2), Kakao Webtoon, Toomics, Comico, MrBlue, Lezhin Global
+- **Etkinlik**: Viagogo, Eventim, Biletinial (TR), Etix, Showpass, Last.fm
+- **EV Araçları**: Rivian (2), Lucid Motors, Polestar (2), NIO, BYD (2), Volvo, Zeekr, Xpeng
+- **Yaşam Tarzı**: Smiling Mind, Aura Health (2), Daily Stoic, Stoic App, Bloom, Plant, Oak Meditation
+- **Sosyal**: Jodel (2 — yerel topluluk uygulaması)
+- **Yapay Zeka Sunum**: Gamma (2), Pitch (2), Beautiful.AI (2), Tome, Elicit, Consensus, Scite
+
+**Uzak Ortam Notu:** APK build yapılamıyor (dl.google.com yasak) — yerel makinede doğrulanmalı.
+
+*Son güncelleme: 2026-06-14 (Loop 93 — AppClassifier 3388 benzersiz, Türkçe arama fix, dead code temizlik)*
