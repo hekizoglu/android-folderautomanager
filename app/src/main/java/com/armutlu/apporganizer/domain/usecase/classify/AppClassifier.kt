@@ -3167,6 +3167,70 @@ class AppClassifier @Inject constructor() {
         "com.voiceitt.android"                       to Category.CAT_UTILITIES,
         "com.nuance.android"                         to Category.CAT_UTILITIES,
         "com.hearingaidapps.android"                 to Category.CAT_UTILITIES,
+
+        // Loop 76 — HR & Business Tools
+        "com.workday.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.bamboohr.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.gusto.android"                          to Category.CAT_PRODUCTIVITY,
+        "com.rippling.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.adp.android"                            to Category.CAT_PRODUCTIVITY,
+        "com.paychex.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.namely.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.zenefits.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.expensify.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.concur.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.ramp.android"                           to Category.CAT_FINANCE,
+        "com.brex.android"                           to Category.CAT_FINANCE,
+        "com.divvy.android"                          to Category.CAT_FINANCE,
+        "com.freshbooks.android"                     to Category.CAT_FINANCE,
+        "com.wave.android"                           to Category.CAT_FINANCE,
+        "com.zoho.books.android"                     to Category.CAT_FINANCE,
+
+        // Loop 76 — CRM & Sales
+        "com.zoho.crm.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.freshsales.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.copper.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.closeio.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.insightly.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.netsuite.android"                       to Category.CAT_PRODUCTIVITY,
+        "com.sap.android"                            to Category.CAT_PRODUCTIVITY,
+        "com.oracle.android"                         to Category.CAT_PRODUCTIVITY,
+
+        // Loop 76 — Logistics & Delivery Tracking
+        "com.fedex.android"                          to Category.CAT_UTILITIES,
+        "com.ups.android"                            to Category.CAT_UTILITIES,
+        "com.dhl.android"                            to Category.CAT_UTILITIES,
+        "com.usps.android"                           to Category.CAT_UTILITIES,
+        "com.amazon.mShop.android"                   to Category.CAT_SHOPPING,
+        "com.postnl.android"                         to Category.CAT_UTILITIES,
+        "com.royalmail.android"                      to Category.CAT_UTILITIES,
+        "com.deutschepost.android"                   to Category.CAT_UTILITIES,
+        "com.laposte.android"                        to Category.CAT_UTILITIES,
+        "com.correos.android"                        to Category.CAT_UTILITIES,
+        "com.araskargo.android"                      to Category.CAT_UTILITIES,
+        "com.mngkargo.android"                       to Category.CAT_UTILITIES,
+        "com.boostlojistik.android"                  to Category.CAT_UTILITIES,
+        "com.sendeo.android"                         to Category.CAT_UTILITIES,
+
+        // Loop 76 — Photography Pro & Camera
+        "com.samsung.android.camera"                 to Category.CAT_PHOTOGRAPHY,
+        "com.sonyericsson.android.camera"            to Category.CAT_PHOTOGRAPHY,
+        "com.lg.camera"                              to Category.CAT_PHOTOGRAPHY,
+        "com.motorola.camera"                        to Category.CAT_PHOTOGRAPHY,
+        "com.asus.camera"                            to Category.CAT_PHOTOGRAPHY,
+        "org.lineageos.aperture"                     to Category.CAT_PHOTOGRAPHY,
+        "com.hdrplus.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.focos.android"                          to Category.CAT_PHOTOGRAPHY,
+        "com.obscura.android"                        to Category.CAT_PHOTOGRAPHY,
+        "com.spectre.camera"                         to Category.CAT_PHOTOGRAPHY,
+
+        // Loop 76 — TR Sports & Betting
+        "com.misli.android"                          to Category.CAT_ENTERTAINMENT,
+        "com.bets10.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.superbahis.android"                     to Category.CAT_ENTERTAINMENT,
+        "com.matbet.android"                         to Category.CAT_ENTERTAINMENT,
+        "com.bahsegel.android"                       to Category.CAT_ENTERTAINMENT,
+        "com.betturkey.android"                      to Category.CAT_ENTERTAINMENT,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
