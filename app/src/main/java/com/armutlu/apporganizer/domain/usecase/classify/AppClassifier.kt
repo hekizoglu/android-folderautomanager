@@ -1726,6 +1726,30 @@ class AppClassifier @Inject constructor() {
         "com.element.android"                        to Category.CAT_COMMUNICATION,
         "chat.simplex.app"                           to Category.CAT_COMMUNICATION,
         "com.briar.briarproject"                     to Category.CAT_COMMUNICATION,
+        // ── Loop 47: Communication genisleme ────────────────────────────────
+        // E-posta istemcileri
+        "com.yahoo.mobile.client.android.mail"       to Category.CAT_COMMUNICATION,
+        "de.tutao.tutanota"                          to Category.CAT_COMMUNICATION,
+        "com.fastmail.app"                           to Category.CAT_COMMUNICATION,
+        // Video konferans / VoIP
+        "org.jitsi.meet"                             to Category.CAT_COMMUNICATION,
+        "com.8x8.video"                              to Category.CAT_COMMUNICATION,
+        "com.vonage.client"                          to Category.CAT_COMMUNICATION,
+        "com.avaya.android.client"                   to Category.CAT_COMMUNICATION,
+        // Sanal numara / VoIP
+        "com.talkatone.android"                      to Category.CAT_COMMUNICATION,
+        "com.textplus.app"                           to Category.CAT_COMMUNICATION,
+        "com.textnow.android"                        to Category.CAT_COMMUNICATION,
+        "com.hushed.android"                         to Category.CAT_COMMUNICATION,
+        "com.grasshopper.android"                    to Category.CAT_COMMUNICATION,
+        "com.openphone.android"                      to Category.CAT_COMMUNICATION,
+        // Takım iletisimi
+        "com.flock.android"                          to Category.CAT_COMMUNICATION,
+        "io.olvid.messenger"                         to Category.CAT_COMMUNICATION,
+        "com.nextcloud.talk2"                        to Category.CAT_COMMUNICATION,
+        "com.zoho.cliq"                              to Category.CAT_COMMUNICATION,
+        "app.revolt.app"                             to Category.CAT_COMMUNICATION,
+        "com.wire.android.internal"                  to Category.CAT_COMMUNICATION,
 
         // MUSIC — streaming + instruments
         "ru.zaycev.site"                             to Category.CAT_ENTERTAINMENT,
@@ -1802,6 +1826,50 @@ class AppClassifier @Inject constructor() {
         "com.trabzonspor.android"                    to Category.CAT_SPORTS,
         "com.mackolik.android"                       to Category.CAT_SPORTS,
         "com.sporx.android"                          to Category.CAT_SPORTS,
+        // Kuzey Amerika ligi uygulamaları
+        "com.nba.official.android"                   to Category.CAT_SPORTS,
+        "com.nfl.fantasy.core.league"                to Category.CAT_SPORTS,
+        "com.nfl.mobile"                             to Category.CAT_SPORTS,
+        "com.nfl.android"                            to Category.CAT_SPORTS,
+        "com.mlb.android"                            to Category.CAT_SPORTS,
+        "com.nhl.android"                            to Category.CAT_SPORTS,
+        "com.nbafantasy.android"                     to Category.CAT_SPORTS,
+        // Futbol / Soccer global
+        "com.onefootball"                            to Category.CAT_SPORTS,
+        "com.goal.goal"                              to Category.CAT_SPORTS,
+        "com.365scores.android"                      to Category.CAT_SPORTS,
+        "com.laliga.app"                             to Category.CAT_SPORTS,
+        "com.bundesliga.app"                         to Category.CAT_SPORTS,
+        "com.ligueprofessionnelle.app"               to Category.CAT_SPORTS,
+        // Motor sporları
+        "com.formulaone.android"                     to Category.CAT_SPORTS,
+        // Tenis / Golf
+        "com.atptour.android"                        to Category.CAT_SPORTS,
+        "com.pgatour.android"                        to Category.CAT_SPORTS,
+        // Diğer sporlar
+        "com.cricbuzz.android"                       to Category.CAT_SPORTS,
+        "com.worldrugby.android"                     to Category.CAT_SPORTS,
+        "com.ufc.android"                            to Category.CAT_SPORTS,
+        // Spor yayın platformları
+        "com.dazn.android"                           to Category.CAT_SPORTS,
+        "com.bein.sports.android"                    to Category.CAT_SPORTS,
+        "uk.co.bbc.sport"                            to Category.CAT_SPORTS,
+        "com.eurosport.android"                      to Category.CAT_SPORTS,
+        "com.bskyb.skysports"                        to Category.CAT_SPORTS,
+        "com.nbcsports.android"                      to Category.CAT_SPORTS,
+        "com.foxsports.android"                      to Category.CAT_SPORTS,
+        "com.skysports.android"                      to Category.CAT_SPORTS,
+        // Türkiye spor uygulamaları
+        "com.fanatik.android"                        to Category.CAT_SPORTS,
+        "com.ntvsports.android"                      to Category.CAT_SPORTS,
+        "com.besiktas.official"                      to Category.CAT_SPORTS,
+        "com.bursaspor.android"                      to Category.CAT_SPORTS,
+        "tr.com.trtspor"                             to Category.CAT_SPORTS,
+        "com.bilyoner.android"                       to Category.CAT_SPORTS,
+        "com.nesine.android"                         to Category.CAT_SPORTS,
+        // Fitness izleme cihazı uygulamaları
+        "com.polar.polarflow"                        to Category.CAT_SPORTS,
+        "com.wahoofitnessapp"                        to Category.CAT_SPORTS,
 
         // KIDS
         "com.duolingo.kids"                          to Category.CAT_EDUCATION,
