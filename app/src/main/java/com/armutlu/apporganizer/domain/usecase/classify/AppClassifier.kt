@@ -8,16 +8,16 @@ import javax.inject.Singleton
 @Singleton
 class AppClassifier @Inject constructor() {
 
-    // Ãœretici bazlÄ± sÄ±nÄ±flandÄ±rma toggle â€” AppListViewModel tarafÄ±ndan set edilir
+    // Ãœretici bazlı sınıflandırma toggle â€" AppListViewModel tarafından set edilir
     var manufacturerClassifyEnabled: Boolean = true
 
-    // Ãœretici prefix â†’ kategori: exactMap'ten sonra, keyword'den Ã¶nce kontrol edilir
+    // Üretici prefix → kategori: exactMap'ten sonra, keyword'den önce kontrol edilir
     private val MANUFACTURER_PREFIX_MAP = mapOf(
-        // Samsung sistem uygulamalarÄ±
+        // Samsung sistem uygulamaları
         "com.samsung.android.app.galaxyfinder"  to Category.CAT_UTILITIES,
         "com.samsung.android.themestore"        to Category.CAT_UTILITIES,
         "com.samsung.android.personalpage"      to Category.CAT_UTILITIES,
-        // Samsung medya/eÄŸlence
+        // Samsung medya/eğlence
         "com.samsung.android.video"             to Category.CAT_ENTERTAINMENT,
         "com.samsung.android.music"             to Category.CAT_ENTERTAINMENT,
         "com.samsung.android.gallery3d"         to Category.CAT_PHOTOGRAPHY,
@@ -37,9 +37,9 @@ class AppClassifier @Inject constructor() {
         "com.lge.music"                         to Category.CAT_ENTERTAINMENT,
     )
 
-    // Paket adÄ±na gÃ¶re kesin kategori eÅŸlemesi â€” keyword'den Ã¶nce kontrol edilir
+    // Paket adına göre kesin kategori eÅŸlemesi â€" keyword'den önce kontrol edilir
     private val exactMatchMap = mapOf(
-        // â”€â”€ SOCIAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ SOCIAL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.facebook.katana"                        to Category.CAT_SOCIAL,
         "com.facebook.lite"                          to Category.CAT_SOCIAL,
         "com.instagram.android"                      to Category.CAT_SOCIAL,
@@ -97,7 +97,7 @@ class AppClassifier @Inject constructor() {
         "com.happn.app"                              to Category.CAT_SOCIAL,
         "com.pof.android"                            to Category.CAT_SOCIAL,
 
-        // â”€â”€ GAMES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ GAMES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.valvesoftware.android.steam.steamlink"  to Category.CAT_GAMES,
         "com.supercell.clashofclans"                 to Category.CAT_GAMES,
         "com.supercell.clashroyale"                  to Category.CAT_GAMES,
@@ -149,7 +149,7 @@ class AppClassifier @Inject constructor() {
         "com.outfit7.talkingtomgoldrun"              to Category.CAT_GAMES,
         "com.kabam.marvelbattle"                     to Category.CAT_GAMES,
 
-        // â”€â”€ ENTERTAINMENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ ENTERTAINMENT â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.netflix.mediaclient"                    to Category.CAT_ENTERTAINMENT,
         "com.spotify.music"                          to Category.CAT_ENTERTAINMENT,
         "com.google.android.youtube"                 to Category.CAT_ENTERTAINMENT,
@@ -201,7 +201,7 @@ class AppClassifier @Inject constructor() {
         "com.muud.android"                           to Category.CAT_ENTERTAINMENT,
         "com.superpeer.android"                      to Category.CAT_ENTERTAINMENT,
 
-        // â”€â”€ SHOPPING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ SHOPPING â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.amazon.mShop.android.shopping"          to Category.CAT_SHOPPING,
         "com.ebay.mobile"                            to Category.CAT_SHOPPING,
         "com.alibaba.aliexpresshd"                   to Category.CAT_SHOPPING,
@@ -245,7 +245,7 @@ class AppClassifier @Inject constructor() {
         "com.pttavm.android"                         to Category.CAT_SHOPPING,
         "com.dolap.android"                          to Category.CAT_SHOPPING,
 
-        // â”€â”€ FINANCE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ FINANCE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.paypal.android.p2pmobile"               to Category.CAT_FINANCE,
         "com.venmo"                                  to Category.CAT_FINANCE,
         "com.cashapp"                                to Category.CAT_FINANCE,
@@ -277,7 +277,7 @@ class AppClassifier @Inject constructor() {
         "com.sofi.android"                           to Category.CAT_FINANCE,
         "com.chime.feature"                          to Category.CAT_FINANCE,
 
-        // â”€â”€ HEALTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ HEALTH â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.google.android.apps.fitness"            to Category.CAT_HEALTH,
         "com.fitbit.FitbitMobile"                    to Category.CAT_HEALTH,
         "com.samsung.health"                         to Category.CAT_HEALTH,
@@ -305,7 +305,7 @@ class AppClassifier @Inject constructor() {
         "com.sanvello.android"                       to Category.CAT_HEALTH,
         "com.zocdoc.android"                         to Category.CAT_HEALTH,
 
-        // â”€â”€ EDUCATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ EDUCATION â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.duolingo"                               to Category.CAT_EDUCATION,
         "com.busuu.android.sp"                       to Category.CAT_EDUCATION,
         "com.babbel.mobile.android.default"          to Category.CAT_EDUCATION,
@@ -331,7 +331,7 @@ class AppClassifier @Inject constructor() {
         "com.masterclass.android"                    to Category.CAT_EDUCATION,
         "com.eba.android"                            to Category.CAT_EDUCATION,
 
-        // â”€â”€ TRAVEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ TRAVEL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.ubercab"                                to Category.CAT_TRAVEL,
         "com.lyft.android"                           to Category.CAT_TRAVEL,
         "com.lyft"                                   to Category.CAT_TRAVEL,
@@ -369,7 +369,7 @@ class AppClassifier @Inject constructor() {
         "com.iett.android"                           to Category.CAT_TRAVEL,
         "com.ido.android"                            to Category.CAT_TRAVEL,
 
-        // â”€â”€ PRODUCTIVITY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ PRODUCTIVITY â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.openai.chatgpt"                         to Category.CAT_PRODUCTIVITY,
         "com.openai.android"                         to Category.CAT_PRODUCTIVITY,
         "com.deepseek.app"                           to Category.CAT_PRODUCTIVITY,
@@ -421,7 +421,7 @@ class AppClassifier @Inject constructor() {
         "com.craft.docs"                             to Category.CAT_PRODUCTIVITY,
         "com.calendly.android"                       to Category.CAT_PRODUCTIVITY,
 
-        // â”€â”€ NEWS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ NEWS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.google.android.apps.news"               to Category.CAT_NEWS,
         "com.flipboard.app"                          to Category.CAT_NEWS,
         "com.feedly.android"                         to Category.CAT_NEWS,
@@ -445,7 +445,7 @@ class AppClassifier @Inject constructor() {
         "com.wired.android"                          to Category.CAT_NEWS,
         "com.businessinsider.android"                to Category.CAT_NEWS,
 
-        // â”€â”€ UTILITIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ UTILITIES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.android.chrome"                         to Category.CAT_UTILITIES,
         "org.mozilla.firefox"                        to Category.CAT_UTILITIES,
         "com.opera.browser"                          to Category.CAT_UTILITIES,
@@ -478,7 +478,7 @@ class AppClassifier @Inject constructor() {
         "com.teslacoilsw.launcher"                   to Category.CAT_UTILITIES,
         "com.windscribe.vpn"                         to Category.CAT_UTILITIES,
 
-        // â”€â”€ FOOD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ FOOD â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.doordash.ddshopper"                     to Category.CAT_FOOD,
         "com.ubereats"                               to Category.CAT_FOOD,
         "com.grubhub.android"                        to Category.CAT_FOOD,
@@ -509,7 +509,7 @@ class AppClassifier @Inject constructor() {
         "com.kfc.android"                            to Category.CAT_FOOD,
         "com.subway.mobile"                          to Category.CAT_FOOD,
 
-        // â”€â”€ PHOTOGRAPHY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ PHOTOGRAPHY â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.adobe.lightroom"                        to Category.CAT_PHOTOGRAPHY,
         "com.adobe.photoshop"                        to Category.CAT_PHOTOGRAPHY,
         "com.canva.android"                          to Category.CAT_PHOTOGRAPHY,
@@ -1087,7 +1087,7 @@ class AppClassifier @Inject constructor() {
         // Turkiye - Egitim
         "com.superonline.okulistik"                  to Category.CAT_EDUCATION,
         "com.vitamin.android"                        to Category.CAT_EDUCATION,
-        "com.tonguÃ§.app"                             to Category.CAT_EDUCATION,
+        "com.tonguc.app"                             to Category.CAT_EDUCATION,
         "com.okyanus.android"                        to Category.CAT_EDUCATION,
         "com.tureng.dictionary"                      to Category.CAT_EDUCATION,
         "com.ets.toefl.android"                      to Category.CAT_EDUCATION,
@@ -1243,7 +1243,7 @@ class AppClassifier @Inject constructor() {
         "com.toyzz.kids"                             to Category.CAT_SHOPPING,
         "com.bebetto.android"                        to Category.CAT_SHOPPING,
         "com.flo.android"                            to Category.CAT_SHOPPING,
-        "com.kiÄŸÄ±lÄ±.android"                         to Category.CAT_SHOPPING,
+        "com.kigili.android"                         to Category.CAT_SHOPPING,
         "com.vakko.android"                          to Category.CAT_SHOPPING,
         "com.english.home"                           to Category.CAT_SHOPPING,
         "com.ikea.android"                           to Category.CAT_SHOPPING,
@@ -1330,7 +1330,7 @@ class AppClassifier @Inject constructor() {
         "com.gboard.android"                         to Category.CAT_UTILITIES,
         "com.swiftkey.android"                       to Category.CAT_UTILITIES,
         "com.touchpal.keyboard"                      to Category.CAT_UTILITIES,
-        // â”€â”€ Loop46: Eksik uygulamalar â€” PHOTOGRAPHY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop46: Eksik uygulamalar â€" PHOTOGRAPHY â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.sec.android.app.camera"                 to Category.CAT_PHOTOGRAPHY,
         "com.motorola.camera2"                       to Category.CAT_PHOTOGRAPHY,
         "com.nothing.camera"                         to Category.CAT_PHOTOGRAPHY,
@@ -1349,7 +1349,7 @@ class AppClassifier @Inject constructor() {
         "com.facetune.app"                           to Category.CAT_PHOTOGRAPHY,
         "com.backgrounderaser"                       to Category.CAT_PHOTOGRAPHY,
         "com.bitmoji"                                to Category.CAT_PHOTOGRAPHY,
-        // â”€â”€ Loop46: Eksik uygulamalar â€” NEWS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop46: Eksik uygulamalar â€" NEWS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.msnbc.android"                          to Category.CAT_NEWS,
         "com.msn.android.news"                       to Category.CAT_NEWS,
         "com.npr.android"                            to Category.CAT_NEWS,
@@ -1372,7 +1372,7 @@ class AppClassifier @Inject constructor() {
         "com.haber3.android"                         to Category.CAT_NEWS,
         "com.diken.android"                          to Category.CAT_NEWS,
         "tr.gov.diyanet.diyanet"                     to Category.CAT_NEWS,
-        // â”€â”€ Loop46: Eksik uygulamalar â€” FOOD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop46: Eksik uygulamalar â€" FOOD â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.hellofresh.android"                     to Category.CAT_FOOD,
         "com.factor75.android"                       to Category.CAT_FOOD,
         "com.instacart.android"                      to Category.CAT_FOOD,
@@ -1393,7 +1393,7 @@ class AppClassifier @Inject constructor() {
         "com.migrosonline.android"                   to Category.CAT_FOOD,
         "com.sokmarket.android"                      to Category.CAT_FOOD,
         "com.banabi.android"                         to Category.CAT_FOOD,
-        // â”€â”€ Loop46: Eksik uygulamalar â€” EDUCATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop46: Eksik uygulamalar â€" EDUCATION â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.grasshopper.app"                        to Category.CAT_EDUCATION,
         "com.datacamp.android"                       to Category.CAT_EDUCATION,
         "com.pluralsight.android"                    to Category.CAT_EDUCATION,
@@ -1429,7 +1429,7 @@ class AppClassifier @Inject constructor() {
         "com.capacities.android"                     to Category.CAT_PRODUCTIVITY,
         "com.zettelkasten.android"                   to Category.CAT_PRODUCTIVITY,
 
-        // â”€â”€ Loop 70-71: Global Top-500 + TR uygulamalari â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop 70-71: Global Top-500 + TR uygulamalari â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         // SOCIAL
         "com.nextdoor.android"                       to Category.CAT_SOCIAL,
         "com.bereal.android"                         to Category.CAT_SOCIAL,
@@ -1555,7 +1555,7 @@ class AppClassifier @Inject constructor() {
         "com.solide.qr"                              to Category.CAT_UTILITIES,
         "com.teamsrv.android"                        to Category.CAT_UTILITIES,
 
-        // â”€â”€ Loop 34: TR Finans + AlÄ±ÅŸveriÅŸ + Servisler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop 34: TR Finans + AlıÅŸveriÅŸ + Servisler â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         // TR FINANS
         "com.finansbank.mobile.cepsube"              to Category.CAT_FINANCE,
         "com.aktifbank.nkolay"                       to Category.CAT_FINANCE,
@@ -1623,8 +1623,8 @@ class AppClassifier @Inject constructor() {
         "com.medikal.android"                        to Category.CAT_HEALTH,
         "com.mhealth.android"                        to Category.CAT_HEALTH,
 
-        // â”€â”€ Loop 43: GAME + TR Kurumsal + Global Eksikler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        // GAMES â€” Mobile global top
+        // â"€â"€ Loop 43: GAME + TR Kurumsal + Global Eksikler â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+        // GAMES â€" Mobile global top
         "com.ea.game.pvzfree_row"                    to Category.CAT_GAMES,
         "com.ea.game.simsfreeplay_row"               to Category.CAT_GAMES,
         "com.naturalmotion.clashofgangs"             to Category.CAT_GAMES,
@@ -1668,7 +1668,7 @@ class AppClassifier @Inject constructor() {
         "com.hayatevesigar.app"                      to Category.CAT_HEALTH,
         "com.mobillium.arabam"                       to Category.CAT_SHOPPING,
 
-        // PRODUCTIVITY â€” global eksikler
+        // PRODUCTIVITY â€" global eksikler
         "com.hemingwayapp.android"                   to Category.CAT_PRODUCTIVITY,
         "com.nuclino.android"                        to Category.CAT_PRODUCTIVITY,
         "com.craft.android"                          to Category.CAT_PRODUCTIVITY,
@@ -1683,7 +1683,7 @@ class AppClassifier @Inject constructor() {
         "com.spreaker.android"                       to Category.CAT_ENTERTAINMENT,
         "com.buzzsprout.android"                     to Category.CAT_ENTERTAINMENT,
 
-        // SOCIAL â€” eksik platformlar
+        // SOCIAL â€" eksik platformlar
         "com.gab.social"                             to Category.CAT_SOCIAL,
         "com.parler.android"                         to Category.CAT_SOCIAL,
         "com.mewe.android"                           to Category.CAT_SOCIAL,
@@ -1696,14 +1696,14 @@ class AppClassifier @Inject constructor() {
         "com.damus.android"                          to Category.CAT_SOCIAL,
         "com.primal.android"                         to Category.CAT_SOCIAL,
 
-        // EDUCATION â€” eksikler
+        // EDUCATION â€" eksikler
         "com.wolfram.alpha"                          to Category.CAT_EDUCATION,
         "com.coursehero.android"                     to Category.CAT_EDUCATION,
         "com.12min.android"                          to Category.CAT_EDUCATION,
         "com.getabstract.android"                    to Category.CAT_EDUCATION,
 
-        // â”€â”€ Loop 44: Communication / Music / Food / Weather / Misc â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        // COMMUNICATION â€” video call / messaging
+        // â"€â"€ Loop 44: Communication / Music / Food / Weather / Misc â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+        // COMMUNICATION â€" video call / messaging
         "com.google.android.apps.meetings"           to Category.CAT_SOCIAL,
         "com.bluejeans.android"                      to Category.CAT_SOCIAL,
         "com.whereby.android"                        to Category.CAT_SOCIAL,
@@ -1721,7 +1721,7 @@ class AppClassifier @Inject constructor() {
         "chat.simplex.app"                           to Category.CAT_SOCIAL,
         "com.briar.briarproject"                     to Category.CAT_SOCIAL,
 
-        // MUSIC â€” streaming + instruments
+        // MUSIC â€" streaming + instruments
         "ru.zaycev.site"                             to Category.CAT_ENTERTAINMENT,
         "com.zvuk.app"                               to Category.CAT_ENTERTAINMENT,
         "com.napster.android"                        to Category.CAT_ENTERTAINMENT,
@@ -1737,7 +1737,7 @@ class AppClassifier @Inject constructor() {
         "com.yalla.sing"                             to Category.CAT_ENTERTAINMENT,
         "com.garageband4.android"                    to Category.CAT_ENTERTAINMENT,
 
-        // FOOD â€” delivery + restaurants
+        // FOOD â€" delivery + restaurants
         "com.instacart.client"                       to Category.CAT_FOOD,
         "com.freshly.android"                        to Category.CAT_FOOD,
         "com.drizly.android"                         to Category.CAT_FOOD,
@@ -1762,7 +1762,7 @@ class AppClassifier @Inject constructor() {
         "pl.twojapogoda.android"                     to Category.CAT_UTILITIES,
         "com.mgelmana.weatherradar"                  to Category.CAT_UTILITIES,
 
-        // PHOTOGRAPHY â€” editing tools
+        // PHOTOGRAPHY â€" editing tools
         "com.vochi.android"                          to Category.CAT_PHOTOGRAPHY,
         "com.bazaart.android"                        to Category.CAT_PHOTOGRAPHY,
         "com.polarr.android"                         to Category.CAT_PHOTOGRAPHY,
@@ -1771,7 +1771,7 @@ class AppClassifier @Inject constructor() {
         "com.moment.android"                         to Category.CAT_PHOTOGRAPHY,
         "com.afterlight.android"                     to Category.CAT_PHOTOGRAPHY,
 
-        // â”€â”€ Loop 45: News / Sports / Kids / Smart Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop 45: News / Sports / Kids / Smart Home â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         // NEWS
         "com.newsbreak.android.citizen"              to Category.CAT_NEWS,
         "com.bbc.android.news"                       to Category.CAT_NEWS,
@@ -1823,7 +1823,7 @@ class AppClassifier @Inject constructor() {
         "com.belkin.wemo.android"                    to Category.CAT_UTILITIES,
         "com.tp_link.android"                        to Category.CAT_UTILITIES,
 
-        // â”€â”€ Loop 46-47: Developer Tools / Banking / Crypto / Misc â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â"€â"€ Loop 46-47: Developer Tools / Banking / Crypto / Misc â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         // DEVELOPER TOOLS
         "com.gitify.android"                         to Category.CAT_PRODUCTIVITY,
         "io.github.android"                          to Category.CAT_PRODUCTIVITY,
@@ -2863,7 +2863,9 @@ class AppClassifier @Inject constructor() {
         "com.ibb.istanbul"                           to Category.CAT_UTILITIES,
         "com.pttt.android"                           to Category.CAT_UTILITIES,
 
-        // Loop 68 — TR Fashion & More Shopping
+        // Loop 68 — TR Fashion & More Shopping        "com.uniqlo.android"                         to Category.CAT_SHOPPING,
+        "com.next.android"                           to Category.CAT_SHOPPING,
+        "com.primark.android"                        to Category.CAT_SHOPPING,
 
         // Loop 68 — Video/Photo Editing
         "com.dji.go.v4"                              to Category.CAT_PHOTOGRAPHY,
@@ -2922,6 +2924,102 @@ class AppClassifier @Inject constructor() {
         "com.moomoo.android"                         to Category.CAT_FINANCE,
         "com.publicinvest.android"                   to Category.CAT_FINANCE,
         "com.ellevest.android"                       to Category.CAT_FINANCE,
+
+        // Loop 69 — Additional entries
+        "com.atlassian.confluence.android"           to Category.CAT_PRODUCTIVITY,
+        "com.basecamp.bc3"                           to Category.CAT_PRODUCTIVITY,
+        "com.meistertask.app"                        to Category.CAT_PRODUCTIVITY,
+        "io.plane.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.height.app"                             to Category.CAT_PRODUCTIVITY,
+        "net.ia.obisdian"                            to Category.CAT_PRODUCTIVITY,
+        "com.dendron.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.raindrop.android"                       to Category.CAT_PRODUCTIVITY,
+        "app.getpocket.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.android.ide.android"                    to Category.CAT_PRODUCTIVITY,
+        "com.jetbrains.kotlin.android"               to Category.CAT_PRODUCTIVITY,
+        "com.termux.api"                             to Category.CAT_UTILITIES,
+        "org.connectbot"                             to Category.CAT_PRODUCTIVITY,
+        "com.juicessh.connectionsmanager"            to Category.CAT_PRODUCTIVITY,
+        "com.serverauditor.sshclient"                to Category.CAT_PRODUCTIVITY,
+        "com.pistolero.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.dcoder.android"                         to Category.CAT_PRODUCTIVITY,
+        "com.aide.android"                           to Category.CAT_PRODUCTIVITY,
+        "com.benim.hocam"                            to Category.CAT_EDUCATION,
+        "com.doping.hafiza"                          to Category.CAT_EDUCATION,
+        "com.otsimo.android"                         to Category.CAT_EDUCATION,
+        "com.okulistik.android"                      to Category.CAT_EDUCATION,
+        "com.bilsem.android"                         to Category.CAT_EDUCATION,
+        "com.tubitak.android"                        to Category.CAT_EDUCATION,
+        "com.matematik.oyunlari"                     to Category.CAT_EDUCATION,
+        "com.mutlu.dersler"                          to Category.CAT_EDUCATION,
+        "com.kidsmath.games.multiplication"          to Category.CAT_EDUCATION,
+        "com.miniclip.shootingrace"                  to Category.CAT_GAMES,
+        "com.outfit7.mytalkingangela2"               to Category.CAT_GAMES,
+        "com.outfit7.mytalkingangela"                to Category.CAT_GAMES,
+        "com.gameloft.android.anmp.gloftdmhm"       to Category.CAT_GAMES,
+        "com.ea.game.pvz2.row"                       to Category.CAT_GAMES,
+        "com.ea.game.nfs.row"                        to Category.CAT_GAMES,
+        "com.ea.game.fifa.row"                       to Category.CAT_GAMES,
+        "com.zynga.FarmVille2"                       to Category.CAT_GAMES,
+        "com.zynga.cityville"                        to Category.CAT_GAMES,
+        "com.plamee.ageofzombie"                     to Category.CAT_GAMES,
+        "com.snowman.altosadventure"                 to Category.CAT_GAMES,
+        "com.ketchapp.ballz"                         to Category.CAT_GAMES,
+        "com.ketchapp.stackapp"                      to Category.CAT_GAMES,
+        "com.ankama.dofus"                           to Category.CAT_GAMES,
+        "com.netease.l2java"                         to Category.CAT_GAMES,
+        "com.netease.z5jyen.g"                       to Category.CAT_GAMES,
+        "com.kabam.marvelcontestchampions"           to Category.CAT_GAMES,
+        "com.ludia.jw3"                              to Category.CAT_GAMES,
+        "com.kakaogames.pubgm.tr"                    to Category.CAT_GAMES,
+        "io.binance.android"                         to Category.CAT_FINANCE,
+        "io.etoro.android"                           to Category.CAT_FINANCE,
+        "com.degiro.android"                         to Category.CAT_FINANCE,
+        "com.xtb.android"                            to Category.CAT_FINANCE,
+        "com.traderepublic.android"                  to Category.CAT_FINANCE,
+        "com.freetrade.android"                      to Category.CAT_FINANCE,
+        "com.stake.android"                          to Category.CAT_FINANCE,
+        "com.garantibbva.android"                    to Category.CAT_FINANCE,
+        "com.isbank.android"                         to Category.CAT_FINANCE,
+        "com.yapikredi.android"                      to Category.CAT_FINANCE,
+        "com.ziraatbank.android"                     to Category.CAT_FINANCE,
+        "com.vakifbank.android"                      to Category.CAT_FINANCE,
+        "com.denizbank.android"                      to Category.CAT_FINANCE,
+        "com.ing.android.turkey"                     to Category.CAT_FINANCE,
+        "com.miui.health"                            to Category.CAT_HEALTH,
+        "com.xiaomi.watch"                           to Category.CAT_HEALTH,
+        "com.oppo.health"                            to Category.CAT_HEALTH,
+        "com.realme.health"                          to Category.CAT_HEALTH,
+        "com.withings.health"                        to Category.CAT_HEALTH,
+        "com.omron.connect"                          to Category.CAT_HEALTH,
+        "com.beurer.healthmanager"                   to Category.CAT_HEALTH,
+        "com.tandem.tconnect"                        to Category.CAT_HEALTH,
+        "com.dexcom.g7"                              to Category.CAT_HEALTH,
+        "com.ikea.tradfri.android"                   to Category.CAT_UTILITIES,
+        "com.nanoleaf.aurora"                        to Category.CAT_UTILITIES,
+        "com.lifx.lifx"                              to Category.CAT_UTILITIES,
+        "com.sengled.mobile"                         to Category.CAT_UTILITIES,
+        "com.govee.home"                             to Category.CAT_UTILITIES,
+        "com.tp_link.tpllinksmarthome"               to Category.CAT_UTILITIES,
+        "com.smartlife.android"                      to Category.CAT_UTILITIES,
+        "com.vesync.android"                         to Category.CAT_UTILITIES,
+        "com.ecovacs.android"                        to Category.CAT_UTILITIES,
+        "com.irobot.android"                         to Category.CAT_UTILITIES,
+        "com.eufy.android"                           to Category.CAT_UTILITIES,
+        "com.roborock.android"                       to Category.CAT_UTILITIES,
+        "com.tomtom.android"                         to Category.CAT_TRAVEL,
+        "com.transitapp.transit"                     to Category.CAT_TRAVEL,
+        "com.trafi.android"                          to Category.CAT_TRAVEL,
+        "com.osmand.android"                         to Category.CAT_TRAVEL,
+        "net.osmand"                                 to Category.CAT_TRAVEL,
+        "com.benmaps.android"                        to Category.CAT_TRAVEL,
+        "com.salesforce.android.app"                 to Category.CAT_PRODUCTIVITY,
+        "com.zendesk.android"                        to Category.CAT_PRODUCTIVITY,
+        "com.freshdesk.android"                      to Category.CAT_PRODUCTIVITY,
+        "com.servicenow.android"                     to Category.CAT_PRODUCTIVITY,
+        "com.sap.mobile.fiori"                       to Category.CAT_PRODUCTIVITY,
+        "com.oracle.android.oraclecloud"             to Category.CAT_PRODUCTIVITY,
+
     )
 
     fun classifyApp(appInfo: AppInfo): String {
@@ -2943,7 +3041,7 @@ class AppClassifier @Inject constructor() {
         else -> 50
     }
 
-    // Ãœretici paket prefix'i â†’ kategori eÅŸleÅŸmesi (exactMap'ten sonra, keyword'den Ã¶nce)
+    // Üretici paket prefix'i → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
     private fun classifyByManufacturerPrefix(packageName: String): String? {
         val pkg = packageName.lowercase()
         return MANUFACTURER_PREFIX_MAP.entries.firstOrNull { (prefix, _) -> pkg.startsWith(prefix) }?.value
