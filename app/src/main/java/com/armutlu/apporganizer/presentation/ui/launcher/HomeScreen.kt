@@ -97,6 +97,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -226,6 +227,7 @@ fun HomeScreen(
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                 if (!currentAllAppsOpen && !swipeLock && available.y < -200f) {
+                    AppAnalytics.allAppsOpened()
                     viewModel.openAllApps()
                 }
                 return Velocity.Zero
@@ -234,6 +236,7 @@ fun HomeScreen(
                 if (!currentAllAppsOpen && !swipeLock && available.y < 0f) {
                     swipeDelta += available.y
                     if (swipeDelta < -swipeThresholdPx) {
+                        AppAnalytics.allAppsOpened()
                         viewModel.openAllApps()
                         swipeDelta = 0f
                     }
@@ -357,6 +360,7 @@ fun HomeScreen(
                                 accumulated += dragAmount
                                 if (!swipeLock && accumulated < -120f) {
                                     accumulated = 0f
+                                    AppAnalytics.allAppsOpened()
                                     viewModel.openAllApps()
                                 }
                             }
@@ -399,6 +403,7 @@ fun HomeScreen(
                     iconPackPkg = suggestionIconPack,
                     onAppClick = { pkg ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        AppAnalytics.appLaunched(pkg, "favorites")
                         viewModel.launchApp(context, pkg)
                     },
                     onAppLongClick = { pkg ->
@@ -494,6 +499,7 @@ fun HomeScreen(
                         onClick = {
                             if (dragFromIndex == null) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                AppAnalytics.folderOpened(folder.category.categoryId, folder.category.categoryName)
                                 viewModel.openFolder(folder)
                             }
                         },

@@ -54,6 +54,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
+import com.armutlu.apporganizer.utils.AppAnalytics
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -287,6 +288,13 @@ fun AllAppsDrawer(
             AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
             AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
             AllAppsSortMode.INSTALL_DATE -> base.sortedByDescending { it.installTime }
+        }
+    }
+
+    // Arama analitik — sorgu en az 2 karakter, sonuç sayısı mevcut
+    LaunchedEffect(searchQuery, sortedApps.size) {
+        if (searchQuery.trim().length >= 2) {
+            AppAnalytics.searchPerformed(searchQuery.trim(), sortedApps.size)
         }
     }
 
@@ -558,6 +566,7 @@ fun AllAppsDrawer(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
+                                            AppAnalytics.appLaunched(app.packageName, "all_apps")
                                             onAppClick(app.packageName)
                                         },
                                         onLongClick = { onAppLongClick?.invoke(app) }
@@ -588,6 +597,7 @@ fun AllAppsDrawer(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
+                                            AppAnalytics.appLaunched(app.packageName, "all_apps")
                                             onAppClick(app.packageName)
                                         },
                                         onLongClick = { onAppLongClick?.invoke(app) }

@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -295,6 +296,7 @@ fun FolderSheet(
                                 .background(Color.White.copy(alpha = 0.10f))
                                 .clickable {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    AppAnalytics.appLaunched(app.packageName, "folder")
                                     onAppClick(app.packageName)
                                     onDismiss()
                                 }
@@ -376,6 +378,7 @@ fun FolderSheet(
                             app       = app,
                             onClick   = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                AppAnalytics.appLaunched(app.packageName, "folder")
                                 onAppClick(app.packageName)
                                 onDismiss()
                             },
