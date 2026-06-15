@@ -135,6 +135,30 @@
 }
 
 # ============================================================
+# Kotlin Serialization
+# ============================================================
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
+-keepclassmembers class kotlinx.serialization.json.** {
+    *** Companion;
+}
+-keepclasseswithmembers class * {
+    @kotlinx.serialization.SerialName <fields>;
+}
+-keep @kotlinx.serialization.Serializable class * { *; }
+-keepclassmembers @kotlinx.serialization.Serializable class * {
+    *** Companion;
+    *** serializer(...);
+    <fields>;
+}
+-dontwarn kotlinx.serialization.**
+
+# ============================================================
+# AppClassifier / domain modeller (ek güvence)
+# ============================================================
+-keep class com.armutlu.apporganizer.domain.usecase.classify.** { *; }
+
+# ============================================================
 # R8 / genel uyarılar
 # ============================================================
 -dontwarn sun.misc.**

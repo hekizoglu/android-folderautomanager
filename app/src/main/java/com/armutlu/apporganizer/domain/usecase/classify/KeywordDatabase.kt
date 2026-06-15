@@ -20,7 +20,10 @@ object KeywordDatabase {
             // Loop 77 — India social
             "sharechat", "roposo", "mojapp", "mxtakatak", "koo", "josh",
             // Loop 84 — yeni nesil platformlar
-            "lemon8", "bluesky", "yubo", "gas", "poparazzi", "spill", "post"
+            "lemon8", "yubo", "gas", "poparazzi", "spill", "post",
+            // Loop 14 — ek keyword'ler
+            "message", "community", "forum", "feed", "photo", "video",
+            "story", "reel", "short", "live", "stream", "follow", "friend"
         ),
         Category.CAT_PRODUCTIVITY to listOf(
             "productivity", "office", "calendar", "notes", "todo", "task",
@@ -49,7 +52,9 @@ object KeywordDatabase {
             "oyun", "oyunu",
             // Loop 84 — gacha / anime RPG
             "wuthering", "nikke", "punishing", "reverse1999", "aether", "gazer",
-            "maplestory", "dragonraja", "summoners", "genshin", "honkai", "zenless"
+            "maplestory", "dragonraja", "summoners", "genshin", "honkai", "zenless",
+            // Loop 14 — ek keyword'ler
+            "arcade", "strategy", "multiplayer", "casino", "satranc"
         ),
         Category.CAT_SHOPPING to listOf(
             // Genel
@@ -74,7 +79,10 @@ object KeywordDatabase {
             // Loop 77 — Middle East
             "noon", "namshi", "opensooq", "haraj", "dubizzle", "souq",
             // Loop 77 — SEA
-            "shopback", "blibli", "kilimall", "jumia"
+            "shopback", "blibli", "kilimall", "jumia",
+            // Loop 14 — ek keyword'ler
+            "mall", "siparis", "kargo", "cargo", "commerce", "fashion",
+            "style", "wear", "clothing", "giyim", "ayakkabi", "shoe"
         ),
         Category.CAT_NEWS to listOf(
             "news", "newspaper", "article", "press", "tribune", "gazette",
@@ -116,7 +124,9 @@ object KeywordDatabase {
             "acibademsaglik", "medikal",
             // Loop 84 — mental wellness
             "youper", "brightside", "sevencups", "7cups", "daylio", "moodfit",
-            "moodistory", "happify", "sanvello", "reflectly", "finch", "woebot"
+            "moodistory", "happify", "sanvello", "reflectly", "finch", "woebot",
+            // Loop 14 — ek keyword'ler
+            "medic", "beslenme", "pharmacy"
         ),
         Category.CAT_FINANCE to listOf(
             // Genel
@@ -158,7 +168,9 @@ object KeywordDatabase {
             // Loop 84 — Web3 / kripto cuzdanlar
             "rainbow", "phantom", "solflare", "solana", "magic eden", "nft", "defi",
             "metamask", "trustwallet", "ledger", "trezor", "uniswap", "aave",
-            "compound", "opensea", "blur", "gem wallet", "argent", "zerion"
+            "compound", "opensea", "blur", "gem wallet", "argent", "zerion",
+            // Loop 14 — ek keyword'ler
+            "banking", "coin", "bourse", "mortgage", "trade"
         ),
         Category.CAT_EDUCATION to listOf(
             "education", "learn", "course", "class", "school", "university",
@@ -169,7 +181,9 @@ object KeywordDatabase {
             "dictionary", "thesaurus", "language", "grammar", "math",
             "egitim", "okul", "universite", "sinav", "odev", "ders",
             "ogren", "kurs", "sertifika", "yds", "tyt", "ayt", "yks",
-            "meb", "dershane", "hazirlik", "lgs", "kpss", "ales"
+            "meb", "dershane", "hazirlik", "lgs", "kpss", "ales",
+            // Loop 14 — ek keyword'ler
+            "vocabulary", "kelime", "matematik", "science", "bilim"
         ),
         Category.CAT_UTILITIES to listOf(
             // Genel
@@ -226,7 +240,9 @@ object KeywordDatabase {
             // Loop 77 — MENA travel
             "wego", "careem",
             // Loop 77 — Africa/Global
-            "bykea", "indriver", "yandex taxi"
+            "bykea", "indriver", "yandex taxi",
+            // Loop 14 — ek keyword'ler
+            "ticket", "havalimanı"
         ),
         Category.CAT_ENTERTAINMENT to listOf(
             "entertainment", "movie", "film", "video", "stream", "watch",
@@ -258,7 +274,9 @@ object KeywordDatabase {
             "talabat", "deliveroo", "rappi", "pedidosya",
             "supermarket", "takeaway", "takeout", "order", "siparis",
             // Loop 77 — India food
-            "dunzo", "fassos", "rebel foods"
+            "dunzo", "fassos", "rebel foods",
+            // Loop 14 — ek keyword'ler
+            "tea", "cay", "bistro", "sushi", "yiyecek", "recipe"
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
@@ -296,7 +314,10 @@ object KeywordDatabase {
             "fl.studio", "bandlab", "voloco", "groovepad", "cross.dj",
             "djay", "edjing", "virtual.dj", "simply.piano", "flowkey",
             "yousician", "smule", "fender", "guitar", "piano", "muzik",
-            "radyo7", "kral.fm", "powerapp.fm", "enerji.fm", "muud", "fizy"
+            "radyo7", "kral.fm", "powerapp.fm", "enerji.fm", "muud", "fizy",
+            // Loop 14 — ek keyword'ler
+            "song", "sarki", "playlist", "radio", "ringtone", "zil",
+            "stream", "beat", "bass", "melody"
         ),
         Category.CAT_VIDEO to listOf(
             "vlc", "mx.player", "kodi", "plex", "bsplayer", "nplayer",
