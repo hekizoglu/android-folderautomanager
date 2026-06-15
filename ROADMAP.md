@@ -133,6 +133,18 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [ ] AllApps double-tap emülatörde doğrulanamadı (2026-06-15 — Döngü 43) — Compose içi state değişimi loglanmıyor; gerçek cihaz testi gerekiyor
 - [ ] Üretici kategorileri gerçek cihaz testi (2026-06-15 — Döngü 41) — 9 yeni kategori eklendi (CAT_GOOGLE vb.), onboarding'den "üreticiye göre" seçip klasörlerin doğru oluştuğunu doğrula
 
+### 🔴 Yüksek Öncelik — Döngü 69 Analiz (2026-06-16)
+- [ ] 🔴 **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir
+- [ ] 🔴 **`git config core.hooksPath .githooks`** — pre-commit hook şu an çalışmıyor (`.github/hooks/` yanlış yol)
+- [ ] 🔴 **Android 15 Edge-to-Edge** — `WindowCompat.setDecorFitsSystemWindows(false)` + `WindowInsets` tüm ekranlarda
+- [ ] 🔴 **Room `schemas/` klasörü** — `room.schemaLocation` gradle'a ekle, klasörü git'e al (migration test için zorunlu)
+- [ ] 🟡 **Predictive Back Gesture** — `android:enableOnBackInvokedCallback="true"` manifest + BackHandler gözden geçir (Android 13+)
+- [ ] 🟡 **LeakCanary** — debug build'e ekle (`debugImplementation "com.squareup.leakcanary:leakcanary-android:..."`)
+- [ ] 🟡 **Android 14 NotificationListenerService** — gerçek cihazda test (Android 14 kısıtlamaları)
+- [ ] 🟢 **Themed monochrome icon** — `ic_launcher_monochrome` drawable (Android 13+ Pixel Launcher uyumu)
+- [ ] 🟢 **`android:dataExtractionRules` XML** — backup/restore kuralları (cihaz değiştirince klasör yapısı korunmalı)
+- [ ] 🟢 **Splash Screen API** — `core-splashscreen` entegrasyonu (Android 12+ kontrolsüz splash)
+
 ---
 
 ## ✅ Tamamlananlar

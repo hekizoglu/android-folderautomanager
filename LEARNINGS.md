@@ -39,15 +39,19 @@
 | P7 | Flow `SharingStarted.Eagerly` | §5 | 3 |
 | P8 | Async ikon `produceState`+LRU | §5 | 5+ |
 | P9 | Reaktif AppPrefs (DisposableEffect) | §5 | 3 |
+| P10 | `fallbackToDestructiveMigration()` kaldırıldı — production'da veri kaybı riski | §5 | 2 |
+| P11 | `derivedStateOf` pattern — scroll sırasında gereksiz recomposition önler | §5 | 2 |
+| P12 | `installSplashScreen()` sırası: `super.onCreate()` sonrası, `setContentView()` öncesi | §5 | 1 |
+| P13 | Build cache kilidi: Java process'leri öldür + `app\build` sil — tekrarlayan sorun | §5 | 3+ |
 
 ---
 
 ## 🧠 Aktif Öğrenmeler
 
 ### [L1] AppClassifier — exactMatchMap vs MANUFACTURER_PREFIX_MAP Çakışması
-**Tarih:** 2026-06-15 | **Öncelik:** ORTA
+**Tarih:** 2026-06-15 | **Öncelik:** ORTA | **Tekrar:** 1
 
-`exactMatchMap` (3594 paket) ile `MANUFACTURER_PREFIX_MAP` (prefix bazlı) aynı paketi farklı kategoriye atayabilir.
+`exactMatchMap` (3717 paket, 2026-06-16 itibarıyla) ile `MANUFACTURER_PREFIX_MAP` (prefix bazlı) aynı paketi farklı kategoriye atayabilir.
 
 **Örnek:** `com.whatsapp`
 - `exactMatchMap["com.whatsapp"] = CAT_COMMUNICATION` ✅
@@ -57,11 +61,7 @@
 
 **Risk:** Yeni paket eklerken `exactMatchMap`'e koymadan sadece prefix map'e güvenilirse yanlış kategori atanır.
 
-**Kural:** Meta/Facebook ekosistemi paketleri (`com.whatsapp`, `com.instagram`, `com.facebook.*`) `exactMatchMap`'te `CAT_COMMUNICATION` veya `CAT_SOCIAL` ile kesin tanımlanmış olmalı — prefix map'e bırakılmamalı.
-| P10 | `fallbackToDestructiveMigration()` kaldırıldı — production'da veri kaybı riski | §5 | 2 |
-| P11 | `derivedStateOf` pattern — scroll sırasında gereksiz recomposition önler | §5 | 2 |
-| P12 | `installSplashScreen()` sırası: `super.onCreate()` sonrası, `setContentView()` öncesi | §5 | 1 |
-| P13 | Build cache kilidi: Java process'leri öldür + `app\build` sil — tekrarlayan sorun | §5 | 3+ |
+**Kural:** Meta/Facebook ekosistemi paketleri (`com.whatsapp`, `com.instagram`, `com.facebook.*`) `exactMatchMap`'te kesin tanımlanmış olmalı — prefix map'e bırakılmamalı.
 
 ---
 
@@ -90,10 +90,16 @@
 - `PACKAGE_FILTER` companion object sabiti — her `onResume`'da nesne oluşturulmaz
 
 ### AppClassifier Mimarisi
-- `exactMatchMap`: 3375 benzersiz paket (paketAdi → kategori)
+- `exactMatchMap`: **3717** benzersiz paket (2026-06-16 itibarıyla — `python scripts/check_duplicates.py` ile doğrula)
 - `KeywordDatabase`: 32 kategori, 20-50 keyword her biri
 - Bilinmeyen → `CAT_OTHER` → `CategoryLLMFallback.kt` (DeepSeek batch 15)
 - Pre-commit hook: her AppClassifier commit'inde `check_duplicates.py` otomatik
+
+**Güncelleme Prosedürü (yeni paket eklerken):**
+1. `exactMatchMap`'te doğru konuma ekle (alfabetik sıra)
+2. `python scripts/check_duplicates.py AppClassifier.kt` çalıştır
+3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
+4. Build + commit + push
 
 ### Onboarding Adım Sırası (v2026-06-13)
 WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → SET_LAUNCHER → DONE (14 adım)
@@ -104,7 +110,19 @@ Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_C
 - v6: `customNotes`, `notificationText` alanları eklendi
 - v7: 18 yeni kategori (CAT_COMMUNICATION, CAT_MUSIC, CAT_VIDEO... vs.) — şema değişimi yok, MIGRATION_6_7 boş migration ile eklendi
 
-> **UYARI:** `fallbackToDestructiveMigration()` — Döngü#19'da KALDIRILDI. Bu metod eksik migration varsa tüm DB'yi siler. Yeni versiyon eklerken mutlaka MIGRATION_x_y oluştur, boş bile olsa.
+> **UYARI:** `fallbackToDestructiveMigration()` — Döngü#19'da KALDIRILDI. Yeni versiyon eklerken mutlaka `MIGRATION_x_y` oluştur, boş bile olsa.
+
+**Migration Şablonu (v8 için örnek):**
+```kotlin
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Şema değişimi yoksa boş bırak
+        // db.execSQL("ALTER TABLE apps ADD COLUMN newField TEXT")
+    }
+}
+// AppDatabase.kt → addMigrations(MIGRATION_7_8)
+```
+**room.schemaLocation** → `app/build.gradle.kts`'e ekle, `schemas/` klasörünü git'e al.
 
 ---
 
@@ -123,30 +141,24 @@ Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_C
 | E9 | `isLoadingApps` race condition | `@Volatile` bileşik operasyon korumaz | `AtomicBoolean.compareAndSet()` |
 | E10 | Git push non-fast-forward | Remote ahead | `git pull --rebase` önce |
 | E11 | Merge conflict AppClassifier | Remote + local aynı döngü | Python ile birleştir, set dedup |
-| E12 | Firebase Crashlytics API erişimi yok | `google-services.json` + credentials yapılandırılmamış | `.env`'de Firebase service account JSON ekle |
 
 ---
 
-## 📌 Aktif Öğrenmeler (Promote Bekleyenler)
+## 📌 Promote Bekleyenler + Gözlemler
+_(3 tekrara ulaşınca 🔼 tablosuna ve CLAUDE.md §5'e taşınır)_
 
-### [2026-06-13] araç-kullanımı [ÖNCELİK: ORTA] — Tekrar: 4+
-**Merge conflict AppClassifier:** Remote ve local aynı döngüde yazınca çakışıyor.
-**Kural:** `scripts/dedup_classifier.py` mantığı — iki tarafı birleştir, set ile dedup.
-**Promote:** Aday (4+ tekrar, CLAUDE.md §5'e eklenecek)
+### [2026-06-13] Merge conflict AppClassifier — Tekrar: 4+ | Öncelik: ORTA
+Remote ve local aynı döngüde yazınca çakışıyor.
+**Kural:** `scripts/dedup_classifier.py` — iki tarafı birleştir, set ile dedup. → **CLAUDE.md §5 adayı**
 
-### [2026-06-15] araç-kullanımı [ÖNCELİK: ORTA] — Tekrar: 1
-**Firebase öğrenme döngüsü:** Metrik → gözlem → karar → uygulama zinciri.
-**Gözlem:** Veri olmadan "iyi/kötü" kararı verilemez. Firebase'den gelen crash stack trace + event sayıları somut öğrenme sinyali.
-**Kural:** Her sprint başında önceki dönemin Firebase metriklerini LEARNINGS'e yaz. Neyin ne kadar kullanıldığını görmeden özellik önceliği verme.
-**Promote:** İzleniyor
+### [2026-06-15] Firebase öğrenme döngüsü — Tekrar: 1 | Öncelik: ORTA
+**Kural:** Her sprint başında Firebase metriklerini LEARNINGS'e yaz. Veri olmadan özellik önceliği verme.
+→ Firebase entegrasyonu aktif olunca izlemeye başla
 
----
-
-## 🆕 İzlenen Gözlemler
-_(3 tekrara ulaşınca yukarı taşınır)_
-
-- [2026-06-15] CLAUDE.md büyüyünce konuşma başında gereksiz token harcanıyor — her bölüm büyüyünce ilgili MD'ye taşı kuralı eklendi.
-- [2026-06-15] AppClassifier'a yeni kategori eklerken **CAT_PHOTO sabiti yok** — doğrusu `Category.CAT_PHOTOGRAPHY` (Category.kt satır 44). Kısaltma kullanma, tam adı yaz.
+### [2026-06-15] Gözlemler
+- CLAUDE.md büyüyünce gereksiz token — her bölüm büyüyünce ilgili MD'ye taşı kuralı eklendi.
+- AppClassifier yeni kategori: `CAT_PHOTO` sabiti yok, doğrusu `Category.CAT_PHOTOGRAPHY` (Category.kt satır 44).
+- Firebase Crashlytics erişimi: `google-services.json` + `.env`'de service account → ROADMAP görevi, çözülmemiş hata değil.
 
 ---
 

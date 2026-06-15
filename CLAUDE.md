@@ -45,7 +45,14 @@ Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 - Tüm değişiklikler `main` branch — yeni branch açma
 - Her döngü sonunda: commit + push + Telegram
 - Her 6 döngüde: build + APK Telegram'a
-- Her 18 döngüde: emülatörde tam test
+- Her 18 döngüde: emülatörde tam test (HomeScreen klasör açılışı → AllAppsDrawer → Ayarlar → geri dön → bildirim badge görünümü)
+- Rollback: kötü commit → `git revert HEAD~1 --no-edit && git push`; APK kaybı → Telegram bot geçmişinden son APK al
+- Semantic versioning: MAJOR.MINOR.PATCH — `versionCode` ve `versionName` her release'te artır (`app/build.gradle.kts`)
+- Git hook aktifleştirme: `git config core.hooksPath .githooks` — ilk kurulumda çalıştır (pre-commit check_duplicates.py için)
+
+### Paralel Agent Kullanımı
+Bağımsız araştırma/analiz görevlerinde tek mesajda birden fazla Agent çağrısı yap — bekleme süresini yarıya indirir.
+Örnek: WebSearch + Explore aynı anda; DeepSeek + code-reviewer aynı anda.
 
 ### Sıralı (Ard Arda) Döngü Kuralları
 - Ard arda çalışan döngülerde build sadece **son döngüde** yapılır
@@ -55,12 +62,14 @@ Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 
 ### Her Görev Sonunda
 1. Build al (`.\gradlew assembleDebug`)
-2. Hata varsa düzelt
-3. Commit + push
-4. `python scripts/update_notebooklm.py`
-5. Telegram'a rapor (bug fix: sebep+fix+sonuç / yeni özellik: hangi dosya / refactor: eski→yeni)
-6. HISTORY.md'ye döngü özeti ekle (3 satır — zorunlu)
-7. CLAUDE.md veya LEARNINGS.md güncelle (yeni tuzak/kural öğrenildiyse)
+2. APK boyutunu logla: `(Get-Item app\build\outputs\apk\debug\app-debug.apk).length / 1MB` → harcananvakit.md BUILD satırına ekle
+3. Hata varsa düzelt
+4. Commit + push
+5. `python scripts/update_notebooklm.py`
+6. Telegram'a rapor (bug fix: sebep+fix+sonuç / yeni özellik: hangi dosya / refactor: eski→yeni)
+7. HISTORY.md'ye döngü özeti ekle (3 satır — zorunlu)
+8. CLAUDE.md veya LEARNINGS.md güncelle (yeni tuzak/kural öğrenildiyse)
+9. **harcananvakit.md** — döngü için başlangıç/bitiş saati ve kategori logu ekle
 
 ### Dosya Güncelleme Kuralları
 
@@ -104,7 +113,8 @@ Her agent görevi sonunda (build almadan önce):
 ### Build Komutları
 ```powershell
 cd "c:\Users\hekizoglu\Documents\AppOrganizer"
-.\gradlew assembleDebug
+.\gradlew assembleDebug        # Debug APK
+.\gradlew bundleRelease        # Play Store AAB (imzalı — keystore.properties gerekli)
 
 # Emülatör
 $em = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\emulator\emulator.exe"
@@ -183,6 +193,23 @@ Cache key: `"${pkg}_${px}"` (ikon paketi varsa `+"_${iconPackPkg}"`). `initialVa
 `remember {}` ile okunan AppPrefs değerleri Settings'ten dönünce güncellenmiyor.
 Pattern: `mutableStateOf` + `DisposableEffect(context)` + `OnSharedPreferenceChangeListener`.
 Conditional `remember` kullanma — değeri composable dışına al.
+
+### Build Cache Kilidi (Windows)
+Gradle build dizini kilitlenince: `Get-Process java | Stop-Process -Force` → `Remove-Item -Recurse -Force app\build` → yeniden build.
+`robocopy /MIR` ile `app\build` silinebilir (locked file'lar dahil). Tekrar: 3+ — kalıcı kural.
+
+### Room Migration Şablonu
+DB versiyonu artışında zorunlu adımlar:
+1. `app/build.gradle.kts`'de `room.schemaLocation` tanımlı olmalı → `schemas/` klasörü git'e alınır
+2. `Migration(vOld, vNew) { db -> db.execSQL("...") }` class oluştur (boş bile olsa)
+3. `addMigrations(MIGRATION_x_y)` — `fallbackToDestructiveMigration()` kullanma (veri siler)
+4. `MigrationTestHelper` ile test yaz
+
+### Android Platform Uyumluluk Kuralları
+- **Edge-to-Edge (Android 15 zorunlu):** `WindowCompat.setDecorFitsSystemWindows(window, false)` + tüm ekranlarda `WindowInsets` padding
+- **Predictive Back (Android 13+):** `AndroidManifest.xml`'de `android:enableOnBackInvokedCallback="true"` + `BackHandler` gözden geçir
+- **QUERY_ALL_PACKAGES:** Play Store'a göndermeden önce Google'a "uygulama keşif/arama" beyan formu zorunlu — eksikse APK reddedilir
+- **NotificationListenerService (Android 14+):** `foregroundServiceType` ve runtime izin değişimleri — gerçek cihaz testi şart
 
 ---
 
@@ -270,6 +297,9 @@ app/src/main/java/com/armutlu/apporganizer/
 - [ ] Store listing görselleri
 - [ ] Content rating anketi
 - [ ] Release keystore: `release.jks`
+- [ ] 🔴 **QUERY_ALL_PACKAGES beyan formu** — Play Store'a göndermeden önce Google'a "uygulama keşif/arama" kategoryasını beyan et (reject sebebi)
+- [ ] Android 15 Edge-to-Edge geçişi — `WindowInsets` tüm ekranlarda
+- [ ] Room `schemas/` klasörü git'e ekle (`room.schemaLocation` gradle'da tanımla)
 
 ---
 
