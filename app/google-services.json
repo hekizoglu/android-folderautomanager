@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "948612373881",
+    "project_id": "com-armutlu-apporganizer",
+    "storage_bucket": "com-armutlu-apporganizer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948612373881:android:4762e1a308edeeaed863a8",
+        "android_client_info": {
+          "package_name": "com.armutlu.apporganizer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_WdT9RcBdKAITfZpEFCJCz1fQmJ2JUuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
