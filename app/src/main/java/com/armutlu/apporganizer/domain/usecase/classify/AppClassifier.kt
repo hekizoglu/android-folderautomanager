@@ -4089,6 +4089,22 @@ class AppClassifier @Inject constructor() {
         // === Türk Spor ===
         "com.bein.sports.beinsports"                 to Category.CAT_SPORTS,     // beIN Sports
         "com.spx.android.ligtvizle"                  to Category.CAT_SPORTS,     // Lig TV İzle
+
+        // === Döngü 12 — Avrupa / Asya / Hindistan Paketleri ===
+        "de.zalando.mobile"                          to Category.CAT_SHOPPING,   // Zalando (DE)
+        "de.check24.app"                             to Category.CAT_FINANCE,    // Check24 (DE)
+        "de.db.pwcc.dbmobile"                        to Category.CAT_FINANCE,    // Deutsche Bank (DE)
+        "com.flixbus.flixtrip"                       to Category.CAT_TRAVEL,     // FlixBus (DE)
+        "ru.sberbankmobile"                          to Category.CAT_FINANCE,    // Sberbank (RU)
+        "ru.vtb24.mobilebanking.android"             to Category.CAT_FINANCE,    // VTB Bank (RU)
+        "ru.alfabank.mobile.android"                 to Category.CAT_FINANCE,    // Alfa-Bank (RU)
+        "com.tencent.mobileqq"                       to Category.CAT_COMMUNICATION, // QQ (CN)
+        "com.meitu.beautyplusmod"                    to Category.CAT_PHOTO,      // BeautyPlus (CN)
+        "net.one97.paytm"                            to Category.CAT_FINANCE,    // Paytm (IN)
+        "com.flipkart.android"                       to Category.CAT_SHOPPING,   // Flipkart (IN)
+        "com.myntra.android"                         to Category.CAT_SHOPPING,   // Myntra (IN)
+        "com.olacabs.customer"                       to Category.CAT_TRAVEL,     // Ola Cabs (IN)
+        "com.jio.myjio"                              to Category.CAT_COMMUNICATION, // MyJio (IN)
     )
 
     fun classifyApp(appInfo: AppInfo): String {
