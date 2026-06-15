@@ -356,3 +356,10 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Yok
 **CLAUDE.md/LEARNINGS.md:** LEARNINGS L1 doğrulandı — WhatsApp exactMatchMap'te CAT_COMMUNICATION, MANUFACTURER_PREFIX_MAP'ten çıkarıldı
 **Sonraki:** Döngü 53 — KOD, backlog görev
+
+
+## Döngü 53 — 20:45 [KOD]
+**Yapılanlar:** NotebookLM güncellendi (74 Kotlin dosyası, 499KB). showSystemApps toggle AppPrefs'e persist edildi (KEY_SHOW_SYSTEM_APPS + getter/setter, ViewModel init+toggle güncellendi). AppPrefs.kt + AppListViewModel.kt değişti.
+**Agent:** Yok
+**CLAUDE.md/LEARNINGS.md:** Güncelleme yok
+**Sonraki:** Döngü 54 — BUILD döngüsü (54 % 6 = 0), gradle assembleDebug + APK Telegram
