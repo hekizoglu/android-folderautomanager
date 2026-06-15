@@ -137,7 +137,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [ ] 🔴 **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir
 - [ ] 🔴 **`git config core.hooksPath .githooks`** — pre-commit hook şu an çalışmıyor (`.github/hooks/` yanlış yol)
 - [ ] 🔴 **Android 15 Edge-to-Edge** — `WindowCompat.setDecorFitsSystemWindows(false)` + `WindowInsets` tüm ekranlarda
-- [ ] 🔴 **Room `schemas/` klasörü** — `room.schemaLocation` gradle'a ekle, klasörü git'e al (migration test için zorunlu)
+- [x] ~~🔴 **Room `schemas/` klasörü**~~ ✅ `room.schemaLocation` kapt argumentine eklendi, `app/schemas/` git'e alındı (Döngü 71, 2026-06-16)
 - [ ] 🟡 **Predictive Back Gesture** — `android:enableOnBackInvokedCallback="true"` manifest + BackHandler gözden geçir (Android 13+)
 - [ ] 🟡 **LeakCanary** — debug build'e ekle (`debugImplementation "com.squareup.leakcanary:leakcanary-android:..."`)
 - [ ] 🟡 **Android 14 NotificationListenerService** — gerçek cihazda test (Android 14 kısıtlamaları)
