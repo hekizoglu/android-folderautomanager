@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 12:03 UTC
-# Commit: 8819306b0c6c99e938d5375de3e66e554482eaf5
+# Generated: 2026-06-15 12:13 UTC
+# Commit: b0f561b2bb3b8a101a0a9f142be2bb4a240d4265
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -10047,7 +10047,7 @@ fun HomeScreen(
                 else Modifier
             )
             .nestedScroll(nestedScrollConnection)
-            .pointerInput(Unit) {
+            .pointerInput("tap") {
                 detectTapGestures(
                     onDoubleTap = {
                         if (!currentAllAppsOpen) {
@@ -10063,7 +10063,7 @@ fun HomeScreen(
                     }
                 )
             }
-            .pointerInput(Unit) {
+            .pointerInput("drag") {
                 var accumulated = 0f
                 var dragStartY = 0f
                 // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
@@ -10075,10 +10075,11 @@ fun HomeScreen(
                     },
                     onDragEnd = { accumulated = 0f },
                     onDragCancel = { accumulated = 0f },
-                    onVerticalDrag = { _, dragAmount ->
+                    onVerticalDrag = { change, dragAmount ->
                         if (!currentAllAppsOpen && dragStartY < size.height - gestureZonePx) {
                             accumulated += dragAmount
-                            if (!swipeLock && accumulated < -120f) {
+                            if (!swipeLock && accumulated < -80f) {
+                                change.consume()
                                 accumulated = 0f
                                 AppAnalytics.allAppsOpened()
                                 viewModel.openAllApps()
@@ -15944,7 +15945,22 @@ fun SettingsScreen(
 
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
+                var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
                 SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.PhoneAndroid,
+                        title = "Üreticiye Göre Sınıflandır",
+                        subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilere ayır",
+                        checked = manufacturerClassify,
+                        onCheckedChange = {
+                            manufacturerClassify = it
+                            AppPrefs.setManufacturerClassifyEnabled(context, it)
+                        }
+                    )
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
                         title = "Sınıflandırılmamışları Sınıflandır",
