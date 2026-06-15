@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 09:51 UTC
-# Commit: 1dfb7152c63d28b59995e5bc18928007178a3045
+# Generated: 2026-06-15 11:44 UTC
+# Commit: 4c64ea0bfc03383503ba44722f9093331be68a4f
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -9,6 +9,8 @@ package com.armutlu.apporganizer
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.workers.BackupWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -23,6 +25,9 @@ class AppOrganizerApp : Application() {
         FirebaseApp.initializeApp(this)
         val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
+        if (AppPrefs.isAutoBackupEnabled(this)) {
+            BackupWorker.schedule(this)
+        }
     }
 }
 
@@ -6759,6 +6764,67 @@ class MainActivity : ComponentActivity() {
 }
 
 ========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/components/ColorPickerDialog.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.github.skydoves.colorpicker.compose.*
+
+@Composable
+fun ColorPickerDialog(
+    initialColor: Color,
+    onColorSelected: (Color) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val controller = rememberColorPickerController()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Renk Seç") },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                HsvColorPicker(
+                    modifier = Modifier.fillMaxWidth().height(250.dp),
+                    controller = controller,
+                    initialColor = initialColor
+                )
+                Spacer(Modifier.height(8.dp))
+                BrightnessSlider(
+                    modifier = Modifier.fillMaxWidth().height(35.dp),
+                    controller = controller
+                )
+                Spacer(Modifier.height(8.dp))
+                AlphaSlider(
+                    modifier = Modifier.fillMaxWidth().height(35.dp),
+                    controller = controller
+                )
+                Spacer(Modifier.height(8.dp))
+                AlphaTile(
+                    modifier = Modifier.fillMaxWidth().height(35.dp),
+                    controller = controller
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onColorSelected(controller.selectedColor.value)
+                onDismiss()
+            }) { Text("Uygula") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("İptal") }
+        }
+    )
+}
+
+========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AllAppsDrawer.kt
 ========================================
 package com.armutlu.apporganizer.presentation.ui.launcher
@@ -9169,6 +9235,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.GenericShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9218,6 +9286,7 @@ fun FolderTile(
     folderCountVisible: Boolean = true,
     folderSwipeHintEnabled: Boolean = true,
     notifTextEnabled: Boolean = false,
+    folderShape: String = "circle",
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -9281,11 +9350,22 @@ fun FolderTile(
             runCatching { Color(android.graphics.Color.parseColor(hex)) }
                 .getOrDefault(Color.White)
         }
+        val tileShape = when (folderShape) {
+            "square"   -> RoundedCornerShape(0.dp)
+            "rounded"  -> RoundedCornerShape(16.dp)
+            "triangle" -> GenericShape { size, _ ->
+                moveTo(size.width / 2f, 0f)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+                close()
+            }
+            else -> CircleShape // "circle"
+        }
         Box {
         Box(
             modifier = Modifier
                 .size(circleSize)
-                .clip(CircleShape)
+                .clip(tileShape)
                 .background(catColor.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
         ) {
@@ -9770,6 +9850,7 @@ fun HomeScreen(
     var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -9816,6 +9897,8 @@ fun HomeScreen(
                     folderSwipeHint = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
+                    folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -9854,7 +9937,7 @@ fun HomeScreen(
     LaunchedEffect(allAppsOpen) {
         if (allAppsOpen) {
             swipeLock = true
-            delay(300)
+            delay(150)
             swipeLock = false
         }
     }
@@ -9964,45 +10047,45 @@ fun HomeScreen(
                 else Modifier
             )
             .nestedScroll(nestedScrollConnection)
-            .pointerInput(allAppsOpen) {
-                if (!allAppsOpen) {
-                    detectTapGestures(
-                        onDoubleTap = {
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             viewModel.openAllApps()
-                        },
-                        onLongPress = {
+                        }
+                    },
+                    onLongPress = {
+                        if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             homeLongPressOpen = true
                         }
-                    )
-                }
+                    }
+                )
             }
-            .pointerInput(allAppsOpen) {
-                if (!allAppsOpen) {
-                    var accumulated = 0f
-                    var dragStartY = 0f
-                    // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
-                    val gestureZonePx = with(density) { 80.dp.toPx() }
-                    detectVerticalDragGestures(
-                        onDragStart = { offset ->
-                            dragStartY = offset.y
-                            accumulated = 0f
-                        },
-                        onDragEnd = { accumulated = 0f },
-                        onDragCancel = { accumulated = 0f },
-                        onVerticalDrag = { _, dragAmount ->
-                            if (dragStartY < size.height - gestureZonePx) {
-                                accumulated += dragAmount
-                                if (!swipeLock && accumulated < -120f) {
-                                    accumulated = 0f
-                                    AppAnalytics.allAppsOpened()
-                                    viewModel.openAllApps()
-                                }
+            .pointerInput(Unit) {
+                var accumulated = 0f
+                var dragStartY = 0f
+                // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
+                val gestureZonePx = with(density) { 80.dp.toPx() }
+                detectVerticalDragGestures(
+                    onDragStart = { offset ->
+                        dragStartY = offset.y
+                        accumulated = 0f
+                    },
+                    onDragEnd = { accumulated = 0f },
+                    onDragCancel = { accumulated = 0f },
+                    onVerticalDrag = { _, dragAmount ->
+                        if (!currentAllAppsOpen && dragStartY < size.height - gestureZonePx) {
+                            accumulated += dragAmount
+                            if (!swipeLock && accumulated < -120f) {
+                                accumulated = 0f
+                                AppAnalytics.allAppsOpened()
+                                viewModel.openAllApps()
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
     ) {
         Column(
@@ -10125,6 +10208,7 @@ fun HomeScreen(
                         folderCountVisible = folderCountVisible,
                         folderSwipeHintEnabled = folderSwipeHint,
                         notifTextEnabled = notifTextEnabled,
+                        folderShape = folderShape,
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(
@@ -13486,6 +13570,13 @@ internal enum class OnboardingStep(
         buttonLabel = "Varsayılan Yap",
         why = "Launcher olarak ayarlanmadan ana ekran gösterilmez."
     ),
+    CLASSIFY_MODE(
+        title = "Nasıl Sınıflandıralım?",
+        description = "Uygulamalarını kategoriye veya üreticiye göre gruplayabiliriz.",
+        icon = Icons.Default.Category,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
     DONE(
         title = "Hazırsınız!",
         description = "AppOrganizer kurulumu tamamlandı. İyi kullanımlar!",
@@ -13546,7 +13637,7 @@ fun OnboardingScreen(
         OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
         OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
         OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
-        OnboardingStep.THEME_SELECT, OnboardingStep.SET_LAUNCHER, OnboardingStep.DONE,
+        OnboardingStep.THEME_SELECT, OnboardingStep.SET_LAUNCHER, OnboardingStep.CLASSIFY_MODE, OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
 
@@ -13690,6 +13781,48 @@ fun OnboardingScreen(
                 )
             }
 
+            if (currentStep == OnboardingStep.CLASSIFY_MODE) {
+                Spacer(Modifier.height(8.dp))
+                val classifyOptions = listOf(
+                    "category"     to ("Kategoriye Göre" to "Sosyal Medya, Oyunlar, Finans..."),
+                    "manufacturer" to ("Üreticiye Göre"  to "Google, Samsung, Microsoft...")
+                )
+                var selectedClassify by remember {
+                    mutableStateOf(if (com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(context)) "manufacturer" else "category")
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    classifyOptions.forEach { (key, pair) ->
+                        val (title, subtitle) = pair
+                        val isSelected = selectedClassify == key
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (isSelected) Color(0xFF00897B).copy(0.3f)
+                                    else Color.White.copy(0.08f)
+                                )
+                                .border(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) Color(0xFF00897B) else Color.White.copy(0.2f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .clickable {
+                                    selectedClassify = key
+                                    com.armutlu.apporganizer.utils.AppPrefs.setManufacturerClassifyEnabled(context, key == "manufacturer")
+                                }
+                                .padding(16.dp)
+                        ) {
+                            Column {
+                                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.White)
+                                Spacer(Modifier.height(4.dp))
+                                Text(subtitle, fontSize = 13.sp, color = Color.White.copy(0.7f))
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(8.dp))
 
             // ── Ana buton ────────────────────────────────────────────────
@@ -13816,6 +13949,7 @@ private fun handleOnboardingStep(
         OnboardingStep.NAV_HIDE       -> { AppPrefs.setNavButtonsHidden(context, navHideEnabled); onNextStep() }
         OnboardingStep.THEME_SELECT   -> { scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }; onNextStep() }
         OnboardingStep.SET_LAUNCHER   -> if (launcherSet) onNextStep() else onRequestRole()
+        OnboardingStep.CLASSIFY_MODE  -> onNextStep()
         OnboardingStep.DONE           -> {
             context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                 .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
@@ -14177,6 +14311,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.presentation.ui.components.ColorPickerDialog
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
@@ -14273,6 +14408,7 @@ fun SettingsAppearanceSection(
                     0xFF1A1025.toInt() to "Derin Mor"
                 )
                 var selectedBgColor by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
+                var showBgColorPicker by remember { mutableStateOf(false) }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(bgColors) { (colorInt, colorLabel) ->
                         val isSelected = selectedBgColor == colorInt
@@ -14306,6 +14442,34 @@ fun SettingsAppearanceSection(
                             )
                         }
                     }
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { showBgColorPicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Özel Renk", fontSize = 13.sp) }
+                if (showBgColorPicker) {
+                    ColorPickerDialog(
+                        initialColor = Color(selectedBgColor),
+                        onColorSelected = { color ->
+                            val colorInt = android.graphics.Color.argb(
+                                (color.alpha * 255).toInt(),
+                                (color.red * 255).toInt(),
+                                (color.green * 255).toInt(),
+                                (color.blue * 255).toInt()
+                            )
+                            selectedBgColor = colorInt
+                            com.armutlu.apporganizer.utils.AppPrefs.setBgColor(context, colorInt)
+                            val hex = "#%06X".format(colorInt and 0xFFFFFF)
+                            scope.launch {
+                                runCatching {
+                                    com.armutlu.apporganizer.utils.WallpaperHelper.applyColorWallpaper(context, hex)
+                                    com.armutlu.apporganizer.utils.AppPrefs.setBgType(context, "wallpaper_color")
+                                }
+                            }
+                        },
+                        onDismiss = { showBgColorPicker = false }
+                    )
                 }
             }
             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
@@ -14353,6 +14517,7 @@ fun SettingsAppearanceSection(
                 "#EF9A9A" to "Pembe"
             )
             var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+            var showLabelColorPicker by remember { mutableStateOf(false) }
             Text("Yazi Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -14376,6 +14541,30 @@ fun SettingsAppearanceSection(
                             }
                     )
                 }
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { showLabelColorPicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Özel Renk", fontSize = 13.sp) }
+            if (showLabelColorPicker) {
+                val initialColor = runCatching {
+                    Color(android.graphics.Color.parseColor(selectedLabel))
+                }.getOrDefault(Color.White)
+                ColorPickerDialog(
+                    initialColor = initialColor,
+                    onColorSelected = { color ->
+                        val hex = "#%02X%02X%02X%02X".format(
+                            (color.alpha * 255).toInt(),
+                            (color.red * 255).toInt(),
+                            (color.green * 255).toInt(),
+                            (color.blue * 255).toInt()
+                        ).let { "#%06X".format(android.graphics.Color.parseColor(it) and 0xFFFFFF) }
+                        selectedLabel = hex
+                        com.armutlu.apporganizer.utils.AppPrefs.setLabelColor(context, hex)
+                    },
+                    onDismiss = { showLabelColorPicker = false }
+                )
             }
         }
     }
@@ -14419,6 +14608,71 @@ fun SettingsAppearanceSection(
                                     else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Klasör Şekli ──────────────────────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        var folderShape by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
+        SettingsCard {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Klasör Şekli", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                val shapeOptions = listOf(
+                    "circle"   to "Daire",
+                    "rounded"  to "Yumuşak",
+                    "square"   to "Kare",
+                    "triangle" to "Üçgen"
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    shapeOptions.forEach { (key, label) ->
+                        val selected = folderShape == key
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clickable {
+                                    folderShape = key
+                                    com.armutlu.apporganizer.utils.AppPrefs.setFolderShape(context, key)
+                                }
+                                .padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(
+                                        when (key) {
+                                            "square"   -> RoundedCornerShape(0.dp)
+                                            "rounded"  -> RoundedCornerShape(12.dp)
+                                            "triangle" -> RoundedCornerShape(4.dp)
+                                            else       -> CircleShape
+                                        }
+                                    )
+                                    .background(
+                                        if (selected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                    .border(
+                                        width = if (selected) 2.dp else 1.dp,
+                                        color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        shape = when (key) {
+                                            "square"   -> RoundedCornerShape(0.dp)
+                                            "rounded"  -> RoundedCornerShape(12.dp)
+                                            else       -> CircleShape
+                                        }
+                                    )
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                label,
+                                fontSize = 10.sp,
+                                textAlign = TextAlign.Center,
+                                color = if (selected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -14663,6 +14917,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.workers.BackupWorker
 import kotlinx.coroutines.launch
 
 /**
@@ -14704,7 +14959,23 @@ internal fun LazyListScope.settingsBackupAboutSection(
                     Text("Otomatik Yedekleme", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Text("Uygulama açıldığında otomatik JSON yedeği al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = autoBackup, onCheckedChange = { autoBackup = it; AppPrefs.setAutoBackupEnabled(context, it) })
+                Switch(checked = autoBackup, onCheckedChange = {
+                    autoBackup = it
+                    AppPrefs.setAutoBackupEnabled(context, it)
+                    if (it) BackupWorker.schedule(context) else BackupWorker.cancel(context)
+                })
+            }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            val lastBackupMs = AppPrefs.getLastBackupTime(context)
+            val lastBackupText = if (lastBackupMs == 0L) "Henüz yedeklenmedi"
+                else java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale("tr")).format(java.util.Date(lastBackupMs))
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.History, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text("Son yedekleme: $lastBackupText", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Yedekleme zamanı: Pazartesi 03:00", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }
@@ -15676,18 +15947,6 @@ fun SettingsScreen(
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {
-                    var manufacturerClassify by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(context)) }
-                    SettingsSwitchRow(
-                        icon = Icons.Default.PhoneAndroid,
-                        title = "Üretici Sınıflandırması",
-                        subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilendir",
-                        checked = manufacturerClassify,
-                        onCheckedChange = {
-                            manufacturerClassify = it
-                            com.armutlu.apporganizer.utils.AppPrefs.setManufacturerClassifyEnabled(context, it)
-                        }
-                    )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
                         title = "Sınıflandırılmamışları Sınıflandır",
@@ -15885,6 +16144,8 @@ fun SettingsScreen(
                         Switch(checked = autoBackup, onCheckedChange = {
                             autoBackup = it
                             com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, it)
+                            if (it) com.armutlu.apporganizer.workers.BackupWorker.schedule(context)
+                            else com.armutlu.apporganizer.workers.BackupWorker.cancel(context)
                         })
                     }
                 }
@@ -17037,6 +17298,11 @@ object AppPrefs {
     fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
     fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
 
+    // Klasör şekli — "circle", "rounded", "square", "triangle"
+    const val KEY_FOLDER_SHAPE = "folder_shape"
+    fun getFolderShape(context: Context): String = prefs(context).getString(KEY_FOLDER_SHAPE, "circle") ?: "circle"
+    fun setFolderShape(context: Context, shape: String) = prefs(context).edit().putString(KEY_FOLDER_SHAPE, shape).apply()
+
     // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
     const val KEY_FOLDER_SIZE = "folder_size_dp"
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
@@ -17180,6 +17446,11 @@ object AppPrefs {
     fun setBackupHour(context: Context, hour: Int) = prefs(context).edit().putInt(KEY_BACKUP_HOUR, hour).apply()
     fun getBackupMinute(context: Context): Int = prefs(context).getInt(KEY_BACKUP_MINUTE, 0)
     fun setBackupMinute(context: Context, minute: Int) = prefs(context).edit().putInt(KEY_BACKUP_MINUTE, minute).apply()
+
+    // Son yedekleme zamanı (epoch ms, 0 = hiç yedeklenmedi)
+    const val KEY_LAST_BACKUP_TIME = "last_backup_time"
+    fun getLastBackupTime(context: Context): Long = prefs(context).getLong(KEY_LAST_BACKUP_TIME, 0L)
+    fun setLastBackupTime(context: Context, ms: Long) = prefs(context).edit().putLong(KEY_LAST_BACKUP_TIME, ms).apply()
 
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
@@ -18451,6 +18722,55 @@ object UsageStatsHelper {
 }
 
 ========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/utils/WallpaperHelper.kt
+========================================
+package com.armutlu.apporganizer.utils
+
+import android.app.WallpaperManager
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Shader
+import androidx.core.graphics.toColorInt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+object WallpaperHelper {
+
+    suspend fun applyColorWallpaper(context: Context, hexColor: String) = withContext(Dispatchers.IO) {
+        val wm = WallpaperManager.getInstance(context)
+        val width = wm.desiredMinimumWidth.takeIf { it > 0 } ?: 1080
+        val height = wm.desiredMinimumHeight.takeIf { it > 0 } ?: 1920
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint().apply { color = hexColor.toColorInt() }
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+        wm.setBitmap(bitmap)
+        bitmap.recycle()
+    }
+
+    suspend fun applyGradientWallpaper(context: Context, startHex: String, endHex: String) = withContext(Dispatchers.IO) {
+        val wm = WallpaperManager.getInstance(context)
+        val width = wm.desiredMinimumWidth.takeIf { it > 0 } ?: 1080
+        val height = wm.desiredMinimumHeight.takeIf { it > 0 } ?: 1920
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint().apply {
+            shader = LinearGradient(
+                0f, 0f, 0f, height.toFloat(),
+                startHex.toColorInt(), endHex.toColorInt(),
+                Shader.TileMode.CLAMP
+            )
+        }
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+        wm.setBitmap(bitmap)
+        bitmap.recycle()
+    }
+}
+
+========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/utils/WidgetHostManager.kt
 ========================================
 package com.armutlu.apporganizer.utils
@@ -18586,6 +18906,7 @@ class BackupWorker(
             val file = File(applicationContext.filesDir, "auto_backup.json")
             file.writeText(json)
             Timber.d("Otomatik yedekleme tamamlandi: ${file.absolutePath}")
+            com.armutlu.apporganizer.utils.AppPrefs.setLastBackupTime(applicationContext, System.currentTimeMillis())
             Result.success()
         }.getOrElse { e ->
             Timber.e(e, "Otomatik yedekleme hatasi")
