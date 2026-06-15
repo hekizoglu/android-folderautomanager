@@ -7,6 +7,15 @@
 
 ## Aktif Sorunlar
 
+### [CS-3] Gradle `merged_res` / `packaged_res` Kilidi (Tekrarlayan)
+**Tarih:** 2026-06-16 | **Durum:** Workaround mevcut (full clean), kök çözüm eksik
+**Sorun:** Monochrome icon eklenmesi sonrası `mergeDebugResources` her değişiklikte `intermediates/packaged_res` ve `incremental/debug/mergeDebugResources` dizinlerini kilitliyor. Mevcut Defender exclusion `app\build` kökünü kapsıyor ama `intermediates` alt dizinleri yeniden oluşturunca taranıyor.
+**Çözüm adayı:** Admin PS'de şunu ekle:
+```powershell
+Add-MpPreference -ExclusionPath "C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates"
+```
+**Kullanıcıdan beklenen:** Admin PowerShell'de yukarıdaki komutu çalıştır.
+
 ### [CS-1] HISTORY.md Arrow Karakteri (→) Tam Kurtarılamadı
 **Tarih:** 2026-06-16 | **Durum:** Kısmi çözüm
 **Sorun:** HISTORY.md 3+ tur encode zincirinden geçmiş. `→` işareti `->` olarak düzeltildi ama bilgi kaybı yok.

@@ -61,3 +61,7 @@
 | 2026-06-16 | Döngü 71 | BUILD | ~5dk | ORTAM | kapt3 kilitli — daemon dur + robocopy purge (2 kez) | Hâlâ kilit var, Defender exclusion olmadan devam ediyor |
 | 2026-06-16 | Döngü 71 | BUILD | ~4dk | BUILD | assembleDebug SUCCESS — 3m 42s | Room schemas/ oluştu (8.json), 24.1 MB APK |
 | 2026-06-16 | Döngü 72 | BUILD | **3s** | BUILD | assembleDebug SUCCESS — 3s (cache+Defender exclusion) | Önceki: 3m 42s → 3s = **74x hızlanma** |
+| 2026-06-16 | Döngü 73 | KOD | 2dk | KOD | Edge-to-Edge MainActivity | Build 33s |
+| 2026-06-16 | Döngü 74-77 | KOD | 5dk | KOD | Predictive Back kontrol + LeakCanary + dataExtr + monochrome | Hızlı — build yok |
+| 2026-06-16 | Döngü 78 | BUILD | ~12dk | BUILD+ORTAM | BUILD 4m23s — res kilit 2 kez tam clean | monochrome icon res merge kilit |
+| 2026-06-16 | Döngü 79 | KOD | ~8dk | KOD+BUILD | Fuzzy arama + kategori alfa + BUILD 3m21s | res kilit 1 kez full clean |
