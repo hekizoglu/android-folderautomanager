@@ -84,6 +84,24 @@ private val BadgeYellow   = Color(0xFFFDD835)
 private const val SWIPE_DOWN_THRESHOLD = 90f
 
 // ── Yardımcı fonksiyonlar ─────────────────────────────────────────────────────
+
+// Levenshtein edit distance — fuzzy arama için (telegrab -> telegram: dist=1)
+// Maksimum karşılaştırılan uzunluk 20 char ile sınırlı (performans)
+private fun fuzzyEditDistance(a: String, b: String): Int {
+    val s = a.take(20); val t = b.take(20)
+    if (s == t) return 0
+    if (s.isEmpty()) return t.length
+    if (t.isEmpty()) return s.length
+    val dp = Array(s.length + 1) { IntArray(t.length + 1) { 0 } }
+    for (i in 0..s.length) dp[i][0] = i
+    for (j in 0..t.length) dp[0][j] = j
+    for (i in 1..s.length) for (j in 1..t.length) {
+        dp[i][j] = if (s[i-1] == t[j-1]) dp[i-1][j-1]
+        else 1 + minOf(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+    }
+    return dp[s.length][t.length]
+}
+
 fun formatBytes(bytes: Long): String = when {
     bytes <= 0          -> "—"
     bytes < 1_048_576   -> "${bytes / 1024} KB"
@@ -677,10 +695,25 @@ fun AllAppsDrawer(
             val base = if (searchQuery.isBlank()) afterFilter
             else {
                 val q = searchQuery.lowercase(trLocale)
-                val exact = afterFilter.filter { it.appName.lowercase(trLocale) == q }
-                val starts = afterFilter.filter { val n = it.appName.lowercase(trLocale); n.startsWith(q) && n != q }
-                val contains = afterFilter.filter { val n = it.appName.lowercase(trLocale); n.contains(q) && !n.startsWith(q) }
-                exact + starts + contains
+                val exact    = mutableListOf<AppInfo>()
+                val starts   = mutableListOf<AppInfo>()
+                val contains = mutableListOf<AppInfo>()
+                val fuzzy    = mutableListOf<Pair<AppInfo, Int>>() // (app, editDistance)
+                for (app in afterFilter) {
+                    val n = app.appName.lowercase(trLocale)
+                    when {
+                        n == q            -> exact.add(app)
+                        n.startsWith(q)   -> starts.add(app)
+                        n.contains(q)     -> contains.add(app)
+                        else -> {
+                            // Fuzzy: her kelimeye karşı en kısa edit distance
+                            val dist = n.split(" ").minOf { fuzzyEditDistance(it, q) }
+                            if (dist <= maxOf(1, q.length / 4))
+                                fuzzy.add(app to dist)
+                        }
+                    }
+                }
+                exact + starts + contains + fuzzy.sortedBy { it.second }.map { it.first }
             }
             when (sortMode) {
                 AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }

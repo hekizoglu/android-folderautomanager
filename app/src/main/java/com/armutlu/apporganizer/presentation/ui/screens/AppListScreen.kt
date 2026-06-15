@@ -178,7 +178,7 @@ fun AppListScreen(
                         onClick = { viewModel.setSelectedCategory("all") }
                     )
                 }
-                items(screenState.categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }, key = { it.categoryId }) { cat ->
+                items(screenState.categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }.sortedBy { it.categoryName.lowercase(java.util.Locale("tr")) }, key = { it.categoryId }) { cat ->
                     val cnt = screenState.apps.count { it.categoryId == cat.categoryId }
                     if (cnt > 0) {
                         CategoryChip(

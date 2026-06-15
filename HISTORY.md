@@ -945,3 +945,8 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** D74 Predictive Back zaten vardı; D75 LeakCanary 2.14 eklendi; D76 dataExtractionRules güncellendi; D77 ic_launcher_monochrome oluşturuldu; D78 BUILD 4m23s (temiz build - kilit 1 kez)
 **Build:** SUCCESS 24.8 MB — monochrome icon res merge kilidi çıktı, full clean ile aşıldı
 **Sonraki:** Fuzzy arama (typo toleranslı) + harcananvakit.md otomatik güncelleme + Ayarlar talep formu
+
+## Döngü 79 — 2026-06-16 (KOD)
+**Yapılanlar:** AllAppsDrawer fuzzy arama (Levenshtein, telegrab->telegram mesafe=1); kategori listesi alfabetik sıralama (AppListScreen); BUILD 3m21s temiz
+**Build:** SUCCESS 24.8 MB — res kilit tekrarladı (Defender exclusion kısmi), full clean 1 kez
+**Sonraki:** merged_res kilit için Defender exclusion genişlet + Ayarlar Talep Formu
