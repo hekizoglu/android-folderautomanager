@@ -34,10 +34,10 @@ fun CategoryEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Categories") },
+                title = { Text("Kategoriler") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Geri")
                     }
                 }
             )
@@ -46,7 +46,7 @@ fun CategoryEditorScreen(
             FloatingActionButton(
                 onClick = { showAddDialog = true }
             ) {
-                Icon(Icons.Default.Add, "Add category")
+                Icon(Icons.Default.Add, "Kategori ekle")
             }
         }
     ) { paddingValues ->
@@ -116,7 +116,7 @@ fun CategoryItem(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = "$appCount apps",
+                    text = "$appCount uygulama",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -135,7 +135,7 @@ fun CategoryItem(
             // Edit button
             if (!category.isSystemCategory) {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, "Edit")
+                    Icon(Icons.Default.Edit, "Düzenle")
                 }
             }
         }
@@ -155,19 +155,19 @@ fun AddCategoryDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Category") },
+        title = { Text("Kategori Ekle") },
         text = {
             Column {
                 OutlinedTextField(
                     value = categoryName,
                     onValueChange = { categoryName = it },
-                    label = { Text("Category name") },
+                    label = { Text("Kategori adı") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
                 )
                 
-                Text("Select emoji:", style = MaterialTheme.typography.labelMedium)
+                Text("Emoji seç:", style = MaterialTheme.typography.labelMedium)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -193,12 +193,12 @@ fun AddCategoryDialog(
                     }
                 }
             ) {
-                Text("Add")
+                Text("Ekle")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("İptal")
             }
         }
     )
