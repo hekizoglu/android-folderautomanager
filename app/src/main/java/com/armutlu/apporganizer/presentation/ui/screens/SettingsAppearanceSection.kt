@@ -45,7 +45,7 @@ fun SettingsAppearanceSection(
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Renk Temasi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(AppTheme.entries.toList()) { theme ->
+                items(AppTheme.entries.toList(), key = { it.name }) { theme ->
                     val isSelected = currentTheme == theme
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -74,7 +74,7 @@ fun SettingsAppearanceSection(
                     }
                 }
             }
-            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             Text("Yazi Tipi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppFont.entries.forEach { font ->
@@ -107,7 +107,7 @@ fun SettingsAppearanceSection(
                 }
             }
             if (bgType == "solid") {
-                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                 Text("Arka Plan Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
                 val bgColors = listOf(
                     0xFF1A1A2E.toInt() to "Koyu Lacivert",
@@ -120,7 +120,7 @@ fun SettingsAppearanceSection(
                 var selectedBgColor by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
                 var showBgColorPicker by remember { mutableStateOf(false) }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(bgColors) { (colorInt, colorLabel) ->
+                    items(bgColors, key = { (colorInt, _) -> colorInt }) { (colorInt, colorLabel) ->
                         val isSelected = selectedBgColor == colorInt
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,7 +182,7 @@ fun SettingsAppearanceSection(
                     )
                 }
             }
-            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Yazi Opaklik", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
@@ -231,7 +231,7 @@ fun SettingsAppearanceSection(
             Text("Yazi Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(labelColorPresets) { (hex, _) ->
+                items(labelColorPresets, key = { (hex, _) -> hex }) { (hex, _) ->
                     val color = runCatching {
                         Color(android.graphics.Color.parseColor(hex))
                     }.getOrDefault(Color.White)

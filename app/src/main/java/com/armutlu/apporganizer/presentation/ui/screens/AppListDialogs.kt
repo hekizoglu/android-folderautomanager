@@ -28,7 +28,7 @@ internal fun BulkCategoryPicker(
         title = { Text("Kategori Seç") },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }, key = { it.categoryId }) { cat ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -48,29 +48,6 @@ internal fun BulkCategoryPicker(
     )
 }
 
-// ── Eski uyumluluk — LauncherOrganizeDialog artık kullanılmıyor ────────────
-
-@Composable
-internal fun LauncherOrganizeDialog(
-    launcherType: String,
-    organizeState: OrganizeState,
-    a11yConnected: Boolean,
-    a11yInSystem: Boolean,
-    onOrganize: (Boolean) -> Unit,
-    onOpenA11ySettings: () -> Unit,
-    onRestart: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Otomatik Organize") },
-        text = { Text("Uygulamalar launcher'da otomatik olarak kategorilere göre klasörlenecek.") },
-        confirmButton = {
-            Button(onClick = { onOrganize(false); onDismiss() }) { Text("Başlat") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } }
-    )
-}
 
 sealed class OrganizeState {
     object Idle : OrganizeState()

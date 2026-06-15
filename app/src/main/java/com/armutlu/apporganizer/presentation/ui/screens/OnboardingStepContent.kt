@@ -156,7 +156,7 @@ internal fun OnboardingThemeSelector(
     Text("Renk Teması", fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
     Spacer(Modifier.height(8.dp))
     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(AppTheme.entries) { theme ->
+        items(AppTheme.entries, key = { it.name }) { theme ->
             val isSelected = selectedTheme == theme
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

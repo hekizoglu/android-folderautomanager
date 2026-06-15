@@ -221,7 +221,7 @@ internal fun CategoryPickerDialog(
         title = { Text("Kategori Seç — ${app.appName}") },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }, key = { it.categoryId }) { cat ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = if (app.categoryId == cat.categoryId)

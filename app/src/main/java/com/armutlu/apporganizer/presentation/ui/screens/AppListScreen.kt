@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -122,7 +123,7 @@ fun AppListScreen(
                         Text("Tümünü Seç")
                     }
                     TextButton(onClick = { showBulkCategory = true }, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.DriveFileMove, null)
+                        Icon(Icons.AutoMirrored.Filled.DriveFileMove, null)
                         Spacer(Modifier.width(4.dp))
                         Text("Kategori Değiştir")
                     }
@@ -177,7 +178,7 @@ fun AppListScreen(
                         onClick = { viewModel.setSelectedCategory("all") }
                     )
                 }
-                items(screenState.categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }) { cat ->
+                items(screenState.categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }, key = { it.categoryId }) { cat ->
                     val cnt = screenState.apps.count { it.categoryId == cat.categoryId }
                     if (cnt > 0) {
                         CategoryChip(
@@ -191,7 +192,7 @@ fun AppListScreen(
                 }
             }
 
-            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
             // İçerik
             when {

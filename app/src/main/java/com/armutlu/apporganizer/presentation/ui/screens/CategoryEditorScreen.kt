@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,7 +37,7 @@ fun CategoryEditorScreen(
                 title = { Text("Categories") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 }
             )
@@ -62,7 +62,7 @@ fun CategoryEditorScreen(
                     .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(screenState.categories) { category ->
+                items(screenState.categories, key = { it.categoryId }) { category ->
                     CategoryItem(
                         category = category,
                         appCount = screenState.countAppsByCategory(category.categoryId),
@@ -79,7 +79,7 @@ fun CategoryEditorScreen(
     if (showAddDialog) {
         AddCategoryDialog(
             onDismiss = { showAddDialog = false },
-            onAdd = { name, emoji ->
+            onAdd = { name, _ ->
                 Timber.d("Add category: $name")
                 showAddDialog = false
             }

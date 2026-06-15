@@ -344,3 +344,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Yok
 **CLAUDE.md/LEARNINGS.md:** Güncelleme yok
 **Sonraki:** Döngü 51 — Yeni özellik: ROADMAP backlog'undan bir görev seç (LazyColumn key audit veya StateFlow migrasyonu)
+
+## Döngü 51 — 20:06 [KOD]
+**Yapılanlar:** LazyColumn key audit — 7 dosyada key parametresi eklendi (AppListComponents, AppListDialogs, CategoryEditorScreen, AppListScreen, SettingsAppearanceSection, OnboardingStepContent). Deprecation fix: DriveFileMove+ArrowBack AutoMirrored, Divider→HorizontalDivider. LauncherOrganizeDialog (kullanılmayan) silindi. 0 uyarı.
+**Agent:** Explore — LazyColumn key audit (14 eksik bulundu, 7 düzeltildi, 7 enum/sayı önemsiz)
+**CLAUDE.md/LEARNINGS.md:** Güncelleme yok
+**Sonraki:** Döngü 52 — BUILD döngüsü (48+6=54, bir sonraki 54. döngü; 52. döngü KOD)
