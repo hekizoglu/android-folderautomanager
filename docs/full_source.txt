@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 17:06 UTC
-# Commit: 6df48e6aa46747b64da7bf53681123255ab06a66
+# Generated: 2026-06-15 17:26 UTC
+# Commit: 1925126dedc435f0aae38e46e1cf4cba60132309
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -1663,7 +1663,6 @@ class AppClassifier @Inject constructor() {
         "com.meta"                              to Category.CAT_META,
         "com.facebook"                          to Category.CAT_META,
         "com.instagram"                         to Category.CAT_META,
-        "com.whatsapp"                          to Category.CAT_META,
         // Spotify
         "com.spotify"                           to Category.CAT_SPOTIFY,
         // Amazon
