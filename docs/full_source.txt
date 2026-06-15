@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 20:45 UTC
-# Commit: ad7457e77fd86011db30ee4d2bee643e097f7079
+# Generated: 2026-06-15 21:05 UTC
+# Commit: e1cccd3537287d39b46257fb3e2b92cf57d90a3d
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -1851,7 +1851,6 @@ class AppClassifier @Inject constructor() {
         "com.etsy.android"                           to Category.CAT_SHOPPING,
         "com.walmart.android"                        to Category.CAT_SHOPPING,
         "com.target.ui"                              to Category.CAT_SHOPPING,
-        "com.vinted.android"                         to Category.CAT_SHOPPING,
         "com.depop"                                  to Category.CAT_SHOPPING,
         "com.poshmark.app"                           to Category.CAT_SHOPPING,
         "com.lazada.android"                         to Category.CAT_SHOPPING,
@@ -2086,17 +2085,8 @@ class AppClassifier @Inject constructor() {
         // â"€â"€ UTILITIES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.android.chrome"                         to Category.CAT_UTILITIES,
         "org.mozilla.firefox"                        to Category.CAT_UTILITIES,
-        "com.opera.browser"                          to Category.CAT_UTILITIES,
-        "com.brave.browser"                          to Category.CAT_UTILITIES,
-        "com.duckduckgo.mobile.android"              to Category.CAT_UTILITIES,
         "com.microsoft.emmx"                         to Category.CAT_UTILITIES,
-        "com.vivaldi.browser"                        to Category.CAT_UTILITIES,
         "org.torproject.torbrowser"                  to Category.CAT_UTILITIES,
-        "com.expressvpn.vpn"                         to Category.CAT_UTILITIES,
-        "com.nordvpn.android"                        to Category.CAT_UTILITIES,
-        "com.surfshark.vpnclient.android"            to Category.CAT_UTILITIES,
-        "com.protonvpn.android"                      to Category.CAT_UTILITIES,
-        "com.mullvad.vpn"                            to Category.CAT_UTILITIES,
         "com.proton.android"                         to Category.CAT_UTILITIES,
         "com.google.android.apps.authenticator2"     to Category.CAT_UTILITIES,
         "com.authy.authy"                            to Category.CAT_UTILITIES,
@@ -2107,8 +2097,6 @@ class AppClassifier @Inject constructor() {
         "com.yandex.translate"                       to Category.CAT_UTILITIES,
         "com.google.android.calculator"              to Category.CAT_UTILITIES,
         "com.speedtest.by.ookla"                     to Category.CAT_UTILITIES,
-        "com.avast.android.mobilesecurity"           to Category.CAT_UTILITIES,
-        "com.bitdefender.security"                   to Category.CAT_UTILITIES,
         "com.kaspersky.kes.android"                  to Category.CAT_UTILITIES,
         "com.windscribe.vpn"                         to Category.CAT_UTILITIES,
 
@@ -2417,7 +2405,6 @@ class AppClassifier @Inject constructor() {
         "com.shareit.alliance"                       to Category.CAT_UTILITIES,
         "com.teamviewer.teamviewer"                  to Category.CAT_UTILITIES,
         "com.anydesk.anydeskandroid"                 to Category.CAT_UTILITIES,
-        "com.opera.mini.native"                      to Category.CAT_UTILITIES,
         "com.UCMobile.intl"                          to Category.CAT_UTILITIES,
         "com.adguard.android"                        to Category.CAT_UTILITIES,
         "com.avira.android"                          to Category.CAT_UTILITIES,
@@ -2431,7 +2418,6 @@ class AppClassifier @Inject constructor() {
         "com.android.vending"                        to Category.CAT_UTILITIES,
         "com.xiaomi.smarthome"                       to Category.CAT_UTILITIES,
         "com.samsung.android.smartthings"            to Category.CAT_HOUSE,
-        "com.philips.lighting.hue"                   to Category.CAT_UTILITIES,
         "com.google.android.apps.barcode"            to Category.CAT_UTILITIES,
         "com.qr.barcode.scanner"                     to Category.CAT_UTILITIES,
 
@@ -2572,7 +2558,6 @@ class AppClassifier @Inject constructor() {
         "com.gap.android"                            to Category.CAT_SHOPPING,
         "com.hm.android"                             to Category.CAT_SHOPPING,
         "com.ikea.kompis"                            to Category.CAT_SHOPPING,
-        "com.mercari.android"                        to Category.CAT_SHOPPING,
         "com.morhipo.android"                        to Category.CAT_SHOPPING,
         "com.migros.android"                         to Category.CAT_SHOPPING,
         "com.bim.bimmarkets"                         to Category.CAT_SHOPPING,
@@ -2645,7 +2630,6 @@ class AppClassifier @Inject constructor() {
         "com.target.android"                         to Category.CAT_SHOPPING,
         "com.shein.android"                          to Category.CAT_SHOPPING,
         "jp.co.rakuten.ichiba"                       to Category.CAT_SHOPPING,
-        "com.poshmark.android"                       to Category.CAT_SHOPPING,
         "com.depop.depop"                            to Category.CAT_SHOPPING,
         // Global Seyahat
         "com.expedia.bookings"                       to Category.CAT_TRAVEL,
@@ -2753,7 +2737,6 @@ class AppClassifier @Inject constructor() {
         // Global - Araclar ek
         "com.onepassword.android"                    to Category.CAT_UTILITIES,
         "org.keepassxc"                              to Category.CAT_UTILITIES,
-        "com.privateinternetaccess.android"          to Category.CAT_UTILITIES,
         "com.microsoft.bing"                         to Category.CAT_UTILITIES,
         "com.mi.filemanager"                         to Category.CAT_UTILITIES,
         "com.ghisler.android.totalcommander"         to Category.CAT_UTILITIES,
@@ -3103,8 +3086,6 @@ class AppClassifier @Inject constructor() {
         "com.net_a_porter.android"                   to Category.CAT_SHOPPING,
         "com.zalando.android"                        to Category.CAT_SHOPPING,
         "com.aboutyou.android"                       to Category.CAT_SHOPPING,
-        "com.depop.android"                          to Category.CAT_SHOPPING,
-        "com.thredup.android"                        to Category.CAT_SHOPPING,
 
         // FINANCE
         "com.sofi.mobile"                            to Category.CAT_FINANCE,
@@ -3158,7 +3139,6 @@ class AppClassifier @Inject constructor() {
         "com.perplexity.ai"                          to Category.CAT_VIDEO,
         "ai.mistral.android"                         to Category.CAT_UTILITIES,
         "com.cleanmaster.mguard"                     to Category.CAT_UTILITIES,
-        "com.kaspersky.android.antivirus"            to Category.CAT_UTILITIES,
         "com.norton.android"                         to Category.CAT_UTILITIES,
         "com.malwarebytes.android"                   to Category.CAT_UTILITIES,
         "com.totaldefense.android"                   to Category.CAT_UTILITIES,
@@ -3419,12 +3399,8 @@ class AppClassifier @Inject constructor() {
         "air.com.disney.disneymagickingdoms"         to Category.CAT_ENTERTAINMENT,
 
         // SMART HOME / IoT
-        "com.google.android.apps.chromecast.app"     to Category.CAT_UTILITIES,
         "com.sonos.acr"                              to Category.CAT_UTILITIES,
-        "com.nest.android"                           to Category.CAT_UTILITIES,
         "com.ring.answer"                            to Category.CAT_UTILITIES,
-        "com.arlo.android"                           to Category.CAT_UTILITIES,
-        "com.wyze.android"                           to Category.CAT_UTILITIES,
         "com.eufy.home"                              to Category.CAT_HOUSE,
         "com.tuya.smart"                             to Category.CAT_HOUSE,
         "com.mi.global.smarthome"                    to Category.CAT_UTILITIES,
@@ -3669,14 +3645,11 @@ class AppClassifier @Inject constructor() {
         "com.twilio.authy"                           to Category.CAT_COMMUNICATION,
 
         // Loop 57 — Smart Home & IoT
-        "com.amazon.echo"                            to Category.CAT_UTILITIES,
         "com.philips.lighting.hue2"                  to Category.CAT_UTILITIES,
         "com.tuya.smartlife"                         to Category.CAT_HOUSE,
         "com.mihome.android"                         to Category.CAT_UTILITIES,
-        "com.ring.android"                           to Category.CAT_UTILITIES,
         "com.tplink.android"                         to Category.CAT_HOUSE,
         "com.netgear.android"                        to Category.CAT_UTILITIES,
-        "com.idevices.android"                       to Category.CAT_UTILITIES,
 
         // Loop 57 — Kids & Family
         "com.pinkfong.app.babyshark"                 to Category.CAT_EDUCATION,
@@ -4109,16 +4082,12 @@ class AppClassifier @Inject constructor() {
         "com.citizen.android"                        to Category.CAT_SOCIAL,
 
         // Loop 64 — Environment & Sustainability
-        "com.goodonyou.android"                      to Category.CAT_SHOPPING,
         "com.tentree.android"                        to Category.CAT_SHOPPING,
-        "com.ecosia.android"                         to Category.CAT_UTILITIES,
         "org.kiwix.kiwimobile"                       to Category.CAT_EDUCATION,
         "com.joulebug.android"                       to Category.CAT_UTILITIES,
-        "com.oroeco.android"                         to Category.CAT_UTILITIES,
         "com.pawprint.android"                       to Category.CAT_UTILITIES,
         "com.klima.android"                          to Category.CAT_UTILITIES,
         "com.earthhero.android"                      to Category.CAT_UTILITIES,
-        "com.patch.android"                          to Category.CAT_UTILITIES,
 
         // Loop 64 — Accessibility & Assistive Tech
         "com.google.android.apps.talkback"           to Category.CAT_UTILITIES,
@@ -4149,12 +4118,10 @@ class AppClassifier @Inject constructor() {
         // Loop 64 — Browser & Internet Tools
         "org.mozilla.firefox_beta"                   to Category.CAT_UTILITIES,
         "com.opera.gx.mobile"                        to Category.CAT_GAMES,
-        "com.kiwibrowser.browser"                    to Category.CAT_UTILITIES,
         "org.bromite.bromite"                        to Category.CAT_UTILITIES,
         "com.yandex.browser"                         to Category.CAT_UTILITIES,
         "com.microsoft.bing.search"                  to Category.CAT_UTILITIES,
         "com.baidu.browser.inter"                    to Category.CAT_UTILITIES,
-        "com.uc.browser.en"                          to Category.CAT_UTILITIES,
 
         // Loop 64 — Parental Control & Family Safety
         "com.qustodio.android.app"                   to Category.CAT_UTILITIES,
@@ -4166,7 +4133,6 @@ class AppClassifier @Inject constructor() {
         "com.screentime.android"                     to Category.CAT_UTILITIES,
 
         // Loop 64 — Home Automation & Security
-        "com.blink.android"                          to Category.CAT_UTILITIES,
         "com.eufysecurity.android"                   to Category.CAT_UTILITIES,
         "com.reolink.android"                        to Category.CAT_UTILITIES,
         "com.simplisafe.android"                     to Category.CAT_HOUSE,
@@ -4175,7 +4141,6 @@ class AppClassifier @Inject constructor() {
         "com.august.android"                         to Category.CAT_UTILITIES,
         "com.schlage.android"                        to Category.CAT_UTILITIES,
         "com.yale.android"                           to Category.CAT_UTILITIES,
-        "com.ecobee.android"                         to Category.CAT_UTILITIES,
         "com.honeywell.android"                      to Category.CAT_UTILITIES,
 
         // Loop 65 — TR Football Clubs (fan apps = entertainment)
@@ -4983,7 +4948,6 @@ class AppClassifier @Inject constructor() {
         "com.ipvanish.android"                       to Category.CAT_UTILITIES,
         "com.mullvad.android"                        to Category.CAT_UTILITIES,
         "com.windscribe.android"                     to Category.CAT_UTILITIES,
-        "com.tunnelbear.android"                     to Category.CAT_UTILITIES,
         "com.hotspotshield.android"                  to Category.CAT_UTILITIES,
         "com.keepassium.android"                     to Category.CAT_UTILITIES,
         "com.enpass.android"                         to Category.CAT_UTILITIES,
@@ -5620,9 +5584,7 @@ class AppClassifier @Inject constructor() {
         "com.abbyy.mobile.finereader.smartphone"     to Category.CAT_UTILITIES,  // FineReader PDF
 
         // ─── Loop 94: Akilli Ev Ek ───────────────────────────────────────────
-        "com.wemo.android"                           to Category.CAT_HOUSE,      // Wemo Smart Home
         "com.ecobee.android.app"                     to Category.CAT_HOUSE,      // Ecobee thermostat
-        "com.honeywell.lyric"                        to Category.CAT_HOUSE,      // Honeywell Home
         "com.lennox.icomfort"                        to Category.CAT_HOUSE,      // Lennox iComfort
         "com.schlage.home.android"                   to Category.CAT_HOUSE,      // Schlage Home
         "com.kwikset.android"                        to Category.CAT_HOUSE,      // Kwikset Halo
@@ -5871,6 +5833,75 @@ class AppClassifier @Inject constructor() {
         "com.xp.android"                             to Category.CAT_FINANCE,        // XP Investimentos
         "com.modalmais.android"                      to Category.CAT_FINANCE,        // Modal Mais
         "com.robinhoodbr.android"                    to Category.CAT_FINANCE,        // Rico Investimentos
+
+        // ─── Döngü 65: Tarayıcılar / Gizlilik ───────────────────────────────
+        "com.brave.browser"                          to Category.CAT_UTILITIES,      // Brave Browser
+        "com.kiwibrowser.browser"                    to Category.CAT_UTILITIES,      // Kiwi Browser
+        "org.mozilla.focus"                          to Category.CAT_UTILITIES,      // Firefox Focus
+        "com.duckduckgo.mobile.android"              to Category.CAT_UTILITIES,      // DuckDuckGo Browser
+        "com.sec.android.app.sbrowser"               to Category.CAT_UTILITIES,      // Samsung Internet
+        "com.vivaldi.browser"                        to Category.CAT_UTILITIES,      // Vivaldi
+        "com.opera.browser"                          to Category.CAT_UTILITIES,      // Opera
+        "com.opera.mini.native"                      to Category.CAT_UTILITIES,      // Opera Mini
+        "com.opera.touch"                            to Category.CAT_UTILITIES,      // Opera Touch
+        "mobi.mgeek.tunnybrowser"                    to Category.CAT_UTILITIES,      // Dolphin Browser
+        "com.uc.browser.en"                          to Category.CAT_UTILITIES,      // UC Browser
+        "com.cloudmosa.puffinfree"                   to Category.CAT_UTILITIES,      // Puffin Browser
+        "com.atom.browser"                           to Category.CAT_UTILITIES,      // Atom Browser
+
+        // ─── Döngü 65: VPN / Güvenlik ────────────────────────────────────────
+        "com.protonvpn.android"                      to Category.CAT_UTILITIES,      // Proton VPN
+        "com.nordvpn.android"                        to Category.CAT_UTILITIES,      // NordVPN
+        "com.expressvpn.vpn"                         to Category.CAT_UTILITIES,      // ExpressVPN
+        "com.surfshark.vpnclient.android"            to Category.CAT_UTILITIES,      // Surfshark
+        "com.privateinternetaccess.android"          to Category.CAT_UTILITIES,      // PIA VPN
+        "com.mullvad.vpn"                            to Category.CAT_UTILITIES,      // Mullvad VPN
+        "com.windscribe.vpn.android"                 to Category.CAT_UTILITIES,      // Windscribe VPN
+        "com.hideme.android"                         to Category.CAT_UTILITIES,      // Hide.me VPN
+        "com.tunnelbear.android"                     to Category.CAT_UTILITIES,      // TunnelBear VPN
+        "com.hotspotshield.android.vpn"              to Category.CAT_UTILITIES,      // Hotspot Shield
+        "com.bitdefender.security"                   to Category.CAT_UTILITIES,      // Bitdefender
+        "com.avast.android.mobilesecurity"           to Category.CAT_UTILITIES,      // Avast Mobile
+        "com.avg.cleaner"                            to Category.CAT_UTILITIES,      // AVG Cleaner
+        "com.norton.android.antivirus"               to Category.CAT_UTILITIES,      // Norton Mobile
+        "com.kaspersky.android.antivirus"            to Category.CAT_UTILITIES,      // Kaspersky Mobile
+
+        // ─── Döngü 65: Akıllı Ev / IoT ───────────────────────────────────────
+        "com.philips.lighting.hue"                   to Category.CAT_HOUSE,          // Philips Hue
+        "com.amazon.echo"                            to Category.CAT_HOUSE,          // Amazon Alexa
+        "com.google.android.apps.chromecast.app"     to Category.CAT_HOUSE,          // Google Home
+        "com.nest.android"                           to Category.CAT_HOUSE,          // Nest (Google)
+        "com.ring.android"                           to Category.CAT_HOUSE,          // Ring Doorbell
+        "com.arlo.android"                           to Category.CAT_HOUSE,          // Arlo Security
+        "com.wyze.android"                           to Category.CAT_HOUSE,          // Wyze Cam
+        "com.blink.android"                          to Category.CAT_HOUSE,          // Blink Smart Home
+        "com.tplink.kasa.android"                    to Category.CAT_HOUSE,          // Kasa Smart (TP-Link)
+        "com.wemo.android"                           to Category.CAT_HOUSE,          // Wemo Smart Plug
+        "com.eufy.android"                           to Category.CAT_HOUSE,          // Eufy Security
+        "com.anker.android"                          to Category.CAT_HOUSE,          // Anker Smart
+        "com.ecobee.android"                         to Category.CAT_HOUSE,          // Ecobee Thermostat
+        "com.honeywell.lyric"                        to Category.CAT_HOUSE,          // Honeywell Home
+        "com.leviton.decora"                         to Category.CAT_HOUSE,          // Leviton Smart
+        "com.idevices.android"                       to Category.CAT_HOUSE,          // iDevices Home
+        "com.sengled.android"                        to Category.CAT_HOUSE,          // Sengled Smart Light
+        "com.govee.home"                             to Category.CAT_HOUSE,          // Govee Home
+
+        // ─── Döngü 65: Çevre / Sürdürülebilirlik ─────────────────────────────
+        "com.oroeco.android"                         to Category.CAT_LIFESTYLE,      // Oroeco (karbon)
+        "com.patch.android"                          to Category.CAT_LIFESTYLE,      // Patch (offset)
+        "com.terrapass.android"                      to Category.CAT_LIFESTYLE,      // TerraPass
+        "com.ecosia.android"                         to Category.CAT_UTILITIES,      // Ecosia (ağaç diken arama)
+        "com.goodonyou.android"                      to Category.CAT_LIFESTYLE,      // Good On You (moda)
+        "com.buycott.android"                        to Category.CAT_LIFESTYLE,      // Buycott (etik)
+        "com.yuka.android"                           to Category.CAT_HEALTH,         // Yuka (ürün tarama)
+        "com.open.food.facts"                        to Category.CAT_FOOD,           // Open Food Facts
+        "com.too.good.to.go.android"                 to Category.CAT_FOOD,           // Too Good To Go
+        "com.olio.android"                           to Category.CAT_LIFESTYLE,      // Olio (paylaşım)
+        "com.depop.android"                          to Category.CAT_SHOPPING,       // Depop (ikinci el)
+        "com.vinted.android"                         to Category.CAT_SHOPPING,       // Vinted
+        "com.poshmark.android"                       to Category.CAT_SHOPPING,       // Poshmark
+        "com.thredup.android"                        to Category.CAT_SHOPPING,       // ThredUp
+        "com.mercari.android"                        to Category.CAT_SHOPPING,       // Mercari
     )
 
     fun classifyApp(appInfo: AppInfo): String {
