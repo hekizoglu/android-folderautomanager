@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 21:24 UTC
-# Commit: 159749ab64121b0f81c5911a8fbe7cb5c7206b2b
+# Generated: 2026-06-15 21:43 UTC
+# Commit: 4b814115af09d39ee119c62ee78d162ee1ac90db
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -1688,7 +1688,6 @@ class AppClassifier @Inject constructor() {
         "com.zhiliaoapp.musically"                   to Category.CAT_SOCIAL,
         "com.ss.android.ugc.trill"                   to Category.CAT_SOCIAL,
         "com.facebook.orca"                          to Category.CAT_SOCIAL,
-        "com.linkedin.android"                       to Category.CAT_SOCIAL,
         "com.reddit.frontpage"                       to Category.CAT_SOCIAL,
         "com.pinterest"                              to Category.CAT_SOCIAL,
         "com.tumblr"                                 to Category.CAT_SOCIAL,
@@ -1831,8 +1830,6 @@ class AppClassifier @Inject constructor() {
         "com.gain.android"                           to Category.CAT_ENTERTAINMENT,
         "com.puhutv.android"                         to Category.CAT_ENTERTAINMENT,
         "com.tabii.android"                          to Category.CAT_ENTERTAINMENT,
-        "com.fizy.android"                           to Category.CAT_ENTERTAINMENT,
-        "com.muud.android"                           to Category.CAT_ENTERTAINMENT,
         "com.superpeer.android"                      to Category.CAT_ENTERTAINMENT,
 
         // â"€â"€ SHOPPING â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -2466,7 +2463,6 @@ class AppClassifier @Inject constructor() {
         "com.nhn.android.search"                     to Category.CAT_SOCIAL,
         "com.weibo.android"                          to Category.CAT_SOCIAL,
         "com.eksiozet.android"                       to Category.CAT_SOCIAL,
-        "com.eksisozluk.android"                     to Category.CAT_SOCIAL,
         // Fotograf
         "com.zing.zalo"                              to Category.CAT_PHOTOGRAPHY,
         "com.wondershare.filmorago"                  to Category.CAT_VIDEO,
@@ -3381,8 +3377,6 @@ class AppClassifier @Inject constructor() {
         "com.livescore.android"                      to Category.CAT_HEALTH,
         "com.mapmyfitness.android2"                  to Category.CAT_SPORTS,
         "com.bjk.android"                            to Category.CAT_HEALTH,
-        "com.galatasaray.android"                    to Category.CAT_HEALTH,
-        "com.fenerbahce.android"                     to Category.CAT_HEALTH,
         "com.trabzonspor.android"                    to Category.CAT_HEALTH,
         "com.mackolik.android"                       to Category.CAT_HEALTH,
         "com.sporx.android"                          to Category.CAT_HEALTH,
@@ -3567,8 +3561,6 @@ class AppClassifier @Inject constructor() {
         "com.kolaybi.android"                        to Category.CAT_UTILITIES,
         "com.eksisozu.android"                       to Category.CAT_SOCIAL,
         "com.sozluk.eksisozluk"                      to Category.CAT_SOCIAL,
-        "com.incisozluk.android"                     to Category.CAT_SOCIAL,
-        "com.uludagsozluk.android"                   to Category.CAT_SOCIAL,
         "com.letgo.tr"                               to Category.CAT_SHOPPING,
 
         // Loop 55 — Global Top-100 (eksik olanlar)
@@ -4148,12 +4140,9 @@ class AppClassifier @Inject constructor() {
         "com.fenerbahce.app"                         to Category.CAT_ENTERTAINMENT,
         "com.besiktas.app"                           to Category.CAT_ENTERTAINMENT,
         "com.trabzonspor.app"                        to Category.CAT_ENTERTAINMENT,
-        "com.bursaspor.android"                      to Category.CAT_ENTERTAINMENT,
-        "com.basaksehir.android"                     to Category.CAT_ENTERTAINMENT,
         "com.konyaspor.android"                      to Category.CAT_ENTERTAINMENT,
         "com.antalyaspor.android"                    to Category.CAT_ENTERTAINMENT,
         "com.gaziantepfk.android"                    to Category.CAT_ENTERTAINMENT,
-        "com.sivasspor.android"                      to Category.CAT_ENTERTAINMENT,
 
         // Loop 65 — Music Creation & Instruments
         "com.apple.garageband"                       to Category.CAT_ENTERTAINMENT,
@@ -4187,11 +4176,7 @@ class AppClassifier @Inject constructor() {
         "com.spotify.podcast.android"                to Category.CAT_MUSIC,
         "com.radyospor.android"                      to Category.CAT_ENTERTAINMENT,
         "com.trtradyo.android"                       to Category.CAT_ENTERTAINMENT,
-        "com.radyonet.android"                       to Category.CAT_ENTERTAINMENT,
-        "com.radyo7.android"                         to Category.CAT_MUSIC,
-        "com.kral.radyo"                             to Category.CAT_ENTERTAINMENT,
         "com.ntv.radyo"                              to Category.CAT_ENTERTAINMENT,
-        "com.virgin.radyo"                           to Category.CAT_ENTERTAINMENT,
 
         // Loop 65 — Print & Scan
         "com.hp.printercontrol"                      to Category.CAT_UTILITIES,
@@ -4215,7 +4200,6 @@ class AppClassifier @Inject constructor() {
         "com.dictionary.android"                     to Category.CAT_EDUCATION,
         "com.oxforddictionaries.android"             to Category.CAT_EDUCATION,
         "com.cambridge.android"                      to Category.CAT_EDUCATION,
-        "com.tureng.android"                         to Category.CAT_EDUCATION,
         "com.seslisozcuk.android"                    to Category.CAT_EDUCATION,
         "com.zargan.android"                         to Category.CAT_EDUCATION,
 
@@ -5902,6 +5886,67 @@ class AppClassifier @Inject constructor() {
         "com.poshmark.android"                       to Category.CAT_SHOPPING,       // Poshmark
         "com.thredup.android"                        to Category.CAT_SHOPPING,       // ThredUp
         "com.mercari.android"                        to Category.CAT_SHOPPING,       // Mercari
+
+        // ─── Döngü 67: TR Spor Kulüpleri ──────────────────────────────────────
+        "com.galatasaray.official"                   to Category.CAT_SPORTS,         // Galatasaray
+        "com.galatasaray.android"                    to Category.CAT_SPORTS,         // Galatasaray alt
+        "com.fenerbahce.official"                    to Category.CAT_SPORTS,         // Fenerbahçe
+        "com.fenerbahce.android"                     to Category.CAT_SPORTS,         // Fenerbahçe alt
+        "com.bjk.official"                           to Category.CAT_SPORTS,         // Beşiktaş
+        "com.besiktas.android"                       to Category.CAT_SPORTS,         // Beşiktaş alt
+        "com.trabzonspor.official"                   to Category.CAT_SPORTS,         // Trabzonspor
+        "com.ankaragucu.android"                     to Category.CAT_SPORTS,         // Ankaragücü
+        "com.bursaspor.android"                      to Category.CAT_SPORTS,         // Bursaspor
+        "com.altay.android"                          to Category.CAT_SPORTS,         // Altay FK
+        "com.kayserispor.android"                    to Category.CAT_SPORTS,         // Kayserispor
+        "com.sivasspor.android"                      to Category.CAT_SPORTS,         // Sivasspor
+        "com.basaksehir.android"                     to Category.CAT_SPORTS,         // İstanbul Başakşehir
+        "com.tff.android"                            to Category.CAT_SPORTS,         // TFF (Türkiye Futbol Fed.)
+        "com.digiturk.sports"                        to Category.CAT_SPORTS,         // Digitürk Spor
+
+        // ─── Döngü 67: TR Müzik / Radyo / Podcast ────────────────────────────
+        "com.fizy.android"                           to Category.CAT_MUSIC,          // Fizy (Turkcell)
+        "com.muud.android"                           to Category.CAT_MUSIC,          // Muud (Turkcell)
+        "com.muud.player"                            to Category.CAT_MUSIC,          // Muud Player
+        "com.radyomonitor"                           to Category.CAT_MUSIC,          // Radyo Monitor
+        "com.radyonet.android"                       to Category.CAT_MUSIC,          // Radyonet
+        "com.turk.radyo"                             to Category.CAT_MUSIC,          // Türk Radyo
+        "com.trtdinle"                               to Category.CAT_MUSIC,          // TRT Dinle
+        "com.trt.radyo"                              to Category.CAT_MUSIC,          // TRT Radyo
+        "com.powertv.radyo"                          to Category.CAT_MUSIC,          // Power Radyo
+        "com.kral.radyo"                             to Category.CAT_MUSIC,          // Kral Radyo
+        "com.number1.radyo"                          to Category.CAT_MUSIC,          // Number One Radyo
+        "com.virgin.radyo"                           to Category.CAT_MUSIC,          // Virgin Radyo TR
+        "com.radyo.d"                                to Category.CAT_MUSIC,          // Radyo D
+        "com.radyo.mydonose"                         to Category.CAT_MUSIC,          // Mydonose FM
+        "com.radyo7.android"                         to Category.CAT_MUSIC,          // Radyo 7
+        "com.radyoplus.android"                      to Category.CAT_MUSIC,          // Radyo Plus
+
+        // ─── Döngü 67: TR Sözlük / Eğitim / Ansiklopedi ──────────────────────
+        "com.seslisozluk.android"                    to Category.CAT_EDUCATION,      // Sesli Sözlük
+        "com.tureng.android"                         to Category.CAT_EDUCATION,      // Tureng Sözlük
+        "com.bab.la.android"                         to Category.CAT_EDUCATION,      // bab.la Sözlük
+        "com.tr.vikipedi"                            to Category.CAT_EDUCATION,      // Vikipedi
+        "com.eksi.sozluk"                            to Category.CAT_SOCIAL,         // Ekşi Sözlük
+        "com.eksisozluk.android"                     to Category.CAT_SOCIAL,         // Ekşi Sözlük alt
+        "com.uludagsozluk.android"                   to Category.CAT_SOCIAL,         // Uludağ Sözlük
+        "com.incisozluk.android"                     to Category.CAT_SOCIAL,         // İnci Sözlük
+        "com.tr.tdk.sozluk"                          to Category.CAT_EDUCATION,      // TDK Sözlük (resmi)
+        "com.android.tdk"                            to Category.CAT_EDUCATION,      // TDK Android
+        "com.dictionaryapp.tr"                       to Category.CAT_EDUCATION,      // TR Dictionary
+
+        // ─── Döngü 67: Kariyer / İş Bulma ────────────────────────────────────
+        "com.kariyer.net.android"                    to Category.CAT_BUSINESS,       // Kariyer.net
+        "com.secretcv.android"                       to Category.CAT_BUSINESS,       // SecretCV
+        "com.yenibiris.android"                      to Category.CAT_BUSINESS,       // Yenibiris.com
+        "com.isinolsun.android"                      to Category.CAT_BUSINESS,       // işinolsun
+        "com.eleman.net.android"                     to Category.CAT_BUSINESS,       // Eleman.net
+        "com.cvtr.android"                           to Category.CAT_BUSINESS,       // CV Türkiye
+        "com.indeed.android.jobsearch"               to Category.CAT_BUSINESS,       // Indeed
+        "com.linkedin.android"                       to Category.CAT_BUSINESS,       // LinkedIn
+        "com.glassdoor.android"                      to Category.CAT_BUSINESS,       // Glassdoor
+        "com.ziprecruiter.android"                   to Category.CAT_BUSINESS,       // ZipRecruiter
+        "com.monster.android"                        to Category.CAT_BUSINESS,       // Monster Jobs
     )
 
     fun classifyApp(appInfo: AppInfo): String {
