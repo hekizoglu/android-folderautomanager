@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 15:56 UTC
-# Commit: 83f39bfe10a3936aa3af353e6f9db49c71496bbb
+# Generated: 2026-06-15 16:18 UTC
+# Commit: b8bd2427d3ca09d132a8cb69eb355eb4263ba727
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -16712,7 +16712,9 @@ class AppListViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow("all")
     private val _searchQuery = MutableStateFlow("")
     private val _sortOption = MutableStateFlow(SortOption.NAME_ASC)
-    private val _showSystemApps = MutableStateFlow(false)
+    private val _showSystemApps = MutableStateFlow(
+        com.armutlu.apporganizer.utils.AppPrefs.isShowSystemApps(application)
+    )
     private val _selectedApps = MutableStateFlow<Set<String>>(emptySet())
     
     // Public state flows
@@ -16889,7 +16891,9 @@ class AppListViewModel @Inject constructor(
      * Toggle show system apps
      */
     fun toggleShowSystemApps() {
-        _showSystemApps.value = !_showSystemApps.value
+        val newVal = !_showSystemApps.value
+        _showSystemApps.value = newVal
+        com.armutlu.apporganizer.utils.AppPrefs.setShowSystemApps(getApplication(), newVal)
     }
     
     /**
@@ -17514,6 +17518,11 @@ object AppPrefs {
     fun markUsageStatsSynced(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
     }
+
+    // Sistem uygulamalarını göster — AppListScreen filtre
+    const val KEY_SHOW_SYSTEM_APPS = "show_system_apps"
+    fun isShowSystemApps(context: Context) = prefs(context).getBoolean(KEY_SHOW_SYSTEM_APPS, false)
+    fun setShowSystemApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SHOW_SYSTEM_APPS, v).apply()
 
     // Uygulama onerileri — en sik kullanilan 4 uygulama ana ekranda gosterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
