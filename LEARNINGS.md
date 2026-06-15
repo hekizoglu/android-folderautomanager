@@ -39,6 +39,25 @@
 | P7 | Flow `SharingStarted.Eagerly` | §5 | 3 |
 | P8 | Async ikon `produceState`+LRU | §5 | 5+ |
 | P9 | Reaktif AppPrefs (DisposableEffect) | §5 | 3 |
+
+---
+
+## 🧠 Aktif Öğrenmeler
+
+### [L1] AppClassifier — exactMatchMap vs MANUFACTURER_PREFIX_MAP Çakışması
+**Tarih:** 2026-06-15 | **Öncelik:** ORTA
+
+`exactMatchMap` (3594 paket) ile `MANUFACTURER_PREFIX_MAP` (prefix bazlı) aynı paketi farklı kategoriye atayabilir.
+
+**Örnek:** `com.whatsapp`
+- `exactMatchMap["com.whatsapp"] = CAT_COMMUNICATION` ✅
+- `MANUFACTURER_PREFIX_MAP["com.facebook"] = CAT_META` → prefix `com.` ile başlayan her şey değil, ama `com.whatsapp` da `com.` ile başlıyor
+
+**Neden şimdi sorun değil:** `classifyApp()` içinde `exactMatchMap` kontrolü **önce** yapılıyor. Exact match bulunursa manufacturer prefix'e hiç bakılmıyor.
+
+**Risk:** Yeni paket eklerken `exactMatchMap`'e koymadan sadece prefix map'e güvenilirse yanlış kategori atanır.
+
+**Kural:** Meta/Facebook ekosistemi paketleri (`com.whatsapp`, `com.instagram`, `com.facebook.*`) `exactMatchMap`'te `CAT_COMMUNICATION` veya `CAT_SOCIAL` ile kesin tanımlanmış olmalı — prefix map'e bırakılmamalı.
 | P10 | `fallbackToDestructiveMigration()` kaldırıldı — production'da veri kaybı riski | §5 | 2 |
 | P11 | `derivedStateOf` pattern — scroll sırasında gereksiz recomposition önler | §5 | 2 |
 | P12 | `installSplashScreen()` sırası: `super.onCreate()` sonrası, `setContentView()` öncesi | §5 | 1 |
