@@ -331,7 +331,7 @@ fun FolderSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
             ) {
-                itemsIndexed(AllAppsSortMode.entries) { _, mode ->
+                itemsIndexed(AllAppsSortMode.entries, key = { _, mode -> mode.name }) { _, mode ->
                     val active = sortMode == mode
                     Box(
                         modifier = Modifier
@@ -449,7 +449,7 @@ private fun FolderRenameDialog(
                 )
                 Text("Emoji sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    itemsIndexed(EMOJI_PICKER) { _, emoji ->
+                    itemsIndexed(EMOJI_PICKER, key = { _, emoji -> emoji }) { _, emoji ->
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
@@ -467,7 +467,7 @@ private fun FolderRenameDialog(
                 }
                 Text("Renk sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    itemsIndexed(COLOR_PRESETS) { _, preset ->
+                    itemsIndexed(COLOR_PRESETS, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
                         val isSelected = selectedColor == hex
                         val resolvedColor = if (hex.isBlank()) Color.White.copy(0.2f)
