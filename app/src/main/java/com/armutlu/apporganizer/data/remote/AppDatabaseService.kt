@@ -69,7 +69,7 @@ class AppDatabaseService @Inject constructor(
             Timber.d("AppDatabase: ${merged.size} uygulama hazır (GitHub: ${map.size}, v$version)")
             FetchResult.Success(merged.size, version)
         } catch (e: Exception) {
-            Timber.w(e, "AppDatabase: indirme başarısız, cache deneniyor")
+            Timber.d("AppDatabase: indirme başarısız (${e.javaClass.simpleName}), cache deneniyor")
             val cacheResult = loadFromCache()
             if (cacheResult is FetchResult.NoCache || cacheResult is FetchResult.Error) {
                 loadFromAssets()
@@ -114,7 +114,7 @@ class AppDatabaseService @Inject constructor(
             cachedMap = map
             Timber.d("AppDatabase: assets'ten ${map.size} uygulama yüklendi")
         } catch (e: Exception) {
-            Timber.w(e, "AppDatabase: assets de yüklenemedi")
+            Timber.d("AppDatabase: assets/app_database.json bulunamadı — sadece AppClassifier kullanılacak")
         }
     }
 

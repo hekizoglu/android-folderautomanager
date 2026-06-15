@@ -96,7 +96,7 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 - [ ] Hilt DI kurulumu — manuel `new()` çağrılarını temizle (kısmen başladı: onboarding'de `hiltViewModel` kullanılıyor)
 - [x] ~~StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir~~ ✅ LiveData kullanımı yok, tüm akışlar StateFlow (2026-06-15 Döngü 52)
 - [ ] Unit test coverage — ViewModel'ler için MockK testleri 🔄 (başlandı, CI pipeline hazır)
-- [ ] Compose UI: `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit
+- [x] ~~Compose UI: `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit~~ ✅ 7 dosyada key eklendi (Döngü 51, 2026-06-15)
 - [ ] Memory leak audit: Fragment binding null kontrolü
 - [ ] Dark mode tam uyum audit
 
@@ -128,7 +128,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [x] ~~FolderTile reaktif AppPrefs pattern'ini standartlaştır~~ ✅ FolderTile parametre bazlı (HomeScreen'den geliyor), HomeScreen DisposableEffect+listener kullanıyor — pattern doğru (2026-06-15 Döngü 52)
 - [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3594 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
 - [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, crash kontrol otomasyonu
-- [ ] `AppDatabaseService` 404 uyarısı (2026-06-15 — Döngü 43) — `app_database.json` repo'da yok, servis her başlangıçta hata logu yazıyor; ya dosyayı ekle ya da özelliği kaldır
+- [x] ~~`AppDatabaseService` 404 uyarısı~~ ✅ Network hata logu Timber.w→d indirildi, assets dosyası mevcut (dummy v2) — sessiz fallback (Döngü 55, 2026-06-15)
 - [ ] `AppNotificationListenerService` ilk açılışta restart (2026-06-15 — Döngü 43) — emülatörde `Scheduling restart of crashed service` görüldü; race condition Döngü 44'te kısmen giderildi, gerçek cihazda test gerekiyor
 - [ ] AllApps double-tap emülatörde doğrulanamadı (2026-06-15 — Döngü 43) — Compose içi state değişimi loglanmıyor; gerçek cihaz testi gerekiyor
 - [ ] Üretici kategorileri gerçek cihaz testi (2026-06-15 — Döngü 41) — 9 yeni kategori eklendi (CAT_GOOGLE vb.), onboarding'den "üreticiye göre" seçip klasörlerin doğru oluştuğunu doğrula
