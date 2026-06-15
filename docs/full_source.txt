@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 00:47 UTC
-# Commit: 10e952e6c7b5053256bc1173efad861c1bf5cc87
+# Generated: 2026-06-15 00:56 UTC
+# Commit: d83444bdc8ae434811af638eab413e72c41c8333
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -5520,6 +5520,56 @@ class AppClassifier @Inject constructor() {
         "com.adt.pulse.android"                      to Category.CAT_HOUSE,      // ADT Pulse
         "com.simplisafe.app"                         to Category.CAT_HOUSE,      // SimpliSafe
         "com.vivint.smarthome"                       to Category.CAT_HOUSE,      // Vivint Smart Home
+
+        // === Türk Bankacılık Uygulamaları ===
+        "com.ingbank.ing_android_app"                to Category.CAT_FINANCE,    // ING Türkiye
+        "com.teb"                                    to Category.CAT_FINANCE,    // TEB (Türk Ekonomi Bankası)
+        "com.halkbank.halkbankMobil"                 to Category.CAT_FINANCE,    // Halkbank Mobil
+        "com.odeabank"                               to Category.CAT_FINANCE,    // Odeabank
+
+        // === Türk E-Ticaret / Alışveriş ===
+        "com.trendyol.international"                 to Category.CAT_SHOPPING,   // Trendyol International
+        "com.n11.application"                        to Category.CAT_SHOPPING,   // n11
+        "com.beymen.android"                         to Category.CAT_SHOPPING,   // Beymen
+        "com.a101.marka"                             to Category.CAT_SHOPPING,   // A101
+        "com.sol.android"                            to Category.CAT_SHOPPING,   // ŞOK Market
+
+        // === Türk Yemek / Market ===
+        "com.getir"                                  to Category.CAT_FOOD,       // Getir
+        "com.migrosone"                              to Category.CAT_FOOD,       // Migros One
+
+        // === Türk Ulaşım ===
+        "com.iett.isbileti"                          to Category.CAT_TRAVEL,     // İETT İstanbul
+        "com.iztek.mobil"                            to Category.CAT_TRAVEL,     // İztek Mobil (İzmir)
+        "com.ankamobil"                              to Category.CAT_TRAVEL,     // AnkaMobil (Ankara)
+
+        // === Türk Telekomünikasyon ===
+        "com.turkcell.platinum"                      to Category.CAT_COMMUNICATION, // Turkcell Platinum
+        "com.telkomunikasyon.telcel"                 to Category.CAT_COMMUNICATION, // Telcel
+        "com.turk.telekom.online.islemler"           to Category.CAT_COMMUNICATION, // Türk Telekom
+
+        // === Türk Eğitim ===
+        "com.enocta.contextlearning.android"         to Category.CAT_EDUCATION,  // Enocta
+        "com.babbel.mobile.android.turkish"          to Category.CAT_EDUCATION,  // Babbel Türkçe
+
+        // === Türk e-Devlet / Kargo ===
+        "tr.gov.turkiye.edevlet.kapisi"              to Category.CAT_PRODUCTIVITY, // e-Devlet Kapısı
+        "tr.gov.ptt.android"                         to Category.CAT_PRODUCTIVITY, // PTT
+        "com.mngkargo.mngkargo"                      to Category.CAT_PRODUCTIVITY, // MNG Kargo
+        "com.arashedex.tracking"                     to Category.CAT_PRODUCTIVITY, // Aras Kargo
+        "com.yurticicargo"                            to Category.CAT_PRODUCTIVITY, // Yurtiçi Kargo
+        "com.ptt.kargotakip"                         to Category.CAT_PRODUCTIVITY, // PTT Kargo Takip
+
+        // === Türk Haber ===
+        "com.ntvhaber"                               to Category.CAT_NEWS,       // NTV Haber
+        "com.hurriyet.app"                           to Category.CAT_NEWS,       // Hürriyet
+        "com.sabah.app"                              to Category.CAT_NEWS,       // Sabah
+        "tr.com.sekizbit.milliyet"                   to Category.CAT_NEWS,       // Milliyet
+        "com.sozcu.app"                              to Category.CAT_NEWS,       // Sözcü
+
+        // === Türk Spor ===
+        "com.bein.sports.beinsports"                 to Category.CAT_SPORTS,     // beIN Sports
+        "com.spx.android.ligtvizle"                  to Category.CAT_SPORTS,     // Lig TV İzle
     )
 
     fun classifyApp(appInfo: AppInfo): String {
