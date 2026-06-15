@@ -66,10 +66,7 @@ class MainActivity : ComponentActivity() {
                         if (!isDefaultLauncher()) requestDefaultLauncher()
                     })
                 } else {
-                    AppNavigation(
-                        viewModel = viewModel,
-                        onSendBugReport = { openBugReport() }
-                    )
+                    AppNavigation(viewModel = viewModel)
                 }
             }
         }

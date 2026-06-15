@@ -350,20 +350,17 @@ fun HomeScreen(
             }
             .pointerInput("drag") {
                 var accumulated = 0f
-                var dragStartY = 0f
-                // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
-                val gestureZonePx = with(density) { 80.dp.toPx() }
                 detectVerticalDragGestures(
-                    onDragStart = { offset ->
-                        dragStartY = offset.y
+                    onDragStart = {
                         accumulated = 0f
                     },
                     onDragEnd = { accumulated = 0f },
                     onDragCancel = { accumulated = 0f },
                     onVerticalDrag = { change, dragAmount ->
-                        if (!currentAllAppsOpen && dragStartY < size.height - gestureZonePx) {
+                        // gestureZonePx kontrolünü kaldırdık — tüm ekrandan swipe çalışsın
+                        if (!currentAllAppsOpen) {
                             accumulated += dragAmount
-                            if (!swipeLock && accumulated < -80f) {
+                            if (!swipeLock && accumulated < -60f) {
                                 change.consume()
                                 accumulated = 0f
                                 AppAnalytics.allAppsOpened()

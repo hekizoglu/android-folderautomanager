@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,7 +46,6 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit = {},
-    onSendBugReport: () -> Unit = {},
     onNavigateToPrivacyPolicy: () -> Unit = {}
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
@@ -81,7 +82,7 @@ fun SettingsScreen(
                 title = { Text("Ayarlar", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Geri")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -176,7 +177,7 @@ fun SettingsScreen(
                             val appName = remember(pkg) {
                                 runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
                             }
-                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                             Row(
                                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -193,7 +194,7 @@ fun SettingsScreen(
                             }
                         }
                     }
-                    Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     SettingsButtonRow(
                         icon = Icons.Default.RestartAlt,
                         title = "Varsayılana Sıfırla",
@@ -237,7 +238,7 @@ fun SettingsScreen(
                             AppPrefs.setManufacturerClassifyEnabled(context, it)
                         }
                     )
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -247,7 +248,7 @@ fun SettingsScreen(
                         subtitle = "Kategorisiz uygulamaları otomatik ata",
                         onClick = { viewModel.classifyUnclassifiedApps() }
                     )
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -268,7 +269,7 @@ fun SettingsScreen(
                 item {
                     SettingsCard {
                         hiddenApps.forEachIndexed { index, app ->
-                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                            if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                             Row(
                                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -357,14 +358,14 @@ fun SettingsScreen(
                                 )
                             }
                         }
-                        Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                         otherApps.take(20).forEachIndexed { index, app ->
-                            if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                            if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                             Row(
                                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                                Icon(Icons.AutoMirrored.Filled.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(12.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(app.appName, fontSize = 14.sp, maxLines = 1)
@@ -373,7 +374,7 @@ fun SettingsScreen(
                             }
                         }
                         if (otherApps.size > 20) {
-                            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                             Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
                                 Text("...ve ${otherApps.size - 20} uygulama daha", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -390,7 +391,7 @@ fun SettingsScreen(
                         title = "App Organizer",
                         subtitle = "v1.0 beta"
                     )
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -399,7 +400,7 @@ fun SettingsScreen(
                         title = "Geliştirici",
                         subtitle = "Hüseyin Ekizoğlu"
                     )
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -408,7 +409,7 @@ fun SettingsScreen(
                         title = "Kaynak Kod",
                         subtitle = "github.com/hekizoglu/android-folderautomanager"
                     )
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -497,7 +498,7 @@ fun SettingsScreen(
                         }
                         if (backupLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     }
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -525,7 +526,7 @@ fun SettingsScreen(
                         subtitle = "Veri toplama ve kullanim hakkinizda bilgi alin",
                         onClick = onNavigateToPrivacyPolicy
                     )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsInfoRow(
                         icon = Icons.Default.Info,
                         title = "Versiyon",

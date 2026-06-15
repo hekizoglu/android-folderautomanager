@@ -18,7 +18,7 @@ object Routes {
 }
 
 @Composable
-fun AppNavigation(viewModel: AppListViewModel, onSendBugReport: () -> Unit = {}) {
+fun AppNavigation(viewModel: AppListViewModel) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Routes.APP_LIST) {
@@ -39,7 +39,6 @@ fun AppNavigation(viewModel: AppListViewModel, onSendBugReport: () -> Unit = {})
             SettingsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onSendBugReport = onSendBugReport,
                 onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) }
             )
         }
