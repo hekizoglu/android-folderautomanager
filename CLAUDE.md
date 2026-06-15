@@ -98,12 +98,11 @@ cd "c:\Users\hekizoglu\Documents\AppOrganizer"
 .\gradlew assembleDebug
 
 # Emülatör
-$em = "C:\Android\Sdk\emulator\emulator.exe"
-Start-Process $em -ArgumentList "-avd","Pixel6_API33","-no-snapshot-save"
-Start-Process $em -ArgumentList "-avd","Xiaomi_HyperOS_API34","-no-snapshot-save"
+$em = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\emulator\emulator.exe"
+Start-Process $em -ArgumentList "-avd","Pixel6_AOSP33","-no-snapshot-save"
 
 # APK yükle
-$adb = "C:\Android\Sdk\platform-tools\adb.exe"
+$adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
 & $adb install -r app\build\outputs\apk\debug\app-debug.apk
 & $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.launcher.LauncherActivity"
 ```
