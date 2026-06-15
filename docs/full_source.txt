@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 00:21 UTC
-# Commit: d7a21e27d4dddfe6efcd6799f65879e717b21998
+# Generated: 2026-06-15 00:25 UTC
+# Commit: c4c698025d120c4c5ebf9997916784a6b0dd24d8
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8,6 +8,7 @@ FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
 package com.armutlu.apporganizer
 
 import android.app.Application
+import com.armutlu.apporganizer.BuildConfig
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -10535,131 +10536,6 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
 }
 
 ========================================
-FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/IconPackManager.kt
-========================================
-package com.armutlu.apporganizer.utils
-
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import androidx.core.graphics.drawable.toBitmap
-import org.xmlpull.v1.XmlPullParser
-import java.util.concurrent.ConcurrentHashMap
-
-object IconPackManager {
-
-    private val filterCache = ConcurrentHashMap<String, Map<String, String>>()
-
-    data class IconPackInfo(val packageName: String, val label: String)
-
-    private val ICON_PACK_INTENTS = listOf(
-        "com.novalauncher.THEME",
-        "org.adw.launcher.THEMES",
-        "com.gau.go.launcherex.theme",
-        "app.lawnchair.ICON_PACK",
-        "com.teslacoilsw.launcher.THEME"
-    )
-
-    fun getInstalledIconPacks(context: Context): List<IconPackInfo> {
-        val pm = context.packageManager
-        return ICON_PACK_INTENTS.flatMap { action ->
-            runCatching {
-                pm.queryIntentActivities(Intent(action), PackageManager.GET_META_DATA)
-                    .map { it.activityInfo.packageName }
-            }.getOrDefault(emptyList())
-        }.distinct().mapNotNull { pkg ->
-            runCatching {
-                val info = pm.getApplicationInfo(pkg, 0)
-                IconPackInfo(pkg, pm.getApplicationLabel(info).toString())
-            }.getOrNull()
-        }
-    }
-
-    fun loadIcon(context: Context, iconPackPkg: String, appPkg: String, sizePx: Int = 96): Bitmap? {
-        if (iconPackPkg.isEmpty()) return null
-        val drawableName = getMapping(context, iconPackPkg)[appPkg] ?: return null
-        return loadDrawableByName(context, iconPackPkg, drawableName, sizePx)
-    }
-
-    fun clearCache() {
-        filterCache.clear()
-    }
-
-    private fun getMapping(context: Context, iconPackPkg: String): Map<String, String> {
-        filterCache[iconPackPkg]?.let { return it }
-        val mapping = parseAppFilter(context, iconPackPkg)
-        filterCache[iconPackPkg] = mapping
-        return mapping
-    }
-
-    private fun parseAppFilter(context: Context, iconPackPkg: String): Map<String, String> {
-        val result = mutableMapOf<String, String>()
-        runCatching {
-            val res = context.packageManager.getResourcesForApplication(iconPackPkg)
-            val resId = res.getIdentifier("appfilter", "xml", iconPackPkg)
-            if (resId == 0) return result
-            val parser = res.getXml(resId)
-            while (parser.next() != XmlPullParser.END_DOCUMENT) {
-                if (parser.eventType != XmlPullParser.START_TAG) continue
-                if (parser.name != "item") continue
-                val component = parser.getAttributeValue(null, "component") ?: continue
-                val drawable = parser.getAttributeValue(null, "drawable") ?: continue
-                val pkg = component
-                    .removePrefix("ComponentInfo{")
-                    .removeSuffix("}")
-                    .substringBefore("/")
-                    .trim()
-                if (pkg.isNotEmpty()) result[pkg] = drawable
-            }
-            parser.close()
-        }
-        return result
-    }
-
-    private fun loadDrawableByName(
-        context: Context,
-        iconPackPkg: String,
-        drawableName: String,
-        sizePx: Int
-    ): Bitmap? = runCatching {
-        val res = context.packageManager.getResourcesForApplication(iconPackPkg)
-        val resId = res.getIdentifier(drawableName, "drawable", iconPackPkg)
-        if (resId == 0) return null
-        res.getDrawable(resId, null)?.toBitmap(sizePx, sizePx)
-    }.getOrNull()
-}
-
-// ----- Adaptive Icon Loader -----
-// AdaptiveIconDrawable (API 26+) için squircle mask uygular
-// Legacy drawable'larda direkt toBitmap kullanır
-// Kullanım: loadAppIcon(context, packageName, 96)
-
-fun loadAppIcon(context: android.content.Context, packageName: String, sizePx: Int): android.graphics.Bitmap? =
-    runCatching {
-        val drawable = context.packageManager.getApplicationIcon(packageName)
-        if (android.os.Build.VERSION.SDK_INT >= 26 &&
-            drawable is android.graphics.drawable.AdaptiveIconDrawable) {
-            val bmp = android.graphics.Bitmap.createBitmap(sizePx, sizePx, android.graphics.Bitmap.Config.ARGB_8888)
-            val canvas = android.graphics.Canvas(bmp)
-            // Squircle mask — Android default adaptive icon shape approximation
-            val path = android.graphics.Path()
-            val r = sizePx * 0.22f  // 22% corner radius ≈ squircle
-            path.addRoundRect(
-                android.graphics.RectF(0f, 0f, sizePx.toFloat(), sizePx.toFloat()),
-                r, r,
-                android.graphics.Path.Direction.CW
-            )
-            canvas.clipPath(path)
-            drawable.setBounds(0, 0, sizePx, sizePx)
-            drawable.draw(canvas)
-            bmp
-        } else {
-            drawable.toBitmap(sizePx, sizePx)
-        }
-    }.getOrNull()
-
-========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherActivity.kt
 ========================================
 package com.armutlu.apporganizer.presentation.ui.launcher
@@ -13941,7 +13817,7 @@ internal fun LazyListScope.settingsAppearanceSection(
         SettingsCard {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // Klasör boyutu slider
-                var folderSize by remember { mutableStateOf(AppPrefs.getFolderSize(context).toFloat()) }
+                var folderSize by remember { mutableStateOf(AppPrefs.getFolderSizeDp(context).toFloat()) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Folder, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(12.dp))
@@ -13950,7 +13826,7 @@ internal fun LazyListScope.settingsAppearanceSection(
                         Text("${folderSize.toInt()} dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                Slider(value = folderSize, onValueChange = { folderSize = it; AppPrefs.setFolderSize(context, it.toInt()) }, valueRange = 56f..96f, steps = 4)
+                Slider(value = folderSize, onValueChange = { folderSize = it; AppPrefs.setFolderSizeDp(context, it.toInt()) }, valueRange = 56f..96f, steps = 4)
                 Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                 // Yazı rengi
                 var labelColor by remember { mutableStateOf(AppPrefs.getLabelColor(context)) }
@@ -15835,131 +15711,7 @@ fun SettingsScreen(
     }
 }
 
-// ── Yardımcı bileşenler ────────────────────────────────────────────────────
 
-@Composable
-private fun SettingsSectionTitle(title: String) {
-    Text(
-        title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 28.dp, top = 20.dp, bottom = 6.dp, end = 16.dp)
-    )
-}
-
-@Composable
-private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(content = content)
-    }
-}
-
-@Composable
-private fun SettingsSwitchRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        )
-    }
-}
-
-@Composable
-private fun SettingsButtonRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
-    }
-}
-
-@Composable
-private fun SettingsInfoRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-// Eski uyumluluk
-@Composable
-fun SectionHeader(title: String) = SettingsSectionTitle(title)
-
-@Composable
-fun SettingSwitch(title: String, description: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) =
-    SettingsSwitchRow(Icons.Default.Settings, title, description, checked, onCheckedChange)
-
-@Composable
-fun SettingButton(title: String, description: String, onClick: () -> Unit) =
-    SettingsButtonRow(Icons.Default.ChevronRight, title, description, onClick = onClick)
-
-@Composable
-fun SettingInfo(title: String, description: String) =
-    SettingsInfoRow(Icons.Default.Info, title, description)
-
-@Suppress("UNUSED_PARAMETER")
-@Composable
-fun DebugInfoCard(
-    appCount: Int, categoryCount: Int, error: String?, logs: List<String>,
-    launcherInfo: String, a11yActive: Boolean,
-    onSendBugReport: () -> Unit, onClearLogs: () -> Unit
-) {}
 
 
 ========================================
@@ -16888,6 +16640,7 @@ object AppPrefs {
     const val KEY_NEW_BADGE_ENABLED    = "new_badge_enabled"
     const val KEY_FOLDER_COUNT_VISIBLE = "folder_count_visible"
     const val KEY_FOLDER_SWIPE_HINT    = "folder_swipe_hint_enabled"
+    const val KEY_FOLDER_SWIPE_HINT_ENABLED = KEY_FOLDER_SWIPE_HINT  // alias
 
     fun isSwipeHintEnabled(context: Context)   = prefs(context).getBoolean(KEY_SWIPE_HINT_ENABLED, true)
     fun isNewBadgeEnabled(context: Context)    = prefs(context).getBoolean(KEY_NEW_BADGE_ENABLED, true)
