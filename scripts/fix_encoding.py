@@ -37,19 +37,47 @@ REPLACEMENTS = {
 
 # Yaygın mojibake dizileri (UTF-8 yanlış decode edilmiş) — düz eşleme
 MOJIBAKE = {
-    "â‚¬": "€",
-    "â€œ": '"',
-    "â€\x9d": '"',
-    "â€™": "'",
-    "â€“": "-",
-    "â€”": "-",
+    “â‚¬”: “€”,
+    “â€œ”: '”',
+    “â€\x9d”: '”',
+    “â€™”: “'”,
+    “â€””: “-”,
+    “â€””: “-”,
 }
+
+# Türkçe double-encoded UTF-8 düzeltme tablosu
+# Kaynak: Add-Content / PowerShell UTF-16LE → git → UTF-8 çift encode zinciri
+# Her dizi: (bozuk_unicode_str, doğru_karakter)
+TURKISH_DOUBLE_ENCODED = [
+    (“Ã¶”, “ö”),   # ö — U+00C3 U+00B6
+    (“Ã¼”, “ü”),   # ü
+    (“Ä±”, “ı”),   # ı — U+00C4 U+00B1
+    (“Ã§”, “ç”),   # ç
+    (“Ä°”, “İ”),   # İ
+    (“ÄŸ”, “ğ”),   # ğ — U+00C4 U+009F
+    (“ÅŸ”, “ş”),   # ş — U+00C5 U+0178
+    (“Åž”, “Ş”),   # Ş
+    (“Ã–“, “Ö”),   # Ö
+    (“Ãœ”, “Ü”),   # Ü
+    (“Ã‡”, “Ç”),   # Ç
+    (“Ä\x9e”, “Ğ”),  # Ğ
+    (“Ã-”, “Ö”),   # Ö (Ã\x96 → “-” ye dönüştükten sonra kalan)
+    # Arrow ve özel semboller
+    (“\xe2†\x27”, “->”),  # â†' (→ triple encode)
+    (“â†'”, “->”),              # → bozuk
+]
 
 TEXT_EXT = {".kt", ".kts", ".java", ".xml", ".md", ".json", ".gradle", ".txt", ".py", ".ps1"}
 
 
 def fix_content(text: str):
     changes = []
+    # Türkçe double-encoded UTF-8 (PowerShell Add-Content kaynağı) — önce uygula
+    for bad, good in TURKISH_DOUBLE_ENCODED:
+        if bad in text:
+            n = text.count(bad)
+            text = text.replace(bad, good)
+            changes.append(f"tr-encode {bad!r}→{good!r} ×{n}")
     for bad, good in MOJIBAKE.items():
         if bad in text:
             n = text.count(bad)
