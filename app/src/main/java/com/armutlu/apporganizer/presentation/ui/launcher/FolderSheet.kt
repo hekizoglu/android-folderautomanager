@@ -36,6 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
@@ -214,7 +217,7 @@ fun FolderSheet(
                         .clickable { showEditDialog = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Edit, "Klasörü düzenle", tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -268,7 +271,7 @@ fun FolderSheet(
                 }
                 if (searchQuery.isNotEmpty()) {
                     Icon(
-                        Icons.Default.Close, null,
+                        Icons.Default.Close, "Aramayı temizle",
                         tint = TextSecondary,
                         modifier = Modifier.size(16.dp).clickable { searchQuery = "" }
                     )
@@ -294,6 +297,10 @@ fun FolderSheet(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color.White.copy(alpha = 0.10f))
+                                .semantics {
+                                    contentDescription = "${app.appName}, $count bildirim"
+                                    onClick(label = "Aç") { onAppClick(app.packageName); onDismiss(); true }
+                                }
                                 .clickable {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     AppAnalytics.appLaunched(app.packageName, "folder")

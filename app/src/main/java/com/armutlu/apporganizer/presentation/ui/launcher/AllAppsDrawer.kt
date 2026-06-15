@@ -51,6 +51,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
@@ -408,7 +411,7 @@ fun AllAppsDrawer(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Search, "Ara", tint = TextSecondary, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
                                 Box(modifier = Modifier.weight(1f)) {
                                     if (searchQuery.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
@@ -450,7 +453,7 @@ fun AllAppsDrawer(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(14.dp))
+                            Icon(Icons.Default.Search, "Arama geçmişi", tint = TextSecondary, modifier = Modifier.size(14.dp))
                             searchHistory.forEach { q ->
                                 Box(
                                     modifier = Modifier
@@ -733,6 +736,10 @@ fun NiagaraAppRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(58.dp)
+            .semantics {
+                contentDescription = "${app.appName}, ${app.categoryId.ifBlank { "Uygulama" }}"
+                onClick(label = "Aç") { onClick(); true }
+            }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(if (isActive) RowHover else Color.Transparent)
             .padding(horizontal = 20.dp),

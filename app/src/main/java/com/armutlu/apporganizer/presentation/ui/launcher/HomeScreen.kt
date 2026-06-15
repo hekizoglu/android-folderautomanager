@@ -397,50 +397,19 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
-            // Favori uygulamalar satiri
-            if (favoritesEnabled && favoriteApps.isNotEmpty()) {
-                FavoritesRow(
-                    apps = favoriteApps,
-                    iconPackPkg = suggestionIconPack,
-                    onAppClick = { pkg ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        AppAnalytics.appLaunched(pkg, "favorites")
-                        viewModel.launchApp(context, pkg)
-                    },
-                    onAppLongClick = { pkg ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        contextMenuPkg = pkg
-                    }
-                )
-            }
-
-            // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
-            if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
-                AppSuggestionsRow(
-                    apps = suggestedApps,
-                    iconPackPkg = suggestionIconPack,
-                    onAppClick = { app ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        viewModel.launchApp(context, app.packageName)
-                    },
-                    onAppLongClick = { app ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        contextMenuPkg = app.packageName
-                    }
-                )
-            }
-
-            // Son kullanılan uygulamalar satırı (varsayılan kapalı)
-            if (recentAppsEnabled && recentApps.isNotEmpty()) {
-                RecentAppsRow(
-                    apps = recentApps,
-                    iconPackPkg = suggestionIconPack,
-                    onAppClick = { pkg ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        viewModel.launchApp(context, pkg)
-                    }
-                )
-            }
+            // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
+            HomeFavoritesSection(
+                favoritesEnabled = favoritesEnabled,
+                favoriteApps = favoriteApps,
+                suggestionsEnabled = suggestionsEnabled,
+                suggestedApps = suggestedApps,
+                recentAppsEnabled = recentAppsEnabled,
+                recentApps = recentApps,
+                iconPackPkg = suggestionIconPack,
+                haptic = haptic,
+                onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                onAppLongClick = { pkg -> contextMenuPkg = pkg }
+            )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
             if (widgetAreaEnabled && widgetIds.isNotEmpty()) {
@@ -588,27 +557,8 @@ fun HomeScreen(
                 } // LazyVerticalGrid
             } // HorizontalPager
 
-            // Sayfa noktaciklari — birden fazla sayfa varsa goster
-            if (pageCount > 1) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    repeat(pageCount) { idx ->
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 3.dp)
-                                .size(if (pagerState.currentPage == idx) 8.dp else 5.dp)
-                                .background(
-                                    if (pagerState.currentPage == idx) Color.White.copy(alpha = 0.9f)
-                                    else Color.White.copy(alpha = 0.3f),
-                                    androidx.compose.foundation.shape.CircleShape
-                                )
-                        )
-                    }
-                }
-            }
+            // Sayfa noktaciklari — HomeScreenPageIndicator.kt
+            HomePageIndicator(pageCount = pageCount, pagerState = pagerState)
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
