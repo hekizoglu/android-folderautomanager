@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 15:15 UTC
-# Commit: e3cb8a336e02414808f6754229a00c7cbceb6044
+# Generated: 2026-06-15 15:21 UTC
+# Commit: 966c425ca1f93681587483a1a3af587d14351565
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8787,9 +8787,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
-import dev.chrisbanes.haze.HazeStyle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
@@ -8923,7 +8920,6 @@ fun FolderSheet(
     onDismiss: () -> Unit,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
-    hazeState: HazeState = remember { HazeState() },
 ) {
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -8954,10 +8950,11 @@ fun FolderSheet(
         base.sortedByMode(sortMode)
     }
 
+    val blurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(LocalContext.current)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,
-        containerColor   = Color.Transparent,
+        containerColor   = if (blurEnabled) Color(0xE61A1A2A) else Color(0xFF1A1A2A),
         scrimColor       = Color(0x66000000),
         shape            = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle       = null,
@@ -8965,13 +8962,6 @@ fun FolderSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .hazeChild(
-                    state = hazeState,
-                    style = HazeStyle(
-                        blurRadius = 18.dp,
-                        tint = Color(0xCC0D0D1A)
-                    )
-                )
                 .navigationBarsPadding()
                 .padding(bottom = 24.dp),
         ) {
@@ -9917,10 +9907,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.armutlu.apporganizer.utils.AppAnalytics
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
-import dev.chrisbanes.haze.HazeStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -9929,7 +9915,6 @@ fun HomeScreen(
     onLaunchWidgetPicker: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val hazeState = remember { HazeState() }
     var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
@@ -10149,10 +10134,10 @@ fun HomeScreen(
     }
 
     // Root box — duvar kağıdı (transparent) veya düz renk arka plan
+    // NOT: .haze() gesture'lardan SONRA — Haze 0.7.3 önce gelince pointer event tüketiyor
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .haze(hazeState)
             .then(
                 if (bgType == "solid")
                     Modifier.background(Color(bgColorInt))
@@ -10555,7 +10540,6 @@ fun HomeScreen(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 contextMenuPkg = app.packageName
             },
-            hazeState = if (folderBlurEnabled) hazeState else remember { HazeState() }
         )
     }
 
