@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BlurOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -320,6 +322,21 @@ fun SettingsAppearanceSection(
                 }
             }
         }
+    }
+
+    // ── Klasör Blur Efekti ─────────────────────────────────────────────────
+    var folderBlur by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.BlurOn,
+            title = "Klasör Blur Efekti",
+            subtitle = "Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)",
+            checked = folderBlur,
+            onCheckedChange = {
+                folderBlur = it
+                com.armutlu.apporganizer.utils.AppPrefs.setFolderBlurEnabled(context, it)
+            }
+        )
     }
 
     // ── Klasör Şekli ──────────────────────────────────────────────────────

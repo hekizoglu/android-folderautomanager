@@ -243,6 +243,11 @@ object AppPrefs {
     fun getLastBackupTime(context: Context): Long = prefs(context).getLong(KEY_LAST_BACKUP_TIME, 0L)
     fun setLastBackupTime(context: Context, ms: Long) = prefs(context).edit().putLong(KEY_LAST_BACKUP_TIME, ms).apply()
 
+    // Klasör blur efekti — HyperOS tarzı frosted glass
+    const val KEY_FOLDER_BLUR = "folder_blur"
+    fun isFolderBlurEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_BLUR, true)
+    fun setFolderBlurEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_BLUR, v).apply()
+
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
     fun getDeepSeekApiKey(context: Context): String =

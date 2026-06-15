@@ -99,6 +99,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.armutlu.apporganizer.utils.AppAnalytics
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.HazeStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,6 +111,8 @@ fun HomeScreen(
     onLaunchWidgetPicker: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val hazeState = remember { HazeState() }
+    var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
@@ -184,6 +190,8 @@ fun HomeScreen(
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
                     folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BLUR ->
+                    folderBlurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -326,6 +334,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .haze(hazeState)
             .then(
                 if (bgType == "solid")
                     Modifier.background(Color(bgColorInt))
@@ -727,7 +736,8 @@ fun HomeScreen(
             onAppLongClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 contextMenuPkg = app.packageName
-            }
+            },
+            hazeState = if (folderBlurEnabled) hazeState else remember { HazeState() }
         )
     }
 

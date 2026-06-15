@@ -122,6 +122,9 @@ dependencies {
     // Color picker
     implementation("com.github.skydoves:colorpicker-compose:1.1.2")
 
+    // Haze — blur efekti (HyperOS tarzı frosted glass) — 0.7.x Kotlin 1.9 ile uyumlu
+    implementation("dev.chrisbanes.haze:haze:0.7.3")
+
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
