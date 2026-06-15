@@ -99,10 +99,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.armutlu.apporganizer.utils.AppAnalytics
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
-import dev.chrisbanes.haze.HazeStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,7 +107,6 @@ fun HomeScreen(
     onLaunchWidgetPicker: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val hazeState = remember { HazeState() }
     var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
@@ -331,10 +326,10 @@ fun HomeScreen(
     }
 
     // Root box — duvar kağıdı (transparent) veya düz renk arka plan
+    // NOT: .haze() gesture'lardan SONRA — Haze 0.7.3 önce gelince pointer event tüketiyor
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .haze(hazeState)
             .then(
                 if (bgType == "solid")
                     Modifier.background(Color(bgColorInt))
@@ -737,7 +732,6 @@ fun HomeScreen(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 contextMenuPkg = app.packageName
             },
-            hazeState = if (folderBlurEnabled) hazeState else remember { HazeState() }
         )
     }
 

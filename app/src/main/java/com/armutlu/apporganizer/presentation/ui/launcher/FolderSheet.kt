@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
-import dev.chrisbanes.haze.HazeStyle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
@@ -140,7 +137,6 @@ fun FolderSheet(
     onDismiss: () -> Unit,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
-    hazeState: HazeState = remember { HazeState() },
 ) {
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -171,10 +167,11 @@ fun FolderSheet(
         base.sortedByMode(sortMode)
     }
 
+    val blurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(LocalContext.current)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,
-        containerColor   = Color.Transparent,
+        containerColor   = if (blurEnabled) Color(0xE61A1A2A) else Color(0xFF1A1A2A),
         scrimColor       = Color(0x66000000),
         shape            = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle       = null,
@@ -182,13 +179,6 @@ fun FolderSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .hazeChild(
-                    state = hazeState,
-                    style = HazeStyle(
-                        blurRadius = 18.dp,
-                        tint = Color(0xCC0D0D1A)
-                    )
-                )
                 .navigationBarsPadding()
                 .padding(bottom = 24.dp),
         ) {
