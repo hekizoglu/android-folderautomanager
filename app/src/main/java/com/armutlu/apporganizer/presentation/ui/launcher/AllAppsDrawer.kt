@@ -178,6 +178,322 @@ private fun buildSidebarEntries(
     }
 }
 
+// ── State holder — büyük composable'ı parçalara böler (DVM register limit aşımını önler) ──
+private data class DrawerState(
+    val sortedApps: List<AppInfo>,
+    val grouped: Map<Char, List<AppInfo>>,
+    val sidebarEntries: List<SidebarEntry>,
+    val bgAlpha: Float,
+    val notifTextEnabled: Boolean,
+    val unusedGreyDays: Int,
+    val iconPackPkg: String,
+    val sortMode: AllAppsSortMode
+)
+
+// ── Arama + filtre bölümü ─────────────────────────────────────────────────────
+@Composable
+private fun DrawerSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onClose: () -> Unit,
+    searchHistory: List<String>,
+    onHistoryClear: () -> Unit,
+    searchFocusRequester: FocusRequester,
+    keyboardController: androidx.compose.ui.platform.SoftwareKeyboardController?,
+    saveSearchIfNeeded: () -> Unit,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    totalCount: Int,
+    filteredCount: Int,
+    quickFilter: Int,
+    onQuickFilterChange: (Int) -> Unit,
+    quickFilterCounts: IntArray,
+    sortMode: AllAppsSortMode,
+    onSortModeChange: (AllAppsSortMode) -> Unit,
+    context: android.content.Context
+) {
+    val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
+
+    // Drag handle
+    Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(DragHandle))
+    }
+    Spacer(Modifier.height(10.dp))
+
+    // Başlık
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text("Uygulamalar", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+        val countText = if (searchQuery.isNotBlank() || quickFilter != 0)
+            "$filteredCount / $totalCount" else "$totalCount uygulama"
+        Text(countText, fontSize = 12.sp, color = TextSecondary)
+    }
+
+    // Arama + kapat
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier.weight(1f).height(44.dp)
+                .clip(RoundedCornerShape(22.dp)).background(SearchBg).padding(horizontal = 14.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Search, "Ara", tint = TextSecondary, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    if (searchQuery.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
+                    BasicTextField(
+                        value = searchQuery, onValueChange = onSearchQueryChange,
+                        singleLine = true, cursorBrush = SolidColor(HeaderColor),
+                        textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
+                        modifier = Modifier.focusRequester(searchFocusRequester)
+                    )
+                }
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.Close, "Temizle", tint = TextSecondary, modifier = Modifier.size(15.dp))
+                    }
+                }
+            }
+        }
+        IconButton(
+            onClick = { saveSearchIfNeeded(); keyboardController?.hide(); onClose() },
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(Icons.Default.Close, "Kapat", tint = TextSecondary, modifier = Modifier.size(20.dp))
+        }
+    }
+
+    Spacer(Modifier.height(8.dp))
+
+    // Son aramalar
+    if (searchQuery.isEmpty() && searchHistory.isNotEmpty()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.Search, "Arama geçmişi", tint = TextSecondary, modifier = Modifier.size(14.dp))
+            searchHistory.forEach { q ->
+                Box(
+                    modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = 0.10f))
+                        .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSearchQueryChange(q) }
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                ) { Text(q, fontSize = 12.sp, color = TextSecondary, maxLines = 1) }
+            }
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                    .clickable { SearchHistoryPrefs.clear(context); onHistoryClear() }
+                    .padding(horizontal = 8.dp, vertical = 5.dp)
+            ) { Text("Temizle", fontSize = 11.sp, color = Color.White.copy(alpha = 0.3f)) }
+        }
+        Spacer(Modifier.height(6.dp))
+    }
+
+    // Hızlı filtre chip'leri
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        itemsIndexed(quickFilterLabels) { idx, label ->
+            val active = quickFilter == idx
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                    .background(if (active) SidebarColor.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.08f))
+                    .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onQuickFilterChange(idx) }
+                    .padding(horizontal = 11.dp, vertical = 5.dp)
+            ) {
+                val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
+                Text(
+                    label + if (active) countLabel else "",
+                    fontSize = 11.sp,
+                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                    color = if (active) Color.White else TextSecondary
+                )
+            }
+        }
+    }
+
+    // Sıralama chip'leri
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        itemsIndexed(AllAppsSortMode.entries) { _, mode ->
+            val active = sortMode == mode
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                    .background(if (active) HeaderColor else Color.White.copy(alpha = 0.12f))
+                    .clickable {
+                        onSortModeChange(mode)
+                        context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
+                            .edit().putString("all_apps_sort_mode", mode.name).apply()
+                    }
+                    .padding(horizontal = 11.dp, vertical = 5.dp)
+            ) {
+                Text(
+                    mode.label, fontSize = 11.sp,
+                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                    color = if (active) Color.White else TextSecondary
+                )
+            }
+        }
+    }
+    Spacer(Modifier.height(4.dp))
+}
+
+// ── Liste bölümü ──────────────────────────────────────────────────────────────
+@Composable
+private fun DrawerAppList(
+    state: DrawerState,
+    listState: LazyListState,
+    searchQuery: String,
+    iconSize: Dp,
+    favoritesEnabled: Boolean,
+    favoriteApps: List<AppInfo>,
+    onFavoriteAppClick: (String) -> Unit,
+    recentAppsEnabled: Boolean,
+    recentApps: List<AppInfo>,
+    onRecentAppClick: (String) -> Unit,
+    onAppClick: (String) -> Unit,
+    onAppLongClick: ((AppInfo) -> Unit)?,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    saveSearchIfNeeded: () -> Unit
+) {
+    if (state.grouped.isNotEmpty()) {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+            if (searchQuery.isEmpty() && favoritesEnabled && favoriteApps.isNotEmpty()) {
+                item(key = "favorites_row") { FavoritesRow(apps = favoriteApps, iconPackPkg = state.iconPackPkg, onAppClick = onFavoriteAppClick) }
+            }
+            if (searchQuery.isEmpty() && recentAppsEnabled && recentApps.isNotEmpty()) {
+                item(key = "recent_row") { RecentAppsRow(apps = recentApps, iconPackPkg = state.iconPackPkg, onAppClick = onRecentAppClick) }
+            }
+            state.grouped.forEach { (letter, letterApps) ->
+                item(key = "header_$letter") { NiagaraLetterHeader(letter = letter) }
+                items(items = letterApps, key = { it.packageName }) { app ->
+                    NiagaraAppRow(
+                        app = app, iconSize = iconSize, isActive = false,
+                        sortMode = state.sortMode,
+                        notifTextEnabled = state.notifTextEnabled,
+                        unusedGreyDays = state.unusedGreyDays,
+                        iconPackPkg = state.iconPackPkg,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            saveSearchIfNeeded()
+                            AppAnalytics.appLaunched(app.packageName, "all_apps")
+                            onAppClick(app.packageName)
+                        },
+                        onLongClick = { onAppLongClick?.invoke(app) }
+                    )
+                }
+            }
+        }
+    } else {
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+            if (state.sortedApps.isEmpty()) {
+                item {
+                    Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
+                        Text("Sonuç bulunamadı", color = TextSecondary, fontSize = 14.sp)
+                    }
+                }
+            } else {
+                items(items = state.sortedApps, key = { it.packageName }) { app ->
+                    NiagaraAppRow(
+                        app = app, iconSize = iconSize, isActive = false,
+                        sortMode = state.sortMode,
+                        notifTextEnabled = state.notifTextEnabled,
+                        unusedGreyDays = state.unusedGreyDays,
+                        iconPackPkg = state.iconPackPkg,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            saveSearchIfNeeded()
+                            AppAnalytics.appLaunched(app.packageName, "all_apps")
+                            onAppClick(app.packageName)
+                        },
+                        onLongClick = { onAppLongClick?.invoke(app) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+@Composable
+private fun DrawerSidebar(
+    sidebarEntries: List<SidebarEntry>,
+    activeSidebarIdx: Int,
+    onActivate: (Int) -> Unit,
+    onDeactivate: () -> Unit,
+    listState: LazyListState,
+    scope: kotlinx.coroutines.CoroutineScope,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
+) {
+    val sidebarPaddingDp = 56.dp
+    var boxHeightPx by remember { mutableStateOf(0f) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(44.dp)
+            .padding(vertical = sidebarPaddingDp)
+            .onSizeChanged { boxHeightPx = it.height.toFloat() }
+            .pointerInput(sidebarEntries) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        val n = sidebarEntries.size
+                        if (n > 0 && boxHeightPx > 0f) {
+                            val idx = (offset.y / (boxHeightPx / n)).toInt().coerceIn(0, sidebarEntries.lastIndex)
+                            onActivate(idx)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
+                        }
+                    },
+                    onDragEnd = { onDeactivate() },
+                    onDragCancel = { onDeactivate() },
+                    onDrag = { change, _ ->
+                        change.consume()
+                        val n = sidebarEntries.size
+                        if (n > 0 && boxHeightPx > 0f) {
+                            val idx = (change.position.y / (boxHeightPx / n)).toInt().coerceIn(0, sidebarEntries.lastIndex)
+                            if (activeSidebarIdx != idx) {
+                                onActivate(idx)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
+                            }
+                        }
+                    }
+                )
+            },
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            sidebarEntries.forEachIndexed { idx, entry ->
+                val isActive = activeSidebarIdx == idx
+                val scale by animateFloatAsState(
+                    targetValue = if (isActive) 1.5f else 1f,
+                    animationSpec = spring(stiffness = Spring.StiffnessHigh),
+                    label = "sidebar_scale_$idx"
+                )
+                Text(
+                    text = entry.label,
+                    fontSize = if (isActive) 14.sp else 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isActive) SidebarActive else SidebarColor,
+                    modifier = Modifier.scale(scale).padding(horizontal = 2.dp),
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
 // ── Ana Drawer ────────────────────────────────────────────────────────────────
 @Composable
 fun AllAppsDrawer(
@@ -195,31 +511,29 @@ fun AllAppsDrawer(
     recentAppsEnabled: Boolean = false,
     onRecentAppClick: (String) -> Unit = {},
 ) {
-    var dragOffset      by remember { mutableFloatStateOf(0f) }
-    val context         = LocalContext.current
+    var dragOffset        by remember { mutableFloatStateOf(0f) }
+    val context           = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchFocusRequester = remember { FocusRequester() }
+    val haptic            = LocalHapticFeedback.current
+    val listState         = rememberLazyListState()
+    val scope             = rememberCoroutineScope()
 
-    // Drawer açıldığında 300ms sonra klavyeyi aç (animasyon bitmeden açma)
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(300)
         runCatching { searchFocusRequester.requestFocus() }
         keyboardController?.show()
     }
 
-    var sortMode        by remember {
+    var sortMode by remember {
         val saved = context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
             .getString("all_apps_sort_mode", AllAppsSortMode.ALPHA.name)
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
     }
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }
-    val haptic          = LocalHapticFeedback.current
-    val listState       = rememberLazyListState()
-    val scope           = rememberCoroutineScope()
-    var searchHistory   by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
-    var quickFilter     by remember { mutableStateOf(0) } // 0=Tümü 1=Kullanıcı 2=Sistem 3=Son7gün
+    var searchHistory    by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
+    var quickFilter      by remember { mutableStateOf(0) }
 
-    // Arama geçmişini güncelle: sorgu boşken drawer kapanmadan önce kaydet
     val saveSearchIfNeeded = {
         if (searchQuery.trim().length >= 2) {
             SearchHistoryPrefs.addQuery(context, searchQuery)
@@ -227,62 +541,44 @@ fun AllAppsDrawer(
         }
     }
 
-    val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
-
-    // Her chip'in sayımı — derivedStateOf: apps değişince yeniden hesaplar, diğer state'lerde değil
     val quickFilterCounts by remember {
         derivedStateOf {
             val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
-            intArrayOf(
-                apps.size,
-                apps.count { !it.isSystemApp },
-                apps.count { it.isSystemApp },
-                apps.count { it.lastUsedTimestamp > cutoff }
-            )
+            intArrayOf(apps.size, apps.count { !it.isSystemApp }, apps.count { it.isSystemApp }, apps.count { it.lastUsedTimestamp > cutoff })
         }
     }
 
-    // Ayarlar — Settings değişince anında güncellenir (SharedPrefs listener)
-    var bgAlpha by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
+    var bgAlpha          by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
-    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
-    var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
+    var unusedGreyDays   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var iconPackPkg      by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
+
     DisposableEffect(context) {
-        val prefs = context.getSharedPreferences(
-            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
-        )
+        val prefs = context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_ALLAPPS_BG_ALPHA ->
-                    bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
-                    notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
-                    unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
-                    iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ALLAPPS_BG_ALPHA -> bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED -> notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS -> unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK -> iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    // Sırala + filtrele — derivedStateOf: bağımlı state'ler değişmedikçe recomposition tetiklenmez
     val sortedApps by remember {
         derivedStateOf {
             val now = System.currentTimeMillis()
-            val afterQuickFilter = when (quickFilter) {
+            val afterFilter = when (quickFilter) {
                 1 -> apps.filter { !it.isSystemApp }
                 2 -> apps.filter { it.isSystemApp }
                 3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
                 else -> apps
             }
             val trLocale = Locale("tr")
-            val base = if (searchQuery.isBlank()) afterQuickFilter
-            else {
-                val q = searchQuery.lowercase(trLocale)
-                afterQuickFilter.filter { it.appName.lowercase(trLocale).contains(q) }
-            }
+            val base = if (searchQuery.isBlank()) afterFilter
+            else { val q = searchQuery.lowercase(trLocale); afterFilter.filter { it.appName.lowercase(trLocale).contains(q) } }
             when (sortMode) {
                 AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
                 AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
@@ -293,14 +589,10 @@ fun AllAppsDrawer(
         }
     }
 
-    // Arama analitik — sorgu en az 2 karakter, sonuç sayısı mevcut
     LaunchedEffect(searchQuery, sortedApps.size) {
-        if (searchQuery.trim().length >= 2) {
-            AppAnalytics.searchPerformed(searchQuery.trim(), sortedApps.size)
-        }
+        if (searchQuery.trim().length >= 2) AppAnalytics.searchPerformed(searchQuery.trim(), sortedApps.size)
     }
 
-    // Alfa gruplama sadece ALPHA modunda — derivedStateOf: sortedApps değişince otomatik güncellenir
     val grouped: Map<Char, List<AppInfo>> by remember {
         derivedStateOf {
             if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
@@ -319,368 +611,93 @@ fun AllAppsDrawer(
         derivedStateOf {
             val map = mutableMapOf<Char, Int>()
             var idx = 0
-            grouped.forEach { (letter, list) ->
-                map[letter] = idx
-                idx += 1 + list.size
-            }
+            grouped.forEach { (letter, list) -> map[letter] = idx; idx += 1 + list.size }
             map
         }
     }
 
-    // Sidebar entries (contextual) — derivedStateOf: gereksiz yeniden hesaplamayı önler
     val sidebarEntries by remember {
         derivedStateOf {
             if (searchQuery.isNotBlank()) emptyList()
-            else if (sortMode == AllAppsSortMode.ALPHA) {
-                grouped.keys.mapIndexed { _, letter ->
-                    SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0)
-                }
-            } else {
-                buildSidebarEntries(sortedApps, sortMode)
-            }
+            else if (sortMode == AllAppsSortMode.ALPHA)
+                grouped.keys.map { letter -> SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0) }
+            else buildSidebarEntries(sortedApps, sortMode)
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectVerticalDragGestures(
-                    onDragEnd = {
-                        if (dragOffset > SWIPE_DOWN_THRESHOLD) {
-                            saveSearchIfNeeded()
-                            keyboardController?.hide()
-                            onClose()
-                        }
-                        dragOffset = 0f
-                    },
-                    onDragCancel = { dragOffset = 0f },
-                    onVerticalDrag = { _, delta ->
-                        if (delta > 0) dragOffset += delta else dragOffset = 0f
-                    }
-                )
-            }
-    ) {
-        // Arka plan
-        Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(Color.Black.copy(alpha = bgAlpha)))
+    val drawerState = DrawerState(
+        sortedApps = sortedApps,
+        grouped = grouped,
+        sidebarEntries = sidebarEntries,
+        bgAlpha = bgAlpha,
+        notifTextEnabled = notifTextEnabled,
+        unusedGreyDays = unusedGreyDays,
+        iconPackPkg = iconPackPkg,
+        sortMode = sortMode
+    )
 
+    Box(
+        modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+            detectVerticalDragGestures(
+                onDragEnd = {
+                    if (dragOffset > SWIPE_DOWN_THRESHOLD) { saveSearchIfNeeded(); keyboardController?.hide(); onClose() }
+                    dragOffset = 0f
+                },
+                onDragCancel = { dragOffset = 0f },
+                onVerticalDrag = { _, delta -> if (delta > 0) dragOffset += delta else dragOffset = 0f }
+            )
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(Color.Black.copy(alpha = bgAlpha)))
         Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
-
-                // ── Sol: Liste ─────────────────────────────────────────────
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-
-                    // Drag handle
-                    Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                        Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(DragHandle))
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-
-                    // Başlık — uygulama sayısı
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "Uygulamalar",
-                            fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary
-                        )
-                        val countText = if (searchQuery.isNotBlank() || quickFilter != 0)
-                            "${sortedApps.size} / ${apps.size}"
-                        else
-                            "${apps.size} uygulama"
-                        Text(countText, fontSize = 12.sp, color = TextSecondary)
-                    }
-
-                    // Arama + kapat
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f).height(44.dp)
-                                .clip(RoundedCornerShape(22.dp)).background(SearchBg)
-                                .padding(horizontal = 14.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Search, "Ara", tint = TextSecondary, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Box(modifier = Modifier.weight(1f)) {
-                                    if (searchQuery.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
-                                    BasicTextField(
-                                        value = searchQuery, onValueChange = onSearchQueryChange,
-                                        singleLine = true, cursorBrush = SolidColor(HeaderColor),
-                                        textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
-                                        modifier = Modifier.focusRequester(searchFocusRequester)
-                                    )
-                                }
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(24.dp)) {
-                                        Icon(Icons.Default.Close, "Temizle", tint = TextSecondary, modifier = Modifier.size(15.dp))
-                                    }
-                                }
-                            }
-                        }
-                        IconButton(
-                            onClick = {
-                                saveSearchIfNeeded()
-                                keyboardController?.hide()
-                                onClose()
-                            },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(Icons.Default.Close, "Kapat", tint = TextSecondary, modifier = Modifier.size(20.dp))
-                        }
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    // Son aramalar — sadece arama boşken ve geçmiş varken göster
-                    if (searchQuery.isEmpty() && searchHistory.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Search, "Arama geçmişi", tint = TextSecondary, modifier = Modifier.size(14.dp))
-                            searchHistory.forEach { q ->
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(Color.White.copy(alpha = 0.10f))
-                                        .clickable {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            onSearchQueryChange(q)
-                                        }
-                                        .padding(horizontal = 10.dp, vertical = 5.dp)
-                                ) {
-                                    Text(q, fontSize = 12.sp, color = TextSecondary, maxLines = 1)
-                                }
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable {
-                                        SearchHistoryPrefs.clear(context)
-                                        searchHistory = emptyList()
-                                    }
-                                    .padding(horizontal = 8.dp, vertical = 5.dp)
-                            ) {
-                                Text("Temizle", fontSize = 11.sp, color = Color.White.copy(alpha = 0.3f))
-                            }
-                        }
-                        Spacer(Modifier.height(6.dp))
-                    }
-
-                    // Hızlı filtre chip'leri
-                    androidx.compose.foundation.lazy.LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        itemsIndexed(quickFilterLabels) { idx, label ->
-                            val active = quickFilter == idx
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(if (active) SidebarColor.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.08f))
-                                    .clickable {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        quickFilter = idx
-                                    }
-                                    .padding(horizontal = 11.dp, vertical = 5.dp)
-                            ) {
-                                val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
-                                Text(
-                                    label + if (active) countLabel else "",
-                                    fontSize = 11.sp,
-                                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (active) Color.White else TextSecondary
-                                )
-                            }
-                        }
-                    }
-
-                    // Sıralama chip'leri (5 mod)
-                    androidx.compose.foundation.lazy.LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        itemsIndexed(AllAppsSortMode.entries) { _, mode ->
-                            val active = sortMode == mode
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(if (active) HeaderColor else Color.White.copy(alpha = 0.12f))
-                                    .clickable {
-                                        sortMode = mode
-                                        context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
-                                            .edit().putString("all_apps_sort_mode", mode.name).apply()
-                                    }
-                                    .padding(horizontal = 11.dp, vertical = 5.dp)
-                            ) {
-                                Text(
-                                    mode.label, fontSize = 11.sp,
-                                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (active) Color.White else TextSecondary
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(4.dp))
-
-                    // ── Liste ──────────────────────────────────────────────────
-                    if (grouped.isNotEmpty()) {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 32.dp)
-                        ) {
-                            if (searchQuery.isEmpty() && favoritesEnabled && favoriteApps.isNotEmpty()) {
-                                item(key = "favorites_row") {
-                                    FavoritesRow(
-                                        apps = favoriteApps,
-                                        iconPackPkg = iconPackPkg,
-                                        onAppClick = onFavoriteAppClick
-                                    )
-                                }
-                            }
-                            if (searchQuery.isEmpty() && recentAppsEnabled && recentApps.isNotEmpty()) {
-                                item(key = "recent_row") {
-                                    RecentAppsRow(
-                                        apps = recentApps,
-                                        iconPackPkg = iconPackPkg,
-                                        onAppClick = onRecentAppClick
-                                    )
-                                }
-                            }
-                            grouped.forEach { (letter, letterApps) ->
-                                item(key = "header_$letter") {
-                                    NiagaraLetterHeader(letter = letter)
-                                }
-                                items(items = letterApps, key = { it.packageName }) { app ->
-                                    NiagaraAppRow(
-                                        app = app, iconSize = iconSize, isActive = false,
-                                        sortMode = sortMode,
-                                        notifTextEnabled = notifTextEnabled,
-                                        unusedGreyDays = unusedGreyDays,
-                                        iconPackPkg = iconPackPkg,
-                                        onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            saveSearchIfNeeded()
-                                            AppAnalytics.appLaunched(app.packageName, "all_apps")
-                                            onAppClick(app.packageName)
-                                        },
-                                        onLongClick = { onAppLongClick?.invoke(app) }
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 32.dp)
-                        ) {
-                            if (sortedApps.isEmpty()) {
-                                item {
-                                    Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
-                                        Text("Sonuç bulunamadı", color = TextSecondary, fontSize = 14.sp)
-                                    }
-                                }
-                            } else {
-                                items(items = sortedApps, key = { it.packageName }) { app ->
-                                    NiagaraAppRow(
-                                        app = app, iconSize = iconSize, isActive = false,
-                                        sortMode = sortMode,
-                                        notifTextEnabled = notifTextEnabled,
-                                        unusedGreyDays = unusedGreyDays,
-                                        iconPackPkg = iconPackPkg,
-                                        onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            saveSearchIfNeeded()
-                                            AppAnalytics.appLaunched(app.packageName, "all_apps")
-                                            onAppClick(app.packageName)
-                                        },
-                                        onLongClick = { onAppLongClick?.invoke(app) }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    DrawerSearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = onSearchQueryChange,
+                        onClose = onClose,
+                        searchHistory = searchHistory,
+                        onHistoryClear = { searchHistory = emptyList() },
+                        searchFocusRequester = searchFocusRequester,
+                        keyboardController = keyboardController,
+                        saveSearchIfNeeded = saveSearchIfNeeded,
+                        haptic = haptic,
+                        totalCount = apps.size,
+                        filteredCount = sortedApps.size,
+                        quickFilter = quickFilter,
+                        onQuickFilterChange = { quickFilter = it },
+                        quickFilterCounts = quickFilterCounts,
+                        sortMode = sortMode,
+                        onSortModeChange = { sortMode = it },
+                        context = context
+                    )
+                    DrawerAppList(
+                        state = drawerState,
+                        listState = listState,
+                        searchQuery = searchQuery,
+                        iconSize = iconSize,
+                        favoritesEnabled = favoritesEnabled,
+                        favoriteApps = favoriteApps,
+                        onFavoriteAppClick = onFavoriteAppClick,
+                        recentAppsEnabled = recentAppsEnabled,
+                        recentApps = recentApps,
+                        onRecentAppClick = onRecentAppClick,
+                        onAppClick = onAppClick,
+                        onAppLongClick = onAppLongClick,
+                        haptic = haptic,
+                        saveSearchIfNeeded = saveSearchIfNeeded
+                    )
                 }
-
-                // ── Sağ: Contextual Sidebar ─────────────────────────────────
                 if (sidebarEntries.isNotEmpty()) {
-                    val sidebarPaddingDp = 56.dp
-                    var boxHeightPx by remember { mutableStateOf(0f) }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(44.dp)
-                            .padding(vertical = sidebarPaddingDp)
-                            .onSizeChanged { boxHeightPx = it.height.toFloat() }
-                            .pointerInput(sidebarEntries) {
-                                detectDragGestures(
-                                    onDragStart = { offset ->
-                                        val n = sidebarEntries.size
-                                        if (n > 0 && boxHeightPx > 0f) {
-                                            val idx = (offset.y / (boxHeightPx / n))
-                                                .toInt().coerceIn(0, sidebarEntries.lastIndex)
-                                            activeSidebarIdx = idx
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
-                                        }
-                                    },
-                                    onDragEnd = { activeSidebarIdx = -1 },
-                                    onDragCancel = { activeSidebarIdx = -1 },
-                                    onDrag = { change, _ ->
-                                        change.consume()
-                                        val n = sidebarEntries.size
-                                        if (n > 0 && boxHeightPx > 0f) {
-                                            val idx = (change.position.y / (boxHeightPx / n))
-                                                .toInt().coerceIn(0, sidebarEntries.lastIndex)
-                                            if (activeSidebarIdx != idx) {
-                                                activeSidebarIdx = idx
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
-                                            }
-                                        }
-                                    }
-                                )
-                            },
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxHeight(),
-                            verticalArrangement = Arrangement.SpaceEvenly,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            sidebarEntries.forEachIndexed { idx, entry ->
-                                val isActive = activeSidebarIdx == idx
-                                val scale by animateFloatAsState(
-                                    targetValue = if (isActive) 1.5f else 1f,
-                                    animationSpec = spring(stiffness = Spring.StiffnessHigh),
-                                    label = "sidebar_scale_$idx"
-                                )
-                                Text(
-                                    text = entry.label,
-                                    fontSize = if (isActive) 14.sp else 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isActive) SidebarActive else SidebarColor,
-                                    modifier = Modifier.scale(scale).padding(horizontal = 2.dp),
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    }
+                    DrawerSidebar(
+                        sidebarEntries = sidebarEntries,
+                        activeSidebarIdx = activeSidebarIdx,
+                        onActivate = { activeSidebarIdx = it },
+                        onDeactivate = { activeSidebarIdx = -1 },
+                        listState = listState,
+                        scope = scope,
+                        haptic = haptic
+                    )
                 }
             }
         }

@@ -320,3 +320,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Yapılanlar:** HyperOS tarzı blur implementasyonu — Haze 0.7.3 (1.5.0 Kotlin 2.x gerektirdiği için 0.7.3 seçildi). FolderSheet containerColor=Transparent + hazeChild(blurRadius=18dp, tint=#CC0D0D1A). HomeScreen root Box'a .haze(hazeState). AppPrefs KEY_FOLDER_BLUR toggle. SettingsAppearanceSection'a "Klasör Blur Efekti" satırı eklendi. 11 dosya değişti.
 **Bug:** Haze 1.5.0 Kotlin 2.x API uyumsuzluğu — 0.7.3'e düşüldü (aynı API mevcut).
 **Sonraki:** Emülatörde blur görsel testi + Ayarlar'daki tüm toggle'ların çalışıp çalışmadığını test et
+
+## Döngü 47 — 18:37
+**Yapılanlar:** AllAppsDrawer.kt refactor — büyük composable (688 satır, v295 register) 4 ayrı @Composable fonksiyona bölündü (DrawerState, DrawerSearchBar, DrawerAppList, DrawerSidebar). VerifyError tamamen giderildi, emülatörde AllApps drawer crash olmadan açıldı.
+**Agent:** Yok
+**LEARNINGS.md:** DVM register limiti — Kotlin 1.9.x'te büyük composable (300+ satır, çok sayıda yerel değişken) v295+ register üretir, verifier reddeder → fonksiyonu küçük @Composable parçalara böl
+**Sonraki:** Settings toggle testleri + ROADMAP BLUR görevleri tamamlandı işareti
