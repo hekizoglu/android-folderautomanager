@@ -259,7 +259,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1A1A2E)),
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -268,13 +268,13 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "AppOrganizer",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Light
                 )
                 Text(
                     text = "Uygulamalar yükleniyor...",
-                    color = Color.White.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )
                 Spacer(Modifier.height(8.dp))
@@ -296,7 +296,7 @@ fun HomeScreen(
                         }
                         runCatching { context.startActivity(intent) }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF37474F))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     Text("Uygulama Ayarları")
                 }

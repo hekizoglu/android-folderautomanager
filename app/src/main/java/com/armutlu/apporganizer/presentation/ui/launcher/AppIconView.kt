@@ -176,12 +176,12 @@ fun AppIconView(
                     modifier = Modifier
                         .size(iconSize)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color.Gray.copy(alpha = 0.5f)),
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = app.appName.take(1).uppercase(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp
                     )
                 }
