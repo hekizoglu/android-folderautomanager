@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 00:25 UTC
-# Commit: c4c698025d120c4c5ebf9997916784a6b0dd24d8
+# Generated: 2026-06-15 00:34 UTC
+# Commit: 6621cd76756ea69752997ffa30951813b5d2d754
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8,7 +8,7 @@ FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
 package com.armutlu.apporganizer
 
 import android.app.Application
-import com.armutlu.apporganizer.BuildConfig
+import android.content.pm.ApplicationInfo
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -21,8 +21,8 @@ class AppOrganizerApp : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
         FirebaseApp.initializeApp(this)
-        // Debug build'de Crashlytics raporlama kapalı — sadece release'te aktif
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+        val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
     }
 }
 
