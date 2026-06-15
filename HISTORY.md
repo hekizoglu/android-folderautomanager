@@ -350,3 +350,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Explore — LazyColumn key audit (14 eksik bulundu, 7 düzeltildi, 7 enum/sayı önemsiz)
 **CLAUDE.md/LEARNINGS.md:** Güncelleme yok
 **Sonraki:** Döngü 52 — BUILD döngüsü (48+6=54, bir sonraki 54. döngü; 52. döngü KOD)
+
+## Döngü 52 — 20:26 [KOD]
+**Yapılanlar:** AppClassifier duplicate fix — com.whatsapp MANUFACTURER_PREFIX_MAP'ten kaldırıldı (exactMatchMap'te CAT_COMMUNICATION zaten var, öncelikli). 3594 benzersiz entry, 0 duplicate. ROADMAP: StateFlow migrasyonu + FolderTile pattern tamamlandı işaretlendi.
+**Agent:** Yok
+**CLAUDE.md/LEARNINGS.md:** LEARNINGS L1 doğrulandı — WhatsApp exactMatchMap'te CAT_COMMUNICATION, MANUFACTURER_PREFIX_MAP'ten çıkarıldı
+**Sonraki:** Döngü 53 — KOD, backlog görev

@@ -94,7 +94,7 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 
 ### Yakın (Sonraki Sprint) — Kod Kalitesi
 - [ ] Hilt DI kurulumu — manuel `new()` çağrılarını temizle (kısmen başladı: onboarding'de `hiltViewModel` kullanılıyor)
-- [ ] StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir
+- [x] ~~StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir~~ ✅ LiveData kullanımı yok, tüm akışlar StateFlow (2026-06-15 Döngü 52)
 - [ ] Unit test coverage — ViewModel'ler için MockK testleri 🔄 (başlandı, CI pipeline hazır)
 - [ ] Compose UI: `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit
 - [ ] Memory leak audit: Fragment binding null kontrolü
@@ -125,7 +125,7 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 ## 🔍 Döngüden Gelen Yeni Görevler
 _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 
-- [ ] FolderTile reaktif AppPrefs pattern'ini standartlaştır (2026-06-13 — Döngü 26/27/36) — tüm Compose ekranlarında `mutableStateOf + DisposableEffect` helper'ı oluştur
+- [x] ~~FolderTile reaktif AppPrefs pattern'ini standartlaştır~~ ✅ FolderTile parametre bazlı (HomeScreen'den geliyor), HomeScreen DisposableEffect+listener kullanıyor — pattern doğru (2026-06-15 Döngü 52)
 - [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3594 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
 - [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, crash kontrol otomasyonu
 - [ ] `AppDatabaseService` 404 uyarısı (2026-06-15 — Döngü 43) — `app_database.json` repo'da yok, servis her başlangıçta hata logu yazıyor; ya dosyayı ekle ya da özelliği kaldır

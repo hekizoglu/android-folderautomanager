@@ -34,7 +34,6 @@ class AppClassifier @Inject constructor() {
         "com.meta"                              to Category.CAT_META,
         "com.facebook"                          to Category.CAT_META,
         "com.instagram"                         to Category.CAT_META,
-        "com.whatsapp"                          to Category.CAT_META,
         // Spotify
         "com.spotify"                           to Category.CAT_SPOTIFY,
         // Amazon
