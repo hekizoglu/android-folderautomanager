@@ -125,6 +125,8 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 ## 🔍 Döngüden Gelen Yeni Görevler
 _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 
+- [ ] **Ayarlar — Kullanıcı Talep/Öneri Formu** — SettingsScreen'e "Talep Gönder" butonu: kullanıcı metin girer, GitHub Issue veya Telegram bot'a gönderilir (2026-06-16 — kullanıcı talebi)
+
 - [x] ~~FolderTile reaktif AppPrefs pattern'ini standartlaştır~~ ✅ FolderTile parametre bazlı (HomeScreen'den geliyor), HomeScreen DisposableEffect+listener kullanıyor — pattern doğru (2026-06-15 Döngü 52)
 - [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3594 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
 - [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, crash kontrol otomasyonu
@@ -138,11 +140,11 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [x] ~~🔴 **`git config core.hooksPath .githooks`**~~ ✅ `.githooks/pre-commit` oluşturuldu, `git config core.hooksPath .githooks` ayarlandı (Döngü 72, 2026-06-16)
 - [x] ~~🔴 **Android 15 Edge-to-Edge**~~ ✅ `WindowCompat.setDecorFitsSystemWindows(false)` MainActivity + LauncherActivity'de; Compose Scaffold ekranları Material3 otomatik handle ediyor (Döngü 73, 2026-06-16)
 - [x] ~~🔴 **Room `schemas/` klasörü**~~ ✅ `room.schemaLocation` kapt argumentine eklendi, `app/schemas/` git'e alındı (Döngü 71, 2026-06-16)
-- [ ] 🟡 **Predictive Back Gesture** — `android:enableOnBackInvokedCallback="true"` manifest + BackHandler gözden geçir (Android 13+)
-- [ ] 🟡 **LeakCanary** — debug build'e ekle (`debugImplementation "com.squareup.leakcanary:leakcanary-android:..."`)
+- [x] ~~🟡 **Predictive Back Gesture**~~ ✅ Manifest satır 49'da zaten mevcut; HomeScreen BackHandler doğru (Döngü 74, 2026-06-16)
+- [x] ~~🟡 **LeakCanary**~~ ✅ `debugImplementation leakcanary-android:2.14` eklendi (Döngü 75, 2026-06-16)
 - [ ] 🟡 **Android 14 NotificationListenerService** — gerçek cihazda test (Android 14 kısıtlamaları)
-- [ ] 🟢 **Themed monochrome icon** — `ic_launcher_monochrome` drawable (Android 13+ Pixel Launcher uyumu)
-- [ ] 🟢 **`android:dataExtractionRules` XML** — backup/restore kuralları (cihaz değiştirince klasör yapısı korunmalı)
+- [x] ~~🟢 **Themed monochrome icon**~~ ✅ `ic_launcher_monochrome.xml` oluşturuldu, ic_launcher + ic_launcher_round'a eklendi (Döngü 77, 2026-06-16)
+- [x] ~~🟢 **`android:dataExtractionRules` XML**~~ ✅ Zaten mevcut; crash_log + deepseek_prefs exclude eklendi (Döngü 76, 2026-06-16)
 - [ ] 🟢 **Splash Screen API** — `core-splashscreen` entegrasyonu (Android 12+ kontrolsüz splash)
 
 ---

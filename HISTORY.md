@@ -940,3 +940,8 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** MainActivity.kt: WindowCompat.setDecorFitsSystemWindows(false) eklendi (Edge-to-Edge); ROADMAP güncellendi
 **Build:** SUCCESS 33s (24.4 MB) — kaynak değişti, KAPT derledi, kilit yok
 **Sonraki:** Predictive Back Gesture (Android 13+) veya LeakCanary debug
+
+## Döngü 74-78 — 2026-06-16 (KOD x4 + BUILD)
+**Yapılanlar:** D74 Predictive Back zaten vardı; D75 LeakCanary 2.14 eklendi; D76 dataExtractionRules güncellendi; D77 ic_launcher_monochrome oluşturuldu; D78 BUILD 4m23s (temiz build - kilit 1 kez)
+**Build:** SUCCESS 24.8 MB — monochrome icon res merge kilidi çıktı, full clean ile aşıldı
+**Sonraki:** Fuzzy arama (typo toleranslı) + harcananvakit.md otomatik güncelleme + Ayarlar talep formu
