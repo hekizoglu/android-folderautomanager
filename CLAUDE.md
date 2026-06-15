@@ -47,6 +47,12 @@ Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 - Her 6 döngüde: build + APK Telegram'a
 - Her 18 döngüde: emülatörde tam test
 
+### Sıralı (Ard Arda) Döngü Kuralları
+- Ard arda çalışan döngülerde build sadece **son döngüde** yapılır
+- Her hata/uyarıda anında agent ile online araştırma başlatılır (beklemeden)
+- Her döngü sonunda HISTORY.md + ROADMAP.md güncellenir
+- Her döngüde kullanıcıya detaylı değişiklik raporu verilir (dosya:satır + eski→yeni)
+
 ### Her Görev Sonunda
 1. Build al (`.\gradlew assembleDebug`)
 2. Hata varsa düzelt
