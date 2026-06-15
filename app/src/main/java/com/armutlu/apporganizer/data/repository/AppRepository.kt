@@ -5,7 +5,10 @@ import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import javax.inject.Inject
@@ -27,6 +30,8 @@ class AppRepository @Inject constructor(
      */
     fun getAllAppsFlow(): Flow<List<AppInfo>> {
         return appDao.getAllAppsFlow()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
     
     /**
@@ -46,13 +51,17 @@ class AppRepository @Inject constructor(
      */
     fun getAppsByCategory(categoryId: String): Flow<List<AppInfo>> {
         return appDao.getAppsByCategory(categoryId)
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
-    
+
     /**
      * Get uncategorized apps
      */
     fun getUncategorizedApps(): Flow<List<AppInfo>> {
         return appDao.getUncategorizedApps()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
     
     /**
@@ -67,6 +76,8 @@ class AppRepository @Inject constructor(
      */
     fun searchApps(query: String): Flow<List<AppInfo>> {
         return appDao.searchAppsByName(query)
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
     
     /**
@@ -163,9 +174,10 @@ class AppRepository @Inject constructor(
      * Get apps with category info
      */
     fun getAppsWithCategories(): Flow<List<AppInfo>> {
-        return appDao.getAllAppsFlow().map { apps ->
-            apps.sortedBy { it.appName }
-        }
+        return appDao.getAllAppsFlow()
+            .map { apps -> apps.sortedBy { it.appName } }
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
     
     /**
@@ -185,13 +197,17 @@ class AppRepository @Inject constructor(
      */
     fun getSystemApps(): Flow<List<AppInfo>> {
         return appDao.getSystemApps()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
-    
+
     /**
      * Get user-installed apps
      */
     fun getUserApps(): Flow<List<AppInfo>> {
         return appDao.getUserApps()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
     }
     
     /**
@@ -239,7 +255,8 @@ class AppRepository @Inject constructor(
         try { appDao.updateUsageCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
     }
 
-    fun getAllAppsSortedByUsage(): Flow<List<AppInfo>> = appDao.getAllAppsSortedByUsage()
+    fun getAllAppsSortedByUsage(): Flow<List<AppInfo>> =
+        appDao.getAllAppsSortedByUsage().distinctUntilChanged().flowOn(Dispatchers.IO)
 
     suspend fun updateAppSize(packageName: String, sizeBytes: Long) {
         try { appDao.updateAppSize(packageName, sizeBytes) } catch (e: Exception) { Timber.e(e) }
@@ -266,7 +283,8 @@ class AppRepository @Inject constructor(
         try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) { Timber.e(e) }
     }
 
-    fun getHiddenApps(): kotlinx.coroutines.flow.Flow<List<AppInfo>> = appDao.getHiddenApps()
+    fun getHiddenApps(): Flow<List<AppInfo>> =
+        appDao.getHiddenApps().distinctUntilChanged().flowOn(Dispatchers.IO)
 
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {
         try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
