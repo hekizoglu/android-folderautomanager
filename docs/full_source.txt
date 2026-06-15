@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 00:04 UTC
-# Commit: 8eda7eb1f254020278de472a1f2d1b9956186aa2
+# Generated: 2026-06-15 00:09 UTC
+# Commit: df96c7d987240c45e8ce26c08eaf53b190177478
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8,6 +8,8 @@ FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
 package com.armutlu.apporganizer
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
@@ -17,6 +19,9 @@ class AppOrganizerApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
+        FirebaseApp.initializeApp(this)
+        // Debug build'de Crashlytics raporlama kapalı — sadece release'te aktif
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
     }
 }
 
@@ -16780,6 +16785,63 @@ class LauncherAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
 
     override fun onInterrupt() {}
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/utils/AppAnalytics.kt
+========================================
+package com.armutlu.apporganizer.utils
+
+import android.os.Bundle
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
+
+object AppAnalytics {
+
+    private val analytics: FirebaseAnalytics by lazy { Firebase.analytics }
+
+    fun folderOpened(categoryId: String, categoryName: String) {
+        analytics.logEvent("folder_opened", Bundle().apply {
+            putString("category_id", categoryId)
+            putString("category_name", categoryName)
+        })
+    }
+
+    fun appLaunched(packageName: String, source: String) {
+        // source: "home", "folder", "all_apps", "suggestions", "favorites", "recent"
+        analytics.logEvent("app_launched", Bundle().apply {
+            putString("package_name", packageName)
+            putString("source", source)
+        })
+    }
+
+    fun allAppsOpened() {
+        analytics.logEvent("all_apps_opened", null)
+    }
+
+    fun categoryReclassified(packageName: String, fromCategory: String, toCategory: String) {
+        // Kullanıcı bir uygulamanın kategorisini değiştirince — öğrenme sinyali
+        analytics.logEvent("category_reclassified", Bundle().apply {
+            putString("package_name", packageName)
+            putString("from_category", fromCategory)
+            putString("to_category", toCategory)
+        })
+    }
+
+    fun shortcutUsed(packageName: String, shortcutId: String) {
+        analytics.logEvent("shortcut_used", Bundle().apply {
+            putString("package_name", packageName)
+            putString("shortcut_id", shortcutId)
+        })
+    }
+
+    fun searchPerformed(query: String, resultCount: Int) {
+        analytics.logEvent("search_performed", Bundle().apply {
+            putString("query_length", query.length.coerceAtMost(5).toString())
+            putInt("result_count", resultCount)
+        })
+    }
 }
 
 ========================================
