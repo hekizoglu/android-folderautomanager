@@ -111,15 +111,48 @@ if (-not $status) {
 # --- 5. Telegram ---
 Step 5 "Telegram bildirim..."
 $apk = "app\build\outputs\apk\debug\app-debug.apk"
+
+# Detaylı rapor mesajı oluştur
+$buildStatus = if ($doBuild) { "✅ BUILD ALINDI" } else { "⏭ Build atlandı" }
+$nextCycle = $CycleNum + 1
+$nextBuild = $BuildEvery - ($nextCycle % $BuildEvery)
+$gitLog = (git log --oneline -3 2>$null) -join "`n"
+$roadmapNext = ""
+try {
+    $roadmap = Get-Content "ROADMAP.md" -ErrorAction SilentlyContinue
+    $inNew = $false
+    foreach ($line in $roadmap) {
+        if ($line -match "Döngüden Gelen") { $inNew = $true; continue }
+        if ($inNew -and $line -match "^\- \[ \]") {
+            $roadmapNext = $line -replace "^\- \[ \] ", ""
+            break
+        }
+    }
+} catch {}
+
+$detailedMsg = @"
+🔄 DÖNGÜ $CycleNum TAMAMLANDI
+━━━━━━━━━━━━━━━━━━━━━━
+📋 Değişenler: $Message
+$buildStatus
+━━━━━━━━━━━━━━━━━━━━━━
+📝 Son commitler:
+$gitLog
+━━━━━━━━━━━━━━━━━━━━━━
+⏭ Sonraki döngü: #$nextCycle
+🏗 Build: $nextBuild döngü sonra
+📌 Öncelik: $roadmapNext
+"@
+
 try {
     if ($doBuild -and (Test-Path $apk)) {
-        & "$scriptDir\telegram_notify.ps1" -Message "Döngü $CycleNum`: $Message" -File $apk
+        & "$scriptDir\telegram_notify.ps1" -Message $detailedMsg -File $apk
     } else {
-        & "$scriptDir\telegram_notify.ps1" -Message "Döngü $CycleNum`: $Message"
+        & "$scriptDir\telegram_notify.ps1" -Message $detailedMsg
     }
 } catch {
     Write-Host "⚠️ Telegram atlandı: $_" -ForegroundColor DarkYellow
 }
 
 Write-Host "`n✅ Döngü $CycleNum tamamlandı." -ForegroundColor Green
-Write-Host "   Hatırlatma: LEARNINGS.md (öğrenme) + HISTORY.md (döngü özeti) güncellemeyi unutma." -ForegroundColor DarkGray
+Write-Host "   Hatırlatma: HISTORY.md güncelle (3 satır zorunlu)." -ForegroundColor DarkGray

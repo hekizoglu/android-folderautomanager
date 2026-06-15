@@ -12,6 +12,60 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
 
 ## 🔥 Aktif Sprint
 
+### HyperOS Tarzı Klasör Açılışı — Blur + Animasyon
+
+> **Hedef:** Klasör açılınca arka plan blur olsun, sheet scale+fade ile açılsın (HyperOS/MIUI tarzı frosted glass)
+> **Araştırma:** 2026-06-15 — Haze kütüphanesi (chrisbanes/haze, API 21+) en uygun çözüm
+> **Kısıt:** minSdk=26 → `Modifier.blur()` API 31+ gerektiriyor → Haze kütüphanesi API 21+ destekli, bu projeyi kapsar
+
+#### Teknik Plan
+
+**Adım 1 — Haze bağımlılığı**
+```kotlin
+// app/build.gradle.kts
+implementation("dev.chrisbanes.haze:haze:1.5.0")
+```
+
+**Adım 2 — HomeScreen: hazeState + haze modifier**
+```kotlin
+val hazeState = remember { HazeState() }
+
+// Arka plan içerik (klasörler, pager) — blur kaynağı
+Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
+    // Mevcut HomeScreen içeriği
+}
+```
+
+**Adım 3 — FolderSheet: ModalBottomSheet → tam ekran Popup + blur**
+```kotlin
+// containerColor = Color.Transparent (opak değil)
+// hazeChild(hazeState, style = HazeStyle(blurRadius=20.dp, tint=Color(0x99000000)))
+// enter: fadeIn + scaleIn(0.9f) — HyperOS scale efekti
+// exit:  fadeOut + scaleOut(0.9f)
+```
+
+**Adım 4 — Ayar toggle**
+```kotlin
+// AppPrefs.KEY_FOLDER_BLUR (varsayılan: true)
+// SettingsScreen'de "Klasör Blur Efekti" toggle
+```
+
+#### Dosya Değişiklikleri
+| Dosya | Değişiklik |
+|-------|-----------|
+| `app/build.gradle.kts` | Haze dependency |
+| `presentation/ui/launcher/HomeScreen.kt` | `hazeState` + `.haze()` modifier |
+| `presentation/ui/launcher/FolderSheet.kt` | `ModalBottomSheet` → blur container + scale animasyon |
+| `utils/AppPrefs.kt` | `KEY_FOLDER_BLUR` toggle |
+| `presentation/ui/screens/SettingsScreen.kt` | Blur toggle UI |
+
+- [ ] **[BLUR-1]** Haze kütüphanesi ekle + HomeScreen hazeState
+- [ ] **[BLUR-2]** FolderSheet blur + scale animasyon (ModalBottomSheet refactor)
+- [ ] **[BLUR-3]** AppPrefs toggle + SettingsScreen
+- [ ] **[BLUR-4]** Gerçek cihaz testi (blur performansı + API 26 uyumu)
+
+---
+
 ### 🔒 Güvenlik (Önce Bu)
 - [x] ~~🔒 Telegram bot token rotasyonu~~ ✅ Yeni token alındı, `.env` güncellendi, test edildi (2026-06-15)
 - [x] ~~🔒 `.gitignore` doğrula~~ ✅ `.env`, `*.jks`, `keystore.properties`, `*.aab` korunuyor (2026-06-15)
