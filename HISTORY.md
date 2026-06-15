@@ -1,228 +1,244 @@
-# HISTORY.md — AppOrganizer Döngü Arşivi
+﻿# HISTORY.md â€” AppOrganizer DÃ¶ngÃ¼ ArÅŸivi
 
-> CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** — sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
-> Append-only. Yeni döngü özetleri sona eklenir.
+> CLAUDE.md'den taÅŸÄ±nan dÃ¶ngÃ¼-spesifik deÄŸiÅŸiklik loglarÄ±. **Her konuÅŸmada okunmaz** â€” sadece "geÃ§miÅŸte X'i nasÄ±l yapmÄ±ÅŸtÄ±k?" sorusunda referans.
+> Append-only. Yeni dÃ¶ngÃ¼ Ã¶zetleri sona eklenir.
 >
-> Kalıcı kurallar → `CLAUDE.md` · Promote öğrenmeler → `LEARNINGS.md`
+> KalÄ±cÄ± kurallar â†’ `CLAUDE.md` Â· Promote Ã¶ÄŸrenmeler â†’ `LEARNINGS.md`
 
 ---
 
-## Özellik Denetim Geçmişi
+## Ã–zellik Denetim GeÃ§miÅŸi
 
-### Özellik Kontrol Listesi — Kontrol Komutları
-| # | Özellik | Kontrol Komutu |
+### Ã–zellik Kontrol Listesi â€” Kontrol KomutlarÄ±
+| # | Ã–zellik | Kontrol Komutu |
 |---|---------|----------------|
 | 1 | Turkuaz tema | `grep -n "00897B\|26C6DA" app/src/.../Theme.kt` |
 | 2 | Launcher manifest | `grep -n "HOME\|DEFAULT" .../AndroidManifest.xml` |
 | 3 | RoleManager | `grep -rn "RoleManager\|ROLE_HOME" app/src` |
 | 4 | AllAppsDrawer blur | `grep -n "blur\|Transparent" .../AllAppsDrawer.kt` |
-| 5 | İkon async | `grep -rn "produceState\|iconCacheInternal" app/src` |
+| 5 | Ä°kon async | `grep -rn "produceState\|iconCacheInternal" app/src` |
 | 6 | Long-press haptic | `grep -rn "HapticFeedback" app/src` |
 | 7 | Tap haptic | `grep -n "launchApp\|startActivity" + haptic` |
 | 8 | DockEditSheet | `grep -n "DockEditSheet\|DockEdit" app/src` |
-| 9 | Varsayılan launcher butonu | `grep -n "Varsayılan Launcher\|ROLE_HOME" .../SettingsScreen.kt` |
+| 9 | VarsayÄ±lan launcher butonu | `grep -n "VarsayÄ±lan Launcher\|ROLE_HOME" .../SettingsScreen.kt` |
 | 10 | Bildirim badge | `grep -rn "notificationCount\|badgeText" app/src` |
 | 11 | NotificationListenerService | `find app/src -name "*Notification*Service*"` |
-| 12 | AppListScreen satır | `wc -l .../AppListScreen.kt` |
+| 12 | AppListScreen satÄ±r | `wc -l .../AppListScreen.kt` |
 
 ### Son Tam Denetim (2026-06-13)
-Tüm 12 madde ✅. Detay:
-- #7: Tap haptic — LongPress tipi ile eklendi (TextHapticFeedback API yok)
-- #11: AppNotificationListenerService eklendi, DB'ye yazıyor
-- #12: AppListScreen 244 satır — CategoryChip+AppListContent → AppListComponents'a taşındı
+TÃ¼m 12 madde âœ…. Detay:
+- #7: Tap haptic â€” LongPress tipi ile eklendi (TextHapticFeedback API yok)
+- #11: AppNotificationListenerService eklendi, DB'ye yazÄ±yor
+- #12: AppListScreen 244 satÄ±r â€” CategoryChip+AppListContent â†’ AppListComponents'a taÅŸÄ±ndÄ±
 
 ---
 
-## Erken Bug Fix'ler (2026-06-10 → 06-12)
+## Erken Bug Fix'ler (2026-06-10 â†’ 06-12)
 
-**Düzeltilen Buglar (2026-06-10):**
-- FolderSheet geri/home tuşu: `sheetState.hide()` + `BackHandler` entegre
-- Sil/Gizle: `contextMenuApp` artık `allApps` flow'undan güncel veri alıyor (stale state giderildi)
-- Dock'a ekle: dolu/zaten var durumları Toast ile bildiriliyor
+**DÃ¼zeltilen Buglar (2026-06-10):**
+- FolderSheet geri/home tuÅŸu: `sheetState.hide()` + `BackHandler` entegre
+- Sil/Gizle: `contextMenuApp` artÄ±k `allApps` flow'undan gÃ¼ncel veri alÄ±yor (stale state giderildi)
+- Dock'a ekle: dolu/zaten var durumlarÄ± Toast ile bildiriliyor
 - Swipe-up AllApps: `detectVerticalDragGestures` eklendi
-- Çift tap: ana ekrana çift dokunarak AllApps açılıyor
+- Ã‡ift tap: ana ekrana Ã§ift dokunarak AllApps aÃ§Ä±lÄ±yor
 
-**Eklenen Özellikler (2026-06-12):**
-- AppClassifier: +30 Türk uygulaması (Getir, Çiçeksepeti, D-Smart, Puhutv, Tabii, TRT, Marti, TCDD)
-- KeywordDatabase: Türkçe keyword'ler
-- AppIconView: tap'te spring bounce scale (ripple kaldırıldı, Pixel hissi)
-- HomeLongPressSheet: Duvar Kağıdı / Dock Düzenle / Ayarlar menüsü
-- AllAppsDrawer: açılınca 300ms sonra klavye otomatik (FocusRequester) + kapanışta arama geçmişe
+**Eklenen Ã–zellikler (2026-06-12):**
+- AppClassifier: +30 TÃ¼rk uygulamasÄ± (Getir, Ã‡iÃ§eksepeti, D-Smart, Puhutv, Tabii, TRT, Marti, TCDD)
+- KeywordDatabase: TÃ¼rkÃ§e keyword'ler
+- AppIconView: tap'te spring bounce scale (ripple kaldÄ±rÄ±ldÄ±, Pixel hissi)
+- HomeLongPressSheet: Duvar KaÄŸÄ±dÄ± / Dock DÃ¼zenle / Ayarlar menÃ¼sÃ¼
+- AllAppsDrawer: aÃ§Ä±lÄ±nca 300ms sonra klavye otomatik (FocusRequester) + kapanÄ±ÅŸta arama geÃ§miÅŸe
 
 ---
 
-## AppPrefs Anahtar Geçmişi
+## AppPrefs Anahtar GeÃ§miÅŸi
 
 **2026-06-12 eklenenler:**
 `KEY_AUTO_BACKUP_ENABLED`, `KEY_HIDE_NAV_BUTTONS`, `KEY_ALLAPPS_BG_ALPHA` (float), `KEY_NOTIFICATION_TEXT_ENABLED`, `KEY_LAST_RECONCILE` (5dk throttle)
 
-**Sonraki döngülerde eklenenler:**
+**Sonraki dÃ¶ngÃ¼lerde eklenenler:**
 `KEY_FOLDER_SORT_MODE`, `KEY_ICON_PACK`, `KEY_WIDGET_AREA_ENABLED`, `KEY_FOLDER_SIZE`, `KEY_MANUFACTURER_CLASSIFY`, `KEY_LABEL_COLOR`, `KEY_BG_TYPE/COLOR/TEXT_ALPHA`, `KEY_SUGGESTIONS_ENABLED`, `KEY_FOLDER_CUSTOM_NAMES/EMOJIS/COLORS`, `KEY_DEEPSEEK_API_KEY`, `KEY_NEW_BADGE_ENABLED`, `KEY_SWIPE_HINT_ENABLED`, `KEY_FOLDER_COUNT_VISIBLE`, `KEY_FOLDER_SWIPE_HINT_ENABLED`
 
 ---
 
-## Mimari Notlar (Döngü kaynaklı)
+## Mimari Notlar (DÃ¶ngÃ¼ kaynaklÄ±)
 
-**Tema Sistemi:** `AppOrganizerTheme` artık `ThemePreferences`'i dinler — `context.themeDataStore` Flow'undan `AppTheme`+`AppFont` okuyup `buildColorScheme`/`buildTypography` üretir. Tema seçimi anında uygulanır.
+**Tema Sistemi:** `AppOrganizerTheme` artÄ±k `ThemePreferences`'i dinler â€” `context.themeDataStore` Flow'undan `AppTheme`+`AppFont` okuyup `buildColorScheme`/`buildTypography` Ã¼retir. Tema seÃ§imi anÄ±nda uygulanÄ±r.
 
-**HorizontalPager:** HomeScreen'de 8 klasör/sayfa — `pageSize = 8`, `HorizontalPager` + sayfa noktacıkları. LazyVerticalGrid `userScrollEnabled = false`.
+**HorizontalPager:** HomeScreen'de 8 klasÃ¶r/sayfa â€” `pageSize = 8`, `HorizontalPager` + sayfa noktacÄ±klarÄ±. LazyVerticalGrid `userScrollEnabled = false`.
 
-**Bildirim Metni Mimarisi (Döngü 8):** `AppNotificationListenerService.latestTexts: StateFlow<Map<String,String>>` — her `onNotificationPosted`'da EXTRA_TITLE+EXTRA_TEXT birleşir. `AppInfo.notificationText` field (DB v6). Gösterim: `isNotificationTextEnabled()`=true → FolderTile/AllAppsDrawer.
+**Bildirim Metni Mimarisi (DÃ¶ngÃ¼ 8):** `AppNotificationListenerService.latestTexts: StateFlow<Map<String,String>>` â€” her `onNotificationPosted`'da EXTRA_TITLE+EXTRA_TEXT birleÅŸir. `AppInfo.notificationText` field (DB v6). GÃ¶sterim: `isNotificationTextEnabled()`=true â†’ FolderTile/AllAppsDrawer.
 
-**LauncherActivity Onboarding:** `onCreate` başında onboarding bitmemişse MainActivity'ye yönlendirir (pm clear/fresh install sonrası onboarding atlanması giderildi).
+**LauncherActivity Onboarding:** `onCreate` baÅŸÄ±nda onboarding bitmemiÅŸse MainActivity'ye yÃ¶nlendirir (pm clear/fresh install sonrasÄ± onboarding atlanmasÄ± giderildi).
 
-**Onboarding Adım Listesi (14 adım):** WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → SET_LAUNCHER → DONE. (SET_LAUNCHER en sona alındı — tüm ayarlar bitince varsayılan launcher sorulur.)
-
----
-
-## Döngü Logları (8-31)
-
-**Döngü 8 — Bildirim metni mimarisi:** (yukarıda)
-
-**Döngü 9 — Onboarding bug fix:** `OnboardingScreen.kt:544` yanlış key/prefs (`"app_prefs"/"onboarding_complete"`) → her açılışta onboarding tekrarlıyordu. FIX: `AppPrefs.PREFS_NAME`+`KEY_ONBOARDING_DONE`. Yeni adımlar: AUTO_BACKUP + NOTIF_TEXT (isSkippable=true).
-
-**Döngü 10 — MainActivity refactor:** `PREFS_NAME`/`KEY_ONBOARDING_DONE` const kaldırıldı → AppPrefs'e taşındı (DRY).
-
-**Döngü 11 — onResume perf + gesture nav:** `PACKAGE_FILTER` companion sabiti (her onResume'da IntentFilter oluşmaz), `receiverRegistered` bayrağı (çift kayıt önlendi), `isGestureNavEnabled()` (`config_navBarInteractionMode==2`), gesture nav aktifse `BEHAVIOR_DEFAULT` (Xiaomi/Samsung home gesture çakışması). HomeScreen: çift `loadDockPackages`+`syncAppSizes` kaldırıldı, alt 80dp gesture zone swipe AllApps tetiklemez.
-
-**Döngü 12 — DockIcon async:** `remember(packageName)` senkron `toBitmap()` → `produceState<ImageBitmap?>` IO async + LRU-200 paylaşımı. `bitmap?.let { }` smart cast pattern. Encoding fix: PixelClockWidget bozuk UTF-8 (`C3 A2 E2 82 AC 22`) → em-dash.
-
-**Döngü 15 — onResume yük + dock kırık ikon:** `dockLoaded` bayrağı (klasör sırası sadece ilk okuma), `loadDockPackages` değer karşılaştırması (gereksiz rekomposisyon önlendi), `onPackageRemoved` dock'taysa anında güncelleme, `isGestureNavEnabled()` → `by lazy` property.
-
-**Döngü 16 — queryIntentActivities:** `getInstalledPackages(GET_META_DATA)`+per-package `getLaunchIntentForPackage` → tek `queryIntentActivities(MAIN+LAUNCHER)` (~5x hız). `reconcileIfNeeded` aynı optimizasyon. AllApps anim: fadeIn/Out → LinearOutSlowInEasing(300ms)/FastOutLinearInEasing(220ms). Dock `systemGestureExclusionRects` karşılaştırma.
-
-**Döngü 17 — AllAppsDrawer rekomposisyon:** `rememberAppIcon` initialValue=cache (cache hit anında), `quickFilterCounts` `remember(apps)` memoize (4x→1x), `notifTextEnabled` drawer seviyesine çıktı (100+ SharedPrefs okuma önlendi). LauncherActivity: `markUsageStatsSynced` (çift senkron önlendi).
-
-**Döngü 18 — bildirim badge temizleme:** Tüm bildirimler silinince badge/metin DB'de kalıyordu. `onNotificationRemoved` → map entry kaldırma (`activeNotifications?.any{...&&!isOngoing}`). `badgeCounts`/`latestTexts` observer `isNotEmpty()` guard kaldırıldı + DB temizleme. Boş listede yazma yok.
-
-**Döngü 19 — ikon cache temizleme + DRY:** `onPackageRemoved`/`onPackageAdded` paket-spesifik cache temizleme, `onPackageAdded` tam tarama → `helper.getAppInfo(pkg)` (~5x). `dockLoaded` @Volatile. FolderSheet: `FolderSortMode` enum kaldırıldı → `AllAppsSortMode` (DRY).
-
-**Döngü 20 — Flow Eagerly:** `folders`/`allApps`/`filteredAllApps` `WhileSubscribed(5000)` → `SharingStarted.Eagerly` (dönüşte "Yükleniyor" flaşı giderildi). `isLoadingApps` @Volatile guard. `loadDockPackages` sadece ilk yükleme. `reconcileIfNeeded` tek geçişli set dedup.
-
-**Döngü 21 — dock in-memory + refactor:** `addToDock`/`removeFromDock` SharedPrefs okuma yerine `_dockPackages.value` (sıfır disk IO). Hardcoded `4` → `DOCK_MAX_SIZE`. `isDefaultLauncher` ölü kod kaldırıldı. HomeScreen→HomeScreenComponents refactor (866→634 satır, yeni 288 satır): PixelClockWidget/GoogleSearchBar/PixelDock/DockIcon/SwipeHint taşındı, `internal` görünürlük.
-
-**Döngü 22 — ikon paketi desteği (Yol Haritası #6):** `IconPackManager.kt` — 5 intent filter (Nova/ADW/GO/Lawnchair/Tesla), `parseAppFilter()` appfilter.xml parse, `filterCache: ConcurrentHashMap`. `KEY_ICON_PACK` + otomatik cache temizleme. Cache key formatı güncellendi. SettingsScreen "İkon Paketi" bölümü.
-
-**Döngü 23 — HomeLongPressSheet grid:** `items(emptySlots)` FolderTile'lardan önceydi → koordinat kayması. FIX: boş slotlar `items(pageFolders.size)`'den sonra. Üst boş alan (y≈180) uzun bas doğrulandı.
-
-**Döngü 24 — widget desteği (Yol Haritası #7):** `WidgetPrefs.kt` (ID listesi SharedPrefs), `WidgetHostManager.kt` (AppWidgetHost singleton, start/stopListening), `WidgetArea.kt` (AppWidgetHostView AndroidView, uzun bas → X silme). LauncherActivity: widgetPicker/Configure launcher, onResume/Pause lifecycle. ViewModel: `widgetIds: StateFlow`. `KEY_WIDGET_AREA_ENABLED`. Manifest: `BIND_APPWIDGET`.
-
-**Döngü 24 (yerel paralel) — AllApps greyscale + RESTORE_BACKUP:** `unusedGreyDays` drawer seviyesinde okunuyor, kapalıysa renkli. RESTORE_BACKUP onboarding adımı (JSON seçici). `_openFolder`→`_openFolderId` refactor (combine ile türetilir). KEY_BG_TYPE/COLOR/TEXT_ALPHA + DisposableEffect.
-
-**Döngü 25 — greyscale + sort + onboarding:** `NiagaraAppRow` `unusedGreyDays` param (`<=0` → saturation=1f). `KEY_FOLDER_SORT_MODE` kalıcılık. RESTORE_BACKUP adımı (`hiltViewModel` ile AppListViewModel inject). `Locale("tr")` arama+sıralama (Ş/İ/Ğ/Ü/Ö/Ç).
-
-**Döngü 26 — Settings reaktiflik:** `remember{}` AppPrefs değerleri Settings dönüşünde güncellenmiyordu. FIX: `mutableStateOf` + `DisposableEffect` + `OnSharedPreferenceChangeListener`. HomeScreen (bgType/bgColor/textAlpha/widgetAreaEnabled), AllAppsDrawer (notifTextEnabled/unusedGreyDays). FolderTile `textAlpha` param. `KEY_FOLDER_SIZE` slider (56-96dp).
-
-**Döngü 27 — robustlik:** `isLoadingApps` @Volatile → `AtomicBoolean` (`compareAndSet`). `onListenerDisconnected()` → badge/text temizleme (stale önlendi). `iconPackPkg` reaktif (DisposableEffect+KEY_ICON_PACK listener). `MANUFACTURER_PREFIX_MAP` (Samsung/Huawei/Xiaomi/Sony/LG → kategori), `KEY_MANUFACTURER_CLASSIFY` toggle.
-
-**Döngü 28 — app shortcuts:** `ShortcutHelper.kt` — `LauncherApps.getShortcuts()` (DYNAMIC+MANIFEST, runCatching), `getShortcutIconDrawable()`, `startShortcut()`. AppContextMenu: `shortcuts by produceState` (max 4), yatay Row, `ShortcutItem` (48dp ikon+2 satır). `KEY_LABEL_COLOR`, FolderTile labelColor.
-
-**Döngü 29 — app önerileri + onboarding:** `KEY_SUGGESTIONS_ENABLED`. `suggestedApps: StateFlow` (lastUsedTimestamp öncelikli, take(4), Eagerly). `AppSuggestionsRow`+`SuggestionAppItem`. SettingsScreen "Uygulama Önerileri" toggle. Onboarding steps açık sıralama, SET_LAUNCHER en sona.
-
-**Döngü 30 — klasör özelleştirme:** `KEY_FOLDER_CUSTOM_NAMES/EMOJIS` (JSON map). FolderTile `customName`/`customEmoji` param. FolderSheet header Edit ikonu → `FolderRenameDialog` (OutlinedTextField + 40 emoji LazyRow). AppClassifier build fix: CAT_TOOLS→CAT_UTILITIES, CAT_PHOTO→CAT_PHOTOGRAPHY.
-
-**Döngü 31 — klasör renk:** `KEY_FOLDER_CUSTOM_COLORS` (JSON map #RRGGBB). FolderSheet `customColor` + 10 preset swatch. FolderTile `customColor` öncelikli. HomeScreen DisposableEffect listener.
+**Onboarding AdÄ±m Listesi (14 adÄ±m):** WELCOME â†’ RESTORE_BACKUP â†’ QUERY_PACKAGES â†’ NOTIFICATIONS â†’ UNUSED_GREY â†’ AUTO_BACKUP â†’ NOTIF_TEXT â†’ NOTIF_ACCESS â†’ SWIPE_HINT â†’ NEW_BADGE â†’ FOLDER_COUNT â†’ NAV_HIDE â†’ THEME_SELECT â†’ SET_LAUNCHER â†’ DONE. (SET_LAUNCHER en sona alÄ±ndÄ± â€” tÃ¼m ayarlar bitince varsayÄ±lan launcher sorulur.)
 
 ---
 
-## Döngü Logları (34-84) — AppClassifier Büyütme Dönemi
+## DÃ¶ngÃ¼ LoglarÄ± (8-31)
 
-> Bu dönem ağırlıklı olarak `AppClassifier.exactMatchMap` büyütmesi: **479 → 3116+ benzersiz paket**. Tekrar eden tuzak: duplicate yönetimi (LEARNINGS.md'ye promote edildi).
+**DÃ¶ngÃ¼ 8 â€” Bildirim metni mimarisi:** (yukarÄ±da)
 
-**Döngü 32 (remote) — LLM fallback (Aşama 2):** `CategoryLLMFallback.kt` — `categorize(apps, apiKey, onProgress)` batch 15/istek, HttpURLConnection DeepSeek, `deepseek-chat` temp 0.1, 14 VALID_CATEGORIES. `KEY_DEEPSEEK_API_KEY`. ViewModel `categorizeDigerWithLLM`. SettingsScreen key input + buton + ilerleme.
+**DÃ¶ngÃ¼ 9 â€” Onboarding bug fix:** `OnboardingScreen.kt:544` yanlÄ±ÅŸ key/prefs (`"app_prefs"/"onboarding_complete"`) â†’ her aÃ§Ä±lÄ±ÅŸta onboarding tekrarlÄ±yordu. FIX: `AppPrefs.PREFS_NAME`+`KEY_ONBOARDING_DONE`. Yeni adÄ±mlar: AUTO_BACKUP + NOTIF_TEXT (isSkippable=true).
 
-**Döngü 34 — duplicate temizlik:** 107+25 duplicate temizlendi → 1448 benzersiz, 0 duplicate.
+**DÃ¶ngÃ¼ 10 â€” MainActivity refactor:** `PREFS_NAME`/`KEY_ONBOARDING_DONE` const kaldÄ±rÄ±ldÄ± â†’ AppPrefs'e taÅŸÄ±ndÄ± (DRY).
 
-**Döngü 35 — Diğer Klasörü UI + favoriler:** `otherApps: StateFlow` (CAT_OTHER). SettingsScreen "Diğer Klasörü (N)" + ilk 20 liste. `favoriteApps: StateFlow` (`_favoritePkgs` combine), `initFavorites`/`toggleFavorite`, PackageChangeReceiver otomatik temizleme. **Dikkat:** `getFavoriteApps()` KALDIRILDI → `viewModel.favoriteApps` kullan.
+**DÃ¶ngÃ¼ 11 â€” onResume perf + gesture nav:** `PACKAGE_FILTER` companion sabiti (her onResume'da IntentFilter oluÅŸmaz), `receiverRegistered` bayraÄŸÄ± (Ã§ift kayÄ±t Ã¶nlendi), `isGestureNavEnabled()` (`config_navBarInteractionMode==2`), gesture nav aktifse `BEHAVIOR_DEFAULT` (Xiaomi/Samsung home gesture Ã§akÄ±ÅŸmasÄ±). HomeScreen: Ã§ift `loadDockPackages`+`syncAppSizes` kaldÄ±rÄ±ldÄ±, alt 80dp gesture zone swipe AllApps tetiklemez.
 
-**Döngü 36 — RecentApps + icon pack reaktif + favoriler uzun bas:** `recentApps: StateFlow` (lastUsedTimestamp, 8 uygulama — `suggestedApps` 4'tü, `take(8)` işlevsizdi). `suggestionIconPack` reaktif. `FavoritesRow` `onAppLongClick` → `combinedClickable`. BUILD #9: SettingsScreen lambda Unit hatası fix.
+**DÃ¶ngÃ¼ 12 â€” DockIcon async:** `remember(packageName)` senkron `toBitmap()` â†’ `produceState<ImageBitmap?>` IO async + LRU-200 paylaÅŸÄ±mÄ±. `bitmap?.let { }` smart cast pattern. Encoding fix: PixelClockWidget bozuk UTF-8 (`C3 A2 E2 82 AC 22`) â†’ em-dash.
 
-**Döngü 42 — BUILD #10:** Temiz build. AAB 6.3MB Play Store hazır (`Desktop/AppOrganizer_PlayStore/app-release-v1.0.0.aab`), mapping kaydedildi.
+**DÃ¶ngÃ¼ 15 â€” onResume yÃ¼k + dock kÄ±rÄ±k ikon:** `dockLoaded` bayraÄŸÄ± (klasÃ¶r sÄ±rasÄ± sadece ilk okuma), `loadDockPackages` deÄŸer karÅŸÄ±laÅŸtÄ±rmasÄ± (gereksiz rekomposisyon Ã¶nlendi), `onPackageRemoved` dock'taysa anÄ±nda gÃ¼ncelleme, `isGestureNavEnabled()` â†’ `by lazy` property.
 
-**Döngü 46 (remote) — büyük temizlik + App Not:** 186 duplicate temizlendi (1407→1182), +93 yeni (PHOTOGRAPHY/NEWS/FOOD/EDUCATION + sistem uygulamaları). KeywordDatabase güçlendirildi. AppContextMenu: `usageCount` ms → "2.5 sa"/"45 dk" format fix. **App Not özelliği:** `AppNoteDialog`, `AppDao.updateCustomNotes()`, `saveAppNote()`. `AppInfo.customNotes` (DB v6'dan beri vardı, aktif edildi). `formatUsageTime(ms)` private fun.
+**DÃ¶ngÃ¼ 16 â€” queryIntentActivities:** `getInstalledPackages(GET_META_DATA)`+per-package `getLaunchIntentForPackage` â†’ tek `queryIntentActivities(MAIN+LAUNCHER)` (~5x hÄ±z). `reconcileIfNeeded` aynÄ± optimizasyon. AllApps anim: fadeIn/Out â†’ LinearOutSlowInEasing(300ms)/FastOutLinearInEasing(220ms). Dock `systemGestureExclusionRects` karÅŸÄ±laÅŸtÄ±rma.
 
-**Döngü 47 (remote) — SPORTS + COMMUNICATION:** SPORTS 13→49, COMMUNICATION 16→35. NA ligleri, soccer global, F1/Tenis/Golf, yayın platformları, TR spor. E-posta/video/VoIP/takım araçları. Toplam 1784.
+**DÃ¶ngÃ¼ 17 â€” AllAppsDrawer rekomposisyon:** `rememberAppIcon` initialValue=cache (cache hit anÄ±nda), `quickFilterCounts` `remember(apps)` memoize (4xâ†’1x), `notifTextEnabled` drawer seviyesine Ã§Ä±ktÄ± (100+ SharedPrefs okuma Ã¶nlendi). LauncherActivity: `markUsageStatsSynced` (Ã§ift senkron Ã¶nlendi).
 
-**Döngü 48-49:** CAT_SPORTS+CAT_COMMUNICATION unresolved ref fix (Category modelde sabitler yoktu) — BUILD #11 fix.
+**DÃ¶ngÃ¼ 18 â€” bildirim badge temizleme:** TÃ¼m bildirimler silinince badge/metin DB'de kalÄ±yordu. `onNotificationRemoved` â†’ map entry kaldÄ±rma (`activeNotifications?.any{...&&!isOngoing}`). `badgeCounts`/`latestTexts` observer `isNotEmpty()` guard kaldÄ±rÄ±ldÄ± + DB temizleme. BoÅŸ listede yazma yok.
 
-**Döngü 50-53:** +105 TR Lifestyle/Global Streaming/Finance/Health/Productivity.
+**DÃ¶ngÃ¼ 19 â€” ikon cache temizleme + DRY:** `onPackageRemoved`/`onPackageAdded` paket-spesifik cache temizleme, `onPackageAdded` tam tarama â†’ `helper.getAppInfo(pkg)` (~5x). `dockLoaded` @Volatile. FolderSheet: `FolderSortMode` enum kaldÄ±rÄ±ldÄ± â†’ `AllAppsSortMode` (DRY).
 
-**Döngü 54-55:** +95 Google/Amazon/Meta/Microsoft tam paket isimleri, top oyunlar.
+**DÃ¶ngÃ¼ 20 â€” Flow Eagerly:** `folders`/`allApps`/`filteredAllApps` `WhileSubscribed(5000)` â†’ `SharingStarted.Eagerly` (dÃ¶nÃ¼ÅŸte "YÃ¼kleniyor" flaÅŸÄ± giderildi). `isLoadingApps` @Volatile guard. `loadDockPackages` sadece ilk yÃ¼kleme. `reconcileIfNeeded` tek geÃ§iÅŸli set dedup.
 
-**Döngü 56:** +79 Müzik/Podcast/Maps/TR-Market/VPN/Auth.
+**DÃ¶ngÃ¼ 21 â€” dock in-memory + refactor:** `addToDock`/`removeFromDock` SharedPrefs okuma yerine `_dockPackages.value` (sÄ±fÄ±r disk IO). Hardcoded `4` â†’ `DOCK_MAX_SIZE`. `isDefaultLauncher` Ã¶lÃ¼ kod kaldÄ±rÄ±ldÄ±. HomeScreenâ†’HomeScreenComponents refactor (866â†’634 satÄ±r, yeni 288 satÄ±r): PixelClockWidget/GoogleSearchBar/PixelDock/DockIcon/SwipeHint taÅŸÄ±ndÄ±, `internal` gÃ¶rÃ¼nÃ¼rlÃ¼k.
 
-**Döngü 57:** +79 SmartHome/Kids/DevTools/TR-Bankalar/Hava.
+**DÃ¶ngÃ¼ 22 â€” ikon paketi desteÄŸi (Yol HaritasÄ± #6):** `IconPackManager.kt` â€” 5 intent filter (Nova/ADW/GO/Lawnchair/Tesla), `parseAppFilter()` appfilter.xml parse, `filterCache: ConcurrentHashMap`. `KEY_ICON_PACK` + otomatik cache temizleme. Cache key formatÄ± gÃ¼ncellendi. SettingsScreen "Ä°kon Paketi" bÃ¶lÃ¼mÃ¼.
 
-**Döngü 58 (remote+local) — büyük genişleme:** +183 net → 2074. Automotive, Sigorta (+TR), Gayrimenkul, Evcil Hayvan, Ev Hizmetleri, OEM Apps (OPPO/Realme/Vivo/Nothing/Asus/Motorola/OnePlus), Seyahat, Streaming, TR Transit & Yerel, Grocery, Foto/Video, E-Commerce, Kitap. 15 duplicate temizlendi, merge conflict çözüldü.
+**DÃ¶ngÃ¼ 23 â€” HomeLongPressSheet grid:** `items(emptySlots)` FolderTile'lardan Ã¶nceydi â†’ koordinat kaymasÄ±. FIX: boÅŸ slotlar `items(pageFolders.size)`'den sonra. Ãœst boÅŸ alan (yâ‰ˆ180) uzun bas doÄŸrulandÄ±.
 
-**Döngü 59:** +81 Gaming/Spor/TR-Kültür/Emlak/Telekom.
+**DÃ¶ngÃ¼ 24 â€” widget desteÄŸi (Yol HaritasÄ± #7):** `WidgetPrefs.kt` (ID listesi SharedPrefs), `WidgetHostManager.kt` (AppWidgetHost singleton, start/stopListening), `WidgetArea.kt` (AppWidgetHostView AndroidView, uzun bas â†’ X silme). LauncherActivity: widgetPicker/Configure launcher, onResume/Pause lifecycle. ViewModel: `widgetIds: StateFlow`. `KEY_WIDGET_AREA_ENABLED`. Manifest: `BIND_APPWIDGET`.
 
-**Döngü 54-60 — BUILD #13:** Debug APK 28.1MB Telegram'a. AppClassifier 2074+.
+**DÃ¶ngÃ¼ 24 (yerel paralel) â€” AllApps greyscale + RESTORE_BACKUP:** `unusedGreyDays` drawer seviyesinde okunuyor, kapalÄ±ysa renkli. RESTORE_BACKUP onboarding adÄ±mÄ± (JSON seÃ§ici). `_openFolder`â†’`_openFolderId` refactor (combine ile tÃ¼retilir). KEY_BG_TYPE/COLOR/TEXT_ALPHA + DisposableEffect.
 
-**Döngü 61:** Otomotiv/AI(ChatGPT/Claude/Gemini/DeepSeek)/Sigorta +82.
+**DÃ¶ngÃ¼ 25 â€” greyscale + sort + onboarding:** `NiagaraAppRow` `unusedGreyDays` param (`<=0` â†’ saturation=1f). `KEY_FOLDER_SORT_MODE` kalÄ±cÄ±lÄ±k. RESTORE_BACKUP adÄ±mÄ± (`hiltViewModel` ile AppListViewModel inject). `Locale("tr")` arama+sÄ±ralama (Å/Ä°/Ä/Ãœ/Ã–/Ã‡).
 
-**Döngü 62 (remote+local):** +128 net → 2185. TR Haber, Avrupa Haberleri, Asya/Pasifik Haber, Restoran Zincirleri, Yemek Teslimat, Foto/Kamera, Sosyal Medya. Kategori dağılımı: NEWS 95→147, FOOD 102→131, PHOTOGRAPHY 104→134, SOCIAL 136→153.
+**DÃ¶ngÃ¼ 26 â€” Settings reaktiflik:** `remember{}` AppPrefs deÄŸerleri Settings dÃ¶nÃ¼ÅŸÃ¼nde gÃ¼ncellenmiyordu. FIX: `mutableStateOf` + `DisposableEffect` + `OnSharedPreferenceChangeListener`. HomeScreen (bgType/bgColor/textAlpha/widgetAreaEnabled), AllAppsDrawer (notifTextEnabled/unusedGreyDays). FolderTile `textAlpha` param. `KEY_FOLDER_SIZE` slider (56-96dp).
 
-**Döngü 63:** LatAm/Orta Doğu/TR Gov(e-Devlet/SGK)/Cloud +74.
+**DÃ¶ngÃ¼ 27 â€” robustlik:** `isLoadingApps` @Volatile â†’ `AtomicBoolean` (`compareAndSet`). `onListenerDisconnected()` â†’ badge/text temizleme (stale Ã¶nlendi). `iconPackPkg` reaktif (DisposableEffect+KEY_ICON_PACK listener). `MANUFACTURER_PREFIX_MAP` (Samsung/Huawei/Xiaomi/Sony/LG â†’ kategori), `KEY_MANUFACTURER_CLASSIFY` toggle.
 
-**Döngü 64:** Çevre/Erişilebilirlik/Browser/Ev Güvenlik +92.
+**DÃ¶ngÃ¼ 28 â€” app shortcuts:** `ShortcutHelper.kt` â€” `LauncherApps.getShortcuts()` (DYNAMIC+MANIFEST, runCatching), `getShortcutIconDrawable()`, `startShortcut()`. AppContextMenu: `shortcuts by produceState` (max 4), yatay Row, `ShortcutItem` (48dp ikon+2 satÄ±r). `KEY_LABEL_COLOR`, FolderTile labelColor.
 
-**Döngü 65:** TR Kulüpler(GS/FB/BJK)/Müzik/TR Radyo/Sözlük +69.
+**DÃ¶ngÃ¼ 29 â€” app Ã¶nerileri + onboarding:** `KEY_SUGGESTIONS_ENABLED`. `suggestedApps: StateFlow` (lastUsedTimestamp Ã¶ncelikli, take(4), Eagerly). `AppSuggestionsRow`+`SuggestionAppItem`. SettingsScreen "Uygulama Ã–nerileri" toggle. Onboarding steps aÃ§Ä±k sÄ±ralama, SET_LAUNCHER en sona.
 
-**Döngü 61-66 — BUILD #14:** Debug APK 28.2MB. AppClassifier 2351.
+**DÃ¶ngÃ¼ 30 â€” klasÃ¶r Ã¶zelleÅŸtirme:** `KEY_FOLDER_CUSTOM_NAMES/EMOJIS` (JSON map). FolderTile `customName`/`customEmoji` param. FolderSheet header Edit ikonu â†’ `FolderRenameDialog` (OutlinedTextField + 40 emoji LazyRow). AppClassifier build fix: CAT_TOOLSâ†’CAT_UTILITIES, CAT_PHOTOâ†’CAT_PHOTOGRAPHY.
 
-**Döngü 67:** AppClassifier +70, FolderTile bildirim "AppAdı: mesaj" format + `onNotificationTap`, BackupWorker/WorkManager (haftalık), `work-runtime-ktx:2.9.0`.
-
-**Döngü 68:** HomeScreen bildirim tap handler (bildirime tap → uygulama aç), +80 (mobile gaming/fintech/mental health/cloud/TR gov).
-
-**Döngü 69 (remote):** 2562→2623 (+61 net). Encoding fix (com.tonguc.app, com.kigili.android). +93 (Productivity/Dev/TR Eğitim/Games/Crypto/TR Bankalar/Health/Smart Home/Navigation/Business). Merge conflict çözüldü.
-
-**Döngü 67-72 — BUILD #15:** Debug APK 28.5MB. Loop 67-71 detayları (WorkManager, oyunlar, fintech, e-öğrenme, harita). AppClassifier 2624.
-
-**Döngü 73 (remote+local):** 2486→2753 (+267 net). SOCIAL/PHOTOGRAPHY/NEWS/HEALTH/UTILITIES/TRAVEL(Hotels+Automotive)/FOOD Chains/FINANCE BNPL/SHOPPING TR/EDUCATION/GAMES + remote FOOD/TELECOM/GOV TR. 0 duplicate.
-
-**Döngü 74-78 — BUILD #16:** +62 + Loop 77 Anime/Manga/SmartHome/Meditasyon/TR Medya +70. 20 duplicate temizlendi → 2861. Debug APK 28.5MB (msg ID 629).
-
-**Döngü 79 (remote+local) — KeywordDatabase BUG FIX:** `mapOf()` duplicate kategori (CAT_TRAVEL/SHOPPING/FINANCE/HEALTH/UTILITIES iki kez) → ilk listeler Loop 40'tan beri kayboluyordu. Tüm kategoriler tek listede. +77 yeni (Hindistan E-Ticaret/Fintech/Seyahat/Sosyal, Afrika Fintech/Telekom, Pakistan/Bangladeş, GD Asya, MENA, LATAM). 2938 benzersiz.
-
-**Döngü 79-84 — BUILD #17:** Loop 79-83 detayları (Fintech/Cloud/Streaming/Gaming/VPN/Dating/DevTools/Kids/Music/Fitness/Crypto/Food/LangLearn/TR). Debug APK 28.5MB (msg ID 657). AppClassifier 3047 (3000 aşıldı).
-
-**Döngü 84 (remote) — son durum:** 3047→3116 (+69 net). Oyunlar (Gacha/ARPG 2024-25: Wuthering Waves/NIKKE/Reverse 1999), Güç Kullanıcı Araçları (Aurora/Shizuku/Tasker/Termux), Yeni Nesil Sosyal (Lemon8/Bluesky), PKM (Anytype/AppFlowy/Workflowy), Mental Wellness (Youper/Daylio), Web3 Cüzdanlar (Rainbow/Phantom), TR Dijital (Onedio/Webtekno/Kariyer.net). KeywordDatabase +37 satır (tüm kategorilere). **FolderSheet Türkçe arama fix:** `contains(ignoreCase=true)` → `lowercase(Locale("tr")).contains(q)`. 2 duplicate temizlendi.
+**DÃ¶ngÃ¼ 31 â€” klasÃ¶r renk:** `KEY_FOLDER_CUSTOM_COLORS` (JSON map #RRGGBB). FolderSheet `customColor` + 10 preset swatch. FolderTile `customColor` Ã¶ncelikli. HomeScreen DisposableEffect listener.
 
 ---
 
-## Build Geçmişi Özeti
+## DÃ¶ngÃ¼ LoglarÄ± (34-84) â€” AppClassifier BÃ¼yÃ¼tme DÃ¶nemi
 
-| Build | Döngü | Boyut | Not |
+> Bu dÃ¶nem aÄŸÄ±rlÄ±klÄ± olarak `AppClassifier.exactMatchMap` bÃ¼yÃ¼tmesi: **479 â†’ 3116+ benzersiz paket**. Tekrar eden tuzak: duplicate yÃ¶netimi (LEARNINGS.md'ye promote edildi).
+
+**DÃ¶ngÃ¼ 32 (remote) â€” LLM fallback (AÅŸama 2):** `CategoryLLMFallback.kt` â€” `categorize(apps, apiKey, onProgress)` batch 15/istek, HttpURLConnection DeepSeek, `deepseek-chat` temp 0.1, 14 VALID_CATEGORIES. `KEY_DEEPSEEK_API_KEY`. ViewModel `categorizeDigerWithLLM`. SettingsScreen key input + buton + ilerleme.
+
+**DÃ¶ngÃ¼ 34 â€” duplicate temizlik:** 107+25 duplicate temizlendi â†’ 1448 benzersiz, 0 duplicate.
+
+**DÃ¶ngÃ¼ 35 â€” DiÄŸer KlasÃ¶rÃ¼ UI + favoriler:** `otherApps: StateFlow` (CAT_OTHER). SettingsScreen "DiÄŸer KlasÃ¶rÃ¼ (N)" + ilk 20 liste. `favoriteApps: StateFlow` (`_favoritePkgs` combine), `initFavorites`/`toggleFavorite`, PackageChangeReceiver otomatik temizleme. **Dikkat:** `getFavoriteApps()` KALDIRILDI â†’ `viewModel.favoriteApps` kullan.
+
+**DÃ¶ngÃ¼ 36 â€” RecentApps + icon pack reaktif + favoriler uzun bas:** `recentApps: StateFlow` (lastUsedTimestamp, 8 uygulama â€” `suggestedApps` 4'tÃ¼, `take(8)` iÅŸlevsizdi). `suggestionIconPack` reaktif. `FavoritesRow` `onAppLongClick` â†’ `combinedClickable`. BUILD #9: SettingsScreen lambda Unit hatasÄ± fix.
+
+**DÃ¶ngÃ¼ 42 â€” BUILD #10:** Temiz build. AAB 6.3MB Play Store hazÄ±r (`Desktop/AppOrganizer_PlayStore/app-release-v1.0.0.aab`), mapping kaydedildi.
+
+**DÃ¶ngÃ¼ 46 (remote) â€” bÃ¼yÃ¼k temizlik + App Not:** 186 duplicate temizlendi (1407â†’1182), +93 yeni (PHOTOGRAPHY/NEWS/FOOD/EDUCATION + sistem uygulamalarÄ±). KeywordDatabase gÃ¼Ã§lendirildi. AppContextMenu: `usageCount` ms â†’ "2.5 sa"/"45 dk" format fix. **App Not Ã¶zelliÄŸi:** `AppNoteDialog`, `AppDao.updateCustomNotes()`, `saveAppNote()`. `AppInfo.customNotes` (DB v6'dan beri vardÄ±, aktif edildi). `formatUsageTime(ms)` private fun.
+
+**DÃ¶ngÃ¼ 47 (remote) â€” SPORTS + COMMUNICATION:** SPORTS 13â†’49, COMMUNICATION 16â†’35. NA ligleri, soccer global, F1/Tenis/Golf, yayÄ±n platformlarÄ±, TR spor. E-posta/video/VoIP/takÄ±m araÃ§larÄ±. Toplam 1784.
+
+**DÃ¶ngÃ¼ 48-49:** CAT_SPORTS+CAT_COMMUNICATION unresolved ref fix (Category modelde sabitler yoktu) â€” BUILD #11 fix.
+
+**DÃ¶ngÃ¼ 50-53:** +105 TR Lifestyle/Global Streaming/Finance/Health/Productivity.
+
+**DÃ¶ngÃ¼ 54-55:** +95 Google/Amazon/Meta/Microsoft tam paket isimleri, top oyunlar.
+
+**DÃ¶ngÃ¼ 56:** +79 MÃ¼zik/Podcast/Maps/TR-Market/VPN/Auth.
+
+**DÃ¶ngÃ¼ 57:** +79 SmartHome/Kids/DevTools/TR-Bankalar/Hava.
+
+**DÃ¶ngÃ¼ 58 (remote+local) â€” bÃ¼yÃ¼k geniÅŸleme:** +183 net â†’ 2074. Automotive, Sigorta (+TR), Gayrimenkul, Evcil Hayvan, Ev Hizmetleri, OEM Apps (OPPO/Realme/Vivo/Nothing/Asus/Motorola/OnePlus), Seyahat, Streaming, TR Transit & Yerel, Grocery, Foto/Video, E-Commerce, Kitap. 15 duplicate temizlendi, merge conflict Ã§Ã¶zÃ¼ldÃ¼.
+
+**DÃ¶ngÃ¼ 59:** +81 Gaming/Spor/TR-KÃ¼ltÃ¼r/Emlak/Telekom.
+
+**DÃ¶ngÃ¼ 54-60 â€” BUILD #13:** Debug APK 28.1MB Telegram'a. AppClassifier 2074+.
+
+**DÃ¶ngÃ¼ 61:** Otomotiv/AI(ChatGPT/Claude/Gemini/DeepSeek)/Sigorta +82.
+
+**DÃ¶ngÃ¼ 62 (remote+local):** +128 net â†’ 2185. TR Haber, Avrupa Haberleri, Asya/Pasifik Haber, Restoran Zincirleri, Yemek Teslimat, Foto/Kamera, Sosyal Medya. Kategori daÄŸÄ±lÄ±mÄ±: NEWS 95â†’147, FOOD 102â†’131, PHOTOGRAPHY 104â†’134, SOCIAL 136â†’153.
+
+**DÃ¶ngÃ¼ 63:** LatAm/Orta DoÄŸu/TR Gov(e-Devlet/SGK)/Cloud +74.
+
+**DÃ¶ngÃ¼ 64:** Ã‡evre/EriÅŸilebilirlik/Browser/Ev GÃ¼venlik +92.
+
+**DÃ¶ngÃ¼ 65:** TR KulÃ¼pler(GS/FB/BJK)/MÃ¼zik/TR Radyo/SÃ¶zlÃ¼k +69.
+
+**DÃ¶ngÃ¼ 61-66 â€” BUILD #14:** Debug APK 28.2MB. AppClassifier 2351.
+
+**DÃ¶ngÃ¼ 67:** AppClassifier +70, FolderTile bildirim "AppAdÄ±: mesaj" format + `onNotificationTap`, BackupWorker/WorkManager (haftalÄ±k), `work-runtime-ktx:2.9.0`.
+
+**DÃ¶ngÃ¼ 68:** HomeScreen bildirim tap handler (bildirime tap â†’ uygulama aÃ§), +80 (mobile gaming/fintech/mental health/cloud/TR gov).
+
+**DÃ¶ngÃ¼ 69 (remote):** 2562â†’2623 (+61 net). Encoding fix (com.tonguc.app, com.kigili.android). +93 (Productivity/Dev/TR EÄŸitim/Games/Crypto/TR Bankalar/Health/Smart Home/Navigation/Business). Merge conflict Ã§Ã¶zÃ¼ldÃ¼.
+
+**DÃ¶ngÃ¼ 67-72 â€” BUILD #15:** Debug APK 28.5MB. Loop 67-71 detaylarÄ± (WorkManager, oyunlar, fintech, e-Ã¶ÄŸrenme, harita). AppClassifier 2624.
+
+**DÃ¶ngÃ¼ 73 (remote+local):** 2486â†’2753 (+267 net). SOCIAL/PHOTOGRAPHY/NEWS/HEALTH/UTILITIES/TRAVEL(Hotels+Automotive)/FOOD Chains/FINANCE BNPL/SHOPPING TR/EDUCATION/GAMES + remote FOOD/TELECOM/GOV TR. 0 duplicate.
+
+**DÃ¶ngÃ¼ 74-78 â€” BUILD #16:** +62 + Loop 77 Anime/Manga/SmartHome/Meditasyon/TR Medya +70. 20 duplicate temizlendi â†’ 2861. Debug APK 28.5MB (msg ID 629).
+
+**DÃ¶ngÃ¼ 79 (remote+local) â€” KeywordDatabase BUG FIX:** `mapOf()` duplicate kategori (CAT_TRAVEL/SHOPPING/FINANCE/HEALTH/UTILITIES iki kez) â†’ ilk listeler Loop 40'tan beri kayboluyordu. TÃ¼m kategoriler tek listede. +77 yeni (Hindistan E-Ticaret/Fintech/Seyahat/Sosyal, Afrika Fintech/Telekom, Pakistan/BangladeÅŸ, GD Asya, MENA, LATAM). 2938 benzersiz.
+
+**DÃ¶ngÃ¼ 79-84 â€” BUILD #17:** Loop 79-83 detaylarÄ± (Fintech/Cloud/Streaming/Gaming/VPN/Dating/DevTools/Kids/Music/Fitness/Crypto/Food/LangLearn/TR). Debug APK 28.5MB (msg ID 657). AppClassifier 3047 (3000 aÅŸÄ±ldÄ±).
+
+**DÃ¶ngÃ¼ 84 (remote) â€” son durum:** 3047â†’3116 (+69 net). Oyunlar (Gacha/ARPG 2024-25: Wuthering Waves/NIKKE/Reverse 1999), GÃ¼Ã§ KullanÄ±cÄ± AraÃ§larÄ± (Aurora/Shizuku/Tasker/Termux), Yeni Nesil Sosyal (Lemon8/Bluesky), PKM (Anytype/AppFlowy/Workflowy), Mental Wellness (Youper/Daylio), Web3 CÃ¼zdanlar (Rainbow/Phantom), TR Dijital (Onedio/Webtekno/Kariyer.net). KeywordDatabase +37 satÄ±r (tÃ¼m kategorilere). **FolderSheet TÃ¼rkÃ§e arama fix:** `contains(ignoreCase=true)` â†’ `lowercase(Locale("tr")).contains(q)`. 2 duplicate temizlendi.
+
+---
+
+## Build GeÃ§miÅŸi Ã–zeti
+
+| Build | DÃ¶ngÃ¼ | Boyut | Not |
 |-------|-------|-------|-----|
-| #6 | 41 | 28MB | İlk LLM fallback dahil |
-| #9 | 36 | — | SettingsScreen lambda fix |
-| #10 | 42 | — | AAB 6.3MB Play Store hazır |
-| #11 | 48 | — | CAT_SPORTS/COMMUNICATION ref fix |
-| #13 | 60 | 28.1MB | — |
-| #14 | 66 | 28.2MB | — |
-| #15 | 72 | 28.5MB | — |
+| #6 | 41 | 28MB | Ä°lk LLM fallback dahil |
+| #9 | 36 | â€” | SettingsScreen lambda fix |
+| #10 | 42 | â€” | AAB 6.3MB Play Store hazÄ±r |
+| #11 | 48 | â€” | CAT_SPORTS/COMMUNICATION ref fix |
+| #13 | 60 | 28.1MB | â€” |
+| #14 | 66 | 28.2MB | â€” |
+| #15 | 72 | 28.5MB | â€” |
 | #16 | 78 | 28.5MB | msg ID 629 |
 | #17 | 84 | 28.5MB | msg ID 657 |
 
-> Remote ortamda APK build edilemez (dl.google.com erişim yok) — tüm build'ler yerel makinede.
+> Remote ortamda APK build edilemez (dl.google.com eriÅŸim yok) â€” tÃ¼m build'ler yerel makinede.
 
 ---
 
-*Bu arşiv 2026-06-15'te CLAUDE.md v3 geçişinde oluşturuldu. 76 döngülük log buraya taşındı.*
+*Bu arÅŸiv 2026-06-15'te CLAUDE.md v3 geÃ§iÅŸinde oluÅŸturuldu. 76 dÃ¶ngÃ¼lÃ¼k log buraya taÅŸÄ±ndÄ±.*
 
 ---
 
-## Loop 84-94 Özeti (2026-06-14, CLAUDE.md'den taşındı)
-- Loop 84: AppClassifier 3116→3116, KeywordDatabase +37 satır, FolderSheet Türkçe arama fix
-- Loop 90: KeywordDatabase 14→32 kategori, CAT_PERSONALIZATION/ART/BEAUTY/WEATHER genişledi
+## Loop 84-94 Ã–zeti (2026-06-14, CLAUDE.md'den taÅŸÄ±ndÄ±)
+- Loop 84: AppClassifier 3116â†’3116, KeywordDatabase +37 satÄ±r, FolderSheet TÃ¼rkÃ§e arama fix
+- Loop 90: KeywordDatabase 14â†’32 kategori, CAT_PERSONALIZATION/ART/BEAUTY/WEATHER geniÅŸledi
 - Loop 91: LIFESTYLE/EVENTS/COMICS/PARENTING/VIDEO/BOOKS/DATING/HOUSE/BUSINESS/SPORTS/AUTO +117
-- Loop 92: DockIcon ikon paketi reaktifliği, AllAppsDrawer bgAlpha reactive, SwipeHint encoding fix
-- Loop 93: HomeScreen dead code temizliği, ViewModel Türkçe locale fix, AppClassifier +80 (AI/çizgi roman/EV araç)
-- Loop 94: Build uyarıları temizlendi (4 dosya), AppClassifier +87 (dini/giyilebilir/ABD bankacılık/sağlık sigortası), KeywordDatabase CAT_LIFESTYLE +30 keyword
-- **AppClassifier: 3375 benzersiz paket** (başlangıç 479)
+- Loop 92: DockIcon ikon paketi reaktifliÄŸi, AllAppsDrawer bgAlpha reactive, SwipeHint encoding fix
+- Loop 93: HomeScreen dead code temizliÄŸi, ViewModel TÃ¼rkÃ§e locale fix, AppClassifier +80 (AI/Ã§izgi roman/EV araÃ§)
+- Loop 94: Build uyarÄ±larÄ± temizlendi (4 dosya), AppClassifier +87 (dini/giyilebilir/ABD bankacÄ±lÄ±k/saÄŸlÄ±k sigortasÄ±), KeywordDatabase CAT_LIFESTYLE +30 keyword
+- **AppClassifier: 3375 benzersiz paket** (baÅŸlangÄ±Ã§ 479)
 
-## Döngü #1-2 (2026-06-15, CLAUDE.md v3 geçiş döngüleri)
-- Döngü #1: pre-commit hook, scripts/update_notebooklm.py, ROADMAP.md, push: 80b715f
-- Döngü #2: docs temizliği, .gitignore güncelleme, loop_count.txt, push: 5b6a17f
+## DÃ¶ngÃ¼ #1-2 (2026-06-15, CLAUDE.md v3 geÃ§iÅŸ dÃ¶ngÃ¼leri)
+- DÃ¶ngÃ¼ #1: pre-commit hook, scripts/update_notebooklm.py, ROADMAP.md, push: 80b715f
+- DÃ¶ngÃ¼ #2: docs temizliÄŸi, .gitignore gÃ¼ncelleme, loop_count.txt, push: 5b6a17f
 
+
+---
+
+## Döngü #8-16 — 2026-06-15
+**Yapılanlar:**
+- #8: AppClassifier +18 global paket (3534), LazyColumn key audit — FolderSheet 3 itemsIndexed'e key eklendi
+- #9: Dark mode audit — HomeScreen.kt + AppIconView.kt 6 hardcoded renk MaterialTheme'e çevrildi; LiveData yok (zaten StateFlow)
+- #10: Hilt DI temizliği — PackageManagerHelper @Singleton @Inject, AppModule gereksiz provider silindi, LauncherViewModel/MainActivity/PackageChangeReceiver güncellendi. BUILD SUCCESSFUL
+- #11: (Kesintiye uğradı, #12'ye geçildi)
+- #12: Memory leak audit — TEMİZ; AppClassifier +14 Avrupa/Asya/Hindistan paketi (3548)
+- #13: AppClassifier +29 Latin Amerika/Orta Doğu/Afrika paketi (3577); AppClassifierTest.kt oluşturuldu (9 test)
+- #14: KeywordDatabase +61 keyword (9 kategori); ProGuard Kotlin Serialization + AppClassifier domain keep eklendi
+- #15: Onboarding zaten tamam (Skip/dots/back var); AppClassifier +18 oyun paketi (3594)
+- #16: BUILD — CAT_PHOTO → CAT_PHOTOGRAPHY fix; BUILD SUCCESSFUL; APK Telegram msg 701
+**Sıralı döngü kuralı CLAUDE.md'ye eklendi:** build sadece son döngüde
+**Sonraki:** ROADMAP aktif sprint — Privacy Policy + store listing
