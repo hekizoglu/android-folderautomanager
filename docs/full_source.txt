@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 23:10 UTC
-# Commit: ef36a6f35eceaee74755f9b18aeba73064256d6f
+# Generated: 2026-06-15 23:15 UTC
+# Commit: 7cdc9e6c184bf72416f8e4f4670ceebc0c2c82b3
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -6868,6 +6868,7 @@ import com.armutlu.apporganizer.presentation.navigation.AppNavigation
 import com.armutlu.apporganizer.presentation.ui.screens.OnboardingScreen
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import androidx.core.view.WindowCompat
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
@@ -6892,6 +6893,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         installSplashScreen()
         CrashReporter.install(this)
 
