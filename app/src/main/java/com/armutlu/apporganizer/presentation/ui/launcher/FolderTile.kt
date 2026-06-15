@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.GenericShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,6 +70,7 @@ fun FolderTile(
     folderCountVisible: Boolean = true,
     folderSwipeHintEnabled: Boolean = true,
     notifTextEnabled: Boolean = false,
+    folderShape: String = "circle",
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -131,11 +134,22 @@ fun FolderTile(
             runCatching { Color(android.graphics.Color.parseColor(hex)) }
                 .getOrDefault(Color.White)
         }
+        val tileShape = when (folderShape) {
+            "square"   -> RoundedCornerShape(0.dp)
+            "rounded"  -> RoundedCornerShape(16.dp)
+            "triangle" -> GenericShape { size, _ ->
+                moveTo(size.width / 2f, 0f)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+                close()
+            }
+            else -> CircleShape // "circle"
+        }
         Box {
         Box(
             modifier = Modifier
                 .size(circleSize)
-                .clip(CircleShape)
+                .clip(tileShape)
                 .background(catColor.copy(alpha = 0.35f)),
             contentAlignment = Alignment.Center
         ) {

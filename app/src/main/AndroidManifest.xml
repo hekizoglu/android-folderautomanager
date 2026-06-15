@@ -33,6 +33,9 @@
     <uses-permission android:name="android.permission.BIND_APPWIDGET"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- Sistem duvar kağıdı ayarlama -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
     <application
         android:name=".AppOrganizerApp"
         android:allowBackup="true"

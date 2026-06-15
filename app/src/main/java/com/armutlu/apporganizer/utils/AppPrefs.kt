@@ -89,6 +89,11 @@ object AppPrefs {
     fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
     fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
 
+    // Klasör şekli — "circle", "rounded", "square", "triangle"
+    const val KEY_FOLDER_SHAPE = "folder_shape"
+    fun getFolderShape(context: Context): String = prefs(context).getString(KEY_FOLDER_SHAPE, "circle") ?: "circle"
+    fun setFolderShape(context: Context, shape: String) = prefs(context).edit().putString(KEY_FOLDER_SHAPE, shape).apply()
+
     // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
     const val KEY_FOLDER_SIZE = "folder_size_dp"
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
@@ -232,6 +237,11 @@ object AppPrefs {
     fun setBackupHour(context: Context, hour: Int) = prefs(context).edit().putInt(KEY_BACKUP_HOUR, hour).apply()
     fun getBackupMinute(context: Context): Int = prefs(context).getInt(KEY_BACKUP_MINUTE, 0)
     fun setBackupMinute(context: Context, minute: Int) = prefs(context).edit().putInt(KEY_BACKUP_MINUTE, minute).apply()
+
+    // Son yedekleme zamanı (epoch ms, 0 = hiç yedeklenmedi)
+    const val KEY_LAST_BACKUP_TIME = "last_backup_time"
+    fun getLastBackupTime(context: Context): Long = prefs(context).getLong(KEY_LAST_BACKUP_TIME, 0L)
+    fun setLastBackupTime(context: Context, ms: Long) = prefs(context).edit().putLong(KEY_LAST_BACKUP_TIME, ms).apply()
 
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"

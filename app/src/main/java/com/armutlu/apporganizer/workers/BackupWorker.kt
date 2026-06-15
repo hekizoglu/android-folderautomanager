@@ -40,6 +40,7 @@ class BackupWorker(
             val file = File(applicationContext.filesDir, "auto_backup.json")
             file.writeText(json)
             Timber.d("Otomatik yedekleme tamamlandi: ${file.absolutePath}")
+            com.armutlu.apporganizer.utils.AppPrefs.setLastBackupTime(applicationContext, System.currentTimeMillis())
             Result.success()
         }.getOrElse { e ->
             Timber.e(e, "Otomatik yedekleme hatasi")

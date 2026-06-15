@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.workers.BackupWorker
 import kotlinx.coroutines.launch
 
 /**
@@ -63,7 +64,23 @@ internal fun LazyListScope.settingsBackupAboutSection(
                     Text("Otomatik Yedekleme", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Text("Uygulama açıldığında otomatik JSON yedeği al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Switch(checked = autoBackup, onCheckedChange = { autoBackup = it; AppPrefs.setAutoBackupEnabled(context, it) })
+                Switch(checked = autoBackup, onCheckedChange = {
+                    autoBackup = it
+                    AppPrefs.setAutoBackupEnabled(context, it)
+                    if (it) BackupWorker.schedule(context) else BackupWorker.cancel(context)
+                })
+            }
+            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            val lastBackupMs = AppPrefs.getLastBackupTime(context)
+            val lastBackupText = if (lastBackupMs == 0L) "Henüz yedeklenmedi"
+                else java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale("tr")).format(java.util.Date(lastBackupMs))
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.History, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text("Son yedekleme: $lastBackupText", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Yedekleme zamanı: Pazartesi 03:00", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }

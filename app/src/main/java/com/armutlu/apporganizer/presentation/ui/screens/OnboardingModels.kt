@@ -139,6 +139,13 @@ internal enum class OnboardingStep(
         buttonLabel = "Varsayılan Yap",
         why = "Launcher olarak ayarlanmadan ana ekran gösterilmez."
     ),
+    CLASSIFY_MODE(
+        title = "Nasıl Sınıflandıralım?",
+        description = "Uygulamalarını kategoriye veya üreticiye göre gruplayabiliriz.",
+        icon = Icons.Default.Category,
+        buttonLabel = "Devam Et",
+        isSkippable = true
+    ),
     DONE(
         title = "Hazırsınız!",
         description = "AppOrganizer kurulumu tamamlandı. İyi kullanımlar!",

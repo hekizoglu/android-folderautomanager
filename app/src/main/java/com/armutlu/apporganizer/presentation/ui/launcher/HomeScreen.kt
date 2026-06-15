@@ -135,6 +135,7 @@ fun HomeScreen(
     var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -181,6 +182,8 @@ fun HomeScreen(
                     folderSwipeHint = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
+                    folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -219,7 +222,7 @@ fun HomeScreen(
     LaunchedEffect(allAppsOpen) {
         if (allAppsOpen) {
             swipeLock = true
-            delay(300)
+            delay(150)
             swipeLock = false
         }
     }
@@ -329,45 +332,45 @@ fun HomeScreen(
                 else Modifier
             )
             .nestedScroll(nestedScrollConnection)
-            .pointerInput(allAppsOpen) {
-                if (!allAppsOpen) {
-                    detectTapGestures(
-                        onDoubleTap = {
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             viewModel.openAllApps()
-                        },
-                        onLongPress = {
+                        }
+                    },
+                    onLongPress = {
+                        if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             homeLongPressOpen = true
                         }
-                    )
-                }
+                    }
+                )
             }
-            .pointerInput(allAppsOpen) {
-                if (!allAppsOpen) {
-                    var accumulated = 0f
-                    var dragStartY = 0f
-                    // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
-                    val gestureZonePx = with(density) { 80.dp.toPx() }
-                    detectVerticalDragGestures(
-                        onDragStart = { offset ->
-                            dragStartY = offset.y
-                            accumulated = 0f
-                        },
-                        onDragEnd = { accumulated = 0f },
-                        onDragCancel = { accumulated = 0f },
-                        onVerticalDrag = { _, dragAmount ->
-                            if (dragStartY < size.height - gestureZonePx) {
-                                accumulated += dragAmount
-                                if (!swipeLock && accumulated < -120f) {
-                                    accumulated = 0f
-                                    AppAnalytics.allAppsOpened()
-                                    viewModel.openAllApps()
-                                }
+            .pointerInput(Unit) {
+                var accumulated = 0f
+                var dragStartY = 0f
+                // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
+                val gestureZonePx = with(density) { 80.dp.toPx() }
+                detectVerticalDragGestures(
+                    onDragStart = { offset ->
+                        dragStartY = offset.y
+                        accumulated = 0f
+                    },
+                    onDragEnd = { accumulated = 0f },
+                    onDragCancel = { accumulated = 0f },
+                    onVerticalDrag = { _, dragAmount ->
+                        if (!currentAllAppsOpen && dragStartY < size.height - gestureZonePx) {
+                            accumulated += dragAmount
+                            if (!swipeLock && accumulated < -120f) {
+                                accumulated = 0f
+                                AppAnalytics.allAppsOpened()
+                                viewModel.openAllApps()
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
     ) {
         Column(
@@ -490,6 +493,7 @@ fun HomeScreen(
                         folderCountVisible = folderCountVisible,
                         folderSwipeHintEnabled = folderSwipeHint,
                         notifTextEnabled = notifTextEnabled,
+                        folderShape = folderShape,
                         modifier = Modifier
                             .pointerInput(index) {
                                 detectDragGesturesAfterLongPress(

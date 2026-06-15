@@ -47,7 +47,7 @@ fun OnboardingScreen(
         OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
         OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
         OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
-        OnboardingStep.THEME_SELECT, OnboardingStep.SET_LAUNCHER, OnboardingStep.DONE,
+        OnboardingStep.THEME_SELECT, OnboardingStep.SET_LAUNCHER, OnboardingStep.CLASSIFY_MODE, OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
 
@@ -191,6 +191,48 @@ fun OnboardingScreen(
                 )
             }
 
+            if (currentStep == OnboardingStep.CLASSIFY_MODE) {
+                Spacer(Modifier.height(8.dp))
+                val classifyOptions = listOf(
+                    "category"     to ("Kategoriye Göre" to "Sosyal Medya, Oyunlar, Finans..."),
+                    "manufacturer" to ("Üreticiye Göre"  to "Google, Samsung, Microsoft...")
+                )
+                var selectedClassify by remember {
+                    mutableStateOf(if (com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(context)) "manufacturer" else "category")
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    classifyOptions.forEach { (key, pair) ->
+                        val (title, subtitle) = pair
+                        val isSelected = selectedClassify == key
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (isSelected) Color(0xFF00897B).copy(0.3f)
+                                    else Color.White.copy(0.08f)
+                                )
+                                .border(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) Color(0xFF00897B) else Color.White.copy(0.2f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .clickable {
+                                    selectedClassify = key
+                                    com.armutlu.apporganizer.utils.AppPrefs.setManufacturerClassifyEnabled(context, key == "manufacturer")
+                                }
+                                .padding(16.dp)
+                        ) {
+                            Column {
+                                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.White)
+                                Spacer(Modifier.height(4.dp))
+                                Text(subtitle, fontSize = 13.sp, color = Color.White.copy(0.7f))
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(8.dp))
 
             // ── Ana buton ────────────────────────────────────────────────
@@ -317,6 +359,7 @@ private fun handleOnboardingStep(
         OnboardingStep.NAV_HIDE       -> { AppPrefs.setNavButtonsHidden(context, navHideEnabled); onNextStep() }
         OnboardingStep.THEME_SELECT   -> { scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }; onNextStep() }
         OnboardingStep.SET_LAUNCHER   -> if (launcherSet) onNextStep() else onRequestRole()
+        OnboardingStep.CLASSIFY_MODE  -> onNextStep()
         OnboardingStep.DONE           -> {
             context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                 .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()

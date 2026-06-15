@@ -226,18 +226,6 @@ fun SettingsScreen(
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
                 SettingsCard {
-                    var manufacturerClassify by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(context)) }
-                    SettingsSwitchRow(
-                        icon = Icons.Default.PhoneAndroid,
-                        title = "Üretici Sınıflandırması",
-                        subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilendir",
-                        checked = manufacturerClassify,
-                        onCheckedChange = {
-                            manufacturerClassify = it
-                            com.armutlu.apporganizer.utils.AppPrefs.setManufacturerClassifyEnabled(context, it)
-                        }
-                    )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
                         title = "Sınıflandırılmamışları Sınıflandır",
@@ -435,6 +423,8 @@ fun SettingsScreen(
                         Switch(checked = autoBackup, onCheckedChange = {
                             autoBackup = it
                             com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, it)
+                            if (it) com.armutlu.apporganizer.workers.BackupWorker.schedule(context)
+                            else com.armutlu.apporganizer.workers.BackupWorker.cancel(context)
                         })
                     }
                 }

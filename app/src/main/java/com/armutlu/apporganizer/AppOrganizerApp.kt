@@ -2,6 +2,8 @@ package com.armutlu.apporganizer
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.workers.BackupWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -16,5 +18,8 @@ class AppOrganizerApp : Application() {
         FirebaseApp.initializeApp(this)
         val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
+        if (AppPrefs.isAutoBackupEnabled(this)) {
+            BackupWorker.schedule(this)
+        }
     }
 }

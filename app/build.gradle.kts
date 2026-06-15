@@ -119,6 +119,9 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 }
 
 dependencies {
+    // Color picker
+    implementation("com.github.skydoves:colorpicker-compose:1.1.2")
+
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.core:core-splashscreen:1.0.1")

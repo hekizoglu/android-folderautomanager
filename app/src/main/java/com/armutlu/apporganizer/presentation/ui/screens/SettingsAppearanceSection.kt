@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.presentation.ui.components.ColorPickerDialog
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
@@ -115,6 +116,7 @@ fun SettingsAppearanceSection(
                     0xFF1A1025.toInt() to "Derin Mor"
                 )
                 var selectedBgColor by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
+                var showBgColorPicker by remember { mutableStateOf(false) }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(bgColors) { (colorInt, colorLabel) ->
                         val isSelected = selectedBgColor == colorInt
@@ -148,6 +150,34 @@ fun SettingsAppearanceSection(
                             )
                         }
                     }
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { showBgColorPicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Özel Renk", fontSize = 13.sp) }
+                if (showBgColorPicker) {
+                    ColorPickerDialog(
+                        initialColor = Color(selectedBgColor),
+                        onColorSelected = { color ->
+                            val colorInt = android.graphics.Color.argb(
+                                (color.alpha * 255).toInt(),
+                                (color.red * 255).toInt(),
+                                (color.green * 255).toInt(),
+                                (color.blue * 255).toInt()
+                            )
+                            selectedBgColor = colorInt
+                            com.armutlu.apporganizer.utils.AppPrefs.setBgColor(context, colorInt)
+                            val hex = "#%06X".format(colorInt and 0xFFFFFF)
+                            scope.launch {
+                                runCatching {
+                                    com.armutlu.apporganizer.utils.WallpaperHelper.applyColorWallpaper(context, hex)
+                                    com.armutlu.apporganizer.utils.AppPrefs.setBgType(context, "wallpaper_color")
+                                }
+                            }
+                        },
+                        onDismiss = { showBgColorPicker = false }
+                    )
                 }
             }
             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
@@ -195,6 +225,7 @@ fun SettingsAppearanceSection(
                 "#EF9A9A" to "Pembe"
             )
             var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
+            var showLabelColorPicker by remember { mutableStateOf(false) }
             Text("Yazi Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -218,6 +249,30 @@ fun SettingsAppearanceSection(
                             }
                     )
                 }
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { showLabelColorPicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Özel Renk", fontSize = 13.sp) }
+            if (showLabelColorPicker) {
+                val initialColor = runCatching {
+                    Color(android.graphics.Color.parseColor(selectedLabel))
+                }.getOrDefault(Color.White)
+                ColorPickerDialog(
+                    initialColor = initialColor,
+                    onColorSelected = { color ->
+                        val hex = "#%02X%02X%02X%02X".format(
+                            (color.alpha * 255).toInt(),
+                            (color.red * 255).toInt(),
+                            (color.green * 255).toInt(),
+                            (color.blue * 255).toInt()
+                        ).let { "#%06X".format(android.graphics.Color.parseColor(it) and 0xFFFFFF) }
+                        selectedLabel = hex
+                        com.armutlu.apporganizer.utils.AppPrefs.setLabelColor(context, hex)
+                    },
+                    onDismiss = { showLabelColorPicker = false }
+                )
             }
         }
     }
@@ -261,6 +316,71 @@ fun SettingsAppearanceSection(
                                     else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Klasör Şekli ──────────────────────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        var folderShape by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
+        SettingsCard {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Klasör Şekli", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                val shapeOptions = listOf(
+                    "circle"   to "Daire",
+                    "rounded"  to "Yumuşak",
+                    "square"   to "Kare",
+                    "triangle" to "Üçgen"
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    shapeOptions.forEach { (key, label) ->
+                        val selected = folderShape == key
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clickable {
+                                    folderShape = key
+                                    com.armutlu.apporganizer.utils.AppPrefs.setFolderShape(context, key)
+                                }
+                                .padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(
+                                        when (key) {
+                                            "square"   -> RoundedCornerShape(0.dp)
+                                            "rounded"  -> RoundedCornerShape(12.dp)
+                                            "triangle" -> RoundedCornerShape(4.dp)
+                                            else       -> CircleShape
+                                        }
+                                    )
+                                    .background(
+                                        if (selected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                    .border(
+                                        width = if (selected) 2.dp else 1.dp,
+                                        color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        shape = when (key) {
+                                            "square"   -> RoundedCornerShape(0.dp)
+                                            "rounded"  -> RoundedCornerShape(12.dp)
+                                            else       -> CircleShape
+                                        }
+                                    )
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                label,
+                                fontSize = 10.sp,
+                                textAlign = TextAlign.Center,
+                                color = if (selected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
