@@ -22,7 +22,8 @@ import javax.inject.Singleton
 class CategoryLLMFallback @Inject constructor() {
 
     // packageName → categoryId cache (uygulama yaşam süresi boyunca)
-    private val cache = mutableMapOf<String, String>()
+    // ConcurrentHashMap: classify() ve classifyBatch() paralel çağrılsa bile thread-safe
+    private val cache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
     /**
      * Tek paket için kategori döndürür.
@@ -71,10 +72,9 @@ class CategoryLLMFallback @Inject constructor() {
                 }
             } catch (e: Exception) {
                 Timber.w(e, "LLM batch fallback failed for ${batch.size} packages")
-                batch.forEach { pkg ->
-                    cache[pkg] = Category.CAT_OTHER
-                    results[pkg] = Category.CAT_OTHER
-                }
+                // cache'e CAT_OTHER yazma — timeout/network hatası geçici olabilir,
+                // cache'e yazarsak sonraki açılışta da hatalı kategori kalır
+                batch.forEach { pkg -> results[pkg] = Category.CAT_OTHER }
             }
         }
 

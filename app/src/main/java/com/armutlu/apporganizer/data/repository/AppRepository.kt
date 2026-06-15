@@ -6,6 +6,7 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -85,12 +86,14 @@ class AppRepository @Inject constructor(
      */
     suspend fun insertApps(apps: List<AppInfo>) {
         try {
-            // Classify apps before inserting
-            val classifiedApps = apps.map { app ->
-                val category = classifier.classifyApp(app)
-                app.copy(categoryId = category)
+            // classifyApp CPU-bound — Dispatchers.Default kullan, IO thread'ini bloke etme
+            val classifiedApps = withContext(Dispatchers.Default) {
+                apps.map { app ->
+                    val category = classifier.classifyApp(app)
+                    app.copy(categoryId = category)
+                }
             }
-            
+
             appDao.insertApps(classifiedApps)
             Timber.d("Inserted ${classifiedApps.size} apps")
         } catch (e: Exception) {

@@ -6,6 +6,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 /**
  * Aktif bildirimleri sayar ve son bildirim metnini (package -> text) yayinlar.
@@ -16,7 +17,6 @@ class AppNotificationListenerService : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
         runCatching {
-            rebuildCounts()
             if (!sbn.isOngoing) {
                 val extras = sbn.notification?.extras
                 val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
@@ -26,10 +26,12 @@ class AppNotificationListenerService : NotificationListenerService() {
                     title.isNotBlank() -> title
                     else -> text
                 }
+                // atomic update — race condition'u önler
+                _badgeCounts.update { counts ->
+                    counts + (sbn.packageName to ((counts[sbn.packageName] ?: 0) + 1))
+                }
                 if (combined.isNotBlank()) {
-                    val current = _latestTexts.value.toMutableMap()
-                    current[sbn.packageName] = combined
-                    _latestTexts.value = current
+                    _latestTexts.update { current -> current + (sbn.packageName to combined) }
                 }
             }
         }
@@ -37,13 +39,13 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         runCatching {
-            rebuildCounts()
             sbn?.packageName?.let { pkg ->
+                // Rebuild badge counts atomically from system source of truth
+                rebuildCounts()
                 val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
                 if (!hasActive) {
-                    val current = _latestTexts.value.toMutableMap()
-                    if (current.remove(pkg) != null) {
-                        _latestTexts.value = current
+                    _latestTexts.update { current ->
+                        if (current.containsKey(pkg)) current - pkg else current
                     }
                 }
             }

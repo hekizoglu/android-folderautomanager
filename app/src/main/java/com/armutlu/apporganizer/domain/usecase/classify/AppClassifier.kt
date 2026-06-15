@@ -8,7 +8,9 @@ import javax.inject.Singleton
 @Singleton
 class AppClassifier @Inject constructor() {
 
-    // Ãœretici bazlı sınıflandırma toggle â€" AppListViewModel tarafından set edilir
+    // Üretici bazlı sınıflandırma toggle — AppListViewModel tarafından set edilir
+    // @Volatile: farklı thread'lerden (IO/Main) okunup yazılabileceği için gerekli
+    @Volatile
     var manufacturerClassifyEnabled: Boolean = true
 
     // Üretici prefix → üretici kategorisi: exactMap'ten sonra, keyword'den önce kontrol edilir
