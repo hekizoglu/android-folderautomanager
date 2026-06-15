@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.domain.usecase.classify
 
+import com.armutlu.apporganizer.domain.models.Category
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -33,13 +34,13 @@ class CategoryLLMFallback @Inject constructor() {
         return try {
             withTimeout(10_000L) {
                 val result = callDeepSeek(listOf(packageName), apiKey)
-                val category = result[packageName] ?: AppClassifier.CAT_OTHER
+                val category = result[packageName] ?: Category.CAT_OTHER
                 cache[packageName] = category
                 category
             }
         } catch (e: Exception) {
             Timber.w(e, "LLM fallback failed for $packageName, defaulting to CAT_OTHER")
-            AppClassifier.CAT_OTHER
+            Category.CAT_OTHER
         }
     }
 
@@ -63,7 +64,7 @@ class CategoryLLMFallback @Inject constructor() {
                 withTimeout(10_000L) {
                     val batchResult = callDeepSeek(batch, apiKey)
                     batch.forEach { pkg ->
-                        val category = batchResult[pkg] ?: AppClassifier.CAT_OTHER
+                        val category = batchResult[pkg] ?: Category.CAT_OTHER
                         cache[pkg] = category
                         results[pkg] = category
                     }
@@ -71,8 +72,8 @@ class CategoryLLMFallback @Inject constructor() {
             } catch (e: Exception) {
                 Timber.w(e, "LLM batch fallback failed for ${batch.size} packages")
                 batch.forEach { pkg ->
-                    cache[pkg] = AppClassifier.CAT_OTHER
-                    results[pkg] = AppClassifier.CAT_OTHER
+                    cache[pkg] = Category.CAT_OTHER
+                    results[pkg] = Category.CAT_OTHER
                 }
             }
         }
@@ -109,7 +110,7 @@ class CategoryLLMFallback @Inject constructor() {
             val responseCode = conn.responseCode
             if (responseCode != 200) {
                 Timber.w("DeepSeek API returned $responseCode")
-                return@withContext packageNames.associateWith { AppClassifier.CAT_OTHER }
+                return@withContext packageNames.associateWith { Category.CAT_OTHER }
             }
 
             val response = conn.inputStream.bufferedReader().readText()
@@ -140,12 +141,12 @@ class CategoryLLMFallback @Inject constructor() {
             }
             // Eksik paketlere CAT_OTHER
             packageNames.forEach { pkg ->
-                if (!result.containsKey(pkg)) result[pkg] = AppClassifier.CAT_OTHER
+                if (!result.containsKey(pkg)) result[pkg] = Category.CAT_OTHER
             }
             result
         } catch (e: Exception) {
             Timber.w(e, "Failed to parse DeepSeek response")
-            packageNames.associateWith { AppClassifier.CAT_OTHER }
+            packageNames.associateWith { Category.CAT_OTHER }
         }
     }
 
