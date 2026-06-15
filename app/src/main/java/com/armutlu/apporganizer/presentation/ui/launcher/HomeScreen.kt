@@ -332,7 +332,7 @@ fun HomeScreen(
                 else Modifier
             )
             .nestedScroll(nestedScrollConnection)
-            .pointerInput(Unit) {
+            .pointerInput("tap") {
                 detectTapGestures(
                     onDoubleTap = {
                         if (!currentAllAppsOpen) {
@@ -348,7 +348,7 @@ fun HomeScreen(
                     }
                 )
             }
-            .pointerInput(Unit) {
+            .pointerInput("drag") {
                 var accumulated = 0f
                 var dragStartY = 0f
                 // Xiaomi/Samsung alt gesture zone (~80dp) — oradan başlayan swipe'ı yok say
@@ -360,10 +360,11 @@ fun HomeScreen(
                     },
                     onDragEnd = { accumulated = 0f },
                     onDragCancel = { accumulated = 0f },
-                    onVerticalDrag = { _, dragAmount ->
+                    onVerticalDrag = { change, dragAmount ->
                         if (!currentAllAppsOpen && dragStartY < size.height - gestureZonePx) {
                             accumulated += dragAmount
-                            if (!swipeLock && accumulated < -120f) {
+                            if (!swipeLock && accumulated < -80f) {
+                                change.consume()
                                 accumulated = 0f
                                 AppAnalytics.allAppsOpened()
                                 viewModel.openAllApps()

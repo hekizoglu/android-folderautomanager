@@ -225,7 +225,22 @@ fun SettingsScreen(
 
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
+                var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
                 SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.PhoneAndroid,
+                        title = "Üreticiye Göre Sınıflandır",
+                        subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilere ayır",
+                        checked = manufacturerClassify,
+                        onCheckedChange = {
+                            manufacturerClassify = it
+                            AppPrefs.setManufacturerClassifyEnabled(context, it)
+                        }
+                    )
+                    Divider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
                         title = "Sınıflandırılmamışları Sınıflandır",
