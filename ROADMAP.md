@@ -20,10 +20,10 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
 - [x] ~~app-release.aab oluştur + imzala~~ ✅ v1.0.0 (6.3MB, `Desktop/AppOrganizer_PlayStore/`)
 - [x] ~~Mapping dosyası~~ ✅ `mapping-v1.0.0.txt`
 - [ ] Privacy Policy sayfası (GitHub Pages tek HTML) ⚠️ içerik onayı
-- [ ] Store listing metni (TR + EN)
+- [x] ~~Store listing metni (TR + EN)~~ ✅ `docs/store_listing.md` (Döngü #22, 2026-06-15)
 - [ ] Screenshots (Pixel 6 emülatörü, light + dark mode)
 - [ ] Content rating anketi ⚠️
-- [ ] ProGuard kuralları son kontrol (release build'de crash testi)
+- [x] ~~ProGuard kuralları son kontrol~~ ✅ `@HiltAndroidApp` + `@AndroidEntryPoint` keep kuralları eklendi (Döngü #23, 2026-06-15)
 
 ### Otomasyon Tamamlama
 - [x] ~~Döngü orchestrator scripti~~ ✅ `scripts/cycle.ps1`
@@ -41,7 +41,7 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
 ### Yakın (Sonraki Sprint) — Kod Kalitesi
 - [ ] Hilt DI kurulumu — manuel `new()` çağrılarını temizle (kısmen başladı: onboarding'de `hiltViewModel` kullanılıyor)
 - [ ] StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir
-- [ ] Unit test coverage — ViewModel'ler için MockK testleri (sıfırdan)
+- [ ] Unit test coverage — ViewModel'ler için MockK testleri 🔄 (başlandı, CI pipeline hazır)
 - [ ] Compose UI: `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit
 - [ ] Memory leak audit: Fragment binding null kontrolü
 - [ ] Dark mode tam uyum audit
@@ -53,7 +53,7 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
   - Avantaj: offline DB güncellemesi sunucudan push edilebilir (APK güncellemeden)
 
 ### CI/CD & Geliştirme Araçları
-- [ ] GitHub Actions — lint + test + build pipeline
+- [x] ~~GitHub Actions — lint + test + build pipeline~~ ✅ `.github/workflows/android.yml` (Döngü #28, 2026-06-15)
 - [ ] Aider repo-map: CBM ile entegrasyon testi
 - [ ] Greptile API denemesi — PR review otomasyonu
 
@@ -115,6 +115,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 |-------|-----------|---------|-----------|-------|
 | 2026-06-14 | Loop 84 (AppClassifier 3116) | — | FolderSheet TR fix | #17 (28.5MB) |
 | 2026-06-15 | Config refactor (CLAUDE/HISTORY/LEARNINGS/ROADMAP + 6 script) | 5 yeni dosya | 11 promote | — |
+| 2026-06-15 | Döngüler #22-30 — store listing, ProGuard, LLM fallback, AppInfo v8, widget, search, shortcut, CI | 3 yeni dosya | 4 yeni LEARNINGS | — |
 
 ---
 

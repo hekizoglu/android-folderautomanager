@@ -41,7 +41,15 @@ data class AppInfo(
 
     val appSizeBytes: Long = 0L,
 
-    val isHidden: Boolean = false
+    val isHidden: Boolean = false,
+
+    val firstInstalledTime: Long = 0L,
+
+    val lastUpdatedTime: Long = 0L,
+
+    val targetSdkVersion: Int = 0,
+
+    val versionName: String = ""
 ) : Serializable {
     
     companion object {

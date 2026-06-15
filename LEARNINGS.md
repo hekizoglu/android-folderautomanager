@@ -39,6 +39,10 @@
 | P7 | Flow `SharingStarted.Eagerly` | §5 | 3 |
 | P8 | Async ikon `produceState`+LRU | §5 | 5+ |
 | P9 | Reaktif AppPrefs (DisposableEffect) | §5 | 3 |
+| P10 | `fallbackToDestructiveMigration()` kaldırıldı — production'da veri kaybı riski | §5 | 2 |
+| P11 | `derivedStateOf` pattern — scroll sırasında gereksiz recomposition önler | §5 | 2 |
+| P12 | `installSplashScreen()` sırası: `super.onCreate()` sonrası, `setContentView()` öncesi | §5 | 1 |
+| P13 | Build cache kilidi: Java process'leri öldür + `app\build` sil — tekrarlayan sorun | §5 | 3+ |
 
 ---
 

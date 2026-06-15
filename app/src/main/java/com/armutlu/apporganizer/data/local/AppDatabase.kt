@@ -16,7 +16,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -70,6 +70,16 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v7→v8: AppInfo'ya firstInstalledTime, lastUpdatedTime, targetSdkVersion, versionName eklendi
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE apps ADD COLUMN firstInstalledTime INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE apps ADD COLUMN lastUpdatedTime INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE apps ADD COLUMN targetSdkVersion INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE apps ADD COLUMN versionName TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -84,7 +94,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_3_4,
                         MIGRATION_4_5,
                         MIGRATION_5_6,
-                        MIGRATION_6_7
+                        MIGRATION_6_7,
+                        MIGRATION_7_8
                     )
                     .build()
 

@@ -26,6 +26,8 @@
 -keep @dagger.hilt.android.lifecycle.HiltViewModel class * { *; }
 -keep @dagger.hilt.InstallIn class * { *; }
 -keep @dagger.Module class * { *; }
+-keep @dagger.hilt.android.HiltAndroidApp class * { *; }
+-keep @dagger.hilt.android.AndroidEntryPoint class * { *; }
 -dontwarn dagger.hilt.**
 
 # ============================================================

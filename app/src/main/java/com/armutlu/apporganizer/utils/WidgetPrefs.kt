@@ -26,4 +26,14 @@ object WidgetPrefs {
     fun removeWidgetId(context: Context, id: Int) {
         saveWidgetIds(context, getWidgetIds(context).filter { it != id })
     }
+
+    /**
+     * Widget'ı hem AppWidgetHost'tan hem SharedPrefs'ten kaldırır.
+     * Widget kaldırma akışında bu metodu çağır — sadece removeWidgetId() çağırma,
+     * aksi halde AppWidgetHost ID'si serbest bırakılmaz ve kaynak sızıntısı oluşur.
+     */
+    fun deleteWidget(context: Context, id: Int) {
+        WidgetHostManager.deleteId(context, id)
+        removeWidgetId(context, id)
+    }
 }

@@ -83,7 +83,11 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                                     lastUpdated = pkgInfo.lastUpdateTime,
                                     appSizeBytes = runCatching {
                                         java.io.File(appInfo.sourceDir).length()
-                                    }.getOrDefault(0L)
+                                    }.getOrDefault(0L),
+                                    firstInstalledTime = pkgInfo.firstInstallTime,
+                                    lastUpdatedTime = pkgInfo.lastUpdateTime,
+                                    targetSdkVersion = appInfo.targetSdkVersion,
+                                    versionName = pkgInfo.versionName ?: ""
                                 )
                             }.onFailure {
                                 Timber.w(it, "Error loading package: ${ri.activityInfo.packageName}")
@@ -109,7 +113,11 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                                     lastUpdated = pkgInfo.lastUpdateTime,
                                     appSizeBytes = runCatching {
                                         java.io.File(appInfo.sourceDir).length()
-                                    }.getOrDefault(0L)
+                                    }.getOrDefault(0L),
+                                    firstInstalledTime = pkgInfo.firstInstallTime,
+                                    lastUpdatedTime = pkgInfo.lastUpdateTime,
+                                    targetSdkVersion = appInfo.targetSdkVersion,
+                                    versionName = pkgInfo.versionName ?: ""
                                 )
                             }.onFailure {
                                 Timber.w(it, "Error loading package: ${pkgInfo.packageName}")
@@ -170,7 +178,11 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                     isSystemApp = isSystemApp(appInfo),
                     isInstalled = true,
                     installTime = pkgInfo.firstInstallTime,
-                    lastUpdated = pkgInfo.lastUpdateTime
+                    lastUpdated = pkgInfo.lastUpdateTime,
+                    firstInstalledTime = pkgInfo.firstInstallTime,
+                    lastUpdatedTime = pkgInfo.lastUpdateTime,
+                    targetSdkVersion = appInfo.targetSdkVersion,
+                    versionName = pkgInfo.versionName ?: ""
                 )
             } catch (e: Exception) {
                 Timber.e(e, "Error getting app info for $packageName")
