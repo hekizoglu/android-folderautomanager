@@ -257,8 +257,6 @@ class AppClassifier @Inject constructor() {
         "com.robinhood.android"                      to Category.CAT_FINANCE,
         "com.sofi.androidapp"                        to Category.CAT_FINANCE,
         "com.chime.banking"                          to Category.CAT_FINANCE,
-        "com.coinbase.android"                       to Category.CAT_FINANCE,
-        "com.binance.dev"                            to Category.CAT_FINANCE,
         "com.kraken.invest.app"                      to Category.CAT_FINANCE,
         "io.metamask"                                to Category.CAT_FINANCE,
         "com.trustwallet.app"                        to Category.CAT_FINANCE,
@@ -276,7 +274,6 @@ class AppClassifier @Inject constructor() {
         "com.vakifbank.mobile"                       to Category.CAT_FINANCE,
         "com.isbankasi.android"                      to Category.CAT_FINANCE,
         "tr.com.papara"                              to Category.CAT_FINANCE,
-        "com.paribu.android"                         to Category.CAT_FINANCE,
         "com.btcturk.android"                        to Category.CAT_FINANCE,
         "com.denizbank.mobildeniz"                   to Category.CAT_FINANCE,
         "com.garanti.cepsubesi"                      to Category.CAT_FINANCE,
@@ -383,17 +380,10 @@ class AppClassifier @Inject constructor() {
         "com.ido.android"                            to Category.CAT_TRAVEL,
 
         // â"€â"€ PRODUCTIVITY â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-        "com.openai.chatgpt"                         to Category.CAT_PRODUCTIVITY,
         "com.openai.android"                         to Category.CAT_PRODUCTIVITY,
         "com.deepseek.app"                           to Category.CAT_PRODUCTIVITY,
         "ai.deepseek.app"                            to Category.CAT_PRODUCTIVITY,
         "com.deepseek.chat"                          to Category.CAT_PRODUCTIVITY,
-        "com.anthropic.claude"                       to Category.CAT_PRODUCTIVITY,
-        "com.google.android.apps.bard"               to Category.CAT_PRODUCTIVITY,
-        "com.google.android.apps.gemini"             to Category.CAT_PRODUCTIVITY,
-        "com.microsoft.copilot"                      to Category.CAT_PRODUCTIVITY,
-        "com.perplexity.app"                         to Category.CAT_PRODUCTIVITY,
-        "ai.perplexity.app.android"                  to Category.CAT_PRODUCTIVITY,
         "io.character.ai"                            to Category.CAT_PRODUCTIVITY,
         "com.google.android.gm"                      to Category.CAT_PRODUCTIVITY,
         "com.google.android.calendar"                to Category.CAT_PRODUCTIVITY,
@@ -442,7 +432,6 @@ class AppClassifier @Inject constructor() {
 
         // â"€â"€ NEWS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.google.android.apps.news"               to Category.CAT_NEWS,
-        "com.flipboard.app"                          to Category.CAT_NEWS,
         "com.medium.reader"                          to Category.CAT_NEWS,
         "com.pocket"                                 to Category.CAT_NEWS,
         "com.feedly.android"                         to Category.CAT_NEWS,
@@ -723,10 +712,8 @@ class AppClassifier @Inject constructor() {
         "com.fastpay.android"                        to Category.CAT_FINANCE,
         "com.param.android"                          to Category.CAT_FINANCE,
         "com.goldenpay.android"                      to Category.CAT_FINANCE,
-        "com.okex.android"                           to Category.CAT_FINANCE,
         "com.bybit.android"                          to Category.CAT_FINANCE,
         "com.gate.io"                                to Category.CAT_FINANCE,
-        "com.kucoin.android"                         to Category.CAT_FINANCE,
 
         // -- HEALTH -- ek -------------------------------------------------------
         "com.webmd.android"                          to Category.CAT_HEALTH,
@@ -1021,7 +1008,6 @@ class AppClassifier @Inject constructor() {
         "com.squareup.cash"                          to Category.CAT_FINANCE,
         "com.zellepay.zelle"                         to Category.CAT_FINANCE,
         "com.wise"                                   to Category.CAT_FINANCE,
-        "com.kraken.trade"                           to Category.CAT_FINANCE,
         "com.bybit.BTCUSDT"                          to Category.CAT_FINANCE,
         "com.okex.app"                               to Category.CAT_FINANCE,
         "com.kucoin.exchange"                        to Category.CAT_FINANCE,
@@ -1298,10 +1284,7 @@ class AppClassifier @Inject constructor() {
         "com.pillow.app"                             to Category.CAT_HEALTH,
         "com.bose.app"                               to Category.CAT_HEALTH,
         // Loop44: Fintech / Kripto ek
-        "com.ledger.live"                            to Category.CAT_FINANCE,
-        "io.metamask.android"                        to Category.CAT_FINANCE,
         "com.blockchain.android"                     to Category.CAT_FINANCE,
-        "com.phantom.app"                            to Category.CAT_FINANCE,
         "com.exodus.android"                         to Category.CAT_FINANCE,
         "com.atomic.wallet"                          to Category.CAT_FINANCE,
         "com.shakepay.android"                       to Category.CAT_FINANCE,
@@ -1436,7 +1419,6 @@ class AppClassifier @Inject constructor() {
         "com.android.gallery3d"                      to Category.CAT_PHOTOGRAPHY,
         "com.android.email"                          to Category.CAT_PRODUCTIVITY,
         "com.microsoft.office.onenote"               to Category.CAT_PRODUCTIVITY,
-        "com.notion.android"                         to Category.CAT_PRODUCTIVITY,
         "com.obsidianmd.android"                     to Category.CAT_PRODUCTIVITY,
         "com.capacities.android"                     to Category.CAT_PRODUCTIVITY,
         "com.zettelkasten.android"                   to Category.CAT_PRODUCTIVITY,
@@ -1578,7 +1560,6 @@ class AppClassifier @Inject constructor() {
         "com.vakifkatilim.android"                   to Category.CAT_FINANCE,
         "com.ziraatkatilim.mobile"                   to Category.CAT_FINANCE,
         "com.bkmexpress"                             to Category.CAT_FINANCE,
-        "com.papara.android"                         to Category.CAT_FINANCE,
         "com.ininal.wallet"                          to Category.CAT_FINANCE,
         "com.paycell.android"                        to Category.CAT_FINANCE,
         "com.masterpassturkey.android"               to Category.CAT_FINANCE,
@@ -1702,7 +1683,6 @@ class AppClassifier @Inject constructor() {
         "com.minds.android"                          to Category.CAT_SOCIAL,
         "com.diaspora.android"                       to Category.CAT_SOCIAL,
         "com.pixelfed.android"                       to Category.CAT_SOCIAL,
-        "com.lemmy.android"                          to Category.CAT_SOCIAL,
         "com.kbin.android"                           to Category.CAT_SOCIAL,
         "com.nostr.android"                          to Category.CAT_SOCIAL,
         "com.damus.android"                          to Category.CAT_SOCIAL,
@@ -1921,7 +1901,6 @@ class AppClassifier @Inject constructor() {
         "com.hepsifinans.android"                    to Category.CAT_FINANCE,
         "com.token.android"                          to Category.CAT_FINANCE,
         "com.bitlo.android"                          to Category.CAT_FINANCE,
-        "com.icrypex.android"                        to Category.CAT_FINANCE,
 
         // Loop 50 — TR Lifestyle & Fashion
         "com.dresslife.android"                      to Category.CAT_SHOPPING,
@@ -2850,7 +2829,6 @@ class AppClassifier @Inject constructor() {
         "com.transfergo.android"                     to Category.CAT_FINANCE,
 
         // Loop 68 — Mental Health & Mindfulness
-        "com.daylio.android"                         to Category.CAT_HEALTH,
         "com.reflectly.android"                      to Category.CAT_HEALTH,
         "com.finch.selfcare.android"                 to Category.CAT_HEALTH,
 
@@ -3850,10 +3828,8 @@ class AppClassifier @Inject constructor() {
         "com.vita.video"                             to Category.CAT_VIDEO,
 
         // ─── AI SANAT / GORUNTU URETIMI (Loop 93) ───────────────────────────
-        "com.adobe.firefly"                          to Category.CAT_ART,
         "com.adobe.firefly.mobile"                   to Category.CAT_ART,
         "ai.adobe.firefly"                           to Category.CAT_ART,
-        "com.ideogram.ai"                            to Category.CAT_ART,
         "com.ideogram.android"                       to Category.CAT_ART,
         "com.leonardoai.android"                     to Category.CAT_ART,
         "com.nightcafe.studio"                       to Category.CAT_ART,
@@ -3863,10 +3839,8 @@ class AppClassifier @Inject constructor() {
         "com.dreambyimagica.android"                 to Category.CAT_ART,
 
         // ─── AI MUZIK URETIMI (Loop 93) ──────────────────────────────────────
-        "com.suno.android"                           to Category.CAT_MUSIC,
         "com.suno.app"                               to Category.CAT_MUSIC,
         "com.udio.android"                           to Category.CAT_MUSIC,
-        "com.udio.app"                               to Category.CAT_MUSIC,
         "com.loudly.android"                         to Category.CAT_MUSIC,
         "com.beatoven.android"                       to Category.CAT_MUSIC,
 
@@ -4165,6 +4139,53 @@ class AppClassifier @Inject constructor() {
         "com.netmarble.marvelfuturefight"            to Category.CAT_GAMES,
         "com.pearlabyss.blackdesertm.gl"             to Category.CAT_GAMES,
         "com.nexon.devcat.shadowgunlegends"          to Category.CAT_GAMES,
+
+        // ─── Döngü 58: Yapay Zeka Asistan / Chatbot (2025) ──────────────────
+        "com.openai.chatgpt"                         to Category.CAT_PRODUCTIVITY,  // ChatGPT
+        "com.anthropic.claude"                       to Category.CAT_PRODUCTIVITY,  // Claude
+        "com.google.android.apps.bard"               to Category.CAT_PRODUCTIVITY,  // Google Gemini (eski Bard)
+        "com.google.android.apps.gemini"             to Category.CAT_PRODUCTIVITY,  // Google Gemini
+        "com.microsoft.copilot"                      to Category.CAT_PRODUCTIVITY,  // Microsoft Copilot
+        "com.perplexity.app"                         to Category.CAT_PRODUCTIVITY,  // Perplexity AI
+        "ai.perplexity.app.android"                  to Category.CAT_PRODUCTIVITY,  // Perplexity AI (alt)
+        "com.character.ai"                           to Category.CAT_SOCIAL,         // Character.AI
+        "ai.character.app"                           to Category.CAT_SOCIAL,         // Character.AI (alt)
+        "com.pika.labs.android"                      to Category.CAT_PHOTO,          // Pika (AI video)
+        "com.runway.mobile"                          to Category.CAT_PHOTO,          // Runway AI video
+        "com.elevenlabs.app"                         to Category.CAT_PRODUCTIVITY,  // ElevenLabs AI ses
+        "com.suno.android"                           to Category.CAT_ENTERTAINMENT,  // Suno AI müzik
+        "com.udio.app"                               to Category.CAT_ENTERTAINMENT,  // Udio AI müzik
+        "com.ideogram.ai"                            to Category.CAT_PHOTO,          // Ideogram AI görsel
+        "com.midjourney.android"                     to Category.CAT_PHOTO,          // Midjourney
+        "com.stability.ai.android"                   to Category.CAT_PHOTO,          // Stable Diffusion
+        "com.adobe.firefly"                          to Category.CAT_PHOTO,          // Adobe Firefly
+        "com.notion.android"                         to Category.CAT_PRODUCTIVITY,  // Notion (AI entegre)
+
+        // ─── Döngü 58: Fintech / Kripto (2025) ──────────────────────────────
+        "com.binance.dev"                            to Category.CAT_FINANCE,        // Binance
+        "com.coinbase.android"                       to Category.CAT_FINANCE,        // Coinbase
+        "com.kraken.trade"                           to Category.CAT_FINANCE,        // Kraken
+        "com.bybit.app"                              to Category.CAT_FINANCE,        // Bybit
+        "com.okex.android"                           to Category.CAT_FINANCE,        // OKX
+        "com.kucoin.android"                         to Category.CAT_FINANCE,        // KuCoin
+        "io.metamask.android"                        to Category.CAT_FINANCE,        // MetaMask
+        "com.phantom.app"                            to Category.CAT_FINANCE,        // Phantom Wallet
+        "com.trustwallet.core"                       to Category.CAT_FINANCE,        // Trust Wallet
+        "com.ledger.live"                            to Category.CAT_FINANCE,        // Ledger Live
+        "com.paribu.android"                         to Category.CAT_FINANCE,        // Paribu (TR kripto)
+        "com.btcturk.pro"                            to Category.CAT_FINANCE,        // BtcTurk (TR kripto)
+        "com.icrypex.android"                        to Category.CAT_FINANCE,        // icrypex (TR kripto)
+        "com.papara.android"                         to Category.CAT_FINANCE,        // Papara (TR fintech)
+
+        // ─── Döngü 58: Yeni Nesil Sosyal / İçerik (2025) ────────────────────
+        "com.substack.app"                           to Category.CAT_NEWS,           // Substack
+        "com.beehaw.app"                             to Category.CAT_SOCIAL,         // Beehaw (Lemmy)
+        "com.lemmy.android"                          to Category.CAT_SOCIAL,         // Lemmy
+        "com.flipboard.app"                          to Category.CAT_NEWS,           // Flipboard
+        "com.artifact.android"                       to Category.CAT_NEWS,           // Artifact News
+        "com.daylio.android"                         to Category.CAT_LIFESTYLE,      // Daylio günlük
+        "com.bearapp.android"                        to Category.CAT_PRODUCTIVITY,  // Bear notes
+        "com.mymind.app"                             to Category.CAT_PRODUCTIVITY,  // myMind
     )
 
     fun classifyApp(appInfo: AppInfo): String {
