@@ -64,7 +64,18 @@ data class Category(
         const val CAT_EVENTS = "events"               // Events
         const val CAT_COMICS = "comics"               // Comics
         const val CAT_PERSONALIZATION = "personalization" // Personalization
-        
+
+        // Üretici/marka kategorileri — manufacturerClassifyEnabled=true iken kullanılır
+        const val CAT_GOOGLE = "google_apps"
+        const val CAT_SAMSUNG = "samsung_apps"
+        const val CAT_MICROSOFT = "microsoft_apps"
+        const val CAT_XIAOMI = "xiaomi_apps"
+        const val CAT_HUAWEI = "huawei_apps"
+        const val CAT_META = "meta_apps"
+        const val CAT_APPLE = "apple_apps"
+        const val CAT_SPOTIFY = "spotify_apps"
+        const val CAT_AMAZON = "amazon_apps"
+
         /**
          * Get default system categories
          */
@@ -294,6 +305,70 @@ data class Category(
                     iconEmoji = "📦",
                     colorHex = "#FF607D8B",
                     displayOrder = 32
+                ),
+                // Üretici/marka kategorileri
+                Category(
+                    categoryId = CAT_GOOGLE,
+                    categoryName = "Google",
+                    iconEmoji = "🔵",
+                    colorHex = "#FF4285F4",
+                    displayOrder = 33
+                ),
+                Category(
+                    categoryId = CAT_SAMSUNG,
+                    categoryName = "Samsung",
+                    iconEmoji = "📱",
+                    colorHex = "#FF1428A0",
+                    displayOrder = 34
+                ),
+                Category(
+                    categoryId = CAT_MICROSOFT,
+                    categoryName = "Microsoft",
+                    iconEmoji = "🪟",
+                    colorHex = "#FF00A4EF",
+                    displayOrder = 35
+                ),
+                Category(
+                    categoryId = CAT_XIAOMI,
+                    categoryName = "Xiaomi",
+                    iconEmoji = "📲",
+                    colorHex = "#FFFF6900",
+                    displayOrder = 36
+                ),
+                Category(
+                    categoryId = CAT_HUAWEI,
+                    categoryName = "Huawei",
+                    iconEmoji = "📡",
+                    colorHex = "#FFCF0A2C",
+                    displayOrder = 37
+                ),
+                Category(
+                    categoryId = CAT_META,
+                    categoryName = "Meta",
+                    iconEmoji = "🌐",
+                    colorHex = "#FF0082FB",
+                    displayOrder = 38
+                ),
+                Category(
+                    categoryId = CAT_APPLE,
+                    categoryName = "Apple",
+                    iconEmoji = "🍎",
+                    colorHex = "#FF555555",
+                    displayOrder = 39
+                ),
+                Category(
+                    categoryId = CAT_SPOTIFY,
+                    categoryName = "Spotify",
+                    iconEmoji = "🎧",
+                    colorHex = "#FF1DB954",
+                    displayOrder = 40
+                ),
+                Category(
+                    categoryId = CAT_AMAZON,
+                    categoryName = "Amazon",
+                    iconEmoji = "📦",
+                    colorHex = "#FFFF9900",
+                    displayOrder = 41
                 ),
                 Category(
                     categoryId = CAT_UNCATEGORIZED,

@@ -1,6 +1,8 @@
 package com.armutlu.apporganizer.utils
 
+import android.content.Context
 import android.os.Bundle
+import com.armutlu.apporganizer.BuildConfig
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -8,6 +10,13 @@ import com.google.firebase.ktx.Firebase
 object AppAnalytics {
 
     private val analytics: FirebaseAnalytics by lazy { Firebase.analytics }
+
+    fun appStarted(context: Context) {
+        analytics.logEvent("app_started", Bundle().apply {
+            putString("version", BuildConfig.VERSION_NAME)
+            putLong("timestamp", System.currentTimeMillis())
+        })
+    }
 
     fun folderOpened(categoryId: String, categoryName: String) {
         analytics.logEvent("folder_opened", Bundle().apply {

@@ -11,29 +11,34 @@ class AppClassifier @Inject constructor() {
     // Ãœretici bazlı sınıflandırma toggle â€" AppListViewModel tarafından set edilir
     var manufacturerClassifyEnabled: Boolean = true
 
-    // Üretici prefix → kategori: exactMap'ten sonra, keyword'den önce kontrol edilir
+    // Üretici prefix → üretici kategorisi: exactMap'ten sonra, keyword'den önce kontrol edilir
+    // manufacturerClassifyEnabled=false iken hiç çağrılmaz (classifyApp() içinde guard var)
     private val MANUFACTURER_PREFIX_MAP = mapOf(
-        // Samsung sistem uygulamaları
-        "com.samsung.android.app.galaxyfinder"  to Category.CAT_UTILITIES,
-        "com.samsung.android.personalpage"      to Category.CAT_UTILITIES,
-        // Samsung medya/eğlence
-        "com.samsung.android.video"             to Category.CAT_ENTERTAINMENT,
-        "com.samsung.android.music"             to Category.CAT_ENTERTAINMENT,
-        "com.samsung.android.gallery3d"         to Category.CAT_PHOTOGRAPHY,
-        // Huawei
-        "com.huawei.himovie"                    to Category.CAT_ENTERTAINMENT,
-        "com.huawei.music"                      to Category.CAT_ENTERTAINMENT,
-        "com.huawei.gallery"                    to Category.CAT_PHOTOGRAPHY,
-        // Xiaomi/MIUI
-        "com.miui.gallery"                      to Category.CAT_PHOTOGRAPHY,
-        "com.miui.videoplayer"                  to Category.CAT_ENTERTAINMENT,
-        "com.miui.music"                        to Category.CAT_ENTERTAINMENT,
-        // Sony
-        "com.sonyericsson.album"                to Category.CAT_PHOTOGRAPHY,
-        "com.sonymobile.music"                  to Category.CAT_ENTERTAINMENT,
-        // LG
-        "com.lge.gallery"                       to Category.CAT_PHOTOGRAPHY,
-        "com.lge.music"                         to Category.CAT_ENTERTAINMENT,
+        // Google
+        "com.google"                            to Category.CAT_GOOGLE,
+        "com.android.google"                    to Category.CAT_GOOGLE,
+        // Samsung
+        "com.samsung"                           to Category.CAT_SAMSUNG,
+        "com.sec.android"                       to Category.CAT_SAMSUNG,
+        // Microsoft
+        "com.microsoft"                         to Category.CAT_MICROSOFT,
+        // Xiaomi / MIUI
+        "com.xiaomi"                            to Category.CAT_XIAOMI,
+        "com.miui"                              to Category.CAT_XIAOMI,
+        // Huawei / Honor
+        "com.huawei"                            to Category.CAT_HUAWEI,
+        "com.hihonor"                           to Category.CAT_HUAWEI,
+        // Meta (Facebook ekosistemi)
+        "com.meta"                              to Category.CAT_META,
+        "com.facebook"                          to Category.CAT_META,
+        "com.instagram"                         to Category.CAT_META,
+        "com.whatsapp"                          to Category.CAT_META,
+        // Spotify
+        "com.spotify"                           to Category.CAT_SPOTIFY,
+        // Amazon
+        "com.amazon"                            to Category.CAT_AMAZON,
+        // Apple
+        "com.apple"                             to Category.CAT_APPLE,
     )
 
     // Paket adına göre kesin kategori eÅŸlemesi â€" keyword'den önce kontrol edilir
