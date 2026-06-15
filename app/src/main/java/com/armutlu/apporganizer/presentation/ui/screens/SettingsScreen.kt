@@ -39,6 +39,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -531,6 +532,79 @@ fun SettingsScreen(
                         icon = Icons.Default.Info,
                         title = "Versiyon",
                         subtitle = "AppOrganizer 1.0.0 — Haziran 2026"
+                    )
+                }
+            }
+
+            // ── Geri Bildirim ────────────────────────────────────────────────
+            item { SettingsSectionTitle("Geri Bildirim") }
+            item {
+                var showFeedbackDialog by remember { mutableStateOf(false) }
+                var feedbackText by remember { mutableStateOf("") }
+                var feedbackSent by remember { mutableStateOf(false) }
+
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Feedback,
+                        title = "Talep / Öneri Gönder",
+                        subtitle = if (feedbackSent) "Gönderildi — tesekkürler!" else "Bir özellik isteyin veya hata bildirin",
+                        onClick = { showFeedbackDialog = true; feedbackSent = false }
+                    )
+                }
+
+                if (showFeedbackDialog) {
+                    androidx.compose.material3.AlertDialog(
+                        onDismissRequest = { showFeedbackDialog = false; feedbackText = "" },
+                        title = { Text("Talep / Öneri") },
+                        text = {
+                            Column {
+                                Text(
+                                    "Uygulama ile ilgili öneri veya sorunlarınızı yazın:",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = feedbackText,
+                                    onValueChange = { feedbackText = it },
+                                    placeholder = { Text("Örnek: Uygulama ikonları yüklenmedi...") },
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+                                    maxLines = 6
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    if (feedbackText.isNotBlank()) {
+                                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                            try {
+                                                val device = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (API ${android.os.Build.VERSION.SDK_INT})"
+                                                val msg = "[AppOrganizer Talep]\n$feedbackText\n\nCihaz: $device"
+                                                val url = java.net.URL("https://api.telegram.org/bot8811346243:AAH-XTZohF00iJ_we8JJWPfjuP4tW44J578/sendMessage")
+                                                val conn = url.openConnection() as java.net.HttpURLConnection
+                                                conn.requestMethod = "POST"
+                                                conn.doOutput = true
+                                                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+                                                val body = "chat_id=937179261&text=${java.net.URLEncoder.encode(msg, "UTF-8")}"
+                                                conn.outputStream.write(body.toByteArray())
+                                                conn.responseCode
+                                                conn.disconnect()
+                                            } catch (_: Exception) {}
+                                        }
+                                        feedbackSent = true
+                                        feedbackText = ""
+                                        showFeedbackDialog = false
+                                    }
+                                },
+                                enabled = feedbackText.isNotBlank()
+                            ) { Text("Gönder") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showFeedbackDialog = false; feedbackText = "" }) {
+                                Text("İptal")
+                            }
+                        }
                     )
                 }
             }

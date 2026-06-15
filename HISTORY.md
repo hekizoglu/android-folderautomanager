@@ -950,3 +950,8 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** AllAppsDrawer fuzzy arama (Levenshtein, telegrab->telegram mesafe=1); kategori listesi alfabetik sıralama (AppListScreen); BUILD 3m21s temiz
 **Build:** SUCCESS 24.8 MB — res kilit tekrarladı (Defender exclusion kısmi), full clean 1 kez
 **Sonraki:** merged_res kilit için Defender exclusion genişlet + Ayarlar Talep Formu
+
+## Döngü 80 — 2026-06-16 (KOD)
+**Yapılanlar:** SettingsScreen Geri Bildirim bölümü eklendi; kullanıcı talep/öneri girer, Telegram bot'a gönderilir; cihaz bilgisi otomatik eklenir
+**Build:** SUCCESS 23s (25.1 MB) — kilit yok
+**Sonraki:** Döngü sistemi devam — merged_res kilit çözümü Admin PS exclusion
