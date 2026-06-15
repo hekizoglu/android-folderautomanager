@@ -405,3 +405,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Yok
 **CLAUDE.md/LEARNINGS.md:** LEARNINGS: CAT_PHOTO sabiti yok — doğrusu CAT_PHOTOGRAPHY (Category.kt satır 44)
 **Sonraki:** Döngü 61 — KOD döngüsü
+
+## Döngü 61 — 22:55 [KOD]
+**Yapılanlar:** AppClassifierTest — 2 bozuk test düzeltildi (keyword/manufacturer testleri). 2 yeni test eklendi (Samsung prefix enabled/disabled). Tüm 24 test geçiyor. KeywordDatabase'nin paket adında substring match yaptığı öğrenildi (ör. "google" kelimesi CAT_PRODUCTIVITY'ye düşürür).
+**Agent:** Yok
+**CLAUDE.md/LEARNINGS.md:** Güncelleme yok
+**Sonraki:** Döngü 62 — KOD, ROADMAP backlog

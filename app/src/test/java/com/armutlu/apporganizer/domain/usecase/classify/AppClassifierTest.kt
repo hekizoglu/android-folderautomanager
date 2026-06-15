@@ -30,9 +30,9 @@ class AppClassifierTest {
 
     @Test
     fun `keyword eslesmesi dogru calisir`() {
-        // "bank" keyword CAT_FINANCE'a yonlendirmeli
-        val result = classifier.classifyApp(appInfo("com.unknown.mobilebanking", "Mobile Banking"))
-        assertTrue(result == Category.CAT_FINANCE || result == Category.CAT_OTHER)
+        // "bankapp" paketi → CAT_FINANCE keyword match
+        val result = classifier.classifyApp(appInfo("com.unknown.bankapp", "BankApp"))
+        assertEquals(Category.CAT_FINANCE, result)
     }
 
     @Test
@@ -138,11 +138,18 @@ class AppClassifierTest {
     }
 
     @Test
-    fun `manufacturerClassify_disabled_Google_prefix_CAT_OTHER_olur`() {
+    fun `manufacturerClassify_enabled_samsung_prefix_CAT_SAMSUNG_dondurur`() {
+        classifier.manufacturerClassifyEnabled = true
+        val result = classifier.classifyApp(appInfo("com.samsung.unknownfeature", "Samsung Unknown"))
+        assertEquals(Category.CAT_SAMSUNG, result)
+    }
+
+    @Test
+    fun `manufacturerClassify_disabled_samsung_prefix_atlanir`() {
         classifier.manufacturerClassifyEnabled = false
-        val result = classifier.classifyApp(appInfo("com.google.unknown.app", "Google Unknown"))
-        // prefix map çalışmıyor → keyword yok → CAT_OTHER
-        assertEquals(Category.CAT_OTHER, result)
+        val result = classifier.classifyApp(appInfo("com.samsung.unknownfeature", "Samsung Unknown"))
+        // Prefix map atlandı — exactMatch yok → keyword match veya OTHER (CAT_SAMSUNG değil)
+        assertNotEquals(Category.CAT_SAMSUNG, result)
     }
 
     private fun appInfo(packageName: String, appName: String) = AppInfo(
