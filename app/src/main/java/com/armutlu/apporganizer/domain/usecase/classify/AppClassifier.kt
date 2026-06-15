@@ -4105,6 +4105,41 @@ class AppClassifier @Inject constructor() {
         "com.myntra.android"                         to Category.CAT_SHOPPING,   // Myntra (IN)
         "com.olacabs.customer"                       to Category.CAT_TRAVEL,     // Ola Cabs (IN)
         "com.jio.myjio"                              to Category.CAT_COMMUNICATION, // MyJio (IN)
+
+        // === LATİN AMERİKA ===
+        "br.com.brainweb.ifoodpartner"               to Category.CAT_FOOD,          // iFood Partner (BR)
+        "com.nubank.nubank"                          to Category.CAT_FINANCE,        // Nubank (BR)
+        "com.cornershopapp.android"                  to Category.CAT_SHOPPING,       // Cornershop (CL/MX)
+        "com.falabella.android"                      to Category.CAT_SHOPPING,       // Falabella (CL)
+        "br.com.bb.android"                          to Category.CAT_FINANCE,        // Banco do Brasil (BR)
+        "com.itau"                                   to Category.CAT_FINANCE,        // Itau (BR)
+        "com.bradesco"                               to Category.CAT_FINANCE,        // Bradesco (BR)
+        "com.santander.br"                           to Category.CAT_FINANCE,        // Santander BR
+        "com.banco.bradesco"                         to Category.CAT_FINANCE,        // Bradesco alt (BR)
+        "com.claro.play"                             to Category.CAT_ENTERTAINMENT,  // Claro Play (LATAM)
+        "com.globo.play"                             to Category.CAT_ENTERTAINMENT,  // Globoplay (BR)
+        "br.com.uol.logim"                           to Category.CAT_COMMUNICATION,  // UOL (BR)
+
+        // === ORTA DOGU ===
+        "com.careem.ACDriver"                        to Category.CAT_TRAVEL,         // Careem Captain (AE)
+        "com.swvl.android"                           to Category.CAT_TRAVEL,         // Swvl (EG/SA)
+        "com.jarir.android"                          to Category.CAT_SHOPPING,       // Jarir (SA)
+        "com.noon.buyerapp"                          to Category.CAT_SHOPPING,       // Noon (AE/SA)
+        "com.namshi.android"                         to Category.CAT_SHOPPING,       // Namshi (AE)
+        "com.talabat.android"                        to Category.CAT_FOOD,           // Talabat (AE/KW)
+        "com.zomato.mena"                            to Category.CAT_FOOD,           // Zomato MENA
+        "com.saib.app"                               to Category.CAT_FINANCE,        // SAIB Bank (SA)
+        "com.riyad.bank.riyadh"                      to Category.CAT_FINANCE,        // Riyad Bank (SA)
+        "com.stc.pay"                                to Category.CAT_FINANCE,        // STC Pay (SA)
+
+        // === AFRİKA ===
+        "com.safaricom.mpesa"                        to Category.CAT_FINANCE,        // M-Pesa (KE)
+        "com.equitybank.android"                     to Category.CAT_FINANCE,        // Equity Bank (KE)
+        "com.flutterwave.android"                    to Category.CAT_FINANCE,        // Flutterwave (NG)
+        "com.opay.app"                               to Category.CAT_FINANCE,        // OPay (NG)
+        "com.kudi.app"                               to Category.CAT_FINANCE,        // Kudi (NG)
+        "com.konga.android"                          to Category.CAT_SHOPPING,       // Konga (NG)
+        "com.safeboda.android"                       to Category.CAT_TRAVEL,         // SafeBoda (UG/KE)
     )
 
     fun classifyApp(appInfo: AppInfo): String {
