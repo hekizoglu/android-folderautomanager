@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 20:25 UTC
-# Commit: 96d21fc254aa36960e9b19d392bddf5beac3317a
+# Generated: 2026-06-15 20:45 UTC
+# Commit: ad7457e77fd86011db30ee4d2bee643e097f7079
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -2002,7 +2002,6 @@ class AppClassifier @Inject constructor() {
         "com.marti.mopet"                            to Category.CAT_TRAVEL,
         "com.martiscooter.android"                   to Category.CAT_TRAVEL,
         "com.hepsiburada.seyahat"                    to Category.CAT_TRAVEL,
-        "com.kentkart.android"                       to Category.CAT_TRAVEL,
         "com.tcdd.bilet"                             to Category.CAT_TRAVEL,
         "com.milpark.ido"                            to Category.CAT_TRAVEL,
         "com.iett.android"                           to Category.CAT_MAPS,
@@ -2138,7 +2137,6 @@ class AppClassifier @Inject constructor() {
         "com.carrefoursa.android"                    to Category.CAT_FOOD,
         "com.arcelik.android"                        to Category.CAT_FOOD,
         "com.swiggy.android"                         to Category.CAT_FOOD,
-        "com.rappi.android"                          to Category.CAT_FOOD,
         "com.talabat"                                to Category.CAT_FOOD,
         "com.foodpanda.android"                      to Category.CAT_FOOD,
         "com.kfc.android"                            to Category.CAT_FOOD,
@@ -2512,7 +2510,6 @@ class AppClassifier @Inject constructor() {
         "com.agiletortoise.Drafts5"                  to Category.CAT_PRODUCTIVITY,
         "com.bear.editor"                            to Category.CAT_PRODUCTIVITY,
         "com.atist.anydo"                            to Category.CAT_PRODUCTIVITY,
-        "com.zoho.mail"                              to Category.CAT_PRODUCTIVITY,
         "com.yaani.mail"                             to Category.CAT_PRODUCTIVITY,
         "com.ttmail.android"                         to Category.CAT_PRODUCTIVITY,
         "com.yandex.mail"                            to Category.CAT_PRODUCTIVITY,
@@ -2744,7 +2741,6 @@ class AppClassifier @Inject constructor() {
         "com.hurriyetemlak.android"                  to Category.CAT_SHOPPING,
         "com.zingat.android"                         to Category.CAT_HOUSE,
         // Global - Uretkenlik ek
-        "com.box.android"                            to Category.CAT_PRODUCTIVITY,
         "com.adobe.reader"                           to Category.CAT_PRODUCTIVITY,
         "com.polaris.office"                         to Category.CAT_PRODUCTIVITY,
         "com.kingsoft.office"                        to Category.CAT_PRODUCTIVITY,
@@ -2811,12 +2807,10 @@ class AppClassifier @Inject constructor() {
         "com.nkolay.android"                         to Category.CAT_FINANCE,
         "com.ozan.android"                           to Category.CAT_FINANCE,
         // Loop40: Global uretkenlik + is araclari
-        "com.hubspot.android"                        to Category.CAT_BUSINESS,
         "com.salesforce.android"                     to Category.CAT_BUSINESS,
         "com.zendesk.support"                        to Category.CAT_BUSINESS,
         "com.freshdesk.helpdesk"                     to Category.CAT_BUSINESS,
         "com.intercom.android"                       to Category.CAT_BUSINESS,
-        "com.pipedrive.android"                      to Category.CAT_BUSINESS,
         "com.wrike.android"                          to Category.CAT_BUSINESS,
         "com.smartsheet.android"                     to Category.CAT_BUSINESS,
         "com.airtable.android"                       to Category.CAT_PRODUCTIVITY,
@@ -2849,7 +2843,6 @@ class AppClassifier @Inject constructor() {
         "com.turkishairlines.android"                to Category.CAT_TRAVEL,
         "com.atlasjet.android"                       to Category.CAT_TRAVEL,
         "com.tcddtasimacilik.android"                to Category.CAT_TRAVEL,
-        "com.metro.istanbul"                         to Category.CAT_TRAVEL,
         "com.belbim.android"                         to Category.CAT_TRAVEL,
         "com.ankakart.android"                       to Category.CAT_TRAVEL,
         "com.izmir.kart"                             to Category.CAT_TRAVEL,
@@ -3228,8 +3221,6 @@ class AppClassifier @Inject constructor() {
 
         // TR ULASIM / SEYAHAT
         "com.treni.android"                          to Category.CAT_TRAVEL,
-        "com.eshot.android"                          to Category.CAT_TRAVEL,
-        "com.istanbulkart.android"                   to Category.CAT_TRAVEL,
         "com.biletino.android"                       to Category.CAT_TRAVEL,
         "com.turkey.airlines"                        to Category.CAT_TRAVEL,
         "com.thyajans.android"                       to Category.CAT_TRAVEL,
@@ -4041,7 +4032,6 @@ class AppClassifier @Inject constructor() {
         "uk.hungrypanda.android"                     to Category.CAT_FOOD,
         "com.justeat.android"                        to Category.CAT_FOOD,
         "au.com.menulog.android"                     to Category.CAT_FOOD,
-        "com.pedidosya.android"                      to Category.CAT_FOOD,
         "br.com.ifood"                               to Category.CAT_FOOD,
         "com.tacobell.mobile"                        to Category.CAT_FOOD,
         "com.chipotle.ordering"                      to Category.CAT_FOOD,
@@ -4462,7 +4452,6 @@ class AppClassifier @Inject constructor() {
         "com.finch.selfcare.android"                 to Category.CAT_HEALTH,
 
         // Loop 68 — Cloud Storage & File Sharing
-        "com.pcloud.android"                         to Category.CAT_PRODUCTIVITY,
         "com.mega.privacy.android.app"               to Category.CAT_PRODUCTIVITY,
         "ch.protonmail.android.drive"                to Category.CAT_COMMUNICATION,
         "com.wetransfer.android"                     to Category.CAT_PRODUCTIVITY,
@@ -4909,9 +4898,7 @@ class AppClassifier @Inject constructor() {
         // Loop 79 — Cloud Storage & Productivity
         "com.sugarsync.android"                      to Category.CAT_PRODUCTIVITY,
         "com.mediafire.android"                      to Category.CAT_PRODUCTIVITY,
-        "com.mega.android"                           to Category.CAT_PRODUCTIVITY,
         "com.koofr.android"                          to Category.CAT_PRODUCTIVITY,
-        "com.icedrive.android"                       to Category.CAT_PRODUCTIVITY,
         "com.idrive.android"                         to Category.CAT_PRODUCTIVITY,
         "com.backblaze.android"                      to Category.CAT_PRODUCTIVITY,
         "com.egnyte.android"                         to Category.CAT_PRODUCTIVITY,
@@ -5030,7 +5017,6 @@ class AppClassifier @Inject constructor() {
         "com.bedas.android"                          to Category.CAT_UTILITIES,
         "com.bursaulasimlari.android"                to Category.CAT_MAPS,
         "com.izulas.android"                         to Category.CAT_MAPS,
-        "com.ankarakart.android"                     to Category.CAT_MAPS,
         "com.izmiregitim.android"                    to Category.CAT_EDUCATION,
         "com.meb.android"                            to Category.CAT_EDUCATION,
         "com.turkiye.gov.android"                    to Category.CAT_UTILITIES,
@@ -5126,7 +5112,6 @@ class AppClassifier @Inject constructor() {
 
         // Loop 85 — Business & Productivity
         "com.zendesk.android"                        to Category.CAT_BUSINESS,
-        "com.freshdesk.android"                      to Category.CAT_BUSINESS,
         "com.redbooth.android"                       to Category.CAT_PRODUCTIVITY,
 
         // Loop 85 — Photography Editing
@@ -5411,7 +5396,6 @@ class AppClassifier @Inject constructor() {
         "com.intuit.qbse.android"                    to Category.CAT_BUSINESS,
         "com.adp.mobile.android"                     to Category.CAT_BUSINESS,
         "com.kronos.mobile.android"                  to Category.CAT_BUSINESS,
-        "com.zoho.crm"                               to Category.CAT_BUSINESS,
         "com.microsoft.dynamics365"                  to Category.CAT_BUSINESS,
         "com.sap.android.fiorilaunchpad"             to Category.CAT_BUSINESS,
         "com.oracle.mobile.android.hrms"             to Category.CAT_BUSINESS,
@@ -5815,6 +5799,78 @@ class AppClassifier @Inject constructor() {
         "com.daylio.android"                         to Category.CAT_LIFESTYLE,      // Daylio günlük
         "com.bearapp.android"                        to Category.CAT_PRODUCTIVITY,  // Bear notes
         "com.mymind.app"                             to Category.CAT_PRODUCTIVITY,  // myMind
+
+        // ─── Döngü 63: TR E-Devlet / Kamu Hizmetleri ─────────────────────────
+        "com.edevlet.portal"                         to Category.CAT_UTILITIES,      // e-Devlet Kapısı
+        "tr.gov.edevlet"                             to Category.CAT_UTILITIES,      // e-Devlet alt paketi
+        "com.turkiye.sgk"                            to Category.CAT_UTILITIES,      // SGK Mobil
+        "tr.gov.sgk.sgkmobil"                        to Category.CAT_UTILITIES,      // SGK Mobil resmi
+        "com.turkiye.meb.mobile"                     to Category.CAT_UTILITIES,      // MEB E-Okul
+        "tr.edu.gov.meb.mebvbs"                      to Category.CAT_UTILITIES,      // MEB VBS
+        "com.gib.mobil"                              to Category.CAT_UTILITIES,      // GİB - Vergi dairesi
+        "tr.gov.gib.indirgib"                        to Category.CAT_UTILITIES,      // e-Beyan
+        "tr.gov.nvi.kimlik"                          to Category.CAT_UTILITIES,      // Nüfus Müdürlüğü
+        "com.pttmobil"                               to Category.CAT_UTILITIES,      // PTT Mobil
+        "tr.gov.ptt.pttmobil"                        to Category.CAT_UTILITIES,      // PTT Mobil resmi
+        "com.turk.telekomunikasyon.android"          to Category.CAT_UTILITIES,      // Türk Telekomünikasyon
+        "com.btk.android"                            to Category.CAT_UTILITIES,      // BTK İnternet Başvuru
+        "com.havelsan.mhrs"                          to Category.CAT_HEALTH,         // MHRS (randevu sistemi)
+        "tr.gov.saglik.mhrs"                         to Category.CAT_HEALTH,         // MHRS resmi
+        "com.turkiye.emekli.sandigi"                 to Category.CAT_UTILITIES,      // Emekli Sandığı
+        "tr.gov.maliye.gidermobil"                   to Category.CAT_UTILITIES,      // e-Gider
+        "tr.belnet.android"                          to Category.CAT_UTILITIES,      // Belnet
+
+        // ─── Döngü 63: TR Bölgesel / Belediye / Ulaşım ────────────────────────
+        "com.ibb.mobile"                             to Category.CAT_UTILITIES,      // İBB Mobil
+        "com.ibb.sehirhatlari"                       to Category.CAT_TRAVEL,         // İBB Şehir Hatları
+        "com.iett.ibb"                               to Category.CAT_TRAVEL,         // İETT Canlı
+        "com.ibb.bisim"                              to Category.CAT_TRAVEL,         // İstanbul bisiklet
+        "tr.gov.ibb.belediye"                        to Category.CAT_UTILITIES,      // İBB Belediye
+        "com.abb.mobile"                             to Category.CAT_UTILITIES,      // ABB (Ankara Büyükşehir)
+        "com.ego.android"                            to Category.CAT_TRAVEL,         // EGO (Ankara)
+        "com.izbb.mobile"                            to Category.CAT_UTILITIES,      // İZBB (İzmir)
+        "com.eshot.android"                          to Category.CAT_TRAVEL,         // ESHOT (İzmir)
+        "com.metro.istanbul"                         to Category.CAT_TRAVEL,         // Metro İstanbul
+        "com.marmaray.android"                       to Category.CAT_TRAVEL,         // Marmaray
+        "com.tcddtasimacilik.gar"                    to Category.CAT_TRAVEL,         // Gar (TCDD)
+        "tr.gov.tcdd.bilet"                          to Category.CAT_TRAVEL,         // TCDD e-Bilet
+        "com.kentkart.android"                       to Category.CAT_TRAVEL,         // Kentkart (İzmir)
+        "com.ankarakart.android"                     to Category.CAT_TRAVEL,         // AnkaraKart
+        "com.istanbulkart.android"                   to Category.CAT_TRAVEL,         // İstanbulKart
+
+        // ─── Döngü 63: Bulut Depolama / İş Araçları ───────────────────────────
+        "com.box.android"                            to Category.CAT_PRODUCTIVITY,   // Box
+        "com.mega.android"                           to Category.CAT_PRODUCTIVITY,   // MEGA cloud
+        "com.sync.android"                           to Category.CAT_PRODUCTIVITY,   // Sync.com
+        "com.pcloud.android"                         to Category.CAT_PRODUCTIVITY,   // pCloud
+        "com.internxt.android"                       to Category.CAT_PRODUCTIVITY,   // Internxt (E2E)
+        "com.icedrive.android"                       to Category.CAT_PRODUCTIVITY,   // Icedrive
+        "com.zoho.mail"                              to Category.CAT_COMMUNICATION,  // Zoho Mail
+        "com.zoho.crm"                               to Category.CAT_PRODUCTIVITY,   // Zoho CRM
+        "com.zoho.show"                              to Category.CAT_PRODUCTIVITY,   // Zoho Show
+        "com.zoho.sheet"                             to Category.CAT_PRODUCTIVITY,   // Zoho Sheet
+        "com.zoho.writer"                            to Category.CAT_PRODUCTIVITY,   // Zoho Writer
+        "com.freshdesk.android"                      to Category.CAT_PRODUCTIVITY,   // Freshdesk
+        "com.freshservice.android"                   to Category.CAT_PRODUCTIVITY,   // Freshservice
+        "com.hubspot.android"                        to Category.CAT_PRODUCTIVITY,   // HubSpot CRM
+        "com.pipedrive.android"                      to Category.CAT_PRODUCTIVITY,   // Pipedrive
+        "com.salesforce.chatter"                     to Category.CAT_PRODUCTIVITY,   // Salesforce Chatter
+
+        // ─── Döngü 63: LatAm Ek Paketler ─────────────────────────────────────
+        "com.rappi.android"                          to Category.CAT_FOOD,           // Rappi (LatAm)
+        "com.cornershop.android"                     to Category.CAT_FOOD,           // Cornershop
+        "com.pedidosya.android"                      to Category.CAT_FOOD,           // PedidosYa
+        "com.mercadolibre.android"                   to Category.CAT_SHOPPING,       // MercadoLibre
+        "com.mercadopago.android"                    to Category.CAT_FINANCE,        // MercadoPago
+        "com.ame.android"                            to Category.CAT_FINANCE,        // AME Digital (BR)
+        "br.com.picpay"                              to Category.CAT_FINANCE,        // PicPay (BR)
+        "com.c6bank.android"                         to Category.CAT_FINANCE,        // C6 Bank (BR)
+        "com.inter.android"                          to Category.CAT_FINANCE,        // Banco Inter (BR)
+        "com.neon.android"                           to Category.CAT_FINANCE,        // Neon (BR)
+        "com.original.android"                       to Category.CAT_FINANCE,        // Banco Original (BR)
+        "com.xp.android"                             to Category.CAT_FINANCE,        // XP Investimentos
+        "com.modalmais.android"                      to Category.CAT_FINANCE,        // Modal Mais
+        "com.robinhoodbr.android"                    to Category.CAT_FINANCE,        // Rico Investimentos
     )
 
     fun classifyApp(appInfo: AppInfo): String {
