@@ -231,15 +231,17 @@ fun AllAppsDrawer(
 
     val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
 
-    // Her chip'in sayımı — apps değişince yeniden hesapla, scroll/rekomposisyonda değil
-    val quickFilterCounts = remember(apps) {
-        val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
-        intArrayOf(
-            apps.size,
-            apps.count { !it.isSystemApp },
-            apps.count { it.isSystemApp },
-            apps.count { it.lastUsedTimestamp > cutoff }
-        )
+    // Her chip'in sayımı — derivedStateOf: apps değişince yeniden hesaplar, diğer state'lerde değil
+    val quickFilterCounts by remember {
+        derivedStateOf {
+            val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
+            intArrayOf(
+                apps.size,
+                apps.count { !it.isSystemApp },
+                apps.count { it.isSystemApp },
+                apps.count { it.lastUsedTimestamp > cutoff }
+            )
+        }
     }
 
     // Ayarlar — Settings değişince anında güncellenir (SharedPrefs listener)
@@ -267,27 +269,29 @@ fun AllAppsDrawer(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    // Sırala + filtrele
-    val sortedApps = remember(apps, sortMode, searchQuery, quickFilter) {
-        val now = System.currentTimeMillis()
-        val afterQuickFilter = when (quickFilter) {
-            1 -> apps.filter { !it.isSystemApp }
-            2 -> apps.filter { it.isSystemApp }
-            3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
-            else -> apps
-        }
-        val trLocale = Locale("tr")
-        val base = if (searchQuery.isBlank()) afterQuickFilter
-        else {
-            val q = searchQuery.lowercase(trLocale)
-            afterQuickFilter.filter { it.appName.lowercase(trLocale).contains(q) }
-        }
-        when (sortMode) {
-            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
-            AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
-            AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
-            AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
-            AllAppsSortMode.INSTALL_DATE -> base.sortedByDescending { it.installTime }
+    // Sırala + filtrele — derivedStateOf: bağımlı state'ler değişmedikçe recomposition tetiklenmez
+    val sortedApps by remember {
+        derivedStateOf {
+            val now = System.currentTimeMillis()
+            val afterQuickFilter = when (quickFilter) {
+                1 -> apps.filter { !it.isSystemApp }
+                2 -> apps.filter { it.isSystemApp }
+                3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
+                else -> apps
+            }
+            val trLocale = Locale("tr")
+            val base = if (searchQuery.isBlank()) afterQuickFilter
+            else {
+                val q = searchQuery.lowercase(trLocale)
+                afterQuickFilter.filter { it.appName.lowercase(trLocale).contains(q) }
+            }
+            when (sortMode) {
+                AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
+                AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
+                AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
+                AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
+                AllAppsSortMode.INSTALL_DATE -> base.sortedByDescending { it.installTime }
+            }
         }
     }
 
@@ -298,38 +302,44 @@ fun AllAppsDrawer(
         }
     }
 
-    // Alfa gruplama sadece ALPHA modunda
-    val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery, quickFilter) {
-        if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
-            sortedApps.groupBy { app ->
-                val first = app.appName.firstOrNull()?.toString()?.uppercase(Locale("tr"))?.firstOrNull() ?: '#'
-                if (first.isLetter()) first else '#'
-            }.toSortedMap(Comparator { a, b ->
-                if (a == '#') 1 else if (b == '#') -1
-                else java.text.Collator.getInstance(Locale("tr")).compare(a.toString(), b.toString())
-            })
-        else emptyMap()
-    }
-
-    val letterScrollIndex = remember(grouped) {
-        val map = mutableMapOf<Char, Int>()
-        var idx = 0
-        grouped.forEach { (letter, list) ->
-            map[letter] = idx
-            idx += 1 + list.size
+    // Alfa gruplama sadece ALPHA modunda — derivedStateOf: sortedApps değişince otomatik güncellenir
+    val grouped: Map<Char, List<AppInfo>> by remember {
+        derivedStateOf {
+            if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
+                sortedApps.groupBy { app ->
+                    val first = app.appName.firstOrNull()?.toString()?.uppercase(Locale("tr"))?.firstOrNull() ?: '#'
+                    if (first.isLetter()) first else '#'
+                }.toSortedMap(Comparator { a, b ->
+                    if (a == '#') 1 else if (b == '#') -1
+                    else java.text.Collator.getInstance(Locale("tr")).compare(a.toString(), b.toString())
+                })
+            else emptyMap()
         }
-        map
     }
 
-    // Sidebar entries (contextual)
-    val sidebarEntries = remember(sortedApps, sortMode, searchQuery, quickFilter) {
-        if (searchQuery.isNotBlank()) emptyList()
-        else if (sortMode == AllAppsSortMode.ALPHA) {
-            grouped.keys.mapIndexed { i, letter ->
-                SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0)
+    val letterScrollIndex by remember {
+        derivedStateOf {
+            val map = mutableMapOf<Char, Int>()
+            var idx = 0
+            grouped.forEach { (letter, list) ->
+                map[letter] = idx
+                idx += 1 + list.size
             }
-        } else {
-            buildSidebarEntries(sortedApps, sortMode)
+            map
+        }
+    }
+
+    // Sidebar entries (contextual) — derivedStateOf: gereksiz yeniden hesaplamayı önler
+    val sidebarEntries by remember {
+        derivedStateOf {
+            if (searchQuery.isNotBlank()) emptyList()
+            else if (sortMode == AllAppsSortMode.ALPHA) {
+                grouped.keys.mapIndexed { i, letter ->
+                    SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0)
+                }
+            } else {
+                buildSidebarEntries(sortedApps, sortMode)
+            }
         }
     }
 
