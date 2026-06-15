@@ -7,8 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,14 +32,11 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
@@ -220,7 +216,6 @@ fun AllAppsDrawer(
     val haptic          = LocalHapticFeedback.current
     val listState       = rememberLazyListState()
     val scope           = rememberCoroutineScope()
-    val density         = LocalDensity.current
     var searchHistory   by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
     var quickFilter     by remember { mutableStateOf(0) } // 0=Tümü 1=Kullanıcı 2=Sistem 3=Son7gün
 
@@ -337,7 +332,7 @@ fun AllAppsDrawer(
         derivedStateOf {
             if (searchQuery.isNotBlank()) emptyList()
             else if (sortMode == AllAppsSortMode.ALPHA) {
-                grouped.keys.mapIndexed { i, letter ->
+                grouped.keys.mapIndexed { _, letter ->
                     SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0)
                 }
             } else {
@@ -624,7 +619,6 @@ fun AllAppsDrawer(
                 // ── Sağ: Contextual Sidebar ─────────────────────────────────
                 if (sidebarEntries.isNotEmpty()) {
                     val sidebarPaddingDp = 56.dp
-                    val sidebarPaddingPx = with(density) { sidebarPaddingDp.toPx() }
                     var boxHeightPx by remember { mutableStateOf(0f) }
 
                     Box(
@@ -634,29 +628,33 @@ fun AllAppsDrawer(
                             .padding(vertical = sidebarPaddingDp)
                             .onSizeChanged { boxHeightPx = it.height.toFloat() }
                             .pointerInput(sidebarEntries) {
-                                awaitEachGesture {
-                                    awaitFirstDown(requireUnconsumed = false)
-                                    do {
-                                        val event = awaitPointerEvent(PointerEventPass.Main)
-                                        val pos = event.changes.firstOrNull()?.position ?: continue
+                                detectDragGestures(
+                                    onDragStart = { offset ->
                                         val n = sidebarEntries.size
-                                        if (n == 0 || boxHeightPx == 0f) continue
-                                        // pos.y is within padded box (0..boxHeightPx)
-                                        val itemSlotPx = boxHeightPx / n
-                                        val idx = (pos.y / itemSlotPx)
-                                            .toInt()
-                                            .coerceIn(0, sidebarEntries.lastIndex)
-                                        if (activeSidebarIdx != idx) {
+                                        if (n > 0 && boxHeightPx > 0f) {
+                                            val idx = (offset.y / (boxHeightPx / n))
+                                                .toInt().coerceIn(0, sidebarEntries.lastIndex)
                                             activeSidebarIdx = idx
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            scope.launch {
-                                                listState.scrollToItem(sidebarEntries[idx].scrollIndex)
+                                            scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
+                                        }
+                                    },
+                                    onDragEnd = { activeSidebarIdx = -1 },
+                                    onDragCancel = { activeSidebarIdx = -1 },
+                                    onDrag = { change, _ ->
+                                        change.consume()
+                                        val n = sidebarEntries.size
+                                        if (n > 0 && boxHeightPx > 0f) {
+                                            val idx = (change.position.y / (boxHeightPx / n))
+                                                .toInt().coerceIn(0, sidebarEntries.lastIndex)
+                                            if (activeSidebarIdx != idx) {
+                                                activeSidebarIdx = idx
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
                                             }
                                         }
-                                        event.changes.forEach { it.consume() }
-                                    } while (event.changes.none { it.changedToUp() })
-                                    activeSidebarIdx = -1
-                                }
+                                    }
+                                )
                             },
                         contentAlignment = Alignment.TopCenter
                     ) {
