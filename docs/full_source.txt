@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 00:34 UTC
-# Commit: 6621cd76756ea69752997ffa30951813b5d2d754
+# Generated: 2026-06-15 00:38 UTC
+# Commit: 998074b307d7bfc91f6e93221f5935df5b895cd6
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -6432,6 +6432,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
+import com.armutlu.apporganizer.utils.AppAnalytics
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -6665,6 +6666,13 @@ fun AllAppsDrawer(
             AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
             AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
             AllAppsSortMode.INSTALL_DATE -> base.sortedByDescending { it.installTime }
+        }
+    }
+
+    // Arama analitik — sorgu en az 2 karakter, sonuç sayısı mevcut
+    LaunchedEffect(searchQuery, sortedApps.size) {
+        if (searchQuery.trim().length >= 2) {
+            AppAnalytics.searchPerformed(searchQuery.trim(), sortedApps.size)
         }
     }
 
@@ -6936,6 +6944,7 @@ fun AllAppsDrawer(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
+                                            AppAnalytics.appLaunched(app.packageName, "all_apps")
                                             onAppClick(app.packageName)
                                         },
                                         onLongClick = { onAppLongClick?.invoke(app) }
@@ -6966,6 +6975,7 @@ fun AllAppsDrawer(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             saveSearchIfNeeded()
+                                            AppAnalytics.appLaunched(app.packageName, "all_apps")
                                             onAppClick(app.packageName)
                                         },
                                         onLongClick = { onAppLongClick?.invoke(app) }
@@ -8261,6 +8271,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -8512,6 +8523,7 @@ fun FolderSheet(
                                 .background(Color.White.copy(alpha = 0.10f))
                                 .clickable {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    AppAnalytics.appLaunched(app.packageName, "folder")
                                     onAppClick(app.packageName)
                                     onDismiss()
                                 }
@@ -8593,6 +8605,7 @@ fun FolderSheet(
                             app       = app,
                             onClick   = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                AppAnalytics.appLaunched(app.packageName, "folder")
                                 onAppClick(app.packageName)
                                 onDismiss()
                             },
@@ -9310,6 +9323,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -9439,6 +9453,7 @@ fun HomeScreen(
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                 if (!currentAllAppsOpen && !swipeLock && available.y < -200f) {
+                    AppAnalytics.allAppsOpened()
                     viewModel.openAllApps()
                 }
                 return Velocity.Zero
@@ -9447,6 +9462,7 @@ fun HomeScreen(
                 if (!currentAllAppsOpen && !swipeLock && available.y < 0f) {
                     swipeDelta += available.y
                     if (swipeDelta < -swipeThresholdPx) {
+                        AppAnalytics.allAppsOpened()
                         viewModel.openAllApps()
                         swipeDelta = 0f
                     }
@@ -9570,6 +9586,7 @@ fun HomeScreen(
                                 accumulated += dragAmount
                                 if (!swipeLock && accumulated < -120f) {
                                     accumulated = 0f
+                                    AppAnalytics.allAppsOpened()
                                     viewModel.openAllApps()
                                 }
                             }
@@ -9612,6 +9629,7 @@ fun HomeScreen(
                     iconPackPkg = suggestionIconPack,
                     onAppClick = { pkg ->
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        AppAnalytics.appLaunched(pkg, "favorites")
                         viewModel.launchApp(context, pkg)
                     },
                     onAppLongClick = { pkg ->
@@ -9707,6 +9725,7 @@ fun HomeScreen(
                         onClick = {
                             if (dragFromIndex == null) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                AppAnalytics.folderOpened(folder.category.categoryId, folder.category.categoryName)
                                 viewModel.openFolder(folder)
                             }
                         },
