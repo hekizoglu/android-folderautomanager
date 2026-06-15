@@ -104,6 +104,7 @@ Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_C
 | E9 | `isLoadingApps` race condition | `@Volatile` bileşik operasyon korumaz | `AtomicBoolean.compareAndSet()` |
 | E10 | Git push non-fast-forward | Remote ahead | `git pull --rebase` önce |
 | E11 | Merge conflict AppClassifier | Remote + local aynı döngü | Python ile birleştir, set dedup |
+| E12 | Firebase Crashlytics API erişimi yok | `google-services.json` + credentials yapılandırılmamış | `.env`'de Firebase service account JSON ekle |
 
 ---
 

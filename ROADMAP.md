@@ -73,6 +73,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 
 - [ ] FolderTile reaktif AppPrefs pattern'ini standartlaştır (2026-06-13 — Döngü 26/27/36, LEARNINGS aday öğrenme) — tüm Compose ekranlarında `mutableStateOf + DisposableEffect` helper'ı oluştur, kopyala-yapıştır azalt
 - [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15 — config refactor) — 3116 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün (derleme süresi + duplicate riski azalır)
+- [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, 6 saatlik crash kontrol otomasyonu
 
 ---
 
