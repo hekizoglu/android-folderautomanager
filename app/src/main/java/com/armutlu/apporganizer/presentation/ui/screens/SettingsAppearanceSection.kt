@@ -323,10 +323,8 @@ fun SettingsAppearanceSection(
     }
 
     // ── Klasör Şekli ──────────────────────────────────────────────────────
-    item {
-        val context = LocalContext.current
-        var folderShape by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
-        SettingsCard {
+    var folderShape by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
+    SettingsCard {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Klasör Şekli", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 val shapeOptions = listOf(
@@ -385,5 +383,4 @@ fun SettingsAppearanceSection(
                 }
             }
         }
-    }
 }
