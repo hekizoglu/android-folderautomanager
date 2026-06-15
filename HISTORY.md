@@ -210,3 +210,19 @@ Tüm 12 madde ✅. Detay:
 ---
 
 *Bu arşiv 2026-06-15'te CLAUDE.md v3 geçişinde oluşturuldu. 76 döngülük log buraya taşındı.*
+
+---
+
+## Loop 84-94 Özeti (2026-06-14, CLAUDE.md'den taşındı)
+- Loop 84: AppClassifier 3116→3116, KeywordDatabase +37 satır, FolderSheet Türkçe arama fix
+- Loop 90: KeywordDatabase 14→32 kategori, CAT_PERSONALIZATION/ART/BEAUTY/WEATHER genişledi
+- Loop 91: LIFESTYLE/EVENTS/COMICS/PARENTING/VIDEO/BOOKS/DATING/HOUSE/BUSINESS/SPORTS/AUTO +117
+- Loop 92: DockIcon ikon paketi reaktifliği, AllAppsDrawer bgAlpha reactive, SwipeHint encoding fix
+- Loop 93: HomeScreen dead code temizliği, ViewModel Türkçe locale fix, AppClassifier +80 (AI/çizgi roman/EV araç)
+- Loop 94: Build uyarıları temizlendi (4 dosya), AppClassifier +87 (dini/giyilebilir/ABD bankacılık/sağlık sigortası), KeywordDatabase CAT_LIFESTYLE +30 keyword
+- **AppClassifier: 3375 benzersiz paket** (başlangıç 479)
+
+## Döngü #1-2 (2026-06-15, CLAUDE.md v3 geçiş döngüleri)
+- Döngü #1: pre-commit hook, scripts/update_notebooklm.py, ROADMAP.md, push: 80b715f
+- Döngü #2: docs temizliği, .gitignore güncelleme, loop_count.txt, push: 5b6a17f
+
