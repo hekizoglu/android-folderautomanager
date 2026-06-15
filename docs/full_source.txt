@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 09:12 UTC
-# Commit: a906b61fd11c97bbc88b2a0897e4e7cdcfd74695
+# Generated: 2026-06-15 09:17 UTC
+# Commit: df04453e267bc94c4453ec411d1a33be9f9f786d
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -6620,6 +6620,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
@@ -6977,7 +6980,7 @@ fun AllAppsDrawer(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Search, "Ara", tint = TextSecondary, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
                                 Box(modifier = Modifier.weight(1f)) {
                                     if (searchQuery.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
@@ -7019,7 +7022,7 @@ fun AllAppsDrawer(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(14.dp))
+                            Icon(Icons.Default.Search, "Arama geçmişi", tint = TextSecondary, modifier = Modifier.size(14.dp))
                             searchHistory.forEach { q ->
                                 Box(
                                     modifier = Modifier
@@ -7302,6 +7305,10 @@ fun NiagaraAppRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(58.dp)
+            .semantics {
+                contentDescription = "${app.appName}, ${app.categoryId.ifBlank { "Uygulama" }}"
+                onClick(label = "Aç") { onClick(); true }
+            }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(if (isActive) RowHover else Color.Transparent)
             .padding(horizontal = 20.dp),
@@ -8464,6 +8471,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
@@ -8642,7 +8652,7 @@ fun FolderSheet(
                         .clickable { showEditDialog = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Edit, "Klasörü düzenle", tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -8696,7 +8706,7 @@ fun FolderSheet(
                 }
                 if (searchQuery.isNotEmpty()) {
                     Icon(
-                        Icons.Default.Close, null,
+                        Icons.Default.Close, "Aramayı temizle",
                         tint = TextSecondary,
                         modifier = Modifier.size(16.dp).clickable { searchQuery = "" }
                     )
@@ -8722,6 +8732,10 @@ fun FolderSheet(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color.White.copy(alpha = 0.10f))
+                                .semantics {
+                                    contentDescription = "${app.appName}, $count bildirim"
+                                    onClick(label = "Aç") { onAppClick(app.packageName); onDismiss(); true }
+                                }
                                 .clickable {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     AppAnalytics.appLaunched(app.packageName, "folder")
@@ -9824,50 +9838,19 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
-            // Favori uygulamalar satiri
-            if (favoritesEnabled && favoriteApps.isNotEmpty()) {
-                FavoritesRow(
-                    apps = favoriteApps,
-                    iconPackPkg = suggestionIconPack,
-                    onAppClick = { pkg ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        AppAnalytics.appLaunched(pkg, "favorites")
-                        viewModel.launchApp(context, pkg)
-                    },
-                    onAppLongClick = { pkg ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        contextMenuPkg = pkg
-                    }
-                )
-            }
-
-            // Uygulama önerileri — son kullanılan 4 uygulama, toggle ile kapatılabilir
-            if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
-                AppSuggestionsRow(
-                    apps = suggestedApps,
-                    iconPackPkg = suggestionIconPack,
-                    onAppClick = { app ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        viewModel.launchApp(context, app.packageName)
-                    },
-                    onAppLongClick = { app ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        contextMenuPkg = app.packageName
-                    }
-                )
-            }
-
-            // Son kullanılan uygulamalar satırı (varsayılan kapalı)
-            if (recentAppsEnabled && recentApps.isNotEmpty()) {
-                RecentAppsRow(
-                    apps = recentApps,
-                    iconPackPkg = suggestionIconPack,
-                    onAppClick = { pkg ->
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        viewModel.launchApp(context, pkg)
-                    }
-                )
-            }
+            // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
+            HomeFavoritesSection(
+                favoritesEnabled = favoritesEnabled,
+                favoriteApps = favoriteApps,
+                suggestionsEnabled = suggestionsEnabled,
+                suggestedApps = suggestedApps,
+                recentAppsEnabled = recentAppsEnabled,
+                recentApps = recentApps,
+                iconPackPkg = suggestionIconPack,
+                haptic = haptic,
+                onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                onAppLongClick = { pkg -> contextMenuPkg = pkg }
+            )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
             if (widgetAreaEnabled && widgetIds.isNotEmpty()) {
@@ -10015,27 +9998,8 @@ fun HomeScreen(
                 } // LazyVerticalGrid
             } // HorizontalPager
 
-            // Sayfa noktaciklari — birden fazla sayfa varsa goster
-            if (pageCount > 1) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    repeat(pageCount) { idx ->
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 3.dp)
-                                .size(if (pagerState.currentPage == idx) 8.dp else 5.dp)
-                                .background(
-                                    if (pagerState.currentPage == idx) Color.White.copy(alpha = 0.9f)
-                                    else Color.White.copy(alpha = 0.3f),
-                                    androidx.compose.foundation.shape.CircleShape
-                                )
-                        )
-                    }
-                }
-            }
+            // Sayfa noktaciklari — HomeScreenPageIndicator.kt
+            HomePageIndicator(pageCount = pageCount, pagerState = pagerState)
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
@@ -10753,6 +10717,133 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
                 text = "Tüm uygulamalar",
                 color = Color.White.copy(alpha = 0.40f),
                 fontSize = 11.sp
+            )
+        }
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreenFavorites.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.launcher
+
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.AppAnalytics
+
+/**
+ * HomeScreen'deki favori, öneri ve son kullanılan uygulama satırlarını
+ * tek bir composable altında toplayan section.
+ *
+ * Parametre sayısını azaltmak için lambdalar HomeScreen'den geçirilir.
+ */
+@Composable
+internal fun HomeFavoritesSection(
+    favoritesEnabled: Boolean,
+    favoriteApps: List<AppInfo>,
+    suggestionsEnabled: Boolean,
+    suggestedApps: List<AppInfo>,
+    recentAppsEnabled: Boolean,
+    recentApps: List<AppInfo>,
+    iconPackPkg: String,
+    haptic: HapticFeedback,
+    onLaunchApp: (String) -> Unit,
+    onAppLongClick: (String) -> Unit,
+) {
+    if (favoritesEnabled && favoriteApps.isNotEmpty()) {
+        FavoritesRow(
+            apps = favoriteApps,
+            iconPackPkg = iconPackPkg,
+            onAppClick = { pkg ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                AppAnalytics.appLaunched(pkg, "favorites")
+                onLaunchApp(pkg)
+            },
+            onAppLongClick = { pkg ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onAppLongClick(pkg)
+            }
+        )
+    }
+
+    if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
+        AppSuggestionsRow(
+            apps = suggestedApps,
+            iconPackPkg = iconPackPkg,
+            onAppClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onLaunchApp(app.packageName)
+            },
+            onAppLongClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onAppLongClick(app.packageName)
+            }
+        )
+    }
+
+    if (recentAppsEnabled && recentApps.isNotEmpty()) {
+        RecentAppsRow(
+            apps = recentApps,
+            iconPackPkg = iconPackPkg,
+            onAppClick = { pkg ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onLaunchApp(pkg)
+            }
+        )
+    }
+}
+
+========================================
+FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreenPageIndicator.kt
+========================================
+package com.armutlu.apporganizer.presentation.ui.launcher
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+
+/**
+ * HorizontalPager sayfa gösterge noktaları — HomeScreen'den extract edildi.
+ */
+@Composable
+internal fun HomePageIndicator(
+    pageCount: Int,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier
+) {
+    if (pageCount <= 1) return
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .semantics { contentDescription = "Sayfa ${pagerState.currentPage + 1} / $pageCount" },
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(pageCount) { idx ->
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 3.dp)
+                    .size(if (pagerState.currentPage == idx) 8.dp else 5.dp)
+                    .background(
+                        if (pagerState.currentPage == idx) Color.White.copy(alpha = 0.9f)
+                        else Color.White.copy(alpha = 0.3f),
+                        androidx.compose.foundation.shape.CircleShape
+                    )
             )
         }
     }
