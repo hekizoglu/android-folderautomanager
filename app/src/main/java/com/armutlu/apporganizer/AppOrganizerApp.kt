@@ -1,7 +1,7 @@
 package com.armutlu.apporganizer
 
 import android.app.Application
-import com.armutlu.apporganizer.BuildConfig
+import android.content.pm.ApplicationInfo
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
@@ -14,7 +14,7 @@ class AppOrganizerApp : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
         FirebaseApp.initializeApp(this)
-        // Debug build'de Crashlytics raporlama kapalı — sadece release'te aktif
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+        val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
     }
 }
