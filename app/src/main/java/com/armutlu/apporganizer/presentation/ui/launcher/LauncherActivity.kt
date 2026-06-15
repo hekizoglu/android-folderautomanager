@@ -111,7 +111,7 @@ class LauncherActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        viewModel.loadAppsIfEmpty(this)
+        viewModel.loadAppsIfEmpty()
         viewModel.initFavorites(this)
         viewModel.syncUsageStats(this)
         AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin

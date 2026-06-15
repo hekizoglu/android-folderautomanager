@@ -6,7 +6,6 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
-import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,7 +39,4 @@ object AppModule {
         return AppDatabaseService(context).also { it.loadFromCacheSync() }
     }
 
-    @Provides
-    @Singleton
-    fun provideAppClassifier(): AppClassifier = AppClassifier()
 }

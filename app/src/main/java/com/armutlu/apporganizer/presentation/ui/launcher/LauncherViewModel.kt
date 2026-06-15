@@ -72,7 +72,8 @@ internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
 @HiltViewModel
 class LauncherViewModel @Inject constructor(
     application: Application,
-    private val repository: AppRepository
+    private val repository: AppRepository,
+    private val packageManagerHelper: PackageManagerHelper
 ) : AndroidViewModel(application) {
 
     private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -195,19 +196,18 @@ class LauncherViewModel @Inject constructor(
                 val dbCount = repository.countApps()
                 if (installedCount != dbCount) {
                     Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
-                    loadAppsIfEmpty(context)
+                    loadAppsIfEmpty()
                 }
             }.onFailure { Timber.e(it, "reconcileIfNeeded hatası") }
         }
     }
 
     /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
-    fun loadAppsIfEmpty(context: Context) {
+    fun loadAppsIfEmpty() {
         if (!isLoadingApps.compareAndSet(false, true)) return  // atomik: zaten çalışıyorsa dön
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val helper = PackageManagerHelper(context)
-                val installed = helper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
+                val installed = packageManagerHelper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
                 val existing = repository.getAllApps()
                 if (existing.isEmpty()) {
                     Timber.d("DB boş — ${installed.size} uygulama yazılıyor")
@@ -362,8 +362,7 @@ class LauncherViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 // Tam tarama yerine tek paket fetch: ~5x daha hızlı
-                val helper = PackageManagerHelper(context)
-                val app = helper.getAppInfo(packageName) ?: return@launch
+                val app = packageManagerHelper.getAppInfo(packageName) ?: return@launch
                 repository.insertApps(listOf(app))
                 Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }

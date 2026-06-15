@@ -22,6 +22,7 @@ import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -29,6 +30,8 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var packageManagerHelper: PackageManagerHelper
 
     private val viewModel: AppListViewModel by viewModels()
 
@@ -119,7 +122,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 Timber.d("Scanning device apps...")
-                val apps = PackageManagerHelper(applicationContext).getInstalledApps(
+                val apps = packageManagerHelper.getInstalledApps(
                     includeSystem = true,
                     onlyLaunchable = true
                 )

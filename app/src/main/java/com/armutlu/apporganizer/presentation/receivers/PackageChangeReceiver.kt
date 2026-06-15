@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.armutlu.apporganizer.data.repository.AppRepository
-import com.armutlu.apporganizer.utils.PackageManagerHelper
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.EntryPoint
@@ -19,6 +18,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
     @dagger.hilt.InstallIn(SingletonComponent::class)
     interface ReceiverEntryPoint {
         fun appRepository(): AppRepository
+        fun packageManagerHelper(): com.armutlu.apporganizer.utils.PackageManagerHelper
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -38,7 +38,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
-                val helper = PackageManagerHelper(context)
+                val helper = getPackageManagerHelper(context)
                 val appInfo = helper.getAppInfo(packageName) ?: return@launch
                 repo.insertApps(listOf(appInfo))
                 Timber.d("Added new app to DB: $packageName")
@@ -69,7 +69,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 if (!repo.appExists(packageName)) return@launch
                 // Mevcut kaydı koru (kategori, gizlilik), sadece PM'den gelen taze veriyi güncelle
                 val existing = repo.getAppByPackageName(packageName) ?: return@launch
-                val helper = PackageManagerHelper(context)
+                val helper = getPackageManagerHelper(context)
                 val fresh = helper.getAppInfo(packageName) ?: return@launch
                 val merged = fresh.copy(
                     categoryId   = existing.categoryId,
@@ -92,5 +92,13 @@ class PackageChangeReceiver : BroadcastReceiver() {
             ReceiverEntryPoint::class.java
         )
         return entryPoint.appRepository()
+    }
+
+    private fun getPackageManagerHelper(context: Context): com.armutlu.apporganizer.utils.PackageManagerHelper {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            ReceiverEntryPoint::class.java
+        )
+        return entryPoint.packageManagerHelper()
     }
 }
