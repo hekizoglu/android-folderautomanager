@@ -332,3 +332,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Yok
 **CLAUDE.md/LEARNINGS.md:** Güncelleme yok
 **Sonraki:** Döngü 49 — Settings toggle tam testi (tüm ayarların çalıştığını doğrula)
+
+## Döngü 49 — 19:18 [KOD]
+**Yapılanlar:** Settings toggle audit — 23/24 çalışıyor. Kırık: showSystemApps AppPrefs'e persist edilmiyordu. AppPrefs.KEY_SHOW_SYSTEM_APPS eklendi, ViewModel init'te yükleniyor, toggleShowSystemApps() artık kalıcı kaydediyor.
+**Agent:** Explore — SettingsScreen + AppPrefs toggle audit (24 toggle incelendi)
+**CLAUDE.md/LEARNINGS.md:** Güncelleme yok
+**Sonraki:** Döngü 50 — ROADMAP BLUR görevlerini tamamlandı işaretle, emülatör arayüz testi

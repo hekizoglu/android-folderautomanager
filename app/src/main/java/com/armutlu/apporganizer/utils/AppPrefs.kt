@@ -152,6 +152,11 @@ object AppPrefs {
         prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
     }
 
+    // Sistem uygulamalarını göster — AppListScreen filtre
+    const val KEY_SHOW_SYSTEM_APPS = "show_system_apps"
+    fun isShowSystemApps(context: Context) = prefs(context).getBoolean(KEY_SHOW_SYSTEM_APPS, false)
+    fun setShowSystemApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SHOW_SYSTEM_APPS, v).apply()
+
     // Uygulama onerileri — en sik kullanilan 4 uygulama ana ekranda gosterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
