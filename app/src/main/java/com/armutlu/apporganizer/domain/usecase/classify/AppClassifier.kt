@@ -4098,7 +4098,7 @@ class AppClassifier @Inject constructor() {
         "ru.vtb24.mobilebanking.android"             to Category.CAT_FINANCE,    // VTB Bank (RU)
         "ru.alfabank.mobile.android"                 to Category.CAT_FINANCE,    // Alfa-Bank (RU)
         "com.tencent.mobileqq"                       to Category.CAT_COMMUNICATION, // QQ (CN)
-        "com.meitu.beautyplusmod"                    to Category.CAT_PHOTO,      // BeautyPlus (CN)
+        "com.meitu.beautyplusmod"                    to Category.CAT_PHOTOGRAPHY, // BeautyPlus (CN)
         "net.one97.paytm"                            to Category.CAT_FINANCE,    // Paytm (IN)
         "com.flipkart.android"                       to Category.CAT_SHOPPING,   // Flipkart (IN)
         "com.myntra.android"                         to Category.CAT_SHOPPING,   // Myntra (IN)
