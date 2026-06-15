@@ -135,7 +135,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 
 ### 🔴 Yüksek Öncelik — Döngü 69 Analiz (2026-06-16)
 - [ ] 🔴 **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir
-- [ ] 🔴 **`git config core.hooksPath .githooks`** — pre-commit hook şu an çalışmıyor (`.github/hooks/` yanlış yol)
+- [x] ~~🔴 **`git config core.hooksPath .githooks`**~~ ✅ `.githooks/pre-commit` oluşturuldu, `git config core.hooksPath .githooks` ayarlandı (Döngü 72, 2026-06-16)
 - [ ] 🔴 **Android 15 Edge-to-Edge** — `WindowCompat.setDecorFitsSystemWindows(false)` + `WindowInsets` tüm ekranlarda
 - [x] ~~🔴 **Room `schemas/` klasörü**~~ ✅ `room.schemaLocation` kapt argumentine eklendi, `app/schemas/` git'e alındı (Döngü 71, 2026-06-16)
 - [ ] 🟡 **Predictive Back Gesture** — `android:enableOnBackInvokedCallback="true"` manifest + BackHandler gözden geçir (Android 13+)

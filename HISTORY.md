@@ -930,3 +930,8 @@ Tüm 12 madde âœ…. Detay:
 
 **Sonraki:** git config core.hooksPath .githooks aktivasyonu + Android 15 Edge-to-Edge (Döngü 69 Analiz yüksek öncelik)
 
+
+## Döngü 72 — 2026-06-16 (BUILD)
+**Yapılanlar:** assembleDebug 3s (Defender exclusion + cache etkisi: 74x hız); .githooks/pre-commit aktifleştirildi; harcananvakit.md'e 74x hız ölçümü eklendi
+**Build:** SUCCESS 3s, 24.1 MB — kilit yok, clean build gerekti
+**Sonraki:** Android 15 Edge-to-Edge (WindowInsets tüm ekranlarda) — en yüksek öncelik
