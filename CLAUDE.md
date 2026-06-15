@@ -79,6 +79,14 @@ Buraya EKLENMEZ: döngü özeti (→ HISTORY.md), tek seferlik not, geçici duru
 - Yarım bırakma
 - Encoding bozukluğu — her zaman UTF-8 kaydet
 - Onboarding'in son adımı (DONE öncesi) MUTLAKA varsayılan launcher sorusu olmalı — hiçbir değişiklik bu adımı kaldıramaz veya sırasını değiştiremez.
+- **Yan etki yaratma:** Bir dosyayı değiştirirken ilgili tüm dosyaları (ViewModel, Repository, Model, UI) önce oku. Yeni sabit/fonksiyon eklenince tüm kullanım noktaları güncellenmeli. Değişiklik sonrası build al — kırmızı alan kalmamalı.
+
+### Değişiklik Güvenlik Protokolü
+Her agent görevi sonunda (build almadan önce):
+1. Değiştirilen dosyalardaki tüm import'ları doğrula (unresolved referans yok)
+2. Eklenen her yeni sabit/fonksiyon — tüm kullanım noktaları güncellendi mi?
+3. Silinen/yeniden adlandırılan her şey — eski adı kullanan başka dosya var mı? (`grep` ile kontrol)
+4. Her görev sonunda `.\gradlew assembleDebug` — build hataları commit öncesi düzeltilmeli
 
 ---
 

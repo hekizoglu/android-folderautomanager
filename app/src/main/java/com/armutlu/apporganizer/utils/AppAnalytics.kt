@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.utils
 
 import android.content.Context
 import android.os.Bundle
-import com.armutlu.apporganizer.BuildConfig
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -12,8 +11,11 @@ object AppAnalytics {
     private val analytics: FirebaseAnalytics by lazy { Firebase.analytics }
 
     fun appStarted(context: Context) {
+        val versionName = try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "unknown"
+        } catch (e: Exception) { "unknown" }
         analytics.logEvent("app_started", Bundle().apply {
-            putString("version", BuildConfig.VERSION_NAME)
+            putString("version", versionName)
             putLong("timestamp", System.currentTimeMillis())
         })
     }
