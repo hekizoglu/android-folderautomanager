@@ -113,8 +113,10 @@ Her agent görevi sonunda (build almadan önce):
 ### Build Komutları
 ```powershell
 cd "c:\Users\hekizoglu\Documents\AppOrganizer"
-.\gradlew assembleDebug        # Debug APK
+.\gradlew assembleDebug        # Debug APK (veya: .\build.ps1)
 .\gradlew bundleRelease        # Play Store AAB (imzalı — keystore.properties gerekli)
+.\build.ps1                    # Akıllı build: cache+parallel, otomatik hata retry
+.\build.ps1 -Clean             # Kilitli build dizinlerini temizleyip yeniden build
 
 # Emülatör
 $em = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\emulator\emulator.exe"
@@ -146,6 +148,16 @@ curl.exe -s -X POST "https://api.telegram.org/bot$t/sendDocument" -F "chat_id=$c
 ### Remote Ortam Notu
 `dl.google.com` ve `api.telegram.org` bu ortamda engelli — build ve Telegram gönderimi yerel makinede yapılmalı.
 
+### Zaman Loglama
+`harcananvakit.md` — her döngüde başlangıç/bitiş saati ve kategori (BUILD/KOD/ORTAM/GİT/DÖKÜMAN) loglanır.
+Her 6 saatte bir otomatik MD denetimi yapılır → Telegram'a rapor → **onay gelmeden değişiklik yapılmaz**.
+Windows Defender exclusion (Admin PowerShell gerekli):
+```powershell
+Add-MpPreference -ExclusionPath "C:\Users\hekizoglu\Documents\AppOrganizer\app\build"
+Add-MpPreference -ExclusionPath "$env:USERPROFILE\.gradle"
+Add-MpPreference -ExclusionPath "$env:USERPROFILE\.android"
+```
+
 ---
 
 ## 5. Kritik Mimari Tuzaklar (LEARNINGS'den Promote)
@@ -168,7 +180,7 @@ curl.exe -s -X POST "https://api.telegram.org/bot$t/sendDocument" -F "chat_id=$c
 `mapOf()` duplicate key'de sessizce son entry'i kullanır, önceki kaybolur.
 - Her commit öncesi: `python scripts/check_duplicates.py AppClassifier.kt`
 - Temizlik: `python scripts/dedup_classifier.py`
-- Pre-commit hook: `.github/hooks/pre-commit` otomatik çalıştırır
+- Pre-commit hook: `.githooks/pre-commit` otomatik çalıştırır (`git config core.hooksPath .githooks` ile aktifleştirilir)
 
 ### KeywordDatabase Duplicate Kategori
 `mapOf()` içinde `CAT_x` iki kez tanımlanırsa ilk (daha kapsamlı) liste kaybolur.
@@ -259,7 +271,7 @@ app/src/main/java/com/armutlu/apporganizer/
 │   └── theme/       # Theme.kt (turkuaz, DataStore reaktif)
 ├── domain/
 │   ├── models/      # AppInfo, Category, AppFolder
-│   └── usecase/classify/  # AppClassifier (3375 paket), KeywordDatabase (32 kategori)
+│   └── usecase/classify/  # AppClassifier (3717 paket), KeywordDatabase (32 kategori)
 ├── data/
 │   ├── local/       # AppDao, AppDatabase (Room v7)
 │   ├── remote/      # BackupSyncService
@@ -268,7 +280,7 @@ app/src/main/java/com/armutlu/apporganizer/
 ```
 
 ### Önemli Mimari Notlar
-- **AppClassifier:** 3375 benzersiz paket, `exactMatchMap` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
+- **AppClassifier:** 3717 benzersiz paket, `exactMatchMap` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
 - **Room DB:** v7 (18 yeni kategori eklendi)
 - **Onboarding:** 14+2 adım (son: CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
@@ -277,7 +289,7 @@ app/src/main/java/com/armutlu/apporganizer/
 ### Özellik Durum Özeti
 | Özellik | Durum |
 |---------|-------|
-| AppClassifier 3375 paket | ✅ |
+| AppClassifier 3717 paket | ✅ |
 | DeepSeek LLM fallback | ✅ |
 | İkon pack desteği | ✅ |
 | Widget desteği | ✅ |

@@ -453,3 +453,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Analiz agent (öneri filtreleme, A/B/C kategorilendirme)
 **CLAUDE.md/LEARNINGS.md:** CLAUDE.md v5 — rollback, paralel agent, APK boyut logu, bundleRelease, Android uyumluluk kuralları, Room migration şablonu. LEARNINGS.md v4 — yapısal düzeltmeler + AppClassifier prosedürü.
 **Sonraki:** Döngü 70 — BUILD (70%6=4, hayır KOD), git hooks düzeltmesi (core.hooksPath) + Edge-to-Edge uygulaması
+
+## Döngü 70 — [KOD/PERFORMANS]
+**Yapılanlar:** gradle.properties 12 optimizasyon ayarı (kapt.use.worker.api=false, Xmx4096m, caching, parallel). build.ps1 oluşturuldu. git global config (pull.rebase=true, autoStash). smart_push C:\Users\hekizoglu\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1'a eklendi. CLAUDE.md: paket sayısı 3375→3717 (3 yerde), hook yolu .github→.githooks, harcananvakit §4, build.ps1 komutları. SETUP.md oluşturuldu. MD denetim cloud schedule: her 6 saatte (ID: trig_01VPPecoLxMWwfH85CmJLkKB).
+**Agent:** Gradle+git araştırma (paralel 3 agent)
+**CLAUDE.md/LEARNINGS.md:** CLAUDE.md: 5 düzeltme + Defender exclusion + zaman loglama bölümü
+**Sonraki:** Döngü 71 — build.ps1 ile ilk test, Defender exclusion (Admin gerekli)
