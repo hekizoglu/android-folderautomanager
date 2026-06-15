@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 07:47 UTC
-# Commit: 14dcfdc24788d2d40af41affe3e36b133bed44d3
+# Generated: 2026-06-15 07:59 UTC
+# Commit: f5074bdaf0259514ce23d013f28726a7499296f3
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -1748,6 +1748,8 @@ class AppClassifier @Inject constructor() {
         "com.venmo"                                  to Category.CAT_FINANCE,
         "com.cashapp"                                to Category.CAT_FINANCE,
         "com.robinhood.android"                      to Category.CAT_FINANCE,
+        "com.sofi.androidapp"                        to Category.CAT_FINANCE,
+        "com.chime.banking"                          to Category.CAT_FINANCE,
         "com.coinbase.android"                       to Category.CAT_FINANCE,
         "com.binance.dev"                            to Category.CAT_FINANCE,
         "com.kraken.invest.app"                      to Category.CAT_FINANCE,
@@ -1797,6 +1799,8 @@ class AppClassifier @Inject constructor() {
         "com.huawei.health"                          to Category.CAT_HEALTH,
         "com.noom.weightlosscoach"                   to Category.CAT_HEALTH,
         "com.cronometer.android"                     to Category.CAT_HEALTH,
+        "com.noom.weight.loss.app"                   to Category.CAT_HEALTH,
+        "com.fatsecret.android"                      to Category.CAT_HEALTH,
         "com.flo.health"                             to Category.CAT_HEALTH,
         "com.clue.android"                           to Category.CAT_HEALTH,
         "com.daylio.app"                             to Category.CAT_HEALTH,
@@ -1810,6 +1814,10 @@ class AppClassifier @Inject constructor() {
         "com.memrise.app"                            to Category.CAT_EDUCATION,
         "com.udemy.android"                          to Category.CAT_EDUCATION,
         "com.coursera.android"                       to Category.CAT_EDUCATION,
+        "com.linkedin.android.learning"              to Category.CAT_EDUCATION,
+        "com.edx.android.main"                       to Category.CAT_EDUCATION,
+        "com.khanacademy.android"                    to Category.CAT_EDUCATION,
+        "org.openedx.app"                            to Category.CAT_EDUCATION,
         "com.skillshare.skillshare"                  to Category.CAT_EDUCATION,
         "com.edx.mobile"                             to Category.CAT_EDUCATION,
         "org.khanacademy.android"                    to Category.CAT_EDUCATION,
@@ -1899,6 +1907,12 @@ class AppClassifier @Inject constructor() {
         "com.slack"                                  to Category.CAT_COMMUNICATION,
         "com.notion.id"                              to Category.CAT_PRODUCTIVITY,
         "com.evernote"                               to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.intune"                       to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.launcher.enterprise"          to Category.CAT_PRODUCTIVITY,
+        "com.citrix.receiver.full"                   to Category.CAT_PRODUCTIVITY,
+        "com.vmware.boxer"                           to Category.CAT_PRODUCTIVITY,
+        "com.craft.editor"                           to Category.CAT_PRODUCTIVITY,
+        "com.roamresearch"                           to Category.CAT_PRODUCTIVITY,
         "com.todoist.android.Todoist"                to Category.CAT_PRODUCTIVITY,
         "com.asana.android"                          to Category.CAT_PRODUCTIVITY,
         "com.trello"                                 to Category.CAT_PRODUCTIVITY,
@@ -1922,6 +1936,8 @@ class AppClassifier @Inject constructor() {
         // â"€â"€ NEWS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
         "com.google.android.apps.news"               to Category.CAT_NEWS,
         "com.flipboard.app"                          to Category.CAT_NEWS,
+        "com.medium.reader"                          to Category.CAT_NEWS,
+        "com.pocket"                                 to Category.CAT_NEWS,
         "com.feedly.android"                         to Category.CAT_NEWS,
         "com.medium.android"                         to Category.CAT_NEWS,
         "com.bbc.news"                               to Category.CAT_NEWS,
@@ -2348,6 +2364,7 @@ class AppClassifier @Inject constructor() {
         // Fotograf
         "com.zing.zalo"                              to Category.CAT_PHOTOGRAPHY,
         "com.wondershare.filmorago"                  to Category.CAT_VIDEO,
+        "com.inshot.app"                             to Category.CAT_VIDEO,
         "com.baidu.camera"                           to Category.CAT_PHOTOGRAPHY,
         // Eglence
         "com.disneyplus"                             to Category.CAT_ENTERTAINMENT,
@@ -2482,6 +2499,7 @@ class AppClassifier @Inject constructor() {
         "com.max.android"                            to Category.CAT_ENTERTAINMENT,
         "com.funimation.android"                     to Category.CAT_COMICS,
         "com.audiomack"                              to Category.CAT_ENTERTAINMENT,
+        "com.tidal.music"                            to Category.CAT_MUSIC,
         "com.amazon.mp3"                             to Category.CAT_ENTERTAINMENT,
         "com.vevo"                                   to Category.CAT_ENTERTAINMENT,
         "fm.last.android"                            to Category.CAT_ENTERTAINMENT,
@@ -8607,7 +8625,7 @@ fun FolderSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
             ) {
-                itemsIndexed(AllAppsSortMode.entries) { _, mode ->
+                itemsIndexed(AllAppsSortMode.entries, key = { _, mode -> mode.name }) { _, mode ->
                     val active = sortMode == mode
                     Box(
                         modifier = Modifier
@@ -8725,7 +8743,7 @@ private fun FolderRenameDialog(
                 )
                 Text("Emoji sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    itemsIndexed(EMOJI_PICKER) { _, emoji ->
+                    itemsIndexed(EMOJI_PICKER, key = { _, emoji -> emoji }) { _, emoji ->
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
@@ -8743,7 +8761,7 @@ private fun FolderRenameDialog(
                 }
                 Text("Renk sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    itemsIndexed(COLOR_PRESETS) { _, preset ->
+                    itemsIndexed(COLOR_PRESETS, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
                         val isSelected = selectedColor == hex
                         val resolvedColor = if (hex.isBlank()) Color.White.copy(0.2f)
