@@ -315,3 +315,8 @@ TÃ¼m 12 madde âœ…. Detay:
 **Yapılanlar:** CLAUDE.md'ye dosya güncelleme kuralları tablosu eklendi. HISTORY.md + ROADMAP.md bu oturum için toplu dolduruldu. Güncelleme sistemi netleştirildi: Her döngü→HISTORY, her 6 döngü→ROADMAP, DeepSeek/test sonrası→LEARNINGS, 3+ tekrar→CLAUDE.md promote.
 **Bug:** —
 **Sonraki:** Döngülere devam
+
+## Döngü 46 — 2026-06-15
+**Yapılanlar:** HyperOS tarzı blur implementasyonu — Haze 0.7.3 (1.5.0 Kotlin 2.x gerektirdiği için 0.7.3 seçildi). FolderSheet containerColor=Transparent + hazeChild(blurRadius=18dp, tint=#CC0D0D1A). HomeScreen root Box'a .haze(hazeState). AppPrefs KEY_FOLDER_BLUR toggle. SettingsAppearanceSection'a "Klasör Blur Efekti" satırı eklendi. 11 dosya değişti.
+**Bug:** Haze 1.5.0 Kotlin 2.x API uyumsuzluğu — 0.7.3'e düşüldü (aynı API mevcut).
+**Sonraki:** Emülatörde blur görsel testi + Ayarlar'daki tüm toggle'ların çalışıp çalışmadığını test et
