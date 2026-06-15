@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 15:07 UTC
-# Commit: e2fa0a077fd568d8a98bb4d79c59bf8603d5d336
+# Generated: 2026-06-15 15:14 UTC
+# Commit: ecefa592900c2e55634a724af3d7f4124a83bc16
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8787,6 +8787,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.HazeStyle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Apps
@@ -8920,6 +8923,7 @@ fun FolderSheet(
     onDismiss: () -> Unit,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
+    hazeState: HazeState = remember { HazeState() },
 ) {
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -8953,12 +8957,23 @@ fun FolderSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,
-        containerColor   = SheetBackground,
+        containerColor   = Color.Transparent,
+        scrimColor       = Color(0x66000000),
         shape            = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle       = null,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .hazeChild(
+                    state = hazeState,
+                    style = HazeStyle(
+                        blurRadius = 18.dp,
+                        tint = Color(0xCC0D0D1A)
+                    )
+                )
+                .navigationBarsPadding()
+                .padding(bottom = 24.dp),
         ) {
             // ── Header ────────────────────────────────────────────────────────
             val catColor = remember(folder.category.colorHex, customColor) {
@@ -9902,6 +9917,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.armutlu.apporganizer.utils.AppAnalytics
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.HazeStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -9910,6 +9929,8 @@ fun HomeScreen(
     onLaunchWidgetPicker: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val hazeState = remember { HazeState() }
+    var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
@@ -9987,6 +10008,8 @@ fun HomeScreen(
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
                     folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BLUR ->
+                    folderBlurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -10129,6 +10152,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .haze(hazeState)
             .then(
                 if (bgType == "solid")
                     Modifier.background(Color(bgColorInt))
@@ -10530,7 +10554,8 @@ fun HomeScreen(
             onAppLongClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 contextMenuPkg = app.packageName
-            }
+            },
+            hazeState = if (folderBlurEnabled) hazeState else remember { HazeState() }
         )
     }
 
@@ -14387,6 +14412,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BlurOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14699,6 +14726,21 @@ fun SettingsAppearanceSection(
                 }
             }
         }
+    }
+
+    // ── Klasör Blur Efekti ─────────────────────────────────────────────────
+    var folderBlur by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.BlurOn,
+            title = "Klasör Blur Efekti",
+            subtitle = "Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)",
+            checked = folderBlur,
+            onCheckedChange = {
+                folderBlur = it
+                com.armutlu.apporganizer.utils.AppPrefs.setFolderBlurEnabled(context, it)
+            }
+        )
     }
 
     // ── Klasör Şekli ──────────────────────────────────────────────────────
@@ -17564,6 +17606,11 @@ object AppPrefs {
     const val KEY_LAST_BACKUP_TIME = "last_backup_time"
     fun getLastBackupTime(context: Context): Long = prefs(context).getLong(KEY_LAST_BACKUP_TIME, 0L)
     fun setLastBackupTime(context: Context, ms: Long) = prefs(context).edit().putLong(KEY_LAST_BACKUP_TIME, ms).apply()
+
+    // Klasör blur efekti — HyperOS tarzı frosted glass
+    const val KEY_FOLDER_BLUR = "folder_blur"
+    fun isFolderBlurEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_BLUR, true)
+    fun setFolderBlurEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_BLUR, v).apply()
 
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
