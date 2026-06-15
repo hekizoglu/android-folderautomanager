@@ -263,3 +263,16 @@ TÃ¼m 12 madde âœ…. Detay:
 - #19: SplashScreen sırası düzeltildi + splash rengi turkuaz + AppDatabase fallbackToDestructive kaldırıldı + strings.xml 15 TR string
 - #20: contentDescription 4 eklendi + semantics 2 yere + HomeScreen 829→744 satır (2 yeni dosya)
 - #21: BUILD SUCCESSFUL — APK Telegram msg 702
+
+---
+
+## Döngü #32-38 — 2026-06-15
+**Yapılanlar:**
+- #32: AllApps swipe fix (pointerInput(Unit), swipeLock 300→150ms) + Manufacturer duplicate toggle silindi
+- #33: BackupWorker schedule (AppOrganizerApp + toggle) + Son yedekleme UI + KEY_LAST_BACKUP_TIME
+- #34: Klasör şekli 4 seçenek — Daire/Yumuşak/Kare/Üçgen (KEY_FOLDER_SHAPE + FolderTile + Settings)
+- #35: ColorPickerDialog (skydoves:colorpicker-compose:1.1.2) + yazı+bg rengi için özel renk picker
+- #36: WallpaperHelper.kt — bitmap wallpaper sistemi (applyColorWallpaper/applyGradientWallpaper) + SET_WALLPAPER permission
+- #37: Onboarding CLASSIFY_MODE adımı + temizlik (KEY_TEXT_ALPHA doğrulandı)
+- #38: BUILD — SettingsAppearanceSection Composable context fix + FolderTile GenericShape import + BUILD SUCCESSFUL. APK Telegram msg 704
+**Önemli:** Divider deprecated uyarıları var (hata değil) — sonraki döngüde HorizontalDivider'a çevrilebilir
