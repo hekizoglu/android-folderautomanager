@@ -3,7 +3,7 @@
 
 $flag = "C:\Users\hekizoglu\.claude\context_full.flag"
 $retryMinutes = 15
-$checkIntervalSeconds = 30
+$checkIntervalSeconds = 300
 $elapsed = 0
 
 if (-not (Test-Path $flag)) { exit 0 }
