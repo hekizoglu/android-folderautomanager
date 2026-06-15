@@ -39,6 +39,7 @@ object AppPrefs {
     const val KEY_NEW_BADGE_ENABLED    = "new_badge_enabled"
     const val KEY_FOLDER_COUNT_VISIBLE = "folder_count_visible"
     const val KEY_FOLDER_SWIPE_HINT    = "folder_swipe_hint_enabled"
+    const val KEY_FOLDER_SWIPE_HINT_ENABLED = KEY_FOLDER_SWIPE_HINT  // alias
 
     fun isSwipeHintEnabled(context: Context)   = prefs(context).getBoolean(KEY_SWIPE_HINT_ENABLED, true)
     fun isNewBadgeEnabled(context: Context)    = prefs(context).getBoolean(KEY_NEW_BADGE_ENABLED, true)

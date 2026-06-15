@@ -166,7 +166,7 @@ internal fun LazyListScope.settingsAppearanceSection(
         SettingsCard {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // Klasör boyutu slider
-                var folderSize by remember { mutableStateOf(AppPrefs.getFolderSize(context).toFloat()) }
+                var folderSize by remember { mutableStateOf(AppPrefs.getFolderSizeDp(context).toFloat()) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Folder, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(12.dp))
@@ -175,7 +175,7 @@ internal fun LazyListScope.settingsAppearanceSection(
                         Text("${folderSize.toInt()} dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                Slider(value = folderSize, onValueChange = { folderSize = it; AppPrefs.setFolderSize(context, it.toInt()) }, valueRange = 56f..96f, steps = 4)
+                Slider(value = folderSize, onValueChange = { folderSize = it; AppPrefs.setFolderSizeDp(context, it.toInt()) }, valueRange = 56f..96f, steps = 4)
                 Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                 // Yazı rengi
                 var labelColor by remember { mutableStateOf(AppPrefs.getLabelColor(context)) }
