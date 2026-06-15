@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 01:13 UTC
-# Commit: fd10186d9ed7078158590dbcdd5c85f7f2d66341
+# Generated: 2026-06-15 07:47 UTC
+# Commit: 14dcfdc24788d2d40af41affe3e36b133bed44d3
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -7482,10 +7482,9 @@ fun AppContextMenu(
                 icon = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
                 label = if (isFav) "Favorilerden Çıkar" else "Favorilere Ekle",
                 onClick = {
-                    if (isFav) com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, app.packageName)
-                    else com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, app.packageName)
-                    isFav = !isFav
-                    onToggleFavorite?.invoke(isFav)
+                    val newFav = !isFav
+                    isFav = newFav
+                    onToggleFavorite?.invoke(newFav)
                     onDismiss()
                 }
             )
@@ -10029,6 +10028,8 @@ fun HomeScreen(
             onDismiss = { categoryPickerApp = null },
             onCategorySelected = { catId ->
                 viewModel.updateAppCategory(app.packageName, catId)
+                // Klasör açıksa kapat — kullanıcı ana ekranda yeni kategoriyi hemen görsün
+                viewModel.closeFolder()
             }
         )
     }
@@ -16825,7 +16826,7 @@ object AppPrefs {
     // Favori uygulamalar — paket adlari Set olarak saklanir
     const val KEY_FAVORITES_ENABLED = "favorites_enabled"
     const val KEY_FAVORITES_SET     = "favorites_set"
-    fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, false)
+    fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, true)
     fun setFavoritesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED, v).apply()
     fun getFavorites(context: Context): Set<String> = prefs(context).getStringSet(KEY_FAVORITES_SET, emptySet()) ?: emptySet()
     fun addFavorite(context: Context, pkg: String) {
