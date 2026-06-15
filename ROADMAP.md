@@ -136,7 +136,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 ### 🔴 Yüksek Öncelik — Döngü 69 Analiz (2026-06-16)
 - [ ] 🔴 **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir
 - [x] ~~🔴 **`git config core.hooksPath .githooks`**~~ ✅ `.githooks/pre-commit` oluşturuldu, `git config core.hooksPath .githooks` ayarlandı (Döngü 72, 2026-06-16)
-- [ ] 🔴 **Android 15 Edge-to-Edge** — `WindowCompat.setDecorFitsSystemWindows(false)` + `WindowInsets` tüm ekranlarda
+- [x] ~~🔴 **Android 15 Edge-to-Edge**~~ ✅ `WindowCompat.setDecorFitsSystemWindows(false)` MainActivity + LauncherActivity'de; Compose Scaffold ekranları Material3 otomatik handle ediyor (Döngü 73, 2026-06-16)
 - [x] ~~🔴 **Room `schemas/` klasörü**~~ ✅ `room.schemaLocation` kapt argumentine eklendi, `app/schemas/` git'e alındı (Döngü 71, 2026-06-16)
 - [ ] 🟡 **Predictive Back Gesture** — `android:enableOnBackInvokedCallback="true"` manifest + BackHandler gözden geçir (Android 13+)
 - [ ] 🟡 **LeakCanary** — debug build'e ekle (`debugImplementation "com.squareup.leakcanary:leakcanary-android:..."`)

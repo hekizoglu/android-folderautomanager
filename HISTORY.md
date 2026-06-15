@@ -935,3 +935,8 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** assembleDebug 3s (Defender exclusion + cache etkisi: 74x hız); .githooks/pre-commit aktifleştirildi; harcananvakit.md'e 74x hız ölçümü eklendi
 **Build:** SUCCESS 3s, 24.1 MB — kilit yok, clean build gerekti
 **Sonraki:** Android 15 Edge-to-Edge (WindowInsets tüm ekranlarda) — en yüksek öncelik
+
+## Döngü 73 — 2026-06-16 (KOD)
+**Yapılanlar:** MainActivity.kt: WindowCompat.setDecorFitsSystemWindows(false) eklendi (Edge-to-Edge); ROADMAP güncellendi
+**Build:** SUCCESS 33s (24.4 MB) — kaynak değişti, KAPT derledi, kilit yok
+**Sonraki:** Predictive Back Gesture (Android 13+) veya LeakCanary debug

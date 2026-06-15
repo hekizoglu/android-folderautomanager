@@ -18,6 +18,7 @@ import com.armutlu.apporganizer.presentation.navigation.AppNavigation
 import com.armutlu.apporganizer.presentation.ui.screens.OnboardingScreen
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import androidx.core.view.WindowCompat
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         installSplashScreen()
         CrashReporter.install(this)
 
