@@ -579,7 +579,6 @@ class AppClassifier @Inject constructor() {
         "com.cognosphere.zenlesszone"                to Category.CAT_GAMES,
         "com.miHoYo.zenlesszone"                    to Category.CAT_GAMES,
         "com.kuro.pgr.global"                        to Category.CAT_GAMES,
-        "com.imangi.templerun"                       to Category.CAT_GAMES,
         "com.outfit7.mytalkingtom"                   to Category.CAT_GAMES,
         "com.outfit7.talkingtomfriendsapp"           to Category.CAT_GAMES,
         "com.halfbrick.jetpackjoyride"               to Category.CAT_GAMES,
@@ -4140,6 +4139,26 @@ class AppClassifier @Inject constructor() {
         "com.kudi.app"                               to Category.CAT_FINANCE,        // Kudi (NG)
         "com.konga.android"                          to Category.CAT_SHOPPING,       // Konga (NG)
         "com.safeboda.android"                       to Category.CAT_TRAVEL,         // SafeBoda (UG/KE)
+
+        // Loop 15 — Populer Oyun Paketleri (2024-2025)
+        "com.kiloo.subwaysurfers"                    to Category.CAT_GAMES,
+        "com.imangi.templerun"                       to Category.CAT_GAMES,
+        "com.outfit7.talkingfriend"                  to Category.CAT_GAMES,
+        "com.gameloft.android.ANMP.GloftDMHM"        to Category.CAT_GAMES,
+        "com.zynga.slots"                            to Category.CAT_GAMES,
+        "com.zynga.poker"                            to Category.CAT_GAMES,
+        "com.playtika.wsopand"                       to Category.CAT_GAMES,
+        "com.chess.free"                             to Category.CAT_GAMES,
+        "net.wooga.jelly"                            to Category.CAT_GAMES,
+        "com.bigfish.gamesmanager"                   to Category.CAT_GAMES,
+        "com.ea.game.simcitymobile_row"              to Category.CAT_GAMES,
+        "com.ea.game.starwarsgoh.google"             to Category.CAT_GAMES,
+        "com.naturalmotion.customstreetracer"        to Category.CAT_GAMES,
+        "jp.konami.pesam"                            to Category.CAT_GAMES,
+        "com.sega.sonicandallstarsbr"                to Category.CAT_GAMES,
+        "com.netmarble.marvelfuturefight"            to Category.CAT_GAMES,
+        "com.pearlabyss.blackdesertm.gl"             to Category.CAT_GAMES,
+        "com.nexon.devcat.shadowgunlegends"          to Category.CAT_GAMES,
     )
 
     fun classifyApp(appInfo: AppInfo): String {
