@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -364,11 +365,16 @@ private fun DrawerAppList(
 ) {
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-            if (searchQuery.isEmpty() && favoritesEnabled && favoriteApps.isNotEmpty()) {
-                item(key = "favorites_row") { FavoritesRow(apps = favoriteApps, iconPackPkg = state.iconPackPkg, onAppClick = onFavoriteAppClick) }
-            }
-            if (searchQuery.isEmpty() && recentAppsEnabled && recentApps.isNotEmpty()) {
-                item(key = "recent_row") { RecentAppsRow(apps = recentApps, iconPackPkg = state.iconPackPkg, onAppClick = onRecentAppClick) }
+            if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
+                item(key = "recent_fav_section") {
+                    DrawerRecentFavSection(
+                        recentApps = if (recentAppsEnabled) recentApps.take(4) else emptyList(),
+                        favoriteApps = if (favoritesEnabled) favoriteApps.take(4) else emptyList(),
+                        iconPackPkg = state.iconPackPkg,
+                        onRecentAppClick = onRecentAppClick,
+                        onFavoriteAppClick = onFavoriteAppClick
+                    )
+                }
             }
             state.grouped.forEach { (letter, letterApps) ->
                 item(key = "header_$letter") { NiagaraLetterHeader(letter = letter) }
@@ -420,6 +426,86 @@ private fun DrawerAppList(
     }
 }
 
+// ── Recent + Favorites combined section ──────────────────────────────────────
+@Composable
+private fun DrawerRecentFavSection(
+    recentApps: List<AppInfo>,
+    favoriteApps: List<AppInfo>,
+    iconPackPkg: String,
+    onRecentAppClick: (String) -> Unit,
+    onFavoriteAppClick: (String) -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (recentApps.isNotEmpty()) {
+            NiagaraLetterHeader(letter = '★', label = "Son Kullanılanlar")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                recentApps.forEach { app ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f).clickable { onRecentAppClick(app.packageName) }
+                    ) {
+                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
+                                iconCacheInternal[cacheKey] ?: run {
+                                    val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                                    if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                    bmp
+                                }
+                            }
+                        }
+                        bitmap?.let {
+                            androidx.compose.foundation.Image(bitmap = it, contentDescription = app.appName,
+                                modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
+                        } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                        Spacer(Modifier.height(3.dp))
+                        Text(app.appName, color = TextPrimary, fontSize = 10.sp, maxLines = 1,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    }
+                }
+                repeat(4 - recentApps.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+        if (favoriteApps.isNotEmpty()) {
+            NiagaraLetterHeader(letter = '♥', label = "Favoriler")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                favoriteApps.forEach { app ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f).clickable { onFavoriteAppClick(app.packageName) }
+                    ) {
+                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
+                                iconCacheInternal[cacheKey] ?: run {
+                                    val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                                    if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                    bmp
+                                }
+                            }
+                        }
+                        bitmap?.let {
+                            androidx.compose.foundation.Image(bitmap = it, contentDescription = app.appName,
+                                modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
+                        } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                        Spacer(Modifier.height(3.dp))
+                        Text(app.appName, color = TextPrimary, fontSize = 10.sp, maxLines = 1,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    }
+                }
+                repeat(4 - favoriteApps.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 @Composable
 private fun DrawerSidebar(
@@ -437,7 +523,7 @@ private fun DrawerSidebar(
     Box(
         modifier = Modifier
             .fillMaxHeight()
-            .width(44.dp)
+            .width(52.dp)
             .padding(vertical = sidebarPaddingDp)
             .onSizeChanged { boxHeightPx = it.height.toFloat() }
             .pointerInput(sidebarEntries) {
@@ -466,6 +552,17 @@ private fun DrawerSidebar(
                         }
                     }
                 )
+            }
+            .pointerInput(sidebarEntries) {
+                detectTapGestures { offset ->
+                    val n = sidebarEntries.size
+                    if (n > 0 && boxHeightPx > 0f) {
+                        val idx = (offset.y / (boxHeightPx / n)).toInt().coerceIn(0, sidebarEntries.lastIndex)
+                        onActivate(idx)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
+                    }
+                }
             },
         contentAlignment = Alignment.TopCenter
     ) {
@@ -483,7 +580,7 @@ private fun DrawerSidebar(
                 )
                 Text(
                     text = entry.label,
-                    fontSize = if (isActive) 14.sp else 11.sp,
+                    fontSize = if (isActive) 16.sp else 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isActive) SidebarActive else SidebarColor,
                     modifier = Modifier.scale(scale).padding(horizontal = 2.dp),
@@ -578,7 +675,13 @@ fun AllAppsDrawer(
             }
             val trLocale = Locale("tr")
             val base = if (searchQuery.isBlank()) afterFilter
-            else { val q = searchQuery.lowercase(trLocale); afterFilter.filter { it.appName.lowercase(trLocale).contains(q) } }
+            else {
+                val q = searchQuery.lowercase(trLocale)
+                val exact = afterFilter.filter { it.appName.lowercase(trLocale) == q }
+                val starts = afterFilter.filter { val n = it.appName.lowercase(trLocale); n.startsWith(q) && n != q }
+                val contains = afterFilter.filter { val n = it.appName.lowercase(trLocale); n.contains(q) && !n.startsWith(q) }
+                exact + starts + contains
+            }
             when (sortMode) {
                 AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
                 AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
@@ -706,10 +809,11 @@ fun AllAppsDrawer(
 
 // ── Harf başlığı ─────────────────────────────────────────────────────────────
 @Composable
-private fun NiagaraLetterHeader(letter: Char) {
+private fun NiagaraLetterHeader(letter: Char, label: String? = null) {
     Text(
-        text = letter.toString(),
-        fontSize = 34.sp, fontWeight = FontWeight.Black, color = HeaderColor,
+        text = label ?: letter.toString(),
+        fontSize = if (label != null) 13.sp else 34.sp,
+        fontWeight = FontWeight.Black, color = HeaderColor,
         modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 18.dp, bottom = 2.dp)
     )
 }

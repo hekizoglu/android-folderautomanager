@@ -131,6 +131,10 @@ class LauncherActivity : ComponentActivity() {
     // Launcher zaten ön planda iken HOME → onNewIntent tetiklenir.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (viewModel.allAppsOpen.value) {
+            viewModel.closeAllApps()
+            return
+        }
         val now = System.currentTimeMillis()
         if (now - lastHomePressMs <= 500L) {
             viewModel.openAllApps()

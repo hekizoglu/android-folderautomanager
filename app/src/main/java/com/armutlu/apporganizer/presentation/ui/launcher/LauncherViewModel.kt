@@ -266,6 +266,7 @@ class LauncherViewModel @Inject constructor(
             context.startActivity(intent)
             viewModelScope.launch(Dispatchers.IO) {
                 repository.incrementUsageCount(packageName)
+                repository.updateLastUsedTimestamp(packageName, System.currentTimeMillis())
             }
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
