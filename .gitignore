@@ -37,3 +37,6 @@ nul
 docs/all_code.txt
 docs/task/
 app/google-services.json
+
+*.bak
+build_out*.txt
