@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 17:48 UTC
-# Commit: 5363434573c10326b7a97cfe58aec0e7f9096483
+# Generated: 2026-06-15 18:05 UTC
+# Commit: e8f2dacedab860893b5a2eaceb821dc38f254af6
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -621,7 +621,7 @@ class AppDatabaseService @Inject constructor(
             Timber.d("AppDatabase: ${merged.size} uygulama hazır (GitHub: ${map.size}, v$version)")
             FetchResult.Success(merged.size, version)
         } catch (e: Exception) {
-            Timber.w(e, "AppDatabase: indirme başarısız, cache deneniyor")
+            Timber.d("AppDatabase: indirme başarısız (${e.javaClass.simpleName}), cache deneniyor")
             val cacheResult = loadFromCache()
             if (cacheResult is FetchResult.NoCache || cacheResult is FetchResult.Error) {
                 loadFromAssets()
@@ -666,7 +666,7 @@ class AppDatabaseService @Inject constructor(
             cachedMap = map
             Timber.d("AppDatabase: assets'ten ${map.size} uygulama yüklendi")
         } catch (e: Exception) {
-            Timber.w(e, "AppDatabase: assets de yüklenemedi")
+            Timber.d("AppDatabase: assets/app_database.json bulunamadı — sadece AppClassifier kullanılacak")
         }
     }
 
