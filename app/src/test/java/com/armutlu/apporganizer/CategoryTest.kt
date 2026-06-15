@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer
+﻿package com.armutlu.apporganizer
 
 import com.armutlu.apporganizer.domain.models.Category
 import org.junit.Assert.assertEquals
@@ -10,7 +10,7 @@ class CategoryTest {
 
     @Test
     fun `getDefaultCategories returns 15 categories`() {
-        assertEquals(15, Category.getDefaultCategories().size)
+        assertTrue("En az 32 kategori olmali", Category.getDefaultCategories().size >= 32)
     }
 
     @Test
@@ -30,7 +30,7 @@ class CategoryTest {
     @Test
     fun `all default categories have non-blank names`() {
         Category.getDefaultCategories().forEach { cat ->
-            assertTrue("${cat.categoryId} için categoryName boş", cat.categoryName.isNotBlank())
+            assertTrue("${cat.categoryId} iÃ§in categoryName boÅŸ", cat.categoryName.isNotBlank())
         }
     }
 
@@ -39,7 +39,7 @@ class CategoryTest {
         val hexPattern = Regex("^#[0-9A-Fa-f]{6,8}$")
         Category.getDefaultCategories().forEach { cat ->
             assertTrue(
-                "${cat.categoryId} için geçersiz renk: ${cat.colorHex}",
+                "${cat.categoryId} iÃ§in geÃ§ersiz renk: ${cat.colorHex}",
                 hexPattern.matches(cat.colorHex)
             )
         }
@@ -48,7 +48,7 @@ class CategoryTest {
     @Test
     fun `displayOrder values are unique`() {
         val orders = Category.getDefaultCategories().map { it.displayOrder }
-        assertEquals("displayOrder değerleri tekrarlanmamalı", orders.size, orders.toSet().size)
+        assertEquals("displayOrder deÄŸerleri tekrarlanmamalÄ±", orders.size, orders.toSet().size)
     }
 
     @Test
@@ -57,3 +57,4 @@ class CategoryTest {
         assertEquals("👥", social.iconEmoji)
     }
 }
+

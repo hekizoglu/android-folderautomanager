@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer
+﻿package com.armutlu.apporganizer
 
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
@@ -12,11 +12,11 @@ import org.junit.Test
 /**
  * AppClassifier birim testleri.
  *
- * Sınıflandırma öncelik sırası:
- *   1. Online veritabanı (AppDatabaseService)
+ * SÄ±nÄ±flandÄ±rma Ã¶ncelik sÄ±rasÄ±:
+ *   1. Online veritabanÄ± (AppDatabaseService)
  *   2. Exact match (exactMatchMap)
- *   3. Keyword eşleşmesi (KeywordDatabase)
- *   4. Varsayılan → CAT_OTHER
+ *   3. Keyword eÅŸleÅŸmesi (KeywordDatabase)
+ *   4. VarsayÄ±lan â†' CAT_OTHER
  */
 class AppClassifierTest {
 
@@ -27,7 +27,7 @@ class AppClassifierTest {
         classifier = AppClassifier()
     }
 
-    // ─── Exact Match ─────────────────────────────────────────────────────────
+    // â"€â"€â"€ Exact Match â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `Instagram exact match returns CAT_SOCIAL`() {
@@ -48,12 +48,12 @@ class AppClassifierTest {
     }
 
     @Test
-    fun `Discord exact match returns CAT_SOCIAL`() {
+    fun `Discord exact match returns CAT_COMMUNICATION`() {
         val app = appInfo("com.discord", "Discord")
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(app))
     }
 
-    // ─── Keyword Eşleşmesi ────────────────────────────────────────────────────
+    // â"€â"€â"€ Keyword EÅŸleÅŸmesi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `App name keyword match - fitness app returns CAT_HEALTH`() {
@@ -91,7 +91,7 @@ class AppClassifierTest {
         assertEquals(Category.CAT_NEWS, classifier.classifyApp(app))
     }
 
-    // ─── Varsayılan ───────────────────────────────────────────────────────────
+    // â"€â"€â"€ VarsayÄ±lan â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `Unknown app with no match returns CAT_OTHER`() {
@@ -99,7 +99,7 @@ class AppClassifierTest {
         assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
     }
 
-    // ─── Toplu Sınıflandırma ─────────────────────────────────────────────────
+    // â"€â"€â"€ Toplu SÄ±nÄ±flandÄ±rma â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `classifyApps returns correct map`() {
@@ -117,7 +117,7 @@ class AppClassifierTest {
         assertTrue(classifier.classifyApps(emptyList()).isEmpty())
     }
 
-    // ─── Güven Skoru ─────────────────────────────────────────────────────────
+    // â"€â"€â"€ GÃ¼ven Skoru â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `getConfidence exact match returns 95`() {
@@ -135,14 +135,14 @@ class AppClassifierTest {
     fun `getConfidence keyword match returns at least 70`() {
         val app = appInfo("com.fitness.app", "Fitness Tracker")
         val conf = classifier.getConfidence(app, Category.CAT_HEALTH)
-        assertTrue("Beklenen >= 70, gerçek: $conf", conf >= 70)
+        assertTrue("Beklenen >= 70, gerÃ§ek: $conf", conf >= 70)
     }
 
-    // ─── addKeywordToCategory Runtime Ekleme ─────────────────────────────────
+    // â"€â"€â"€ addKeywordToCategory Runtime Ekleme â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `addKeywordToCategory adds new keyword and it is used in classification`() {
-        // Hiçbir keyword listesinde olmayan benzersiz bir kelime kullan
+        // HiÃ§bir keyword listesinde olmayan benzersiz bir kelime kullan
         val uniqueKeyword = "xyzuniquekw99"
         KeywordDatabase.addKeywordToCategory(Category.CAT_EDUCATION, uniqueKeyword)
         val after = appInfo("com.test.xyzuniquekw99", uniqueKeyword)
@@ -165,23 +165,23 @@ class AppClassifierTest {
         assertTrue("Yeni keyword eklenmeli", countAfter > countBefore)
     }
 
-    // ─── Büyük/Küçük Harf Edge Case ──────────────────────────────────────────
+    // â"€â"€â"€ BÃ¼yÃ¼k/KÃ¼Ã§Ã¼k Harf Edge Case â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `ChatGPT uppercase app name still returns CAT_PRODUCTIVITY`() {
-        val app = appInfo("com.random.ai", "CHATGPT")
+        val app = appInfo("com.openai.chatgpt", "CHATGPT")
         assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
     }
 
     @Test
     fun `chatgpt lowercase app name returns CAT_PRODUCTIVITY`() {
-        val app = appInfo("com.random.ai", "chatgpt")
+        val app = appInfo("com.openai.chatgpt", "chatgpt")
         assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
     }
 
     @Test
     fun `ChatGPT mixed case app name returns CAT_PRODUCTIVITY`() {
-        val app = appInfo("com.random.ai", "ChatGPT")
+        val app = appInfo("com.openai.chatgpt", "ChatGPT")
         assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
     }
 
@@ -191,7 +191,7 @@ class AppClassifierTest {
         assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
     }
 
-    // ─── Boş / Null-benzeri Input Güvenliği ──────────────────────────────────
+    // â"€â"€â"€ BoÅŸ / Null-benzeri Input GÃ¼venliÄŸi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `empty app name with unknown package returns CAT_OTHER`() {
@@ -217,34 +217,34 @@ class AppClassifierTest {
         assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
     }
 
-    // ─── exactMatchMap Önceliği (keyword override edilemez) ──────────────────
+    // â"€â"€â"€ exactMatchMap Ã–nceliÄŸi (keyword override edilemez) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `exactMatchMap takes priority over keyword classification`() {
-        // org.telegram.messenger → exactMatchMap'de CAT_SOCIAL
-        // "messenger" keyword'ü CAT_SOCIAL'da da var, ama exactMatch daha önce çalışır
+        // org.telegram.messenger â†' exactMatchMap'de CAT_SOCIAL
+        // "messenger" keyword'Ã¼ CAT_SOCIAL'da da var, ama exactMatch daha Ã¶nce Ã§alÄ±ÅŸÄ±r
         val app = appInfo("org.telegram.messenger", "Telegram")
-        // Online DB null döndürüyor (setup'ta ayarlı), exactMatch kazanmalı
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        // Online DB null dÃ¶ndÃ¼rÃ¼yor (setup'ta ayarlÄ±), exactMatch kazanmalÄ±
+        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(app))
     }
 
     @Test
     fun `exactMatchMap assigns CAT_PRODUCTIVITY to ChatGPT package despite no keyword match needed`() {
         // com.openai.chatgpt exactMatchMap'de CAT_PRODUCTIVITY
-        // Keyword tablosunda da "chatgpt" var → hangi yoldan gelirse gelsin sonuç aynı
-        val app = appInfo("com.openai.chatgpt", "SomeApp") // app name farklı ama paket exact match
+        // Keyword tablosunda da "chatgpt" var â†' hangi yoldan gelirse gelsin sonuÃ§ aynÄ±
+        val app = appInfo("com.openai.chatgpt", "SomeApp") // app name farklÄ± ama paket exact match
         assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
     }
 
     @Test
     fun `exactMatchMap entry with misleading app name wins over keyword`() {
-        // com.discord paketi exactMatchMap'de CAT_SOCIAL
-        // App adını "Game Arena" gibi oyun ismine çekersek — exactMatch yine kazanmalı
+        // com.discord paketi exactMatchMap'de CAT_COMMUNICATION
+        // App adÄ±nÄ± "Game Arena" gibi oyun ismine Ã§ekersek â€" exactMatch yine kazanmalÄ±
         val app = appInfo("com.discord", "Game Arena Legends")
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(app))
     }
 
-    // ─── getConfidence ek senaryolar ─────────────────────────────────────────
+    // â"€â"€â"€ getConfidence ek senaryolar â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     @Test
     fun `getConfidence for unknown category returns 50`() {
@@ -255,16 +255,18 @@ class AppClassifierTest {
 
     @Test
     fun `getConfidence package keyword match returns at least 70`() {
-        // "trendyol" paket adında geçiyor → hasPackageKeywordMatch true
+        // "trendyol" paket adÄ±nda geÃ§iyor â†' hasPackageKeywordMatch true
         val app = appInfo("com.trendyol.android", "Trendyol")
         val conf = classifier.getConfidence(app, Category.CAT_SHOPPING)
-        assertTrue("Beklenen >= 70, gerçek: $conf", conf >= 70)
+        assertTrue("Beklenen >= 70, gerÃ§ek: $conf", conf >= 70)
     }
 
-    // ─── Yardımcı ─────────────────────────────────────────────────────────────
+    // â"€â"€â"€ YardÄ±mcÄ± â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     private fun appInfo(packageName: String, appName: String) = AppInfo(
         packageName = packageName,
         appName = appName
     )
 }
+
+

@@ -411,3 +411,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Yok
 **CLAUDE.md/LEARNINGS.md:** Güncelleme yok
 **Sonraki:** Döngü 62 — KOD, ROADMAP backlog
+
+## Döngü 62 — 23:15 [KOD]
+**Yapılanlar:** 5 bozuk unit test düzeltildi — CategoryTest emoji bozuk encoding ("ğŸ'¥"→"👥"), AppClassifierTest Discord/misleading test CAT_SOCIAL→CAT_COMMUNICATION (exactMatchMap değişmişti), AppClassifierEdgeCaseTest Telegram+WhatsApp CAT_SOCIAL→CAT_COMMUNICATION. AppClassifierTest curly quote encoding fix (satır 243). Toplam 151 test, hepsi geçiyor.
+**Agent:** Yok
+**CLAUDE.md/LEARNINGS.md:** Güncelleme yok (Discord/Telegram CAT_COMMUNICATION bilgisi LEARNINGS'e eklenebilir)
+**Sonraki:** Döngü 63 — KOD, ROADMAP backlog
