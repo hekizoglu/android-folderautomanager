@@ -79,7 +79,9 @@ Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_C
 ### Room DB Versiyon Geçmişi
 - v1-v5: temel alanlar
 - v6: `customNotes`, `notificationText` alanları eklendi
-- v7: 18 yeni kategori (CAT_COMMUNICATION, CAT_MUSIC, CAT_VIDEO... vs.) — `fallbackToDestructiveMigration`
+- v7: 18 yeni kategori (CAT_COMMUNICATION, CAT_MUSIC, CAT_VIDEO... vs.) — şema değişimi yok, MIGRATION_6_7 boş migration ile eklendi
+
+> **UYARI:** `fallbackToDestructiveMigration()` — Döngü#19'da KALDIRILDI. Bu metod eksik migration varsa tüm DB'yi siler. Yeni versiyon eklerken mutlaka MIGRATION_x_y oluştur, boş bile olsa.
 
 ---
 

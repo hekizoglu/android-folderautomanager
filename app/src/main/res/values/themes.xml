@@ -4,7 +4,7 @@
 
     <!-- Splash Screen teması -->
     <style name="Theme.AppOrganizer.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#6200EE</item>
+        <item name="windowSplashScreenBackground">#00897B</item>
         <item name="windowSplashScreenAnimatedIcon">@android:drawable/sym_def_app_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.AppOrganizer</item>
     </style>

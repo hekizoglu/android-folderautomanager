@@ -41,8 +41,8 @@ class MainActivity : ComponentActivity() {
     ) { /* Seçim yapıldı ya da iptal — devam et */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         CrashReporter.install(this)
 
         val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)

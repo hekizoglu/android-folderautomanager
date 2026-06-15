@@ -37,4 +37,29 @@
     <string name="cat_education">Eğitim</string>
     <string name="cat_utilities">Araçlar</string>
     <string name="cat_other">Diğer</string>
+
+    <!-- Navigation & Screen Titles -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="favorites_title">Favoriler</string>
+    <string name="recent_title">Son Kullanılanlar</string>
+    <string name="all_apps_title">Tüm Uygulamalar</string>
+
+    <!-- Search -->
+    <string name="search_hint">Uygulama ara...</string>
+
+    <!-- Folder -->
+    <string name="folder_rename_hint">Klasör adı</string>
+
+    <!-- App Actions -->
+    <string name="category_change_title">Kategori Değiştir</string>
+    <string name="add_to_favorites">Favorilere Ekle</string>
+    <string name="remove_from_favorites">Favorilerden Çıkar</string>
+    <string name="hide_app">Uygulamayı Gizle</string>
+    <string name="unhide_app">Uygulamayı Göster</string>
+    <string name="app_info">Uygulama Bilgisi</string>
+    <string name="uninstall">Kaldır</string>
+
+    <!-- State Messages -->
+    <string name="no_apps_found">Uygulama bulunamadı</string>
+    <string name="loading">Yükleniyor...</string>
 </resources>
