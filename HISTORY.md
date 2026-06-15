@@ -253,3 +253,13 @@ TÃ¼m 12 madde âœ…. Detay:
 **Değişen dosyalar:** AllAppsDrawer.kt, FolderSheet.kt, HomeScreen.kt + 2 yeni dosya
 **Sonraki:** Build + APK (Döngü #21 veya #22)
 - #18: BackupWorker Constraints(battery) + EXPONENTIAL backoff(15m) eklendi; SettingsScreen 1066→619 satir (AppearanceSection.kt + HomeScreenSection.kt ayrildi); AppRepository tum Flow metodlarina distinctUntilChanged + flowOn(IO) eklendi
+
+---
+
+## Döngü #17-21 — 2026-06-15
+**Yapılanlar:**
+- #17: LauncherViewModel 12 unit test (MockK+runTest) + AllAppsDrawer 5 remember→derivedStateOf optimizasyon
+- #18: BackupWorker retry/constraint + SettingsScreen 1066→619 satır (2 yeni dosya) + AppRepository 9 Flow'a distinctUntilChanged+flowOn
+- #19: SplashScreen sırası düzeltildi + splash rengi turkuaz + AppDatabase fallbackToDestructive kaldırıldı + strings.xml 15 TR string
+- #20: contentDescription 4 eklendi + semantics 2 yere + HomeScreen 829→744 satır (2 yeni dosya)
+- #21: BUILD SUCCESSFUL — APK Telegram msg 702
