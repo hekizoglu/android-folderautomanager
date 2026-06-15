@@ -155,7 +155,7 @@ object AppPrefs {
     // Favori uygulamalar — paket adlari Set olarak saklanir
     const val KEY_FAVORITES_ENABLED = "favorites_enabled"
     const val KEY_FAVORITES_SET     = "favorites_set"
-    fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, false)
+    fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, true)
     fun setFavoritesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED, v).apply()
     fun getFavorites(context: Context): Set<String> = prefs(context).getStringSet(KEY_FAVORITES_SET, emptySet()) ?: emptySet()
     fun addFavorite(context: Context, pkg: String) {

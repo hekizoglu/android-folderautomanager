@@ -753,6 +753,8 @@ fun HomeScreen(
             onDismiss = { categoryPickerApp = null },
             onCategorySelected = { catId ->
                 viewModel.updateAppCategory(app.packageName, catId)
+                // Klasör açıksa kapat — kullanıcı ana ekranda yeni kategoriyi hemen görsün
+                viewModel.closeFolder()
             }
         )
     }

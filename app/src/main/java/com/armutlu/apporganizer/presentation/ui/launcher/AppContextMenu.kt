@@ -238,10 +238,9 @@ fun AppContextMenu(
                 icon = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
                 label = if (isFav) "Favorilerden Çıkar" else "Favorilere Ekle",
                 onClick = {
-                    if (isFav) com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, app.packageName)
-                    else com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, app.packageName)
-                    isFav = !isFav
-                    onToggleFavorite?.invoke(isFav)
+                    val newFav = !isFav
+                    isFav = newFav
+                    onToggleFavorite?.invoke(newFav)
                     onDismiss()
                 }
             )
