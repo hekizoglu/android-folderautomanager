@@ -242,3 +242,14 @@ TÃ¼m 12 madde âœ…. Detay:
 - #16: BUILD — CAT_PHOTO → CAT_PHOTOGRAPHY fix; BUILD SUCCESSFUL; APK Telegram msg 701
 **Sıralı döngü kuralı CLAUDE.md'ye eklendi:** build sadece son döngüde
 **Sonraki:** ROADMAP aktif sprint — Privacy Policy + store listing
+
+---
+
+## Döngü #20 — 2026-06-15
+**Yapılanlar:**
+- AllAppsDrawer.kt: 3 `null` contentDescription → anlamlı açıklama ("Ara", "Arama geçmişi"); NiagaraAppRow'a `semantics { contentDescription + onClick }` eklendi
+- FolderSheet.kt: Edit ikonu → "Klasörü düzenle", Close → "Aramayı temizle"; bildirim satırı Box'a semantics eklendi
+- HomeScreen.kt: 829 satırdan 744 satıra — `HomeFavoritesSection` (HomeScreenFavorites.kt) ve `HomePageIndicator` (HomeScreenPageIndicator.kt) ayrı dosyalara extract edildi
+**Değişen dosyalar:** AllAppsDrawer.kt, FolderSheet.kt, HomeScreen.kt + 2 yeni dosya
+**Sonraki:** Build + APK (Döngü #21 veya #22)
+- #18: BackupWorker Constraints(battery) + EXPONENTIAL backoff(15m) eklendi; SettingsScreen 1066→619 satir (AppearanceSection.kt + HomeScreenSection.kt ayrildi); AppRepository tum Flow metodlarina distinctUntilChanged + flowOn(IO) eklendi
