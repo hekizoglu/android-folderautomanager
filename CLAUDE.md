@@ -59,11 +59,20 @@ Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 3. Commit + push
 4. `python scripts/update_notebooklm.py`
 5. Telegram'a rapor (bug fix: sebep+fix+sonuç / yeni özellik: hangi dosya / refactor: eski→yeni)
-6. CLAUDE.md veya LEARNINGS.md güncelle (yeni tuzak/kural öğrenildiyse)
+6. HISTORY.md'ye döngü özeti ekle (3 satır — zorunlu)
+7. CLAUDE.md veya LEARNINGS.md güncelle (yeni tuzak/kural öğrenildiyse)
 
-### CLAUDE.md Güncelleme Kuralı
-Buraya eklenir: kalıcı kural, build hatası+çözümü, kritik mimari karar.
-Buraya EKLENMEZ: döngü özeti (→ HISTORY.md), tek seferlik not, geçici durum.
+### Dosya Güncelleme Kuralları
+
+| Dosya | Ne zaman | İçerik |
+|-------|----------|--------|
+| **HISTORY.md** | **Her döngü sonunda** (zorunlu) | Yapılanlar / Bug / Sonraki — 3 satır |
+| **ROADMAP.md** | **Her 6 döngüde** (build döngüsü) | Tamamlananları işaretle, testlerden gelen yeni görev ekle |
+| **LEARNINGS.md** | DeepSeek/test/hata sonrası yeni bulgu | Tuzak, race condition, mimari karar — kayda değer |
+| **CLAUDE.md** | 3+ tekrar veya ÖNCELİK:YÜKSEK | LEARNINGS'den promote — kalıcı kural |
+
+**CLAUDE.md'ye eklenir:** kalıcı kural, build hatası+çözümü, kritik mimari karar.
+**CLAUDE.md'ye eklenmez:** döngü özeti (→ HISTORY.md), tek seferlik not, geçici durum.
 
 ### Döngü Sonu Özet Formatı
 ```

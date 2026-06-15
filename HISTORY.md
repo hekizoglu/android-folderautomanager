@@ -276,3 +276,42 @@ TÃ¼m 12 madde âœ…. Detay:
 - #37: Onboarding CLASSIFY_MODE adımı + temizlik (KEY_TEXT_ALPHA doğrulandı)
 - #38: BUILD — SettingsAppearanceSection Composable context fix + FolderTile GenericShape import + BUILD SUCCESSFUL. APK Telegram msg 704
 **Önemli:** Divider deprecated uyarıları var (hata değil) — sonraki döngüde HorizontalDivider'a çevrilebilir
+
+---
+
+## 2026-06-15 Oturumu (Döngü #39–47)
+
+## Döngü 39 — 2026-06-15
+**Yapılanlar:** AllApps gesture kök neden bulundu — `pointerInput(Unit)` çift tanımı (tap + drag aynı key) ikinci bloğun birincini tüketmesine neden oluyordu. `pointerInput("tap")` + `pointerInput("drag")` ile ayrıldı. SettingsScreen'de üretici sınıflandırma toggle görünmüyordu — `SettingsAppsSection` çağrılmıyordu, `SettingsScreen.kt` satır 226'ya eklendi.
+**Bug:** Çift `pointerInput(Unit)` → gesture çakışması (Compose davranışı)
+**Sonraki:** Firebase test + warning temizliği
+
+## Döngü 40 — 2026-06-15
+**Yapılanlar:** Firebase Analytics debug mode eklendi (`AppOrganizerApp`). `AppAnalytics.appStarted()` fonksiyonu — `BuildConfig.VERSION_NAME` hata verdi (`BuildConfig` bu projede kapalı), `packageManager.getPackageInfo()` ile düzeltildi. `AppAnalytics.kt` import temizlendi.
+**Bug:** `BuildConfig` unresolved → yan etki: agent ekledi, biz düzelttik. CLAUDE.md'ye "yan etki protokolü" kuralı eklendi.
+**Sonraki:** Category.kt üretici kategorileri
+
+## Döngü 41 — 2026-06-15
+**Yapılanlar:** `Category.kt`'ye 9 üretici kategorisi eklendi (CAT_GOOGLE, CAT_SAMSUNG, CAT_MICROSOFT, CAT_XIAOMI, CAT_HUAWEI, CAT_META, CAT_APPLE, CAT_SPOTIFY, CAT_AMAZON). `AppClassifier.kt` MANUFACTURER_PREFIX_MAP tamamen yeniden yazıldı — prefix→üretici kategorisi map'i. CLAUDE.md'ye onboarding DEFAULT_LAUNCHER kuralı eklendi.
+**Bug:** Önceki map içerik kategorisine atıyordu (CAT_ENTERTAINMENT), üretici kategorisi yoktu.
+**Sonraki:** Build + warning temizliği
+
+## Döngü 42 — 2026-06-15
+**Yapılanlar:** BUILD. `SettingsScreen.kt`'teki tüm warning'ler temizlendi: 13× `Divider→HorizontalDivider`, `Icons.Filled.ArrowBack→AutoMirrored`, `Icons.Filled.Help→AutoMirrored`. `onSendBugReport` parametresi `SettingsScreen`+`AppNavigation`+`MainActivity`'den kaldırıldı. AllApps swipe `gestureZonePx` kısıtlaması kaldırıldı (tüm ekrandan çalışsın), eşik 80→60dp.
+**Bug:** `onSendBugReport` kaldırıldı ama `AppNavigation.kt` hâlâ geçiriyordu → derleme hatası. `AppNavigation` + `MainActivity` güncellendi.
+**Sonraki:** Emülatör testi + DeepSeek analizi
+
+## Döngü 43 — 2026-06-15
+**Yapılanlar:** Pixel6_AOSP33 emülatöründe tam test. Firebase Analytics init OK (`App measurement initialized`). Crash: 0, ANR: 0, PSS: 131MB (sağlıklı). `AppNotificationListenerService` ilk açılışta bir kez restart — race condition tespit edildi.
+**Bug:** `AppDatabaseService` → `https://raw.githubusercontent.com/...app_database.json` 404 (dosya repo'da yok — önemsiz warning).
+**Sonraki:** DeepSeek ile modül analizi
+
+## Döngü 44 — 2026-06-15
+**Yapılanlar:** DeepSeek API ile 5 kritik modül analizi (493 fonksiyon içinden). 4 bug bulundu ve düzeltildi: (1) `AppNotificationListenerService` race condition → `update{}` ile atomic, (2) `CategoryLLMFallback` `mutableMapOf→ConcurrentHashMap` + hata durumunda cache yazımı kaldırıldı, (3) `AppClassifier.manufacturerClassifyEnabled` → `@Volatile`, (4) `AppRepository` CPU iş IO dispatcher'da → `Dispatchers.Default`'a taşındı.
+**Bug:** BackupWorker temiz çıktı. LEARNINGS L1 eklendi (exactMatchMap vs MANUFACTURER_PREFIX_MAP çakışma kuralı).
+**Sonraki:** HISTORY/ROADMAP/CLAUDE.md güncelleme sistemi
+
+## Döngü 45 — 2026-06-15
+**Yapılanlar:** CLAUDE.md'ye dosya güncelleme kuralları tablosu eklendi. HISTORY.md + ROADMAP.md bu oturum için toplu dolduruldu. Güncelleme sistemi netleştirildi: Her döngü→HISTORY, her 6 döngü→ROADMAP, DeepSeek/test sonrası→LEARNINGS, 3+ tekrar→CLAUDE.md promote.
+**Bug:** —
+**Sonraki:** Döngülere devam

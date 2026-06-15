@@ -71,9 +71,13 @@ Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görs
 ## 🔍 Döngüden Gelen Yeni Görevler
 _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 
-- [ ] FolderTile reaktif AppPrefs pattern'ini standartlaştır (2026-06-13 — Döngü 26/27/36, LEARNINGS aday öğrenme) — tüm Compose ekranlarında `mutableStateOf + DisposableEffect` helper'ı oluştur, kopyala-yapıştır azalt
-- [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15 — config refactor) — 3116 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün (derleme süresi + duplicate riski azalır)
-- [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, 6 saatlik crash kontrol otomasyonu
+- [ ] FolderTile reaktif AppPrefs pattern'ini standartlaştır (2026-06-13 — Döngü 26/27/36) — tüm Compose ekranlarında `mutableStateOf + DisposableEffect` helper'ı oluştur
+- [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3594 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
+- [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, crash kontrol otomasyonu
+- [ ] `AppDatabaseService` 404 uyarısı (2026-06-15 — Döngü 43) — `app_database.json` repo'da yok, servis her başlangıçta hata logu yazıyor; ya dosyayı ekle ya da özelliği kaldır
+- [ ] `AppNotificationListenerService` ilk açılışta restart (2026-06-15 — Döngü 43) — emülatörde `Scheduling restart of crashed service` görüldü; race condition Döngü 44'te kısmen giderildi, gerçek cihazda test gerekiyor
+- [ ] AllApps double-tap emülatörde doğrulanamadı (2026-06-15 — Döngü 43) — Compose içi state değişimi loglanmıyor; gerçek cihaz testi gerekiyor
+- [ ] Üretici kategorileri gerçek cihaz testi (2026-06-15 — Döngü 41) — 9 yeni kategori eklendi (CAT_GOOGLE vb.), onboarding'den "üreticiye göre" seçip klasörlerin doğru oluştuğunu doğrula
 
 ---
 
@@ -117,6 +121,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 | 2026-06-14 | Loop 84 (AppClassifier 3116) | — | FolderSheet TR fix | #17 (28.5MB) |
 | 2026-06-15 | Config refactor (CLAUDE/HISTORY/LEARNINGS/ROADMAP + 6 script) | 5 yeni dosya | 11 promote | — |
 | 2026-06-15 | Döngüler #22-30 — store listing, ProGuard, LLM fallback, AppInfo v8, widget, search, shortcut, CI | 3 yeni dosya | 4 yeni LEARNINGS | — |
+| 2026-06-15 | Döngüler #39-45 — AllApps gesture fix, 9 üretici kategorisi, 0-warning build, DeepSeek 4 bug fix, emülatör testi, HISTORY/ROADMAP sistemi | — | L1 eklendi | #705 (msg) |
 
 ---
 
