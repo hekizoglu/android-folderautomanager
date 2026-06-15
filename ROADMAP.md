@@ -59,9 +59,9 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 | `utils/AppPrefs.kt` | `KEY_FOLDER_BLUR` toggle |
 | `presentation/ui/screens/SettingsScreen.kt` | Blur toggle UI |
 
-- [ ] **[BLUR-1]** Haze kütüphanesi ekle + HomeScreen hazeState
-- [ ] **[BLUR-2]** FolderSheet blur + scale animasyon (ModalBottomSheet refactor)
-- [ ] **[BLUR-3]** AppPrefs toggle + SettingsScreen
+- [x] ~~**[BLUR-1]** Haze kütüphanesi ekle + HomeScreen hazeState~~ ✅ Haze VerifyError yaptı → kaldırıldı; `Modifier.blur(20.dp)` AllAppsDrawer'da, frosted tint FolderSheet'te (2026-06-15 Döngü 46)
+- [x] ~~**[BLUR-2]** FolderSheet blur + scale animasyon~~ ✅ `containerColor = Color(0xE61A1A2A)` frosted tint — API bağımsız çözüm (2026-06-15 Döngü 46)
+- [x] ~~**[BLUR-3]** AppPrefs toggle + SettingsScreen~~ ✅ `KEY_FOLDER_BLUR` toggle Settings'te mevcut (2026-06-15 Döngü 46)
 - [ ] **[BLUR-4]** Gerçek cihaz testi (blur performansı + API 26 uyumu)
 
 ---
