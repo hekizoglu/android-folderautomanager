@@ -399,3 +399,9 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Yok
 **CLAUDE.md/LEARNINGS.md:** Güncelleme yok
 **Sonraki:** Döngü 60 — BUILD döngüsü (60 % 6 = 0), gradle assembleDebug + APK Telegram
+
+## Döngü 60 — 22:34 [BUILD]
+**Yapılanlar:** assembleDebug BUILD SUCCESSFUL (30s). Bug fix: Döngü 58 eklemelerinde CAT_PHOTO → CAT_PHOTOGRAPHY düzeltildi (6 satır). APK (29.3MB) Telegram'a gönderildi.
+**Agent:** Yok
+**CLAUDE.md/LEARNINGS.md:** LEARNINGS: CAT_PHOTO sabiti yok — doğrusu CAT_PHOTOGRAPHY (Category.kt satır 44)
+**Sonraki:** Döngü 61 — KOD döngüsü

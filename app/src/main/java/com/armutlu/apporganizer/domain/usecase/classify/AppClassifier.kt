@@ -4150,15 +4150,15 @@ class AppClassifier @Inject constructor() {
         "ai.perplexity.app.android"                  to Category.CAT_PRODUCTIVITY,  // Perplexity AI (alt)
         "com.character.ai"                           to Category.CAT_SOCIAL,         // Character.AI
         "ai.character.app"                           to Category.CAT_SOCIAL,         // Character.AI (alt)
-        "com.pika.labs.android"                      to Category.CAT_PHOTO,          // Pika (AI video)
-        "com.runway.mobile"                          to Category.CAT_PHOTO,          // Runway AI video
+        "com.pika.labs.android"                      to Category.CAT_PHOTOGRAPHY,          // Pika (AI video)
+        "com.runway.mobile"                          to Category.CAT_PHOTOGRAPHY,          // Runway AI video
         "com.elevenlabs.app"                         to Category.CAT_PRODUCTIVITY,  // ElevenLabs AI ses
         "com.suno.android"                           to Category.CAT_ENTERTAINMENT,  // Suno AI müzik
         "com.udio.app"                               to Category.CAT_ENTERTAINMENT,  // Udio AI müzik
-        "com.ideogram.ai"                            to Category.CAT_PHOTO,          // Ideogram AI görsel
-        "com.midjourney.android"                     to Category.CAT_PHOTO,          // Midjourney
-        "com.stability.ai.android"                   to Category.CAT_PHOTO,          // Stable Diffusion
-        "com.adobe.firefly"                          to Category.CAT_PHOTO,          // Adobe Firefly
+        "com.ideogram.ai"                            to Category.CAT_PHOTOGRAPHY,          // Ideogram AI görsel
+        "com.midjourney.android"                     to Category.CAT_PHOTOGRAPHY,          // Midjourney
+        "com.stability.ai.android"                   to Category.CAT_PHOTOGRAPHY,          // Stable Diffusion
+        "com.adobe.firefly"                          to Category.CAT_PHOTOGRAPHY,          // Adobe Firefly
         "com.notion.android"                         to Category.CAT_PRODUCTIVITY,  // Notion (AI entegre)
 
         // ─── Döngü 58: Fintech / Kripto (2025) ──────────────────────────────

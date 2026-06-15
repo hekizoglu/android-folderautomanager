@@ -146,6 +146,7 @@ Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_C
 _(3 tekrara ulaşınca yukarı taşınır)_
 
 - [2026-06-15] CLAUDE.md büyüyünce konuşma başında gereksiz token harcanıyor — her bölüm büyüyünce ilgili MD'ye taşı kuralı eklendi.
+- [2026-06-15] AppClassifier'a yeni kategori eklerken **CAT_PHOTO sabiti yok** — doğrusu `Category.CAT_PHOTOGRAPHY` (Category.kt satır 44). Kısaltma kullanma, tam adı yaz.
 
 ---
 
