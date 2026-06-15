@@ -51,6 +51,9 @@ if (-not (Get-Command python3 -ErrorAction SilentlyContinue)) { $python = "pytho
 
 function Step($n, $t) { Write-Host "`n[$n] $t" -ForegroundColor Yellow }
 
+# Context doluluk kontrolu — flag varsa 15 dk bekle, sonra devam et
+& "$scriptDir\check_context.ps1"
+
 # Build gerekli mi?
 $doBuild = $Build -or ($CycleNum -gt 0 -and $BuildEvery -gt 0 -and ($CycleNum % $BuildEvery -eq 0))
 
