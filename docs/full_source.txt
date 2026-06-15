@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-15 09:07 UTC
-# Commit: 40d8c8933d975c1997b2d28df108031768e5d961
+# Generated: 2026-06-15 09:12 UTC
+# Commit: a906b61fd11c97bbc88b2a0897e4e7cdcfd74695
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -291,6 +291,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v6→v7: şema değişimi yok, categories tablosuna yeni kategoriler eklendi (DatabaseCallback ile)
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Şema değişikliği yok — yeni kategoriler DatabaseCallback.onOpen içinde eklenir
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -304,9 +311,9 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_2_3,
                         MIGRATION_3_4,
                         MIGRATION_4_5,
-                        MIGRATION_5_6
+                        MIGRATION_5_6,
+                        MIGRATION_6_7
                     )
-                    .fallbackToDestructiveMigration()
                     .build()
 
                 INSTANCE = instance
@@ -6442,8 +6449,8 @@ class MainActivity : ComponentActivity() {
     ) { /* Seçim yapıldı ya da iptal — devam et */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         CrashReporter.install(this)
 
         val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
