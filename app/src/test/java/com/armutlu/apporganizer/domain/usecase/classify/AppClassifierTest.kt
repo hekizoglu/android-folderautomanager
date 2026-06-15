@@ -96,6 +96,55 @@ class AppClassifierTest {
         assertEquals(Category.CAT_SHOPPING, classifier.classifyApp(appInfo("com.konga.android", "Konga")))
     }
 
+    // Döngü 58 — AI / Kripto / TR Fintech yeni paketleri
+    @Test
+    fun `ChatGPT CAT_PRODUCTIVITY`() {
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.openai.chatgpt", "ChatGPT")))
+    }
+
+    @Test
+    fun `Claude CAT_PRODUCTIVITY`() {
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.anthropic.claude", "Claude")))
+    }
+
+    @Test
+    fun `Perplexity CAT_PRODUCTIVITY`() {
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.perplexity.app", "Perplexity")))
+    }
+
+    @Test
+    fun `Gemini CAT_PRODUCTIVITY`() {
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.google.android.apps.gemini", "Gemini")))
+    }
+
+    @Test
+    fun `Binance CAT_FINANCE`() {
+        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.binance.dev", "Binance")))
+    }
+
+    @Test
+    fun `Paribu TR kripto CAT_FINANCE`() {
+        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.paribu.android", "Paribu")))
+    }
+
+    @Test
+    fun `Papara TR fintech CAT_FINANCE`() {
+        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.papara.android", "Papara")))
+    }
+
+    @Test
+    fun `MetaMask CAT_FINANCE`() {
+        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("io.metamask.android", "MetaMask")))
+    }
+
+    @Test
+    fun `manufacturerClassify_disabled_Google_prefix_CAT_OTHER_olur`() {
+        classifier.manufacturerClassifyEnabled = false
+        val result = classifier.classifyApp(appInfo("com.google.unknown.app", "Google Unknown"))
+        // prefix map çalışmıyor → keyword yok → CAT_OTHER
+        assertEquals(Category.CAT_OTHER, result)
+    }
+
     private fun appInfo(packageName: String, appName: String) = AppInfo(
         packageName = packageName,
         appName = appName
