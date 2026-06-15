@@ -459,3 +459,8 @@ TÃ¼m 12 madde âœ…. Detay:
 **Agent:** Gradle+git araştırma (paralel 3 agent)
 **CLAUDE.md/LEARNINGS.md:** CLAUDE.md: 5 düzeltme + Defender exclusion + zaman loglama bölümü
 **Sonraki:** Döngü 71 — build.ps1 ile ilk test, Defender exclusion (Admin gerekli)
+
+## Döngü 71 — 2026-06-16
+**Yapılanlar:** app/build.gradle.kts kapt schemaLocation eklendi; app/schemas/8.json Room v8 şeması oluşturuldu; ROADMAP güncellendi
+**Build:** assembleDebug SUCCESS (3m 42s, 24.1 MB) — Windows Defender kilit hâlâ var (Defender exclusion pending)
+**Sonraki:** git config core.hooksPath .githooks aktivasyonu + Android 15 Edge-to-Edge (Döngü 69 Analiz yüksek öncelik)

@@ -58,3 +58,5 @@
 
 
 | 2026-06-16 | Döngü 70 başlangıç | Döngü 70 bitiş | ~30dk | KOD+DÖKÜMAN | Performans opt: gradle.properties, build.ps1, git config, smart_push, MD düzeltmeleri, SETUP.md, cloud schedule | Beklenti: kilit hatası sıfır, %40-60 hız |
+| 2026-06-16 | Döngü 71 | BUILD | ~5dk | ORTAM | kapt3 kilitli — daemon dur + robocopy purge (2 kez) | Hâlâ kilit var, Defender exclusion olmadan devam ediyor |
+| 2026-06-16 | Döngü 71 | BUILD | ~4dk | BUILD | assembleDebug SUCCESS — 3m 42s | Room schemas/ oluştu (8.json), 24.1 MB APK |
