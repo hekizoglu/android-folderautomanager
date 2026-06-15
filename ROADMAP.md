@@ -97,7 +97,7 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 - [x] ~~StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir~~ ✅ LiveData kullanımı yok, tüm akışlar StateFlow (2026-06-15 Döngü 52)
 - [ ] Unit test coverage — ViewModel'ler için MockK testleri 🔄 (başlandı, CI pipeline hazır)
 - [x] ~~Compose UI: `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit~~ ✅ 7 dosyada key eklendi (Döngü 51, 2026-06-15)
-- [ ] Memory leak audit: Fragment binding null kontrolü
+- [x] ~~Memory leak audit: Fragment binding null kontrolü~~ ✅ Proje tamamen Compose — Fragment yok, ViewBinding yok, leak riski minimal (Döngü 57, 2026-06-15)
 - [ ] Dark mode tam uyum audit
 
 ### Akıllı Kategorizasyon Aşama 3
