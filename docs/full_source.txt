@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-16 06:12 UTC
-# Commit: be79d80660fc67ce63ae317779668dbff30c55ab
+# Generated: 2026-06-16 06:53 UTC
+# Commit: 5c32768ef1820961fd5ce159eac4a4abcc7ccc28
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -230,6 +230,10 @@ interface AppDao {
 
     @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName")
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long)
+
+    // Sadece mevcut değerden büyükse güncelle — launchApp'ın anlık timestamp'ini ezmez
+    @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName AND lastUsedTimestamp < :timestamp")
+    suspend fun updateLastUsedTimestampIfNewer(packageName: String, timestamp: Long)
 
     @Query("UPDATE apps SET customNotes = :note WHERE packageName = :packageName")
     suspend fun updateCustomNotes(packageName: String, note: String)
@@ -1033,6 +1037,11 @@ class AppRepository @Inject constructor(
 
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {
         try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
+    }
+
+    // UsageStats sync için — mevcut değerden büyükse yazar, launchApp'ın anlık değerini ezmez
+    suspend fun updateLastUsedTimestampIfNewer(packageName: String, timestamp: Long) {
+        try { appDao.updateLastUsedTimestampIfNewer(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
     }
 
     suspend fun updateCustomNotes(packageName: String, note: String) {
@@ -11721,6 +11730,8 @@ class LauncherActivity : ComponentActivity() {
         super.onResume()
         WidgetHostManager.startListening(this)
         applyNavBarVisibility()
+        // Son başlatılan uygulamanın timestamp'ini garantile (startActivity süreci durdurduğunda coroutine tamamlanamayabilir)
+        viewModel.refreshLastLaunched()
         // Reconcile 5 dakikada bir — geri tuşunda her seferinde PM sorgusu yapmasın
         if (AppPrefs.shouldReconcile(this)) {
             viewModel.reconcileIfNeeded(this)
@@ -11860,6 +11871,10 @@ class LauncherViewModel @Inject constructor(
 
     // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
     private val isLoadingApps = AtomicBoolean(false)
+
+    // launchApp'ta başlatılan son paket — onResume'da timestamp güncellenir (startActivity process'i askıya aldığında coroutine tamamlanamıyor)
+    @Volatile private var lastLaunchedPkg: String? = null
+    @Volatile private var lastLaunchedTs: Long = 0L
 
     // Favori paket seti — toggleFavorite() ile güncellenir, allApps ile combine edilir
     private val _favoritePkgs = MutableStateFlow<Set<String>>(emptySet())
@@ -12032,13 +12047,26 @@ class LauncherViewModel @Inject constructor(
                 return
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val ts = System.currentTimeMillis()
+            lastLaunchedPkg = packageName
+            lastLaunchedTs = ts
             context.startActivity(intent)
             viewModelScope.launch(Dispatchers.IO) {
                 repository.incrementUsageCount(packageName)
-                repository.updateLastUsedTimestamp(packageName, System.currentTimeMillis())
+                repository.updateLastUsedTimestamp(packageName, ts)
             }
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
+        }
+    }
+
+    /** onResume'da çağrılır — son başlatılan uygulamanın timestamp'ini garantiler (startActivity süreci askıya aldığında coroutine tamamlanamayabilir). */
+    fun refreshLastLaunched() {
+        val pkg = lastLaunchedPkg ?: return
+        val ts = lastLaunchedTs
+        lastLaunchedPkg = null
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateLastUsedTimestamp(pkg, ts)
         }
     }
 
@@ -12211,7 +12239,8 @@ class LauncherViewModel @Inject constructor(
                 val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
                 counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
                 val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
-                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
+                // IfNewer: launchApp'ın anlık timestamp'ini daha eski UsageStats verisiyle ezme
+                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestampIfNewer(pkg, ts) }
                 Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
             }.onFailure { Timber.e(it, "syncUsageStats hatası") }
         }
