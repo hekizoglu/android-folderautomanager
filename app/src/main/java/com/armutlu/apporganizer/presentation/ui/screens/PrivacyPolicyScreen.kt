@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -73,6 +73,6 @@ private fun PolicySection(title: String, body: String) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
         Text(body, fontSize = 13.sp, lineHeight = 20.sp)
-        Divider()
+        HorizontalDivider()
     }
 }

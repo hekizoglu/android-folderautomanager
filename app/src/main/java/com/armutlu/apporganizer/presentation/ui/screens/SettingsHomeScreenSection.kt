@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -45,7 +45,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setFavoritesEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.AutoAwesome,
             title = "Uygulama Onerileri",
@@ -56,7 +56,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.History,
             title = "Son Kullanilanlar",
@@ -67,7 +67,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setRecentAppsEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.SwipeUp,
             title = "Swipe-up Ipucu",
@@ -78,7 +78,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.NewReleases,
             title = "YENI Badge",
@@ -89,7 +89,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.FormatListNumbered,
             title = "Klasor Uygulama Sayisi",
@@ -100,7 +100,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Folder,
             title = "Klasor Swipe Ipucu",
@@ -111,7 +111,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderSwipeHintEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Notifications,
             title = "Bildirim Metni",
@@ -122,7 +122,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.HideSource,
             title = "Sistem Navigasyonunu Gizle",
@@ -133,7 +133,7 @@ fun SettingsHomeScreenSection() {
                 com.armutlu.apporganizer.utils.AppPrefs.setNavButtonsHidden(context, it)
             }
         )
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Opacity, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -198,7 +198,7 @@ fun SettingsHomeScreenSection() {
             }
         }
         if (iconPacks.isEmpty()) {
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
             Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
@@ -206,7 +206,7 @@ fun SettingsHomeScreenSection() {
             }
         } else {
             iconPacks.forEach { pack ->
-                Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

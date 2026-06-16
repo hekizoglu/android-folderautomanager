@@ -981,3 +981,9 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** BUILD #16 — assembleDebug SUCCESS 45s, APK 24.8MB. D82 (AppRepositoryTest 23 test) + D83 (recentApps fix) dahil.
 **Agent:** android-builder — temiz build, cache+kısmi.
 **Sonraki:** D85 KOD — ROADMAP backlog.
+
+
+## Doengue 85 - 2026-06-16
+
+**Yapılanlar:** Deprecated Divider->HorizontalDivider geçişi — 8 dosyada 55 yer değişti (SettingsScreen, AppListScreen, SettingsHomeSection, SettingsHomeScreenSection, SettingsAppearanceSection, SettingsBackupAboutSection, SettingsAppsSection, PrivacyPolicyScreen). Build SUCCESSFUL, 0 deprecated uyarı.
+**Sonraki:** D86 KOD.

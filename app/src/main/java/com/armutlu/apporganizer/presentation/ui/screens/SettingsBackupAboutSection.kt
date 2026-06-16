@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -42,11 +42,11 @@ internal fun LazyListScope.settingsBackupAboutSection(
     item {
         SettingsCard {
             SettingsInfoRow(Icons.Default.Apps, "App Organizer", "v1.0 beta")
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsInfoRow(Icons.Default.Person, "Geliştirici", "Hüseyin Ekizoğlu")
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsInfoRow(Icons.Default.Code, "Kaynak Kod", "github.com/hekizoglu/android-folderautomanager")
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsInfoRow(Icons.Default.Storage, "Veritabanı", "$appCount uygulama · $categoryCount kategori")
         }
     }
@@ -70,7 +70,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                     if (it) BackupWorker.schedule(context) else BackupWorker.cancel(context)
                 })
             }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
             val lastBackupMs = AppPrefs.getLastBackupTime(context)
             val lastBackupText = if (lastBackupMs == 0L) "Henüz yedeklenmedi"
                 else java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale("tr")).format(java.util.Date(lastBackupMs))
@@ -125,7 +125,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 }
                 if (backupLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             Row(modifier = Modifier.fillMaxWidth()
                     .clickable(enabled = !backupLoading) { filePickerLauncher.launch("application/json") }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
@@ -147,7 +147,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
             SettingsButtonRow(Icons.Default.PrivacyTip, "Gizlilik Politikası",
                 "Veri toplama ve kullanım hakkınızda bilgi alın",
                 onClick = onNavigateToPrivacyPolicy)
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsInfoRow(Icons.Default.Info, "Versiyon", "AppOrganizer 1.0.0 — Haziran 2026")
         }
     }

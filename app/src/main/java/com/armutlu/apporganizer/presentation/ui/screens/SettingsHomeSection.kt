@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.content.Intent
 import android.os.Build
@@ -79,7 +79,7 @@ internal fun LazyListScope.settingsHomeSection(
                     val appName = remember(pkg) {
                         runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
                     }
-                    if (index > 0) Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Apps, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(12.dp))
@@ -93,7 +93,7 @@ internal fun LazyListScope.settingsHomeSection(
                     }
                 }
             }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
             SettingsButtonRow(icon = Icons.Default.RestartAlt,
                 title = "Varsayılana Sıfırla",
                 subtitle = "Telefon, Mesaj, Kamera, Tarayıcı",
@@ -122,39 +122,39 @@ internal fun LazyListScope.settingsHomeSection(
             SettingsSwitchRow(Icons.Default.Star, "Favoriler",
                 "Uzun basınca favoriye eklenen uygulamalar ana ekranda gösterilir",
                 favoritesEnabled) { favoritesEnabled = it; AppPrefs.setFavoritesEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.AutoAwesome, "Uygulama Önerileri",
                 "Arama çubuğunun altında son kullanılan 4 uygulama",
                 suggestionsEnabled) { suggestionsEnabled = it; AppPrefs.setSuggestionsEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.History, "Son Kullanılanlar",
                 "Ana ekranda + tüm uygulamalarda son 4 uygulamayı göster",
                 recentAppsEnabled) { recentAppsEnabled = it; AppPrefs.setRecentAppsEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.SwipeUp, "Swipe-up İpucu",
                 "Ana ekranda yukarı kaydırma animasyonu göster",
                 swipeHintEnabled) { swipeHintEnabled = it; AppPrefs.setSwipeHintEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.NewReleases, "YENİ Badge",
                 "7 gün içinde kurulan uygulamalara rozet göster",
                 newBadgeEnabled) { newBadgeEnabled = it; AppPrefs.setNewBadgeEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.FormatListNumbered, "Klasör Uygulama Sayısı",
                 "Klasör simgesinin altında uygulama adedini göster",
                 folderCountVisible) { folderCountVisible = it; AppPrefs.setFolderCountVisible(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.Folder, "Klasör Swipe İpucu",
                 "Klasörde en çok kullanılan uygulamayı göster",
                 folderSwipeHint) { folderSwipeHint = it; AppPrefs.setFolderSwipeHintEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.Notifications, "Bildirim Metni",
                 "Klasör ve uygulamaların altında son bildirimi göster",
                 notifTextEnabled) { notifTextEnabled = it; AppPrefs.setNotificationTextEnabled(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(Icons.Default.HideSource, "Sistem Navigasyonunu Gizle",
                 "Tam ekran launcher — geri/home/recents butonsuz",
                 hideNavButtons) { hideNavButtons = it; AppPrefs.setNavButtonsHidden(context, it) }
-            Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Opacity, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -204,7 +204,7 @@ internal fun LazyListScope.settingsHomeSection(
                 if (selectedPack.isEmpty()) Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             }
             if (iconPacks.isEmpty()) {
-                Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                 Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(10.dp))
@@ -213,7 +213,7 @@ internal fun LazyListScope.settingsHomeSection(
                 }
             } else {
                 iconPacks.forEach { pack ->
-                    Divider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     Row(modifier = Modifier.fillMaxWidth()
                             .clickable { selectedPack = pack.packageName; AppPrefs.setIconPack(context, pack.packageName) }
                             .padding(horizontal = 16.dp, vertical = 12.dp),

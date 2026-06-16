@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
