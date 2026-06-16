@@ -143,6 +143,7 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 | E11 | Merge conflict AppClassifier | Remote + local aynı döngü | Python ile birleştir, set dedup |
 | E12 | PowerShell heredoc `<<'EOF'` syntax hatası | PS 5.1'de bash heredoc çalışmaz | `@'...'@` kullan — kapatan `'@` sıfır indent olmalı |
 | E13 | VerifyError / DVM register limit | Büyük `@Composable` (300+ satır) → register limiti aşılıyor | Fonksiyonlara böl, composable'ı küçült |
+| E13 | VerifyError / DVM register limit | Büyük `@Composable` (300+ satır) → register limiti aşılıyor | Fonksiyonlara böl, composable'ı küçült |
 
 ---
 

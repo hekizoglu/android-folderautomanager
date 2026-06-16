@@ -92,6 +92,25 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 
 ## 📋 Backlog
 
+### 🔴 KRİTİK — Arayüz + Ayarlar Yeniden Tasarlanacak (YENİ)
+> **Kapsam:** Tüm UI katmanı sıfırdan yeniden yazılacak. Mevcut kod referans olarak kullanılacak ama her şey yeniden tasarlanacak.
+> **Gerekçe:** Mevcut kodda `SettingsHomeScreenSection.kt` ve `SettingsHomeSection.kt` çakışıyor, aynı ayarlar 3 farklı dosyada tekrarlanmış. Sayfa kayması, klasör isimlerinin yarım kalması, widget/klasör sürükle-bırak eksikliği gibi sorunlar temelden çözülecek.
+
+#### Yeni Tasarım Hedefleri
+- [ ] **Tüm ayarlar açılıp kapanabilir olmalı** — her özellik için toggle (mevcut + yeniler)
+- [ ] **Sayfa başına klasör sayısı ayarlanabilir** — kullanıcı seçimi veya "otomatik (ekran boyutuna göre)"
+- [ ] **Klasör yeri değiştirilebilir** — sürükle-bırak ile (mevcut) + **sayı numarası girerek** (yeni)
+- [ ] **Widget yer değişikliği** — sürükle-bırak ile widget'ların konumu değiştirilebilmeli
+- [ ] **Sayfa kayması sorunu çözülecek** — tüm özellikler açıkken sayfa aşağı kayıyor; diğer sayfalara dağıtılacak
+- [ ] **Klasör isimleri yarım kalmasın** — uzun isimler için tooltip/alt satıra geçme/kesme noktası
+- [ ] **Masaüstü ve Tüm Uygulamalar için ayrı ayarlar** — Uygulama önerileri, Son kullanılanlar, Favoriler her iki alan için bağımsız toggle
+
+#### Düzeltilecek Hatalar (Yeni Arayüzde)
+- [ ] **Uygulama önerileri doğru çalışmıyor** — `suggestedApps` (en çok kullanılan) ile `recentApps` (son açılan) karışıyor, UI'da başlıklar yanlış
+- [ ] **Son kullanılanlar doğru çalışmıyor** — `lastUsedTimestamp` sıfır olan sistem uygulamaları 1970 gösteriyor (sorun değil ama filtrelenmeli)
+- [ ] **Favoriler doğru çalışmıyor** — SharedPrefs + StateFlow senkronizasyon sorunu, AllAppsDrawer'da ve ana ekranda ayrı ayrı test edilmeli
+- [ ] **Sistem uygulamaları 1970 tarihi** — `lastUsedTimestamp == 0L` olanlar sıralamada en alta atılmalı (sorun değil, bilinçli)
+
 ### Yakın (Sonraki Sprint) — Kod Kalitesi
 - [ ] Hilt DI kurulumu — manuel `new()` çağrılarını temizle (kısmen başladı: onboarding'de `hiltViewModel` kullanılıyor)
 - [x] ~~StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir~~ ✅ LiveData kullanımı yok, tüm akışlar StateFlow (2026-06-15 Döngü 52)
@@ -112,6 +131,7 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 - [ ] Greptile API denemesi — PR review otomasyonu
 
 ### Orta Vade — Ürün
+- [ ] **Akıllı Uygulama Önerileri (30dk/1)** — Kullanıcının uygulama kullanım alışkanlığına göre (saat/gün/konum) her 30 dakikada bir değişen öneri satırı. Pixel Launcher'ın "App Predictions" API'si (hücre dışı) veya basit zaman-bazlı döngü: son 30dk'da en çok kullanılan 4 uygulama
 - [ ] Multi-language support (TR/EN) — string resource ayrımı
 - [ ] Backup/restore tam — Room export (kısmen: RESTORE_BACKUP onboarding + BackupWorker haftalık ✅, kalan: manuel export/import UI + bulut)
 
@@ -191,7 +211,9 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 | 2026-06-15 | Döngüler #22-30 — store listing, ProGuard, LLM fallback, AppInfo v8, widget, search, shortcut, CI | 3 yeni dosya | 4 yeni LEARNINGS | — |
 | 2026-06-15 | Döngüler #39-45 — AllApps gesture fix, 9 üretici kategorisi, 0-warning build, DeepSeek 4 bug fix, emülatör testi, HISTORY/ROADMAP sistemi | — | L1 eklendi | #705 (msg) |
 | 2026-06-16 | Döngüler #62-66 — 5 test fix, AppClassifier +191 paket (TR e-Devlet/ulaşım/LatAm/Browser/VPN/IoT/Çevre), 3680 benzersiz | — | — | #731 (29.3MB) |
-| 2026-06-16 | Döngüler #67-80 | 10+ özellik | 3717 benzersiz | |
+| 2026-06-16 | Döngüler #67-80 — AllApps bug fix + performans opt + 0 uyarı build, 3717 benzersiz | 10+ özellik | DVM register limiti E13 | 24.8MB |
+| 2026-06-16 | Döngüler #81-87 — SplashScreen + AppRepositoryTest 23 test + 0 uyarı build + recentApps fix | 8 dosya | — | BUILD #16 (24.8MB) |
+| 2026-06-16 | MD Denetim + ROADMAP/LEARNINGS/CLAUDE düzeltme (K1/K
 
 ---
 

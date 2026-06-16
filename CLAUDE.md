@@ -295,7 +295,7 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ### Önemli Mimari Notlar
 - **AppClassifier:** 3717 benzersiz paket, `exactMatchMap` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
-- **Room DB:** v8 (18 yeni kategori eklendi)
+- **Room DB:** v8 (v7→v8 boş migration, 2026-06-16)
 - **Onboarding:** 14+2 adım (son: CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor
