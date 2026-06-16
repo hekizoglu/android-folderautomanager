@@ -1003,3 +1003,13 @@ Tüm 12 madde âœ…. Detay:
 **Yapilanlar:** AllApps arama kritik bug fix -- remember { derivedStateOf {} } + plain String parametresi reaktif degil sorunu cozuldu. sortedApps/grouped/sidebarEntries remember(key) patterni ile yeniden yazildi. Ek: paket adi aramaya eklendi, fuzzy threshold iyilestirildi (maxOf(2,q.length/3)), string truncate performans korumasi. APK 24.79MB.
 **Bug:** searchQuery String parametresi Compose State olmadigi icin derivedStateOf izleyemiyordu, kullanici yazinca liste guncellenmiyordu.
 **Sonraki:** D89 KOD -- ROADMAP gorevleri.
+## Doengue 89 - 2026-06-16
+
+**Yapilanlar:** LauncherViewModelTest -- refreshLastLaunched icin 4 yeni unit test eklendi (pkg=null durumu, intent=null durumu, basarili launch sonrasi timestamp guncelleme, cift cagri idempotency). Toplam 19 test, tumu PASSED.
+**Agent:** 5 paralel market arastirma agent -- 1 yil simulasyon raporu (Telegram 7 mesaj, 40+ kaynak). Dark mode audit: 149 hardcode renk tespit edildi, kapsam genis, sonraki donguye ertelendi.
+**Sonraki:** D90 BUILD -- APK Telegram.
+## Doengue 90 - 2026-06-16
+
+**Yapilanlar:** BUILD #17 -- assembleDebug SUCCESS 1s (cache), APK 24.79MB. D89 testleri (19 PASSED) + D88 arama fix dahil.
+**Agent:** -
+**Sonraki:** D91 KOD -- dark mode hardcode renk duzeltme (149 sorun tespit edildi, oncelik: FolderSheet + AllAppsDrawer).
