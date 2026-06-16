@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-16 07:01 UTC
-# Commit: 5829a9a315a8a714f538461d214d1dfeb684e697
+# Generated: 2026-06-16 07:08 UTC
+# Commit: 64e63449260508adad51d6429ac50b5cad546e3f
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -8063,7 +8063,7 @@ fun NiagaraAppRow(
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AppContextMenu.kt
 ========================================
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -8079,6 +8079,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.AddToHomeScreen
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -8248,11 +8251,11 @@ fun AppContextMenu(
             }
 
             Spacer(Modifier.height(12.dp))
-            Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
             // ── Eylemler ──────────────────────────────────────────────────────
             ContextAction(
-                icon = Icons.Default.OpenInNew,
+                icon = Icons.AutoMirrored.Filled.OpenInNew,
                 label = "Uygulamayı Aç",
                 color = TealColor,
                 onClick = {
@@ -8262,7 +8265,7 @@ fun AppContextMenu(
                 }
             )
 
-            Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
             if (isDocked) {
                 ContextAction(
@@ -8272,7 +8275,7 @@ fun AppContextMenu(
                 )
             } else {
                 ContextAction(
-                    icon = Icons.Default.AddToHomeScreen,
+                    icon = Icons.AutoMirrored.Filled.AddToHomeScreen,
                     label = "Dock'a Ekle",
                     onClick = { onAddToDock(); onDismiss() }
                 )
@@ -8284,7 +8287,7 @@ fun AppContextMenu(
                 onClick = { onChangeCategory(); onDismiss() }
             )
 
-            Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
             ContextAction(
                 icon = Icons.Default.Info,
@@ -8319,7 +8322,7 @@ fun AppContextMenu(
             }
 
             onSaveNote?.let {
-                Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Mevcut not varsa göster
                 if (app.customNotes.isNotBlank()) {
@@ -8330,7 +8333,7 @@ fun AppContextMenu(
                         verticalAlignment = Alignment.Top
                     ) {
                         Icon(
-                            Icons.Default.StickyNote2,
+                            Icons.AutoMirrored.Filled.StickyNote2,
                             null,
                             tint = TealColor.copy(alpha = 0.8f),
                             modifier = Modifier.size(16.dp).padding(top = 2.dp)
@@ -8500,7 +8503,7 @@ private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
             iconBmp?.let { bmp ->
                 Image(bitmap = bmp, contentDescription = null, modifier = Modifier.size(32.dp))
             } ?: Icon(
-                Icons.Default.OpenInNew,
+                Icons.AutoMirrored.Filled.OpenInNew,
                 contentDescription = null,
                 tint = TealColor,
                 modifier = Modifier.size(20.dp)
@@ -8789,7 +8792,7 @@ fun AppIconView(
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/CategoryPickerSheet.kt
 ========================================
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8855,7 +8858,7 @@ fun CategoryPickerSheet(
                 fontSize = 13.sp,
                 modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 8.dp)
             )
-            Divider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
             LazyColumn {
                 items(categories) { cat ->
                     val isCurrent = cat.categoryId == app.categoryId
@@ -8889,7 +8892,7 @@ fun CategoryPickerSheet(
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/DockEditSheet.kt
 ========================================
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.background
@@ -9016,7 +9019,7 @@ fun DockEditSheet(
                     }
                 }
                 Spacer(Modifier.height(14.dp))
-                Divider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
                 Spacer(Modifier.height(10.dp))
             }
 
@@ -13842,13 +13845,14 @@ fun LauncherSetupScreen(
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingModels.kt
 ========================================
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -13901,7 +13905,7 @@ internal enum class OnboardingStep(
     QUERY_PACKAGES(
         title = "Uygulama Listesi İzni",
         description = "Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.",
-        icon = Icons.Default.ManageSearch,
+        icon = Icons.AutoMirrored.Filled.ManageSearch,
         buttonLabel = "İzin Ver",
         why = "Bu izin olmadan launcher çalışamaz."
     ),
@@ -14628,7 +14632,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14645,7 +14649,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
                 title = { Text("Gizlilik Politikası") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                     }
                 }
             )
@@ -15121,6 +15125,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15299,7 +15304,7 @@ internal fun LazyListScope.settingsAppsSection(
                 otherApps.take(20).forEachIndexed { index, app ->
                     if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                        Icon(Icons.AutoMirrored.Filled.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(app.appName, fontSize = 14.sp, maxLines = 1)
