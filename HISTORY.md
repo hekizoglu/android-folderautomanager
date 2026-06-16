@@ -998,3 +998,8 @@ Tüm 12 madde âœ…. Detay:
 
 **Yapılanlar:** Kotlin uyarı sıfırlama — 18 uyarı -> 0. Unused context/scope/viewModel/coroutineScope kaldırıldı (6 dosya). DebugInfoCard + onPackageAdded + handleOnboardingStep unused param Suppress. LocalLifecycleOwner Suppress(DEPRECATION). FolderCreationService categoryEmoji Suppress.
 **Sonraki:** D88 KOD.
+## Doengue 88 - 2026-06-16
+
+**Yapilanlar:** AllApps arama kritik bug fix -- remember { derivedStateOf {} } + plain String parametresi reaktif degil sorunu cozuldu. sortedApps/grouped/sidebarEntries remember(key) patterni ile yeniden yazildi. Ek: paket adi aramaya eklendi, fuzzy threshold iyilestirildi (maxOf(2,q.length/3)), string truncate performans korumasi. APK 24.79MB.
+**Bug:** searchQuery String parametresi Compose State olmadigi icin derivedStateOf izleyemiyordu, kullanici yazinca liste guncellenmiyordu.
+**Sonraki:** D89 KOD -- ROADMAP gorevleri.
