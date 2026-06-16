@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.background
@@ -125,7 +125,7 @@ fun DockEditSheet(
                     }
                 }
                 Spacer(Modifier.height(14.dp))
-                Divider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
                 Spacer(Modifier.height(10.dp))
             }
 

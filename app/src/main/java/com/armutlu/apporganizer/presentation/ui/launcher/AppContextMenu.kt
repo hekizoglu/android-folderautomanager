@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -14,6 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.AddToHomeScreen
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -183,11 +186,11 @@ fun AppContextMenu(
             }
 
             Spacer(Modifier.height(12.dp))
-            Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
             // ── Eylemler ──────────────────────────────────────────────────────
             ContextAction(
-                icon = Icons.Default.OpenInNew,
+                icon = Icons.AutoMirrored.Filled.OpenInNew,
                 label = "Uygulamayı Aç",
                 color = TealColor,
                 onClick = {
@@ -197,7 +200,7 @@ fun AppContextMenu(
                 }
             )
 
-            Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
             if (isDocked) {
                 ContextAction(
@@ -207,7 +210,7 @@ fun AppContextMenu(
                 )
             } else {
                 ContextAction(
-                    icon = Icons.Default.AddToHomeScreen,
+                    icon = Icons.AutoMirrored.Filled.AddToHomeScreen,
                     label = "Dock'a Ekle",
                     onClick = { onAddToDock(); onDismiss() }
                 )
@@ -219,7 +222,7 @@ fun AppContextMenu(
                 onClick = { onChangeCategory(); onDismiss() }
             )
 
-            Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
             ContextAction(
                 icon = Icons.Default.Info,
@@ -254,7 +257,7 @@ fun AppContextMenu(
             }
 
             onSaveNote?.let {
-                Divider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Mevcut not varsa göster
                 if (app.customNotes.isNotBlank()) {
@@ -265,7 +268,7 @@ fun AppContextMenu(
                         verticalAlignment = Alignment.Top
                     ) {
                         Icon(
-                            Icons.Default.StickyNote2,
+                            Icons.AutoMirrored.Filled.StickyNote2,
                             null,
                             tint = TealColor.copy(alpha = 0.8f),
                             modifier = Modifier.size(16.dp).padding(top = 2.dp)
@@ -435,7 +438,7 @@ private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
             iconBmp?.let { bmp ->
                 Image(bitmap = bmp, contentDescription = null, modifier = Modifier.size(32.dp))
             } ?: Icon(
-                Icons.Default.OpenInNew,
+                Icons.AutoMirrored.Filled.OpenInNew,
                 contentDescription = null,
                 tint = TealColor,
                 modifier = Modifier.size(20.dp)

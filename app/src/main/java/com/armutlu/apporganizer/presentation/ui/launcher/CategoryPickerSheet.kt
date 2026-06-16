@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,7 +64,7 @@ fun CategoryPickerSheet(
                 fontSize = 13.sp,
                 modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 8.dp)
             )
-            Divider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
             LazyColumn {
                 items(categories) { cat ->
                     val isCurrent = cat.categoryId == app.categoryId

@@ -1,10 +1,11 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,7 +58,7 @@ internal enum class OnboardingStep(
     QUERY_PACKAGES(
         title = "Uygulama Listesi İzni",
         description = "Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.",
-        icon = Icons.Default.ManageSearch,
+        icon = Icons.AutoMirrored.Filled.ManageSearch,
         buttonLabel = "İzin Ver",
         why = "Bu izin olmadan launcher çalışamaz."
     ),

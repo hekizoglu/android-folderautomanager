@@ -987,3 +987,9 @@ Tüm 12 madde âœ…. Detay:
 
 **Yapılanlar:** Deprecated Divider->HorizontalDivider geçişi — 8 dosyada 55 yer değişti (SettingsScreen, AppListScreen, SettingsHomeSection, SettingsHomeScreenSection, SettingsAppearanceSection, SettingsBackupAboutSection, SettingsAppsSection, PrivacyPolicyScreen). Build SUCCESSFUL, 0 deprecated uyarı.
 **Sonraki:** D86 KOD.
+
+
+## Doengue 86 - 2026-06-16
+
+**Yapılanlar:** Deprecated uyarı temizligi devami — launcher Divider fix (AppContextMenu, CategoryPickerSheet, DockEditSheet) + AutoMirrored icon 6 dosya. Uyari 55->18.
+**Sonraki:** D87 KOD kalan 18 uyari.
