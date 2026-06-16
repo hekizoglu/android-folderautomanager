@@ -372,7 +372,7 @@ class LauncherViewModel @Inject constructor(
     }
 
     /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
-    fun onPackageAdded(context: Context, packageName: String) {
+    fun onPackageAdded(@Suppress("UNUSED_PARAMETER") context: Context, packageName: String) {
         // Uygulama güncellemelerinde ikon değişmiş olabilir — cache'i temizle
         iconCacheInternal.snapshot().keys
             .filter { it.startsWith("${packageName}_") }

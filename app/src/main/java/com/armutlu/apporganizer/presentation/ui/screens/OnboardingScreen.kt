@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
 import android.content.Intent
@@ -96,6 +96,7 @@ fun OnboardingScreen(
     }
 
     // ── Lifecycle observer ───────────────────────────────────────────────
+    @Suppress("DEPRECATION")
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -325,7 +326,7 @@ private fun handleOnboardingStep(
     context: android.content.Context,
     scope: kotlinx.coroutines.CoroutineScope,
     themePrefs: ThemePreferences,
-    viewModel: AppListViewModel,
+    @Suppress("UNUSED_PARAMETER") viewModel: AppListViewModel,
     launcherSet: Boolean,
     notifGranted: Boolean,
     notifAccessGranted: Boolean,

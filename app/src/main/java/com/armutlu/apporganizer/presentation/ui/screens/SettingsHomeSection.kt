@@ -30,7 +30,6 @@ internal fun LazyListScope.settingsHomeSection(
     // ── Launcher ────────────────────────────────────────────────────────
     item { SettingsSectionTitle("Launcher") }
     item {
-        val context = LocalContext.current
         SettingsCard {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),

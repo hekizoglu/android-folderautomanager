@@ -35,8 +35,6 @@ internal fun LazyListScope.settingsBackupAboutSection(
     logs: List<String>,
     onNavigateToPrivacyPolicy: () -> Unit
 ) {
-    val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
-
     // ── Hakkında (üst) ──────────────────────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
     item {
@@ -156,7 +154,6 @@ internal fun LazyListScope.settingsBackupAboutSection(
     if (logs.isNotEmpty()) {
         item { SettingsSectionTitle("Debug") }
         item {
-            val coroutineScope = rememberCoroutineScope()
             val clipboard = LocalClipboardManager.current
             var debugExpanded by remember { mutableStateOf(false) }
             SettingsCard {

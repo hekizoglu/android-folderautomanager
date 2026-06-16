@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.Manifest
 import android.content.Context
@@ -86,6 +86,8 @@ fun PermissionsBanner() {
     var notifGranted       by remember { mutableStateOf(isNotifGranted(context)) }
     var launcherSet        by remember { mutableStateOf(isDefaultLauncher(context)) }
     var notifListenerOk    by remember { mutableStateOf(isNotificationListenerGranted(context)) }
+
+    @Suppress("DEPRECATION")
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {

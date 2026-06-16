@@ -203,7 +203,6 @@ fun FolderTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(tileWidth)
         )
-        val context = LocalContext.current
         // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
         if (folderCountVisible) {
             Text(

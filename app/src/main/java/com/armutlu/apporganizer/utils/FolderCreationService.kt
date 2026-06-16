@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.utils
+﻿package com.armutlu.apporganizer.utils
 
 import android.content.Context
 import android.content.Intent
@@ -87,7 +87,7 @@ class FolderCreationService(private val context: Context) {
     private suspend fun createFolderForCategory(
         categoryId: String,
         categoryName: String,
-        categoryEmoji: String,
+        @Suppress("UNUSED_PARAMETER") categoryEmoji: String,
         apps: List<AppInfo>
     ): FolderCreationResult {
         return withContext(Dispatchers.Default) {

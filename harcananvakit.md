@@ -71,3 +71,4 @@
 | 2026-06-16 | 10:08 | 10:20 | ~12dk | KOD+BUILD | Döngü 85 — Divider→HorizontalDivider 55 yer, 0 uyarı | 8 dosya |
 
 | 2026-06-16 | 10:20 | 10:35 | ~15dk | KOD+BUILD | Dongue 86 — AutoMirrored+Divider 55->18 uyari | 9 dosya |
+| 2026-06-16 | 10:35 | 10:55 | ~20dk | KOD+BUILD | Döngü 87 — 18->0 Kotlin uyarı | 8 dosya |

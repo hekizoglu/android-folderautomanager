@@ -993,3 +993,8 @@ Tüm 12 madde âœ…. Detay:
 
 **Yapılanlar:** Deprecated uyarı temizligi devami — launcher Divider fix (AppContextMenu, CategoryPickerSheet, DockEditSheet) + AutoMirrored icon 6 dosya. Uyari 55->18.
 **Sonraki:** D87 KOD kalan 18 uyari.
+
+## Doengue 87 - 2026-06-16
+
+**Yapılanlar:** Kotlin uyarı sıfırlama — 18 uyarı -> 0. Unused context/scope/viewModel/coroutineScope kaldırıldı (6 dosya). DebugInfoCard + onPackageAdded + handleOnboardingStep unused param Suppress. LocalLifecycleOwner Suppress(DEPRECATION). FolderCreationService categoryEmoji Suppress.
+**Sonraki:** D88 KOD.

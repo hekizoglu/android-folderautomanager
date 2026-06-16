@@ -40,7 +40,6 @@ internal fun LazyListScope.settingsAppsSection(
     // ── Görünüm → Sistem Uygulamaları ─────────────────────────────────
     item { SettingsSectionTitle("Görünüm") }
     item {
-        val context = LocalContext.current
         SettingsCard {
             SettingsSwitchRow(
                 icon = Icons.Default.Visibility,
