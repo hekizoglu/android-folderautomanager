@@ -960,3 +960,10 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** Splash icon ic_launcher_foreground'a güncellendi; FuzzySearchTest.kt 7 test yazıldı (hepsi geçti); Dark mode audit: Launcher beyaz metin kasıtlı, Settings Material3 ile uyumlu
 **Build/Test:** testDebugUnitTest PASS 1m15s — full clean 1 kez (merged_res kilit CS-3)
 **Sonraki:** Admin PS'de intermediates exclusion ekle (CS-3 çözümü) + unit test coverage artır
+
+
+## Doengue 82 - 2026-06-16
+
+**Yapılanlar:** AppRepositoryTest.kt oluşturuldu (app/src/test/java/.../data/repository/) — 23 unit test: getAllApps/exception, insertApps+classifier doğrulama, updateAppCategory/updateAppsCategory (timestamp parametresi any() ile), syncInstalledApps (yeni ekleme + eski silme), countApps/countAppsByCategory/appExists. Tüm testler PASSED.
+**Bug:** updateAppCategory coVerify imzası — DAO'da varsayılan timestamp var, any() eklenerek düzeltildi.
+**Sonraki:** harcananvakit.md güncelle, commit+push, Telegram raporu.
