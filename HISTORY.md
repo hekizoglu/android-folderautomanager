@@ -974,3 +974,10 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** Son kullanılan uygulamalar (recentApps) anında güncelleme fix — AppDao.updateLastUsedTimestampIfNewer eklendi; syncUsageStats artık eski UsageStats verisiyle launchApp timestamp'ini ezmez. LauncherViewModel: lastLaunchedPkg/Ts state + refreshLastLaunched() metodu; LauncherActivity.onResume'da her dönüşte refreshLastLaunched() çağrısı.
 **Bug:** startActivity sonrası process askıya alındığında IO coroutine tamamlanamıyordu — onResume'da garantileyici eklendi.
 **Sonraki:** Build 84. döngüde (84%6=0).
+
+
+## Doengue 84 - 2026-06-16
+
+**Yapılanlar:** BUILD #16 — assembleDebug SUCCESS 45s, APK 24.8MB. D82 (AppRepositoryTest 23 test) + D83 (recentApps fix) dahil.
+**Agent:** android-builder — temiz build, cache+kısmi.
+**Sonraki:** D85 KOD — ROADMAP backlog.

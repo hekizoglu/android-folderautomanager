@@ -67,3 +67,4 @@
 | 2026-06-16 | Döngü 79 | KOD | ~8dk | KOD+BUILD | Fuzzy arama + kategori alfa + BUILD 3m21s | res kilit 1 kez full clean |
 | 2026-06-16 | 03:18 | 03:42 | ~24dk | TEST+KOD | Döngü 82 — AppRepositoryTest 23 test (tüm PASSED) | updateAppCategory DAO timestamp imzası fix |
 | 2026-06-16 | 03:52 | 04:10 | ~18dk | KOD+BUILD | Döngü 83 — recentApps anında güncelleme fix | AppDao IfNewer + refreshLastLaunched + BUILD 3s |
+| 2026-06-16 | 10:00 | 10:08 | ~8dk | BUILD | Döngü 84 — assembleDebug 45s, APK 24.8MB | BUILD #16 |
