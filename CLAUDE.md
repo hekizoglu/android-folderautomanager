@@ -1,6 +1,6 @@
 # AppOrganizer — Claude Çalışma Talimatları
 
-> **Meta:** ~380 satır · Son güncelleme: 2026-06-15 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → ROADMAP.md
+> **Meta:** ~380 satır · Son güncelleme: 2026-06-16 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → ROADMAP.md
 
 ---
 
@@ -205,6 +205,12 @@ Arama/sıralama: `lowercase(Locale("tr"))` — `contains(ignoreCase=true)` Türk
 ### Flow Sıcaklığı
 Launcher kök akışları (`folders`/`allApps`) `SharingStarted.Eagerly` — `WhileSubscribed` ile dönüşte "Yükleniyor..." flaşı oluşur.
 
+### `derivedStateOf` Pattern
+`derivedStateOf` ile türetilen değerleri doğrudan UI bağımlılığı olarak kullan; scroll ve offset gibi sık değişen girdilerde gereksiz recomposition'ı azaltır.
+
+### `installSplashScreen()` Sırası
+`installSplashScreen()` çağrısı `super.onCreate()` sonrası, `setContentView()` öncesi olmalı; splash yaşam döngüsü bu sıraya bağlıdır.
+
 ### Async İkon Yükleme
 `produceState<ImageBitmap?>` + IO thread + ortak `iconCacheInternal` (LRU-200).
 Cache key: `"${pkg}_${px}"` (ikon paketi varsa `+"_${iconPackPkg}"`). `initialValue = cache[key]` ile cache hit'te anında göster.
@@ -281,7 +287,7 @@ app/src/main/java/com/armutlu/apporganizer/
 │   ├── models/      # AppInfo, Category, AppFolder
 │   └── usecase/classify/  # AppClassifier (3717 paket), KeywordDatabase (32 kategori)
 ├── data/
-│   ├── local/       # AppDao, AppDatabase (Room v7)
+│   ├── local/       # AppDao, AppDatabase (Room v8)
 │   ├── remote/      # BackupSyncService
 │   └── repository/  # AppRepository
 └── utils/           # AppPrefs, IconPackManager, ShortcutHelper, WidgetPrefs, WidgetHostManager
@@ -289,7 +295,7 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ### Önemli Mimari Notlar
 - **AppClassifier:** 3717 benzersiz paket, `exactMatchMap` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
-- **Room DB:** v7 (18 yeni kategori eklendi)
+- **Room DB:** v8 (18 yeni kategori eklendi)
 - **Onboarding:** 14+2 adım (son: CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor
@@ -351,4 +357,4 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ---
 
-*Son güncelleme: 2026-06-15 — CLAUDE.md v4: ~%70 küçüldü, döngü logları HISTORY.md'ye, mimari notlar LEARNINGS.md'ye taşındı. Firebase Analytics planı eklendi.*
+*Son güncelleme: 2026-06-16 — CLAUDE.md v4: ~%70 küçüldü, döngü logları HISTORY.md'ye, mimari notlar LEARNINGS.md'ye taşındı. Firebase Analytics planı eklendi.*

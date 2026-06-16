@@ -128,7 +128,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [ ] **Ayarlar — Kullanıcı Talep/Öneri Formu** — SettingsScreen'e "Talep Gönder" butonu: kullanıcı metin girer, GitHub Issue veya Telegram bot'a gönderilir (2026-06-16 — kullanıcı talebi)
 
 - [x] ~~FolderTile reaktif AppPrefs pattern'ini standartlaştır~~ ✅ FolderTile parametre bazlı (HomeScreen'den geliyor), HomeScreen DisposableEffect+listener kullanıyor — pattern doğru (2026-06-15 Döngü 52)
-- [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3594 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
+- [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3717 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
 - [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, crash kontrol otomasyonu
 - [x] ~~`AppDatabaseService` 404 uyarısı~~ ✅ Network hata logu Timber.w→d indirildi, assets dosyası mevcut (dummy v2) — sessiz fallback (Döngü 55, 2026-06-15)
 - [ ] `AppNotificationListenerService` ilk açılışta restart (2026-06-15 — Döngü 43) — emülatörde `Scheduling restart of crashed service` görüldü; race condition Döngü 44'te kısmen giderildi, gerçek cihazda test gerekiyor
@@ -191,6 +191,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 | 2026-06-15 | Döngüler #22-30 — store listing, ProGuard, LLM fallback, AppInfo v8, widget, search, shortcut, CI | 3 yeni dosya | 4 yeni LEARNINGS | — |
 | 2026-06-15 | Döngüler #39-45 — AllApps gesture fix, 9 üretici kategorisi, 0-warning build, DeepSeek 4 bug fix, emülatör testi, HISTORY/ROADMAP sistemi | — | L1 eklendi | #705 (msg) |
 | 2026-06-16 | Döngüler #62-66 — 5 test fix, AppClassifier +191 paket (TR e-Devlet/ulaşım/LatAm/Browser/VPN/IoT/Çevre), 3680 benzersiz | — | — | #731 (29.3MB) |
+| 2026-06-16 | Döngüler #67-80 | 10+ özellik | 3717 benzersiz | |
 
 ---
 
@@ -198,11 +199,10 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 
 | Karar | Bağlam | Durum |
 |-------|--------|-------|
-| 🔒 Telegram token rotasyonu | Token sızmış olabilir, BotFather erişimi sende | **Bekliyor** |
 | Privacy Policy içeriği | Play Store şart, hangi veri toplandığı netleşmeli (NotificationListener, UsageStats) | Bekliyor |
 | AppClassifier → JSON asset | Derleme süresi + duplicate riski azalır ama runtime parse maliyeti | Tartışma |
 | Gemini API key | NotebookLM/LLM fallback için, sen sağlarsan eklenir | Bekliyor |
 
 ---
 
-*Son güncelleme: 2026-06-15 — gerçek duruma senkronize edildi, dağılmış istekler + otomasyon + güvenlik görevleri eklendi.*
+*Son güncelleme: 2026-06-16 — gerçek duruma senkronize edildi, dağılmış istekler + otomasyon + güvenlik görevleri eklendi.*
