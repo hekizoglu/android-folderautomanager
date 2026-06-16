@@ -293,6 +293,11 @@ class AppRepository @Inject constructor(
         try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
     }
 
+    // UsageStats sync için — mevcut değerden büyükse yazar, launchApp'ın anlık değerini ezmez
+    suspend fun updateLastUsedTimestampIfNewer(packageName: String, timestamp: Long) {
+        try { appDao.updateLastUsedTimestampIfNewer(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
+    }
+
     suspend fun updateCustomNotes(packageName: String, note: String) {
         try { appDao.updateCustomNotes(packageName, note) } catch (e: Exception) { Timber.e(e) }
     }

@@ -188,6 +188,10 @@ interface AppDao {
     @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName")
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long)
 
+    // Sadece mevcut değerden büyükse güncelle — launchApp'ın anlık timestamp'ini ezmez
+    @Query("UPDATE apps SET lastUsedTimestamp = :timestamp WHERE packageName = :packageName AND lastUsedTimestamp < :timestamp")
+    suspend fun updateLastUsedTimestampIfNewer(packageName: String, timestamp: Long)
+
     @Query("UPDATE apps SET customNotes = :note WHERE packageName = :packageName")
     suspend fun updateCustomNotes(packageName: String, note: String)
 }

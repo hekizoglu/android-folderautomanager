@@ -188,6 +188,8 @@ class LauncherActivity : ComponentActivity() {
         super.onResume()
         WidgetHostManager.startListening(this)
         applyNavBarVisibility()
+        // Son başlatılan uygulamanın timestamp'ini garantile (startActivity süreci durdurduğunda coroutine tamamlanamayabilir)
+        viewModel.refreshLastLaunched()
         // Reconcile 5 dakikada bir — geri tuşunda her seferinde PM sorgusu yapmasın
         if (AppPrefs.shouldReconcile(this)) {
             viewModel.reconcileIfNeeded(this)

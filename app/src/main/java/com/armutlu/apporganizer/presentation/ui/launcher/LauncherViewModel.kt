@@ -92,6 +92,10 @@ class LauncherViewModel @Inject constructor(
     // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
     private val isLoadingApps = AtomicBoolean(false)
 
+    // launchApp'ta başlatılan son paket — onResume'da timestamp güncellenir (startActivity process'i askıya aldığında coroutine tamamlanamıyor)
+    @Volatile private var lastLaunchedPkg: String? = null
+    @Volatile private var lastLaunchedTs: Long = 0L
+
     // Favori paket seti — toggleFavorite() ile güncellenir, allApps ile combine edilir
     private val _favoritePkgs = MutableStateFlow<Set<String>>(emptySet())
 
@@ -263,13 +267,26 @@ class LauncherViewModel @Inject constructor(
                 return
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val ts = System.currentTimeMillis()
+            lastLaunchedPkg = packageName
+            lastLaunchedTs = ts
             context.startActivity(intent)
             viewModelScope.launch(Dispatchers.IO) {
                 repository.incrementUsageCount(packageName)
-                repository.updateLastUsedTimestamp(packageName, System.currentTimeMillis())
+                repository.updateLastUsedTimestamp(packageName, ts)
             }
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
+        }
+    }
+
+    /** onResume'da çağrılır — son başlatılan uygulamanın timestamp'ini garantiler (startActivity süreci askıya aldığında coroutine tamamlanamayabilir). */
+    fun refreshLastLaunched() {
+        val pkg = lastLaunchedPkg ?: return
+        val ts = lastLaunchedTs
+        lastLaunchedPkg = null
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateLastUsedTimestamp(pkg, ts)
         }
     }
 
@@ -442,7 +459,8 @@ class LauncherViewModel @Inject constructor(
                 val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
                 counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
                 val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
-                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestamp(pkg, ts) }
+                // IfNewer: launchApp'ın anlık timestamp'ini daha eski UsageStats verisiyle ezme
+                lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestampIfNewer(pkg, ts) }
                 Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
             }.onFailure { Timber.e(it, "syncUsageStats hatası") }
         }

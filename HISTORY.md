@@ -967,3 +967,10 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** AppRepositoryTest.kt oluşturuldu (app/src/test/java/.../data/repository/) — 23 unit test: getAllApps/exception, insertApps+classifier doğrulama, updateAppCategory/updateAppsCategory (timestamp parametresi any() ile), syncInstalledApps (yeni ekleme + eski silme), countApps/countAppsByCategory/appExists. Tüm testler PASSED.
 **Bug:** updateAppCategory coVerify imzası — DAO'da varsayılan timestamp var, any() eklenerek düzeltildi.
 **Sonraki:** harcananvakit.md güncelle, commit+push, Telegram raporu.
+
+
+## Doengue 83 - 2026-06-16
+
+**Yapılanlar:** Son kullanılan uygulamalar (recentApps) anında güncelleme fix — AppDao.updateLastUsedTimestampIfNewer eklendi; syncUsageStats artık eski UsageStats verisiyle launchApp timestamp'ini ezmez. LauncherViewModel: lastLaunchedPkg/Ts state + refreshLastLaunched() metodu; LauncherActivity.onResume'da her dönüşte refreshLastLaunched() çağrısı.
+**Bug:** startActivity sonrası process askıya alındığında IO coroutine tamamlanamıyordu — onResume'da garantileyici eklendi.
+**Sonraki:** Build 84. döngüde (84%6=0).
