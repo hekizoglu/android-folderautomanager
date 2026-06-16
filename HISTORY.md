@@ -955,3 +955,8 @@ Tüm 12 madde âœ…. Detay:
 **Yapılanlar:** SettingsScreen Geri Bildirim bölümü eklendi; kullanıcı talep/öneri girer, Telegram bot'a gönderilir; cihaz bilgisi otomatik eklenir
 **Build:** SUCCESS 23s (25.1 MB) — kilit yok
 **Sonraki:** Döngü sistemi devam — merged_res kilit çözümü Admin PS exclusion
+
+## Döngü 81 — 2026-06-16 (KOD)
+**Yapılanlar:** Splash icon ic_launcher_foreground'a güncellendi; FuzzySearchTest.kt 7 test yazıldı (hepsi geçti); Dark mode audit: Launcher beyaz metin kasıtlı, Settings Material3 ile uyumlu
+**Build/Test:** testDebugUnitTest PASS 1m15s — full clean 1 kez (merged_res kilit CS-3)
+**Sonraki:** Admin PS'de intermediates exclusion ekle (CS-3 çözümü) + unit test coverage artır

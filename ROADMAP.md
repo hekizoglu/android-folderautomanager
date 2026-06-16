@@ -145,7 +145,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [ ] 🟡 **Android 14 NotificationListenerService** — gerçek cihazda test (Android 14 kısıtlamaları)
 - [x] ~~🟢 **Themed monochrome icon**~~ ✅ `ic_launcher_monochrome.xml` oluşturuldu, ic_launcher + ic_launcher_round'a eklendi (Döngü 77, 2026-06-16)
 - [x] ~~🟢 **`android:dataExtractionRules` XML**~~ ✅ Zaten mevcut; crash_log + deepseek_prefs exclude eklendi (Döngü 76, 2026-06-16)
-- [ ] 🟢 **Splash Screen API** — `core-splashscreen` entegrasyonu (Android 12+ kontrolsüz splash)
+- [x] ~~🟢 **Splash Screen API**~~ ✅ Dependency + installSplashScreen() zaten entegre; splash ikonu ic_launcher_foreground olarak güncellendi (Döngü 81, 2026-06-16)
 
 ---
 
