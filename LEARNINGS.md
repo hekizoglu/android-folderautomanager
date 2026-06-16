@@ -163,4 +163,4 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-*Son güncelleme: 2026-06-15 — v3: Metrik Hedefler + Firebase Events + Hata Kataloğu eklendi. Mimari kararlar bölümü genişletildi. CLAUDE.md'den taşınan döngü logları HISTORY.md'de.*
+*Son güncelleme: 2026-06-15 — v3: Metrik Hedefler + Firebase Events + Hata Kataloğu eklendi. Mimari kararlar bölümü genişletildi. CLAUDE.md'den taşınan döngü logları HISTORprojY.md'de.*
