@@ -1,6 +1,6 @@
 # AppOrganizer — Full Source Code
-# Generated: 2026-06-16 07:08 UTC
-# Commit: 64e63449260508adad51d6429ac50b5cad546e3f
+# Generated: 2026-06-16 07:14 UTC
+# Commit: fd92ea38737c99fc22089be258694eaeb8e41e4f
 
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt
@@ -9830,7 +9830,6 @@ fun FolderTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(tileWidth)
         )
-        val context = LocalContext.current
         // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
         if (folderCountVisible) {
             Text(
@@ -12155,7 +12154,7 @@ class LauncherViewModel @Inject constructor(
     }
 
     /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
-    fun onPackageAdded(context: Context, packageName: String) {
+    fun onPackageAdded(@Suppress("UNUSED_PARAMETER") context: Context, packageName: String) {
         // Uygulama güncellemelerinde ikon değişmiş olabilir — cache'i temizle
         iconCacheInternal.snapshot().keys
             .filter { it.startsWith("${packageName}_") }
@@ -12288,7 +12287,7 @@ class LauncherViewModel @Inject constructor(
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/PermissionsBanner.kt
 ========================================
-package com.armutlu.apporganizer.presentation.ui.launcher
+﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.Manifest
 import android.content.Context
@@ -12376,6 +12375,8 @@ fun PermissionsBanner() {
     var notifGranted       by remember { mutableStateOf(isNotifGranted(context)) }
     var launcherSet        by remember { mutableStateOf(isDefaultLauncher(context)) }
     var notifListenerOk    by remember { mutableStateOf(isNotificationListenerGranted(context)) }
+
+    @Suppress("DEPRECATION")
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -14005,7 +14006,7 @@ internal enum class OnboardingStep(
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingScreen.kt
 ========================================
-package com.armutlu.apporganizer.presentation.ui.screens
+﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
 import android.content.Intent
@@ -14103,6 +14104,7 @@ fun OnboardingScreen(
     }
 
     // ── Lifecycle observer ───────────────────────────────────────────────
+    @Suppress("DEPRECATION")
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -14332,7 +14334,7 @@ private fun handleOnboardingStep(
     context: android.content.Context,
     scope: kotlinx.coroutines.CoroutineScope,
     themePrefs: ThemePreferences,
-    viewModel: AppListViewModel,
+    @Suppress("UNUSED_PARAMETER") viewModel: AppListViewModel,
     launcherSet: Boolean,
     notifGranted: Boolean,
     notifAccessGranted: Boolean,
@@ -15157,7 +15159,6 @@ internal fun LazyListScope.settingsAppsSection(
     // ── Görünüm → Sistem Uygulamaları ─────────────────────────────────
     item { SettingsSectionTitle("Görünüm") }
     item {
-        val context = LocalContext.current
         SettingsCard {
             SettingsSwitchRow(
                 icon = Icons.Default.Visibility,
@@ -15363,8 +15364,6 @@ internal fun LazyListScope.settingsBackupAboutSection(
     logs: List<String>,
     onNavigateToPrivacyPolicy: () -> Unit
 ) {
-    val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
-
     // ── Hakkında (üst) ──────────────────────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
     item {
@@ -15484,7 +15483,6 @@ internal fun LazyListScope.settingsBackupAboutSection(
     if (logs.isNotEmpty()) {
         item { SettingsSectionTitle("Debug") }
         item {
-            val coroutineScope = rememberCoroutineScope()
             val clipboard = LocalClipboardManager.current
             var debugExpanded by remember { mutableStateOf(false) }
             SettingsCard {
@@ -15674,6 +15672,7 @@ fun SettingButton(title: String, description: String, onClick: () -> Unit) =
 fun SettingInfo(title: String, description: String) =
     SettingsInfoRow(Icons.Default.Info, title, description)
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun DebugInfoCard(
     appCount: Int, categoryCount: Int, error: String?, logs: List<String>,
@@ -15950,7 +15949,6 @@ internal fun LazyListScope.settingsHomeSection(
     // ── Launcher ────────────────────────────────────────────────────────
     item { SettingsSectionTitle("Launcher") }
     item {
-        val context = LocalContext.current
         SettingsCard {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
@@ -18383,7 +18381,7 @@ object DockPrefs {
 ========================================
 FILE: app/src/main/java/com/armutlu/apporganizer/utils/FolderCreationService.kt
 ========================================
-package com.armutlu.apporganizer.utils
+﻿package com.armutlu.apporganizer.utils
 
 import android.content.Context
 import android.content.Intent
@@ -18472,7 +18470,7 @@ class FolderCreationService(private val context: Context) {
     private suspend fun createFolderForCategory(
         categoryId: String,
         categoryName: String,
-        categoryEmoji: String,
+        @Suppress("UNUSED_PARAMETER") categoryEmoji: String,
         apps: List<AppInfo>
     ): FolderCreationResult {
         return withContext(Dispatchers.Default) {
