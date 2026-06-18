@@ -1013,3 +1013,8 @@ Tüm 12 madde âœ…. Detay:
 **Yapilanlar:** BUILD #17 -- assembleDebug SUCCESS 1s (cache), APK 24.79MB. D89 testleri (19 PASSED) + D88 arama fix dahil.
 **Agent:** -
 **Sonraki:** D91 KOD -- dark mode hardcode renk duzeltme (149 sorun tespit edildi, oncelik: FolderSheet + AllAppsDrawer).
+## Doengue 91 - 2026-06-18
+
+**Yapilanlar:** Dark mode tema renk duzeltmesi — AllAppsDrawer.kt ve FolderSheet.kt icindeki hardcoded Color(0xFF00897B)/Color(0xFF26C6DA)/Color.White renkleri MaterialTheme.colorScheme.primary/secondary/onSurface/surface ile degistirildi. 8 dosya seviyesi private val kaldirildi, her composable fonksiyona local MaterialTheme vals eklendi. Build CI agp plugin erisilemez (onceden var olan sorun, degisiklikle ilgisiz).
+**Kapsam:** AllAppsDrawer (NiagaraLetterHeader, NiagaraAppRow, DrawerSidebar, DrawerSearchBar, DrawerAppList, DrawerRecentFavSection), FolderSheet (FolderContextMenuSheet, FolderSheet, FolderRenameDialog) — 9 composable.
+**Sonraki:** D92 KOD — diger dosyalardaki hardcoded renk duzeltmesi (OnboardingScreen, SettingsAppearanceSection) veya ROADMAP backlog.

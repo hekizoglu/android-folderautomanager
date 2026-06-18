@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -59,15 +60,18 @@ fun FolderContextMenuSheet(
 ) {
     val catColor = runCatching {
         Color(android.graphics.Color.parseColor(folder.category.colorHex))
-    }.getOrDefault(Color(0xFF00897B))
+    }.getOrDefault(MaterialTheme.colorScheme.primary)
+    val primary   = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val surface   = MaterialTheme.colorScheme.surface
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1A1A2A),
+        containerColor = surface,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         dragHandle = {
             Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(0.2f)))
+                Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(onSurface.copy(0.2f)))
             }
         }
     ) {
@@ -86,40 +90,38 @@ fun FolderContextMenuSheet(
                     contentAlignment = Alignment.Center
                 ) { Text(folder.category.iconEmoji, fontSize = 22.sp) }
                 Column {
-                    Text(folder.category.categoryName, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                    Text("${folder.apps.size} uygulama", color = Color.White.copy(0.55f), fontSize = 12.sp)
+                    Text(folder.category.categoryName, color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Text("${folder.apps.size} uygulama", color = onSurface.copy(0.55f), fontSize = 12.sp)
                 }
             }
-            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
             // Klasörü Aç
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenFolder)
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.FolderOpen, null, tint = Color(0xFF00897B), modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.FolderOpen, null, tint = primary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
-                Text("Klasörü Aç", color = Color.White, fontSize = 15.sp)
+                Text("Klasörü Aç", color = onSurface, fontSize = 15.sp)
             }
-            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
             // Tüm Uygulamalar
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenAllApps)
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Apps, null, tint = Color.White.copy(0.7f), modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Apps, null, tint = onSurface.copy(0.7f), modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
-                Text("Tüm Uygulamalara Git", color = Color.White, fontSize = 15.sp)
+                Text("Tüm Uygulamalara Git", color = onSurface, fontSize = 15.sp)
             }
         }
     }
 }
 
-private val SheetBackground = Color(0xFF1A1A2A)
-private val DividerColor    = Color(0xFFFFFFFF).copy(alpha = 0.08f)
-private val TealColor       = Color(0xFF00897B)
-private val TextSecondary   = Color.White.copy(alpha = 0.55f)
+// Sabit renk — tema bağımsız overlay
+private val FolderSheetScrim = Color(0x66000000)
 
 private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
     AllAppsSortMode.ALPHA        -> sortedBy { it.appName.lowercase() }
@@ -138,8 +140,13 @@ fun FolderSheet(
     onAppClick: (String) -> Unit,
     onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
 ) {
-    val haptic = LocalHapticFeedback.current
-    val context = LocalContext.current
+    val haptic    = LocalHapticFeedback.current
+    val context   = LocalContext.current
+    val primary   = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val surface   = MaterialTheme.colorScheme.surface
+    val textSecondary = onSurface.copy(alpha = 0.55f)
+    val dividerColor  = onSurface.copy(alpha = 0.08f)
     var sortMode by remember {
         val saved = com.armutlu.apporganizer.utils.AppPrefs.getFolderSortMode(context)
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
@@ -171,8 +178,8 @@ fun FolderSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,
-        containerColor   = if (blurEnabled) Color(0xE61A1A2A) else Color(0xFF1A1A2A),
-        scrimColor       = Color(0x66000000),
+        containerColor   = if (blurEnabled) surface.copy(alpha = 0.9f) else surface,
+        scrimColor       = FolderSheetScrim,
         shape            = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle       = null,
     ) {
@@ -186,7 +193,7 @@ fun FolderSheet(
             val catColor = remember(folder.category.colorHex, customColor) {
                 val hex = customColor.ifBlank { null } ?: folder.category.colorHex
                 runCatching { Color(android.graphics.Color.parseColor(hex)) }
-                    .getOrDefault(TealColor)
+                    .getOrDefault(primary)
             }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp),
@@ -208,21 +215,21 @@ fun FolderSheet(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = customName.ifBlank { folder.category.categoryName },
-                        color = Color.White,
+                        color = onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text("${folder.apps.size} uygulama", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
+                    Text("${folder.apps.size} uygulama", color = onSurface.copy(alpha = 0.6f), fontSize = 14.sp)
                 }
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(androidx.compose.foundation.shape.CircleShape)
-                        .background(Color.White.copy(alpha = 0.08f))
+                        .background(onSurface.copy(alpha = 0.08f))
                         .clickable { showEditDialog = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, "Klasörü düzenle", tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Edit, "Klasörü düzenle", tint = onSurface.copy(0.6f), modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -253,31 +260,31 @@ fun FolderSheet(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
                     .height(40.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White.copy(alpha = 0.10f))
+                    .background(onSurface.copy(alpha = 0.10f))
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Search, null, tint = textSecondary, modifier = Modifier.size(16.dp))
                 Box(modifier = Modifier.weight(1f)) {
                     if (searchQuery.isEmpty()) {
                         Text(
                             "${customName.ifBlank { folder.category.categoryName }} icinde ara...",
-                            color = TextSecondary, fontSize = 13.sp
+                            color = textSecondary, fontSize = 13.sp
                         )
                     }
                     BasicTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         singleLine = true,
-                        cursorBrush = SolidColor(TealColor),
-                        textStyle = TextStyle(color = Color.White, fontSize = 13.sp)
+                        cursorBrush = SolidColor(primary),
+                        textStyle = TextStyle(color = onSurface, fontSize = 13.sp)
                     )
                 }
                 if (searchQuery.isNotEmpty()) {
                     Icon(
                         Icons.Default.Close, "Aramayı temizle",
-                        tint = TextSecondary,
+                        tint = textSecondary,
                         modifier = Modifier.size(16.dp).clickable { searchQuery = "" }
                     )
                 }
@@ -301,7 +308,7 @@ fun FolderSheet(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(alpha = 0.10f))
+                                .background(onSurface.copy(alpha = 0.10f))
                                 .semantics {
                                     contentDescription = "${app.appName}, $count bildirim"
                                     onClick(label = "Aç") { onAppClick(app.packageName); onDismiss(); true }
@@ -319,22 +326,22 @@ fun FolderSheet(
                                     modifier = Modifier
                                         .size(20.dp)
                                         .clip(androidx.compose.foundation.shape.CircleShape)
-                                        .background(TealColor),
+                                        .background(primary),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text("$count", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Column {
-                                    Text(app.appName, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                                    Text(app.appName, color = onSurface, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                                     if (text.isNotEmpty()) {
-                                        Text(text, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1)
+                                        Text(text, color = onSurface.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1)
                                     }
                                 }
                             }
                         }
                     }
                 }
-                Spacer(Modifier.fillMaxWidth().height(1.dp).background(DividerColor))
+                Spacer(Modifier.fillMaxWidth().height(1.dp).background(dividerColor))
             }
 
             // ── Sıralama chip'leri ────────────────────────────────────────────
@@ -348,7 +355,7 @@ fun FolderSheet(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
-                            .background(if (active) TealColor else Color.White.copy(alpha = 0.12f))
+                            .background(if (active) primary else onSurface.copy(alpha = 0.12f))
                             .clickable {
                                 sortMode = mode
                                 com.armutlu.apporganizer.utils.AppPrefs.setFolderSortMode(context, mode.name)
@@ -358,14 +365,14 @@ fun FolderSheet(
                         Text(
                             mode.label, fontSize = 11.sp,
                             fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                            color = if (active) Color.White else TextSecondary
+                            color = if (active) Color.White else textSecondary
                         )
                     }
                 }
             }
 
             // ── Divider ───────────────────────────────────────────────────────
-            Spacer(Modifier.fillMaxWidth().height(1.dp).background(DividerColor))
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(dividerColor))
 
             // ── App grid / Empty state ────────────────────────────────────────
             if (sortedApps.isEmpty()) {
@@ -376,7 +383,7 @@ fun FolderSheet(
                     Text(
                         if (searchQuery.isNotEmpty()) "\"$searchQuery\" bulunamadı"
                         else "Bu klasör boş",
-                        color = Color.White.copy(alpha = 0.5f), fontSize = 16.sp
+                        color = onSurface.copy(alpha = 0.5f), fontSize = 16.sp
                     )
                 }
             } else {
@@ -436,30 +443,33 @@ private fun FolderRenameDialog(
     var nameField by remember { mutableStateOf(currentName) }
     var selectedEmoji by remember { mutableStateOf(currentEmoji) }
     var selectedColor by remember { mutableStateOf(currentColor) }
+    val primary   = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val surface   = MaterialTheme.colorScheme.surface
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1E1E2E),
+        containerColor = surface,
         title = {
-            Text("Klasoru Duzenle", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Text("Klasoru Duzenle", color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 OutlinedTextField(
                     value = nameField,
                     onValueChange = { nameField = it },
-                    label = { Text("Klasor adi", color = Color.White.copy(0.6f)) },
+                    label = { Text("Klasor adi", color = onSurface.copy(0.6f)) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF00897B),
-                        unfocusedBorderColor = Color.White.copy(0.25f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = Color(0xFF00897B),
+                        focusedBorderColor = primary,
+                        unfocusedBorderColor = onSurface.copy(0.25f),
+                        focusedTextColor = onSurface,
+                        unfocusedTextColor = onSurface,
+                        cursorColor = primary,
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text("Emoji sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                Text("Emoji sec", color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     itemsIndexed(EMOJI_PICKER, key = { _, emoji -> emoji }) { _, emoji ->
                         Box(
@@ -467,8 +477,8 @@ private fun FolderRenameDialog(
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
-                                    if (emoji == selectedEmoji) Color(0xFF00897B).copy(0.35f)
-                                    else Color.White.copy(0.08f)
+                                    if (emoji == selectedEmoji) primary.copy(0.35f)
+                                    else onSurface.copy(0.08f)
                                 )
                                 .clickable { selectedEmoji = emoji },
                             contentAlignment = Alignment.Center
@@ -477,13 +487,13 @@ private fun FolderRenameDialog(
                         }
                     }
                 }
-                Text("Renk sec", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                Text("Renk sec", color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     itemsIndexed(COLOR_PRESETS, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
                         val isSelected = selectedColor == hex
-                        val resolvedColor = if (hex.isBlank()) Color.White.copy(0.2f)
-                            else runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(Color.White)
+                        val resolvedColor = if (hex.isBlank()) onSurface.copy(0.2f)
+                            else runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(onSurface)
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
@@ -510,12 +520,12 @@ private fun FolderRenameDialog(
         },
         confirmButton = {
             TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji, selectedColor) }) {
-                Text("Kaydet", color = Color(0xFF00897B), fontWeight = FontWeight.Bold)
+                Text("Kaydet", color = primary, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Iptal", color = Color.White.copy(0.6f))
+                Text("Iptal", color = onSurface.copy(0.6f))
             }
         }
     )
