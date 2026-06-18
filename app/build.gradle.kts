@@ -164,10 +164,11 @@ dependencies {
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    // Firebase — Analytics + Crashlytics
+    // Firebase — Analytics + Crashlytics + Messaging (FCM push)
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
 
     // WorkManager — zamanlanmis yedekleme gorevi
     implementation("androidx.work:work-runtime-ktx:2.9.0")

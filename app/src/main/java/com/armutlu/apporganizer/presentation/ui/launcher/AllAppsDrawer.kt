@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -67,19 +68,11 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
-// ── Renkler ──────────────────────────────────────────────────────────────────
-private val BgColor       = Color(0xCC000000)
-private val HeaderColor   = Color(0xFF00897B)
-private val SidebarColor  = Color(0xFF26C6DA)
-private val SidebarActive = Color.White
-private val TextPrimary   = Color.White
-private val TextSecondary = Color.White.copy(alpha = 0.55f)
-private val SearchBg      = Color.White.copy(alpha = 0.10f)
-private val RowHover      = Color.White.copy(alpha = 0.08f)
-private val DragHandle    = Color.White.copy(alpha = 0.20f)
-private val BadgeRed      = Color(0xFFE53935)
-private val BadgeGreen    = Color(0xFF43A047)
-private val BadgeYellow   = Color(0xFFFDD835)
+// ── Sabit renkler (temadan bağımsız) ─────────────────────────────────────────
+private val BgColor    = Color(0xCC000000)  // arka plan overlay — kasıtlı sabit
+private val BadgeRed   = Color(0xFFE53935)
+private val BadgeGreen = Color(0xFF43A047)
+private val BadgeYellow = Color(0xFFFDD835)
 
 private const val SWIPE_DOWN_THRESHOLD = 90f
 
@@ -230,11 +223,18 @@ private fun DrawerSearchBar(
     onSortModeChange: (AllAppsSortMode) -> Unit,
     context: android.content.Context
 ) {
+    val primary          = MaterialTheme.colorScheme.primary
+    val secondary        = MaterialTheme.colorScheme.secondary
+    val onSurface        = MaterialTheme.colorScheme.onSurface
+    val textSecondary    = onSurface.copy(alpha = 0.55f)
+    val searchBg         = onSurface.copy(alpha = 0.10f)
+    val dragHandle       = onSurface.copy(alpha = 0.20f)
+
     val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
 
     // Drag handle
     Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-        Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(DragHandle))
+        Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(dragHandle))
     }
     Spacer(Modifier.height(10.dp))
 
@@ -244,34 +244,34 @@ private fun DrawerSearchBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("Uygulamalar", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+        Text("Uygulamalar", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = onSurface)
         val countText = if (searchQuery.isNotBlank() || quickFilter != 0)
             "$filteredCount / $totalCount" else "$totalCount uygulama"
-        Text(countText, fontSize = 12.sp, color = TextSecondary)
+        Text(countText, fontSize = 12.sp, color = textSecondary)
     }
 
     // Arama + kapat
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.weight(1f).height(44.dp)
-                .clip(RoundedCornerShape(22.dp)).background(SearchBg).padding(horizontal = 14.dp),
+                .clip(RoundedCornerShape(22.dp)).background(searchBg).padding(horizontal = 14.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Search, "Ara", tint = TextSecondary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Search, "Ara", tint = textSecondary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Box(modifier = Modifier.weight(1f)) {
-                    if (searchQuery.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 14.sp)
+                    if (searchQuery.isEmpty()) Text("Uygulama ara...", color = textSecondary, fontSize = 14.sp)
                     BasicTextField(
                         value = searchQuery, onValueChange = onSearchQueryChange,
-                        singleLine = true, cursorBrush = SolidColor(HeaderColor),
-                        textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
+                        singleLine = true, cursorBrush = SolidColor(primary),
+                        textStyle = TextStyle(color = onSurface, fontSize = 14.sp),
                         modifier = Modifier.focusRequester(searchFocusRequester)
                     )
                 }
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, "Temizle", tint = TextSecondary, modifier = Modifier.size(15.dp))
+                        Icon(Icons.Default.Close, "Temizle", tint = textSecondary, modifier = Modifier.size(15.dp))
                     }
                 }
             }
@@ -280,7 +280,7 @@ private fun DrawerSearchBar(
             onClick = { saveSearchIfNeeded(); keyboardController?.hide(); onClose() },
             modifier = Modifier.size(40.dp)
         ) {
-            Icon(Icons.Default.Close, "Kapat", tint = TextSecondary, modifier = Modifier.size(20.dp))
+            Icon(Icons.Default.Close, "Kapat", tint = textSecondary, modifier = Modifier.size(20.dp))
         }
     }
 
@@ -293,14 +293,14 @@ private fun DrawerSearchBar(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Search, "Arama geçmişi", tint = TextSecondary, modifier = Modifier.size(14.dp))
+            Icon(Icons.Default.Search, "Arama geçmişi", tint = textSecondary, modifier = Modifier.size(14.dp))
             searchHistory.forEach { q ->
                 Box(
                     modifier = Modifier.clip(RoundedCornerShape(14.dp))
                         .background(Color.White.copy(alpha = 0.10f))
                         .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSearchQueryChange(q) }
                         .padding(horizontal = 10.dp, vertical = 5.dp)
-                ) { Text(q, fontSize = 12.sp, color = TextSecondary, maxLines = 1) }
+                ) { Text(q, fontSize = 12.sp, color = textSecondary, maxLines = 1) }
             }
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(14.dp))
@@ -320,7 +320,7 @@ private fun DrawerSearchBar(
             val active = quickFilter == idx
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                    .background(if (active) SidebarColor.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.08f))
+                    .background(if (active) secondary.copy(alpha = 0.8f) else onSurface.copy(alpha = 0.08f))
                     .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onQuickFilterChange(idx) }
                     .padding(horizontal = 11.dp, vertical = 5.dp)
             ) {
@@ -329,7 +329,7 @@ private fun DrawerSearchBar(
                     label + if (active) countLabel else "",
                     fontSize = 11.sp,
                     fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                    color = if (active) Color.White else TextSecondary
+                    color = if (active) Color.White else textSecondary
                 )
             }
         }
@@ -344,7 +344,7 @@ private fun DrawerSearchBar(
             val active = sortMode == mode
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                    .background(if (active) HeaderColor else Color.White.copy(alpha = 0.12f))
+                    .background(if (active) primary else onSurface.copy(alpha = 0.12f))
                     .clickable {
                         onSortModeChange(mode)
                         context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
@@ -355,7 +355,7 @@ private fun DrawerSearchBar(
                 Text(
                     mode.label, fontSize = 11.sp,
                     fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                    color = if (active) Color.White else TextSecondary
+                    color = if (active) Color.White else textSecondary
                 )
             }
         }
@@ -381,6 +381,8 @@ private fun DrawerAppList(
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     saveSearchIfNeeded: () -> Unit
 ) {
+    val onSurface     = MaterialTheme.colorScheme.onSurface
+    val textSecondary = onSurface.copy(alpha = 0.55f)
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
             if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
@@ -419,7 +421,7 @@ private fun DrawerAppList(
             if (state.sortedApps.isEmpty()) {
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
-                        Text("Sonuç bulunamadı", color = TextSecondary, fontSize = 14.sp)
+                        Text("Sonuç bulunamadı", color = textSecondary, fontSize = 14.sp)
                     }
                 }
             } else {
@@ -454,6 +456,7 @@ private fun DrawerRecentFavSection(
     onFavoriteAppClick: (String) -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    val onSurface = MaterialTheme.colorScheme.onSurface
     Column(modifier = Modifier.fillMaxWidth()) {
         if (recentApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '★', label = "Son Kullanılanlar")
@@ -481,7 +484,7 @@ private fun DrawerRecentFavSection(
                                 modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
                         } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
                         Spacer(Modifier.height(3.dp))
-                        Text(app.appName, color = TextPrimary, fontSize = 10.sp, maxLines = 1,
+                        Text(app.appName, color = onSurface, fontSize = 10.sp, maxLines = 1,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
@@ -514,7 +517,7 @@ private fun DrawerRecentFavSection(
                                 modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
                         } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
                         Spacer(Modifier.height(3.dp))
-                        Text(app.appName, color = TextPrimary, fontSize = 10.sp, maxLines = 1,
+                        Text(app.appName, color = onSurface, fontSize = 10.sp, maxLines = 1,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
@@ -535,6 +538,8 @@ private fun DrawerSidebar(
     scope: kotlinx.coroutines.CoroutineScope,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
+    val secondary = MaterialTheme.colorScheme.secondary
+    val onSurface = MaterialTheme.colorScheme.onSurface
     val sidebarPaddingDp = 56.dp
     var boxHeightPx by remember { mutableStateOf(0f) }
 
@@ -600,7 +605,7 @@ private fun DrawerSidebar(
                     text = entry.label,
                     fontSize = if (isActive) 16.sp else 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isActive) SidebarActive else SidebarColor,
+                    color = if (isActive) onSurface else secondary,
                     modifier = Modifier.scale(scale).padding(horizontal = 2.dp),
                     maxLines = 1
                 )
@@ -839,7 +844,7 @@ private fun NiagaraLetterHeader(letter: Char, label: String? = null) {
     Text(
         text = label ?: letter.toString(),
         fontSize = if (label != null) 13.sp else 34.sp,
-        fontWeight = FontWeight.Black, color = HeaderColor,
+        fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 18.dp, bottom = 2.dp)
     )
 }
@@ -858,6 +863,11 @@ fun NiagaraAppRow(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
+    val primary       = MaterialTheme.colorScheme.primary
+    val secondary     = MaterialTheme.colorScheme.secondary
+    val onSurface     = MaterialTheme.colorScheme.onSurface
+    val textSecondary = onSurface.copy(alpha = 0.55f)
+    val rowHover      = onSurface.copy(alpha = 0.08f)
     val icon = rememberAppIcon(app.packageName, iconPackPkg)
     val notifColor = when {
         app.notificationCount == 0 -> null
@@ -886,7 +896,7 @@ fun NiagaraAppRow(
                 onClick(label = "Aç") { onClick(); true }
             }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .background(if (isActive) RowHover else Color.Transparent)
+            .background(if (isActive) rowHover else Color.Transparent)
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -915,7 +925,7 @@ fun NiagaraAppRow(
             } ?: run {
                 Box(
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp))
-                        .background(HeaderColor.copy(alpha = 0.3f)),
+                        .background(primary.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(app.appName.firstOrNull()?.toString() ?: "?", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -940,13 +950,13 @@ fun NiagaraAppRow(
         // Isim + alt bilgi
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = TextPrimary,
+                app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = onSurface,
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
             if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
                     app.notificationText,
-                    fontSize = 11.sp, color = TextSecondary.copy(alpha = 0.8f), maxLines = 1,
+                    fontSize = 11.sp, color = textSecondary.copy(alpha = 0.8f), maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             } else {
@@ -957,7 +967,7 @@ fun NiagaraAppRow(
                 if (!catLabel.isNullOrBlank() && app.categoryId != "other" && app.categoryId != "uncategorized") {
                     Text(
                         catLabel,
-                        fontSize = 11.sp, color = TextSecondary, maxLines = 1
+                        fontSize = 11.sp, color = textSecondary, maxLines = 1
                     )
                 }
             }
@@ -966,7 +976,7 @@ fun NiagaraAppRow(
         // Sağ bilgi (boyut / tarih / kullanım)
         if (trailingText != null) {
             Text(
-                trailingText, fontSize = 11.sp, color = SidebarColor, fontWeight = FontWeight.Medium,
+                trailingText, fontSize = 11.sp, color = secondary, fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
