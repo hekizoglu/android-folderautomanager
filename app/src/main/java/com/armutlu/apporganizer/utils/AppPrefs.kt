@@ -260,5 +260,12 @@ object AppPrefs {
     fun setDeepSeekApiKey(context: Context, key: String) =
         prefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, key.trim()).apply()
 
+    // FCM token — push bildirim için sunucu kaydı
+    const val KEY_FCM_TOKEN = "fcm_token"
+    fun getFcmToken(context: Context): String =
+        prefs(context).getString(KEY_FCM_TOKEN, "") ?: ""
+    fun setFcmToken(context: Context, token: String) =
+        prefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
