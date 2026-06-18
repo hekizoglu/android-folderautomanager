@@ -6,8 +6,12 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
     id("jacoco")
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") apply false
     id("com.google.firebase.crashlytics")
+}
+
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 val keystoreProps = Properties().also { props ->
