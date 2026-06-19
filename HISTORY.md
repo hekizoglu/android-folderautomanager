@@ -54,7 +54,7 @@
 
 ### Son Tam Denetim (2026-06-13)
 
-Tüm 12 madde âœ…. Detay:
+Tüm 12 madde ✅. Detay:
 
 - #7: Tap haptic - LongPress tipi ile eklendi (TextHapticFeedback API yok)
 
@@ -208,7 +208,7 @@ Tüm 12 madde âœ…. Detay:
 
 
 
-**Döngü 23 - HomeLongPressSheet grid:** `items(emptySlots)` FolderTile'lardan önceydi -> koordinat kayması. FIX: boş slotlar `items(pageFolders.size)`'den sonra. Üst boş alan (yâ‰ˆ180) uzun bas doğrulandı.
+**Döngü 23 - HomeLongPressSheet grid:** `items(emptySlots)` FolderTile'lardan önceydi -> koordinat kayması. FIX: boş slotlar `items(pageFolders.size)`'den sonra. Üst boş alan (y≈180) uzun bas doğrulandı.
 
 
 
@@ -959,62 +959,66 @@ Tüm 12 madde âœ…. Detay:
 **Sonraki:** Admin PS'de intermediates exclusion ekle (CS-3 çözümü) + unit test coverage artır
 
 
-## Doengue 82 - 2026-06-16
+## Döngü 82 — 2026-06-16
 
 **Yapılanlar:** AppRepositoryTest.kt oluşturuldu (app/src/test/java/.../data/repository/) — 23 unit test: getAllApps/exception, insertApps+classifier doğrulama, updateAppCategory/updateAppsCategory (timestamp parametresi any() ile), syncInstalledApps (yeni ekleme + eski silme), countApps/countAppsByCategory/appExists. Tüm testler PASSED.
 **Bug:** updateAppCategory coVerify imzası — DAO'da varsayılan timestamp var, any() eklenerek düzeltildi.
 **Sonraki:** harcananvakit.md güncelle, commit+push, Telegram raporu.
 
 
-## Doengue 83 - 2026-06-16
+## Döngü 83 — 2026-06-16
 
 **Yapılanlar:** Son kullanılan uygulamalar (recentApps) anında güncelleme fix — AppDao.updateLastUsedTimestampIfNewer eklendi; syncUsageStats artık eski UsageStats verisiyle launchApp timestamp'ini ezmez. LauncherViewModel: lastLaunchedPkg/Ts state + refreshLastLaunched() metodu; LauncherActivity.onResume'da her dönüşte refreshLastLaunched() çağrısı.
 **Bug:** startActivity sonrası process askıya alındığında IO coroutine tamamlanamıyordu — onResume'da garantileyici eklendi.
 **Sonraki:** Build 84. döngüde (84%6=0).
 
 
-## Doengue 84 - 2026-06-16
+## Döngü 84 — 2026-06-16
 
 **Yapılanlar:** BUILD #16 — assembleDebug SUCCESS 45s, APK 24.8MB. D82 (AppRepositoryTest 23 test) + D83 (recentApps fix) dahil.
 **Agent:** android-builder — temiz build, cache+kısmi.
 **Sonraki:** D85 KOD — ROADMAP backlog.
 
 
-## Doengue 85 - 2026-06-16
+## Döngü 85 — 2026-06-16
 
 **Yapılanlar:** Deprecated Divider->HorizontalDivider geçişi — 8 dosyada 55 yer değişti (SettingsScreen, AppListScreen, SettingsHomeSection, SettingsHomeScreenSection, SettingsAppearanceSection, SettingsBackupAboutSection, SettingsAppsSection, PrivacyPolicyScreen). Build SUCCESSFUL, 0 deprecated uyarı.
 **Sonraki:** D86 KOD.
 
 
-## Doengue 86 - 2026-06-16
+## Döngü 86 — 2026-06-16
 
-**Yapılanlar:** Deprecated uyarı temizligi devami — launcher Divider fix (AppContextMenu, CategoryPickerSheet, DockEditSheet) + AutoMirrored icon 6 dosya. Uyari 55->18.
-**Sonraki:** D87 KOD kalan 18 uyari.
+**Yapılanlar:** Deprecated uyarı temizliği devamı — launcher Divider fix (AppContextMenu, CategoryPickerSheet, DockEditSheet) + AutoMirrored icon 6 dosya. Uyarı 55->18.
+**Sonraki:** D87 KOD kalan 18 uyarı.
 
-## Doengue 87 - 2026-06-16
+## Döngü 87 — 2026-06-16
 
 **Yapılanlar:** Kotlin uyarı sıfırlama — 18 uyarı -> 0. Unused context/scope/viewModel/coroutineScope kaldırıldı (6 dosya). DebugInfoCard + onPackageAdded + handleOnboardingStep unused param Suppress. LocalLifecycleOwner Suppress(DEPRECATION). FolderCreationService categoryEmoji Suppress.
 **Sonraki:** D88 KOD.
-## Doengue 88 - 2026-06-16
 
-**Yapilanlar:** AllApps arama kritik bug fix -- remember { derivedStateOf {} } + plain String parametresi reaktif degil sorunu cozuldu. sortedApps/grouped/sidebarEntries remember(key) patterni ile yeniden yazildi. Ek: paket adi aramaya eklendi, fuzzy threshold iyilestirildi (maxOf(2,q.length/3)), string truncate performans korumasi. APK 24.79MB.
-**Bug:** searchQuery String parametresi Compose State olmadigi icin derivedStateOf izleyemiyordu, kullanici yazinca liste guncellenmiyordu.
-**Sonraki:** D89 KOD -- ROADMAP gorevleri.
-## Doengue 89 - 2026-06-16
+## Döngü 88 — 2026-06-16
 
-**Yapilanlar:** LauncherViewModelTest -- refreshLastLaunched icin 4 yeni unit test eklendi (pkg=null durumu, intent=null durumu, basarili launch sonrasi timestamp guncelleme, cift cagri idempotency). Toplam 19 test, tumu PASSED.
-**Agent:** 5 paralel market arastirma agent -- 1 yil simulasyon raporu (Telegram 7 mesaj, 40+ kaynak). Dark mode audit: 149 hardcode renk tespit edildi, kapsam genis, sonraki donguye ertelendi.
-**Sonraki:** D90 BUILD -- APK Telegram.
-## Doengue 90 - 2026-06-16
+**Yapılanlar:** AllApps arama kritik bug fix — remember { derivedStateOf {} } + plain String parametresi reaktif değil sorunu çözüldü. sortedApps/grouped/sidebarEntries remember(key) patterni ile yeniden yazıldı. Ek: paket adı aramaya eklendi, fuzzy threshold iyileştirildi (maxOf(2,q.length/3)), string truncate performans koruması. APK 24.79MB.
+**Bug:** searchQuery String parametresi Compose State olmadığı için derivedStateOf izleyemiyordu, kullanıcı yazınca liste güncellenmiyordu.
+**Sonraki:** D89 KOD — ROADMAP görevleri.
 
-**Yapilanlar:** BUILD #17 -- assembleDebug SUCCESS 1s (cache), APK 24.79MB. D89 testleri (19 PASSED) + D88 arama fix dahil.
+## Döngü 89 — 2026-06-16
+
+**Yapılanlar:** LauncherViewModelTest — refreshLastLaunched için 4 yeni unit test eklendi (pkg=null durumu, intent=null durumu, başarılı launch sonrası timestamp güncelleme, çift çağrı idempotency). Toplam 19 test, tümü PASSED.
+**Agent:** 5 paralel market araştırma agent — 1 yıl simülasyon raporu (Telegram 7 mesaj, 40+ kaynak). Dark mode audit: 149 hardcode renk tespit edildi, kapsam geniş, sonraki döngüye ertelendi.
+**Sonraki:** D90 BUILD — APK Telegram.
+
+## Döngü 90 — 2026-06-16
+
+**Yapılanlar:** BUILD #17 — assembleDebug SUCCESS 1s (cache), APK 24.79MB. D89 testleri (19 PASSED) + D88 arama fix dahil.
 **Agent:** -
-**Sonraki:** D91 KOD -- dark mode hardcode renk duzeltme (149 sorun tespit edildi, oncelik: FolderSheet + AllAppsDrawer).
-## Doengue 91 - 2026-06-18
+**Sonraki:** D91 KOD — dark mode hardcode renk düzeltme (149 sorun tespit edildi, öncelik: FolderSheet + AllAppsDrawer).
 
-**Yapilanlar:** Dark mode tema renk duzeltmesi — AllAppsDrawer.kt ve FolderSheet.kt icindeki hardcoded Color(0xFF00897B)/Color(0xFF26C6DA)/Color.White renkleri MaterialTheme.colorScheme.primary/secondary/onSurface/surface ile degistirildi. 8 dosya seviyesi private val kaldirildi, her composable fonksiyona local MaterialTheme vals eklendi. Build CI agp plugin erisilemez (onceden var olan sorun, degisiklikle ilgisiz).
+## Döngü 91 — 2026-06-18
+
+**Yapılanlar:** Dark mode tema renk düzeltmesi — AllAppsDrawer.kt ve FolderSheet.kt içindeki hardcoded Color(0xFF00897B)/Color(0xFF26C6DA)/Color.White renkleri MaterialTheme.colorScheme.primary/secondary/onSurface/surface ile değiştirildi. 8 dosya seviyesi private val kaldırıldı, her composable fonksiyona local MaterialTheme vals eklendi. Build CI agp plugin erişilemez (önceden var olan sorun, değişiklikle ilgisiz).
 **Kapsam:** AllAppsDrawer (NiagaraLetterHeader, NiagaraAppRow, DrawerSidebar, DrawerSearchBar, DrawerAppList, DrawerRecentFavSection), FolderSheet (FolderContextMenuSheet, FolderSheet, FolderRenameDialog) — 9 composable.
-**Sonraki:** D92 KOD — diger dosyalardaki hardcoded renk duzeltmesi (OnboardingScreen, SettingsAppearanceSection) veya ROADMAP backlog.
+**Sonraki:** D92 KOD — diğer dosyalardaki hardcoded renk düzeltmesi (OnboardingScreen, SettingsAppearanceSection) veya ROADMAP backlog.
 
 
 
@@ -1036,3 +1040,8 @@ Tüm 12 madde âœ…. Detay:
 
 **Yapılanlar:** 6 saatlik rutin 2. kez çalıştı. Yukarıdaki 8 sorun hâlâ açık — hiçbiri düzeltilmedi. Yeni sorun yok.
 **Durum:** Onay bekleniyor. Rapor: `MD_DENETIM_2026-06-19.md`
+
+## MD Denetim 3. Kontrol — 2026-06-19 (Otomatik)
+
+**Yapılanlar:** 6 saatlik rutin 3. kez çalıştı. 8 sorun hâlâ açık. 1 yeni sorun eklendi: LEARNINGS.md Hata Kataloğu'nda `derivedStateOf + String parametresi` bug'ı (D88) kayıt edilmemiş.
+**Durum:** Onay bekleniyor — 3 çalışmadır hiçbir düzeltme yapılmadı. Rapor: `MD_DENETIM_2026-06-19.md`

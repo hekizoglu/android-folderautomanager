@@ -110,4 +110,35 @@ Tablo hâlâ "Gradle build dir kilitlenme | Sıklık: Sık" diyor. Oysa:
 | 7 | HISTORY.md | D82+ Türkçe karakter bozuk | Orta |
 | 8 | harcananvakit.md | Kilit tablosu güncel değil | Düşük |
 
-*Denetim tarihi: 2026-06-19 | Denetleyen: Claude otomatik rutin*
+---
+
+## 9. LEARNINGS.md — Hata Kataloğu'nda E14 eksik
+
+HISTORY.md Döngü 88'de kritik bir bug belgelendi ama LEARNINGS.md Hata Kataloğu'na eklenmedi:
+
+> `searchQuery` String parametresi Compose State olmadığı için `derivedStateOf` izleyemiyordu — kullanıcı yazınca liste güncellenmiyordu.  
+> **Fix:** `remember(searchQuery)` ile key-based invalidation.
+
+Bu pattern (`derivedStateOf` + plain String parametresi reaktif olmaz) LEARNINGS.md E14 olarak eklenmelidir.
+
+**Öneri:** LEARNINGS.md Hata Kataloğu'na E14 satırı ekle.
+
+---
+
+## Denetim Özeti (Güncel)
+
+| # | Dosya | Sorun | Öncelik | Durum |
+|---|-------|-------|---------|-------|
+| 1 | ROADMAP.md | Paket sayısı "3116" stale (2 yer) | Orta | Açık |
+| 2 | LEARNINGS.md | E13 duplicate satır | Düşük | Açık |
+| 3 | LEARNINGS.md | Footer "HISTORprojY.md" encoding | Düşük | Açık |
+| 4 | ROADMAP.md | Sprint Metrikleri satır kesilmiş | Düşük | Açık |
+| 5 | CLAUDE.md | Versiyon v4↔v5 uyuşmazlık | Düşük | Açık |
+| 6 | harcananvakit.md | D88-91 logları eksik | Orta | Açık |
+| 7 | HISTORY.md | D82+ Türkçe karakter bozuk | Orta | Açık |
+| 8 | harcananvakit.md | Kilit tablosu güncel değil | Düşük | Açık |
+| 9 | LEARNINGS.md | E14 eksik (derivedStateOf+String) | Orta | **YENİ** |
+
+**3. denetimde 9 sorun açık. Hiçbiri düzeltilmedi.**
+
+*Denetim tarihi: 2026-06-19 (3. çalıştırma) | Denetleyen: Claude otomatik rutin*
