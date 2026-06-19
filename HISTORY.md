@@ -1031,3 +1031,8 @@ Tüm 12 madde âœ…. Detay:
 7. HISTORY.md Döngü 82+ başlıkları: "Doengue"/"Yapilanlar" — Türkçe karakter bozukluğu
 8. harcananvakit.md "Tekrar Eden Sorunlar" tablosu: Defender exclusion (74x hız) yansıtılmamış
 **Sonraki:** Hüseyin onayı ile düzeltme döngüsü başlatılacak.
+
+## MD Denetim 2. Kontrol — 2026-06-19 (Otomatik)
+
+**Yapılanlar:** 6 saatlik rutin 2. kez çalıştı. Yukarıdaki 8 sorun hâlâ açık — hiçbiri düzeltilmedi. Yeni sorun yok.
+**Durum:** Onay bekleniyor. Rapor: `MD_DENETIM_2026-06-19.md`
