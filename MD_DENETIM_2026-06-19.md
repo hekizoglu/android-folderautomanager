@@ -75,15 +75,16 @@ Son kayıt: Döngü 87 (2026-06-16 10:35-10:55). Döngü 88-91 logları yok:
 
 ---
 
-## 7. HISTORY.md — Encoding bozukluğu (Döngü 82+)
+## 7. harcananvakit.md — Encoding bozukluğu (Döngü 86 satırı)
 
-Döngü 82 ve sonraki başlıklarda Türkçe karakter bozukluğu:
-- `Doengue` → `Döngü`
-- `Yapilanlar` → `Yapılanlar`
-- `temizligi` → `temizliği`
-- `Ayarlar talep formu` → `Ayarlar Talep Formu`
+> **4. Kontrolde düzeltme:** Önceki raporlarda bu bozukluk HISTORY.md'ye atfedilmişti. Dosya yeniden okundu — HISTORY.md'de encoding sorunu yok. Gerçek bozukluk `harcananvakit.md` satır 73'te:
 
-**Öneri:** `PYTHONIOENCODING=utf-8 python scripts/fix_encoding.py HISTORY.md`
+```
+| Dongue 86 — AutoMirrored+Divider 55->18 uyari |
+```
+Doğrusu: `Döngü 86 — AutoMirrored+Divider 55->18 uyarı`
+
+**Öneri:** `python scripts/fix_encoding.py harcananvakit.md` veya satırı manuel düzelt.
 
 ---
 
@@ -94,21 +95,6 @@ Tablo hâlâ "Gradle build dir kilitlenme | Sıklık: Sık" diyor. Oysa:
 - Döngü 78-79: `merged_res` kilidi hâlâ çıkıyor (farklı bir sorun)
 
 **Öneri:** Tabloyu güncelle — genel kilit sorunu "Çözüldü (Defender excl.)", merged_res kilidi ayrı satır olarak ekle.
-
----
-
-## Özet
-
-| # | Dosya | Sorun | Öncelik |
-|---|-------|-------|---------|
-| 1 | ROADMAP.md | Paket sayısı "3116" stale | Orta |
-| 2 | LEARNINGS.md | E13 duplicate satır | Düşük |
-| 3 | LEARNINGS.md | Footer "HISTORprojY.md" encoding | Düşük |
-| 4 | ROADMAP.md | Sprint Metrikleri satır kesilmiş | Düşük |
-| 5 | CLAUDE.md | Versiyon v4↔v5 uyuşmazlık | Düşük |
-| 6 | harcananvakit.md | D88-91 logları eksik | Orta |
-| 7 | HISTORY.md | D82+ Türkçe karakter bozuk | Orta |
-| 8 | harcananvakit.md | Kilit tablosu güncel değil | Düşük |
 
 ---
 
@@ -125,7 +111,21 @@ Bu pattern (`derivedStateOf` + plain String parametresi reaktif olmaz) LEARNINGS
 
 ---
 
-## Denetim Özeti (Güncel)
+## 10. LEARNINGS.md — Room DB Versiyon Geçmişi v8 eksik (YENİ)
+
+`LEARNINGS.md` Room DB Versiyon Geçmişi bölümü v7'de bitiyor:
+```
+- v7: 18 yeni kategori — şema değişimi yok, MIGRATION_6_7 boş migration ile eklendi
+```
+Oysa `CLAUDE.md §7`'de şu bilgi var: *"Room DB: v8 (v7→v8 boş migration, 2026-06-16)"*
+
+Migration şablonu LEARNINGS.md'de örnek olarak gösterilmiş ancak sürüm geçmişine v8 kaydı eklenmemiş.
+
+**Öneri:** LEARNINGS.md → Room DB Versiyon Geçmişi'ne ekle: `- v8: boş migration (2026-06-16, şema değişimi yok)`
+
+---
+
+## Denetim Özeti (4. Kontrol — Güncel)
 
 | # | Dosya | Sorun | Öncelik | Durum |
 |---|-------|-------|---------|-------|
@@ -135,10 +135,13 @@ Bu pattern (`derivedStateOf` + plain String parametresi reaktif olmaz) LEARNINGS
 | 4 | ROADMAP.md | Sprint Metrikleri satır kesilmiş | Düşük | Açık |
 | 5 | CLAUDE.md | Versiyon v4↔v5 uyuşmazlık | Düşük | Açık |
 | 6 | harcananvakit.md | D88-91 logları eksik | Orta | Açık |
-| 7 | HISTORY.md | D82+ Türkçe karakter bozuk | Orta | Açık |
+| 7 | harcananvakit.md | D86 satırı encoding bozuk ("Dongue 86", "uyari") | Orta | Açık — önceki raporda HISTORY.md olarak yanlış atfedilmişti |
 | 8 | harcananvakit.md | Kilit tablosu güncel değil | Düşük | Açık |
-| 9 | LEARNINGS.md | E14 eksik (derivedStateOf+String) | Orta | **YENİ** |
+| 9 | LEARNINGS.md | E14 eksik (derivedStateOf+String) | Orta | Açık |
+| 10 | LEARNINGS.md | Room DB versiyon geçmişi v7'de bitiyor, v8 yok | Düşük | **YENİ** |
 
-**3. denetimde 9 sorun açık. Hiçbiri düzeltilmedi.**
+**4. denetimde 10 sorun tespit edildi. 9 sorun hâlâ açık + 1 yeni. Düzeltme onayı bekleniyor.**
 
-*Denetim tarihi: 2026-06-19 (3. çalıştırma) | Denetleyen: Claude otomatik rutin*
+---
+
+*Denetim tarihi: 2026-06-19 (4. çalıştırma) | Denetleyen: Claude otomatik rutin*

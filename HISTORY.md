@@ -1045,3 +1045,8 @@ Tüm 12 madde ✅. Detay:
 
 **Yapılanlar:** 6 saatlik rutin 3. kez çalıştı. 8 sorun hâlâ açık. 1 yeni sorun eklendi: LEARNINGS.md Hata Kataloğu'nda `derivedStateOf + String parametresi` bug'ı (D88) kayıt edilmemiş.
 **Durum:** Onay bekleniyor — 3 çalışmadır hiçbir düzeltme yapılmadı. Rapor: `MD_DENETIM_2026-06-19.md`
+
+## MD Denetim 4. Kontrol — 2026-06-19 (Otomatik)
+
+**Yapılanlar:** 4. otomatik rutin çalıştı. 9 sorun hâlâ açık. 1 yeni sorun eklendi (#10): LEARNINGS.md Room DB versiyon geçmişi v7'de bitiyor, v8 kaydı eksik. Önceki rapordaki #7 (HISTORY.md encoding) düzeltildi — gerçek bozukluk harcananvakit.md satır 73'te ("Dongue 86").
+**Durum:** Toplam 10 sorun açık. Düzeltme onayı bekleniyor. Rapor: `MD_DENETIM_2026-06-19.md`
