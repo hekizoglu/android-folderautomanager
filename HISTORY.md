@@ -455,7 +455,6 @@ Tüm 12 madde âœ…. Detay:
 
 
 
-
 ---
 
 
@@ -713,8 +712,6 @@ Tüm 12 madde âœ…. Detay:
 **CLAUDE.md/LEARNINGS.md:** LEARNINGS L1 doğrulandı - WhatsApp exactMatchMap'te CAT_COMMUNICATION, MANUFACTURER_PREFIX_MAP'ten çıkarıldı
 
 **Sonraki:** Döngü 53 - KOD, backlog görev
-
-
 
 
 
@@ -1018,3 +1015,19 @@ Tüm 12 madde âœ…. Detay:
 **Yapilanlar:** Dark mode tema renk duzeltmesi — AllAppsDrawer.kt ve FolderSheet.kt icindeki hardcoded Color(0xFF00897B)/Color(0xFF26C6DA)/Color.White renkleri MaterialTheme.colorScheme.primary/secondary/onSurface/surface ile degistirildi. 8 dosya seviyesi private val kaldirildi, her composable fonksiyona local MaterialTheme vals eklendi. Build CI agp plugin erisilemez (onceden var olan sorun, degisiklikle ilgisiz).
 **Kapsam:** AllAppsDrawer (NiagaraLetterHeader, NiagaraAppRow, DrawerSidebar, DrawerSearchBar, DrawerAppList, DrawerRecentFavSection), FolderSheet (FolderContextMenuSheet, FolderSheet, FolderRenameDialog) — 9 composable.
 **Sonraki:** D92 KOD — diger dosyalardaki hardcoded renk duzeltmesi (OnboardingScreen, SettingsAppearanceSection) veya ROADMAP backlog.
+
+
+
+## MD Denetim — 2026-06-19 (Otomatik)
+
+**Yapılanlar:** 6 saatlik MD denetim rutini çalıştı. 8 sorun tespit edildi, düzeltme bekliyor.
+**Sorunlar:**
+1. ROADMAP.md §Tamamlananlar + §Aşama 3: "3116+" paket sayısı stale → güncel: 3717
+2. LEARNINGS.md Hata Kataloğu: E13 satırı iki kez yazılmış (duplicate)
+3. LEARNINGS.md footer: "HISTORprojY.md" encoding hatası → doğrusu: "HISTORY.md"
+4. ROADMAP.md Sprint Metrikleri son satır kesilmiş: "...düzeltme (K1/K" — tamamlanmamış
+5. CLAUDE.md dipnot "v4" ↔ HISTORY.md D69'da "v5" — versiyon uyuşmazlığı
+6. harcananvakit.md: Döngü 88-91 zaman logları eksik
+7. HISTORY.md Döngü 82+ başlıkları: "Doengue"/"Yapilanlar" — Türkçe karakter bozukluğu
+8. harcananvakit.md "Tekrar Eden Sorunlar" tablosu: Defender exclusion (74x hız) yansıtılmamış
+**Sonraki:** Hüseyin onayı ile düzeltme döngüsü başlatılacak.
