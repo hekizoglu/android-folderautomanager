@@ -14,15 +14,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Ana Ekran Ozellikleri, Widget ve Ikon Paketi bolumu.
- * SettingsScreen LazyColumn icinde item{} bloklariyla cagirilir.
+ * Ana Ekran Özellikleri, Widget ve İkon Paketi bölümü.
+ * SettingsScreen LazyColumn içinde item{} bloklarıyla çağrılır.
  */
 @Composable
 fun SettingsHomeScreenSection() {
     val context = LocalContext.current
 
-    // ── Ana Ekran Ozellikleri ─────────────────────────────────────────────
-    SettingsSectionTitle("Ana Ekran Ozellikleri")
+    // ── Ana Ekran Özellikleri ─────────────────────────────────────────────
+    SettingsSectionTitle("Ana Ekran Özellikleri")
     var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
     var newBadgeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
     var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
@@ -38,7 +38,7 @@ fun SettingsHomeScreenSection() {
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = "Favoriler",
-            subtitle = "Uzun basinca favoriye eklenen uygulamalar ana ekranda gosterilir (varsayilan: kapali)",
+            subtitle = "Uzun basınca favoriye eklenen uygulamalar ana ekranda gösterilir (varsayılan: kapalı)",
             checked = favoritesEnabled,
             onCheckedChange = {
                 favoritesEnabled = it
@@ -48,8 +48,8 @@ fun SettingsHomeScreenSection() {
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.AutoAwesome,
-            title = "Uygulama Onerileri",
-            subtitle = "Arama cubugununun altinda son kullanilan 4 uygulama",
+            title = "Uygulama Önerileri",
+            subtitle = "Arama çubuğunun altında en çok kullanılan 4 uygulama",
             checked = suggestionsEnabled,
             onCheckedChange = {
                 suggestionsEnabled = it
@@ -59,8 +59,8 @@ fun SettingsHomeScreenSection() {
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.History,
-            title = "Son Kullanilanlar",
-            subtitle = "Ana ekranda son 8 uygulamayi buyuk ikonlarla goster (varsayilan: kapali)",
+            title = "Son Kullanılanlar",
+            subtitle = "Ana ekranda son 8 uygulamayı büyük ikonlarla göster (varsayılan: kapalı)",
             checked = recentAppsEnabled,
             onCheckedChange = {
                 recentAppsEnabled = it
@@ -70,8 +70,8 @@ fun SettingsHomeScreenSection() {
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.SwipeUp,
-            title = "Swipe-up Ipucu",
-            subtitle = "Ana ekranda yukari kaydirma animasyonu goster",
+            title = "Yukarı Kaydırma İpucu",
+            subtitle = "Ana ekranda yukarı kaydırma animasyonu göster",
             checked = swipeHintEnabled,
             onCheckedChange = {
                 swipeHintEnabled = it
@@ -81,8 +81,8 @@ fun SettingsHomeScreenSection() {
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.NewReleases,
-            title = "YENI Badge",
-            subtitle = "7 gun icinde kurulan uygulamalara rozet goster",
+            title = "YENİ Rozeti",
+            subtitle = "7 gün içinde kurulan uygulamalara rozet göster",
             checked = newBadgeEnabled,
             onCheckedChange = {
                 newBadgeEnabled = it
@@ -92,8 +92,8 @@ fun SettingsHomeScreenSection() {
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.FormatListNumbered,
-            title = "Klasor Uygulama Sayisi",
-            subtitle = "Klasor simgesinin altinda uygulama adedini goster",
+            title = "Klasör Uygulama Sayısı",
+            subtitle = "Klasör simgesinin altında uygulama adedini göster",
             checked = folderCountVisible,
             onCheckedChange = {
                 folderCountVisible = it
@@ -103,8 +103,8 @@ fun SettingsHomeScreenSection() {
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Folder,
-            title = "Klasor Swipe Ipucu",
-            subtitle = "Klasorde en cok kullanilan uygulamayi goster",
+            title = "Klasör Önizleme",
+            subtitle = "Klasörde en çok kullanılan uygulamayı göster",
             checked = folderSwipeHint,
             onCheckedChange = {
                 folderSwipeHint = it
@@ -115,7 +115,7 @@ fun SettingsHomeScreenSection() {
         SettingsSwitchRow(
             icon = Icons.Default.Notifications,
             title = "Bildirim Metni",
-            subtitle = "Klasor ve uygulamalarin altinda son bildirimi goster",
+            subtitle = "Klasör ve uygulamaların altında son bildirimi göster",
             checked = notifTextEnabled,
             onCheckedChange = {
                 notifTextEnabled = it
@@ -126,7 +126,7 @@ fun SettingsHomeScreenSection() {
         SettingsSwitchRow(
             icon = Icons.Default.HideSource,
             title = "Sistem Navigasyonunu Gizle",
-            subtitle = "Tam ekran launcher - geri/home/recents butonsuz",
+            subtitle = "Tam ekran launcher — geri/home/recents butonları gizle",
             checked = hideNavButtons,
             onCheckedChange = {
                 hideNavButtons = it
@@ -139,7 +139,7 @@ fun SettingsHomeScreenSection() {
                 Icon(Icons.Default.Opacity, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Tum Uygulamalar Arka Plan", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("Tüm Uygulamalar Arka Plan", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Text("Opaklık: ${(allAppsBgAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -156,14 +156,14 @@ fun SettingsHomeScreenSection() {
         }
     }
 
-    // ── Widget Alani ──────────────────────────────────────────────────────
+    // ── Widget Alanı ──────────────────────────────────────────────────────
     SettingsSectionTitle("Widget")
     var widgetAreaEnabledLocal by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
     SettingsCard {
         SettingsSwitchRow(
             icon = Icons.Default.Widgets,
-            title = "Widget Alani",
-            subtitle = "Ana ekranda widget gosterimine izin ver",
+            title = "Widget Alanı",
+            subtitle = "Ana ekranda widget gösterimine izin ver",
             checked = widgetAreaEnabledLocal,
             onCheckedChange = {
                 widgetAreaEnabledLocal = it
@@ -172,8 +172,8 @@ fun SettingsHomeScreenSection() {
         )
     }
 
-    // ── Ikon Paketi ───────────────────────────────────────────────────────
-    SettingsSectionTitle("Ikon Paketi")
+    // ── İkon Paketi ───────────────────────────────────────────────────────
+    SettingsSectionTitle("İkon Paketi")
     val iconPacks = remember { com.armutlu.apporganizer.utils.IconPackManager.getInstalledIconPacks(context) }
     var selectedPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     SettingsCard {
@@ -190,8 +190,8 @@ fun SettingsHomeScreenSection() {
             Icon(Icons.Default.Android, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Sistem Ikonlari", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                Text("Varsayilan uygulama ikonlari", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Sistem İkonları", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                Text("Varsayılan uygulama ikonları", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (selectedPack.isEmpty()) {
                 Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
@@ -202,7 +202,7 @@ fun SettingsHomeScreenSection() {
             Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
-                Text("Kurulu ikon paketi bulunamadi. Play Store'dan bir ikon paketi yukleyin.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Kurulu ikon paketi bulunamadı. Play Store'dan bir ikon paketi yükleyin.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             iconPacks.forEach { pack ->

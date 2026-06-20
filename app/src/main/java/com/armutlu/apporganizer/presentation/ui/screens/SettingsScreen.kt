@@ -208,22 +208,22 @@ fun SettingsScreen(
                 }
             }
 
-            // Sistem uygulama toggle — AppearanceSection'dan ayri cunku viewModel gerekiyor
-            item { SettingsSectionTitle("Görünüm") }
+            // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
+            item { SettingsHomeScreenSection() }
+
+            // ── Uygulama Görünümü ─────────────────────────────────────────────
+            item { SettingsSectionTitle("Uygulama Listesi") }
             item {
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Visibility,
-                        title = "Sistem Uygulamalarini Goster",
-                        subtitle = "Dahili sistem uygulamalarini listele",
+                        title = "Sistem Uygulamalarını Göster",
+                        subtitle = "Dahili sistem uygulamalarını listele",
                         checked = showSystemApps,
                         onCheckedChange = { viewModel.toggleShowSystemApps() }
                     )
                 }
             }
-
-            // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
-            item { SettingsHomeScreenSection() }
 
             item { SettingsSectionTitle("Uygulama Yönetimi") }
             item {
