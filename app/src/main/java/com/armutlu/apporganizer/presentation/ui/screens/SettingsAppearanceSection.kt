@@ -28,8 +28,8 @@ import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import kotlinx.coroutines.launch
 
 /**
- * Gorunum bolumu: tema, yazi tipi, arka plan, yazi rengi, soluk uygulama ayarlari.
- * SettingsScreen LazyColumn icinde item{} bloklariyla cagirilir.
+ * Görünüm bölümü: tema, yazı tipi, arka plan, yazı rengi, soluk uygulama ayarları.
+ * SettingsScreen LazyColumn içinde item{} bloklarıyla çağrılır.
  */
 @Composable
 fun SettingsAppearanceSection(
@@ -40,10 +40,10 @@ fun SettingsAppearanceSection(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // ── Tema + Yazi Tipi ─────────────────────────────────────────────────
+    // ── Tema + Yazı Tipi ─────────────────────────────────────────────────
     SettingsCard {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Renk Temasi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text("Renk Teması", fontWeight = FontWeight.Medium, fontSize = 15.sp)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(AppTheme.entries.toList(), key = { it.name }) { theme ->
                     val isSelected = currentTheme == theme
@@ -75,7 +75,7 @@ fun SettingsAppearanceSection(
                 }
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-            Text("Yazi Tipi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text("Yazı Tipi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppFont.entries.forEach { font ->
                     val isSelected = currentFont == font
@@ -92,10 +92,10 @@ fun SettingsAppearanceSection(
     // ── Arka Plan ────────────────────────────────────────────────────────
     SettingsCard {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Ana Ekran Arka Plani", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text("Ana Ekran Arka Planı", fontWeight = FontWeight.Medium, fontSize = 15.sp)
             var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("wallpaper" to "Duvar Kagidi", "solid" to "Duz Renk").forEach { (type, label) ->
+                listOf("wallpaper" to "Duvar Kağıdı", "solid" to "Düz Renk").forEach { (type, label) ->
                     FilterChip(
                         selected = bgType == type,
                         onClick = {
@@ -185,7 +185,7 @@ fun SettingsAppearanceSection(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Yazi Opaklik", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text("Yazı Opaklık", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
                 Text("${(textAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -237,15 +237,15 @@ fun SettingsAppearanceSection(
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             val labelColorPresets = listOf(
                 "#FFFFFF" to "Beyaz",
-                "#F5F5F5" to "Acik Gri",
-                "#FFD700" to "Altin",
+                "#F5F5F5" to "Açık Gri",
+                "#FFD700" to "Altın",
                 "#80DEEA" to "Turkuaz",
                 "#FFAB40" to "Turuncu",
                 "#EF9A9A" to "Pembe"
             )
             var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
             var showLabelColorPicker by remember { mutableStateOf(false) }
-            Text("Yazi Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+            Text("Yazı Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(labelColorPresets, key = { (hex, _) -> hex }) { (hex, _) ->
@@ -296,17 +296,17 @@ fun SettingsAppearanceSection(
         }
     }
 
-    // ── Kullanilmayan Uygulamalar Gri ────────────────────────────────────
+    // ── Kullanılmayan Uygulamalar Gri ────────────────────────────────────
     SettingsCard {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             var unusedGreyDays by remember {
                 mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context))
             }
-            val greyOptions = listOf(0 to "Kapali", 7 to "7 gun", 14 to "14 gun", 30 to "30 gun")
+            val greyOptions = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
             Column(modifier = Modifier.weight(1f, fill = false)) {
-                Text("Kullanilmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
+                Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    "Hic acilmamis uygulamalar soluk gosterilir",
+                    "Hiç açılmamış uygulamalar soluk gösterilir",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

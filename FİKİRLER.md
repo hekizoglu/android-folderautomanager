@@ -62,7 +62,7 @@
 
 | Tarih | Kaynak | Fikir | Not |
 |-------|--------|-------|-----|
-| 2026-06-16 | ROADMAP | **Ayarlar — Kullanıcı Talep/Öneri Formu** — SettingsScreen'e "Talep Gönder" butonu | Tartışılacak |
+| 2026-06-21 | D103 | **Ayarlar — Kullanıcı Talep/Öneri Formu** — "Talep Gönder" butonu: e-posta Intent ile `huseyinekizoglu@gmail.com`'a yönlendirir | [TAMAMLANDI] |
 | 2026-06-15 | ROADMAP | **AppClassifier'ı JSON asset'e böl** — 3717 paketlik mapOf şişiyor; `assets/app_categories.json` + runtime parse | Tartışılacak |
 | 2026-06-15 | ROADMAP | **Kendi sunucu API'si** — `packageName → category` endpoint, APK güncellemeden DB güncellenebilir | Tartışılacak |
 | 2026-06-16 | ROADMAP | **Akıllı Uygulama Önerileri (30dk)** — kullanım alışkanlığına göre değişen öneri satırı | Tartışılacak |

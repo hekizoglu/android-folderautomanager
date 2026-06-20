@@ -539,71 +539,20 @@ fun SettingsScreen(
             // ── Geri Bildirim ────────────────────────────────────────────────
             item { SettingsSectionTitle("Geri Bildirim") }
             item {
-                var showFeedbackDialog by remember { mutableStateOf(false) }
-                var feedbackText by remember { mutableStateOf("") }
-                var feedbackSent by remember { mutableStateOf(false) }
-
                 SettingsCard {
                     SettingsButtonRow(
                         icon = Icons.Default.Feedback,
                         title = "Talep / Öneri Gönder",
-                        subtitle = if (feedbackSent) "Gönderildi — tesekkürler!" else "Bir özellik isteyin veya hata bildirin",
-                        onClick = { showFeedbackDialog = true; feedbackSent = false }
-                    )
-                }
-
-                if (showFeedbackDialog) {
-                    androidx.compose.material3.AlertDialog(
-                        onDismissRequest = { showFeedbackDialog = false; feedbackText = "" },
-                        title = { Text("Talep / Öneri") },
-                        text = {
-                            Column {
-                                Text(
-                                    "Uygulama ile ilgili öneri veya sorunlarınızı yazın:",
-                                    fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                OutlinedTextField(
-                                    value = feedbackText,
-                                    onValueChange = { feedbackText = it },
-                                    placeholder = { Text("Örnek: Uygulama ikonları yüklenmedi...") },
-                                    modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
-                                    maxLines = 6
-                                )
+                        subtitle = "E-posta ile öneri veya hata bildirin",
+                        onClick = {
+                            val device = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (API ${android.os.Build.VERSION.SDK_INT})"
+                            val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                                data = android.net.Uri.parse("mailto:")
+                                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("huseyinekizoglu@gmail.com"))
+                                putExtra(android.content.Intent.EXTRA_SUBJECT, "AppOrganizer - Talep / Öneri")
+                                putExtra(android.content.Intent.EXTRA_TEXT, "\n\n---\nCihaz: $device")
                             }
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    if (feedbackText.isNotBlank()) {
-                                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                                            try {
-                                                val device = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (API ${android.os.Build.VERSION.SDK_INT})"
-                                                val msg = "[AppOrganizer Talep]\n$feedbackText\n\nCihaz: $device"
-                                                val url = java.net.URL("https://api.telegram.org/bot8811346243:AAH-XTZohF00iJ_we8JJWPfjuP4tW44J578/sendMessage")
-                                                val conn = url.openConnection() as java.net.HttpURLConnection
-                                                conn.requestMethod = "POST"
-                                                conn.doOutput = true
-                                                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-                                                val body = "chat_id=937179261&text=${java.net.URLEncoder.encode(msg, "UTF-8")}"
-                                                conn.outputStream.write(body.toByteArray())
-                                                conn.responseCode
-                                                conn.disconnect()
-                                            } catch (_: Exception) {}
-                                        }
-                                        feedbackSent = true
-                                        feedbackText = ""
-                                        showFeedbackDialog = false
-                                    }
-                                },
-                                enabled = feedbackText.isNotBlank()
-                            ) { Text("Gönder") }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showFeedbackDialog = false; feedbackText = "" }) {
-                                Text("İptal")
-                            }
+                            runCatching { context.startActivity(intent) }
                         }
                     )
                 }
