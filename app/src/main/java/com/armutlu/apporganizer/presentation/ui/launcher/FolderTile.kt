@@ -197,10 +197,11 @@ fun FolderTile(
         Text(
             text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
             color = labelColor.copy(alpha = textAlpha),
-            fontSize = 12.sp,
-            maxLines = 1,
+            fontSize = 11.sp,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
+            lineHeight = 13.sp,
             modifier = Modifier.width(tileWidth)
         )
         // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir

@@ -278,7 +278,7 @@ internal fun AppSuggestionsRow(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
                 Text(
-            text = "Önerilenler",
+            text = "Sık Kullanılanlar",
             color = Color.White.copy(alpha = 0.45f),
             fontSize = 11.sp,
             modifier = Modifier

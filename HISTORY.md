@@ -1139,3 +1139,12 @@ Tüm 12 madde ✅. Detay:
 - Encoding doğrulaması: curly quote yok, UTF-8 temiz
 **Commit:** `9b96220`
 **Sonraki:** D97 — FİKİRLER.md'den bir sonraki görev (Onboarding adım sırası güncellenmeli)
+
+## Döngü 97 — 2026-06-21 (KOD — Settings Kritik Düzeltme)
+
+**Yapılanlar:** ROADMAP KRİTİK bölümü — Settings UI sorunları düzeltildi.
+- `SettingsScreen.kt`: İkinci duplicate "Görünüm" başlığı kaldırıldı; "Sistem Uygulamalarını Göster" toggle'ı "Uygulama Listesi" başlığı altına taşındı (mantıksal doğru yer — viewModel gerektiriyor)
+- `SettingsHomeScreenSection.kt`: 20+ ASCII string Türkçe karakterlere çevrildi: "Ana Ekran Özellikleri", "Uygulama Önerileri", "Son Kullanılanlar", "Yukarı Kaydırma İpucu", "YENİ Rozeti", "Klasör Uygulama Sayısı", "Klasör Önizleme", "Widget Alanı", "İkon Paketi", "Sistem İkonları" vb.
+- Yan etki sıfır: fonksiyonel mantık değişmedi, sadece bölümleme ve metin düzeltmesi
+**Commit:** `4dbe740`
+**Sonraki:** D98 — ROADMAP Kritik: Uygulama Önerileri başlık/veri tutarsızlığı + Klasör ismi yarım kalma sorunu
