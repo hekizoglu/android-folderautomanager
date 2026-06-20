@@ -1076,6 +1076,23 @@ Tüm 12 madde ✅. Detay:
 **Durum:** Toplam 14 sorun açık. Rapor güncellendi: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
 **Sonraki:** Hüseyin onayı bekleniyor — 14 sorunu tek düzeltme döngüsünde çöz (önce #13 KRİTİK, sonra #14, ardından diğerleri).
 
+## Döngü 93-94 — 2026-06-20 (KOD — Drag-Drop Fix)
+
+**Yapılanlar:** Klasör sürükle-bırak pozisyon hatası düzeltildi + görsel feedback eklendi.
+- **D93 — Pozisyon Fix:** `change.position` (tile-local, hep sabit) → `dragAmount` kümülatif delta
+  - `dragOffsetX/Y` state: her swap'ta sıfırlanıyor, referans noktası güncelleniyor
+  - Tile genişliği artık `size.width / colCount` ile dinamik hesaplanıyor
+  - Sayfa-local/global index dönüşümü eklendi (`pageOffset` ile)
+- **D94 — Görsel Feedback:**
+  - Sürüklenen tile: `scale(1.08f)` + beyaz arka plan overlay
+  - Hedef slot: turkuaz `#00897B` çerçeve (`isDropTarget`)
+  - Diğer tile'lar drag sırasında: `alpha(0.72f)` ile solar
+- **Yan etki sıfır:** FolderTile, LauncherViewModel.reorderFolders(), AppPrefs, AppRepository dokunulmadı
+- **Bonus:** `gradle.properties` → `android.overridePathCheck=true` (Türkçe proje yolu AGP uyarısı), `local.properties` oluşturuldu
+- **Build:** Bu ortamda `google-services.json` eksik — yerel makinede build alınacak
+**Commit:** `a2d0417`
+**Sonraki:** Telegram onayı → yerel build → APK test → D95
+
 ## Döngü 92 — 2026-06-18 (KOD — Retroaktif Belgeleme)
 
 **Yapılanlar:** FCM push ile AppDatabase uzaktan güncelleme özelliği eklendi.
