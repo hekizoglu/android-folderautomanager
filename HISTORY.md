@@ -1178,6 +1178,11 @@ Tüm 12 madde ✅. Detay:
 **Commit:** `64f46e5`
 **Sonraki:** D104 — dark mode hardcode renk fix (agent audit tamamlandı)
 
+## Döngü 104 — 2026-06-21 (KOD — Dark mode hardcode renk fix)
+**Yapılanlar:** Agent audit bulgularından 2 kesin fix: SettingsAppearanceSection renk paleti seçilmemiş border `Color.Gray` → `MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)`. HomeScreen "Launcher Ayarları" butonu `Color(0xFF00897B)` → `MaterialTheme.colorScheme.primary`. LauncherSetupScreen önizleme kartı + AppContextMenu koyu sheet bilinçli tasarım — dokunulmadı.
+**Commit:** `e4417e4`
+**Sonraki:** D105 — FİKİRLER.md puanlama TOP'unda sıradaki: Onboarding adım sırası tutarsızlığı (17 puan)
+
 ---
 
 ## ✅ Tamamlananlar Arşivi (ROADMAP'tan taşındı — 2026-06-21)

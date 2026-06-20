@@ -1,7 +1,7 @@
 # ROADMAP.md — AppOrganizer Yol Haritası
 
-> Son güncelleme: 2026-06-21 (D103 sonrası). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
-> İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒
+> Son güncelleme: 2026-06-21 (D104 sonrası). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
+> İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 · Puanlar FİKİRLER.md tablosundan (15+ = bu listeye girer)
 
 ---
 
@@ -12,9 +12,9 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 ---
 
-## 🔥 Şu An Ne Yapılıyor (D104+)
+## 🔥 Şu An Ne Yapılıyor (D105+)
 
-Gerçek cihaz testleri ve Play Store ön hazırlıkları.
+Dark mode audit tamamlandı (D104). Sıradaki: Onboarding tutarsızlığı fix + Multi-language altyapısı.
 
 ---
 
@@ -29,13 +29,22 @@ Gerçek cihaz testleri ve Play Store ön hazırlıkları.
 | **Content rating anketi** | Play Store — göndermeden önce doldurulmalı | ⚠️ Bekliyor |
 | **Screenshots** | Play Store — Pixel 6 emülatörü, light + dark mode | Bekliyor |
 
-### 🟡 Orta Öncelik (Sonraki Sprint)
+### ⭐ Yüksek Puanlı — Kodlanabilir (FİKİRLER.md 15+ puan, Play Store dışı)
 
-| Görev | Dosya / Alan | Durum |
-|-------|-------------|-------|
+| Puan | Görev | Alan | Durum |
+|------|-------|------|-------|
+| 17 | **Onboarding adım sırası fix** | CLAUDE.md "14+2" ↔ LEARNINGS.md "14" tutarsızlığı + kod doğrulama | Bekliyor |
+| 17 | **Multi-language support (TR/EN)** | `strings.xml` + `values-en/strings.xml` altyapısı | Bekliyor |
+| 16 | **Klasör sıra numarasıyla yer değiştirme** | FolderSheet / HomeScreen — numara girerek taşıma | Bekliyor |
+| 16 | **Akıllı Uygulama Önerileri (30dk)** | `suggestedApps` — saat/kullanım alışkanlığına göre | Bekliyor |
+| 16 | **Dark mode tam uyum audit** | Kalan 🟡 "İncelenmeli" renkler | ✅ Kısmen D104 |
+
+### 🟡 Orta Öncelik
+
+| Görev | Alan | Durum |
+|-------|------|-------|
 | **Android 14 NotificationListenerService gerçek cihaz testi** | `AppNotificationListenerService.kt` | Bekliyor |
 | **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
-| **Dark mode tam uyum audit** | Kalan hardcode renkler | Bekliyor |
 | **Firebase Crashlytics kurulumu** | `google-services.json` + service account | Bekliyor |
 | **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
 | **AppNotificationListenerService ilk açılışta restart** | gerçek cihaz test gerekli | Bekliyor |
@@ -45,7 +54,6 @@ Gerçek cihaz testleri ve Play Store ön hazırlıkları.
 | Görev | Alan | Durum |
 |-------|------|-------|
 | **Unit test coverage** | LauncherViewModel MockK testleri | Bekliyor |
-| **Multi-language support (TR/EN)** | string resources | Bekliyor |
 | **Hilt DI kurulumu** | manuel `new()` çağrılarını temizle | Bekliyor |
 | **AppClassifier → JSON asset** | `assets/app_categories.json` + runtime parse | Tartışma ⚠️ |
 | **AllApps double-tap gerçek cihaz testi** | emülatörde doğrulanamadı | Bekliyor |
@@ -55,12 +63,7 @@ Gerçek cihaz testleri ve Play Store ön hazırlıkları.
 
 - Kendi sunucu API'si (`packageName → category` endpoint) — DeepSeek fallback'e alternatif
 - Backup/restore: manuel export/import UI + bulut senkron
-- Akıllı Uygulama Önerileri (30dk) — kullanım alışkanlığına göre
-- Wear OS companion app
-- Tablet layout (large screen)
-- Widget ekranı genişletme (resize, çoklu sayfa)
-- Aider CBM entegrasyon testi
-- Greptile API PR review otomasyonu
+- Wear OS companion app · Tablet layout · Widget ekranı genişletme
 
 ---
 
