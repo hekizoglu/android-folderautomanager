@@ -98,6 +98,8 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -208,6 +210,9 @@ fun HomeScreen(
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
     var dragToIndex   by remember { mutableStateOf<Int?>(null) }
     var draggingFolders by remember { mutableStateOf<List<AppFolder>?>(null) }
+    // Kümülatif drag offset — change.position tile-local, dragAmount ekran-delta verir
+    var dragOffsetX by remember { mutableStateOf(0f) }
+    var dragOffsetY by remember { mutableStateOf(0f) }
 
     // Dock sistem gesture exclusion rect — sadece deger degisince guncellenir, her layout'ta degil
     val dockRectHolder = remember { object { var rect: android.graphics.Rect? = null } }
@@ -469,6 +474,8 @@ fun HomeScreen(
                     val index = pageStart + pageIndex
                     val folder = pageFolders[pageIndex]
                     val isDragging = dragFromIndex == index
+                    // Sürüklenen tile'ın gideceği hedef slot
+                    val isDropTarget = dragToIndex == index && dragFromIndex != null && !isDragging
                     FolderTile(
                         folder = folder,
                         onClick = {
@@ -502,26 +509,40 @@ fun HomeScreen(
                                     onDragStart = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         dragFromIndex = index
+                                        dragOffsetX = 0f
+                                        dragOffsetY = 0f
                                         draggingFolders = folders.toMutableList()
                                     },
-                                    onDrag = { change, _ ->
+                                    onDrag = { change, dragAmount ->
                                         change.consume()
                                         val from = dragFromIndex ?: return@detectDragGesturesAfterLongPress
-                                        val tileWidthPx = with(density) { 90.dp.toPx() }
-                                        val dx = change.position.x
-                                        val dy = change.position.y
+                                        // dragAmount = ekran delta (px) — kümülatif toplayarak gerçek offset
+                                        dragOffsetX += dragAmount.x
+                                        dragOffsetY += dragAmount.y
                                         val colCount = 4
-                                        val colOffset = (dx / tileWidthPx).toInt().coerceIn(-1, 1)
-                                        val rowOffset = (dy / tileWidthPx).toInt().coerceIn(-1, 1)
-                                        val to = (from + rowOffset * colCount + colOffset)
-                                            .coerceIn(0, (draggingFolders?.lastIndex ?: 0))
-                                        if (to != dragToIndex) {
-                                            dragToIndex = to
+                                        // Tile boyutu: 4 sütun + yatay padding hesabı
+                                        val tileWidthPx = with(density) { (size.width / colCount).toFloat() }
+                                        val tileHeightPx = with(density) { 100.dp.toPx() }
+                                        val colOffset = (dragOffsetX / tileWidthPx).toInt()
+                                        val rowOffset = (dragOffsetY / tileHeightPx).toInt()
+                                        // Sayfa-local başlangıç konumu
+                                        val pageOffset = page * pageSize
+                                        val localFrom = from - pageOffset
+                                        val localCol = localFrom % colCount + colOffset
+                                        val localRow = localFrom / colCount + rowOffset
+                                        val localTo = (localRow * colCount + localCol)
+                                            .coerceIn(0, pageFolders.lastIndex)
+                                        val globalTo = pageOffset + localTo
+                                        if (globalTo != dragToIndex) {
+                                            dragToIndex = globalTo
                                             draggingFolders = draggingFolders?.toMutableList()?.also { list ->
-                                                if (from != to && from in list.indices && to in list.indices) {
+                                                if (from != globalTo && from in list.indices && globalTo in list.indices) {
                                                     val item = list.removeAt(from)
-                                                    list.add(to, item)
-                                                    dragFromIndex = to
+                                                    list.add(globalTo, item)
+                                                    dragFromIndex = globalTo
+                                                    // Offset sıfırla — yeni pozisyon referans noktası
+                                                    dragOffsetX = 0f
+                                                    dragOffsetY = 0f
                                                 }
                                             }
                                         }
@@ -531,15 +552,36 @@ fun HomeScreen(
                                         dragFromIndex = null
                                         dragToIndex = null
                                         draggingFolders = null
+                                        dragOffsetX = 0f
+                                        dragOffsetY = 0f
                                     },
                                     onDragCancel = {
                                         dragFromIndex = null
                                         dragToIndex = null
                                         draggingFolders = null
+                                        dragOffsetX = 0f
+                                        dragOffsetY = 0f
                                     }
                                 )
                             }
-                            .then(if (isDragging) Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp)) else Modifier)
+                            .then(
+                                when {
+                                    isDragging ->
+                                        Modifier
+                                            .background(Color.White.copy(alpha = 0.18f), RoundedCornerShape(12.dp))
+                                            .scale(1.08f)
+                                    isDropTarget ->
+                                        // Hedef slot: turkuaz çerçeve
+                                        Modifier.background(
+                                            Color(0xFF00897B).copy(alpha = 0.28f),
+                                            RoundedCornerShape(12.dp)
+                                        )
+                                    dragFromIndex != null ->
+                                        // Drag aktifken diğer tile'lar hafif solar
+                                        Modifier.alpha(0.72f)
+                                    else -> Modifier
+                                }
+                            )
                     )
                 }
                 // Bos slotlar — folder'lardan sonra, uzun basinca HomeLongPressSheet ac
