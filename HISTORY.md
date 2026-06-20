@@ -1188,6 +1188,11 @@ Tüm 12 madde ✅. Detay:
 **Commit:** `4188caa`
 **Sonraki:** D106 — Klasör sıra değiştirme (16 puan) + az puanlı fikirler HISTORY'ye
 
+## Döngü 106 — 2026-06-21 (KOD — Klasör konumu değiştirme)
+**Yapılanlar:** FolderSheet `FolderContextMenuSheet`: yeni `allFolders` + `onMove` parametresi. Uzun basınca açılan menüde "Konumu Değiştir" seçeneği → dialog → numara gir → `reorderFolders()` ile kalıcı kayıt. Başlık satırında mevcut sıra gösteriliyor. HomeScreen çağrısı güncellendi. Az puanlı fikirler (Wear OS/Aider/Greptile) HISTORY arşivine taşındı.
+**Commit:** `ede1dff`
+**Sonraki:** D107 — Akıllı Uygulama Önerileri (16 puan) veya build alıp test
+
 ---
 
 ## 🗂️ Az Puanlı Fikir Arşivi (FİKİRLER.md puanlama sonrası — işleme alınmadı)
