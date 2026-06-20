@@ -1059,3 +1059,11 @@ Tüm 12 madde ✅. Detay:
 - #12: ROADMAP.md Sprint Metrikleri D88-D91 satırları eksik
 **Durum:** Toplam 12 sorun açık. Rapor: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
 **Sonraki:** Hüseyin onayı bekleniyor — onay gelince 12 sorunu tek düzeltme döngüsünde çöz.
+
+## MD Denetim 2. Kontrol — 2026-06-20 (Otomatik)
+
+**Yapılanlar:** Günlük denetim 2. çalışması. 12 sorun hâlâ açık. 1 KRİTİK yeni sorun tespit edildi.
+**Yeni bulgu:**
+- #13: 🔴 commit 34070c4 (2026-06-18 23:28) `feat: FCM push ile AppDatabase uzaktan güncelleme` — 8 dosya değişti (AppFirebaseMessagingService.kt YENİ), HISTORY.md'de döngü logu yok, CLAUDE.md/ROADMAP.md güncellenmedi. Dark mode fix (D91) ile aynı dosyaları değiştiriyor (AllAppsDrawer.kt + FolderSheet.kt) — regresyon riski var.
+**Durum:** Toplam 13 sorun açık. Rapor güncellendi: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
+**Sonraki:** Hüseyin onayı bekleniyor — özellikle #13 acil kontrol gerektiriyor.
