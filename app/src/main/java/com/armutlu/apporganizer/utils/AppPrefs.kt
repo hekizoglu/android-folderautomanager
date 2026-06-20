@@ -99,6 +99,11 @@ object AppPrefs {
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
     fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
 
+    // Sayfa başına klasör sayısı — 4/6/8/12 (varsayılan 8 = 4x2)
+    const val KEY_PAGE_SIZE = "page_folder_count"
+    fun getPageSize(context: Context): Int = prefs(context).getInt(KEY_PAGE_SIZE, 8)
+    fun setPageSize(context: Context, v: Int) = prefs(context).edit().putInt(KEY_PAGE_SIZE, v).apply()
+
     // Klasör sıralama modu — tüm klasörler için global
     const val KEY_FOLDER_SORT_MODE = "folder_sort_mode"
     fun getFolderSortMode(context: Context): String =

@@ -1148,3 +1148,13 @@ Tüm 12 madde ✅. Detay:
 - Yan etki sıfır: fonksiyonel mantık değişmedi, sadece bölümleme ve metin düzeltmesi
 **Commit:** `4dbe740`
 **Sonraki:** D98 — ROADMAP Kritik: Uygulama Önerileri başlık/veri tutarsızlığı + Klasör ismi yarım kalma sorunu
+
+## Döngü 98 — 2026-06-21 (KOD — Öneriler başlık + FolderTile sarma)
+**Yapılanlar:** HomeScreenComponents: "Önerilenler"→"Sık Kullanılanlar" (veri usageCount bazlı, tutarlı). FolderTile: maxLines=1→2, fontSize=12→11.sp, lineHeight=13.sp (uzun isimler 2. satıra sarıyor).
+**Commit:** `1c1ce4c`
+**Sonraki:** D99
+
+## Döngü 99 — 2026-06-21 (KOD — Masaüstü/AllApps bağımsız toggle)
+**Yapılanlar:** AppPrefs: `KEY_FAVORITES_ENABLED_ALLAPPS` + `KEY_RECENT_APPS_ENABLED_ALLAPPS` yeni KEY'ler (eski KEY'ler korundu). HomeScreen: AllAppsDrawer'a artık `favoritesEnabledAllApps` / `recentAppsEnabledAllApps` ayrı state'leri geçiliyor. SettingsHomeScreenSection: "Tüm Uygulamalar" bölümü eklendi — 2 bağımsız toggle. Yan etki sıfır.
+**Commit:** `96c527f`
+**Sonraki:** D100 — ROADMAP Kritik devam: "Sayfa kayması sorunu" + "Sayfa başına klasör sayısı"

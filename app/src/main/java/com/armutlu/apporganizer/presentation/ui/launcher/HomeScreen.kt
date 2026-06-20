@@ -133,6 +133,7 @@ fun HomeScreen(
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
     var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
+    var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
     var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
     // Ayar toggle'ları — DisposableEffect listener ile reaktif
     var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
@@ -177,6 +178,8 @@ fun HomeScreen(
                     customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SIZE ->
                     folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_PAGE_SIZE ->
+                    pageFolderCount = com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
@@ -391,7 +394,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding(),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Top
         ) {
             // İzin uyarı banner'ı (kapatılabilir)
             PermissionsBanner()
@@ -456,9 +459,9 @@ fun HomeScreen(
                 }
             }
 
-            // Folder grid — sayfa basina 8 klasor (4 sutun x 2 satir), fazlasi sonraki sayfaya
+            // Folder grid — sayfa başına klasör sayısı ayarlanabilir (AppPrefs.KEY_PAGE_SIZE)
             val displayFolders = draggingFolders ?: folders
-            val pageSize = 8
+            val pageSize = pageFolderCount
             val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
             val pagerState = rememberPagerState(pageCount = { pageCount })
 

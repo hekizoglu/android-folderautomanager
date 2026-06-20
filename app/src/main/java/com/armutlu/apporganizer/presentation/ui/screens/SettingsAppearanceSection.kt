@@ -200,7 +200,7 @@ fun SettingsAppearanceSection(
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Klasor Boyutu", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text("Klasör Boyutu", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
                 Text("${folderSizeDp}dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -211,6 +211,23 @@ fun SettingsAppearanceSection(
                 },
                 valueRange = 56f..96f,
                 steps = 7
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
+            val pageSizeOptions = listOf(4, 6, 8, 12)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Sayfa Başına Klasör", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text("$pageFolderCount klasör", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+            }
+            Slider(
+                value = pageSizeOptions.indexOf(pageFolderCount).coerceAtLeast(0).toFloat(),
+                onValueChange = {
+                    val selected = pageSizeOptions.getOrElse(it.toInt()) { 8 }
+                    pageFolderCount = selected
+                    com.armutlu.apporganizer.utils.AppPrefs.setPageSize(context, selected)
+                },
+                valueRange = 0f..3f,
+                steps = 2
             )
         }
     }
