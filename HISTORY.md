@@ -1210,9 +1210,9 @@ Tüm 12 madde ✅. Detay:
 **CLAUDE.md:** Görev Zorluk Puanı Kuralı (§3) eklendi
 **Sonraki:** D108 — Multi-language stringResource() entegrasyonu
 
-## Döngü 108 — 2026-06-21 (KOD — Multi-language stringResource entegrasyonu)
-**Yapılanlar:** `values/strings.xml` + `values-en/strings.xml`: 50+ yeni key eklendi (HomeScreen, AllAppsDrawer, FolderSheet, Settings, Appearance). FolderSheet.kt: 8 Türkçe literal → stringResource(). AllAppsDrawer.kt: 2 literal → stringResource(). HomeScreen.kt: 2 literal → stringResource(). ROADMAP güncellendi: tamamlananlar HISTORY'ye taşındı — bu döngüden itibaren kalıcı kural.
-**Sonraki:** SettingsScreen.kt + SettingsAppearanceSection.kt stringResource() entegrasyonu
+## Döngü 108-109 — 2026-06-21 (KOD — Multi-language stringResource() tam entegrasyon)
+**Yapılanlar:** `values/strings.xml` + `values-en/strings.xml`: 50+ yeni key. FolderSheet (8), AllAppsDrawer (3), HomeScreen (2), SettingsScreen (11), SettingsAppearanceSection (10) — toplam 34 Türkçe literal stringResource() ile değiştirildi. CLAUDE.md: "yarım bırakma" kuralı güncellendi — başlanan görev aynı döngüde tamamlanır. ROADMAP: tamamlananlar silinir, HISTORY'ye taşınır (kalıcı kural).
+**Sonraki:** Orta öncelik görevlerinden bir sonraki: Firebase Crashlytics veya NotifListener gerçek cihaz testi
 
 ---
 

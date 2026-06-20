@@ -23,7 +23,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import com.armutlu.apporganizer.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -80,10 +82,10 @@ fun SettingsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Ayarlar", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -124,7 +126,7 @@ fun SettingsScreen(
                         )
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Varsayılan Launcher", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(stringResource(R.string.settings_default_launcher), fontWeight = FontWeight.Medium, fontSize = 15.sp)
                             Text(
                                 if (isDefault) "Aktif" else "Ayarlanmadı",
                                 fontSize = 12.sp,
@@ -150,7 +152,7 @@ fun SettingsScreen(
                                 OutlinedButton(
                                     onClick = launcherAction,
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                                ) { Text("Değiştir", fontSize = 12.sp) }
+                                ) { Text(stringResource(R.string.settings_launcher_change), fontSize = 12.sp) }
                             }
                         } else {
                             Button(
@@ -171,7 +173,7 @@ fun SettingsScreen(
                 SettingsCard {
                     if (dockPkgs.isEmpty()) {
                         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text("Dock boş", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.settings_dock_empty), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         dockPkgs.forEachIndexed { index, pkg ->
@@ -198,8 +200,8 @@ fun SettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     SettingsButtonRow(
                         icon = Icons.Default.RestartAlt,
-                        title = "Varsayılana Sıfırla",
-                        subtitle = "Telefon, Mesaj, Kamera, Tarayıcı",
+                        title = stringResource(R.string.settings_reset_defaults),
+                        subtitle = stringResource(R.string.settings_dock_default_apps),
                         onClick = {
                             DockPrefs.saveDockPackages(context, emptyList())
                             dockPkgs = DockPrefs.getDockPackages(context)
@@ -217,8 +219,8 @@ fun SettingsScreen(
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Visibility,
-                        title = "Sistem Uygulamalarını Göster",
-                        subtitle = "Dahili sistem uygulamalarını listele",
+                        title = stringResource(R.string.settings_show_system_apps),
+                        subtitle = stringResource(R.string.settings_show_system_apps_desc),
                         checked = showSystemApps,
                         onCheckedChange = { viewModel.toggleShowSystemApps() }
                     )
@@ -231,8 +233,8 @@ fun SettingsScreen(
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.PhoneAndroid,
-                        title = "Üreticiye Göre Sınıflandır",
-                        subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilere ayır",
+                        title = stringResource(R.string.settings_classify_by_vendor),
+                        subtitle = stringResource(R.string.settings_classify_by_vendor_desc),
                         checked = manufacturerClassify,
                         onCheckedChange = {
                             manufacturerClassify = it
@@ -245,8 +247,8 @@ fun SettingsScreen(
                     )
                     SettingsButtonRow(
                         icon = Icons.Default.AutoFixHigh,
-                        title = "Sınıflandırılmamışları Sınıflandır",
-                        subtitle = "Kategorisiz uygulamaları otomatik ata",
+                        title = stringResource(R.string.settings_classify_uncategorized),
+                        subtitle = stringResource(R.string.settings_classify_uncategorized_desc),
                         onClick = { viewModel.classifyUnclassifiedApps() }
                     )
                     HorizontalDivider(
@@ -255,8 +257,8 @@ fun SettingsScreen(
                     )
                     SettingsButtonRow(
                         icon = Icons.Default.RestartAlt,
-                        title = "Tüm Kategorileri Sıfırla",
-                        subtitle = "Tüm atamaları sil ve yeniden sınıflandır",
+                        title = stringResource(R.string.settings_reset_categories),
+                        subtitle = stringResource(R.string.settings_reset_categories_desc),
                         iconTint = MaterialTheme.colorScheme.error,
                         onClick = { viewModel.resetAndReclassifyAllApps() }
                     )
@@ -281,7 +283,7 @@ fun SettingsScreen(
                                 OutlinedButton(
                                     onClick = { viewModel.unhideApp(app.packageName) },
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                                ) { Text("Göster", fontSize = 12.sp) }
+                                ) { Text(stringResource(R.string.settings_show), fontSize = 12.sp) }
                             }
                         }
                     }
@@ -398,8 +400,8 @@ fun SettingsScreen(
                     )
                     SettingsInfoRow(
                         icon = Icons.Default.Person,
-                        title = "Geliştirici",
-                        subtitle = "Hüseyin Ekizoğlu"
+                        title = stringResource(R.string.settings_developer),
+                        subtitle = stringResource(R.string.settings_developer_name)
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -416,7 +418,7 @@ fun SettingsScreen(
                     )
                     SettingsInfoRow(
                         icon = Icons.Default.Storage,
-                        title = "Veritabanı",
+                        title = stringResource(R.string.settings_database),
                         subtitle = "${state.apps.size} uygulama · ${state.categories.size} kategori"
                     )
                 }
@@ -481,9 +483,9 @@ fun SettingsScreen(
                                     backupLoading = true
                                     val intent = viewModel.exportBackup(context)
                                     if (intent != null) {
-                                        shareLauncher.launch(Intent.createChooser(intent, "Yedegi paylas"))
+                                        shareLauncher.launch(Intent.createChooser(intent, context.getString(R.string.settings_share_backup)))
                                     } else {
-                                        android.widget.Toast.makeText(context, "Disa aktarma basarisiz", android.widget.Toast.LENGTH_SHORT).show()
+                                        android.widget.Toast.makeText(context, context.getString(R.string.settings_export_failed), android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                     backupLoading = false
                                 }
@@ -542,8 +544,8 @@ fun SettingsScreen(
                 SettingsCard {
                     SettingsButtonRow(
                         icon = Icons.Default.Feedback,
-                        title = "Talep / Öneri Gönder",
-                        subtitle = "E-posta ile öneri veya hata bildirin",
+                        title = stringResource(R.string.settings_feedback),
+                        subtitle = stringResource(R.string.settings_feedback_desc),
                         onClick = {
                             val device = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (API ${android.os.Build.VERSION.SDK_INT})"
                             val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {

@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.armutlu.apporganizer.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +45,7 @@ fun SettingsAppearanceSection(
     // ── Tema + Yazı Tipi ─────────────────────────────────────────────────
     SettingsCard {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Renk Teması", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text(stringResource(R.string.appearance_color_theme), fontWeight = FontWeight.Medium, fontSize = 15.sp)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(AppTheme.entries.toList(), key = { it.name }) { theme ->
                     val isSelected = currentTheme == theme
@@ -75,7 +77,7 @@ fun SettingsAppearanceSection(
                 }
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-            Text("Yazı Tipi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text(stringResource(R.string.appearance_font), fontWeight = FontWeight.Medium, fontSize = 15.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AppFont.entries.forEach { font ->
                     val isSelected = currentFont == font
@@ -92,7 +94,7 @@ fun SettingsAppearanceSection(
     // ── Arka Plan ────────────────────────────────────────────────────────
     SettingsCard {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Ana Ekran Arka Planı", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text(stringResource(R.string.appearance_wallpaper), fontWeight = FontWeight.Medium, fontSize = 15.sp)
             var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("wallpaper" to "Duvar Kağıdı", "solid" to "Düz Renk").forEach { (type, label) ->
@@ -157,7 +159,7 @@ fun SettingsAppearanceSection(
                 OutlinedButton(
                     onClick = { showBgColorPicker = true },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Özel Renk", fontSize = 13.sp) }
+                ) { Text(stringResource(R.string.appearance_custom_color), fontSize = 13.sp) }
                 if (showBgColorPicker) {
                     ColorPickerDialog(
                         initialColor = Color(selectedBgColor),
@@ -185,7 +187,7 @@ fun SettingsAppearanceSection(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Yazı Opaklık", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.appearance_text_opacity), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
                 Text("${(textAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -200,7 +202,7 @@ fun SettingsAppearanceSection(
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Klasör Boyutu", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.appearance_folder_size), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
                 Text("${folderSizeDp}dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -216,8 +218,8 @@ fun SettingsAppearanceSection(
             var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
             val pageSizeOptions = listOf(4, 6, 8, 12)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Sayfa Başına Klasör", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                Text("$pageFolderCount klasör", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.appearance_folders_per_page), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text("$pageFolderCount ${stringResource(R.string.appearance_folder_unit)}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
                 value = pageSizeOptions.indexOf(pageFolderCount).coerceAtLeast(0).toFloat(),
@@ -245,7 +247,7 @@ fun SettingsAppearanceSection(
             )
             var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
             var showLabelColorPicker by remember { mutableStateOf(false) }
-            Text("Yazı Rengi", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+            Text(stringResource(R.string.appearance_text_color), fontWeight = FontWeight.Medium, fontSize = 14.sp)
             Spacer(Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(labelColorPresets, key = { (hex, _) -> hex }) { (hex, _) ->
@@ -273,7 +275,7 @@ fun SettingsAppearanceSection(
             OutlinedButton(
                 onClick = { showLabelColorPicker = true },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Özel Renk", fontSize = 13.sp) }
+            ) { Text(stringResource(R.string.appearance_custom_color), fontSize = 13.sp) }
             if (showLabelColorPicker) {
                 val initialColor = runCatching {
                     Color(android.graphics.Color.parseColor(selectedLabel))
@@ -304,7 +306,7 @@ fun SettingsAppearanceSection(
             }
             val greyOptions = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
             Column(modifier = Modifier.weight(1f, fill = false)) {
-                Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.appearance_grey_unused), style = MaterialTheme.typography.bodyLarge)
                 Text(
                     "Hiç açılmamış uygulamalar soluk gösterilir",
                     style = MaterialTheme.typography.bodySmall,
@@ -346,8 +348,8 @@ fun SettingsAppearanceSection(
     SettingsCard {
         SettingsSwitchRow(
             icon = Icons.Default.BlurOn,
-            title = "Klasör Blur Efekti",
-            subtitle = "Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)",
+            title = stringResource(R.string.appearance_blur_effect),
+            subtitle = stringResource(R.string.appearance_blur_effect_desc),
             checked = folderBlur,
             onCheckedChange = {
                 folderBlur = it
@@ -360,7 +362,7 @@ fun SettingsAppearanceSection(
     var folderShape by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     SettingsCard {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Klasör Şekli", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                Text(stringResource(R.string.appearance_folder_shape), fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 val shapeOptions = listOf(
                     "circle"   to "Daire",
                     "rounded"  to "Yumuşak",
