@@ -123,6 +123,8 @@ fun HomeScreen(
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
     var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
     var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
+    var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
+    var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
@@ -163,6 +165,10 @@ fun HomeScreen(
                     recentAppsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_ENABLED ->
                     favoritesEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_APPS_ENABLED_ALLAPPS ->
+                    recentAppsEnabledAllApps = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_ENABLED_ALLAPPS ->
+                    favoritesEnabledAllApps = com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
                     customFolderNames = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
@@ -693,13 +699,13 @@ fun HomeScreen(
                 },
                 onClose = viewModel::closeAllApps,
                 favoriteApps = favoriteApps,
-                favoritesEnabled = favoritesEnabled,
+                favoritesEnabled = favoritesEnabledAllApps,
                 onFavoriteAppClick = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
                 },
                 recentApps = recentApps,
-                recentAppsEnabled = recentAppsEnabled,
+                recentAppsEnabled = recentAppsEnabledAllApps,
                 onRecentAppClick = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)

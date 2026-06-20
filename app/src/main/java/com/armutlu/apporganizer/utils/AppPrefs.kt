@@ -157,16 +157,19 @@ object AppPrefs {
     fun isShowSystemApps(context: Context) = prefs(context).getBoolean(KEY_SHOW_SYSTEM_APPS, false)
     fun setShowSystemApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SHOW_SYSTEM_APPS, v).apply()
 
-    // Uygulama onerileri — en sik kullanilan 4 uygulama ana ekranda gosterilir
+    // Uygulama önerileri — en sık kullanılan 4 uygulama ana ekranda gösterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
 
-    // Favori uygulamalar — paket adlari Set olarak saklanir
-    const val KEY_FAVORITES_ENABLED = "favorites_enabled"
-    const val KEY_FAVORITES_SET     = "favorites_set"
+    // Favori uygulamalar — paket adları Set olarak saklanır
+    const val KEY_FAVORITES_ENABLED          = "favorites_enabled"
+    const val KEY_FAVORITES_ENABLED_ALLAPPS  = "favorites_enabled_allapps"
+    const val KEY_FAVORITES_SET              = "favorites_set"
     fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, true)
     fun setFavoritesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED, v).apply()
+    fun isFavoritesEnabledAllApps(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED_ALLAPPS, true)
+    fun setFavoritesEnabledAllApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED_ALLAPPS, v).apply()
     fun getFavorites(context: Context): Set<String> = prefs(context).getStringSet(KEY_FAVORITES_SET, emptySet()) ?: emptySet()
     fun addFavorite(context: Context, pkg: String) {
         val set = getFavorites(context).toMutableSet().also { it.add(pkg) }
@@ -178,10 +181,13 @@ object AppPrefs {
     }
     fun isFavorite(context: Context, pkg: String) = getFavorites(context).contains(pkg)
 
-    // Son kullanilan uygulamalar satiri
-    const val KEY_RECENT_APPS_ENABLED = "recent_apps_enabled"
+    // Son kullanılanlar satırı
+    const val KEY_RECENT_APPS_ENABLED         = "recent_apps_enabled"
+    const val KEY_RECENT_APPS_ENABLED_ALLAPPS = "recent_apps_enabled_allapps"
     fun isRecentAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED, false)
     fun setRecentAppsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED, v).apply()
+    fun isRecentAppsEnabledAllApps(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED_ALLAPPS, false)
+    fun setRecentAppsEnabledAllApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED_ALLAPPS, v).apply()
 
     // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
     const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"

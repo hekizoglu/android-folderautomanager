@@ -30,9 +30,11 @@ fun SettingsHomeScreenSection() {
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var hideNavButtons     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
     var allAppsBgAlpha     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
-    var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
-    var recentAppsEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
-    var favoritesEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
+    var suggestionsEnabled       by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    var recentAppsEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
+    var favoritesEnabled         by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
+    var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
+    var favoritesEnabledAllApps  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
 
     SettingsCard {
         SettingsSwitchRow(
@@ -154,6 +156,32 @@ fun SettingsHomeScreenSection() {
                 steps = 8
             )
         }
+    }
+
+    // ── Tüm Uygulamalar Ekranı ────────────────────────────────────────────
+    SettingsSectionTitle("Tüm Uygulamalar")
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.Star,
+            title = "Favoriler (Tüm Uygulamalar)",
+            subtitle = "Tüm Uygulamalar ekranında favori satırını göster",
+            checked = favoritesEnabledAllApps,
+            onCheckedChange = {
+                favoritesEnabledAllApps = it
+                com.armutlu.apporganizer.utils.AppPrefs.setFavoritesEnabledAllApps(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.History,
+            title = "Son Kullanılanlar (Tüm Uygulamalar)",
+            subtitle = "Tüm Uygulamalar ekranında son kullanılanlar satırını göster",
+            checked = recentAppsEnabledAllApps,
+            onCheckedChange = {
+                recentAppsEnabledAllApps = it
+                com.armutlu.apporganizer.utils.AppPrefs.setRecentAppsEnabledAllApps(context, it)
+            }
+        )
     }
 
     // ── Widget Alanı ──────────────────────────────────────────────────────
