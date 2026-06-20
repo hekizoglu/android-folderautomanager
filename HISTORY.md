@@ -1128,3 +1128,14 @@ Tüm 12 madde ✅. Detay:
 - ROADMAP.md: 3116→3717 (2 yer), Sprint Metrikleri D88-D91 satırları eklendi, son satır tamamlandı, donduruldu başlığı eklendi
 - HISTORY.md: D92 FCM push retroaktif belgeleme eklendi
 **Tüm 14 sorun kapandı.**
+
+## Döngü 96 — 2026-06-21 (KOD — FolderSheet Türkçe + Dark Mode Doğrulama)
+
+**Yapılanlar:** FolderSheet.kt Türkçe karakter düzeltmesi + dark mode regresyon kontrolü.
+- `FolderRenameDialog`: "Klasoru Duzenle"→"Klasörü Düzenle", "Klasor adi"→"Klasör adı", "Emoji sec"→"Emoji seç", "Renk sec"→"Renk seç", "Iptal"→"İptal"
+- `FolderSheet.kt:272`: "icinde ara"→"içinde ara"
+- `COLOR_PRESETS`: "Varsayilan"→"Varsayılan", "Kirmizi"→"Kırmızı", "Yesil"→"Yeşil", "Sari"→"Sarı"
+- Dark mode audit: AllAppsDrawer.kt + FolderSheet.kt tümü `MaterialTheme.colorScheme.*` kullanıyor — regresyon yok
+- Encoding doğrulaması: curly quote yok, UTF-8 temiz
+**Commit:** `9b96220`
+**Sonraki:** D97 — FİKİRLER.md'den bir sonraki görev (Onboarding adım sırası güncellenmeli)
