@@ -74,10 +74,48 @@
 
 ---
 
+## 📊 Fikir Puanlama (2026-06-21)
+
+> Agent tarafından yapıldı. Kriterler: Kullanıcı Değeri · Uygulanabilirlik · Bağımlılık Riski · Etki Alanı (her biri 1-5, toplam 20)
+
+| # | Fikir | Değer | Uygulanabilirlik | Bağımlılık | Etki | TOPLAM | Öneri |
+|---|-------|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | QUERY_ALL_PACKAGES Play Store beyanı | 5 | 5 | 4 | 5 | **19** | ✅ Yap |
+| 2 | Privacy Policy sayfası | 4 | 5 | 5 | 5 | **19** | ✅ Yap |
+| 3 | Content rating anketi | 4 | 5 | 4 | 5 | **18** | ✅ Yap |
+| 4 | Onboarding adım sırası güncellenmeli | 3 | 5 | 5 | 4 | **17** | ✅ Yap |
+| 5 | Multi-language support (TR/EN) | 4 | 3 | 5 | 5 | **17** | ✅ Yap |
+| 6 | Klasör sıra numarasıyla yer değiştirme | 4 | 4 | 5 | 3 | **16** | ✅ Yap |
+| 7 | Dark mode tam uyum audit | 3 | 4 | 5 | 4 | **16** | ✅ Yap |
+| 8 | Akıllı Uygulama Önerileri (30dk) | 5 | 2 | 4 | 5 | **16** | ✅ Yap |
+| 9 | Screenshots | 3 | 4 | 3 | 4 | **14** | 🟡 Değerlendir |
+| 10 | AppClassifier → JSON asset | 2 | 3 | 5 | 4 | **14** | 🟡 Değerlendir |
+| 11 | Android 14 NotificationListenerService testi | 4 | 3 | 2 | 4 | **13** | 🟡 Değerlendir |
+| 12 | Hilt DI kurulumu | 2 | 2 | 5 | 4 | **13** | 🟡 Değerlendir |
+| 13 | Unit test coverage | 2 | 2 | 5 | 4 | **13** | 🟡 Değerlendir |
+| 14 | cycle.ps1 uçtan uca test | 2 | 4 | 4 | 3 | **13** | 🟡 Değerlendir |
+| 15 | Tablet layout (large screen) | 3 | 2 | 5 | 3 | **13** | 🟡 Değerlendir |
+| 16 | Widget ekranı genişletme | 3 | 2 | 5 | 3 | **13** | 🟡 Değerlendir |
+| 17 | AppNotificationListenerService restart | 4 | 3 | 2 | 3 | **12** | 🟡 Değerlendir |
+| 18 | Firebase Crashlytics kurulumu | 3 | 3 | 2 | 4 | **12** | 🟡 Değerlendir |
+| 19 | BLUR-4 gerçek cihaz testi | 3 | 4 | 2 | 3 | **12** | 🟡 Değerlendir |
+| 20 | Kendi sunucu API'si | 5 | 1 | 1 | 5 | **12** | 🟡 Değerlendir |
+| 21 | AllApps double-tap gerçek cihaz | 3 | 4 | 2 | 2 | **11** | 🟡 Değerlendir |
+| 22 | Üretici kategorileri gerçek cihaz | 3 | 4 | 2 | 3 | **12** | 🟡 Değerlendir |
+| 23 | Wear OS companion app | 2 | 1 | 3 | 2 | **8** | ⏸ Beklet |
+| 24 | Aider CBM entegrasyon testi | 1 | 3 | 3 | 1 | **8** | ⏸ Beklet |
+| 25 | Greptile API PR review | 1 | 3 | 2 | 1 | **7** | ⏸ Beklet |
+
+**TOP 5:** Play Store beyanı (19) · Privacy Policy (19) · Content rating (18) · Onboarding fix (17) · Multi-language (17)
+> Play Store engellerini (1+2+3) tek oturumda kapatmak en verimli yol. Onboarding tutarsızlığı ve dark mode audit bağımsız, her döngüye sıkıştırılabilir.
+
+---
+
 ## 📋 Son Eklenenler (Bu Konuşmadan)
 
 | Tarih | Madde |
 |-------|-------|
+| 2026-06-21 | Fikir puanlama tablosu eklendi (25 madde, agent analizi) |
 | 2026-06-20 | FİKİRLER.md sistemi oluşturuldu — artık tüm yeni görevler/fikirler buraya |
 | 2026-06-20 | ROADMAP.md donduruldu — yeni ekleme yapılmayacak |
 

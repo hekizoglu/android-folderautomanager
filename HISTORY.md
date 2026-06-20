@@ -1176,4 +1176,76 @@ Tüm 12 madde ✅. Detay:
 ## Döngü 103 — 2026-06-21 (KOD — Türkçe karakter + e-posta geri bildirim)
 **Yapılanlar:** SettingsAppearanceSection: 12+ ASCII Türkçe string düzeltildi (Renk Teması, Yazı Tipi, Duvar Kağıdı, vb.). SettingsScreen: Geri Bildirim bölümü Telegram API'sinden e-posta Intent'e dönüştürüldü; `huseyinekizoglu@gmail.com` hedef, konu ve cihaz bilgisi hazır gelir. recentApps `lastUsedTimestamp > 0L` zaten filtreli — ROADMAP notu onaylı, kapalı sayıldı.
 **Commit:** `64f46e5`
-**Sonraki:** D104 — FİKİRLER.md 🟡 Orta: Android 14 NotificationListenerService gerçek cihaz testi veya dark mode audit
+**Sonraki:** D104 — dark mode hardcode renk fix (agent audit tamamlandı)
+
+---
+
+## ✅ Tamamlananlar Arşivi (ROADMAP'tan taşındı — 2026-06-21)
+
+### Altyapı & Config
+- CLAUDE.md v1-v5, LEARNINGS.md, HISTORY.md sistemi
+- Multi-agent mimari (code-reviewer / android-builder / deepseek-analyst)
+- `scripts/`: cycle.ps1, check_duplicates.py, dedup_classifier.py, fix_encoding.py, telegram_notify.ps1, update_notebooklm.py
+- `.githooks/pre-commit` — AppClassifier duplicate otomatik kontrol
+- GitHub Actions CI/CD pipeline
+- Room `schemas/` git'e alındı, `room.schemaLocation` gradle'da tanımlı
+- 🔒 `.gitignore` → `.env`, `*.jks`, `keystore.properties`, `*.aab` korunuyor
+- 🔒 Telegram bot token rotasyonu
+
+### Play Store Hazırlık
+- app-release.aab v1.0.0 (6.3MB) + mapping dosyası
+- Store listing metni (TR + EN) — `docs/store_listing.md`
+- ProGuard kuralları son kontrol
+- Android 15 Edge-to-Edge — `WindowCompat.setDecorFitsSystemWindows(false)`
+- Predictive Back Gesture — Manifest + BackHandler
+- Themed monochrome icon (`ic_launcher_monochrome.xml`)
+- `android:dataExtractionRules` XML — crash_log + deepseek_prefs exclude
+- Splash Screen API — `installSplashScreen()` + ic_launcher_foreground
+
+### Akıllı Kategorizasyon
+- Aşama 1: Offline veritabanı — 3717 benzersiz paket
+- Aşama 2: DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
+- KeywordDatabase duplicate bug fix
+- AppClassifier duplicate temizliği (350+, pre-commit hook ile korunuyor)
+
+### Launcher Özellikleri
+- HyperOS blur (AllAppsDrawer `Modifier.blur(20.dp)` + FolderSheet frosted tint)
+- İkon pack desteği (Nova/ADW/GO/Lawnchair/Tesla)
+- Widget desteği + drag-drop sıralama (D101)
+- App shortcuts (uzun bas)
+- Klasör özelleştirme: ad + emoji + renk
+- Favoriler + Son Kullanılanlar (race condition fix D102)
+- Bildirim badge + metin
+- BackupWorker haftalık
+- FCM push ile AppDatabase uzaktan güncelleme (`AppFirebaseMessagingService.kt`)
+
+### UI & Ayarlar
+- Masaüstü ve Tüm Uygulamalar için bağımsız Favoriler + Son Kullanılanlar toggle'ları (D99)
+- Sayfa başına klasör sayısı ayarı — slider 4/6/8/12 (D100)
+- Sayfa kayması fix — `Arrangement.SpaceBetween` → `Arrangement.Top` (D100)
+- FolderTile uzun isim sarma — `maxLines=2` (D98)
+- AppSuggestionsRow başlık: "Önerilenler" → "Sık Kullanılanlar" (D98)
+- SettingsScreen duplicate "Görünüm" başlığı temizliği (D97)
+- SettingsHomeScreenSection 20+ Türkçe string fix (D97)
+- SettingsAppearanceSection 12+ Türkçe string fix (D103)
+- Geri Bildirim — Telegram API → e-posta Intent (huseyinekizoglu@gmail.com) (D103)
+- Dark mode — hardcode renk → MaterialTheme.colorScheme (D91)
+- LeakCanary debugImplementation eklendi
+- AllApps arama kritik bug fix (D88)
+- AppRepositoryTest + LauncherViewModelTest (D89)
+
+### Kod Kalitesi
+- StateFlow migrasyonu — LiveData kullanımı yok
+- `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit (7 dosya)
+- Memory leak audit — Fragment/ViewBinding yok, Compose tamamen
+- 0-warning build
+
+### Sprint Özeti
+| Tarih | Döngüler | Özet |
+|-------|---------|------|
+| 2026-06-14 | D84 | AppClassifier 3116 paket |
+| 2026-06-15 | D22-D57 | Config refactor, store listing, LLM fallback, widget, CI, AllApps |
+| 2026-06-16 | D62-D87 | AppClassifier 3717, 0-uyarı build, SplashScreen, 23 test, FCM push |
+| 2026-06-18 | D88-D92 | AllApps arama fix, LauncherViewModelTest, BUILD #17, dark mode |
+| 2026-06-20 | D93-D95 | MD denetim + senkronizasyon düzeltmeleri |
+| 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
