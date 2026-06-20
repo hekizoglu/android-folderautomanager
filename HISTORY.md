@@ -1193,6 +1193,12 @@ Tüm 12 madde ✅. Detay:
 **Commit:** `ede1dff`
 **Sonraki:** D107 — Akıllı Uygulama Önerileri (16 puan) veya build alıp test
 
+## Döngü 107 — 2026-06-21 (KOD — Akıllı Öneriler Yaklaşım B)
+**Yapılanlar:** `UsageStatsHelper.kt`'ye `getWeightedScores()` eklendi — recency(40%)+frequency(40%)+timeSlot(20%) skor motoru, `queryEvents` + `queryUsageStats` çift kaynak, Samsung/Xiaomi lastTimeUsed=0 fallback. `LauncherViewModel.kt`: `suggestedApps` flow → Yaklaşım B skoru (izin varsa), 30dk tick ile yenileme, izinsiz fallback. CLAUDE.md'ye Görev Zorluk Puanı Kuralı eklendi.
+**Agent:** 2 paralel araştırma — UsageStatsManager API tuzakları + KISS/Lawnchair algoritması karşılaştırması
+**CLAUDE.md:** Görev Zorluk Puanı Kuralı (§3) eklendi
+**Sonraki:** Multi-language stringResource() entegrasyonu (17 puan) veya build
+
 ---
 
 ## 🗂️ Az Puanlı Fikir Arşivi (FİKİRLER.md puanlama sonrası — işleme alınmadı)

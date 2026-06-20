@@ -18,6 +18,7 @@ import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -440,14 +442,41 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala
-    val suggestedApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
-        .map { apps ->
-            apps.filter { !it.isHidden && it.usageCount > 0 }
+    // 30 dakikada bir tick — suggestedApps'ın time-slot skorunu yenilemek için
+    private val _suggestionTick = flow {
+        while (true) {
+            emit(System.currentTimeMillis())
+            delay(30 * 60 * 1000L)
+        }
+    }
+
+    // Akıllı öneriler — Yaklaşım B: recency(0.4) + frequency(0.4) + timeSlot(0.2)
+    // UsageStats izni varsa ağırlıklı skor kullanılır; izin yoksa lastUsedTimestamp sıralamasına düşer
+    val suggestedApps: StateFlow<List<AppInfo>> = combine(
+        repository.getAllAppsFlow(),
+        _suggestionTick
+    ) { apps, _ ->
+        val ctx = getApplication<Application>()
+        val visible = apps.filter { !it.isHidden }
+        if (UsageStatsHelper.hasPermission(ctx)) {
+            val scores = UsageStatsHelper.getWeightedScores(ctx, days = 28)
+            visible
+                .filter { scores.containsKey(it.packageName) }
+                .sortedByDescending { scores[it.packageName] ?: 0f }
+                .take(4)
+                .ifEmpty {
+                    // Skor listesi boşsa (izin var ama hiç veri yok) — timestamp sıralamasına düş
+                    visible.filter { it.usageCount > 0 }
+                        .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                        .take(4)
+                }
+        } else {
+            // İzin yoksa mevcut basit sıralama korunur
+            visible.filter { it.usageCount > 0 }
                 .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
                 .take(4)
         }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
     val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()

@@ -88,6 +88,15 @@ Her döngü sonunda yeni fikir/görev FİKİRLER.md'ye eklenince puanla (agent i
 - **10-14 puan** → FİKİRLER.md 🟡 Değerlendir olarak kalır
 - **9-** → FİKİRLER.md ⏸ Beklet
 
+### Görev Zorluk Puanı Kuralı
+Her döngü başında yapılacak görev için **1-10** arası zorluk puanı ver, ardından çalış:
+- **1-3 (Kolay):** Tek dosya, bilinen pattern — doğrudan yap
+- **4-6 (Orta):** Çok dosya veya yeni mantık — dikkatli yap, yan etki kontrol et
+- **7-8 (Yüksek):** Yeni sistem/API veya mimari değişiklik → **önce 2+ kaynaktan agent araştırması başlat, 2+ seçenek sun, kullanıcı onayı al**
+- **9-10 (Kritik):** Veri kaybı/güvenlik riski → **3+ kaynak, Plan aşaması zorunlu, commit öncesi onay**
+
+Puan yüksekse araştırma tamamlanmadan kod yazılmaz.
+
 **CLAUDE.md'ye eklenir:** kalıcı kural, build hatası+çözümü, kritik mimari karar.
 **CLAUDE.md'ye eklenmez:** döngü özeti (→ HISTORY.md), tek seferlik not, geçici durum.
 
