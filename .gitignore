@@ -29,6 +29,7 @@ Thumbs.db
 entities.json
 mempalace.yaml
 .claude/
+!.claude/agents/
 .env
 
 nul
