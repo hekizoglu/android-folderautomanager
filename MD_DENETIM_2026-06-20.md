@@ -5,7 +5,7 @@
 
 ---
 
-⚠️ **13 sorun tespit edildi** (12 önceki açık + 1 KRİTİK yeni)
+⚠️ **14 sorun tespit edildi** (13 önceki açık + 1 yeni)
 
 ---
 
@@ -25,11 +25,12 @@
 | 10 | LEARNINGS.md | Room DB versiyon geçmişi v7'de bitiyor, v8 kaydı yok | Düşük | Açık |
 | 11 | LEARNINGS.md | Onboarding adım listesi güncel değil (CLASSIFY_MODE eksik, 14 adım vs CLAUDE.md "14+2") | Orta | Açık |
 | 12 | ROADMAP.md | Sprint Metrikleri D88-D91 döngü satırları eksik | Düşük | Açık |
-| **13** | **HISTORY + CLAUDE + ROADMAP** | **FCM push özelliği (commit 34070c4, 2026-06-18 23:28) döngü logu yok — 8 dosya değişti, hiç belgelenmedi** | **🔴 KRİTİK** | **YENİ** |
+| **13** | **HISTORY + CLAUDE + ROADMAP** | **FCM push özelliği (commit 34070c4, 2026-06-18 23:28) döngü logu yok — 8 dosya değişti, hiç belgelenmedi** | **🔴 KRİTİK** | Açık |
+| **14** | **LEARNINGS.md** | **"Promote Bekleyenler": Merge conflict AppClassifier — 4+ tekrar (eşik 3+), 7 gündür CLAUDE.md §5'e promote edilmemiş** | Orta | **YENİ** |
 
 ---
 
-## Yeni Kritik Bulgu — #13
+## Kritik Bulgu — #13 (Hâlâ Açık)
 
 ### FCM Push Özelliği Belgelenmemiş (commit 34070c4)
 
@@ -63,6 +64,25 @@
 - ROADMAP.md'de tamamlandı işaretle  
 - LEARNINGS.md'ye FCM mimarisi ekle
 - AllAppsDrawer/FolderSheet dark mode regressionlarını kontrol et
+
+---
+
+## Yeni Bulgu — #14
+
+### LEARNINGS.md: Merge Conflict AppClassifier Promote Edilmemiş
+
+**Bölüm:** LEARNINGS.md §"Promote Bekleyenler"  
+**Satır:** `[2026-06-13] Merge conflict AppClassifier — Tekrar: 4+ | Öncelik: ORTA`
+
+Kural: 3+ tekrar → CLAUDE.md §5'e promote. Bu kayıt 4+ tekrar ile eşiği **7 gün önce** aştı, hâlâ LEARNINGS.md'de bekliyor.
+
+**Promote edilecek kural:**  
+> Remote ve local aynı döngüde AppClassifier'a yazınca merge conflict oluşur. Çözüm: `scripts/dedup_classifier.py` ile iki tarafı birleştir, set ile dedup et.
+
+**Fix:** CLAUDE.md §5 AppClassifier Duplicate bölümüne şu satırı ekle:
+```
+- Merge conflict durumunda: `python scripts/dedup_classifier.py` ile remote+local birleştir, set dedup uygula
+```
 
 ---
 
@@ -153,12 +173,12 @@ D88 (AllApps fix), D89 (LauncherViewModelTest), D90 (BUILD #17), D91 (dark mode)
 
 ## Denetim Durumu
 
-- **Önceki açık sorunlar:** 12 (MD_DENETIM_2026-06-20.md, ilk kontrol)
-- **Bu denetimde yeni:** 1 (#13 FCM push belgelenmemiş — KRİTİK)
+- **Önceki açık sorunlar:** 13
+- **Bu denetimde yeni:** 1 (#14 Merge conflict AppClassifier 7 gündür promote edilmemiş)
 - **Düzeltilen:** 0
-- **Toplam açık:** 13
+- **Toplam açık:** 14
 - **Son kod değişikliği:** commit 34070c4 (2026-06-18 23:28 — FCM push)
-- **Denetim tarihi:** 2026-06-20
+- **Denetim tarihi:** 2026-06-20 (3. kontrol)
 
 **Telegram engellendiği için bu rapor GitHub commit olarak iletildi.**
 

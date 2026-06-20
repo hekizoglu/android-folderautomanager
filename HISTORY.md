@@ -1067,3 +1067,11 @@ Tüm 12 madde ✅. Detay:
 - #13: 🔴 commit 34070c4 (2026-06-18 23:28) `feat: FCM push ile AppDatabase uzaktan güncelleme` — 8 dosya değişti (AppFirebaseMessagingService.kt YENİ), HISTORY.md'de döngü logu yok, CLAUDE.md/ROADMAP.md güncellenmedi. Dark mode fix (D91) ile aynı dosyaları değiştiriyor (AllAppsDrawer.kt + FolderSheet.kt) — regresyon riski var.
 **Durum:** Toplam 13 sorun açık. Rapor güncellendi: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
 **Sonraki:** Hüseyin onayı bekleniyor — özellikle #13 acil kontrol gerektiriyor.
+
+## MD Denetim 3. Kontrol — 2026-06-20 (Otomatik)
+
+**Yapılanlar:** Günlük denetim 3. çalışması. 13 sorun hâlâ açık. 1 yeni sorun eklendi.
+**Yeni bulgu:**
+- #14: LEARNINGS.md "Promote Bekleyenler" — Merge conflict AppClassifier kaydı 4+ tekrar ile eşiği 7 gün önce aştı, CLAUDE.md §5'e promote edilmemiş. Fix: CLAUDE.md §5 AppClassifier bölümüne merge conflict çözüm adımı ekle.
+**Durum:** Toplam 14 sorun açık. Rapor güncellendi: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
+**Sonraki:** Hüseyin onayı bekleniyor — 14 sorunu tek düzeltme döngüsünde çöz (önce #13 KRİTİK, sonra #14, ardından diğerleri).
