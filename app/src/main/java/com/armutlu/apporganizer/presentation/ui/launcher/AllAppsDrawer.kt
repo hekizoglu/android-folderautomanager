@@ -53,6 +53,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.res.stringResource
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
@@ -421,7 +423,7 @@ private fun DrawerAppList(
             if (state.sortedApps.isEmpty()) {
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
-                        Text("Sonuç bulunamadı", color = textSecondary, fontSize = 14.sp)
+                        Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
                     }
                 }
             } else {
@@ -459,7 +461,7 @@ private fun DrawerRecentFavSection(
     val onSurface = MaterialTheme.colorScheme.onSurface
     Column(modifier = Modifier.fillMaxWidth()) {
         if (recentApps.isNotEmpty()) {
-            NiagaraLetterHeader(letter = '★', label = "Son Kullanılanlar")
+            NiagaraLetterHeader(letter = '★', label = stringResource(R.string.recent_apps))
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -893,7 +895,7 @@ fun NiagaraAppRow(
             .height(58.dp)
             .semantics {
                 contentDescription = "${app.appName}, ${app.categoryId.ifBlank { "Uygulama" }}"
-                onClick(label = "Aç") { onClick(); true }
+                onClick(label = stringResource(R.string.open_app)) { onClick(); true }
             }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(if (isActive) rowHover else Color.Transparent)

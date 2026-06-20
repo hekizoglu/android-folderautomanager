@@ -100,6 +100,8 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -307,7 +309,7 @@ fun HomeScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Launcher Ayarları")
+                    Text(stringResource(R.string.launcher_settings))
                 }
                 Button(
                     onClick = {
@@ -319,7 +321,7 @@ fun HomeScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Text("Uygulama Ayarları")
+                    Text(stringResource(R.string.app_settings))
                 }
             }
         }

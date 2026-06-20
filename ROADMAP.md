@@ -1,7 +1,8 @@
 # ROADMAP.md — AppOrganizer Yol Haritası
 
-> Son güncelleme: 2026-06-21 (D104 sonrası). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
+> Son güncelleme: 2026-06-21 (D108). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
 > İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 · Puanlar FİKİRLER.md tablosundan (15+ = bu listeye girer)
+> **Kural:** Tamamlanan görevler bu dosyadan silinir → HISTORY.md Tamamlananlar Arşivi'ne taşınır.
 
 ---
 
@@ -12,9 +13,9 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 ---
 
-## 🔥 Şu An Ne Yapılıyor (D105+)
+## 🔥 Şu An Ne Yapılıyor (D108)
 
-Dark mode audit tamamlandı (D104). Sıradaki: Onboarding tutarsızlığı fix + Multi-language altyapısı.
+Multi-language strings.xml entegrasyonu devam ediyor — FolderSheet, HomeScreen, AllAppsDrawer tamamlandı. Sırada: SettingsScreen + SettingsAppearanceSection.
 
 ---
 
@@ -33,11 +34,7 @@ Dark mode audit tamamlandı (D104). Sıradaki: Onboarding tutarsızlığı fix +
 
 | Puan | Görev | Alan | Durum |
 |------|-------|------|-------|
-| 17 | **Onboarding adım sırası fix** | CLAUDE.md "14+2" ↔ LEARNINGS.md "14" tutarsızlığı + kod doğrulama | ✅ D105 — 16 adım, SET_LAUNCHER → CLASSIFY_MODE → DONE |
-| 17 | **Multi-language support (TR/EN)** | `strings.xml` + `values-en/strings.xml` altyapısı | Bekliyor |
-| 16 | **Klasör sıra numarasıyla yer değiştirme** | FolderSheet / HomeScreen — numara girerek taşıma | ✅ D106 |
-| 16 | **Akıllı Uygulama Önerileri (30dk)** | `suggestedApps` — saat/kullanım alışkanlığına göre | ✅ D107 — Yaklaşım B: recency+freq+timeSlot |
-| 16 | **Dark mode tam uyum audit** | Kalan 🟡 "İncelenmeli" renkler | ✅ Kısmen D104 |
+| 17 | **Multi-language support (TR/EN)** | `strings.xml` + `values-en/strings.xml` + Kotlin entegrasyon | 🔄 D108 devam ediyor |
 
 ### 🟡 Orta Öncelik
 

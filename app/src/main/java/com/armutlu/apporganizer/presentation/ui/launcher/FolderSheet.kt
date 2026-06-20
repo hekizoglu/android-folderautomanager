@@ -43,10 +43,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppAnalytics
 
@@ -109,7 +111,7 @@ fun FolderContextMenuSheet(
             ) {
                 Icon(Icons.Default.FolderOpen, null, tint = primary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
-                Text("Klasörü Aç", color = onSurface, fontSize = 15.sp)
+                Text(stringResource(R.string.folder_open), color = onSurface, fontSize = 15.sp)
             }
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
             // Klasörü Taşı
@@ -121,7 +123,7 @@ fun FolderContextMenuSheet(
                 ) {
                     Icon(Icons.Default.Edit, null, tint = onSurface.copy(0.7f), modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(16.dp))
-                    Text("Konumu Değiştir", color = onSurface, fontSize = 15.sp)
+                    Text(stringResource(R.string.folder_move), color = onSurface, fontSize = 15.sp)
                 }
                 Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
             }
@@ -133,7 +135,7 @@ fun FolderContextMenuSheet(
             ) {
                 Icon(Icons.Default.Apps, null, tint = onSurface.copy(0.7f), modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
-                Text("Tüm Uygulamalara Git", color = onSurface, fontSize = 15.sp)
+                Text(stringResource(R.string.folder_goto_all_apps), color = onSurface, fontSize = 15.sp)
             }
         }
     }
@@ -141,7 +143,7 @@ fun FolderContextMenuSheet(
     if (showMoveDialog) {
         AlertDialog(
             onDismissRequest = { showMoveDialog = false; moveTargetText = "" },
-            title = { Text("Konumu Değiştir") },
+            title = { Text(stringResource(R.string.folder_move)) },
             text = {
                 Column {
                     Text(
@@ -153,7 +155,7 @@ fun FolderContextMenuSheet(
                     OutlinedTextField(
                         value = moveTargetText,
                         onValueChange = { moveTargetText = it.filter { c -> c.isDigit() } },
-                        label = { Text("Hedef sıra (1–${allFolders.size})") },
+                        label = { Text(stringResource(R.string.folder_move_target_hint, allFolders.size)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -171,10 +173,10 @@ fun FolderContextMenuSheet(
                         }
                     },
                     enabled = moveTargetText.toIntOrNull()?.let { it in 1..allFolders.size } == true
-                ) { Text("Taşı") }
+                ) { Text(stringResource(R.string.folder_move_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { showMoveDialog = false; moveTargetText = "" }) { Text("İptal") }
+                TextButton(onClick = { showMoveDialog = false; moveTargetText = "" }) { Text(stringResource(R.string.btn_cancel)) }
             }
         )
     }
@@ -289,7 +291,7 @@ fun FolderSheet(
                         .clickable { showEditDialog = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, "Klasörü düzenle", tint = onSurface.copy(0.6f), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Edit, stringResource(R.string.folder_edit), tint = onSurface.copy(0.6f), modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -511,14 +513,14 @@ private fun FolderRenameDialog(
         onDismissRequest = onDismiss,
         containerColor = surface,
         title = {
-            Text("Klasörü Düzenle", color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.folder_edit), color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 OutlinedTextField(
                     value = nameField,
                     onValueChange = { nameField = it },
-                    label = { Text("Klasör adı", color = onSurface.copy(0.6f)) },
+                    label = { Text(stringResource(R.string.folder_rename_hint), color = onSurface.copy(0.6f)) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primary,
@@ -529,7 +531,7 @@ private fun FolderRenameDialog(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text("Emoji seç", color = onSurface.copy(0.6f), fontSize = 13.sp)
+                Text(stringResource(R.string.folder_emoji_pick), color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     itemsIndexed(EMOJI_PICKER, key = { _, emoji -> emoji }) { _, emoji ->
                         Box(
@@ -547,7 +549,7 @@ private fun FolderRenameDialog(
                         }
                     }
                 }
-                Text("Renk seç", color = onSurface.copy(0.6f), fontSize = 13.sp)
+                Text(stringResource(R.string.folder_color_pick), color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     itemsIndexed(COLOR_PRESETS, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
@@ -580,12 +582,12 @@ private fun FolderRenameDialog(
         },
         confirmButton = {
             TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji, selectedColor) }) {
-                Text("Kaydet", color = primary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.btn_save), color = primary, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("İptal", color = onSurface.copy(0.6f))
+                Text(stringResource(R.string.btn_cancel), color = onSurface.copy(0.6f))
             }
         }
     )

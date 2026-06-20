@@ -62,4 +62,61 @@
     <!-- State Messages -->
     <string name="no_apps_found">No apps found</string>
     <string name="loading">Loading…</string>
+
+    <!-- HomeScreen -->
+    <string name="launcher_settings">Launcher Settings</string>
+    <string name="app_settings">App Settings</string>
+
+    <!-- AllAppsDrawer -->
+    <string name="no_results">No results found</string>
+    <string name="recent_apps">Recent</string>
+    <string name="open_app">Open</string>
+
+    <!-- FolderSheet -->
+    <string name="folder_open">Open Folder</string>
+    <string name="folder_move">Move Position</string>
+    <string name="folder_goto_all_apps">Go to All Apps</string>
+    <string name="folder_move_target_hint">Target position (1–%1$d)</string>
+    <string name="folder_move_confirm">Move</string>
+    <string name="folder_edit">Edit Folder</string>
+    <string name="folder_emoji_pick">Pick emoji</string>
+    <string name="folder_color_pick">Pick color</string>
+
+    <!-- Settings -->
+    <string name="settings_default_launcher">Default Launcher</string>
+    <string name="settings_launcher_change">Change</string>
+    <string name="settings_dock_empty">Dock is empty</string>
+    <string name="settings_reset_defaults">Reset to Defaults</string>
+    <string name="settings_dock_default_apps">Phone, Messages, Camera, Browser</string>
+    <string name="settings_show_system_apps">Show System Apps</string>
+    <string name="settings_show_system_apps_desc">List built-in system apps</string>
+    <string name="settings_classify_by_vendor">Classify by Vendor</string>
+    <string name="settings_classify_by_vendor_desc">Auto-categorize Samsung/Huawei/Xiaomi apps</string>
+    <string name="settings_classify_uncategorized">Classify Uncategorized</string>
+    <string name="settings_classify_uncategorized_desc">Auto-assign apps without a category</string>
+    <string name="settings_reset_categories">Reset All Categories</string>
+    <string name="settings_reset_categories_desc">Delete all assignments and re-classify</string>
+    <string name="settings_show">Show</string>
+    <string name="settings_developer">Developer</string>
+    <string name="settings_developer_name">Hüseyin Ekizoğlu</string>
+    <string name="settings_database">Database</string>
+    <string name="settings_feedback">Send Feedback</string>
+    <string name="settings_feedback_desc">Report a bug or suggestion by e-mail</string>
+    <string name="settings_export_failed">Export failed</string>
+    <string name="settings_share_backup">Share backup</string>
+
+    <!-- Appearance Settings -->
+    <string name="appearance_color_theme">Color Theme</string>
+    <string name="appearance_font">Font</string>
+    <string name="appearance_wallpaper">Home Screen Wallpaper</string>
+    <string name="appearance_custom_color">Custom Color</string>
+    <string name="appearance_text_opacity">Text Opacity</string>
+    <string name="appearance_folder_size">Folder Size</string>
+    <string name="appearance_folders_per_page">Folders per Page</string>
+    <string name="appearance_folder_unit">folders</string>
+    <string name="appearance_text_color">Text Color</string>
+    <string name="appearance_grey_unused">Grey Unused Apps</string>
+    <string name="appearance_blur_effect">Folder Blur Effect</string>
+    <string name="appearance_blur_effect_desc">Background blurs when folder opens (HyperOS style)</string>
+    <string name="appearance_folder_shape">Folder Shape</string>
 </resources>

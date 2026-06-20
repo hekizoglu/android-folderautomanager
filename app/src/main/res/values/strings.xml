@@ -62,4 +62,61 @@
     <!-- State Messages -->
     <string name="no_apps_found">Uygulama bulunamadı</string>
     <string name="loading">Yükleniyor...</string>
+
+    <!-- HomeScreen -->
+    <string name="launcher_settings">Launcher Ayarları</string>
+    <string name="app_settings">Uygulama Ayarları</string>
+
+    <!-- AllAppsDrawer -->
+    <string name="no_results">Sonuç bulunamadı</string>
+    <string name="recent_apps">Son Kullanılanlar</string>
+    <string name="open_app">Aç</string>
+
+    <!-- FolderSheet -->
+    <string name="folder_open">Klasörü Aç</string>
+    <string name="folder_move">Konumu Değiştir</string>
+    <string name="folder_goto_all_apps">Tüm Uygulamalara Git</string>
+    <string name="folder_move_target_hint">Hedef sıra (1–%1$d)</string>
+    <string name="folder_move_confirm">Taşı</string>
+    <string name="folder_edit">Klasörü Düzenle</string>
+    <string name="folder_emoji_pick">Emoji seç</string>
+    <string name="folder_color_pick">Renk seç</string>
+
+    <!-- Settings -->
+    <string name="settings_default_launcher">Varsayılan Launcher</string>
+    <string name="settings_launcher_change">Değiştir</string>
+    <string name="settings_dock_empty">Dock boş</string>
+    <string name="settings_reset_defaults">Varsayılana Sıfırla</string>
+    <string name="settings_dock_default_apps">Telefon, Mesaj, Kamera, Tarayıcı</string>
+    <string name="settings_show_system_apps">Sistem Uygulamalarını Göster</string>
+    <string name="settings_show_system_apps_desc">Dahili sistem uygulamalarını listele</string>
+    <string name="settings_classify_by_vendor">Üreticiye Göre Sınıflandır</string>
+    <string name="settings_classify_by_vendor_desc">Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilere ayır</string>
+    <string name="settings_classify_uncategorized">Sınıflandırılmamışları Sınıflandır</string>
+    <string name="settings_classify_uncategorized_desc">Kategorisiz uygulamaları otomatik ata</string>
+    <string name="settings_reset_categories">Tüm Kategorileri Sıfırla</string>
+    <string name="settings_reset_categories_desc">Tüm atamaları sil ve yeniden sınıflandır</string>
+    <string name="settings_show">Göster</string>
+    <string name="settings_developer">Geliştirici</string>
+    <string name="settings_developer_name">Hüseyin Ekizoğlu</string>
+    <string name="settings_database">Veritabanı</string>
+    <string name="settings_feedback">Talep / Öneri Gönder</string>
+    <string name="settings_feedback_desc">E-posta ile öneri veya hata bildirin</string>
+    <string name="settings_export_failed">Dışa aktarma başarısız</string>
+    <string name="settings_share_backup">Yedeği paylaş</string>
+
+    <!-- Appearance Settings -->
+    <string name="appearance_color_theme">Renk Teması</string>
+    <string name="appearance_font">Yazı Tipi</string>
+    <string name="appearance_wallpaper">Ana Ekran Arka Planı</string>
+    <string name="appearance_custom_color">Özel Renk</string>
+    <string name="appearance_text_opacity">Yazı Opaklık</string>
+    <string name="appearance_folder_size">Klasör Boyutu</string>
+    <string name="appearance_folders_per_page">Sayfa Başına Klasör</string>
+    <string name="appearance_folder_unit">klasör</string>
+    <string name="appearance_text_color">Yazı Rengi</string>
+    <string name="appearance_grey_unused">Kullanılmayan Uygulamalar Gri</string>
+    <string name="appearance_blur_effect">Klasör Blur Efekti</string>
+    <string name="appearance_blur_effect_desc">Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)</string>
+    <string name="appearance_folder_shape">Klasör Şekli</string>
 </resources>
