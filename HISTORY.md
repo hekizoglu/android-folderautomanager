@@ -1167,3 +1167,13 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** LauncherViewModel: `reorderWidgets(context, newOrder)` eklendi. WidgetArea: `detectDragGesturesAfterLongPress` ile sıralama. Birden fazla widget varsa uzun bas+sürükle = sıra değiştir + DragHandle ikonu; tek widget = mevcut davranış. HomeScreen: `onReorderWidgets` bağlandı.
 **Commit:** `fe58550`
 **Sonraki:** D102 — ROADMAP Kritik: Favoriler senkronizasyon sorunu (SharedPrefs+StateFlow)
+
+## Döngü 102 — 2026-06-21 (KOD — Favoriler race condition)
+**Yapılanlar:** LauncherViewModel `toggleFavorite`: SharedPrefs async `.apply()` race condition giderildi. Memory-first pattern: önce `_favoritePkgs.value` güncellenir, ardından SharedPrefs yazılır. StateFlow anında yansır.
+**Commit:** `0036ed6`
+**Sonraki:** D103 — recentApps lastUsedTimestamp=0 denetimi + Türkçe karakter audit
+
+## Döngü 103 — 2026-06-21 (KOD — Türkçe karakter + e-posta geri bildirim)
+**Yapılanlar:** SettingsAppearanceSection: 12+ ASCII Türkçe string düzeltildi (Renk Teması, Yazı Tipi, Duvar Kağıdı, vb.). SettingsScreen: Geri Bildirim bölümü Telegram API'sinden e-posta Intent'e dönüştürüldü; `huseyinekizoglu@gmail.com` hedef, konu ve cihaz bilgisi hazır gelir. recentApps `lastUsedTimestamp > 0L` zaten filtreli — ROADMAP notu onaylı, kapalı sayıldı.
+**Commit:** `64f46e5`
+**Sonraki:** D104 — FİKİRLER.md 🟡 Orta: Android 14 NotificationListenerService gerçek cihaz testi veya dark mode audit
