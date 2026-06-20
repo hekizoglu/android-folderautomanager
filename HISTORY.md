@@ -1050,3 +1050,12 @@ Tüm 12 madde ✅. Detay:
 
 **Yapılanlar:** 4. otomatik rutin çalıştı. 9 sorun hâlâ açık. 1 yeni sorun eklendi (#10): LEARNINGS.md Room DB versiyon geçmişi v7'de bitiyor, v8 kaydı eksik. Önceki rapordaki #7 (HISTORY.md encoding) düzeltildi — gerçek bozukluk harcananvakit.md satır 73'te ("Dongue 86").
 **Durum:** Toplam 10 sorun açık. Düzeltme onayı bekleniyor. Rapor: `MD_DENETIM_2026-06-19.md`
+
+## MD Denetim — 2026-06-20 (Otomatik)
+
+**Yapılanlar:** Günlük denetim rutini çalıştı. Önceki 10 sorunun tümü hâlâ açık. 2 yeni sorun eklendi.
+**Yeni bulgular:**
+- #11: LEARNINGS.md Onboarding adım listesi güncel değil (CLASSIFY_MODE eksik, "14+2" vs 14 adım tutarsızlığı)
+- #12: ROADMAP.md Sprint Metrikleri D88-D91 satırları eksik
+**Durum:** Toplam 12 sorun açık. Rapor: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
+**Sonraki:** Hüseyin onayı bekleniyor — onay gelince 12 sorunu tek düzeltme döngüsünde çöz.
