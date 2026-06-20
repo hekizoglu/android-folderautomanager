@@ -8,13 +8,18 @@
 ## Aktif Sorunlar
 
 ### [CS-3] Gradle `merged_res` / `packaged_res` Kilidi (Tekrarlayan)
-**Tarih:** 2026-06-16 | **Durum:** Workaround mevcut (full clean), kök çözüm eksik
-**Sorun:** Monochrome icon eklenmesi sonrası `mergeDebugResources` her değişiklikte `intermediates/packaged_res` ve `incremental/debug/mergeDebugResources` dizinlerini kilitliyor. Mevcut Defender exclusion `app\build` kökünü kapsıyor ama `intermediates` alt dizinleri yeniden oluşturunca taranıyor.
-**Çözüm adayı:** Admin PS'de şunu ekle:
+**Tarih:** 2026-06-16 | **Durum:** ⚠️ Workaround mevcut — kök çözüm Admin yetki engeline takıldı
+**Sorun:** `mergeDebugResources` her değişiklikte `intermediates/packaged_res` dizinini kilitliyor. Windows Defender gerçek zamanlı tarama nedeniyle.
+**Denenen:** 2026-06-21 — `Add-MpPreference -ExclusionPath "...\intermediates"` → `HRESULT 0xc0000142` — yetki hatası, Admin PS gerektiriyor.
+**Workaround (build kilitleninceye kadar):** `Get-Process java | Stop-Process -Force` → `Remove-Item -Recurse -Force app\build` → yeniden build.
+**Alternatif çözüm — yetki gerekmez:**
 ```powershell
-Add-MpPreference -ExclusionPath "C:\Users\hekizoglu\Documents\AppOrganizer\app\build\intermediates"
+# gradle.properties'e ekle (mevcut dizinde):
+org.gradle.daemon=false
+org.gradle.configureondemand=false
 ```
-**Kullanıcıdan beklenen:** Admin PowerShell'de yukarıdaki komutu çalıştır.
+Bu Gradle daemon'u kapatır — Defender daemon process'ini izleyemez, kilit azalır.
+**Kullanıcıdan beklenen:** Gerçek Admin PS erişimi olduğunda `Add-MpPreference` çalıştır. Şimdilik `gradle.properties` workaround dene.
 
 ### ~~[CS-1] HISTORY.md Arrow Karakteri (→) Tam Kurtarılamadı~~ ✅ KAPANDI 2026-06-21
 **Sonuç:** `→` işaretleri `->` haline dönüştürüldü. Bilgi kaybı yok — müdahale gerekmez. HISTORY.md şu an temiz UTF-8.
