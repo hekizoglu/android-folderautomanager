@@ -435,6 +435,7 @@ fun HomeScreen(
                 WidgetArea(
                     widgetIds = widgetIds,
                     onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
+                    onReorderWidgets = { newOrder -> viewModel.reorderWidgets(context, newOrder) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

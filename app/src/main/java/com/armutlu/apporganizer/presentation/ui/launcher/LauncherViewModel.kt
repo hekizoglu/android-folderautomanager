@@ -406,6 +406,11 @@ class LauncherViewModel @Inject constructor(
         _widgetIds.value = WidgetPrefs.getWidgetIds(context)
     }
 
+    fun reorderWidgets(context: Context, newOrder: List<Int>) {
+        WidgetPrefs.saveWidgetIds(context, newOrder)
+        _widgetIds.value = newOrder
+    }
+
     val hiddenApps: StateFlow<List<AppInfo>> = repository.getHiddenApps()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 

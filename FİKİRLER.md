@@ -30,6 +30,7 @@
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
+| 2026-06-21 | D100 sonrası | **Klasör sıra numarasıyla yer değiştirme** — kullanıcı "3. klasörü 7. sıraya taşı" gibi numara girerek taşıyabilsin | Bekliyor |
 | 2026-06-20 | Denetim #11 | **Onboarding adım sırası güncellenmeli** — CLASSIFY_MODE adımı eksik, CLAUDE.md "14+2" diyor ama LEARNINGS.md 14 adım | Bekliyor |
 | 2026-06-20 | Denetim #14 | **Merge conflict AppClassifier kural CLAUDE.md §5'e promote** — 4+ tekrar, eşik geçildi | [TAMAMLANDI] |
 | 2026-06-16 | Döngü 86 | **AllAppsDrawer/FolderSheet dark mode regresyon kontrolü** — D91 fix sonrası FCM commit tekrar değiştirdi | [TAMAMLANDI D96] |
