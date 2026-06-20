@@ -1,235 +1,148 @@
 # ROADMAP.md — AppOrganizer Yol Haritası
 
-> **🔒 DONDURULDU (2026-06-20)** — Yeni görevler artık FİKİRLER.md'ye eklenir. Bu dosya sadece referans amaçlı korunuyor.
-> İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 ile işaretlenir.
+> Son güncelleme: 2026-06-21 (D103 sonrası). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
+> İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒
 
 ---
 
 ## 🎯 Hedef
-Play Store yayını → Production AAB hazır ✅, kalan: Privacy Policy + görseller + content rating + son ProGuard kontrolü.
+
+Play Store yayını → Production AAB v1.0.0 hazır ✅  
+Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 ---
 
-## 🔥 Aktif Sprint
+## 🔥 Şu An Ne Yapılıyor (D104+)
 
-### HyperOS Tarzı Klasör Açılışı — Blur + Animasyon
-
-> **Hedef:** Klasör açılınca arka plan blur olsun, sheet scale+fade ile açılsın (HyperOS/MIUI tarzı frosted glass)
-> **Araştırma:** 2026-06-15 — Haze kütüphanesi (chrisbanes/haze, API 21+) en uygun çözüm
-> **Kısıt:** minSdk=26 → `Modifier.blur()` API 31+ gerektiriyor → Haze kütüphanesi API 21+ destekli, bu projeyi kapsar
-
-#### Teknik Plan
-
-**Adım 1 — Haze bağımlılığı**
-```kotlin
-// app/build.gradle.kts
-implementation("dev.chrisbanes.haze:haze:1.5.0")
-```
-
-**Adım 2 — HomeScreen: hazeState + haze modifier**
-```kotlin
-val hazeState = remember { HazeState() }
-
-// Arka plan içerik (klasörler, pager) — blur kaynağı
-Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
-    // Mevcut HomeScreen içeriği
-}
-```
-
-**Adım 3 — FolderSheet: ModalBottomSheet → tam ekran Popup + blur**
-```kotlin
-// containerColor = Color.Transparent (opak değil)
-// hazeChild(hazeState, style = HazeStyle(blurRadius=20.dp, tint=Color(0x99000000)))
-// enter: fadeIn + scaleIn(0.9f) — HyperOS scale efekti
-// exit:  fadeOut + scaleOut(0.9f)
-```
-
-**Adım 4 — Ayar toggle**
-```kotlin
-// AppPrefs.KEY_FOLDER_BLUR (varsayılan: true)
-// SettingsScreen'de "Klasör Blur Efekti" toggle
-```
-
-#### Dosya Değişiklikleri
-| Dosya | Değişiklik |
-|-------|-----------|
-| `app/build.gradle.kts` | Haze dependency |
-| `presentation/ui/launcher/HomeScreen.kt` | `hazeState` + `.haze()` modifier |
-| `presentation/ui/launcher/FolderSheet.kt` | `ModalBottomSheet` → blur container + scale animasyon |
-| `utils/AppPrefs.kt` | `KEY_FOLDER_BLUR` toggle |
-| `presentation/ui/screens/SettingsScreen.kt` | Blur toggle UI |
-
-- [x] ~~**[BLUR-1]** Haze kütüphanesi ekle + HomeScreen hazeState~~ ✅ Haze VerifyError yaptı → kaldırıldı; `Modifier.blur(20.dp)` AllAppsDrawer'da, frosted tint FolderSheet'te (2026-06-15 Döngü 46)
-- [x] ~~**[BLUR-2]** FolderSheet blur + scale animasyon~~ ✅ `containerColor = Color(0xE61A1A2A)` frosted tint — API bağımsız çözüm (2026-06-15 Döngü 46)
-- [x] ~~**[BLUR-3]** AppPrefs toggle + SettingsScreen~~ ✅ `KEY_FOLDER_BLUR` toggle Settings'te mevcut (2026-06-15 Döngü 46)
-- [ ] **[BLUR-4]** Gerçek cihaz testi (blur performansı + API 26 uyumu)
+Gerçek cihaz testleri ve Play Store ön hazırlıkları.
 
 ---
 
-### 🔒 Güvenlik (Önce Bu)
-- [x] ~~🔒 Telegram bot token rotasyonu~~ ✅ Yeni token alındı, `.env` güncellendi, test edildi (2026-06-15)
-- [x] ~~🔒 `.gitignore` doğrula~~ ✅ `.env`, `*.jks`, `keystore.properties`, `*.aab` korunuyor (2026-06-15)
+## 📋 Bekleyen Görevler
 
-### Play Store Yayını (Kritik)
-- [x] ~~app-release.aab oluştur + imzala~~ ✅ v1.0.0 (6.3MB, `Desktop/AppOrganizer_PlayStore/`)
-- [x] ~~Mapping dosyası~~ ✅ `mapping-v1.0.0.txt`
-- [ ] Privacy Policy sayfası (GitHub Pages tek HTML) ⚠️ içerik onayı
-- [x] ~~Store listing metni (TR + EN)~~ ✅ `docs/store_listing.md` (Döngü #22, 2026-06-15)
-- [ ] Screenshots (Pixel 6 emülatörü, light + dark mode)
-- [ ] Content rating anketi ⚠️
-- [x] ~~ProGuard kuralları son kontrol~~ ✅ `@HiltAndroidApp` + `@AndroidEntryPoint` keep kuralları eklendi (Döngü #23, 2026-06-15)
+### 🔴 Kritik (Engel)
 
-### Otomasyon Tamamlama
-- [x] ~~Döngü orchestrator scripti~~ ✅ `scripts/cycle.ps1`
-- [x] ~~AppClassifier duplicate kontrol~~ ✅ `scripts/check_duplicates.py` + `dedup_classifier.py`
-- [x] ~~Encoding fix scripti~~ ✅ `scripts/fix_encoding.py`
-- [x] ~~Telegram bildirim helper~~ ✅ `scripts/telegram_notify.ps1`
-- [ ] `cycle.ps1` yerel makinede uçtan uca test (build → push → Telegram)
-- [x] ~~Git pre-commit hook~~ ✅ `.github/hooks/pre-commit` + `scripts/install_hooks.ps1` (2026-06-15)
-- [x] ~~`scripts/update_notebooklm.py`~~ ✅ 68 Kotlin dosyası → 488KB, Masaüstü/notebooklm_apporganizer/ (2026-06-15)
+| Görev | Neden Kritik | Durum |
+|-------|-------------|-------|
+| **QUERY_ALL_PACKAGES Play Store beyanı** | Göndermeden önce zorunlu — eksikse APK reddedilir | ⚠️ Bekliyor |
+| **Privacy Policy sayfası** | Play Store şart — GitHub Pages `/docs/privacy_policy.html` hazır, Pages aktifleştirilmeli | ⚠️ Onay gerekli |
+| **Content rating anketi** | Play Store — göndermeden önce doldurulmalı | ⚠️ Bekliyor |
+| **Screenshots** | Play Store — Pixel 6 emülatörü, light + dark mode | Bekliyor |
 
----
+### 🟡 Orta Öncelik (Sonraki Sprint)
 
-## 📋 Backlog
+| Görev | Dosya / Alan | Durum |
+|-------|-------------|-------|
+| **Android 14 NotificationListenerService gerçek cihaz testi** | `AppNotificationListenerService.kt` | Bekliyor |
+| **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
+| **Dark mode tam uyum audit** | Kalan hardcode renkler | Bekliyor |
+| **Firebase Crashlytics kurulumu** | `google-services.json` + service account | Bekliyor |
+| **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
+| **AppNotificationListenerService ilk açılışta restart** | gerçek cihaz test gerekli | Bekliyor |
 
-### 🔴 KRİTİK — Arayüz + Ayarlar Yeniden Tasarlanacak (YENİ)
-> **Kapsam:** Tüm UI katmanı sıfırdan yeniden yazılacak. Mevcut kod referans olarak kullanılacak ama her şey yeniden tasarlanacak.
-> **Gerekçe:** Mevcut kodda `SettingsHomeScreenSection.kt` ve `SettingsHomeSection.kt` çakışıyor, aynı ayarlar 3 farklı dosyada tekrarlanmış. Sayfa kayması, klasör isimlerinin yarım kalması, widget/klasör sürükle-bırak eksikliği gibi sorunlar temelden çözülecek.
+### 🟢 Düşük Öncelik
 
-#### Yeni Tasarım Hedefleri
-- [ ] **Tüm ayarlar açılıp kapanabilir olmalı** — her özellik için toggle (mevcut + yeniler)
-- [ ] **Sayfa başına klasör sayısı ayarlanabilir** — kullanıcı seçimi veya "otomatik (ekran boyutuna göre)"
-- [ ] **Klasör yeri değiştirilebilir** — sürükle-bırak ile (mevcut) + **sayı numarası girerek** (yeni)
-- [ ] **Widget yer değişikliği** — sürükle-bırak ile widget'ların konumu değiştirilebilmeli
-- [ ] **Sayfa kayması sorunu çözülecek** — tüm özellikler açıkken sayfa aşağı kayıyor; diğer sayfalara dağıtılacak
-- [ ] **Klasör isimleri yarım kalmasın** — uzun isimler için tooltip/alt satıra geçme/kesme noktası
-- [ ] **Masaüstü ve Tüm Uygulamalar için ayrı ayarlar** — Uygulama önerileri, Son kullanılanlar, Favoriler her iki alan için bağımsız toggle
+| Görev | Alan | Durum |
+|-------|------|-------|
+| **Unit test coverage** | LauncherViewModel MockK testleri | Bekliyor |
+| **Multi-language support (TR/EN)** | string resources | Bekliyor |
+| **Hilt DI kurulumu** | manuel `new()` çağrılarını temizle | Bekliyor |
+| **AppClassifier → JSON asset** | `assets/app_categories.json` + runtime parse | Tartışma ⚠️ |
+| **AllApps double-tap gerçek cihaz testi** | emülatörde doğrulanamadı | Bekliyor |
+| **Üretici kategorileri gerçek cihaz testi** | 9 yeni kategori (CAT_GOOGLE vb.) | Bekliyor |
 
-#### Düzeltilecek Hatalar (Yeni Arayüzde)
-- [ ] **Uygulama önerileri doğru çalışmıyor** — `suggestedApps` (en çok kullanılan) ile `recentApps` (son açılan) karışıyor, UI'da başlıklar yanlış
-- [ ] **Son kullanılanlar doğru çalışmıyor** — `lastUsedTimestamp` sıfır olan sistem uygulamaları 1970 gösteriyor (sorun değil ama filtrelenmeli)
-- [ ] **Favoriler doğru çalışmıyor** — SharedPrefs + StateFlow senkronizasyon sorunu, AllAppsDrawer'da ve ana ekranda ayrı ayrı test edilmeli
-- [ ] **Sistem uygulamaları 1970 tarihi** — `lastUsedTimestamp == 0L` olanlar sıralamada en alta atılmalı (sorun değil, bilinçli)
+### 🔵 Uzun Vade
 
-### Yakın (Sonraki Sprint) — Kod Kalitesi
-- [ ] Hilt DI kurulumu — manuel `new()` çağrılarını temizle (kısmen başladı: onboarding'de `hiltViewModel` kullanılıyor)
-- [x] ~~StateFlow migrasyonu — kalan `LiveData` kullanımlarını tara ve geçir~~ ✅ LiveData kullanımı yok, tüm akışlar StateFlow (2026-06-15 Döngü 52)
-- [ ] Unit test coverage — ViewModel'ler için MockK testleri 🔄 (başlandı, CI pipeline hazır)
-- [x] ~~Compose UI: `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit~~ ✅ 7 dosyada key eklendi (Döngü 51, 2026-06-15)
-- [x] ~~Memory leak audit: Fragment binding null kontrolü~~ ✅ Proje tamamen Compose — Fragment yok, ViewBinding yok, leak riski minimal (Döngü 57, 2026-06-15)
-- [ ] Dark mode tam uyum audit
-
-### Akıllı Kategorizasyon Aşama 3
-- [ ] **Kendi sunucu API'si** (`packageName → category` endpoint) — Play Store ToS uyumlu, DeepSeek fallback'e alternatif
-  - Sunucu: Python Flask + SQLite, basit; bilinmeyen paket gönderilir, kategori döner
-  - Mevcut 3717 paketlik `exactMatchMap` ile seed edilir
-  - Avantaj: offline DB güncellemesi sunucudan push edilebilir (APK güncellemeden)
-
-### CI/CD & Geliştirme Araçları
-- [x] ~~GitHub Actions — lint + test + build pipeline~~ ✅ `.github/workflows/android.yml` (Döngü #28, 2026-06-15)
-- [ ] Aider repo-map: CBM ile entegrasyon testi
-- [ ] Greptile API denemesi — PR review otomasyonu
-
-### Orta Vade — Ürün
-- [ ] **Akıllı Uygulama Önerileri (30dk/1)** — Kullanıcının uygulama kullanım alışkanlığına göre (saat/gün/konum) her 30 dakikada bir değişen öneri satırı. Pixel Launcher'ın "App Predictions" API'si (hücre dışı) veya basit zaman-bazlı döngü: son 30dk'da en çok kullanılan 4 uygulama
-- [ ] Multi-language support (TR/EN) — string resource ayrımı
-- [ ] Backup/restore tam — Room export (kısmen: RESTORE_BACKUP onboarding + BackupWorker haftalık ✅, kalan: manuel export/import UI + bulut)
-
-### Uzun Vade
-- [ ] Wear OS companion app
-- [ ] Tablet layout (large screen support)
-- [ ] Widget ekranı genişletme (resize, çoklu sayfa)
+- Kendi sunucu API'si (`packageName → category` endpoint) — DeepSeek fallback'e alternatif
+- Backup/restore: manuel export/import UI + bulut senkron
+- Akıllı Uygulama Önerileri (30dk) — kullanım alışkanlığına göre
+- Wear OS companion app
+- Tablet layout (large screen)
+- Widget ekranı genişletme (resize, çoklu sayfa)
+- Aider CBM entegrasyon testi
+- Greptile API PR review otomasyonu
 
 ---
 
-## 🔍 Döngüden Gelen Yeni Görevler
-_(Claude döngü sonunda buraya ekler — tarih + kaynak)_
+## ⚠️ Onay Bekleyen Kararlar
 
-- [ ] **Ayarlar — Kullanıcı Talep/Öneri Formu** — SettingsScreen'e "Talep Gönder" butonu: kullanıcı metin girer, GitHub Issue veya Telegram bot'a gönderilir (2026-06-16 — kullanıcı talebi)
-
-- [x] ~~FolderTile reaktif AppPrefs pattern'ini standartlaştır~~ ✅ FolderTile parametre bazlı (HomeScreen'den geliyor), HomeScreen DisposableEffect+listener kullanıyor — pattern doğru (2026-06-15 Döngü 52)
-- [ ] AppClassifier'ı ayrı veri dosyasına böl (2026-06-15) — 3717 paketlik `mapOf` tek Kotlin dosyasında şişiyor; `assets/app_categories.json` + runtime parse düşün
-- [ ] Firebase Crashlytics API kurulumu (2026-06-15) — `google-services.json` + service account credentials `.env`'ye, crash kontrol otomasyonu
-- [x] ~~`AppDatabaseService` 404 uyarısı~~ ✅ Network hata logu Timber.w→d indirildi, assets dosyası mevcut (dummy v2) — sessiz fallback (Döngü 55, 2026-06-15)
-- [ ] `AppNotificationListenerService` ilk açılışta restart (2026-06-15 — Döngü 43) — emülatörde `Scheduling restart of crashed service` görüldü; race condition Döngü 44'te kısmen giderildi, gerçek cihazda test gerekiyor
-- [ ] AllApps double-tap emülatörde doğrulanamadı (2026-06-15 — Döngü 43) — Compose içi state değişimi loglanmıyor; gerçek cihaz testi gerekiyor
-- [ ] Üretici kategorileri gerçek cihaz testi (2026-06-15 — Döngü 41) — 9 yeni kategori eklendi (CAT_GOOGLE vb.), onboarding'den "üreticiye göre" seçip klasörlerin doğru oluştuğunu doğrula
-
-### 🔴 Yüksek Öncelik — Döngü 69 Analiz (2026-06-16)
-- [ ] 🔴 **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir
-- [x] ~~🔴 **`git config core.hooksPath .githooks`**~~ ✅ `.githooks/pre-commit` oluşturuldu, `git config core.hooksPath .githooks` ayarlandı (Döngü 72, 2026-06-16)
-- [x] ~~🔴 **Android 15 Edge-to-Edge**~~ ✅ `WindowCompat.setDecorFitsSystemWindows(false)` MainActivity + LauncherActivity'de; Compose Scaffold ekranları Material3 otomatik handle ediyor (Döngü 73, 2026-06-16)
-- [x] ~~🔴 **Room `schemas/` klasörü**~~ ✅ `room.schemaLocation` kapt argumentine eklendi, `app/schemas/` git'e alındı (Döngü 71, 2026-06-16)
-- [x] ~~🟡 **Predictive Back Gesture**~~ ✅ Manifest satır 49'da zaten mevcut; HomeScreen BackHandler doğru (Döngü 74, 2026-06-16)
-- [x] ~~🟡 **LeakCanary**~~ ✅ `debugImplementation leakcanary-android:2.14` eklendi (Döngü 75, 2026-06-16)
-- [ ] 🟡 **Android 14 NotificationListenerService** — gerçek cihazda test (Android 14 kısıtlamaları)
-- [x] ~~🟢 **Themed monochrome icon**~~ ✅ `ic_launcher_monochrome.xml` oluşturuldu, ic_launcher + ic_launcher_round'a eklendi (Döngü 77, 2026-06-16)
-- [x] ~~🟢 **`android:dataExtractionRules` XML**~~ ✅ Zaten mevcut; crash_log + deepseek_prefs exclude eklendi (Döngü 76, 2026-06-16)
-- [x] ~~🟢 **Splash Screen API**~~ ✅ Dependency + installSplashScreen() zaten entegre; splash ikonu ic_launcher_foreground olarak güncellendi (Döngü 81, 2026-06-16)
+| Karar | Bağlam | Durum |
+|-------|--------|-------|
+| Privacy Policy içeriği | Hangi veri toplandığı netleşmeli (NotificationListener, UsageStats) | Bekliyor |
+| AppClassifier → JSON asset | Derleme süresi + duplicate riski azalır, runtime parse maliyeti artar | Tartışma |
+| Gemini API key | LLM fallback için, kullanıcı sağlarsa eklenir | Bekliyor |
 
 ---
 
 ## ✅ Tamamlananlar
 
 ### Altyapı & Config
-- [x] CLAUDE.md v1 — Token optimizasyon stack
-- [x] CLAUDE.md v2 — Aider, Android standartları, döngü öğrenme sistemi
-- [x] CLAUDE.md v3 — Döngü logları HISTORY.md'ye taşındı, otomasyon scriptleri, CLAUDE.md ~%37 küçüldü, döngü logları artık HISTORY.md'ye gidiyor (her konuşmada şişmiyor) (2026-06-15)
-- [x] Multi-agent mimari — subagent bölümü + 3 agent (`code-reviewer`/`android-builder`/`deepseek-analyst`)
-- [x] CBM ignore konfigürasyonu (`.cbm-ignore`)
-- [x] LEARNINGS.md doğru yapılandırıldı — 11 promote öğrenme (2026-06-15)
-- [x] HISTORY.md arşivi oluşturuldu — 76 döngü logu (2026-06-15)
+- [x] CLAUDE.md v1-v5, LEARNINGS.md, HISTORY.md sistemi
+- [x] Multi-agent mimari (code-reviewer / android-builder / deepseek-analyst)
+- [x] `scripts/`: cycle.ps1, check_duplicates.py, dedup_classifier.py, fix_encoding.py, telegram_notify.ps1, update_notebooklm.py
+- [x] `.githooks/pre-commit` — AppClassifier duplicate otomatik kontrol
+- [x] GitHub Actions CI/CD pipeline
+- [x] Room `schemas/` git'e alındı, `room.schemaLocation` gradle'da tanımlı
+- [x] 🔒 `.gitignore` → `.env`, `*.jks`, `keystore.properties`, `*.aab` korunuyor
+- [x] 🔒 Telegram bot token rotasyonu
+
+### Play Store Hazırlık
+- [x] app-release.aab v1.0.0 (6.3MB) + mapping dosyası
+- [x] Store listing metni (TR + EN) — `docs/store_listing.md`
+- [x] ProGuard kuralları son kontrol
+- [x] Android 15 Edge-to-Edge — `WindowCompat.setDecorFitsSystemWindows(false)`
+- [x] Predictive Back Gesture — Manifest + BackHandler
+- [x] Themed monochrome icon (`ic_launcher_monochrome.xml`)
+- [x] `android:dataExtractionRules` XML — crash_log + deepseek_prefs exclude
+- [x] Splash Screen API — `installSplashScreen()` + ic_launcher_foreground
 
 ### Akıllı Kategorizasyon
-- [x] Aşama 1: Offline veritabanı — **3717 benzersiz paket** (479'dan)
-- [x] Aşama 2: "Diğer" klasörü DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
-- [x] KeywordDatabase duplicate kategori bug fix (Döngü 79)
-- [x] AppClassifier duplicate temizliği (350+ duplicate, çeşitli döngüler)
+- [x] Aşama 1: Offline veritabanı — **3717 benzersiz paket**
+- [x] Aşama 2: DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
+- [x] KeywordDatabase duplicate bug fix
+- [x] AppClassifier duplicate temizliği (350+, pre-commit hook ile korunuyor)
 
-### Rakip Döngüsü (Rakiplerden Öne Geçme)
-- [x] ~~Ana ekrana dönüş hızı~~ ✅ (Döngü 15,16,20,21 — Flow Eagerly + queryIntentActivities)
-- [x] ~~Gesture navigation uyumsuzluk~~ ✅ (Döngü 11 — Xiaomi/Samsung)
-- [x] ~~İkon pack desteği~~ ✅ (Döngü 22 — Nova/ADW/GO/Lawnchair/Tesla)
-- [x] ~~Widget desteği~~ ✅ (Döngü 24 — AppWidgetHost)
+### Launcher Özellikleri
+- [x] HyperOS blur (AllAppsDrawer `Modifier.blur(20.dp)` + FolderSheet frosted tint)
+- [x] İkon pack desteği (Nova/ADW/GO/Lawnchair/Tesla)
+- [x] Widget desteği + drag-drop sıralama (D101)
+- [x] App shortcuts (uzun bas)
+- [x] Klasör özelleştirme: ad + emoji + renk
+- [x] Favoriler + Son Kullanılanlar (race condition fix D102)
+- [x] Bildirim badge + metin
+- [x] BackupWorker haftalık
+- [x] FCM push ile AppDatabase uzaktan güncelleme (`AppFirebaseMessagingService.kt`)
 
-### Özellikler (Geniş Liste)
-- [x] App shortcuts (uzun bas, Döngü 28) · App Not (Döngü 46) · Uygulama önerileri/Son kullanılanlar (Döngü 29,36)
-- [x] Klasör özelleştirme: ad + emoji + renk (Döngü 30,31)
-- [x] Favoriler (Döngü 35,36) · Bildirim badge + metni (Döngü 8,18,27)
-- [x] BackupWorker haftalık + RESTORE_BACKUP onboarding (Döngü 24,67)
-- [x] Türkçe arama/sıralama (Locale tr, Döngü 25,84)
-- [x] 12/12 Özellik Kontrol Listesi maddesi ✅
+### UI & Ayarlar
+- [x] Masaüstü ve Tüm Uygulamalar için bağımsız Favoriler + Son Kullanılanlar toggle'ları (D99)
+- [x] Sayfa başına klasör sayısı ayarı — slider 4/6/8/12 (D100)
+- [x] Sayfa kayması fix — `Arrangement.SpaceBetween` → `Arrangement.Top` (D100)
+- [x] FolderTile uzun isim sarma — `maxLines=2` (D98)
+- [x] AppSuggestionsRow başlık: "Önerilenler" → "Sık Kullanılanlar" (D98)
+- [x] SettingsScreen duplicate "Görünüm" başlığı temizliği (D97)
+- [x] SettingsHomeScreenSection 20+ Türkçe string fix (D97)
+- [x] SettingsAppearanceSection 12+ Türkçe string fix (D103)
+- [x] Geri Bildirim — Telegram API → e-posta Intent (huseyinekizoglu@gmail.com) (D103)
+- [x] Dark mode — hardcode renk → MaterialTheme.colorScheme (D91)
+- [x] LeakCanary debugImplementation eklendi
+- [x] AllApps arama kritik bug fix (D88)
+- [x] AppRepositoryTest + LauncherViewModelTest (D89)
 
----
-
-## 📊 Sprint Metrikleri
-
-| Tarih | Tamamlanan | Eklenen | LEARNINGS | Build |
-|-------|-----------|---------|-----------|-------|
-| 2026-06-14 | Loop 84 (AppClassifier 3116) | — | FolderSheet TR fix | #17 (28.5MB) |
-| 2026-06-15 | Config refactor (CLAUDE/HISTORY/LEARNINGS/ROADMAP + 6 script) | 5 yeni dosya | 11 promote | — |
-| 2026-06-15 | Döngüler #22-30 — store listing, ProGuard, LLM fallback, AppInfo v8, widget, search, shortcut, CI | 3 yeni dosya | 4 yeni LEARNINGS | — |
-| 2026-06-15 | Döngüler #39-45 — AllApps gesture fix, 9 üretici kategorisi, 0-warning build, DeepSeek 4 bug fix, emülatör testi, HISTORY/ROADMAP sistemi | — | L1 eklendi | #705 (msg) |
-| 2026-06-16 | Döngüler #62-66 — 5 test fix, AppClassifier +191 paket (TR e-Devlet/ulaşım/LatAm/Browser/VPN/IoT/Çevre), 3680 benzersiz | — | — | #731 (29.3MB) |
-| 2026-06-16 | Döngüler #67-80 — AllApps bug fix + performans opt + 0 uyarı build, 3717 benzersiz | 10+ özellik | DVM register limiti E13 | 24.8MB |
-| 2026-06-16 | Döngüler #81-87 — SplashScreen + AppRepositoryTest 23 test + 0 uyarı build + recentApps fix | 8 dosya | — | BUILD #16 (24.8MB) |
-| 2026-06-16 | MD Denetim + ROADMAP/LEARNINGS/CLAUDE düzeltme | — | — | — |
-| 2026-06-18 | Döngü 88 — AllApps arama kritik bug fix (derivedStateOf+String) | — | E14 eklendi | — |
-| 2026-06-18 | Döngü 89 — LauncherViewModelTest 4 yeni test | — | — | — |
-| 2026-06-18 | Döngü 90 — BUILD #17 assembleDebug 1s cache | — | — | BUILD #17 (24.79MB) |
-| 2026-06-18 | Döngü 91 — Dark mode hardcode renk düzeltmesi | — | — | — |
-| 2026-06-18 | Döngü 92 — FCM push ile AppDatabase uzaktan güncelleme | AppFirebaseMessagingService.kt (YENİ) | FCM mimari | — |
+### Kod Kalitesi
+- [x] StateFlow migrasyonu — LiveData kullanımı yok
+- [x] `LazyColumn`/`LazyVerticalGrid` `key` parametresi audit (7 dosya)
+- [x] Memory leak audit — Fragment/ViewBinding yok, Compose tamamen
+- [x] 0-warning build
 
 ---
 
-## ⚠️ Onay Bekleyen Kararlar (Claude → Kullanıcı)
+## 📊 Sprint Özeti
 
-| Karar | Bağlam | Durum |
-|-------|--------|-------|
-| Privacy Policy içeriği | Play Store şart, hangi veri toplandığı netleşmeli (NotificationListener, UsageStats) | Bekliyor |
-| AppClassifier → JSON asset | Derleme süresi + duplicate riski azalır ama runtime parse maliyeti | Tartışma |
-| Gemini API key | NotebookLM/LLM fallback için, sen sağlarsan eklenir | Bekliyor |
-
----
-
-*Son güncelleme: 2026-06-16 — gerçek duruma senkronize edildi, dağılmış istekler + otomasyon + güvenlik görevleri eklendi.*
+| Tarih | Döngüler | Özet |
+|-------|---------|------|
+| 2026-06-14 | D84 | AppClassifier 3116 paket |
+| 2026-06-15 | D22-D57 | Config refactor, store listing, LLM fallback, widget, CI, AllApps |
+| 2026-06-16 | D62-D87 | AppClassifier 3717, 0-uyarı build, SplashScreen, 23 test, FCM push |
+| 2026-06-18 | D88-D92 | AllApps arama fix, LauncherViewModelTest, BUILD #17, dark mode |
+| 2026-06-20 | D93-D95 | MD denetim + senkronizasyon düzeltmeleri |
+| 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
