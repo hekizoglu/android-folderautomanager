@@ -1210,6 +1210,10 @@ Tüm 12 madde ✅. Detay:
 **CLAUDE.md:** Görev Zorluk Puanı Kuralı (§3) eklendi
 **Sonraki:** D108 — Multi-language stringResource() entegrasyonu
 
+## Döngü 110 — 2026-06-21 (DÜZELTME — Bilinen sorunlar tarama + fix)
+**Yapılanlar:** LEARNINGS + COZULEMEYEN_SORUNLAR incelendi. E14 fix: AllAppsDrawer `derivedStateOf(apps)` → `remember(apps)` (apps Compose State değil, key-based invalidation gerekli). LEARNINGS onboarding adım sırası güncellendi (14+2 → 16 adım, D105 doğrulaması). CS-1 kapandı. L1 exactMatchMap öncelik sırası zaten doğru — sadece belgelendi.
+**Sonraki:** CS-3 Admin PS exclusion kullanıcı aksiyonu bekliyor (build lock sorunu)
+
 ## Döngü 108-109 — 2026-06-21 (KOD — Multi-language stringResource() tam entegrasyon)
 **Yapılanlar:** `values/strings.xml` + `values-en/strings.xml`: 50+ yeni key. FolderSheet (8), AllAppsDrawer (3), HomeScreen (2), SettingsScreen (11), SettingsAppearanceSection (10) — toplam 34 Türkçe literal stringResource() ile değiştirildi. CLAUDE.md: "yarım bırakma" kuralı güncellendi — başlanan görev aynı döngüde tamamlanır. ROADMAP: tamamlananlar silinir, HISTORY'ye taşınır (kalıcı kural).
 **Sonraki:** Orta öncelik görevlerinden bir sonraki: Firebase Crashlytics veya NotifListener gerçek cihaz testi

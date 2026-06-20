@@ -663,11 +663,10 @@ fun AllAppsDrawer(
         }
     }
 
-    val quickFilterCounts by remember {
-        derivedStateOf {
-            val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
-            intArrayOf(apps.size, apps.count { !it.isSystemApp }, apps.count { it.isSystemApp }, apps.count { it.lastUsedTimestamp > cutoff })
-        }
+    // E14: apps parametre olarak geliyor (Compose State değil) — remember(apps) ile key-based invalidation
+    val quickFilterCounts = remember(apps) {
+        val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
+        intArrayOf(apps.size, apps.count { !it.isSystemApp }, apps.count { it.isSystemApp }, apps.count { it.lastUsedTimestamp > cutoff })
     }
 
     var bgAlpha          by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }

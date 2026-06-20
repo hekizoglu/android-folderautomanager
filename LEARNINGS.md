@@ -101,10 +101,10 @@
 3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
 4. Build + commit + push
 
-### Onboarding Adım Sırası (v2026-06-13, 14+2 adım)
-WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE
+### Onboarding Adım Sırası (D105 doğrulandı — 16 adım)
+WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → SET_LAUNCHER → CLASSIFY_MODE → DONE
 Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
-Son iki adım CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE sırası değiştirilemez (CLAUDE.md §3 kuralı).
+Son iki adım: SET_LAUNCHER → CLASSIFY_MODE → DONE sırası değiştirilemez (CLAUDE.md §3 kuralı). ~~14+2 adım~~ → 16 adım (2026-06-21 D105).
 
 ### Room DB Versiyon Geçmişi
 - v1-v5: temel alanlar
@@ -167,4 +167,4 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-*Son güncelleme: 2026-06-20 — v4: E14 eklendi (derivedStateOf+String), Room v8 kaydı, Onboarding 14+2 adım düzeltmesi, Merge conflict AppClassifier promote edildi, E13 duplicate temizlendi. Döngü logları → HISTORY.md.*
+*Son güncelleme: 2026-06-21 — v5: Onboarding 16 adım olarak düzeltildi (D105), E14 fix AllAppsDrawer'da uygulandı (derivedStateOf → remember(apps)), L1 exactMatchMap öncelik sırası dokümante edildi. Döngü logları → HISTORY.md.*

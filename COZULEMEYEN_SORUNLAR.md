@@ -16,15 +16,8 @@ Add-MpPreference -ExclusionPath "C:\Users\hekizoglu\Documents\AppOrganizer\app\b
 ```
 **Kullanıcıdan beklenen:** Admin PowerShell'de yukarıdaki komutu çalıştır.
 
-### [CS-1] HISTORY.md Arrow Karakteri (→) Tam Kurtarılamadı
-**Tarih:** 2026-06-16 | **Durum:** Kısmi çözüm
-**Sorun:** HISTORY.md 3+ tur encode zincirinden geçmiş. `→` işareti `->` olarak düzeltildi ama bilgi kaybı yok.
-**Yapılan:**
-1. `fix_encoding.py` MOJIBAKE tablosu — kısmi iyileşme
-2. Latin-1 → UTF-8 re-decode — başarısız (triple encode)
-3. Manuel string replace (5 tur) — `→` → `->` olarak kurtarıldı
-**Sonuç:** `→` işaretleri `->` haline dönüştürüldü. Orijinal sembol kurtarılamaz (lossless fix mümkün değil).
-**Kullanıcıdan beklenen:** Bilgi amaçlı — müdahale gerekmez.
+### ~~[CS-1] HISTORY.md Arrow Karakteri (→) Tam Kurtarılamadı~~ ✅ KAPANDI 2026-06-21
+**Sonuç:** `→` işaretleri `->` haline dönüştürüldü. Bilgi kaybı yok — müdahale gerekmez. HISTORY.md şu an temiz UTF-8.
 
 ---
 
