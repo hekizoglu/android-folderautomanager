@@ -32,7 +32,7 @@
 |-------|--------|-------|-------|
 | 2026-06-20 | Denetim #11 | **Onboarding adım sırası güncellenmeli** — CLASSIFY_MODE adımı eksik, CLAUDE.md "14+2" diyor ama LEARNINGS.md 14 adım | Bekliyor |
 | 2026-06-20 | Denetim #14 | **Merge conflict AppClassifier kural CLAUDE.md §5'e promote** — 4+ tekrar, eşik geçildi | [TAMAMLANDI] |
-| 2026-06-16 | Döngü 86 | **AllAppsDrawer/FolderSheet dark mode regresyon kontrolü** — D91 fix sonrası FCM commit tekrar değiştirdi | Bekliyor |
+| 2026-06-16 | Döngü 86 | **AllAppsDrawer/FolderSheet dark mode regresyon kontrolü** — D91 fix sonrası FCM commit tekrar değiştirdi | [TAMAMLANDI D96] |
 | 2026-06-15 | ROADMAP | **Android 14 NotificationListenerService gerçek cihaz testi** | Bekliyor |
 | 2026-06-15 | Döngü 43 | **AppNotificationListenerService ilk açılışta restart** — gerçek cihaz test gerekli | Bekliyor |
 | 2026-06-15 | ROADMAP | **Firebase Crashlytics API kurulumu** — `google-services.json` + service account | Bekliyor |

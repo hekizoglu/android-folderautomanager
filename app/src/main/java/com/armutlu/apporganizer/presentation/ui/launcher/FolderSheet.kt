@@ -269,7 +269,7 @@ fun FolderSheet(
                 Box(modifier = Modifier.weight(1f)) {
                     if (searchQuery.isEmpty()) {
                         Text(
-                            "${customName.ifBlank { folder.category.categoryName }} icinde ara...",
+                            "${customName.ifBlank { folder.category.categoryName }} içinde ara...",
                             color = textSecondary, fontSize = 13.sp
                         )
                     }
@@ -420,15 +420,15 @@ private val EMOJI_PICKER = listOf(
 )
 
 private val COLOR_PRESETS = listOf(
-    "" to "Varsayilan",
+    "" to "Varsayılan",
     "#00897B" to "Turkuaz",
     "#1976D2" to "Mavi",
     "#7B1FA2" to "Mor",
-    "#D32F2F" to "Kirmizi",
+    "#D32F2F" to "Kırmızı",
     "#F57C00" to "Turuncu",
-    "#388E3C" to "Yesil",
+    "#388E3C" to "Yeşil",
     "#C2185B" to "Pembe",
-    "#FBC02D" to "Sari",
+    "#FBC02D" to "Sarı",
     "#303F9F" to "Lacivert",
 )
 
@@ -451,14 +451,14 @@ private fun FolderRenameDialog(
         onDismissRequest = onDismiss,
         containerColor = surface,
         title = {
-            Text("Klasoru Duzenle", color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Text("Klasörü Düzenle", color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 OutlinedTextField(
                     value = nameField,
                     onValueChange = { nameField = it },
-                    label = { Text("Klasor adi", color = onSurface.copy(0.6f)) },
+                    label = { Text("Klasör adı", color = onSurface.copy(0.6f)) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primary,
@@ -469,7 +469,7 @@ private fun FolderRenameDialog(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text("Emoji sec", color = onSurface.copy(0.6f), fontSize = 13.sp)
+                Text("Emoji seç", color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     itemsIndexed(EMOJI_PICKER, key = { _, emoji -> emoji }) { _, emoji ->
                         Box(
@@ -487,7 +487,7 @@ private fun FolderRenameDialog(
                         }
                     }
                 }
-                Text("Renk sec", color = onSurface.copy(0.6f), fontSize = 13.sp)
+                Text("Renk seç", color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     itemsIndexed(COLOR_PRESETS, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
@@ -525,7 +525,7 @@ private fun FolderRenameDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Iptal", color = onSurface.copy(0.6f))
+                Text("İptal", color = onSurface.copy(0.6f))
             }
         }
     )
