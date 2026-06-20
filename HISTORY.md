@@ -1210,6 +1210,10 @@ Tüm 12 madde ✅. Detay:
 **CLAUDE.md:** Görev Zorluk Puanı Kuralı (§3) eklendi
 **Sonraki:** D108 — Multi-language stringResource() entegrasyonu
 
+## Döngü 111 — 2026-06-21 (ORTAM — CS-3 Defender exclusion 3 yöntem denendi)
+**Yapılanlar:** CS-3 için 3 yöntem denendi: doğrudan Add-MpPreference (0xc0000142), Task Scheduler SYSTEM (0x80070005), gradle daemon timeout azaltma. Hepsi başarısız. Gerçek çözüm: Windows Güvenlik GUI → Dışlamalar (yönetici gerekmez). COZULEMEYEN_SORUNLAR temizlendi, çözülenler tablo haline getirildi.
+**Sonraki:** CS-3 için GUI yolu dene — Windows Güvenlik → Virüs ve tehdit koruması → Ayarlar → Dışlamalar
+
 ## Döngü 110 — 2026-06-21 (DÜZELTME — Bilinen sorunlar tarama + fix)
 **Yapılanlar:** LEARNINGS + COZULEMEYEN_SORUNLAR incelendi. E14 fix: AllAppsDrawer `derivedStateOf(apps)` → `remember(apps)` (apps Compose State değil, key-based invalidation gerekli). LEARNINGS onboarding adım sırası güncellendi (14+2 → 16 adım, D105 doğrulaması). CS-1 kapandı. L1 exactMatchMap öncelik sırası zaten doğru — sadece belgelendi.
 **Sonraki:** CS-3 Admin PS exclusion kullanıcı aksiyonu bekliyor (build lock sorunu)
