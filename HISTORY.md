@@ -1091,7 +1091,17 @@ Tüm 12 madde ✅. Detay:
 - **Bonus:** `gradle.properties` → `android.overridePathCheck=true` (Türkçe proje yolu AGP uyarısı), `local.properties` oluşturuldu
 - **Build:** Bu ortamda `google-services.json` eksik — yerel makinede build alınacak
 **Commit:** `a2d0417`
-**Sonraki:** Telegram onayı → yerel build → APK test → D95
+**Onay:** HÜSEYİN ONAYLADI (2026-06-21)
+**Sonraki:** D95 — GitHub Actions Telegram webhook + loop-start-researcher agent
+
+## Döngü 95 — 2026-06-21 (ALTYAPI)
+
+**Yapılanlar:** Döngü altyapısı tamamlandı.
+- `loop-start-researcher.yaml` agent oluşturuldu (Haiku 4.5) — her döngü başında git diff + LEARNINGS tuzak taraması + FİKİRLER.md görev önerisi
+- `telegram-notify.yml` güncellendi — push sonrası döngü onay isteği (ONAYLA/IPTAL/DUZENLE) Telegram'a gider
+- `.gitignore`: `.claude/agents/` artık git'e alınıyor
+- **Öğrenilen:** Telegram bu ortamda engelli — sonuç belli olunca hemen sohbette bildir, bekleme
+- **Commit:** `10e58e7`
 
 ## Döngü 92 — 2026-06-18 (KOD — Retroaktif Belgeleme)
 
