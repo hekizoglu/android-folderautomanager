@@ -54,9 +54,11 @@ import com.armutlu.apporganizer.utils.AppAnalytics
 @Composable
 fun FolderContextMenuSheet(
     folder: AppFolder,
+    allFolders: List<AppFolder> = emptyList(),
     onDismiss: () -> Unit,
     onOpenFolder: () -> Unit,
     onOpenAllApps: () -> Unit,
+    onMove: ((newIndex: Int) -> Unit)? = null,
 ) {
     val catColor = runCatching {
         Color(android.graphics.Color.parseColor(folder.category.colorHex))
@@ -64,6 +66,10 @@ fun FolderContextMenuSheet(
     val primary   = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
     val surface   = MaterialTheme.colorScheme.surface
+
+    var showMoveDialog by remember { mutableStateOf(false) }
+    var moveTargetText by remember { mutableStateOf("") }
+    val currentIndex = allFolders.indexOfFirst { it.category.categoryId == folder.category.categoryId }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -91,7 +97,7 @@ fun FolderContextMenuSheet(
                 ) { Text(folder.category.iconEmoji, fontSize = 22.sp) }
                 Column {
                     Text(folder.category.categoryName, color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                    Text("${folder.apps.size} uygulama", color = onSurface.copy(0.55f), fontSize = 12.sp)
+                    Text("${folder.apps.size} uygulama${if (currentIndex >= 0) " · ${currentIndex + 1}. sıra" else ""}", color = onSurface.copy(0.55f), fontSize = 12.sp)
                 }
             }
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
@@ -106,6 +112,19 @@ fun FolderContextMenuSheet(
                 Text("Klasörü Aç", color = onSurface, fontSize = 15.sp)
             }
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
+            // Klasörü Taşı
+            if (allFolders.size > 1 && onMove != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { showMoveDialog = true }
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Edit, null, tint = onSurface.copy(0.7f), modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Text("Konumu Değiştir", color = onSurface, fontSize = 15.sp)
+                }
+                Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
+            }
             // Tüm Uygulamalar
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenAllApps)
@@ -117,6 +136,47 @@ fun FolderContextMenuSheet(
                 Text("Tüm Uygulamalara Git", color = onSurface, fontSize = 15.sp)
             }
         }
+    }
+
+    if (showMoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showMoveDialog = false; moveTargetText = "" },
+            title = { Text("Konumu Değiştir") },
+            text = {
+                Column {
+                    Text(
+                        "Şu an: ${currentIndex + 1}. sıra / Toplam: ${allFolders.size}",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = moveTargetText,
+                        onValueChange = { moveTargetText = it.filter { c -> c.isDigit() } },
+                        label = { Text("Hedef sıra (1–${allFolders.size})") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val target = moveTargetText.toIntOrNull()
+                        if (target != null && target in 1..allFolders.size) {
+                            onMove?.invoke(target - 1)
+                            showMoveDialog = false
+                            moveTargetText = ""
+                            onDismiss()
+                        }
+                    },
+                    enabled = moveTargetText.toIntOrNull()?.let { it in 1..allFolders.size } == true
+                ) { Text("Taşı") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showMoveDialog = false; moveTargetText = "" }) { Text("İptal") }
+            }
+        )
     }
 }
 

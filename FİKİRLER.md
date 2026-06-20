@@ -66,11 +66,11 @@
 | 2026-06-15 | ROADMAP | **AppClassifier'ı JSON asset'e böl** — 3717 paketlik mapOf şişiyor; `assets/app_categories.json` + runtime parse | Tartışılacak |
 | 2026-06-15 | ROADMAP | **Kendi sunucu API'si** — `packageName → category` endpoint, APK güncellemeden DB güncellenebilir | Tartışılacak |
 | 2026-06-16 | ROADMAP | **Akıllı Uygulama Önerileri (30dk)** — kullanım alışkanlığına göre değişen öneri satırı | Tartışılacak |
-| 2026-06-16 | ROADMAP | **Wear OS companion app** | Uzun vade |
-| 2026-06-16 | ROADMAP | **Tablet layout (large screen)** | Uzun vade |
-| 2026-06-16 | ROADMAP | **Widget ekranı genişletme** — resize, çoklu sayfa | Uzun vade |
-| 2026-06-16 | ROADMAP | **Aider repo-map CBM entegrasyon testi** | Tartışılacak |
-| 2026-06-16 | ROADMAP | **Greptile API PR review otomasyonu** | Tartışılacak |
+| 2026-06-16 | ROADMAP | **Wear OS companion app** | ⏸ İşleme alınmadı (puan: 8) — HISTORY'de |
+| 2026-06-16 | ROADMAP | **Tablet layout (large screen)** | Uzun vade (puan: 13) |
+| 2026-06-16 | ROADMAP | **Widget ekranı genişletme** — resize, çoklu sayfa | Uzun vade (puan: 13) |
+| 2026-06-16 | ROADMAP | **Aider repo-map CBM entegrasyon testi** | ⏸ İşleme alınmadı (puan: 8) — HISTORY'de |
+| 2026-06-16 | ROADMAP | **Greptile API PR review otomasyonu** | ⏸ İşleme alınmadı (puan: 7) — HISTORY'de |
 
 ---
 

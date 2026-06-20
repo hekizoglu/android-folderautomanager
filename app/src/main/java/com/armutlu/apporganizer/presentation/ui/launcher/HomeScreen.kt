@@ -819,6 +819,7 @@ fun HomeScreen(
     folderContextMenu?.let { folder ->
         FolderContextMenuSheet(
             folder = folder,
+            allFolders = folders,
             onDismiss = { folderContextMenu = null },
             onOpenFolder = {
                 folderContextMenu = null
@@ -827,6 +828,16 @@ fun HomeScreen(
             onOpenAllApps = {
                 folderContextMenu = null
                 viewModel.openAllApps()
+            },
+            onMove = { newIndex ->
+                val currentList = folders.toMutableList()
+                val fromIndex = currentList.indexOfFirst { it.category.categoryId == folder.category.categoryId }
+                if (fromIndex >= 0 && newIndex in currentList.indices) {
+                    val item = currentList.removeAt(fromIndex)
+                    currentList.add(newIndex, item)
+                    viewModel.reorderFolders(context, currentList)
+                }
+                folderContextMenu = null
             }
         )
     }

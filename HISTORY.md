@@ -1183,6 +1183,23 @@ Tüm 12 madde ✅. Detay:
 **Commit:** `e4417e4`
 **Sonraki:** D105 — FİKİRLER.md puanlama TOP'unda sıradaki: Onboarding adım sırası tutarsızlığı (17 puan)
 
+## Döngü 105 — 2026-06-21 (DÖKÜMAN — Denetim + Onboarding + EN strings altyapısı)
+**Yapılanlar:** 3 eski denetim raporu silindi, MD_DENETIM_2026-06-21 oluşturuldu (0 kritik, 3 orta). Onboarding adım sayısı kod incelemesiyle 16 olarak doğrulandı — CLAUDE.md düzeltildi (14+2 → 16, sıra SET_LAUNCHER→CLASSIFY_MODE→DONE). `values-en/strings.xml` oluşturuldu (İngilizce multi-language altyapısı başlatıldı).
+**Commit:** `4188caa`
+**Sonraki:** D106 — Klasör sıra değiştirme (16 puan) + az puanlı fikirler HISTORY'ye
+
+---
+
+## 🗂️ Az Puanlı Fikir Arşivi (FİKİRLER.md puanlama sonrası — işleme alınmadı)
+
+> Bu fikirler değerlendirildi ve düşük puan aldı (9 veya altı). Şu an için işleme alınmadı.
+
+| Fikir | Puan | Neden İşleme Alınmadı |
+|-------|------|----------------------|
+| Wear OS companion app | 8 | Bağımlılık çok yüksek, kullanıcı kitlesi dar, uzun vade |
+| Aider repo-map CBM entegrasyon testi | 8 | Kullanıcı değeri düşük, geliştirici aracı — üretim öncelikli değil |
+| Greptile API PR review otomasyonu | 7 | Harici servis bağımlılığı + düşük etki alanı |
+
 ---
 
 ## ✅ Tamamlananlar Arşivi (ROADMAP'tan taşındı — 2026-06-21)
