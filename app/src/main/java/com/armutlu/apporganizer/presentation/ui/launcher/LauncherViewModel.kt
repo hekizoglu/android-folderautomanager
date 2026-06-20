@@ -427,15 +427,17 @@ class LauncherViewModel @Inject constructor(
         _favoritePkgs.value = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
     }
 
-    /** Favori toggle — SharedPrefs + reaktif StateFlow birlikte güncellenir. */
+    /** Favori toggle — memory-first: StateFlow anlık güncellenir, SharedPrefs'e async persist. */
     fun toggleFavorite(context: Context, packageName: String) {
-        val isFav = com.armutlu.apporganizer.utils.AppPrefs.isFavorite(context, packageName)
-        if (isFav) {
+        val current = _favoritePkgs.value
+        val updated = if (packageName in current) current - packageName else current + packageName
+        _favoritePkgs.value = updated
+        // SharedPrefs'e persist — async, race condition yok (memory zaten güncel)
+        if (packageName in current) {
             com.armutlu.apporganizer.utils.AppPrefs.removeFavorite(context, packageName)
         } else {
             com.armutlu.apporganizer.utils.AppPrefs.addFavorite(context, packageName)
         }
-        _favoritePkgs.value = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
     }
 
     // En son kullanilan 4 uygulama — lastUsedTimestamp oncelikli, esitlerde usageCount ile sirala

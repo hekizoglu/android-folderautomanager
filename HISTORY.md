@@ -1158,3 +1158,12 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** AppPrefs: `KEY_FAVORITES_ENABLED_ALLAPPS` + `KEY_RECENT_APPS_ENABLED_ALLAPPS` yeni KEY'ler (eski KEY'ler korundu). HomeScreen: AllAppsDrawer'a artık `favoritesEnabledAllApps` / `recentAppsEnabledAllApps` ayrı state'leri geçiliyor. SettingsHomeScreenSection: "Tüm Uygulamalar" bölümü eklendi — 2 bağımsız toggle. Yan etki sıfır.
 **Commit:** `96c527f`
 **Sonraki:** D100 — ROADMAP Kritik devam: "Sayfa kayması sorunu" + "Sayfa başına klasör sayısı"
+
+## Döngü 100 — 2026-06-21 (KOD — Sayfa kayması + klasör sayısı)
+**Yapılanlar:** HomeScreen `Arrangement.SpaceBetween`→`Arrangement.Top` (sayfa kayması giderildi). AppPrefs: `KEY_PAGE_SIZE` eklendi (4/6/8/12, varsayılan 8). HomeScreen: `pageFolderCount` state reaktif, DisposableEffect listener'a eklendi. SettingsAppearanceSection: "Klasör Boyutu" Türkçe fix + "Sayfa Başına Klasör" slider (4 adım seçici) eklendi.
+**Commit:** `54da5f9`
+
+## Döngü 101 — 2026-06-21 (KOD — Widget sürükle-bırak)
+**Yapılanlar:** LauncherViewModel: `reorderWidgets(context, newOrder)` eklendi. WidgetArea: `detectDragGesturesAfterLongPress` ile sıralama. Birden fazla widget varsa uzun bas+sürükle = sıra değiştir + DragHandle ikonu; tek widget = mevcut davranış. HomeScreen: `onReorderWidgets` bağlandı.
+**Commit:** `fe58550`
+**Sonraki:** D102 — ROADMAP Kritik: Favoriler senkronizasyon sorunu (SharedPrefs+StateFlow)
