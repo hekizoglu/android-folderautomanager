@@ -305,7 +305,7 @@ fun HomeScreen(
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         runCatching { context.startActivity(intent) }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00897B))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Launcher Ayarları")
                 }

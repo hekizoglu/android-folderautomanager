@@ -138,7 +138,7 @@ fun SettingsAppearanceSection(
                                     .background(Color(colorInt))
                                     .border(
                                         width = if (isSelected) 3.dp else 1.dp,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                                         shape = CircleShape
                                     )
                             )
