@@ -1,6 +1,6 @@
 # AppOrganizer — Claude Çalışma Talimatları
 
-> **Meta:** ~380 satır · Son güncelleme: 2026-06-16 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → ROADMAP.md
+> **Meta:** ~390 satır · Son güncelleme: 2026-06-20 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → FİKİRLER.md (ROADMAP.md donduruldu)
 
 ---
 
@@ -189,6 +189,7 @@ Add-MpPreference -ExclusionPath "$env:USERPROFILE\.android"
 - Her commit öncesi: `python scripts/check_duplicates.py AppClassifier.kt`
 - Temizlik: `python scripts/dedup_classifier.py`
 - Pre-commit hook: `.githooks/pre-commit` otomatik çalıştırır (`git config core.hooksPath .githooks` ile aktifleştirilir)
+- **Merge conflict durumunda:** `python scripts/dedup_classifier.py` ile remote+local birleştir, set dedup uygula (4+ kez tekrarlandı)
 
 ### KeywordDatabase Duplicate Kategori
 `mapOf()` içinde `CAT_x` iki kez tanımlanırsa ilk (daha kapsamlı) liste kaybolur.
@@ -313,6 +314,7 @@ app/src/main/java/com/armutlu/apporganizer/
 | Klasör özelleştirme (ad+emoji+renk) | ✅ |
 | BackupWorker haftalık | ✅ |
 | Firebase Analytics | ❌ bekliyor |
+| FCM Push (uzaktan DB güncelleme) | ✅ `AppFirebaseMessagingService.kt` (2026-06-18) |
 | DeepSeek API | ✅ `.env`'de |
 | NotebookLM MCP | ✅ auth tamam |
 | Telegram Bot | ✅ yeni token |
@@ -357,4 +359,4 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ---
 
-*Son güncelleme: 2026-06-16 — CLAUDE.md v4: ~%70 küçüldü, döngü logları HISTORY.md'ye, mimari notlar LEARNINGS.md'ye taşındı. Firebase Analytics planı eklendi.*
+*Son güncelleme: 2026-06-20 — CLAUDE.md v5: FCM push özelliği eklendi, AppClassifier merge conflict kuralı §5'e promote edildi, FİKİRLER.md sistemi oluşturuldu (ROADMAP.md donduruldu), Meta satırı güncellendi.*

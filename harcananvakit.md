@@ -50,11 +50,12 @@
 
 ## Tekrar Eden Sorunlar (Öncelikli Optimizasyon)
 
-| Sorun | Sıklık | Tahmini Kayıp/döngü |
-|-------|--------|----------------------|
-| Gradle build dir kilitlenme | Sık | 20-40 dk |
-| git push non-fast-forward | Her 3-4 döngüde | 2-3 dk |
-| KAPT incremental cache bozulması | Zaman zaman | 10-20 dk |
+| Sorun | Sıklık | Tahmini Kayıp/döngü | Durum |
+|-------|--------|----------------------|-------|
+| Gradle build dir kilitlenme (genel) | Eskiden Sık | 20-40 dk | ✅ Çözüldü — Defender exclusion (Döngü 72, 74x hız) |
+| merged_res kilidi | Zaman zaman | 5-15 dk | Açık — full clean gerekiyor |
+| git push non-fast-forward | Her 3-4 döngüde | 2-3 dk | Açık — `git pull --rebase` alışkanlığı |
+| KAPT incremental cache bozulması | Zaman zaman | 10-20 dk | Açık — KSP geçişi gündemde |
 
 
 | 2026-06-16 | Döngü 70 başlangıç | Döngü 70 bitiş | ~30dk | KOD+DÖKÜMAN | Performans opt: gradle.properties, build.ps1, git config, smart_push, MD düzeltmeleri, SETUP.md, cloud schedule | Beklenti: kilit hatası sıfır, %40-60 hız |
@@ -70,5 +71,10 @@
 | 2026-06-16 | 10:00 | 10:08 | ~8dk | BUILD | Döngü 84 — assembleDebug 45s, APK 24.8MB | BUILD #16 |
 | 2026-06-16 | 10:08 | 10:20 | ~12dk | KOD+BUILD | Döngü 85 — Divider→HorizontalDivider 55 yer, 0 uyarı | 8 dosya |
 
-| 2026-06-16 | 10:20 | 10:35 | ~15dk | KOD+BUILD | Dongue 86 — AutoMirrored+Divider 55->18 uyari | 9 dosya |
+| 2026-06-16 | 10:20 | 10:35 | ~15dk | KOD+BUILD | Döngü 86 — AutoMirrored+Divider 55->18 uyarı | 9 dosya |
 | 2026-06-16 | 10:35 | 10:55 | ~20dk | KOD+BUILD | Döngü 87 — 18->0 Kotlin uyarı | 8 dosya |
+| 2026-06-18 | — | — | ~20dk | KOD | Döngü 88 — AllApps arama kritik bug fix (remember+derivedStateOf) | searchQuery String reaktif değildi, remember(searchQuery) çözümü |
+| 2026-06-18 | — | — | ~15dk | TEST | Döngü 89 — LauncherViewModelTest 4 yeni test (tüm PASSED) | |
+| 2026-06-18 | — | — | ~3dk | BUILD | Döngü 90 — BUILD #17 assembleDebug 1s cache (24.79MB APK) | |
+| 2026-06-18 | — | — | ~30dk | KOD+BUILD | Döngü 91 — Dark mode hardcode renk düzeltmesi | AllAppsDrawer + FolderSheet + HomeScreen |
+| 2026-06-18 | 23:28 | — | ~60dk | KOD+BUILD | Döngü 92 — FCM push ile AppDatabase uzaktan güncelleme | AppFirebaseMessagingService.kt (YENİ) + AppOrganizerApp FCM init + Manifest + build.gradle |

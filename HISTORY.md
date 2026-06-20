@@ -1075,3 +1075,29 @@ Tüm 12 madde ✅. Detay:
 - #14: LEARNINGS.md "Promote Bekleyenler" — Merge conflict AppClassifier kaydı 4+ tekrar ile eşiği 7 gün önce aştı, CLAUDE.md §5'e promote edilmemiş. Fix: CLAUDE.md §5 AppClassifier bölümüne merge conflict çözüm adımı ekle.
 **Durum:** Toplam 14 sorun açık. Rapor güncellendi: `MD_DENETIM_2026-06-20.md`. Telegram engellendiği için GitHub commit ile iletildi.
 **Sonraki:** Hüseyin onayı bekleniyor — 14 sorunu tek düzeltme döngüsünde çöz (önce #13 KRİTİK, sonra #14, ardından diğerleri).
+
+## Döngü 92 — 2026-06-18 (KOD — Retroaktif Belgeleme)
+
+**Yapılanlar:** FCM push ile AppDatabase uzaktan güncelleme özelliği eklendi.
+- `AppFirebaseMessagingService.kt` (YENİ, 71 satır) — FCM push mesajı alınca `action=update_db` kontrol, `AppDatabaseService` üzerinden DB güncelleme tetikler
+- `AppOrganizerApp.kt` — +34 satır FCM init, `FirebaseApp.initializeApp()`, `FirebaseMessaging.getInstance().subscribeToTopic("app_updates")`
+- `AndroidManifest.xml` — `<service android:name=".service.AppFirebaseMessagingService">` + FCM intent filter + `RECEIVE_BOOT_COMPLETED` permission
+- `app/build.gradle.kts` — `firebase-messaging-ktx:24.1.1` bağımlılığı eklendi
+- `AllAppsDrawer.kt` + `FolderSheet.kt` — 90+120 satır değişim (dark mode fix ile aynı PR, D91 ile bağlantılı)
+- `AppPrefs.kt` — +7 satır: `KEY_FCM_TOPIC`, `KEY_LAST_DB_UPDATE` yeni anahtarlar
+
+**Mimari Karar:** FCM push → AppDatabaseService.fetchAndUpdate() zinciri. Sunucu `update_db` mesajı gönderince uygulama arka planda DB'yi günceller. APK güncellemesi gerekmez.
+**Dikkat:** AllAppsDrawer/FolderSheet dark mode regreson riski — D91 ile aynı dosyalar değişti. Gerçek cihaz testi gerekli.
+**Commit:** `34070c4` (2026-06-18 23:28)
+**Sonraki:** FCM push gerçek cihaz testi + D93 KOD.
+
+## MD Denetim Düzeltme Döngüsü — 2026-06-20 (Onay Alındı)
+
+**Yapılanlar:** 14 denetim sorununun tümü kapatıldı.
+- FİKİRLER.md oluşturuldu — yeni görev/fikir deposu, ROADMAP.md donduruldu
+- LEARNINGS.md: E13 duplicate silindi, footer encoding düzeltildi (HISTORprojY→HISTORY), E14 eklendi (derivedStateOf+String), Room v8 kaydı eklendi, Onboarding 14+2 adım güncellendi, Merge conflict AppClassifier promote edildi
+- harcananvakit.md: D86 encoding düzeltildi (Dongue→Döngü), D88-92 logları eklendi, Tekrar Eden Sorunlar tablosu güncellendi (Defender exclusion çözüldü)
+- CLAUDE.md v5: FCM push ✅ eklendi, Meta satırı güncellendi, AppClassifier merge conflict kuralı §5'e eklendi, ROADMAP.md donduruldu notu
+- ROADMAP.md: 3116→3717 (2 yer), Sprint Metrikleri D88-D91 satırları eklendi, son satır tamamlandı, donduruldu başlığı eklendi
+- HISTORY.md: D92 FCM push retroaktif belgeleme eklendi
+**Tüm 14 sorun kapandı.**

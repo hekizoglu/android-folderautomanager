@@ -1,6 +1,6 @@
 # ROADMAP.md — AppOrganizer Yol Haritası
 
-> Sprint yönetimi + Play Store yayını. Claude her döngü sonunda tamamlananları işaretler, yeni görevleri "Döngüden Gelen"e ekler.
+> **🔒 DONDURULDU (2026-06-20)** — Yeni görevler artık FİKİRLER.md'ye eklenir. Bu dosya sadece referans amaçlı korunuyor.
 > İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 ile işaretlenir.
 
 ---
@@ -122,7 +122,7 @@ Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
 ### Akıllı Kategorizasyon Aşama 3
 - [ ] **Kendi sunucu API'si** (`packageName → category` endpoint) — Play Store ToS uyumlu, DeepSeek fallback'e alternatif
   - Sunucu: Python Flask + SQLite, basit; bilinmeyen paket gönderilir, kategori döner
-  - Mevcut 3116 paketlik `exactMatchMap` ile seed edilir
+  - Mevcut 3717 paketlik `exactMatchMap` ile seed edilir
   - Avantaj: offline DB güncellemesi sunucudan push edilebilir (APK güncellemeden)
 
 ### CI/CD & Geliştirme Araçları
@@ -181,7 +181,7 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 - [x] HISTORY.md arşivi oluşturuldu — 76 döngü logu (2026-06-15)
 
 ### Akıllı Kategorizasyon
-- [x] Aşama 1: Offline veritabanı — **3116+ benzersiz paket** (479'dan)
+- [x] Aşama 1: Offline veritabanı — **3717 benzersiz paket** (479'dan)
 - [x] Aşama 2: "Diğer" klasörü DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
 - [x] KeywordDatabase duplicate kategori bug fix (Döngü 79)
 - [x] AppClassifier duplicate temizliği (350+ duplicate, çeşitli döngüler)
@@ -213,7 +213,12 @@ _(Claude döngü sonunda buraya ekler — tarih + kaynak)_
 | 2026-06-16 | Döngüler #62-66 — 5 test fix, AppClassifier +191 paket (TR e-Devlet/ulaşım/LatAm/Browser/VPN/IoT/Çevre), 3680 benzersiz | — | — | #731 (29.3MB) |
 | 2026-06-16 | Döngüler #67-80 — AllApps bug fix + performans opt + 0 uyarı build, 3717 benzersiz | 10+ özellik | DVM register limiti E13 | 24.8MB |
 | 2026-06-16 | Döngüler #81-87 — SplashScreen + AppRepositoryTest 23 test + 0 uyarı build + recentApps fix | 8 dosya | — | BUILD #16 (24.8MB) |
-| 2026-06-16 | MD Denetim + ROADMAP/LEARNINGS/CLAUDE düzeltme (K1/K
+| 2026-06-16 | MD Denetim + ROADMAP/LEARNINGS/CLAUDE düzeltme | — | — | — |
+| 2026-06-18 | Döngü 88 — AllApps arama kritik bug fix (derivedStateOf+String) | — | E14 eklendi | — |
+| 2026-06-18 | Döngü 89 — LauncherViewModelTest 4 yeni test | — | — | — |
+| 2026-06-18 | Döngü 90 — BUILD #17 assembleDebug 1s cache | — | — | BUILD #17 (24.79MB) |
+| 2026-06-18 | Döngü 91 — Dark mode hardcode renk düzeltmesi | — | — | — |
+| 2026-06-18 | Döngü 92 — FCM push ile AppDatabase uzaktan güncelleme | AppFirebaseMessagingService.kt (YENİ) | FCM mimari | — |
 
 ---
 

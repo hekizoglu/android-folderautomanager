@@ -101,14 +101,16 @@
 3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
 4. Build + commit + push
 
-### Onboarding Adım Sırası (v2026-06-13)
-WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → SET_LAUNCHER → DONE (14 adım)
+### Onboarding Adım Sırası (v2026-06-13, 14+2 adım)
+WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE
 Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
+Son iki adım CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE sırası değiştirilemez (CLAUDE.md §3 kuralı).
 
 ### Room DB Versiyon Geçmişi
 - v1-v5: temel alanlar
 - v6: `customNotes`, `notificationText` alanları eklendi
 - v7: 18 yeni kategori (CAT_COMMUNICATION, CAT_MUSIC, CAT_VIDEO... vs.) — şema değişimi yok, MIGRATION_6_7 boş migration ile eklendi
+- v8: boş migration (2026-06-16) — şema değişimi yok, MIGRATION_7_8 eklendi
 
 > **UYARI:** `fallbackToDestructiveMigration()` — Döngü#19'da KALDIRILDI. Yeni versiyon eklerken mutlaka `MIGRATION_x_y` oluştur, boş bile olsa.
 
@@ -143,16 +145,16 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 | E11 | Merge conflict AppClassifier | Remote + local aynı döngü | Python ile birleştir, set dedup |
 | E12 | PowerShell heredoc `<<'EOF'` syntax hatası | PS 5.1'de bash heredoc çalışmaz | `@'...'@` kullan — kapatan `'@` sıfır indent olmalı |
 | E13 | VerifyError / DVM register limit | Büyük `@Composable` (300+ satır) → register limiti aşılıyor | Fonksiyonlara böl, composable'ı küçült |
-| E13 | VerifyError / DVM register limit | Büyük `@Composable` (300+ satır) → register limiti aşılıyor | Fonksiyonlara böl, composable'ı küçült |
+| E14 | `derivedStateOf` + plain String reaktif değil | `searchQuery: String` Compose State değil, `derivedStateOf` izleyemiyor | `remember(searchQuery) { ... }` — key-based invalidation kullan |
 
 ---
 
 ## 📌 Promote Bekleyenler + Gözlemler
 _(3 tekrara ulaşınca 🔼 tablosuna ve CLAUDE.md §5'e taşınır)_
 
-### [2026-06-13] Merge conflict AppClassifier — Tekrar: 4+ | Öncelik: ORTA
+### [2026-06-13] Merge conflict AppClassifier — Tekrar: 4+ | Öncelik: ORTA → **PROMOTE EDİLDİ**
 Remote ve local aynı döngüde yazınca çakışıyor.
-**Kural:** `scripts/dedup_classifier.py` — iki tarafı birleştir, set ile dedup. → **CLAUDE.md §5 adayı**
+**Kural:** `scripts/dedup_classifier.py` — iki tarafı birleştir, set ile dedup. → **CLAUDE.md §5'e eklendi (2026-06-20)**
 
 ### [2026-06-15] Firebase öğrenme döngüsü — Tekrar: 1 | Öncelik: ORTA
 **Kural:** Her sprint başında Firebase metriklerini LEARNINGS'e yaz. Veri olmadan özellik önceliği verme.
@@ -165,4 +167,4 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-*Son güncelleme: 2026-06-15 — v3: Metrik Hedefler + Firebase Events + Hata Kataloğu eklendi. Mimari kararlar bölümü genişletildi. CLAUDE.md'den taşınan döngü logları HISTORprojY.md'de.*
+*Son güncelleme: 2026-06-20 — v4: E14 eklendi (derivedStateOf+String), Room v8 kaydı, Onboarding 14+2 adım düzeltmesi, Merge conflict AppClassifier promote edildi, E13 duplicate temizlendi. Döngü logları → HISTORY.md.*
