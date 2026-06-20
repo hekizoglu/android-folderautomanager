@@ -33,7 +33,7 @@ Dark mode audit tamamlandı (D104). Sıradaki: Onboarding tutarsızlığı fix +
 
 | Puan | Görev | Alan | Durum |
 |------|-------|------|-------|
-| 17 | **Onboarding adım sırası fix** | CLAUDE.md "14+2" ↔ LEARNINGS.md "14" tutarsızlığı + kod doğrulama | Bekliyor |
+| 17 | **Onboarding adım sırası fix** | CLAUDE.md "14+2" ↔ LEARNINGS.md "14" tutarsızlığı + kod doğrulama | ✅ D105 — 16 adım, SET_LAUNCHER → CLASSIFY_MODE → DONE |
 | 17 | **Multi-language support (TR/EN)** | `strings.xml` + `values-en/strings.xml` altyapısı | Bekliyor |
 | 16 | **Klasör sıra numarasıyla yer değiştirme** | FolderSheet / HomeScreen — numara girerek taşıma | Bekliyor |
 | 16 | **Akıllı Uygulama Önerileri (30dk)** | `suggestedApps` — saat/kullanım alışkanlığına göre | Bekliyor |
