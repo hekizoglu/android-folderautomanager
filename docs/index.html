@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppOrganizer — Akıllı Android Launcher</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0F0C29;
+            color: #ECEFF1;
+            min-height: 100vh;
+        }
+        header {
+            background: linear-gradient(135deg, #00897B, #26C6DA);
+            padding: 48px 24px 40px;
+            text-align: center;
+        }
+        header h1 { font-size: 2.2em; font-weight: 800; letter-spacing: -0.5px; }
+        header p  { font-size: 1.1em; opacity: 0.9; margin-top: 10px; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 24px;
+            padding: 6px 16px;
+            font-size: 0.85em;
+            margin-top: 14px;
+        }
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px 64px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 8px;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .feature-card .icon { font-size: 1.8em; margin-bottom: 10px; }
+        .feature-card h3 { font-size: 1em; font-weight: 700; margin-bottom: 6px; color: #26C6DA; }
+        .feature-card p  { font-size: 0.88em; opacity: 0.75; line-height: 1.5; }
+        h2 { font-size: 1.3em; font-weight: 700; color: #26C6DA; margin: 40px 0 16px; }
+        .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+        .btn {
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary   { background: linear-gradient(90deg, #00897B, #26C6DA); color: #fff; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #ECEFF1; border: 1px solid rgba(255,255,255,0.2); }
+        footer {
+            text-align: center;
+            padding: 24px;
+            font-size: 0.82em;
+            opacity: 0.45;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>AppOrganizer</h1>
+    <p>Uygulamalarını otomatik kategorilere ayıran akıllı Android launcher</p>
+    <div class="badge">v1.0.0 · Android 8.0+</div>
+</header>
+
+<main>
+    <h2>Özellikler</h2>
+    <div class="features">
+        <div class="feature-card">
+            <div class="icon">🗂️</div>
+            <h3>Otomatik Kategorizasyon</h3>
+            <p>3700+ uygulama tanınır. Bilinmeyenler DeepSeek AI ile sınıflandırılır.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">📁</div>
+            <h3>Akıllı Klasörler</h3>
+            <p>Oyunlar, Sosyal Medya, Finans, Sağlık... Her şey yerli yerinde.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🔔</div>
+            <h3>Bildirim Badge</h3>
+            <p>Klasör ikonlarında okunmamış bildirim sayısı ve önizleme metni.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🎨</div>
+            <h3>Özelleştirme</h3>
+            <p>Klasör adı, emoji ve renk seçimi. İkon paketi desteği dahil.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">⭐</div>
+            <h3>Favoriler &amp; Kısayollar</h3>
+            <p>En çok kullandığın uygulamalara tek dokunuşla eriş.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🔒</div>
+            <h3>Gizlilik Öncelikli</h3>
+            <p>Tüm veriler cihazında kalır. Hiçbir kişisel veri paylaşılmaz.</p>
+        </div>
+    </div>
+
+    <h2>Linkler</h2>
+    <div class="links">
+        <a class="btn btn-primary" href="https://github.com/hekizoglu/android-folderautomanager">GitHub Kaynak Kodu</a>
+        <a class="btn btn-secondary" href="privacy_policy.html">Gizlilik Politikası</a>
+        <a class="btn btn-secondary" href="mailto:huseyinekizoglu@gmail.com">İletişim</a>
+    </div>
+</main>
+
+<footer>
+    AppOrganizer © 2026 Hüseyin Ekizoğlu. Tüm hakları saklıdır.
+</footer>
+
+</body>
+</html>

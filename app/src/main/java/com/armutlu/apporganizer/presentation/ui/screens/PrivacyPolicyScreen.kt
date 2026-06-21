@@ -1,20 +1,27 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+private const val PP_WEB_URL = "https://hekizoglu.github.io/android-folderautomanager/docs/privacy_policy.html"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyPolicyScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -22,6 +29,13 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PP_WEB_URL)))
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Tarayıcıda aç")
                     }
                 }
             )
@@ -37,7 +51,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
         ) {
             PolicySection(
                 title = "AppOrganizer Gizlilik Politikası",
-                body = "Son güncelleme: Haziran 2026\n\nBu gizlilik politikası, AppOrganizer uygulamasının kişisel verilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar."
+                body = "Son güncelleme: 21 Haziran 2026\n\nBu gizlilik politikası, AppOrganizer uygulamasının kişisel verilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar."
             )
             PolicySection(
                 title = "Toplanan Veriler",
@@ -62,6 +76,12 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
             PolicySection(
                 title = "İletişim",
                 body = "Gizlilik ile ilgili sorularınız için: huseyinekizoglu@gmail.com"
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = "Web'de görüntüle: $PP_WEB_URL",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
             )
             Spacer(Modifier.height(32.dp))
         }
