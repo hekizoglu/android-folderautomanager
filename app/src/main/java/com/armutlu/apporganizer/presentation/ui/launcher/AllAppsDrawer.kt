@@ -864,6 +864,7 @@ fun NiagaraAppRow(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
+    val context        = androidx.compose.ui.platform.LocalContext.current
     val primary       = MaterialTheme.colorScheme.primary
     val secondary     = MaterialTheme.colorScheme.secondary
     val onSurface     = MaterialTheme.colorScheme.onSurface
@@ -894,7 +895,7 @@ fun NiagaraAppRow(
             .height(58.dp)
             .semantics {
                 contentDescription = "${app.appName}, ${app.categoryId.ifBlank { "Uygulama" }}"
-                onClick(label = stringResource(R.string.open_app)) { onClick(); true }
+                onClick(label = context.getString(R.string.open_app)) { onClick(); true }
             }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(if (isActive) rowHover else Color.Transparent)

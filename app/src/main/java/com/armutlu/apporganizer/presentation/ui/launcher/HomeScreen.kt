@@ -3,10 +3,7 @@
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -16,42 +13,28 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -61,14 +44,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import android.os.Build
 import androidx.compose.ui.platform.LocalContext
@@ -77,29 +58,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
+
 import androidx.compose.ui.res.stringResource
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.utils.AppAnalytics
@@ -443,24 +412,7 @@ fun HomeScreen(
             }
 
             // İstatistik bandı — toplam klasör ve uygulama sayısı
-            val totalApps   = folders.sumOf { it.apps.size }
-            val totalFolders = folders.size
-            if (totalFolders > 0) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "$totalFolders klasör  ·  $totalApps uygulama",
-                        color = Color.White.copy(alpha = 0.45f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Normal
-                    )
-                }
-            }
+            FolderStatsRow(folders = folders)
 
             // Folder grid — sayfa başına klasör sayısı ayarlanabilir (AppPrefs.KEY_PAGE_SIZE)
             val displayFolders = draggingFolders ?: folders
@@ -468,154 +420,83 @@ fun HomeScreen(
             val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
             val pagerState = rememberPagerState(pageCount = { pageCount })
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxWidth().weight(1f)
-            ) { page ->
-                val pageStart = page * pageSize
-                val pageFolders = displayFolders.drop(pageStart).take(pageSize)
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(0.dp),
-                    userScrollEnabled = false
-                ) {
-                items(pageFolders.size) { pageIndex ->
-                    val index = pageStart + pageIndex
-                    val folder = pageFolders[pageIndex]
-                    val isDragging = dragFromIndex == index
-                    // Sürüklenen tile'ın gideceği hedef slot
-                    val isDropTarget = dragToIndex == index && dragFromIndex != null && !isDragging
-                    FolderTile(
-                        folder = folder,
-                        onClick = {
-                            if (dragFromIndex == null) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                AppAnalytics.folderOpened(folder.category.categoryId, folder.category.categoryName)
-                                viewModel.openFolder(folder)
+            FolderPager(
+                pagerState = pagerState,
+                displayFolders = displayFolders,
+                pageSize = pageSize,
+                dragFromIndex = dragFromIndex,
+                dragToIndex = dragToIndex,
+                dragOffsetX = dragOffsetX,
+                dragOffsetY = dragOffsetY,
+                textAlpha = textAlpha,
+                folderSizeDp = folderSizeDp,
+                labelColor = labelColor,
+                customFolderNames = customFolderNames,
+                customFolderEmojis = customFolderEmojis,
+                customFolderColors = customFolderColors,
+                folderCountVisible = folderCountVisible,
+                folderSwipeHint = folderSwipeHint,
+                notifTextEnabled = notifTextEnabled,
+                folderShape = folderShape,
+                haptic = haptic,
+                onFolderClick = { viewModel.openFolder(it) },
+                onFolderLongClick = { folderContextMenu = it },
+                onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
+                onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
+                onDragStart = { index ->
+                    dragFromIndex = index
+                    dragOffsetX = 0f
+                    dragOffsetY = 0f
+                    draggingFolders = folders.toMutableList()
+                },
+                onDrag = { dragAmount, page ->
+                    val from = dragFromIndex ?: return@FolderPager
+                    dragOffsetX += dragAmount.x
+                    dragOffsetY += dragAmount.y
+                    val colCount = 4
+                    val screenWidthPx = with(density) { android.content.res.Resources.getSystem().displayMetrics.widthPixels.toFloat() }
+                    val tileWidthPx = screenWidthPx / colCount
+                    val tileHeightPx = with(density) { 100.dp.toPx() }
+                    val colOffset = (dragOffsetX / tileWidthPx).toInt()
+                    val rowOffset = (dragOffsetY / tileHeightPx).toInt()
+                    val pageOffset = page * pageSize
+                    val localFrom = from - pageOffset
+                    val pageFoldersCnt = displayFolders.drop(pageOffset).take(pageSize).size
+                    val localCol = localFrom % colCount + colOffset
+                    val localRow = localFrom / colCount + rowOffset
+                    val localTo = (localRow * colCount + localCol).coerceIn(0, pageFoldersCnt - 1)
+                    val globalTo = pageOffset + localTo
+                    if (globalTo != dragToIndex) {
+                        dragToIndex = globalTo
+                        draggingFolders = draggingFolders?.toMutableList()?.also { list ->
+                            if (from != globalTo && from in list.indices && globalTo in list.indices) {
+                                val item = list.removeAt(from)
+                                list.add(globalTo, item)
+                                dragFromIndex = globalTo
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
                             }
-                        },
-                        onLongClick = {
-                            if (dragFromIndex == null) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                folderContextMenu = folder
-                            }
-                        },
-                        onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
-                        onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
-                        textAlpha = textAlpha,
-                        folderSizeDp = folderSizeDp,
-                        labelColor = labelColor,
-                        customName = customFolderNames[folder.category.categoryId],
-                        customEmoji = customFolderEmojis[folder.category.categoryId],
-                        customColor = customFolderColors[folder.category.categoryId],
-                        folderCountVisible = folderCountVisible,
-                        folderSwipeHintEnabled = folderSwipeHint,
-                        notifTextEnabled = notifTextEnabled,
-                        folderShape = folderShape,
-                        modifier = Modifier
-                            .pointerInput(index) {
-                                detectDragGesturesAfterLongPress(
-                                    onDragStart = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        dragFromIndex = index
-                                        dragOffsetX = 0f
-                                        dragOffsetY = 0f
-                                        draggingFolders = folders.toMutableList()
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        change.consume()
-                                        val from = dragFromIndex ?: return@detectDragGesturesAfterLongPress
-                                        // dragAmount = ekran delta (px) — kümülatif toplayarak gerçek offset
-                                        dragOffsetX += dragAmount.x
-                                        dragOffsetY += dragAmount.y
-                                        val colCount = 4
-                                        // Tile boyutu: 4 sütun + yatay padding hesabı
-                                        val tileWidthPx = with(density) { (size.width / colCount).toFloat() }
-                                        val tileHeightPx = with(density) { 100.dp.toPx() }
-                                        val colOffset = (dragOffsetX / tileWidthPx).toInt()
-                                        val rowOffset = (dragOffsetY / tileHeightPx).toInt()
-                                        // Sayfa-local başlangıç konumu
-                                        val pageOffset = page * pageSize
-                                        val localFrom = from - pageOffset
-                                        val localCol = localFrom % colCount + colOffset
-                                        val localRow = localFrom / colCount + rowOffset
-                                        val localTo = (localRow * colCount + localCol)
-                                            .coerceIn(0, pageFolders.lastIndex)
-                                        val globalTo = pageOffset + localTo
-                                        if (globalTo != dragToIndex) {
-                                            dragToIndex = globalTo
-                                            draggingFolders = draggingFolders?.toMutableList()?.also { list ->
-                                                if (from != globalTo && from in list.indices && globalTo in list.indices) {
-                                                    val item = list.removeAt(from)
-                                                    list.add(globalTo, item)
-                                                    dragFromIndex = globalTo
-                                                    // Offset sıfırla — yeni pozisyon referans noktası
-                                                    dragOffsetX = 0f
-                                                    dragOffsetY = 0f
-                                                }
-                                            }
-                                        }
-                                    },
-                                    onDragEnd = {
-                                        draggingFolders?.let { viewModel.reorderFolders(context, it) }
-                                        dragFromIndex = null
-                                        dragToIndex = null
-                                        draggingFolders = null
-                                        dragOffsetX = 0f
-                                        dragOffsetY = 0f
-                                    },
-                                    onDragCancel = {
-                                        dragFromIndex = null
-                                        dragToIndex = null
-                                        draggingFolders = null
-                                        dragOffsetX = 0f
-                                        dragOffsetY = 0f
-                                    }
-                                )
-                            }
-                            .then(
-                                when {
-                                    isDragging ->
-                                        Modifier
-                                            .background(Color.White.copy(alpha = 0.18f), RoundedCornerShape(12.dp))
-                                            .scale(1.08f)
-                                    isDropTarget ->
-                                        // Hedef slot: turkuaz çerçeve
-                                        Modifier.background(
-                                            Color(0xFF00897B).copy(alpha = 0.28f),
-                                            RoundedCornerShape(12.dp)
-                                        )
-                                    dragFromIndex != null ->
-                                        // Drag aktifken diğer tile'lar hafif solar
-                                        Modifier.alpha(0.72f)
-                                    else -> Modifier
-                                }
-                            )
-                    )
-                }
-                // Bos slotlar — folder'lardan sonra, uzun basinca HomeLongPressSheet ac
-                val emptySlots = pageSize - pageFolders.size
-                if (emptySlots > 0) {
-                    items(emptySlots) { _ ->
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onLongPress = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            homeLongPressOpen = true
-                                        }
-                                    )
-                                }
-                        )
+                        }
                     }
-                }
-                } // LazyVerticalGrid
-            } // HorizontalPager
+                },
+                onDragEnd = {
+                    draggingFolders?.let { viewModel.reorderFolders(context, it) }
+                    dragFromIndex = null
+                    dragToIndex = null
+                    draggingFolders = null
+                    dragOffsetX = 0f
+                    dragOffsetY = 0f
+                },
+                onDragCancel = {
+                    dragFromIndex = null
+                    dragToIndex = null
+                    draggingFolders = null
+                    dragOffsetX = 0f
+                    dragOffsetY = 0f
+                },
+                onHomeLongPress = { homeLongPressOpen = true },
+                modifier = Modifier.fillMaxWidth().weight(1f)
+            )
 
             // Sayfa noktaciklari — HomeScreenPageIndicator.kt
             HomePageIndicator(pageCount = pageCount, pagerState = pagerState)
@@ -720,127 +601,220 @@ fun HomeScreen(
         }
     }
 
-    // Dock düzenleme sheet
+    HomeScreenOverlays(
+        allApps = allApps,
+        folders = folders,
+        dockPackages = dockPackages,
+        openFolder = openFolder,
+        folderSheetState = folderSheetState,
+        dockEditOpen = dockEditOpen,
+        contextMenuApp = contextMenuApp,
+        categoryPickerApp = categoryPickerApp,
+        homeLongPressOpen = homeLongPressOpen,
+        folderContextMenu = folderContextMenu,
+        haptic = haptic,
+        scope = scope,
+        onDockEditDismiss = { dockEditOpen = false },
+        onContextMenuDismiss = { contextMenuPkg = null },
+        onCategoryPickerDismiss = { categoryPickerApp = null },
+        onHomeLongPressDismiss = { homeLongPressOpen = false },
+        onFolderContextMenuDismiss = { folderContextMenu = null },
+        onDockAdd = { viewModel.addToDock(context, it) },
+        onDockRemove = { viewModel.removeFromDock(context, it) },
+        onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+        onAddToDock = { pkg -> viewModel.addToDock(context, pkg) },
+        onRemoveFromDock = { pkg -> viewModel.removeFromDock(context, pkg) },
+        onChangeCategory = { app ->
+            categoryPickerApp = app
+            contextMenuPkg = null
+        },
+        onHideApp = { app, hidden ->
+            viewModel.setAppHidden(app.packageName, hidden)
+            contextMenuPkg = null
+        },
+        onSaveNote = { app, note -> viewModel.saveAppNote(app.packageName, note) },
+        onToggleFavorite = { app -> viewModel.toggleFavorite(context, app.packageName) },
+        onCategorySelected = { app, catId ->
+            viewModel.updateAppCategory(app.packageName, catId)
+            viewModel.closeFolder()
+        },
+        onFolderDismiss = {
+            scope.launch {
+                folderSheetState.hide()
+                viewModel.closeFolder()
+            }
+        },
+        onFolderAppLongClick = { app ->
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            contextMenuPkg = app.packageName
+        },
+        onOpenFolder = { folder ->
+            folderContextMenu = null
+            viewModel.openFolder(folder)
+        },
+        onOpenAllApps = {
+            folderContextMenu = null
+            viewModel.openAllApps()
+        },
+        onMoveFolder = { folder, newIndex ->
+            val currentList = folders.toMutableList()
+            val fromIndex = currentList.indexOfFirst { it.category.categoryId == folder.category.categoryId }
+            if (fromIndex >= 0 && newIndex in currentList.indices) {
+                val item = currentList.removeAt(fromIndex)
+                currentList.add(newIndex, item)
+                viewModel.reorderFolders(context, currentList)
+            }
+            folderContextMenu = null
+        },
+        onWallpaper = {
+            homeLongPressOpen = false
+            val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            runCatching {
+                context.startActivity(Intent.createChooser(intent, "Duvar Kagidi Sec").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            }
+        },
+        onSettings = {
+            homeLongPressOpen = false
+            viewModel.openManager(context)
+        },
+        onDockEdit = {
+            homeLongPressOpen = false
+            dockEditOpen = true
+        },
+        onAddWidget = {
+            homeLongPressOpen = false
+            onLaunchWidgetPicker()
+        }
+    )
+}
+
+@Composable
+private fun FolderStatsRow(folders: List<AppFolder>) {
+    val totalApps = folders.sumOf { it.apps.size }
+    val totalFolders = folders.size
+    if (totalFolders > 0) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "$totalFolders klasör  ·  $totalApps uygulama",
+                color = Color.White.copy(alpha = 0.45f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeScreenOverlays(
+    allApps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+    folders: List<AppFolder>,
+    dockPackages: List<String>,
+    openFolder: AppFolder?,
+    folderSheetState: androidx.compose.material3.SheetState,
+    dockEditOpen: Boolean,
+    contextMenuApp: com.armutlu.apporganizer.domain.models.AppInfo?,
+    categoryPickerApp: com.armutlu.apporganizer.domain.models.AppInfo?,
+    homeLongPressOpen: Boolean,
+    folderContextMenu: AppFolder?,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    scope: kotlinx.coroutines.CoroutineScope,
+    onDockEditDismiss: () -> Unit,
+    onContextMenuDismiss: () -> Unit,
+    onCategoryPickerDismiss: () -> Unit,
+    onHomeLongPressDismiss: () -> Unit,
+    onFolderContextMenuDismiss: () -> Unit,
+    onDockAdd: (String) -> Unit,
+    onDockRemove: (String) -> Unit,
+    onLaunchApp: (String) -> Unit,
+    onAddToDock: (String) -> Unit,
+    onRemoveFromDock: (String) -> Unit,
+    onChangeCategory: (com.armutlu.apporganizer.domain.models.AppInfo) -> Unit,
+    onHideApp: (com.armutlu.apporganizer.domain.models.AppInfo, Boolean) -> Unit,
+    onSaveNote: (com.armutlu.apporganizer.domain.models.AppInfo, String) -> Unit,
+    onToggleFavorite: (com.armutlu.apporganizer.domain.models.AppInfo) -> Unit,
+    onCategorySelected: (com.armutlu.apporganizer.domain.models.AppInfo, String) -> Unit,
+    onFolderDismiss: () -> Unit,
+    onFolderAppLongClick: (com.armutlu.apporganizer.domain.models.AppInfo) -> Unit,
+    onOpenFolder: (AppFolder) -> Unit,
+    onOpenAllApps: () -> Unit,
+    onMoveFolder: (AppFolder, Int) -> Unit,
+    onWallpaper: () -> Unit,
+    onSettings: () -> Unit,
+    onDockEdit: () -> Unit,
+    onAddWidget: () -> Unit
+) {
     if (dockEditOpen) {
         DockEditSheet(
             allApps = allApps,
             dockPackages = dockPackages,
-            onAdd = { viewModel.addToDock(context, it) },
-            onRemove = { viewModel.removeFromDock(context, it) },
-            onDismiss = { dockEditOpen = false }
+            onAdd = onDockAdd,
+            onRemove = onDockRemove,
+            onDismiss = onDockEditDismiss
         )
     }
 
-    // App context menu (long press)
     contextMenuApp?.let { app ->
         AppContextMenu(
             app = app,
             isDocked = app.packageName in dockPackages,
-            onDismiss = { contextMenuPkg = null },
-            onLaunch = { viewModel.launchApp(context, app.packageName) },
-            onAddToDock = { viewModel.addToDock(context, app.packageName) },
-            onRemoveFromDock = { viewModel.removeFromDock(context, app.packageName) },
-            onChangeCategory = {
-                categoryPickerApp = app
-                contextMenuPkg = null
-            },
-            onHideApp = { hidden ->
-                viewModel.setAppHidden(app.packageName, hidden)
-                contextMenuPkg = null
-            },
-            onSaveNote = { note ->
-                viewModel.saveAppNote(app.packageName, note)
-            },
-            onToggleFavorite = { _ ->
-                viewModel.toggleFavorite(context, app.packageName)
-            }
+            onDismiss = onContextMenuDismiss,
+            onLaunch = { onLaunchApp(app.packageName) },
+            onAddToDock = { onAddToDock(app.packageName) },
+            onRemoveFromDock = { onRemoveFromDock(app.packageName) },
+            onChangeCategory = { onChangeCategory(app) },
+            onHideApp = { hidden -> onHideApp(app, hidden) },
+            onSaveNote = { note -> onSaveNote(app, note) },
+            onToggleFavorite = { _ -> onToggleFavorite(app) }
         )
     }
 
-    // Kategori picker sheet
     categoryPickerApp?.let { app ->
         CategoryPickerSheet(
             app = app,
-            onDismiss = { categoryPickerApp = null },
-            onCategorySelected = { catId ->
-                viewModel.updateAppCategory(app.packageName, catId)
-                // Klasör açıksa kapat — kullanıcı ana ekranda yeni kategoriyi hemen görsün
-                viewModel.closeFolder()
-            }
+            onDismiss = onCategoryPickerDismiss,
+            onCategorySelected = { catId -> onCategorySelected(app, catId) }
         )
     }
 
-    // Folder bottom sheet
     openFolder?.let { folder ->
         FolderSheet(
             folder = folder,
             sheetState = folderSheetState,
-            onDismiss = {
-                scope.launch {
-                    folderSheetState.hide()
-                    viewModel.closeFolder()
-                }
-            },
-            onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-            onAppLongClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                contextMenuPkg = app.packageName
-            },
+            onDismiss = onFolderDismiss,
+            onAppClick = onLaunchApp,
+            onAppLongClick = onFolderAppLongClick,
         )
     }
 
-    // Ana ekran uzun basma menüsü
     if (homeLongPressOpen) {
         HomeLongPressSheet(
-            onDismiss = { homeLongPressOpen = false },
-            onWallpaper = {
-                homeLongPressOpen = false
-                val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                runCatching { context.startActivity(Intent.createChooser(intent, "Duvar Kagidi Sec").apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }) }
-            },
-            onSettings = {
-                homeLongPressOpen = false
-                viewModel.openManager(context)
-            },
-            onDockEdit = {
-                homeLongPressOpen = false
-                dockEditOpen = true
-            },
-            onAddWidget = {
-                homeLongPressOpen = false
-                onLaunchWidgetPicker()
-            }
+            onDismiss = onHomeLongPressDismiss,
+            onWallpaper = onWallpaper,
+            onSettings = onSettings,
+            onDockEdit = onDockEdit,
+            onAddWidget = onAddWidget
         )
     }
 
-    // Klasör uzun basınca context menu
     folderContextMenu?.let { folder ->
         FolderContextMenuSheet(
             folder = folder,
             allFolders = folders,
-            onDismiss = { folderContextMenu = null },
-            onOpenFolder = {
-                folderContextMenu = null
-                viewModel.openFolder(folder)
-            },
-            onOpenAllApps = {
-                folderContextMenu = null
-                viewModel.openAllApps()
-            },
-            onMove = { newIndex ->
-                val currentList = folders.toMutableList()
-                val fromIndex = currentList.indexOfFirst { it.category.categoryId == folder.category.categoryId }
-                if (fromIndex >= 0 && newIndex in currentList.indices) {
-                    val item = currentList.removeAt(fromIndex)
-                    currentList.add(newIndex, item)
-                    viewModel.reorderFolders(context, currentList)
-                }
-                folderContextMenu = null
-            }
+            onDismiss = onFolderContextMenuDismiss,
+            onOpenFolder = { onOpenFolder(folder) },
+            onOpenAllApps = onOpenAllApps,
+            onMove = { newIndex -> onMoveFolder(folder, newIndex) }
         )
     }
 }

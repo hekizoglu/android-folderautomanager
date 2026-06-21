@@ -66,7 +66,10 @@ fun DockEditSheet(
     var query by remember { mutableStateOf("") }
     val filtered = remember(allApps, query) {
         if (query.isBlank()) allApps
-        else allApps.filter { it.appName.contains(query, ignoreCase = true) }
+        else {
+            val q = query.lowercase(java.util.Locale("tr"))
+            allApps.filter { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
+        }
     }
 
     ModalBottomSheet(
