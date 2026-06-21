@@ -1305,3 +1305,16 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-18 | D88-D92 | AllApps arama fix, LauncherViewModelTest, BUILD #17, dark mode |
 | 2026-06-20 | D93-D95 | MD denetim + senkronizasyon düzeltmeleri |
 | 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
+| 2026-06-21 | D107-D111 | Akıllı öneriler, multi-language, bilinen sorunlar tarama, CS-3 3 yöntem |
+
+## Döngü 112 — 2026-06-21 (KOD — E13 HomeScreen refactor + E5 DockEditSheet + AllAppsDrawer semantics fix)
+**Yapılanlar:** HomeScreen.kt 738 satır → alt composable'lara bölündü (DVM register limit riski giderildi).
+- `HomeScreenFolderPager.kt` (YENİ, 159 satır) — `FolderPager` internal composable: tüm drag-drop mantığı, klasör grid, boş slotlar
+- `FolderStatsRow` private composable — stats bandı (18 satır)
+- `HomeScreenOverlays` private composable — tüm sheet/dialog overlayler (100+ satır)
+- E5 fix: `DockEditSheet.kt` `contains(ignoreCase=true)` → `lowercase(Locale("tr")).contains(q)` (Türkçe I/İ/ı bug)
+- AllAppsDrawer.kt:897 `semantics { onClick(label=stringResource(...)) }` → `context.getString(...)` (composable olmayan scope fix)
+- Yan branch'ler silindi: `copilot/bir-sonraki-donguyu-calistir` + `copilot/fix-build-debug-apk-job`
+**Build:** SUCCESS 24.91 MB
+**Commit:** `d825a75`
+**Sonraki:** Cron kurulumu (15 dk, bilinen sorunlar otomatik çözüm döngüsü)
