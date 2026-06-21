@@ -1368,6 +1368,11 @@ Tüm 12 madde ✅. Detay:
 **Build:** SUCCESS 26.1 MB, commit [6a02acd], Telegram APK gönderildi
 **Sonraki:** Widget hızlı menü araştırması, iOS/Android tema seçenekleri
 
+## Döngü 122 — 2026-06-21 (KOD/BUILD — iOS + AMOLED tema)
+**Yapılanlar:** ThemePreferences.kt: IOS (#007AFF/#5AC8FA, iOS dark bg) ve AMOLED (#00E5FF/#69FF47, saf siyah) enum eklendi. previewBrush: primary→secondary lineer gradyan. Theme.kt: buildColorScheme() tema bazlı onSurface/onVariant/outline renklerine ayrıştırıldı. Hem Onboarding hem Settings tema daireleri gradyan görünümüne geçti.
+**Build:** SUCCESS 26.1 MB, commit [f75b902], Telegram APK gönderildi
+**Sonraki:** Kullanıcı "döngü bittikten sonra dur" dedi — bekliyor
+
 ## Döngü 121 — 2026-06-21 (KOD/WEB — Privacy Policy tam kurulum)
 **Yapılanlar:** PrivacyPolicyScreen.kt: TopAppBar'a OpenInNew ikonu eklendi (tarayıcıda açar), PP web URL footer'da gösterildi. docs/index.html: GitHub Pages landing sayfası oluşturuldu (özellikler + linkler). docs/privacy_policy.html tarih güncellendi. PP URL: hekizoglu.github.io/android-folderautomanager/docs/privacy_policy.html
 **Build:** SUCCESS 26.1 MB, commit [5b5c3b0], Telegram APK gönderildi

@@ -118,7 +118,7 @@
 | 2026-06-21 | **AllAppsDrawer klavye fix** [TAMAMLANDI D119] — açılışta klavye otomatik çıkmıyordu |
 | 2026-06-21 | **Klasör sıralama görsel UI** [TAMAMLANDI D119] — sayı giriş yerine emoji+kutucuk grid |
 | 2026-06-21 | **Widget hızlı menü çalışmıyor** — araştırılacak, Widget widget press long-press menü çalışmıyor |
-| 2026-06-21 | **İki yeni tema: iOS tarzı + modern Android** — kullanıcı talebi, uygulanacak |
+| 2026-06-21 | **İki yeni tema: iOS tarzı + modern Android** — kullanıcı talebi, uygulanacak | [TAMAMLANDI D122 — IOS + AMOLED enum, gradyan preview daireler] |
 | 2026-06-21 | **Onboarding yeniden yazım** — default launcher sorusu en sona taşınacak, ayarlar açıklamalı | [TAMAMLANDI D120] |
 | 2026-06-21 | **Görsel kalite artırımı** — genel UI iyileştirme talebi |
 | 2026-06-21 | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab ile build gerektirmeden test |
