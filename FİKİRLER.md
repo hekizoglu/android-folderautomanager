@@ -89,7 +89,7 @@
 | 7 | Dark mode tam uyum audit | 3 | 4 | 5 | 4 | **16** | ✅ [TAMAMLANDI D114] |
 | 8 | Akıllı Uygulama Önerileri (30dk) | 5 | 2 | 4 | 5 | **16** | ✅ Yap |
 | 9 | Screenshots | 3 | 4 | 3 | 4 | **14** | 🟡 Değerlendir |
-| 10 | AppClassifier → JSON asset | 2 | 3 | 5 | 4 | **14** | 🟡 Değerlendir |
+| 10 | AppClassifier → JSON asset | 2 | 3 | 5 | 4 | **14** | ✅ [TAMAMLANDI D115] |
 | 11 | Android 14 NotificationListenerService testi | 4 | 3 | 2 | 4 | **13** | 🟡 Değerlendir |
 | 12 | Hilt DI kurulumu | 2 | 2 | 5 | 4 | **13** | 🟡 Değerlendir |
 | 13 | Unit test coverage | 2 | 2 | 5 | 4 | **13** | 🟡 Değerlendir |

@@ -1307,6 +1307,14 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
 | 2026-06-21 | D107-D111 | Akıllı öneriler, multi-language, bilinen sorunlar tarama, CS-3 3 yöntem |
 
+## Döngü 115 — 2026-06-21 (KOD — AppClassifier JSON asset dönüşümü)
+**Yapılanlar:** AppClassifier.kt 4369 satır → 99 satır; exactMatchMap (3702 entry) assets/app_categories.json'a taşındı.
+- AppClassifierAssets.kt (YENİ): singleton, thread-safe double-check lazy parse, JSONObject ile 122 KB asset okuma
+- AppClassifier.kt: @ApplicationContext Context inject, exactMatchMap getter → AppClassifierAssets delegate
+- scripts/export_classifier_json.py + strip_exact_map.py: dönüşüm araçları (tekrar çalıştırılabilir)
+**Build:** SUCCESS 26.45 MB, commit fe0fce8 — Telegram msg 768
+**Sonraki:** Unit test coverage (13 puan) veya cycle.ps1 test (13 puan)
+
 ## Döngü 114 — 2026-06-21 (KOD — Dark mode audit: chip/badge renk token düzeltmeleri)
 **Yapılanlar:** FolderSheet + AllAppsDrawer'da hardcode Color.White → MaterialTheme token geçişi.
 - FolderSheet: badge count + sort chip aktif text → colorScheme.onPrimary
