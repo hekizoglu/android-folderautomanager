@@ -105,6 +105,94 @@
     <string name="settings_export_failed">Export failed</string>
     <string name="settings_share_backup">Share backup</string>
 
+    <!-- Onboarding -->
+    <string name="onb_welcome_title">Welcome to AppOrganizer</string>
+    <string name="onb_welcome_desc">The smart launcher that automatically organizes your apps.</string>
+    <string name="onb_welcome_btn">Get Started</string>
+
+    <string name="onb_restore_title">Have a Previous Backup?</string>
+    <string name="onb_restore_desc">If you\'ve used AppOrganizer before, you can restore your category settings.</string>
+    <string name="onb_restore_btn">Restore from Backup</string>
+
+    <string name="onb_query_title">App List Permission</string>
+    <string name="onb_query_desc">This permission is required to view and organize your apps.</string>
+    <string name="onb_query_why">The launcher cannot work without this permission.</string>
+    <string name="onb_query_btn">Grant Permission</string>
+
+    <string name="onb_notif_title">Notification Permission</string>
+    <string name="onb_notif_desc">Permission is needed to show notification counts on app icons.</string>
+    <string name="onb_notif_why">Badge counts require this permission.</string>
+    <string name="onb_notif_btn">Grant Permission</string>
+
+    <string name="onb_unused_title">Unused Apps</string>
+    <string name="onb_unused_desc">Show apps you never open in a faded color?</string>
+    <string name="onb_unused_btn">Continue</string>
+
+    <string name="onb_autobackup_title">Auto Backup</string>
+    <string name="onb_autobackup_desc">Automatically save a JSON backup of your category assignments on each launch?</string>
+    <string name="onb_autobackup_btn">Continue</string>
+
+    <string name="onb_notiftext_title">Notification Text</string>
+    <string name="onb_notiftext_desc">Show the latest notification below folders and apps?</string>
+    <string name="onb_notiftext_btn">Continue</string>
+
+    <string name="onb_notifaccess_title">Notification Access</string>
+    <string name="onb_notifaccess_desc">Full access is required to show real notification counts on app icons.</string>
+    <string name="onb_notifaccess_why">Android requires a separate permission for this.</string>
+    <string name="onb_notifaccess_btn">Allow Access</string>
+
+    <string name="onb_swipe_title">Swipe-up Hint</string>
+    <string name="onb_swipe_desc">Show swipe-up animation on the home screen?</string>
+    <string name="onb_swipe_btn">Continue</string>
+
+    <string name="onb_newbadge_title">NEW Badge</string>
+    <string name="onb_newbadge_desc">Show a \'NEW\' badge on apps installed within the last 7 days?</string>
+    <string name="onb_newbadge_btn">Continue</string>
+
+    <string name="onb_foldercount_title">Folder App Count</string>
+    <string name="onb_foldercount_desc">Show the number of apps below each folder icon?</string>
+    <string name="onb_foldercount_btn">Continue</string>
+
+    <string name="onb_navhide_title">Hide System Navigation</string>
+    <string name="onb_navhide_desc">Hide Back/Home/Recents buttons for a full-screen launcher.</string>
+    <string name="onb_navhide_btn">Continue</string>
+
+    <string name="onb_theme_title">Choose Color Theme</string>
+    <string name="onb_theme_desc">Pick your preferred color theme and font.</string>
+    <string name="onb_theme_btn">Apply</string>
+
+    <string name="onb_setlauncher_title">Default Launcher</string>
+    <string name="onb_setlauncher_desc">Set AppOrganizer as your default launcher.</string>
+    <string name="onb_setlauncher_why">The home screen won\'t show without setting it as launcher.</string>
+    <string name="onb_setlauncher_btn">Set as Default</string>
+
+    <string name="onb_classify_title">How Should We Classify?</string>
+    <string name="onb_classify_desc">We can group your apps by category or by manufacturer.</string>
+    <string name="onb_classify_btn">Continue</string>
+    <string name="onb_classify_cat_title">By Category</string>
+    <string name="onb_classify_cat_desc">Social Media, Games, Finance…</string>
+    <string name="onb_classify_mfr_title">By Manufacturer</string>
+    <string name="onb_classify_mfr_desc">Google, Samsung, Microsoft…</string>
+
+    <string name="onb_done_title">You\'re All Set!</string>
+    <string name="onb_done_desc">AppOrganizer setup is complete. Enjoy!</string>
+    <string name="onb_done_btn">Start</string>
+
+    <string name="onb_continue">Continue</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb_skip_now">Not Now</string>
+    <string name="onb_restore_success">%1$d apps restored</string>
+    <string name="onb_restore_fail">Restore failed: %1$s</string>
+    <string name="onb_restore_read_fail">Could not read file: %1$s</string>
+    <string name="onb_status_launcher_set">Set as default launcher</string>
+    <string name="onb_status_permission_granted">Permission granted</string>
+    <string name="onb_status_notif_access">Notification access granted</string>
+    <string name="onb_status_grey_days">%1$d days set</string>
+    <string name="onb_status_ok">Done: %1$s</string>
+    <string name="onb_on">On</string>
+    <string name="onb_off">Off</string>
+    <string name="onb_days">days</string>
+
     <!-- Appearance Settings -->
     <string name="appearance_color_theme">Color Theme</string>
     <string name="appearance_font">Font</string>

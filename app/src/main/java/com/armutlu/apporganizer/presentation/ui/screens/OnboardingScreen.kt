@@ -21,9 +21,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,6 +75,7 @@ fun OnboardingScreen(
     var selectedTheme     by remember { mutableStateOf(AppTheme.TEAL) }
     var selectedFont      by remember { mutableStateOf(AppFont.DEFAULT) }
     var restoreResult     by remember { mutableStateOf<String?>(null) }
+    var restoreSuccess    by remember { mutableStateOf<Boolean?>(null) }
     val scope         = rememberCoroutineScope()
     val themePrefs    = remember { ThemePreferences(context) }
 
@@ -82,9 +85,10 @@ fun OnboardingScreen(
             runCatching {
                 val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return@launch
                 val result = viewModel.importBackup(json)
-                restoreResult = if (result.success) "${result.updatedCount} uygulama geri yuklendi"
-                                else "Geri yukleme basarisiz: ${result.error}"
-            }.onFailure { restoreResult = "Dosya okunamadi: ${it.message}" }
+                restoreSuccess = result.success
+                restoreResult = if (result.success) context.getString(R.string.onb_restore_success, result.updatedCount)
+                                else context.getString(R.string.onb_restore_fail, result.error ?: "")
+            }.onFailure { restoreSuccess = false; restoreResult = context.getString(R.string.onb_restore_read_fail, it.message ?: "") }
         }
     }
     val roleRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -130,7 +134,7 @@ fun OnboardingScreen(
             OnboardingStepHeader(steps, stepIndex)
             Spacer(Modifier.height(24.dp))
             OnboardingWhyBox(currentStep)
-            if (currentStep.why.isNotBlank()) Spacer(Modifier.height(16.dp))
+            if (currentStep.whyRes != 0) Spacer(Modifier.height(16.dp))
 
             OnboardingStatusBadge(currentStep, launcherSet, notifGranted, notifAccessGranted, unusedGreyDays)
             if (currentStep in listOf(OnboardingStep.SET_LAUNCHER, OnboardingStep.QUERY_PACKAGES,
@@ -140,7 +144,7 @@ fun OnboardingScreen(
             // RESTORE_BACKUP sonucu
             if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
                 val result = restoreResult ?: ""
-                val isSuccess = result.contains("geri yuklendi")
+                val isSuccess = restoreSuccess == true
                 Spacer(Modifier.height(8.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
@@ -153,7 +157,7 @@ fun OnboardingScreen(
                         modifier = Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(12.dp))
                             .background(OnboardingTealGradient).clickable { stepIndex++ },
                         contentAlignment = Alignment.Center
-                    ) { Text("Devam Et", color = Color.White, fontWeight = FontWeight.SemiBold) }
+                    ) { Text(stringResource(R.string.onb_continue), color = Color.White, fontWeight = FontWeight.SemiBold) }
                 }
                 Spacer(Modifier.height(12.dp))
             }
@@ -196,8 +200,8 @@ fun OnboardingScreen(
             if (currentStep == OnboardingStep.CLASSIFY_MODE) {
                 Spacer(Modifier.height(8.dp))
                 val classifyOptions = listOf(
-                    "category"     to ("Kategoriye Göre" to "Sosyal Medya, Oyunlar, Finans..."),
-                    "manufacturer" to ("Üreticiye Göre"  to "Google, Samsung, Microsoft...")
+                    "category"     to (stringResource(R.string.onb_classify_cat_title) to stringResource(R.string.onb_classify_cat_desc)),
+                    "manufacturer" to (stringResource(R.string.onb_classify_mfr_title) to stringResource(R.string.onb_classify_mfr_desc))
                 )
                 var selectedClassify by remember {
                     mutableStateOf(if (com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(context)) "manufacturer" else "category")
@@ -278,10 +282,10 @@ fun OnboardingScreen(
             ) {
                 Text(
                     text = when {
-                        currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> "Devam Et"
-                        currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> "Devam Et"
-                        currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> "Devam Et"
-                        else -> currentStep.buttonLabel
+                        currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
+                        currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> stringResource(R.string.onb_continue)
+                        currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> stringResource(R.string.onb_continue)
+                        else -> stringResource(currentStep.buttonLabelRes)
                     },
                     fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
                 )
@@ -302,7 +306,7 @@ fun OnboardingScreen(
                 Box(
                     modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
                     contentAlignment = Alignment.Center
-                ) { Text("Simdi Degil", fontSize = 14.sp, color = Color.White.copy(0.50f)) }
+                ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             }
 
             // İsteğe bağlı adımlar için "Atla"
@@ -311,7 +315,7 @@ fun OnboardingScreen(
                 Box(
                     modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
                     contentAlignment = Alignment.Center
-                ) { Text("Atla", fontSize = 14.sp, color = Color.White.copy(0.50f)) }
+                ) { Text(stringResource(R.string.onb_skip), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             } else {
                 Spacer(Modifier.height(40.dp))
             }

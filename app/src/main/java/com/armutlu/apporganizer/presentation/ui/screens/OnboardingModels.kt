@@ -1,14 +1,16 @@
-﻿package com.armutlu.apporganizer.presentation.ui.screens
+package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.armutlu.apporganizer.R
 
 // ── Renkler ve gradyanlar ────────────────────────────────────────────────────
 
@@ -35,122 +37,122 @@ internal fun isDefaultLauncherApp(context: Context): Boolean {
 // ── Onboarding adım modeli ────────────────────────────────────────────────────
 
 internal enum class OnboardingStep(
-    val title: String,
-    val description: String,
+    @StringRes val titleRes: Int,
+    @StringRes val descriptionRes: Int,
     val icon: ImageVector,
-    val buttonLabel: String,
-    val why: String = "",
+    @StringRes val buttonLabelRes: Int,
+    @StringRes val whyRes: Int = 0,
     val isSkippable: Boolean = false
 ) {
     WELCOME(
-        title = "AppOrganizer'a Hoş Geldiniz",
-        description = "Uygulamalarınızı otomatik olarak düzenleyen akıllı launcher.",
+        titleRes = R.string.onb_welcome_title,
+        descriptionRes = R.string.onb_welcome_desc,
         icon = Icons.Default.Apps,
-        buttonLabel = "Başla"
+        buttonLabelRes = R.string.onb_welcome_btn
     ),
     RESTORE_BACKUP(
-        title = "Önceki Yedeğiniz Var Mı?",
-        description = "Daha önce AppOrganizer kullandıysanız, kategori ayarlarınızı geri yükleyebilirsiniz.",
+        titleRes = R.string.onb_restore_title,
+        descriptionRes = R.string.onb_restore_desc,
         icon = Icons.Default.Restore,
-        buttonLabel = "Yedekten Geri Yükle",
+        buttonLabelRes = R.string.onb_restore_btn,
         isSkippable = true
     ),
     QUERY_PACKAGES(
-        title = "Uygulama Listesi İzni",
-        description = "Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.",
+        titleRes = R.string.onb_query_title,
+        descriptionRes = R.string.onb_query_desc,
         icon = Icons.AutoMirrored.Filled.ManageSearch,
-        buttonLabel = "İzin Ver",
-        why = "Bu izin olmadan launcher çalışamaz."
+        buttonLabelRes = R.string.onb_query_btn,
+        whyRes = R.string.onb_query_why
     ),
     NOTIFICATIONS(
-        title = "Bildirim İzni",
-        description = "Uygulama ikonlarında bildirim sayısını göstermek için izin gerekli.",
+        titleRes = R.string.onb_notif_title,
+        descriptionRes = R.string.onb_notif_desc,
         icon = Icons.Default.Notifications,
-        buttonLabel = "İzin Ver",
-        why = "Badge sayıları bu izinle çalışır.",
+        buttonLabelRes = R.string.onb_notif_btn,
+        whyRes = R.string.onb_notif_why,
         isSkippable = true
     ),
     UNUSED_GREY(
-        title = "Kullanılmayan Uygulamalar",
-        description = "Hiç açmadığınız uygulamalar soluk renkte gösterilsin mi?",
+        titleRes = R.string.onb_unused_title,
+        descriptionRes = R.string.onb_unused_desc,
         icon = Icons.Default.Visibility,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_unused_btn,
         isSkippable = true
     ),
     AUTO_BACKUP(
-        title = "Otomatik Yedekleme",
-        description = "Her açılışta kategori atamalarınızın JSON yedeğini alsın mı?",
+        titleRes = R.string.onb_autobackup_title,
+        descriptionRes = R.string.onb_autobackup_desc,
         icon = Icons.Default.Badge,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_autobackup_btn,
         isSkippable = true
     ),
     NOTIF_TEXT(
-        title = "Bildirim Metni",
-        description = "Klasör ve uygulamaların altında son bildirimi göstersin mi?",
+        titleRes = R.string.onb_notiftext_title,
+        descriptionRes = R.string.onb_notiftext_desc,
         icon = Icons.Default.Notifications,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_notiftext_btn,
         isSkippable = true
     ),
     NOTIF_ACCESS(
-        title = "Bildirim Erişimi",
-        description = "Uygulama ikonlarında gerçek bildirim sayısını göstermek için tam erişim gerekli.",
+        titleRes = R.string.onb_notifaccess_title,
+        descriptionRes = R.string.onb_notifaccess_desc,
         icon = Icons.Default.Notifications,
-        buttonLabel = "Erişime İzin Ver",
-        why = "Android kısıtlamaları nedeniyle ayrı izin gerekiyor.",
+        buttonLabelRes = R.string.onb_notifaccess_btn,
+        whyRes = R.string.onb_notifaccess_why,
         isSkippable = true
     ),
     SWIPE_HINT(
-        title = "Swipe-up İpucu",
-        description = "Ana ekranda yukarı kaydırma animasyonu gösterilsin mi?",
+        titleRes = R.string.onb_swipe_title,
+        descriptionRes = R.string.onb_swipe_desc,
         icon = Icons.Default.SwipeUp,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_swipe_btn,
         isSkippable = true
     ),
     NEW_BADGE(
-        title = "YENİ Badge",
-        description = "7 gün içinde kurulan uygulamalara 'YENİ' rozeti gösterilsin mi?",
+        titleRes = R.string.onb_newbadge_title,
+        descriptionRes = R.string.onb_newbadge_desc,
         icon = Icons.Default.Badge,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_newbadge_btn,
         isSkippable = true
     ),
     FOLDER_COUNT(
-        title = "Klasör Uygulama Sayısı",
-        description = "Klasör simgesinin altında uygulama adedi gösterilsin mi?",
+        titleRes = R.string.onb_foldercount_title,
+        descriptionRes = R.string.onb_foldercount_desc,
         icon = Icons.Default.Folder,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_foldercount_btn,
         isSkippable = true
     ),
     NAV_HIDE(
-        title = "Sistem Navigasyonunu Gizle",
-        description = "Geri/Home/Recents butonlarını gizle, tam ekran launcher.",
+        titleRes = R.string.onb_navhide_title,
+        descriptionRes = R.string.onb_navhide_desc,
         icon = Icons.Default.Navigation,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_navhide_btn,
         isSkippable = true
     ),
     THEME_SELECT(
-        title = "Renk Teması Seçin",
-        description = "Beğendiğiniz renk temasını ve yazı tipini seçin.",
+        titleRes = R.string.onb_theme_title,
+        descriptionRes = R.string.onb_theme_desc,
         icon = Icons.Default.CheckCircle,
-        buttonLabel = "Uygula"
+        buttonLabelRes = R.string.onb_theme_btn
     ),
     SET_LAUNCHER(
-        title = "Ana Ekran Uygulaması",
-        description = "AppOrganizer'ı varsayılan launcher olarak ayarlayın.",
+        titleRes = R.string.onb_setlauncher_title,
+        descriptionRes = R.string.onb_setlauncher_desc,
         icon = Icons.Default.Home,
-        buttonLabel = "Varsayılan Yap",
-        why = "Launcher olarak ayarlanmadan ana ekran gösterilmez."
+        buttonLabelRes = R.string.onb_setlauncher_btn,
+        whyRes = R.string.onb_setlauncher_why
     ),
     CLASSIFY_MODE(
-        title = "Nasıl Sınıflandıralım?",
-        description = "Uygulamalarını kategoriye veya üreticiye göre gruplayabiliriz.",
+        titleRes = R.string.onb_classify_title,
+        descriptionRes = R.string.onb_classify_desc,
         icon = Icons.Default.Category,
-        buttonLabel = "Devam Et",
+        buttonLabelRes = R.string.onb_classify_btn,
         isSkippable = true
     ),
     DONE(
-        title = "Hazırsınız!",
-        description = "AppOrganizer kurulumu tamamlandı. İyi kullanımlar!",
+        titleRes = R.string.onb_done_title,
+        descriptionRes = R.string.onb_done_desc,
         icon = Icons.Default.CheckCircle,
-        buttonLabel = "Başla"
+        buttonLabelRes = R.string.onb_done_btn
     )
 }

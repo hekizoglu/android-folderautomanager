@@ -105,6 +105,94 @@
     <string name="settings_export_failed">Dışa aktarma başarısız</string>
     <string name="settings_share_backup">Yedeği paylaş</string>
 
+    <!-- Onboarding -->
+    <string name="onb_welcome_title">AppOrganizer\'a Hoş Geldiniz</string>
+    <string name="onb_welcome_desc">Uygulamalarınızı otomatik olarak düzenleyen akıllı launcher.</string>
+    <string name="onb_welcome_btn">Başla</string>
+
+    <string name="onb_restore_title">Önceki Yedeğiniz Var Mı?</string>
+    <string name="onb_restore_desc">Daha önce AppOrganizer kullandıysanız, kategori ayarlarınızı geri yükleyebilirsiniz.</string>
+    <string name="onb_restore_btn">Yedekten Geri Yükle</string>
+
+    <string name="onb_query_title">Uygulama Listesi İzni</string>
+    <string name="onb_query_desc">Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.</string>
+    <string name="onb_query_why">Bu izin olmadan launcher çalışamaz.</string>
+    <string name="onb_query_btn">İzin Ver</string>
+
+    <string name="onb_notif_title">Bildirim İzni</string>
+    <string name="onb_notif_desc">Uygulama ikonlarında bildirim sayısını göstermek için izin gerekli.</string>
+    <string name="onb_notif_why">Badge sayıları bu izinle çalışır.</string>
+    <string name="onb_notif_btn">İzin Ver</string>
+
+    <string name="onb_unused_title">Kullanılmayan Uygulamalar</string>
+    <string name="onb_unused_desc">Hiç açmadığınız uygulamalar soluk renkte gösterilsin mi?</string>
+    <string name="onb_unused_btn">Devam Et</string>
+
+    <string name="onb_autobackup_title">Otomatik Yedekleme</string>
+    <string name="onb_autobackup_desc">Her açılışta kategori atamalarınızın JSON yedeğini alsın mı?</string>
+    <string name="onb_autobackup_btn">Devam Et</string>
+
+    <string name="onb_notiftext_title">Bildirim Metni</string>
+    <string name="onb_notiftext_desc">Klasör ve uygulamaların altında son bildirimi göstersin mi?</string>
+    <string name="onb_notiftext_btn">Devam Et</string>
+
+    <string name="onb_notifaccess_title">Bildirim Erişimi</string>
+    <string name="onb_notifaccess_desc">Uygulama ikonlarında gerçek bildirim sayısını göstermek için tam erişim gerekli.</string>
+    <string name="onb_notifaccess_why">Android kısıtlamaları nedeniyle ayrı izin gerekiyor.</string>
+    <string name="onb_notifaccess_btn">Erişime İzin Ver</string>
+
+    <string name="onb_swipe_title">Swipe-up İpucu</string>
+    <string name="onb_swipe_desc">Ana ekranda yukarı kaydırma animasyonu gösterilsin mi?</string>
+    <string name="onb_swipe_btn">Devam Et</string>
+
+    <string name="onb_newbadge_title">YENİ Badge</string>
+    <string name="onb_newbadge_desc">7 gün içinde kurulan uygulamalara \'YENİ\' rozeti gösterilsin mi?</string>
+    <string name="onb_newbadge_btn">Devam Et</string>
+
+    <string name="onb_foldercount_title">Klasör Uygulama Sayısı</string>
+    <string name="onb_foldercount_desc">Klasör simgesinin altında uygulama adedi gösterilsin mi?</string>
+    <string name="onb_foldercount_btn">Devam Et</string>
+
+    <string name="onb_navhide_title">Sistem Navigasyonunu Gizle</string>
+    <string name="onb_navhide_desc">Geri/Home/Recents butonlarını gizle, tam ekran launcher.</string>
+    <string name="onb_navhide_btn">Devam Et</string>
+
+    <string name="onb_theme_title">Renk Teması Seçin</string>
+    <string name="onb_theme_desc">Beğendiğiniz renk temasını ve yazı tipini seçin.</string>
+    <string name="onb_theme_btn">Uygula</string>
+
+    <string name="onb_setlauncher_title">Ana Ekran Uygulaması</string>
+    <string name="onb_setlauncher_desc">AppOrganizer\'ı varsayılan launcher olarak ayarlayın.</string>
+    <string name="onb_setlauncher_why">Launcher olarak ayarlanmadan ana ekran gösterilmez.</string>
+    <string name="onb_setlauncher_btn">Varsayılan Yap</string>
+
+    <string name="onb_classify_title">Nasıl Sınıflandıralım?</string>
+    <string name="onb_classify_desc">Uygulamalarını kategoriye veya üreticiye göre gruplayabiliriz.</string>
+    <string name="onb_classify_btn">Devam Et</string>
+    <string name="onb_classify_cat_title">Kategoriye Göre</string>
+    <string name="onb_classify_cat_desc">Sosyal Medya, Oyunlar, Finans…</string>
+    <string name="onb_classify_mfr_title">Üreticiye Göre</string>
+    <string name="onb_classify_mfr_desc">Google, Samsung, Microsoft…</string>
+
+    <string name="onb_done_title">Hazırsınız!</string>
+    <string name="onb_done_desc">AppOrganizer kurulumu tamamlandı. İyi kullanımlar!</string>
+    <string name="onb_done_btn">Başla</string>
+
+    <string name="onb_continue">Devam Et</string>
+    <string name="onb_skip">Atla</string>
+    <string name="onb_skip_now">Şimdi Değil</string>
+    <string name="onb_restore_success">%1$d uygulama geri yüklendi</string>
+    <string name="onb_restore_fail">Geri yükleme başarısız: %1$s</string>
+    <string name="onb_restore_read_fail">Dosya okunamadı: %1$s</string>
+    <string name="onb_status_launcher_set">Varsayılan launcher olarak ayarlandı</string>
+    <string name="onb_status_permission_granted">İzin verildi</string>
+    <string name="onb_status_notif_access">Bildirim erişimi verildi</string>
+    <string name="onb_status_grey_days">%1$d gün ayarlandı</string>
+    <string name="onb_status_ok">Tamam: %1$s</string>
+    <string name="onb_on">Açık</string>
+    <string name="onb_off">Kapalı</string>
+    <string name="onb_days">gün</string>
+
     <!-- Appearance Settings -->
     <string name="appearance_color_theme">Renk Teması</string>
     <string name="appearance_font">Yazı Tipi</string>

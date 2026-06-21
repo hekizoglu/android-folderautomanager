@@ -23,10 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 
@@ -90,8 +92,8 @@ internal fun OnboardingStepHeader(steps: List<OnboardingStep>, stepIndex: Int) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(s.title, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
-            Text(s.description, fontSize = 16.sp, color = Color.White.copy(0.75f), textAlign = TextAlign.Center, lineHeight = 26.sp)
+            Text(stringResource(s.titleRes), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
+            Text(stringResource(s.descriptionRes), fontSize = 16.sp, color = Color.White.copy(0.75f), textAlign = TextAlign.Center, lineHeight = 26.sp)
         }
     }
 }
@@ -99,9 +101,10 @@ internal fun OnboardingStepHeader(steps: List<OnboardingStep>, stepIndex: Int) {
 /** "Neden gerekli" açıklama kutusu */
 @Composable
 internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
-    if (currentStep.why.isBlank()) return
+    if (currentStep.whyRes == 0) return
     val isLauncher = currentStep == OnboardingStep.SET_LAUNCHER
     val accentColor = if (isLauncher) Color(0xFF00897B) else OnboardingAccentPurple
+    val whyText = stringResource(currentStep.whyRes)
     Box(
         modifier = Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
@@ -111,7 +114,7 @@ internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
             Box(Modifier.width(3.dp).height(48.dp).clip(RoundedCornerShape(2.dp)).background(accentColor))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 Icon(Icons.Default.Info, null, tint = accentColor, modifier = Modifier.size(18.dp).padding(top = 2.dp))
-                Text(currentStep.why, fontSize = 14.sp, color = Color.White.copy(0.75f), lineHeight = 20.sp)
+                Text(whyText, fontSize = 14.sp, color = Color.White.copy(0.75f), lineHeight = 20.sp)
             }
         }
     }
@@ -128,11 +131,11 @@ internal fun OnboardingStatusBadge(
 ) {
     val isLauncher = currentStep == OnboardingStep.SET_LAUNCHER
     val statusText = when (currentStep) {
-        OnboardingStep.SET_LAUNCHER -> if (launcherSet) "Varsayilan launcher olarak ayarlandi" else null
-        OnboardingStep.QUERY_PACKAGES -> "Izin verildi"
-        OnboardingStep.NOTIFICATIONS -> if (notifGranted) "Izin verildi" else null
-        OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) "Bildirim erisimi verildi" else null
-        OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) "$unusedGreyDays gun ayarlandi" else null
+        OnboardingStep.SET_LAUNCHER -> if (launcherSet) stringResource(R.string.onb_status_launcher_set) else null
+        OnboardingStep.QUERY_PACKAGES -> stringResource(R.string.onb_status_permission_granted)
+        OnboardingStep.NOTIFICATIONS -> if (notifGranted) stringResource(R.string.onb_status_permission_granted) else null
+        OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) stringResource(R.string.onb_status_notif_access) else null
+        OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) stringResource(R.string.onb_status_grey_days, unusedGreyDays) else null
         else -> null
     } ?: return
     Box(
@@ -141,7 +144,7 @@ internal fun OnboardingStatusBadge(
             .background(if (isLauncher) Color(0xFF00897B).copy(0.25f) else OnboardingAccentPurple.copy(0.20f))
             .padding(12.dp)
     ) {
-        Text("Tamam: $statusText", fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
+        Text(stringResource(R.string.onb_status_ok, statusText), fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -153,7 +156,7 @@ internal fun OnboardingThemeSelector(
     onThemeChange: (AppTheme) -> Unit,
     onFontChange: (AppFont) -> Unit
 ) {
-    Text("Renk Teması", fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
+    Text(stringResource(R.string.appearance_color_theme), fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
     Spacer(Modifier.height(8.dp))
     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         items(AppTheme.entries, key = { it.name }) { theme ->
@@ -174,7 +177,7 @@ internal fun OnboardingThemeSelector(
         }
     }
     Spacer(Modifier.height(16.dp))
-    Text("Yazı Tipi", fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
+    Text(stringResource(R.string.appearance_font), fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
     Spacer(Modifier.height(8.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         AppFont.entries.forEach { font ->
@@ -198,7 +201,8 @@ internal fun OnboardingThemeSelector(
 /** UNUSED_GREY gün seçici chip'leri */
 @Composable
 internal fun OnboardingGreyDayChips(unusedGreyDays: Int, onSelect: (Int) -> Unit) {
-    val options = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
+    val offLabel = stringResource(R.string.onb_off)
+    val options = listOf(0 to offLabel, 7 to "7 ${stringResource(R.string.onb_days)}", 14 to "14 ${stringResource(R.string.onb_days)}", 30 to "30 ${stringResource(R.string.onb_days)}")
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
@@ -231,7 +235,7 @@ internal fun OnboardingToggleRow(value: Boolean, onValueChange: (Boolean) -> Uni
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(if (value) "Açık" else "Kapalı", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text(stringResource(if (value) R.string.onb_on else R.string.onb_off), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
         androidx.compose.material3.Switch(
             checked = value, onCheckedChange = onValueChange,
             colors = androidx.compose.material3.SwitchDefaults.colors(
