@@ -37,7 +37,7 @@
 | 2026-06-15 | ROADMAP | **Android 14 NotificationListenerService gerçek cihaz testi** | Bekliyor |
 | 2026-06-15 | Döngü 43 | **AppNotificationListenerService ilk açılışta restart** — gerçek cihaz test gerekli | Bekliyor |
 | 2026-06-15 | ROADMAP | **Firebase Crashlytics API kurulumu** — `google-services.json` + service account | Bekliyor |
-| 2026-06-15 | ROADMAP | **Privacy Policy sayfası** — GitHub Pages tek HTML, içerik onayı gerekli ⚠️ | Bekliyor |
+| 2026-06-15 | ROADMAP | **Privacy Policy sayfası** — GitHub Pages tek HTML, içerik onayı gerekli ⚠️ | [TAMAMLANDI D121 — docs/index.html + PP web linki uygulamaya eklendi. Kalan: repo Settings'ten Pages aktifleştir] |
 | 2026-06-15 | ROADMAP | **Screenshots** — Pixel 6 emülatörü, light + dark mode | Bekliyor |
 | 2026-06-15 | ROADMAP | **Content rating anketi** — Play Store ⚠️ | Bekliyor |
 | 2026-06-16 | ROADMAP | **BLUR-4: Gerçek cihaz testi** — blur performansı + API 26 uyumu | Bekliyor |

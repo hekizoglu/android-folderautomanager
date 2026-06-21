@@ -1367,3 +1367,8 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** SET_LAUNCHER adımı CLASSIFY_MODE'dan sonraya taşındı (kullanıcı talebi). OnboardingModels.kt: 8 adıma whyRes açıklaması + yeni ikonlar (Backup/Message/NewReleases/Palette/FullscreenExit). strings.xml: 8 adıma açıklayıcı "Neden?" metni + zenginleştirilmiş açıklamalar. CLAUDE.md kuralı güncellendi.
 **Build:** SUCCESS 26.1 MB, commit [6a02acd], Telegram APK gönderildi
 **Sonraki:** Widget hızlı menü araştırması, iOS/Android tema seçenekleri
+
+## Döngü 121 — 2026-06-21 (KOD/WEB — Privacy Policy tam kurulum)
+**Yapılanlar:** PrivacyPolicyScreen.kt: TopAppBar'a OpenInNew ikonu eklendi (tarayıcıda açar), PP web URL footer'da gösterildi. docs/index.html: GitHub Pages landing sayfası oluşturuldu (özellikler + linkler). docs/privacy_policy.html tarih güncellendi. PP URL: hekizoglu.github.io/android-folderautomanager/docs/privacy_policy.html
+**Build:** SUCCESS 26.1 MB, commit [5b5c3b0], Telegram APK gönderildi
+**Sonraki:** GitHub Pages aktifleştir (repo Settings > Pages > /docs klasörü), Play Store PP URL girilebilir
