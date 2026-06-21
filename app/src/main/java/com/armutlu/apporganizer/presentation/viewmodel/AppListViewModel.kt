@@ -14,6 +14,7 @@ import com.armutlu.apporganizer.utils.LauncherOrganizer
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreenState
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +32,7 @@ class AppListViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository,
     private val classifier: AppClassifier,
+    private val llmFallback: CategoryLLMFallback,
     private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
 ) : AndroidViewModel(application) {
 
@@ -373,17 +375,17 @@ class AppListViewModel @Inject constructor(
                 }
                 _llmProgress.value = "Hazirlaniyor (${otherAppsList.size} uygulama)..."
                 appendDebugLog("LLM kategorize basliyor: ${otherAppsList.size} uygulama")
-                val appsMap = otherAppsList.associate { it.packageName to it.appName }
-                val results = com.armutlu.apporganizer.utils.CategoryLLMFallback.categorize(
-                    apps = appsMap,
-                    apiKey = apiKey,
-                    onProgress = { done, total ->
-                        _llmProgress.value = "Kategorize ediliyor: $done/$total"
-                    }
-                )
+                val packageNames = otherAppsList.map { it.packageName }
+                // Batch'lere bölerek ilerleme raporla
+                val results = mutableMapOf<String, String>()
+                packageNames.chunked(15).forEachIndexed { idx, batch ->
+                    _llmProgress.value = "Kategorize ediliyor: ${(idx * 15).coerceAtMost(packageNames.size)}/${packageNames.size}"
+                    val batchResult = llmFallback.classifyBatch(batch, apiKey)
+                    results.putAll(batchResult)
+                }
                 var updated = 0
                 results.forEach { (pkg, catId) ->
-                    if (catId != "other") {
+                    if (catId != Category.CAT_OTHER) {
                         repository.updateAppCategory(pkg, catId)
                         updated++
                     }

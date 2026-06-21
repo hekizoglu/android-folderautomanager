@@ -1347,3 +1347,8 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** AppSuggestionsRow başlığı saat dilimine göre dinamikleşti (Sabah/Öğle/Öğleden Sonra/Akşam Önerileri) — `HomeScreenComponents.kt:280`; strings TR+EN eklendi; cycle.ps1 `$Classifier` path hatası düzeltildi (`data/` → `domain/usecase/classify/`); FİKİRLER.md D115+D116 TAMAMLANDI.
 **Build:** SUCCESS 26.46 MB
 **Sonraki:** FİKİRLER.md'de 16+ puan bekleyen: Klasör sıra taşıma (16) → ya da cycle.ps1 uçtan uca test (13)
+
+## Döngü 117 — 2026-06-21 (KOD — Hilt DI temizliği: CategoryLLMFallback tekli versiyona)
+**Yapılanlar:** `utils/CategoryLLMFallback.kt` (eski object, 14 kategori) silindi; `AppListViewModel` artık Hilt inject edilmiş `domain/usecase/classify/CategoryLLMFallback` kullanıyor (cache + timeout + 32 kategori). `utils/FolderCreationService.kt` (kullanılmayan dead code) silindi. LLM batch progress raporlama eklendi.
+**Build:** SUCCESS 26.46 MB, commit [D117]
+**Sonraki:** FİKİRLER.md Hilt DI [TAMAMLANDI] işaretle → sonraki yüksek puan görev
