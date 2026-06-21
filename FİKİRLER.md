@@ -52,7 +52,7 @@
 | 2026-06-15 | Döngü 43 | **AllApps double-tap emülatörde doğrulanamadı** — gerçek cihaz testi | Bekliyor |
 | 2026-06-15 | Döngü 41 | **Üretici kategorileri gerçek cihaz testi** — 9 yeni kategori, onboarding'den "üreticiye göre" | Bekliyor |
 | 2026-06-16 | ROADMAP | **Hilt DI kurulumu** — manuel `new()` çağrılarını temizle | [TAMAMLANDI D117 — utils/CategoryLLMFallback silindi, domain versiyonu inject edildi] |
-| 2026-06-16 | ROADMAP | **Unit test coverage** — ViewModel'ler MockK testleri | Bekliyor |
+| 2026-06-16 | ROADMAP | **Unit test coverage** — ViewModel'ler MockK testleri | [TAMAMLANDI D118 — 156 test, 9 sınıf, C:\AppOrg junction fix] |
 | 2026-06-16 | ROADMAP | **Dark mode tam uyum audit** | Bekliyor |
 | 2026-06-16 | ROADMAP | **Multi-language support (TR/EN)** | Bekliyor |
 
@@ -92,7 +92,7 @@
 | 10 | AppClassifier → JSON asset | 2 | 3 | 5 | 4 | **14** | ✅ [TAMAMLANDI D115] |
 | 11 | Android 14 NotificationListenerService testi | 4 | 3 | 2 | 4 | **13** | 🟡 Değerlendir |
 | 12 | Hilt DI kurulumu | 2 | 2 | 5 | 4 | **13** | ✅ [TAMAMLANDI D117] |
-| 13 | Unit test coverage | 2 | 2 | 5 | 4 | **13** | 🟡 Değerlendir |
+| 13 | Unit test coverage | 2 | 2 | 5 | 4 | **13** | ✅ [TAMAMLANDI D118] |
 | 14 | cycle.ps1 uçtan uca test | 2 | 4 | 4 | 3 | **13** | 🟡 Değerlendir |
 | 15 | Tablet layout (large screen) | 3 | 2 | 5 | 3 | **13** | 🟡 Değerlendir |
 | 16 | Widget ekranı genişletme | 3 | 2 | 5 | 3 | **13** | 🟡 Değerlendir |

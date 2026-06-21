@@ -78,3 +78,4 @@
 | 2026-06-18 | — | — | ~3dk | BUILD | Döngü 90 — BUILD #17 assembleDebug 1s cache (24.79MB APK) | |
 | 2026-06-18 | — | — | ~30dk | KOD+BUILD | Döngü 91 — Dark mode hardcode renk düzeltmesi | AllAppsDrawer + FolderSheet + HomeScreen |
 | 2026-06-18 | 23:28 | — | ~60dk | KOD+BUILD | Döngü 92 — FCM push ile AppDatabase uzaktan güncelleme | AppFirebaseMessagingService.kt (YENİ) + AppOrganizerApp FCM init + Manifest + build.gradle |
+| 2026-06-21 | 08:30 | 10:05 | ~95dk | KOD+BUILD | Döngü 118 — Unit test coverage 156 test geçti (9 sınıf), Türkçe yol @argfile ClassNotFoundException fix, C:\AppOrg junction çözümü | Hilt 2.52, jarHiltAsmTestClasses workaround |

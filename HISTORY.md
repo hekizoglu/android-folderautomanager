@@ -1352,3 +1352,8 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** `utils/CategoryLLMFallback.kt` (eski object, 14 kategori) silindi; `AppListViewModel` artık Hilt inject edilmiş `domain/usecase/classify/CategoryLLMFallback` kullanıyor (cache + timeout + 32 kategori). `utils/FolderCreationService.kt` (kullanılmayan dead code) silindi. LLM batch progress raporlama eklendi.
 **Build:** SUCCESS 26.46 MB, commit [D117]
 **Sonraki:** FİKİRLER.md Hilt DI [TAMAMLANDI] işaretle → sonraki yüksek puan görev
+
+## Döngü 118 — 2026-06-21 (KOD/BUILD — Unit test coverage: 156 test)
+**Yapılanlar:** 10 test sınıfı yazıldı/güncellendi; 156 test geçti (9 sınıf), LauncherViewModelTest @Ignore. Kök sorun: 'Github Klasörleri' Türkçe klasör adı Java @argfile'da CP1252 bozulması → ClassNotFoundException. Çözüm: C:\AppOrg junction. Hilt 2.51.1→2.52; jarHiltAsmTestClasses workaround; CLAUDE.md §5'e Türkçe yol tuzağı eklendi.
+**Build:** SUCCESS 24.2 MB, commit [0d8ea3b]
+**Sonraki:** FİKİRLER.md Unit test [TAMAMLANDI] işaretle → sonraki yüksek puan görev
