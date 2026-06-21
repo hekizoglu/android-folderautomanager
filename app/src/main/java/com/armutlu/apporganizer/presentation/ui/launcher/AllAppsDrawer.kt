@@ -302,7 +302,7 @@ private fun DrawerSearchBar(
                         .background(Color.White.copy(alpha = 0.10f))
                         .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSearchQueryChange(q) }
                         .padding(horizontal = 10.dp, vertical = 5.dp)
-                ) { Text(q, fontSize = 12.sp, color = textSecondary, maxLines = 1) }
+                ) { Text(q, fontSize = 12.sp, color = Color.White.copy(alpha = 0.75f), maxLines = 1) }
             }
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(14.dp))
@@ -331,7 +331,7 @@ private fun DrawerSearchBar(
                     label + if (active) countLabel else "",
                     fontSize = 11.sp,
                     fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                    color = if (active) Color.White else textSecondary
+                    color = if (active) MaterialTheme.colorScheme.onSecondary else Color.White.copy(alpha = 0.55f)
                 )
             }
         }
@@ -357,7 +357,7 @@ private fun DrawerSearchBar(
                 Text(
                     mode.label, fontSize = 11.sp,
                     fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                    color = if (active) Color.White else textSecondary
+                    color = if (active) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f)
                 )
             }
         }

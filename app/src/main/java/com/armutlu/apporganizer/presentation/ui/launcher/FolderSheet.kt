@@ -391,7 +391,7 @@ fun FolderSheet(
                                         .background(primary),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("$count", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    Text("$count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Column {
                                     Text(app.appName, color = onSurface, fontSize = 12.sp, fontWeight = FontWeight.Medium)
@@ -427,7 +427,7 @@ fun FolderSheet(
                         Text(
                             mode.label, fontSize = 11.sp,
                             fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                            color = if (active) Color.White else textSecondary
+                            color = if (active) MaterialTheme.colorScheme.onPrimary else textSecondary
                         )
                     }
                 }
