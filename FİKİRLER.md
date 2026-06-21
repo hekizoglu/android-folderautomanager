@@ -63,9 +63,9 @@
 | Tarih | Kaynak | Fikir | Not |
 |-------|--------|-------|-----|
 | 2026-06-21 | D103 | **Ayarlar — Kullanıcı Talep/Öneri Formu** — "Talep Gönder" butonu: e-posta Intent ile `huseyinekizoglu@gmail.com`'a yönlendirir | [TAMAMLANDI] |
-| 2026-06-15 | ROADMAP | **AppClassifier'ı JSON asset'e böl** — 3717 paketlik mapOf şişiyor; `assets/app_categories.json` + runtime parse | Tartışılacak |
+| 2026-06-15 | ROADMAP | **AppClassifier'ı JSON asset'e böl** — 3717 paketlik mapOf şişiyor; `assets/app_categories.json` + runtime parse | [TAMAMLANDI D115] |
 | 2026-06-15 | ROADMAP | **Kendi sunucu API'si** — `packageName → category` endpoint, APK güncellemeden DB güncellenebilir | Tartışılacak |
-| 2026-06-16 | ROADMAP | **Akıllı Uygulama Önerileri (30dk)** — kullanım alışkanlığına göre değişen öneri satırı | Tartışılacak |
+| 2026-06-16 | ROADMAP | **Akıllı Uygulama Önerileri (30dk)** — kullanım alışkanlığına göre değişen öneri satırı | [TAMAMLANDI D116 — saat dilimine göre dinamik başlık + UsageStatsHelper ağırlıklı skor] |
 | 2026-06-16 | ROADMAP | **Wear OS companion app** | ⏸ İşleme alınmadı (puan: 8) — HISTORY'de |
 | 2026-06-16 | ROADMAP | **Tablet layout (large screen)** | Uzun vade (puan: 13) |
 | 2026-06-16 | ROADMAP | **Widget ekranı genişletme** — resize, çoklu sayfa | Uzun vade (puan: 13) |
@@ -87,7 +87,7 @@
 | 5 | Multi-language support (TR/EN) | 4 | 3 | 5 | 5 | **17** | ✅ [TAMAMLANDI D113] |
 | 6 | Klasör sıra numarasıyla yer değiştirme | 4 | 4 | 5 | 3 | **16** | ✅ Yap |
 | 7 | Dark mode tam uyum audit | 3 | 4 | 5 | 4 | **16** | ✅ [TAMAMLANDI D114] |
-| 8 | Akıllı Uygulama Önerileri (30dk) | 5 | 2 | 4 | 5 | **16** | ✅ Yap |
+| 8 | Akıllı Uygulama Önerileri (30dk) | 5 | 2 | 4 | 5 | **16** | ✅ [TAMAMLANDI D116] |
 | 9 | Screenshots | 3 | 4 | 3 | 4 | **14** | 🟡 Değerlendir |
 | 10 | AppClassifier → JSON asset | 2 | 3 | 5 | 4 | **14** | ✅ [TAMAMLANDI D115] |
 | 11 | Android 14 NotificationListenerService testi | 4 | 3 | 2 | 4 | **13** | 🟡 Değerlendir |

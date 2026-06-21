@@ -207,4 +207,11 @@
     <string name="appearance_blur_effect">Folder Blur Effect</string>
     <string name="appearance_blur_effect_desc">Background blurs when folder opens (HyperOS style)</string>
     <string name="appearance_folder_shape">Folder Shape</string>
+
+    <!-- Smart Suggestions Row -->
+    <string name="suggestions_label_morning">Morning Picks</string>
+    <string name="suggestions_label_noon">Midday Picks</string>
+    <string name="suggestions_label_afternoon">Afternoon Picks</string>
+    <string name="suggestions_label_evening">Evening Picks</string>
+    <string name="suggestions_label_default">Frequent Apps</string>
 </resources>

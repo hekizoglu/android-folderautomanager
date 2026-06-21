@@ -61,7 +61,10 @@ import com.armutlu.apporganizer.utils.AppPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.stringResource
+import com.armutlu.apporganizer.R
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -271,14 +274,23 @@ internal fun AppSuggestionsRow(
     modifier: Modifier = Modifier
 ) {
     if (apps.isEmpty()) return
+    val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
+    val labelRes = remember(hour) {
+        when {
+            hour in 6..10  -> R.string.suggestions_label_morning
+            hour in 11..13 -> R.string.suggestions_label_noon
+            hour in 14..17 -> R.string.suggestions_label_afternoon
+            else            -> R.string.suggestions_label_evening  // 18-05 arası
+        }
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-                Text(
-            text = "Sık Kullanılanlar",
+        Text(
+            text = stringResource(labelRes),
             color = Color.White.copy(alpha = 0.45f),
             fontSize = 11.sp,
             modifier = Modifier

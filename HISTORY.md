@@ -1342,3 +1342,8 @@ Tüm 12 madde ✅. Detay:
 **Build:** SUCCESS 24.91 MB
 **Commit:** `d825a75`
 **Sonraki:** Cron kurulumu (15 dk, bilinen sorunlar otomatik çözüm döngüsü)
+
+## Döngü 116 — 2026-06-21 (KOD — Akıllı Öneriler + cycle.ps1 düzeltme)
+**Yapılanlar:** AppSuggestionsRow başlığı saat dilimine göre dinamikleşti (Sabah/Öğle/Öğleden Sonra/Akşam Önerileri) — `HomeScreenComponents.kt:280`; strings TR+EN eklendi; cycle.ps1 `$Classifier` path hatası düzeltildi (`data/` → `domain/usecase/classify/`); FİKİRLER.md D115+D116 TAMAMLANDI.
+**Build:** SUCCESS 26.46 MB
+**Sonraki:** FİKİRLER.md'de 16+ puan bekleyen: Klasör sıra taşıma (16) → ya da cycle.ps1 uçtan uca test (13)

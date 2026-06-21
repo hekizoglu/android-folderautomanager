@@ -207,4 +207,11 @@
     <string name="appearance_blur_effect">Klasör Blur Efekti</string>
     <string name="appearance_blur_effect_desc">Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)</string>
     <string name="appearance_folder_shape">Klasör Şekli</string>
+
+    <!-- Akıllı Öneriler Row -->
+    <string name="suggestions_label_morning">Sabah Önerileri</string>
+    <string name="suggestions_label_noon">Öğle Önerileri</string>
+    <string name="suggestions_label_afternoon">Öğleden Sonra Önerileri</string>
+    <string name="suggestions_label_evening">Akşam Önerileri</string>
+    <string name="suggestions_label_default">Sık Kullanılanlar</string>
 </resources>

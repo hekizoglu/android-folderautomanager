@@ -41,7 +41,7 @@ param(
     [switch]$Build,
     [switch]$NoPush,
     [int]$BuildEvery = 6,
-    [string]$Classifier = "app/src/main/java/com/armutlu/apporganizer/data/AppClassifier.kt"
+    [string]$Classifier = "app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/AppClassifier.kt"
 )
 
 $ErrorActionPreference = "Stop"
