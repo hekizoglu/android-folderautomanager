@@ -115,6 +115,13 @@
 
 | Tarih | Madde |
 |-------|-------|
+| 2026-06-21 | **AllAppsDrawer klavye fix** [TAMAMLANDI D119] — açılışta klavye otomatik çıkmıyordu |
+| 2026-06-21 | **Klasör sıralama görsel UI** [TAMAMLANDI D119] — sayı giriş yerine emoji+kutucuk grid |
+| 2026-06-21 | **Widget hızlı menü çalışmıyor** — araştırılacak, Widget widget press long-press menü çalışmıyor |
+| 2026-06-21 | **İki yeni tema: iOS tarzı + modern Android** — kullanıcı talebi, uygulanacak |
+| 2026-06-21 | **Onboarding yeniden yazım** — default launcher sorusu en sona taşınacak, ayarlar açıklamalı |
+| 2026-06-21 | **Görsel kalite artırımı** — genel UI iyileştirme talebi |
+| 2026-06-21 | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab ile build gerektirmeden test |
 | 2026-06-21 | Fikir puanlama tablosu eklendi (25 madde, agent analizi) |
 | 2026-06-20 | FİKİRLER.md sistemi oluşturuldu — artık tüm yeni görevler/fikirler buraya |
 | 2026-06-20 | ROADMAP.md donduruldu — yeni ekleme yapılmayacak |

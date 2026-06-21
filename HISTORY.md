@@ -1357,3 +1357,8 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** 10 test sınıfı yazıldı/güncellendi; 156 test geçti (9 sınıf), LauncherViewModelTest @Ignore. Kök sorun: 'Github Klasörleri' Türkçe klasör adı Java @argfile'da CP1252 bozulması → ClassNotFoundException. Çözüm: C:\AppOrg junction. Hilt 2.51.1→2.52; jarHiltAsmTestClasses workaround; CLAUDE.md §5'e Türkçe yol tuzağı eklendi.
 **Build:** SUCCESS 24.2 MB, commit [0d8ea3b]
 **Sonraki:** FİKİRLER.md Unit test [TAMAMLANDI] işaretle → sonraki yüksek puan görev
+
+## Döngü 119 — 2026-06-21 (KOD/BUILD — Klavye fix + Klasör sıralama görsel UI)
+**Yapılanlar:** AllAppsDrawer.kt LaunchedEffect(Unit) klavye bloğu kaldırıldı (arama açılışında artık klavye çıkmıyor). FolderSheet.kt: AlertDialog+OutlinedTextField sayı girişi → FolderPositionPickerSheet — 4x2 emoji+ad+numara kutucukları, mevcut konum vurgulanmış, çok sayfalı için LazyRow sayfa seçici.
+**Build:** SUCCESS 24.6 MB, commit [3bed541]
+**Sonraki:** Widget hızlı menü araştırması + tema seçenekleri (iOS tarzı / modern Android)
