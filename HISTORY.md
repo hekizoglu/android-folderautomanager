@@ -1368,6 +1368,11 @@ Tüm 12 madde ✅. Detay:
 **Build:** SUCCESS 26.1 MB, commit [6a02acd], Telegram APK gönderildi
 **Sonraki:** Widget hızlı menü araştırması, iOS/Android tema seçenekleri
 
+## Döngü 123 — 2026-06-21 (KOD/BUILD — Görsel kalite artırımı)
+**Yapılanlar:** HomeScreenComponents.kt: saat 72sp→84sp, letterSpacing -2→-3sp; GoogleSearchBar 1dp border (alpha 0.20f); öneri satırı başlığı alpha 0.45→0.55 + FontWeight.Medium. FolderTile.kt: bildirim badge kırmızı shadow 3dp (ambientColor + spotColor #E53935).
+**Build:** SUCCESS 26.1 MB, commit [5cd3c30], Telegram APK gönderildi
+**Sonraki:** Bir sonraki FİKİRLER.md görevi
+
 ## Döngü 122 — 2026-06-21 (KOD/BUILD — iOS + AMOLED tema)
 **Yapılanlar:** ThemePreferences.kt: IOS (#007AFF/#5AC8FA, iOS dark bg) ve AMOLED (#00E5FF/#69FF47, saf siyah) enum eklendi. previewBrush: primary→secondary lineer gradyan. Theme.kt: buildColorScheme() tema bazlı onSurface/onVariant/outline renklerine ayrıştırıldı. Hem Onboarding hem Settings tema daireleri gradyan görünümüne geçti.
 **Build:** SUCCESS 26.1 MB, commit [f75b902], Telegram APK gönderildi

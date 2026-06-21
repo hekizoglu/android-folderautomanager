@@ -120,7 +120,7 @@
 | 2026-06-21 | **Widget hızlı menü çalışmıyor** — araştırılacak, Widget widget press long-press menü çalışmıyor |
 | 2026-06-21 | **İki yeni tema: iOS tarzı + modern Android** — kullanıcı talebi, uygulanacak | [TAMAMLANDI D122 — IOS + AMOLED enum, gradyan preview daireler] |
 | 2026-06-21 | **Onboarding yeniden yazım** — default launcher sorusu en sona taşınacak, ayarlar açıklamalı | [TAMAMLANDI D120] |
-| 2026-06-21 | **Görsel kalite artırımı** — genel UI iyileştirme talebi |
+| 2026-06-21 | **Görsel kalite artırımı** — genel UI iyileştirme talebi | [TAMAMLANDI D123 — saat 84sp, arama border, badge shadow, öneri başlığı] |
 | 2026-06-21 | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab ile build gerektirmeden test |
 | 2026-06-21 | Fikir puanlama tablosu eklendi (25 madde, agent analizi) |
 | 2026-06-20 | FİKİRLER.md sistemi oluşturuldu — artık tüm yeni görevler/fikirler buraya |
