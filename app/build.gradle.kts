@@ -5,7 +5,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
-    id("jacoco")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -80,6 +79,16 @@ android {
         }
     }
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = false
+            all { test ->
+                test.jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
+            }
+        }
+    }
+
 }
 
 kapt {
@@ -90,40 +99,24 @@ kapt {
     }
 }
 
-tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest")
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        // Çıktı konumlarını açıkça belirt — CI artifact yolu ile birebir uyumlu olmalı
-        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/jacocoTestReport/html"))
-        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
+// Workaround: Hilt ASM transform output lands in "dirs/" but Gradle's BuiltinClassLoader
+// cannot load .class files from directories on the @argfile classpath when the path
+// contains non-ASCII characters (Türkçe klasör adı). We jar up the output and add it
+// to the test classpath explicitly so the classloader can find the classes.
+afterEvaluate {
+    val jarAsmDirs = tasks.register<Jar>("jarHiltAsmTestClasses") {
+        dependsOn("transformDebugUnitTestClassesWithAsm")
+        archiveFileName.set("hilt-asm-test-classes.jar")
+        destinationDirectory.set(layout.buildDirectory.dir("tmp/hilt-asm-workaround"))
+        from(layout.buildDirectory.dir(
+            "intermediates/classes/debugUnitTest/transformDebugUnitTestClassesWithAsm/dirs"
+        ))
+        include("**/*.class")
     }
-
-    val fileFilter = listOf(
-        "**/R.class", "**/R$*.class", "**/BuildConfig.*",
-        "**/Manifest*.*", "**/*Test*.*", "android/**/*.*",
-        "**/*_MembersInjector.class", "**/*Dagger*.*", "**/*Hilt*.*",
-        "**/*_Factory.class", "**/*_GeneratedInjector.class",
-        "**/*ComposableSingletons*.*", "**/*\$*.*"
-    )
-
-    val debugTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
+    tasks.withType<Test>().configureEach {
+        dependsOn(jarAsmDirs)
+        classpath = jarAsmDirs.get().outputs.files + classpath
     }
-
-    sourceDirectories.setFrom(files("src/main/java"))
-    classDirectories.setFrom(files(debugTree))
-    // AGP'nin enableUnitTestCoverage ayarı .exec dosyasını
-    // build/outputs/unit_test_code_coverage/... altına koyar; düz jacoco plugin ise
-    // build/jacoco/ altına. Her iki konumu da dahil et.
-    executionData.setFrom(fileTree(layout.buildDirectory.get()) {
-        include(
-            "jacoco/testDebugUnitTest.exec",
-            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"
-        )
-    })
 }
 
 dependencies {
@@ -153,8 +146,8 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Hilt Dependency Injection
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("com.google.dagger:hilt-android:2.52")
+    kapt("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Coroutines
@@ -188,5 +181,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
+    // LeakCanary unit test'te ASM transform ile classpath wiring bozuyor — kaldırıldı
+    // debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 }

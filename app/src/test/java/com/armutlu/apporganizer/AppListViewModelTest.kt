@@ -6,6 +6,7 @@ import com.armutlu.apporganizer.data.remote.FetchResult
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import io.mockk.coEvery
@@ -44,6 +45,7 @@ class AppListViewModelTest {
     private lateinit var mockApplication: Application
     private lateinit var mockRepository: AppRepository
     private lateinit var mockClassifier: AppClassifier
+    private lateinit var mockLlmFallback: CategoryLLMFallback
     private lateinit var mockDbService: AppDatabaseService
 
     /** Flow that the fake repository emits apps through. */
@@ -55,9 +57,10 @@ class AppListViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
-        mockApplication = mockk(relaxed = true)
+        mockApplication  = mockk(relaxed = true)
         mockRepository   = mockk(relaxed = true)
         mockClassifier   = mockk(relaxed = true)
+        mockLlmFallback  = mockk(relaxed = true)
         mockDbService    = mockk(relaxed = true)
 
         // Repository returns our controllable flow
@@ -67,9 +70,10 @@ class AppListViewModelTest {
         coEvery { mockDbService.fetchAndCache() } returns FetchResult.FromCache(0, 1)
 
         viewModel = AppListViewModel(
-            application      = mockApplication,
-            repository       = mockRepository,
-            classifier       = mockClassifier,
+            application        = mockApplication,
+            repository         = mockRepository,
+            classifier         = mockClassifier,
+            llmFallback        = mockLlmFallback,
             appDatabaseService = mockDbService
         )
     }

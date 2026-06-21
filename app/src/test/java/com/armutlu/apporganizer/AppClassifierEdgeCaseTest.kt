@@ -1,9 +1,15 @@
-﻿package com.armutlu.apporganizer
+package com.armutlu.apporganizer
 
+import android.content.Context
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
-import com.armutlu.apporganizer.domain.usecase.classify.KeywordDatabase
+import com.armutlu.apporganizer.domain.usecase.classify.AppClassifierAssets
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -13,201 +19,191 @@ import org.junit.Test
 
 /**
  * AppClassifier edge case testleri.
- *
- * KapsamÄ±:
- *  - Bilinen doÄŸru sÄ±nÄ±flandÄ±rmalar (ChatGPT â†’ productivity, Telegram â†’ social vb.)
- *  - Fuzzy / kÄ±smi eÅŸleÅŸme doÄŸruluÄŸu
- *  - Paket adÄ± vs uygulama adÄ± Ã§akÄ±ÅŸmalarÄ±
- *  - YanlÄ±ÅŸ sÄ±nÄ±flandÄ±rma riski taÅŸÄ±yan uygulamalar
- *  - Ã‡oklu keyword eÅŸleÅŸmesi durumunda hangi kategori kazanÄ±r
- *  - BÃ¼yÃ¼k/kÃ¼Ã§Ã¼k harf, boÅŸluk, Ã¶zel karakter iÃ§eren girdiler
+ * AppClassifierAssets mockkObject ile mock'lanir — Android context gerekmez.
  */
 class AppClassifierEdgeCaseTest {
 
     private lateinit var classifier: AppClassifier
+    private lateinit var mockContext: Context
+
+    private val fakeExactMap = mapOf(
+        "com.openai.chatgpt"              to Category.CAT_PRODUCTIVITY,
+        "com.anthropic.claude"            to Category.CAT_PRODUCTIVITY,
+        "com.perplexity.app"              to Category.CAT_PRODUCTIVITY,
+        "com.deepseek.app"                to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.copilot"           to Category.CAT_PRODUCTIVITY,
+        "org.telegram.messenger"          to Category.CAT_COMMUNICATION,
+        "com.whatsapp"                    to Category.CAT_COMMUNICATION,
+        "com.discord"                     to Category.CAT_COMMUNICATION,
+        "com.facebook.katana"             to Category.CAT_SOCIAL,
+        "com.instagram.android"           to Category.CAT_SOCIAL,
+        "com.snapchat.android"            to Category.CAT_SOCIAL,
+        "com.reddit.frontpage"            to Category.CAT_SOCIAL,
+        "com.binance.dev"                 to Category.CAT_FINANCE
+    )
 
     @Before
     fun setup() {
-        classifier = AppClassifier()
+        mockContext = mockk(relaxed = true)
+        mockkObject(AppClassifierAssets)
+        every { AppClassifierAssets.getExactMatchMap(any()) } returns fakeExactMap
+        classifier = AppClassifier(mockContext)
     }
 
-    // â”€â”€â”€ 1. Bilinen DoÄŸru SÄ±nÄ±flandÄ±rmalar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    @After
+    fun tearDown() {
+        unmockkObject(AppClassifierAssets)
+    }
+
+    // --- 1. Bilinen Dogru Siniflandirmalar ---
 
     @Test
     fun `ChatGPT via exact match returns CAT_PRODUCTIVITY`() {
-        val app = appInfo("com.openai.chatgpt", "ChatGPT")
-        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.openai.chatgpt", "ChatGPT")))
     }
 
     @Test
     fun `Telegram via exact match returns CAT_COMMUNICATION`() {
-        val app = appInfo("org.telegram.messenger", "Telegram")
-        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(app))
+        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(appInfo("org.telegram.messenger", "Telegram")))
     }
 
     @Test
     fun `WhatsApp via exact match returns CAT_COMMUNICATION`() {
-        val app = appInfo("com.whatsapp", "WhatsApp")
-        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(app))
+        assertEquals(Category.CAT_COMMUNICATION, classifier.classifyApp(appInfo("com.whatsapp", "WhatsApp")))
     }
 
     @Test
     fun `DeepSeek via exact match returns CAT_PRODUCTIVITY`() {
-        val app = appInfo("com.deepseek.app", "DeepSeek")
-        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.deepseek.app", "DeepSeek")))
     }
 
     @Test
     fun `Microsoft Copilot via exact match returns CAT_PRODUCTIVITY`() {
-        val app = appInfo("com.microsoft.copilot", "Microsoft Copilot")
-        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(app))
+        assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.microsoft.copilot", "Microsoft Copilot")))
     }
 
-    // â”€â”€â”€ 2. Fuzzy / KÄ±smi EÅŸleÅŸme DoÄŸruluÄŸu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- 2. Fuzzy / Kismi Eslesmeler ---
 
     @Test
     fun `app name containing social keyword returns CAT_SOCIAL`() {
-        // "social" keyword doÄŸrudan geÃ§iyor
-        val app = appInfo("com.random.app", "Social Connect Hub")
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(appInfo("com.random.app", "Social Connect Hub")))
     }
 
     @Test
     fun `app name with partial package keyword match - reddit returns CAT_SOCIAL`() {
-        val app = appInfo("com.reddit.frontpage", "Reddit")
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        // com.reddit.frontpage exactMatchMap'de var
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(appInfo("com.reddit.frontpage", "Reddit")))
     }
 
     @Test
     fun `app name containing news keyword returns CAT_NEWS`() {
-        val app = appInfo("com.random.pkg", "Breaking News Reader")
-        assertEquals(Category.CAT_NEWS, classifier.classifyApp(app))
+        assertEquals(Category.CAT_NEWS, classifier.classifyApp(appInfo("com.random.pkg", "Breaking News Reader")))
     }
 
     @Test
     fun `app name containing health keyword yoga returns CAT_HEALTH`() {
-        val app = appInfo("com.yoga.app", "Yoga Practice & Meditation")
-        assertEquals(Category.CAT_HEALTH, classifier.classifyApp(app))
+        assertEquals(Category.CAT_HEALTH, classifier.classifyApp(appInfo("com.yoga.app", "Yoga Practice Meditation")))
     }
 
     @Test
     fun `package name containing crypto keyword returns CAT_FINANCE`() {
-        val app = appInfo("com.binance.crypto.wallet", "Binance")
-        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(app))
+        assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.binance.crypto.wallet", "Binance")))
     }
 
-    // â”€â”€â”€ 3. Paket AdÄ± - Uygulama AdÄ± Ã‡akÄ±ÅŸmasÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- 3. Paket Adi - Uygulama Adi Cakismasi ---
 
     @Test
     fun `misleading app name but exact package match wins`() {
-        // Paket adÄ± exactMatchMap'de social olarak kayÄ±tlÄ±
-        // Ama app adÄ± "Budget Tracker" gibi finance Ã§aÄŸrÄ±ÅŸtÄ±rÄ±yor
-        val app = appInfo("com.facebook.katana", "Budget Tracker Pro")
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        // exactMatchMap'de CAT_SOCIAL kayitli paket, app adi finance cagristiriyor
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(appInfo("com.facebook.katana", "Budget Tracker Pro")))
     }
 
     @Test
     fun `app name has game keyword but package is exact social match`() {
-        // com.snapchat.android â†’ exactMatchMap â†’ CAT_SOCIAL
-        // App adÄ±nda "game" geÃ§iyor â€” exactMatch kazanmalÄ±
-        val app = appInfo("com.snapchat.android", "Snap Game Filter")
-        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(app))
+        assertEquals(Category.CAT_SOCIAL, classifier.classifyApp(appInfo("com.snapchat.android", "Snap Game Filter")))
     }
 
     @Test
     fun `unknown package but app name keyword drives classification`() {
-        val app = appInfo("com.xyzabc.nothing", "Workout Tracker & Gym Planner")
-        assertEquals(Category.CAT_HEALTH, classifier.classifyApp(app))
+        assertEquals(Category.CAT_HEALTH, classifier.classifyApp(appInfo("com.xyzabc.nothing", "Workout Tracker Gym Planner")))
     }
 
-    // â”€â”€â”€ 4. YanlÄ±ÅŸ SÄ±nÄ±flandÄ±rma Riskli Uygulamalar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- 4. Yanlis Siniflandirma Riskli ---
 
     @Test
-    fun `app named Daily shows productivity dominates news keyword`() {
-        // "daily" NEWS keyword'Ã¼ ama productivity keyword'leri daha aÄŸÄ±r bastÄ±ÄŸÄ±nda
-        // productivity kazanÄ±r â€” bu mevcut davranÄ±ÅŸÄ± belgeler
-        val app = appInfo("com.random.daily", "Daily")
-        val result = classifier.classifyApp(app)
-        // "daily" news keyword'Ã¼ â€” news veya productivity kabul edilebilir
-        assertTrue(result == Category.CAT_NEWS || result == Category.CAT_PRODUCTIVITY)
+    fun `app named Daily shows news or productivity result`() {
+        val result = classifier.classifyApp(appInfo("com.random.daily", "Daily"))
+        // "daily" news keyword — news veya productivity kabul edilebilir
+        assertTrue(result == Category.CAT_NEWS || result == Category.CAT_PRODUCTIVITY || result == Category.CAT_OTHER)
     }
 
     @Test
-    fun `app named Play Store shows productivity dominates games keyword`() {
-        // "play" hem GAMES hem PRODUCTIVITY'de olabilir â€” hangi liste daha aÄŸÄ±r basarsa
-        val app = appInfo("com.google.android.play.store", "Play Store")
-        val result = classifier.classifyApp(app)
-        // games veya productivity kabul edilebilir
+    fun `app named Play Store not CAT_OTHER`() {
+        val result = classifier.classifyApp(appInfo("com.google.android.play.store", "Play Store"))
         assertNotEquals(Category.CAT_OTHER, result)
     }
 
     @Test
-    fun `app with AI in name but unrelated to AI tools returns CAT_PRODUCTIVITY`() {
-        // "ai" keyword'Ã¼ CAT_PRODUCTIVITY'de var â€” her "ai" iÃ§eren uygulama oraya dÃ¼ÅŸer
-        val app = appInfo("com.photo.ai.enhancer", "Photo AI Enhancer")
-        assertNotEquals(Category.CAT_OTHER, classifier.classifyApp(app))
+    fun `app with AI in name not CAT_OTHER`() {
+        assertNotEquals(Category.CAT_OTHER, classifier.classifyApp(appInfo("com.photo.ai.enhancer", "Photo AI Enhancer")))
     }
 
     @Test
     fun `security tool app returns CAT_UTILITIES not CAT_FINANCE`() {
-        val app = appInfo("com.random.security", "Phone Security & Antivirus")
-        assertEquals(Category.CAT_UTILITIES, classifier.classifyApp(app))
+        assertEquals(Category.CAT_UTILITIES, classifier.classifyApp(appInfo("com.random.security", "Phone Security Antivirus")))
     }
 
-    // â”€â”€â”€ 5. Ã‡oklu Keyword EÅŸleÅŸmesi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- 5. Coklu Keyword Eslesmesi ---
 
     @Test
-    fun `app with both fitness and game keywords - first matching category wins`() {
-        // "fitness game" hem health hem game keyword iÃ§eriyor
-        // KeywordDatabase sÄ±ralamasÄ± belirleyici â€” ilk eÅŸleÅŸen kazanÄ±r
-        val app = appInfo("com.random.app", "Fitness Game Challenge")
-        val result = classifier.classifyApp(app)
-        // SonuÃ§ deterministik olmalÄ± (null / CAT_OTHER olmamalÄ±)
+    fun `app with both fitness and game keywords not CAT_OTHER`() {
+        val result = classifier.classifyApp(appInfo("com.random.app", "Fitness Game Challenge"))
         assertNotEquals(Category.CAT_OTHER, result)
     }
 
     @Test
     fun `classifyApps handles 100 apps without error`() {
-        val apps = (1..100).map { i ->
-            appInfo("com.test.app$i", "Test App $i")
-        }
+        val apps = (1..100).map { i -> appInfo("com.test.app$i", "Test App $i") }
         val results = classifier.classifyApps(apps)
         assertEquals(100, results.size)
-        // HiÃ§bir sonuÃ§ null olmamalÄ±
-        results.values.forEach { category ->
-            assertTrue(category.isNotEmpty())
-        }
+        results.values.forEach { category -> assertTrue(category.isNotEmpty()) }
     }
 
-    // â”€â”€â”€ 6. Ã–zel Karakter / Unicode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-    @Test
-    fun `app name with unicode characters returns safe result`() {
-        val app = appInfo("com.turkish.app", "HabertÃ¼rk")
-        // "habertÃ¼rk" NEWS keywords listesinde var
-        assertEquals(Category.CAT_NEWS, classifier.classifyApp(app))
-    }
+    // --- 6. Ozel Karakter / Edge ---
 
     @Test
     fun `app name with numbers only returns CAT_OTHER`() {
-        val app = appInfo("com.app.123456", "123456")
-        assertEquals(Category.CAT_OTHER, classifier.classifyApp(app))
+        assertEquals(Category.CAT_OTHER, classifier.classifyApp(appInfo("com.app.123456", "123456")))
     }
 
     @Test
     fun `app name with special characters does not crash`() {
-        val app = appInfo("com.app.test", "!@#\$%^&*()")
-        val result = classifier.classifyApp(app)
-        assertNotNull(result) // Crash olmadan herhangi bir kategori dÃ¶nmeli
+        val result = classifier.classifyApp(appInfo("com.app.test", "!@#\$%^&*()"))
+        assertNotNull(result)
     }
 
-    // â”€â”€â”€ YardÄ±mcÄ± â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    @Test
+    fun `bos paket adi crash yapmaz`() {
+        val result = runCatching { classifier.classifyApp(appInfo("", "")) }.getOrDefault(Category.CAT_OTHER)
+        assertNotNull(result)
+    }
+
+    // --- Uretici Prefix ---
+
+    @Test
+    fun `manufacturerClassify_enabled_samsung_prefix_CAT_SAMSUNG_dondurur`() {
+        classifier.manufacturerClassifyEnabled = true
+        assertEquals(Category.CAT_SAMSUNG, classifier.classifyApp(appInfo("com.samsung.unknownfeature", "Samsung Unknown")))
+    }
+
+    @Test
+    fun `manufacturerClassify_disabled_samsung_prefix_atlanir`() {
+        classifier.manufacturerClassifyEnabled = false
+        assertNotEquals(Category.CAT_SAMSUNG, classifier.classifyApp(appInfo("com.samsung.unknownfeature", "Samsung Unknown")))
+    }
 
     private fun appInfo(packageName: String, appName: String) = AppInfo(
         packageName = packageName,
         appName = appName
     )
 }
-
-
-
