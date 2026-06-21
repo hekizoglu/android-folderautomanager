@@ -1,12 +1,12 @@
 # MD Denetim Raporu — 2026-06-21
 
 > Otomatik denetim: CLAUDE.md · LEARNINGS.md · ROADMAP.md · HISTORY.md · FİKİRLER.md · harcananvakit.md
-> Son kod commit: `714e731` (D104 sonrası)
-> **Önceki raporlar temizlendi** — bu ilk temiz başlangıç raporu.
+> Son kod commit inceleme kapsamı: D104 → D111
+> **ONAY GEREKİYOR** — değişiklik yapılmadı, sadece rapor güncellendi.
 
 ---
 
-## ✅ Önceki Raporlarda Çözülenler (D93–D104)
+## ✅ D104 Öncesi Çözülenler
 
 | # | Sorun | Çözüm | Döngü |
 |---|-------|-------|-------|
@@ -26,6 +26,13 @@
 | Footer enc | `HISTORprojY.md` encoding | Düzeltildi | D-öncesi |
 | CLAUDE v4/v5 | Dipnot uyuşmazlığı | Güncellendi | D-öncesi |
 
+## ✅ D105–D111 Döneminde Çözülenler
+
+| # | Sorun | Çözüm | Döngü |
+|---|-------|-------|-------|
+| O2 (eski) | Onboarding 14 vs 14+2 tutarsızlığı | Kod incelemesiyle 16 adım doğrulandı, CLAUDE.md güncellendi | D105 |
+| O3 (eski) | COZULEMEYEN_SORUNLAR.md incelenmemişti | D111'de temizlendi, çözülenler tablo haline getirildi | D111 |
+
 ---
 
 ## 🔴 Kritik (Hemen)
@@ -36,33 +43,51 @@ _Şu an kritik açık sorun yok._
 
 ## 🟡 Orta Öncelik
 
-### O1 — harcananvakit.md: D93–D104 log satırları eksik
-- **Sorun:** Son kayıt D92. D93-D104 arası 12 döngü loglanmamış.
-- **Öneri:** Retrospektif olarak ekle (tarih: 2026-06-20 / 2026-06-21).
+### O1 — ROADMAP.md: Multi-language support tamamlandı ama hâlâ açık görünüyor ⭐ YENİ
+- **Sorun:** ROADMAP.md `Şu An Ne Yapılıyor (D108)` bölümü "SettingsScreen + SettingsAppearanceSection sırada" diyor. ROADMAP.md `⭐ Yüksek Puanlı` tablosunda `🔄 D108 devam ediyor` yazıyor.
+- **Gerçek durum:** HISTORY.md Döngü 108-109 — SettingsScreen (11 key) + SettingsAppearanceSection (10 key) dahil toplam 34 string tamamlandı. Görev BITTI.
+- **Eksik:** ROADMAP.md'den silinmedi. HISTORY.md Tamamlananlar Arşivi'ne eklenmedi.
+- **Öneri:** ROADMAP.md `Şu An Ne Yapılıyor` bölümünü temizle. ⭐ tablosundan sil. HISTORY.md Tamamlananlar'a `| D108-109 | 17 | Multi-language support (TR/EN) | strings.xml 50+ key, 34 Türkçe literal |` ekle.
 
-### O2 — Onboarding 14 vs 14+2 tutarsızlığı henüz kod seviyesinde doğrulanmadı
-- **Sorun:** CLAUDE.md "14+2 adım (CLASSIFY_MODE → DEFAULT_LAUNCHER → DONE)" diyor. Kod doğrulaması yapılmadı.
-- **FİKİRLER.md:** 17 puan — ROADMAP ⭐ listesinde, D105'e alındı.
-
-### O3 — COZULEMEYEN_SORUNLAR.md içeriği kontrol edilmedi
-- **Sorun:** Dosya var ama içeriği bu denetimde incelenmedi.
-- **Öneri:** Sonraki döngüde içeriği gözden geçir, çözülenleri işaretle.
+### O2 — harcananvakit.md: D93–D111 arası 19 döngü loglanmamış ⭐ GENİŞLEDİ
+- **Sorun:** Son log satırı D92 (2026-06-18). D93-D111 arası ~19 döngü (2026-06-20/21) kaydedilmemiş. Önceki raporda D93-D104 olarak belirtilmişti, sorun devam ediyor ve kapsam genişledi.
+- **Öneri:** Retrospektif olarak HISTORY.md döngü loglarından özet çıkarılarak eklenebilir.
 
 ---
 
 ## 🟢 Düşük Öncelik
 
-### D1 — harcananvakit.md: D86 satırı başlangıç/bitiş saati yok
-- **Sorun:** Satır 74'te `—` yerine gerçek saat olmalı (artık önemli değil, retrospektif zaman bilinmiyor).
-- **Öneri:** Olduğu gibi bırak, retrospektif saat doldurulamaz.
+### D1 — HISTORY.md: D110/D111 ters kronoloji ⭐ YENİ
+- **Sorun:** HISTORY.md'de Döngü 111 (satır ~1213) Döngü 110'dan (satır ~1217) önce geliyor. D110 retroaktif eklendi.
+- **Öneri:** Anlam kaybı yok, olduğu gibi bırakılabilir. Veya D110'u D111'den önce sıraya taşı.
 
-### D2 — HISTORY.md "Mimari Notlar" bölümü
-- **Sorun:** Tema Sistemi, HorizontalPager gibi kalıcı mimari kararlar HISTORY.md'de duruyor; LEARNINGS.md'ye ait.
-- **Öneri:** İleri dönemde taşı — acil değil.
+### D2 — HISTORY.md: İki ayrı "Tamamlananlar Arşivi" bölümü ⭐ YENİ
+- **Sorun:** HISTORY.md'de satır ~1196 ve ~1239'da aynı başlıkla iki ayrı Tamamlananlar Arşivi bölümü var. Küçük bölüm (D104/105/106/107 puan tablosu) büyük kapsamlı bölümle örtüşüyor.
+- **Öneri:** Küçük bölümü büyük bölüme merge et veya başlığını değiştir.
 
-### D3 — AGENTS.md içeriği kontrol edilmedi
+### D3 — HISTORY.md: "Mimari Notlar" bölümünde "14 adım" stale
+- **Sorun:** HISTORY.md satır 147'deki "Mimari Notlar" bölümü `Onboarding Adım Listesi (14 adım)` diyor; CLASSIFY_MODE yok. D105'te 16 adım doğrulandı, bu not güncellenmedi.
+- **Bağlam:** Bu tarihi bir snapshot — döneminde doğruydu. Ancak LEARNINGS.md zaten 16 adımı doğru gösteriyor.
+- **Öneri:** HISTORY.md satır 147'ye `(D105 itibarıyla 16 adım — bkz. LEARNINGS.md)` notu ekle.
+
+### D4 — AGENTS.md içeriği kontrol edilmedi (devam)
 - **Sorun:** `AGENTS.md` dosyası var, aktif agent listesiyle senkron mu bilinmiyor.
-- **Öneri:** Bir sonraki döngüde hızlıca kontrol et.
+- **Öneri:** Sonraki döngüde kontrol et.
+
+---
+
+## 📊 Paket Sayısı Tutarlılık Kontrolü
+
+| Dosya | Paket Sayısı | Durum |
+|-------|-------------|-------|
+| CLAUDE.md §7 | 3717 | ✅ |
+| CLAUDE.md §8 | 3717 | ✅ |
+| LEARNINGS.md L1 | 3717 | ✅ |
+| LEARNINGS.md Mimari Kararlar | 3717 | ✅ |
+| HISTORY.md D67 | 3717 | ✅ |
+| HISTORY.md Tamamlananlar Arşivi | 3717 | ✅ |
+
+**Sonuç: Paket sayısı tüm dosyalarda tutarlı — sorun yok.**
 
 ---
 
@@ -71,12 +96,12 @@ _Şu an kritik açık sorun yok._
 | Öncelik | Adet | Durum |
 |---------|------|-------|
 | 🔴 Kritik | 0 | — |
-| 🟡 Orta | 3 | İzleniyor |
-| 🟢 Düşük | 3 | Zaman bulununca |
-| **✅ Önceki raporlardan çözülen** | **15** | Kapatıldı |
+| 🟡 Orta | 2 | Onay bekliyor |
+| 🟢 Düşük | 4 | Zaman bulununca |
+| **✅ Çözülen (toplam)** | **17** | Kapatıldı |
 
-**Genel durum:** Proje sağlıklı. Kod tarafında D105+ ⭐ yüksek puanlı görevler aktif — Onboarding fix, Multi-language, Klasör sıra değiştirme, Akıllı Öneriler.
+**Genel durum:** Proje sağlıklı. Kod tarafı D108-111 itibarıyla stabil. En acil aksiyon: ROADMAP.md multi-language kaydı (O1) — 2 satır değişiklik, onay gelince yapılabilir.
 
 ---
 
-*Denetim: 2026-06-21 | Önceki 3 rapor silindi, bu dosya temiz başlangıç.*
+*Denetim güncellemesi: 2026-06-21 otomatik rutin | Kapsam: D105-D111 | Telegram engelli, GitHub commit ile iletildi.*
