@@ -1,8 +1,9 @@
 # MD Denetim Raporu — 2026-06-21
 
 > Otomatik denetim: CLAUDE.md · LEARNINGS.md · ROADMAP.md · HISTORY.md · FİKİRLER.md · harcananvakit.md
-> Son kod commit inceleme kapsamı: D104 → D123
+> Son kod commit inceleme kapsamı: D104 → D123 | Taze çalışma: 2026-06-21 (ikinci rutin)
 > **ONAY GEREKİYOR** — değişiklik yapılmadı, sadece rapor güncellendi.
+> Son git commit: `74053b2` — önceki denetim. D123'ten bu yana yeni kod değişikliği yok.
 
 ---
 
@@ -36,6 +37,21 @@
 ---
 
 ## 🔴 Kritik (Hemen)
+
+### K2 — CLAUDE.md §5 + LEARNINGS.md: AppClassifier Güncelleme Prosedürü AKTİF YANLIŞ ⭐ 2. rutin YENİ
+
+- **Sorun:** D115'te AppClassifier.kt `exactMatchMap` (4369 satır) → `assets/app_categories.json` (3702 entry, `AppClassifierAssets.kt`) aktarıldı. Ancak CLAUDE.md §5 ve LEARNINGS.md'deki "Güncelleme Prosedürü" hâlâ şöyle yazıyor:
+  ```
+  1. exactMatchMap'te doğru konuma ekle (alfabetik sıra)
+  2. python scripts/check_duplicates.py AppClassifier.kt çalıştır
+  ```
+- **Risk:** Bu prosedürü izleyen Claude veya geliştirici AppClassifier.kt'de VAR OLMAYAN bir yapıya eklemeye çalışır — sessiz başarısızlık, paket sınıflandırılmaz.
+- `check_duplicates.py AppClassifier.kt` de artık anlamsız (99 satır, içerik yok).
+- **Doğru prosedür (D115 sonrası):** `assets/app_categories.json` dosyasını düzenle veya `scripts/export_classifier_json.py` aracını kullan.
+- **Etki:** CLAUDE.md §5 Güncelleme Prosedürü (2 adım yanlış) + LEARNINGS.md AppClassifier Mimarisi bölümü (aynı yanlış prosedür).
+- **Öneri:** Her iki dosyada prosedürü JSON-bazlı yeni akışla güncelle.
+
+---
 
 ### K1 — LEARNINGS.md: Onboarding adım sırası CLAUDE.md ile çelişiyor ⭐ D112-D123 YENİ
 
@@ -116,13 +132,13 @@
 
 | Öncelik | Adet | Durum |
 |---------|------|-------|
-| 🔴 Kritik | 1 | **K1 — Onay bekliyor (acil)** |
+| 🔴 Kritik | 2 | **K2 (YENİ 2. rutin) + K1 — Onay bekliyor (acil)** |
 | 🟡 Orta | 4 | Onay bekliyor |
 | 🟢 Düşük | 6 | Zaman bulununca |
 | **✅ Çözülen (toplam)** | **17** | Kapatıldı |
 
-**En acil:** K1 — LEARNINGS.md onboarding sıra çelişkisi (CLASSIFY_MODE ↔ SET_LAUNCHER ters yazılmış). Ardından O3 — paket sayısı 3717 değil 3702 (doğrulandı).
+**En acil:** K2 (YENİ) — AppClassifier Güncelleme Prosedürü aktif olarak yanlış (D115 sonrası exactMatchMap yok, JSON gerekiyor). K1 — LEARNINGS.md onboarding sıra çelişkisi (CLASSIFY_MODE ↔ SET_LAUNCHER ters yazılmış). Ardından O3 — paket sayısı 3717 değil 3702.
 
 ---
 
-*Denetim güncellemesi: 2026-06-21 otomatik rutin | Kapsam: D105-D123 | Telegram engelli, GitHub commit ile iletildi.*
+*Denetim güncellemesi: 2026-06-21 otomatik rutin (2. çalışma) | Kapsam: D105-D123 | Telegram engelli, GitHub commit ile iletildi. YENİ: K2 eklendi (AppClassifier prosedürü aktif yanlış).*
