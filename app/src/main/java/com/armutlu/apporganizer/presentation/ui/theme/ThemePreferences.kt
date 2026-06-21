@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.theme
 
 import android.content.Context
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -54,7 +55,23 @@ enum class AppTheme(
         secondary = Color(0xFF90A4AE),
         background = Color(0xFF121212),
         surface = Color(0xFF1E1E1E)
+    ),
+    IOS(
+        label = "iOS",
+        primary = Color(0xFF007AFF),
+        secondary = Color(0xFF5AC8FA),
+        background = Color(0xFF1C1C1E),
+        surface = Color(0xFF2C2C2E)
+    ),
+    AMOLED(
+        label = "AMOLED",
+        primary = Color(0xFF00E5FF),
+        secondary = Color(0xFF69FF47),
+        background = Color(0xFF000000),
+        surface = Color(0xFF0A0A0A)
     );
+
+    val previewBrush: Brush get() = Brush.linearGradient(listOf(primary, secondary))
 
     companion object {
         fun fromName(name: String): AppTheme =

@@ -15,26 +15,43 @@ import kotlinx.coroutines.flow.map
 
 private val ErrorColor = Color(0xFFCF6679)
 
-private fun buildColorScheme(theme: AppTheme) = darkColorScheme(
-    primary              = theme.primary,
-    onPrimary            = Color.White,
-    primaryContainer     = theme.primary.copy(alpha = 0.3f),
-    onPrimaryContainer   = theme.primary,
-    secondary            = theme.secondary,
-    onSecondary          = Color.White,
-    secondaryContainer   = theme.secondary.copy(alpha = 0.2f),
-    onSecondaryContainer = theme.secondary,
-    background           = theme.background,
-    onBackground         = Color(0xFFE8EAED),
-    surface              = theme.surface,
-    onSurface            = Color(0xFFE8EAED),
-    surfaceVariant       = theme.surface.copy(alpha = 0.8f),
-    onSurfaceVariant     = Color(0xFF9AA0A6),
-    outline              = Color(0xFF444444),
-    outlineVariant       = Color(0xFF333333),
-    error                = ErrorColor,
-    onError              = Color.White,
-)
+private fun buildColorScheme(theme: AppTheme): androidx.compose.material3.ColorScheme {
+    val onContent = when (theme) {
+        AppTheme.IOS   -> Color(0xFFF2F2F7)
+        AppTheme.AMOLED -> Color(0xFFFFFFFF)
+        else           -> Color(0xFFE8EAED)
+    }
+    val onVariant = when (theme) {
+        AppTheme.IOS   -> Color(0xFF8E8E93)
+        AppTheme.AMOLED -> Color(0xFF9E9E9E)
+        else           -> Color(0xFF9AA0A6)
+    }
+    val outline = when (theme) {
+        AppTheme.IOS   -> Color(0xFF3A3A3C)
+        AppTheme.AMOLED -> Color(0xFF1A1A1A)
+        else           -> Color(0xFF444444)
+    }
+    return darkColorScheme(
+        primary              = theme.primary,
+        onPrimary            = Color.White,
+        primaryContainer     = theme.primary.copy(alpha = 0.25f),
+        onPrimaryContainer   = theme.primary,
+        secondary            = theme.secondary,
+        onSecondary          = Color.White,
+        secondaryContainer   = theme.secondary.copy(alpha = 0.18f),
+        onSecondaryContainer = theme.secondary,
+        background           = theme.background,
+        onBackground         = onContent,
+        surface              = theme.surface,
+        onSurface            = onContent,
+        surfaceVariant       = theme.surface.copy(alpha = 0.8f),
+        onSurfaceVariant     = onVariant,
+        outline              = outline,
+        outlineVariant       = outline.copy(alpha = 0.7f),
+        error                = ErrorColor,
+        onError              = Color.White,
+    )
+}
 
 private fun buildTypography(font: AppFont): Typography {
     val family = when (font) {

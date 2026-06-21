@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -167,7 +168,7 @@ internal fun OnboardingThemeSelector(
             ) {
                 Box(
                     modifier = Modifier.size(52.dp).clip(CircleShape)
-                        .background(theme.primary)
+                        .background(theme.previewBrush)
                         .border(if (isSelected) 3.dp else 1.dp,
                             if (isSelected) Color.White else Color.White.copy(0.3f), CircleShape)
                 )

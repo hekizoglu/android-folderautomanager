@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -59,7 +60,7 @@ fun SettingsAppearanceSection(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(theme.primary)
+                                .background(theme.previewBrush)
                                 .border(
                                     width = if (isSelected) 3.dp else 1.dp,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
