@@ -1362,3 +1362,8 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** AllAppsDrawer.kt LaunchedEffect(Unit) klavye bloğu kaldırıldı (arama açılışında artık klavye çıkmıyor). FolderSheet.kt: AlertDialog+OutlinedTextField sayı girişi → FolderPositionPickerSheet — 4x2 emoji+ad+numara kutucukları, mevcut konum vurgulanmış, çok sayfalı için LazyRow sayfa seçici.
 **Build:** SUCCESS 24.6 MB, commit [3bed541]
 **Sonraki:** Widget hızlı menü araştırması + tema seçenekleri (iOS tarzı / modern Android)
+
+## Döngü 120 — 2026-06-21 (KOD/BUILD — Onboarding yeniden tasarım)
+**Yapılanlar:** SET_LAUNCHER adımı CLASSIFY_MODE'dan sonraya taşındı (kullanıcı talebi). OnboardingModels.kt: 8 adıma whyRes açıklaması + yeni ikonlar (Backup/Message/NewReleases/Palette/FullscreenExit). strings.xml: 8 adıma açıklayıcı "Neden?" metni + zenginleştirilmiş açıklamalar. CLAUDE.md kuralı güncellendi.
+**Build:** SUCCESS 26.1 MB, commit [6a02acd], Telegram APK gönderildi
+**Sonraki:** Widget hızlı menü araştırması, iOS/Android tema seçenekleri
