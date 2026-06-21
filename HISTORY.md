@@ -1307,6 +1307,13 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
 | 2026-06-21 | D107-D111 | Akıllı öneriler, multi-language, bilinen sorunlar tarama, CS-3 3 yöntem |
 
+## Döngü 114 — 2026-06-21 (KOD — Dark mode audit: chip/badge renk token düzeltmeleri)
+**Yapılanlar:** FolderSheet + AllAppsDrawer'da hardcode Color.White → MaterialTheme token geçişi.
+- FolderSheet: badge count + sort chip aktif text → colorScheme.onPrimary
+- AllAppsDrawer: filtre chip aktif → onSecondary, sıralama chip aktif → onPrimary, arama geçmişi chip text → Color.White.copy(0.75f) (siyah overlay üzeri okunabilirlik)
+**Build:** SUCCESS 26.45 MB, commit a0cde2b — Telegram msg 767
+**Sonraki:** FİKİRLER.md'den bir sonraki yüksek puanlı görev
+
 ## Döngü 113 — 2026-06-21 (KOD — OnboardingScreen çok dil desteği, @StringRes Int pattern)
 **Yapılanlar:** OnboardingScreen.kt + OnboardingModels.kt + OnboardingStepContent.kt tam multi-language dönüşümü.
 - `OnboardingModels.kt`: `title`/`description`/`why`/`buttonLabel` String alanları → `titleRes`/`descriptionRes`/`whyRes`/`buttonLabelRes` (@StringRes Int) — enum'da runtime değer tutulmaz artık

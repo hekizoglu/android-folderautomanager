@@ -30,7 +30,7 @@
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
-| 2026-06-21 | D100 sonrası | **Klasör sıra numarasıyla yer değiştirme** — kullanıcı "3. klasörü 7. sıraya taşı" gibi numara girerek taşıyabilsin | Bekliyor |
+| 2026-06-21 | D100 sonrası | **Klasör sıra numarasıyla yer değiştirme** — kullanıcı "3. klasörü 7. sıraya taşı" gibi numara girerek taşıyabilsin | [TAMAMLANDI — D114 denetiminde zaten implementali: FolderSheet AlertDialog + onMove callback] |
 | 2026-06-20 | Denetim #11 | **Onboarding adım sırası güncellenmeli** — CLASSIFY_MODE adımı eksik, CLAUDE.md "14+2" diyor ama LEARNINGS.md 14 adım | [TAMAMLANDI D105 — 16 adım doğrulandı, CLAUDE.md güncellendi] |
 | 2026-06-20 | Denetim #14 | **Merge conflict AppClassifier kural CLAUDE.md §5'e promote** — 4+ tekrar, eşik geçildi | [TAMAMLANDI] |
 | 2026-06-16 | Döngü 86 | **AllAppsDrawer/FolderSheet dark mode regresyon kontrolü** — D91 fix sonrası FCM commit tekrar değiştirdi | [TAMAMLANDI D96] |
@@ -84,9 +84,9 @@
 | 2 | Privacy Policy sayfası | 4 | 5 | 5 | 5 | **19** | ✅ Yap |
 | 3 | Content rating anketi | 4 | 5 | 4 | 5 | **18** | ✅ Yap |
 | 4 | Onboarding adım sırası güncellenmeli | 3 | 5 | 5 | 4 | **17** | ✅ Yap |
-| 5 | Multi-language support (TR/EN) | 4 | 3 | 5 | 5 | **17** | ✅ Yap |
+| 5 | Multi-language support (TR/EN) | 4 | 3 | 5 | 5 | **17** | ✅ [TAMAMLANDI D113] |
 | 6 | Klasör sıra numarasıyla yer değiştirme | 4 | 4 | 5 | 3 | **16** | ✅ Yap |
-| 7 | Dark mode tam uyum audit | 3 | 4 | 5 | 4 | **16** | ✅ Yap |
+| 7 | Dark mode tam uyum audit | 3 | 4 | 5 | 4 | **16** | ✅ [TAMAMLANDI D114] |
 | 8 | Akıllı Uygulama Önerileri (30dk) | 5 | 2 | 4 | 5 | **16** | ✅ Yap |
 | 9 | Screenshots | 3 | 4 | 3 | 4 | **14** | 🟡 Değerlendir |
 | 10 | AppClassifier → JSON asset | 2 | 3 | 5 | 4 | **14** | 🟡 Değerlendir |
