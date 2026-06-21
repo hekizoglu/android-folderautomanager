@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -22,7 +23,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -31,6 +31,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,7 +71,7 @@ fun FolderContextMenuSheet(
     val surface   = MaterialTheme.colorScheme.surface
 
     var showMoveDialog by remember { mutableStateOf(false) }
-    var moveTargetText by remember { mutableStateOf("") }
+    var selectedMoveIndex by remember { mutableStateOf(-1) }
     val currentIndex = allFolders.indexOfFirst { it.category.categoryId == folder.category.categoryId }
 
     ModalBottomSheet(
@@ -141,44 +142,198 @@ fun FolderContextMenuSheet(
     }
 
     if (showMoveDialog) {
-        AlertDialog(
-            onDismissRequest = { showMoveDialog = false; moveTargetText = "" },
-            title = { Text(stringResource(R.string.folder_move)) },
-            text = {
-                Column {
-                    Text(
-                        "Şu an: ${currentIndex + 1}. sıra / Toplam: ${allFolders.size}",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = moveTargetText,
-                        onValueChange = { moveTargetText = it.filter { c -> c.isDigit() } },
-                        label = { Text(stringResource(R.string.folder_move_target_hint, allFolders.size)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+        FolderPositionPickerSheet(
+            allFolders = allFolders,
+            currentIndex = currentIndex,
+            selectedIndex = selectedMoveIndex,
+            onSelectIndex = { selectedMoveIndex = it },
+            onConfirm = {
+                if (selectedMoveIndex >= 0 && selectedMoveIndex != currentIndex) {
+                    onMove?.invoke(selectedMoveIndex)
+                    showMoveDialog = false
+                    selectedMoveIndex = -1
+                    onDismiss()
                 }
             },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val target = moveTargetText.toIntOrNull()
-                        if (target != null && target in 1..allFolders.size) {
-                            onMove?.invoke(target - 1)
-                            showMoveDialog = false
-                            moveTargetText = ""
-                            onDismiss()
-                        }
-                    },
-                    enabled = moveTargetText.toIntOrNull()?.let { it in 1..allFolders.size } == true
-                ) { Text(stringResource(R.string.folder_move_confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showMoveDialog = false; moveTargetText = "" }) { Text(stringResource(R.string.btn_cancel)) }
-            }
+            onDismiss = { showMoveDialog = false; selectedMoveIndex = -1 }
         )
+    }
+}
+
+private const val FOLDERS_PER_PAGE = 8
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FolderPositionPickerSheet(
+    allFolders: List<AppFolder>,
+    currentIndex: Int,
+    selectedIndex: Int,
+    onSelectIndex: (Int) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val primary   = MaterialTheme.colorScheme.primary
+    val surface   = MaterialTheme.colorScheme.surface
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val haptic    = LocalHapticFeedback.current
+
+    val pageCount = ((allFolders.size - 1) / FOLDERS_PER_PAGE) + 1
+    var currentPage by remember { mutableStateOf(if (currentIndex >= 0) currentIndex / FOLDERS_PER_PAGE else 0) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = surface,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        dragHandle = {
+            Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(onSurface.copy(0.2f)))
+            }
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Başlık
+            Text(
+                text = "Yeni konum seç",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = onSurface,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+            )
+            Text(
+                text = "Mevcut: ${currentIndex + 1}. sıra · Toplam: ${allFolders.size} klasör",
+                fontSize = 12.sp,
+                color = onSurface.copy(0.55f),
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            // Klasör konum kutucukları — sayfadaki 8 adet
+            val pageStart = currentPage * FOLDERS_PER_PAGE
+            val pageEnd   = minOf(pageStart + FOLDERS_PER_PAGE, allFolders.size)
+            val pageItems = allFolders.subList(pageStart, pageEnd)
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(4.dp)
+            ) {
+                itemsIndexed(pageItems) { localIdx, f ->
+                    val globalIdx = pageStart + localIdx
+                    val isCurrent  = globalIdx == currentIndex
+                    val isSelected = globalIdx == selectedIndex
+                    val bgColor = when {
+                        isSelected -> primary
+                        isCurrent  -> primary.copy(alpha = 0.18f)
+                        else       -> onSurface.copy(alpha = 0.07f)
+                    }
+                    val borderColor = when {
+                        isSelected -> primary
+                        isCurrent  -> primary.copy(alpha = 0.6f)
+                        else       -> Color.Transparent
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(bgColor)
+                            .border(1.5.dp, borderColor, RoundedCornerShape(12.dp))
+                            .clickable(enabled = !isCurrent) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onSelectIndex(globalIdx)
+                            }
+                            .padding(vertical = 10.dp, horizontal = 4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = f.category.iconEmoji,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            text = "${globalIdx + 1}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) surface else onSurface
+                        )
+                        Text(
+                            text = f.category.categoryName,
+                            fontSize = 9.sp,
+                            color = (if (isSelected) surface else onSurface).copy(alpha = 0.75f),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            // Sayfa seçici — birden fazla sayfa varsa göster
+            if (pageCount > 1) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = "Sayfa",
+                    fontSize = 11.sp,
+                    color = onSurface.copy(0.5f),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                Spacer(Modifier.height(6.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    items(pageCount) { pageIdx ->
+                        val isActivePage = pageIdx == currentPage
+                        val rangeStart = pageIdx * FOLDERS_PER_PAGE + 1
+                        val rangeEnd   = minOf((pageIdx + 1) * FOLDERS_PER_PAGE, allFolders.size)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isActivePage) primary else onSurface.copy(0.1f))
+                                .clickable { currentPage = pageIdx }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$rangeStart–$rangeEnd",
+                                fontSize = 11.sp,
+                                fontWeight = if (isActivePage) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isActivePage) surface else onSurface
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Onayla / İptal
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.btn_cancel), color = onSurface.copy(0.7f))
+                }
+                Spacer(Modifier.width(8.dp))
+                TextButton(
+                    onClick = onConfirm,
+                    enabled = selectedIndex >= 0 && selectedIndex != currentIndex
+                ) {
+                    Text(
+                        stringResource(R.string.folder_move_confirm),
+                        color = if (selectedIndex >= 0 && selectedIndex != currentIndex) primary else onSurface.copy(0.3f)
+                    )
+                }
+            }
+        }
     }
 }
 

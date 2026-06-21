@@ -641,11 +641,7 @@ fun AllAppsDrawer(
     val listState         = rememberLazyListState()
     val scope             = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(300)
-        runCatching { searchFocusRequester.requestFocus() }
-        keyboardController?.show()
-    }
+    // Klavye otomatik açılmasın — kullanıcı arama kutusuna tıklayınca açılır
 
     var sortMode by remember {
         val saved = context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
