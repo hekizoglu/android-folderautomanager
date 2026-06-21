@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -174,6 +175,7 @@ fun FolderTile(
                 modifier = Modifier
                     .size(badgeW, 16.dp)
                     .align(Alignment.TopEnd)
+                    .shadow(3.dp, androidx.compose.foundation.shape.RoundedCornerShape(8.dp), ambientColor = Color(0xFFE53935), spotColor = Color(0xFFE53935))
                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
                     .background(Color(0xFFE53935)),
                 contentAlignment = Alignment.Center

@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -88,9 +89,9 @@ internal fun PixelClockWidget(modifier: Modifier = Modifier) {
         Text(
             text = timeFormat.format(now),
             color = Color.White,
-            fontSize = 72.sp,
+            fontSize = 84.sp,
             fontWeight = FontWeight.Thin,
-            letterSpacing = (-2).sp,
+            letterSpacing = (-3).sp,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(2.dp))
@@ -112,6 +113,7 @@ internal fun GoogleSearchBar(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .height(50.dp)
+            .border(1.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(25.dp))
             .background(
                 color = Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(25.dp)
@@ -291,8 +293,9 @@ internal fun AppSuggestionsRow(
     ) {
         Text(
             text = stringResource(labelRes),
-            color = Color.White.copy(alpha = 0.45f),
+            color = Color.White.copy(alpha = 0.55f),
             fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, bottom = 6.dp)
