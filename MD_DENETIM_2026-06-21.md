@@ -1,7 +1,7 @@
 # MD Denetim Raporu — 2026-06-21
 
 > Otomatik denetim: CLAUDE.md · LEARNINGS.md · ROADMAP.md · HISTORY.md · FİKİRLER.md · harcananvakit.md
-> Son kod commit inceleme kapsamı: D104 → D111
+> Son kod commit inceleme kapsamı: D104 → D123
 > **ONAY GEREKİYOR** — değişiklik yapılmadı, sadece rapor güncellendi.
 
 ---
@@ -37,40 +37,63 @@
 
 ## 🔴 Kritik (Hemen)
 
-_Şu an kritik açık sorun yok._
+### K1 — LEARNINGS.md: Onboarding adım sırası CLAUDE.md ile çelişiyor ⭐ D112-D123 YENİ
+
+- **Sorun:** `LEARNINGS.md` satır 107: "Son iki adım: **SET_LAUNCHER → CLASSIFY_MODE** → DONE sırası değiştirilemez" yazıyor.
+- **Doğrusu:** CLAUDE.md §3: "son 3 adım MUTLAKA **CLASSIFY_MODE → SET_LAUNCHER** → DONE" (D120'de kullanıcı talebiyle SET_LAUNCHER sona alındı).
+- **Risk:** Claude LEARNINGS.md'ye bakıp yanlış sırayı uygularsa onboarding bozulur.
+- **Öneri:** LEARNINGS.md satır 107: "SET_LAUNCHER → CLASSIFY_MODE" → "CLASSIFY_MODE → SET_LAUNCHER" olarak düzelt.
 
 ---
 
 ## 🟡 Orta Öncelik
 
-### O1 — ROADMAP.md: Multi-language support tamamlandı ama hâlâ açık görünüyor ⭐ YENİ
-- **Sorun:** ROADMAP.md `Şu An Ne Yapılıyor (D108)` bölümü "SettingsScreen + SettingsAppearanceSection sırada" diyor. ROADMAP.md `⭐ Yüksek Puanlı` tablosunda `🔄 D108 devam ediyor` yazıyor.
-- **Gerçek durum:** HISTORY.md Döngü 108-109 — SettingsScreen (11 key) + SettingsAppearanceSection (10 key) dahil toplam 34 string tamamlandı. Görev BITTI.
-- **Eksik:** ROADMAP.md'den silinmedi. HISTORY.md Tamamlananlar Arşivi'ne eklenmedi.
-- **Öneri:** ROADMAP.md `Şu An Ne Yapılıyor` bölümünü temizle. ⭐ tablosundan sil. HISTORY.md Tamamlananlar'a `| D108-109 | 17 | Multi-language support (TR/EN) | strings.xml 50+ key, 34 Türkçe literal |` ekle.
+### O1 — ROADMAP.md: Multi-language support tamamlandı ama hâlâ açık görünüyor
+- **Sorun:** ROADMAP.md `Şu An Ne Yapılıyor (D108)` bölümü "SettingsScreen + SettingsAppearanceSection sırada" diyor. ⭐ Yüksek Puanlı tablosunda `🔄 D108 devam ediyor` yazıyor.
+- **Gerçek durum:** HISTORY.md Döngü 108-109 + D113 OnboardingScreen — toplam 60+ key, görev BİTTİ.
+- **Öneri:** ROADMAP.md `Şu An Ne Yapılıyor` bölümünü temizle. ⭐ tablosundan sil. HISTORY.md Tamamlananlar'a `| D108-113 | 17 | Multi-language support (TR/EN) |` ekle.
 
-### O2 — harcananvakit.md: D93–D111 arası 19 döngü loglanmamış ⭐ GENİŞLEDİ
-- **Sorun:** Son log satırı D92 (2026-06-18). D93-D111 arası ~19 döngü (2026-06-20/21) kaydedilmemiş. Önceki raporda D93-D104 olarak belirtilmişti, sorun devam ediyor ve kapsam genişledi.
+### O2 — harcananvakit.md: D119–D123 logları eksik (D93-D118 arası da eksik)
+- **Sorun:** Son log satırı D118 (2026-06-21 08:30-10:05). D119-D123 (klavye fix, onboarding redesign, Privacy Policy, iOS+AMOLED tema, görsel kalite) loglanmamış.
 - **Öneri:** Retrospektif olarak HISTORY.md döngü loglarından özet çıkarılarak eklenebilir.
+
+### O3 — Paket sayısı tutarsızlığı: 3717 vs 3702 ⭐ D112-D123 YENİ
+- **Sorun:** HISTORY.md Döngü 115: "exactMatchMap **(3702 entry)** assets/app_categories.json'a taşındı." Ancak CLAUDE.md §7, LEARNINGS.md AppClassifier Mimarisi hâlâ "**3717** benzersiz paket" diyor.
+- **Doğrulandı:** `assets/app_categories.json` → **3702 entry** (python ile sayıldı). 15 paket D115 export sırasında kayboldu.
+- **Etki:** CLAUDE.md §7 (2 yer), LEARNINGS.md AppClassifier Mimarisi, HISTORY.md Tamamlananlar Arşivi — hepsi "3717" diyor, doğrusu 3702.
+- **Öneri:** CLAUDE.md + LEARNINGS.md'de "3717" → "3702" güncelle. Kayıp 15 paketi bulmak için AppClassifier.kt geçmiş commit + JSON diff al.
+
+### O4 — LEARNINGS.md AppClassifier Mimarisi D115 sonrası güncel değil ⭐ D112-D123 YENİ
+- **Sorun:** D115'te büyük mimari değişiklik: AppClassifier.kt 4369→99 satır, `AppClassifierAssets.kt` (YENİ singleton) oluşturuldu, exactMatchMap `assets/app_categories.json`'a taşındı. LEARNINGS.md "AppClassifier Mimarisi" bölümü hâlâ eski KT dosyası anlatımıyla yazılı; `AppClassifierAssets.kt` sınıfı hiç belgelenmemiş.
+- **Öneri:** LEARNINGS.md "AppClassifier Mimarisi" → "D115 itibarıyla `AppClassifierAssets.kt` singleton + `assets/app_categories.json` (122 KB); thread-safe double-check lazy parse." notu ekle.
 
 ---
 
 ## 🟢 Düşük Öncelik
 
-### D1 — HISTORY.md: D110/D111 ters kronoloji ⭐ YENİ
-- **Sorun:** HISTORY.md'de Döngü 111 (satır ~1213) Döngü 110'dan (satır ~1217) önce geliyor. D110 retroaktif eklendi.
-- **Öneri:** Anlam kaybı yok, olduğu gibi bırakılabilir. Veya D110'u D111'den önce sıraya taşı.
+### D5 — FİKİRLER.md: Düşük Öncelik tablosu çelişkili durum etiketleri ⭐ D112-D123 YENİ
+- **Sorun:** "Düşük Öncelik" tablosu (satır 56-57):
+  - "Dark mode tam uyum audit → **Bekliyor**" ama Puanlama tablosu #7: "✅ **[TAMAMLANDI D114]**"
+  - "Multi-language support (TR/EN) → **Bekliyor**" ama Puanlama tablosu #5: "✅ **[TAMAMLANDI D113]**"
+- **Öneri:** FİKİRLER.md Düşük Öncelik tablosunda bu satırları "[TAMAMLANDI D114]" ve "[TAMAMLANDI D113]" olarak güncelle.
 
-### D2 — HISTORY.md: İki ayrı "Tamamlananlar Arşivi" bölümü ⭐ YENİ
-- **Sorun:** HISTORY.md'de satır ~1196 ve ~1239'da aynı başlıkla iki ayrı Tamamlananlar Arşivi bölümü var. Küçük bölüm (D104/105/106/107 puan tablosu) büyük kapsamlı bölümle örtüşüyor.
-- **Öneri:** Küçük bölümü büyük bölüme merge et veya başlığını değiştir.
+### D6 — HISTORY.md: Sprint Özeti D112-D123 eksik ⭐ D112-D123 YENİ
+- **Sorun:** Sprint Özeti tablosunun son satırı "D107-D111". D112-D123 arası 12 döngü (HomeScreen refactor, OnboardingScreen dil, JSON asset dönüşümü, 156 test, onboarding redesign, iOS+AMOLED tema, görsel kalite) tabloda yok.
+- **Öneri:** `| 2026-06-21 | D112-D123 | HomeScreen refactor, OnboardingScreen dil, JSON asset 3702, 156 test, iOS+AMOLED tema, görsel kalite |` satırı ekle.
+
+### D1 — HISTORY.md: D110/D111 ters kronoloji
+- **Sorun:** HISTORY.md'de Döngü 111 (satır ~1213) Döngü 110'dan (satır ~1217) önce geliyor. D110 retroaktif eklendi.
+- **Öneri:** Anlam kaybı yok, olduğu gibi bırakılabilir.
+
+### D2 — HISTORY.md: İki ayrı "Tamamlananlar Arşivi" bölümü
+- **Sorun:** HISTORY.md'de satır ~1196 ve ~1239'da aynı başlıkla iki ayrı Tamamlananlar Arşivi bölümü var.
+- **Öneri:** Küçük bölümü büyük bölüme merge et.
 
 ### D3 — HISTORY.md: "Mimari Notlar" bölümünde "14 adım" stale
-- **Sorun:** HISTORY.md satır 147'deki "Mimari Notlar" bölümü `Onboarding Adım Listesi (14 adım)` diyor; CLASSIFY_MODE yok. D105'te 16 adım doğrulandı, bu not güncellenmedi.
-- **Bağlam:** Bu tarihi bir snapshot — döneminde doğruydu. Ancak LEARNINGS.md zaten 16 adımı doğru gösteriyor.
-- **Öneri:** HISTORY.md satır 147'ye `(D105 itibarıyla 16 adım — bkz. LEARNINGS.md)` notu ekle.
+- **Sorun:** HISTORY.md satır 147'deki "Mimari Notlar" bölümü `Onboarding Adım Listesi (14 adım)` diyor; CLASSIFY_MODE yok.
+- **Öneri:** `(D105 itibarıyla 16 adım — bkz. LEARNINGS.md)` notu ekle.
 
-### D4 — AGENTS.md içeriği kontrol edilmedi (devam)
+### D4 — AGENTS.md içeriği kontrol edilmedi
 - **Sorun:** `AGENTS.md` dosyası var, aktif agent listesiyle senkron mu bilinmiyor.
 - **Öneri:** Sonraki döngüde kontrol et.
 
@@ -80,14 +103,12 @@ _Şu an kritik açık sorun yok._
 
 | Dosya | Paket Sayısı | Durum |
 |-------|-------------|-------|
-| CLAUDE.md §7 | 3717 | ✅ |
-| CLAUDE.md §8 | 3717 | ✅ |
-| LEARNINGS.md L1 | 3717 | ✅ |
-| LEARNINGS.md Mimari Kararlar | 3717 | ✅ |
-| HISTORY.md D67 | 3717 | ✅ |
-| HISTORY.md Tamamlananlar Arşivi | 3717 | ✅ |
+| CLAUDE.md §7 | 3717 | ⚠️ Güncellenmeli |
+| LEARNINGS.md Mimari Kararlar | 3717 | ⚠️ Güncellenmeli |
+| assets/app_categories.json | **3702** | ✅ Gerçek kaynak |
+| HISTORY.md D67 | 3717 | ℹ️ Tarihi kayıt |
 
-**Sonuç: Paket sayısı tüm dosyalarda tutarlı — sorun yok.**
+**Sonuç: D115 JSON export sonrası gerçek sayı 3702. CLAUDE.md + LEARNINGS.md güncellenmeli (O3).**
 
 ---
 
@@ -95,13 +116,13 @@ _Şu an kritik açık sorun yok._
 
 | Öncelik | Adet | Durum |
 |---------|------|-------|
-| 🔴 Kritik | 0 | — |
-| 🟡 Orta | 2 | Onay bekliyor |
-| 🟢 Düşük | 4 | Zaman bulununca |
+| 🔴 Kritik | 1 | **K1 — Onay bekliyor (acil)** |
+| 🟡 Orta | 4 | Onay bekliyor |
+| 🟢 Düşük | 6 | Zaman bulununca |
 | **✅ Çözülen (toplam)** | **17** | Kapatıldı |
 
-**Genel durum:** Proje sağlıklı. Kod tarafı D108-111 itibarıyla stabil. En acil aksiyon: ROADMAP.md multi-language kaydı (O1) — 2 satır değişiklik, onay gelince yapılabilir.
+**En acil:** K1 — LEARNINGS.md onboarding sıra çelişkisi (CLASSIFY_MODE ↔ SET_LAUNCHER ters yazılmış). Ardından O3 — paket sayısı 3717 değil 3702 (doğrulandı).
 
 ---
 
-*Denetim güncellemesi: 2026-06-21 otomatik rutin | Kapsam: D105-D111 | Telegram engelli, GitHub commit ile iletildi.*
+*Denetim güncellemesi: 2026-06-21 otomatik rutin | Kapsam: D105-D123 | Telegram engelli, GitHub commit ile iletildi.*
