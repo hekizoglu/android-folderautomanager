@@ -123,7 +123,7 @@ Bir dosyada Türkçe karakter bozukluğu (`Ã¶`, `Ä±`, `ÅŸ` vb.) tespit edi
 - Yarım bırakma — başlanan her görev aynı döngüde tamamlanmalı; multi-dosya işlemler bölünmez
 - Bir görevi "devam edeyim mi?" diye sorarak bırakma — tüm ilgili dosyaları aynı anda bitir
 - Encoding bozukluğu — her zaman UTF-8 kaydet
-- Onboarding'in son 2 adımı MUTLAKA SET_LAUNCHER → CLASSIFY_MODE → DONE sırasında olmalı — hiçbir değişiklik bu sırayı bozamaz.
+- Onboarding'in son 3 adımı MUTLAKA CLASSIFY_MODE → SET_LAUNCHER → DONE sırasında olmalı — hiçbir değişiklik bu sırayı bozamaz. (D120'de SET_LAUNCHER en sona alındı — kullanıcı talebi)
 - **Yan etki yaratma:** Bir dosyayı değiştirirken ilgili tüm dosyaları (ViewModel, Repository, Model, UI) önce oku. Yeni sabit/fonksiyon eklenince tüm kullanım noktaları güncellenmeli. Değişiklik sonrası build al — kırmızı alan kalmamalı.
 
 ### Değişiklik Güvenlik Protokolü

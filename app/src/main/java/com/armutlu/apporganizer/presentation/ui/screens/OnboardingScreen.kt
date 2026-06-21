@@ -50,7 +50,7 @@ fun OnboardingScreen(
         OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
         OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
         OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
-        OnboardingStep.THEME_SELECT, OnboardingStep.SET_LAUNCHER, OnboardingStep.CLASSIFY_MODE, OnboardingStep.DONE,
+        OnboardingStep.THEME_SELECT, OnboardingStep.CLASSIFY_MODE, OnboardingStep.SET_LAUNCHER, OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
 

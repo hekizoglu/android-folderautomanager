@@ -7,6 +7,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -77,20 +78,23 @@ internal enum class OnboardingStep(
         descriptionRes = R.string.onb_unused_desc,
         icon = Icons.Default.Visibility,
         buttonLabelRes = R.string.onb_unused_btn,
+        whyRes = R.string.onb_unused_why,
         isSkippable = true
     ),
     AUTO_BACKUP(
         titleRes = R.string.onb_autobackup_title,
         descriptionRes = R.string.onb_autobackup_desc,
-        icon = Icons.Default.Badge,
+        icon = Icons.Default.Backup,
         buttonLabelRes = R.string.onb_autobackup_btn,
+        whyRes = R.string.onb_autobackup_why,
         isSkippable = true
     ),
     NOTIF_TEXT(
         titleRes = R.string.onb_notiftext_title,
         descriptionRes = R.string.onb_notiftext_desc,
-        icon = Icons.Default.Notifications,
+        icon = Icons.AutoMirrored.Filled.Message,
         buttonLabelRes = R.string.onb_notiftext_btn,
+        whyRes = R.string.onb_notiftext_why,
         isSkippable = true
     ),
     NOTIF_ACCESS(
@@ -106,13 +110,15 @@ internal enum class OnboardingStep(
         descriptionRes = R.string.onb_swipe_desc,
         icon = Icons.Default.SwipeUp,
         buttonLabelRes = R.string.onb_swipe_btn,
+        whyRes = R.string.onb_swipe_why,
         isSkippable = true
     ),
     NEW_BADGE(
         titleRes = R.string.onb_newbadge_title,
         descriptionRes = R.string.onb_newbadge_desc,
-        icon = Icons.Default.Badge,
+        icon = Icons.Default.NewReleases,
         buttonLabelRes = R.string.onb_newbadge_btn,
+        whyRes = R.string.onb_newbadge_why,
         isSkippable = true
     ),
     FOLDER_COUNT(
@@ -120,20 +126,23 @@ internal enum class OnboardingStep(
         descriptionRes = R.string.onb_foldercount_desc,
         icon = Icons.Default.Folder,
         buttonLabelRes = R.string.onb_foldercount_btn,
+        whyRes = R.string.onb_foldercount_why,
         isSkippable = true
     ),
     NAV_HIDE(
         titleRes = R.string.onb_navhide_title,
         descriptionRes = R.string.onb_navhide_desc,
-        icon = Icons.Default.Navigation,
+        icon = Icons.Default.FullscreenExit,
         buttonLabelRes = R.string.onb_navhide_btn,
+        whyRes = R.string.onb_navhide_why,
         isSkippable = true
     ),
     THEME_SELECT(
         titleRes = R.string.onb_theme_title,
         descriptionRes = R.string.onb_theme_desc,
-        icon = Icons.Default.CheckCircle,
-        buttonLabelRes = R.string.onb_theme_btn
+        icon = Icons.Default.Palette,
+        buttonLabelRes = R.string.onb_theme_btn,
+        whyRes = R.string.onb_theme_why
     ),
     SET_LAUNCHER(
         titleRes = R.string.onb_setlauncher_title,

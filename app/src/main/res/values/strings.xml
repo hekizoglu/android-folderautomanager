@@ -125,40 +125,48 @@
     <string name="onb_notif_btn">İzin Ver</string>
 
     <string name="onb_unused_title">Kullanılmayan Uygulamalar</string>
-    <string name="onb_unused_desc">Hiç açmadığınız uygulamalar soluk renkte gösterilsin mi?</string>
+    <string name="onb_unused_desc">Uzun süredir açmadığınız uygulamalar soluk renkte görünsün mü? Kaç günden sonra grileşsin?</string>
+    <string name="onb_unused_why">Kullanmadığınız uygulamaları görsel olarak ayırt etmenizi sağlar.</string>
     <string name="onb_unused_btn">Devam Et</string>
 
     <string name="onb_autobackup_title">Otomatik Yedekleme</string>
-    <string name="onb_autobackup_desc">Her açılışta kategori atamalarınızın JSON yedeğini alsın mı?</string>
+    <string name="onb_autobackup_desc">Kategori atamalarınız her gün otomatik olarak yedeklensin mi? Telefon değiştirince geri yükleyebilirsiniz.</string>
+    <string name="onb_autobackup_why">Haftalık arka plan yedeği — veri kaybı yaşamazsınız.</string>
     <string name="onb_autobackup_btn">Devam Et</string>
 
-    <string name="onb_notiftext_title">Bildirim Metni</string>
-    <string name="onb_notiftext_desc">Klasör ve uygulamaların altında son bildirimi göstersin mi?</string>
+    <string name="onb_notiftext_title">Bildirim Önizlemesi</string>
+    <string name="onb_notiftext_desc">Klasör simgelerinin altında son bildirimin kısa önizlemesi gösterilsin mi?</string>
+    <string name="onb_notiftext_why">Uygulamayı açmadan son mesajı görürsünüz.</string>
     <string name="onb_notiftext_btn">Devam Et</string>
 
     <string name="onb_notifaccess_title">Bildirim Erişimi</string>
     <string name="onb_notifaccess_desc">Uygulama ikonlarında gerçek bildirim sayısını göstermek için tam erişim gerekli.</string>
-    <string name="onb_notifaccess_why">Android kısıtlamaları nedeniyle ayrı izin gerekiyor.</string>
+    <string name="onb_notifaccess_why">Android kısıtlamaları nedeniyle badge sayıları için ayrı bir sistem izni gerekiyor.</string>
     <string name="onb_notifaccess_btn">Erişime İzin Ver</string>
 
     <string name="onb_swipe_title">Swipe-up İpucu</string>
-    <string name="onb_swipe_desc">Ana ekranda yukarı kaydırma animasyonu gösterilsin mi?</string>
+    <string name="onb_swipe_desc">Ana ekranda yukarı kaydırarak tüm uygulamalara ulaşabilirsiniz. Bu ipucu animasyonu gösterilsin mi?</string>
+    <string name="onb_swipe_why">Yeni kullanıcıların özelliği keşfetmesine yardımcı olur.</string>
     <string name="onb_swipe_btn">Devam Et</string>
 
-    <string name="onb_newbadge_title">YENİ Badge</string>
-    <string name="onb_newbadge_desc">7 gün içinde kurulan uygulamalara \'YENİ\' rozeti gösterilsin mi?</string>
+    <string name="onb_newbadge_title">YENİ Uygulama Rozeti</string>
+    <string name="onb_newbadge_desc">Son 7 gün içinde yüklenen uygulamalarda \'YENİ\' rozeti görünsün mü?</string>
+    <string name="onb_newbadge_why">Yeni kurduğunuz uygulamaları takip etmenizi kolaylaştırır.</string>
     <string name="onb_newbadge_btn">Devam Et</string>
 
     <string name="onb_foldercount_title">Klasör Uygulama Sayısı</string>
-    <string name="onb_foldercount_desc">Klasör simgesinin altında uygulama adedi gösterilsin mi?</string>
+    <string name="onb_foldercount_desc">Klasör simgesinin altında kaç uygulama olduğu görünsün mü?</string>
+    <string name="onb_foldercount_why">Hangi klasörde ne kadar uygulama olduğunu hızlıca görürsünüz.</string>
     <string name="onb_foldercount_btn">Devam Et</string>
 
-    <string name="onb_navhide_title">Sistem Navigasyonunu Gizle</string>
-    <string name="onb_navhide_desc">Geri/Home/Recents butonlarını gizle, tam ekran launcher.</string>
+    <string name="onb_navhide_title">Sistem Navigasyonu</string>
+    <string name="onb_navhide_desc">Geri/Home/Recents butonları gizlensin mi? Tam ekran launcher deneyimi için idealdir.</string>
+    <string name="onb_navhide_why">Ekranın alt bölümü tamamen içeriğe ayrılır, daha geniş görünüm elde edersiniz.</string>
     <string name="onb_navhide_btn">Devam Et</string>
 
-    <string name="onb_theme_title">Renk Teması Seçin</string>
-    <string name="onb_theme_desc">Beğendiğiniz renk temasını ve yazı tipini seçin.</string>
+    <string name="onb_theme_title">Görünümü Kişiselleştir</string>
+    <string name="onb_theme_desc">Renk teması ve yazı tipini seçin — istediğiniz zaman Ayarlar\'dan değiştirebilirsiniz.</string>
+    <string name="onb_theme_why">Seçtiğiniz tema launcher boyunca uygulanır.</string>
     <string name="onb_theme_btn">Uygula</string>
 
     <string name="onb_setlauncher_title">Ana Ekran Uygulaması</string>
