@@ -1307,6 +1307,15 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
 | 2026-06-21 | D107-D111 | Akıllı öneriler, multi-language, bilinen sorunlar tarama, CS-3 3 yöntem |
 
+## Döngü 113 — 2026-06-21 (KOD — OnboardingScreen çok dil desteği, @StringRes Int pattern)
+**Yapılanlar:** OnboardingScreen.kt + OnboardingModels.kt + OnboardingStepContent.kt tam multi-language dönüşümü.
+- `OnboardingModels.kt`: `title`/`description`/`why`/`buttonLabel` String alanları → `titleRes`/`descriptionRes`/`whyRes`/`buttonLabelRes` (@StringRes Int) — enum'da runtime değer tutulmaz artık
+- `strings.xml` + `values-en/strings.xml`: 60+ yeni onboarding key (onb_* prefix) — TR + EN tam çeviri
+- `OnboardingStepContent.kt`: `s.title`/`s.description`/`currentStep.why` → `stringResource(s.titleRes)` vb.; status badge, toggle, chip metinleri de stringResource
+- `OnboardingScreen.kt`: restore result format → `context.getString(R.string.onb_restore_success, count)`, buton/atla/şimdi değil metinleri stringResource, `restoreSuccess` boolean state eklendi
+**Build:** SUCCESS 26.45 MB, commit cf9230f
+**Sonraki:** Cron devam — FİKİRLER.md'den bir sonraki yüksek puanlı görev
+
 ## Döngü 112 — 2026-06-21 (KOD — E13 HomeScreen refactor + E5 DockEditSheet + AllAppsDrawer semantics fix)
 **Yapılanlar:** HomeScreen.kt 738 satır → alt composable'lara bölündü (DVM register limit riski giderildi).
 - `HomeScreenFolderPager.kt` (YENİ, 159 satır) — `FolderPager` internal composable: tüm drag-drop mantığı, klasör grid, boş slotlar
