@@ -101,6 +101,15 @@ Puan yüksekse araştırma tamamlanmadan kod yazılmaz.
 **CLAUDE.md'ye eklenir:** kalıcı kural, build hatası+çözümü, kritik mimari karar.
 **CLAUDE.md'ye eklenmez:** döngü özeti (→ HISTORY.md), tek seferlik not, geçici durum.
 
+### MD Denetim Raporu Kuralı
+Her döngüde proje kökünde `MD_DENETIM_*.md` dosyası varsa:
+1. Openclaw agent (`gh/claude-haiku-4.5`, http://localhost:20128/v1) ile içeriği analiz et — Claude orkestra şefi, agent icracı
+2. Her maddeyi tek tek ele al: 1-2 madde/döngü
+3. Çözülen maddeyi HISTORY.md'ye `[ÇÖZÜLDÜ]` + kısa açıklama ile taşı; rapordan sil
+4. Çözülemeyen/gerekmeyen maddeyi HISTORY.md'ye `[ÇÖZÜLMEDI — sebep]` ile taşı; rapordan sil
+5. Rapor tamamen boşalınca (0 madde) → dosyayı sil, HISTORY.md'ye "MD Denetim KAPANDI" notu ekle
+- Sıralı döngülerde son döngüde build alınır, aradaki döngülerde build atlanır
+
 ### Döngü Sonu Özet Formatı
 ```
 ## Döngü [N] — [SAAT]
