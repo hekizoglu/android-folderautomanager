@@ -54,11 +54,13 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.asImageBitmap
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.math.abs
 
 private const val SWIPE_DOWN_THRESHOLD = 90f
@@ -333,7 +335,9 @@ private fun DrawerRecentFavSection(
                         val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
                             value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                                 val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
-                                iconCacheInternal[cacheKey] ?: run {
+                                val cached = iconCacheInternal[cacheKey]
+                                if (cached != null) cached
+                                else {
                                     val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
                                     if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                     bmp
@@ -366,7 +370,9 @@ private fun DrawerRecentFavSection(
                         val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
                             value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                                 val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
-                                iconCacheInternal[cacheKey] ?: run {
+                                val cached = iconCacheInternal[cacheKey]
+                                if (cached != null) cached
+                                else {
                                     val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
                                     if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
                                     bmp
