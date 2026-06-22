@@ -1421,3 +1421,7 @@ K2 (AppClassifier JSON prosedürü) caa5f63'te, K1 (onboarding sırası) LEARNIN
 
 ## MD Denetim 2026-06-22b — KAPANDI
 S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tüm S1-S6 çözüldü.
+
+## Döngü 132 — 2026-06-22 (DÖKÜMAN — MD_DENETIM_22b S6 kapatıldı)
+**Yapılanlar:** HISTORY.md'deki iki "Tamamlananlar Arşivi" bölümü tek başlık altında birleştirildi (D104-D107 satırları büyük tabloya taşındı). MD_DENETIM_2026-06-22b.md silindi. Tüm MD_DENETIM raporları kapatıldı.
+**Sonraki:** D133 — Build (7 döngü build yok, 6 döngü kuralı aşıldı)
