@@ -1,6 +1,6 @@
 # AppOrganizer — Claude Çalışma Talimatları
 
-> **Meta:** ~390 satır · Son güncelleme: 2026-06-20 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → FİKİRLER.md (ROADMAP.md donduruldu)
+> **Meta:** ~390 satır · Son güncelleme: 2026-06-22 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → FİKİRLER.md (ROADMAP.md donduruldu)
 
 ---
 
@@ -204,8 +204,9 @@ Add-MpPreference -ExclusionPath "$env:USERPROFILE\.android"
 | compileSdk yükselt | SDK 35: applicationInfo nullable |
 
 ### AppClassifier Duplicate
-`mapOf()` duplicate key'de sessizce son entry'i kullanır, önceki kaybolur.
-- Her commit öncesi: `python scripts/check_duplicates.py AppClassifier.kt`
+D115'ten itibaren paket→kategori haritası `assets/app_categories.json`'da (3702 paket). `AppClassifier.kt` artık bu JSON'u yükler.
+- JSON'da duplicate key: JSON parser sessizce son entry'i kullanır, önceki kaybolur — aynı risk.
+- Her commit öncesi: `python scripts/check_duplicates.py assets/app_categories.json`
 - Temizlik: `python scripts/dedup_classifier.py`
 - Pre-commit hook: `.githooks/pre-commit` otomatik çalıştırır (`git config core.hooksPath .githooks` ile aktifleştirilir)
 - **Merge conflict durumunda:** `python scripts/dedup_classifier.py` ile remote+local birleştir, set dedup uygula (4+ kez tekrarlandı)
@@ -317,7 +318,7 @@ app/src/main/java/com/armutlu/apporganizer/
 │   └── theme/       # Theme.kt (turkuaz, DataStore reaktif)
 ├── domain/
 │   ├── models/      # AppInfo, Category, AppFolder
-│   └── usecase/classify/  # AppClassifier (3717 paket), KeywordDatabase (32 kategori)
+│   └── usecase/classify/  # AppClassifier (3702 paket), KeywordDatabase (32 kategori)
 ├── data/
 │   ├── local/       # AppDao, AppDatabase (Room v8)
 │   ├── remote/      # BackupSyncService
@@ -326,16 +327,16 @@ app/src/main/java/com/armutlu/apporganizer/
 ```
 
 ### Önemli Mimari Notlar
-- **AppClassifier:** 3717 benzersiz paket, `exactMatchMap` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
+- **AppClassifier:** 3702 benzersiz paket, `assets/app_categories.json` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
 - **Room DB:** v8 (v7→v8 boş migration, 2026-06-16)
-- **Onboarding:** 16 adım (WELCOME → ... → THEME_SELECT → SET_LAUNCHER → CLASSIFY_MODE → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
+- **Onboarding:** 16 adım (WELCOME → ... → THEME_SELECT → CLASSIFY_MODE → SET_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor
 
 ### Özellik Durum Özeti
 | Özellik | Durum |
 |---------|-------|
-| AppClassifier 3717 paket | ✅ |
+| AppClassifier 3702 paket | ✅ |
 | DeepSeek LLM fallback | ✅ |
 | İkon pack desteği | ✅ |
 | Widget desteği | ✅ |
@@ -390,4 +391,4 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ---
 
-*Son güncelleme: 2026-06-20 — CLAUDE.md v5: FCM push özelliği eklendi, AppClassifier merge conflict kuralı §5'e promote edildi, FİKİRLER.md sistemi oluşturuldu (ROADMAP.md donduruldu), Meta satırı güncellendi.*
+*Son güncelleme: 2026-06-22 — CLAUDE.md v5.1: paket sayısı 3702 güncellendi (D115), onboarding sırası düzeltildi (D120), AppClassifier JSON-tabanlı mimari notu eklendi.*

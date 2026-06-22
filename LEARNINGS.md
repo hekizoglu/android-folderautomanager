@@ -51,7 +51,7 @@
 ### [L1] AppClassifier — exactMatchMap vs MANUFACTURER_PREFIX_MAP Çakışması
 **Tarih:** 2026-06-15 | **Öncelik:** ORTA | **Tekrar:** 1
 
-`exactMatchMap` (3717 paket, 2026-06-16 itibarıyla) ile `MANUFACTURER_PREFIX_MAP` (prefix bazlı) aynı paketi farklı kategoriye atayabilir.
+`exactMatchMap` (3702 paket, D115 sonrası — `assets/app_categories.json`'da) ile `MANUFACTURER_PREFIX_MAP` (prefix bazlı) aynı paketi farklı kategoriye atayabilir.
 
 **Örnek:** `com.whatsapp`
 - `exactMatchMap["com.whatsapp"] = CAT_COMMUNICATION` ✅
@@ -90,21 +90,21 @@
 - `PACKAGE_FILTER` companion object sabiti — her `onResume`'da nesne oluşturulmaz
 
 ### AppClassifier Mimarisi
-- `exactMatchMap`: **3717** benzersiz paket (2026-06-16 itibarıyla — `python scripts/check_duplicates.py` ile doğrula)
+- D115'ten itibaren: `assets/app_categories.json` (**3702** paket) — `AppClassifier.kt` bu dosyayı yükler
 - `KeywordDatabase`: 32 kategori, 20-50 keyword her biri
 - Bilinmeyen → `CAT_OTHER` → `CategoryLLMFallback.kt` (DeepSeek batch 15)
 - Pre-commit hook: her AppClassifier commit'inde `check_duplicates.py` otomatik
 
-**Güncelleme Prosedürü (yeni paket eklerken):**
-1. `exactMatchMap`'te doğru konuma ekle (alfabetik sıra)
-2. `python scripts/check_duplicates.py AppClassifier.kt` çalıştır
+**Güncelleme Prosedürü (yeni paket eklerken — D115 sonrası):**
+1. `assets/app_categories.json`'da doğru kategoriye paketi ekle (alfabetik)
+2. `python scripts/check_duplicates.py assets/app_categories.json` çalıştır
 3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
 4. Build + commit + push
 
-### Onboarding Adım Sırası (D105 doğrulandı — 16 adım)
-WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → SET_LAUNCHER → CLASSIFY_MODE → DONE
+### Onboarding Adım Sırası (D120 güncel — 16 adım)
+WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → CLASSIFY_MODE → SET_LAUNCHER → DONE
 Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
-Son iki adım: SET_LAUNCHER → CLASSIFY_MODE → DONE sırası değiştirilemez (CLAUDE.md §3 kuralı). ~~14+2 adım~~ → 16 adım (2026-06-21 D105).
+Son iki adım: CLASSIFY_MODE → SET_LAUNCHER → DONE sırası değiştirilemez (D120'de SET_LAUNCHER sona alındı — kullanıcı talebi). ~~14+2 adım~~ → 16 adım (D105).
 
 ### Room DB Versiyon Geçmişi
 - v1-v5: temel alanlar

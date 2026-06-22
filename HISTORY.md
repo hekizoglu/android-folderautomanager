@@ -144,7 +144,7 @@ Tüm 12 madde ✅. Detay:
 
 
 
-**Onboarding Adım Listesi (14 adım):** WELCOME -> RESTORE_BACKUP -> QUERY_PACKAGES -> NOTIFICATIONS -> UNUSED_GREY -> AUTO_BACKUP -> NOTIF_TEXT -> NOTIF_ACCESS -> SWIPE_HINT -> NEW_BADGE -> FOLDER_COUNT -> NAV_HIDE -> THEME_SELECT -> SET_LAUNCHER -> DONE. (SET_LAUNCHER en sona alındı - tüm ayarlar bitince varsayılan launcher sorulur.)
+**Onboarding Adım Listesi (16 adım — D105 itibarıyla):** WELCOME -> RESTORE_BACKUP -> QUERY_PACKAGES -> NOTIFICATIONS -> UNUSED_GREY -> AUTO_BACKUP -> NOTIF_TEXT -> NOTIF_ACCESS -> SWIPE_HINT -> NEW_BADGE -> FOLDER_COUNT -> NAV_HIDE -> THEME_SELECT -> CLASSIFY_MODE -> SET_LAUNCHER -> DONE. (D120: SET_LAUNCHER en sona, CLASSIFY_MODE öncesine alındı.)
 
 
 
@@ -1306,6 +1306,8 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-20 | D93-D95 | MD denetim + senkronizasyon düzeltmeleri |
 | 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
 | 2026-06-21 | D107-D111 | Akıllı öneriler, multi-language, bilinen sorunlar tarama, CS-3 3 yöntem |
+| 2026-06-21 | D112-D115 | AppClassifier JSON asset dönüşümü (3702 paket), dark mode chip/badge renk fix |
+| 2026-06-22 | D116-D123 | Hüseyin H1-H10 talepleri puanlama, D123 görsel kalite (saat 84sp, search border, badge shadow), D124 H1 bug fix (mail compose) |
 
 ## Döngü 115 — 2026-06-21 (KOD — AppClassifier JSON asset dönüşümü)
 **Yapılanlar:** AppClassifier.kt 4369 satır → 99 satır; exactMatchMap (3702 entry) assets/app_categories.json'a taşındı.
