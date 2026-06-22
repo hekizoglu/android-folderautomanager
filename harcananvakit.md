@@ -79,3 +79,8 @@
 | 2026-06-18 | — | — | ~30dk | KOD+BUILD | Döngü 91 — Dark mode hardcode renk düzeltmesi | AllAppsDrawer + FolderSheet + HomeScreen |
 | 2026-06-18 | 23:28 | — | ~60dk | KOD+BUILD | Döngü 92 — FCM push ile AppDatabase uzaktan güncelleme | AppFirebaseMessagingService.kt (YENİ) + AppOrganizerApp FCM init + Manifest + build.gradle |
 | 2026-06-21 | 08:30 | 10:05 | ~95dk | KOD+BUILD | Döngü 118 — Unit test coverage 156 test geçti (9 sınıf), Türkçe yol @argfile ClassNotFoundException fix, C:\AppOrg junction çözümü | Hilt 2.52, jarHiltAsmTestClasses workaround |
+| 2026-06-21 | 10:05 | 10:25 | ~20dk | KOD+BUILD | Döngü 119 — AllAppsDrawer klavye fix, FolderPositionPickerSheet emoji grid UI | IME WindowInsets fix, GridLayoutManager |
+| 2026-06-21 | 10:25 | 10:50 | ~25dk | KOD+BUILD | Döngü 120 — Onboarding yeniden tasarım, SET_LAUNCHER adımı en sona alındı | 16 adım sırası güncellendi, CLAUDE.md §3 kuralı değişti |
+| 2026-06-21 | 10:50 | 11:10 | ~20dk | KOD+WEB | Döngü 121 — Privacy Policy GitHub Pages landing sayfası, PP web linki uygulama içine eklendi | docs/index.html oluşturuldu |
+| 2026-06-21 | 11:10 | 11:30 | ~20dk | KOD+BUILD | Döngü 122 — iOS + AMOLED tema eklendi | Theme enum genişletildi, gradyan preview daireler |
+| 2026-06-21 | 11:30 | 11:45 | ~15dk | KOD+BUILD | Döngü 123 — Görsel kalite artırımı | Saat 84sp, arama border, badge shadow, öneri başlığı |
