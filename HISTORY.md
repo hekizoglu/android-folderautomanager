@@ -1430,3 +1430,13 @@ S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tü
 **Yapılanlar:** assembleDebug SUCCESS, APK 25.7 MB. D125-D132 arası 8 döngünün (H3/H5/H6/H7/H8/H9 + MD denetim temizliği) ilk build doğrulaması. Tüm değişiklikler derleniyor, hata yok.
 **Build:** SUCCESS 25.7 MB, commit [3fae12d]
 **Sonraki:** H10 büyük dosya bölme (AllAppsDrawer 982, HomeScreen 876, SettingsScreen 765 satır) veya H4 Drive backup (onay bekliyor)
+
+## Döngü 134 — 2026-06-22 (KOD — H10 AllAppsDrawer bölme)
+**Yapılanlar:** AllAppsDrawer.kt 982→695 satır. AllAppsDrawerUtils.kt (YENİ ~135 satır): sabitler + fuzzyEditDistance + formatBytes + AllAppsSortMode + rememberAppIcon + SidebarEntry + DrawerState. NiagaraComponents.kt (YENİ ~145 satır): NiagaraLetterHeader + NiagaraAppRow. private→internal visibility.
+**Build:** YOK (sıralı — build D139 civarında)
+**Sonraki:** HomeScreen.kt bölme (876 satır) veya FolderSheet.kt (749 satır)
+
+## Döngü 135 — 2026-06-22 (KOD — H10 FolderSheet bölme)
+**Yapılanlar:** FolderSheet.kt 749→275 satır. FolderContextMenuSheet.kt (YENİ ~130 satır): klasör context menü + FolderPositionPickerSheet çağrısı. FolderPositionPickerSheet.kt (YENİ ~165 satır): FOLDERS_PER_PAGE=8 + sayfalama grid. FolderRenameDialog.kt (YENİ ~130 satır): EMOJI_PICKER + COLOR_PRESETS + dialog. private→internal visibility.
+**Build:** YOK (sıralı — build D139 civarında)
+**Sonraki:** HomeScreen.kt bölme (876 satır) veya H4 Google Drive backup
