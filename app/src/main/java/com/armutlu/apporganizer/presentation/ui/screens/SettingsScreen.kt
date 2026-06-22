@@ -480,6 +480,34 @@ fun SettingsScreen(
                 }
             }
 
+            // ── İstatistikler ─────────────────────────────────────────────────
+            item { SettingsSectionTitle("İstatistikler") }
+            item {
+                val lastBackupMs = AppPrefs.getLastBackupTime(context)
+                val lastBackupText = if (lastBackupMs == 0L) "Henüz yedeklenmedi"
+                else {
+                    val sdf = java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale("tr"))
+                    sdf.format(java.util.Date(lastBackupMs))
+                }
+                val topCategory = state.getCategoryStats()
+                    .maxByOrNull { it.value }
+                    ?.let { (id, count) -> state.categories.find { it.categoryId == id }?.categoryName?.let { "$it ($count)" } }
+                    ?: "—"
+                SettingsCard {
+                    SettingsInfoRow(icon = Icons.Default.Apps, title = "Toplam Uygulama", subtitle = "${state.totalAppsCount}")
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(icon = Icons.Default.Folder, title = "Kategori Sayısı", subtitle = "${state.categories.size}")
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(icon = Icons.Default.HelpOutline, title = "Sınıflandırılmamış", subtitle = "${otherApps.size} uygulama")
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(icon = Icons.Default.VisibilityOff, title = "Gizli Uygulama", subtitle = "${hiddenApps.size}")
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(icon = Icons.Default.BarChart, title = "En Çok Dolu Kategori", subtitle = topCategory)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsInfoRow(icon = Icons.Default.Backup, title = "Son Yedekleme", subtitle = lastBackupText)
+                }
+            }
+
             item { SettingsSectionTitle("Hakkında") }
             item {
                 SettingsCard {
