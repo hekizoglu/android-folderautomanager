@@ -1193,16 +1193,6 @@ Tüm 12 madde ✅. Detay:
 **Commit:** `ede1dff`
 **Sonraki:** D107 — Akıllı Uygulama Önerileri (16 puan) veya build alıp test
 
-## ✅ Tamamlananlar Arşivi (ROADMAP ⭐ bölümünden taşındı)
-
-| D | Puan | Görev | Not |
-|---|------|-------|-----|
-| D105 | 17 | Onboarding adım sırası fix | 16 adım doğrulandı, SET_LAUNCHER→CLASSIFY_MODE→DONE |
-| D106 | 16 | Klasör sıra numarasıyla yer değiştirme | FolderContextMenuSheet + reorderFolders() |
-| D107 | 16 | Akıllı Uygulama Önerileri (30dk) | Yaklaşım B: recency+freq+timeSlot, UsageStatsHelper |
-| D104 | 16 | Dark mode tam uyum audit | Hardcode Color.Gray + Color(0xFF00897B) → theme renk |
-
----
 
 ## Döngü 107 — 2026-06-21 (KOD — Akıllı Öneriler Yaklaşım B)
 **Yapılanlar:** `UsageStatsHelper.kt`'ye `getWeightedScores()` eklendi — recency(40%)+frequency(40%)+timeSlot(20%) skor motoru, `queryEvents` + `queryUsageStats` çift kaynak, Samsung/Xiaomi lastTimeUsed=0 fallback. `LauncherViewModel.kt`: `suggestedApps` flow → Yaklaşım B skoru (izin varsa), 30dk tick ile yenileme, izinsiz fallback. CLAUDE.md'ye Görev Zorluk Puanı Kuralı eklendi.
@@ -1236,7 +1226,14 @@ Tüm 12 madde ✅. Detay:
 
 ---
 
-## ✅ Tamamlananlar Arşivi (ROADMAP'tan taşındı — 2026-06-21)
+## ✅ Tamamlananlar Arşivi
+
+| D | Puan | Görev | Not |
+|---|------|-------|-----|
+| D104 | 16 | Dark mode tam uyum audit | Hardcode Color.Gray + Color(0xFF00897B) → theme renk |
+| D105 | 17 | Onboarding adım sırası fix | 16 adım doğrulandı, CLASSIFY_MODE→SET_LAUNCHER→DONE |
+| D106 | 16 | Klasör sıra numarasıyla yer değiştirme | FolderContextMenuSheet + reorderFolders() |
+| D107 | 16 | Akıllı Uygulama Önerileri (30dk) | Yaklaşım B: recency+freq+timeSlot, UsageStatsHelper |
 
 ### Altyapı & Config
 - CLAUDE.md v1-v5, LEARNINGS.md, HISTORY.md sistemi
@@ -1421,3 +1418,6 @@ K2 (AppClassifier JSON prosedürü) caa5f63'te, K1 (onboarding sırası) LEARNIN
 **Yapılanlar:** MD_DENETIM_2026-06-21.md + 21b.md silindi [ÇÖZÜLDÜ S1]. harcananvakit.md D124-D131 retroaktif log eklendi [ÇÖZÜLDÜ S2]. HISTORY.md "3717"→"3702" [ÇÖZÜLDÜ S3]. Sprint Özeti tarih/döngü düzeltildi [ÇÖZÜLDÜ S4]. LEARNINGS.md AppClassifierAssets singleton belgesi eklendi [ÇÖZÜLDÜ S5]. MD_DENETIM_22b tek madde (S6 düşük öncelik) kaldı.
 **Agent:** openclaw (gh/claude-haiku-4.5) — hangi sorunların zaten çözüldüğünü analiz etti
 **Sonraki:** SORUN 6 (iki arşiv bölümü merge) veya H4 Google Drive backup araştırması
+
+## MD Denetim 2026-06-22b — KAPANDI
+S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tüm S1-S6 çözüldü.
