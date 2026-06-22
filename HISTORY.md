@@ -1445,3 +1445,8 @@ S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tü
 **Yapılanlar:** HomeScreen.kt 876→748 satır. HomeScreenOverlays.kt (YENİ ~130 satır): FolderStatsRow + HomeScreenOverlays internal composable. private→internal. Row import temizlendi.
 **Build:** YOK (sıralı — build D139 civarında)
 **Sonraki:** SettingsScreen.kt bölme (765 satır) veya H4 Google Drive backup
+
+## Döngü 137 — 2026-06-23 (KOD — H10 SettingsScreen bölme)
+**Yapılanlar:** SettingsScreen.kt 765→576 satır. Uygulama Listesi/Yönetimi/Gizli/Diğer bölümleri (190 satır) → settingsAppsSection() çağrısına dönüştürüldü (SettingsAppsSection.kt). Kullanılmayan importlar ve classifyLoading state kaldırıldı.
+**Build:** YOK (sıralı — build D139 civarında)
+**Sonraki:** Build döngüsü (D138-D139) veya H4 Google Drive backup
