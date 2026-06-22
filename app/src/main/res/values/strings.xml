@@ -142,6 +142,7 @@
     <string name="onb_notifaccess_title">Bildirim Erişimi</string>
     <string name="onb_notifaccess_desc">Uygulama ikonlarında gerçek bildirim sayısını göstermek için tam erişim gerekli.</string>
     <string name="onb_notifaccess_why">Android kısıtlamaları nedeniyle badge sayıları için ayrı bir sistem izni gerekiyor.</string>
+    <string name="onb_notifaccess_privacy">🔒 Tüm bildirim verileri yalnızca cihazınızda kalır — hiçbir veri dışarı çıkmaz.</string>
     <string name="onb_notifaccess_btn">Erişime İzin Ver</string>
 
     <string name="onb_swipe_title">Swipe-up İpucu</string>

@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -116,6 +117,20 @@ internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 Icon(Icons.Default.Info, null, tint = accentColor, modifier = Modifier.size(18.dp).padding(top = 2.dp))
                 Text(whyText, fontSize = 14.sp, color = Color.White.copy(0.75f), lineHeight = 20.sp)
+            }
+        }
+    }
+    if (currentStep.privacyNoteRes != 0) {
+        Spacer(Modifier.height(8.dp))
+        val privacyText = stringResource(currentStep.privacyNoteRes)
+        Box(
+            modifier = Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF00897B).copy(alpha = 0.15f))
+        ) {
+            Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Lock, null, tint = Color(0xFF26C6DA), modifier = Modifier.size(16.dp))
+                Text(privacyText, fontSize = 12.sp, color = Color(0xFF26C6DA), lineHeight = 18.sp)
             }
         }
     }

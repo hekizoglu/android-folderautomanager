@@ -43,6 +43,7 @@ internal enum class OnboardingStep(
     val icon: ImageVector,
     @StringRes val buttonLabelRes: Int,
     @StringRes val whyRes: Int = 0,
+    @StringRes val privacyNoteRes: Int = 0,
     val isSkippable: Boolean = false
 ) {
     WELCOME(
@@ -103,6 +104,7 @@ internal enum class OnboardingStep(
         icon = Icons.Default.Notifications,
         buttonLabelRes = R.string.onb_notifaccess_btn,
         whyRes = R.string.onb_notifaccess_why,
+        privacyNoteRes = R.string.onb_notifaccess_privacy,
         isSkippable = true
     ),
     SWIPE_HINT(

@@ -1,8 +1,10 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -169,6 +171,70 @@ fun SettingsScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
                             ) { Text("Ayarla", fontSize = 13.sp) }
+                        }
+                    }
+                }
+            }
+
+            // ── Bildirim İzni ─────────────────────────────────────────────────
+            item { SettingsSectionTitle("Bildirim") }
+            item {
+                val notifListenerOk = remember {
+                    val flat = android.provider.Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: ""
+                    flat.contains(context.packageName)
+                }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Notifications, null,
+                            tint = if (notifListenerOk) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Bildirim Erişimi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                if (notifListenerOk) "Aktif — badge sayıları çalışıyor" else "Kapalı — badge'ler görünmez",
+                                fontSize = 12.sp,
+                                color = if (notifListenerOk) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        if (!notifListenerOk) {
+                            Button(
+                                onClick = {
+                                    val i = Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    }
+                                    runCatching { context.startActivity(i) }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            ) { Text("İzin Ver", fontSize = 13.sp) }
+                        }
+                    }
+                    if (!notifListenerOk) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .padding(bottom = 12.dp)
+                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                            Text(
+                                "Tüm bildirim verileri yalnızca cihazınızda kalır — hiçbir veri dışarı çıkmaz.",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                            )
                         }
                     }
                 }

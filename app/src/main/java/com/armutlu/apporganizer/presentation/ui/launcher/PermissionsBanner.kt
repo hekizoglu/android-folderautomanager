@@ -176,6 +176,24 @@ fun PermissionsBanner() {
                     Text("Düzelt →", color = TealColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
+            if (!notifListenerOk) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(TealColor.copy(alpha = 0.12f))
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("🔒", fontSize = 12.sp)
+                    Text(
+                        "Tüm veriler yalnızca cihazınızda kalır — dışarı çıkmaz.",
+                        color = TealColor.copy(alpha = 0.9f),
+                        fontSize = 11.sp
+                    )
+                }
+            }
         }
     }
 }
