@@ -1389,3 +1389,11 @@ Tüm 12 madde ✅. Detay:
 **Yapılanlar:** PrivacyPolicyScreen.kt: TopAppBar'a OpenInNew ikonu eklendi (tarayıcıda açar), PP web URL footer'da gösterildi. docs/index.html: GitHub Pages landing sayfası oluşturuldu (özellikler + linkler). docs/privacy_policy.html tarih güncellendi. PP URL: hekizoglu.github.io/android-folderautomanager/docs/privacy_policy.html
 **Build:** SUCCESS 26.1 MB, commit [5b5c3b0], Telegram APK gönderildi
 **Sonraki:** GitHub Pages aktifleştir (repo Settings > Pages > /docs klasörü), Play Store PP URL girilebilir
+
+## Döngü 125 — 2026-06-22 (KOD — H3 Ana ekranda klasör arama)
+**Yapılanlar:** FolderSearchBar composable eklendi (HomeScreenComponents.kt) — Google arama çubuğunun altında; klasör/uygulama adına göre filtreler; 30s hareketsizlikte auto-reset ve geri sayım gösterir; X ile anında temizlenir. AppPrefs.KEY_HOME_SEARCH_ENABLED toggle + SettingsHomeScreenSection.kt'ye "Klasör Arama" satırı eklendi.
+**Build:** SUCCESS 26.1 MB, commit f2908c8
+**Sonraki:** MD_DENETIM_2026-06-22 tüm A/B/D sorunları çözüldü — rapor kapatıldı. H5 veya H6 sıradaki görev.
+
+## MD Denetim 2026-06-22 — KAPANDI
+A1-A6 (CLAUDE.md), B1-B4 (LEARNINGS.md), D3+D6 (HISTORY.md) tüm sorunlar bu oturumda düzeltildi (commit f5e7412). Rapor MD_DENETIM_2026-06-22.md silindi.

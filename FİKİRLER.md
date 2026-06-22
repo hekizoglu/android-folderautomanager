@@ -119,7 +119,7 @@
 |---|-------|:----:|-------|-------|
 | H1 | 2026-06-22 | **18** | **[BUG] Kategorisiz uygulama atama → mail compose açılıyor** — "Otomatik ata" butonuna basınca e-posta client açılıyor, intent yanlış | [TAMAMLANDI D124 — LazyList reflow fix, classifyLoading guard, Toast] |
 | H2 | 2026-06-22 | **18** | **Telefonlar arası online senkronizasyon** — 2 telefon aynı masaüstü/klasör yapısı; uygulama birinde yoksa uyarı ver ("Facebook yükle"); senkron gerçek zamanlı | Bekliyor |
-| H3 | 2026-06-22 | **17** | **Ana ekranda app search** — Google arama çubuğunun altına, klasörleri filtreler; X ile temizle; 30sn işlem yapılmazsa otomatik reset; sağ köşede arama ikonu, yazınca 30sn geri sayım göster | Bekliyor |
+| H3 | 2026-06-22 | **17** | **Ana ekranda app search** — Google arama çubuğunun altına, klasörleri filtreler; X ile temizle; 30sn işlem yapılmazsa otomatik reset; sağ köşede arama ikonu, yazınca 30sn geri sayım göster | [TAMAMLANDI D125 — FolderSearchBar, 30s auto-reset, Ayarlar toggle] |
 | H4 | 2026-06-22 | **17** | **Google Drive yedekleme + zamanlama** — Yedekleme saati/günü kullanıcı seçsin; Google Drive'a push seçeneği; mevcut BackupWorker genişletilecek | Bekliyor |
 | H5 | 2026-06-22 | **16** | **Sayfa kayması ve ekran boyutu uyumu** — Tüm özellikler (favoriler, son kullanılanlar, öneriler) açıkken içerik alt kısma kayıyor; farklı telefon ekran boyutları için dinamik sayfa düzeni (4/6/8 klasör adaptif) | Bekliyor |
 | H6 | 2026-06-22 | **15** | **Renk teması tüm elemanlara yansısın** — Favoriler, son kullanılanlar, badge, klasör border, arama çubuğu — hepsi primary rengi takip etmeli; mevcut bazı hardcode #00897B kaldı | Bekliyor |
