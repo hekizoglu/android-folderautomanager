@@ -1,6 +1,6 @@
 # ROADMAP.md — AppOrganizer Yol Haritası
 
-> Son güncelleme: 2026-06-21 (D108). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
+> Son güncelleme: 2026-06-22 (D123). Yeni görevler → **FİKİRLER.md**. Bu dosya aktif durumu gösterir.
 > İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 · Puanlar FİKİRLER.md tablosundan (15+ = bu listeye girer)
 > **Kural:** Tamamlanan görevler bu dosyadan silinir → HISTORY.md Tamamlananlar Arşivi'ne taşınır.
 
@@ -10,12 +10,6 @@
 
 Play Store yayını → Production AAB v1.0.0 hazır ✅  
 Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
-
----
-
-## 🔥 Şu An Ne Yapılıyor (D108)
-
-Multi-language strings.xml entegrasyonu devam ediyor — FolderSheet, HomeScreen, AllAppsDrawer tamamlandı. Sırada: SettingsScreen + SettingsAppearanceSection.
 
 ---
 
@@ -29,12 +23,6 @@ Multi-language strings.xml entegrasyonu devam ediyor — FolderSheet, HomeScreen
 | **Privacy Policy sayfası** | Play Store şart — GitHub Pages `/docs/privacy_policy.html` hazır, Pages aktifleştirilmeli | ⚠️ Onay gerekli |
 | **Content rating anketi** | Play Store — göndermeden önce doldurulmalı | ⚠️ Bekliyor |
 | **Screenshots** | Play Store — Pixel 6 emülatörü, light + dark mode | Bekliyor |
-
-### ⭐ Yüksek Puanlı — Kodlanabilir (FİKİRLER.md 15+ puan, Play Store dışı)
-
-| Puan | Görev | Alan | Durum |
-|------|-------|------|-------|
-| 17 | **Multi-language support (TR/EN)** | `strings.xml` + `values-en/strings.xml` + Kotlin entegrasyon | 🔄 D108 devam ediyor |
 
 ### 🟡 Orta Öncelik
 
@@ -50,9 +38,6 @@ Multi-language strings.xml entegrasyonu devam ediyor — FolderSheet, HomeScreen
 
 | Görev | Alan | Durum |
 |-------|------|-------|
-| **Unit test coverage** | LauncherViewModel MockK testleri | Bekliyor |
-| **Hilt DI kurulumu** | manuel `new()` çağrılarını temizle | Bekliyor |
-| **AppClassifier → JSON asset** | `assets/app_categories.json` + runtime parse | Tartışma ⚠️ |
 | **AllApps double-tap gerçek cihaz testi** | emülatörde doğrulanamadı | Bekliyor |
 | **Üretici kategorileri gerçek cihaz testi** | 9 yeni kategori (CAT_GOOGLE vb.) | Bekliyor |
 
@@ -69,7 +54,6 @@ Multi-language strings.xml entegrasyonu devam ediyor — FolderSheet, HomeScreen
 | Karar | Bağlam | Durum |
 |-------|--------|-------|
 | Privacy Policy içeriği | Hangi veri toplandığı netleşmeli (NotificationListener, UsageStats) | Bekliyor |
-| AppClassifier → JSON asset | Derleme süresi + duplicate riski azalır, runtime parse maliyeti artar | Tartışma |
 | Gemini API key | LLM fallback için, kullanıcı sağlarsa eklenir | Bekliyor |
 
 ---
