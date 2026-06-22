@@ -113,6 +113,7 @@ fun HomeScreen(
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
+    var homeSearchEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -169,6 +170,8 @@ fun HomeScreen(
                     folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BLUR ->
                     folderBlurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_SEARCH_ENABLED ->
+                    homeSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -185,6 +188,8 @@ fun HomeScreen(
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
     var folderContextMenu by remember { mutableStateOf<AppFolder?>(null) }
     var homeLongPressOpen by remember { mutableStateOf(false) }
+    var folderSearchQuery by remember { mutableStateOf("") }
+    var folderSearchCountdown by remember { mutableStateOf(30) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -243,6 +248,19 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { msg ->
             android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Klasör arama 30s otomatik sıfırlama
+    LaunchedEffect(folderSearchQuery) {
+        folderSearchCountdown = 30
+        if (folderSearchQuery.isNotEmpty()) {
+            repeat(30) {
+                delay(1_000)
+                folderSearchCountdown--
+            }
+            folderSearchQuery = ""
+            folderSearchCountdown = 30
         }
     }
 
@@ -387,6 +405,19 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
+            // Klasör arama çubuğu — HomeScreenComponents.FolderSearchBar
+            if (homeSearchEnabled) {
+                FolderSearchBar(
+                    query = folderSearchQuery,
+                    onQueryChange = { folderSearchQuery = it },
+                    onClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
+                    countdown = folderSearchCountdown,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
+
             // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
             HomeFavoritesSection(
                 favoritesEnabled = favoritesEnabled,
@@ -415,7 +446,14 @@ fun HomeScreen(
             FolderStatsRow(folders = folders)
 
             // Folder grid — sayfa başına klasör sayısı ayarlanabilir (AppPrefs.KEY_PAGE_SIZE)
-            val displayFolders = draggingFolders ?: folders
+            val baseFolders = draggingFolders ?: folders
+            val displayFolders = if (homeSearchEnabled && folderSearchQuery.isNotEmpty()) {
+                val q = folderSearchQuery.lowercase(java.util.Locale("tr"))
+                baseFolders.filter { folder ->
+                    folder.category.categoryName.lowercase(java.util.Locale("tr")).contains(q) ||
+                    folder.apps.any { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
+                }
+            } else baseFolders
             val pageSize = pageFolderCount
             val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
             val pagerState = rememberPagerState(pageCount = { pageCount })

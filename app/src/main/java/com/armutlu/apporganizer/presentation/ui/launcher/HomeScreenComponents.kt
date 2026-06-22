@@ -27,10 +27,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -508,6 +515,81 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
                 text = "Tüm uygulamalar",
                 color = Color.White.copy(alpha = 0.40f),
                 fontSize = 11.sp
+            )
+        }
+    }
+}
+
+/**
+ * Ana ekran klasör arama çubuğu.
+ * [query] boş değilken aktif — 30s hareketsizlikte [onClear] tetiklenir.
+ * [countdown] dışarıdan yönetilir (HomeScreen LaunchedEffect).
+ */
+@Composable
+internal fun FolderSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+    countdown: Int,
+    modifier: Modifier = Modifier
+) {
+    val active = query.isNotEmpty() || countdown < 30
+    Row(
+        modifier = modifier
+            .height(44.dp)
+            .border(
+                1.dp,
+                if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                else Color.White.copy(alpha = 0.18f),
+                RoundedCornerShape(22.dp)
+            )
+            .background(
+                color = Color.White.copy(alpha = if (active) 0.18f else 0.10f),
+                shape = RoundedCornerShape(22.dp)
+            )
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = "Klasör ara",
+            tint = if (active) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.55f),
+            modifier = Modifier.size(18.dp)
+        )
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            singleLine = true,
+            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+            decorationBox = { inner ->
+                Box(Modifier.weight(1f)) {
+                    if (query.isEmpty()) {
+                        Text(
+                            "Klasör ara...",
+                            color = Color.White.copy(alpha = 0.40f),
+                            fontSize = 14.sp
+                        )
+                    }
+                    inner()
+                }
+            },
+            modifier = Modifier.weight(1f)
+        )
+        if (active) {
+            Text(
+                text = "${countdown}s",
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
+                fontSize = 12.sp,
+                modifier = Modifier.wrapContentWidth()
+            )
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Aramayı temizle",
+                tint = Color.White.copy(alpha = 0.70f),
+                modifier = Modifier
+                    .size(18.dp)
+                    .clickable { onClear() }
             )
         }
     }

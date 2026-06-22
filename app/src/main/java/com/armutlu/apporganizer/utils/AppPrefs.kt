@@ -162,6 +162,11 @@ object AppPrefs {
     fun isShowSystemApps(context: Context) = prefs(context).getBoolean(KEY_SHOW_SYSTEM_APPS, false)
     fun setShowSystemApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SHOW_SYSTEM_APPS, v).apply()
 
+    // Ana ekran klasör arama çubuğu
+    const val KEY_HOME_SEARCH_ENABLED = "home_search_enabled"
+    fun isHomeSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_HOME_SEARCH_ENABLED, true)
+    fun setHomeSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_SEARCH_ENABLED, v).apply()
+
     // Uygulama önerileri — en sık kullanılan 4 uygulama ana ekranda gösterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)

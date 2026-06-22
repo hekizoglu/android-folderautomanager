@@ -35,8 +35,20 @@ fun SettingsHomeScreenSection() {
     var favoritesEnabled         by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
     var favoritesEnabledAllApps  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
+    var homeSearchEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
 
     SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.Search,
+            title = "Klasör Arama",
+            subtitle = "Google arama çubuğunun altında klasör filtresi (30s hareketsizlikte otomatik sıfırlanır)",
+            checked = homeSearchEnabled,
+            onCheckedChange = {
+                homeSearchEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setHomeSearchEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = "Favoriler",
