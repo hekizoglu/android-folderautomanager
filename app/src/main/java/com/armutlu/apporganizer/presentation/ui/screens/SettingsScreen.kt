@@ -1,6 +1,5 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.screens
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,12 +22,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import com.armutlu.apporganizer.R
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,7 +51,6 @@ fun SettingsScreen(
     val llmCategorizing  by viewModel.llmCategorizing.collectAsState()
     val llmProgress      by viewModel.llmProgress.collectAsState()
     val classifyResult   by viewModel.classifyResult.collectAsState()
-    val clipboard        = LocalClipboardManager.current
     val context          = LocalContext.current
 
     // classifyResult değişince Toast göster
@@ -64,8 +59,6 @@ fun SettingsScreen(
             android.widget.Toast.makeText(context, classifyResult, android.widget.Toast.LENGTH_LONG).show()
         }
     }
-    var debugExpanded   by remember { mutableStateOf(false) }
-    val scope           = rememberCoroutineScope()
     val themePrefs      = remember { ThemePreferences(context) }
     val currentTheme    by themePrefs.themeFlow.collectAsState(initial = AppTheme.TEAL)
     val currentFont     by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
@@ -319,157 +312,15 @@ fun SettingsScreen(
                 }
             }
 
-            item { SettingsSectionTitle("Hakkında") }
-            item {
-                SettingsCard {
-                    SettingsInfoRow(
-                        icon = Icons.Default.Apps,
-                        title = "App Organizer",
-                        subtitle = "v1.0 beta"
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsInfoRow(
-                        icon = Icons.Default.Person,
-                        title = stringResource(R.string.settings_developer),
-                        subtitle = stringResource(R.string.settings_developer_name)
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsInfoRow(
-                        icon = Icons.Default.Code,
-                        title = "Kaynak Kod",
-                        subtitle = "github.com/hekizoglu/android-folderautomanager"
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsInfoRow(
-                        icon = Icons.Default.Storage,
-                        title = stringResource(R.string.settings_database),
-                        subtitle = "${state.apps.size} uygulama · ${state.categories.size} kategori"
-                    )
-                }
-            }
+            // Hakkında (üst) + Yedek/Geri Yükle + Hakkında (gizlilik) + Debug → SettingsBackupAboutSection.kt
+            settingsBackupAboutSection(
+                viewModel = viewModel,
+                appCount = state.apps.size,
+                categoryCount = state.categories.size,
+                logs = logs,
+                onNavigateToPrivacyPolicy = onNavigateToPrivacyPolicy
+            )
 
-            // Backup & Restore
-            item { SettingsSectionTitle("Yedek / Geri Yukle") }
-            item {
-                var autoBackup by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoBackupEnabled(context)) }
-                SettingsCard {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Autorenew, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-                        Spacer(Modifier.width(14.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text("Otomatik Yedekleme", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                            Text("Uygulama acildiginda otomatik JSON yedegi al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Switch(checked = autoBackup, onCheckedChange = {
-                            autoBackup = it
-                            com.armutlu.apporganizer.utils.AppPrefs.setAutoBackupEnabled(context, it)
-                            if (it) com.armutlu.apporganizer.workers.BackupWorker.schedule(context)
-                            else com.armutlu.apporganizer.workers.BackupWorker.cancel(context)
-                        })
-                    }
-                }
-            }
-            item {
-                var backupLoading by remember { mutableStateOf(false) }
-                val filePickerLauncher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.GetContent()
-                ) { uri ->
-                    if (uri == null) return@rememberLauncherForActivityResult
-                    scope.launch {
-                        backupLoading = true
-                        runCatching {
-                            val json = context.contentResolver.openInputStream(uri)
-                                ?.bufferedReader()?.readText() ?: return@runCatching
-                            val result = viewModel.importBackup(json)
-                            android.widget.Toast.makeText(
-                                context,
-                                if (result.success) "${result.updatedCount} uygulama geri yuklendi"
-                                else "Geri yukleme basarisiz: ${result.error}",
-                                android.widget.Toast.LENGTH_LONG
-                            ).show()
-                        }
-                        backupLoading = false
-                    }
-                }
-                val shareLauncher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.StartActivityForResult()
-                ) {}
-
-                SettingsCard {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = !backupLoading) {
-                                scope.launch {
-                                    backupLoading = true
-                                    val intent = viewModel.exportBackup(context)
-                                    if (intent != null) {
-                                        shareLauncher.launch(Intent.createChooser(intent, context.getString(R.string.settings_share_backup)))
-                                    } else {
-                                        android.widget.Toast.makeText(context, context.getString(R.string.settings_export_failed), android.widget.Toast.LENGTH_SHORT).show()
-                                    }
-                                    backupLoading = false
-                                }
-                            }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Upload, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-                        Spacer(Modifier.width(14.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text("Yedek Al", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                            Text("Kategori atamalarini JSON olarak disa aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (backupLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    }
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = !backupLoading) { filePickerLauncher.launch("application/json") }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Download, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(22.dp))
-                        Spacer(Modifier.width(14.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text("Geri Yukle", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                            Text("JSON yedek dosyasindan kategorileri ice aktar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
-            }
-
-            // ── Hakkinda ─────────────────────────────────────────────────────
-            item { SettingsSectionTitle("Hakkında") }
-            item {
-                SettingsCard {
-                    SettingsButtonRow(
-                        icon = Icons.Default.PrivacyTip,
-                        title = "Gizlilik Politikasi",
-                        subtitle = "Veri toplama ve kullanim hakkinizda bilgi alin",
-                        onClick = onNavigateToPrivacyPolicy
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(
-                        icon = Icons.Default.Info,
-                        title = "Versiyon",
-                        subtitle = "AppOrganizer 1.0.0 — Haziran 2026"
-                    )
-                }
-            }
 
             // ── Geri Bildirim ────────────────────────────────────────────────
             item { SettingsSectionTitle("Geri Bildirim") }
@@ -493,81 +344,6 @@ fun SettingsScreen(
                 }
             }
 
-            // ── Debug ────────────────────────────────────────────────────────
-            if (logs.isNotEmpty()) {
-                item { SettingsSectionTitle("Debug") }
-                item {
-                    SettingsCard {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { debugExpanded = !debugExpanded }
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.BugReport,
-                                null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(Modifier.width(14.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text("Loglar", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                                Text("${logs.size} satır", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            Icon(
-                                if (debugExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        if (debugExpanded) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .animateContentSize()
-                                    .padding(horizontal = 12.dp, vertical = 4.dp)
-                            ) {
-                                // Son 30 log
-                                logs.takeLast(30).forEach { line ->
-                                    Text(
-                                        line,
-                                        fontSize = 11.sp,
-                                        fontFamily = FontFamily.Monospace,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(vertical = 1.dp)
-                                    )
-                                }
-                                Spacer(Modifier.height(8.dp))
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            clipboard.setText(AnnotatedString(viewModel.getDebugLogs()))
-                                        },
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(16.dp))
-                                        Spacer(Modifier.width(4.dp))
-                                        Text("Kopyala", fontSize = 13.sp)
-                                    }
-                                    OutlinedButton(
-                                        onClick = { viewModel.clearDebugLogs() },
-                                        modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                                    ) {
-                                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
-                                        Spacer(Modifier.width(4.dp))
-                                        Text("Temizle", fontSize = 13.sp)
-                                    }
-                                }
-                                Spacer(Modifier.height(8.dp))
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
