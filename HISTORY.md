@@ -1368,6 +1368,11 @@ Tüm 12 madde ✅. Detay:
 **Build:** SUCCESS 26.1 MB, commit [6a02acd], Telegram APK gönderildi
 **Sonraki:** Widget hızlı menü araştırması, iOS/Android tema seçenekleri
 
+## Döngü 124 — 2026-06-22 (BUG FIX — H1 Otomatik ata mail açılması)
+**Yapılanlar:** Kök neden: classifyUnclassifiedApps() bitince otherApps StateFlow güncelleniyor, LazyList reflow yapıyor, parmak Geri Bildirim butonuna (ACTION_SENDTO mailto:) kayıyordu. Düzeltme: ViewModel'e classifyLoading + classifyResult StateFlow eklendi; buton sınıflandırma sırasında disabled+spinner; tamamlanınca Toast gösterilir.
+**Build:** SUCCESS 26.1 MB, commit [13d2514], Telegram APK gönderildi
+**Sonraki:** H7 — Bildirim izni kapalıysa uyarı + veri güvencesi mesajı
+
 ## Döngü 123 — 2026-06-21 (KOD/BUILD — Görsel kalite artırımı)
 **Yapılanlar:** HomeScreenComponents.kt: saat 72sp→84sp, letterSpacing -2→-3sp; GoogleSearchBar 1dp border (alpha 0.20f); öneri satırı başlığı alpha 0.45→0.55 + FontWeight.Medium. FolderTile.kt: bildirim badge kırmızı shadow 3dp (ambientColor + spotColor #E53935).
 **Build:** SUCCESS 26.1 MB, commit [5cd3c30], Telegram APK gönderildi
