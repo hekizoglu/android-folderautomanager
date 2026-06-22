@@ -1402,3 +1402,8 @@ A1-A6 (CLAUDE.md), B1-B4 (LEARNINGS.md), D3+D6 (HISTORY.md) tüm sorunlar bu otu
 **Yapılanlar:** HomeScreen: effectivePageSize = ekran yüksekliği + aktif özellik sayısına göre hesaplanır (screenHeightDp<640→4, <720 ve 2+ özellik→4, else→8). HomeFavoritesSection: compactMode parametresi eklendi — <640dp ekranlarda öneri+son kullanılanlar gizlenir, klasör grid için alan açılır.
 **Build:** YOK (sıralı döngü — son döngüde build)
 **Sonraki:** H6 tema rengi (15p)
+
+## Döngü 129 — 2026-06-22 (KOD — H9 Ayarlar İstatistikler bölümü)
+**Yapılanlar:** SettingsScreen.kt: "Hakkında" bölümünden önce "İstatistikler" kartı eklendi — toplam uygulama, kategori sayısı, sınıflandırılmamış uygulama, gizli uygulama, en çok dolu kategori, son yedekleme tarihi. AppPrefs.getLastBackupTime + state.totalAppsCount + otherApps.size + hiddenApps.size + getCategoryStats() kullanıldı.
+**Build:** YOK (sıralı döngü — son döngüde build)
+**Sonraki:** H8 üretici fuzzy matching (13p, zorluk 4-5)

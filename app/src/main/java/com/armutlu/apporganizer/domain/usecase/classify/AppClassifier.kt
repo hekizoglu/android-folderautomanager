@@ -46,6 +46,23 @@ class AppClassifier @Inject constructor(
         "com.apple"                             to Category.CAT_APPLE,
     )
 
+    // Üretici kategorileri kümesi — tek uygulamalı üretici klasörlerini CAT_OTHER'a almak için
+    private val MANUFACTURER_CATEGORIES = MANUFACTURER_PREFIX_MAP.values.toSet()
+
+    // Üretici adı → üretici kategorisi: uygulama adında üretici adı geçiyorsa da eşleştirir
+    private val MANUFACTURER_NAME_MAP = mapOf(
+        "samsung"   to Category.CAT_SAMSUNG,
+        "xiaomi"    to Category.CAT_XIAOMI,
+        "miui"      to Category.CAT_XIAOMI,
+        "huawei"    to Category.CAT_HUAWEI,
+        "honor"     to Category.CAT_HUAWEI,
+        "microsoft" to Category.CAT_MICROSOFT,
+        "amazon"    to Category.CAT_AMAZON,
+        "apple"     to Category.CAT_APPLE,
+        "meta"      to Category.CAT_META,
+        "spotify"   to Category.CAT_SPOTIFY,
+    )
+
     // Paket adına göre kesin kategori eşlemesi — assets/app_categories.json'dan lazy yüklenir
     private val exactMatchMap: Map<String, String> get() = AppClassifierAssets.getExactMatchMap(context)
 
@@ -53,13 +70,20 @@ class AppClassifier @Inject constructor(
     fun classifyApp(appInfo: AppInfo): String {
         exactMatchMap[appInfo.packageName]?.let { return it }
         if (manufacturerClassifyEnabled) {
-            classifyByManufacturerPrefix(appInfo.packageName)?.let { return it }
+            classifyByManufacturerPrefix(appInfo.packageName, appInfo.appName)?.let { return it }
         }
         return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
     }
 
-    fun classifyApps(apps: List<AppInfo>): Map<String, String> =
-        apps.associateBy({ it.packageName }, { classifyApp(it) })
+    fun classifyApps(apps: List<AppInfo>): Map<String, String> {
+        val raw = apps.associateBy({ it.packageName }, { classifyApp(it) })
+        if (!manufacturerClassifyEnabled) return raw
+        // Tek uygulamalı üretici klasörlerini CAT_OTHER'a at
+        val manufacturerCounts = raw.values.filter { it in MANUFACTURER_CATEGORIES }.groupingBy { it }.eachCount()
+        return raw.mapValues { (_, cat) ->
+            if (cat in MANUFACTURER_CATEGORIES && (manufacturerCounts[cat] ?: 0) < 2) Category.CAT_OTHER else cat
+        }
+    }
 
     fun getConfidence(appInfo: AppInfo, categoryId: String): Int = when {
         categoryId == Category.CAT_OTHER -> 30
@@ -69,10 +93,15 @@ class AppClassifier @Inject constructor(
         else -> 50
     }
 
-    // Üretici paket prefix'i → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
-    private fun classifyByManufacturerPrefix(packageName: String): String? {
+    // Üretici paket prefix'i veya uygulama adı → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
+    // Nokta/tire normalize edilir; büyük/küçük harf toleransı sağlanır.
+    private fun classifyByManufacturerPrefix(packageName: String, appName: String = ""): String? {
         val pkg = packageName.lowercase()
-        return MANUFACTURER_PREFIX_MAP.entries.firstOrNull { (prefix, _) -> pkg.startsWith(prefix) }?.value
+        val prefixMatch = MANUFACTURER_PREFIX_MAP.entries.firstOrNull { (prefix, _) -> pkg.startsWith(prefix) }?.value
+        if (prefixMatch != null) return prefixMatch
+        // Uygulama adında üretici adı varsa da eşleştir (Samsung/SAMSUNG/samsung toleranslı)
+        val lowerName = appName.lowercase(java.util.Locale("tr"))
+        return MANUFACTURER_NAME_MAP.entries.firstOrNull { (mfr, _) -> lowerName.contains(mfr) }?.value
     }
 
     private fun classifyByKeywords(appName: String, packageName: String): String? {

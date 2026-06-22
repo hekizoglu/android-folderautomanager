@@ -125,7 +125,7 @@
 | H6 | 2026-06-22 | **15** | **Renk teması tüm elemanlara yansısın** — Favoriler, son kullanılanlar, badge, klasör border, arama çubuğu — hepsi primary rengi takip etmeli; mevcut bazı hardcode #00897B kaldı | [TAMAMLANDI D128 — AppContextMenu/DockEdit/CategoryPicker/HomeLongPress/AppIconView/FolderPager'da TealColor→MaterialTheme.colorScheme.primary] |
 | H7 | 2026-06-22 | **14** | **Bildirim izni kapalıysa uyarı + veri güvencesi** — Bildirimler kapalıysa HomeScreen'de uyarı banner; "Tüm veriler cihazda kalır, dışarı çıkmaz" açıklaması onboarding/ayarlarda | [TAMAMLANDI D126 — PermissionsBanner güvence notu, Onboarding privacyNoteRes, Ayarlar Bildirim bölümü] |
 | H8 | 2026-06-22 | **13** | **Üreticiye göre klasörleme fuzzy matching** — Büyük/küçük harf, nokta, tire toleransı (Samsung/SAMSUNG/samsung); tek üretici 1 cihazsa "Diğer" klasörüne at; çok cihazsa üretici klasörü aç | Bekliyor |
-| H9 | 2026-06-22 | **12** | **Ayarlar istatistik ekranı** — Toplam klasör sayısı, uygulama sayısı, en çok kullanılan kategori, sınıflandırılmamış uygulama sayısı, son yedekleme tarihi | Bekliyor |
+| H9 | 2026-06-22 | **12** | **Ayarlar istatistik ekranı** — Toplam klasör sayısı, uygulama sayısı, en çok kullanılan kategori, sınıflandırılmamış uygulama sayısı, son yedekleme tarihi | ✅ TAMAMLANDI (D129) |
 | H10 | 2026-06-22 | **8** | **Kod dosyası bölme (single responsibility)** — Büyük composable'ları ayrı dosyalara böl; max 300 satır kuralı tüm dosyalara uygula | Bekliyor |
 
 ---
