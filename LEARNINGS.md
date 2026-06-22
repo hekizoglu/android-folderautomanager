@@ -91,6 +91,7 @@
 
 ### AppClassifier Mimarisi
 - D115'ten itibaren: `assets/app_categories.json` (**3702** paket) — `AppClassifier.kt` bu dosyayı yükler
+- `AppClassifierAssets.kt`: singleton, thread-safe double-check lazy init, JSONObject ile 122 KB parse; `AppClassifier.kt`'nin `exactMatchMap` kaynağı
 - `KeywordDatabase`: 32 kategori, 20-50 keyword her biri
 - Bilinmeyen → `CAT_OTHER` → `CategoryLLMFallback.kt` (DeepSeek batch 15)
 - Pre-commit hook: her AppClassifier commit'inde `check_duplicates.py` otomatik

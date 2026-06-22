@@ -1259,7 +1259,7 @@ Tüm 12 madde ✅. Detay:
 - Splash Screen API — `installSplashScreen()` + ic_launcher_foreground
 
 ### Akıllı Kategorizasyon
-- Aşama 1: Offline veritabanı — 3717 benzersiz paket
+- Aşama 1: Offline veritabanı — 3702 benzersiz paket (D115 JSON export sonrası)
 - Aşama 2: DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
 - KeywordDatabase duplicate bug fix
 - AppClassifier duplicate temizliği (350+, pre-commit hook ile korunuyor)
@@ -1407,3 +1407,11 @@ A1-A6 (CLAUDE.md), B1-B4 (LEARNINGS.md), D3+D6 (HISTORY.md) tüm sorunlar bu otu
 **Yapılanlar:** SettingsScreen.kt: "Hakkında" bölümünden önce "İstatistikler" kartı eklendi — toplam uygulama, kategori sayısı, sınıflandırılmamış uygulama, gizli uygulama, en çok dolu kategori, son yedekleme tarihi. AppPrefs.getLastBackupTime + state.totalAppsCount + otherApps.size + hiddenApps.size + getCategoryStats() kullanıldı.
 **Build:** YOK (sıralı döngü — son döngüde build)
 **Sonraki:** H8 üretici fuzzy matching (13p, zorluk 4-5)
+
+## Döngü 130 — 2026-06-22 (KOD — H8 Üretici fuzzy matching)
+**Yapılanlar:** AppClassifier.kt: MANUFACTURER_NAME_MAP eklendi (samsung/xiaomi/huawei/microsoft/amazon/apple/meta/spotify Türkçe locale toleranslı). classifyByManufacturerPrefix artık appName'de de üretici adı arıyor. classifyApps: <2 uygulamalı üretici kategorileri CAT_OTHER'a remapped.
+**Build:** YOK (sıralı döngü — son döngüde build)
+**Sonraki:** H4 Google Drive backup (17p, zorluk 8 — araştırma gerekli) veya build döngüsü
+
+## MD Denetim 2026-06-21 ve 2026-06-21b — KAPANDI
+K2 (AppClassifier JSON prosedürü) caa5f63'te, K1 (onboarding sırası) LEARNINGS.md satır 107'de zaten doğruydu, O1 (ROADMAP multi-lang) 64c4ffb'de, O3 (3717→3702) f5e7412'de çözülmüştü. O4 (AppClassifierAssets belgeleme) bu döngüde LEARNINGS.md'ye eklendi. Her iki rapor dosyası silindi.
