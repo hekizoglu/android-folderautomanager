@@ -3,8 +3,15 @@
 > Tarih: 2026-06-22 | Kontrol eden: Claude (zamanlanmış rutin)
 > Okunan dosyalar: CLAUDE.md · LEARNINGS.md · ROADMAP.md · HISTORY.md · harcananvakit.md · FİKİRLER.md
 > Son git commit: `6d974fa` — MD denetim raporu 2026-06-21 (2. rutin)
-> D123 sonrasında yeni kod commit'i yok.
-> **ONAY GEREKİYOR** — değişiklik yapılmadı, sadece rapor oluşturuldu.
+
+## 🔄 Rutin Çalışma Geçmişi (Bugün)
+
+| Çalışma | Saat (UTC) | Durum | Yeni Bulgu |
+|---------|-----------|-------|-----------|
+| 1. rutin | 2026-06-22 00:11 | 12 sorun tespit edildi, commit ile iletildi | 1 yeni (N1 footer tarihi) |
+| **2. rutin** | **2026-06-22 ~06:00** | **12 sorun hâlâ açık — Hüseyin onayı bekleniyor** | **Yok** |
+
+> ⚠️ **Kritik sorunlar (K1 + K2) ~18 saattir açık.** Özellikle K2 risk taşıyor: CLAUDE.md + LEARNINGS.md'deki AppClassifier prosedürü yanlış. Bir sonraki oturumda AppClassifier'a yeni paket eklemek istenirse hata yapılır.
 
 ---
 
@@ -97,15 +104,7 @@ LEARNINGS.md "AppClassifier Mimarisi" bölümü `AppClassifierAssets.kt` singlet
 | D4 | AGENTS.md içeriği kontrol edilmedi | AGENTS.md | Aktif agent listesiyle senkron mu kontrol et |
 | D5 | "Dark mode → Bekliyor" ve "Multi-language → Bekliyor" (her ikisi TAMAMLANDI D114/D113) | FİKİRLER.md Düşük Öncelik tablosu | `[TAMAMLANDI D114]` ve `[TAMAMLANDI D113]` olarak güncelle |
 | D6 | Sprint Özeti son satırı "D107-D111" — D112-D123 arası 12 döngü eksik | HISTORY.md | Yeni satır ekle: `2026-06-21 · D112-D123 · HomeScreen refactor, OnboardingScreen dil, JSON asset 3702, 156 test, iOS+AMOLED tema` |
-
----
-
-## 🆕 Bu Denetimde Yeni Tespit
-
-### N1 — CLAUDE.md footer: "Son güncelleme: 2026-06-20" ama D120 (2026-06-21) kuralı güncelledi [DÜŞÜK]
-CLAUDE.md son satırı "Son güncelleme: 2026-06-20" yazıyor. D120'de onboarding sırası (CLASSIFY_MODE → SET_LAUNCHER) kuralı CLAUDE.md §3'e eklendi (2026-06-21). Footer en az 1 gün geride.
-
-**Öneri:** Footer tarihi 2026-06-21 olarak güncelle, v5 notuna D120 kuralı ekle.
+| N1 | CLAUDE.md footer "Son güncelleme: 2026-06-20" ama D120 (2026-06-21) kuralı güncelledi | CLAUDE.md | Footer tarihi 2026-06-21 olarak güncelle |
 
 ---
 
@@ -142,4 +141,4 @@ CLAUDE.md son satırı "Son güncelleme: 2026-06-20" yazıyor. D120'de onboardin
 ---
 
 > **Telegram engelli (bu ortamda)** — rapor commit mesajına yazıldı ve GitHub MCP ile push edildi.
-> Rutin: 2026-06-22 | Telegram: Engellenmiş | GitHub commit ile iletildi.
+> 1. rutin: 2026-06-22 00:11 UTC | 2. rutin: 2026-06-22 ~06:00 UTC
