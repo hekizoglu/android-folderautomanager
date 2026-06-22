@@ -1450,3 +1450,13 @@ S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tü
 **Yapılanlar:** SettingsScreen.kt 765→576 satır. Uygulama Listesi/Yönetimi/Gizli/Diğer bölümleri (190 satır) → settingsAppsSection() çağrısına dönüştürüldü (SettingsAppsSection.kt). Kullanılmayan importlar ve classifyLoading state kaldırıldı.
 **Build:** YOK (sıralı — build D139 civarında)
 **Sonraki:** Build döngüsü (D138-D139) veya H4 Google Drive backup
+
+## Döngü 138 — 2026-06-23 (KOD — H10 SettingsScreen 2. tur)
+**Yapılanlar:** SettingsScreen.kt 576→352 satır. Hakkında+Yedek+Debug bölümleri settingsBackupAboutSection() çağrısına taşındı. clipboard/debugExpanded/scope + animateContentSize/FontFamily/AnnotatedString temizlendi.
+**Build:** YOK
+**Sonraki:** Build D139
+
+## Döngü 139 — 2026-06-23 (BUILD — D134-D139 toplu)
+**Yapılanlar:** assembleDebug SUCCESS 25.7 MB. AllAppsDrawer.kt build hataları düzeltildi: asImageBitmap+Locale import eksik, LRUCache?.run→cached/else pattern. H10 code split serisinin ilk başarılı build doğrulaması.
+**Build:** SUCCESS 25.7 MB, commit b58f701
+**Sonraki:** H4 Google Drive backup (17p, zorluk 8 — kullanıcı A/B seçimi bekleniyor)
