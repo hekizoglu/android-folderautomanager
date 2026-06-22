@@ -111,21 +111,40 @@
 
 ---
 
+## 🔴 Kritik — 2026-06-22 Hüseyin Talepleri
+
+> Haiku (openclaw gh/claude-haiku-4.5) analizi ile puanlandı. Öneri sırası: 9 → 7 → 1 → 8 → 6 → 4
+
+| # | Tarih | Puan | Madde | Durum |
+|---|-------|:----:|-------|-------|
+| H1 | 2026-06-22 | **18** | **[BUG] Kategorisiz uygulama atama → mail compose açılıyor** — "Otomatik ata" butonuna basınca e-posta client açılıyor, intent yanlış | Bekliyor 🔴 |
+| H2 | 2026-06-22 | **18** | **Telefonlar arası online senkronizasyon** — 2 telefon aynı masaüstü/klasör yapısı; uygulama birinde yoksa uyarı ver ("Facebook yükle"); senkron gerçek zamanlı | Bekliyor |
+| H3 | 2026-06-22 | **17** | **Ana ekranda app search** — Google arama çubuğunun altına, klasörleri filtreler; X ile temizle; 30sn işlem yapılmazsa otomatik reset; sağ köşede arama ikonu, yazınca 30sn geri sayım göster | Bekliyor |
+| H4 | 2026-06-22 | **17** | **Google Drive yedekleme + zamanlama** — Yedekleme saati/günü kullanıcı seçsin; Google Drive'a push seçeneği; mevcut BackupWorker genişletilecek | Bekliyor |
+| H5 | 2026-06-22 | **16** | **Sayfa kayması ve ekran boyutu uyumu** — Tüm özellikler (favoriler, son kullanılanlar, öneriler) açıkken içerik alt kısma kayıyor; farklı telefon ekran boyutları için dinamik sayfa düzeni (4/6/8 klasör adaptif) | Bekliyor |
+| H6 | 2026-06-22 | **15** | **Renk teması tüm elemanlara yansısın** — Favoriler, son kullanılanlar, badge, klasör border, arama çubuğu — hepsi primary rengi takip etmeli; mevcut bazı hardcode #00897B kaldı | Bekliyor |
+| H7 | 2026-06-22 | **14** | **Bildirim izni kapalıysa uyarı + veri güvencesi** — Bildirimler kapalıysa HomeScreen'de uyarı banner; "Tüm veriler cihazda kalır, dışarı çıkmaz" açıklaması onboarding/ayarlarda | Bekliyor |
+| H8 | 2026-06-22 | **13** | **Üreticiye göre klasörleme fuzzy matching** — Büyük/küçük harf, nokta, tire toleransı (Samsung/SAMSUNG/samsung); tek üretici 1 cihazsa "Diğer" klasörüne at; çok cihazsa üretici klasörü aç | Bekliyor |
+| H9 | 2026-06-22 | **12** | **Ayarlar istatistik ekranı** — Toplam klasör sayısı, uygulama sayısı, en çok kullanılan kategori, sınıflandırılmamış uygulama sayısı, son yedekleme tarihi | Bekliyor |
+| H10 | 2026-06-22 | **8** | **Kod dosyası bölme (single responsibility)** — Büyük composable'ları ayrı dosyalara böl; max 300 satır kuralı tüm dosyalara uygula | Bekliyor |
+
+---
+
 ## 📋 Son Eklenenler (Bu Konuşmadan)
 
 | Tarih | Madde |
 |-------|-------|
-| 2026-06-21 | **AllAppsDrawer klavye fix** [TAMAMLANDI D119] — açılışta klavye otomatik çıkmıyordu |
-| 2026-06-21 | **Klasör sıralama görsel UI** [TAMAMLANDI D119] — sayı giriş yerine emoji+kutucuk grid |
-| 2026-06-21 | **Widget hızlı menü çalışmıyor** — araştırılacak, Widget widget press long-press menü çalışmıyor |
-| 2026-06-21 | **İki yeni tema: iOS tarzı + modern Android** — kullanıcı talebi, uygulanacak | [TAMAMLANDI D122 — IOS + AMOLED enum, gradyan preview daireler] |
-| 2026-06-21 | **Onboarding yeniden yazım** — default launcher sorusu en sona taşınacak, ayarlar açıklamalı | [TAMAMLANDI D120] |
-| 2026-06-21 | **Görsel kalite artırımı** — genel UI iyileştirme talebi | [TAMAMLANDI D123 — saat 84sp, arama border, badge shadow, öneri başlığı] |
-| 2026-06-21 | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab ile build gerektirmeden test |
-| 2026-06-21 | Fikir puanlama tablosu eklendi (25 madde, agent analizi) |
-| 2026-06-20 | FİKİRLER.md sistemi oluşturuldu — artık tüm yeni görevler/fikirler buraya |
-| 2026-06-20 | ROADMAP.md donduruldu — yeni ekleme yapılmayacak |
+| 2026-06-22 | **openclaw API testi** — gh/claude-haiku-4.5 çalışıyor; bash üzerinden /v1/chat/completions |
+| 2026-06-22 | Hüseyin 10 feature talebi FİKİRLER.md'ye eklendi (H1-H10, haiku puanlaması) |
+| 2026-06-21 | **AllAppsDrawer klavye fix** [TAMAMLANDI D119] |
+| 2026-06-21 | **Klasör sıralama görsel UI** [TAMAMLANDI D119] |
+| 2026-06-21 | **Widget hızlı menü çalışmıyor** — araştırılacak |
+| 2026-06-21 | **İki yeni tema: iOS + AMOLED** [TAMAMLANDI D122] |
+| 2026-06-21 | **Onboarding yeniden yazım** [TAMAMLANDI D120] |
+| 2026-06-21 | **Görsel kalite artırımı** [TAMAMLANDI D123] |
+| 2026-06-21 | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab |
+| 2026-06-20 | FİKİRLER.md sistemi oluşturuldu |
 
 ---
 
-*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda*
+*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-22*
