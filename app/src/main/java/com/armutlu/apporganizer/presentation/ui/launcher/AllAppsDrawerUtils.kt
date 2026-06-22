@@ -1,0 +1,141 @@
+package com.armutlu.apporganizer.presentation.ui.launcher
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.IconPackManager
+import com.armutlu.apporganizer.utils.loadAppIcon
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+// ── Sabit renkler (temadan bağımsız) ─────────────────────────────────────────
+internal val BgColor     = Color(0xCC000000)
+internal val BadgeRed    = Color(0xFFE53935)
+internal val BadgeGreen  = Color(0xFF43A047)
+internal val BadgeYellow = Color(0xFFFDD835)
+
+// ── Fuzzy arama — Levenshtein edit distance ───────────────────────────────────
+internal fun fuzzyEditDistance(a: String, b: String): Int {
+    val s = a.take(20); val t = b.take(20)
+    if (s == t) return 0
+    if (s.isEmpty()) return t.length
+    if (t.isEmpty()) return s.length
+    val dp = Array(s.length + 1) { IntArray(t.length + 1) { 0 } }
+    for (i in 0..s.length) dp[i][0] = i
+    for (j in 0..t.length) dp[0][j] = j
+    for (i in 1..s.length) for (j in 1..t.length) {
+        dp[i][j] = if (s[i-1] == t[j-1]) dp[i-1][j-1]
+        else 1 + minOf(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+    }
+    return dp[s.length][t.length]
+}
+
+fun formatBytes(bytes: Long): String = when {
+    bytes <= 0            -> "—"
+    bytes < 1_048_576     -> "${bytes / 1024} KB"
+    bytes < 1_073_741_824 -> "${"%.1f".format(bytes / 1_048_576.0)} MB"
+    else                  -> "${"%.2f".format(bytes / 1_073_741_824.0)} GB"
+}
+
+internal val monthFmt = SimpleDateFormat("MMM yy", Locale("tr"))
+internal fun fmtMonth(ts: Long): String =
+    if (ts == 0L) "?" else monthFmt.format(Date(ts))
+
+enum class AllAppsSortMode(val label: String) {
+    ALPHA("A–Z"),
+    USAGE("Kullanım"),
+    SIZE_DESC("Boyut ↓"),
+    SIZE_ASC("Boyut ↑"),
+    INSTALL_DATE("Yükleme")
+}
+
+// ── Async ikon yükleme — global LRU cache paylaşılır ─────────────────────────
+@Composable
+internal fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): ImageBitmap? {
+    val context = LocalContext.current
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
+    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        IconPackManager.loadIcon(context, iconPackPkg, packageName, 96)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: loadAppIcon(context, packageName, 96)?.asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) iconCacheInternal.put(cacheKey, loaded)
+            value = loaded
+        }
+    }.value
+}
+
+// ── Sidebar label hesaplama ───────────────────────────────────────────────────
+internal data class SidebarEntry(val label: String, val scrollIndex: Int)
+
+internal fun buildSidebarEntries(
+    apps: List<AppInfo>,
+    mode: AllAppsSortMode
+): List<SidebarEntry> {
+    if (apps.isEmpty()) return emptyList()
+    return when (mode) {
+        AllAppsSortMode.ALPHA -> {
+            val grouped = apps.groupBy { app ->
+                val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'
+                if (c.isLetter()) c else '#'
+            }.toSortedMap(compareBy { if (it == '#') Char.MAX_VALUE else it })
+            var idx = 0
+            grouped.map { (letter, list) ->
+                val entry = SidebarEntry(letter.toString(), idx)
+                idx += 1 + list.size
+                entry
+            }
+        }
+        AllAppsSortMode.USAGE -> {
+            val steps = listOf(1000L, 500L, 200L, 100L, 50L, 20L, 10L, 5L, 1L, 0L)
+            steps.mapNotNull { threshold ->
+                val idx = apps.indexOfFirst { it.usageCount <= threshold }
+                if (idx >= 0) SidebarEntry("${threshold}×", idx) else null
+            }.distinctBy { it.scrollIndex }
+        }
+        AllAppsSortMode.SIZE_DESC -> {
+            val steps = listOf(500L, 200L, 100L, 50L, 20L, 10L, 5L, 1L).map { it * 1_048_576 }
+            steps.mapNotNull { threshold ->
+                val idx = apps.indexOfFirst { it.appSizeBytes <= threshold }
+                if (idx >= 0) SidebarEntry(formatBytes(threshold), idx) else null
+            }.distinctBy { it.scrollIndex }
+        }
+        AllAppsSortMode.SIZE_ASC -> {
+            val steps = listOf(1L, 5L, 10L, 20L, 50L, 100L, 200L, 500L).map { it * 1_048_576 }
+            steps.mapNotNull { threshold ->
+                val idx = apps.indexOfFirst { it.appSizeBytes >= threshold }
+                if (idx >= 0) SidebarEntry(formatBytes(threshold), idx) else null
+            }.distinctBy { it.scrollIndex }
+        }
+        AllAppsSortMode.INSTALL_DATE -> {
+            apps.mapIndexed { idx, app -> idx to fmtMonth(app.installTime) }
+                .distinctBy { (_, month) -> month }
+                .map { (idx, month) -> SidebarEntry(month, idx) }
+        }
+    }
+}
+
+// ── State holder ──────────────────────────────────────────────────────────────
+internal data class DrawerState(
+    val sortedApps: List<AppInfo>,
+    val grouped: Map<Char, List<AppInfo>>,
+    val sidebarEntries: List<SidebarEntry>,
+    val bgAlpha: Float,
+    val notifTextEnabled: Boolean,
+    val unusedGreyDays: Int,
+    val iconPackPkg: String,
+    val sortMode: AllAppsSortMode
+)
