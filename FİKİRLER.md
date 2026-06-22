@@ -53,8 +53,8 @@
 | 2026-06-15 | Döngü 41 | **Üretici kategorileri gerçek cihaz testi** — 9 yeni kategori, onboarding'den "üreticiye göre" | Bekliyor |
 | 2026-06-16 | ROADMAP | **Hilt DI kurulumu** — manuel `new()` çağrılarını temizle | [TAMAMLANDI D117 — utils/CategoryLLMFallback silindi, domain versiyonu inject edildi] |
 | 2026-06-16 | ROADMAP | **Unit test coverage** — ViewModel'ler MockK testleri | [TAMAMLANDI D118 — 156 test, 9 sınıf, C:\AppOrg junction fix] |
-| 2026-06-16 | ROADMAP | **Dark mode tam uyum audit** | Bekliyor |
-| 2026-06-16 | ROADMAP | **Multi-language support (TR/EN)** | Bekliyor |
+| 2026-06-16 | ROADMAP | **Dark mode tam uyum audit** | [TAMAMLANDI D114] |
+| 2026-06-16 | ROADMAP | **Multi-language support (TR/EN)** | [TAMAMLANDI D113] |
 
 ---
 
