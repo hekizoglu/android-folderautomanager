@@ -120,10 +120,10 @@ private fun HomeLongPressAction(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF00897B).copy(alpha = 0.2f)),
+                .background(androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = Color(0xFF00897B), modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = androidx.compose.material3.MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
         }
         Column {
             Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)

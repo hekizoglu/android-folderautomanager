@@ -45,7 +45,7 @@ import java.util.Date
 import java.util.Locale
 
 private val SheetBg      = Color(0xFF1A1A2A)
-private val TealColor    = Color(0xFF00897B)
+// MaterialTheme.colorScheme.primary kaldırıldı — MaterialTheme.colorScheme.primary kullanılıyor
 private val DangerColor  = Color(0xFFE53935)
 private val TextPrimary  = Color.White
 private val TextSecondary = Color.White.copy(alpha = 0.55f)
@@ -121,7 +121,7 @@ fun AppContextMenu(
                         modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp))
                     )
                 } ?: run {
-                    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(TealColor.copy(0.3f)),
+                    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primary.copy(0.3f)),
                         contentAlignment = Alignment.Center) {
                         Text(app.appName.take(1), fontSize = 22.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
                     }
@@ -192,7 +192,7 @@ fun AppContextMenu(
             ContextAction(
                 icon = Icons.AutoMirrored.Filled.OpenInNew,
                 label = "Uygulamayı Aç",
-                color = TealColor,
+                color = MaterialTheme.colorScheme.primary,
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onLaunch()
@@ -270,7 +270,7 @@ fun AppContextMenu(
                         Icon(
                             Icons.AutoMirrored.Filled.StickyNote2,
                             null,
-                            tint = TealColor.copy(alpha = 0.8f),
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                             modifier = Modifier.size(16.dp).padding(top = 2.dp)
                         )
                         Spacer(Modifier.width(8.dp))
@@ -286,7 +286,7 @@ fun AppContextMenu(
                 ContextAction(
                     icon = Icons.Default.EditNote,
                     label = if (app.customNotes.isBlank()) "Not Ekle" else "Notu Düzenle",
-                    color = TealColor,
+                    color = MaterialTheme.colorScheme.primary,
                     onClick = { showNoteDialog = true }
                 )
             }
@@ -344,9 +344,9 @@ private fun AppNoteDialog(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    focusedBorderColor = TealColor,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.White.copy(0.3f),
-                    cursorColor = TealColor
+                    cursorColor = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 4,
@@ -355,7 +355,7 @@ private fun AppNoteDialog(
         },
         confirmButton = {
             TextButton(onClick = { onSave(noteText) }) {
-                Text("Kaydet", color = TealColor, fontWeight = FontWeight.Bold)
+                Text("Kaydet", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -440,7 +440,7 @@ private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
             } ?: Icon(
                 Icons.AutoMirrored.Filled.OpenInNew,
                 contentDescription = null,
-                tint = TealColor,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
         }

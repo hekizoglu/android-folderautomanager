@@ -194,7 +194,7 @@ fun AppIconView(
                         .height(14.dp)
                         .align(Alignment.TopEnd)
                         .clip(RoundedCornerShape(7.dp))
-                        .background(Color(0xFF00897B))
+                        .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
                         .padding(horizontal = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {

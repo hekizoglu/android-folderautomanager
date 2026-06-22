@@ -36,7 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private val SheetBg    = Color(0xFF1A1A2E)
-private val TealColor  = Color(0xFF00897B)
+// MaterialTheme.colorScheme.primary kaldırıldı — MaterialTheme.colorScheme.primary kullanılıyor
 private val SearchBg   = Color.White.copy(alpha = 0.09f)
 private val TextPrimary   = Color.White
 private val TextSecondary = Color.White.copy(alpha = 0.55f)
@@ -89,7 +89,7 @@ fun DockEditSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Dock Düzenle", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary, modifier = Modifier.weight(1f))
-                Text("${dockPackages.size}/$maxDock", fontSize = 13.sp, color = TealColor, fontWeight = FontWeight.Bold)
+                Text("${dockPackages.size}/$maxDock", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(12.dp))
                 IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.Default.Close, "Kapat", tint = TextSecondary, modifier = Modifier.size(18.dp))
@@ -98,7 +98,7 @@ fun DockEditSheet(
 
             // Mevcut dock uygulamaları
             if (dockPackages.isNotEmpty()) {
-                Text("Mevcut", fontSize = 12.sp, color = TealColor, fontWeight = FontWeight.Bold,
+                Text("Mevcut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 20.dp, bottom = 6.dp))
                 Row(
                     Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -114,7 +114,7 @@ fun DockEditSheet(
                                     modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
                                 )
                             } else {
-                                Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(TealColor.copy(0.3f)))
+                                Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.primary.copy(0.3f)))
                             }
                             Box(
                                 modifier = Modifier.size(18.dp).clip(CircleShape)
@@ -146,7 +146,7 @@ fun DockEditSheet(
                         if (query.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 13.sp)
                         BasicTextField(
                             value = query, onValueChange = { query = it },
-                            singleLine = true, cursorBrush = SolidColor(TealColor),
+                            singleLine = true, cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             textStyle = TextStyle(color = TextPrimary, fontSize = 13.sp)
                         )
                     }
@@ -168,7 +168,7 @@ fun DockEditSheet(
                                 if (inDock) onRemove(app.packageName)
                                 else if (!full) onAdd(app.packageName)
                             }
-                            .background(if (inDock) TealColor.copy(0.12f) else Color.Transparent)
+                            .background(if (inDock) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
                             .padding(horizontal = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -180,7 +180,7 @@ fun DockEditSheet(
                                 alpha = if (full && !inDock) 0.4f else 1f
                             )
                         } else {
-                            Box(Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(TealColor.copy(0.2f)))
+                            Box(Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primary.copy(0.2f)))
                         }
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
@@ -194,8 +194,8 @@ fun DockEditSheet(
                             }
                         }
                         when {
-                            inDock -> Icon(Icons.Default.Check, null, tint = TealColor, modifier = Modifier.size(20.dp))
-                            !full  -> Icon(Icons.Default.Add, null, tint = TealColor.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+                            inDock -> Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                            !full  -> Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
                             else   -> Icon(Icons.Default.Add, null, tint = Color(0xFFE57373).copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
                         }
                     }

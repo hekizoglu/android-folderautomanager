@@ -21,7 +21,7 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 
 private val SheetBg     = Color(0xFF1A1A2A)
-private val TealCat     = Color(0xFF00897B)
+// MaterialTheme.colorScheme.primary kaldırıldı — MaterialTheme.colorScheme.primary kullanılıyor
 private val RowHover    = Color.White.copy(alpha = 0.07f)
 private val TextPrim    = Color.White
 private val TextSec     = Color.White.copy(alpha = 0.55f)
@@ -72,7 +72,7 @@ fun CategoryPickerSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onCategorySelected(cat.categoryId); onDismiss() }
-                            .background(if (isCurrent) TealCat.copy(0.12f) else Color.Transparent)
+                            .background(if (isCurrent) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
                             .padding(horizontal = 20.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -80,13 +80,13 @@ fun CategoryPickerSheet(
                         Text(cat.iconEmoji, fontSize = 24.sp)
                         Text(
                             cat.categoryName,
-                            color = if (isCurrent) TealCat else TextPrim,
+                            color = if (isCurrent) MaterialTheme.colorScheme.primary else TextPrim,
                             fontSize = 15.sp,
                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                             modifier = Modifier.weight(1f)
                         )
                         if (isCurrent) {
-                            Icon(Icons.Default.Check, null, tint = TealCat, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                         }
                     }
                 }
