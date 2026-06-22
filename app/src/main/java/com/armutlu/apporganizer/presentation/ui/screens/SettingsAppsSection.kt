@@ -37,8 +37,8 @@ internal fun LazyListScope.settingsAppsSection(
     llmCategorizing: Boolean,
     llmProgress: String
 ) {
-    // ── Görünüm → Sistem Uygulamaları ─────────────────────────────────
-    item { SettingsSectionTitle("Görünüm") }
+    // ── Uygulama Listesi → Sistem Uygulamaları ─────────────────────────────────
+    item { SettingsSectionTitle("Uygulama Listesi") }
     item {
         SettingsCard {
             SettingsSwitchRow(

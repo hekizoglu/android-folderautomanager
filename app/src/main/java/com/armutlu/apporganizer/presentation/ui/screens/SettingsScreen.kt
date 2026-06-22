@@ -37,13 +37,7 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.BackupManager
 import com.armutlu.apporganizer.utils.DockPrefs
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +54,6 @@ fun SettingsScreen(
     val otherApps       by viewModel.otherApps.collectAsState()
     val llmCategorizing  by viewModel.llmCategorizing.collectAsState()
     val llmProgress      by viewModel.llmProgress.collectAsState()
-    val classifyLoading  by viewModel.classifyLoading.collectAsState()
     val classifyResult   by viewModel.classifyResult.collectAsState()
     val clipboard        = LocalClipboardManager.current
     val context          = LocalContext.current
@@ -288,197 +281,15 @@ fun SettingsScreen(
             // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
             item { SettingsHomeScreenSection() }
 
-            // ── Uygulama Görünümü ─────────────────────────────────────────────
-            item { SettingsSectionTitle("Uygulama Listesi") }
-            item {
-                SettingsCard {
-                    SettingsSwitchRow(
-                        icon = Icons.Default.Visibility,
-                        title = stringResource(R.string.settings_show_system_apps),
-                        subtitle = stringResource(R.string.settings_show_system_apps_desc),
-                        checked = showSystemApps,
-                        onCheckedChange = { viewModel.toggleShowSystemApps() }
-                    )
-                }
-            }
-
-            item { SettingsSectionTitle("Uygulama Yönetimi") }
-            item {
-                var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
-                SettingsCard {
-                    SettingsSwitchRow(
-                        icon = Icons.Default.PhoneAndroid,
-                        title = stringResource(R.string.settings_classify_by_vendor),
-                        subtitle = stringResource(R.string.settings_classify_by_vendor_desc),
-                        checked = manufacturerClassify,
-                        onCheckedChange = {
-                            manufacturerClassify = it
-                            AppPrefs.setManufacturerClassifyEnabled(context, it)
-                        }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = !classifyLoading) { viewModel.classifyUnclassifiedApps() }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (classifyLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary)
-                        } else {
-                            Icon(Icons.Default.AutoFixHigh, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-                        }
-                        Spacer(Modifier.width(14.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                stringResource(R.string.settings_classify_uncategorized),
-                                fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                                color = if (classifyLoading) MaterialTheme.colorScheme.onSurface.copy(0.5f) else MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                if (classifyLoading) "Sınıflandırılıyor..." else stringResource(R.string.settings_classify_uncategorized_desc),
-                                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsButtonRow(
-                        icon = Icons.Default.RestartAlt,
-                        title = stringResource(R.string.settings_reset_categories),
-                        subtitle = stringResource(R.string.settings_reset_categories_desc),
-                        iconTint = MaterialTheme.colorScheme.error,
-                        onClick = { viewModel.resetAndReclassifyAllApps() }
-                    )
-                }
-            }
-
-            // â"€â"€ Hakkında â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-            // ── Gizli Uygulamalar ─────────────────────────────────────────────
-            if (hiddenApps.isNotEmpty()) {
-                item { SettingsSectionTitle("Gizli Uygulamalar (${hiddenApps.size})") }
-                item {
-                    SettingsCard {
-                        hiddenApps.forEachIndexed { index, app ->
-                            if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
-                            Row(
-                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                                Spacer(Modifier.width(12.dp))
-                                Text(app.appName, Modifier.weight(1f), fontSize = 14.sp)
-                                OutlinedButton(
-                                    onClick = { viewModel.unhideApp(app.packageName) },
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                                ) { Text(stringResource(R.string.settings_show), fontSize = 12.sp) }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ── Diğer Klasörü (Bilinmeyen Uygulamalar) ───────────────────────
-            if (otherApps.isNotEmpty()) {
-                item { SettingsSectionTitle("Diğer Klasörü — Bilinmeyenler (${otherApps.size})") }
-                item {
-                    SettingsCard {
-                        // DeepSeek LLM kategorize paneli
-                        var apiKeyInput by remember { mutableStateOf(AppPrefs.getDeepSeekApiKey(context)) }
-                        var showApiKey  by remember { mutableStateOf(false) }
-                        Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                            Text(
-                                "Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. " +
-                                "DeepSeek AI ile otomatik olarak kategorilendirilebilir.",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            OutlinedTextField(
-                                value = apiKeyInput,
-                                onValueChange = {
-                                    apiKeyInput = it
-                                    AppPrefs.setDeepSeekApiKey(context, it)
-                                },
-                                label = { Text("DeepSeek API Key", fontSize = 12.sp) },
-                                placeholder = { Text("sk-...", fontSize = 12.sp) },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                trailingIcon = {
-                                    IconButton(onClick = { showApiKey = !showApiKey }) {
-                                        Icon(
-                                            if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                },
-                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp)
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Button(
-                                onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
-                                enabled = !llmCategorizing && apiKeyInput.isNotBlank(),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                if (llmCategorizing) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Kategorize ediliyor...", fontSize = 13.sp)
-                                } else {
-                                    Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(16.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("DeepSeek ile Kategorize Et", fontSize = 13.sp)
-                                }
-                            }
-                            if (llmProgress.isNotBlank()) {
-                                Spacer(Modifier.height(6.dp))
-                                Text(
-                                    llmProgress,
-                                    fontSize = 12.sp,
-                                    color = if (llmProgress.startsWith("Hata") || llmProgress.contains("hata"))
-                                        MaterialTheme.colorScheme.error
-                                    else
-                                        MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
-                        otherApps.take(20).forEachIndexed { index, app ->
-                            if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                            Row(
-                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(12.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(app.appName, fontSize = 14.sp, maxLines = 1)
-                                    Text(app.packageName, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                                }
-                            }
-                        }
-                        if (otherApps.size > 20) {
-                            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                            Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                                Text("...ve ${otherApps.size - 20} uygulama daha", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
-            }
+            // Uygulama Listesi / Yönetimi / Gizli / Diğer → SettingsAppsSection.kt
+            settingsAppsSection(
+                showSystemApps = showSystemApps,
+                viewModel = viewModel,
+                hiddenApps = hiddenApps,
+                otherApps = otherApps,
+                llmCategorizing = llmCategorizing,
+                llmProgress = llmProgress
+            )
 
             // ── İstatistikler ─────────────────────────────────────────────────
             item { SettingsSectionTitle("İstatistikler") }
