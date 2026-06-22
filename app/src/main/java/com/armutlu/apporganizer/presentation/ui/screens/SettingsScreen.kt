@@ -56,10 +56,19 @@ fun SettingsScreen(
     val logs            by viewModel.liveDebugLogs.collectAsState()
     val hiddenApps      by viewModel.hiddenApps.collectAsState()
     val otherApps       by viewModel.otherApps.collectAsState()
-    val llmCategorizing by viewModel.llmCategorizing.collectAsState()
-    val llmProgress     by viewModel.llmProgress.collectAsState()
-    val clipboard       = LocalClipboardManager.current
-    val context         = LocalContext.current
+    val llmCategorizing  by viewModel.llmCategorizing.collectAsState()
+    val llmProgress      by viewModel.llmProgress.collectAsState()
+    val classifyLoading  by viewModel.classifyLoading.collectAsState()
+    val classifyResult   by viewModel.classifyResult.collectAsState()
+    val clipboard        = LocalClipboardManager.current
+    val context          = LocalContext.current
+
+    // classifyResult değişince Toast göster
+    LaunchedEffect(classifyResult) {
+        if (classifyResult.isNotBlank()) {
+            android.widget.Toast.makeText(context, classifyResult, android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
     var debugExpanded   by remember { mutableStateOf(false) }
     val scope           = rememberCoroutineScope()
     val themePrefs      = remember { ThemePreferences(context) }
@@ -245,12 +254,31 @@ fun SettingsScreen(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
-                    SettingsButtonRow(
-                        icon = Icons.Default.AutoFixHigh,
-                        title = stringResource(R.string.settings_classify_uncategorized),
-                        subtitle = stringResource(R.string.settings_classify_uncategorized_desc),
-                        onClick = { viewModel.classifyUnclassifiedApps() }
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = !classifyLoading) { viewModel.classifyUnclassifiedApps() }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (classifyLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary)
+                        } else {
+                            Icon(Icons.Default.AutoFixHigh, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        }
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.settings_classify_uncategorized),
+                                fontWeight = FontWeight.Medium, fontSize = 15.sp,
+                                color = if (classifyLoading) MaterialTheme.colorScheme.onSurface.copy(0.5f) else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                if (classifyLoading) "Sınıflandırılıyor..." else stringResource(R.string.settings_classify_uncategorized_desc),
+                                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)

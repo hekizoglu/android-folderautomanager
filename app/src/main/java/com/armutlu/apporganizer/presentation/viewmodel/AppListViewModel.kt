@@ -72,6 +72,12 @@ class AppListViewModel @Inject constructor(
     val llmCategorizing: StateFlow<Boolean> = _llmCategorizing.asStateFlow()
     private val _llmProgress = MutableStateFlow("")
     val llmProgress: StateFlow<String> = _llmProgress.asStateFlow()
+
+    // Sınıflandırılmamışları sınıflandır yükleme durumu (layout jump → mail bug önlemi)
+    private val _classifyLoading = MutableStateFlow(false)
+    val classifyLoading: StateFlow<Boolean> = _classifyLoading.asStateFlow()
+    private val _classifyResult = MutableStateFlow("")
+    val classifyResult: StateFlow<String> = _classifyResult.asStateFlow()
     
     // Initialization
     init {
@@ -325,8 +331,11 @@ class AppListViewModel @Inject constructor(
      * Classify unclassified apps
      */
     fun classifyUnclassifiedApps() {
+        if (_classifyLoading.value) return
         viewModelScope.launch {
             try {
+                _classifyLoading.value = true
+                _classifyResult.value = ""
                 val ctx = getApplication<Application>()
                 classifier.manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(ctx)
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
@@ -336,8 +345,10 @@ class AppListViewModel @Inject constructor(
                 }
 
                 if (unclassifiedApps.isEmpty()) {
-                    appendDebugLog("ℹ️ Tüm uygulamalar zaten sınıflandırılmış. 'Menü → Kategorileri Sıfırla' ile baştan başlayabilirsiniz.")
+                    _classifyResult.value = "Tüm uygulamalar zaten sınıflandırılmış."
+                    appendDebugLog("ℹ️ Tüm uygulamalar zaten sınıflandırılmış.")
                     _screenState.value = _screenState.value.copy(isRefreshing = false)
+                    _classifyLoading.value = false
                     return@launch
                 }
 
@@ -351,10 +362,14 @@ class AppListViewModel @Inject constructor(
                 }
 
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
+                _classifyResult.value = "$classified / ${unclassifiedApps.size} uygulama kategorilendi."
                 appendDebugLog("✅ AI sınıflandırma: $classified/${unclassifiedApps.size} uygulama kategorilendi")
             } catch (e: Exception) {
                 Timber.e(e, "Error classifying apps")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
+                _classifyResult.value = "Hata: ${e.message}"
+            } finally {
+                _classifyLoading.value = false
             }
         }
     }
