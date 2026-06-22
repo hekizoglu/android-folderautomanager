@@ -1397,3 +1397,8 @@ Tüm 12 madde ✅. Detay:
 
 ## MD Denetim 2026-06-22 — KAPANDI
 A1-A6 (CLAUDE.md), B1-B4 (LEARNINGS.md), D3+D6 (HISTORY.md) tüm sorunlar bu oturumda düzeltildi (commit f5e7412). Rapor MD_DENETIM_2026-06-22.md silindi.
+
+## Döngü 127 — 2026-06-22 (KOD — H5 Adaptif sayfa düzeni)
+**Yapılanlar:** HomeScreen: effectivePageSize = ekran yüksekliği + aktif özellik sayısına göre hesaplanır (screenHeightDp<640→4, <720 ve 2+ özellik→4, else→8). HomeFavoritesSection: compactMode parametresi eklendi — <640dp ekranlarda öneri+son kullanılanlar gizlenir, klasör grid için alan açılır.
+**Build:** YOK (sıralı döngü — son döngüde build)
+**Sonraki:** H6 tema rengi (15p)
