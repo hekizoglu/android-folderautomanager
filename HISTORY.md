@@ -1440,3 +1440,8 @@ S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tü
 **Yapılanlar:** FolderSheet.kt 749→275 satır. FolderContextMenuSheet.kt (YENİ ~130 satır): klasör context menü + FolderPositionPickerSheet çağrısı. FolderPositionPickerSheet.kt (YENİ ~165 satır): FOLDERS_PER_PAGE=8 + sayfalama grid. FolderRenameDialog.kt (YENİ ~130 satır): EMOJI_PICKER + COLOR_PRESETS + dialog. private→internal visibility.
 **Build:** YOK (sıralı — build D139 civarında)
 **Sonraki:** HomeScreen.kt bölme (876 satır) veya H4 Google Drive backup
+
+## Döngü 136 — 2026-06-23 (KOD — H10 HomeScreen bölme)
+**Yapılanlar:** HomeScreen.kt 876→748 satır. HomeScreenOverlays.kt (YENİ ~130 satır): FolderStatsRow + HomeScreenOverlays internal composable. private→internal. Row import temizlendi.
+**Build:** YOK (sıralı — build D139 civarında)
+**Sonraki:** SettingsScreen.kt bölme (765 satır) veya H4 Google Drive backup
