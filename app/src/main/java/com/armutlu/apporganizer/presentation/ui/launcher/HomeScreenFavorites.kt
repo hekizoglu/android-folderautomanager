@@ -24,7 +24,11 @@ internal fun HomeFavoritesSection(
     haptic: HapticFeedback,
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
+    screenHeightDp: Int = 800,
 ) {
+    // Küçük ekranlarda (< 640dp) sadece favorileri göster — öneri+son kullanılanlar grid'i iter
+    val compactMode = screenHeightDp < 640
+
     if (favoritesEnabled && favoriteApps.isNotEmpty()) {
         FavoritesRow(
             apps = favoriteApps,
@@ -41,7 +45,7 @@ internal fun HomeFavoritesSection(
         )
     }
 
-    if (suggestionsEnabled && suggestedApps.isNotEmpty()) {
+    if (!compactMode && suggestionsEnabled && suggestedApps.isNotEmpty()) {
         AppSuggestionsRow(
             apps = suggestedApps,
             iconPackPkg = iconPackPkg,
@@ -56,7 +60,7 @@ internal fun HomeFavoritesSection(
         )
     }
 
-    if (recentAppsEnabled && recentApps.isNotEmpty()) {
+    if (!compactMode && recentAppsEnabled && recentApps.isNotEmpty()) {
         RecentAppsRow(
             apps = recentApps,
             iconPackPkg = iconPackPkg,

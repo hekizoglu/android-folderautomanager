@@ -70,6 +70,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalConfiguration
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.utils.AppAnalytics
 
@@ -429,7 +430,8 @@ fun HomeScreen(
                 iconPackPkg = suggestionIconPack,
                 haptic = haptic,
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
-                onAppLongClick = { pkg -> contextMenuPkg = pkg }
+                onAppLongClick = { pkg -> contextMenuPkg = pkg },
+                screenHeightDp = LocalConfiguration.current.screenHeightDp
             )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
@@ -445,7 +447,19 @@ fun HomeScreen(
             // İstatistik bandı — toplam klasör ve uygulama sayısı
             FolderStatsRow(folders = folders)
 
-            // Folder grid — sayfa başına klasör sayısı ayarlanabilir (AppPrefs.KEY_PAGE_SIZE)
+            // Folder grid — sayfa başına klasör sayısı: kullanıcı tercihi veya ekran yüksekliğine göre adaptif
+            val screenHeightDp = LocalConfiguration.current.screenHeightDp
+            // Aktif özellik sayısı — fazla içerik varsa daha az klasör göster
+            val activeFeatureCount = listOf(favoritesEnabled, suggestionsEnabled, recentAppsEnabled).count { it }
+            val effectivePageSize = if (pageFolderCount == 8) {
+                // Varsayılan değerdeyse otomatik adaptif hesapla
+                when {
+                    screenHeightDp < 640 -> 4
+                    screenHeightDp < 720 && activeFeatureCount >= 2 -> 4
+                    screenHeightDp < 800 && activeFeatureCount >= 2 -> 8
+                    else -> 8
+                }
+            } else pageFolderCount  // Kullanıcı manuel ayarladıysa dokunma
             val baseFolders = draggingFolders ?: folders
             val displayFolders = if (homeSearchEnabled && folderSearchQuery.isNotEmpty()) {
                 val q = folderSearchQuery.lowercase(java.util.Locale("tr"))
@@ -454,7 +468,7 @@ fun HomeScreen(
                     folder.apps.any { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
                 }
             } else baseFolders
-            val pageSize = pageFolderCount
+            val pageSize = effectivePageSize
             val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
             val pagerState = rememberPagerState(pageCount = { pageCount })
 
