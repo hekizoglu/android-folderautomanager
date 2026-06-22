@@ -84,3 +84,10 @@
 | 2026-06-21 | 10:50 | 11:10 | ~20dk | KOD+WEB | Döngü 121 — Privacy Policy GitHub Pages landing sayfası, PP web linki uygulama içine eklendi | docs/index.html oluşturuldu |
 | 2026-06-21 | 11:10 | 11:30 | ~20dk | KOD+BUILD | Döngü 122 — iOS + AMOLED tema eklendi | Theme enum genişletildi, gradyan preview daireler |
 | 2026-06-21 | 11:30 | 11:45 | ~15dk | KOD+BUILD | Döngü 123 — Görsel kalite artırımı | Saat 84sp, arama border, badge shadow, öneri başlığı |
+| 2026-06-22 | — | — | ~25dk | KOD+BUILD | Döngü 124 — H1 mail compose bug fix | CategoryLLMFallback + MailCompose düzeltmesi |
+| 2026-06-22 | — | — | ~30dk | KOD+BUILD | Döngü 125 — H3 FolderSearchBar + AppPrefs toggle | HomeScreenComponents.kt + SettingsHomeScreenSection.kt |
+| 2026-06-22 | — | — | ~20dk | KOD | Döngü 127 — H5 adaptif sayfa düzeni | HomeScreen effectivePageSize + HomeFavoritesSection compactMode |
+| 2026-06-22 | — | — | ~25dk | KOD | Döngü 128 — H6 tema rengi hardcode → MaterialTheme | AppContextMenu+DockEdit+CategoryPicker+AppIconView+HomeLongPress |
+| 2026-06-22 | — | — | ~20dk | KOD | Döngü 129 — H9 Ayarlar İstatistikler bölümü | SettingsScreen.kt 28 satır |
+| 2026-06-22 | — | — | ~15dk | KOD | Döngü 130 — H8 üretici fuzzy matching | AppClassifier MANUFACTURER_NAME_MAP + tek-uygulama filtresi |
+| 2026-06-22 | — | — | ~20dk | DÖKÜMAN | Döngü 131 — MD_DENETIM_21 kapatma, LEARNINGS AppClassifierAssets, HISTORY 3702 fix | MD denetim temizliği |

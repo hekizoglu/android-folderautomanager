@@ -1307,7 +1307,8 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-21 | D96-D103 | FolderSheet Türkçe, Settings audit, widget drag-drop, favoriler race condition, e-posta geri bildirim |
 | 2026-06-21 | D107-D111 | Akıllı öneriler, multi-language, bilinen sorunlar tarama, CS-3 3 yöntem |
 | 2026-06-21 | D112-D115 | AppClassifier JSON asset dönüşümü (3702 paket), dark mode chip/badge renk fix |
-| 2026-06-22 | D116-D123 | Hüseyin H1-H10 talepleri puanlama, D123 görsel kalite (saat 84sp, search border, badge shadow), D124 H1 bug fix (mail compose) |
+| 2026-06-21 | D116-D123 | Hüseyin H1-H10 talepleri puanlama, görsel kalite (saat 84sp, search border, badge shadow), iOS+AMOLED tema |
+| 2026-06-22 | D124-D130 | H1 mail bug fix, H3 klasör arama, H5 adaptif sayfa, H6 tema rengi, H7 bildirim güvence, H8 üretici fuzzy, H9 istatistik ekranı |
 
 ## Döngü 115 — 2026-06-21 (KOD — AppClassifier JSON asset dönüşümü)
 **Yapılanlar:** AppClassifier.kt 4369 satır → 99 satır; exactMatchMap (3702 entry) assets/app_categories.json'a taşındı.
@@ -1415,3 +1416,8 @@ A1-A6 (CLAUDE.md), B1-B4 (LEARNINGS.md), D3+D6 (HISTORY.md) tüm sorunlar bu otu
 
 ## MD Denetim 2026-06-21 ve 2026-06-21b — KAPANDI
 K2 (AppClassifier JSON prosedürü) caa5f63'te, K1 (onboarding sırası) LEARNINGS.md satır 107'de zaten doğruydu, O1 (ROADMAP multi-lang) 64c4ffb'de, O3 (3717→3702) f5e7412'de çözülmüştü. O4 (AppClassifierAssets belgeleme) bu döngüde LEARNINGS.md'ye eklendi. Her iki rapor dosyası silindi.
+
+## Döngü 131 — 2026-06-22 (DÖKÜMAN — MD Denetim 22b temizlik)
+**Yapılanlar:** MD_DENETIM_2026-06-21.md + 21b.md silindi [ÇÖZÜLDÜ S1]. harcananvakit.md D124-D131 retroaktif log eklendi [ÇÖZÜLDÜ S2]. HISTORY.md "3717"→"3702" [ÇÖZÜLDÜ S3]. Sprint Özeti tarih/döngü düzeltildi [ÇÖZÜLDÜ S4]. LEARNINGS.md AppClassifierAssets singleton belgesi eklendi [ÇÖZÜLDÜ S5]. MD_DENETIM_22b tek madde (S6 düşük öncelik) kaldı.
+**Agent:** openclaw (gh/claude-haiku-4.5) — hangi sorunların zaten çözüldüğünü analiz etti
+**Sonraki:** SORUN 6 (iki arşiv bölümü merge) veya H4 Google Drive backup araştırması
