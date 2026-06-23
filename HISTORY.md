@@ -1312,6 +1312,7 @@ Tüm 12 madde ✅. Detay:
 | 2026-06-21 | D112-D115 | AppClassifier JSON asset dönüşümü (3702 paket), dark mode chip/badge renk fix |
 | 2026-06-21 | D116-D123 | Hüseyin H1-H10 talepleri puanlama, görsel kalite (saat 84sp, search border, badge shadow), iOS+AMOLED tema |
 | 2026-06-22 | D124-D130 | H1 mail bug fix, H3 klasör arama, H5 adaptif sayfa, H6 tema rengi, H7 bildirim güvence, H8 üretici fuzzy, H9 istatistik ekranı |
+| 2026-06-23 | D134-D141 | H10 kod bölme (AllAppsDrawer/FolderSheet/HomeScreen/SettingsScreen), glassmorphism UI, HomeAppSearchBar, stale icon fix, folderBlurEnabled ölü kod aktif |
 
 ## Döngü 115 — 2026-06-21 (KOD — AppClassifier JSON asset dönüşümü)
 **Yapılanlar:** AppClassifier.kt 4369 satır → 99 satır; exactMatchMap (3702 entry) assets/app_categories.json'a taşındı.

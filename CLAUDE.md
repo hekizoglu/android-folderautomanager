@@ -18,7 +18,7 @@
 
 1. `git pull origin main` — yerel/uzak senkronize et
 2. LEARNINGS.md oku — mimari kararlar ve tuzaklar
-3. ROADMAP.md oku — aktif sprint ve bekleyen görevler
+3. FİKİRLER.md oku — aktif görevler ve fikir havuzu (ROADMAP.md donduruldu)
 4. `git log --oneline -10` — son değişiklikler
 5. Özellik Kontrol Listesi'ni (§8) koda karşı doğrula, ❌ varsa o konuşmada düzelt
 
@@ -178,8 +178,14 @@ curl.exe -s -X POST "https://api.telegram.org/bot$t/sendDocument" -F "chat_id=$c
 - 2 notebook yüklü, `apporganizer` aktif, 20 tool
 - Günde ~50 sorgu limiti
 
+### Lokal AI Gateway (ÖNCELİKLİ — SADECE LOCAL)
+- Endpoint: `http://localhost:20128/v1` · Key: `.env` → `LOCAL_AI_KEY` · Model: `all99` (80 model round-robin)
+- Çağrı: `python scripts/local_ai.py "soru"` veya `--model gh/claude-haiku-4.5` gibi spesifik model
+- Araştırma, analiz, ikinci görüş için → **önce bu sistemi kullan** (ucuz, hızlı, yerel)
+- Offline ise (localhost:20128 erişilemiyor) → DeepSeek API'ye geç
+
 ### DeepSeek API
-- Model: `deepseek-chat` · Key: `.env` → `DEEPSEEK_API_KEY`
+- Model: `deepseek-chat` · Key: `.env` → `DEEPSEEK_API_KEY` · Yedek: lokal AI offline ise kullan
 
 ### Remote Ortam Notu
 `dl.google.com` ve `api.telegram.org` bu ortamda engelli — build ve Telegram gönderimi yerel makinede yapılmalı.

@@ -91,5 +91,9 @@
 | 2026-06-22 | — | — | ~20dk | KOD | Döngü 129 — H9 Ayarlar İstatistikler bölümü | SettingsScreen.kt 28 satır |
 | 2026-06-22 | — | — | ~15dk | KOD | Döngü 130 — H8 üretici fuzzy matching | AppClassifier MANUFACTURER_NAME_MAP + tek-uygulama filtresi |
 | 2026-06-22 | — | — | ~20dk | DÖKÜMAN | Döngü 131 — MD_DENETIM_21 kapatma, LEARNINGS AppClassifierAssets, HISTORY 3702 fix | MD denetim temizliği |
-| 2026-06-22 | — | — | ~35dk | KOD | Döngü D132-D139 — H10 büyük dosya bölme | FolderSheet 749→275 + FolderContextMenuSheet + FolderPositionPickerSheet + FolderRenameDialog + HomeScreenOverlays + SettingsAppsSection + SettingsBackupAboutSection; AllAppsDrawer 982→695 |
-| 2026-06-23 | — | — | ~30dk | KOD | Döngü D140 — glassmorphism UI + uygulama arama çubuğu | GlassCard.kt (yeni), FolderTile border, AppSuggestionsRow glass frame, HomeAppSearchBar, stale icon fix |
+| 2026-06-22 | 10:00 | 10:15 | ~15dk | DÖKÜMAN | Döngü D132 — MD denetim analizi (2026-06-22 rutin) | MD_DENETIM_2026-06-22.md oluşturuldu |
+| 2026-06-22 | 10:15 | 10:25 | ~10dk | BUILD | Döngü D133 — BUILD 25.7 MB APK | assembleDebug, boyut logu |
+| 2026-06-23 | 09:00 | 10:00 | ~60dk | KOD | Döngü D134-D138 — H10 kod bölme | AllAppsDrawer 982→695, FolderSheet 749→275, HomeScreen 876→748, SettingsScreen 765→352; 5 yeni dosya |
+| 2026-06-23 | 10:00 | 10:20 | ~20dk | HATA_GIDER | Döngü D139 — BUILD hataları fix | AllAppsDrawer asImageBitmap + Locale import + LRUCache type mismatch |
+| 2026-06-23 | 10:20 | 10:55 | ~35dk | KOD | Döngü D140 — glassmorphism UI + HomeAppSearchBar + stale icon fix | GlassCard.kt, FolderTile border, AppSuggestionsRow glass, HomeAppSearchBar, lastUpdatedTime cache key |
+| 2026-06-23 | 10:55 | 11:10 | ~15dk | KOD | Döngü D141 — folderBlurEnabled ölü kod aktif edildi | FolderTile/FolderPager folderGlassEnabled parametre zinciri |

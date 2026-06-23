@@ -126,7 +126,7 @@
 | H7 | 2026-06-22 | **14** | **Bildirim izni kapalıysa uyarı + veri güvencesi** — Bildirimler kapalıysa HomeScreen'de uyarı banner; "Tüm veriler cihazda kalır, dışarı çıkmaz" açıklaması onboarding/ayarlarda | [TAMAMLANDI D126 — PermissionsBanner güvence notu, Onboarding privacyNoteRes, Ayarlar Bildirim bölümü] |
 | H8 | 2026-06-22 | **13** | **Üreticiye göre klasörleme fuzzy matching** — Büyük/küçük harf, nokta, tire toleransı (Samsung/SAMSUNG/samsung); tek üretici 1 cihazsa "Diğer" klasörüne at; çok cihazsa üretici klasörü aç | ✅ TAMAMLANDI (D130) |
 | H9 | 2026-06-22 | **12** | **Ayarlar istatistik ekranı** — Toplam klasör sayısı, uygulama sayısı, en çok kullanılan kategori, sınıflandırılmamış uygulama sayısı, son yedekleme tarihi | ✅ TAMAMLANDI (D129) |
-| H10 | 2026-06-22 | **8** | **Kod dosyası bölme (single responsibility)** — Büyük composable'ları ayrı dosyalara böl; max 300 satır kuralı tüm dosyalara uygula | Bekliyor |
+| H10 | 2026-06-22 | **8** | **Kod dosyası bölme (single responsibility)** — Büyük composable'ları ayrı dosyalara böl; max 300 satır kuralı tüm dosyalara uygula | [TAMAMLANDI D134-D139 — AllAppsDrawer 982→695, FolderSheet 749→275, HomeScreen 876→748, SettingsScreen 765→352; 5 yeni dosya] |
 
 ---
 
@@ -135,6 +135,8 @@
 | Tarih | Madde |
 |-------|-------|
 | 2026-06-22 | **openclaw API testi** — gh/claude-haiku-4.5 çalışıyor; bash üzerinden /v1/chat/completions |
+| 2026-06-23 | **HomeAppSearchBar** — Google Search altında uygulama arama çubuğu eklendi (all99 round-robin proxy). [TAMAMLANDI D140] |
+| 2026-06-23 | **Lokal AI Gateway (all99)** — http://localhost:20128/v1, 80 model, scripts/local_ai.py helper, .env kayıt tamamlandı |
 | 2026-06-22 | Hüseyin 10 feature talebi FİKİRLER.md'ye eklendi (H1-H10, haiku puanlaması) |
 | 2026-06-21 | **AllAppsDrawer klavye fix** [TAMAMLANDI D119] |
 | 2026-06-21 | **Klasör sıralama görsel UI** [TAMAMLANDI D119] |

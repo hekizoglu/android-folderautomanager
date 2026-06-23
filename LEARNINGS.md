@@ -168,4 +168,4 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-*Son güncelleme: 2026-06-21 — v5: Onboarding 16 adım olarak düzeltildi (D105), E14 fix AllAppsDrawer'da uygulandı (derivedStateOf → remember(apps)), L1 exactMatchMap öncelik sırası dokümante edildi. Döngü logları → HISTORY.md.*
+*Son güncelleme: 2026-06-22 — v6: AppClassifierAssets singleton mimarisi eklendi (D131). Lokal AI gateway (all99, http://localhost:20128/v1) entegre edildi — scripts/local_ai.py, .env LOCAL_AI_* değişkenleri.*
