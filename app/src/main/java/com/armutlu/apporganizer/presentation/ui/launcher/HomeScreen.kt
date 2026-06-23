@@ -113,7 +113,8 @@ fun HomeScreen(
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
-    var homeSearchEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
+    var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
+    var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -172,6 +173,8 @@ fun HomeScreen(
                     folderBlurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_SEARCH_ENABLED ->
                     homeSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_APP_SEARCH_ENABLED ->
+                    homeAppSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -404,6 +407,17 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
+
+            // Uygulama arama çubuğu — Google Search altında, tüm uygulamalarda arama yapar
+            if (homeAppSearchEnabled) {
+                HomeAppSearchBar(
+                    allApps = allApps,
+                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
 
             // Klasör arama çubuğu — HomeScreenComponents.FolderSearchBar
             if (homeSearchEnabled) {

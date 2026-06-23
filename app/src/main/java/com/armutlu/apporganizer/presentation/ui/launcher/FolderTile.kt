@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
@@ -151,7 +152,8 @@ fun FolderTile(
             modifier = Modifier
                 .size(circleSize)
                 .clip(tileShape)
-                .background(catColor.copy(alpha = 0.35f)),
+                .background(catColor.copy(alpha = 0.30f))
+                .border(1.dp, Color.White.copy(alpha = 0.25f), tileShape),
             contentAlignment = Alignment.Center
         ) {
             if (folder.apps.isEmpty()) {

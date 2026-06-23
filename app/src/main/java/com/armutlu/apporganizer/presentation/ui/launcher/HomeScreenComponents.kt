@@ -292,33 +292,40 @@ internal fun AppSuggestionsRow(
             else            -> R.string.suggestions_label_evening  // 18-05 arası
         }
     }
-    Column(
+    GlassCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        cornerRadius = 20.dp,
+        backgroundAlpha = 0.13f,
+        borderAlpha = 0.22f
     ) {
-        Text(
-            text = stringResource(labelRes),
-            color = Color.White.copy(alpha = 0.55f),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, bottom = 6.dp)
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            apps.forEach { app ->
-                SuggestionAppItem(
-                    app = app,
-                    iconPackPkg = iconPackPkg,
-                    onClick = { onAppClick(app) },
-                    onLongClick = { onAppLongClick(app) }
-                )
+            Text(
+                text = stringResource(labelRes),
+                color = Color.White.copy(alpha = 0.55f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, bottom = 6.dp)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                apps.forEach { app ->
+                    SuggestionAppItem(
+                        app = app,
+                        iconPackPkg = iconPackPkg,
+                        onClick = { onAppClick(app) },
+                        onLongClick = { onAppLongClick(app) }
+                    )
+                }
             }
         }
     }
@@ -410,9 +417,12 @@ internal fun FavoritesRow(
                         onLongClick = { onAppLongClick?.invoke(app.packageName) }
                     )
                 ) {
-                    val bitmap by produceState<ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                    val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                        if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                        else "${app.packageName}_48_${app.lastUpdatedTime}"
+                    }
+                    val bitmap by produceState<ImageBitmap?>(null, cacheKey) {
                         value = withContext(Dispatchers.IO) {
-                            val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
                                 val bmp = runCatching {
                                     com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap()
@@ -456,9 +466,12 @@ internal fun RecentAppsRow(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
                 ) {
-                    val bitmap by produceState<ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                    val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                        if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                        else "${app.packageName}_48_${app.lastUpdatedTime}"
+                    }
+                    val bitmap by produceState<ImageBitmap?>(null, cacheKey) {
                         value = withContext(Dispatchers.IO) {
-                            val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                             iconCacheInternal[cacheKey] ?: run {
                                 val bmp = runCatching {
                                     com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap()
@@ -516,6 +529,105 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
                 color = Color.White.copy(alpha = 0.40f),
                 fontSize = 11.sp
             )
+        }
+    }
+}
+
+/**
+ * Ana ekran uygulama arama çubuğu — allApps içinde isim arar, sonuçlar anlık gösterilir.
+ */
+@Composable
+internal fun HomeAppSearchBar(
+    allApps: List<AppInfo>,
+    onAppClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var query by rememberSaveable { mutableStateOf("") }
+    val results = remember(query, allApps) {
+        if (query.isBlank()) emptyList()
+        else allApps
+            .filter { it.appName.lowercase(Locale("tr")).contains(query.lowercase(Locale("tr"))) }
+            .sortedBy { it.appName }
+            .take(6)
+    }
+
+    Column(modifier = modifier) {
+        // Arama alanı — glass kart stilinde
+        GlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            cornerRadius = 28.dp,
+            backgroundAlpha = 0.12f,
+            borderAlpha = 0.25f
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(Icons.Default.Search, contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(18.dp))
+                BasicTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    singleLine = true,
+                    textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                    modifier = Modifier.weight(1f),
+                    decorationBox = { inner ->
+                        Box(Modifier.weight(1f)) {
+                            if (query.isEmpty()) Text("Uygulama ara...",
+                                color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp)
+                            inner()
+                        }
+                    }
+                )
+                if (query.isNotEmpty()) {
+                    Icon(Icons.Default.Close, contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.60f),
+                        modifier = Modifier.size(18.dp).clickable { query = "" })
+                }
+            }
+        }
+
+        // Sonuç listesi
+        if (results.isNotEmpty()) {
+            Spacer(Modifier.height(4.dp))
+            GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.18f) {
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    results.forEach { app ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { query = ""; onAppClick(app.packageName) }
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            val cacheKey = "${app.packageName}_32_${app.lastUpdatedTime}"
+                            val icon by produceState<ImageBitmap?>(null, cacheKey) {
+                                value = withContext(Dispatchers.IO) {
+                                    iconCacheInternal[cacheKey] ?: run {
+                                        val bmp = runCatching {
+                                            com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 64)?.asImageBitmap()
+                                        }.getOrNull()
+                                        if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                        bmp
+                                    }
+                                }
+                            }
+                            if (icon != null) {
+                                Image(bitmap = icon!!, contentDescription = null,
+                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
+                            } else {
+                                Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                                    .background(Color.White.copy(alpha = 0.2f)))
+                            }
+                            Text(app.appName, color = Color.White.copy(alpha = 0.90f),
+                                fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            }
         }
     }
 }

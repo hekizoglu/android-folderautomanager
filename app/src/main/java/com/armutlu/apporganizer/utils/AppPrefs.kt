@@ -167,6 +167,11 @@ object AppPrefs {
     fun isHomeSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_HOME_SEARCH_ENABLED, true)
     fun setHomeSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_SEARCH_ENABLED, v).apply()
 
+    // Ana ekran uygulama arama çubuğu (Google Search altında, uygulama başlatır)
+    const val KEY_HOME_APP_SEARCH_ENABLED = "home_app_search_enabled"
+    fun isHomeAppSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_HOME_APP_SEARCH_ENABLED, true)
+    fun setHomeAppSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_APP_SEARCH_ENABLED, v).apply()
+
     // Uygulama önerileri — en sık kullanılan 4 uygulama ana ekranda gösterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
