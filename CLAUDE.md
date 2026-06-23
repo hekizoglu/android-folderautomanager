@@ -374,7 +374,7 @@ app/src/main/java/com/armutlu/apporganizer/
 - [ ] Release keystore: `release.jks`
 - [ ] 🔴 **QUERY_ALL_PACKAGES beyan formu** — Play Store'a göndermeden önce Google'a "uygulama keşif/arama" kategoryasını beyan et (reject sebebi)
 - [ ] Android 15 Edge-to-Edge geçişi — `WindowInsets` tüm ekranlarda
-- [ ] Room `schemas/` klasörü git'e ekle (`room.schemaLocation` gradle'da tanımla)
+- [x] Room `schemas/` klasörü git'te — `schemaLocation` tanımlı, `app/schemas/8.json` commit'li (D143)
 
 ---
 
