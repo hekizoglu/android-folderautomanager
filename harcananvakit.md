@@ -91,3 +91,5 @@
 | 2026-06-22 | — | — | ~20dk | KOD | Döngü 129 — H9 Ayarlar İstatistikler bölümü | SettingsScreen.kt 28 satır |
 | 2026-06-22 | — | — | ~15dk | KOD | Döngü 130 — H8 üretici fuzzy matching | AppClassifier MANUFACTURER_NAME_MAP + tek-uygulama filtresi |
 | 2026-06-22 | — | — | ~20dk | DÖKÜMAN | Döngü 131 — MD_DENETIM_21 kapatma, LEARNINGS AppClassifierAssets, HISTORY 3702 fix | MD denetim temizliği |
+| 2026-06-22 | — | — | ~35dk | KOD | Döngü D132-D139 — H10 büyük dosya bölme | FolderSheet 749→275 + FolderContextMenuSheet + FolderPositionPickerSheet + FolderRenameDialog + HomeScreenOverlays + SettingsAppsSection + SettingsBackupAboutSection; AllAppsDrawer 982→695 |
+| 2026-06-23 | — | — | ~30dk | KOD | Döngü D140 — glassmorphism UI + uygulama arama çubuğu | GlassCard.kt (yeni), FolderTile border, AppSuggestionsRow glass frame, HomeAppSearchBar, stale icon fix |

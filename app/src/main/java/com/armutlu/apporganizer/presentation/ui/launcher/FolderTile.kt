@@ -73,6 +73,7 @@ fun FolderTile(
     folderSwipeHintEnabled: Boolean = true,
     notifTextEnabled: Boolean = false,
     folderShape: String = "circle",
+    folderGlassEnabled: Boolean = true,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -153,7 +154,7 @@ fun FolderTile(
                 .size(circleSize)
                 .clip(tileShape)
                 .background(catColor.copy(alpha = 0.30f))
-                .border(1.dp, Color.White.copy(alpha = 0.25f), tileShape),
+                .then(if (folderGlassEnabled) Modifier.border(1.dp, Color.White.copy(alpha = 0.25f), tileShape) else Modifier),
             contentAlignment = Alignment.Center
         ) {
             if (folder.apps.isEmpty()) {

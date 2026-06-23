@@ -503,6 +503,7 @@ fun HomeScreen(
                 folderSwipeHint = folderSwipeHint,
                 notifTextEnabled = notifTextEnabled,
                 folderShape = folderShape,
+                folderGlassEnabled = folderBlurEnabled,
                 haptic = haptic,
                 onFolderClick = { viewModel.openFolder(it) },
                 onFolderLongClick = { folderContextMenu = it },

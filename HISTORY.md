@@ -14,7 +14,13 @@
 
 ---
 
+## Döngü D140 — 2026-06-23
+**Yapılanlar:** GlassCard.kt (yeni) — glassmorphism container; FolderTile glass border; AppSuggestionsRow GlassCard içine alındı; HomeAppSearchBar (Google Search altında anlık uygulama arama); FavoritesRow+RecentAppsRow stale icon fix (lastUpdatedTime cache key'e eklendi); AppPrefs KEY_HOME_APP_SEARCH_ENABLED; SettingsHomeScreenSection toggle eklendi.
+**Agent:** Yok
+**CLAUDE.md/LEARNINGS.md:** Değişmedi
+**Sonraki:** Build doğrulama; harcananvakit.md
 
+---
 
 ## Özellik Denetim Geçmişi
 

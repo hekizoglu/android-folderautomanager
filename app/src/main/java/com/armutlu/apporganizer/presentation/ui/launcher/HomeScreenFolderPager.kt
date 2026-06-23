@@ -46,6 +46,7 @@ internal fun FolderPager(
     folderSwipeHint: Boolean,
     notifTextEnabled: Boolean,
     folderShape: String,
+    folderGlassEnabled: Boolean = true,
     haptic: HapticFeedback,
     onFolderClick: (AppFolder) -> Unit,
     onFolderLongClick: (AppFolder) -> Unit,
@@ -104,6 +105,7 @@ internal fun FolderPager(
                     folderSwipeHintEnabled = folderSwipeHint,
                     notifTextEnabled = notifTextEnabled,
                     folderShape = folderShape,
+                    folderGlassEnabled = folderGlassEnabled,
                     modifier = Modifier
                         .pointerInput(index) {
                             detectDragGesturesAfterLongPress(
