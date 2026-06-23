@@ -14,6 +14,14 @@
 
 ---
 
+## Döngü D142 — 2026-06-23
+**Yapılanlar:** MD denetim 2026-06-23 6 sorun kapatıldı. Lokal AI entegrasyonu: scripts/local_ai.py, .env LOCAL_AI_*, agent yaml'lar güncellendi, CLAUDE.md §4 Lokal AI Gateway eklendi. S1-S6 tümü çözüldü.
+**Agent:** Lokal AI (all99) — harcananvakit retroaktif log üretimi
+**Kaynaklar:** Araçlar: Read·Edit·Write·Bash · Servis: Lokal AI gateway (all99) · Bakılan dosyalar: CLAUDE.md, FİKİRLER.md, HISTORY.md, LEARNINGS.md, harcananvakit.md, agent yaml'lar
+**Sonraki:** Build doğrulama veya yeni özellik döngüsü
+
+---
+
 ## Döngü D140 — 2026-06-23
 **Yapılanlar:** GlassCard.kt (yeni) — glassmorphism container; FolderTile glass border; AppSuggestionsRow GlassCard içine alındı; HomeAppSearchBar (Google Search altında anlık uygulama arama); FavoritesRow+RecentAppsRow stale icon fix (lastUpdatedTime cache key'e eklendi); AppPrefs KEY_HOME_APP_SEARCH_ENABLED; SettingsHomeScreenSection toggle eklendi.
 **Agent:** Yok
