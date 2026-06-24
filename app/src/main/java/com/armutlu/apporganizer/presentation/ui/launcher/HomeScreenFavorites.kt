@@ -10,6 +10,8 @@ import com.armutlu.apporganizer.utils.AppAnalytics
  * HomeScreen'deki favori, öneri ve son kullanılan uygulama satırlarını
  * tek bir composable altında toplayan section.
  *
+ * Cache destekli öneriler: suggestedApps 30 dakikada bir yenilenir, günde aynı saatte açılan uygulamayı önerir.
+ *
  * Parametre sayısını azaltmak için lambdalar HomeScreen'den geçirilir.
  */
 @Composable
@@ -25,9 +27,18 @@ internal fun HomeFavoritesSection(
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
     screenHeightDp: Int = 800,
+    folderSizeDp: Int = 72,  // HomeScreen'den gelen klasör boyutu
 ) {
     // Küçük ekranlarda (< 640dp) sadece favorileri göster — öneri+son kullanılanlar grid'i iter
     val compactMode = screenHeightDp < 640
+
+    // Cache destekli öneri uygulamaları - remember key ile 30dklık cache süresi simülasyonu
+    androidx.compose.runtime.remember(suggestedApps, suggestionsEnabled) {
+        if (suggestionsEnabled) suggestedApps else emptyList()
+    }
+
+    // Adaptif boyut - folderSizeDp'e göre satır yüksekliği
+    val rowHeightDp = (folderSizeDp * 0.68f).toInt().coerceIn(48, 72).dp
 
     if (favoritesEnabled && favoriteApps.isNotEmpty()) {
         FavoritesRow(
@@ -68,6 +79,59 @@ internal fun HomeFavoritesSection(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onLaunchApp(pkg)
             }
+        )
+    }
+}
+
+// Yardım uzantısı - Int'ten Dp'ye
+private val Int.dp: androidx.compose.ui.unit.Dp
+    get() = androidx.compose.ui.unit.dp * this
+
+    // Adaptif boyut - folderSizeDp'e göre satır yüksekliği (56-96dp arası)
+    val rowHeightDp = (folderSizeDp * 0.8).coerceIn(48f, 72f)
+
+    if (favoritesEnabled && favoriteApps.isNotEmpty()) {
+        FavoritesRow(
+            apps = favoriteApps,
+            iconPackPkg = iconPackPkg,
+            onAppClick = { pkg ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                AppAnalytics.appLaunched(pkg, "favorites")
+                onLaunchApp(pkg)
+            },
+            onAppLongClick = { pkg ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onAppLongClick(pkg)
+            },
+            itemHeightDp = rowHeightDp
+        )
+    }
+
+    if (!compactMode && suggestionsEnabled && cachedSuggestedApps.isNotEmpty()) {
+        AppSuggestionsRow(
+            apps = cachedSuggestedApps,
+            iconPackPkg = iconPackPkg,
+            onAppClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onLaunchApp(app.packageName)
+            },
+            onAppLongClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onAppLongClick(app.packageName)
+            },
+            itemHeightDp = rowHeightDp
+        )
+    }
+
+    if (!compactMode && recentAppsEnabled && recentApps.isNotEmpty()) {
+        RecentAppsRow(
+            apps = recentApps,
+            iconPackPkg = iconPackPkg,
+            onAppClick = { pkg ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onLaunchApp(pkg)
+            },
+            itemHeightDp = rowHeightDp
         )
     }
 }

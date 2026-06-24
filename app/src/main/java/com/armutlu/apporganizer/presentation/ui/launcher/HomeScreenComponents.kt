@@ -278,6 +278,7 @@ internal fun DockIcon(
 internal fun AppSuggestionsRow(
     apps: List<AppInfo>,
     iconPackPkg: String = "",
+    itemHeightDp: androidx.compose.ui.unit.Dp = 56.dp,
     onAppClick: (AppInfo) -> Unit,
     onAppLongClick: (AppInfo) -> Unit,
     modifier: Modifier = Modifier
@@ -396,6 +397,7 @@ private fun SuggestionAppItem(
 internal fun FavoritesRow(
     apps: List<AppInfo>,
     iconPackPkg: String = "",
+    itemHeightDp: androidx.compose.ui.unit.Dp = 56.dp,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((String) -> Unit)? = null,
 ) {
@@ -449,6 +451,7 @@ internal fun FavoritesRow(
 internal fun RecentAppsRow(
     apps: List<AppInfo>,
     iconPackPkg: String = "",
+    itemHeightDp: androidx.compose.ui.unit.Dp = 56.dp,
     onAppClick: (String) -> Unit,
 ) {
     if (apps.isEmpty()) return

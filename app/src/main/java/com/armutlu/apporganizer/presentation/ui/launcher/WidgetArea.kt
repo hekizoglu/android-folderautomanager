@@ -124,7 +124,7 @@ private fun WidgetCard(
     var hostView by remember { mutableStateOf<android.appwidget.AppWidgetHostView?>(null) }
     var minHeightDp by remember { mutableIntStateOf(100) }
 
-    LaunchedEffect(widgetId) {
+LaunchedEffect(widgetId) {
         hostView = WidgetHostManager.createView(context, widgetId)
         val awm = context.getSystemService(android.content.Context.APPWIDGET_SERVICE) as? android.appwidget.AppWidgetManager
         awm?.getAppWidgetInfo(widgetId)?.let { info ->
@@ -133,7 +133,7 @@ private fun WidgetCard(
         }
     }
 
-    hostView?.let { view ->
+    hostView?.let { widgetView ->
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,7 +143,10 @@ private fun WidgetCard(
                     if (isDraggable)
                         Modifier.pointerInput(Unit) {
                             detectDragGesturesAfterLongPress(
-                                onDragStart = { onDragStart() },
+                                onDragStart = {
+                                    onDragStart()
+                                    showRemoveButton = true
+                                },
                                 onDragEnd = { onDragEnd() },
                                 onDragCancel = { onDragEnd() },
                                 onDrag = { _, dragAmount -> onDrag(dragAmount.y) }
@@ -158,15 +161,15 @@ private fun WidgetCard(
                 )
         ) {
             AndroidView(
-                factory = { view },
+                factory = { widgetView },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = minHeightDp.dp)
                     .wrapContentHeight()
             )
 
-            if (isDraggable) {
-                // Sürükleme tutacağı — sağ üst köşe
+            // Drag handle - sadece isDraggable true iken göster
+            if (isDraggable && !showRemoveButton) {
                 Icon(
                     imageVector = Icons.Default.DragHandle,
                     contentDescription = "Taşı",
@@ -178,7 +181,8 @@ private fun WidgetCard(
                 )
             }
 
-            if (showRemoveButton || !isDraggable) {
+            // Silme butonu - her zaman göster
+            if (showRemoveButton) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)

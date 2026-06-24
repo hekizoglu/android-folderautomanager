@@ -444,7 +444,8 @@ fun HomeScreen(
                 haptic = haptic,
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
                 onAppLongClick = { pkg -> contextMenuPkg = pkg },
-                screenHeightDp = LocalConfiguration.current.screenHeightDp
+                screenHeightDp = LocalConfiguration.current.screenHeightDp,
+                folderSizeDp = folderSizeDp
             )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında

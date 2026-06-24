@@ -450,32 +450,41 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    // Akıllı öneriler — Yaklaşım B: recency(0.4) + frequency(0.4) + timeSlot(0.2)
-    // UsageStats izni varsa ağırlıklı skor kullanılır; izin yoksa lastUsedTimestamp sıralamasına düşer
+    // Memory cache: öneri skorları 30 dakikada bir yenilenir
+    @Volatile private var cachedSuggestedApps: List<AppInfo>? = null
+    @Volatile private var cacheTimestamp: Long = 0L
+    private val CACHE_DURATION_MS = 30 * 60 * 1000L  // 30 dakika
+
+    // Akıllı öneriler — time-slot aware (Yaklaşım B)
     val suggestedApps: StateFlow<List<AppInfo>> = combine(
         repository.getAllAppsFlow(),
         _suggestionTick
-    ) { apps, _ ->
-        val ctx = getApplication<Application>()
-        val visible = apps.filter { !it.isHidden }
-        if (UsageStatsHelper.hasPermission(ctx)) {
-            val scores = UsageStatsHelper.getWeightedScores(ctx, days = 28)
-            visible
-                .filter { scores.containsKey(it.packageName) }
-                .sortedByDescending { scores[it.packageName] ?: 0f }
-                .take(4)
-                .ifEmpty {
-                    // Skor listesi boşsa (izin var ama hiç veri yok) — timestamp sıralamasına düş
-                    visible.filter { it.usageCount > 0 }
-                        .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                        .take(4)
-                }
-        } else {
-            // İzin yoksa mevcut basit sıralama korunur
-            visible.filter { it.usageCount > 0 }
-                .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                .take(4)
+    ) { apps, tick ->
+        val now = System.currentTimeMillis()
+        // Cache süresi dolduysa yenile
+        if (cachedSuggestedApps == null || now - cacheTimestamp > CACHE_DURATION_MS) {
+            val ctx = getApplication<Application>()
+            val visible = apps.filter { !it.isHidden }
+            val result = if (UsageStatsHelper.hasPermission(ctx)) {
+                val scores = UsageStatsHelper.getWeightedScores(ctx, days = 28)
+                visible
+                    .filter { scores.containsKey(it.packageName) }
+                    .sortedByDescending { scores[it.packageName] ?: 0f }
+                    .take(4)
+                    .ifEmpty {
+                        visible.filter { it.usageCount > 0 }
+                            .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                            .take(4)
+                    }
+            } else {
+                visible.filter { it.usageCount > 0 }
+                    .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                    .take(4)
+            }
+            cachedSuggestedApps = result
+            cacheTimestamp = now
         }
+        cachedSuggestedApps!!
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
