@@ -168,9 +168,6 @@ internal fun LazyListScope.settingsBackupAboutSection(
 
     // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
-
-    // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
-    item { SettingsSectionTitle("Hakkında") }
     item {
         SettingsCard {
             SettingsButtonRow(Icons.Default.PrivacyTip, "Gizlilik Politikası",

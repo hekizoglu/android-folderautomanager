@@ -35,6 +35,7 @@ fun AppListScreen(
     var showMenu       by remember { mutableStateOf(false) }
     var showSortMenu   by remember { mutableStateOf(false) }
     var appForCategory by remember { mutableStateOf<AppInfo?>(null) }
+    var showResetCategoriesDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -80,7 +81,7 @@ fun AppListScreen(
                         )
                         DropdownMenuItem(
                             text = { Text("Kategorileri Sıfırla ve Yeniden Sınıflandır") },
-                            onClick = { showMenu = false; viewModel.resetAndReclassifyAllApps() },
+                            onClick = { showMenu = false; showResetCategoriesDialog = true },
                             leadingIcon = { Icon(Icons.Default.RestartAlt, null) }
                         )
                         DropdownMenuItem(
@@ -235,6 +236,27 @@ fun AppListScreen(
                 appForCategory = null
             },
             onDismiss = { appForCategory = null }
+        )
+    }
+
+    if (showResetCategoriesDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetCategoriesDialog = false },
+            title = { Text("Kategorileri sıfırla ve yeniden sınıflandır") },
+            text = { Text("Tüm mevcut kategori atamaları silinecek ve uygulamalar yeniden sınıflandırılacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showResetCategoriesDialog = false
+                    viewModel.resetAndReclassifyAllApps()
+                }) {
+                    Text("Sıfırla", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetCategoriesDialog = false }) {
+                    Text("İptal")
+                }
+            }
         )
     }
 }
