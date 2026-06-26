@@ -14,6 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,6 +76,10 @@ fun CategoryPickerSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = if (isCurrent) "${cat.categoryName}, seçili" else cat.categoryName
+                            }
                             .clickable { onCategorySelected(cat.categoryId); onDismiss() }
                             .background(if (isCurrent) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
                             .padding(horizontal = 20.dp, vertical = 14.dp),
@@ -87,7 +95,7 @@ fun CategoryPickerSheet(
                             modifier = Modifier.weight(1f)
                         )
                         if (isCurrent) {
-                            Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Check, "Seçili", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                         }
                     }
                 }

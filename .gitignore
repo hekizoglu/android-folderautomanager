@@ -28,6 +28,15 @@ Thumbs.db
 # Memory / MCP tool files
 entities.json
 mempalace.yaml
+mempalace_embedder.json
+.kilo/
+.blob_seq_ids_migrated
+.collection_type_fixed
+chroma.sqlite3
+.palace/
+.mempalace/
+.codex/
+*-*-*-*-*/
 .claude/
 !.claude/agents/
 .env

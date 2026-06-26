@@ -39,6 +39,7 @@ Bu kurallar resmi Android ve Material kaynaklarindan turetilmistir:
 - Buton etiketi, tiklandiginda olacak eylemi dogrudan anlatmali.
 - Labels kisa, acik, tek anlamli ve amaci tarif eder nitelikte olmali.
 - Accessibility icin interaktif elemanlarin anlami, rolu ve gerekiyorsa durumu okunabilir olmali.
+- Sistem ayarina yonlendiren akislar, Android'in ayri izin ekranlariyla uyumlu ve acik isimlendirilmis olmali.
 - Test yalnizca statik analizle bitmez; TalkBack ve manuel akis kontrolu de denetimin parcasi olmalidir.
 
 ---
@@ -81,6 +82,7 @@ Bu kurallar resmi Android ve Material kaynaklarindan turetilmistir:
 | C7 | Tehlikeli veya geri alinmasi zor aksiyonlar yeterince acik isimlendirilmis mi? |
 | C8 | Subtitle, helper text veya toast metni gercek davranisla tutarli mi? |
 | C9 | Disabled, loading veya secili durumlar kullaniciya gorunur ve anlasilir mi? |
+| C10 | Swipe, drag, nested scroll ve dismiss gesture'lari birbirini bozuyor mu? |
 
 ### D. Performans Hatalari
 
@@ -167,6 +169,7 @@ Dead code odakli minimum kontroller:
 
 Bu kurallar otomatik tarama ile tam yakalanamaz:
 - C6, C7, C8, C9
+- C10
 - F1, F2, F3, F4, F5, F6, F7
 - G1, G2, G3, G4, G5
 - E5'in davranissal etkisi olan kismi: artik kullanilmayan ama hala akisi varmis gibi duran screen, ayar, buton veya route kalintilari
@@ -180,6 +183,7 @@ Bu denetimde su checklist uygulanir:
 5. Yikici aksiyonlarda aciklik, uyari ve geri alma ihtiyacini kontrol et.
 6. TalkBack mantigiyla elemanin amacinin anlasilip anlasilmadigini dusun.
 7. Kodda tanimli ama akista hic ulasilmayan screen, helper, ayar anahtari veya composable kalip kalmadigini kontrol et.
+8. Gesture kullanan ekranlarda child-parent event tuketiminin scroll veya dismiss davranisini bozup bozmadigini kontrol et.
 
 Detayli kontrol listesi icin:
 - `local_denetim_manuel_checklist.md`

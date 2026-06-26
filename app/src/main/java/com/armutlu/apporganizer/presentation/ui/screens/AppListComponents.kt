@@ -22,6 +22,10 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -228,7 +232,11 @@ internal fun CategoryPickerDialog(
                             MaterialTheme.colorScheme.primaryContainer
                         else MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.fillMaxWidth()
-                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) })
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = if (app.categoryId == cat.categoryId) "${cat.categoryName}, seçili" else cat.categoryName
+                            }
+                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId); onDismiss() })
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
@@ -238,7 +246,7 @@ internal fun CategoryPickerDialog(
                             Text(cat.iconEmoji, fontSize = 20.sp)
                             Text(cat.categoryName, fontSize = 14.sp, modifier = Modifier.weight(1f))
                             if (app.categoryId == cat.categoryId)
-                                Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Check, "Seçili", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                         }
                     }
                 }

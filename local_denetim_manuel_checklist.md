@@ -19,6 +19,7 @@
 - Ayar degisince ekranda aninda geri bildirim var mi?
 - Ayar sadece sistem ekranina yonlendiriyorsa bu metinden anlasiliyor mu?
 - Sistem ayarlarini kopyalayan veya catisan ayar var mi?
+- Sistem ayarina giden satir, sanki uygulama ici toggle degismis gibi yaniltici bir dil kullaniyor mu?
 
 ## 3. Tehlikeli Islem Kontrolu
 
@@ -32,6 +33,7 @@
 - `contentDescription` eksik veya celiskili mi?
 - Bir grup tek bir kart gibi davranirken cocuk elemanlar gereksiz fokus aliyor mu?
 - Okuma sirasi mantikli mi?
+- Bildirim sayisi, secili durum, acik/kapali durum gibi kritik bilgiler sesli olarak aktariliyor mu?
 
 ## 5. Sonuc Kontrolu
 
@@ -47,6 +49,12 @@
 - Kullanilmayan drawable, string, menu veya diger resource artiklari birikmis mi?
 - Eski refactor sonrasi yalnizca bir kez tanimli kalmis composable, extension veya util fonksiyon var mi?
 
+## 7. Gesture ve Kapanis Kontrolu
+
+- Scroll edilen liste ile swipe-to-close veya swipe-to-open gesture'lari birbirini eziyor mu?
+- Cocuk composable drag event'ini gereksiz erken consume ederek parent gesture'ini bozuyor mu?
+- Threshold degerleri dp/px acisindan ekran yogunlugundan bagimsiz ve tutarli mi?
+
 ---
 
 ## Onerilen Manuel Tur Alanlari
@@ -55,3 +63,4 @@
 - Tum dialog ve bottom sheet aksiyonlari
 - Context menu ve overflow menu maddeleri
 - Ilk acilis, izin, reset ve backup akislari
+- checklist için geliştirme önerin var ise en alta sistemin önerileri diye başlık aç ve her döngü de yeni bir fikrini ekle

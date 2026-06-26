@@ -13,7 +13,7 @@ $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
-$reportPath = Join-Path $projectRoot "local_denetim_raporu.md"
+$reportPath = Join-Path $projectRoot "local_denetim_otomatik_rapor.md"
 $envPath = Join-Path $projectRoot ".env"
 $timestamp = Get-Date
 $timestampText = $timestamp.ToString("yyyy-MM-dd HH:mm")

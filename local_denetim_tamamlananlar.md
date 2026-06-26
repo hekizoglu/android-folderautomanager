@@ -48,3 +48,26 @@
 - `C6` sistem kategorilerinin silinmesini DAO seviyesinde koruyan kosul eklendi.
 - `C7` launcher kategori secici sabit liste yerine veritabanindan gelen kategorileri kullanir hale getirildi.
 - `C10` kategori editorunde duzenleme ve silme aksiyonlari gercek islev kazandi.
+
+## 2026-06-27 03:20
+
+- `P2` onboarding akisina `Usage Access` adimi eklenip `UsageStatsHelper.openPermissionSettings()` ile sistem ekranina yonlendirme baglandi.
+- `P10` `PermissionsBanner` snooze suresi sabit yerine `BANNER_SNOOZE_DAYS` uzerinden okunur hale getirildi.
+- `A8` `NiagaraAppRow` semantics metnine bildirim sayisi eklendi.
+- `A9` `DockIcon` etkileşimli alani icin acik semantics tanimlandi.
+- `A10` `SuggestionAppItem` fallback icon durumu TalkBack icin anlamli hale getirildi.
+- `A11` `FavoritesRow` ve `RecentAppsRow` item'lari button rolu ve uygulama adi ile etiketlendi.
+- `A12` klasor swipe ipucu caret sembolu yerine anlamli metne donusturuldu.
+- `A14` `SwipeHint` icin icon aciklamasi ve polite live region semantics eklendi.
+- `A16` `HomeScreenPageIndicator` tab rolu ile odak acisindan netlestirildi.
+- `A17` `MiniAppIcon` fallback kutusu uygulama adini sesli aktarir hale geldi.
+- `A18` `FolderSheet` bildirim satirina acik `onClick` etiketi eklendi.
+- `A19` widget drag handle bulgusu yeniden dogrulandi; mevcut aciklama yeterli oldugu icin rapordan dusuruldu.
+- `S2` `FolderTile` drag baslangicinda `swipeDy` sifirlanarak birikimli gesture hatasi kapatildi.
+- `S4` `FolderTile` klasor kutusu erisilebilir semantics ve ozet aciklamasi kazandi.
+- `S5` swipe ipucu screen reader dostu hale getirildi.
+- `S7` `AllAppsDrawer` threshold'unun zaten `LocalDensity` ile dp->px donusturuldugu yeniden dogrulandi; bulgu kapatildi.
+- `C8` iki kategori secicide secim sonrasi kapanis davranisi hizalandi.
+- `C9` kategori secicilerinde secili ikon aciklamasi ve satir semantics'i eklendi.
+- Denetim otomasyonu saatlik `Full` ve +15 dakika `Resolve` gorev akisi ile yeniden kurgulandi.
+- Manuel checklist'e sistem ayari dili, durumun sesli okunmasi ve gesture cakismasi sorulari eklendi.

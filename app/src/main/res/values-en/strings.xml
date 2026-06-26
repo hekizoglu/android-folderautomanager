@@ -118,6 +118,11 @@
     <string name="onb_query_desc">This permission is required to view and organize your apps.</string>
     <string name="onb_query_why">The launcher cannot work without this permission.</string>
     <string name="onb_query_btn">Grant Permission</string>
+    <string name="onb_usage_title">Usage Access</string>
+    <string name="onb_usage_desc">Required to show smart suggestions and recent apps accurately.</string>
+    <string name="onb_usage_why">Android grants this from a separate system screen; without it, suggestions stay incomplete.</string>
+    <string name="onb_usage_privacy">Usage data stays on your device and is never sent out.</string>
+    <string name="onb_usage_btn">Open Access</string>
 
     <string name="onb_notif_title">Notification Permission</string>
     <string name="onb_notif_desc">Permission is needed to show notification counts on app icons.</string>
@@ -186,6 +191,7 @@
     <string name="onb_restore_read_fail">Could not read file: %1$s</string>
     <string name="onb_status_launcher_set">Set as default launcher</string>
     <string name="onb_status_permission_granted">Permission granted</string>
+    <string name="onb_status_usage_access">Usage access granted</string>
     <string name="onb_status_notif_access">Notification access granted</string>
     <string name="onb_status_grey_days">%1$d days set</string>
     <string name="onb_status_ok">Done: %1$s</string>

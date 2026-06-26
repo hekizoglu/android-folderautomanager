@@ -53,6 +53,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -252,6 +258,10 @@ internal fun DockIcon(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .semantics {
+                role = Role.Button
+                contentDescription = label
+            }
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -268,6 +278,7 @@ internal fun DockIcon(
             modifier = Modifier
                 .size(iconSize)
                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                .semantics { contentDescription = label }
         )
     }
 }
@@ -377,6 +388,7 @@ private fun SuggestionAppItem(
             modifier = Modifier
                 .size(iconSize)
                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                .semantics { contentDescription = app.appName }
         )
         Spacer(Modifier.height(4.dp))
         Text(
@@ -412,10 +424,15 @@ internal fun FavoritesRow(
             items(apps, key = { it.packageName }) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(56.dp).combinedClickable(
-                        onClick = { onAppClick(app.packageName) },
-                        onLongClick = { onAppLongClick?.invoke(app.packageName) }
-                    )
+                    modifier = Modifier.width(56.dp)
+                        .semantics {
+                            role = Role.Button
+                            contentDescription = app.appName
+                        }
+                        .combinedClickable(
+                            onClick = { onAppClick(app.packageName) },
+                            onLongClick = { onAppLongClick?.invoke(app.packageName) }
+                        )
                 ) {
                     val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
                         if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
@@ -464,7 +481,12 @@ internal fun RecentAppsRow(
             items(apps.take(8), key = { it.packageName }) { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(56.dp).clickable { onAppClick(app.packageName) }
+                    modifier = Modifier.width(56.dp)
+                        .semantics {
+                            role = Role.Button
+                            contentDescription = app.appName
+                        }
+                        .clickable { onAppClick(app.packageName) }
                 ) {
                     val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
                         if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
@@ -515,12 +537,15 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
     }
     if (showSwipeHint && visible) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp).semantics {
+                liveRegion = LiveRegionMode.Polite
+                contentDescription = "Yukarı kaydırarak tüm uygulamaları aç"
+            },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
+                contentDescription = "Yukarı kaydırma ipucu",
                 tint = Color.White.copy(alpha = 0.55f),
                 modifier = Modifier.size(20.dp).offset(y = offsetY.dp)
             )

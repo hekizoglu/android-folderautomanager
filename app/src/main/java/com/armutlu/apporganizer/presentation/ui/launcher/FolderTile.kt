@@ -43,6 +43,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -93,6 +97,15 @@ fun FolderTile(
 
     val previewApps = folder.apps.take(4)
     val totalBadge  = folder.apps.sumOf { it.notificationCount }
+    val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
+    val folderLabel = remember(folder, customName, topApp, totalBadge) {
+        buildString {
+            append(customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName)
+            append(", ${folder.apps.size} uygulama")
+            if (totalBadge > 0) append(", $totalBadge bildirim")
+            if (topApp != null) append(", yukarı kaydırınca ${topApp.appName} açılır")
+        }
+    }
 
     val tileWidth = folderSizeDp.dp
     val circleSize = (folderSizeDp * 5 / 6).dp  // 60/72 oranı korunuyor
@@ -102,16 +115,21 @@ fun FolderTile(
         modifier = modifier
             .width(tileWidth)
             .scale(scale)
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+                contentDescription = folderLabel
+            }
             .pointerInput(folder) {
                 detectVerticalDragGestures(
+                    onDragStart = { swipeDy = 0f },
                     onDragEnd = { swipeDy = 0f },
                     onDragCancel = { swipeDy = 0f },
                     onVerticalDrag = { change, delta ->
-                        change.consume()
+                        if (delta >= 0f) return@detectVerticalDragGestures
                         swipeDy += delta
                         if (swipeDy < -swipeThresholdPx) {
-                            val topApp = folder.apps.maxByOrNull { it.usageCount }
                             if (topApp != null && onSwipeUp != null) {
+                                change.consume()
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onSwipeUp(topApp.packageName)
                             }
@@ -220,10 +238,9 @@ fun FolderTile(
         }
         // Swipe-up ile acilacak uygulamanin adi — en cok kullanilan
         // folderSwipeHintEnabled — HomeScreen'den reaktif parametre olarak gelir
-        val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
             Text(
-                text = "^ ${topApp.appName}",
+                text = "Yukarı kaydır: ${topApp.appName}",
                 color = Color.White.copy(alpha = 0.28f),
                 fontSize = 9.sp,
                 maxLines = 1,
@@ -350,7 +367,8 @@ private fun MiniAppIcon(
             modifier = Modifier
                 .size(size)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.4f)),
+                .background(Color.White.copy(alpha = 0.4f))
+                .semantics { contentDescription = app.appName },
             contentAlignment = Alignment.Center
         ) {
             Text(

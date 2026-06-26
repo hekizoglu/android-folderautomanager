@@ -197,7 +197,7 @@ fun FolderSheet(
                                 .background(onSurface.copy(alpha = 0.10f))
                                 .semantics {
                                     contentDescription = "${app.appName}, $count bildirim"
-                                    onClick(label = "Aç") { onAppClick(app.packageName); onDismiss(); true }
+                                    onClick(label = "Uygulamayı aç") { onAppClick(app.packageName); onDismiss(); true }
                                 }
                                 .clickable {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)

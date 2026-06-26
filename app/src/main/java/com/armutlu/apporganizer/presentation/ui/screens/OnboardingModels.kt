@@ -67,6 +67,15 @@ internal enum class OnboardingStep(
         whyRes = R.string.onb_query_why,
         isSkippable = true
     ),
+    USAGE_ACCESS(
+        titleRes = R.string.onb_usage_title,
+        descriptionRes = R.string.onb_usage_desc,
+        icon = Icons.Default.QueryStats,
+        buttonLabelRes = R.string.onb_usage_btn,
+        whyRes = R.string.onb_usage_why,
+        privacyNoteRes = R.string.onb_usage_privacy,
+        isSkippable = true
+    ),
     NOTIFICATIONS(
         titleRes = R.string.onb_notif_title,
         descriptionRes = R.string.onb_notif_desc,

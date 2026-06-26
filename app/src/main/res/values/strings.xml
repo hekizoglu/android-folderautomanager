@@ -118,6 +118,12 @@
     <string name="onb_query_desc">Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.</string>
     <string name="onb_query_why">Bu izin olmadan launcher çalışamaz.</string>
     <string name="onb_query_btn">İzin Ver</string>
+    <string name="onb_usage_title">Kullan?m Eri?imi</string>
+    <string name="onb_usage_desc">Ak?ll? ?neriler ve son kullan?lanlar? do?ru g?stermek i?in kullan?m istatistiklerine eri?im gerekir.</string>
+    <string name="onb_usage_why">Android bu veriyi ayr? bir sistem ekran?ndan verir; izin olmazsa ?neriler eksik kal?r.</string>
+    <string name="onb_usage_privacy">Kullan?m verileri yaln?zca cihazda i?lenir; hi?bir veri d??ar? g?nderilmez.</string>
+    <string name="onb_usage_btn">Eri?imi A?</string>
+
 
     <string name="onb_notif_title">Bildirim İzni</string>
     <string name="onb_notif_desc">Uygulama ikonlarında bildirim sayısını göstermek için izin gerekli.</string>
@@ -195,6 +201,7 @@
     <string name="onb_restore_read_fail">Dosya okunamadı: %1$s</string>
     <string name="onb_status_launcher_set">Varsayılan launcher olarak ayarlandı</string>
     <string name="onb_status_permission_granted">İzin verildi</string>
+    <string name="onb_status_usage_access">Kullan?m eri?imi verildi</string>
     <string name="onb_status_notif_access">Bildirim erişimi verildi</string>
     <string name="onb_status_grey_days">%1$d gün ayarlandı</string>
     <string name="onb_status_ok">Tamam: %1$s</string>

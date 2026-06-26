@@ -37,6 +37,7 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.UsageStatsHelper
 import kotlinx.coroutines.launch
 
 @Composable
@@ -48,6 +49,7 @@ fun OnboardingScreen(
     var stepIndex  by remember { mutableStateOf(0) }
     val steps = listOf(
         OnboardingStep.WELCOME, OnboardingStep.RESTORE_BACKUP, OnboardingStep.QUERY_PACKAGES,
+        OnboardingStep.USAGE_ACCESS,
         OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
         OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
         OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
@@ -67,6 +69,7 @@ fun OnboardingScreen(
         mutableStateOf(Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
             ?.contains(context.packageName) == true)
     }
+    var usageStatsGranted by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
     var unusedGreyDays    by remember { mutableStateOf(AppPrefs.getUnusedGreyDays(context)) }
     var autoBackupEnabled by remember { mutableStateOf(true) }
     var notifTextEnabled  by remember { mutableStateOf(true) }
@@ -123,8 +126,10 @@ fun OnboardingScreen(
                 launcherSet = isDefaultLauncherApp(context)
                 notifAccessGranted = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
                     ?.contains(context.packageName) == true
+                usageStatsGranted = UsageStatsHelper.hasPermission(context)
                 if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) stepIndex++
                 if (notifAccessGranted && currentStep == OnboardingStep.NOTIF_ACCESS) stepIndex++
+                if (usageStatsGranted && currentStep == OnboardingStep.USAGE_ACCESS) stepIndex++
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -151,9 +156,9 @@ fun OnboardingScreen(
             OnboardingWhyBox(currentStep)
             if (currentStep.whyRes != 0) Spacer(Modifier.height(16.dp))
 
-            OnboardingStatusBadge(currentStep, launcherSet, notifGranted, notifAccessGranted, unusedGreyDays)
+            OnboardingStatusBadge(currentStep, launcherSet, notifGranted, notifAccessGranted, usageStatsGranted, unusedGreyDays)
             if (currentStep in listOf(OnboardingStep.SET_LAUNCHER, OnboardingStep.QUERY_PACKAGES,
-                    OnboardingStep.NOTIFICATIONS, OnboardingStep.NOTIF_ACCESS, OnboardingStep.UNUSED_GREY))
+                    OnboardingStep.USAGE_ACCESS, OnboardingStep.NOTIFICATIONS, OnboardingStep.NOTIF_ACCESS, OnboardingStep.UNUSED_GREY))
                 Spacer(Modifier.height(12.dp))
 
             // RESTORE_BACKUP sonucu
@@ -266,6 +271,7 @@ fun OnboardingScreen(
                         step = currentStep, context = context, scope = scope,
                         themePrefs = themePrefs, viewModel = viewModel,
                         launcherSet = launcherSet, notifGranted = notifGranted, notifAccessGranted = notifAccessGranted,
+                        usageStatsGranted = usageStatsGranted,
                         unusedGreyDays = unusedGreyDays, autoBackupEnabled = autoBackupEnabled,
                         notifTextEnabled = notifTextEnabled, swipeHintEnabled = swipeHintEnabled,
                         newBadgeEnabled = newBadgeEnabled, folderCountEnabled = folderCountEnabled,
@@ -302,6 +308,7 @@ fun OnboardingScreen(
                             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                         },
+                        onUsageAccess = { UsageStatsHelper.openPermissionSettings(context) },
                         onFinish = onFinish,
                         onNextStep = { stepIndex++ }
                     )},
@@ -310,6 +317,7 @@ fun OnboardingScreen(
                 Text(
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
+                        currentStep == OnboardingStep.USAGE_ACCESS && usageStatsGranted -> stringResource(R.string.onb_continue)
                         currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> stringResource(R.string.onb_continue)
                         currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> stringResource(R.string.onb_continue)
                         else -> stringResource(currentStep.buttonLabelRes)
@@ -361,6 +369,7 @@ private fun handleOnboardingStep(
     launcherSet: Boolean,
     notifGranted: Boolean,
     notifAccessGranted: Boolean,
+    usageStatsGranted: Boolean,
     unusedGreyDays: Int,
     autoBackupEnabled: Boolean,
     notifTextEnabled: Boolean,
@@ -374,6 +383,7 @@ private fun handleOnboardingStep(
     onRequestRole: () -> Unit,
     onRequestNotif: () -> Unit,
     onNotifAccess: () -> Unit,
+    onUsageAccess: () -> Unit,
     onFinish: () -> Unit,
     onNextStep: () -> Unit
 ) {
@@ -381,6 +391,7 @@ private fun handleOnboardingStep(
         OnboardingStep.WELCOME        -> onNextStep()
         OnboardingStep.RESTORE_BACKUP -> restoreFilePicker()
         OnboardingStep.QUERY_PACKAGES -> onNextStep()
+        OnboardingStep.USAGE_ACCESS   -> if (usageStatsGranted) onNextStep() else onUsageAccess()
         OnboardingStep.NOTIFICATIONS  -> if (notifGranted) onNextStep() else onRequestNotif()
         OnboardingStep.UNUSED_GREY    -> { AppPrefs.setUnusedGreyDays(context, unusedGreyDays); onNextStep() }
         OnboardingStep.AUTO_BACKUP    -> { AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled); onNextStep() }

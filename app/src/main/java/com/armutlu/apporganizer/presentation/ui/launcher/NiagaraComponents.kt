@@ -83,7 +83,13 @@ fun NiagaraAppRow(
             .fillMaxWidth()
             .height(58.dp)
             .semantics {
-                contentDescription = "${app.appName}, ${app.categoryId.ifBlank { "Uygulama" }}"
+                val categoryLabel = app.categoryId.ifBlank { "Uygulama" }
+                val notificationLabel = when {
+                    app.notificationCount <= 0 -> ""
+                    app.notificationCount == 1 -> ", 1 bildirim"
+                    else -> ", ${app.notificationCount} bildirim"
+                }
+                contentDescription = "${app.appName}, $categoryLabel$notificationLabel"
                 onClick(label = context.getString(R.string.open_app)) { onClick(); true }
             }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)

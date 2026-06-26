@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
@@ -30,7 +32,10 @@ internal fun HomePageIndicator(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .semantics { contentDescription = "Sayfa ${pagerState.currentPage + 1} / $pageCount" },
+            .semantics {
+                role = Role.Tab
+                contentDescription = "Sayfa ${pagerState.currentPage + 1} / $pageCount"
+            },
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
