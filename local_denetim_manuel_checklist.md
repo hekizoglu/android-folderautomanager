@@ -39,6 +39,14 @@
 - Toast, dialog veya state metni yapilan islemi dogru anlatiyor mu?
 - Basarisiz durumda kullanici ne yapacagini anlayabiliyor mu?
 
+## 6. Dead Code Kontrolu
+
+- Tanimli olup hic acilmayan ekran, dialog, bottom sheet veya route var mi?
+- Kodda kalan ama UI'da artik tetiklenmeyen buton handler, callback veya helper var mi?
+- Preference key tanimli ama hic okunmayan ya da yazilmayan ayar var mi?
+- Kullanilmayan drawable, string, menu veya diger resource artiklari birikmis mi?
+- Eski refactor sonrasi yalnizca bir kez tanimli kalmis composable, extension veya util fonksiyon var mi?
+
 ---
 
 ## Onerilen Manuel Tur Alanlari

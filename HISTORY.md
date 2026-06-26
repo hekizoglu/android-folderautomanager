@@ -467,7 +467,7 @@ Tüm 12 madde ✅. Detay:
 
 ## Döngü #1-2 (2026-06-15, CLAUDE.md v3 geçiş döngüleri)
 
-- Döngü #1: pre-commit hook, scripts/update_notebooklm.py, ROADMAP.md, push: 80b715f
+- Döngü #1: pre-commit hook, ROADMAP.md, push: 80b715f
 
 - Döngü #2: docs temizliği, .gitignore güncelleme, loop_count.txt, push: 5b6a17f
 
@@ -736,7 +736,7 @@ Tüm 12 madde ✅. Detay:
 
 ## Döngü 53 - 20:45 [KOD]
 
-**Yapılanlar:** NotebookLM güncellendi (74 Kotlin dosyası, 499KB). showSystemApps toggle AppPrefs'e persist edildi (KEY_SHOW_SYSTEM_APPS + getter/setter, ViewModel init+toggle güncellendi). AppPrefs.kt + AppListViewModel.kt değişti.
+**Yapılanlar:** showSystemApps toggle AppPrefs'e persist edildi (KEY_SHOW_SYSTEM_APPS + getter/setter, ViewModel init+toggle güncellendi). AppPrefs.kt + AppListViewModel.kt değişti.
 
 **Agent:** Yok
 
@@ -784,7 +784,7 @@ Tüm 12 madde ✅. Detay:
 
 ## Döngü 57 - 21:42 [KOD]
 
-**Yapılanlar:** NotebookLM güncellendi (74 dosya, 488KB). AppClassifier duplicate kontrol: 3594/3594 benzersiz, 0 duplicate. Memory leak audit: proje tamamen Compose, Fragment/ViewBinding yok - ROADMAP tamamlandı işaretlendi.
+**Yapılanlar:** AppClassifier duplicate kontrol: 3594/3594 benzersiz, 0 duplicate. Memory leak audit: proje tamamen Compose, Fragment/ViewBinding yok - ROADMAP tamamlandı işaretlendi.
 
 **Agent:** Yok
 
@@ -874,13 +874,13 @@ Tüm 12 madde ✅. Detay:
 
 **CLAUDE.md/LEARNINGS.md:** Güncelleme yok
 
-**Sonraki:** Döngü 66 - BUILD döngüsü (66%6=0), gradle assembleDebug + NotebookLM güncelle + APK Telegram
+**Sonraki:** Döngü 66 - BUILD döngüsü (66%6=0), gradle assembleDebug + APK Telegram
 
 
 
 ## Döngü 66 - [BUILD]
 
-**Yapılanlar:** assembleDebug BUILD SUCCESSFUL (11s). APK (29.3MB) Telegram msg 731. NotebookLM güncellendi (74 dosya, 488KB). ROADMAP Sprint Metrikleri güncellendi.
+**Yapılanlar:** assembleDebug BUILD SUCCESSFUL (11s). APK (29.3MB) Telegram msg 731. ROADMAP Sprint Metrikleri güncellendi.
 
 **Agent:** Yok
 
@@ -1257,7 +1257,7 @@ Tüm 12 madde ✅. Detay:
 ### Altyapı & Config
 - CLAUDE.md v1-v5, LEARNINGS.md, HISTORY.md sistemi
 - Multi-agent mimari (code-reviewer / android-builder / deepseek-analyst)
-- `scripts/`: cycle.ps1, check_duplicates.py, dedup_classifier.py, fix_encoding.py, telegram_notify.ps1, update_notebooklm.py
+- `scripts/`: cycle.ps1, check_duplicates.py, dedup_classifier.py, fix_encoding.py, telegram_notify.ps1
 - `.githooks/pre-commit` — AppClassifier duplicate otomatik kontrol
 - GitHub Actions CI/CD pipeline
 - Room `schemas/` git'e alındı, `room.schemaLocation` gradle'da tanımlı

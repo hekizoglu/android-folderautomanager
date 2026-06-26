@@ -99,6 +99,7 @@ Bu kurallar resmi Android ve Material kaynaklarindan turetilmistir:
 | E2 | Kirik import, bozuk referans veya stale API kullanimi var mi? |
 | E3 | Hardcoded string, renk veya boyut merkezi yonetimden kacmis mi? |
 | E4 | Log, toast ve hata mesaji anlamli, tutarli ve kullanici baglamina uygun mu? |
+| E5 | Kullanilmayan class, function, composable, resource, route veya preference anahtari var mi? |
 
 ### F. Islem-Anlam Tutarliligi
 
@@ -153,6 +154,14 @@ Kontrol ornekleri:
 - Getter bazli pahali hesap
 - Kullanilmayan parametre
 - Global mutable singleton flag
+- Kullanilmayan `private` fonksiyon, property veya helper
+- Cagirilmayan screen, dialog, route veya utility
+- Kullanilmayan drawable, string, layout, menu veya diger resource artiklari
+
+Dead code odakli minimum kontroller:
+- Android Lint ile `UnusedResources`
+- Kotlin/IDE inspection ile `Unused symbol`
+- Varsa detekt benzeri statik analizle `UnusedPrivateMember` ailesi
 
 ### 6.2 Manuel veya Yari Otomatik Denetim
 
@@ -160,6 +169,7 @@ Bu kurallar otomatik tarama ile tam yakalanamaz:
 - C6, C7, C8, C9
 - F1, F2, F3, F4, F5, F6, F7
 - G1, G2, G3, G4, G5
+- E5'in davranissal etkisi olan kismi: artik kullanilmayan ama hala akisi varmis gibi duran screen, ayar, buton veya route kalintilari
 
 Bu denetimde su checklist uygulanir:
 
@@ -169,6 +179,7 @@ Bu denetimde su checklist uygulanir:
 4. Kullaniciya gosterilen subtitle, toast veya dialog metninin sonucu dogru anlattigini kontrol et.
 5. Yikici aksiyonlarda aciklik, uyari ve geri alma ihtiyacini kontrol et.
 6. TalkBack mantigiyla elemanin amacinin anlasilip anlasilmadigini dusun.
+7. Kodda tanimli ama akista hic ulasilmayan screen, helper, ayar anahtari veya composable kalip kalmadigini kontrol et.
 
 Detayli kontrol listesi icin:
 - `local_denetim_manuel_checklist.md`
@@ -207,6 +218,8 @@ Bu kurallar su resmi kaynaklarla hizalidir:
 - Compose accessibility rehberi
 - Android accessibility testing rehberi
 - Material 3 button ve labeling guidance
+- Android Lint `UnusedResources`
+- JetBrains/Kotlin `Unused symbol` inspection guidance
 
 ### Resmi Kaynak Linkleri
 
@@ -221,6 +234,9 @@ Bu kurallar su resmi kaynaklarla hizalidir:
 - Material 3 Snackbar: `https://m3.material.io/components/snackbar/guidelines`
 - Material 3 Progress Indicators: `https://m3.material.io/components/progress-indicators/guidelines`
 - Material 3 Text Fields: `https://m3.material.io/components/text-fields/guidelines`
+- Android Lint Checks: `https://developer.android.com/studio/write/lint`
+- JetBrains Unused Symbol Inspection: `https://www.jetbrains.com/help/inspectopedia/UnusedSymbol.html`
+- detekt Potential Bugs Rule Set: `https://detekt.dev/docs/rules/potential-bugs`
 
 ---
 

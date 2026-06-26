@@ -10,7 +10,7 @@
 - **BUILD** — Gradle assembleDebug/Release
 - **HATA_GİDER** — Build/test hatası çözümü
 - **KOD** — Özellik yazma, refactor, bug fix
-- **ARAŞTIRMA** — WebSearch, DeepSeek, NotebookLM
+- **ARAŞTIRMA** — WebSearch, DeepSeek
 - **GIT** — Commit, push, pull, rebase
 - **TEST** — Unit test çalıştırma, test yazma
 - **DÖKÜMAN** — HISTORY/ROADMAP/CLAUDE.md güncelleme
