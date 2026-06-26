@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppAnalytics
 
@@ -79,59 +80,6 @@ internal fun HomeFavoritesSection(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onLaunchApp(pkg)
             }
-        )
-    }
-}
-
-// Yardım uzantısı - Int'ten Dp'ye
-private val Int.dp: androidx.compose.ui.unit.Dp
-    get() = androidx.compose.ui.unit.dp * this
-
-    // Adaptif boyut - folderSizeDp'e göre satır yüksekliği (56-96dp arası)
-    val rowHeightDp = (folderSizeDp * 0.8).coerceIn(48f, 72f)
-
-    if (favoritesEnabled && favoriteApps.isNotEmpty()) {
-        FavoritesRow(
-            apps = favoriteApps,
-            iconPackPkg = iconPackPkg,
-            onAppClick = { pkg ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                AppAnalytics.appLaunched(pkg, "favorites")
-                onLaunchApp(pkg)
-            },
-            onAppLongClick = { pkg ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onAppLongClick(pkg)
-            },
-            itemHeightDp = rowHeightDp
-        )
-    }
-
-    if (!compactMode && suggestionsEnabled && cachedSuggestedApps.isNotEmpty()) {
-        AppSuggestionsRow(
-            apps = cachedSuggestedApps,
-            iconPackPkg = iconPackPkg,
-            onAppClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onLaunchApp(app.packageName)
-            },
-            onAppLongClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onAppLongClick(app.packageName)
-            },
-            itemHeightDp = rowHeightDp
-        )
-    }
-
-    if (!compactMode && recentAppsEnabled && recentApps.isNotEmpty()) {
-        RecentAppsRow(
-            apps = recentApps,
-            iconPackPkg = iconPackPkg,
-            onAppClick = { pkg ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onLaunchApp(pkg)
-            },
-            itemHeightDp = rowHeightDp
         )
     }
 }
