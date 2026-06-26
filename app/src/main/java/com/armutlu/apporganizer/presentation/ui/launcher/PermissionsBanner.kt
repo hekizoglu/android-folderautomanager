@@ -44,6 +44,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.utils.UsageStatsHelper
 
 private val BannerBg   = Color(0xCC1A1A2E)
 private val WarnColor  = Color(0xFFFFB300)
@@ -86,6 +87,7 @@ fun PermissionsBanner() {
     var notifGranted       by remember { mutableStateOf(isNotifGranted(context)) }
     var launcherSet        by remember { mutableStateOf(isDefaultLauncher(context)) }
     var notifListenerOk    by remember { mutableStateOf(isNotificationListenerGranted(context)) }
+    var usageStatsGranted  by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
 
     @Suppress("DEPRECATION")
 
@@ -96,6 +98,7 @@ fun PermissionsBanner() {
                 notifGranted    = isNotifGranted(context)
                 launcherSet     = isDefaultLauncher(context)
                 notifListenerOk = isNotificationListenerGranted(context)
+                usageStatsGranted = UsageStatsHelper.hasPermission(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -121,6 +124,9 @@ fun PermissionsBanner() {
             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             })
+        })
+        if (!usageStatsGranted) add(PermissionIssue("Öneriler için kullanım erişimi gerekli") {
+            UsageStatsHelper.openPermissionSettings(context)
         })
     }
 

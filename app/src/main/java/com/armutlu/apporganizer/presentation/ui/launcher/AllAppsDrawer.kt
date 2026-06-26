@@ -50,11 +50,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalDensity
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -162,6 +164,10 @@ private fun DrawerSearchBar(
                 Box(
                     modifier = Modifier.clip(RoundedCornerShape(14.dp))
                         .background(Color.White.copy(alpha = 0.10f))
+                        .semantics {
+                            contentDescription = "$q arama geçmişi"
+                            onClick(label = "Ara") { true }
+                        }
                         .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSearchQueryChange(q) }
                         .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) { Text(q, fontSize = 12.sp, color = Color.White.copy(alpha = 0.75f), maxLines = 1) }
@@ -260,7 +266,11 @@ private fun DrawerAppList(
                 }
             }
             state.grouped.forEach { (letter, letterApps) ->
-                item(key = "header_$letter") { NiagaraLetterHeader(letter = letter) }
+                item(key = "header_$letter") {
+                    Box(Modifier.semantics { heading() }) {
+                        NiagaraLetterHeader(letter = letter)
+                    }
+                }
                 items(items = letterApps, key = { it.packageName }) { app ->
                     NiagaraAppRow(
                         app = app, iconSize = iconSize, isActive = false,
@@ -506,6 +516,7 @@ fun AllAppsDrawer(
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
+    val density           = LocalDensity.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchFocusRequester = remember { FocusRequester() }
     val haptic            = LocalHapticFeedback.current
@@ -641,7 +652,8 @@ fun AllAppsDrawer(
         modifier = Modifier.fillMaxSize().pointerInput(Unit) {
             detectVerticalDragGestures(
                 onDragEnd = {
-                    if (dragOffset > SWIPE_DOWN_THRESHOLD) { saveSearchIfNeeded(); keyboardController?.hide(); onClose() }
+                    val swipeDownThreshold = with(density) { SWIPE_DOWN_THRESHOLD.dp.toPx() }
+                    if (dragOffset > swipeDownThreshold) { saveSearchIfNeeded(); keyboardController?.hide(); onClose() }
                     dragOffset = 0f
                 },
                 onDragCancel = { dragOffset = 0f },

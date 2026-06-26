@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,6 +102,7 @@ fun HomeScreen(
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
+    val categories by viewModel.categories.collectAsState()
     var suggestionIconPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
@@ -209,7 +211,7 @@ fun HomeScreen(
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
-    var swipeDelta = 0f  // mutableFloatStateOf değil — sadece scroll callback'te kullanılır, recomposition tetiklemez
+    var swipeDelta by rememberSaveable { mutableStateOf(0f) }
 
     // rememberUpdatedState ile closure'lar her zaman güncel değeri okur
     val currentAllAppsOpen by rememberUpdatedState(allAppsOpen)
@@ -682,6 +684,8 @@ fun HomeScreen(
         folderSheetState = folderSheetState,
         dockEditOpen = dockEditOpen,
         contextMenuApp = contextMenuApp,
+        favoritePackages = favoriteApps.mapTo(mutableSetOf()) { it.packageName },
+        categories = categories,
         categoryPickerApp = categoryPickerApp,
         homeLongPressOpen = homeLongPressOpen,
         folderContextMenu = folderContextMenu,

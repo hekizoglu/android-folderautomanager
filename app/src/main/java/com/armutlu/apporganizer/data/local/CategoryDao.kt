@@ -38,7 +38,7 @@ interface CategoryDao {
     /**
      * Delete category by ID
      */
-    @Query("DELETE FROM categories WHERE categoryId = :categoryId")
+    @Query("DELETE FROM categories WHERE categoryId = :categoryId AND isSystemCategory = 0")
     suspend fun deleteCategoryById(categoryId: String)
     
     /**
@@ -76,6 +76,9 @@ interface CategoryDao {
      */
     @Query("SELECT * FROM categories WHERE categoryName LIKE '%' || :query || '%' ORDER BY displayOrder ASC")
     fun searchCategories(query: String): Flow<List<Category>>
+
+    @Query("SELECT * FROM categories WHERE LOWER(categoryName) = LOWER(:name) LIMIT 1")
+    suspend fun findByCategoryName(name: String): Category?
     
     /**
      * Count total categories

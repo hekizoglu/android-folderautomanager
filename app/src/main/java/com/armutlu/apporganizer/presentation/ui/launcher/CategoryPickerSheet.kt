@@ -30,10 +30,11 @@ private val TextSec     = Color.White.copy(alpha = 0.55f)
 @Composable
 fun CategoryPickerSheet(
     app: AppInfo,
+    categories: List<Category>,
     onDismiss: () -> Unit,
     onCategorySelected: (String) -> Unit,
 ) {
-    val categories = Category.getDefaultCategories()
+    val visibleCategories = categories
         .filter { it.categoryId != Category.CAT_UNCATEGORIZED }
         .sortedBy { it.displayOrder }
 
@@ -66,7 +67,7 @@ fun CategoryPickerSheet(
             )
             HorizontalDivider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
             LazyColumn {
-                items(categories) { cat ->
+                items(visibleCategories) { cat ->
                     val isCurrent = cat.categoryId == app.categoryId
                     Row(
                         modifier = Modifier

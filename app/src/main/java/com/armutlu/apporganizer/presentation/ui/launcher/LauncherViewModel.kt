@@ -53,8 +53,8 @@ data class AppFolder(
  * Pure function — Android bağımlılığı yok, birim testlerinden doğrudan çağrılabilir.
  * Her kategori için bir klasör oluşturur. Boş kategoriler dahil edilmez.
  */
-internal fun buildFolders(apps: List<AppInfo>): List<AppFolder> =
-    Category.getDefaultCategories()
+internal fun buildFolders(apps: List<AppInfo>, categories: List<Category>): List<AppFolder> =
+    categories
         .filter { it.categoryId != Category.CAT_UNCATEGORIZED }
         .sortedBy { it.displayOrder }
         .map { cat ->
@@ -107,13 +107,17 @@ class LauncherViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    val categories: StateFlow<List<Category>> = repository.getAllCategoriesFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, Category.getDefaultCategories())
+
     // Eagerly: launcher her zaman arka planda çalışır — akış hiç durmamalı.
     // WhileSubscribed(5s) ile 5+ saniye sonra dönüşte kısa "yükleniyor" flaşı oluyordu.
     val folders: StateFlow<List<AppFolder>> = combine(
         repository.getAllAppsFlow(),
+        categories,
         _folderOrder
-    ) { apps, order ->
-        val built = buildFolders(apps)
+    ) { apps, categoryList, order ->
+        val built = buildFolders(apps, categoryList)
         if (order.isEmpty()) built
         else {
             val orderMap = order.mapIndexed { i, id -> id to i }.toMap()
@@ -148,6 +152,9 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.ensureDefaultCategories()
+        }
         // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz.
         // Tum bildirimler silindiginde counts bos map gelir — guard olmadan her durumda temizle.
         AppNotificationListenerService.badgeCounts
@@ -459,7 +466,7 @@ class LauncherViewModel @Inject constructor(
     val suggestedApps: StateFlow<List<AppInfo>> = combine(
         repository.getAllAppsFlow(),
         _suggestionTick
-    ) { apps, tick ->
+    ) { apps, _ ->
         val now = System.currentTimeMillis()
         // Cache süresi dolduysa yenile
         if (cachedSuggestedApps == null || now - cacheTimestamp > CACHE_DURATION_MS) {

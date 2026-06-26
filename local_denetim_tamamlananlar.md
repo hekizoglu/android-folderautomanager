@@ -25,3 +25,26 @@
 - `Geri Yukle` akisina ice aktarma oncesi onay dialogu eklendi.
 - `Klasor Onizleme` ayari `Yukari Kaydirma Ipucu` olarak yeniden adlandirildi ve gercek davranisla hizalandi.
 - App listesi menusundeki `Yeniden Siniflandir` aksiyonu `Kategorileri Sifirla ve Yeniden Siniflandir` olarak netlestirildi ve onay dialogu ile korundu.
+
+## 2026-06-27 02:28
+
+- `A1` ve `A2` `LauncherActivity` icinde home-press zamani `savedInstanceState` ile korunup receiver kaydi `onStart/onStop` yasam dongusune tasindi.
+- `A3` `HomeScreen` swipe state'i `rememberSaveable` ile config-change guvenli hale getirildi.
+- `A4` `AppContextMenu` favori durumu lokal prefs okumasindan cikarilip ViewModel state'iyle hizalandi.
+- `A5` `FolderRenameDialog` bos isimde kaydi engelleyen hata ve disabled confirm davranisi kazandi.
+- `A7` `WidgetArea` drag siralama hesabi sabit yukseklik yerine gercek olculen kart yuksekligine baglandi.
+- `A13` arama gecmisi chip'lerine tiklanabilirlik semantics'i eklendi.
+- `A15` alfabetik drawer basliklari `heading()` semantics'i ile erisilebilir hale getirildi.
+- `P3` kullanilmayan `PermissionHelper` tamamen kaldirildi; olu kod kapatildi.
+- `P1` ve `P5` `QUERY_ALL_PACKAGES` icin runtime/banner beklentisinin yanlis alarm oldugu dogrulandi; bu izin manifest kapsaminda degerlendirildigi icin ilgili bulgular kapatildi.
+- `P4` bildirim izni kalici reddedildiginde onboarding artik uygulama ayarlarina yonlendiren fallback akisi kullaniyor.
+- `P6` izin eksigi yalnizca sessiz donus olmaktan cikarildi; `PermissionsBanner` artik Usage Access eksigini de gosteriyor.
+- `P9` kullanilmayan `GET_INSTALLED_PACKAGES` manifest izni kaldirildi.
+- `P7` `QUERY_PACKAGES` onboarding adimi skippable hale getirildi.
+- `P8` `NOTIF_ACCESS` adimi mevcut ortak skip davranisi ile yeniden dogrulandi; bulgu yanlis alarm olarak kapatildi.
+- `C1`, `C2`, `C3` kategori CRUD akisi repository + ViewModel + ekran tarafinda gercek Room verisine baglandi.
+- `C4` bos kategori adi artik UI seviyesinde engelleniyor.
+- `C5` duplicate kategori adi kontrolu eklendi.
+- `C6` sistem kategorilerinin silinmesini DAO seviyesinde koruyan kosul eklendi.
+- `C7` launcher kategori secici sabit liste yerine veritabanindan gelen kategorileri kullanir hale getirildi.
+- `C10` kategori editorunde duzenleme ve silme aksiyonlari gercek islev kazandi.

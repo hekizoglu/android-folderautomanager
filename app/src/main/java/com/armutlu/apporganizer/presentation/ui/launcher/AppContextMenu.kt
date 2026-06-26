@@ -58,6 +58,7 @@ private val dateFmt = SimpleDateFormat("d MMM yyyy", Locale("tr"))
 @Composable
 fun AppContextMenu(
     app: AppInfo,
+    isFavorite: Boolean,
     isDocked: Boolean,
     onDismiss: () -> Unit,
     onLaunch: () -> Unit,
@@ -71,7 +72,6 @@ fun AppContextMenu(
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
     var showNoteDialog by remember { mutableStateOf(false) }
-    var isFav by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavorite(context, app.packageName)) }
 
     val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
         value = withContext(Dispatchers.IO) {
@@ -238,12 +238,10 @@ fun AppContextMenu(
             )
 
             ContextAction(
-                icon = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
-                label = if (isFav) "Favorilerden Çıkar" else "Favorilere Ekle",
+                icon = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                label = if (isFavorite) "Favorilerden Çıkar" else "Favorilere Ekle",
                 onClick = {
-                    val newFav = !isFav
-                    isFav = newFav
-                    onToggleFavorite?.invoke(newFav)
+                    onToggleFavorite?.invoke(!isFavorite)
                     onDismiss()
                 }
             )

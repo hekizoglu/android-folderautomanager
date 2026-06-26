@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.domain.models.Category
 
 @Composable
 internal fun FolderStatsRow(folders: List<AppFolder>) {
@@ -46,11 +47,13 @@ internal fun HomeScreenOverlays(
     folderSheetState: androidx.compose.material3.SheetState,
     dockEditOpen: Boolean,
     contextMenuApp: com.armutlu.apporganizer.domain.models.AppInfo?,
+    favoritePackages: Set<String>,
+    categories: List<Category>,
     categoryPickerApp: com.armutlu.apporganizer.domain.models.AppInfo?,
     homeLongPressOpen: Boolean,
     folderContextMenu: AppFolder?,
-    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    scope: kotlinx.coroutines.CoroutineScope,
+    @Suppress("UNUSED_PARAMETER") haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    @Suppress("UNUSED_PARAMETER") scope: kotlinx.coroutines.CoroutineScope,
     onDockEditDismiss: () -> Unit,
     onContextMenuDismiss: () -> Unit,
     onCategoryPickerDismiss: () -> Unit,
@@ -89,6 +92,7 @@ internal fun HomeScreenOverlays(
     contextMenuApp?.let { app ->
         AppContextMenu(
             app = app,
+            isFavorite = app.packageName in favoritePackages,
             isDocked = app.packageName in dockPackages,
             onDismiss = onContextMenuDismiss,
             onLaunch = { onLaunchApp(app.packageName) },
@@ -104,6 +108,7 @@ internal fun HomeScreenOverlays(
     categoryPickerApp?.let { app ->
         CategoryPickerSheet(
             app = app,
+            categories = categories,
             onDismiss = onCategoryPickerDismiss,
             onCategorySelected = { catId -> onCategorySelected(app, catId) }
         )

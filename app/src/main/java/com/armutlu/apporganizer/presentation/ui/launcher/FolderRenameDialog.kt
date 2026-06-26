@@ -59,6 +59,8 @@ internal fun FolderRenameDialog(
     var nameField by remember { mutableStateOf(currentName) }
     var selectedEmoji by remember { mutableStateOf(currentEmoji) }
     var selectedColor by remember { mutableStateOf(currentColor) }
+    val trimmedName = nameField.trim()
+    val showNameError = nameField.isNotEmpty() && trimmedName.isBlank()
     val primary   = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
     val surface   = MaterialTheme.colorScheme.surface
@@ -76,6 +78,7 @@ internal fun FolderRenameDialog(
                     onValueChange = { nameField = it },
                     label = { Text(stringResource(R.string.folder_rename_hint), color = onSurface.copy(0.6f)) },
                     singleLine = true,
+                    isError = showNameError,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primary,
                         unfocusedBorderColor = onSurface.copy(0.25f),
@@ -85,6 +88,13 @@ internal fun FolderRenameDialog(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (showNameError) {
+                    Text(
+                        text = "Klasör adı boş bırakılamaz",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
                 Text(stringResource(R.string.folder_emoji_pick), color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     itemsIndexed(EMOJI_PICKER, key = { _, emoji -> emoji }) { _, emoji ->
@@ -116,7 +126,10 @@ internal fun FolderRenameDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { if (nameField.isNotBlank()) onSave(nameField.trim(), selectedEmoji, selectedColor) }) {
+            TextButton(
+                enabled = trimmedName.isNotEmpty(),
+                onClick = { onSave(trimmedName, selectedEmoji, selectedColor) }
+            ) {
                 Text(stringResource(R.string.btn_save), color = primary, fontWeight = FontWeight.Bold)
             }
         },

@@ -6,11 +6,11 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,6 +25,64 @@ class AppRepository @Inject constructor(
     private val categoryDao: CategoryDao,
     private val classifier: AppClassifier
 ) {
+    fun getAllCategoriesFlow(): Flow<List<Category>> {
+        return categoryDao.getAllCategoriesFlow()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
+
+    suspend fun ensureDefaultCategories() {
+        try {
+            Category.getDefaultCategories().forEach { category ->
+                if (!categoryDao.categoryExists(category.categoryId)) {
+                    categoryDao.insertCategory(category)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error ensuring default categories")
+        }
+    }
+
+    suspend fun addCategory(category: Category) {
+        try {
+            categoryDao.insertCategory(category)
+        } catch (e: Exception) {
+            Timber.e(e, "Error adding category")
+            throw e
+        }
+    }
+
+    suspend fun updateCategory(category: Category) {
+        try {
+            categoryDao.updateCategory(category)
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating category")
+            throw e
+        }
+    }
+
+    suspend fun deleteCategory(categoryId: String) {
+        try {
+            categoryDao.deleteCategoryById(categoryId)
+        } catch (e: Exception) {
+            Timber.e(e, "Error deleting category")
+            throw e
+        }
+    }
+
+    suspend fun findCategoryByName(name: String): Category? {
+        return try {
+            categoryDao.findByCategoryName(name)
+        } catch (e: Exception) {
+            Timber.e(e, "Error finding category by name")
+            null
+        }
+    }
+
+    suspend fun getNextCategoryDisplayOrder(): Int {
+        return (categoryDao.getMaxDisplayOrder() ?: 0) + 1
+    }
+
     
     /**
      * Get all apps as a Flow

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import java.util.Locale
 
 /**
  * ViewModel for AppListScreen
@@ -111,19 +112,26 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 Timber.d("Initializing screen...")
-
-                // Get categories
-                val categories = Category.getDefaultCategories()
+                repository.ensureDefaultCategories()
                 
                 // Get apps from repository — tüm filtre flow'larını combine et
                 combine(
                     repository.getAllAppsFlow(),
+                    repository.getAllCategoriesFlow(),
                     _selectedCategory,
                     _searchQuery,
                     _sortOption,
                     _showSystemApps
-                ) { apps, category, query, sort, showSystem ->
-                    createScreenState(apps, categories, category, query, sort, showSystem)
+                ) { values ->
+                    @Suppress("UNCHECKED_CAST")
+                    createScreenState(
+                        apps = values[0] as List<AppInfo>,
+                        categories = values[1] as List<Category>,
+                        category = values[2] as String,
+                        query = values[3] as String,
+                        sort = values[4] as SortOption,
+                        showSystem = values[5] as Boolean
+                    )
                 }
                     .collect { state ->
                         _screenState.value = state
@@ -202,6 +210,73 @@ class AppListViewModel @Inject constructor(
                 _screenState.value = _screenState.value.copy(
                     error = "Failed to update category"
                 )
+            }
+        }
+    }
+
+    fun addCategory(name: String, emoji: String) {
+        viewModelScope.launch {
+            val trimmedName = name.trim()
+            if (trimmedName.isEmpty()) {
+                _screenState.value = _screenState.value.copy(error = "Kategori adı boş olamaz")
+                return@launch
+            }
+            if (repository.findCategoryByName(trimmedName) != null) {
+                _screenState.value = _screenState.value.copy(error = "Bu isimde bir kategori zaten var")
+                return@launch
+            }
+            runCatching {
+                val categoryId = buildCategoryId(trimmedName)
+                val order = repository.getNextCategoryDisplayOrder()
+                repository.addCategory(
+                    Category(
+                        categoryId = categoryId,
+                        categoryName = trimmedName,
+                        iconEmoji = emoji,
+                        colorHex = "#00897B",
+                        isSystemCategory = false,
+                        displayOrder = order
+                    )
+                )
+            }.onFailure {
+                Timber.e(it, "Error adding category")
+                _screenState.value = _screenState.value.copy(error = "Kategori eklenemedi")
+            }
+        }
+    }
+
+    fun updateCategory(category: Category) {
+        viewModelScope.launch {
+            val trimmedName = category.categoryName.trim()
+            if (trimmedName.isEmpty()) {
+                _screenState.value = _screenState.value.copy(error = "Kategori adı boş olamaz")
+                return@launch
+            }
+            val duplicate = repository.findCategoryByName(trimmedName)
+            if (duplicate != null && duplicate.categoryId != category.categoryId) {
+                _screenState.value = _screenState.value.copy(error = "Bu isimde bir kategori zaten var")
+                return@launch
+            }
+            runCatching {
+                repository.updateCategory(category.copy(categoryName = trimmedName))
+            }.onFailure {
+                Timber.e(it, "Error updating category")
+                _screenState.value = _screenState.value.copy(error = "Kategori güncellenemedi")
+            }
+        }
+    }
+
+    fun deleteCategory(category: Category) {
+        if (category.isSystemCategory) {
+            _screenState.value = _screenState.value.copy(error = "Sistem kategorileri silinemez")
+            return
+        }
+        viewModelScope.launch {
+            runCatching {
+                repository.deleteCategory(category.categoryId)
+            }.onFailure {
+                Timber.e(it, "Error deleting category")
+                _screenState.value = _screenState.value.copy(error = "Kategori silinemedi")
             }
         }
     }
@@ -552,5 +627,20 @@ class AppListViewModel @Inject constructor(
             appendLine("--- Recent Logs ---")
             _liveDebugLogs.value.forEach { appendLine(it) }
         }
+    }
+
+    private fun buildCategoryId(name: String): String {
+        val normalized = name
+            .trim()
+            .lowercase(Locale("tr"))
+            .replace('ı', 'i')
+            .replace('ğ', 'g')
+            .replace('ü', 'u')
+            .replace('ş', 's')
+            .replace('ö', 'o')
+            .replace('ç', 'c')
+            .replace(Regex("[^a-z0-9]+"), "_")
+            .trim('_')
+        return "custom_${normalized.ifBlank { System.currentTimeMillis().toString() }}"
     }
 }

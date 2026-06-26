@@ -64,7 +64,8 @@ internal enum class OnboardingStep(
         descriptionRes = R.string.onb_query_desc,
         icon = Icons.AutoMirrored.Filled.ManageSearch,
         buttonLabelRes = R.string.onb_query_btn,
-        whyRes = R.string.onb_query_why
+        whyRes = R.string.onb_query_why,
+        isSkippable = true
     ),
     NOTIFICATIONS(
         titleRes = R.string.onb_notif_title,

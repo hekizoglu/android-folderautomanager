@@ -7,13 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -41,9 +41,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import kotlin.math.roundToInt
 
-/**
- * Ana ekrandaki widget alanı. Uzun basınca silme, sürükle-bırak ile sıra değiştirme.
- */
 @Composable
 fun WidgetArea(
     widgetIds: List<Int>,
@@ -56,6 +53,7 @@ fun WidgetArea(
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
     var dragOffsetY by remember { mutableFloatStateOf(0f) }
     var draggingIds by remember { mutableStateOf<List<Int>?>(null) }
+    var estimatedItemHeightPx by remember { mutableFloatStateOf(0f) }
     val displayIds = draggingIds ?: widgetIds
 
     Column(
@@ -66,6 +64,9 @@ fun WidgetArea(
             val isDragging = dragFromIndex == index
             val itemModifier = Modifier
                 .fillMaxWidth()
+                .onSizeChanged { size ->
+                    if (size.height > 0) estimatedItemHeightPx = size.height.toFloat()
+                }
                 .then(if (isDragging) Modifier.offset { IntOffset(0, dragOffsetY.roundToInt()) } else Modifier)
                 .scale(if (isDragging) 1.03f else 1f)
                 .alpha(if (dragFromIndex != null && !isDragging) 0.75f else 1f)
@@ -74,7 +75,7 @@ fun WidgetArea(
                 WidgetCard(
                     widgetId = id,
                     onRemove = { onRemoveWidget(id) },
-                    isDraggable = (widgetIds.size > 1),
+                    isDraggable = widgetIds.size > 1,
                     onDragStart = {
                         dragFromIndex = index
                         draggingIds = displayIds.toMutableList()
@@ -82,9 +83,8 @@ fun WidgetArea(
                     },
                     onDrag = { delta ->
                         dragOffsetY += delta
-                        // Tahmini hedef index — 120dp'lik widget yüksekliği varsayımı
-                        val estimatedItemHeightPx = 120 * 3f  // yaklaşık px
-                        val toIndex = (index + (dragOffsetY / estimatedItemHeightPx).roundToInt())
+                        val stepHeight = estimatedItemHeightPx.takeIf { it > 0f } ?: 1f
+                        val toIndex = (index + (dragOffsetY / stepHeight).roundToInt())
                             .coerceIn(0, displayIds.lastIndex)
                         if (toIndex != dragFromIndex) {
                             val mutable = (draggingIds ?: displayIds).toMutableList()
@@ -124,7 +124,7 @@ private fun WidgetCard(
     var hostView by remember { mutableStateOf<android.appwidget.AppWidgetHostView?>(null) }
     var minHeightDp by remember { mutableIntStateOf(100) }
 
-LaunchedEffect(widgetId) {
+    LaunchedEffect(widgetId) {
         hostView = WidgetHostManager.createView(context, widgetId)
         val awm = context.getSystemService(android.content.Context.APPWIDGET_SERVICE) as? android.appwidget.AppWidgetManager
         awm?.getAppWidgetInfo(widgetId)?.let { info ->
@@ -140,7 +140,7 @@ LaunchedEffect(widgetId) {
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color.White.copy(alpha = 0.08f))
                 .then(
-                    if (isDraggable)
+                    if (isDraggable) {
                         Modifier.pointerInput(Unit) {
                             detectDragGesturesAfterLongPress(
                                 onDragStart = {
@@ -152,12 +152,13 @@ LaunchedEffect(widgetId) {
                                 onDrag = { _, dragAmount -> onDrag(dragAmount.y) }
                             )
                         }
-                    else
+                    } else {
                         Modifier.pointerInput(Unit) {
                             detectTapGestures(
                                 onLongPress = { showRemoveButton = !showRemoveButton }
                             )
                         }
+                    }
                 )
         ) {
             AndroidView(
@@ -168,11 +169,10 @@ LaunchedEffect(widgetId) {
                     .wrapContentHeight()
             )
 
-            // Drag handle - sadece isDraggable true iken göster
             if (isDraggable && !showRemoveButton) {
                 Icon(
                     imageVector = Icons.Default.DragHandle,
-                    contentDescription = "Taşı",
+                    contentDescription = "Widget sırasını değiştirmek için sürükle",
                     tint = Color.White.copy(alpha = 0.40f),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -181,7 +181,6 @@ LaunchedEffect(widgetId) {
                 )
             }
 
-            // Silme butonu - her zaman göster
             if (showRemoveButton) {
                 Box(
                     modifier = Modifier

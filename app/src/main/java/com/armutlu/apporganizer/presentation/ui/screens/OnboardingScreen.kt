@@ -1,6 +1,7 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
@@ -61,6 +62,7 @@ fun OnboardingScreen(
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PermissionChecker.PERMISSION_GRANTED
             else true)
     }
+    var notifRequestAttempted by remember { mutableStateOf(false) }
     var notifAccessGranted by remember {
         mutableStateOf(Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
             ?.contains(context.packageName) == true)
@@ -96,7 +98,20 @@ fun OnboardingScreen(
         if (launcherSet) stepIndex++
     }
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        notifGranted = granted; stepIndex++
+        notifGranted = granted
+        notifRequestAttempted = true
+        if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val activity = context as? Activity
+            if (activity != null && !activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                context.startActivity(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = android.net.Uri.parse("package:${context.packageName}")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                )
+            }
+        }
+        stepIndex++
     }
 
     // ── Lifecycle observer ───────────────────────────────────────────────
@@ -267,9 +282,21 @@ fun OnboardingScreen(
                             }
                         },
                         onRequestNotif = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                            if (
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                notifRequestAttempted &&
+                                (context as? Activity)?.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) == false &&
+                                !notifGranted
+                            ) {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = android.net.Uri.parse("package:${context.packageName}")
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                )
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            else stepIndex++
+                            } else stepIndex++
                         },
                         onNotifAccess = {
                             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)

@@ -29,7 +29,6 @@ class LauncherActivity : ComponentActivity() {
     private val viewModel: LauncherViewModel by viewModels()
 
     private var lastHomePressMs = 0L
-    private var receiverRegistered = false
 
     // config_navBarInteractionMode cihaz yeniden başlamadan değişmez — bir kere okumak yeterli
     private val gestureNavEnabled: Boolean by lazy {
@@ -95,6 +94,7 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lastHomePressMs = savedInstanceState?.getLong(KEY_LAST_HOME_PRESS_MS) ?: 0L
 
         // Onboarding bitmemişse MainActivity'ye yönlendir
         val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -125,6 +125,11 @@ class LauncherActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong(KEY_LAST_HOME_PRESS_MS, lastHomePressMs)
     }
 
     // Home tuşuna iki kez hızlıca basılınca (≤500ms) AllApps açılır.
@@ -184,6 +189,11 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        registerReceiver(packageReceiver, PACKAGE_FILTER)
+    }
+
     override fun onResume() {
         super.onResume()
         WidgetHostManager.startListening(this)
@@ -201,20 +211,16 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
-        // initFavorites sadece onCreate'de; toggleFavorite reaktif günceller, onResume'da gerek yok
-        if (!receiverRegistered) {
-            registerReceiver(packageReceiver, PACKAGE_FILTER)
-            receiverRegistered = true
-        }
     }
 
     override fun onPause() {
         super.onPause()
         WidgetHostManager.stopListening()
-        if (receiverRegistered) {
-            runCatching { unregisterReceiver(packageReceiver) }
-            receiverRegistered = false
-        }
+    }
+
+    override fun onStop() {
+        runCatching { unregisterReceiver(packageReceiver) }
+        super.onStop()
     }
 
     // Launcher'da back tuşu uygulamayı kapatmamalı
@@ -224,6 +230,7 @@ class LauncherActivity : ComponentActivity() {
     }
 
     companion object {
+        private const val KEY_LAST_HOME_PRESS_MS = "last_home_press_ms"
         private val PACKAGE_FILTER = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_ADDED)
