@@ -1,24 +1,23 @@
 $taskName = "AppOrganizer_LocalDenetim_21min"
-$scriptPath = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\scripts\run_local_denetim_cycle.ps1"
+$scriptPath = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\scripts\run_local_denetim_cycle.cmd"
+$taskRun = '"' + $scriptPath + '"'
+$startTime = (Get-Date).AddMinutes(1).ToString("HH:mm")
 
-$existing = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-if ($existing) {
-    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+Start-Process schtasks.exe -ArgumentList @("/Delete", "/TN", $taskName, "/F") -Wait -NoNewWindow 2>$null
+$create = Start-Process schtasks.exe -ArgumentList @(
+    "/Create",
+    "/SC", "MINUTE",
+    "/MO", "21",
+    "/TN", $taskName,
+    "/TR", $taskRun,
+    "/ST", $startTime,
+    "/F"
+) -Wait -NoNewWindow -PassThru
+
+if ($create.ExitCode -ne 0) {
+    throw "schtasks gorev kaydi basarisiz oldu."
 }
-
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 21)
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
-$principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType S4U -RunLevel Highest
-
-Register-ScheduledTask `
-    -TaskName $taskName `
-    -Action $action `
-    -Trigger $trigger `
-    -Settings $settings `
-    -Principal $principal `
-    -Description "21 dakikada bir local denetim dongusu calistirir."
 
 Write-Host "Gorev olusturuldu: $taskName" -ForegroundColor Green
 Write-Host "Zamanlama: Her 21 dakika" -ForegroundColor Cyan
-Write-Host "Script: $scriptPath" -ForegroundColor Cyan
+Write-Host "Komut: $taskRun" -ForegroundColor Cyan
