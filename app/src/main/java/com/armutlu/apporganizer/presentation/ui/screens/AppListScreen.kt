@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -178,17 +177,14 @@ fun AppListScreen(
                         onClick = { viewModel.setSelectedCategory("all") }
                     )
                 }
-                items(screenState.categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }.sortedBy { it.categoryName.lowercase(java.util.Locale("tr")) }, key = { it.categoryId }) { cat ->
-                    val cnt = screenState.apps.count { it.categoryId == cat.categoryId }
-                    if (cnt > 0) {
-                        CategoryChip(
-                            label = cat.categoryName,
-                            emoji = cat.iconEmoji,
-                            count = cnt,
-                            selected = selectedCategory == cat.categoryId,
-                            onClick = { viewModel.setSelectedCategory(cat.categoryId) }
-                        )
-                    }
+                items(screenState.visibleCategories, key = { it.categoryId }) { cat ->
+                    CategoryChip(
+                        label = cat.categoryName,
+                        emoji = cat.iconEmoji,
+                        count = screenState.countAppsByCategory(cat.categoryId),
+                        selected = selectedCategory == cat.categoryId,
+                        onClick = { viewModel.setSelectedCategory(cat.categoryId) }
+                    )
                 }
             }
 

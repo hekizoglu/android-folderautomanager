@@ -1,122 +1,124 @@
 <#
 .SYNOPSIS
-    audit.ps1 — AppOrganizer local denetim scripti.
-    15 dakikada bir calistirilir, bulgulari local_denetim_raporu.md'ye ekler ve Telegram'a gonderir.
+    Guncel local denetim raporunu uretir.
 #>
 
 param(
-    [switch]$SendTelegram = $true,
+    [switch]$SendTelegram = $false,
     [switch]$DryRun = $false
 )
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$ErrorActionPreference = "SilentlyContinue"
+$ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
-$raporPath   = Join-Path $projectRoot "local_denetim_raporu.md"
-$envPath     = Join-Path $projectRoot ".env"
-$timestamp   = Get-Date -Format "yyyy-MM-dd HH:mm"
+$reportPath = Join-Path $projectRoot "local_denetim_raporu.md"
+$envPath = Join-Path $projectRoot ".env"
+$timestamp = Get-Date
+$timestampText = $timestamp.ToString("yyyy-MM-dd HH:mm")
 
 Set-Location $projectRoot
 
 function Get-EnvValue {
     param([string]$Key)
-    if (-not (Test-Path $envPath)) {
-        Write-Host "  [DEBUG] .env bulunamadi: $envPath" -ForegroundColor Red
-        return $null
-    }
+    if (-not (Test-Path $envPath)) { return $null }
     $line = Get-Content $envPath | Where-Object { $_ -match "^[\s]*$Key[\s]*=" } | Select-Object -First 1
-    if (-not $line) {
-        Write-Host "  [DEBUG] $Key bulunamadi" -ForegroundColor Red
-        return $null
-    }
-    $val = ($line -replace "^[\s]*$Key[\s]*=[\s]*", "").Trim().Trim('"')
-    Write-Host "  [DEBUG] $Key = $val" -ForegroundColor Gray
-    return $val
+    if (-not $line) { return $null }
+    return ($line -replace "^[\s]*$Key[\s]*=[\s]*", "").Trim().Trim('"')
 }
 
-$token  = Get-EnvValue -Key "TELEGRAM_BOT_TOKEN"
-$chatId = Get-EnvValue -Key "TELEGRAM_CHAT_ID"
+$rules = @(
+    @{ Code = "K1"; Severity = "KRITIK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = 'getSharedPreferences\("app_organizer_prefs"'; Description = "AllAppsDrawer hardcoded prefs kullaniyor." },
+    @{ Code = "Y1"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt"; Pattern = 'lowercase\(\)'; Description = "Locale belirtilmeyen lowercase bulundu." },
+    @{ Code = "Y2"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LaunchedEffect\(folderSearchQuery\)'; Description = "Eski folderSearch sayaç akisi bulundu." },
+    @{ Code = "Y3"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'var swipeDy = 0f'; Description = "swipeDy state degil." },
+    @{ Code = "Y4"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'var isDefault by remember \{'; Description = "Launcher durumu keysiz remember ile tutuluyor." },
+    @{ Code = "O1"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreen.kt"; Pattern = 'items\(screenState\.categories\.filter'; Description = "Kategori listesi hala composable icinde hesaplanıyor." },
+    @{ Code = "O2"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = '\$\{app\.packageName\}_48_\$iconPackPkg'; Description = "Icon cache key icinde lastUpdatedTime eksik." },
+    @{ Code = "O3"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\domain\usecase\classify\AppClassifier.kt"; Pattern = 'var manufacturerClassifyEnabled'; Description = "AppClassifier global mutable state tasiyor." },
+    @{ Code = "O5"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt"; Pattern = 'val filteredApps: List<AppInfo>\s*[\r\n]+\s*get\(\)'; Description = "filteredApps getter bazli hesaplanıyor." },
+    @{ Code = "D1"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreenComponents.kt"; Pattern = 'itemHeightDp: androidx\.compose\.ui\.unit\.Dp = 56\.dp'; Description = "Kullanilmayan itemHeightDp parametresi duruyor." }
+)
 
-$findings = @()
-
-$k1 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt" -Pattern '"app_organizer_prefs"' -SimpleMatch
-if ($k1) { $findings += "[K1] AllAppsDrawer ikinci SharedPreferences dosyasi kullaniliyor (satir $($k1.LineNumber))" }
-
-$y1 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt" -Pattern 'lowercase()' -SimpleMatch
-if ($y1) { $findings += "[Y1] fuzzySearch locale duyarsiz lowercase() kullaniliyor (satir $($y1.LineNumber))" }
-
-$y2 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt" -Pattern 'folderSearchCountdown' -SimpleMatch
-if ($y2) { $findings += "[Y2] folderSearchCountdown race condition riski (satir $($y2.LineNumber))" }
-
-$y3 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt" -Pattern 'var swipeDy = 0f' -SimpleMatch
-if ($y3) { $findings += "[Y3] FolderTile swipeDy non-state (satir $($y3.LineNumber))" }
-
-$y4 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt" -Pattern 'fun isDefaultLauncher' -SimpleMatch
-if ($y4) { $findings += "[Y4] SettingsScreen isDefaultLauncher() onbellege alinmamis (satir $($y4.LineNumber))" }
-
-$o1 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreen.kt" -Pattern 'items(screenState.categories.filter' -SimpleMatch
-if ($o1) { $findings += "[O1] AppListScreen kategori listesi her recomposition'da yeniden hesaplaniyor (satir $($o1.LineNumber))" }
-
-$o2 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt" -Pattern '${app.packageName}_48_${iconPackPkg}' -SimpleMatch
-if ($o2) { $findings += "[O2] AllApps drawer ikon cache anahtari lastUpdatedTime eksik (satir $($o2.LineNumber))" }
-
-$d1 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreenComponents.kt" -Pattern 'itemHeightDp: androidx.compose.ui.unit.Dp = 56.dp' -SimpleMatch
-if ($d1) { $findings += "[D1] Kullanilmayan itemHeightDp parametresi (satir $($d1.LineNumber))" }
-
-$d3 = Select-String -Path "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt" -Pattern 'val isLoading = folders.isEmpty() && allApps.isEmpty()' -SimpleMatch
-if ($d3) { $findings += "[D3] isLoading degiskeni kullanilmiyor (satir $($d3.LineNumber))" }
-
-if ($findings.Count -eq 0) {
-    $summary = "Temiz - bulgu yok"
-} else {
-    $summary = "$($findings.Count) bulgu tespit edildi"
-}
-
-$sb = [System.Text.StringBuilder]::new()
-[void]$sb.AppendLine("# Local Denetim Raporu - $timestamp")
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine("Sonuc: $summary")
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine("## Bulgular")
-[void]$sb.AppendLine("")
-
-if ($findings.Count -eq 0) {
-    [void]$sb.AppendLine("Tum kontroller gecti.")
-} else {
-    foreach ($f in $findings) {
-        [void]$sb.AppendLine("- $f")
+$findings = foreach ($rule in $rules) {
+    $filePath = Join-Path $projectRoot $rule.Path
+    if (-not (Test-Path $filePath)) { continue }
+    $match = Select-String -Path $filePath -Pattern $rule.Pattern
+    if ($match) {
+        [PSCustomObject]@{
+            Code = $rule.Code
+            Severity = $rule.Severity
+            Description = $rule.Description
+            Path = $rule.Path
+            Line = $match[0].LineNumber
+        }
     }
 }
 
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine("---")
-[void]$sb.AppendLine("Denetim: Otomatik tarama | Kurallar: local_denetim_kurallari.md")
+$criticalCount = ($findings | Where-Object Severity -eq "KRITIK").Count
+$highCount = ($findings | Where-Object Severity -eq "YUKSEK").Count
+$mediumCount = ($findings | Where-Object Severity -eq "ORTA").Count
+$lowCount = ($findings | Where-Object Severity -eq "DUSUK").Count
 
-$report = $sb.ToString()
+$lines = @()
+$lines += "# Local Denetim Raporu"
+$lines += ""
+$lines += "> Son dongu: ``$timestampText``"
+$lines += "> Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir."
+$lines += ""
+$lines += "---"
+$lines += ""
+$lines += "## Denetim Ozeti"
+$lines += ""
+$lines += "| Oncelik | Sayi | Aciklama |"
+$lines += "|---------|------|----------|"
+$lines += "| KRITIK | $criticalCount | Acik kritik bulgu |"
+$lines += "| YUKSEK | $highCount | Acik yuksek bulgu |"
+$lines += "| ORTA | $mediumCount | Acik orta bulgu |"
+$lines += "| DUSUK | $lowCount | Acik dusuk bulgu |"
+$lines += "| TOPLAM | $($findings.Count) | |"
+$lines += ""
+$lines += "---"
+$lines += ""
+
+if ($findings.Count -eq 0) {
+    $lines += "## Bu Dongu Sonucu"
+    $lines += ""
+    $lines += "- Acik bulgu tespit edilmedi."
+    $lines += "- Tamamlanan maddeler icin `local_denetim_tamamlananlar.md` dosyasina bak."
+} else {
+    foreach ($severity in @("KRITIK", "YUKSEK", "ORTA", "DUSUK")) {
+        $items = $findings | Where-Object Severity -eq $severity
+        if ($items.Count -eq 0) { continue }
+        $lines += "## $severity"
+        $lines += ""
+        foreach ($item in $items) {
+            $lines += "- $($item.Code) | `"$($item.Path):$($item.Line)`" | $($item.Description)"
+        }
+        $lines += ""
+    }
+}
+
+$lines += "---"
+$lines += ""
+$lines += "*Denetim tarihi: $($timestamp.ToString("yyyy-MM-dd"))*"
+
+$report = ($lines -join [Environment]::NewLine)
 
 if (-not $DryRun) {
-    [System.IO.File]::WriteAllText($raporPath, $report, [System.Text.Encoding]::UTF8)
-    Write-Host "[audit.ps1] Rapor guncellendi: $raporPath" -ForegroundColor Green
-    Write-Host "[audit.ps1] $summary" -ForegroundColor $(if ($findings.Count -eq 0) { "Green" } else { "Yellow" })
-    foreach ($f in $findings) { Write-Host "  $f" -ForegroundColor Yellow }
+    [System.IO.File]::WriteAllText($reportPath, $report, [System.Text.Encoding]::UTF8)
+    Write-Host "[audit] Rapor guncellendi: $reportPath" -ForegroundColor Green
 } else {
-    Write-Host "[audit.ps1] DryRun - degisiklik yapilmadi" -ForegroundColor Cyan
-    Write-Host "[audit.ps1] $summary"
-    foreach ($f in $findings) { Write-Host "  $f" -ForegroundColor Yellow }
+    Write-Host $report
 }
 
-if ($SendTelegram -and $token -and $chatId) {
-    $msg = "Denetim $timestamp`n$summary"
-    if ($findings.Count -gt 0) {
-        $msg += "`nIlk 3 bulgu:`n"
-        $findings | Select-Object -First 3 | ForEach-Object { $msg += "- $_`n" }
+if ($SendTelegram) {
+    $token = Get-EnvValue -Key "TELEGRAM_BOT_TOKEN"
+    $chatId = Get-EnvValue -Key "TELEGRAM_CHAT_ID"
+    if ($token -and $chatId) {
+        $summary = "Denetim $timestampText - Acik bulgu: $($findings.Count)"
+        $url = "https://api.telegram.org/bot$token/sendMessage"
+        curl.exe -s -X POST $url -F "chat_id=$chatId" -F "text=$summary" | Out-Null
     }
-    $url = "https://api.telegram.org/bot$token/sendMessage"
-    $result = curl.exe -s -X POST $url -F "chat_id=$chatId" -F "text=$msg"
-    Write-Host "[audit.ps1] Telegram sonuc: $result" -ForegroundColor Gray
-    Write-Host "[audit.ps1] Telegram gonderildi." -ForegroundColor Green
-} else {
-    Write-Host "[audit.ps1] Telegram gonderimi atlandi (token=$token chatId=$chatId)." -ForegroundColor Yellow
 }

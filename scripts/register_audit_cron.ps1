@@ -1,24 +1,24 @@
-# register_audit_cron.ps1
-# 30 dakikada bir audit.ps1 calistiracak Windows Task Scheduler gorevini olusturur.
+$taskName = "AppOrganizer_LocalDenetim_21min"
+$scriptPath = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\scripts\run_local_denetim_cycle.ps1"
 
-$taskName = "AppOrganizer_Audit_30min"
-$scriptPath = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\scripts\audit.ps1"
-$workDir = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager"
-
-# Gorev zaten var mi kontrol et
 $existing = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($existing) {
-    Write-Host "Gorev zaten mevcut: $taskName — yeniden olusturuluyor..." -ForegroundColor Yellow
     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
 }
 
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -SendTelegram"
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 30)
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 21)
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType S4U -RunLevel Highest
 
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "AppOrganizer local denetim — 30 dakikada bir"
+Register-ScheduledTask `
+    -TaskName $taskName `
+    -Action $action `
+    -Trigger $trigger `
+    -Settings $settings `
+    -Principal $principal `
+    -Description "21 dakikada bir local denetim dongusu calistirir."
 
 Write-Host "Gorev olusturuldu: $taskName" -ForegroundColor Green
-Write-Host "Zamanlama: Her 30 dakika bir" -ForegroundColor Cyan
+Write-Host "Zamanlama: Her 21 dakika" -ForegroundColor Cyan
 Write-Host "Script: $scriptPath" -ForegroundColor Cyan

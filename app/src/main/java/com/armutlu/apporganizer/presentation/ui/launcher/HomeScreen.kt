@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -66,6 +67,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 import androidx.compose.ui.res.stringResource
@@ -254,17 +256,21 @@ fun HomeScreen(
         }
     }
 
-    // Klasör arama 30s otomatik sıfırlama
-    LaunchedEffect(folderSearchQuery) {
-        folderSearchCountdown = 30
-        if (folderSearchQuery.isNotEmpty()) {
-            repeat(30) {
-                delay(1_000)
-                folderSearchCountdown--
+    // Klasör arama 30s otomatik sıfırlama — yeni sorgu gelince eski sayaç iptal edilir
+    LaunchedEffect(Unit) {
+        snapshotFlow { folderSearchQuery }
+            .collectLatest { query ->
+                folderSearchCountdown = 30
+                if (query.isBlank()) return@collectLatest
+                repeat(30) {
+                    delay(1_000)
+                    folderSearchCountdown--
+                }
+                if (folderSearchQuery == query) {
+                    folderSearchQuery = ""
+                }
+                folderSearchCountdown = 30
             }
-            folderSearchQuery = ""
-            folderSearchCountdown = 30
-        }
     }
 
     // İzin verilmeden launcher seçildiyse veya veriler henüz yüklenmediyse güvenli fallback

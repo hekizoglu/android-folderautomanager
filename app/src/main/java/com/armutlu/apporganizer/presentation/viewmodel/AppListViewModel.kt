@@ -17,6 +17,9 @@ import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreenState
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
+import com.armutlu.apporganizer.presentation.ui.screens.computeCategoryStats
+import com.armutlu.apporganizer.presentation.ui.screens.computeFilteredApps
+import com.armutlu.apporganizer.presentation.ui.screens.computeVisibleCategories
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -145,6 +148,8 @@ class AppListViewModel @Inject constructor(
         sort: SortOption = _sortOption.value,
         showSystem: Boolean = _showSystemApps.value
     ): AppListScreenState {
+        val categoryStats = computeCategoryStats(apps, categories)
+        val filteredApps = computeFilteredApps(apps, category, query, showSystem, sort)
         return AppListScreenState(
             apps = apps,
             categories = categories,
@@ -153,6 +158,9 @@ class AppListViewModel @Inject constructor(
             showSystemApps = showSystem,
             sortBy = sort,
             selectedApps = _selectedApps.value,
+            filteredApps = filteredApps,
+            visibleCategories = computeVisibleCategories(categories, categoryStats),
+            categoryStats = categoryStats,
             isLoading = false,
             isInitializing = false
         )
@@ -310,7 +318,7 @@ class AppListViewModel @Inject constructor(
      * Get category statistics
      */
     fun getCategoryStats(): Map<String, Int> {
-        return _screenState.value.getCategoryStats()
+        return _screenState.value.categoryStats
     }
     
     /**
@@ -337,7 +345,7 @@ class AppListViewModel @Inject constructor(
                 _classifyLoading.value = true
                 _classifyResult.value = ""
                 val ctx = getApplication<Application>()
-                classifier.manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(ctx)
+                val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(ctx)
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
 
                 val unclassifiedApps = _screenState.value.apps.filter {
@@ -354,7 +362,7 @@ class AppListViewModel @Inject constructor(
 
                 var classified = 0
                 unclassifiedApps.forEach { app ->
-                    val category = classifier.classifyApp(app)
+                    val category = classifier.classifyApp(app, manufacturerClassifyEnabled)
                     if (category != "uncategorized") {
                         repository.updateAppCategory(app.packageName, category)
                         classified++
@@ -459,8 +467,10 @@ class AppListViewModel @Inject constructor(
                 repository.resetAllCategories()
                 appendDebugLog("Kategoriler sıfırlandı — yeniden sınıflandırılıyor...")
                 val apps = _screenState.value.apps
+                val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs
+                    .isManufacturerClassifyEnabled(getApplication())
                 apps.forEach { app ->
-                    val category = classifier.classifyApp(app)
+                    val category = classifier.classifyApp(app, manufacturerClassifyEnabled)
                     if (category != "uncategorized") {
                         repository.updateAppCategory(app.packageName, category)
                     }

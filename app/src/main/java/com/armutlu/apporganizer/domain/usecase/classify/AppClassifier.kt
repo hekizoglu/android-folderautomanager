@@ -11,14 +11,7 @@ import javax.inject.Singleton
 class AppClassifier @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-
-    // Üretici bazlı sınıflandırma toggle — AppListViewModel tarafından set edilir
-    // @Volatile: farklı thread'lerden (IO/Main) okunup yazılabileceği için gerekli
-    @Volatile
-    var manufacturerClassifyEnabled: Boolean = true
-
     // Üretici prefix → üretici kategorisi: exactMap'ten sonra, keyword'den önce kontrol edilir
-    // manufacturerClassifyEnabled=false iken hiç çağrılmaz (classifyApp() içinde guard var)
     private val MANUFACTURER_PREFIX_MAP = mapOf(
         // Google
         "com.google"                            to Category.CAT_GOOGLE,
@@ -67,7 +60,7 @@ class AppClassifier @Inject constructor(
     private val exactMatchMap: Map<String, String> get() = AppClassifierAssets.getExactMatchMap(context)
 
 
-    fun classifyApp(appInfo: AppInfo): String {
+    fun classifyApp(appInfo: AppInfo, manufacturerClassifyEnabled: Boolean = true): String {
         exactMatchMap[appInfo.packageName]?.let { return it }
         if (manufacturerClassifyEnabled) {
             classifyByManufacturerPrefix(appInfo.packageName, appInfo.appName)?.let { return it }
@@ -75,8 +68,11 @@ class AppClassifier @Inject constructor(
         return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
     }
 
-    fun classifyApps(apps: List<AppInfo>): Map<String, String> {
-        val raw = apps.associateBy({ it.packageName }, { classifyApp(it) })
+    fun classifyApps(
+        apps: List<AppInfo>,
+        manufacturerClassifyEnabled: Boolean = true
+    ): Map<String, String> {
+        val raw = apps.associateBy({ it.packageName }, { classifyApp(it, manufacturerClassifyEnabled) })
         if (!manufacturerClassifyEnabled) return raw
         // Tek uygulamalı üretici klasörlerini CAT_OTHER'a at
         val manufacturerCounts = raw.values.filter { it in MANUFACTURER_CATEGORIES }.groupingBy { it }.eachCount()

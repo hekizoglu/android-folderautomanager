@@ -69,7 +69,7 @@ fun SettingsScreen(
         return info?.activityInfo?.packageName == context.packageName
     }
 
-    var isDefault by remember { mutableStateOf(isDefaultLauncher()) }
+    var isDefault by remember(context.packageName) { mutableStateOf(isDefaultLauncher()) }
 
     val roleRequestLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -293,10 +293,14 @@ fun SettingsScreen(
                     val sdf = java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale("tr"))
                     sdf.format(java.util.Date(lastBackupMs))
                 }
-                val topCategory = state.getCategoryStats()
-                    .maxByOrNull { it.value }
-                    ?.let { (id, count) -> state.categories.find { it.categoryId == id }?.categoryName?.let { "$it ($count)" } }
-                    ?: "—"
+                val topCategory by remember(state.categoryStats, state.categories) {
+                    derivedStateOf {
+                        state.categoryStats
+                            .maxByOrNull { it.value }
+                            ?.let { (id, count) -> state.categories.find { it.categoryId == id }?.categoryName?.let { "$it ($count)" } }
+                            ?: "—"
+                    }
+                }
                 SettingsCard {
                     SettingsInfoRow(icon = Icons.Default.Apps, title = "Toplam Uygulama", subtitle = "${state.totalAppsCount}")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

@@ -57,6 +57,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.asImageBitmap
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
@@ -210,8 +211,7 @@ private fun DrawerSearchBar(
                     .background(if (active) primary else onSurface.copy(alpha = 0.12f))
                     .clickable {
                         onSortModeChange(mode)
-                        context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
-                            .edit().putString("all_apps_sort_mode", mode.name).apply()
+                        AppPrefs.setAllAppsSortMode(context, mode.name)
                     }
                     .padding(horizontal = 11.dp, vertical = 5.dp)
             ) {
@@ -332,9 +332,12 @@ private fun DrawerRecentFavSection(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f).clickable { onRecentAppClick(app.packageName) }
                     ) {
-                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                            if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                            else "${app.packageName}_48_${app.lastUpdatedTime}"
+                        }
+                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
                             value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                                 val cached = iconCacheInternal[cacheKey]
                                 if (cached != null) cached
                                 else {
@@ -367,9 +370,12 @@ private fun DrawerRecentFavSection(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f).clickable { onFavoriteAppClick(app.packageName) }
                     ) {
-                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName, iconPackPkg) {
+                        val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                            if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                            else "${app.packageName}_48_${app.lastUpdatedTime}"
+                        }
+                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
                             value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                val cacheKey = if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_$iconPackPkg" else "${app.packageName}_48"
                                 val cached = iconCacheInternal[cacheKey]
                                 if (cached != null) cached
                                 else {
@@ -509,8 +515,7 @@ fun AllAppsDrawer(
     // Klavye otomatik açılmasın — kullanıcı arama kutusuna tıklayınca açılır
 
     var sortMode by remember {
-        val saved = context.getSharedPreferences("app_organizer_prefs", android.content.Context.MODE_PRIVATE)
-            .getString("all_apps_sort_mode", AllAppsSortMode.ALPHA.name)
+        val saved = AppPrefs.getAllAppsSortMode(context)
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
     }
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }

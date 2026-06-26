@@ -66,6 +66,13 @@ object AppPrefs {
     fun getAllAppsBgAlpha(context: Context) = prefs(context).getFloat(KEY_ALLAPPS_BG_ALPHA, 0.85f)
     fun setAllAppsBgAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_ALLAPPS_BG_ALPHA, v).apply()
 
+    // AllApps sıralama modu
+    const val KEY_ALL_APPS_SORT_MODE = "all_apps_sort_mode"
+    fun getAllAppsSortMode(context: Context): String =
+        prefs(context).getString(KEY_ALL_APPS_SORT_MODE, "ALPHA") ?: "ALPHA"
+    fun setAllAppsSortMode(context: Context, mode: String) =
+        prefs(context).edit().putString(KEY_ALL_APPS_SORT_MODE, mode).apply()
+
     // Bildirim metni goster (FolderTile + AllApps altinda)
     const val KEY_NOTIFICATION_TEXT_ENABLED = "notification_text_enabled"
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)

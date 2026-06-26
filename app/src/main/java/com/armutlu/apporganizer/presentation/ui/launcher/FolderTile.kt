@@ -79,7 +79,7 @@ fun FolderTile(
     val isPressed by interactionSource.collectIsPressedAsState()
     val hapticFeedback = LocalHapticFeedback.current
     val density = LocalDensity.current
-    var swipeDy = 0f  // mutableFloatStateOf değil — drag callback'te accumulator, UI'a yansımaz
+    var swipeDy by remember { mutableFloatStateOf(0f) }
     val swipeThresholdPx = with(density) { 40.dp.toPx() }
 
     val scale by animateFloatAsState(
