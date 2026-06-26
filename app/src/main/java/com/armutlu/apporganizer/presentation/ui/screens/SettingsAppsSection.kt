@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,10 +88,11 @@ internal fun LazyListScope.settingsAppsSection(
         }
     }
 
-    // ── Uygulama Yönetimi ───────────────────────────────────────────────
+    // Uygulama Yönetimi
     item { SettingsSectionTitle("Uygulama Yönetimi") }
     item {
         val context = LocalContext.current
+        var showResetDialog by remember { mutableStateOf(false) }
         SettingsCard {
             var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
             SettingsSwitchRow(
@@ -103,13 +106,31 @@ internal fun LazyListScope.settingsAppsSection(
             SettingsButtonRow(icon = Icons.Default.AutoFixHigh,
                 title = "Sınıflandırılmamışları Sınıflandır",
                 subtitle = "Kategorisiz uygulamaları otomatik ata",
+                showChevron = false,
                 onClick = { viewModel.classifyUnclassifiedApps() })
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsButtonRow(icon = Icons.Default.RestartAlt,
                 title = "Tüm Kategorileri Sıfırla",
                 subtitle = "Tüm atamaları sil ve yeniden sınıflandır",
                 iconTint = MaterialTheme.colorScheme.error,
-                onClick = { viewModel.resetAndReclassifyAllApps() })
+                showChevron = false,
+                onClick = { showResetDialog = true })
+            if (showResetDialog) {
+                AlertDialog(
+                    onDismissRequest = { showResetDialog = false },
+                    title = { Text("Tüm kategorileri sıfırla") },
+                    text = { Text("Tüm uygulama kategorileri silinecek ve yeniden sınıflandırma başlayacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showResetDialog = false
+                            viewModel.resetAndReclassifyAllApps()
+                        }) { Text("Sıfırla", color = MaterialTheme.colorScheme.error) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showResetDialog = false }) { Text("İptal") }
+                    }
+                )
+            }
         }
     }
 

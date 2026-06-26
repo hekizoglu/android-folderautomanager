@@ -79,7 +79,7 @@ fun AppListScreen(
                             leadingIcon = { Icon(Icons.Default.Category, null) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Yeniden Sınıflandır") },
+                            text = { Text("Kategorileri Sıfırla ve Yeniden Sınıflandır") },
                             onClick = { showMenu = false; viewModel.resetAndReclassifyAllApps() },
                             leadingIcon = { Icon(Icons.Default.RestartAlt, null) }
                         )

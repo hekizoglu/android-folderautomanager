@@ -200,7 +200,7 @@ fun SettingsScreen(
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
-                            ) { Text("İzin Ver", fontSize = 13.sp) }
+                            ) { Text("Bildirim Erişimini Aç", fontSize = 13.sp) }
                         }
                     }
                     if (!notifListenerOk) {
@@ -259,15 +259,31 @@ fun SettingsScreen(
                         }
                     }
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    var showDockResetDialog by remember { mutableStateOf(false) }
                     SettingsButtonRow(
                         icon = Icons.Default.RestartAlt,
                         title = stringResource(R.string.settings_reset_defaults),
                         subtitle = stringResource(R.string.settings_dock_default_apps),
-                        onClick = {
-                            DockPrefs.saveDockPackages(context, emptyList())
-                            dockPkgs = DockPrefs.getDockPackages(context)
-                        }
+                        showChevron = false,
+                        onClick = { showDockResetDialog = true }
                     )
+                    if (showDockResetDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDockResetDialog = false },
+                            title = { Text("Dock uygulamalarını sıfırla") },
+                            text = { Text("Dock'daki tüm uygulamalar kaldırılacak. Devam etmek istiyor musunuz?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    showDockResetDialog = false
+                                    DockPrefs.saveDockPackages(context, emptyList())
+                                    dockPkgs = DockPrefs.getDockPackages(context)
+                                }) { Text("Sıfırla", color = MaterialTheme.colorScheme.error) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDockResetDialog = false }) { Text("İptal") }
+                            }
+                        )
+                    }
                 }
             }
 
@@ -334,6 +350,7 @@ fun SettingsScreen(
                         icon = Icons.Default.Feedback,
                         title = stringResource(R.string.settings_feedback),
                         subtitle = stringResource(R.string.settings_feedback_desc),
+                        showChevron = false,
                         onClick = {
                             val device = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} (API ${android.os.Build.VERSION.SDK_INT})"
                             val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {

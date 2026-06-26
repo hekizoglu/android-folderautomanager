@@ -128,9 +128,9 @@ fun SettingsHomeScreenSection() {
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
-            icon = Icons.Default.Folder,
-            title = "Klasör Önizleme",
-            subtitle = "Klasörde en çok kullanılan uygulamayı göster",
+            icon = Icons.Default.SwipeUp,
+            title = "Yukarı Kaydırma İpucu",
+            subtitle = "Klasör altında uygulama adını göster",
             checked = folderSwipeHint,
             onCheckedChange = {
                 folderSwipeHint = it

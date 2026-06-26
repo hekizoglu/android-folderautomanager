@@ -24,6 +24,8 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
 import kotlinx.coroutines.launch
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 /**
  * Hakkında (bilgi) + Yedek/Geri Yükle + Hakkında (gizlilik/versiyon) + Debug bölümleri
@@ -60,7 +62,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Otomatik Yedekleme", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                    Text("Uygulama açıldığında otomatik JSON yedeği al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Haftalık periyodik JSON yedeği al", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = autoBackup, onCheckedChange = {
                     autoBackup = it
@@ -86,20 +88,12 @@ internal fun LazyListScope.settingsBackupAboutSection(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         var backupLoading by remember { mutableStateOf(false) }
+        var showRestoreDialog by remember { mutableStateOf(false) }
+        var pendingRestoreUri by remember { mutableStateOf<android.net.Uri?>(null) }
         val filePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
-            coroutineScope.launch {
-                backupLoading = true
-                runCatching {
-                    val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return@runCatching
-                    val result = viewModel.importBackup(json)
-                    android.widget.Toast.makeText(context,
-                        if (result.success) "${result.updatedCount} uygulama geri yüklendi"
-                        else "Geri yükleme başarısız: ${result.error}",
-                        android.widget.Toast.LENGTH_LONG).show()
-                }
-                backupLoading = false
-            }
+            pendingRestoreUri = uri
+            showRestoreDialog = true
         }
         val shareLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
         SettingsCard {
@@ -136,7 +130,44 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 }
             }
         }
+        if (showRestoreDialog && pendingRestoreUri != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showRestoreDialog = false
+                    pendingRestoreUri = null
+                },
+                title = { Text("Yedeği geri yükle") },
+                text = { Text("Bu işlem mevcut kategori atamalarınızı ve gizleme durumlarınızı seçilen yedekleme ile değiştirecek. Devam etmek istiyor musunuz?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showRestoreDialog = false
+                        coroutineScope.launch {
+                            backupLoading = true
+                            runCatching {
+                                val json = context.contentResolver.openInputStream(pendingRestoreUri!!)?.bufferedReader()?.readText() ?: return@runCatching
+                                val result = viewModel.importBackup(json)
+                                android.widget.Toast.makeText(context,
+                                    if (result.success) "${result.updatedCount} uygulama geri yüklendi"
+                                    else "Geri yükleme başarısız: ${result.error}",
+                                    android.widget.Toast.LENGTH_LONG).show()
+                            }
+                            backupLoading = false
+                            pendingRestoreUri = null
+                        }
+                    }) { Text("Yüklemeyi Başlat", color = MaterialTheme.colorScheme.error) }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showRestoreDialog = false
+                        pendingRestoreUri = null
+                    }) { Text("İptal") }
+                }
+            )
+        }
     }
+
+    // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
+    item { SettingsSectionTitle("Hakkında") }
 
     // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
@@ -144,6 +175,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
         SettingsCard {
             SettingsButtonRow(Icons.Default.PrivacyTip, "Gizlilik Politikası",
                 "Veri toplama ve kullanım hakkınızda bilgi alın",
+                showChevron = true,
                 onClick = onNavigateToPrivacyPolicy)
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsInfoRow(Icons.Default.Info, "Versiyon", "AppOrganizer 1.0.0 — Haziran 2026")

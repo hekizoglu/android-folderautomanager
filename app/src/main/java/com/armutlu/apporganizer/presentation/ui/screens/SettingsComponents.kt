@@ -81,6 +81,7 @@ internal fun SettingsButtonRow(
     title: String,
     subtitle: String,
     iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    showChevron: Boolean = true,
     onClick: () -> Unit
 ) {
     Row(
@@ -97,8 +98,10 @@ internal fun SettingsButtonRow(
                 color = MaterialTheme.colorScheme.onSurface)
             Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Icon(Icons.Default.ChevronRight, null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        if (showChevron) {
+            Icon(Icons.Default.ChevronRight, null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        }
     }
 }
 
