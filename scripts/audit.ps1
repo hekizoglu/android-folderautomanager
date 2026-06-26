@@ -83,10 +83,10 @@ $lines += "---"
 $lines += ""
 
 if ($findings.Count -eq 0) {
-    $lines += "## Bu Dongu Sonucu"
-    $lines += ""
-    $lines += "- Acik bulgu tespit edilmedi."
-    $lines += "- Tamamlanan maddeler icin `local_denetim_tamamlananlar.md` dosyasina bak."
+$lines += "## Bu Dongu Sonucu"
+$lines += ""
+$lines += "- Acik bulgu tespit edilmedi."
+$lines += "- Tamamlanan maddeler icin `local_denetim_tamamlananlar.md` dosyasina bak."
 } else {
     foreach ($severity in @("KRITIK", "YUKSEK", "ORTA", "DUSUK")) {
         $items = $findings | Where-Object Severity -eq $severity
@@ -100,6 +100,12 @@ if ($findings.Count -eq 0) {
     }
 }
 
+$lines += "---"
+$lines += ""
+$lines += "Not: Bu script agirlikli olarak statik ve otomatik taranabilen kurallari kontrol eder."
+$lines += "Buton adi ile yaptigi isin tutarliligi gibi anlamsal UI denetimleri manuel veya yari otomatik kod okumasi gerektirir."
+$lines += "Manuel semantik tur icin `local_denetim_manuel_checklist.md` kullan."
+$lines += ""
 $lines += "---"
 $lines += ""
 $lines += "*Denetim tarihi: $($timestamp.ToString("yyyy-MM-dd"))*"

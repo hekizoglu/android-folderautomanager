@@ -1,6 +1,6 @@
 ﻿# Local Denetim Raporu
 
-> Son dongu: `2026-06-26 11:32`
+> Son dongu: `2026-06-26 18:17`
 > Kapanan maddeler local_denetim_tamamlananlar.md dosyasina tasinir.
 
 ---
@@ -21,6 +21,12 @@
 
 - Acik bulgu tespit edilmedi.
 - Tamamlanan maddeler icin local_denetim_tamamlananlar.md dosyasina bak.
+---
+
+Not: Bu script agirlikli olarak statik ve otomatik taranabilen kurallari kontrol eder.
+Buton adi ile yaptigi isin tutarliligi gibi anlamsal UI denetimleri manuel veya yari otomatik kod okumasi gerektirir.
+Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
+
 ---
 
 *Denetim tarihi: 2026-06-26*

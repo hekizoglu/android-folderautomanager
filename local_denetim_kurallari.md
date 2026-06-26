@@ -1,105 +1,227 @@
-# Local Denetim Kuralları
+# Local Denetim Kurallari
 
-> Bu dosya, kod tabanı denetiminde uygulanacak kuralları belirler.
-> Tüm kurallar **son kullanıcıya görünen katman** (UI, ViewModel, business logic, data flow) odaklıdır.
-> Her kural "maddeler halinde liste" formatında `local_denetim.md`'de bulgulara dönüştürülür.
-
----
-
-## 1. Kapsam
-
-- **Dosyalar:** `app/src/main/java/**` (tüm Kotlin kaynakları)
-- **Hariç:** `test/`, `androidTest/`, üçüncü parti kütüphane kaynakları
-- **Odak:** Son kullanıcıya doğrudan görünen mantık hatası, bağlam hatası, akış hatası
+> Bu dosya, Android uygulamasi icin profesyonel local kod denetimi kurallarini tanimlar.
+> Kapsam son kullanicinin gordugu tum katmanlardir: UI, ViewModel, state, settings, flow, data flow ve geri bildirim akislari.
+> Denetim iki parcadan olusur:
+> 1. Otomatik statik denetim
+> 2. Manuel veya yari otomatik semantik UX denetimi
 
 ---
 
-## 2. Denetim Kategorileri
+## 1. Denetim Amaci
 
-### 🔴 A. Mantık Hataları (Logic Errors)
-
-| Kural | Açıklama |
-|-------|----------|
-| A1 | State değişkenleri `remember`/`mutableStateOf` ile yönetiliyor mu? |
-| A2 | `remember` key parametreleri eksik veya yanlış mı? |
-| A3 | `LaunchedEffect`/`DisposableEffect` race condition riski var mı? |
-| A4 | SharedPreferences okuma/yazma tutarlılığı var mı? |
-| A5 | Flow/StateFlow collect ediliyor mu, yokluğu `by`/`collectAsState` ile yölneniyor mu? |
-| A6 | Null safety eksikliği var mı? (`!!`, unsafe call, null olabilecek referans) |
-| A7 | Koşul/break/continue mantığı doğru mu? |
-| A8 | Döngü sınırları (index out of bounds) riski var mı? |
-
-### 🟡 B. Bağlam Hataları (Context Errors)
-
-| Kural | Açıklama |
-|-------|----------|
-| B1 | Aynı veri kaynağı birden fazla yerde okunuyor mu? (redundant I/O) |
-| B2 | Composable içinde PackageManager/SharedPreferences direkt çağrısı var mı? (recomposition'da tekrar okur) |
-| B3 | Cache anahtarları tutarlı mı? (farklı dosyalarda farklı key formatı) |
-| B4 | Locale/bölge ayarları tutarlı mı? (bazı yerlerde `Locale("tr")`, bazılerinde `getDefault()`) |
-| B5 | Singleton/global state mutation riski var mı? |
-
-### 🟠 C. Kullanıcı Görünüm Hataları (UI/UX Errors)
-
-| Kural | Açıklama |
-|-------|----------|
-| C1 | Kullanıcı aksiyonu (tıklama/dokunma/sürükleme) doğru hedefleniyor mu? |
-| C2 | Yükleme/boş/hata durumları kullanıcıya doğru gösteriliyor mu? |
-| C3 | Toggle/ayar değişikliği anında yansıtılıyor mu? |
-| C4 | İkon/ görsel güncellemeleri cache prop ile yölneniyor mu? |
-| C5 | accessibility (semantics, contentDescription) eksik var mı? |
-
-### 🔵 D. Performans Hataları
-
-| Kural | Açıklama |
-|-------|----------|
-| D1 | `LazyColumn`/`LazyRow` için `key` parametresi eksik var mı? |
-| D2 | `remember`/`derivedStateOf`/`produceState` kullanımı doğru mu? |
-| D3 | Gereksiz rekomposizyon tetikleyen state yapısı var mı? |
-| D4 | IO işlemi ana thread'de mi yapılıyor? |
-
-### 🟢 E. Kod Sağlığı
-
-| Kural | Açıklama |
-|-------|----------|
-| E1 | Kullanılmayan parametre/değişken var mı? |
-| E2 | Kırık import/bozuk referans var mı? |
-| E3 | Hardcoded değerler (string, boyut, renk) yönetiliyor mu? |
-| E4 | Log/hata mesajları anlamlı ve Türkçe mi? |
+- Son kullaniciya yansiyan mantik, UI ve davranis hatalarini erken yakalamak
+- Ayarlar ekranlari ve eylem butonlarinda anlam-davranis tutarliligini korumak
+- Accessibility, net etiketleme, geri bildirim ve hata onleme ilkelerini standartlastirmak
+- Her dongude tekrar edilebilir bir denetim standardi saglamak
 
 ---
 
-## 3. Öncelik Sistemi
+## 2. Kapsam
 
-| Öncelik | Kriter |
+- Kod kapsami: `app/src/main/java/**`
+- Haric tutulanlar: `test/`, `androidTest/`, ucuncu parti kutuphane kaynaklari
+- Birincil odak:
+  - UI state ve recomposition davranisi
+  - Ayarlar ve preference akisleri
+  - Buton, menu, dialog ve bottom sheet aksiyonlari
+  - Arama, siralama, filtreleme, cache ve locale davranisi
+  - Accessibility ve metin-eylem tutarliligi
+
+---
+
+## 3. Arastirmaya Dayali Temel Ilkeler
+
+Bu kurallar resmi Android ve Material kaynaklarindan turetilmistir:
+
+- Settings ekranlari kullanicinin uygulama davranisini kontrol ettigi yerlerdir; acik, kesin ve gruplandirilmis olmali.
+- Sik kullanilan aksiyonlar settings icine saklanmamali; ozellige yakin yerde olmali.
+- Buton etiketi, tiklandiginda olacak eylemi dogrudan anlatmali.
+- Labels kisa, acik, tek anlamli ve amaci tarif eder nitelikte olmali.
+- Accessibility icin interaktif elemanlarin anlami, rolu ve gerekiyorsa durumu okunabilir olmali.
+- Test yalnizca statik analizle bitmez; TalkBack ve manuel akis kontrolu de denetimin parcasi olmalidir.
+
+---
+
+## 4. Denetim Kategorileri
+
+### A. Mantik Hatalari
+
+| Kural | Aciklama |
+|-------|----------|
+| A1 | State degiskenleri `remember`, `mutableStateOf`, `StateFlow` veya benzeri yapiyla dogru yonetiliyor mu? |
+| A2 | `remember` key parametreleri eksik, fazla veya yanlis mi? |
+| A3 | `LaunchedEffect`, `DisposableEffect`, coroutine ve timer akislarinda race condition riski var mi? |
+| A4 | SharedPreferences veya benzeri ayar depolama okuma-yazma tutarliligi korunuyor mu? |
+| A5 | Flow veya StateFlow collect edilip UI ile dogru senkronize oluyor mu? |
+| A6 | Null safety eksigi, unsafe call veya bos deger riski var mi? |
+| A7 | Kosullar, erken donusler ve durum gecisleri dogru mu? |
+| A8 | Dizi, sayfa ve liste indexleri sinir guvenli mi? |
+
+### B. Baglam ve Veri Kaynagi Hatalari
+
+| Kural | Aciklama |
+|-------|----------|
+| B1 | Ayni veri kaynagi birden fazla yerde gereksiz okunuyor mu? |
+| B2 | Composable icinde pahali sistem cagri, prefs cagri veya package manager sorgusu tekrarli calisiyor mu? |
+| B3 | Cache key formatlari ekranlar arasinda tutarli mi? |
+| B4 | Locale kullanimi tum arama, siralama ve karsilastirmalarda tutarli mi? |
+| B5 | Singleton veya global mutable state yan etki uretiyor mu? |
+
+### C. UI ve UX Hatalari
+
+| Kural | Aciklama |
+|-------|----------|
+| C1 | Kullanici aksiyonu dogru hedefe bagli mi? |
+| C2 | Loading, bos, hata ve izin durumlari dogru ve zamaninda gosteriliyor mu? |
+| C3 | Toggle ve ayar degisiklikleri UI'a aninda yansiyor mu? |
+| C4 | Ikon ve gorsel guncellemeler dogru invalidation ile yenileniyor mu? |
+| C5 | Accessibility semantics, contentDescription ve okuma sirasi eksigi var mi? |
+| C6 | Buton, menu veya satir etiketi, gercek davranisi acik ve dogru tarif ediyor mu? |
+| C7 | Tehlikeli veya geri alinmasi zor aksiyonlar yeterince acik isimlendirilmis mi? |
+| C8 | Subtitle, helper text veya toast metni gercek davranisla tutarli mi? |
+| C9 | Disabled, loading veya secili durumlar kullaniciya gorunur ve anlasilir mi? |
+
+### D. Performans Hatalari
+
+| Kural | Aciklama |
+|-------|----------|
+| D1 | `LazyColumn` ve `LazyRow` icin `key` eksigi var mi? |
+| D2 | `remember`, `derivedStateOf`, `produceState` veya memoization ihtiyaci kacirilmis mi? |
+| D3 | Gereksiz recomposition tetikleyen state yapilari var mi? |
+| D4 | IO islemleri ana thread uzerinde mi? |
+
+### E. Kod Sagligi
+
+| Kural | Aciklama |
+|-------|----------|
+| E1 | Kullanilmayan parametre, degisken veya olu kod var mi? |
+| E2 | Kirik import, bozuk referans veya stale API kullanimi var mi? |
+| E3 | Hardcoded string, renk veya boyut merkezi yonetimden kacmis mi? |
+| E4 | Log, toast ve hata mesaji anlamli, tutarli ve kullanici baglamina uygun mu? |
+
+### F. Islem-Anlam Tutarliligi
+
+| Kural | Aciklama |
+|-------|----------|
+| F1 | `Ayarla`, `Degistir`, `Ac`, `Kapat`, `Sil`, `Sifirla`, `Yonet` gibi fiiller gercek davranisla birebir uyusuyor mu? |
+| F2 | Bir satir ayar ekranini aciyorsa, bunu degisiklik yapan bir toggle gibi gostermiyor mu? |
+| F3 | Bir buton dogrudan islem yapiyorsa, yalnizca bilgi ekranina gidiyormus gibi adlandirilmamis mi? |
+| F4 | Yikici aksiyonlar onay, geri alma veya acik uyari gerektiriyor mu? |
+| F5 | Kullanici butona bastiginda bekledigi sonucu goruyor mu, yoksa gizli yan etki mi oluyor? |
+| F6 | Label, icon ve contentDescription ayni anlami tasiyor mu? |
+| F7 | Settings subtitle veya aciklama metni gercekte ne olacagini soyluyor mu? |
+
+### G. Settings Profesyonel Denetimi
+
+| Kural | Aciklama |
+|-------|----------|
+| G1 | Settings icinde sik kullanilan islevler yanlis yere gomulmus mu? |
+| G2 | Sistem ayarlarini tekrar eden veya onlarla catisan uygulama ayarlari var mi? |
+| G3 | Ayarlar mantikli gruplara ayrilmis mi? |
+| G4 | Default degerler dusuk riskli, tarafsiz ve pil/veri dostu mu? |
+| G5 | Ayarlar ekraninda bilgi, aksiyon ve tercih kavramlari birbirine karismis mi? |
+
+---
+
+## 5. Oncelik Sistemi
+
+| Oncelik | Kriter |
 |---------|--------|
-| 🔴 KRİTİK | Kullanıcı verisi kaybı, app crash, yanlış işlem (farklı app açma, yanlış kategori) |
-| 🟠 YÜKSEK | UI çalışmaz, toggle etkisiz, arama/sıralama hatalı |
-| 🟡 ORTA | Görsel hata, geçici state tutarsızlığı, performans kaybı |
-| 🟢 DÜŞÜK | Kod kalitesi, minor UX, log eksikliği |
+| KRITIK | Veri kaybi, crash, yanlis uygulama acma, geri alinmasi zor yanlis islem, yaniltici tehlikeli aksiyon |
+| YUKSEK | UI calismaz, toggle etkisiz, ayar farkli is yapar, buton adi ile islev celisir, arama/siralama bozuk |
+| ORTA | Gecici state tutarsizligi, performans kaybi, kafa karistiran etiket, eksik geri bildirim |
+| DUSUK | Kod kalitesi, minor UX, log veya ufak metin netligi sorunu |
 
 ---
 
-## 4. Rapor Formatı
+## 6. Denetim Yontemi
 
-Her bulgu şu formatta kaydedilir:
+### 6.1 Otomatik Denetim
 
+`scripts/audit.ps1` ile yapilir.
+
+Amac:
+- Regex veya statik analizle yakalanabilen sorunlari bulmak
+- Onceki duzeltilerin regress etmeyip etmedigini kontrol etmek
+- Her dongude hizli durum ozeti vermek
+
+Kontrol ornekleri:
+- Hardcoded prefs adi
+- Locale belirtilmeyen arama
+- State yerine normal degisken kullanimi
+- Getter bazli pahali hesap
+- Kullanilmayan parametre
+- Global mutable singleton flag
+
+### 6.2 Manuel veya Yari Otomatik Denetim
+
+Bu kurallar otomatik tarama ile tam yakalanamaz:
+- C6, C7, C8, C9
+- F1, F2, F3, F4, F5, F6, F7
+- G1, G2, G3, G4, G5
+
+Bu denetimde su checklist uygulanir:
+
+1. Gorunen buton veya satir metnini bul.
+2. `onClick`, `onCheckedChange`, `Intent`, `launcher` veya `viewModel` cagrisi ne yapiyor kontrol et.
+3. Label ile davranis uyusmuyorsa bulgu yaz.
+4. Kullaniciya gosterilen subtitle, toast veya dialog metninin sonucu dogru anlattigini kontrol et.
+5. Yikici aksiyonlarda aciklik, uyari ve geri alma ihtiyacini kontrol et.
+6. TalkBack mantigiyla elemanin amacinin anlasilip anlasilmadigini dusun.
+
+Detayli kontrol listesi icin:
+- `local_denetim_manuel_checklist.md`
+
+---
+
+## 7. Rapor Formati
+
+Her bulgu su formatta yazilir:
+
+```md
+### [ONCELIK] [KOD] - Kisa baslik
+**Dosya:** `dosya.kt` (satir x-y)
+**Sorun:** Tek cumle ile aciklama
+**Etki:** Kullanici ne yasar?
+**Oneri:** Tek cumle ile duzeltme onerisi
 ```
-### [Öncelik] [Kod] — Kısa başlık
-**Dosya:** `dosya.kt` (satır x-y)
-**Sorun:** Tek cümle ile açıklama
-**Etki:** Kullanıcı ne yaşar?
-**Öneri:** Tek cümle ile düzeltme önerisi
-```
 
 ---
 
-## 5. Çalıştırma Sıklığı
+## 8. Calistirma Sikligi
 
-- Her **döngü sonunda** (cycle.ps1 çalıştırıldıktan sonra)
-- Yeni kod eklendiyen/merge olduysa **anında**
-- Manuel tetikleme: `.\scripts\audit.ps1` (planlanan)
+- Her dongu sonunda otomatik denetim
+- Yeni kod eklendiginde veya merge oldugunda anlik denetim
+- Haftalik en az bir kez manuel semantik UI ve Settings denetimi
+- Buyuk UI degisikliklerinden sonra TalkBack odakli kisa tur
 
 ---
 
-*Oluşturulma: 2026-06-26 | Denetçi: Otomatik + Kilo*
+## 9. Kaynak Temelli Referans Basliklari
+
+Bu kurallar su resmi kaynaklarla hizalidir:
+
+- Android Settings tasarim rehberi
+- Android accessibility principles
+- Compose accessibility rehberi
+- Android accessibility testing rehberi
+- Material 3 button ve labeling guidance
+
+### Resmi Kaynak Linkleri
+
+- Android Settings: `https://developer.android.com/design/ui/mobile/guides/patterns/settings`
+- Android Accessibility Principles: `https://developer.android.com/guide/topics/ui/accessibility/principles`
+- Compose Accessibility: `https://developer.android.com/develop/ui/compose/accessibility`
+- Compose Semantics: `https://developer.android.com/develop/ui/compose/accessibility/semantics`
+- Compose Accessibility API Defaults: `https://developer.android.com/develop/ui/compose/accessibility/api-defaults`
+- Material 3 Buttons: `https://m3.material.io/components/buttons/guidelines`
+- Material 3 Dialogs: `https://m3.material.io/components/dialogs/guidelines`
+- Material 3 Lists: `https://m3.material.io/components/lists/guidelines`
+- Material 3 Snackbar: `https://m3.material.io/components/snackbar/guidelines`
+- Material 3 Progress Indicators: `https://m3.material.io/components/progress-indicators/guidelines`
+- Material 3 Text Fields: `https://m3.material.io/components/text-fields/guidelines`
+
+---
+
+*Guncelleme: 2026-06-26 | Denetci standardi: profesyonel local auditor*
