@@ -1,7 +1,7 @@
 # register_audit_cron.ps1
-# 15 dakikada bir audit.ps1 calistiracak Windows Task Scheduler gorevini olusturur.
+# 30 dakikada bir audit.ps1 calistiracak Windows Task Scheduler gorevini olusturur.
 
-$taskName = "AppOrganizer_Audit_15min"
+$taskName = "AppOrganizer_Audit_30min"
 $scriptPath = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\scripts\audit.ps1"
 $workDir = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager"
 
@@ -13,12 +13,12 @@ if ($existing) {
 }
 
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -SendTelegram"
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 15)
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 30)
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType S4U -RunLevel Highest
 
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "AppOrganizer local denetim — 15 dakikada bir"
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "AppOrganizer local denetim — 30 dakikada bir"
 
 Write-Host "Gorev olusturuldu: $taskName" -ForegroundColor Green
-Write-Host "Zamanlama: Her 15 dakika bir" -ForegroundColor Cyan
+Write-Host "Zamanlama: Her 30 dakika bir" -ForegroundColor Cyan
 Write-Host "Script: $scriptPath" -ForegroundColor Cyan

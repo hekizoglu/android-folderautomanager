@@ -32,7 +32,7 @@ function Read-EnvFile {
 
 # ─── ADIM 1: git pull --rebase ───────────────────────────────────────────────
 Write-Host ""
-Write-Host "[1/7] git pull --rebase origin main ..." -ForegroundColor Cyan
+Write-Host "[1/8] git pull --rebase origin main ..." -ForegroundColor Cyan
 git pull --rebase origin main
 if (-not $?) {
     Write-Host "[HATA] git pull basarisiz. Cakismalari coz ve tekrar dene." -ForegroundColor Red
@@ -125,9 +125,20 @@ if (-not $botToken -or -not $chatId) {
     }
 }
 
+# ─── ADIM 8: Local Denetim ───────────────────────────────────────────────────
+Write-Host ""
+Write-Host "[8/8] Local denetim calistiriliyor ..." -ForegroundColor Cyan
+$auditScript = Join-Path $projectRoot "scripts\audit.ps1"
+if (Test-Path $auditScript) {
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $auditScript -SendTelegram
+    Write-Host "[8/8] Denetim tamam." -ForegroundColor Green
+} else {
+    Write-Host "[UYARI] audit.ps1 bulunamadi, denetim atlandi." -ForegroundColor Yellow
+}
+
 # ─── Bitis ───────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "Döngü tamamlandi — APK Telegram'a gonderildi" -ForegroundColor Green
+Write-Host "Döngü tamamlandı — APK Telegram'a gonderildi, denetim çalıştırıldı" -ForegroundColor Green
 Write-Host "  APK boyutu : $apkSizeMB MB" -ForegroundColor White
 Write-Host "  Commit     : $CommitMessage" -ForegroundColor White
 Write-Host "  Zaman      : $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -ForegroundColor White
