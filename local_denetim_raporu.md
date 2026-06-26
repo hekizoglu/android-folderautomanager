@@ -1,4 +1,4 @@
-# Local Denetim Raporu
+﻿# Local Denetim Raporu
 
 > Otomatik denetim — son kullanıcıya görünen katman odaklı.
 > **ONAY GEREKİYOR** — değişiklik yapılmadı, sadece rapor.
@@ -123,7 +123,7 @@
 **Etki:** Derleme uyarısı, kod kalitesi.
 **Öneri:** Parametreyi kaldır veya gerçekten kullan (örn. `Modifier.height(itemHeightDp)`).
 
-### D2 — SettingsScreen statistik bölümü `getCategoryStats()` her recomposition'da map oluşturur
+### D2 — SettingsScreen istatistik bölümü `getCategoryStats()` her recomposition'da map oluşturur
 
 **Dosya:** `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt` (satır 296-298)
 **Sorun:** `state.getCategoryStats().maxByOrNull { ... }` her recomposition'da yeni bir Map oluşturur ve sonra max arar. Çok küçük bir performans kaybı.
