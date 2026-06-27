@@ -5,9 +5,23 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.firebase-bom")
-    id("com.google.firebase.crashlytics")
+}
+
+val skipGoogleServices = project.hasProperty("skipGoogleServices")
+
+if (skipGoogleServices) {
+    println("[ci] skipGoogleServices aktif — Google Services islemleri atlaniyor")
+    afterEvaluate {
+        tasks.whenTaskAdded {
+            if (name.startsWith("process") && name.contains("GoogleServices", ignoreCase = true)) {
+                enabled = false
+                actions = listOf()
+            }
+        }
+    }
+} else {
+    plugins.apply("com.google.gms.google-services")
+    plugins.apply("com.google.firebase.crashlytics")
 }
 
 val keystoreProps = Properties().also { props ->
@@ -29,17 +43,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
-        }
-
-        val skipGoogleServices = project.hasProperty("skipGoogleServices")
-        if (skipGoogleServices) {
-            println("[ci] skipGoogleServices aktif — Google Services islemleri atlaniyor")
-            tasks.whenTaskAdded {
-                if (name.startsWith("process") && name.contains("GoogleServices", ignoreCase = true)) {
-                    enabled = false
-                    actions = listOf()
-                }
-            }
         }
     }
 

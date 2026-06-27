@@ -14,6 +14,14 @@
 
 ---
 
+## Döngü D144 — 2026-06-28
+**Yapılanlar:** Local denetim raporu temizliği. K9 [ÇÖZÜLDÜ] — getAllCategoriesFlow tüm katmanlarda tanımlı, clean build ile API senkron. Y6 [ÇÖZÜLDÜ — yanlış alarm] — OnboardingScreen.kt:108 ve 294'te shouldShowRequestPermissionRationale ve ACTION_APPLICATION_DETAILS_SETTINGS zaten mevcut, NOTIFICATIONS isSkippable=true. O7 [ÇÖZÜLDÜ] — DockPrefs.removeFromDock Boolean dönüyor, ViewModel wrapper toast gösteriyor.
+**Dosyalar:** local_denetim_otomatik_rapor.md silindi (0 bulgu), local_denetim_raporu.md sıfırlandı, qa/local_denetim_raporu.md senkronize, COZULEMEYEN_SORUNLAR.md 10 adet LD-* saatlik tekrar girişi temizlendi.
+**CLAUDE.md/LEARNINGS.md:** Değişmedi
+**Sonraki:** Yeni özellik veya ROADMAP görevi
+
+---
+
 ## Döngü D143 — 2026-06-23
 **Yapılanlar:** Agent-only döngü denemesi. Build agent: assembleDebug BAŞARILI 25.70 MB 2m27s. Schemas agent: Room schemas/ zaten git'te, schemaLocation tanımlı. CLAUDE.md Play Store bekleyeninden kapatıldı. HomeScreenFolderPager.kt dragOffsetX/Y unused param uyarısı @Suppress ile kapatıldı.
 **Agent:** android-builder (build doğrulama, 28K token, 2.9dk) + general-purpose (schemas kontrol, 27K token, 32sn) — paralel
