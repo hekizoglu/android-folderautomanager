@@ -31,7 +31,7 @@
 |-------|--------|-------|-------|
 | 2026-06-21 | Denetim | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab | |
 | 2026-06-28 | Hüseyin | **Onboarding Ayar Sihirbazı** — İlk kurulumda tüm ayarları sırayla sor, her birine açıklama ekle. Mevcut onboarding'e ek bir "Ayar Tur" akışı olarak eklenebilir. (Kullanıcı Değeri:5 · Uygulanabilirlik:4 · Bağımlılık Riski:2 · Etki:4 = 15 puan ⭐) | Bekliyor |
-| 2026-06-28 | Hüseyin | **Akşam Önerisi Algoritma Açıklaması** — Ayarlar > Öneriler bölümüne kullanım örüntüsüne göre nasıl öneri verdiği açıklaması ekle | Bekliyor |
+| 2026-06-28 | Hüseyin | **Akşam Önerisi Algoritma Açıklaması** — Ayarlar > Öneriler bölümüne kullanım örüntüsüne göre nasıl öneri verdiği açıklaması ekle | [TAMAMLANDI D146] |
 | 2026-06-28 | Hüseyin | **Widget Auto-Resize** — Widget alanı ekran en/boy oranına göre otomatik yükseklik ayarı | Bekliyor |
 | 2026-06-28 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
 | 2026-06-28 | Hüseyin | **Tablet Desteği** — Adaptive layout: 2 sütun klasör grid (tablet), side panel AllAppsDrawer, foldable hinge desteği. `WindowSizeClass` API kullan. mobile-design skill ile birlikte ekle. (Kullanıcı Değeri:5 · Uygulanabilirlik:3 · Bağımlılık Riski:3 · Etki:5 = 16 puan ⭐) | Bekliyor |
