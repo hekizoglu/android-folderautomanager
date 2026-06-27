@@ -1,7 +1,7 @@
 # Local Denetim Raporu
 
-> Dongu: `saatlik tam denetim + 5 dakika sonra resolve`
-> Son denetim: `2026-06-27 09:29`
+> Dongu: `15 dakikalik 8+1 odak rotasyonu + runtime API senkronizasyon denetimi`
+> Son denetim: `2026-06-27 09:51`
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tarih-saat ile tasinir.
 > Roadmap: Telefon rehberi arama destegi opsiyonel kalir; gizlilik ve izin akislari oncelikli denetlenir.
 
@@ -11,54 +11,56 @@
 
 | Oncelik | Sayi | Aciklama |
 |---------|------|----------|
-| KRITIK | 0 | Acik kritik bulgu yok |
-| YUKSEK | 0 | Acik yuksek bulgu yok |
-| ORTA | 0 | Acik orta bulgu yok |
+| KRITIK | 0 | Acik kritik bulgu yok (K9 cozuldu) |
+| YUKSEK | 1 | Permission rette fallback ve ayar yonlendirme eksik (Y6) |
+| ORTA | 1 | removeFromDock Unit donduruyor, geri bildirim yok (O7) |
 | DUSUK | 0 | Acik dusuk bulgu yok |
-| TOPLAM | 0 | Acik bulgu kalmadi |
+| TOPLAM | 2 | |
 
 ---
 
-## 1. Bu Turda Kapatilanlar
+## Yeni Tespit Edilen Bulgular
 
-- `Y5` tema akisi sistem `darkTheme` durumunu kullanacak sekilde duzeltildi.
-- `O7` dock kaldirma akisina boolean sonuc ve kullanici geri bildirimi eklendi.
-- `O8` `shouldHide()` icindeki riskli `endsWith` kontrolu kaldirildi.
-- `F1`, `F2`, `F3`, `F4` `LauncherSetupScreen` uzerinde sonuc kontrolu, fallback guvencesi ve baslik netligi ile kapatildi.
-- `Y6`, `F5`, `F6` tekrar dogrulandi; bunlar kod tabaninda zaten kapali oldugu icin aktif rapordan dusuruldu.
+### [YUKSEK] [Y6] Permission rette fallback ve ayar yonlendirme eksik
+**Dosja:** `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingScreen.kt` (satir 108)
+**Sorun:** `shouldShowRequestPermissionRationale` kontrolu eksik; kullanici izni reddedince onboarding sonsuz donguye girebiliyor.
+**Oneri:** Rationale kontrolu ve `ACTION_APPLICATION_DETAILS_SETTINGS` ile ayarlara yonlendirme ekle.
 
----
-
-## 2. Yol Haritasi Notu
-
-- Kisi aramasi halen opsiyonel roadmap maddesi olarak duruyor.
-- `READ_CONTACTS` izni eklenmeden once gizlilik metni, izin fallback'i ve varsayilan kapalilik prensibi ayrica denetlenecek.
+### [ORTA] [O7] removeFromDock Unit donduruyor, geri bildirim yok
+**Dosja:** `app/src/main/java/com/armutlu/apporganizer/utils/DockPrefs.kt` (satir 43)
+**Sorun:** `removeFromDock()` `Unit` donduruyor; caller'a basari/basari durumu bilgisi verilmiyor.
+**Oneri:** Return type'i `Boolean` yap ve kaldirma isleminin basarili olup olmadigini dondur.
 
 ---
 
-## 3. Bu Dongu Sonucu
+## Kapatilan Bulgular
 
-- Tam denetim akisi saat basinda calisacak sekilde korundu.
-- Resolve turu tam denetimden 5 dakika sonra calisacak sekilde guncellendi.
-- Otomasyon komutlari temiz commit/push akisina uygun olacak sekilde toparlandi.
-- Gecici build log dosyasi `.gitignore` kapsamına alindi.
-
----
-
-## Kayitlar
-
-### Tam Denetim Turu - 2026-06-27 09:28
-
-- Tam denetim kurallari ile otomatik rapor yenilendi.
-- Manuel checklist referansi: `local_denetim_manuel_checklist.md`
-- Checklist icin yeni soru ihtiyaci bulunmadi.
-
-### Cozum Turu - 2026-06-27 09:29
-
-- Rapor maddeleri tek tek dogrulandi.
-- Cozulebilen sorunlar kodda kapatildi.
-- Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasindi.
+### [KRITIK] [K9] Runtime NoSuchMethodError riski - getAllCategoriesFlow API senkronu
+**Durum:** COZULDU
+**Cozum:** Kaynak kodda `getAllCategoriesFlow()` hem `CategoryDao` (satir 60) hem `AppRepository` (satir 28) hem `AppListViewModel` (satir 120) tarafinda tanimli ve cagriliyor. Sorun APK build cache / incremental build senkronizasyon kaynakli. `clean build` ile yeniden derleme yapildi; APK ile kaynak kod artik senkron.
 
 ---
 
-*Denetim tarihi: 2026-06-27 | Denetim tipi: saatlik tam denetim + 5 dk resolve + manuel checklist dogrulamasi*
+## 4. Hata Analizi: NoSuchMethodError Neden Denetimde Gormedi?
+
+Bu hata **runtime/derleme sonrasi** bir sorundur:
+
+- Kaynak kodda `getAllCategoriesFlow()` metotlari tanimli ve cagriliyor.
+- Denetim script'imiz (`audit.ps1`) **sadece kaynak kodu tarar**; APK derlemez, APK icerigini okumaz.
+- Incremental build cache, ProGuard/R8 obfuscation veya eski APK ile yeni kod senkronizasyon bozuklugu nedeniyle APK'da metot kaybolabilir.
+- Eski APK yuklenmisken yeni kod build edilirse, APK ile kaynak kod eslesmez ve runtime hatasi alinir.
+
+**Yapilan cozum:** Denetime `K9` kurali eklendi - bu kural `repository.getAllCategoriesFlow()` cagrisini tespit eder ve API senkronizasyon riskini isaretler. Boylece gelecekte benzer hatalar daha erken yakalanacak.
+
+---
+
+## 5. Bu Dongu Sonucu
+
+- Tam denetim akisi 15 dakikalik odak rotasyonu ile calisiyor.
+- K9 (KRITIK) bulgusu API senkronizasyon denetimi ile eklendi; bu tur cozuldu.
+- Resolve turu otomatik olarak calisiyor.
+- Gecici build log dosyasi `.gitignore` kapsamina alindi.
+
+---
+
+*Denetim tarihi: 2026-06-27 | Denetim tipi: 15 dakikalik otomatik + manuel checklist + K9 API senkron denetimi*

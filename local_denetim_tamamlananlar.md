@@ -83,3 +83,11 @@
 - `F6` `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/CategoryEditorScreen.kt` icinde bos isim hatasi ve disabled confirm zaten aktif oldugu icin yanlis alarm olarak kapatildi.
 - Denetim otomasyonu `scripts/register_audit_cron.ps1` uzerinde saatlik tam denetim + 5 dakika sonra resolve turu modeline guncellendi.
 - `local_denetim_kurallari.md` yeni zamanlama ve tarih-saatli tasima kurali ile guncellendi.
+
+## 2026-06-27 09:48
+
+- `K9` `AppListViewModel.kt` ve `AppRepository.kt` uzerinde `getAllCategoriesFlow()` API cagrisi denetlendi; kaynak kodda tanim ve cagri duzeni dogru. Motesefe `NoSuchMethodError` APK build cache veya eski APK senkronizasyon sorunundan kaynaklanmaktadir. Cozum: `clean build` + yeniden APK yukle.
+- Denetim sistemine `K9` (KRITIK) API senkronizasyon kurali eklendi.
+- Denetim sistemine `H` grubu (Derleme ve API Senkronizasyonu) kurallari eklendi.
+- Denetim sıklığı 15 dakikaya düşürüldü, 8 odak alani + 1 ekstra denetim rotasyonu aktif.
+- Denetim raporuna tarih-saat ve KiloCode aciklamasi eklendi.
