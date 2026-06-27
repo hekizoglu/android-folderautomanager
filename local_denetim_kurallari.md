@@ -210,8 +210,17 @@ Her bulgu su formatta yazilir:
 - Yeni kod eklendiginde veya merge oldugunda anlik denetim
 - Haftalik en az bir kez manuel semantik UI ve Settings denetimi
 - Buyuk UI degisikliklerinden sonra TalkBack odakli kisa tur
-- Zamanlanmis tam denetim ilk kez her gun `04:00` (TR / Europe-Istanbul) saatinde baslar, sonraki turlar saatlik tekrar eder.
-- Zamanlanmis cozum/build/push hazirligi ilk denetimden `15` dakika sonra, yani ilk kez `04:15` (TR) saatinde baslar ve saatlik tekrar eder.
+- Zamanlanmis tam denetim ilk kez her gun `04:00` (TR / Europe-Istanbul) saatinde baslar, sonraki turlar **her 2 saat** tekrar eder.
+- Her turda **farkli bir odak alani** denetlenir; tum alanlar dairesel olarak rotasyona girer.
+- Odak alanlari:
+  1. `UI_Settings_Labels` — etiket-davranis ve ayar tutarsizliklari
+  2. `Gesture_Swipe_Drawer` — swipe, drawer, gesture akislari
+  3. `Permission_Izin` — izin akislari, onboarding, fallback
+  4. `Data_State_Persistence` — state yonetimi, SharedPrefs, kalicilik
+  5. `Accessibility_A11y` — TalkBack, contentDescription, semantics
+  6. `Performance_Memory` — recomposition, cache, IO, performans
+  7. `Category_CRUD` — kategori ekleme/duzenleme/silme
+  8. `Dock_Widget_Backup` — dock, widget, yedekleme akislari
 
 ---
 
@@ -243,6 +252,25 @@ Bu kurallar su resmi kaynaklarla hizalidir:
 - Android Lint Checks: `https://developer.android.com/studio/write/lint`
 - JetBrains Unused Symbol Inspection: `https://www.jetbrains.com/help/inspectopedia/UnusedSymbol.html`
 - detekt Potential Bugs Rule Set: `https://detekt.dev/docs/rules/potential-bugs`
+
+---
+
+## 10. Otomatik Denetim Döngüsü ve Kurallar
+
+- Denetim her `15` dakikada bir tekrarlanır.
+- Kural güncellemesi yalnızca bulgu sonrasında yapılır; iyileşme yoksa kural değişmez.
+- Her döngü şu adımları izler:
+  1. Otomatik statik tarama (`scripts/audit.ps1`)
+  2. Manuel semantik tur (`local_denetim_manuel_checklist.md`)
+  3. Yeni bulgular `local_denetim_raporu.md` içine eklenir
+  4. Kapanan maddeler `local_denetim_tamamlananlar.md`'ye taşınır
+- Geri bildirim akışları kullanıcı dostu, anlaşılır ve hızlı olmalıdır.
+
+### Arama Geliştirme Yönergesi (Roadmap)
+
+- Arama; isteğe göre telefon rehberindeki isimler de dahil edilebilecek şekilde tasarlanmalıdır.
+- Bu özellik opsiyonel kalmalı; varsayılan davranış mevcut hızlı dosya/uygulama aramasıdır.
+- Kişi verisiyle ilgili gizlilik ve izin akışları ilk sırada denetlenmelidir.
 
 ---
 

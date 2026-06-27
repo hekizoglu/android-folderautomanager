@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
     Guncel local denetim raporunu uretir.
+    Her calistirmada farkli bir odak alani denetlenir.
 #>
 
 param(
@@ -17,6 +18,7 @@ $reportPath = Join-Path $projectRoot "local_denetim_otomatik_rapor.md"
 $envPath = Join-Path $projectRoot ".env"
 $timestamp = Get-Date
 $timestampText = $timestamp.ToString("yyyy-MM-dd HH:mm")
+$focusIndexPath = Join-Path $scriptDir "audit_focus_index.txt"
 
 Set-Location $projectRoot
 
@@ -28,20 +30,50 @@ function Get-EnvValue {
     return ($line -replace "^[\s]*$Key[\s]*=[\s]*", "").Trim().Trim('"')
 }
 
-$rules = @(
-    @{ Code = "K1"; Severity = "KRITIK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = 'getSharedPreferences\("app_organizer_prefs"'; Description = "AllAppsDrawer hardcoded prefs kullaniyor." },
-    @{ Code = "Y1"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt"; Pattern = 'lowercase\(\)'; Description = "Locale belirtilmeyen lowercase bulundu." },
-    @{ Code = "Y2"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LaunchedEffect\(folderSearchQuery\)'; Description = "Eski folderSearch sayaç akisi bulundu." },
-    @{ Code = "Y3"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'var swipeDy = 0f'; Description = "swipeDy state degil." },
-    @{ Code = "Y4"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'var isDefault by remember \{'; Description = "Launcher durumu keysiz remember ile tutuluyor." },
-    @{ Code = "O1"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreen.kt"; Pattern = 'items\(screenState\.categories\.filter'; Description = "Kategori listesi hala composable icinde hesaplanıyor." },
-    @{ Code = "O2"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = '\$\{app\.packageName\}_48_\$iconPackPkg'; Description = "Icon cache key icinde lastUpdatedTime eksik." },
-    @{ Code = "O3"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\domain\usecase\classify\AppClassifier.kt"; Pattern = 'var manufacturerClassifyEnabled'; Description = "AppClassifier global mutable state tasiyor." },
-    @{ Code = "O5"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt"; Pattern = 'val filteredApps: List<AppInfo>\s*[\r\n]+\s*get\(\)'; Description = "filteredApps getter bazli hesaplanıyor." },
-    @{ Code = "D1"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreenComponents.kt"; Pattern = 'itemHeightDp: androidx\.compose\.ui\.unit\.Dp = 56\.dp'; Description = "Kullanilmayan itemHeightDp parametresi duruyor." }
+# Focus area rotation: each run checks a different domain
+$focusAreas = @(
+    @{ Name = "UI_Settings_Labels"; Desc = "Settings etiket-davranis tutarliligi" },
+    @{ Name = "Gesture_Swipe_Drawer"; Desc = "Gesture, swipe, drawer akislari" },
+    @{ Name = "Permission_Izin"; Desc = "Izin akislari, onboarding, fallback" },
+    @{ Name = "Data_State_Persistence"; Desc = "State yonetimi, SharedPrefs, kalicilik" },
+    @{ Name = "Accessibility_A11y"; Desc = "TalkBack, contentDescription, semantics" },
+    @{ Name = "Performance_Memory"; Desc = "Recomposition, cache, IO, performans" },
+    @{ Name = "Category_CRUD"; Desc = "Kategori ekleme/duzenleme/silme" },
+    @{ Name = "Dock_Widget_Backup"; Desc = "Dock, widget, yedekleme akislari" }
 )
 
-$findings = foreach ($rule in $rules) {
+$currentFocusIndex = 0
+if (Test-Path $focusIndexPath) {
+    $saved = Get-Content $focusIndexPath -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($saved -match '^\d+$') { $currentFocusIndex = [int]$saved }
+}
+$focus = $focusAreas[$currentFocusIndex % $focusAreas.Count]
+$nextIndex = ($currentFocusIndex + 1) % $focusAreas.Count
+Set-Content -Path $focusIndexPath -Value $nextIndex -Encoding UTF8
+
+# All rules pooled; selection hints which focus area they belong to
+$allRules = @(
+    @{ Code = "K1"; Severity = "KRITIK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = 'getSharedPreferences\("app_organizer_prefs"'; Description = "AllAppsDrawer hardcoded prefs kullaniyor."; Focus = @("Data_State_Persistence") },
+    @{ Code = "Y1"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt"; Pattern = 'lowercase\(\)'; Description = "Locale belirtilmeyen lowercase bulundu."; Focus = @("Gesture_Swipe_Drawer","Performance_Memory") },
+    @{ Code = "Y2"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LaunchedEffect\(folderSearchQuery\)'; Description = "Eski folderSearch sayaç akisi bulundu."; Focus = @("Gesture_Swipe_Drawer","Data_State_Persistence") },
+    @{ Code = "Y3"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'var swipeDy = 0f'; Description = "swipeDy state degil."; Focus = @("Gesture_Swipe_Drawer") },
+    @{ Code = "Y4"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'var isDefault by remember \{'; Description = "Launcher durumu keysiz remember ile tutuluyor."; Focus = @("UI_Settings_Labels","Data_State_Persistence") },
+    @{ Code = "O1"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreen.kt"; Pattern = 'items\(screenState\.categories\.filter'; Description = "Kategori listesi hala composable icinde hesaplaniyor."; Focus = @("Performance_Memory","UI_Settings_Labels") },
+    @{ Code = "O2"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = '\$\{app\.packageName\}_48_\$iconPackPkg'; Description = "Icon cache key icinde lastUpdatedTime eksik."; Focus = @("Performance_Memory","Dock_Widget_Backup") },
+    @{ Code = "O3"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\domain\usecase\classify\AppClassifier.kt"; Pattern = 'var manufacturerClassifyEnabled'; Description = "AppClassifier global mutable state tasiyor."; Focus = @("Category_CRUD","Data_State_Persistence") },
+    @{ Code = "O5"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\AppListScreenState.kt"; Pattern = 'val filteredApps: List<AppInfo>\s*[\r\n]+\s*get\(\)'; Description = "filteredApps getter bazli hesaplaniyor."; Focus = @("Performance_Memory") },
+    @{ Code = "D1"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreenComponents.kt"; Pattern = 'itemHeightDp: androidx\.compose\.ui\.unit\.Dp = 56\.dp'; Description = "Kullanilmayan itemHeightDp parametresi duruyor."; Focus = @("UI_Settings_Labels","Performance_Memory") },
+    @{ Code = "Y5"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\theme\Theme.kt"; Pattern = '@Suppress\("UNUSED_PARAMETER"\).*darkTheme'; Description = "darkTheme parametresi devre disi birakilmis."; Focus = @("UI_Settings_Labels") },
+    @{ Code = "Y6"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\OnboardingScreen.kt"; Pattern = 'shouldShowRequestPermissionRationale'; Description = "Permission rette fallback ve ayar yonlendirme eksik."; Focus = @("Permission_Izin") },
+    @{ Code = "O6"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\theme\ThemePreferences.kt"; Pattern = 'ThemePreferences\('; Description = "ThemePreferences manuel new leniyor, Hilt bypass ediliyor."; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
+    @{ Code = "O7"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\utils\DockPrefs.kt"; Pattern = 'fun removeFromDock\('; Description = "removeFromDock Unit donduruyor, geri bildirim yok."; Focus = @("Dock_Widget_Backup") },
+    @{ Code = "O8"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\utils\PackageManagerHelper.kt"; Pattern = 'endsWith\(it\)'; Description = "shouldHide endsWith ile yanlis eslesme riski."; Focus = @("Performance_Memory","Permission_Izin") }
+)
+
+$activeRules = $allRules | Where-Object { $_.Focus -contains $focus.Name }
+if ($activeRules.Count -eq 0) { $activeRules = $allRules }
+
+$findings = foreach ($rule in $activeRules) {
     $filePath = Join-Path $projectRoot $rule.Path
     if (-not (Test-Path $filePath)) { continue }
     $match = Select-String -Path $filePath -Pattern $rule.Pattern
@@ -64,8 +96,10 @@ $lowCount = ($findings | Where-Object Severity -eq "DUSUK").Count
 $lines = @()
 $lines += "# Local Denetim Raporu"
 $lines += ""
-$lines += "> Son dongu: ``$timestampText``"
-$lines += "> Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir."
+$lines += '> Döngü: `2 saatlik odak alani rotasyonu`'
+$lines += "> Son denetim: $timestampText"
+$lines += "> Bu tur odak: **$($focus.Desc)** ($($focus.Name))"
+$lines += '> Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.'
 $lines += ""
 $lines += "---"
 $lines += ""
@@ -108,13 +142,13 @@ $lines += "Manuel semantik tur icin `local_denetim_manuel_checklist.md` kullan."
 $lines += ""
 $lines += "---"
 $lines += ""
-$lines += "*Denetim tarihi: $($timestamp.ToString("yyyy-MM-dd"))*"
+$lines += "*Denetim tarihi: $($timestamp.ToString("yyyy-MM-dd")) | Odak: $($focus.Desc)*"
 
 $report = ($lines -join [Environment]::NewLine)
 
 if (-not $DryRun) {
     [System.IO.File]::WriteAllText($reportPath, $report, [System.Text.Encoding]::UTF8)
-    Write-Host "[audit] Rapor guncellendi: $reportPath" -ForegroundColor Green
+    Write-Host "[audit] Rapor guncellendi: $reportPath (Odak: $($focus.Desc))" -ForegroundColor Green
 } else {
     Write-Host $report
 }
@@ -123,7 +157,30 @@ if ($SendTelegram) {
     $token = Get-EnvValue -Key "TELEGRAM_BOT_TOKEN"
     $chatId = Get-EnvValue -Key "TELEGRAM_CHAT_ID"
     if ($token -and $chatId) {
-        $summary = "Denetim $timestampText - Acik bulgu: $($findings.Count)"
+        $summary = "Denetim $timestampText - Odak: $($focus.Desc) | Acik bulgu: $($findings.Count)"
+        $url = "https://api.telegram.org/bot$token/sendMessage"
+        curl.exe -s -X POST $url -F "chat_id=$chatId" -F "text=$summary" | Out-Null
+    }
+}
+
+$report = ($lines -join [Environment]::NewLine)
+
+if (-not $DryRun) {
+    $appendMode = $false
+    if (Test-Path $reportPath) {
+        $appendMode = $true
+    }
+    [System.IO.File]::WriteAllText($reportPath, $report, [System.Text.Encoding]::UTF8)
+    Write-Host "[audit] Rapor guncellendi: $reportPath (Odak: $($focus.Desc))" -ForegroundColor Green
+} else {
+    Write-Host $report
+}
+
+if ($SendTelegram) {
+    $token = Get-EnvValue -Key "TELEGRAM_BOT_TOKEN"
+    $chatId = Get-EnvValue -Key "TELEGRAM_CHAT_ID"
+    if ($token -and $chatId) {
+        $summary = "Denetim $timestampText - Odak: $($focus.Desc) | Acik bulgu: $($findings.Count)"
         $url = "https://api.telegram.org/bot$token/sendMessage"
         curl.exe -s -X POST $url -F "chat_id=$chatId" -F "text=$summary" | Out-Null
     }

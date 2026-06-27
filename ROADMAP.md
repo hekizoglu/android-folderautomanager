@@ -46,6 +46,7 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 - Kendi sunucu API'si (`packageName → category` endpoint) — DeepSeek fallback'e alternatif
 - Backup/restore: manuel export/import UI + bulut senkron
 - Wear OS companion app · Tablet layout · Widget ekranı genişletme
+- Arama genişletme: isteğe bağlı olarak telefon rehberindeki isimler de dahil edilebilsin (kişi araması)
 
 ---
 

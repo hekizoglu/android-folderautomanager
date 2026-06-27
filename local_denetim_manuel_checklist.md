@@ -49,11 +49,27 @@
 - Kullanilmayan drawable, string, menu veya diger resource artiklari birikmis mi?
 - Eski refactor sonrasi yalnizca bir kez tanimli kalmis composable, extension veya util fonksiyon var mi?
 
-## 7. Gesture ve Kapanis Kontrolu
+## 8. Sistem Kararlılık ve Kullanıcı Dostu Akış
 
-- Scroll edilen liste ile swipe-to-close veya swipe-to-open gesture'lari birbirini eziyor mu?
-- Cocuk composable drag event'ini gereksiz erken consume ederek parent gesture'ini bozuyor mu?
-- Threshold degerleri dp/px acisindan ekran yogunlugundan bagimsiz ve tutarli mi?
+- Her aksiyon sonrası kullanıcı ne olduğunu anlıyor mu? (toast, dialog, state değişimi)
+- Hata durumunda kullanıcı ne yapacağı netleşiyor mu?
+- İzin reddi, ayarlar yönlendirme ve fallback akışları gerçek cihaz varyasyonlarını (OEM) hesaba katıyor mu?
+- Arama sonucu boşsa, yükleme ve hata durumlarında mesajlar yoruma açık mı?
+
+## 9. Odak Alanı Rotasyonu (Her 2 Saatte Bir)
+
+Her denetim döngüsünde farklı bir odak alanı derinlemesine incelenir:
+
+| Tur | Odak Alanı | Kapsam |
+|-----|------------|--------|
+| 1 | `UI_Settings_Labels` | Settings etiket-davranış tutarlılığı, button-label eşleşmesi |
+| 2 | `Gesture_Swipe_Drawer` | Swipe, drawer, gesture akışları, threshold tutarsızlıkları |
+| 3 | `Permission_Izin` | İzin akışları, onboarding, fallback, OEM varyasyonları |
+| 4 | `Data_State_Persistence` | State yönetimi, SharedPrefs, DataStore kalıcılığı |
+| 5 | `Accessibility_A11y` | TalkBack, contentDescription, semantics, erişilebilirlik |
+| 6 | `Performance_Memory` | Recomposition, cache, IO, performans, memory leak |
+| 7 | `Category_CRUD` | Kategori ekleme/düzenleme/silme, duplicate, sistem koruması |
+| 8 | `Dock_Widget_Backup` | Dock, widget, yedekleme akışları, kalıcılık |
 
 ---
 

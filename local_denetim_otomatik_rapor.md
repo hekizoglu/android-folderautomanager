@@ -1,7 +1,9 @@
 ﻿# Local Denetim Raporu
 
-> Son dongu: `2026-06-27 02:56`
-> Kapanan maddeler local_denetim_tamamlananlar.md dosyasina tasinir.
+> DÃ¶ngÃ¼: `2 saatlik odak alani rotasyonu`
+> Son denetim: 2026-06-27 03:22
+> Bu tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
+> Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
 
@@ -29,4 +31,4 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-27*
+*Denetim tarihi: 2026-06-27 | Odak: Gesture, swipe, drawer akislari*
