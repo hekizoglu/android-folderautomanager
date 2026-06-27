@@ -6,6 +6,19 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
     id("com.google.gms.google-services")
+    id("com.google.firebase.firebase-bom")
+
+    // CI ortamında google-services.json eksik olabilir; bu durumda process*GoogleServices görevlerini atla
+    if (System.getenv("CI") == "true") {
+        afterEvaluate {
+            tasks.filter { task ->
+                task.name.startsWith("process") && task.name.contains("GoogleServices", ignoreCase = true)
+            }.forEach { task ->
+                task.enabled = false
+                task.actions = listOf()
+            }
+        }
+    }
     id("com.google.firebase.crashlytics")
 }
 
