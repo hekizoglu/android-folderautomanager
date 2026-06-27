@@ -34,6 +34,8 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
 | **AppNotificationListenerService ilk açılışta restart** | gerçek cihaz test gerekli | Bekliyor |
 | **Klasör taşma (overflow) sorunu** | `FolderTile`, `HomeScreen` — çok fazla uygulama/klasör ekrandan taşıyor; Android modeline göre otomatik boyut/yerleşim düzeltmesi gerekli | Bekliyor |
+| **Klasör değiştirmeden sonra görsel güncelleme kalıyor** | Kategori değişikliği sonrası ilk sayfa yenilenene kadar eski görsel görünüyor; stale UI state sorunu | Bekliyor |
+| **Geri tuşuyla ilk sayfa yenileniyor (eski/yavaş cihaz sorunu)** | Back press tetikliyor yenileme; eski/performans düşük cihazlarda istenmeyen yavaşlama/geçiş yaşanabilir | Bekliyor |
 
 ### 🟢 Düşük Öncelik
 
