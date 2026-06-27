@@ -32,19 +32,6 @@ Remove-Item -Recurse -Force app\build
 
 ---
 
-## Çözülenler (HISTORY.md'ye Taşındı)
-
-| # | Sorun | Çözüm | Tarih |
-|---|-------|-------|-------|
-| CS-1 | HISTORY.md `→` encoding | `->` ile değiştirildi, bilgi kaybı yok | 2026-06-21 |
-| CS-2 | Windows Defender build lock (kapt) | Admin PS'de `Add-MpPreference` çalıştırıldı | 2026-06-16 |
-| - | PowerShell heredoc `<<'EOF'` | `@'...'@` syntax | 2026-06-16 |
-| - | Git push non-fast-forward | `git pull --rebase` | 2026-06-15 |
-| - | KAPT incremental cache kilit | `kapt.incremental.apt=false` + robocopy | 2026-06-16 |
-| - | HISTORY.md Türkçe mojibake | `fix_encoding.py` TURKISH_DOUBLE_ENCODED | 2026-06-16 |
-| E14 | AllAppsDrawer `derivedStateOf` + plain param | `remember(apps)` key-based | 2026-06-21 |
-| LD-* | 10 adet saatlik otomatik denetim girişi | 2026-06-28: K9/Y6/O7 kapatıldı, tekrarlayan girişler temizlendi | 2026-06-28 |
-
 ---
 
-*Son güncelleme: 2026-06-28*
+*Son güncelleme: 2026-06-28 | Çözülenler → HISTORY.md "Tamamlananlar Arşivi" bölümüne taşındı*

@@ -21,7 +21,6 @@
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
-| 2026-06-20 | Denetim #13 | **FCM push mimari kararı LEARNINGS.md'ye eklenmeli** — `AppFirebaseMessagingService.kt` + `AppOrganizerApp.kt` FCM init belgelenmedi | [TAMAMLANDI] |
 | 2026-06-16 | ROADMAP | **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir | Bekliyor ⚠️ |
 
 ---
@@ -30,12 +29,7 @@
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
-| 2026-06-21 | **Widget hızlı menü çalışmıyor** — araştırılacak | [TAMAMLANDI D141 — WidgetArea.kt'de isDraggable long press mantığı düzeltildi, X butonu gösterilmeye başlandı] |
-| 2026-06-21 | **İki yeni tema: iOS + AMOLED** [TAMAMLANDI D122] |
-| 2026-06-21 | **Onboarding yeniden yazım** [TAMAMLANDI D120] |
-| 2026-06-21 | **Görsel kalite artırımı** [TAMAMLANDI D123] |
 | 2026-06-21 | Denetim | **Test altyapısı araştırması** — Maestro/UIAutomator/Firebase Test Lab | |
-| 2026-06-20 | Sistem | FİKİRLER.md sistemi oluşturuldu | |
 | 2026-06-28 | Hüseyin | **Onboarding Ayar Sihirbazı** — İlk kurulumda tüm ayarları sırayla sor, her birine açıklama ekle. Mevcut onboarding'e ek bir "Ayar Tur" akışı olarak eklenebilir. (Kullanıcı Değeri:5 · Uygulanabilirlik:4 · Bağımlılık Riski:2 · Etki:4 = 15 puan ⭐) | Bekliyor |
 | 2026-06-28 | Hüseyin | **Akşam Önerisi Algoritma Açıklaması** — Ayarlar > Öneriler bölümüne kullanım örüntüsüne göre nasıl öneri verdiği açıklaması ekle | Bekliyor |
 | 2026-06-28 | Hüseyin | **Widget Auto-Resize** — Widget alanı ekran en/boy oranına göre otomatik yükseklik ayarı | Bekliyor |
