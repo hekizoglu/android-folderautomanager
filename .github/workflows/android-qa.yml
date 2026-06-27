@@ -27,20 +27,20 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build (Debug)
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug -PskipGoogleServices=true
 
       - name: Lint
-        run: ./gradlew lintDebug
+        run: ./gradlew lintDebug -PskipGoogleServices=true
 
       - name: Unit Tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest -PskipGoogleServices=true
 
       - name: detekt
-        run: ./gradlew detekt
+        run: ./gradlew detekt -PskipGoogleServices=true
         continue-on-error: true
 
       - name: ktlint
-        run: ./gradlew ktlintCheck
+        run: ./gradlew ktlintCheck -PskipGoogleServices=true
         continue-on-error: true
 
       - name: Upload QA Reports
