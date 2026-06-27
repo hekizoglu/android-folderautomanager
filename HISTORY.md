@@ -51,6 +51,12 @@
 **CLAUDE.md/LEARNINGS.md:** Değişmedi
 **Sonraki:** Onboarding ayar sihirbazı (FİKİRLER'e eklendi)
 
+## Döngü D146 — 2026-06-28
+**Yapılanlar:** CS-3 (Gradle build kilit) için 4. yöntem: UAC self-elevation PowerShell script (`scripts/add_defender_exclusion.ps1`) oluşturuldu — kullanıcı sağ tıkla çalıştırınca UAC prompt çıkar, Evet deyince exclusion eklenir. local_denetim_otomatik_rapor.md encoding düzeltildi, stale K9/Y6/O7 temizlendi. FİKİRLER "Akşam Önerisi Algoritma Açıklaması" tamamlandı — SettingsHomeScreenSection'a öneri açık olunca algoritma detay kartı eklendi (28 gün, %40 yenilik + %40 sıklık + %20 zaman dilimi).
+**Dosyalar:** scripts/add_defender_exclusion.ps1, COZULEMEYEN_SORUNLAR.md, local_denetim_otomatik_rapor.md, SettingsHomeScreenSection.kt, FİKİRLER.md
+**Agent:** —
+**Sonraki:** Döngü 2 — 45 dk sonra. CS-3 UAC script kullanıcı testi bekleniyor.
+
 ---
 
 ## Döngü D143 — 2026-06-23
