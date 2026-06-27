@@ -1,3 +1,8 @@
+$StartNow = $false
+if ($args -contains "-StartNow") {
+    $StartNow = $true
+}
+
 $legacyTask = "AppOrganizer_LocalDenetim_21min"
 $auditTaskName = "AppOrganizer_LocalDenetim_HourlyAudit"
 $resolveTaskName = "AppOrganizer_LocalDenetim_Resolve15"
@@ -6,10 +11,15 @@ $resolveCmd = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\a
 $fullRun = '"' + $fullCmd + '"'
 $resolveRun = '"' + $resolveCmd + '"'
 $now = Get-Date
+$nextFullHour = $now.AddHours(1)
+$nextAuditHour = Get-Date -Date $nextFullHour -Hour $nextFullHour.Hour -Minute $now.Minute -Second 0
 $todayAudit = Get-Date -Hour 4 -Minute 0 -Second 0
 $todayResolve = Get-Date -Hour 4 -Minute 15 -Second 0
 
-if ($now -lt $todayAudit) {
+if ($StartNow) {
+    $startAudit = $nextAuditHour
+    $startResolve = $startAudit.AddMinutes(15)
+} elseif ($now -lt $todayAudit) {
     $startAudit = $todayAudit
     $startResolve = $todayResolve
 } else {

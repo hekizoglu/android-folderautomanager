@@ -19,6 +19,31 @@ $encoding = [System.Text.Encoding]::UTF8
 
 Set-Location $projectRoot
 
+function Add-TextWithRetry {
+    param(
+        [string]$Path,
+        [string]$Text
+    )
+
+    for ($attempt = 1; $attempt -le 10; $attempt++) {
+        try {
+            $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::ReadWrite)
+            try {
+                $writer = New-Object System.IO.StreamWriter($stream, $encoding)
+                $writer.Write($Text)
+                $writer.Flush()
+            } finally {
+                if ($writer) { $writer.Dispose() }
+                $stream.Dispose()
+            }
+            return
+        } catch {
+            if ($attempt -eq 10) { throw }
+            Start-Sleep -Milliseconds 500
+        }
+    }
+}
+
 function Append-UniqueQuestion {
     param(
         [string]$Header,
@@ -74,7 +99,7 @@ function Append-RunNote {
     foreach ($line in $Lines) {
         $block += "- $line"
     }
-    Add-Content -Path $reportPath -Value ($block -join "`r`n") -Encoding UTF8
+    Add-TextWithRetry -Path $reportPath -Text (($block -join "`r`n") + "`r`n")
 }
 
 function Append-UnresolvedPlaceholder {
@@ -87,7 +112,7 @@ function Append-UnresolvedPlaceholder {
     $entry += "**Denenen:** Saatlik tam denetim ve checklist guncellemesi calistirildi."
     $entry += "**Neden basarisiz:** Script kendi basina guvenli kaynak kod degisikligi yapmiyor."
     $entry += "**Beklenen:** Bir sonraki ajan turunda rapordaki maddeler sirayla ele alinacak."
-    Add-Content -Path $unresolvedPath -Value ($entry -join "`r`n") -Encoding UTF8
+    Add-TextWithRetry -Path $unresolvedPath -Text (($entry -join "`r`n") + "`r`n")
 }
 
 function Stage-ProjectChanges {
@@ -128,7 +153,7 @@ $checklistAdds = Update-ChecklistFromReport
 if ($Mode -eq "Full") {
     $notes = @(
         "Tam denetim kurallari ile otomatik rapor yenilendi.",
-        "Manuel checklist referansi: `local_denetim_manuel_checklist.md`"
+        'Manuel checklist referansi: `local_denetim_manuel_checklist.md`'
     )
     if ($checklistAdds.Count -gt 0) {
         $notes += $checklistAdds
@@ -140,7 +165,7 @@ if ($Mode -eq "Full") {
     Append-UnresolvedPlaceholder
     Append-RunNote -Title "Cozum Sirasi Hazirligi" -Lines @(
         "Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.",
-        "Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi."
+        'Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.'
     )
 }
 

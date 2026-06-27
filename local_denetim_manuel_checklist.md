@@ -1,4 +1,4 @@
-# Local Denetim Manuel Checklist
+﻿# Local Denetim Manuel Checklist
 
 > Bu checklist, otomatik taramanin tek basina yakalayamadigi semantik UI ve ayar davranisi sorunlari icin kullanilir.
 
@@ -34,6 +34,8 @@
 - Bir grup tek bir kart gibi davranirken cocuk elemanlar gereksiz fokus aliyor mu?
 - Okuma sirasi mantikli mi?
 - Bildirim sayisi, secili durum, acik/kapali durum gibi kritik bilgiler sesli olarak aktariliyor mu?
+
+- Bildirim sayisi ve secili durum gibi baglamsal bilgiler sadece gorsel degil, sesli de aktariliyor mu?
 
 ## 5. Sonuc Kontrolu
 
