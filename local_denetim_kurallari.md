@@ -210,6 +210,8 @@ Her bulgu su formatta yazilir:
 - Yeni kod eklendiginde veya merge oldugunda anlik denetim
 - Haftalik en az bir kez manuel semantik UI ve Settings denetimi
 - Buyuk UI degisikliklerinden sonra TalkBack odakli kisa tur
+- Zamanlanmis tam denetim ilk kez her gun `04:00` (TR / Europe-Istanbul) saatinde baslar, sonraki turlar saatlik tekrar eder.
+- Zamanlanmis cozum/build/push hazirligi ilk denetimden `15` dakika sonra, yani ilk kez `04:15` (TR) saatinde baslar ve saatlik tekrar eder.
 
 ---
 
@@ -244,4 +246,4 @@ Bu kurallar su resmi kaynaklarla hizalidir:
 
 ---
 
-*Guncelleme: 2026-06-26 | Denetci standardi: profesyonel local auditor*
+*Guncelleme: 2026-06-27 | Denetci standardi: profesyonel local auditor*

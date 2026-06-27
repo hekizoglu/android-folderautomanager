@@ -5,8 +5,17 @@ $fullCmd = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\andr
 $resolveCmd = "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\scripts\run_local_denetim_resolve.cmd"
 $fullRun = '"' + $fullCmd + '"'
 $resolveRun = '"' + $resolveCmd + '"'
-$startAudit = (Get-Date).AddMinutes(1)
-$startResolve = $startAudit.AddMinutes(15)
+$now = Get-Date
+$todayAudit = Get-Date -Hour 4 -Minute 0 -Second 0
+$todayResolve = Get-Date -Hour 4 -Minute 15 -Second 0
+
+if ($now -lt $todayAudit) {
+    $startAudit = $todayAudit
+    $startResolve = $todayResolve
+} else {
+    $startAudit = $todayAudit.AddDays(1)
+    $startResolve = $todayResolve.AddDays(1)
+}
 
 foreach ($taskName in @($legacyTask, $auditTaskName, $resolveTaskName)) {
     Start-Process schtasks.exe -ArgumentList @("/Delete", "/TN", $taskName, "/F") -Wait -NoNewWindow 2>$null
@@ -43,3 +52,5 @@ if ($resolveCreate.ExitCode -ne 0) {
 Write-Host "Gorevler olusturuldu." -ForegroundColor Green
 Write-Host "$auditTaskName -> her saat basi tam denetim" -ForegroundColor Cyan
 Write-Host "$resolveTaskName -> her saatten 15 dk sonra cozum/build/push hazirligi" -ForegroundColor Cyan
+Write-Host ("Ilk audit: {0}" -f $startAudit.ToString("yyyy-MM-dd HH:mm")) -ForegroundColor Cyan
+Write-Host ("Ilk resolve: {0}" -f $startResolve.ToString("yyyy-MM-dd HH:mm")) -ForegroundColor Cyan
