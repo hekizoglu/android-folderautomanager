@@ -112,6 +112,15 @@ Bu kurallar resmi Android ve Material kaynaklarindan turetilmistir:
 | F3 | Bir buton dogrudan islem yapiyorsa, yalnizca bilgi ekranina gidiyormus gibi adlandirilmamis mi? |
 | F4 | Yikici aksiyonlar onay, geri alma veya acik uyari gerektiriyor mu? |
 | F5 | Kullanici butona bastiginda bekledigi sonucu goruyor mu, yoksa gizli yan etki mi oluyor? |
+
+### H. Derleme ve API Senkronizasyonu
+
+| Kural | Aciklama |
+|-------|----------|
+| H1 | Repository veya DAO'ya yeni bir metot eklendiyse, tum cagiran ViewModel'lar guncellendi mi? |
+| H2 | APK derleme sonrasi en son kod ile senkron mu? Eski APK hala calisiyor mu? |
+| H3 | ProGuard/R8 obfuscation metot adlarini degistirmis olabilir mi? (NoSuchMethodError riski) |
+| H4 | Incremental build cache sorunu - eski derleme dosyalari APK'da kalakalmis olabilir mi? |
 | F6 | Label, icon ve contentDescription ayni anlami tasiyor mu? |
 | F7 | Settings subtitle veya aciklama metni gercekte ne olacagini soyluyor mu? |
 
