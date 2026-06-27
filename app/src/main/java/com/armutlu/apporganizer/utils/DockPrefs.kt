@@ -40,10 +40,12 @@ object DockPrefs {
         return true
     }
 
-    fun removeFromDock(context: Context, packageName: String) {
+    fun removeFromDock(context: Context, packageName: String): Boolean {
         val current = getDockPackages(context).toMutableList()
-        current.remove(packageName)
+        val removed = current.remove(packageName)
+        if (!removed) return false
         saveDockPackages(context, current)
+        return true
     }
 
     fun isInDock(context: Context, packageName: String): Boolean =

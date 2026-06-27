@@ -50,3 +50,4 @@ app/google-services.json
 
 *.bak
 build_out*.txt
+apk_build_latest.txt

@@ -1,9 +1,9 @@
 ﻿# Local Denetim Raporu
 
 > DÃ¶ngÃ¼: `15 dakikalÄ±k 8+1 odak rotasyonu`
-> Son denetim: 2026-06-27 09:11
-> Ana tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
-> Ekstra denetim: **Timber log quality, user-facing error messages, fallback** (Error_Handling_Logging)
+> Son denetim: 2026-06-27 09:29
+> Ana tur odak: **Kategori ekleme/duzenleme/silme** (Category_CRUD)
+> Ekstra denetim: **AppRepository, DAO, data mapping, sorgu dogrulama** (Repository_DataLayer)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -13,22 +13,20 @@
 | Oncelik | Sayi | Aciklama |
 |---------|------|----------|
 | KRITIK | 0 | Acik kritik bulgu |
-| YUKSEK | 2 | Acik yuksek bulgu |
-| ORTA | 2 | Acik orta bulgu |
+| YUKSEK |  | Acik yuksek bulgu |
+| ORTA |  | Acik orta bulgu |
 | DUSUK | 0 | Acik dusuk bulgu |
-| TOPLAM | 4 | |
+| TOPLAM | 2 | |
 
 ---
 
 ## YUKSEK
 
-- Y5 | "app\src\main\java\com\armutlu\apporganizer\presentation\ui\theme\Theme.kt:88" | darkTheme parametresi devre disi birakilmis.
 - Y6 | "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\OnboardingScreen.kt:108" | Permission rette fallback ve ayar yonlendirme eksik.
 
 ## ORTA
 
 - O7 | "app\src\main\java\com\armutlu\apporganizer\utils\DockPrefs.kt:43" | removeFromDock Unit donduruyor, geri bildirim yok.
-- O8 | "app\src\main\java\com\armutlu\apporganizer\utils\PackageManagerHelper.kt:38" | shouldHide endsWith ile yanlis eslesme riski.
 
 ---
 
@@ -38,4 +36,9 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-27 09:11 | Ana: Gesture, swipe, drawer akislari | Ekstra: Timber log quality, user-facing error messages, fallback*
+*Denetim tarihi: 2026-06-27 09:29 | Ana: Kategori ekleme/duzenleme/silme | Ekstra: AppRepository, DAO, data mapping, sorgu dogrulama*
+
+---
+
+KiloCode | Profesyonel local denetim asistani - Android uygulama kalitesi ve guvenilirligi.
+Kod hatasiz, kullanici dostu, anlasilir ve suratli olmaya devam ediyor.

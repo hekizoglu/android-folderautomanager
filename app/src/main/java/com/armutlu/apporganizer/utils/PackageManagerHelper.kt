@@ -35,7 +35,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
         )
 
         fun shouldHide(packageName: String): Boolean =
-            HIDDEN_PREFIXES.any { packageName.startsWith(it) || packageName.endsWith(it) } ||
+            HIDDEN_PREFIXES.any { packageName.startsWith(it) } ||
             packageName == "android" ||
             packageName.contains(".overlay.")
     }

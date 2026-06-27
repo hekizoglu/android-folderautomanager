@@ -250,8 +250,10 @@ fun SettingsScreen(
                                 Spacer(Modifier.width(12.dp))
                                 Text(appName, Modifier.weight(1f), fontSize = 14.sp)
                                 IconButton(onClick = {
-                                    DockPrefs.removeFromDock(context, pkg)
+                                    val removed = DockPrefs.removeFromDock(context, pkg)
                                     dockPkgs = DockPrefs.getDockPackages(context)
+                                    val message = if (removed) "Dock uygulamasi kaldirildi" else "Dock uygulamasi kaldirilamadi"
+                                    android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
                                 }, modifier = Modifier.size(32.dp)) {
                                     Icon(Icons.Default.Close, "Kaldır", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                                 }

@@ -210,17 +210,17 @@ Her bulgu su formatta yazilir:
 - Yeni kod eklendiginde veya merge oldugunda anlik denetim
 - Haftalik en az bir kez manuel semantik UI ve Settings denetimi
 - Buyuk UI degisikliklerinden sonra TalkBack odakli kisa tur
-- Zamanlanmis tam denetim ilk kez her gun `04:00` (TR / Europe-Istanbul) saatinde baslar, sonraki turlar **her 2 saat** tekrar eder.
+- Zamanlanmis tam denetim ilk kez her gun `04:00` (TR / Europe-Istanbul) saatinde baslar, sonraki turlar **her 1 saat** tekrar eder.
 - Her turda **farkli bir odak alani** denetlenir; tum alanlar dairesel olarak rotasyona girer.
 - Odak alanlari:
-  1. `UI_Settings_Labels` — etiket-davranis ve ayar tutarsizliklari
-  2. `Gesture_Swipe_Drawer` — swipe, drawer, gesture akislari
-  3. `Permission_Izin` — izin akislari, onboarding, fallback
-  4. `Data_State_Persistence` — state yonetimi, SharedPrefs, kalicilik
-  5. `Accessibility_A11y` — TalkBack, contentDescription, semantics
-  6. `Performance_Memory` — recomposition, cache, IO, performans
-  7. `Category_CRUD` — kategori ekleme/duzenleme/silme
-  8. `Dock_Widget_Backup` — dock, widget, yedekleme akislari
+  1. `UI_Settings_Labels` - etiket-davranis ve ayar tutarsizliklari
+  2. `Gesture_Swipe_Drawer` - swipe, drawer, gesture akislari
+  3. `Permission_Izin` - izin akislari, onboarding, fallback
+  4. `Data_State_Persistence` - state yonetimi, SharedPrefs, kalicilik
+  5. `Accessibility_A11y` - TalkBack, contentDescription, semantics
+  6. `Performance_Memory` - recomposition, cache, IO, performans
+  7. `Category_CRUD` - kategori ekleme/duzenleme/silme
+  8. `Dock_Widget_Backup` - dock, widget, yedekleme akislari
 
 ---
 
@@ -255,22 +255,27 @@ Bu kurallar su resmi kaynaklarla hizalidir:
 
 ---
 
-## 10. Otomatik Denetim Döngüsü ve Kurallar
+## 10. Otomatik Denetim Dongusu ve Kurallar
 
-- Denetim her `15` dakikada bir tekrarlanır.
-- Kural güncellemesi yalnızca bulgu sonrasında yapılır; iyileşme yoksa kural değişmez.
-- Her döngü şu adımları izler:
+- Denetim otomasyonu iki asamalidir: saat basinda tam denetim, **5 dakika sonra** rapor bulgularini cozmeye odakli resolve turu.
+- Kural guncellemesi yalnizca bulgu sonrasinda yapilir; iyilesme yoksa kural degismez.
+- Her tam denetim turu su adimlari izler:
   1. Otomatik statik tarama (`scripts/audit.ps1`)
   2. Manuel semantik tur (`local_denetim_manuel_checklist.md`)
-  3. Yeni bulgular `local_denetim_raporu.md` içine eklenir
-  4. Kapanan maddeler `local_denetim_tamamlananlar.md`'ye taşınır
-- Geri bildirim akışları kullanıcı dostu, anlaşılır ve hızlı olmalıdır.
+  3. Yeni bulgular `local_denetim_raporu.md` icine tarih-saat ile eklenir
+  4. Odak alanlari rotasyon indeksleri guncellenir
+- Her resolve turu su adimlari izler:
+  1. Tam denetimden 5 dakika sonra acik bulgular siralanir
+  2. Cozulebilen maddeler kodda kapatilir
+  3. Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tarih-saat ve aciklama ile tasinir
+  4. Cozulemeyen maddeler `local_denetim_raporu.md` icinde acik kalir veya not dusulur
+- Geri bildirim akislari kullanici dostu, anlasilir ve hizli olmali.
 
-### Arama Geliştirme Yönergesi (Roadmap)
+### Arama Gelistirme Yonergesi (Roadmap)
 
-- Arama; isteğe göre telefon rehberindeki isimler de dahil edilebilecek şekilde tasarlanmalıdır.
-- Bu özellik opsiyonel kalmalı; varsayılan davranış mevcut hızlı dosya/uygulama aramasıdır.
-- Kişi verisiyle ilgili gizlilik ve izin akışları ilk sırada denetlenmelidir.
+- Arama; istege gore telefon rehberindeki isimler de dahil edilebilecek sekilde tasarlanmalidir.
+- Bu ozellik opsiyonel kalmali; varsayilan davranis mevcut hizli dosya/uygulama aramasidir.
+- Kisi verisiyle ilgili gizlilik ve izin akislari ilk sirada denetlenmelidir.
 
 ---
 

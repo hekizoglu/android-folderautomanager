@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -15,7 +16,10 @@ import kotlinx.coroutines.flow.map
 
 private val ErrorColor = Color(0xFFCF6679)
 
-private fun buildColorScheme(theme: AppTheme): androidx.compose.material3.ColorScheme {
+private fun buildColorScheme(
+    theme: AppTheme,
+    darkTheme: Boolean,
+): androidx.compose.material3.ColorScheme {
     val onContent = when (theme) {
         AppTheme.IOS   -> Color(0xFFF2F2F7)
         AppTheme.AMOLED -> Color(0xFFFFFFFF)
@@ -31,26 +35,49 @@ private fun buildColorScheme(theme: AppTheme): androidx.compose.material3.ColorS
         AppTheme.AMOLED -> Color(0xFF1A1A1A)
         else           -> Color(0xFF444444)
     }
-    return darkColorScheme(
-        primary              = theme.primary,
-        onPrimary            = Color.White,
-        primaryContainer     = theme.primary.copy(alpha = 0.25f),
-        onPrimaryContainer   = theme.primary,
-        secondary            = theme.secondary,
-        onSecondary          = Color.White,
-        secondaryContainer   = theme.secondary.copy(alpha = 0.18f),
-        onSecondaryContainer = theme.secondary,
-        background           = theme.background,
-        onBackground         = onContent,
-        surface              = theme.surface,
-        onSurface            = onContent,
-        surfaceVariant       = theme.surface.copy(alpha = 0.8f),
-        onSurfaceVariant     = onVariant,
-        outline              = outline,
-        outlineVariant       = outline.copy(alpha = 0.7f),
-        error                = ErrorColor,
-        onError              = Color.White,
-    )
+    return if (darkTheme) {
+        darkColorScheme(
+            primary              = theme.primary,
+            onPrimary            = Color.White,
+            primaryContainer     = theme.primary.copy(alpha = 0.25f),
+            onPrimaryContainer   = theme.primary,
+            secondary            = theme.secondary,
+            onSecondary          = Color.White,
+            secondaryContainer   = theme.secondary.copy(alpha = 0.18f),
+            onSecondaryContainer = theme.secondary,
+            background           = theme.background,
+            onBackground         = onContent,
+            surface              = theme.surface,
+            onSurface            = onContent,
+            surfaceVariant       = theme.surface.copy(alpha = 0.8f),
+            onSurfaceVariant     = onVariant,
+            outline              = outline,
+            outlineVariant       = outline.copy(alpha = 0.7f),
+            error                = ErrorColor,
+            onError              = Color.White,
+        )
+    } else {
+        lightColorScheme(
+            primary              = theme.primary,
+            onPrimary            = Color.White,
+            primaryContainer     = theme.primary.copy(alpha = 0.12f),
+            onPrimaryContainer   = theme.primary,
+            secondary            = theme.secondary,
+            onSecondary          = Color.White,
+            secondaryContainer   = theme.secondary.copy(alpha = 0.10f),
+            onSecondaryContainer = theme.secondary,
+            background           = Color(0xFFF8F9FB),
+            onBackground         = Color(0xFF1B1C1F),
+            surface              = Color.White,
+            onSurface            = Color(0xFF1B1C1F),
+            surfaceVariant       = Color(0xFFF1F3F4),
+            onSurfaceVariant     = Color(0xFF5F6368),
+            outline              = theme.primary.copy(alpha = 0.35f),
+            outlineVariant       = theme.primary.copy(alpha = 0.18f),
+            error                = Color(0xFFB3261E),
+            onError              = Color.White,
+        )
+    }
 }
 
 private fun buildTypography(font: AppFont): Typography {
@@ -85,7 +112,7 @@ private val FONT_KEY  = stringPreferencesKey("app_font")
 
 @Composable
 fun AppOrganizerTheme(
-    @Suppress("UNUSED_PARAMETER") darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -97,7 +124,7 @@ fun AppOrganizerTheme(
         .collectAsState(initial = AppFont.DEFAULT)
 
     MaterialTheme(
-        colorScheme = buildColorScheme(currentTheme),
+        colorScheme = buildColorScheme(currentTheme, darkTheme),
         typography  = buildTypography(currentFont),
         content     = content,
     )

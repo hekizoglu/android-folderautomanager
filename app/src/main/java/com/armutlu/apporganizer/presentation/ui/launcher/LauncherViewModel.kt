@@ -348,9 +348,13 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun removeFromDock(context: Context, packageName: String) {
-        val updated = _dockPackages.value - packageName
-        DockPrefs.saveDockPackages(context, updated)
-        _dockPackages.value = updated
+        val removed = DockPrefs.removeFromDock(context, packageName)
+        if (removed) {
+            _dockPackages.value = _dockPackages.value - packageName
+            _toastMessage.tryEmit("Dock'tan kaldirildi")
+        } else {
+            _toastMessage.tryEmit("Dock'ta bu uygulama bulunamadi")
+        }
     }
 
     fun updateAppCategory(packageName: String, categoryId: String) {

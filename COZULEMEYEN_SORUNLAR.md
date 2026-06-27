@@ -47,3 +47,4 @@ Remove-Item -Recurse -Force app\build
 ---
 
 *Son güncelleme: 2026-06-21*
+

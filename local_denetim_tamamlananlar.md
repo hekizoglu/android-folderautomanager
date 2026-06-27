@@ -71,3 +71,15 @@
 - `C9` kategori secicilerinde secili ikon aciklamasi ve satir semantics'i eklendi.
 - Denetim otomasyonu saatlik `Full` ve +15 dakika `Resolve` gorev akisi ile yeniden kurgulandi.
 - Manuel checklist'e sistem ayari dili, durumun sesli okunmasi ve gesture cakismasi sorulari eklendi.
+
+## 2026-06-27 09:29
+
+- `Y5` `app/src/main/java/com/armutlu/apporganizer/presentation/ui/theme/Theme.kt` icinde `darkTheme` tekrar aktif kullanildi; sistemin acik/koyu tema tercihi artik uygulanıyor.
+- `O7` `app/src/main/java/com/armutlu/apporganizer/utils/DockPrefs.kt`, `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsScreen.kt` ve `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherViewModel.kt` uzerinde dock kaldirma sonucu boolean + toast geri bildirimi ile guclendirildi.
+- `O8` `app/src/main/java/com/armutlu/apporganizer/utils/PackageManagerHelper.kt` icinde riskli `endsWith` kontrolu kaldirildi; gizleme mantigi prefix bazli hale getirildi.
+- `F1`, `F2`, `F3`, `F4` `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/LauncherSetupScreen.kt` icinde launcher sonuc kontrolu, guvenli fallback ve dogru baslik ile kapatildi.
+- `Y6` `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/OnboardingScreen.kt` icinde ayar yonlendirmesi ve rationale kontrolu zaten mevcut oldugu icin yanlis alarm olarak kapatildi.
+- `F5` `app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt` icinde kategori akisi zaten `repository.getAllCategoriesFlow()` ile calistigi icin yanlis alarm olarak kapatildi.
+- `F6` `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/CategoryEditorScreen.kt` icinde bos isim hatasi ve disabled confirm zaten aktif oldugu icin yanlis alarm olarak kapatildi.
+- Denetim otomasyonu `scripts/register_audit_cron.ps1` uzerinde saatlik tam denetim + 5 dakika sonra resolve turu modeline guncellendi.
+- `local_denetim_kurallari.md` yeni zamanlama ve tarih-saatli tasima kurali ile guncellendi.

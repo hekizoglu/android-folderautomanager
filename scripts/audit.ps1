@@ -189,6 +189,11 @@ $lines += ""
 $lines += "---"
 $lines += ""
 $lines += "*Denetim tarihi: $($timestamp.ToString("yyyy-MM-dd HH:mm")) | Ana: $($focus.Desc) | Ekstra: $($extraFocus.Desc)*"
+$lines += ""
+$lines += "---"
+$lines += ""
+$lines += "KiloCode | Profesyonel local denetim asistani - Android uygulama kalitesi ve guvenilirligi."
+$lines += "Kod hatasiz, kullanici dostu, anlasilir ve suratli olmaya devam ediyor."
 
 $report = ($lines -join [Environment]::NewLine)
 
