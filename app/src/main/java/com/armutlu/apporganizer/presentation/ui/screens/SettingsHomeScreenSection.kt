@@ -37,6 +37,7 @@ fun SettingsHomeScreenSection() {
     var favoritesEnabledAllApps  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     var homeSearchEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
+    var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
 
     SettingsCard {
         SettingsSwitchRow(
@@ -113,6 +114,17 @@ fun SettingsHomeScreenSection() {
             onCheckedChange = {
                 newBadgeEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.AspectRatio,
+            title = "Otomatik Boyut Ayarla",
+            subtitle = "Klasörleri ekran genişliğine göre otomatik boyutlandır — taşma ve üst üste binmeyi önler",
+            checked = autoFolderSizeEnabled,
+            onCheckedChange = {
+                autoFolderSizeEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setAutoFolderSizeEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

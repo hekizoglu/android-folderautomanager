@@ -20,6 +20,12 @@
 **CLAUDE.md/LEARNINGS.md:** Değişmedi
 **Sonraki:** Yeni özellik veya ROADMAP görevi
 
+## Döngü D145 — 2026-06-28
+**Yapılanlar:** 3 bug/özellik: (1) Kullanım sayısı "23 milyon" bug'ı düzeltildi — NiagaraComponents.kt:77 `"${usageCount}×"` → `formatUsageMs()` (ms→insan okunabilir format). (2) Sort toggle — AllAppsDrawer'da 4 base chip, aynı butona basınca yön değişir (A→Z↔Z→A, Kullanım↓↔↑, Boyut↓↔↑, Yükleme↓↔↑); ALPHA_DESC/USAGE_ASC/INSTALL_DATE_ASC enum değerleri eklendi. (3) Klasör auto-size — ekrana taşmayı önlemek için folderSizeDp her zaman maxFolderSize=(screenWidth-32)/4 ile klamplandı; AppPrefs'e KEY_AUTO_FOLDER_SIZE eklendi; Ayarlar'a "Otomatik Boyut Ayarla" toggle eklendi.
+**Dosyalar:** AllAppsDrawerUtils.kt, NiagaraComponents.kt, AllAppsDrawer.kt, FolderSheet.kt, AppPrefs.kt, HomeScreen.kt, SettingsHomeScreenSection.kt
+**CLAUDE.md/LEARNINGS.md:** Değişmedi
+**Sonraki:** Onboarding ayar sihirbazı (FİKİRLER'e eklendi)
+
 ---
 
 ## Döngü D143 — 2026-06-23

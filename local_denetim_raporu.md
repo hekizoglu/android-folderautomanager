@@ -35,3 +35,9 @@
 ---
 
 *Denetim tarihi: 2026-06-28 | Tum bulgular kapatildi.*
+
+## Tam Denetim Turu - 2026-06-28 02:28
+
+- Tam denetim kurallari ile otomatik rapor yenilendi.
+- Manuel checklist referansi: `local_denetim_manuel_checklist.md`
+- Checklist icin yeni soru ihtiyaci bulunmadi.

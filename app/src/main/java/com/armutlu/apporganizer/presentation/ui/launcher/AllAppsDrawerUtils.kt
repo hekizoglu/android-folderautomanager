@@ -50,10 +50,40 @@ internal fun fmtMonth(ts: Long): String =
 
 enum class AllAppsSortMode(val label: String) {
     ALPHA("A–Z"),
-    USAGE("Kullanım"),
+    ALPHA_DESC("Z–A"),
+    USAGE("Kullanım ↓"),
+    USAGE_ASC("Kullanım ↑"),
     SIZE_DESC("Boyut ↓"),
     SIZE_ASC("Boyut ↑"),
-    INSTALL_DATE("Yükleme")
+    INSTALL_DATE("Yükleme ↓"),
+    INSTALL_DATE_ASC("Yükleme ↑")
+}
+
+internal fun AllAppsSortMode.opposite(): AllAppsSortMode = when (this) {
+    AllAppsSortMode.ALPHA          -> AllAppsSortMode.ALPHA_DESC
+    AllAppsSortMode.ALPHA_DESC     -> AllAppsSortMode.ALPHA
+    AllAppsSortMode.USAGE          -> AllAppsSortMode.USAGE_ASC
+    AllAppsSortMode.USAGE_ASC      -> AllAppsSortMode.USAGE
+    AllAppsSortMode.SIZE_DESC      -> AllAppsSortMode.SIZE_ASC
+    AllAppsSortMode.SIZE_ASC       -> AllAppsSortMode.SIZE_DESC
+    AllAppsSortMode.INSTALL_DATE   -> AllAppsSortMode.INSTALL_DATE_ASC
+    AllAppsSortMode.INSTALL_DATE_ASC -> AllAppsSortMode.INSTALL_DATE
+}
+
+internal fun AllAppsSortMode.baseMode(): AllAppsSortMode = when (this) {
+    AllAppsSortMode.ALPHA_DESC       -> AllAppsSortMode.ALPHA
+    AllAppsSortMode.USAGE_ASC        -> AllAppsSortMode.USAGE
+    AllAppsSortMode.SIZE_ASC         -> AllAppsSortMode.SIZE_DESC
+    AllAppsSortMode.INSTALL_DATE_ASC -> AllAppsSortMode.INSTALL_DATE
+    else -> this
+}
+
+internal fun formatUsageMs(ms: Long): String = when {
+    ms <= 0L         -> "—"
+    ms < 60_000L     -> "${ms / 1000} sn"
+    ms < 3_600_000L  -> "${ms / 60_000} dk"
+    ms < 86_400_000L -> "${"%.1f".format(ms / 3_600_000.0)} sa"
+    else             -> "${ms / 86_400_000} gün"
 }
 
 // ── Async ikon yükleme — global LRU cache paylaşılır ─────────────────────────
@@ -87,6 +117,9 @@ internal fun buildSidebarEntries(
 ): List<SidebarEntry> {
     if (apps.isEmpty()) return emptyList()
     return when (mode) {
+        AllAppsSortMode.ALPHA_DESC -> buildSidebarEntries(apps, AllAppsSortMode.ALPHA)
+        AllAppsSortMode.USAGE_ASC -> buildSidebarEntries(apps.reversed(), AllAppsSortMode.USAGE)
+        AllAppsSortMode.INSTALL_DATE_ASC -> emptyList()
         AllAppsSortMode.ALPHA -> {
             val grouped = apps.groupBy { app ->
                 val c = app.appName.firstOrNull()?.uppercaseChar() ?: '#'

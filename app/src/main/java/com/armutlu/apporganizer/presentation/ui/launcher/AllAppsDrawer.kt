@@ -205,26 +205,32 @@ private fun DrawerSearchBar(
         }
     }
 
-    // Sıralama chip'leri
+    // Sıralama chip'leri — 4 temel kategori, aynı butona basınca yön değişir
+    val baseSortChips = listOf(
+        AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE,
+        AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE
+    )
     androidx.compose.foundation.lazy.LazyRow(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        itemsIndexed(AllAppsSortMode.entries) { _, mode ->
-            val active = sortMode == mode
+        itemsIndexed(baseSortChips) { _, baseMode ->
+            val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
+            val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                    .background(if (active) primary else onSurface.copy(alpha = 0.12f))
+                    .background(if (isActive) primary else onSurface.copy(alpha = 0.12f))
                     .clickable {
-                        onSortModeChange(mode)
-                        AppPrefs.setAllAppsSortMode(context, mode.name)
+                        val newMode = if (isActive) sortMode.opposite() else baseMode
+                        onSortModeChange(newMode)
+                        AppPrefs.setAllAppsSortMode(context, newMode.name)
                     }
                     .padding(horizontal = 11.dp, vertical = 5.dp)
             ) {
                 Text(
-                    mode.label, fontSize = 11.sp,
-                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                    color = if (active) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f)
+                    displayLabel, fontSize = 11.sp,
+                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isActive) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f)
                 )
             }
         }
@@ -599,11 +605,14 @@ fun AllAppsDrawer(
             exact + starts + contains + fuzzy.sortedBy { it.second }.map { it.first }
         }
         when (sortMode) {
-            AllAppsSortMode.ALPHA        -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
-            AllAppsSortMode.USAGE        -> base.sortedByDescending { it.usageCount }
-            AllAppsSortMode.SIZE_DESC    -> base.sortedByDescending { it.appSizeBytes }
-            AllAppsSortMode.SIZE_ASC     -> base.sortedBy { it.appSizeBytes }
-            AllAppsSortMode.INSTALL_DATE -> base.sortedByDescending { it.installTime }
+            AllAppsSortMode.ALPHA            -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
+            AllAppsSortMode.ALPHA_DESC       -> base.sortedByDescending { it.appName.lowercase(Locale("tr")) }
+            AllAppsSortMode.USAGE            -> base.sortedByDescending { it.usageCount }
+            AllAppsSortMode.USAGE_ASC        -> base.sortedBy { it.usageCount }
+            AllAppsSortMode.SIZE_DESC        -> base.sortedByDescending { it.appSizeBytes }
+            AllAppsSortMode.SIZE_ASC         -> base.sortedBy { it.appSizeBytes }
+            AllAppsSortMode.INSTALL_DATE     -> base.sortedByDescending { it.installTime }
+            AllAppsSortMode.INSTALL_DATE_ASC -> base.sortedBy { it.installTime }
         }
     }
 

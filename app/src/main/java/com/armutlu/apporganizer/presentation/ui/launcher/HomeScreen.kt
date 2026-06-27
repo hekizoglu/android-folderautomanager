@@ -108,7 +108,12 @@ fun HomeScreen(
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
     var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
+    var autoFolderSizeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
+    val configuration = LocalConfiguration.current
+    // Ekrana taşmayı önle: 4 sütun + 32dp toplam kenar boşluğu
+    val maxFolderSizeDp = ((configuration.screenWidthDp - 32) / 4).coerceIn(48, 92)
+    val effectiveFolderSizeDp = if (autoFolderSizeEnabled) maxFolderSizeDp else folderSizeDp.coerceAtMost(maxFolderSizeDp)
     var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
     // Ayar toggle'ları — DisposableEffect listener ile reaktif
     var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
@@ -155,6 +160,8 @@ fun HomeScreen(
                     customFolderColors = com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SIZE ->
                     folderSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_AUTO_FOLDER_SIZE ->
+                    autoFolderSizeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_PAGE_SIZE ->
                     pageFolderCount = com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
@@ -453,7 +460,7 @@ fun HomeScreen(
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
                 onAppLongClick = { pkg -> contextMenuPkg = pkg },
                 screenHeightDp = LocalConfiguration.current.screenHeightDp,
-                folderSizeDp = folderSizeDp
+                folderSizeDp = effectiveFolderSizeDp
             )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
@@ -503,7 +510,7 @@ fun HomeScreen(
                 dragOffsetX = dragOffsetX,
                 dragOffsetY = dragOffsetY,
                 textAlpha = textAlpha,
-                folderSizeDp = folderSizeDp,
+                folderSizeDp = effectiveFolderSizeDp,
                 labelColor = labelColor,
                 customFolderNames = customFolderNames,
                 customFolderEmojis = customFolderEmojis,

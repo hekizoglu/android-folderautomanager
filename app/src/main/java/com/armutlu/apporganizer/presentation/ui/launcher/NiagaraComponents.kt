@@ -71,11 +71,11 @@ fun NiagaraAppRow(
     val trailingText: String? = when (sortMode) {
         AllAppsSortMode.SIZE_DESC, AllAppsSortMode.SIZE_ASC ->
             if (app.appSizeBytes > 0) formatBytes(app.appSizeBytes) else null
-        AllAppsSortMode.INSTALL_DATE ->
+        AllAppsSortMode.INSTALL_DATE, AllAppsSortMode.INSTALL_DATE_ASC ->
             if (app.installTime > 0) fmtMonth(app.installTime) else null
-        AllAppsSortMode.USAGE ->
-            if (app.usageCount > 0) "${app.usageCount}×" else null
-        AllAppsSortMode.ALPHA -> null
+        AllAppsSortMode.USAGE, AllAppsSortMode.USAGE_ASC ->
+            if (app.usageCount > 0) formatUsageMs(app.usageCount) else null
+        AllAppsSortMode.ALPHA, AllAppsSortMode.ALPHA_DESC -> null
     }
 
     Row(

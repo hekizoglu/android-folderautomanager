@@ -106,6 +106,11 @@ object AppPrefs {
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
     fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
 
+    // Otomatik klasör boyutu — ekran genişliğine göre klasörü otomatik boyutlandır
+    const val KEY_AUTO_FOLDER_SIZE = "auto_folder_size"
+    fun isAutoFolderSizeEnabled(context: Context) = prefs(context).getBoolean(KEY_AUTO_FOLDER_SIZE, false)
+    fun setAutoFolderSizeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_AUTO_FOLDER_SIZE, v).apply()
+
     // Sayfa başına klasör sayısı — 4/6/8/12 (varsayılan 8 = 4x2)
     const val KEY_PAGE_SIZE = "page_folder_count"
     fun getPageSize(context: Context): Int = prefs(context).getInt(KEY_PAGE_SIZE, 8)
