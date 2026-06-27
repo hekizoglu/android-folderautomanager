@@ -13,6 +13,10 @@
 | AllApps drawer açılışı | < 150ms | `folder_opened` event latency |
 | Kategori doğruluğu | > %90 | `category_classified` event + kullanıcı düzeltme oranı |
 | Crash-free oturum | > %99 | Crashlytics |
+| Cold start süresi | < 1.5s | Firebase Performance (trace: `cold_start`) |
+| Bellek kullanımı | < 120MB baseline | MemoryStats + Crashlytics OOM |
+| Batarya tüketimi | < %4/saat (aktif kullanım) | Android Battery Historian |
+| APK boyutu | < 30MB | `assembleDebug` çıktısı |
 | Özellik kullanım oranı | — | Her event sayısı |
 
 ### İzlenecek Firebase Events
