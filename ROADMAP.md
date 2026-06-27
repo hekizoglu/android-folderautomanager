@@ -33,6 +33,7 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | **Firebase Crashlytics kurulumu** | `google-services.json` + service account | Bekliyor |
 | **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
 | **AppNotificationListenerService ilk açılışta restart** | gerçek cihaz test gerekli | Bekliyor |
+| **Klasör taşma (overflow) sorunu** | `FolderTile`, `HomeScreen` — çok fazla uygulama/klasör ekrandan taşıyor; Android modeline göre otomatik boyut/yerleşim düzeltmesi gerekli | Bekliyor |
 
 ### 🟢 Düşük Öncelik
 

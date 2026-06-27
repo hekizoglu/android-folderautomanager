@@ -90,7 +90,8 @@ $allRules = @(
     @{ Code = "O6"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\theme\ThemePreferences.kt"; Pattern = 'ThemePreferences\('; Description = "ThemePreferences manuel new leniyor, Hilt bypass ediliyor."; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
     @{ Code = "O7"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\utils\DockPrefs.kt"; Pattern = 'fun removeFromDock\('; Description = "removeFromDock Unit donduruyor, geri bildirim yok."; Focus = @("Dock_Widget_Backup") },
     @{ Code = "O8"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\utils\PackageManagerHelper.kt"; Pattern = 'endsWith\(it\)'; Description = "shouldHide endsWith ile yanlis eslesme riski."; Focus = @("Performance_Memory","Permission_Izin") },
-    @{ Code = "K9"; Severity = "KRITIK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\viewmodel\AppListViewModel.kt"; Pattern = 'repository\.getAllCategoriesFlow\(\)'; Description = "Runtime NoSuchMethodError riski - getMethod/Flow API senkronu ihlali."; Focus = @("Data_State_Persistence") }
+    @{ Code = "K9"; Severity = "KRITIK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\viewmodel\AppListViewModel.kt"; Pattern = 'repository\.getAllCategoriesFlow\(\)'; Description = "Runtime NoSuchMethodError riski - getMethod/Flow API senkronu ihlali."; Focus = @("Data_State_Persistence") },
+    @{ Code = "Y7"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'Modifier\.size\(\d+\.dp\)'; Description = "Hardcoded dp boyut - responsive taşma riski."; Focus = @("UI_Settings_Labels","Performance_Memory") }
 )
 
 # Ana odak alani kurallarini sec
