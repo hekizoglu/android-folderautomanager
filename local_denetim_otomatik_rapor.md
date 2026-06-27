@@ -1,9 +1,9 @@
 ﻿# Local Denetim Raporu
 
 > DÃ¶ngÃ¼: `15 dakikalÄ±k 8+1 odak rotasyonu`
-> Son denetim: 2026-06-27 13:33
-> Ana tur odak: **TalkBack, contentDescription, semantics** (Accessibility_A11y)
-> Ekstra denetim: **Test edilmeyis senaryolari, dead code, unused imports** (Test_Coverage_Gap)
+> Son denetim: 2026-06-27 17:44
+> Ana tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
+> Ekstra denetim: **Timber log quality, user-facing error messages, fallback** (Error_Handling_Logging)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -40,7 +40,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-27 13:33 | Ana: TalkBack, contentDescription, semantics | Ekstra: Test edilmeyis senaryolari, dead code, unused imports*
+*Denetim tarihi: 2026-06-27 17:44 | Ana: Gesture, swipe, drawer akislari | Ekstra: Timber log quality, user-facing error messages, fallback*
 
 ---
 

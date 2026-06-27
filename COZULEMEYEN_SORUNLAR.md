@@ -76,3 +76,31 @@ Remove-Item -Recurse -Force app\build
 **Denenen:** Saatlik tam denetim ve checklist guncellemesi calistirildi.
 **Neden basarisiz:** Script kendi basina guvenli kaynak kod degisikligi yapmiyor.
 **Beklenen:** Bir sonraki ajan turunda rapordaki maddeler sirayla ele alinacak.
+
+### [LD-2026-06-27 14:33] Otomatik cozum bekleyen denetim maddeleri
+**Tarih:** 2026-06-27 14:33 | **Durum:** Otomatik script tarafinda sadece raporlandi
+**Sorun:** local_denetim_raporu.md icindeki kalan maddeler ajan/gelistirici kod mudahalesi bekliyor.
+**Denenen:** Saatlik tam denetim ve checklist guncellemesi calistirildi.
+**Neden basarisiz:** Script kendi basina guvenli kaynak kod degisikligi yapmiyor.
+**Beklenen:** Bir sonraki ajan turunda rapordaki maddeler sirayla ele alinacak.
+
+### [LD-2026-06-27 15:33] Otomatik cozum bekleyen denetim maddeleri
+**Tarih:** 2026-06-27 15:33 | **Durum:** Otomatik script tarafinda sadece raporlandi
+**Sorun:** local_denetim_raporu.md icindeki kalan maddeler ajan/gelistirici kod mudahalesi bekliyor.
+**Denenen:** Saatlik tam denetim ve checklist guncellemesi calistirildi.
+**Neden basarisiz:** Script kendi basina guvenli kaynak kod degisikligi yapmiyor.
+**Beklenen:** Bir sonraki ajan turunda rapordaki maddeler sirayla ele alinacak.
+
+### [LD-2026-06-27 16:33] Otomatik cozum bekleyen denetim maddeleri
+**Tarih:** 2026-06-27 16:33 | **Durum:** Otomatik script tarafinda sadece raporlandi
+**Sorun:** local_denetim_raporu.md icindeki kalan maddeler ajan/gelistirici kod mudahalesi bekliyor.
+**Denenen:** Saatlik tam denetim ve checklist guncellemesi calistirildi.
+**Neden basarisiz:** Script kendi basina guvenli kaynak kod degisikligi yapmiyor.
+**Beklenen:** Bir sonraki ajan turunda rapordaki maddeler sirayla ele alinacak.
+
+### [LD-2026-06-27 17:33] Otomatik cozum bekleyen denetim maddeleri
+**Tarih:** 2026-06-27 17:33 | **Durum:** Otomatik script tarafinda sadece raporlandi
+**Sorun:** local_denetim_raporu.md icindeki kalan maddeler ajan/gelistirici kod mudahalesi bekliyor.
+**Denenen:** Saatlik tam denetim ve checklist guncellemesi calistirildi.
+**Neden basarisiz:** Script kendi basina guvenli kaynak kod degisikligi yapmiyor.
+**Beklenen:** Bir sonraki ajan turunda rapordaki maddeler sirayla ele alinacak.

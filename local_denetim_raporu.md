@@ -89,3 +89,23 @@ Bu hata **runtime/derleme sonrasi** bir sorundur:
 
 - Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
 - Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
+
+## Cozum Sirasi Hazirligi - 2026-06-27 14:33
+
+- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
+- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
+
+## Cozum Sirasi Hazirligi - 2026-06-27 15:33
+
+- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
+- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
+
+## Cozum Sirasi Hazirligi - 2026-06-27 16:33
+
+- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
+- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
+
+## Cozum Sirasi Hazirligi - 2026-06-27 17:33
+
+- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
+- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
