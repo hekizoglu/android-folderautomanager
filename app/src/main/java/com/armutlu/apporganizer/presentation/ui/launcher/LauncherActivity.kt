@@ -111,6 +111,17 @@ class LauncherActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        val safeMode = com.armutlu.apporganizer.utils.CrashReporter.checkSafeMode(this)
+        if (safeMode) {
+            android.widget.Toast.makeText(
+                this,
+                "Güvenli mod: Ayarlar varsayılana alındı. Ayarlar menüsünden çıkabilirsiniz.",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+            com.armutlu.apporganizer.utils.CrashReporter.exitSafeMode(this)
+        }
+
         viewModel.loadAppsIfEmpty()
         viewModel.initFavorites(this)
         viewModel.syncUsageStats(this)
@@ -196,6 +207,7 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        com.armutlu.apporganizer.utils.CrashReporter.markStartedSuccessfully(this)
         WidgetHostManager.startListening(this)
         applyNavBarVisibility()
         // Son başlatılan uygulamanın timestamp'ini garantile (startActivity süreci durdurduğunda coroutine tamamlanamayabilir)

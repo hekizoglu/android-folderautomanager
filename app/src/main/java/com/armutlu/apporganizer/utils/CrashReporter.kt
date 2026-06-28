@@ -13,6 +13,10 @@ object CrashReporter {
 
     private const val CRASH_DIR = "crash_logs"
     private const val MAX_LOGS = 5
+    private const val PREFS_CRASH = "crash_reporter_prefs"
+    private const val KEY_CRASH_COUNT = "startup_crash_count"
+    private const val KEY_SAFE_MODE = "safe_mode_active"
+    private const val SAFE_MODE_THRESHOLD = 2
 
     fun install(context: Context) {
         val appContext = context.applicationContext
@@ -21,6 +25,7 @@ object CrashReporter {
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
                 saveCrashLog(appContext, throwable)
+                incrementCrashCount(appContext)
             } catch (e: Exception) {
                 Timber.e(e, "CrashReporter: log kaydetme hatası")
             }
@@ -28,6 +33,39 @@ object CrashReporter {
         }
 
         Timber.d("CrashReporter kuruldu")
+    }
+
+    fun checkSafeMode(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_CRASH, Context.MODE_PRIVATE)
+        val count = prefs.getInt(KEY_CRASH_COUNT, 0)
+        val alreadySafe = prefs.getBoolean(KEY_SAFE_MODE, false)
+        return if (count >= SAFE_MODE_THRESHOLD || alreadySafe) {
+            prefs.edit().putBoolean(KEY_SAFE_MODE, true).putInt(KEY_CRASH_COUNT, 0).apply()
+            true
+        } else {
+            false
+        }
+    }
+
+    fun markStartedSuccessfully(context: Context) {
+        context.getSharedPreferences(PREFS_CRASH, Context.MODE_PRIVATE)
+            .edit().putInt(KEY_CRASH_COUNT, 0).apply()
+    }
+
+    fun exitSafeMode(context: Context) {
+        context.getSharedPreferences(PREFS_CRASH, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_SAFE_MODE, false).putInt(KEY_CRASH_COUNT, 0).apply()
+    }
+
+    fun isSafeModeActive(context: Context): Boolean =
+        context.getSharedPreferences(PREFS_CRASH, Context.MODE_PRIVATE)
+            .getBoolean(KEY_SAFE_MODE, false)
+
+    private fun incrementCrashCount(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_CRASH, Context.MODE_PRIVATE)
+        val count = prefs.getInt(KEY_CRASH_COUNT, 0) + 1
+        prefs.edit().putInt(KEY_CRASH_COUNT, count).apply()
+        Timber.w("Startup crash sayacı: $count")
     }
 
     private fun saveCrashLog(context: Context, throwable: Throwable) {

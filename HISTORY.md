@@ -260,3 +260,8 @@
 **Yapılanlar:** Android 15/16 Edge-to-Edge — MainActivity'ye enableEdgeToEdge() eklendi (LauncherActivity'de zaten vardı); encode fix; APK 25.77 MB
 **Agent:** Yok
 **Sonraki:** Bir sonraki ⭐ özellik
+
+## Döngü D176 — 17:53
+**Yapılanlar:** Safe Mode/Crash Recovery (⭐ 15 puan) — CrashReporter'a startup crash sayacı eklendi; 2+ crash = güvenli mod; LauncherActivity'de kontrol + Toast bildirim; onResume'da başarılı başlangıç işareti; APK 25.77 MB
+**Agent:** Yok
+**Sonraki:** FİKİRLER ⭐ devam
