@@ -128,6 +128,11 @@ object AppPrefs {
     fun isWidgetAreaEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AREA_ENABLED, true)
     fun setWidgetAreaEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WIDGET_AREA_ENABLED, v).apply()
 
+    // Widget Auto-Resize — ekran yüksekliğine göre widget yüksekliği otomatik ayarla
+    const val KEY_WIDGET_AUTO_RESIZE = "widget_auto_resize"
+    fun isWidgetAutoResizeEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AUTO_RESIZE, false)
+    fun setWidgetAutoResizeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WIDGET_AUTO_RESIZE, v).apply()
+
     // Arka plan tipi — "wallpaper" (duvar kağıdı) | "solid" (düz renk)
     const val KEY_BG_TYPE = "bg_type"
     fun getBgType(context: Context): String = prefs(context).getString(KEY_BG_TYPE, "wallpaper") ?: "wallpaper"

@@ -91,6 +91,7 @@ fun HomeScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
     var widgetAreaEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
+    var widgetAutoResize by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)) }
     var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
     var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
@@ -186,6 +187,8 @@ fun HomeScreen(
                     homeSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_APP_SEARCH_ENABLED ->
                     homeAppSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AUTO_RESIZE ->
+                    widgetAutoResize = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -469,6 +472,8 @@ fun HomeScreen(
                     widgetIds = widgetIds,
                     onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
                     onReorderWidgets = { newOrder -> viewModel.reorderWidgets(context, newOrder) },
+                    autoResize = widgetAutoResize,
+                    screenHeightDp = LocalConfiguration.current.screenHeightDp,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

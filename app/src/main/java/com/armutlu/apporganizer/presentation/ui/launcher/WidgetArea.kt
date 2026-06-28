@@ -46,6 +46,8 @@ fun WidgetArea(
     widgetIds: List<Int>,
     onRemoveWidget: (Int) -> Unit,
     onReorderWidgets: ((List<Int>) -> Unit)? = null,
+    autoResize: Boolean = false,
+    screenHeightDp: Int = 800,
     modifier: Modifier = Modifier
 ) {
     if (widgetIds.isEmpty()) return
@@ -76,6 +78,8 @@ fun WidgetArea(
                     widgetId = id,
                     onRemove = { onRemoveWidget(id) },
                     isDraggable = widgetIds.size > 1,
+                    autoResize = autoResize,
+                    screenHeightDp = screenHeightDp,
                     onDragStart = {
                         dragFromIndex = index
                         draggingIds = displayIds.toMutableList()
@@ -115,6 +119,8 @@ private fun WidgetCard(
     widgetId: Int,
     onRemove: () -> Unit,
     isDraggable: Boolean = false,
+    autoResize: Boolean = false,
+    screenHeightDp: Int = 800,
     onDragStart: () -> Unit = {},
     onDrag: (Float) -> Unit = {},
     onDragEnd: () -> Unit = {}
@@ -129,7 +135,12 @@ private fun WidgetCard(
         val awm = context.getSystemService(android.content.Context.APPWIDGET_SERVICE) as? android.appwidget.AppWidgetManager
         awm?.getAppWidgetInfo(widgetId)?.let { info ->
             val density = context.resources.displayMetrics.density
-            minHeightDp = (info.minHeight / density).toInt().coerceAtLeast(80)
+            val infoMinHeight = (info.minHeight / density).toInt().coerceAtLeast(80)
+            minHeightDp = if (autoResize) {
+                maxOf(infoMinHeight, (screenHeightDp * 0.22f).toInt())
+            } else {
+                infoMinHeight
+            }
         }
     }
 

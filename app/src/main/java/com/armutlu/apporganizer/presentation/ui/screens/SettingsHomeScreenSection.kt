@@ -255,6 +255,7 @@ fun SettingsHomeScreenSection() {
     // ── Widget Alanı ──────────────────────────────────────────────────────
     SettingsSectionTitle("Widget")
     var widgetAreaEnabledLocal by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
+    var widgetAutoResizeLocal by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)) }
     SettingsCard {
         SettingsSwitchRow(
             icon = Icons.Default.Widgets,
@@ -264,6 +265,16 @@ fun SettingsHomeScreenSection() {
             onCheckedChange = {
                 widgetAreaEnabledLocal = it
                 com.armutlu.apporganizer.utils.AppPrefs.setWidgetAreaEnabled(context, it)
+            }
+        )
+        SettingsSwitchRow(
+            icon = Icons.Default.AspectRatio,
+            title = "Otomatik Widget Boyutu",
+            subtitle = "Widget yüksekliğini ekran boyutuna göre otomatik ayarla (%22)",
+            checked = widgetAutoResizeLocal,
+            onCheckedChange = {
+                widgetAutoResizeLocal = it
+                com.armutlu.apporganizer.utils.AppPrefs.setWidgetAutoResizeEnabled(context, it)
             }
         )
     }
