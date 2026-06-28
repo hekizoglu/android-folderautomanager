@@ -230,3 +230,8 @@
 **Yapılanlar:** FİKİRLER.md + ROADMAP.md — Yedek Karşılaştırma özelliği eklendi (14 puan); run_local_denetim_cycle.ps1 koşulsuz yazma hatası D168'de düzeltildi
 **Agent:** Yok
 **Sonraki:** D170 — denetim dosyaları encode kontrolü + lokal denetim
+
+## Döngü D170 — 11:50
+**Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi; CS-3 ve denetim durumu kontrol edildi — TOPLAM 0 açık bulgu
+**Agent:** Yok
+**Sonraki:** D171 — rutin denetim + encode kontrol
