@@ -35,6 +35,7 @@
 | 2026-06-28 | Hüseyin | **Widget Auto-Resize** — Widget alanı ekran en/boy oranına göre otomatik yükseklik ayarı | [TAMAMLANDI D147] |
 | 2026-06-28 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
 | 2026-06-28 | Hüseyin | **Tablet Desteği** — Adaptive layout: 2 sütun klasör grid (tablet), side panel AllAppsDrawer, foldable hinge desteği. `WindowSizeClass` API kullan. mobile-design skill ile birlikte ekle. (Kullanıcı Değeri:5 · Uygulanabilirlik:3 · Bağımlılık Riski:3 · Etki:5 = 16 puan ⭐) | Bekliyor |
+| 2026-06-28 | Hüseyin | **Yedek Karşılaştırma + Eksik Uygulama Tespiti** — Yedekten geri dönünce eksik uygulamaları listele; liste kopyalanabilir + Play Store derin linkleri göster; "Hepsini Sırayla Aç" butonu ile tek tek yükleme. İki cihaz arası senkron: yedek dosyası paylaş → diğer cihazda eksikler listelenir. Tam otomatik indirme mümkün değil (Android güvenlik kısıtı) ama derin link akışı kullanıcıyı çok hızlandırır. (Kullanıcı Değeri:5 · Uygulanabilirlik:4 · Bağımlılık Riski:1 · Etki:4 = 14 puan 🟡) | Bekliyor |
 
 ---
 
