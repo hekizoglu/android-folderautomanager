@@ -200,3 +200,8 @@
 **Yapılanlar:** LEARNINGS.md E15+E16 eklendi (fix_encoding.py MOJIBAKE tuzağı + cp1254 terminal emoji tuzağı); local_denetim encoding fix; git non-fast-forward → rebase ile çözüldü
 **Agent:** —
 **Sonraki:** D164 — küçük iyileştirme, D166 = BUILD
+
+## D164 — 09:51
+**Yapılanlar:** scripts/README.md eklendi (8 yardımcı script, kullanım örnekleri, hook notları); local_denetim encoding fix
+**Agent:** —
+**Sonraki:** D165 — küçük iyileştirme, D166 = BUILD
