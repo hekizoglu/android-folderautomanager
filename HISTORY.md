@@ -195,3 +195,8 @@
 **Yapılanlar:** assembleDebug BUILD SUCCESSFUL 4s, APK 25.77 MB Telegram'a gönderildi. Döngü D159-D162: fix_encoding terminal fix, .gitignore Python, fix_denetim_encoding.ps1 helper, build başarılı
 **Agent:** —
 **Sonraki:** D163 — küçük iyileştirme veya onay bekleyen FİKİRLER
+
+## D163 — 09:16
+**Yapılanlar:** LEARNINGS.md E15+E16 eklendi (fix_encoding.py MOJIBAKE tuzağı + cp1254 terminal emoji tuzağı); local_denetim encoding fix; git non-fast-forward → rebase ile çözüldü
+**Agent:** —
+**Sonraki:** D164 — küçük iyileştirme, D166 = BUILD
