@@ -278,6 +278,7 @@ DB versiyonu artışında zorunlu adımlar:
 - **Predictive Back (Android 13+):** `AndroidManifest.xml`'de `android:enableOnBackInvokedCallback="true"` + `BackHandler` gözden geçir
 - **QUERY_ALL_PACKAGES:** Play Store'a göndermeden önce Google'a "uygulama keşif/arama" beyan formu zorunlu — eksikse APK reddedilir
 - **NotificationListenerService (Android 14+):** `foregroundServiceType` ve runtime izin değişimleri — gerçek cihaz testi şart
+- **Android 16 Dosya Erişimi:** `getExternalFilesDir` veya `Environment.getExternalStorageDirectory` kullanma — sadece `context.filesDir` (internal) veya SAF (`OpenDocumentTree`) kullan. Audit: `grep -r "getExternalFilesDir\|getExternalStorageDirectory" app/src/` ile tarandı, bu projede kullanılmıyor (D187).
 
 ---
 

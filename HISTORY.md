@@ -318,3 +318,9 @@
 **CLAUDE.md/LEARNINGS.md:** --
 **Sonraki:** LEARNINGS auditmatrix (12p) veya Android 16 Permission Audit (11p)
 
+## Dongü 187 -- 23:19
+**Yapılanlar:** SettingsBackupAboutSection Neden AppOrganizer karti (6 ozellik vs Pixel). Android16 permission audit: sadece filesDir kullaniliyor, guvenli. CLAUDE.md CE7 kuralı eklendi. BUILD OK 24.66MB
+**Agent:** --
+**CLAUDE.md/LEARNINGS.md:** Android 16 dosya erisim kurali eklendi
+**Sonraki:** LEARNINGS audit matrix (12p) veya yeni fikir
+

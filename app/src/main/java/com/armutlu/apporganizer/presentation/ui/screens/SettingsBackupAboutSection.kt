@@ -306,6 +306,38 @@ internal fun LazyListScope.settingsBackupAboutSection(
         }
     }
 
+    // ── Neden AppOrganizer? ──────────────────────────────────────────────
+    item { SettingsSectionTitle("Neden AppOrganizer?") }
+    item {
+        SettingsCard {
+            val features = listOf(
+                Icons.Default.FolderOpen to "Otomatik Klasörleme" to "Pixel Launcher'da yok — 3700+ uygulama otomatik kategorilere ayrılır",
+                Icons.Default.Backup to "Çapraz Cihaz Yedekleme" to "Google Drive ile tüm kategoriler yeni cihaza taşınır",
+                Icons.Default.Brush to "İkon Pack Desteği" to "3. parti ikon paketleri uygulanabilir",
+                Icons.Default.Gesture to "Özelleştirilebilir Jestler" to "Kaydırma yönleri ve kısayollar ayarlanabilir",
+                Icons.Default.Category to "App Drawer Kategorileri" to "Uygulama çekmecesinde kategoriye göre filtreleme",
+                Icons.Default.PhotoSizeSelectLarge to "İkon Boyutu" to "%70-%130 arasında ikon boyutu ayarı"
+            )
+            features.forEachIndexed { i, (iconTitle, desc) ->
+                val (icon, title) = iconTitle
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(title, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                        Text(desc, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (i < features.size - 1) {
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                }
+            }
+        }
+    }
+
     // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
     item {
