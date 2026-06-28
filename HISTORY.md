@@ -164,7 +164,7 @@
 **Dosyalar:** .claude/skills/compose-expert/, .claude/skills/caveman/, scripts/audit.ps1, local_denetim_raporu.md
 **Sonraki:** Cron otonom - 5-skill + ekstra rotasyon saatlik.
 
-## Döngü D151 - 2026-06-28
+## Döngü D151b - 2026-06-28
 **Yapılanlar:** audit.ps1 KiloCode tarafından eklenen CE kuralları curly quote ve encoding nedeniyle PS syntax patlatıyordu - temizlendi. FİKİRLER: Test altyapısı Maestro analizi eklendi (12 puan), Widget Auto-Resize TAMAMLANDI işaretlendi.
 **Dosyalar:** scripts/audit.ps1, FİKİRLER.md
 **Sonraki:** D152.

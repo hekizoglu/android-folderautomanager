@@ -65,5 +65,6 @@
 | 2026-06-29 02:03 | T1 | BackupWorker | - | Bulunamadi |
 | 2026-06-29 01:38 | T1 | Settings etiket (UI) | Navigation routing | Bulunamadi |
 | 2026-06-29 02:12 | T2 | Gesture/Swipe/Drawer + CE | Timber log quality | Bulunamadi |
+| 2026-06-29 02:35 | T1 | State/SharedPrefs | Memory/Lifecycle | Bulunamadi |
 
-*31 tur, 0 bug | Meta-audit: 5/17 (%29) LEARNINGS kapsama | Cron: 2 saatte bir*
+*32 tur, 0 bug | Cron: 2 saatte bir | Sonraki: #140 T3 derin denetim*

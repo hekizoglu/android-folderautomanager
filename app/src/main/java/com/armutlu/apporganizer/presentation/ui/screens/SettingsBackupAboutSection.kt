@@ -55,6 +55,71 @@ internal fun LazyListScope.settingsBackupAboutSection(
         }
     }
 
+    // ── Gizlilik Merkezi ─────────────────────────────────────────────────
+    item { SettingsSectionTitle("Gizlilik") }
+    item {
+        val context = LocalContext.current
+        var showResetDialog by remember { mutableStateOf(false) }
+
+        if (showResetDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                icon = { Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error) },
+                title = { Text("Tüm Kullanım Verisini Sıfırla") },
+                text = { Text("Kullanım sayıları, son açılma zamanları, bildirim geçmişi ve notlar silinir. Bu işlem geri alınamaz.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showResetDialog = false
+                            viewModel.resetAllPrivacyData(context)
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) { Text("Sıfırla") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetDialog = false }) { Text("İptal") }
+                }
+            )
+        }
+
+        SettingsCard {
+            // Gizlilik maddeleri
+            val privacyItems = listOf(
+                Icons.Default.PhoneAndroid to "Uygulama listesi cihazda kalır",
+                Icons.Default.CloudOff to "İnternete veri gönderilmez",
+                Icons.Default.ToggleOff to "Online kategori DB varsayılan kapalı",
+                Icons.Default.Visibility to "Bildirim içeriği okunmaz (sadece sayı)",
+                Icons.Default.Security to "Reklamcılık veya izleme yok"
+            )
+            privacyItems.forEachIndexed { i, (icon, text) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text(text, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                }
+                if (i < privacyItems.size - 1)
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+            }
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            // Sıfırlama butonu
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { showResetDialog = true }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.DeleteSweep, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Tüm Kullanım Verisini Sıfırla", fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.error)
+                    Text("Kullanım sayıları, notlar ve bildirim geçmişi silinir", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+
     // ── Yedek / Geri Yükle ─────────────────────────────────────────────
     item { SettingsSectionTitle("Yedek / Geri Yükle") }
     item {

@@ -583,6 +583,23 @@ class AppListViewModel @Inject constructor(
         _liveDebugLogs.value = emptyList()
     }
 
+    fun resetAllPrivacyData(context: android.content.Context) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                repository.resetAllCategories()
+                repository.getAllApps().forEach { app ->
+                    repository.updateUsageCount(app.packageName, 0)
+                    repository.updateLastUsedTimestamp(app.packageName, 0L)
+                    repository.updateNotificationCount(app.packageName, 0)
+                    repository.updateCustomNotes(app.packageName, "")
+                }
+                context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                    .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
+                Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
+            }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
+        }
+    }
+
     fun isAccessibilityServiceEnabledInSystem(): Boolean {
         return try {
             val am = getApplication<Application>()

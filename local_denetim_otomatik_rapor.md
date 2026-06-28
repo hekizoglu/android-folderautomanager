@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 02:12
-> Dongu: **#138** | Tier: **2**
-> Ana tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
-> Ekstra denetim: **Timber log quality, user-facing error messages, fallback** (Error_Handling_Logging)
+> Son denetim: 2026-06-29 02:35
+> Dongu: **#139** | Tier: **1**
+> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
+> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
 
 ---
 
@@ -25,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-06-29 02:12 | Dongu: #138 | Tier: 2 | Ana: Gesture, swipe, drawer akislari | Ekstra: Timber log quality, user-facing error messages, fallback*
+*Denetim tarihi: 2026-06-29 02:35 | Dongu: #139 | Tier: 1 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*
