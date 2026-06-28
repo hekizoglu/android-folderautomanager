@@ -210,3 +210,8 @@
 **Yapılanlar:** .maestro/06_notification_badge.yaml eklendi (badge görünürlük testi: HomeScreen+Drawer+sayfa2); README flow tablosu 6 akışa tamamlandı; local_denetim encoding fix
 **Agent:** —
 **Sonraki:** D166 = BUILD döngüsü
+
+## D166 — 10:52 (BUILD)
+**Yapılanlar:** assembleDebug BUILD SUCCESSFUL 41s, APK 25.77 MB Telegram #833. D163-D166 özet: LEARNINGS E15+E16, scripts/README, Maestro flow06, build OK
+**Agent:** —
+**Sonraki:** D167 — küçük iyileştirme, D170 = BUILD
