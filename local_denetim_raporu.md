@@ -29,10 +29,12 @@
 | 2026-06-28 05:03 | ✅ | Onboarding | Bulunamadi |
 | 2026-06-28 06:03 | ✅ | Widget | Bulunamadi |
 | 2026-06-28 07:03 | ✅ | IconCache | Bulunamadi |
+| 2026-06-28 08:03 | ✅ | DockPrefs | Bulunamadi |
+| 2026-06-28 09:03 | ✅ | BackupWorker | Bulunamadi |
 
-*Sonraki ekstra: DockPrefs | Telegram: ✅ msg_id:828*
+*Sonraki ekstra: Theme | Telegram: ✅ msg_id:831*
 
-## Cozum Sirasi Hazirligi - 2026-06-28 07:33
+## Cozum Sirasi Hazirligi - 2026-06-28 09:33
 
 - Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
 - Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.

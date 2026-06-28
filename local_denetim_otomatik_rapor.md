@@ -1,9 +1,9 @@
 # Local Denetim Raporu
 
 > Döngü: `15 dakikalık 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 09:14
-> Ana tur odak: **Recomposition, cache, IO, performans** (Performance_Memory)
-> Ekstra denetim: **Hassas veri, log, izin, data export/import guvenligi** (Privacy_Security)
+> Son denetim: 2026-06-28 09:44
+> Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
+> Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 09:14 | Ana: Recomposition, cache, IO, performans | Ekstra: Hassas veri, log, izin, data export/import guvenligi*
+*Denetim tarihi: 2026-06-28 09:44 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
 
 ---
 
