@@ -39,7 +39,7 @@
 
 ---
 
-| 2026-06-28 13:03 | Cron #13 | **Compose Compiler Stabilite Raporu** — `build.gradle.kts`'ye `composeCompiler { reportsDestination = ... }` ekle, her build'de hangi composable'ların unstable/skippable olmadığını raporla. compose-expert skill ile entegre, E13/E14 benzeri hataları build aşamasında yakalar. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | Bekliyor |
+| 2026-06-28 13:03 | Cron #13 | **Compose Compiler Stabilite Raporu** — `build.gradle.kts`'ye `composeCompiler { reportsDestination = ... }` ekle, her build'de hangi composable'ların unstable/skippable olmadığını raporla. compose-expert skill ile entegre, E13/E14 benzeri hataları build aşamasında yakalar. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | [TAMAMLANDI D186] |
 | 2026-06-28 14:03 | Meta-audit | **LEARNINGS→audit.ps1 Coverage Matrix** — Her LEARNINGS hatasina (E1-E14) karsi audit.ps1 kurali var mi matrix'i olustur. E9 (@Volatile→AtomicBoolean) eksikti, CE6 eklendi. Sistematik coverage kontrolu her 6 dongude bir otomatik yapilsin. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | CE6 eklendi, coverage %93 (13/14) |
 | 2026-06-28 14:14 | Meta-audit | **E8 Guard Pattern Audit Kurali (CE7)** — `if (map.isNotEmpty())` guard pattern'ini tara. E8'de bildirim badge temizlemede guard kaldirilmisti. Benzer pattern'ler (bos koleksiyon guard'i gereksiz yerde) taranip false-positive olmayanlar isaretlenmeli. (KV:2 · U:4 · BR:2 · EA:2 = **10 puan 🟡**) | Bekliyor |
 
