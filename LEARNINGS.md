@@ -172,4 +172,12 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-*Son güncelleme: 2026-06-22 — v6: AppClassifierAssets singleton mimarisi eklendi (D131). Lokal AI gateway (all99, http://localhost:20128/v1) entegre edildi — scripts/local_ai.py, .env LOCAL_AI_* değişkenleri.*
+### [2026-06-28] KiloCode audit.ps1 Encoding Tuzağı — Tekrar: 1 | Öncelik: YÜKSEK
+**Sorun:** KiloCode otomatik olarak audit.ps1'e kural ekliyor. Eklenen kuralların description alanında curly quote (`'` U+2019) veya double-encoded em dash (`â€"`) olunca PowerShell 5.1 syntax parser patlatıyor — script tamamen çalışmıyor.
+**Fix:** Description alanlarında daima ASCII-safe string kullan (tek tırnak → `'`, em dash → `-`). Mevcut kuralları kaldırarak temiz versiyon yaz.
+**Test:** `.\scripts\audit.ps1 -DryRun` — çıktı görünüyorsa syntax OK.
+**Bağlantı:** audit.ps1'deki K1-Y8 kurallarının çoğu artık yanlış alarm (D144-D151'de çözüldü). Yeni gerçek kurallar eklenecekse ASCII-safe olmalı.
+
+---
+
+*Son güncelleme: 2026-06-28 — v7: KiloCode audit encoding tuzağı eklendi (D152). audit.ps1 stale kuralları temizlendi (D144-D151).*

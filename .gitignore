@@ -48,6 +48,9 @@ docs/all_code.txt
 docs/task/
 app/google-services.json
 
+# QA otomatik raporlar (geçici build artifact)
+qa/reports/
+
 *.bak
 build_out*.txt
 apk_build_latest.txt

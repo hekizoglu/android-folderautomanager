@@ -140,3 +140,9 @@
 **Yapılanlar:** assembleDebug BAŞARILI 41s (cache). APK 25.77 MB. Telegram'a gönderildi. CI workflow'ları workflow_dispatch'e alındı (push triggerı kaldırıldı).
 **Dosyalar:** .github/workflows/*.yml
 **Sonraki:** 45 dk döngü devam — FİKİRLER yüksek puanlı görevler.
+
+## Döngü D151 — 2026-06-28
+**Yapılanlar:** 5-skill kurulum ve test: compose-expert (.claude/skills/, 27 ref + 6 source), code-review (built-in), security-review (built-in), caveman (npx skill-caveman, %65 token tasarrufu). Saatlik cron e5e7066c kuruldu. audit.ps1'e CE1-CE5 compose-expert kuralları eklendi (remember config-key, indexOf, Canvas zero-size, derivedStateOf, modifier sırası). Telegram bildirimi test edildi (msg_id:820). Rapor formatı sadeleştirildi (tarih-saat + bug bulunamadı).
+**Agent:** WebSearch (aitmpl.com, caveman, compose-skill)
+**Dosyalar:** .claude/skills/compose-expert/, .claude/skills/caveman/, scripts/audit.ps1, local_denetim_raporu.md
+**Sonraki:** Cron otonom — 5-skill + ekstra rotasyon saatlik.
