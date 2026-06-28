@@ -11,6 +11,7 @@
 | `local_ai.py` | `python scripts/local_ai.py "soru"` | Lokal AI gateway (localhost:20128) üzerinden model sorgusu. Offline ise hata verir. |
 | `audit.ps1` | `.\scripts\audit.ps1` | 15 dakikalık odak rotasyonlu statik kod denetimi. Çıktı: local_denetim_raporu.md |
 | `add_defender_exclusion.ps1` | Çift tıkla → UAC Evet | Windows Defender'dan Gradle build dizinini çıkarır (CS-3 için). |
+| `version_bump.ps1` | `.\scripts\version_bump.ps1 patch` | versionCode+1, versionName patch/minor/major artırır. app/build.gradle.kts günceller. |
 
 ## Notlar
 

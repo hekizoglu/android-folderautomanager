@@ -215,3 +215,8 @@
 **Yapılanlar:** assembleDebug BUILD SUCCESSFUL 41s, APK 25.77 MB Telegram #833. D163-D166 özet: LEARNINGS E15+E16, scripts/README, Maestro flow06, build OK
 **Agent:** —
 **Sonraki:** D167 — küçük iyileştirme, D170 = BUILD
+
+## D167 — 11:16
+**Yapılanlar:** scripts/version_bump.ps1 eklendi (patch/minor/major otomatik versiyon artırma); scripts/README.md guncellendi; local_denetim encoding fix
+**Agent:** —
+**Sonraki:** D168 — küçük iyileştirme, D170 = BUILD
