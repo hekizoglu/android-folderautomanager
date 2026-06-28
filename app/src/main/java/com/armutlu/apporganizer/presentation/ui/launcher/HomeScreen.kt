@@ -112,8 +112,12 @@ fun HomeScreen(
     var autoFolderSizeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
     val configuration = LocalConfiguration.current
-    // Ekrana taşmayı önle: 4 sütun + 32dp toplam kenar boşluğu
-    val maxFolderSizeDp = ((configuration.screenWidthDp - 32) / 4).coerceIn(48, 92)
+    val screenColumns = when {
+        configuration.screenWidthDp >= 840 -> 6
+        configuration.screenWidthDp >= 600 -> 5
+        else -> 4
+    }
+    val maxFolderSizeDp = ((configuration.screenWidthDp - 32) / screenColumns).coerceIn(48, 96)
     val effectiveFolderSizeDp = if (autoFolderSizeEnabled) maxFolderSizeDp else folderSizeDp.coerceAtMost(maxFolderSizeDp)
     var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
     // Ayar toggle'ları — DisposableEffect listener ile reaktif
@@ -510,6 +514,7 @@ fun HomeScreen(
                 pagerState = pagerState,
                 displayFolders = displayFolders,
                 pageSize = pageSize,
+                columnsCount = screenColumns,
                 dragFromIndex = dragFromIndex,
                 dragToIndex = dragToIndex,
                 dragOffsetX = dragOffsetX,

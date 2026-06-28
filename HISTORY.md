@@ -250,3 +250,8 @@
 **Yapılanlar:** Onboarding Ayar Sihirbazı (⭐ 15 puan) — QUICK_SETTINGS adımı aktif edildi; adım sırası düzeltildi (THEME_SELECT→QUICK_SETTINGS→CLASSIFY_MODE→SET_LAUNCHER→DONE); 4 interaktif toggle: Widget, Öneri, Arama, Blur
 **Agent:** Yok
 **Sonraki:** Tablet Desteği (⭐ 16 puan)
+
+## Döngü D174 — 16:58
+**Yapılanlar:** Tablet Desteği (⭐ 16 puan) — FolderPager adaptive columns: 600dp+=5 sütun, 840dp+=6 sütun; maxFolderSizeDp tablet'e göre yeniden hesaplandı; APK 25.77 MB
+**Agent:** Yok
+**Sonraki:** 3 saatlik döngü — denetim + encode

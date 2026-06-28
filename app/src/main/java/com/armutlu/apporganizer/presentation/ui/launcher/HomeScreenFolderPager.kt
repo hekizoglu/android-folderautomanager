@@ -25,6 +25,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalConfiguration
 import com.armutlu.apporganizer.utils.AppAnalytics
 
 @Composable
@@ -32,6 +33,7 @@ internal fun FolderPager(
     pagerState: PagerState,
     displayFolders: List<AppFolder>,
     pageSize: Int,
+    columnsCount: Int = 0,
     dragFromIndex: Int?,
     dragToIndex: Int?,
     @Suppress("UNUSED_PARAMETER") dragOffsetX: Float,
@@ -59,6 +61,13 @@ internal fun FolderPager(
     onHomeLongPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val configuration = LocalConfiguration.current
+    val columns = when {
+        columnsCount > 0 -> columnsCount
+        configuration.screenWidthDp >= 840 -> 6
+        configuration.screenWidthDp >= 600 -> 5
+        else -> 4
+    }
     HorizontalPager(
         state = pagerState,
         modifier = modifier
@@ -66,7 +75,7 @@ internal fun FolderPager(
         val pageStart = page * pageSize
         val pageFolders = displayFolders.drop(pageStart).take(pageSize)
         LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(columns),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),

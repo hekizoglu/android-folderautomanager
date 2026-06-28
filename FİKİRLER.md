@@ -48,6 +48,9 @@
 | 2026-06-28 | Rakip | **Pixel Launcher Eksikleri Bizde Var** — Icon pack (✅), yedekleme (✅), klasör (✅), gesture özelleştirme (✅), app drawer kategorileri (✅). Pixel'da olmayan 6 özellik bizde var → Play Store listing'te vurgula. (KV:4 · U:5 · BR:1 · EA:4 = **14 puan 🟡**) | Bekliyor |
 | 2026-06-28 | Rakip | **İkon Boyutu Özelleştirme** — Nothing Launcher'da en çok şikayet edilen şey. AppOrganizer'a icon scale ayarı ekle (Ayarlar > Görünüm). (KV:4 · U:4 · BR:1 · EA:2 = **11 puan 🟡**) | Bekliyor |
 | 2026-06-28 | Rakip | **Safe Mode / Crash Recovery** — Nova'nın yaşadığı crash→downgrade senaryosuna karşı. AppOrganizer'da son 3 build'ten birine otomatik rollback. (KV:5 · U:3 · BR:3 · EA:4 = **15 puan ⭐**) | Bekliyor |
+| 2026-06-28 | Araştırma | **Google Drive Cross-Device Sync (⭐17p)** — WhatsApp benzeri `appDataFolder` API ile otomatik yedekleme. 3 aşama: (1) BackupWorker→Drive upload, (2) Yeni cihazda otomatik restore, (3) FCM push ile canlı sync. Rakiplerin %80'inde yok, en büyük farklılaştırıcı özellik. (KV:5 · U:4 · BR:3 · EA:5 = **17 puan ⭐**)| Bekliyor |
+| 2026-06-28 | Araştırma | **Android 15/16 Edge-to-Edge Tam Uyum** — Android 15'te zorunlu edge-to-edge. Mevcut durum kontrol edilip `WindowInsets` tüm ekranlarda doğru mu taranmalı. Play Store reddi riski. (KV:5 · U:4 · BR:2 · EA:5 = **16 puan ⭐**) | Bekliyor |
+| 2026-06-28 | Araştırma | **Launcher Crash Rate İzleme** — Nova'nın %15 crash rate skandalı. AppOrganizer'a Crashlytics + ANR izleme + otomatik safe mode. Kullanıcı güveni için kritik. (KV:4 · U:4 · BR:2 · EA:4 = **14 puan 🟡**) | Bekliyor |
 
 *Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-28 14:30*
 *🏆 Piyasa Puani: 7.8/10 | Tahmini 1 yillik indirme: 5K-15K (organik, niche launcher)*
