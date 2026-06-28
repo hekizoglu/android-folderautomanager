@@ -255,3 +255,8 @@
 **Yapılanlar:** Tablet Desteği (⭐ 16 puan) — FolderPager adaptive columns: 600dp+=5 sütun, 840dp+=6 sütun; maxFolderSizeDp tablet'e göre yeniden hesaplandı; APK 25.77 MB
 **Agent:** Yok
 **Sonraki:** 3 saatlik döngü — denetim + encode
+
+## Döngü D175 — 17:18
+**Yapılanlar:** Android 15/16 Edge-to-Edge — MainActivity'ye enableEdgeToEdge() eklendi (LauncherActivity'de zaten vardı); encode fix; APK 25.77 MB
+**Agent:** Yok
+**Sonraki:** Bir sonraki ⭐ özellik

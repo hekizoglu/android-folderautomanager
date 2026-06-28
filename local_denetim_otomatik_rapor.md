@@ -1,9 +1,9 @@
-﻿# Local Denetim Raporu
+# Local Denetim Raporu
 
-> DÃ¶ngÃ¼: `15 dakikalÄ±k 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 13:44
-> Ana tur odak: **Kategori ekleme/duzenleme/silme** (Category_CRUD)
-> Ekstra denetim: **AppRepository, DAO, data mapping, sorgu dogrulama** (Repository_DataLayer)
+> Döngü: `15 dakikalık 8+1 odak rotasyonu`
+> Son denetim: 2026-06-28 17:14
+> Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
+> Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 13:44 | Ana: Kategori ekleme/duzenleme/silme | Ekstra: AppRepository, DAO, data mapping, sorgu dogrulama*
+*Denetim tarihi: 2026-06-28 17:14 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
 
 ---
 
