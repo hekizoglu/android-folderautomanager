@@ -180,3 +180,8 @@
 **Yapılanlar:** fix_encoding.py terminal cp1254 emoji UnicodeEncodeError giderildi (sys.stdout.reconfigure); PYTHONIOENCODING olmadan da çalışıyor; local_denetim encoding düzeltildi
 **Agent:** —
 **Sonraki:** D160 — FİKİRLER yüksek puan veya kod iyileştirme
+
+## D160 — 07:51
+**Yapılanlar:** .gitignore __pycache__//*.pyc/*.pyo eklendi; local_denetim encoding fix_encoding.py ile otomatik düzeltildi
+**Agent:** —
+**Sonraki:** D161 — kod iyileştirme veya onay bekleyen FİKİRLER
