@@ -32,6 +32,7 @@ maestro test --device emulator-5554 .maestro/02_all_apps_drawer.yaml
 | `01_home_screen.yaml` | HomeScreen yükleme, klasör listesi |
 | `02_all_apps_drawer.yaml` | Swipe ile drawer açma, arama |
 | `03_settings_navigation.yaml` | Uzun basış menü, Ayarlar navigasyonu |
+| `04_folder_interaction.yaml` | Klasör tıklama (FolderSheet), uzun basış context menü |
 
 ## Notlar
 

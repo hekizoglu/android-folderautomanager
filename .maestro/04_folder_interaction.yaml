@@ -1,0 +1,30 @@
+appId: com.armutlu.apporganizer
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: home_initial
+# Klasore tek tikla (FolderSheet ac)
+- tapOn:
+    point: "25%, 40%"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: folder_sheet_open
+# FolderSheet'i kapat (swipe asagi)
+- swipe:
+    direction: DOWN
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+# Klasore uzun bas (yeniden adlandirma/renk menüsü)
+- longPressOn:
+    point: "25%, 40%"
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: folder_context_menu
+# Escape ile kapat
+- pressKey: Back
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: home_after_folder_interaction
