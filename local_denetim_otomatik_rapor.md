@@ -1,9 +1,9 @@
 # Local Denetim Raporu
 
 > Döngü: `15 dakikalık 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 09:44
-> Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
-> Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
+> Son denetim: 2026-06-28 10:14
+> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
+> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 09:44 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
+*Denetim tarihi: 2026-06-28 10:14 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*
 
 ---
 

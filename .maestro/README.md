@@ -33,6 +33,8 @@ maestro test --device emulator-5554 .maestro/02_all_apps_drawer.yaml
 | `02_all_apps_drawer.yaml` | Swipe ile drawer açma, arama |
 | `03_settings_navigation.yaml` | Uzun basış menü, Ayarlar navigasyonu |
 | `04_folder_interaction.yaml` | Klasör tıklama (FolderSheet), uzun basış context menü |
+| `05_dock_edit.yaml` | Dock uzun basış, DockEditSheet açma/kapama |
+| `06_notification_badge.yaml` | Badge görünürlük: HomeScreen + AllAppsDrawer + sayfa 2 |
 
 ## Notlar
 
