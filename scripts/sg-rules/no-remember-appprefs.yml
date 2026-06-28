@@ -1,0 +1,6 @@
+id: no-remember-appprefs
+language: kotlin
+severity: warning
+message: "AppPrefs'i remember{} içinde okuma — Settings'ten dönünce güncellenmez. DisposableEffect + SharedPrefsListener kullan."
+rule:
+  pattern: "remember { AppPrefs.$$$($$$) }"

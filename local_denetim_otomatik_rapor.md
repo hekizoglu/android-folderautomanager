@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 02:35
+> Son denetim: 2026-06-29 02:59
 > Dongu: **#139** | Tier: **1**
-> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
-> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
+> Ana tur odak: **Recomposition, cache, IO, performans** (Performance_Memory)
+> Ekstra denetim: **Hassas veri, log, izin, data export/import guvenligi** (Privacy_Security)
 
 ---
 
@@ -25,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-06-29 02:35 | Dongu: #139 | Tier: 1 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*
+*Denetim tarihi: 2026-06-29 02:59 | Dongu: #139 | Tier: 1 | Ana: Recomposition, cache, IO, performans | Ekstra: Hassas veri, log, izin, data export/import guvenligi*

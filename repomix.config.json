@@ -1,0 +1,32 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "showLineNumbers": true,
+    "copyToClipboard": false,
+    "includeEmptyDirectories": false
+  },
+  "include": [
+    "app/src/main/java/**/*.kt",
+    "app/src/main/AndroidManifest.xml",
+    "app/build.gradle.kts",
+    "gradle.properties",
+    "CLAUDE.md",
+    "LEARNINGS.md"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "app/build/**",
+      ".gradle/**",
+      "*.apk",
+      "*.aab",
+      ".env",
+      "keystore.properties"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}

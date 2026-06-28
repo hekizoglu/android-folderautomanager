@@ -1,0 +1,39 @@
+# Build outputs
+app/build/
+build/
+.gradle/
+
+# Generated files
+app/src/main/java/**/*_Generated.kt
+app/schemas/
+
+# Binaries
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Large assets
+assets/app_categories.json
+
+# IDE
+.idea/
+*.iml
+
+# Secrets
+.env
+keystore.properties
+google-services.json
+
+# Tests (include only for review tasks)
+app/src/test/
+app/src/androidTest/
+
+# Scripts output
+scripts/audit_*.txt
+scripts/loop_count.txt
+qa/
+
+# Docs
+HISTORY.md
+harcananvakit.md

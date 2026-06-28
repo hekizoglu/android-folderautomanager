@@ -4,6 +4,13 @@
 
 ---
 
+## Döngü 140 — 2026-06-29 [5 ARAÇ KURULUM + PRIVACY CENTER]
+**Yapılanlar:** Privacy Center UI TAMAMLANDI (SettingsBackupAboutSection + AppListViewModel). ast-grep 0.44.0 kuruldu+PATH, sgconfig.yml+sg-rules/, repomix.config.json+.repomixignore+scripts/repomix-run.ps1 oluşturuldu. ast-grep ilk taramada gerçek sorun buldu: HomeScreenComponents.kt:522'de AppPrefs `remember{}` içinde (Settings'ten dönünce güncellenmez).
+**Agent:** —
+**Sonraki:** HomeScreenComponents.kt:522 fix, UsageScore v2 (17p), Smart Search v1 (16p)
+
+---
+
 ## Döngü 135 — 2026-06-29
 **Yapılanlar:** Çift Tıkla Arama (14p) uygulandı — LauncherViewModel'e `openAllAppsWithSearch()`+`focusSearchOnOpen` flow, AllAppsDrawer'a `focusSearchOnOpen`/`onFocusSearchConsumed` parametresi+LaunchedEffect, HomeScreen'e `doubleTapSearchEnabled` guard, AppPrefs'e KEY_DOUBLE_TAP_SEARCH, SettingsHomeScreenSection'a toggle; LEARNINGS E17 eklendi (Kotlin Internal Compiler Error)
 **Agent:** —
