@@ -300,3 +300,9 @@
 **Yapılanlar:** BUILD hatası → düzeltme → BUILD SUCCESSFUL (1m 49s). APK: 31.21 MB. Hatalar: HomeScreen.kt fillMaxHeight import eksik; SettingsBackupAboutSection.kt items/LazyColumn import + FontFamily çift import. Hepsi düzeltildi.
 **Agent:** Yok
 **Sonraki:** Pixel Launcher Eksikleri (14p 🟡) veya İkon Boyutu Özelleştirme (11p)
+## Döngü 184 - 21:58
+**Yapılanlar:** AppIconView.kt effectiveIconSize (iconSize*userIconScale) tüm .size() modifier'lara uygulandı; SettingsAppearanceSection slider %70-130; AppPrefs KEY_ICON_SCALE. BUILD OK 31.21MB
+**Agent:** -
+**CLAUDE.md/LEARNINGS.md:** -
+**Sonraki:** Nova Crash Koruması (12p 🟡) veya Launcher Crash Rate İzleme (14p 🟡)
+
