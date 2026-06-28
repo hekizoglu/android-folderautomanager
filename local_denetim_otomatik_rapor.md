@@ -1,9 +1,9 @@
 # Local Denetim Raporu
 
 > Döngü: `15 dakikalık 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 08:44
-> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
-> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
+> Son denetim: 2026-06-28 09:14
+> Ana tur odak: **Recomposition, cache, IO, performans** (Performance_Memory)
+> Ekstra denetim: **Hassas veri, log, izin, data export/import guvenligi** (Privacy_Security)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 08:44 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*
+*Denetim tarihi: 2026-06-28 09:14 | Ana: Recomposition, cache, IO, performans | Ekstra: Hassas veri, log, izin, data export/import guvenligi*
 
 ---
 

@@ -151,6 +151,8 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 | E12 | PowerShell heredoc `<<'EOF'` syntax hatası | PS 5.1'de bash heredoc çalışmaz | `@'...'@` kullan — kapatan `'@` sıfır indent olmalı |
 | E13 | VerifyError / DVM register limit | Büyük `@Composable` (300+ satır) → register limiti aşılıyor | Fonksiyonlara böl, composable'ı küçült |
 | E14 | `derivedStateOf` + plain String reaktif değil | `searchQuery: String` Compose State değil, `derivedStateOf` izleyemiyor | `remember(searchQuery) { ... }` — key-based invalidation kullan |
+| E15 | `fix_encoding.py` MOJIBAKE dict curly-quote SyntaxError | Edit tool dict key delimiters'ı curly quote yaptı; içerik de `\x9d`/`\x94` içeriyordu — blanket replace content'i de bozdu | Dict'i `_mb(*bs)` fonksiyonu ile byte bazlı oluştur (D156) |
+| E16 | `fix_encoding.py` terminal cp1254 emoji hatası | Windows Türkçe terminal (cp1254) emoji print'i redediyor | `sys.stdout.reconfigure(encoding='utf-8')` ile başta set et (D159) |
 
 ---
 
