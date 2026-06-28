@@ -290,3 +290,8 @@
 **Yapılanlar:** Tablet Desteği (⭐ 16p) - HomeScreen.kt: isTablet=screenWidthDp>=600; AllAppsDrawer tablet'te Modifier.align(CenterEnd).width(380.dp) ile sağ side panel; slideInHorizontally/slideOutHorizontally animasyon; telefonda davranış değişmedi. Adaptif grid D174'ten zaten vardı.
 **Agent:** Yok
 **Sonraki:** Tüm ⭐ özellikler tamamlandı - 12+ puanlı 🟡 özellikler değerlendirilecek
+
+## Döngü D182 - 23:25
+**Yapılanlar:** Yedek Karşılaştırma + Eksik Uygulama Tespiti (14p 🟡) - BackupManager.ImportResult'a missingPackages:List<String> eklendi; importFromJson yedekte olan ama cihazda yüklü olmayan paketleri toplar; SettingsBackupAboutSection'da restore sonrası eksik uygulama dialogu: liste kopyalanabilir, her öğe Play Store'a tıklanabilir, "Hepsini Aç" butonu.
+**Agent:** Yok
+**Sonraki:** Pixel Launcher Eksikleri Bizde Var (14p 🟡) - Play Store listing vurgusu

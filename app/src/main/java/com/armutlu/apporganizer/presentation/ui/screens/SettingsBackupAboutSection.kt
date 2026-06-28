@@ -150,6 +150,9 @@ internal fun LazyListScope.settingsBackupAboutSection(
         var backupLoading by remember { mutableStateOf(false) }
         var showRestoreDialog by remember { mutableStateOf(false) }
         var pendingRestoreUri by remember { mutableStateOf<android.net.Uri?>(null) }
+        var missingPackages by remember { mutableStateOf<List<String>>(emptyList()) }
+        var showMissingDialog by remember { mutableStateOf(false) }
+        val clipboardManager = LocalClipboardManager.current
         val filePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
             pendingRestoreUri = uri
@@ -190,6 +193,72 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 }
             }
         }
+        // Eksik uygulama dialogu — restore sonrası yedekte olup cihazda yüklü olmayanlar
+        if (showMissingDialog && missingPackages.isNotEmpty()) {
+            AlertDialog(
+                onDismissRequest = { showMissingDialog = false },
+                title = { Text("${missingPackages.size} Eksik Uygulama") },
+                text = {
+                    Column {
+                        Text(
+                            "Yedekte bulunan ancak bu cihazda yüklü olmayan uygulamalar:",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        androidx.compose.foundation.lazy.LazyColumn(
+                            modifier = Modifier.heightIn(max = 240.dp)
+                        ) {
+                            androidx.compose.foundation.lazy.items(missingPackages) { pkg ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            val intent = android.content.Intent(
+                                                android.content.Intent.ACTION_VIEW,
+                                                android.net.Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
+                                            )
+                                            context.startActivity(intent)
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.ShoppingBag, null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(pkg, fontSize = 12.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        // Hepsini sırayla Play Store'da aç
+                        missingPackages.forEach { pkg ->
+                            val intent = android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
+                            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent)
+                        }
+                        showMissingDialog = false
+                    }) { Text("Hepsini Play Store'da Aç") }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        // Listeyi panoya kopyala
+                        val text = missingPackages.joinToString("\n")
+                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(text))
+                        android.widget.Toast.makeText(context, "Kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
+                    }) { Text("Kopyala") }
+                }
+            )
+        }
+
         if (showRestoreDialog && pendingRestoreUri != null) {
             AlertDialog(
                 onDismissRequest = {
@@ -206,10 +275,19 @@ internal fun LazyListScope.settingsBackupAboutSection(
                             runCatching {
                                 val json = context.contentResolver.openInputStream(pendingRestoreUri!!)?.bufferedReader()?.readText() ?: return@runCatching
                                 val result = viewModel.importBackup(json)
-                                android.widget.Toast.makeText(context,
-                                    if (result.success) "${result.updatedCount} uygulama geri yüklendi"
-                                    else "Geri yükleme başarısız: ${result.error}",
-                                    android.widget.Toast.LENGTH_LONG).show()
+                                if (result.success) {
+                                    android.widget.Toast.makeText(context,
+                                        "${result.updatedCount} uygulama geri yüklendi",
+                                        android.widget.Toast.LENGTH_SHORT).show()
+                                    if (result.missingPackages.isNotEmpty()) {
+                                        missingPackages = result.missingPackages
+                                        showMissingDialog = true
+                                    }
+                                } else {
+                                    android.widget.Toast.makeText(context,
+                                        "Geri yükleme başarısız: ${result.error}",
+                                        android.widget.Toast.LENGTH_LONG).show()
+                                }
                             }
                             backupLoading = false
                             pendingRestoreUri = null

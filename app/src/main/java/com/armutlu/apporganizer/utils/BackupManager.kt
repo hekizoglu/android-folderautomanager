@@ -72,6 +72,7 @@ object BackupManager {
                 val root = JSONObject(json)
                 val appsArray = root.getJSONArray("apps")
                 var updated = 0
+                val missing = mutableListOf<String>()
                 for (i in 0 until appsArray.length()) {
                     val obj = appsArray.getJSONObject(i)
                     val pkg = obj.getString("packageName")
@@ -85,9 +86,12 @@ object BackupManager {
                         if (usageCount > 0) repository.updateUsageCount(pkg, usageCount)
                         if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
                         updated++
+                    } else {
+                        // Yedekte var, cihazda yüklü değil
+                        missing.add(pkg)
                     }
                 }
-                ImportResult(success = true, updatedCount = updated)
+                ImportResult(success = true, updatedCount = updated, missingPackages = missing)
             }.getOrElse { e ->
                 Timber.e(e, "Import failed")
                 ImportResult(success = false, error = e.message)
@@ -97,6 +101,7 @@ object BackupManager {
     data class ImportResult(
         val success: Boolean,
         val updatedCount: Int = 0,
-        val error: String? = null
+        val error: String? = null,
+        val missingPackages: List<String> = emptyList()
     )
 }
