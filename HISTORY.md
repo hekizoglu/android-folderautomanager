@@ -336,3 +336,9 @@
 **CLAUDE.md/LEARNINGS.md:** --
 **Sonraki:** FİKİRLER listesi tukendi, yeni fikirler uretilecek
 
+## Dongü 190 -- 00:58
+**Yapılanlar:** UsageReportScreen oluşturuldu (15p): en çok/az kullanılan bar grafik, 30g+ açılmayan listesi, gizle butonu. ViewModel.setAppHidden() + route + Settings butonu. BUILD OK 24.68MB
+**Agent:** --
+**CLAUDE.md/LEARNINGS.md:** --
+**Sonraki:** Cift Tiklama Arama (14p) veya Klasor Rengi Otomatik (13p)
+
