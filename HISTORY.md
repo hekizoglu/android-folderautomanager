@@ -270,3 +270,8 @@
 **Yapılanlar:** Android 15/16 Edge-to-Edge Tam Uyum (⭐ 16 puan) - AllAppsDrawer.kt'de eksik WindowInsets düzeltildi: içerik Box'a statusBarsPadding()+navigationBarsPadding() eklendi; blur arka plan sistem barlarının arkasında frosted-glass görünümünü korur. FİKİRLER: Safe Mode [TAMAMLANDI D176] güncellendi.
 **Agent:** Yok
 **Sonraki:** Google Drive Cross-Device Sync (⭐ 17p) - en yüksek puanlı bekleyen özellik
+
+## Döngü D178 - 19:30
+**Yapılanlar:** Google Drive SAF Yedekleme (⭐ 17p) - AppPrefs'e KEY_DRIVE_FOLDER_URI eklendi; BackupWorker DocumentFile.fromTreeUri ile Drive'a JSON kopyalıyor; SettingsBackupAboutSection'a OpenDocumentTree launcher + Drive Klasörü kartı eklendi; build.gradle.kts'e androidx.documentfile:1.0.1 bağımlılığı eklendi. Sıfır ek izin, SAF persistable URI yeterli. google-services.json gerektirmez.
+**Agent:** Google Drive API araştırma (yerel AI) - SAF vs REST API karşılaştırması; SAF önerildi (0 bağımlılık, WorkManager uyumlu)
+**Sonraki:** Gesture/Multitasking Uyumluluğu (⭐ 16p) veya build döngüsü (D180'de)
