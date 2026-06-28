@@ -225,3 +225,8 @@
 **Yapılanlar:** COZULEMEYEN_SORUNLAR.md temizlendi (8x sahte LD-* giris silindi); run_local_denetim_cycle.ps1 duzeltildi — artik sadece gercek acik bulgu varsa COZULEMEYEN_SORUNLAR.md'ye yazar
 **Bug:** KiloCode saatlik script kosulsuz Append-UnresolvedPlaceholder cagiriyordu; TOPLAM kontrolu eklendi
 **Sonraki:** D169 + D170 = BUILD
+
+## Döngü D169 — 11:44
+**Yapılanlar:** FİKİRLER.md + ROADMAP.md — Yedek Karşılaştırma özelliği eklendi (14 puan); run_local_denetim_cycle.ps1 koşulsuz yazma hatası D168'de düzeltildi
+**Agent:** Yok
+**Sonraki:** D170 — denetim dosyaları encode kontrolü + lokal denetim
