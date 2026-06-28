@@ -162,11 +162,20 @@ if ($Mode -eq "Full") {
     }
     Append-RunNote -Title "Tam Denetim Turu" -Lines $notes
 } else {
-    Append-UnresolvedPlaceholder
-    Append-RunNote -Title "Cozum Sirasi Hazirligi" -Lines @(
-        "Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.",
-        'Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.'
-    )
+    # Sadece gercek acik bulgu varsa COZULEMEYEN_SORUNLAR.md'ye yaz
+    $reportContent = if (Test-Path "local_denetim_raporu.md") { Get-Content "local_denetim_raporu.md" -Raw -Encoding UTF8 } else { "" }
+    $hasOpenFindings = $reportContent -match 'TOPLAM\s*\|\s*[1-9]'
+    if ($hasOpenFindings) {
+        Append-UnresolvedPlaceholder
+        Append-RunNote -Title "Cozum Sirasi Hazirligi" -Lines @(
+            "Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.",
+            'Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.'
+        )
+    } else {
+        Append-RunNote -Title "Cozum Sirasi Hazirligi" -Lines @(
+            "Rapor incelendi — acik bulgu yok, COZULEMEYEN_SORUNLAR.md guncellenmedi."
+        )
+    }
 }
 
 $shouldBuild = ($cycleNumber % 3 -eq 0)

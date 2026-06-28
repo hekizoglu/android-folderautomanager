@@ -34,6 +34,5 @@ Remove-Item -Recurse -Force app\build
 
 ---
 
----
-
 *Son güncelleme: 2026-06-28 | Çözülenler → HISTORY.md "Tamamlananlar Arşivi" bölümüne taşındı*
+*Not: LD-* sahte girişler (2026-06-28 03:33–10:33) temizlendi — run_local_denetim_cycle.ps1 koşulsuz yazıyordu, D168'de düzeltildi.*
