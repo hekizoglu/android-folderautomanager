@@ -240,3 +240,8 @@
 **Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi (KiloCode 15dk döngüsü tekrar bozmuş); CS-3 değişiklik yok
 **Agent:** Yok
 **Sonraki:** D172 — rutin
+
+## Döngü D172 — 12:50
+**Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi (KiloCode tekrarlayan sorun); açık bulgu yok
+**Agent:** Yok
+**Sonraki:** D173 — rutin
