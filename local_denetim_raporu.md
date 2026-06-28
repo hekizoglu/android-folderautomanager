@@ -18,10 +18,24 @@
 
 ---
 
-## Bu Dongü Sonucu
+## Cron Denetim Gecmisi
 
-- Acik bulgu tespit edilmedi.
+| Tarih-Saat | 5-Skill | Ekstra | Bug |
+|------------|---------|--------|-----|
+| 2026-06-28 02:45 | ✅ | AppClassifier | Bulunamadi |
+| 2026-06-28 03:03 | ✅ | Room DB | Bulunamadi |
+| 2026-06-28 03:10 | ✅ | WorkManager | Bulunamadi |
+| 2026-06-28 04:03 | ✅ | NotificationListener | Bulunamadi |
+| 2026-06-28 05:03 | ✅ | Onboarding | Bulunamadi |
+| 2026-06-28 06:03 | ✅ | Widget | Bulunamadi |
 
----
+*Sonraki ekstra: IconCache | Telegram: ✅ msg_id:826*
+## Cozum Sirasi Hazirligi - 2026-06-28 05:33
 
-*Denetim tarihi: 2026-06-28 03:55*
+- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
+- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
+
+## Cozum Sirasi Hazirligi - 2026-06-28 06:33
+
+- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
+- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.

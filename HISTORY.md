@@ -165,3 +165,8 @@
 ## Döngü D154 — 2026-06-28 BUILD
 **Yapılanlar:** assembleDebug BAŞARILI 35s (cache). APK 25.77 MB. Telegram'a gönderildi.
 **Sonraki:** D155 — 45 dk döngü devam.
+
+## D155 — 03:56
+**Yapılanlar:** .maestro/04_folder_interaction.yaml eklendi (klasör tıklama + uzun basış flow); local_denetim encoding düzeltildi (KiloCode bozukluk); README flow tablosu güncellendi
+**Agent:** —
+**Sonraki:** D156 — FİKİRLER yüksek puan (Onboarding/Tablet onay bekliyor), küçük iyileştirme ara

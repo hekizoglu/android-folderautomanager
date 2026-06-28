@@ -36,35 +36,42 @@ REPLACEMENTS = {
 }
 
 # Yaygın mojibake dizileri (UTF-8 yanlış decode edilmiş) — düz eşleme
+# Keys: UTF-8 bytes cp1252 ile yanlış okunmuş Unicode metin olarak
+# Yaygın mojibake dizileri (UTF-8 yanlış decode edilmiş)
+# Keys: UTF-8 byte dizisi cp1252 ile yanlış okunmuş — byte bazlı hesaplama
+def _mb(*bs):
+    return bytes(bs).decode('cp1252', errors='replace')
+
 MOJIBAKE = {
-    “â‚¬”: “€”,
-    “â€œ”: '”',
-    “â€\x9d”: '”',
-    “â€™”: “'”,
-    “â€””: “-”,
-    “â€””: “-”,
+    _mb(0xe2, 0x82, 0xac): chr(0x20ac),  # euro sign
+    _mb(0xe2, 0x80, 0x9c): chr(0x201c),  # left double quotation mark
+    _mb(0xe2, 0x80, 0x9d): chr(0x201d),  # right double quotation mark
+    _mb(0xe2, 0x80, 0x99): chr(0x2019),  # right single quotation mark
+    _mb(0xe2, 0x80, 0x93): chr(0x2013),  # en-dash
+    _mb(0xe2, 0x80, 0x94): chr(0x2014),  # em-dash
 }
+
 
 # Türkçe double-encoded UTF-8 düzeltme tablosu
 # Kaynak: Add-Content / PowerShell UTF-16LE → git → UTF-8 çift encode zinciri
 # Her dizi: (bozuk_unicode_str, doğru_karakter)
 TURKISH_DOUBLE_ENCODED = [
-    (“Ã¶”, “ö”),   # ö — U+00C3 U+00B6
-    (“Ã¼”, “ü”),   # ü
-    (“Ä±”, “ı”),   # ı — U+00C4 U+00B1
-    (“Ã§”, “ç”),   # ç
-    (“Ä°”, “İ”),   # İ
-    (“ÄŸ”, “ğ”),   # ğ — U+00C4 U+009F
-    (“ÅŸ”, “ş”),   # ş — U+00C5 U+0178
-    (“Åž”, “Ş”),   # Ş
-    (“Ã–“, “Ö”),   # Ö
-    (“Ãœ”, “Ü”),   # Ü
-    (“Ã‡”, “Ç”),   # Ç
-    (“Ä\x9e”, “Ğ”),  # Ğ
-    (“Ã-”, “Ö”),   # Ö (Ã\x96 → “-” ye dönüştükten sonra kalan)
+    ("Ã¶", "ö"),   # ö — U+00C3 U+00B6
+    ("Ã¼", "ü"),   # ü
+    ("Ä±", "ı"),   # ı — U+00C4 U+00B1
+    ("Ã§", "ç"),   # ç
+    ("Ä°", "İ"),   # İ
+    ("ÄŸ", "ğ"),   # ğ — U+00C4 U+009F
+    ("ÅŸ", "ş"),   # ş — U+00C5 U+0178
+    ("Åž", "Ş"),   # Ş
+    ("Ã–", "Ö"),   # Ö
+    ("Ãœ", "Ü"),   # Ü
+    ("Ã‡", "Ç"),   # Ç
+    ("Ä\x9e", "Ğ"),  # Ğ
+    ("Ã-", "Ö"),   # Ö (Ã\x96 → "-" ye dönüştükten sonra kalan)
     # Arrow ve özel semboller
-    (“\xe2†\x27”, “->”),  # â†' (→ triple encode)
-    (“â†'”, “->”),              # → bozuk
+    ("\xe2†\x27", "->"),  # â†' (→ triple encode)
+    ("â†'", "->"),              # → bozuk
 ]
 
 TEXT_EXT = {".kt", ".kts", ".java", ".xml", ".md", ".json", ".gradle", ".txt", ".py", ".ps1"}
@@ -88,7 +95,7 @@ def fix_content(text: str):
             n = text.count(bad)
             text = text.replace(bad, good)
             name = {
-                "\u201c": "“", "\u201d": "”", "\u2018": "‘", "\u2019": "’",
+                "\u201c": """, "\u201d": """, "\u2018": "'", "\u2019": "'",
                 "\u00a0": "NBSP", "\u200b": "ZWSP", "\u200c": "ZWNJ",
                 "\u200d": "ZWJ", "\ufeff": "BOM", "\u2013": "en-dash", "\u2014": "em-dash",
             }.get(bad, repr(bad))
