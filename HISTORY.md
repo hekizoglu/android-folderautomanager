@@ -220,3 +220,8 @@
 **Yapılanlar:** scripts/version_bump.ps1 eklendi (patch/minor/major otomatik versiyon artırma); scripts/README.md guncellendi; local_denetim encoding fix
 **Agent:** —
 **Sonraki:** D168 — küçük iyileştirme, D170 = BUILD
+
+## D168 — 11:33
+**Yapılanlar:** COZULEMEYEN_SORUNLAR.md temizlendi (8x sahte LD-* giris silindi); run_local_denetim_cycle.ps1 duzeltildi — artik sadece gercek acik bulgu varsa COZULEMEYEN_SORUNLAR.md'ye yazar
+**Bug:** KiloCode saatlik script kosulsuz Append-UnresolvedPlaceholder cagiriyordu; TOPLAM kontrolu eklendi
+**Sonraki:** D169 + D170 = BUILD
