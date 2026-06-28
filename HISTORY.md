@@ -205,3 +205,8 @@
 **Yapılanlar:** scripts/README.md eklendi (8 yardımcı script, kullanım örnekleri, hook notları); local_denetim encoding fix
 **Agent:** —
 **Sonraki:** D165 — küçük iyileştirme, D166 = BUILD
+
+## D165 — 10:16
+**Yapılanlar:** .maestro/06_notification_badge.yaml eklendi (badge görünürlük testi: HomeScreen+Drawer+sayfa2); README flow tablosu 6 akışa tamamlandı; local_denetim encoding fix
+**Agent:** —
+**Sonraki:** D166 = BUILD döngüsü
