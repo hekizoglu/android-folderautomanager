@@ -31,13 +31,14 @@
 
 | Tarih | Puan | Madde | Durum |
 |-------|------|-------|-------|
-| 2026-06-29 | **17 ⭐** | **Folder Swipe-Up → En Sık Kullanılan Uygulama** — Klasör kartına yukarı kaydırınca o klasördeki en çok açılan uygulama doğrudan başlar (Sosyal→WhatsApp, Finans→Garanti, Spor→Hevy). AppPrefs ile her klasör için override edilebilir. (KV:5 · U:4 · BR:4 · EA:4) | Bekliyor |
+| 2026-06-29 | **17 ⭐** | **Folder Swipe-Up → En Sık Kullanılan Uygulama** — Klasör kartına yukarı kaydırınca o klasördeki en çok açılan uygulama doğrudan başlar (Sosyal→WhatsApp, Finans→Garanti, Spor→Hevy). AppPrefs ile her klasör için override edilebilir. (KV:5 · U:4 · BR:4 · EA:4) | [TAMAMLANDI — FolderTile.kt:131, HomeScreen.kt:543] |
 | 2026-06-29 | **17 ⭐** | **UsageScore Algoritması v2** — Mevcut usageCount+lastUsed yetmez. `score = baseCategory + usageCountWeight + lastUsedBoost + timeOfDayBoost + dayOfWeekBoost + dockFavoriteBoost + notificationBoost - focusModePenalty`. Sabah: Takvim/Gmail/Maps; öğlen: banka/yemek; akşam: spor/müzik; gece: alarm/okuma. (KV:5 · U:3 · BR:4 · EA:5) | Bekliyor |
 | 2026-06-29 | **17 ⭐** | **Privacy Center UI** — Fossify tarzı net gizlilik ekranı: "Uygulama listesi cihazda kalır · İnternete veri gönderilmez · Online DB opsiyonel · Tüm veriyi sıfırla." Settings > Hakkında altına kart + README'ye bölüm. Play Store için zorunlu. (KV:4 · U:5 · BR:5 · EA:3) | Bekliyor |
 | 2026-06-29 | **16 ⭐** | **Smart Search v1 (KISS tarzı)** — AllAppsDrawer aramasını genişlet: uygulama adı + paket + kategori adı aynı anda aranır. "banka" → Finans klasörü + tüm finans uygulamaları; "spor" → Hevy+YouTube Music+Sağlık; "wa ali" → WhatsApp Ali kişisi (ileride). İlk sürümde: app+kategori+shortcut. (KV:5 · U:3 · BR:3 · EA:5) | Bekliyor |
 | 2026-06-29 | **16 ⭐** | **AppOrganizer Assistant Kartları** — Ana ekranda klasörlerin üstünde küçük kart: "Sabah genelde Haritalar açıyorsun", "Finans'ta 3 okunmamış bildirim", "Son 7 gündür açılmayan 12 uygulama var", "WhatsApp bu klasörde en çok açılıyor — swipe-up atanabilir." İlk sürümde AI gerekmez, saf kural motoru. (KV:5 · U:3 · BR:4 · EA:4) | Bekliyor |
 | 2026-06-29 | **15 ⭐** | **Contextual Dock v1** — Dock sabit 4 uygulama değil: 2 kullanıcı sabit + 2 akıllı öneri. Saat+gün+son kullanım+bildirim yoğunluğuna göre değişir. Gündüz: Mail+Takvim; akşam: müzik+sosyal. DockContext veri sınıfı + AppPrefs toggle. (KV:5 · U:3 · BR:3 · EA:4) | Bekliyor |
 | 2026-06-29 | **15 ⭐** | **Manual Category Override** — Long press uygulama → "Kategori Değiştir" → seçim + "Bu kararı hatırla" checkbox. ManualCategoryOverride tablosu (Room) — AppClassifier bu tabloyu exactMatch'ten önce kontrol eder. "Aynı tür uygulamalara uygula" opsiyonu. (KV:4 · U:4 · BR:4 · EA:3) | Bekliyor |
+| 2026-06-29 | **14 🟡** | **Batch Kategori Değiştirme** — AppListScreen çoklu seçim modu: birden fazla uygulama checkbox ile seçilir, tek seferde kategori atanır. "Tümünü Seç" + "Seçimi Temizle" butonları. Kategori taşıma sonrası seçim korunur — zincirleme düzenleme kolaylığı. (KV:4 · U:4 · BR:2 · EA:4) | Bekliyor |
 
 ---
 

@@ -63,5 +63,7 @@
 | 2026-06-29 00:03 | T1 | IconCache | - | Bulunamadi |
 | 2026-06-29 01:03 | T1 | DockPrefs | - | Bulunamadi |
 | 2026-06-29 02:03 | T1 | BackupWorker | - | Bulunamadi |
+| 2026-06-29 01:38 | T1 | Settings etiket (UI) | Navigation routing | Bulunamadi |
+| 2026-06-29 02:12 | T2 | Gesture/Swipe/Drawer + CE | Timber log quality | Bulunamadi |
 
-*29 tur, 0 bug | Tier sistemi D182'de optimize edildi | Fixler: excludeFromRecents + klasor hint ↑*
+*31 tur, 0 bug | Meta-audit: 5/17 (%29) LEARNINGS kapsama | Cron: 2 saatte bir*
