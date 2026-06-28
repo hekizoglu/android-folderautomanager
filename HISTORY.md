@@ -185,3 +185,8 @@
 **Yapılanlar:** .gitignore __pycache__//*.pyc/*.pyo eklendi; local_denetim encoding fix_encoding.py ile otomatik düzeltildi
 **Agent:** —
 **Sonraki:** D161 — kod iyileştirme veya onay bekleyen FİKİRLER
+
+## D161 — 08:16
+**Yapılanlar:** scripts/fix_denetim_encoding.ps1 eklendi (KiloCode encoding bozukluğunu tek komutla düzelten helper); .bak temizleme dahil; local_denetim encoding fix
+**Agent:** —
+**Sonraki:** D162 = BUILD döngüsü
