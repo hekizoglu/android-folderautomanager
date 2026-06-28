@@ -91,8 +91,14 @@ $allRules = @(
     # K9 KALDIRILDI (D144): getAllCategoriesFlow tum katmanlarda tanimi dogru, clean build ile senkron — yanlis alarm
     # O6 KALDIRILDI (D149): ThemePreferences @Singleton @Inject constructor ile Hilt'e bagli, manuel new yok — yanlis alarm
     # O8 KALDIRILDI (D149): endsWith(it) koda hic eslemiyor (D114'te prefix bazli yapildi) — yanlis alarm
-    @{ Code = "Y7"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'Modifier\.size\(\d+\.dp\)'; Description = "Hardcoded dp boyut - responsive taşma riski."; Focus = @("UI_Settings_Labels","Performance_Memory") },
-    @{ Code = "Y8"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LauncherActivity\('; Description = "HomeScreen yenileme/refresh tetikleyici kaynak kod hatti."; Focus = @("Data_State_Persistence","UI_Settings_Labels") }
+    @{ Code = "Y7"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'Modifier\.size\(\d+\.dp\)'; Description = "Hardcoded dp boyut - responsive tasma riski."; Focus = @("UI_Settings_Labels","Performance_Memory") },
+    @{ Code = "Y8"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LauncherActivity\('; Description = "HomeScreen yenileme/refresh tetikleyici kaynak kod hatti."; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
+    # -- compose-expert skill kurallari (D151) -- ASCII-safe, curly quote yok --
+    @{ Code = "CE1"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui"; Pattern = 'remember\s*\{[^}]*screenHeightDp|remember\s*\{[^}]*screenWidthDp|remember\s*\{[^}]*fontScale|remember\s*\{[^}]*densityDpi'; Description = "remember {} config-key yok - rotation stale riski."; Focus = @("Performance_Memory","UI_Settings_Labels") },
+    @{ Code = "CE2"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui"; Pattern = '\.indexOf\(|\.lastIndexOf\('; Description = "LazyColumn items{} icinde indexOf() - O(n^2) + crash riski."; Focus = @("Performance_Memory") },
+    @{ Code = "CE3"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui"; Pattern = 'Canvas\('; Description = "Canvas/DrawScope zero-size guard kontrol et."; Focus = @("Performance_Memory") },
+    @{ Code = "CE4"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui"; Pattern = 'derivedStateOf\s*\{'; Description = "derivedStateOf unstable input riski - E14 tekrari."; Focus = @("Data_State_Persistence") },
+    @{ Code = "CE5"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui"; Pattern = '\.padding\(.*\)\s*\.\s*clickable'; Description = "Modifier sirasi: padding clickable'dan once - tik alani daralmis."; Focus = @("UI_Settings_Labels","Gesture_Swipe_Drawer") }
 )
 
 # Ana odak alani kurallarini sec
