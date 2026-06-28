@@ -146,3 +146,22 @@
 **Agent:** WebSearch (aitmpl.com, caveman, compose-skill)
 **Dosyalar:** .claude/skills/compose-expert/, .claude/skills/caveman/, scripts/audit.ps1, local_denetim_raporu.md
 **Sonraki:** Cron otonom — 5-skill + ekstra rotasyon saatlik.
+
+## Döngü D151 — 2026-06-28
+**Yapılanlar:** audit.ps1 KiloCode tarafından eklenen CE kuralları curly quote ve encoding nedeniyle PS syntax patlatıyordu — temizlendi. FİKİRLER: Test altyapısı Maestro analizi eklendi (12 puan), Widget Auto-Resize TAMAMLANDI işaretlendi.
+**Dosyalar:** scripts/audit.ps1, FİKİRLER.md
+**Sonraki:** D152.
+
+## Döngü D152 — 2026-06-28
+**Yapılanlar:** qa/reports/ gitignore eklendi. LEARNINGS.md KiloCode audit encoding tuzağı belgelendi (curly quote PS5.1 patlatıyor, ASCII-safe olmalı).
+**Dosyalar:** .gitignore, LEARNINGS.md
+**Sonraki:** D153.
+
+## Döngü D153 — 2026-06-28
+**Yapılanlar:** .maestro/ klasörü oluşturuldu, 3 Maestro UI test flow eklendi: 01_home_screen, 02_all_apps_drawer, 03_settings_navigation. README.md ile dokümante edildi.
+**Dosyalar:** .maestro/*.yaml, .maestro/README.md, FİKİRLER.md
+**Sonraki:** D154 BUILD.
+
+## Döngü D154 — 2026-06-28 BUILD
+**Yapılanlar:** assembleDebug BAŞARILI 35s (cache). APK 25.77 MB. Telegram'a gönderildi.
+**Sonraki:** D155 — 45 dk döngü devam.
