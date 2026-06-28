@@ -40,12 +40,33 @@ class BackupWorker(
             val file = File(applicationContext.filesDir, "auto_backup.json")
             file.writeText(json)
             Timber.d("Otomatik yedekleme tamamlandi: ${file.absolutePath}")
+
+            // Drive / SAF klasörü seçildiyse oraya da yaz
+            val driveFolderUriStr = com.armutlu.apporganizer.utils.AppPrefs.getDriveFolderUri(applicationContext)
+            if (driveFolderUriStr != null) {
+                runCatching { copyBackupToDrive(json, android.net.Uri.parse(driveFolderUriStr)) }
+                    .onFailure { Timber.w(it, "Drive yedeği başarısız — yerel yedek korundu") }
+            }
+
             com.armutlu.apporganizer.utils.AppPrefs.setLastBackupTime(applicationContext, System.currentTimeMillis())
             Result.success()
         }.getOrElse { e ->
             Timber.e(e, "Otomatik yedekleme hatasi")
             Result.retry()
         }
+    }
+
+    private fun copyBackupToDrive(json: String, folderUri: android.net.Uri) {
+        val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
+        val fileName = "apporganizer_backup_$timestamp.json"
+        val docUri = androidx.documentfile.provider.DocumentFile
+            .fromTreeUri(applicationContext, folderUri)
+            ?.createFile("application/json", fileName)
+            ?.uri ?: return
+        applicationContext.contentResolver.openOutputStream(docUri)?.use { out ->
+            out.write(json.toByteArray(Charsets.UTF_8))
+        }
+        Timber.d("Drive yedeği kaydedildi: $fileName")
     }
 
     companion object {

@@ -286,6 +286,11 @@ object AppPrefs {
     fun getLastBackupTime(context: Context): Long = prefs(context).getLong(KEY_LAST_BACKUP_TIME, 0L)
     fun setLastBackupTime(context: Context, ms: Long) = prefs(context).edit().putLong(KEY_LAST_BACKUP_TIME, ms).apply()
 
+    // Google Drive / SAF klasör URI — null = seçilmemiş
+    const val KEY_DRIVE_FOLDER_URI = "drive_folder_uri"
+    fun getDriveFolderUri(context: Context): String? = prefs(context).getString(KEY_DRIVE_FOLDER_URI, null)
+    fun setDriveFolderUri(context: Context, uri: String?) = prefs(context).edit().putString(KEY_DRIVE_FOLDER_URI, uri).apply()
+
     // Klasör blur efekti — HyperOS tarzı frosted glass
     const val KEY_FOLDER_BLUR = "folder_blur"
     fun isFolderBlurEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_BLUR, true)

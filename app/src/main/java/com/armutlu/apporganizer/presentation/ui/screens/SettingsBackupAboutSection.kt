@@ -3,6 +3,7 @@
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -84,6 +85,65 @@ internal fun LazyListScope.settingsBackupAboutSection(
             }
         }
     }
+    // ── Google Drive / SAF Klasör Seçimi ───────────────────────────────────
+    item {
+        val context = LocalContext.current
+        var driveFolderUri by remember { mutableStateOf(AppPrefs.getDriveFolderUri(context)) }
+        val driveFolderPickerLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocumentTree()
+        ) { uri: Uri? ->
+            if (uri != null) {
+                // Kalıcı okuma+yazma izni al
+                val flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(uri, flags)
+                AppPrefs.setDriveFolderUri(context, uri.toString())
+                driveFolderUri = uri.toString()
+                android.widget.Toast.makeText(context, "Drive klasörü seçildi", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+        SettingsCard {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { driveFolderPickerLauncher.launch(null) }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.CloudUpload, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Drive Yedekleme Klasörü", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text(
+                        if (driveFolderUri != null) "Klasör seçildi — yedekler otomatik kopyalanır"
+                        else "Google Drive klasörü seçin (SAF)",
+                        fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (driveFolderUri != null) {
+                    Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                }
+            }
+            if (driveFolderUri != null) {
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            AppPrefs.setDriveFolderUri(context, null)
+                            driveFolderUri = null
+                        }
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.CloudOff, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Text("Drive Bağlantısını Kaldır", fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+    }
+
     item {
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
