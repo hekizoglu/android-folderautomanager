@@ -342,3 +342,28 @@
 **CLAUDE.md/LEARNINGS.md:** --
 **Sonraki:** Cift Tiklama Arama (14p) veya Klasor Rengi Otomatik (13p)
 
+
+---
+
+## Tamamlananlar Arsivi (FİKİRLER.md'den tasindi 2026-06-29)
+
+| Döngü | Özellik | Puan |
+|-------|---------|------|
+| D146 | Aksam Onerisi Algoritma Aciklamasi | - |
+| D147 | Widget Auto-Resize | - |
+| D153 | Test altyapisi - Maestro (12p) | 12p |
+| D172 | Onboarding Ayar Sihirbazi (15p) | 15p |
+| D176 | Safe Mode / Crash Recovery (15p) | 15p |
+| D177 | Android 15/16 Edge-to-Edge Tam Uyum (16p) | 16p |
+| D178 | Google Drive Cross-Device Sync (17p) | 17p |
+| D180 | Gesture/Multitasking Uyumlulugu (16p) | 16p |
+| D181 | Tablet Destegi (16p) | 16p |
+| D182 | Yedek Karsilastirma + Eksik Uygulama Tespiti (14p) | 14p |
+| D184 | İkon Boyutu Ozellestirme (11p) | 11p |
+| D185 | Nova Crash Korumasi + Launcher Crash Rate İzleme (12p+14p) | 26p |
+| D186 | Compose Compiler Stabilite Raporu (12p) | 12p |
+| D187 | Pixel Launcher Eksikleri Karti + Android 16 Audit (14p+11p) | 25p |
+| D188 | LEARNINGS audit Coverage Matrix (12p) | 12p |
+| D189 | E8 Guard Pattern Audit (10p) | 10p |
+| D190 | Kullanim Raporu Ekrani (15p) | 15p |
+
