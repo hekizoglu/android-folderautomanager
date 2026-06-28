@@ -20,6 +20,7 @@ class AppOrganizerApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
+        com.armutlu.apporganizer.utils.CrashReporter.install(this)
         FirebaseApp.initializeApp(this)
         val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)

@@ -319,6 +319,79 @@ internal fun LazyListScope.settingsBackupAboutSection(
         }
     }
 
+    // ── Crash Raporları ──────────────────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        val crashLogs = remember { com.armutlu.apporganizer.utils.CrashReporter.getAllCrashLogs(context) }
+        var showCrashDialog by remember { mutableStateOf(false) }
+        val isSafeMode = remember { com.armutlu.apporganizer.utils.CrashReporter.isSafeModeActive(context) }
+        if (crashLogs.isNotEmpty() || isSafeMode) {
+            SettingsCard {
+                if (isSafeMode) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            com.armutlu.apporganizer.utils.CrashReporter.exitSafeMode(context)
+                        }.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Güvenli Mod Aktif", fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.error)
+                            Text("Uygulama güvenli modda başlatıldı. Çıkmak için tıklayın.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    if (crashLogs.isNotEmpty()) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+                }
+                if (crashLogs.isNotEmpty()) {
+                    val clipboard = LocalClipboardManager.current
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { showCrashDialog = true }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.BugReport, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Hata Raporları", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("${crashLogs.size} crash kaydedildi — görmek için tıklayın", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (showCrashDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showCrashDialog = false },
+                            title = { Text("Son Crash Raporu") },
+                            text = {
+                                LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
+                                    item {
+                                        Text(
+                                            text = crashLogs.first().take(2000),
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    }
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    clipboard.setText(AnnotatedString(crashLogs.first()))
+                                    showCrashDialog = false
+                                }) { Text("Kopyala") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    com.armutlu.apporganizer.utils.CrashReporter.clearCrashLogs(context)
+                                    showCrashDialog = false
+                                }) { Text("Temizle", color = MaterialTheme.colorScheme.error) }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     // ── Debug ────────────────────────────────────────────────────────────
     if (logs.isNotEmpty()) {
         item { SettingsSectionTitle("Debug") }
