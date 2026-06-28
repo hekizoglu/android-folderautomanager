@@ -1,9 +1,9 @@
 # Local Denetim Raporu
 
 > Döngü: `15 dakikalık 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 08:14
-> Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
-> Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
+> Son denetim: 2026-06-28 08:44
+> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
+> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 08:14 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
+*Denetim tarihi: 2026-06-28 08:44 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*
 
 ---
 

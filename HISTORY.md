@@ -190,3 +190,8 @@
 **Yapılanlar:** scripts/fix_denetim_encoding.ps1 eklendi (KiloCode encoding bozukluğunu tek komutla düzelten helper); .bak temizleme dahil; local_denetim encoding fix
 **Agent:** —
 **Sonraki:** D162 = BUILD döngüsü
+
+## D162 — 08:51 (BUILD)
+**Yapılanlar:** assembleDebug BUILD SUCCESSFUL 4s, APK 25.77 MB Telegram'a gönderildi. Döngü D159-D162: fix_encoding terminal fix, .gitignore Python, fix_denetim_encoding.ps1 helper, build başarılı
+**Agent:** —
+**Sonraki:** D163 — küçük iyileştirme veya onay bekleyen FİKİRLER
