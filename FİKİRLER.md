@@ -13,7 +13,7 @@
 - Onay gelince: `[ONAYLANDI 2026-xx-xx]` etiketi + uygulama başlar
 - Tamamlanınca: `[TAMAMLANDI]` etiketi → HISTORY.md'ye taşınır
 
-**Öncelik:** 🔴 Kritik · 🟡 Orta · 🟢 Düşük · ⚪ Fikir (tartışılacak)
+**Öncelik:** 🔴 Kritik · ⭐ Yüksek Puanlı (15+) · 🟡 Orta (12-14) · 🟢 Düşük · ⚪ Fikir
 
 ---
 
@@ -25,18 +25,74 @@
 
 ---
 
-## 🟡 Orta Öncelik
+## ⭐ Yüksek Puanlı (≥15p) — Rekabet Analizi 2026-06-29
+
+> Kaynak: ChatGPT destekli açık kaynak launcher karşılaştırması (Lawnchair, KISS, Neo, mLauncher, Fossify, Kvaesitso, Pie, Olauncher)
+
+| Tarih | Puan | Madde | Durum |
+|-------|------|-------|-------|
+| 2026-06-29 | **17 ⭐** | **Folder Swipe-Up → En Sık Kullanılan Uygulama** — Klasör kartına yukarı kaydırınca o klasördeki en çok açılan uygulama doğrudan başlar (Sosyal→WhatsApp, Finans→Garanti, Spor→Hevy). AppPrefs ile her klasör için override edilebilir. (KV:5 · U:4 · BR:4 · EA:4) | Bekliyor |
+| 2026-06-29 | **17 ⭐** | **UsageScore Algoritması v2** — Mevcut usageCount+lastUsed yetmez. `score = baseCategory + usageCountWeight + lastUsedBoost + timeOfDayBoost + dayOfWeekBoost + dockFavoriteBoost + notificationBoost - focusModePenalty`. Sabah: Takvim/Gmail/Maps; öğlen: banka/yemek; akşam: spor/müzik; gece: alarm/okuma. (KV:5 · U:3 · BR:4 · EA:5) | Bekliyor |
+| 2026-06-29 | **17 ⭐** | **Privacy Center UI** — Fossify tarzı net gizlilik ekranı: "Uygulama listesi cihazda kalır · İnternete veri gönderilmez · Online DB opsiyonel · Tüm veriyi sıfırla." Settings > Hakkında altına kart + README'ye bölüm. Play Store için zorunlu. (KV:4 · U:5 · BR:5 · EA:3) | Bekliyor |
+| 2026-06-29 | **16 ⭐** | **Smart Search v1 (KISS tarzı)** — AllAppsDrawer aramasını genişlet: uygulama adı + paket + kategori adı aynı anda aranır. "banka" → Finans klasörü + tüm finans uygulamaları; "spor" → Hevy+YouTube Music+Sağlık; "wa ali" → WhatsApp Ali kişisi (ileride). İlk sürümde: app+kategori+shortcut. (KV:5 · U:3 · BR:3 · EA:5) | Bekliyor |
+| 2026-06-29 | **16 ⭐** | **AppOrganizer Assistant Kartları** — Ana ekranda klasörlerin üstünde küçük kart: "Sabah genelde Haritalar açıyorsun", "Finans'ta 3 okunmamış bildirim", "Son 7 gündür açılmayan 12 uygulama var", "WhatsApp bu klasörde en çok açılıyor — swipe-up atanabilir." İlk sürümde AI gerekmez, saf kural motoru. (KV:5 · U:3 · BR:4 · EA:4) | Bekliyor |
+| 2026-06-29 | **15 ⭐** | **Contextual Dock v1** — Dock sabit 4 uygulama değil: 2 kullanıcı sabit + 2 akıllı öneri. Saat+gün+son kullanım+bildirim yoğunluğuna göre değişir. Gündüz: Mail+Takvim; akşam: müzik+sosyal. DockContext veri sınıfı + AppPrefs toggle. (KV:5 · U:3 · BR:3 · EA:4) | Bekliyor |
+| 2026-06-29 | **15 ⭐** | **Manual Category Override** — Long press uygulama → "Kategori Değiştir" → seçim + "Bu kararı hatırla" checkbox. ManualCategoryOverride tablosu (Room) — AppClassifier bu tabloyu exactMatch'ten önce kontrol eder. "Aynı tür uygulamalara uygula" opsiyonu. (KV:4 · U:4 · BR:4 · EA:3) | Bekliyor |
+
+---
+
+## 🟡 Orta Öncelik (12-14p)
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
-| 2026-06-28 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
-| 2026-06-29 | Yeni | **Uygulama Kullanım Raporu Ekranı** — UsageStats verisiyle en çok/az kullanılan uygulamaları listele, bar grafik + "X gündür açılmadı" bilgisi. Temizlik önerisi (kullanılmayanları gizle). (KV:5 · U:4 · BR:2 · EA:4 = **15 puan ⭐**) | [TAMAMLANDI D190] |
-| 2026-06-29 | Yeni | **Çift Tıkla Arama** — HomeScreen'de boş alana çift tıklanınca AllAppsDrawer açılır ve search'e odaklanır. (KV:4 · U:5 · BR:1 · EA:4 = **14 puan 🟡**) | [TAMAMLANDI D135] |
-| 2026-06-29 | Yeni | **Klasör Rengi Otomatik (Dominant İkon)** — Klasör oluşturulunca içindeki uygulamaların ikonundan dominant renk hesaplanıp otomatik atanır. Manuel değiştirilebilir. (KV:3 · U:4 · BR:2 · EA:4 = **13 puan 🟡**) | Bekliyor |
-| 2026-06-29 | Yeni | **Onboarding Yeniden Başlatma** — Settings > Hakkında'ya "Kurulum Sihirbazını Yeniden Başlat" butonu ekle. Yeni kullanıcıya demo / sıfırlama için. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | Bekliyor |
-| 2026-06-29 | Yeni | **Duvar Kağıdı Renk Uyumu** — Duvar kağıdının dominant rengine göre klasör başlık rengini otomatik ayarla (açık/koyu tema). (KV:3 · U:3 · BR:2 · EA:3 = **11 puan 🟡**) | Bekliyor |
+| 2026-06-29 | Rekabet | **GestureActionEngine** — Swipe up/down/left/right + çift tık + long press home + saat tıklama + klasör swipe-up için özelleştirilebilir aksiyon tablosu. Aksiyonlar: drawer aç, bildirimler, hızlı ayarlar, ekran kilitle, screenshot, belirli uygulama aç, focus mode. (KV:4 · U:3 · BR:3 · EA:4 = **14p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **Backup / Restore JSON** — dock apps + folder order + manual category overrides + tema + gesture ayarları + gizlenen uygulamalar. Google Drive SAF entegrasyonu var, format standardize edilmeli. Neo'da mevcut. (KV:4 · U:3 · BR:4 · EA:3 = **14p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **ShortcutManager Entegrasyonu** — Long press app → Android dynamic/static shortcuts göster: WhatsApp'ta "Son kişi / Yeni mesaj / Kamera", Haritalar'da "Eve git / İşe git". ShortcutManagerCompat kullan. (KV:4 · U:3 · BR:3 · EA:4 = **14p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **Notification Badge Intelligence** — Mevcut kırmızı badge yeterli değil. Renk sistemi: Kırmızı=çağrı/alarm, Yeşil=mesajlaşma, Sarı=sistem/güncelleme, Gri=düşük önem. Kanal importance + package prefix bazlı, içerik okunmaz. (KV:3 · U:4 · BR:3 · EA:3 = **13p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **Biometric Settings Lock** — Ayarlar ekranını parmak izi / yüz tanıma arkasına kilitle. Kurumsal/kiosk/çocuk modu için. BiometricPrompt API, minSDK 28. (KV:3 · U:4 · BR:4 · EA:2 = **13p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **Quick Wheel / Pie Mode (Opsiyonel)** — Boş alana uzun bas → 6-8 uygulamalı radyal çark. Pie Launcher'dan ilham. Kas hafızasıyla bakılmadan açma. AppPrefs toggle, varsayılan kapalı. (KV:3 · U:3 · BR:4 · EA:3 = **13p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **Widget Host (Gerçek)** — Sistem widget'larını (hava durumu, takvim, müzik) destekle. AppWidgetHost + AppWidgetManager. Mevcut saat widgeti bunun üzerine inşa edilebilir. Zor ama Play Store'da ciddi launcher için şart. (KV:4 · U:2 · BR:3 · EA:4 = **13p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **Icon Pack Desteği** — Üçüncü taraf icon pack uygulamalarından ikon yükleme. IconPackManager mevcut ama UI eksik. Settings > Görünüm'e seçici ekle. (KV:3 · U:3 · BR:3 · EA:3 = **12p**) | Bekliyor |
+| 2026-06-29 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
+| 2026-06-29 | Yeni | **Klasör Rengi Otomatik (Dominant İkon)** — Klasör oluşturulunca içindeki uygulamaların ikonundan dominant renk hesaplanıp otomatik atanır. Manuel değiştirilebilir. (KV:3 · U:4 · BR:2 · EA:4 = **13p**) | Bekliyor |
+| 2026-06-29 | Yeni | **Onboarding Yeniden Başlatma** — Settings > Hakkında'ya "Kurulum Sihirbazını Yeniden Başlat" butonu ekle. (KV:3 · U:5 · BR:1 · EA:3 = **12p**) | Bekliyor |
+
+---
+
+## ⏸ Beklet (≤11p)
+
+| Tarih | Kaynak | Madde | Puan |
+|-------|--------|-------|------|
+| 2026-06-29 | Yeni | **Duvar Kağıdı Renk Uyumu** — Dominant renge göre klasör başlık rengi | 11p |
+| 2026-06-29 | Rekabet | **Online App Category DB** — Opsiyonel, gizlilik riski yüksek. Lokal → keyword → kullanıcı override → en son online. (KV:3 · U:2 · BR:2 · EA:3 = 10p) | 10p |
+| 2026-06-29 | Rekabet | **Focus Mode / Minimal Mod** — Olauncher tarzı dijital wellbeing modu, yalnızca izin verilen uygulamalar görünür | 9p |
+
+---
+
+## ✅ Tamamlananlar (Bu Dosyada Kalan)
+
+| Tarih | Madde | Döngü |
+|-------|-------|-------|
+| 2026-06-29 | Uygulama Kullanım Raporu Ekranı (15p) | D190 |
+| 2026-06-29 | Çift Tıkla Arama (14p) | D135 |
+
+---
+
+## 📊 Rekabet Pozisyonlama Özeti
+
+| Rakip | Bizim aldığımız | Kalan fark |
+|-------|----------------|------------|
+| KISS | UsageScore + Smart Search fikri | KISS'in arama hızı (native C) |
+| Lawnchair | Pixel hissi korunuyor | Icon pack, global search |
+| mLauncher | Gesture fikri | Biometric lock |
+| Neo | Backup/kategori fikri | Icon shape, drawer özelleştirme |
+| Fossify | Privacy Center fikri | Tam offline mimari |
+| Kvaesitso | Search provider mimarisi | Plugin sistemi |
+| Pie Launcher | Quick Wheel fikri | Tam radyal nav |
+
+**Hedef cümle:** "AppOrganizer, uygulamalarını otomatik klasörleyen; kullanım alışkanlığına göre dock, arama ve önerileri akıllandıran privacy-first Android launcher'dır."
 
 ---
 
 *Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-29*
-*🏆 Piyasa Puani: 7.8/10 | Tahmini 1 yillik indirme: 5K-15K (organik, niche launcher)*
+*🏆 Piyasa Puanı: 7.8/10 → Hedef 8.5/10 (Smart Search + Contextual Dock + Privacy Center sonrası)*
