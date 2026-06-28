@@ -18,6 +18,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -112,9 +114,10 @@ fun HomeScreen(
     var autoFolderSizeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
     val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
     val screenColumns = when {
         configuration.screenWidthDp >= 840 -> 6
-        configuration.screenWidthDp >= 600 -> 5
+        isTablet -> 5
         else -> 4
     }
     val maxFolderSizeDp = ((configuration.screenWidthDp - 32) / screenColumns).coerceIn(48, 96)
@@ -651,18 +654,20 @@ fun HomeScreen(
             )
         }
 
-        // All Apps Drawer overlay — LinearOutSlowIn acilirken ani baslatip yavaslatir,
-        // FastOutLinearIn kapatirken hizli bitis verir (Material motion standardlari)
+        // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel
         AnimatedVisibility(
             visible = allAppsOpen,
-            enter = slideInVertically(
-                animationSpec = tween(300, easing = LinearOutSlowInEasing),
-                initialOffsetY = { it }
-            ) + fadeIn(animationSpec = tween(200)),
-            exit = slideOutVertically(
-                animationSpec = tween(220, easing = FastOutLinearInEasing),
-                targetOffsetY = { it }
-            ) + fadeOut(animationSpec = tween(180))
+            modifier = if (isTablet)
+                Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(380.dp)
+            else Modifier,
+            enter = if (isTablet)
+                slideInHorizontally(tween(280, easing = LinearOutSlowInEasing)) { it } + fadeIn(tween(200))
+            else
+                slideInVertically(tween(300, easing = LinearOutSlowInEasing)) { it } + fadeIn(tween(200)),
+            exit = if (isTablet)
+                slideOutHorizontally(tween(220, easing = FastOutLinearInEasing)) { it } + fadeOut(tween(180))
+            else
+                slideOutVertically(tween(220, easing = FastOutLinearInEasing)) { it } + fadeOut(tween(180))
         ) {
             AllAppsDrawer(
                 apps = allApps,

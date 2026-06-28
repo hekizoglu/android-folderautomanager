@@ -285,3 +285,8 @@
 **Yapılanlar:** Gesture/Multitasking Uyumluluğu (⭐ 16p) - AndroidManifest: LauncherActivity'ye resizeableActivity=false + configChanges (orientation|screenSize|uiMode|density|keyboard) eklendi; MainActivity'ye configChanges eklendi; LauncherActivity.onMultiWindowModeChanged() ile OEM split-screen koruması eklendi. enableOnBackInvokedCallback + BackHandler zaten vardı.
 **Agent:** Yok
 **Sonraki:** Tablet Desteği (⭐ 16p) - WindowSizeClass API, side panel AllAppsDrawer
+
+## Döngü D181 - 22:25
+**Yapılanlar:** Tablet Desteği (⭐ 16p) - HomeScreen.kt: isTablet=screenWidthDp>=600; AllAppsDrawer tablet'te Modifier.align(CenterEnd).width(380.dp) ile sağ side panel; slideInHorizontally/slideOutHorizontally animasyon; telefonda davranış değişmedi. Adaptif grid D174'ten zaten vardı.
+**Agent:** Yok
+**Sonraki:** Tüm ⭐ özellikler tamamlandı - 12+ puanlı 🟡 özellikler değerlendirilecek
