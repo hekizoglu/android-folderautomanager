@@ -245,3 +245,8 @@
 **Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi (KiloCode tekrarlayan sorun); açık bulgu yok
 **Agent:** Yok
 **Sonraki:** D173 — rutin
+
+## Döngü D173 — 16:55
+**Yapılanlar:** Onboarding Ayar Sihirbazı (⭐ 15 puan) — QUICK_SETTINGS adımı aktif edildi; adım sırası düzeltildi (THEME_SELECT→QUICK_SETTINGS→CLASSIFY_MODE→SET_LAUNCHER→DONE); 4 interaktif toggle: Widget, Öneri, Arama, Blur
+**Agent:** Yok
+**Sonraki:** Tablet Desteği (⭐ 16 puan)
