@@ -48,36 +48,36 @@ MD_DENETIM_2026-06-23.md silinebilir: S1+S7 cozuldu, S6 stale, S8 buraya tasinmi
 
 ### N2 — ORTA: ROADMAP.md stale (D123'ten beri guncellenmedi)
 
-**Dosya:** ROADMAP.md (son guncelleme: 2026-06-22 / D123; su an: D177)
+**Dosya:** ROADMAP.md (son guncelleme: 2026-06-22 / D123; su an: D182)
 **Sorunlar:**
 
 1. **Tamamlanan ama hala acik gorunen gorevler:**
    - "Klasor tasma (overflow) sorunu" — D174'te tablet adaptive layout ile cozuldu
    - Android 15/16 Edge-to-Edge — [TAMAMLANDI D177] FiKiRLER'de, ROADMAP'te hic yok
+   - "Yedek Karsilastirma + Eksik Uygulama Tespiti" — D182'de tamamlandi (bkz N9)
 
 2. **15+ puan alip ROADMAP'e girmemis bekleyen gorevler (CLAUDE.md kurali ihlali):**
 
 | Madde | Puan | FiKiRLER Durumu | ROADMAP'te? |
 |-------|------|-----------------|-------------|
-| Tablet Destegi | 16p | Bekliyor (ama D174'te yapildi — bkz N6) | Sadece "Uzun Vade" |
-| Gesture/Multitasking Uyumlulugu | 16p | Bekliyor | EKSIK |
-| Google Drive Cross-Device Sync | 17p | Bekliyor | EKSIK |
+| Tablet Destegi | 16p | [TAMAMLANDI D181] | Sadece "Uzun Vade" |
+| Gesture/Multitasking Uyumlulugu | 16p | [TAMAMLANDI D180] | EKSIK |
+| Google Drive Cross-Device Sync | 17p | [TAMAMLANDI D178] | EKSIK |
 | Safe Mode/Crash Recovery | 15p | [TAMAMLANDI D176] | EKSIK |
 
-**Oneri:** ROADMAP.md'ye "Yuksek Puanli Gorevler (15+)" bolumu ekle; Gesture ve Google Drive
-buraya girmeli. Tamamlananlar HISTORY.md'ye tasinmali (Safe Mode, Edge-to-Edge).
+**Oneri:** ROADMAP.md'yi tamamlananlar icin temizle; tamamlananlar HISTORY.md'ye tasinmali.
 
 ---
 
-### N3 — ORTA: harcananvakit.md — D144-D177 log boslugu (34 dongu)
+### N3 — ORTA: harcananvakit.md — D144-D182 log boslugu (39 dongu)
 
 **Dosya:** harcananvakit.md
-**Sorun:** Son log D143 (2026-06-23 11:15). D144-D177 arasi 34 dongu (yaklasik 5 gun) log yok.
+**Sorun:** Son log D143 (2026-06-23 11:15). D144-D182 arasi 39 dongu (yaklasik 5 gun) log yok.
 Tekrar Eden Sorunlar tablosunda `merged_res kilidi` ve `KAPT incremental cache` hala "Acik" —
 D72'den beri cozum durumu degismemis, plan yok.
 
 **Oneri:**
-1. D144-D177 icin toplu ozet log girisi ekle (kategori bazli toplam yeterli)
+1. D144-D182 icin toplu ozet log girisi ekle (kategori bazli toplam yeterli)
 2. merged_res ve KAPT icin cozum plani: FiKiRLER.md'ye madde ekle ya da "Kabul Edildi" olarak kapat
 
 ---
@@ -101,18 +101,6 @@ CLAUDE.md kurali: "ONCELIK:YUKSEK -> CLAUDE.md paragraf 5'e tasinir." Mevcut Enc
 **Oneri:** LEARNINGS.md'deki KiloCode tuzagini CLAUDE.md paragraf 5 Encoding bolumune alt madde olarak ekle:
 "KiloCode audit.ps1'e otomatik eklenen kurallar curly quote / em dash icerebilir —
 PS5.1 syntax hatasi. Description alanlarinda daima ASCII-safe string kullan."
-
----
-
-### N6 — ORTA: FiKiRLER.md Tablet Destegi "Bekliyor" ama HISTORY.md D174'te tamamlandi
-
-**Dosya:** FiKiRLER.md satir 37, HISTORY.md D174
-**Sorun:** FiKiRLER.md Tablet Destegi — "Bekliyor" yazıyor.
-HISTORY.md D174: "FolderPager adaptive columns: 600dp+=5 sutun, 840dp+=6 sutun; maxFolderSizeDp tablet'e gore hesaplandi."
-Bu tamamlandi — FiKiRLER.md guncellenmemis.
-
-**Oneri:** FiKiRLER.md Tablet Destegi satirini "[TAMAMLANDI D174]" olarak guncelle.
-ROADMAP.md Uzun Vade listesinden "Tablet layout" satirini da guncelle.
 
 ---
 
@@ -142,17 +130,55 @@ CLAUDE.md kurali: "Rapor tamamen bosalinca -> dosyayi sil, HISTORY.md'ye 'MD Den
 
 ---
 
-## Ozet
+### N9 — ORTA: ROADMAP.md "Yedek Karsilastirma" D182'de tamamlandi ama hala "Bekliyor"
+
+**Dosya:** ROADMAP.md satir 38
+**Sorun:** ROADMAP.md Orta Oncelik listesinde "Yedek Karsilastirma + Eksik Uygulama Tespiti" gorevi "Bekliyor" duruyor.
+FiKiRLER.md: "[TAMAMLANDI D182]"
+HISTORY.md D182: BackupManager.ImportResult + missingPackages + SettingsBackupAboutSection dialog tamamlandi.
+**Oneri:** ROADMAP.md'den bu satiri sil, HISTORY.md Tamamlananlar Arsivine tasi.
+
+---
+
+## Ozet — 4. Gecis
 
 | Oncelik | Sayi | Sorunlar |
 |---------|------|----------|
 | Paket sayisi | 0 sorun | 3702 tutarli, tum dosyalar uyumlu |
 | Kritik | 1 | N1 — HISTORY.md D151 cift dongu numarasi |
-| Orta | 4 | N2 ROADMAP stale (D123'ten 40+ dongu); N3 harcananvakit 34 dongu boslugu; N6 Tablet tamamlandi ama Bekliyor; N7 Onboarding 16→17 adim stale |
+| Orta | 4 | N2 ROADMAP stale (D123'ten 40+ dongu); N3 harcananvakit 34 dongu boslugu; N6 Tablet tamamlandi ama Bekliyor; N7 Onboarding 16->17 adim stale |
 | Dusuk | 3 | N4 LEARNINGS temizlik; N5 CLAUDE.md promote eksik; N8 eski denetim silinmeli |
 
-**Toplam acik: 8 sorun — onay bekleniyor.**
+*4. gecis: 2026-06-28 | Onceki gecis: 2026-06-28 (3. gecis) | Telegram engelli -> GitHub commit ile iletildi*
 
 ---
 
-*4. gecis: 2026-06-28 | Onceki gecis: 2026-06-28 (3. gecis) | Telegram engelli -> GitHub commit ile iletildi*
+## 5. Gecis — 2026-06-28 (Otomatik Rutin)
+
+### Durum Guncellemesi
+
+| # | Sorun | 5. Gecis |
+|---|-------|----------|
+| N1 | HISTORY.md D151 cift | **Hala ACIK** |
+| N2 | ROADMAP stale | **Hala ACIK** |
+| N3 | harcananvakit log boslugu | **Hala ACIK** |
+| N4 | LEARNINGS promote temizlik | **Hala ACIK** |
+| N5 | KiloCode tuzagi CLAUDE.md promote eksik | **Hala ACIK** |
+| N6 | FiKiRLER Tablet "Bekliyor" | **COZULDU** — D181'de "[TAMAMLANDI D181]" yapilmis |
+| N7 | Onboarding 16->17 adim stale | **Hala ACIK** |
+| N8 | MD_DENETIM_2026-06-23.md silinmeli | **Hala ACIK** (dosya hala mevcut) |
+| N9 | ROADMAP Yedek Karsilastirma stale | **YENI** — D182'de tamamlandi ama "Bekliyor" |
+
+### 5. Gecis Ozeti
+
+| Oncelik | Sayi | Sorunlar |
+|---------|------|----------|
+| Paket sayisi | 0 sorun | 3702 tutarli, tum dosyalar uyumlu |
+| Kritik | 1 | N1 — HISTORY.md D151 cift dongu girisi |
+| Orta | 4 | N2 ROADMAP stale (D123'ten 60+ dongu); N3 harcananvakit D144-D182 log boslugu; N7 Onboarding 16->17 stale; N9 (YENI) ROADMAP Yedek Karsilastirma hala Bekliyor |
+| Dusuk | 3 | N4 LEARNINGS promote temizlik; N5 CLAUDE.md KiloCode promote eksik; N8 eski denetim dosyasi silinmeli |
+| Cozuldu | 1 | N6 — FiKiRLER.md Tablet [TAMAMLANDI D181] yapilmis |
+
+**Toplam acik: 8 sorun (7 devam eden + 1 yeni N9) — onay bekleniyor.**
+
+*5. gecis: 2026-06-28 | Telegram engelli -> GitHub commit ile iletildi*
