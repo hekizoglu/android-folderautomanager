@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -206,10 +208,10 @@ internal fun LazyListScope.settingsBackupAboutSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(8.dp))
-                        androidx.compose.foundation.lazy.LazyColumn(
+                        LazyColumn(
                             modifier = Modifier.heightIn(max = 240.dp)
                         ) {
-                            androidx.compose.foundation.lazy.items(missingPackages) { pkg ->
+                            items(missingPackages) { pkg ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -229,7 +231,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    Text(pkg, fontSize = 12.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                                    Text(text = pkg, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
                                 }
                             }
                         }

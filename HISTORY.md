@@ -295,3 +295,8 @@
 **Yapılanlar:** Yedek Karşılaştırma + Eksik Uygulama Tespiti (14p 🟡) - BackupManager.ImportResult'a missingPackages:List<String> eklendi; importFromJson yedekte olan ama cihazda yüklü olmayan paketleri toplar; SettingsBackupAboutSection'da restore sonrası eksik uygulama dialogu: liste kopyalanabilir, her öğe Play Store'a tıklanabilir, "Hepsini Aç" butonu.
 **Agent:** Yok
 **Sonraki:** Pixel Launcher Eksikleri Bizde Var (14p 🟡) - Play Store listing vurgusu
+
+## Döngü D183 - 01:00 [BUILD]
+**Yapılanlar:** BUILD hatası → düzeltme → BUILD SUCCESSFUL (1m 49s). APK: 31.21 MB. Hatalar: HomeScreen.kt fillMaxHeight import eksik; SettingsBackupAboutSection.kt items/LazyColumn import + FontFamily çift import. Hepsi düzeltildi.
+**Agent:** Yok
+**Sonraki:** Pixel Launcher Eksikleri (14p 🟡) veya İkon Boyutu Özelleştirme (11p)
