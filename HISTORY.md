@@ -175,3 +175,8 @@
 **Yapılanlar:** D156: fix_encoding.py MOJIBAKE dict _mb() fonksiyonu ile yeniden yazıldı (curly-quote syntax hata giderildi); D157: .maestro/05_dock_edit.yaml eklendi (dock uzun-basış flow); D158: assembleDebug BUILD SUCCESSFUL 4s, APK 25.77 MB Telegram'a gönderildi
 **Agent:** —
 **Sonraki:** D159 — FİKİRLER yüksek puan veya küçük iyileştirme
+
+## D159 — 07:16
+**Yapılanlar:** fix_encoding.py terminal cp1254 emoji UnicodeEncodeError giderildi (sys.stdout.reconfigure); PYTHONIOENCODING olmadan da çalışıyor; local_denetim encoding düzeltildi
+**Agent:** —
+**Sonraki:** D160 — FİKİRLER yüksek puan veya kod iyileştirme
