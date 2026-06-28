@@ -170,6 +170,14 @@ internal enum class OnboardingStep(
         buttonLabelRes = R.string.onb_classify_btn,
         isSkippable = true
     ),
+    QUICK_SETTINGS(
+        titleRes = R.string.onb_quick_settings_title,
+        descriptionRes = R.string.onb_quick_settings_desc,
+        icon = Icons.Default.Tune,
+        buttonLabelRes = R.string.onb_quick_settings_btn,
+        whyRes = R.string.onb_quick_settings_why,
+        isSkippable = true
+    ),
     DONE(
         titleRes = R.string.onb_done_title,
         descriptionRes = R.string.onb_done_desc,

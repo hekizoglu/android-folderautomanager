@@ -53,7 +53,7 @@ fun OnboardingScreen(
         OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
         OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
         OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
-        OnboardingStep.THEME_SELECT, OnboardingStep.CLASSIFY_MODE, OnboardingStep.SET_LAUNCHER, OnboardingStep.DONE,
+        OnboardingStep.THEME_SELECT, OnboardingStep.CLASSIFY_MODE, OnboardingStep.SET_LAUNCHER, OnboardingStep.QUICK_SETTINGS, OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
 
@@ -259,6 +259,37 @@ fun OnboardingScreen(
                 }
             }
 
+            // QUICK_SETTINGS: ayar özet kartı
+            if (currentStep == OnboardingStep.QUICK_SETTINGS) {
+                val settings = listOf(
+                    "Otomatik Yedekleme" to autoBackupEnabled,
+                    "Bildirim Metni" to notifTextEnabled,
+                    "Kaydırma İpucu" to swipeHintEnabled,
+                    "Yeni Rozeti" to newBadgeEnabled,
+                    "Klasör Sayacı" to folderCountEnabled,
+                    "Gezinme Çubuğu Gizle" to navHideEnabled,
+                    "Kullanılmayan Gri Gün" to (unusedGreyDays > 0)
+                )
+                Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    settings.forEach { (label, enabled) ->
+                        Box(
+                            modifier = Modifier.fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (enabled) Color(0xFF00897B).copy(0.25f) else Color.White.copy(0.06f))
+                                .padding(12.dp)
+                        ) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(label, color = Color.White, fontSize = 14.sp)
+                                Text(if (enabled) "Açık" else "Kapalı",
+                                    color = if (enabled) Color(0xFF26C6DA) else Color.White.copy(0.4f),
+                                    fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(8.dp))
 
             // ── Ana buton ────────────────────────────────────────────────
@@ -404,6 +435,17 @@ private fun handleOnboardingStep(
         OnboardingStep.THEME_SELECT   -> { scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }; onNextStep() }
         OnboardingStep.SET_LAUNCHER   -> if (launcherSet) onNextStep() else onRequestRole()
         OnboardingStep.CLASSIFY_MODE  -> onNextStep()
+        OnboardingStep.QUICK_SETTINGS -> {
+            AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled)
+            AppPrefs.setNotificationTextEnabled(context, notifTextEnabled)
+            AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled)
+            AppPrefs.setNewBadgeEnabled(context, newBadgeEnabled)
+            AppPrefs.setFolderCountVisible(context, folderCountEnabled)
+            AppPrefs.setNavButtonsHidden(context, navHideEnabled)
+            AppPrefs.setUnusedGreyDays(context, unusedGreyDays)
+            scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }
+            onNextStep()
+        }
         OnboardingStep.DONE           -> {
             context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                 .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()

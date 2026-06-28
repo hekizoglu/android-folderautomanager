@@ -1,9 +1,9 @@
-# Local Denetim Raporu
+﻿# Local Denetim Raporu
 
-> Döngü: `15 dakikalık 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 12:44
-> Ana tur odak: **Recomposition, cache, IO, performans** (Performance_Memory)
-> Ekstra denetim: **Hassas veri, log, izin, data export/import guvenligi** (Privacy_Security)
+> DÃ¶ngÃ¼: `15 dakikalÄ±k 8+1 odak rotasyonu`
+> Son denetim: 2026-06-28 13:44
+> Ana tur odak: **Kategori ekleme/duzenleme/silme** (Category_CRUD)
+> Ekstra denetim: **AppRepository, DAO, data mapping, sorgu dogrulama** (Repository_DataLayer)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 12:44 | Ana: Recomposition, cache, IO, performans | Ekstra: Hassas veri, log, izin, data export/import guvenligi*
+*Denetim tarihi: 2026-06-28 13:44 | Ana: Kategori ekleme/duzenleme/silme | Ekstra: AppRepository, DAO, data mapping, sorgu dogrulama*
 
 ---
 

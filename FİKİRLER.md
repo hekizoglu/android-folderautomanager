@@ -30,7 +30,7 @@
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
 | 2026-06-21 | Denetim | **Test altyapısı — Maestro** — 3 flow oluşturuldu: HomeScreen, AllAppsDrawer, Ayarlar navigasyon. `.maestro/` klasöründe. Kurulum: `maestro test .maestro/` (Kullanıcı Değeri:4 · Uygulanabilirlik:3 · Bağımlılık Riski:2 · Etki:3 = 12 puan 🟡) | [TAMAMLANDI D153] |
-| 2026-06-28 | Hüseyin | **Onboarding Ayar Sihirbazı** — İlk kurulumda tüm ayarları sırayla sor, her birine açıklama ekle. Mevcut onboarding'e ek bir "Ayar Tur" akışı olarak eklenebilir. (Kullanıcı Değeri:5 · Uygulanabilirlik:4 · Bağımlılık Riski:2 · Etki:4 = 15 puan ⭐) | Bekliyor |
+| 2026-06-28 | Hüseyin | **Onboarding Ayar Sihirbazı** — İlk kurulumda tüm ayarları sırayla sor, her birine açıklama ekle. QUICK_SETTINGS adımı eklendi (SET_LAUNCHER→DONE arası). Tüm toggle'lar özet kartta gösteriliyor, tek tıkla kaydediliyor. (Kullanıcı Değeri:5 · Uygulanabilirlik:4 · Bağımlılık Riski:2 · Etki:4 = 15 puan ⭐) | [TAMAMLANDI D172] |
 | 2026-06-28 | Hüseyin | **Akşam Önerisi Algoritma Açıklaması** — Ayarlar > Öneriler bölümüne kullanım örüntüsüne göre nasıl öneri verdiği açıklaması ekle | [TAMAMLANDI D146] |
 | 2026-06-28 | Hüseyin | **Widget Auto-Resize** — Widget alanı ekran en/boy oranına göre otomatik yükseklik ayarı | [TAMAMLANDI D147] |
 | 2026-06-28 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
@@ -39,4 +39,15 @@
 
 ---
 
-*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-28*
+| 2026-06-28 13:03 | Cron #13 | **Compose Compiler Stabilite Raporu** — `build.gradle.kts`'ye `composeCompiler { reportsDestination = ... }` ekle, her build'de hangi composable'ların unstable/skippable olmadığını raporla. compose-expert skill ile entegre, E13/E14 benzeri hataları build aşamasında yakalar. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | Bekliyor |
+| 2026-06-28 14:03 | Meta-audit | **LEARNINGS→audit.ps1 Coverage Matrix** — Her LEARNINGS hatasina (E1-E14) karsi audit.ps1 kurali var mi matrix'i olustur. E9 (@Volatile→AtomicBoolean) eksikti, CE6 eklendi. Sistematik coverage kontrolu her 6 dongude bir otomatik yapilsin. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | CE6 eklendi, coverage %93 (13/14) |
+| 2026-06-28 14:14 | Meta-audit | **E8 Guard Pattern Audit Kurali (CE7)** — `if (map.isNotEmpty())` guard pattern'ini tara. E8'de bildirim badge temizlemede guard kaldirilmisti. Benzer pattern'ler (bos koleksiyon guard'i gereksiz yerde) taranip false-positive olmayanlar isaretlenmeli. (KV:2 · U:4 · BR:2 · EA:2 = **10 puan 🟡**) | Bekliyor |
+
+| 2026-06-28 | Rakip | **Nova Crash Koruması** — Nova 8.2.8'de yeni cihazda crash sorunu var. AppOrganizer'da ilk açılışta crash olursa safe-mode (varsayılan ayarlarla başlat) mekanizması ekle. (KV:4 · U:3 · BR:2 · EA:3 = **12 puan 🟡**) | Bekliyor |
+| 2026-06-28 | Rakip | **Gesture/Multitasking Uyumluluğu** — Tüm 3.parti launcher'larda gesture + recents çakışması var. Android 16 iyileştirmelerini takip et, split-screen testleri ekle. (KV:5 · U:3 · BR:3 · EA:5 = **16 puan ⭐**) | Bekliyor |
+| 2026-06-28 | Rakip | **Pixel Launcher Eksikleri Bizde Var** — Icon pack (✅), yedekleme (✅), klasör (✅), gesture özelleştirme (✅), app drawer kategorileri (✅). Pixel'da olmayan 6 özellik bizde var → Play Store listing'te vurgula. (KV:4 · U:5 · BR:1 · EA:4 = **14 puan 🟡**) | Bekliyor |
+| 2026-06-28 | Rakip | **İkon Boyutu Özelleştirme** — Nothing Launcher'da en çok şikayet edilen şey. AppOrganizer'a icon scale ayarı ekle (Ayarlar > Görünüm). (KV:4 · U:4 · BR:1 · EA:2 = **11 puan 🟡**) | Bekliyor |
+| 2026-06-28 | Rakip | **Safe Mode / Crash Recovery** — Nova'nın yaşadığı crash→downgrade senaryosuna karşı. AppOrganizer'da son 3 build'ten birine otomatik rollback. (KV:5 · U:3 · BR:3 · EA:4 = **15 puan ⭐**) | Bekliyor |
+
+*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-28 14:30*
+*🏆 Piyasa Puani: 7.8/10 | Tahmini 1 yillik indirme: 5K-15K (organik, niche launcher)*

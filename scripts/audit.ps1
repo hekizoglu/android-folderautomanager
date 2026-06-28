@@ -98,7 +98,8 @@ $allRules = @(
     @{ Code = "CE2"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = '\.indexOf\(|\.lastIndexOf\('; Description = "LazyColumn items{} icinde indexOf() - O(n^2) + crash riski."; Focus = @("Performance_Memory") },
     @{ Code = "CE3"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'Canvas\('; Description = "Canvas/DrawScope zero-size guard kontrol et."; Focus = @("Performance_Memory") },
     @{ Code = "CE4"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'derivedStateOf\s*\{'; Description = "derivedStateOf unstable input riski - E14 tekrari."; Focus = @("Data_State_Persistence") },
-    @{ Code = "CE5"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = '\.padding\(.*\)\s*\.\s*clickable'; Description = "Modifier sirasi: padding clickable'dan once - tik alani daralmis."; Focus = @("UI_Settings_Labels","Gesture_Swipe_Drawer") }
+    @{ Code = "CE5"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = '\.padding\(.*\)\s*\.\s*clickable'; Description = "Modifier sirasi: padding clickable'dan once - tik alani daralmis."; Focus = @("UI_Settings_Labels","Gesture_Swipe_Drawer") },
+    @{ Code = "CE6"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = '@Volatile\s+var\s+\w+\s*='; Description = "@Volatile bilesik operasyon korumaz - AtomicBoolean.compareAndSet() kullan. (E9 tekrari)"; Focus = @("Data_State_Persistence","Performance_Memory") }
 )
 
 # Ana odak alani kurallarini sec

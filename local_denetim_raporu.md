@@ -31,10 +31,13 @@
 | 2026-06-28 07:03 | ✅ | IconCache | Bulunamadi |
 | 2026-06-28 08:03 | ✅ | DockPrefs | Bulunamadi |
 | 2026-06-28 09:03 | ✅ | BackupWorker | Bulunamadi |
+| 2026-06-28 10:03 | ✅ | Theme | Bulunamadi |
+| 2026-06-28 11:03 | ✅ | AppClassifier | Bulunamadi |
+| 2026-06-28 12:03 | ✅ | Room DB | Bulunamadi |
+| 2026-06-28 13:03 | ✅ | WorkManager | Bulunamadi |
+| 2026-06-28 13:33 | ✅ | NotificationListener | Bulunamadi |
+| 2026-06-28 14:03 | ✅ audit.ps1 (Dock+StateFlow) | Onboarding | Bulunamadi |
+| 2026-06-28 14:12 | ✅ audit.ps1 (Permission+OEM) | Widget | Bulunamadi |
+| 2026-06-28 14:14 | ✅ audit.ps1 (A11y+Test) | IconCache | Bulunamadi |
 
-*Sonraki ekstra: Theme | Telegram: ✅ msg_id:831*
-
-## Cozum Sirasi Hazirligi - 2026-06-28 09:33
-
-- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
-- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
+*16 kural (CE1-CE6) | Meta: %93 coverage, E8 guard kurali FIKIRLER'de | Sonraki: DockPrefs*

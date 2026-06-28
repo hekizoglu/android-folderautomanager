@@ -189,6 +189,11 @@
     <string name="onb_classify_mfr_title">Üreticiye Göre</string>
     <string name="onb_classify_mfr_desc">Google, Samsung, Microsoft…</string>
 
+    <string name="onb_quick_settings_title">Hızlı Ayarlar</string>
+    <string name="onb_quick_settings_desc">Tüm tercihlerinizi tek ekranda gözden geçirin ve değiştirin.</string>
+    <string name="onb_quick_settings_btn">Kaydet ve Devam Et</string>
+    <string name="onb_quick_settings_why">Bu ayarları daha sonra Ayarlar menüsünden değiştirebilirsiniz.</string>
+
     <string name="onb_done_title">Hazırsınız!</string>
     <string name="onb_done_desc">AppOrganizer kurulumu tamamlandı. İyi kullanımlar!</string>
     <string name="onb_done_btn">Başla</string>
