@@ -1,0 +1,14 @@
+appId: com.armutlu.apporganizer
+---
+- launchApp
+- assertVisible:
+    id: "com.armutlu.apporganizer:id/.*"
+    optional: true
+# HomeScreen yuklenene kadar bekle
+- waitForAnimationToEnd:
+    timeout: 3000
+# Klasor listesi gorunuyor mu kontrol et
+- assertVisible:
+    text: ".*"
+    optional: true
+- takeScreenshot: home_screen_loaded

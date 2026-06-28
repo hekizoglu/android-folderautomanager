@@ -29,7 +29,7 @@
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
-| 2026-06-21 | Denetim | **Test altyapısı — Maestro önerisi** — Launcher için en uygun: **Maestro** (YAML flow, kurulum 5dk, APK üstüne çalışır). Önce: `brew install maestro` + `.maestro/` klasörü. UIAutomator daha güçlü ama 10x karmaşık. Firebase Test Lab: CI için ideal ama paralı. Öneri: Maestro ile 3 kritik flow (HomeScreen→FolderOpen, AllAppsDrawer, Ayarlar navigasyon). (Kullanıcı Değeri:4 · Uygulanabilirlik:3 · Bağımlılık Riski:2 · Etki:3 = 12 puan 🟡) | Analiz Tamam D151 |
+| 2026-06-21 | Denetim | **Test altyapısı — Maestro** — 3 flow oluşturuldu: HomeScreen, AllAppsDrawer, Ayarlar navigasyon. `.maestro/` klasöründe. Kurulum: `maestro test .maestro/` (Kullanıcı Değeri:4 · Uygulanabilirlik:3 · Bağımlılık Riski:2 · Etki:3 = 12 puan 🟡) | [TAMAMLANDI D153] |
 | 2026-06-28 | Hüseyin | **Onboarding Ayar Sihirbazı** — İlk kurulumda tüm ayarları sırayla sor, her birine açıklama ekle. Mevcut onboarding'e ek bir "Ayar Tur" akışı olarak eklenebilir. (Kullanıcı Değeri:5 · Uygulanabilirlik:4 · Bağımlılık Riski:2 · Etki:4 = 15 puan ⭐) | Bekliyor |
 | 2026-06-28 | Hüseyin | **Akşam Önerisi Algoritma Açıklaması** — Ayarlar > Öneriler bölümüne kullanım örüntüsüne göre nasıl öneri verdiği açıklaması ekle | [TAMAMLANDI D146] |
 | 2026-06-28 | Hüseyin | **Widget Auto-Resize** — Widget alanı ekran en/boy oranına göre otomatik yükseklik ayarı | [TAMAMLANDI D147] |

@@ -1,0 +1,28 @@
+appId: com.armutlu.apporganizer
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 3000
+# Yukari swipe ile AllAppsDrawer ac
+- swipe:
+    direction: UP
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: all_apps_drawer_open
+# Arama kutusuna yaz
+- tapOn:
+    text: "Uygulama ara"
+    optional: true
+- inputText: "Set"
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: all_apps_search_result
+# Geri don
+- pressKey: Escape
+- swipe:
+    direction: DOWN
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: home_screen_returned

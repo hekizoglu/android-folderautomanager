@@ -1,0 +1,23 @@
+appId: com.armutlu.apporganizer
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 3000
+# Uzun bas ile menü ac (launcher context menu)
+- longPressOn:
+    point: "50%, 80%"
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: context_menu_open
+# Ayarlar'a git
+- tapOn:
+    text: "Ayarlar"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: settings_screen
+# Geri don
+- pressKey: Back
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: home_after_settings
