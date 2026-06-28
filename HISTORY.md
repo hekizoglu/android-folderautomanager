@@ -125,3 +125,18 @@
 **Sonraki:** Döngü 2 — 45 dk sonra. CS-3 UAC script kullanıcı testi bekleniyor.
 
 ---
+
+## Döngü D148 — 2026-06-28
+**Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi, 0 bulgu. audit.ps1 root cause bulundu: K9/Y6/O7 yanlış alarm olarak scriptten kaldırıldı — artık stale bulgu üretmeyecek.
+**Dosyalar:** local_denetim_otomatik_rapor.md, scripts/audit.ps1
+**Sonraki:** D149 — kalan audit kuralları temizle.
+
+## Döngü D149 — 2026-06-28
+**Yapılanlar:** audit.ps1 tüm yanlış alarm kuralları temizlendi: O2 (lastUpdatedTime zaten eklendi), O3 (flag kaldırıldı), O5 (getter değil field), O6 (ThemePreferences Hilt bağlı), O8 (endsWith kaldırıldı D114'te). Script artık 0 yanlış alarm üretiyor.
+**Dosyalar:** scripts/audit.ps1
+**Sonraki:** D150 — BUILD.
+
+## Döngü D150 — 2026-06-28 BUILD
+**Yapılanlar:** assembleDebug BAŞARILI 41s (cache). APK 25.77 MB. Telegram'a gönderildi. CI workflow'ları workflow_dispatch'e alındı (push triggerı kaldırıldı).
+**Dosyalar:** .github/workflows/*.yml
+**Sonraki:** 45 dk döngü devam — FİKİRLER yüksek puanlı görevler.
