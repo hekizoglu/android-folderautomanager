@@ -235,6 +235,16 @@ class LauncherActivity : ComponentActivity() {
         super.onStop()
     }
 
+    // Launcher split-screen'e alınırsa tam ekrana geri döner (resizeableActivity=false yeterli değil tüm OEM'lerde)
+    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
+        if (isInMultiWindowMode) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                stopLockTask()
+            }
+        }
+    }
+
     // Launcher'da back tuşu uygulamayı kapatmamalı
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {

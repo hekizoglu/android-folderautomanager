@@ -280,3 +280,8 @@
 **Yapılanlar:** assembleDebug - BUILD SUCCESSFUL (3m 19s). APK: 31.21 MB (+5.44 MB - documentfile bağımlılığı + D177/D178 özellikler). FİKİRLER: Google Drive [TAMAMLANDI D178] güncellendi. Telegram engelli - APK gönderilmedi.
 **Agent:** Yok
 **Sonraki:** Gesture/Multitasking Uyumluluğu (⭐ 16p)
+
+## Döngü D180 - 21:22
+**Yapılanlar:** Gesture/Multitasking Uyumluluğu (⭐ 16p) - AndroidManifest: LauncherActivity'ye resizeableActivity=false + configChanges (orientation|screenSize|uiMode|density|keyboard) eklendi; MainActivity'ye configChanges eklendi; LauncherActivity.onMultiWindowModeChanged() ile OEM split-screen koruması eklendi. enableOnBackInvokedCallback + BackHandler zaten vardı.
+**Agent:** Yok
+**Sonraki:** Tablet Desteği (⭐ 16p) - WindowSizeClass API, side panel AllAppsDrawer
