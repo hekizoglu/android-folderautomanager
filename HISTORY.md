@@ -235,3 +235,8 @@
 **Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi; CS-3 ve denetim durumu kontrol edildi — TOPLAM 0 açık bulgu
 **Agent:** Yok
 **Sonraki:** D171 — rutin denetim + encode kontrol
+
+## Döngü D171 — 12:15
+**Yapılanlar:** local_denetim_otomatik_rapor.md encoding düzeltildi (KiloCode 15dk döngüsü tekrar bozmuş); CS-3 değişiklik yok
+**Agent:** Yok
+**Sonraki:** D172 — rutin
