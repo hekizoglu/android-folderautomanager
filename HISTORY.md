@@ -324,3 +324,9 @@
 **CLAUDE.md/LEARNINGS.md:** Android 16 dosya erisim kurali eklendi
 **Sonraki:** LEARNINGS audit matrix (12p) veya yeni fikir
 
+## Dongü 188 -- 23:52
+**Yapılanlar:** scripts/learnings_audit_coverage.py oluşturuldu (E1-E16 vs audit.ps1 matrix). Sonuc: 5/16 (%31) coverage. CE7 (E6-Settings donus) + CE8 (E13-composable boyut) audit.ps1'e eklendi. BUILD yok (salt script degisikligi)
+**Agent:** --
+**CLAUDE.md/LEARNINGS.md:** --
+**Sonraki:** Kalan fikirler tukendi, yeni fikir uretimi veya build+APK dongusu
+
