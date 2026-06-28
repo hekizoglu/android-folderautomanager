@@ -17,6 +17,67 @@
 | 2026-06-21 | Onboarding yeniden yazım (16 adım, CLASSIFY_MODE→SET_LAUNCHER→DONE sırası) | D120 |
 | 2026-06-21 | Görsel kalite artırımı | D123 |
 
+### Local Denetim Tamamlananlar Arşivi
+
+#### 2026-06-26 11:26
+- `K1` AllApps sıralama tercihi `AppPrefs` üzerinden tek prefs kaynağına taşındı.
+- `Y1` `fuzzySearch()` Türkçe locale ile normalize edilerek AppList ve drawer araması hizalandı.
+- `Y2` Klasör arama sayacı `snapshotFlow` ve `collectLatest` ile eski sayaçları iptal edecek hale getirildi.
+- `Y3` `FolderTile` içindeki `swipeDy` recomposition güvenli Compose state oldu.
+- `Y4` Launcher varsayılan durumu tekrar hesaplama yerine hatırlanan state ile yönetildi.
+- `O1` Kategori sekmeleri ViewModel tarafında önceden hesaplanan `visibleCategories` listesine taşındı.
+- `O2` All Apps içindeki recent ve favorite ikon cache anahtarlarına `lastUpdatedTime` eklendi.
+- `O3` `AppClassifier` üzerindeki global mutable flag kaldırıldı; sınıflandırma tercihi çağrı bazlı parametre oldu.
+- `O4` Klasör arama temizleme akışı tek aktif sayaçla sınırlandı.
+- `O5` `filteredApps` ve kategori istatistikleri her erişimde değil state üretiminde hesaplanır hale geldi.
+- `D1` Kullanılmayan `itemHeightDp` parametreleri temizlendi.
+- `D2` Ayarlar ekranındaki en dolu kategori hesabı önbelleğe alınmış state üzerinden okunur hale geldi.
+- `D3` Tekrar doğrulandı; `isLoading` değişkeni loading fallback ekranında kullanıldığı için yanlış alarm olarak kapatıldı.
+
+#### 2026-06-27 01:46
+- Manuel semantik denetimdeki `Tüm Kategorileri Sıfırla` satırı onay dialogu ile korundu.
+- Dock `Varsayılanlara Sıfırla` satırı chevron olmadan ve onay dialogu ile çalışacak şekilde düzeltildi.
+- `İzin Ver` etiketi `Bildirim Erişimini Aç` olarak güncellendi.
+- `Otomatik Yedekleme` açıklaması haftalık periyodik worker davranışını doğru anlatır hale getirildi.
+- `Geri Yükle` akışına içe aktarma öncesi onay dialogu eklendi.
+- `Klasör Önizleme` ayarı `Yukarı Kaydırma İpucu` olarak yeniden adlandırıldı.
+- App listesi menüsündeki `Yeniden Sınıflandır` aksiyonu netleştirildi ve onay dialogu ile korundu.
+
+#### 2026-06-27 02:28
+- `A1-A2` `LauncherActivity` home-press zamanı `savedInstanceState` ile korundu; receiver kaydı `onStart/onStop`'a taşındı.
+- `A3` `HomeScreen` swipe state'i `rememberSaveable` ile config-change güvenli hale getirildi.
+- `A4` `AppContextMenu` favori durumu ViewModel state'iyle hizalandı.
+- `A5` `FolderRenameDialog` boş isimde kaydı engelleyen hata ve disabled confirm davranışı kazandı.
+- `A7` `WidgetArea` drag sıralama hesabı gerçek ölçülen kart yüksekliğine bağlandı.
+- `A13` Arama geçmişi chip'lerine tıklanabilirlik semantics'i eklendi.
+- `A15` Alfabetik drawer başlıkları `heading()` semantics'i ile erişilebilir hale getirildi.
+- `P1-P9` İzin sorunları: `PermissionHelper` kaldırıldı, bildirim izninde fallback akışı eklendi, `GET_INSTALLED_PACKAGES` manifest izninden silindi, `QUERY_PACKAGES` onboarding adımı skippable yapıldı.
+- `C1-C10` Kategori CRUD akışı gerçek Room verisine bağlandı; boş/duplicate ad engellendi; sistem kategorisi silme DAO'da korundu.
+
+#### 2026-06-27 03:20
+- `P2` Onboarding akışına `Usage Access` adımı eklendi.
+- `P10` `PermissionsBanner` snooze süresi `BANNER_SNOOZE_DAYS` üzerinden okunur hale getirildi.
+- `A8-A18` TalkBack/erişilebilirlik: bildirim sayısı semantics, dock icon semantics, öneri fallback icon, FavoritesRow/RecentAppsRow, klasör swipe ipucu, SwipeHint live region, HomeScreenPageIndicator tab rolü, MiniAppIcon fallback, FolderSheet onClick etiketi.
+- `S2` `FolderTile` drag başlangıcında `swipeDy` sıfırlandı.
+- `S4-S7` FolderTile erişilebilir semantics, swipe ipucu screen reader dostu hale getirildi.
+- `C8-C9` Kategori seçicilerde kapanış davranışı ve semantics hizalandı.
+- Denetim otomasyonu saatlik Full + 15 dk Resolve görev akışı ile yeniden kurgulandı.
+
+#### 2026-06-27 09:29
+- `Y5` `Theme.kt` içinde `darkTheme` tekrar aktif; sistem açık/koyu tercihi artık uygulanıyor.
+- `O7` `DockPrefs.removeFromDock` Boolean dönüyor, ViewModel wrapper toast gösteriyor.
+- `O8` `PackageManagerHelper.kt` riskli `endsWith` kaldırıldı; gizleme mantığı prefix bazlı hale getirildi.
+- `F1-F4` `LauncherSetupScreen.kt` launcher sonuç kontrolü, güvenli fallback ve doğru başlıkla kapatıldı.
+- `Y6`, `F5`, `F6` — yanlış alarm olarak kapatıldı.
+- Denetim otomasyonu `scripts/register_audit_cron.ps1` saatlik tam denetim + 5 dk sonra resolve turu modeline güncellendi.
+
+#### 2026-06-27 09:48
+- `K9` `AppListViewModel.kt` `getAllCategoriesFlow()` API çağrısı denetlendi; `NoSuchMethodError` clean build + yeniden APK yükleme ile kapanır.
+- Denetim sistemine `K9` (KRİTİK) API senkronizasyon kuralı eklendi; `H` grubu (Derleme ve API Senkronizasyonu) kuralları eklendi.
+- Denetim sıklığı 15 dakikaya düşürüldü, 8 odak alanı + 1 ekstra denetim rotasyonu aktif.
+
+---
+
 ### ÇÖZÜLEMEYEN_SORUNLAR.md Çözülenler Arşivi
 | # | Sorun | Çözüm | Tarih |
 |---|-------|-------|-------|
