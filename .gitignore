@@ -54,3 +54,8 @@ qa/reports/
 *.bak
 build_out*.txt
 apk_build_latest.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

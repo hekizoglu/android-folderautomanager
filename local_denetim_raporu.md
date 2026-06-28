@@ -2,7 +2,7 @@
 
 > Dongü: 15 dakikalik 8+1 odak rotasyonu
 > Son denetim: 2026-06-28 03:55
-> Acik bulgu yok — tüm maddeler cozüldü veya HISTORY.md arsivine tasindi.
+> Acik bulgu yok - tüm maddeler cozüldü veya HISTORY.md arsivine tasindi.
 
 ---
 
@@ -28,14 +28,11 @@
 | 2026-06-28 04:03 | ✅ | NotificationListener | Bulunamadi |
 | 2026-06-28 05:03 | ✅ | Onboarding | Bulunamadi |
 | 2026-06-28 06:03 | ✅ | Widget | Bulunamadi |
+| 2026-06-28 07:03 | ✅ | IconCache | Bulunamadi |
 
-*Sonraki ekstra: IconCache | Telegram: ✅ msg_id:826*
-## Cozum Sirasi Hazirligi - 2026-06-28 05:33
+*Sonraki ekstra: DockPrefs | Telegram: ✅ msg_id:828*
 
-- Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
-- Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
-
-## Cozum Sirasi Hazirligi - 2026-06-28 06:33
+## Cozum Sirasi Hazirligi - 2026-06-28 07:33
 
 - Rapor tekrar uretildi ve kalan sorunlar bir sonraki cozum turu icin listelendi.
 - Cozulemeyen maddeler `COZULEMEYEN_SORUNLAR.md` dosyasina not edildi.
