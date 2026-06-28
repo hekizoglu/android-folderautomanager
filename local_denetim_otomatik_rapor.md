@@ -1,9 +1,9 @@
 # Local Denetim Raporu
 
 > Döngü: `15 dakikalık 8+1 odak rotasyonu`
-> Son denetim: 2026-06-28 18:44
-> Ana tur odak: **Dock, widget, yedekleme akislari** (Dock_Widget_Backup)
-> Ekstra denetim: **StateFlow kullanimi, hot-path, race condition** (ViewModel_StateFlow)
+> Son denetim: 2026-06-28 19:14
+> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
+> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
 > Kapanan maddeler `local_denetim_tamamlananlar.md` dosyasina tasinir.
 
 ---
@@ -32,7 +32,7 @@ Manuel semantik tur icin local_denetim_manuel_checklist.md kullan.
 
 ---
 
-*Denetim tarihi: 2026-06-28 18:44 | Ana: Dock, widget, yedekleme akislari | Ekstra: StateFlow kullanimi, hot-path, race condition*
+*Denetim tarihi: 2026-06-28 19:14 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*
 
 ---
 

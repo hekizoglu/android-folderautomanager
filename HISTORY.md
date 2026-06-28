@@ -275,3 +275,8 @@
 **Yapılanlar:** Google Drive SAF Yedekleme (⭐ 17p) - AppPrefs'e KEY_DRIVE_FOLDER_URI eklendi; BackupWorker DocumentFile.fromTreeUri ile Drive'a JSON kopyalıyor; SettingsBackupAboutSection'a OpenDocumentTree launcher + Drive Klasörü kartı eklendi; build.gradle.kts'e androidx.documentfile:1.0.1 bağımlılığı eklendi. Sıfır ek izin, SAF persistable URI yeterli. google-services.json gerektirmez.
 **Agent:** Google Drive API araştırma (yerel AI) - SAF vs REST API karşılaştırması; SAF önerildi (0 bağımlılık, WorkManager uyumlu)
 **Sonraki:** Gesture/Multitasking Uyumluluğu (⭐ 16p) veya build döngüsü (D180'de)
+
+## Döngü D179 - 20:58 [BUILD]
+**Yapılanlar:** assembleDebug - BUILD SUCCESSFUL (3m 19s). APK: 31.21 MB (+5.44 MB - documentfile bağımlılığı + D177/D178 özellikler). FİKİRLER: Google Drive [TAMAMLANDI D178] güncellendi. Telegram engelli - APK gönderilmedi.
+**Agent:** Yok
+**Sonraki:** Gesture/Multitasking Uyumluluğu (⭐ 16p)
