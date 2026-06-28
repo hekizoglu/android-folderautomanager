@@ -1,0 +1,19 @@
+appId: com.armutlu.apporganizer
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: home_initial
+# Dock'a uzun bas (DockEditSheet ac)
+- longPressOn:
+    point: "50%, 92%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: dock_edit_sheet_open
+# Dock app listesini asagi swipe ile kapat
+- swipe:
+    direction: DOWN
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: home_after_dock_close
