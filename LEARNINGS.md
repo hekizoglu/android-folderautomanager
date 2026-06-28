@@ -106,10 +106,9 @@
 3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
 4. Build + commit + push
 
-### Onboarding Adım Sırası (D120 güncel — 16 adım)
-WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → CLASSIFY_MODE → SET_LAUNCHER → DONE
-Toggle chip adımları: AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE
-Son iki adım: CLASSIFY_MODE → SET_LAUNCHER → DONE sırası değiştirilemez (D120'de SET_LAUNCHER sona alındı — kullanıcı talebi). ~~14+2 adım~~ → 16 adım (D105).
+### Onboarding Adım Sırası (D173 güncel — 17 adım)
+WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → QUICK_SETTINGS → CLASSIFY_MODE → SET_LAUNCHER → DONE
+Son üç adım: CLASSIFY_MODE → SET_LAUNCHER → DONE sırası değiştirilemez (D120'de SET_LAUNCHER sona alındı — kullanıcı talebi). ~~16 adım~~ → 17 adım (D173'te QUICK_SETTINGS eklendi).
 
 ### Room DB Versiyon Geçmişi
 - v1-v5: temel alanlar
@@ -160,10 +159,6 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 ## 📌 Promote Bekleyenler + Gözlemler
 _(3 tekrara ulaşınca 🔼 tablosuna ve CLAUDE.md §5'e taşınır)_
 
-### [2026-06-13] Merge conflict AppClassifier — Tekrar: 4+ | Öncelik: ORTA → **PROMOTE EDİLDİ**
-Remote ve local aynı döngüde yazınca çakışıyor.
-**Kural:** `scripts/dedup_classifier.py` — iki tarafı birleştir, set ile dedup. → **CLAUDE.md §5'e eklendi (2026-06-20)**
-
 ### [2026-06-15] Firebase öğrenme döngüsü — Tekrar: 1 | Öncelik: ORTA
 **Kural:** Her sprint başında Firebase metriklerini LEARNINGS'e yaz. Veri olmadan özellik önceliği verme.
 → Firebase entegrasyonu aktif olunca izlemeye başla
@@ -175,7 +170,7 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-### [2026-06-28] KiloCode audit.ps1 Encoding Tuzağı — Tekrar: 1 | Öncelik: YÜKSEK
+### [2026-06-28] KiloCode audit.ps1 Encoding Tuzağı — Tekrar: 1 | Öncelik: YÜKSEK → **PROMOTE EDİLDİ (D191)**
 **Sorun:** KiloCode otomatik olarak audit.ps1'e kural ekliyor. Eklenen kuralların description alanında curly quote (`'` U+2019) veya double-encoded em dash (`â€"`) olunca PowerShell 5.1 syntax parser patlatıyor — script tamamen çalışmıyor.
 **Fix:** Description alanlarında daima ASCII-safe string kullan (tek tırnak → `'`, em dash → `-`). Mevcut kuralları kaldırarak temiz versiyon yaz.
 **Test:** `.\scripts\audit.ps1 -DryRun` — çıktı görünüyorsa syntax OK.
@@ -183,4 +178,4 @@ Remote ve local aynı döngüde yazınca çakışıyor.
 
 ---
 
-*Son güncelleme: 2026-06-28 — v7: KiloCode audit encoding tuzağı eklendi (D152). audit.ps1 stale kuralları temizlendi (D144-D151).*
+*Son güncelleme: 2026-06-29 — v8: MD denetim N1-N9 kapatildi (D191). KiloCode CLAUDE.md §5'e promote edildi. Onboarding 17 adim guncellendi.*

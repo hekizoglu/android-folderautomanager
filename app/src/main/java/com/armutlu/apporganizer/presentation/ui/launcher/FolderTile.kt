@@ -236,18 +236,30 @@ fun FolderTile(
                 textAlign = TextAlign.Center
             )
         }
-        // Swipe-up ile acilacak uygulamanin adi — en cok kullanilan
+        // Hizli acma ipucu — klasor uzerinde yukari kaydirinca en cok kullanilan uygulama acilir
         // folderSwipeHintEnabled — HomeScreen'den reaktif parametre olarak gelir
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {
-            Text(
-                text = "Yukarı kaydır: ${topApp.appName}",
-                color = Color.White.copy(alpha = 0.28f),
-                fontSize = 9.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.width(tileWidth)
-            )
+            Row(
+                modifier = Modifier.width(tileWidth),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "↑",
+                    color = Color.White.copy(alpha = 0.40f),
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.width(3.dp))
+                Text(
+                    text = topApp.appName,
+                    color = Color.White.copy(alpha = 0.45f),
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
         // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
         // notifTextEnabled — HomeScreen'den reaktif parametre olarak gelir

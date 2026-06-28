@@ -10,6 +10,16 @@
 **LEARNINGS.md:** E17 eklendi — Kotlin JvmValueClassAbstractLowering internal compiler error → `--rerun-tasks` ile geçer
 **Sonraki:** Klasör Rengi Otomatik (13p) veya Onboarding Yeniden Başlatma (12p)
 
+## Döngü 136 — 2026-06-29 [AUDIT OPTIMIZASYON]
+**Yapılanlar:** Denetim tiered frequency: T1 her dongu (10 regex), T2 3 dongude (8 CE kurali), T3 10 dongude (Compose metrics + Dep matrix + APK trend + Skill + Dead code). lintDebug T3'ten kaldirildi (2+dk) — build artifact kontroller eklendi. run_local_denetim_cycle.ps1 audit.ps1'a CycleNumber gonderiyor.
+**Agent:** —
+**Sonraki:** Tier sistemiyle devam; T3'te compose stability raporu + APK trend izleme
+
+## Döngü 137 — 2026-06-29 [MD DENETIM KAPATMA]
+**Yapılanlar:** MD Denetim Raporu (4. ve 5. gecis) tum maddeleri kapatildi: N1 (D151 cift) linter tarafindan cozuldu, N2 ROADMAP temizlendi, N3 harcananvakit toplu log eklendi, N4 LEARNINGS promote temizlik, N5 KiloCode CLAUDE.md §5'e promote, N7 Onboarding 17 adim guncellendi (LEARNINGS+CLAUDE.md), N8 MD_DENETIM_2026-06-23.md silindi, N9 ROADMAP Yedek Karsilastirma kaldirildi.
+**Agent:** —
+**Sonraki:** Commit + push + build
+
 ---
 
 ## Tamamlananlar Arşivi

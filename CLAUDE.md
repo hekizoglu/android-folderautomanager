@@ -1,6 +1,6 @@
 # AppOrganizer — Claude Çalışma Talimatları
 
-> **Meta:** ~390 satır · Son güncelleme: 2026-06-22 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → FİKİRLER.md (ROADMAP.md donduruldu)
+> **Meta:** ~390 satır · Son güncelleme: 2026-06-29 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → FİKİRLER.md (ROADMAP.md donduruldu)
 
 ---
 
@@ -236,6 +236,7 @@ D115'ten itibaren paket→kategori haritası `assets/app_categories.json`'da (37
 Edit tool bazen `"` `"` (0x201c/201d) yazar → "Expecting an expression" hatası.
 - Fix: `python scripts/fix_encoding.py <dosya>`
 - Kontrol: `xxd dosya | grep e280`
+- **KiloCode/audit.ps1 tuzağı (D182):** KiloCode audit.ps1'e otomatik kural eklerken description alanında curly quote veya em dash (`—`) kullanabilir → PS5.1 syntax hatası. Description alanlarında daima ASCII-safe string kullan. Test: `.\scripts\audit.ps1 -DryRun`.
 
 ### Unit Test — Türkçe Proje Yolu ClassNotFoundException
 Proje yolu Türkçe karakter içeriyorsa (`Github Klasörleri`) `testDebugUnitTest` çalıştırmak ClassNotFoundException verir.
@@ -347,7 +348,7 @@ app/src/main/java/com/armutlu/apporganizer/
 ### Önemli Mimari Notlar
 - **AppClassifier:** 3702 benzersiz paket, `assets/app_categories.json` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
 - **Room DB:** v8 (v7→v8 boş migration, 2026-06-16)
-- **Onboarding:** 16 adım (WELCOME → ... → THEME_SELECT → CLASSIFY_MODE → SET_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
+- **Onboarding:** 17 adım (WELCOME → ... → THEME_SELECT → QUICK_SETTINGS → CLASSIFY_MODE → SET_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor
 
@@ -408,4 +409,4 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ---
 
-*Son güncelleme: 2026-06-22 — CLAUDE.md v5.1: paket sayısı 3702 güncellendi (D115), onboarding sırası düzeltildi (D120), AppClassifier JSON-tabanlı mimari notu eklendi.*
+*Son güncelleme: 2026-06-29 — CLAUDE.md v5.2: onboarding 17 adim guncellendi (D173), KiloCode audit encoding kurali eklendi (D191), MD denetim N1-N9 kapatildi.*

@@ -144,7 +144,7 @@ if ($parsed -match '^\d+$') {
 $cycleNumber = $current + 1
 Set-Content -Path $counterPath -Value $cycleNumber -Encoding UTF8
 
-& $auditScript -SendTelegram:$($SendTelegram.IsPresent)
+& $auditScript -SendTelegram:$($SendTelegram.IsPresent) -CycleNumber $cycleNumber
 if (-not $?) {
     throw "audit.ps1 basarisiz oldu."
 }

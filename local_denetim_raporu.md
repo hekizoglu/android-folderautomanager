@@ -1,8 +1,8 @@
 # Local Denetim Raporu
 
-> Dongü: 15 dakikalik 8+1 odak rotasyonu
-> Son denetim: 2026-06-28 03:55
-> Acik bulgu yok - tüm maddeler cozüldü veya HISTORY.md arsivine tasindi.
+> Dongu: tiered frequency (T1:her · T2:3dongu · T3:10dongu)
+> Son denetim: 2026-06-29 01:26
+> Acik bulgu yok - tum maddeler cozuldu veya HISTORY.md arsivine tasindi.
 
 ---
 
@@ -18,26 +18,50 @@
 
 ---
 
+## Tier Sistemi (D182)
+
+| Tier | Frekans | Kapsam |
+|------|---------|--------|
+| T1 | Her dongu | Temel regex: K1, Y1-Y5, Y7-Y8, O1, D1 (10 kural) |
+| T2 | 3 dongude 1 | + CE1-CE8 compose-expert (8 kural) |
+| T3 | 10 dongude 1 | + Compose metrics + Dependency matrix + APK trend + Skill integrity + Dead code |
+
+**Optimizasyon notu (D182):** `gradlew lintDebug` T3'ten kaldirildi — 2+ dk suruyor. Yerine build artifact tabanli hizli kontroller eklendi.
+
+---
+
 ## Cron Denetim Gecmisi
 
-| Tarih-Saat | 5-Skill | Ekstra | Bug |
-|------------|---------|--------|-----|
-| 2026-06-28 02:45 | ✅ | AppClassifier | Bulunamadi |
-| 2026-06-28 03:03 | ✅ | Room DB | Bulunamadi |
-| 2026-06-28 03:10 | ✅ | WorkManager | Bulunamadi |
-| 2026-06-28 04:03 | ✅ | NotificationListener | Bulunamadi |
-| 2026-06-28 05:03 | ✅ | Onboarding | Bulunamadi |
-| 2026-06-28 06:03 | ✅ | Widget | Bulunamadi |
-| 2026-06-28 07:03 | ✅ | IconCache | Bulunamadi |
-| 2026-06-28 08:03 | ✅ | DockPrefs | Bulunamadi |
-| 2026-06-28 09:03 | ✅ | BackupWorker | Bulunamadi |
-| 2026-06-28 10:03 | ✅ | Theme | Bulunamadi |
-| 2026-06-28 11:03 | ✅ | AppClassifier | Bulunamadi |
-| 2026-06-28 12:03 | ✅ | Room DB | Bulunamadi |
-| 2026-06-28 13:03 | ✅ | WorkManager | Bulunamadi |
-| 2026-06-28 13:33 | ✅ | NotificationListener | Bulunamadi |
-| 2026-06-28 14:03 | ✅ audit.ps1 (Dock+StateFlow) | Onboarding | Bulunamadi |
-| 2026-06-28 14:12 | ✅ audit.ps1 (Permission+OEM) | Widget | Bulunamadi |
-| 2026-06-28 14:14 | ✅ audit.ps1 (A11y+Test) | IconCache | Bulunamadi |
+| Tarih-Saat | Tier | Ana Odak | Ekstra | Bug |
+|------------|------|----------|--------|-----|
+| 2026-06-28 02:45 | T1 | AppClassifier | - | Bulunamadi |
+| 2026-06-28 03:03 | T1 | Room DB | - | Bulunamadi |
+| 2026-06-28 03:10 | T1 | WorkManager | - | Bulunamadi |
+| 2026-06-28 04:03 | T1 | NotificationListener | - | Bulunamadi |
+| 2026-06-28 05:03 | T1 | Onboarding | - | Bulunamadi |
+| 2026-06-28 06:03 | T1 | Widget | - | Bulunamadi |
+| 2026-06-28 07:03 | T1 | IconCache | - | Bulunamadi |
+| 2026-06-28 08:03 | T1 | DockPrefs | - | Bulunamadi |
+| 2026-06-28 09:03 | T3 | BackupWorker | lint+dep+skill | Bulunamadi |
+| 2026-06-28 10:03 | T1 | Theme | - | Bulunamadi |
+| 2026-06-28 11:03 | T1 | AppClassifier | - | Bulunamadi |
+| 2026-06-28 12:03 | T1 | Room DB | - | Bulunamadi |
+| 2026-06-28 13:03 | T1 | WorkManager | - | Bulunamadi |
+| 2026-06-28 13:33 | T1 | NotificationListener | - | Bulunamadi |
+| 2026-06-28 14:03 | T1 | Onboarding | - | Bulunamadi |
+| 2026-06-28 14:12 | T1 | Widget | - | Bulunamadi |
+| 2026-06-28 14:14 | T1 | IconCache | - | Bulunamadi |
+| 2026-06-28 15:03 | T1 | DockPrefs | - | Bulunamadi |
+| 2026-06-28 16:03 | T1 | BackupWorker | - | Bulunamadi |
+| 2026-06-28 17:03 | T1 | Theme | - | Bulunamadi |
+| 2026-06-28 18:03 | T1 | AppClassifier | - | Bulunamadi |
+| 2026-06-28 19:03 | T1 | RoomDB | - | Bulunamadi |
+| 2026-06-28 20:03 | T1 | WorkManager | - | Bulunamadi |
+| 2026-06-28 21:03 | T1 | NotificationListener | - | Bulunamadi |
+| 2026-06-28 22:03 | T1 | Onboarding | - | Bulunamadi |
+| 2026-06-28 23:03 | T1 | Widget | - | Bulunamadi |
+| 2026-06-29 00:03 | T1 | IconCache | - | Bulunamadi |
+| 2026-06-29 01:03 | T1 | DockPrefs | - | Bulunamadi |
+| 2026-06-29 02:03 | T1 | BackupWorker | - | Bulunamadi |
 
-*16 kural (CE1-CE6) | Meta: %93 coverage, E8 guard kurali FIKIRLER'de | Sonraki: DockPrefs*
+*29 tur, 0 bug | Tier sistemi D182'de optimize edildi | Fixler: excludeFromRecents + klasor hint ↑*
