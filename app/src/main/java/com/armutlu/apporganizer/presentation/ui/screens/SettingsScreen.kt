@@ -41,7 +41,8 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit = {},
-    onNavigateToPrivacyPolicy: () -> Unit = {}
+    onNavigateToPrivacyPolicy: () -> Unit = {},
+    onNavigateToUsageReport: () -> Unit = {}
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
     val state           by viewModel.screenState.collectAsState()
@@ -340,7 +341,8 @@ fun SettingsScreen(
                 appCount = state.apps.size,
                 categoryCount = state.categories.size,
                 logs = logs,
-                onNavigateToPrivacyPolicy = onNavigateToPrivacyPolicy
+                onNavigateToPrivacyPolicy = onNavigateToPrivacyPolicy,
+                onNavigateToUsageReport = onNavigateToUsageReport
             )
 
 

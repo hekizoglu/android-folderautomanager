@@ -609,6 +609,12 @@ class AppListViewModel @Inject constructor(
         }
     }
 
+    fun setAppHidden(packageName: String, hidden: Boolean) {
+        viewModelScope.launch {
+            repository.updateAppHidden(packageName, hidden)
+        }
+    }
+
     suspend fun exportBackup(context: android.content.Context): android.content.Intent? =
         com.armutlu.apporganizer.utils.BackupManager.exportAndShare(context, repository)
 

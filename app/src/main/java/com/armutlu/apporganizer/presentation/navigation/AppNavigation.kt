@@ -8,6 +8,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
+import com.armutlu.apporganizer.presentation.ui.screens.UsageReportScreen
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 object Routes {
@@ -15,6 +16,7 @@ object Routes {
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
     const val PRIVACY_POLICY = "privacy_policy"
+    const val USAGE_REPORT = "usage_report"
 }
 
 @Composable
@@ -39,11 +41,18 @@ fun AppNavigation(viewModel: AppListViewModel) {
             SettingsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) }
+                onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) },
+                onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) }
             )
         }
         composable(Routes.PRIVACY_POLICY) {
             PrivacyPolicyScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.USAGE_REPORT) {
+            UsageReportScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

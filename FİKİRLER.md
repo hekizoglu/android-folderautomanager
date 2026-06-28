@@ -53,5 +53,11 @@
 | 2026-06-28 | Araştırma | **Launcher Crash Rate İzleme** — Nova'nın %15 crash rate skandalı. AppOrganizer'a Crashlytics + ANR izleme + otomatik safe mode. Kullanıcı güveni için kritik. (KV:4 · U:4 · BR:2 · EA:4 = **14 puan 🟡**) | [TAMAMLANDI D185] |
 | 2026-06-28 | Meta #3 | **Android 16 File Permission Audit Kurali (CE7)** — MojoLauncher'da Android 16'da app data folder'a yazma izni kirildi. `getExternalFilesDir` / `getFilesDir` kullanimini tara, Android 16 breaking change'lerine karsi kural ekle. (KV:3 · U:4 · BR:1 · EA:3 = **11 puan 🟡**) | [TAMAMLANDI D187] |
 
-*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-28 14:30*
+| 2026-06-29 | Yeni | **Uygulama Kullanım Raporu Ekranı** — UsageStats verisiyle en çok/az kullanılan uygulamaları listele, bar grafik + "X gündür açılmadı" bilgisi. Temizlik önerisi (kullanılmayanları gizle). (KV:5 · U:4 · BR:2 · EA:4 = **15 puan ⭐**) | Bekliyor |
+| 2026-06-29 | Yeni | **Çift Tıkla Arama** — HomeScreen'de boş alana çift tıklanınca AllAppsDrawer açılır ve search'e odaklanır. (KV:4 · U:5 · BR:1 · EA:4 = **14 puan 🟡**) | Bekliyor |
+| 2026-06-29 | Yeni | **Klasör Rengi Otomatik (Dominant İkon)** — Klasör oluşturulunca içindeki uygulamaların ikonundan dominant renk hesaplanıp otomatik atanır. Manuel değiştirilebilir. (KV:3 · U:4 · BR:2 · EA:4 = **13 puan 🟡**) | Bekliyor |
+| 2026-06-29 | Yeni | **Onboarding Yeniden Başlatma** — Settings > Hakkında'ya "Kurulum Sihirbazını Yeniden Başlat" butonu ekle. Yeni kullanıcıya demo / sıfırlama için. (KV:3 · U:5 · BR:1 · EA:3 = **12 puan 🟡**) | Bekliyor |
+| 2026-06-29 | Yeni | **Duvar Kağıdı Renk Uyumu** — Duvar kağıdının dominant rengine göre klasör başlık rengini otomatik ayarla (açık/koyu tema). (KV:3 · U:3 · BR:2 · EA:3 = **11 puan 🟡**) | Bekliyor |
+
+*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-06-29*
 *🏆 Piyasa Puani: 7.8/10 | Tahmini 1 yillik indirme: 5K-15K (organik, niche launcher)*

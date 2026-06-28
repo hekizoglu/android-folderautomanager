@@ -38,7 +38,8 @@ internal fun LazyListScope.settingsBackupAboutSection(
     appCount: Int,
     categoryCount: Int,
     logs: List<String>,
-    onNavigateToPrivacyPolicy: () -> Unit
+    onNavigateToPrivacyPolicy: () -> Unit,
+    onNavigateToUsageReport: () -> Unit = {}
 ) {
     // ── Hakkında (üst) ──────────────────────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
@@ -335,6 +336,19 @@ internal fun LazyListScope.settingsBackupAboutSection(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                 }
             }
+        }
+    }
+
+    // ── Kullanım Raporu ─────────────────────────────────────────────────
+    item {
+        SettingsCard {
+            SettingsButtonRow(
+                icon = Icons.Default.BarChart,
+                title = "Kullanım Raporu",
+                subtitle = "En çok/az kullanılan uygulamalar, gizleme önerileri",
+                showChevron = true,
+                onClick = onNavigateToUsageReport
+            )
         }
     }
 
