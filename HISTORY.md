@@ -1586,3 +1586,8 @@ S6 (iki arşiv bölümü) birleştirildi, MD_DENETIM_2026-06-22b.md silindi. Tü
 **Yapılanlar:** assembleDebug SUCCESS 25.7 MB. AllAppsDrawer.kt build hataları düzeltildi: asImageBitmap+Locale import eksik, LRUCache?.run→cached/else pattern. H10 code split serisinin ilk başarılı build doğrulaması.
 **Build:** SUCCESS 25.7 MB, commit b58f701
 **Sonraki:** H4 Google Drive backup (17p, zorluk 8 — kullanıcı A/B seçimi bekleniyor)
+
+## Döngü D147 — 2026-06-28
+**Yapılanlar:** Widget Auto-Resize özelliği eklendi — AppPrefs KEY_WIDGET_AUTO_RESIZE, WidgetArea autoResize+screenHeightDp parametreleri, HomeScreen reaktif state, SettingsHomeScreenSection toggle. local_denetim_otomatik_rapor.md encoding düzeltildi (0 açık bulgu). local_denetim_tamamlananlar.md HISTORY arşivine taşındı, silindi.
+**Dosyalar:** AppPrefs.kt, WidgetArea.kt, HomeScreen.kt, SettingsHomeScreenSection.kt, local_denetim_otomatik_rapor.md, HISTORY.md
+**Sonraki:** Döngü D148 — 45 dk döngü devam, sonraki build D150' da.
