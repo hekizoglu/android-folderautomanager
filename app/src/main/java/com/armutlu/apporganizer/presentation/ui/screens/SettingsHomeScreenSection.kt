@@ -41,6 +41,7 @@ fun SettingsHomeScreenSection() {
     var homeSearchEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
+    var doubleTapSearchEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
 
     SettingsCard {
         SettingsSwitchRow(
@@ -135,6 +136,17 @@ fun SettingsHomeScreenSection() {
             onCheckedChange = {
                 swipeHintEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.TouchApp,
+            title = "Çift Tıkla Arama",
+            subtitle = "Ana ekrana çift tıklayınca tüm uygulamalar açılır ve arama kutusuna odaklanır",
+            checked = doubleTapSearchEnabled,
+            onCheckedChange = {
+                doubleTapSearchEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setDoubleTapSearchEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

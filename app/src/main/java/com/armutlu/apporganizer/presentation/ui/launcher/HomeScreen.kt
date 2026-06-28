@@ -90,6 +90,7 @@ fun HomeScreen(
     val folders by viewModel.folders.collectAsState()
     val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
+    val focusSearchOnOpen by viewModel.focusSearchOnOpen.collectAsState()
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
@@ -103,6 +104,7 @@ fun HomeScreen(
     var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
     var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
+    var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
@@ -373,7 +375,8 @@ fun HomeScreen(
                     onDoubleTap = {
                         if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.openAllApps()
+                            if (doubleTapSearchEnabled) viewModel.openAllAppsWithSearch()
+                            else viewModel.openAllApps()
                         }
                     },
                     onLongPress = {
@@ -694,7 +697,9 @@ fun HomeScreen(
                 onRecentAppClick = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
-                }
+                },
+                focusSearchOnOpen = focusSearchOnOpen,
+                onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen
             )
         }
     }

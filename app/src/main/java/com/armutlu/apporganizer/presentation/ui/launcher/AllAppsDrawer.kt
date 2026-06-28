@@ -521,6 +521,8 @@ fun AllAppsDrawer(
     recentApps: List<AppInfo> = emptyList(),
     recentAppsEnabled: Boolean = false,
     onRecentAppClick: (String) -> Unit = {},
+    focusSearchOnOpen: Boolean = false,
+    onFocusSearchConsumed: () -> Unit = {},
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -530,6 +532,15 @@ fun AllAppsDrawer(
     val haptic            = LocalHapticFeedback.current
     val listState         = rememberLazyListState()
     val scope             = rememberCoroutineScope()
+
+    // Çift tıkla arama: focusSearchOnOpen=true ise açılınca klavyeyi göster
+    LaunchedEffect(focusSearchOnOpen) {
+        if (focusSearchOnOpen) {
+            runCatching { searchFocusRequester.requestFocus() }
+            keyboardController?.show()
+            onFocusSearchConsumed()
+        }
+    }
 
     // Klavye otomatik açılmasın — kullanıcı arama kutusuna tıklayınca açılır
 

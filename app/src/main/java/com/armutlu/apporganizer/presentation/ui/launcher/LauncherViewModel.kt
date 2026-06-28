@@ -104,6 +104,9 @@ class LauncherViewModel @Inject constructor(
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
 
+    private val _focusSearchOnOpen = MutableStateFlow(false)
+    val focusSearchOnOpen: StateFlow<Boolean> = _focusSearchOnOpen.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -256,11 +259,22 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun openAllApps() {
+        _focusSearchOnOpen.value = false
         _allAppsOpen.value = true
+    }
+
+    fun openAllAppsWithSearch() {
+        _focusSearchOnOpen.value = true
+        _allAppsOpen.value = true
+    }
+
+    fun resetFocusSearchOnOpen() {
+        _focusSearchOnOpen.value = false
     }
 
     fun closeAllApps() {
         _allAppsOpen.value = false
+        _focusSearchOnOpen.value = false
         _searchQuery.value = ""
     }
 

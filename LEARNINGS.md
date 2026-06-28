@@ -153,6 +153,7 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
 | E14 | `derivedStateOf` + plain String reaktif değil | `searchQuery: String` Compose State değil, `derivedStateOf` izleyemiyor | `remember(searchQuery) { ... }` — key-based invalidation kullan |
 | E15 | `fix_encoding.py` MOJIBAKE dict curly-quote SyntaxError | Edit tool dict key delimiters'ı curly quote yaptı; içerik de `\x9d`/`\x94` içeriyordu — blanket replace content'i de bozdu | Dict'i `_mb(*bs)` fonksiyonu ile byte bazlı oluştur (D156) |
 | E16 | `fix_encoding.py` terminal cp1254 emoji hatası | Windows Türkçe terminal (cp1254) emoji print'i redediyor | `sys.stdout.reconfigure(encoding='utf-8')` ile başta set et (D159) |
+| E17 | Kotlin Internal Compiler Error (JvmValueClassAbstractLowering) | Gradle cache bazen bozuk obje kachlar — ilk build fail, ikinci `--rerun-tasks` ile geçer | `.\gradlew :app:compileDebugKotlin --rerun-tasks` ile yeniden derle; kalıcıysa `.\gradlew clean assembleDebug` |
 
 ---
 

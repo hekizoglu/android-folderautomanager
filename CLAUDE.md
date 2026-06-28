@@ -48,6 +48,7 @@ Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 - Her 18 döngüde: emülatörde tam test (HomeScreen klasör açılışı → AllAppsDrawer → Ayarlar → geri dön → bildirim badge görünümü)
 - Rollback: kötü commit → `git revert HEAD~1 --no-edit && git push`; APK kaybı → Telegram bot geçmişinden son APK al
 - Semantic versioning: MAJOR.MINOR.PATCH — `versionCode` ve `versionName` her release'te artır (`app/build.gradle.kts`)
+- **Her build'de versiyon güncelle:** `versionCode` +1, `versionName` PATCH +1 — commit öncesi `app/build.gradle.kts` güncellenmeli
 - Git hook aktifleştirme: `git config core.hooksPath .githooks` — ilk kurulumda çalıştır (pre-commit check_duplicates.py için)
 
 ### Paralel Agent Kullanımı

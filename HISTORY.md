@@ -1,12 +1,19 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
-
-
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
 ---
 
+## Döngü 135 — 2026-06-29
+**Yapılanlar:** Çift Tıkla Arama (14p) uygulandı — LauncherViewModel'e `openAllAppsWithSearch()`+`focusSearchOnOpen` flow, AllAppsDrawer'a `focusSearchOnOpen`/`onFocusSearchConsumed` parametresi+LaunchedEffect, HomeScreen'e `doubleTapSearchEnabled` guard, AppPrefs'e KEY_DOUBLE_TAP_SEARCH, SettingsHomeScreenSection'a toggle; LEARNINGS E17 eklendi (Kotlin Internal Compiler Error)
+**Agent:** —
+**LEARNINGS.md:** E17 eklendi — Kotlin JvmValueClassAbstractLowering internal compiler error → `--rerun-tasks` ile geçer
+**Sonraki:** Klasör Rengi Otomatik (13p) veya Onboarding Yeniden Başlatma (12p)
+
+---
+
 ## Tamamlananlar Arşivi
+
 
 ### FİKİRLER.md'den Taşınanlar
 | Tarih | Madde | Döngü |
@@ -342,6 +349,12 @@
 **CLAUDE.md/LEARNINGS.md:** --
 **Sonraki:** Cift Tiklama Arama (14p) veya Klasor Rengi Otomatik (13p)
 
+## Dongu D191 -- 01:26 [AUDIT OPTIMIZASYON]
+**Yapilanlar:** Denetim sistemi tiered frequency'e gecirildi. audit.ps1: T1 (her dongu, 10 temel regex), T2 (3 dongude bir, 8 CE kurali), T3 (10 dongude bir, Compose metrics + Dependency matrix + APK trend + Skill integrity + Dead code). `gradlew lintDebug` T3'ten kaldirildi (2+ dk suruyor) - yerine build artifact tabanli hizli kontroller eklendi. run_local_denetim_cycle.ps1 CycleNumber parametresi eklendi. COZULEMEYEN_SORUNLAR.md temizlendi.
+**Agent:** --
+**CLAUDE.md/LEARNINGS.md:** --
+**Sonraki:** CE kurallari 3 dongude 1 calisacak, derin denetim 10 dongude 1
+
 
 ---
 
@@ -366,4 +379,5 @@
 | D188 | LEARNINGS audit Coverage Matrix (12p) | 12p |
 | D189 | E8 Guard Pattern Audit (10p) | 10p |
 | D190 | Kullanim Raporu Ekrani (15p) | 15p |
+| D191 | Audit Tiered Frequency Sistemi (optimizasyon) | -- |
 

@@ -315,5 +315,10 @@ object AppPrefs {
     fun setFcmToken(context: Context, token: String) =
         prefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
 
+    // Çift tıkla arama — HomeScreen boş alana çift tıklayınca AllAppsDrawer açılır + search odaklanır
+    const val KEY_DOUBLE_TAP_SEARCH = "double_tap_search"
+    fun isDoubleTapSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_DOUBLE_TAP_SEARCH, true)
+    fun setDoubleTapSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_DOUBLE_TAP_SEARCH, v).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
