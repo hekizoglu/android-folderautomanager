@@ -17,8 +17,14 @@ Kullanım:
     python3 scripts/fix_encoding.py --scan app/src   # sadece tara, raporla (yazma)
 """
 import sys
+import os
 import shutil
 from pathlib import Path
+
+# Terminal cp1254 emoji hatasını önle
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ('utf-8', 'utf-8-sig'):
+    os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stdout, 'reconfigure') else None
 
 # (bozuk, düzeltme) eşlemeleri
 REPLACEMENTS = {
