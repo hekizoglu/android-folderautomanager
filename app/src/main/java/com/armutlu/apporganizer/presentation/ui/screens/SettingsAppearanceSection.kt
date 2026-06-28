@@ -216,6 +216,21 @@ fun SettingsAppearanceSection(
                 steps = 7
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            var iconScale by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context)) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("İkon Boyutu", fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text("${(iconScale * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+            }
+            Slider(
+                value = iconScale,
+                onValueChange = {
+                    iconScale = it
+                    com.armutlu.apporganizer.utils.AppPrefs.setIconScale(context, it)
+                },
+                valueRange = 0.7f..1.3f,
+                steps = 5
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
             val pageSizeOptions = listOf(4, 6, 8, 12)
             Row(verticalAlignment = Alignment.CenterVertically) {

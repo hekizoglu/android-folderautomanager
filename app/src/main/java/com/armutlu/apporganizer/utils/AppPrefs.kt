@@ -106,6 +106,11 @@ object AppPrefs {
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
     fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
 
+    // İkon boyutu ölçeği — 0.7f (küçük) .. 1.3f (büyük), varsayılan 1.0f
+    const val KEY_ICON_SCALE = "icon_scale"
+    fun getIconScale(context: Context): Float = prefs(context).getFloat(KEY_ICON_SCALE, 1.0f)
+    fun setIconScale(context: Context, scale: Float) = prefs(context).edit().putFloat(KEY_ICON_SCALE, scale).apply()
+
     // Otomatik klasör boyutu — ekran genişliğine göre klasörü otomatik boyutlandır
     const val KEY_AUTO_FOLDER_SIZE = "auto_folder_size"
     fun isAutoFolderSizeEnabled(context: Context) = prefs(context).getBoolean(KEY_AUTO_FOLDER_SIZE, false)

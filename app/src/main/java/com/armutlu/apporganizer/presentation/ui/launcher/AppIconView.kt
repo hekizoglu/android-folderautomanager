@@ -94,7 +94,9 @@ fun AppIconView(
     newBadgeEnabled: Boolean = true,
 ) {
     val context = LocalContext.current
-    val px = (iconSize.value * context.resources.displayMetrics.density).toInt()
+    val userIconScale = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context) }
+    val effectiveIconSize = iconSize * userIconScale
+    val px = (effectiveIconSize.value * context.resources.displayMetrics.density).toInt()
     val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
     val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
 
@@ -169,13 +171,13 @@ fun AppIconView(
                     colorFilter = greyFilter,
                     alpha = iconAlpha,
                     modifier = Modifier
-                        .size(iconSize)
+                        .size(effectiveIconSize)
                         .clip(RoundedCornerShape(14.dp))
                 )
             } ?: run {
                 Box(
                     modifier = Modifier
-                        .size(iconSize)
+                        .size(effectiveIconSize)
                         .clip(RoundedCornerShape(14.dp))
                         .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
@@ -237,7 +239,7 @@ fun AppIconView(
             // Scrim + text shadow ile her duvar kağıdında okunabilir label
             Box(
                 modifier = Modifier
-                    .width(iconSize + 8.dp)
+                    .width(effectiveIconSize + 8.dp)
                     .clip(RoundedCornerShape(bottomStart = 6.dp, bottomEnd = 6.dp))
                     .background(LabelScrim)
                     .padding(horizontal = 2.dp, vertical = 2.dp),
@@ -257,7 +259,7 @@ fun AppIconView(
                     ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.width(iconSize + 4.dp)
+                    modifier = Modifier.width(effectiveIconSize + 4.dp)
                 )
             }
         }
