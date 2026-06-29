@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 17:14
-> Dongu: **#158** | Tier: **1**
-> Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
-> Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
+> Son denetim: 2026-06-29 17:16
+> Dongu: **#160** | Tier: **3**
+> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
+> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
 
 ---
 
@@ -13,12 +13,26 @@
 | Oncelik | Sayi | Aciklama |
 |---------|------|----------|
 | KRITIK | 0 | Acik kritik bulgu |
-| YUKSEK | 0 | Acik yuksek bulgu |
+| YUKSEK |  | Acik yuksek bulgu |
 | ORTA |  | Acik orta bulgu |
 | DUSUK | 0 | Acik dusuk bulgu |
-| TOPLAM |  | |
+| TOPLAM | 2 | |
+
+### Tier 3 Notlari
+- Compose: app\build\compose_compiler bulunamadi
+- Compose BOM: 2024.09.03
+- Compose Compiler: 1.5.15
+- compileSdk: 35
+- targetSdk: 35
+- APK: build edilmemis, boyut kontrol edilemedi
+- Skill: 2 kontrol edildi
+- TODO/FIXME: temiz
 
 ---
+
+## YUKSEK
+
+- CE7 | `app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt:255` | AppPrefs remember{} keysiz okunuyor - Settings donus guncellenmez. DisposableEffect + listener kullan. (E6 tekrari)
 
 ## ORTA
 
@@ -26,4 +40,4 @@
 
 ---
 
-*Denetim tarihi: 2026-06-29 17:14 | Dongu: #158 | Tier: 1 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
+*Denetim tarihi: 2026-06-29 17:16 | Dongu: #160 | Tier: 3 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*

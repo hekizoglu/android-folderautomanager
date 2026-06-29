@@ -592,7 +592,7 @@ internal fun HomeAppSearchBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Icon(Icons.Default.Search, contentDescription = null,
+                Icon(Icons.Default.Search, contentDescription = "Uygulama ara",
                     tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(18.dp))
                 BasicTextField(
                     value = query,
