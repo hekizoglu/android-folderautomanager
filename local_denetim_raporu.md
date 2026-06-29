@@ -76,6 +76,8 @@
 | 2026-06-29 08:04 | **T2** | Izin/Onboarding + CE | **2 BULGU: CE7(Settings:255) + CE9(HomeScreen:89)** | **DUZELTILDI** |
 | 2026-06-29 08:47 | T1 | State/SharedPrefs | IconCache OK | Bulunamadi → CE10 eklendi |
 | 2026-06-29 09:55 | **T3** | Gesture/Swipe/Drawer + CE + Compose+Dep+APK+Skill+Dead | Timber log | Bulunamadi |
-| 2026-06-29 10:32 | T1 | Accessibility/A11y | DockPrefs OK | Bulunamadi → CE11 (modifier order) eklendi |
+| 2026-06-29 10:32 | T1 | Accessibility/A11y | DockPrefs OK | Bulunamadi → CE11 eklendi |
+| 2026-06-29 10:55 | T1 | State/SharedPrefs | BackupWorker OK | Bulunamadi → CE12 eklendi |
+| 2026-06-29 11:08 | T2 | Dock/Widget/Backup + CE | StateFlow/ViewModel | Bulunamadi |
 
-*44 tur | 0 sonuc -> CE11 modifier order kurali*
+*46 tur | CE12 path fix (dizin->dosya)*

@@ -27,14 +27,17 @@ class PackageChangeReceiver : BroadcastReceiver() {
         val packageName = intent.data?.schemeSpecificPart ?: return
         Timber.d("Package event: ${intent.action} for $packageName")
 
+        // goAsync() ile Android'e "henuz bitmedi" sinyali verilir; coroutine bitince finish() cagrilir
+        val pendingResult = goAsync()
         when (intent.action) {
-            Intent.ACTION_PACKAGE_ADDED -> onPackageAdded(context, packageName)
-            Intent.ACTION_PACKAGE_REMOVED -> onPackageRemoved(context, packageName)
-            Intent.ACTION_PACKAGE_CHANGED -> onPackageChanged(context, packageName)
+            Intent.ACTION_PACKAGE_ADDED   -> onPackageAdded(context, packageName, pendingResult)
+            Intent.ACTION_PACKAGE_REMOVED -> onPackageRemoved(context, packageName, pendingResult)
+            Intent.ACTION_PACKAGE_CHANGED -> onPackageChanged(context, packageName, pendingResult)
+            else                          -> pendingResult.finish()
         }
     }
 
-    private fun onPackageAdded(context: Context, packageName: String) {
+    private fun onPackageAdded(context: Context, packageName: String, pendingResult: PendingResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -44,11 +47,13 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 Timber.d("Added new app to DB: $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error adding app: $packageName")
+            } finally {
+                pendingResult.finish()
             }
         }
     }
 
-    private fun onPackageRemoved(context: Context, packageName: String) {
+    private fun onPackageRemoved(context: Context, packageName: String, pendingResult: PendingResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -58,11 +63,13 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 Timber.d("Removed app from DB: $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error removing app: $packageName")
+            } finally {
+                pendingResult.finish()
             }
         }
     }
 
-    private fun onPackageChanged(context: Context, packageName: String) {
+    private fun onPackageChanged(context: Context, packageName: String, pendingResult: PendingResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -82,6 +89,8 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 Timber.d("App updated (category preserved): $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error handling app change: $packageName")
+            } finally {
+                pendingResult.finish()
             }
         }
     }
