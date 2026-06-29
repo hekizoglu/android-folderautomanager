@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 153 — 2026-06-29 [İKON PACK UI]
+
+**Yapılanlar:** Icon Pack Desteği (12p) — SettingsAppearanceSection.kt sonuna DropdownMenu seçici eklendi: yüklü icon pack varsa gösterilir, "Varsayılan" seçeneği + pack listesi, seçim → AppPrefs.setIconPack() + IconPackManager.clearCache() (ikonlar anında yeniden yüklensin). BUILD SUCCESSFUL (24.9MB).
+**Agent:** —
+**Sonraki:** Quick Wheel/Pie Mode (13p) veya Klasör Rengi Otomatik (13p)
+
+---
+
 ## Döngü 152 — 2026-06-29 [WEEKLY DIGEST + ONBOARDING RESTART]
 
 **Yapılanlar:** WeeklyDigestWorker.kt (PeriodicWork 7gün, lastUsedTimestamp+installTime tabanlı, notification channel "weekly_digest"), AppOrganizerApp'e schedule çağrısı, AppPrefs.KEY_WEEKLY_DIGEST toggle, SettingsBackupAboutSection'a digest switch + "Kurulum Sihirbazını Yeniden Başlat" butonu (AlertDialog → KEY_ONBOARDING_DONE=false → clear task restart). BUILD SUCCESSFUL (24.9MB).

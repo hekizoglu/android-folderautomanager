@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BlurOn
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +30,8 @@ import com.armutlu.apporganizer.presentation.ui.components.ColorPickerDialog
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.IconPackManager
 import kotlinx.coroutines.launch
 
 /**
@@ -435,4 +439,55 @@ fun SettingsAppearanceSection(
                 }
             }
         }
+
+    // ── İkon Pack Seçimi ──────────────────────────────────────────────────
+    val iconPacks = remember { IconPackManager.getInstalledIconPacks(context) }
+    if (iconPacks.isNotEmpty()) {
+        var selectedPack by remember { mutableStateOf(AppPrefs.getIconPack(context)) }
+        var showPackMenu by remember { mutableStateOf(false) }
+        SettingsCard {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showPackMenu = true }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Extension, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("İkon Pack", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text(
+                        if (selectedPack.isEmpty()) "Varsayılan (sistem ikonları)"
+                        else iconPacks.firstOrNull { it.packageName == selectedPack }?.label ?: selectedPack,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                DropdownMenu(expanded = showPackMenu, onDismissRequest = { showPackMenu = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Varsayılan") },
+                        onClick = {
+                            selectedPack = ""
+                            AppPrefs.setIconPack(context, "")
+                            IconPackManager.clearCache()
+                            showPackMenu = false
+                        }
+                    )
+                    iconPacks.forEach { pack ->
+                        DropdownMenuItem(
+                            text = { Text(pack.label) },
+                            onClick = {
+                                selectedPack = pack.packageName
+                                AppPrefs.setIconPack(context, pack.packageName)
+                                IconPackManager.clearCache()
+                                showPackMenu = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
