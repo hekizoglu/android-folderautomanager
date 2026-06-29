@@ -4,6 +4,18 @@
 
 ---
 
+## MD Denetim — 2026-06-29 [OTOMATİK RAPOR]
+**Yapılanlar:** Otomatik MD denetimi çalıştırıldı. 5 sorun tespit edildi (detay aşağıda). Telegram engelli — rapor HISTORY.md'ye yazıldı.
+**Sorunlar:**
+1. CLAUDE.md §7 Play Store Bekleyenler: Android 15 Edge-to-Edge `[ ]` açık ama D175+D177'de tamamlandı → `[x]` olmalı
+2. ROADMAP.md Uzun Vade: "Tablet layout" D181'de tamamlandı; "Backup/restore bulut senkron" D178'de tamamlandı — stale bilgi
+3. CLAUDE.md §3 Sıralı Döngü Kuralları: "Her döngü sonunda HISTORY.md + ROADMAP.md güncellenir" yazıyor ama ROADMAP.md donduruldu — kural güncel değil
+4. HISTORY.md Tamamlananlar Arşivi (ilk tablo): "D141 | Widget hızlı menü" referansı yanlış — mevcut D141 = Smart Search v1
+5. harcananvakit.md Tekrar Eden Sorunlar: "git push non-fast-forward" Açık görünüyor ama COZULEMEYEN_SORUNLAR.md'de çözümü var (`git pull --rebase`)
+**Sonraki:** Onay gelince 5 düzeltme yapılacak
+
+---
+
 ## Döngü 141 — 2026-06-29 [SMART SEARCH v1]
 **Yapılanlar:** Smart Search v1 (16p) — AllAppsDrawer.kt:587'de `catMatch` bucket eklendi. Kullanıcı "finans" yazınca Finans kategorisindeki tüm uygulamalar gelir; "spor" → Spor kategorisi; catMatch'ler usageCount'a göre sıralı. HomeScreenComponents.kt:522 fix (hintAllowed mutableStateOf + increment sonrası re-read).
 **Agent:** —
@@ -43,7 +55,7 @@
 | Tarih | Madde | Döngü |
 |-------|-------|-------|
 | 2026-06-20 | FCM push mimari kararı LEARNINGS.md'ye eklendi - AppFirebaseMessagingService.kt + AppOrganizerApp.kt FCM init belgelendi | D13x |
-| 2026-06-21 | Widget hızlı menü düzeltildi - WidgetArea.kt isDraggable long press mantığı, X butonu gösterilmeye başlandı | D141 |
+| 2026-06-21 | Widget hızlı menü düzeltildi - WidgetArea.kt isDraggable long press mantığı, X butonu gösterilmeye başlandı | D140 |
 | 2026-06-21 | İki yeni tema: iOS + AMOLED | D122 |
 | 2026-06-21 | Onboarding yeniden yazım (16 adım, CLASSIFY_MODE→SET_LAUNCHER→DONE sırası) | D120 |
 | 2026-06-21 | Görsel kalite artırımı | D123 |
@@ -404,4 +416,3 @@
 | D189 | E8 Guard Pattern Audit (10p) | 10p |
 | D190 | Kullanim Raporu Ekrani (15p) | 15p |
 | D191 | Audit Tiered Frequency Sistemi (optimizasyon) | -- |
-
