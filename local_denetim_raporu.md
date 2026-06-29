@@ -66,5 +66,6 @@
 | 2026-06-29 01:38 | T1 | Settings etiket (UI) | Navigation routing | Bulunamadi |
 | 2026-06-29 02:12 | T2 | Gesture/Swipe/Drawer + CE | Timber log quality | Bulunamadi |
 | 2026-06-29 02:35 | T1 | State/SharedPrefs | Memory/Lifecycle | Bulunamadi |
+| 2026-06-29 03:09 | **T3** | Category CRUD + CE + Compose+Dep+APK+Skill+Dead | RoomDB v8 OK | Bulunamadi |
 
-*32 tur, 0 bug | Cron: 2 saatte bir | Sonraki: #140 T3 derin denetim*
+*33 tur, 0 bug | T3: BOM 2024.09.03 · SDK 35/35 · APK 24.74MB · TODO temiz | Sonraki: #141 T1*

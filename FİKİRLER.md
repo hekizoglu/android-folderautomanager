@@ -39,6 +39,7 @@
 | 2026-06-29 | **15 ⭐** | **Contextual Dock v1** — Dock sabit 4 uygulama değil: 2 kullanıcı sabit + 2 akıllı öneri. Saat+gün+son kullanım+bildirim yoğunluğuna göre değişir. Gündüz: Mail+Takvim; akşam: müzik+sosyal. DockContext veri sınıfı + AppPrefs toggle. (KV:5 · U:3 · BR:3 · EA:4) | Bekliyor |
 | 2026-06-29 | **15 ⭐** | **Manual Category Override** — Long press uygulama → "Kategori Değiştir" → seçim + "Bu kararı hatırla" checkbox. ManualCategoryOverride tablosu (Room) — AppClassifier bu tabloyu exactMatch'ten önce kontrol eder. "Aynı tür uygulamalara uygula" opsiyonu. (KV:4 · U:4 · BR:4 · EA:3) | Bekliyor |
 | 2026-06-29 | **14 🟡** | **Batch Kategori Değiştirme** — AppListScreen çoklu seçim modu: birden fazla uygulama checkbox ile seçilir, tek seferde kategori atanır. "Tümünü Seç" + "Seçimi Temizle" butonları. Kategori taşıma sonrası seçim korunur — zincirleme düzenleme kolaylığı. (KV:4 · U:4 · BR:2 · EA:4) | Bekliyor |
+| 2026-06-29 | **14 🟡** | **Widget Öneri Motoru** — Kullanıcının en çok kullandığı uygulamaların widget'larını öner. AppWidgetManager.getInstalledProviders() ile cihazdaki widget'ları tara, kullanım verisiyle eşleştir, "WhatsApp için 3 widget var" toast + Settings'te öneri listesi. (KV:4 · U:4 · BR:3 · EA:3) | Bekliyor |
 
 ---
 
