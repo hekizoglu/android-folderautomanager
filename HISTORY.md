@@ -4,6 +4,30 @@
 
 ---
 
+## Döngü 146 — 2026-06-29 [MANUAL CATEGORY OVERRIDE]
+
+**Yapılanlar:** Manual Category Override (15p) — AppPrefs.KEY_MANUAL_CAT_OVERRIDES (JSON harita), AppClassifier.classifyApp() override'ı exactMatch'ten önce kontrol eder, LauncherViewModel.updateAppCategory() override'ı kaydeder. UI mevcut CategoryPickerSheet'i kullanıyor — ek UI değişikliği gerekmedi. BUILD SUCCESSFUL (25MB). Push: 3c36a6f.
+**Agent:** —
+**Sonraki:** FİKİRLER.md'deki sonraki yüksek puanlı görev (Batch Kategori 14p veya GestureActionEngine 14p)
+
+---
+
+## Döngü 145 — 2026-06-29 [CONTEXTUAL DOCK v1]
+
+**Yapılanlar:** Contextual Dock v1 (15p) — `contextualDockPackages` StateFlow (LauncherViewModel): fixed[0-1] + smart[2-3] suggestedApps'ten. AppPrefs.KEY_CONTEXTUAL_DOCK toggle. Settings "Akıllı Dock" switch eklendi. BUILD SUCCESSFUL (25MB). Push: 97ecd6d.
+**Agent:** —
+**Sonraki:** Manual Category Override (15p)
+
+---
+
+## Döngü 144 — 2026-06-29 [INSIGHT ENGINE FIX]
+
+**Yapılanlar:** InsightEngine.kt `AppFolder` compile hatası düzeltildi — `generate()` imzası `List<AppFolder>` → `List<Category>` olarak değiştirildi. LauncherViewModel.insightCards güncellendi. BUILD SUCCESSFUL (25MB). Push: 5539f99.
+**Agent:** —
+**Sonraki:** Contextual Dock v1 (15p), Manual Category Override (15p)
+
+---
+
 ## Döngü 143 — 2026-06-29 [ASSISTANT KARTLARI]
 
 **Yapılanlar:** AppOrganizer Assistant Kartları (16p) — InsightEngine.kt (kural motoru: 4 kart tipi), AssistantInsightRow.kt (chip UI), LauncherViewModel.insightCards StateFlow, HomeScreen entegrasyonu, AppPrefs toggle, SettingsHomeScreenSection toggle.
