@@ -74,6 +74,7 @@
 | 2026-06-29 05:00 | T1 | Gesture/Swipe/Drawer | Timber log quality | Bulunamadi |
 | 2026-06-29 05:18 | T1 | Accessibility/A11y | Widget OK | Bulunamadi |
 | 2026-06-29 08:04 | **T2** | Izin/Onboarding + CE | **2 BULGU: CE7(Settings:255) + CE9(HomeScreen:89)** | **DUZELTILDI** |
-| 2026-06-29 08:47 | T1 | State/SharedPrefs | IconCache OK | Bulunamadi → **CE10 (!! null safety) eklendi** |
+| 2026-06-29 08:47 | T1 | State/SharedPrefs | IconCache OK | Bulunamadi → CE10 eklendi |
+| 2026-06-29 09:55 | **T3** | Gesture/Swipe/Drawer + CE + Compose+Dep+APK+Skill+Dead | Timber log | Bulunamadi |
 
-*41 tur, 2 BULGU → 42 agent bulgusu analizde. 0 sonuclu dongu: CE10 eklendi.*
+*43 tur | T3: BOM 2024.09.03 · SDK 35/35 · APK 24.57MB*
