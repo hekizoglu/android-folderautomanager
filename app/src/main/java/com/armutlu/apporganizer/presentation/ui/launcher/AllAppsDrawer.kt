@@ -559,12 +559,6 @@ fun AllAppsDrawer(
         }
     }
 
-    // E14: apps parametre olarak geliyor (Compose State değil) — remember(apps) ile key-based invalidation
-    val quickFilterCounts = remember(apps) {
-        val cutoff = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
-        intArrayOf(apps.size, apps.count { !it.isSystemApp }, apps.count { it.isSystemApp }, apps.count { it.lastUsedTimestamp > cutoff })
-    }
-
     var bgAlpha          by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedGreyDays   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
@@ -584,85 +578,15 @@ fun AllAppsDrawer(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    val sortedApps = remember(searchQuery, quickFilter, apps, sortMode) {
-        val now = System.currentTimeMillis()
-        val afterFilter = when (quickFilter) {
-            1 -> apps.filter { !it.isSystemApp }
-            2 -> apps.filter { it.isSystemApp }
-            3 -> apps.filter { it.lastUsedTimestamp > now - 7L * 24 * 60 * 60 * 1000 }
-            else -> apps
-        }
-        val trLocale = Locale("tr")
-        val base = if (searchQuery.isBlank()) afterFilter
-        else {
-            val q = searchQuery.lowercase(trLocale)
-            // Smart Search: categoryId → categoryName (Türkçe) haritası
-            val catNames = com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
-                .associate { it.categoryId to it.categoryName.lowercase(trLocale) }
-            val exact    = mutableListOf<AppInfo>()
-            val starts   = mutableListOf<AppInfo>()
-            val contains = mutableListOf<AppInfo>()
-            val catMatch = mutableListOf<AppInfo>()
-            val fuzzy    = mutableListOf<Pair<AppInfo, Int>>()
-            for (app in afterFilter) {
-                val n = app.appName.lowercase(trLocale)
-                val pkg = app.packageName.lowercase(trLocale)
-                val catName = catNames[app.categoryId] ?: ""
-                when {
-                    n == q                      -> exact.add(app)
-                    n.startsWith(q)             -> starts.add(app)
-                    n.contains(q)               -> contains.add(app)
-                    pkg.contains(q)             -> contains.add(app)
-                    catName.contains(q)         -> catMatch.add(app)
-                    else -> {
-                        val dist = n.split(" ").minOf { fuzzyEditDistance(it.take(20), q.take(20)) }
-                        if (dist <= maxOf(2, q.length / 3))
-                            fuzzy.add(app to dist)
-                    }
-                }
-            }
-            exact + starts + contains + catMatch.sortedByDescending { it.usageCount } + fuzzy.sortedBy { it.second }.map { it.first }
-        }
-        when (sortMode) {
-            AllAppsSortMode.ALPHA            -> base.sortedBy { it.appName.lowercase(Locale("tr")) }
-            AllAppsSortMode.ALPHA_DESC       -> base.sortedByDescending { it.appName.lowercase(Locale("tr")) }
-            AllAppsSortMode.USAGE            -> base.sortedByDescending { it.usageCount }
-            AllAppsSortMode.USAGE_ASC        -> base.sortedBy { it.usageCount }
-            AllAppsSortMode.SIZE_DESC        -> base.sortedByDescending { it.appSizeBytes }
-            AllAppsSortMode.SIZE_ASC         -> base.sortedBy { it.appSizeBytes }
-            AllAppsSortMode.INSTALL_DATE     -> base.sortedByDescending { it.installTime }
-            AllAppsSortMode.INSTALL_DATE_ASC -> base.sortedBy { it.installTime }
-        }
-    }
+    // Ağır hesaplamalar ayrı composable'da — DEX VerifyError'u önler (çok fazla register)
+    val drawerData        = rememberDrawerData(apps, searchQuery, quickFilter, sortMode)
+    val sortedApps        = drawerData.sortedApps
+    val grouped           = drawerData.grouped
+    val sidebarEntries    = drawerData.sidebarEntries
+    val quickFilterCounts = drawerData.quickFilterCounts
 
     LaunchedEffect(searchQuery, sortedApps.size) {
         if (searchQuery.trim().length >= 2) AppAnalytics.searchPerformed(searchQuery.trim(), sortedApps.size)
-    }
-
-    val grouped: Map<Char, List<AppInfo>> = remember(sortedApps, sortMode, searchQuery) {
-        if (sortMode == AllAppsSortMode.ALPHA && searchQuery.isBlank())
-            sortedApps.groupBy { app ->
-                val first = app.appName.firstOrNull()?.toString()?.uppercase(Locale("tr"))?.firstOrNull() ?: '#'
-                if (first.isLetter()) first else '#'
-            }.toSortedMap(Comparator { a, b ->
-                if (a == '#') 1 else if (b == '#') -1
-                else java.text.Collator.getInstance(Locale("tr")).compare(a.toString(), b.toString())
-            })
-        else emptyMap()
-    }
-
-    val letterScrollIndex = remember(grouped) {
-        val map = mutableMapOf<Char, Int>()
-        var idx = 0
-        grouped.forEach { (letter, list) -> map[letter] = idx; idx += 1 + list.size }
-        map
-    }
-
-    val sidebarEntries = remember(searchQuery, sortMode, grouped, sortedApps) {
-        if (searchQuery.isNotBlank()) emptyList()
-        else if (sortMode == AllAppsSortMode.ALPHA)
-            grouped.keys.map { letter -> SidebarEntry(letter.toString(), letterScrollIndex[letter] ?: 0) }
-        else buildSidebarEntries(sortedApps, sortMode)
     }
 
     val drawerState = DrawerState(

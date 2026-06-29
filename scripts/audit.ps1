@@ -96,7 +96,7 @@ $nextExtraIndex = ($currentExtraIndex + 1) % $extraFocusAreas.Count
 Set-Content -Path $extraIndexPath -Value $nextExtraIndex -Encoding UTF8
 
 # ============================================================
-# TIER 1 -- Her dongu: Temel regex kurallari
+# TIER 1 -- Her dongu: Temel regex + cross-ref kurallari
 # ============================================================
 $tier1Rules = @(
     @{ Code = "K1"; Severity = "KRITIK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = 'getSharedPreferences\("app_organizer_prefs"'; Description = "AllAppsDrawer hardcoded prefs kullaniyor."; Focus = @("Data_State_Persistence") },
@@ -108,7 +108,9 @@ $tier1Rules = @(
     @{ Code = "D1"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreenComponents.kt"; Pattern = 'itemHeightDp: androidx\.compose\.ui\.unit\.Dp = 56\.dp'; Description = "Kullanilmayan itemHeightDp parametresi duruyor."; Focus = @("UI_Settings_Labels","Performance_Memory") },
     @{ Code = "Y5"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\theme\Theme.kt"; Pattern = '@Suppress\("UNUSED_PARAMETER"\).*darkTheme'; Description = "darkTheme parametresi devre disi birakilmis."; Focus = @("UI_Settings_Labels") },
     @{ Code = "Y7"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'Modifier\.size\(\d+\.dp\)'; Description = "Hardcoded dp boyut - responsive tasma riski."; Focus = @("UI_Settings_Labels","Performance_Memory") },
-    @{ Code = "Y8"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LauncherActivity\('; Description = "HomeScreen yenileme/refresh tetikleyici kaynak kod hatti."; Focus = @("Data_State_Persistence","UI_Settings_Labels") }
+    @{ Code = "Y8"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LauncherActivity\('; Description = "HomeScreen yenileme/refresh tetikleyici kaynak kod hatti."; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
+    # D191-YENI: AppPrefs remember{} + DisposableEffect cross-ref (T1'e alindi - gercek bug yakaladi)
+    @{ Code = "CE9"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'remember\s*\{[^}]*AppPrefs\.'; Description = "AppPrefs remember{} keysiz okunuyor - tum KEY_*'ler DisposableEffect listener'da olmali. Eksik: KEY_DOUBLE_TAP_SEARCH/KEY_ASSISTANT_CARDS gibi yeni eklenenler. (D191'de yakalandi)"; Focus = @("Data_State_Persistence","UI_Settings_Labels") }
 )
 
 # ============================================================

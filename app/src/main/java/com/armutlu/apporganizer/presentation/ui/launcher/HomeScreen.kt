@@ -207,6 +207,10 @@ fun HomeScreen(
                     quickWheelEnabled = com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOCUS_MODE ->
                     focusModeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_DOUBLE_TAP_SEARCH ->
+                    doubleTapSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ASSISTANT_CARDS ->
+                    assistantCardsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
