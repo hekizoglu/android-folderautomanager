@@ -8,6 +8,7 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.service.LauncherAccessibilityService
@@ -38,6 +39,7 @@ import java.util.Locale
 class AppListViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository,
+    private val searchRepository: SearchRepository,
     private val classifier: AppClassifier,
     private val llmFallback: CategoryLLMFallback,
     private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
@@ -192,6 +194,7 @@ class AppListViewModel @Inject constructor(
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
                 
                 repository.syncInstalledApps(installedApps)
+                searchRepository.bootstrapIndex()
                 
                 Timber.d("Synced ${installedApps.size} apps")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
@@ -212,6 +215,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.updateAppCategory(packageName, categoryId)
+                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
                 Timber.d("Updated $packageName to $categoryId")
             } catch (e: Exception) {
                 Timber.e(e, "Error updating app category")
@@ -236,16 +240,16 @@ class AppListViewModel @Inject constructor(
             runCatching {
                 val categoryId = buildCategoryId(trimmedName)
                 val order = repository.getNextCategoryDisplayOrder()
-                repository.addCategory(
-                    Category(
-                        categoryId = categoryId,
-                        categoryName = trimmedName,
-                        iconEmoji = emoji,
-                        colorHex = "#00897B",
-                        isSystemCategory = false,
-                        displayOrder = order
-                    )
+                val category = Category(
+                    categoryId = categoryId,
+                    categoryName = trimmedName,
+                    iconEmoji = emoji,
+                    colorHex = "#00897B",
+                    isSystemCategory = false,
+                    displayOrder = order
                 )
+                repository.addCategory(category)
+                searchRepository.reindexCategory(null, category)
             }.onFailure {
                 Timber.e(it, "Error adding category")
                 _screenState.value = _screenState.value.copy(error = "Kategori eklenemedi")
@@ -265,8 +269,11 @@ class AppListViewModel @Inject constructor(
                 _screenState.value = _screenState.value.copy(error = "Bu isimde bir kategori zaten var")
                 return@launch
             }
+            val oldCategory = repository.getCategoryById(category.categoryId)
             runCatching {
-                repository.updateCategory(category.copy(categoryName = trimmedName))
+                val updatedCategory = category.copy(categoryName = trimmedName)
+                repository.updateCategory(updatedCategory)
+                searchRepository.reindexCategory(oldCategory, updatedCategory)
             }.onFailure {
                 Timber.e(it, "Error updating category")
                 _screenState.value = _screenState.value.copy(error = "Kategori güncellenemedi")
@@ -282,6 +289,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 repository.deleteCategory(category.categoryId)
+                searchRepository.removeCategory(category.categoryId)
             }.onFailure {
                 Timber.e(it, "Error deleting category")
                 _screenState.value = _screenState.value.copy(error = "Kategori silinemedi")
@@ -296,6 +304,9 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.updateAppsCategory(packageNames, categoryId)
+                packageNames.forEach { packageName ->
+                    repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                }
                 clearSelection()
                 Timber.d("Updated ${packageNames.size} apps to $categoryId")
             } catch (e: Exception) {

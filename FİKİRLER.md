@@ -1,7 +1,7 @@
 # FİKİRLER.md — AppOrganizer Fikir & Görev Havuzu
 
 > Yeni özellik fikirleri, döngüden gelen görevler, backlog adayları buraya eklenir.
-> ROADMAP.md artık değiştirilmez — yeni her şey buraya gelir.
+> 15+ puan alanlar ROADMAP.md'ye de taşınır. Tamamlananlar → HISTORY.md arşiv.
 > Telegram onayı alındıktan sonra fikir hayata geçirilir.
 
 ---
@@ -33,7 +33,13 @@
 | Tarih | Puan | Madde | Durum |
 |-------|------|-------|-------|
 | 2026-06-29 | **18 ⭐** | **Raporlar Merkezi / AppOrganizer Dashboard** — Bize özel istatistik sayfası: klasör dağılımı, yönetilen uygulama sayısı, bu hafta top uygulama, kullanılmayanlar, UsageScore trend, swipe-up hızlı erişim sayacı. Mevcut `UsageReportScreen` + `InsightEngine` + `WeeklyDigestWorker` verileri birleştirilir; `AppOrganizerDashboardScreen.kt` yeni ekran. (KV:5 · U:4 · BR:4 · EA:5) | [TAMAMLANDI — AppOrganizerDashboardScreen.kt] |
+| 2026-06-30 | **19 ⭐** | **Onboarding 18→5 Adım Radikal Kesme** — Mevcut 18 adımlı onboarding, kullanıcıların ~%72'sini kaybediyor (her ek adım ~%20 drop-off). 5 adıma indir: Hoşgeldin → Varsayılan Launcher → Tema → Hızlı Ayarlar → Tarayıcı Seç + Tamam. Kesilen 13 adımın izinleri contextual priming ile ilgili özellik ilk kullanıldığında sorulsun. (KV:5 · U:4 · BR:4 · EA:3 = **16p** + browser yenilik bonusu = **19p**) | Bekliyor |
+| 2026-06-30 | **16 ⭐** | **Setup Sonu Varsayılan Tarayıcı Seçimi** — Onboarding DONE adımında `RoleManager.ROLE_BROWSER` ile sistem diyaloğu. Cihazdaki yüklü tarayıcılar (Chrome, Firefox, Brave, Vivaldi, vs.) tespit edilip önerilsin. “Sonra seçerim” skippable. API 29+ `createRequestRoleIntent()`. (KV:4 · U:4 · BR:4 · EA:4 = **16p**) | Bekliyor |
 | 2026-06-29 | **17 ⭐** | **Yerel Arama İndeksi v1 (Kişi + Dosya + Uygulama)** — Ayarlarda ayrı bir “Arama Kaynakları” bölümü ile hangi kaynakların aranacağı seçilir: uygulamalar, kategoriler, kişi kartları, cihaz dosya adları. Android tarafında `MediaStore` + `ContactsContract` + Room `FTS4` tabanlı birleşik indeks kullanılır; dosya araması varsayılan kapalı ve izin anlatımı net olur. “Everything” benzeri hedef: hızlı ilk sonuç, küçük disk izi, artımlı güncelleme. (KV:5 · U:4 · BR:5 · EA:3 — Kvaesitso bunu zaten yapıyor, farklılaşma puanı düşürüldü) | Bekliyor |
+| 2026-06-30 | **17 ⭐** | **FTS5 Bootstrap Tetikleme** — `SearchRepository.bootstrapIndex()`'i uygulama ilk açılışında çağır. App + Category indeksi oluşsun, arama anında çalışsın. `SearchBootstrapWorker` (OneTimeWorkRequest) + `LauncherViewModel.init` bağlantısı. **Bağımlılık: Yok.** (KV:5 · U:5 · BR:2 · EA:5 = **17p**) | [TAMAMLANDI — AppListViewModel sync sonrası bootstrap] |
+| 2026-06-30 | **16 ⭐** | **Arama Geçmişi (Room tabanlı)** — Son 20 aramayı Room'da sakla, search bar focus olunca chip row olarak göster. `SearchHistory` entity + `SearchHistoryDao` + `SearchRepository.recordQuery()`. Tek tuşla geçmiş temizleme. Settings'te “Arama Geçmişi” toggle. (KV:4 · U:4 · BR:3 · EA:5 = **16p**) | Bekliyor |
+| 2026-06-30 | **16 ⭐** | **App Install/Uninstall → Anlık FTS Delta** — `LauncherViewModel.onPackageAdded()` → `SearchRepository.indexApp()` ve `onPackageRemoved()` → `removeApp()` bağlantısı. Yeni yüklenen uygulama anında aranabilir olur. Zaten kodlandı, sadece ViewModel bağlantısı kaldı. (KV:4 · U:5 · BR:2 · EA:5 = **16p**) | [TAMAMLANDI — PackageChangeReceiver FTS delta] |
+| 2026-06-30 | **15 ⭐** | **FTS5 Türkçe Arama Testi** — `unicode61` tokenizer + query escaping ile Türkçe karakter ve tırnaklı sorgular doğrulanır. Edge case: “İSTANBUL”, “ŞEKER”, `"bank"` sorgusu. `SearchRepositoryTest.kt` unit test. (KV:3 · U:5 · BR:2 · EA:5 = **15p**) | Bekliyor |
 | 2026-06-29 | **15 ⭐** | **Arama Kaynakları Ayar Bölümü** — Settings içinde ayrı bir arama bölümü açılır: “Uygulamalar”, “Kategoriler”, “Kişiler”, “Dosya adları”, “Arama geçmişi”, “Çift tıkla arama”, “Varsayılan sonuç sırası”. Kişi ve dosya kaynakları için izin gerekçesi, gizlilik notu ve indeks durum bilgisi gösterilir. Yerel Arama İndeksi tamamlandıktan sonra bağımsız yapılabilir. (KV:4 · U:4 · BR:3 · EA:4) | Bekliyor |
 | 2026-06-29 | **14 🟡** | **Sürükle-Bırak Ana Ekran Search Bar** — Ana ekrandaki uygulama arama çubuğu daha premium görünümlü tek bir arama barına dönüşür; kullanıcı uzun basıp saat/widget/öneri kartları arasındaki yerini sürükle-bırak ile değiştirebilir. Search bar düzeni `AppPrefs` ile saklanır, tablet/telefon adaptif davranır. (KV:4 · U:4 · BR:3 · EA:3 — yaygınlaşan pattern, farklılaşma azaldı) | Bekliyor |
 | 2026-06-29 | **17 ⭐** | **Folder Swipe-Up → En Sık Kullanılan Uygulama** — Klasör kartına yukarı kaydırınca o klasördeki en çok açılan uygulama doğrudan başlar (Sosyal→WhatsApp, Finans→Garanti, Spor→Hevy). AppPrefs ile her klasör için override edilebilir. (KV:5 · U:4 · BR:4 · EA:4) | [TAMAMLANDI — FolderTile.kt:131, HomeScreen.kt:543] |
@@ -61,7 +67,7 @@
 | 2026-06-29 | Rekabet | **Quick Wheel / Pie Mode (Opsiyonel)** — Boş alana uzun bas → 6-8 uygulamalı radyal çark. Pie Launcher'dan ilham. Kas hafızasıyla bakılmadan açma. AppPrefs toggle, varsayılan kapalı. (KV:3 · U:3 · BR:4 · EA:3 = **13p**) | [TAMAMLANDI — QuickWheelOverlay.kt, HomeScreen.kt onLongPress entegrasyon, Settings "Hızlı Erişim" toggle] |
 | 2026-06-29 | Rekabet | **Widget Host (Gerçek)** — Sistem widget'larını (hava durumu, takvim, müzik) destekle. AppWidgetHost + AppWidgetManager. Mevcut saat widgeti bunun üzerine inşa edilebilir. Zor ama Play Store'da ciddi launcher için şart. (KV:4 · U:2 · BR:3 · EA:4 = **13p**) | [MEVCUT — WidgetHostManager.kt + WidgetPrefs.kt + WidgetArea.kt (AndroidView+AppWidgetHostView+drag-reorder) + LauncherActivity widgetPickerLauncher + LauncherViewModel widgetIds StateFlow — tam çalışır, D155 doğrulandı] |
 | 2026-06-29 | Rekabet | **Icon Pack Desteği** — Üçüncü taraf icon pack uygulamalarından ikon yükleme. IconPackManager mevcut ama UI eksik. Settings > Görünüm'e seçici ekle. (KV:3 · U:3 · BR:3 · EA:3 = **12p**) | [TAMAMLANDI — SettingsAppearanceSection.kt: DropdownMenu icon pack seçici, IconPackManager.clearCache() + AppPrefs.setIconPack() entegrasyonu, sadece yüklü pack varsa gösterilir] |
-| 2026-06-29 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
+| 2026-06-29 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda). (KV:2 · U:4 · BR:1 · EA:2 = **9p**) | ⏸ Beklet |
 | 2026-06-29 | Yeni | **Klasör Rengi Otomatik (Dominant İkon)** — Klasör oluşturulunca içindeki uygulamaların ikonundan dominant renk hesaplanıp otomatik atanır. Manuel değiştirilebilir. (KV:3 · U:4 · BR:2 · EA:4 = **13p**) | [TAMAMLANDI — DominantColorExtractor.kt (androidx.palette Vibrant/Dark), LauncherViewModel folders.onEach auto-assign, AppPrefs.KEY_AUTO_FOLDER_COLOR toggle, SettingsAppearanceSection switch] |
 | 2026-06-29 | Yeni | **Onboarding Yeniden Başlatma** — Settings > Hakkında'ya "Kurulum Sihirbazını Yeniden Başlat" butonu ekle. (KV:3 · U:5 · BR:1 · EA:3 = **12p**) | [TAMAMLANDI — SettingsBackupAboutSection.kt "Hakkında" bölümüne SettingsButtonRow + AlertDialog: KEY_ONBOARDING_DONE=false → MainActivity clear task restart] |
 
@@ -71,18 +77,19 @@
 
 | Tarih | Kaynak | Madde | Puan |
 |-------|--------|-------|------|
-| 2026-06-29 | Yeni | **Duvar Kağıdı Renk Uyumu** — Dominant renge göre klasör başlık rengi | [TAMAMLANDI — FolderTile.kt: effectiveLabelColor luminance>0.55→koyu metin, ≤0.55→beyaz, D156] |
-| 2026-06-29 | Rekabet | **Online App Category DB** — Opsiyonel, gizlilik riski yüksek. Lokal → keyword → kullanıcı override → en son online. (KV:3 · U:2 · BR:2 · EA:3 = 10p) | 10p |
-| 2026-06-29 | Rekabet | **Focus Mode / Minimal Mod** — Olauncher tarzı dijital wellbeing modu, yalnızca izin verilen uygulamalar görünür | [TAMAMLANDI — AppPrefs.KEY_FOCUS_MODE, HomeScreen klasör grid gizleme + "Odak Modu Aktif" banner, SettingsScreen "Hızlı Erişim" bölümü DoNotDisturb toggle, D158] |
+| 2026-06-29 | Rekabet | **Online App Category DB** — Opsiyonel, gizlilik riski yüksek. Lokal → keyword → kullanıcı override → en son online. (KV:3 · U:2 · BR:2 · EA:3 = **10p**) | 10p |
+| 2026-06-29 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda). (KV:2 · U:4 · BR:1 · EA:2 = **9p**) | 9p |
 
 ---
 
 ## ✅ Tamamlananlar (Bu Dosyada Kalan)
 
-| Tarih | Madde | Döngü |
-|-------|-------|-------|
-| 2026-06-29 | Uygulama Kullanım Raporu Ekranı (15p) | D190 |
-| 2026-06-29 | Çift Tıkla Arama (14p) | D135 |
+| Tarih | Madde | Puan | Döngü |
+|-------|-------|------|-------|
+| 2026-06-29 | Uygulama Kullanım Raporu Ekranı | 15p | D190 |
+| 2026-06-29 | Duvar Kağıdı Renk Uyumu — Dominant renge göre klasör başlık rengi | 13p | D156 |
+| 2026-06-29 | Focus Mode / Minimal Mod — Olauncher tarzı dijital wellbeing | 12p | D158 |
+| 2026-06-29 | Çift Tıkla Arama | 14p | D135 |
 
 ---
 

@@ -81,6 +81,7 @@ fun AppNavigation(
         }
         composable(Routes.REPORTS_CENTER) {
             ReportsCenterScreen(
+                viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) },
                 onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },

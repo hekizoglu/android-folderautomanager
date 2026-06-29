@@ -51,6 +51,7 @@ fun SearchSettingsScreen(
     var contactsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
     var filesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
     var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
+    var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -119,6 +120,24 @@ fun SearchSettingsScreen(
                             searchHistoryEnabled = it
                             AppPrefs.setSearchHistoryEnabled(context, it)
                             if (!it) SearchHistoryPrefs.clear(context)
+                        },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.SwapVert,
+                        title = "Arama Cubugu Konumu",
+                        subtitle = if (searchBarPosition == AppPrefs.SEARCH_BAR_POS_TOP) {
+                            "Saat widget'inin altinda"
+                        } else {
+                            "Google aramasinin altinda"
+                        },
+                        onClick = {
+                            searchBarPosition = if (searchBarPosition == AppPrefs.SEARCH_BAR_POS_TOP) {
+                                AppPrefs.SEARCH_BAR_POS_BOTTOM
+                            } else {
+                                AppPrefs.SEARCH_BAR_POS_TOP
+                            }
+                            AppPrefs.setSearchBarPosition(context, searchBarPosition)
                         },
                     )
                 }

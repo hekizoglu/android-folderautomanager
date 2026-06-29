@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-30 01:09
-> Dongu: **#172** | Tier: **1**
-> Ana tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
-> Ekstra denetim: **Timber log quality, user-facing error messages, fallback** (Error_Handling_Logging)
+> Son denetim: 2026-06-30 02:10
+> Dongu: **#173** | Tier: **1**
+> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
+> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
 
 ---
 
@@ -26,4 +26,4 @@
 
 ---
 
-*Denetim tarihi: 2026-06-30 01:09 | Dongu: #172 | Tier: 1 | Ana: Gesture, swipe, drawer akislari | Ekstra: Timber log quality, user-facing error messages, fallback*
+*Denetim tarihi: 2026-06-30 02:10 | Dongu: #173 | Tier: 1 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*

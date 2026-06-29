@@ -79,6 +79,15 @@ class AppRepository @Inject constructor(
         }
     }
 
+    suspend fun getCategoryById(categoryId: String): Category? {
+        return try {
+            categoryDao.getCategoryById(categoryId)
+        } catch (e: Exception) {
+            Timber.e(e, "Error getting category by id")
+            null
+        }
+    }
+
     suspend fun getNextCategoryDisplayOrder(): Int {
         return (categoryDao.getMaxDisplayOrder() ?: 0) + 1
     }

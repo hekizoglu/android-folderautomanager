@@ -1,15 +1,17 @@
 package com.armutlu.apporganizer.data.repository
 
+import android.content.Context
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
+import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
@@ -23,7 +25,8 @@ import javax.inject.Singleton
  * Sprint 2-3: Contacts ve Files indeksleme buraya eklenecek.
  */
 @Singleton
-class SearchRepository @Inject constructor(
+class SearchRepository(
+    private val context: Context,
     private val searchDao: SearchDao,
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
@@ -47,12 +50,47 @@ class SearchRepository @Inject constructor(
         // FTS5 prefix-match: her terimin sonuna * ekle
         val ftsQuery = trimmed.split("\\s+".toRegex())
             .filter { it.isNotBlank() }
-            .joinToString(" ") { "\"$it\"*" }
+            .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
 
         return withContext(Dispatchers.IO) {
-            val docs = searchDao.search(ftsQuery, limit)
+            val allowedSources = enabledSources()
+            if (allowedSources.isEmpty()) return@withContext emptyMap()
+            val docs = searchDao.search(buildSearchQuery(ftsQuery, limit, allowedSources))
             docs.groupBy { SourceType.fromKey(it.sourceType) }
         }
+    }
+
+    private fun enabledSources(): List<String> = buildList {
+        if (AppPrefs.isSearchSourceAppsEnabled(context)) add(SourceType.APP.key)
+        if (AppPrefs.isSearchSourceCategoriesEnabled(context)) add(SourceType.CATEGORY.key)
+        if (AppPrefs.isSearchSourceContactsEnabled(context)) add(SourceType.CONTACT.key)
+        if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)
+    }
+
+    private fun buildSearchQuery(ftsQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {
+        val placeholders = allowedSources.joinToString(",") { "?" }
+        val args = (listOf<Any>(ftsQuery) + allowedSources + limit).toTypedArray()
+        return SimpleSQLiteQuery(
+            """
+                SELECT search_documents.*
+                FROM search_documents
+                JOIN search_fts ON search_documents.docId = search_fts.rowid
+                WHERE search_fts MATCH ?
+                    AND source_type IN ($placeholders)
+                ORDER BY
+                    CASE source_group
+                        WHEN 'app' THEN 0
+                        WHEN 'category' THEN 1
+                        WHEN 'contact' THEN 2
+                        WHEN 'file' THEN 3
+                        ELSE 9
+                    END ASC,
+                    bm25(search_fts) ASC,
+                    title ASC
+                LIMIT ?
+            """.trimIndent(),
+            args,
+        )
     }
 
     /**
@@ -88,6 +126,7 @@ class SearchRepository @Inject constructor(
             val categories = categoryDao.getAllCategories()
             val catName = categories.find { it.categoryId == app.categoryId }?.categoryName ?: ""
             val doc = indexer.appToDocument(app, catName)
+            searchDao.delete("app", app.packageName)
             searchDao.insert(doc)
             Timber.d("indexApp: ${app.packageName} indekslendi")
         }.onFailure {
@@ -121,6 +160,7 @@ class SearchRepository @Inject constructor(
                 searchDao.updateCategoryRefs(oldCategory.categoryName, newCategory.categoryName, now)
             }
             val doc = indexer.categoryToDocument(newCategory).copy(lastModified = now)
+            searchDao.delete("category", newCategory.categoryId)
             searchDao.insert(doc)
             Timber.d("reindexCategory: ${newCategory.categoryId}")
         }.onFailure {

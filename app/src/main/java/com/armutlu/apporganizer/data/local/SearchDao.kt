@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import com.armutlu.apporganizer.domain.models.SearchDocument
+import androidx.sqlite.db.SupportSQLiteQuery
 
 /**
  * FTS5 arama DAO'su.
@@ -25,13 +27,8 @@ interface SearchDao {
      * @param limit Maksimum sonuç sayısı (varsayılan 50)
      * @return source_group, bm25 sırasında gruplandırılmış SearchDocument'ler
      */
-    @Query("""
-        SELECT * FROM search_documents
-        WHERE title LIKE '%' || :query || '%' OR subtitle LIKE '%' || :query || '%'
-        ORDER BY source_group ASC
-        LIMIT :limit
-    """)
-    suspend fun search(query: String, limit: Int = 50): List<SearchDocument>
+    @RawQuery(observedEntities = [SearchDocument::class])
+    suspend fun search(query: SupportSQLiteQuery): List<SearchDocument>
 
     /**
      * Toplu indeks ekleme. İlk bootstrap ve tam reindex için.

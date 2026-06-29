@@ -68,6 +68,12 @@ interface AppDao {
      */
     @Query("SELECT * FROM apps ORDER BY appName ASC")
     suspend fun getAllApps(): List<AppInfo>
+
+    /**
+     * Get apps page for large datasets.
+     */
+    @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT :limit OFFSET :offset")
+    suspend fun getAppsPage(limit: Int, offset: Int = 0): List<AppInfo>
     
     /**
      * Get all apps as Flow (real-time updates)
@@ -104,6 +110,12 @@ interface AppDao {
      */
     @Query("SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' ORDER BY appName ASC")
     fun searchAppsByName(query: String): Flow<List<AppInfo>>
+
+    /**
+     * Search apps with a bounded result set for UI paths.
+     */
+    @Query("SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' ORDER BY appName ASC LIMIT :limit")
+    fun searchAppsByNameLimited(query: String, limit: Int = 50): Flow<List<AppInfo>>
     
     /**
      * Get system apps

@@ -1,7 +1,6 @@
 package com.armutlu.apporganizer.di
 
 import android.content.Context
-import androidx.room.Room
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
@@ -23,11 +22,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "app_organizer_db"
-        ).fallbackToDestructiveMigration().build()
+        return AppDatabase.getInstance(context)
     }
 
     @Provides
@@ -42,11 +37,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSearchRepository(
+        @ApplicationContext context: Context,
         searchDao: SearchDao,
         appDao: AppDao,
         categoryDao: CategoryDao,
         indexer: SearchIndexer
-    ): SearchRepository = SearchRepository(searchDao, appDao, categoryDao, indexer)
+    ): SearchRepository = SearchRepository(context, searchDao, appDao, categoryDao, indexer)
 
     @Provides
     @Singleton

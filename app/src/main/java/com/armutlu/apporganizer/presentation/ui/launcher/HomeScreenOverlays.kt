@@ -46,20 +46,20 @@ internal fun FolderStatsRow(
             onClick = onOpenAppStats,
         )
         StatChip(
-            label = "Klasör",
+            label = "Klasor",
             value = "$totalFolders",
             modifier = Modifier.weight(1f),
             onClick = onOpenFolderStats,
         )
         StatChip(
             label = "Dashboard",
-            value = "↗",
+            value = ">",
             modifier = Modifier.weight(1f),
             onClick = onOpenDashboard,
         )
         StatChip(
-            label = "Kullanım",
-            value = "↗",
+            label = "Kullanim",
+            value = ">",
             modifier = Modifier.weight(1f),
             onClick = onOpenUsageReport,
         )

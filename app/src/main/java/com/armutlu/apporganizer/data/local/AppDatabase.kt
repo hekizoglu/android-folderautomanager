@@ -107,7 +107,7 @@ abstract class AppDatabase : RoomDatabase() {
                         search_text, keywords,
                         content='search_documents',
                         content_rowid='docId',
-                        tokenize='unicode61 tokenchars=çğıöşüÇĞİÖŞÜ'
+                        tokenize='unicode61'
                     )
                 """)
                 // FTS5 senkronizasyon trigger'ları
@@ -132,6 +132,37 @@ abstract class AppDatabase : RoomDatabase() {
                     END
                 """)
             }
+        }
+
+        private fun ensureSearchTables(db: SupportSQLiteDatabase) {
+            db.execSQL("""
+                CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
+                    search_text, keywords,
+                    content='search_documents',
+                    content_rowid='docId',
+                    tokenize='unicode61'
+                )
+            """)
+            db.execSQL("""
+                CREATE TRIGGER IF NOT EXISTS search_fts_ai AFTER INSERT ON search_documents BEGIN
+                    INSERT INTO search_fts(rowid, search_text, keywords)
+                    VALUES (new.docId, new.title || ' ' || new.subtitle, '');
+                END
+            """)
+            db.execSQL("""
+                CREATE TRIGGER IF NOT EXISTS search_fts_ad AFTER DELETE ON search_documents BEGIN
+                    INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
+                    VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
+                END
+            """)
+            db.execSQL("""
+                CREATE TRIGGER IF NOT EXISTS search_fts_au AFTER UPDATE ON search_documents BEGIN
+                    INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
+                    VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
+                    INSERT INTO search_fts(rowid, search_text, keywords)
+                    VALUES (new.docId, new.title || ' ' || new.subtitle, '');
+                END
+            """)
         }
 
         fun getInstance(context: Context): AppDatabase {
@@ -191,12 +222,15 @@ abstract class AppDatabase : RoomDatabase() {
                         )
                     )
                 }
+
+                ensureSearchTables(db)
                 
                 Timber.d("Default categories inserted: ${defaultCategories.size}")
             }
             
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
+                ensureSearchTables(db)
                 Timber.d("Database opened")
             }
         }

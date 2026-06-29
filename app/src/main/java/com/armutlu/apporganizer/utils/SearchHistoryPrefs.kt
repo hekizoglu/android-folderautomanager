@@ -8,6 +8,7 @@ object SearchHistoryPrefs {
     private const val MAX   = 5
 
     fun getHistory(context: Context): List<String> {
+        if (!AppPrefs.isSearchHistoryEnabled(context)) return emptyList()
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .getString(KEY, null) ?: return emptyList()
         return raw.split("||").filter { it.isNotBlank() }

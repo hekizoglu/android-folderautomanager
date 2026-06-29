@@ -3,7 +3,6 @@ package com.armutlu.apporganizer.data.local
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,18 +33,6 @@ class SearchIndexer @Inject constructor() {
      * @param categoryName Kategorinin görünen adı (subtitle olarak eklenir)
      */
     fun appToDocument(app: AppInfo, categoryName: String = ""): SearchDocument {
-        val normalizedAppName = normalize(app.appName)
-        val normalizedPkg = normalize(app.packageName)
-        val normalizedCat = normalize(categoryName)
-        val searchText = buildString {
-            append(normalizedAppName)
-            append(' ')
-            append(normalizedPkg)
-            if (normalizedCat.isNotBlank()) {
-                append(' ')
-                append(normalizedCat)
-            }
-        }
         return SearchDocument(
             sourceType = SOURCE_APP,
             sourceId = app.packageName,
@@ -61,13 +48,6 @@ class SearchIndexer @Inject constructor() {
      * Category → SearchDocument dönüşümü.
      */
     fun categoryToDocument(cat: Category): SearchDocument {
-        val searchText = buildString {
-            append(normalize(cat.categoryName))
-            if (cat.description.isNotBlank()) {
-                append(' ')
-                append(normalize(cat.description))
-            }
-        }
         return SearchDocument(
             sourceType = SOURCE_CATEGORY,
             sourceId = cat.categoryId,
@@ -101,6 +81,4 @@ class SearchIndexer @Inject constructor() {
      * Türkçe locale ile lowercase normalizasyonu.
      * İ→i, I→ı dönüşümünü garantiler.
      */
-    private fun normalize(text: String): String =
-        text.lowercase(Locale("tr"))
 }
