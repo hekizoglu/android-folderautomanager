@@ -44,7 +44,8 @@ fun SettingsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit = {},
     onNavigateToPrivacyPolicy: () -> Unit = {},
-    onNavigateToUsageReport: () -> Unit = {}
+    onNavigateToUsageReport: () -> Unit = {},
+    onNavigateToDashboard: () -> Unit = {}
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
     val state           by viewModel.screenState.collectAsState()
@@ -396,7 +397,8 @@ fun SettingsScreen(
                 categoryCount = state.categories.size,
                 logs = logs,
                 onNavigateToPrivacyPolicy = onNavigateToPrivacyPolicy,
-                onNavigateToUsageReport = onNavigateToUsageReport
+                onNavigateToUsageReport = onNavigateToUsageReport,
+                onNavigateToDashboard = onNavigateToDashboard
             )
 
 

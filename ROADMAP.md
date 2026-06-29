@@ -24,6 +24,14 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | **Content rating anketi** | Play Store — göndermeden önce doldurulmalı | ⚠️ Bekliyor |
 | **Screenshots** | Play Store — Pixel 6 emülatörü, light + dark mode | Bekliyor |
 
+### ⭐ Yüksek Puanlı (FİKİRLER.md'den — ≥15p)
+
+| Puan | Görev | Durum |
+|------|-------|-------|
+| 18p | **AppOrganizer Dashboard** — `AppOrganizerDashboardScreen.kt`: klasör/uygulama istatistikleri, top uygulama, UsageScore trend, swipe-up sayacı. Mevcut UsageReportScreen + InsightEngine verileri kullanılır. | [TAMAMLANDI] |
+| 17p | **Yerel Arama İndeksi v1** — `MediaStore` + `ContactsContract` + Room FTS4 tabanlı birleşik arama; uygulama+kategori+kişi+dosya. Varsayılan: uygulama+kategori açık, kişi+dosya kapalı. | Bekliyor |
+| 15p | **Arama Kaynakları Ayar Bölümü** — Settings'te ayrı arama bölümü, izin gerekçesi + indeks durum bilgisi. Yerel Arama İndeksi tamamlandıktan sonra. | Bekliyor |
+
 ### 🟡 Orta Öncelik
 
 | Görev | Alan | Durum |
