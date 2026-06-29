@@ -3,6 +3,7 @@
 import android.content.Context
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,6 +62,8 @@ class AppClassifier @Inject constructor(
 
 
     fun classifyApp(appInfo: AppInfo, manufacturerClassifyEnabled: Boolean = true): String {
+        // Manuel override — kullanici secimi tum otomatik siniflandirmanin onunde gelir
+        AppPrefs.getManualCategoryOverrides(context)[appInfo.packageName]?.let { return it }
         exactMatchMap[appInfo.packageName]?.let { return it }
         if (manufacturerClassifyEnabled) {
             classifyByManufacturerPrefix(appInfo.packageName, appInfo.appName)?.let { return it }

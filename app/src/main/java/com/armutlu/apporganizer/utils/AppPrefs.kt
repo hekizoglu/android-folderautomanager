@@ -330,5 +330,24 @@ object AppPrefs {
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)
     fun setContextualDockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTEXTUAL_DOCK, v).apply()
 
+    // Manuel Kategori Ezmeler — kullanıcı tarafından atanmış paket→kategori haritası
+    // AppClassifier bu haritayı exactMatch'ten önce kontrol eder (en yüksek öncelik)
+    const val KEY_MANUAL_CAT_OVERRIDES = "manual_category_overrides"
+
+    fun getManualCategoryOverrides(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_MANUAL_CAT_OVERRIDES, null) ?: "").parseJsonMap()
+
+    fun setManualCategoryOverride(context: Context, packageName: String, categoryId: String) {
+        val map = getManualCategoryOverrides(context).toMutableMap()
+        map[packageName] = categoryId
+        prefs(context).edit().putString(KEY_MANUAL_CAT_OVERRIDES, map.toJsonString()).apply()
+    }
+
+    fun clearManualCategoryOverride(context: Context, packageName: String) {
+        val map = getManualCategoryOverrides(context).toMutableMap()
+        map.remove(packageName)
+        prefs(context).edit().putString(KEY_MANUAL_CAT_OVERRIDES, map.toJsonString()).apply()
+    }
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

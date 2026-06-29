@@ -377,6 +377,8 @@ class LauncherViewModel @Inject constructor(
     fun updateAppCategory(packageName: String, categoryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.updateAppCategory(packageName, categoryId)
+            // Manuel override'ı kaydet — AppClassifier yeniden sınıflandırmada da bunu öncelendirir
+            AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
         }
     }
 
