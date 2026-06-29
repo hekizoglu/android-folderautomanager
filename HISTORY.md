@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 155 — 2026-06-29 [WIDGET HOST DOĞRULAMA + FIKIRLER TEMİZLİK]
+
+**Yapılanlar:** Widget Host Gerçek (13p) doğrulandı — WidgetHostManager.kt+WidgetPrefs.kt+WidgetArea.kt+LauncherActivity+LauncherViewModel hepsi tam çalışır, FİKİRLER.md [MEVCUT] güncellendi. Tüm ≥12p FİKİRLER.md maddeleri artık TAMAMLANDI/MEVCUT. MD_DENETIM_2026-06-23 proje kökünde değil (worktree) → atlandı.
+**Agent:** —
+**Sonraki:** D157'de build + versiyon güncelleme (versionCode 5, versionName 1.0.3)
+
+---
+
 ## Döngü 154 — 2026-06-29 [QUICK WHEEL / PIE MODE]
 
 **Yapılanlar:** Quick Wheel/Pie Mode (13p) — QuickWheelOverlay.kt (radyal 6 app, Spring animasyon, ekran sınırı klamp, ikon+isim), AppPrefs.KEY_QUICK_WHEEL (default: false), HomeScreen.kt onLongPress Offset parametresi ile press koordinatı yakalar, quickWheelEnabled ise overlay gösterir (gestureLongPress fallback korundu), SettingsScreen.kt "Hızlı Erişim" bölümü toggle. BUILD SUCCESSFUL (30MB).
