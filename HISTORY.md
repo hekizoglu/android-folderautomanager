@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 150 — 2026-06-29 [BADGE INTELLIGENCE + SHORTCUT MEVCUT]
+
+**Yapılanlar:** BadgeColorEngine.kt (yeşil=mesajlaşma, kırmızı=alarm/finans, sarı=güncelleme — paket+kategori bazlı), AppIconView.kt+FolderTile.kt badge rengi BadgeColorEngine'e bağlandı, AppPrefs.KEY_BADGE_INTELLIGENCE toggle, SettingsScreen'e "Akıllı Badge Rengi" switch eklendi. ShortcutManager mevcut [AppContextMenu.kt:85] tespit edildi — FİKİRLER.md güncellendi. BUILD SUCCESSFUL (24.4MB).
+**Agent:** —
+**Sonraki:** Biometric Settings Lock (13p), Weekly Digest (13p)
+
+---
+
 ## Döngü 149 — 2026-06-29 [BACKUP/RESTORE JSON v3]
 
 **Yapılanlar:** BackupManager.kt v3 — exportToJson(context, repository): dock packages, folderCustomNames/Emojis/Colors, manualCategoryOverrides, gestures (doubleTap/longPress/swipeUp), settings (sortMode, iconPack, theme, contextualDock, assistantCards). importFromJson(context, json, repository): version >= 3 şubesinde tüm alanları geri yükler. Geriye dönük uyumluluk: eski context'siz imzalar korundu. FİKİRLER.md güncellendi [TAMAMLANDI].

@@ -227,6 +227,31 @@ fun SettingsScreen(
                 }
             }
 
+            // Badge Intelligence toggle
+            item {
+                var badgeIntelligence by remember { mutableStateOf(AppPrefs.isBadgeIntelligenceEnabled(context)) }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Akıllı Badge Rengi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("Mesaj=yeşil · Alarm=kırmızı · Güncelleme=sarı", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = badgeIntelligence,
+                            onCheckedChange = {
+                                badgeIntelligence = it
+                                AppPrefs.setBadgeIntelligenceEnabled(context, it)
+                            }
+                        )
+                    }
+                }
+            }
+
             // ── Dock Yönetimi ─────────────────────────────────────────────────
             item { SettingsSectionTitle("Dock Uygulamaları") }
             item {

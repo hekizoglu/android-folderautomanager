@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.utils.BadgeColorEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -212,12 +213,17 @@ fun AppIconView(
             if (app.notificationCount > 0) {
                 val badgeText = if (app.notificationCount > 99) "99+" else app.notificationCount.toString()
                 val badgeWidth = if (app.notificationCount > 9) 20.dp else 16.dp
+                val badgeIntelligence = com.armutlu.apporganizer.utils.AppPrefs.isBadgeIntelligenceEnabled(context)
+                val badgeColor = if (badgeIntelligence)
+                    BadgeColorEngine.badgeColor(app.categoryId, app.packageName)
+                else
+                    BadgeColorEngine.Red
                 Box(
                     modifier = Modifier
                         .size(badgeWidth, 16.dp)
                         .align(Alignment.TopEnd)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFE53935)),
+                        .background(badgeColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

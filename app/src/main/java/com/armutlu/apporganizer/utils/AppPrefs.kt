@@ -325,6 +325,11 @@ object AppPrefs {
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)
     fun setAssistantCardsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_ASSISTANT_CARDS, v).apply()
 
+    // Badge Intelligence — bildirim badge rengi kategori bazlı (yeşil/sarı/kırmızı)
+    const val KEY_BADGE_INTELLIGENCE = "badge_intelligence_enabled"
+    fun isBadgeIntelligenceEnabled(context: Context) = prefs(context).getBoolean(KEY_BADGE_INTELLIGENCE, true)
+    fun setBadgeIntelligenceEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_BADGE_INTELLIGENCE, v).apply()
+
     // Contextual Dock — 2 sabit + 2 akıllı öneri
     const val KEY_CONTEXTUAL_DOCK = "contextual_dock_enabled"
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)

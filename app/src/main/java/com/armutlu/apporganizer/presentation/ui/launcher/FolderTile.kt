@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.armutlu.apporganizer.utils.BadgeColorEngine
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -83,6 +84,7 @@ fun FolderTile(
     val isPressed by interactionSource.collectIsPressedAsState()
     val hapticFeedback = LocalHapticFeedback.current
     val density = LocalDensity.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     var swipeDy by remember { mutableFloatStateOf(0f) }
     val swipeThresholdPx = with(density) { 40.dp.toPx() }
 
@@ -188,17 +190,23 @@ fun FolderTile(
                 )
             }
         }
-        // Klasör badge
+        // Klasör badge — renk: en yüksek bildirimli uygulamanın kategorisine göre
         if (totalBadge > 0) {
             val badgeText = if (totalBadge > 99) "99+" else totalBadge.toString()
             val badgeW = if (totalBadge > 9) 20.dp else 16.dp
+            val topNotifApp = folder.apps.maxByOrNull { it.notificationCount }
+            val badgeIntelligence = com.armutlu.apporganizer.utils.AppPrefs.isBadgeIntelligenceEnabled(context)
+            val folderBadgeColor = if (badgeIntelligence && topNotifApp != null)
+                BadgeColorEngine.badgeColor(topNotifApp.categoryId, topNotifApp.packageName)
+            else
+                BadgeColorEngine.Red
             Box(
                 modifier = Modifier
                     .size(badgeW, 16.dp)
                     .align(Alignment.TopEnd)
-                    .shadow(3.dp, androidx.compose.foundation.shape.RoundedCornerShape(8.dp), ambientColor = Color(0xFFE53935), spotColor = Color(0xFFE53935))
+                    .shadow(3.dp, androidx.compose.foundation.shape.RoundedCornerShape(8.dp), ambientColor = folderBadgeColor, spotColor = folderBadgeColor)
                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                    .background(Color(0xFFE53935)),
+                    .background(folderBadgeColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
