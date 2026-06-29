@@ -131,13 +131,13 @@ internal fun GoogleSearchBar(modifier: Modifier = Modifier) {
                 color = Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(25.dp)
             )
+            .padding(horizontal = 16.dp)
             .clickable {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com")).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 runCatching { context.startActivity(intent) }
-            }
-            .padding(horizontal = 16.dp),
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
