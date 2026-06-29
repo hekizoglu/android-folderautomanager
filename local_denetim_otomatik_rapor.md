@@ -1,8 +1,8 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 12:45
-> Dongu: **#156** | Tier: **2**
+> Son denetim: 2026-06-29 17:14
+> Dongu: **#158** | Tier: **1**
 > Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
 > Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
 
@@ -13,17 +13,17 @@
 | Oncelik | Sayi | Aciklama |
 |---------|------|----------|
 | KRITIK | 0 | Acik kritik bulgu |
-| YUKSEK |  | Acik yuksek bulgu |
-| ORTA | 0 | Acik orta bulgu |
+| YUKSEK | 0 | Acik yuksek bulgu |
+| ORTA |  | Acik orta bulgu |
 | DUSUK | 0 | Acik dusuk bulgu |
 | TOPLAM |  | |
 
 ---
 
-## YUKSEK
+## ORTA
 
-- CE7 | `app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt:255` | AppPrefs remember{} keysiz okunuyor - Settings donus guncellenmez. DisposableEffect + listener kullan. (E6 tekrari)
+- CS13 | `app\src\main\java\com\armutlu\apporganizer\data\local\AppDao.kt:69` | AppDao SELECT * ORDER BY LIMIT yok - 500+ uygulama icin yavas. Pagination veya specific column sec.
 
 ---
 
-*Denetim tarihi: 2026-06-29 12:45 | Dongu: #156 | Tier: 2 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
+*Denetim tarihi: 2026-06-29 17:14 | Dongu: #158 | Tier: 1 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*

@@ -366,7 +366,7 @@ fun SettingsScreen(
                     val sdf = java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale("tr"))
                     sdf.format(java.util.Date(lastBackupMs))
                 }
-                val topCategory by remember(state.categoryStats, state.categories) {
+                val topCategory by remember {
                     derivedStateOf {
                         state.categoryStats
                             .maxByOrNull { it.value }

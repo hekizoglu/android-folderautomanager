@@ -82,5 +82,11 @@
 | 2026-06-29 11:30 | T1 | Izin/Onboarding | Theme OK | Bulunamadi → CE13 eklendi |
 | 2026-06-29 11:52 | T1 | Category CRUD | AppClassifier OK | Bulunamadi |
 | 2026-06-29 12:08 | T2 | Dock/Widget/Backup + CE | StateFlow/ViewModel | Bulunamadi |
+| 2026-06-29 12:35 | T1 | Izin/Onboarding | OEM Compatibility | Bulunamadi |
+| 2026-06-29 13:00 | T1 | Dock/Widget/Backup | StateFlow/ViewModel | Bulunamadi |
+
+*51 tur, 0 bug | IMP#4: derivedStateOf fix*
+
+*50 tur, 0 bug*
 
 *49 tur, 0 bug*
