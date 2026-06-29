@@ -4,6 +4,14 @@
 
 ---
 
+## MD Denetim — 2026-06-29 [OTOMATİK — 5 SORUN]
+
+**Yapılanlar:** Otomatik MD denetimi (CLAUDE.md, LEARNINGS.md, ROADMAP.md, HISTORY.md, harcananvakit.md). 5 sorun tespit edildi — detaylar commit mesajında. Telegram engelli — GitHub commit ile iletildi.
+**Agent:** —
+**Sonraki:** Kullanıcı onayı sonrası düzeltmeler yapılacak
+
+---
+
 ## Döngü 161 — 2026-06-29 [BUILD v1.0.5]
 
 **Yapılanlar:** Build döngüsü — versionCode 6→7, versionName 1.0.4→1.0.5. BUILD SUCCESSFUL, APK 24.57 MB. Telegram bu ortamda engelli — yerel makineden gönderilebilir.
@@ -73,14 +81,6 @@
 **Yapılanlar:** Icon Pack UI (12p) — SettingsAppearanceSection'a DropdownMenu seçici eklendi (yüklü pack varsa gösterilir). Klasör Rengi Otomatik (13p) — DominantColorExtractor.kt (androidx.palette Vibrant öncelikli), LauncherViewModel folders.onEach auto-assign (renk yoksa hesapla), SettingsAppearanceSection "Klasör Rengi Otomatik" switch. APK 25→30MB (palette lib +5MB). BUILD SUCCESSFUL.
 **Agent:** —
 **Sonraki:** Quick Wheel/Pie Mode (13p), Widget Host (13p)
-
----
-
-## Döngü 153 — 2026-06-29 [İKON PACK UI]
-
-**Yapılanlar:** Icon Pack Desteği (12p) — SettingsAppearanceSection.kt sonuna DropdownMenu seçici eklendi: yüklü icon pack varsa gösterilir, "Varsayılan" seçeneği + pack listesi, seçim → AppPrefs.setIconPack() + IconPackManager.clearCache() (ikonlar anında yeniden yüklensin). BUILD SUCCESSFUL (24.9MB).
-**Agent:** —
-**Sonraki:** Quick Wheel/Pie Mode (13p) veya Klasör Rengi Otomatik (13p)
 
 ---
 
@@ -528,7 +528,7 @@
 **Sonraki:** LEARNINGS auditmatrix (12p) veya Android 16 Permission Audit (11p)
 
 ## Dongü 187 -- 23:19
-**Yapılanlar:** SettingsBackupAboutSection Neden AppOrganizer karti (6 ozellik vs Pixel). Android16 permission audit: sadece filesDir kullaniliyor, guvenli. CLAUDE.md CE7 kuralı eklendi. BUILD OK 24.66MB
+**Yapılanlar:** SettingsBackupAboutSection Neden AppOrganizer karti (6 ozellik vs Pixel). Android16 permission audit: sadece filesDir kullaniliyor, guvenli. CLAUDE.md CE7 kurali eklendi. BUILD OK 24.66MB
 **Agent:** --
 **CLAUDE.md/LEARNINGS.md:** Android 16 dosya erisim kurali eklendi
 **Sonraki:** LEARNINGS audit matrix (12p) veya yeni fikir
