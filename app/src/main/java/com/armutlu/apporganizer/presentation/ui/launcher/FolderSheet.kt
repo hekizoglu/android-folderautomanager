@@ -99,7 +99,7 @@ fun FolderSheet(
         base.sortedByMode(sortMode)
     }
 
-    val blurEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(LocalContext.current) }
+    val blurEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context) }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState       = sheetState,

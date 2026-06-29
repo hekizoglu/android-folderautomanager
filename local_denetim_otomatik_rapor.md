@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 20:44
+> Son denetim: 2026-06-29 20:59
 > Dongu: **#165** | Tier: **2**
-> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
-> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
+> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
+> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
 
 ---
 
@@ -30,4 +30,4 @@
 
 ---
 
-*Denetim tarihi: 2026-06-29 20:44 | Dongu: #165 | Tier: 2 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*
+*Denetim tarihi: 2026-06-29 20:59 | Dongu: #165 | Tier: 2 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*
