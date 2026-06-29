@@ -66,7 +66,7 @@
 
 | Tarih | Kaynak | Madde | Puan |
 |-------|--------|-------|------|
-| 2026-06-29 | Yeni | **Duvar Kağıdı Renk Uyumu** — Dominant renge göre klasör başlık rengi | 11p |
+| 2026-06-29 | Yeni | **Duvar Kağıdı Renk Uyumu** — Dominant renge göre klasör başlık rengi | [TAMAMLANDI — FolderTile.kt: effectiveLabelColor luminance>0.55→koyu metin, ≤0.55→beyaz, D156] |
 | 2026-06-29 | Rekabet | **Online App Category DB** — Opsiyonel, gizlilik riski yüksek. Lokal → keyword → kullanıcı override → en son online. (KV:3 · U:2 · BR:2 · EA:3 = 10p) | 10p |
 | 2026-06-29 | Rekabet | **Focus Mode / Minimal Mod** — Olauncher tarzı dijital wellbeing modu, yalnızca izin verilen uygulamalar görünür | 9p |
 

@@ -157,6 +157,18 @@ fun FolderTile(
             runCatching { Color(android.graphics.Color.parseColor(hex)) }
                 .getOrDefault(Color.White)
         }
+        // Klasör rengi varsa kontrast label rengi — açık bg → koyu metin, koyu bg → beyaz metin
+        val effectiveLabelColor = remember(customColor, labelColor) {
+            if (customColor.isNullOrEmpty()) labelColor
+            else runCatching {
+                val c = android.graphics.Color.parseColor(customColor)
+                val r = android.graphics.Color.red(c) / 255f
+                val g = android.graphics.Color.green(c) / 255f
+                val b = android.graphics.Color.blue(c) / 255f
+                val lum = 0.299f * r + 0.587f * g + 0.114f * b
+                if (lum > 0.55f) Color(0xFF212121) else Color.White
+            }.getOrDefault(labelColor)
+        }
         val tileShape = when (folderShape) {
             "square"   -> RoundedCornerShape(0.dp)
             "rounded"  -> RoundedCornerShape(16.dp)
@@ -227,7 +239,7 @@ fun FolderTile(
 
         Text(
             text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
-            color = labelColor.copy(alpha = textAlpha),
+            color = effectiveLabelColor.copy(alpha = textAlpha),
             fontSize = 11.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

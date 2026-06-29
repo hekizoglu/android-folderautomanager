@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 156 — 2026-06-29 [DUVAR KAĞIDI RENK UYUMU]
+
+**Yapılanlar:** Duvar Kağıdı Renk Uyumu (11p) — FolderTile.kt: `effectiveLabelColor` hesabı eklendi; customColor varsa RGB luminance (0.299r+0.587g+0.114b) >0.55 → koyu metin (#212121), ≤0.55 → beyaz. customColor yoksa global labelColor kullanılır. BUILD SUCCESSFUL (1m38s).
+**Agent:** —
+**Sonraki:** D157 build döngüsü — versionCode=5, versionName=1.0.3
+
+---
+
 ## Döngü 155 — 2026-06-29 [WIDGET HOST DOĞRULAMA + FIKIRLER TEMİZLİK]
 
 **Yapılanlar:** Widget Host Gerçek (13p) doğrulandı — WidgetHostManager.kt+WidgetPrefs.kt+WidgetArea.kt+LauncherActivity+LauncherViewModel hepsi tam çalışır, FİKİRLER.md [MEVCUT] güncellendi. Tüm ≥12p FİKİRLER.md maddeleri artık TAMAMLANDI/MEVCUT. MD_DENETIM_2026-06-23 proje kökünde değil (worktree) → atlandı.
