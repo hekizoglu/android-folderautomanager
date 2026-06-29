@@ -69,5 +69,6 @@
 | 2026-06-29 03:09 | **T3** | Category CRUD + CE + Compose+Dep+APK+Skill+Dead | RoomDB v8 OK | Bulunamadi |
 | 2026-06-29 03:28 | T2 | State/SharedPrefs + CE | WorkManager OK | Bulunamadi |
 | 2026-06-29 03:47 | T1 | Category CRUD | Repository/DataLayer | Bulunamadi |
+| 2026-06-29 04:10 | T1 | Gesture/Swipe/Drawer | NotificationListener OK | Bulunamadi |
 
-*35 tur, 0 bug | Sonraki: #143 T2*
+*36 tur, 0 bug | Sonraki: #144 T2 (CE + meta-audit)*
