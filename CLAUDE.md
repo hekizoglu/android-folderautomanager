@@ -117,6 +117,16 @@ Her döngüde proje kökünde `MD_DENETIM_*.md` dosyası varsa:
 5. Rapor tamamen boşalınca (0 madde) → dosyayı sil, HISTORY.md'ye "MD Denetim KAPANDI" notu ekle
 - Sıralı döngülerde son döngüde build alınır, aradaki döngülerde build atlanır
 
+### Denetim İyileştirme Kuralı (D191)
+Her 0 sonuçlu denetim döngüsünde 1 yeni tespit yöntemi ekle:
+1. `scripts/audit_improvements.md`'deki "Bekleyen Tespit Yontemleri" kuyruğundan sıradakini al
+2. audit.ps1'a yeni kural olarak ekle (T1/T2/T3 uygun katmanına)
+3. Kuyruktaki maddeyi "Eklendi D[xxx]" olarak işaretle
+4. Kuyruk boşalırsa: agent ile yeni tespit açıları araştır, kuyruğa 3+ yeni madde ekle
+5. Her 10 döngüde bir: agent ile LEARNINGS.md E-katalogundaki hataları tara, kapsanmayanlardan yeni kural türet
+- Regex yetmez — cross-reference (iki dosya arası tutarlılık), null safety, coroutine scope kontrolü gibi çok katmanlı analiz şart
+- Aynı hatayı iki kez yakalama: bulunan her bug için otomatik kural ekle (örn: CE9 HomeScreen DisposableEffect eksik KEY)
+
 ### Döngü Sonu Özet Formatı
 ```
 ## Döngü [N] — [SAAT]
