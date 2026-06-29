@@ -75,4 +75,4 @@
 | 2026-06-29 05:18 | T1 | Accessibility/A11y | Widget OK | Bulunamadi |
 | 2026-06-29 08:04 | **T2** | Izin/Onboarding + CE | **2 BULGU: CE7(Settings:255) + CE9(HomeScreen:89)** | **DUZELTILDI** |
 
-*40 tur, 2 BULGU (CE7+CE9) → ilk gercek yakalama! | CE9: HomeScreen DisposableEffect'e 2 eksik KEY eklendi. CE7: SettingsScreen badgeIntelligence remember{} keysiz (dusuk risk). Audit.ps1'a CE9 cross-ref kurali eklendi.*
+*40 tur, 2 BULGU → D191 agent analizi: 42 BULGU (13 ViewModel + 16 AppPrefs cross-ref + 16 Compose UI). Kritik: AppListViewModel Flow.first() hang + resetFilters SharedPrefs desync + HomeScreen gesture 3 KEY eksik + modifier order.*
