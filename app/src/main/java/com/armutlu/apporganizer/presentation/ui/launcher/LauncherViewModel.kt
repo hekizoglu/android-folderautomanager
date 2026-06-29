@@ -11,6 +11,7 @@ import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
+import com.armutlu.apporganizer.utils.DominantColorExtractor
 import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
@@ -196,6 +197,26 @@ class LauncherViewModel @Inject constructor(
                             toClean.forEach { repository.updateNotificationText(it.packageName, "") }
                         }
                     }.onFailure { Timber.e(it, "latestTexts observer hatası") }
+                }
+            }
+            .launchIn(viewModelScope)
+
+        // Klasör Rengi Otomatik — renk atanmamış klasörler için ikonlardan dominant renk çıkar
+        folders
+            .onEach { folderList ->
+                val ctx = getApplication<Application>()
+                if (!AppPrefs.isAutoFolderColorEnabled(ctx)) return@onEach
+                val existing = AppPrefs.getFolderCustomColors(ctx)
+                folderList.filter { folder ->
+                    folder.apps.isNotEmpty() && existing[folder.category.categoryId].isNullOrEmpty()
+                }.forEach { folder ->
+                    viewModelScope.launch(Dispatchers.IO) {
+                        runCatching {
+                            val pkgs = folder.apps.map { it.packageName }
+                            val hex = DominantColorExtractor.extractFromPackages(ctx, pkgs)
+                            if (hex != null) AppPrefs.setFolderCustomColor(ctx, folder.category.categoryId, hex)
+                        }.onFailure { Timber.w(it, "auto-color hatası: ${folder.category.categoryId}") }
+                    }
                 }
             }
             .launchIn(viewModelScope)

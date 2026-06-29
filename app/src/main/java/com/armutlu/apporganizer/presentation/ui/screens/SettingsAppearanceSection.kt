@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BlurOn
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -439,6 +440,21 @@ fun SettingsAppearanceSection(
                 }
             }
         }
+
+    // ── Klasör Rengi Otomatik ─────────────────────────────────────────────
+    var autoFolderColor by remember { mutableStateOf(AppPrefs.isAutoFolderColorEnabled(context)) }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.ColorLens,
+            title = "Klasör Rengi Otomatik",
+            subtitle = "Klasör ikonlarından dominant renk hesapla ve otomatik ata",
+            checked = autoFolderColor,
+            onCheckedChange = {
+                autoFolderColor = it
+                AppPrefs.setAutoFolderColorEnabled(context, it)
+            }
+        )
+    }
 
     // ── İkon Pack Seçimi ──────────────────────────────────────────────────
     val iconPacks = remember { IconPackManager.getInstalledIconPacks(context) }

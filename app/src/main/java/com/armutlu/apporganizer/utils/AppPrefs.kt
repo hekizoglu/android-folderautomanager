@@ -325,6 +325,11 @@ object AppPrefs {
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)
     fun setAssistantCardsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_ASSISTANT_CARDS, v).apply()
 
+    // Klasör Rengi Otomatik — ikonlardan dominant renk hesapla ve ata
+    const val KEY_AUTO_FOLDER_COLOR = "auto_folder_color_enabled"
+    fun isAutoFolderColorEnabled(context: Context) = prefs(context).getBoolean(KEY_AUTO_FOLDER_COLOR, true)
+    fun setAutoFolderColorEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_AUTO_FOLDER_COLOR, v).apply()
+
     // Weekly Digest — haftalık kullanılmayan uygulama raporu bildirimi
     const val KEY_WEEKLY_DIGEST = "weekly_digest_enabled"
     fun isWeeklyDigestEnabled(context: Context) = prefs(context).getBoolean(KEY_WEEKLY_DIGEST, true)

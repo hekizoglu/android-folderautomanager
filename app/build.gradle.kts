@@ -145,6 +145,9 @@ dependencies {
     // Biometric (Settings Lock)
     implementation("androidx.biometric:biometric:1.1.0")
 
+    // Palette (dominant color extraction)
+    implementation("androidx.palette:palette-ktx:1.0.0")
+
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.core:core-splashscreen:1.0.1")

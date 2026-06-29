@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 153 — 2026-06-29 [İKON PACK UI + KLASÖR RENGİ OTOMATİK]
+
+**Yapılanlar:** Icon Pack UI (12p) — SettingsAppearanceSection'a DropdownMenu seçici eklendi (yüklü pack varsa gösterilir). Klasör Rengi Otomatik (13p) — DominantColorExtractor.kt (androidx.palette Vibrant öncelikli), LauncherViewModel folders.onEach auto-assign (renk yoksa hesapla), SettingsAppearanceSection "Klasör Rengi Otomatik" switch. APK 25→30MB (palette lib +5MB). BUILD SUCCESSFUL.
+**Agent:** —
+**Sonraki:** Quick Wheel/Pie Mode (13p), Widget Host (13p)
+
+---
+
 ## Döngü 153 — 2026-06-29 [İKON PACK UI]
 
 **Yapılanlar:** Icon Pack Desteği (12p) — SettingsAppearanceSection.kt sonuna DropdownMenu seçici eklendi: yüklü icon pack varsa gösterilir, "Varsayılan" seçeneği + pack listesi, seçim → AppPrefs.setIconPack() + IconPackManager.clearCache() (ikonlar anında yeniden yüklensin). BUILD SUCCESSFUL (24.9MB).
