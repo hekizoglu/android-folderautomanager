@@ -139,6 +139,9 @@ fun HomeScreen(
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
     var focusModeEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)) }
+    var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
+    var gestureLongPress by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)) }
+    var gestureSwipeUp   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -211,6 +214,12 @@ fun HomeScreen(
                     doubleTapSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ASSISTANT_CARDS ->
                     assistantCardsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
+                    gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_LONG_PRESS ->
+                    gestureLongPress = com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_SWIPE_UP ->
+                    gestureSwipeUp = com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -241,11 +250,6 @@ fun HomeScreen(
     // Kümülatif drag offset — change.position tile-local, dragAmount ekran-delta verir
     var dragOffsetX by remember { mutableStateOf(0f) }
     var dragOffsetY by remember { mutableStateOf(0f) }
-
-    // Gesture aksiyon ayarları
-    var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
-    var gestureLongPress by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)) }
-    var gestureSwipeUp   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)) }
 
     // Dock sistem gesture exclusion rect — sadece deger degisince guncellenir, her layout'ta degil
     val dockRectHolder = remember { object { var rect: android.graphics.Rect? = null } }
