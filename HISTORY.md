@@ -4,6 +4,22 @@
 
 ---
 
+## Döngü 171 — 2026-06-30 [BOSTA]
+
+**Yapılanlar:** Bos dongu — D170 Search/Reports commit sonrasi yeni gorev yok. Audit script dosyalari (loop_count, focus index) commit edildi.
+**Agent:** —
+**Sonraki:** D173 build dongusu (versionCode=10, versionName=1.0.8)
+
+---
+
+## Döngü 170 — 2026-06-29 [Search/Reports]
+
+**Yapılanlar:** Otomatik dongu eklenen ReportsCenterScreen + SearchSettingsScreen + AppNavigation/HomeScreen/SettingsScreen entegrasyonu commit edildi (fa10675, 653 ekleme). Build basarili.
+**Agent:** —
+**Sonraki:** D173 build dongusu
+
+---
+
 ## Döngü 169 — 2026-06-29 [BUILD v1.0.7]
 
 **Yapılanlar:** versionCode=9, versionName=1.0.7. assembleDebug basarili (24.57 MB). Telegram engelli — APK manuel gonderilmeli.
