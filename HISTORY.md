@@ -10,6 +10,16 @@
 **Agent:** —
 **Sonraki:** AppOrganizer Assistant Kartları (16p), Contextual Dock v1 (15p)
 
+## MD Denetim — 2026-06-29 [OTOMATİK RAPOR]
+
+**Yapılanlar:** Otomatik MD denetimi çalıştırıldı. 5 sorun tespit edildi.
+
+1. CLAUDE.md §7: Android 15 Edge-to-Edge `[ ]` açık ama D175+D177'de tamamlandı → `[x]` yapılmalı
+2. ROADMAP.md stale: "Tablet layout" D181, "Backup/restore bulut senkron" D178 tamamlandı
+3. CLAUDE.md §3: "ROADMAP.md güncellenir" yazıyor ama ROADMAP.md donduruldu
+4. HISTORY.md Arşiv: "D141 Widget hızlı menü" yanlış — D141 = Smart Search v1
+5. harcananvakit.md: "git push non-fast-forward" açık görünüyor, fix: `git pull --rebase`
+
 ---
 
 ## Döngü 141 — 2026-06-29 [SMART SEARCH v1]
@@ -51,7 +61,7 @@
 | Tarih | Madde | Döngü |
 |-------|-------|-------|
 | 2026-06-20 | FCM push mimari kararı LEARNINGS.md'ye eklendi - AppFirebaseMessagingService.kt + AppOrganizerApp.kt FCM init belgelendi | D13x |
-| 2026-06-21 | Widget hızlı menü düzeltildi - WidgetArea.kt isDraggable long press mantığı, X butonu gösterilmeye başlandı | D141 |
+| 2026-06-21 | Widget hızlı menü düzeltildi - WidgetArea.kt isDraggable long press mantığı, X butonu gösterilmeye başlandı | D140 |
 | 2026-06-21 | İki yeni tema: iOS + AMOLED | D122 |
 | 2026-06-21 | Onboarding yeniden yazım (16 adım, CLASSIFY_MODE→SET_LAUNCHER→DONE sırası) | D120 |
 | 2026-06-21 | Görsel kalite artırımı | D123 |
@@ -412,4 +422,3 @@
 | D189 | E8 Guard Pattern Audit (10p) | 10p |
 | D190 | Kullanim Raporu Ekrani (15p) | 15p |
 | D191 | Audit Tiered Frequency Sistemi (optimizasyon) | -- |
-
