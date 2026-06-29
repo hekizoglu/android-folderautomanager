@@ -54,7 +54,7 @@
 |-------|--------|----------------------|-------|
 | Gradle build dir kilitlenme (genel) | Eskiden Sık | 20-40 dk | ✅ Çözüldü — Defender exclusion (Döngü 72, 74x hız) |
 | merged_res kilidi | Zaman zaman | 5-15 dk | Açık — full clean gerekiyor |
-| git push non-fast-forward | Her 3-4 döngüde | 2-3 dk | Açık — `git pull --rebase` alışkanlığı |
+| git push non-fast-forward | Her 3-4 döngüde | 2-3 dk | Çözüm: `git pull --rebase` önce çalıştır (D142) |
 | KAPT incremental cache bozulması | Zaman zaman | 10-20 dk | Açık — KSP geçişi gündemde |
 
 
