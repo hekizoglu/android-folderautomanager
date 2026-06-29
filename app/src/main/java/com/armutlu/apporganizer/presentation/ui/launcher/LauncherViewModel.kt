@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.service.AppNotificationListenerService
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
@@ -533,6 +534,21 @@ class LauncherViewModel @Inject constructor(
                 badgeCounts = AppNotificationListenerService.badgeCounts.value
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Contextual Dock — 2 sabit (kullanici) + 2 akilli öneri (saat/gun/kullanim)
+    val contextualDockPackages: StateFlow<List<String>> = combine(
+        dockPackages,
+        suggestedApps
+    ) { fixed, suggested ->
+        val ctx = getApplication<Application>()
+        if (!AppPrefs.isContextualDockEnabled(ctx)) return@combine fixed
+        val fixedSlots = fixed.take(2)
+        val smartSlots = suggested
+            .map { it.packageName }
+            .filter { it !in fixedSlots }
+            .take(2)
+        fixedSlots + smartSlots
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
     val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()

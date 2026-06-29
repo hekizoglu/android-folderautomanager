@@ -210,6 +210,7 @@ fun HomeScreen(
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
     val dockPackages by viewModel.dockPackages.collectAsState()
+    val contextualDockPackages by viewModel.contextualDockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
@@ -630,7 +631,7 @@ fun HomeScreen(
 
             // Bottom dock — frosted pill (uzun bas → düzenle)
             PixelDock(
-                packages = dockPackages,
+                packages = contextualDockPackages,
                 iconPackPkg = suggestionIconPack,
                 onLaunchApp = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)

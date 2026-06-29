@@ -43,6 +43,7 @@ fun SettingsHomeScreenSection() {
     var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var doubleTapSearchEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     var assistantCardsEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
+    var contextualDockEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isContextualDockEnabled(context)) }
 
     SettingsCard {
         SettingsSwitchRow(
@@ -159,6 +160,17 @@ fun SettingsHomeScreenSection() {
             onCheckedChange = {
                 assistantCardsEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setAssistantCardsEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Layers,
+            title = "Akıllı Dock",
+            subtitle = "İlk 2 slot sabit, son 2 slot kullanım alışkanlığına göre otomatik değişir",
+            checked = contextualDockEnabled,
+            onCheckedChange = {
+                contextualDockEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setContextualDockEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
