@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 169 — 2026-06-29 [BUILD v1.0.7]
+
+**Yapılanlar:** versionCode=9, versionName=1.0.7. assembleDebug basarili (24.57 MB). Telegram engelli — APK manuel gonderilmeli.
+**Agent:** —
+**Sonraki:** D173 build dongusu (D169+4)
+
+---
+
 ## Döngü 168 — 2026-06-29 [BackHandler ONBOARDING]
 
 **Yapılanlar:** OnboardingScreen.kt BackHandler(enabled=stepIndex>0) eklendi. 17 adimda geri tusu bir onceki adima doner; ilk adimda sistem back'e birakılır. Derleme basarili.
