@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 149 — 2026-06-29 [BACKUP/RESTORE JSON v3]
+
+**Yapılanlar:** BackupManager.kt v3 — exportToJson(context, repository): dock packages, folderCustomNames/Emojis/Colors, manualCategoryOverrides, gestures (doubleTap/longPress/swipeUp), settings (sortMode, iconPack, theme, contextualDock, assistantCards). importFromJson(context, json, repository): version >= 3 şubesinde tüm alanları geri yükler. Geriye dönük uyumluluk: eski context'siz imzalar korundu. FİKİRLER.md güncellendi [TAMAMLANDI].
+**Agent:** —
+**Sonraki:** ShortcutManager Entegrasyonu (14p), Notification Badge Intelligence (13p)
+
+---
+
 ## Döngü 148 — 2026-06-29 [WIDGET ÖNERİ MOTORU]
 
 **Yapılanlar:** Widget Öneri Motoru (14p) — WidgetSuggestionEngine.kt (AppWidgetManager tarama), WidgetSuggestion data class (Long usageCount), AppListViewModel+LauncherViewModel StateFlow, WidgetSuggestionSection.kt (Settings'te genişletilebilir kart). BUILD SUCCESSFUL (25MB). Push: 45a3715.
