@@ -88,8 +88,11 @@
 | 2026-06-29 14:10 | **T3** | Izin/Onboarding + CE + Compose+Dep+APK+Skill+Dead | OEM Compatibility | Bulunamadi |
 | 2026-06-29 18:05 | T1 | Accessibility/A11y | Test Coverage | Bulunamadi |
 | 2026-06-29 18:20 | T2 | Settings UI/Labels + CE | Navigation/Routing | Bulunamadi |
+| 2026-06-29 18:40 | T1 | Permission/Izin | ViewModel/StateFlow | Bulunamadi |
+| 2026-06-29 19:05 | T1 | Category CRUD | Repository/DataLayer | Bulunamadi |
+| 2026-06-29 19:25 | T2 | Gesture/Swipe/Drawer + CE | Timber log | Bulunamadi |
 
-*55 tur, 0 bug*
+*58 tur, 0 bug*
 
 *51 tur, 0 bug | IMP#4: derivedStateOf fix*
 

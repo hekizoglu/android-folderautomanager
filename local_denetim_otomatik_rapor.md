@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 18:49
-> Dongu: **#162** | Tier: **2**
-> Ana tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
-> Ekstra denetim: **Timber log quality, user-facing error messages, fallback** (Error_Handling_Logging)
+> Son denetim: 2026-06-29 20:44
+> Dongu: **#165** | Tier: **2**
+> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
+> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
 
 ---
 
@@ -13,16 +13,21 @@
 | Oncelik | Sayi | Aciklama |
 |---------|------|----------|
 | KRITIK | 0 | Acik kritik bulgu |
-| YUKSEK | 0 | Acik yuksek bulgu |
-| ORTA | 0 | Acik orta bulgu |
+| YUKSEK |  | Acik yuksek bulgu |
+| ORTA |  | Acik orta bulgu |
 | DUSUK | 0 | Acik dusuk bulgu |
-| TOPLAM | 0 | |
+| TOPLAM | 2 | |
 
 ---
 
-## Bu Dongu Sonucu
+## YUKSEK
 
-- Acik bulgu tespit edilmedi.
+- CE7 | `app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt:255` | AppPrefs remember{} keysiz okunuyor - Settings donus guncellenmez. DisposableEffect + listener kullan. (E6 tekrari)
+
+## ORTA
+
+- CS13 | `app\src\main\java\com\armutlu\apporganizer\data\local\AppDao.kt:69` | AppDao SELECT * ORDER BY LIMIT yok - 500+ uygulama icin yavas. Pagination veya specific column sec.
+
 ---
 
-*Denetim tarihi: 2026-06-29 18:49 | Dongu: #162 | Tier: 2 | Ana: Gesture, swipe, drawer akislari | Ekstra: Timber log quality, user-facing error messages, fallback*
+*Denetim tarihi: 2026-06-29 20:44 | Dongu: #165 | Tier: 2 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*
