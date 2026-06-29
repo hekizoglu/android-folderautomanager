@@ -105,6 +105,8 @@ fun HomeScreen(
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
     var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
+    var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
+    val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
@@ -487,6 +489,11 @@ fun HomeScreen(
                     screenHeightDp = LocalConfiguration.current.screenHeightDp,
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+
+            // Assistant kartları — kullanım içgörüleri (kural bazlı, AI gerektirmez)
+            if (assistantCardsEnabled && insightCards.isNotEmpty()) {
+                AssistantInsightRow(cards = insightCards)
             }
 
             // İstatistik bandı — toplam klasör ve uygulama sayısı

@@ -67,5 +67,6 @@
 | 2026-06-29 02:12 | T2 | Gesture/Swipe/Drawer + CE | Timber log quality | Bulunamadi |
 | 2026-06-29 02:35 | T1 | State/SharedPrefs | Memory/Lifecycle | Bulunamadi |
 | 2026-06-29 03:09 | **T3** | Category CRUD + CE + Compose+Dep+APK+Skill+Dead | RoomDB v8 OK | Bulunamadi |
+| 2026-06-29 03:28 | T2 | State/SharedPrefs + CE | WorkManager OK | Bulunamadi |
 
-*33 tur, 0 bug | T3: BOM 2024.09.03 · SDK 35/35 · APK 24.74MB · TODO temiz | Sonraki: #141 T1*
+*34 tur, 0 bug | Meta-audit: 5/17 (%29) | Sonraki: #142 T1*

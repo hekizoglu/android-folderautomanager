@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 03:09
-> Dongu: **#140** | Tier: **3**
-> Ana tur odak: **Kategori ekleme/duzenleme/silme** (Category_CRUD)
-> Ekstra denetim: **AppRepository, DAO, data mapping, sorgu dogrulama** (Repository_DataLayer)
+> Son denetim: 2026-06-29 04:09
+> Dongu: **#141** | Tier: **2**
+> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
+> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
 
 ---
 
@@ -18,16 +18,6 @@
 | DUSUK | 0 | Acik dusuk bulgu |
 | TOPLAM | 0 | |
 
-### Tier 3 Notlari
-- Compose: metrics dosyasi yok (build sonrasi olusur)
-- Compose BOM: 2024.09.03
-- Compose Compiler: 1.5.15
-- compileSdk: 35
-- targetSdk: 35
-- APK: 24.74 MB
-- Skill: 2 kontrol edildi
-- TODO/FIXME: temiz
-
 ---
 
 ## Bu Dongu Sonucu
@@ -35,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-06-29 03:09 | Dongu: #140 | Tier: 3 | Ana: Kategori ekleme/duzenleme/silme | Ekstra: AppRepository, DAO, data mapping, sorgu dogrulama*
+*Denetim tarihi: 2026-06-29 04:09 | Dongu: #141 | Tier: 2 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*

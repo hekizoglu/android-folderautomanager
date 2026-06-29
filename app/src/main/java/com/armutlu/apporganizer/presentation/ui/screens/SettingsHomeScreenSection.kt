@@ -42,6 +42,7 @@ fun SettingsHomeScreenSection() {
     var homeAppSearchEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var doubleTapSearchEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
+    var assistantCardsEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
 
     SettingsCard {
         SettingsSwitchRow(
@@ -147,6 +148,17 @@ fun SettingsHomeScreenSection() {
             onCheckedChange = {
                 doubleTapSearchEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setDoubleTapSearchEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Info,
+            title = "Assistant Kartları",
+            subtitle = "Ana ekranda kullanım alışkanlığınıza göre içgörü kartları gösterir",
+            checked = assistantCardsEnabled,
+            onCheckedChange = {
+                assistantCardsEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setAssistantCardsEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

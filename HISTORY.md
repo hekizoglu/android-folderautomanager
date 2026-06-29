@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 143 — 2026-06-29 [ASSISTANT KARTLARI]
+
+**Yapılanlar:** AppOrganizer Assistant Kartları (16p) — InsightEngine.kt (kural motoru: 4 kart tipi), AssistantInsightRow.kt (chip UI), LauncherViewModel.insightCards StateFlow, HomeScreen entegrasyonu, AppPrefs toggle, SettingsHomeScreenSection toggle.
+**Agent:** —
+**Sonraki:** Contextual Dock v1 (15p), Manual Category Override (15p)
+
+---
+
 ## Döngü 142 — 2026-06-29 [USAGESCORE v2]
 
 **Yapılanlar:** UsageScore v2 (17p) — LauncherViewModel.kt:483 `suggestedApps` güncellendi. Dock/favorite +0.15, aktif bildirim +0.2 boost. UsageStatsHelper.getWeightedScores base: recency+frequency+timeSlot. Sonuç: dock'taki ve bildirimli uygulamalar öneri sırasında yükseliyor.
