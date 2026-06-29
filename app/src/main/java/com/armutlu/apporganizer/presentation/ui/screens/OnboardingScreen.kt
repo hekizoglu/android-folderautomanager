@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -136,6 +137,9 @@ fun OnboardingScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+
+    // Adim icinde geri gitme; stepIndex==0'da sistem back'e birak (ekrandan cik)
+    BackHandler(enabled = stepIndex > 0) { stepIndex-- }
 
     // ── UI ───────────────────────────────────────────────────────────────
     Box(Modifier.fillMaxSize().background(OnboardingBackgroundGradient)) {

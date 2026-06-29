@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 168 — 2026-06-29 [BackHandler ONBOARDING]
+
+**Yapılanlar:** OnboardingScreen.kt BackHandler(enabled=stepIndex>0) eklendi. 17 adimda geri tusu bir onceki adima doner; ilk adimda sistem back'e birakılır. Derleme basarili.
+**Agent:** —
+**Sonraki:** D169 build dongusu (D165+4)
+
+---
+
 ## Döngü 166 — 2026-06-29 [BOSTA]
 
 **Yapılanlar:** FİKİRLER.md tarama — tum yuksek puanli maddeler TAMAMLANDI. CS-3 UAC bekliyor. Aktif kod gorevi yok.
