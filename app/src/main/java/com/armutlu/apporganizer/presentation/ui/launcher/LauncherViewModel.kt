@@ -546,7 +546,7 @@ class LauncherViewModel @Inject constructor(
             cachedSuggestedApps = result
             cacheTimestamp = now
         }
-        cachedSuggestedApps!!
+        cachedSuggestedApps ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Assistant Kartları — kural bazlı içgörü (AI gerektirmez)

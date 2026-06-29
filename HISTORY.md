@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 160 — 2026-06-29 [CE10 NPE FIX + CE9 FALSE POSITIVE KALDIRILDI]
+
+**Yapılanlar:** CE10: `cachedSuggestedApps!!` → `?: emptyList()` (LauncherViewModel.kt:549). CE9: audit.ps1'dan kaldırıldı — pattern çok geniş, tüm KEY_* DisposableEffect listener'da mevcut (false positive). Denetim: 0 bulgu.
+**Agent:** —
+**Sonraki:** D161 build döngüsü (versionCode=7, versionName=1.0.5)
+
+---
+
 ## Döngü 159 — 2026-06-29 [VERIFYERROR DÜZELTME + v1.0.4]
 
 **Yapılanlar:** AllAppsDrawer VerifyError (DEX register taşması) — `rememberDrawerData()` composable AllAppsDrawerUtils.kt'ye eklendi, `DrawerComputedData` veri sınıfı oluşturuldu. AllAppsDrawer.kt'den 5 büyük `remember` bloğu ve `sortedApps`/`grouped`/`sidebarEntries`/`quickFilterCounts` hesaplamaları bu fonksiyona taşındı. versionCode 5→6, versionName 1.0.3→1.0.4. BUILD SUCCESSFUL 28s, APK 24.57 MB.
