@@ -10,6 +10,8 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.DockPrefs
+import com.armutlu.apporganizer.utils.InsightCard
+import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WidgetHostManager
@@ -521,6 +523,16 @@ class LauncherViewModel @Inject constructor(
         }
         cachedSuggestedApps!!
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Assistant Kartları — kural bazlı içgörü (AI gerektirmez)
+    val insightCards: StateFlow<List<InsightCard>> = repository.getAllAppsFlow()
+        .map { apps ->
+            InsightEngine.generate(
+                apps = apps.filter { !it.isHidden },
+                categories = Category.getDefaultCategories(),
+                badgeCounts = AppNotificationListenerService.badgeCounts.value
+            )
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
     val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
