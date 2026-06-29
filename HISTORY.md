@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 161 — 2026-06-29 [BUILD v1.0.5]
+
+**Yapılanlar:** Build döngüsü — versionCode 6→7, versionName 1.0.4→1.0.5. BUILD SUCCESSFUL, APK 24.57 MB. Telegram bu ortamda engelli — yerel makineden gönderilebilir.
+**Agent:** —
+**Sonraki:** Loop 3 saatlik cron aktif, akıllı-claudemd ayrı döngü kurulu
+
+---
+
 ## Döngü 160 — 2026-06-29 [CE10 NPE FIX + CE9 FALSE POSITIVE KALDIRILDI]
 
 **Yapılanlar:** CE10: `cachedSuggestedApps!!` → `?: emptyList()` (LauncherViewModel.kt:549). CE9: audit.ps1'dan kaldırıldı — pattern çok geniş, tüm KEY_* DisposableEffect listener'da mevcut (false positive). Denetim: 0 bulgu.

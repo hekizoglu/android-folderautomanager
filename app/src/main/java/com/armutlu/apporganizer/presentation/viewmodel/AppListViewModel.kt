@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.service.LauncherAccessibilityService
 import com.armutlu.apporganizer.utils.LauncherOrganizer
 import com.armutlu.apporganizer.utils.WidgetSuggestion
@@ -472,7 +473,7 @@ class AppListViewModel @Inject constructor(
             if (_llmCategorizing.value) return@launch
             _llmCategorizing.value = true
             try {
-                val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).first()
+                val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).firstOrNull() ?: emptyList()
                 if (otherAppsList.isEmpty()) {
                     _llmProgress.value = "Diger klasoru bos — kategorize edilecek uygulama yok."
                     appendDebugLog("LLM: Diger klasoru bos.")
@@ -571,6 +572,7 @@ class AppListViewModel @Inject constructor(
         _searchQuery.value = ""
         _sortOption.value = SortOption.NAME_ASC
         _showSystemApps.value = false
+        AppPrefs.setShowSystemApps(getApplication(), false)
         clearSelection()
     }
 
