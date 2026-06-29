@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 154 — 2026-06-29 [QUICK WHEEL / PIE MODE]
+
+**Yapılanlar:** Quick Wheel/Pie Mode (13p) — QuickWheelOverlay.kt (radyal 6 app, Spring animasyon, ekran sınırı klamp, ikon+isim), AppPrefs.KEY_QUICK_WHEEL (default: false), HomeScreen.kt onLongPress Offset parametresi ile press koordinatı yakalar, quickWheelEnabled ise overlay gösterir (gestureLongPress fallback korundu), SettingsScreen.kt "Hızlı Erişim" bölümü toggle. BUILD SUCCESSFUL (30MB).
+**Agent:** —
+**Sonraki:** Widget Host Gerçek (13p)
+
+---
+
 ## Döngü 153 — 2026-06-29 [İKON PACK UI + KLASÖR RENGİ OTOMATİK]
 
 **Yapılanlar:** Icon Pack UI (12p) — SettingsAppearanceSection'a DropdownMenu seçici eklendi (yüklü pack varsa gösterilir). Klasör Rengi Otomatik (13p) — DominantColorExtractor.kt (androidx.palette Vibrant öncelikli), LauncherViewModel folders.onEach auto-assign (renk yoksa hesapla), SettingsAppearanceSection "Klasör Rengi Otomatik" switch. APK 25→30MB (palette lib +5MB). BUILD SUCCESSFUL.
