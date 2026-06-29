@@ -97,8 +97,9 @@
 | 2026-06-29 21:03 | T1 | Dock/Widget/Backup | StateFlow/ViewModel | Bulunamadi |
 | 2026-06-30 00:35 | **T3** | A11y + CE + Compose+Dep+APK+Skill+Dead | Test Coverage | Bulunamadi |
 | 2026-06-30 00:52 | T2 | Dock/Widget/Backup + CE | StateFlow/ViewModel | Bulunamadi |
+| 2026-06-30 01:40 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi → CE14 eklendi |
 
-*64 tur, 0 bug*
+*65 tur, 0 bug | 6 kural (CE9-CE14)*
 
 *51 tur, 0 bug | IMP#4: derivedStateOf fix*
 

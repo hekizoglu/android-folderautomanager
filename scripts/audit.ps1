@@ -133,7 +133,9 @@ $tier2Rules = @(
     # D191-YENI (0 sonuc kuyrugu): Timber.e() exception'siz cagri
     @{ Code = "CE12"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = 'Timber\.e\([^,)]*\)'; Description = "Timber.e() exception parametresiz - stack trace kaybolur. Timber.e(exception, mesaj) kullan."; Focus = @("Error_Handling_Logging") },
     # D191-YENI (0 sonuc kuyrugu): Hardcoded Turkce string (R.string kullanilmamis)
-    @{ Code = "CE13"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'Text\(""\w*[çğıöşüÇĞİÖŞÜ]'; Description = "Hardcoded Turkce string - R.string kullanilmali. (Agent D191: contentDescription eksikleriyle iliskili)"; Focus = @("UI_Settings_Labels") }
+    @{ Code = "CE13"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'Text\(""\w*[çğıöşüÇĞİÖŞÜ]'; Description = "Hardcoded Turkce string - R.string kullanilmali."; Focus = @("UI_Settings_Labels") },
+    # D191-YENI (0 sonuc kuyrugu): Permission flow butunlugu
+    @{ Code = "CE14"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer"; Pattern = 'shouldShowRequestPermissionRationale'; Description = "Permission rationale kontrolu: her requestPermissions() oncesi rationale gosteriliyor mu? OnboardingScreen'te kontrol et."; Focus = @("Permission_Izin") }
 )
 
 # ============================================================
