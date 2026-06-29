@@ -602,7 +602,7 @@ internal fun HomeAppSearchBar(
                     modifier = Modifier.weight(1f),
                     decorationBox = { inner ->
                         Box(Modifier.weight(1f)) {
-                            if (query.isEmpty()) Text("Uygulama ara...",
+                            if (query.isEmpty()) Text("Uygulama, kategori ara…",
                                 color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp)
                             inner()
                         }

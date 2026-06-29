@@ -8,21 +8,26 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.models.SearchDocument
 import timber.log.Timber
 
 /**
  * Room Database for AppOrganizer
  * Handles persistence of apps and categories
+ *
+ * Not: search_fts FTS5 sanal tablosu Migration 8→9'daki raw SQL ile yönetilir.
+ * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class],
-    version = 8,
+    entities = [AppInfo::class, Category::class, SearchDocument::class],
+    version = 9,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     
     abstract fun appDao(): AppDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun searchDao(): SearchDao
     
     companion object {
         @Volatile
@@ -80,6 +85,55 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v8→v9: FTS5 search tablosu eklendi (birleşik arama Sprint 1)
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Gölge tablo — SearchDocument entity
+                db.execSQL("""
+                    CREATE TABLE search_documents (
+                        docId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        source_type TEXT NOT NULL,
+                        source_id TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        subtitle TEXT NOT NULL DEFAULT '',
+                        icon_key TEXT NOT NULL DEFAULT '',
+                        source_group TEXT NOT NULL DEFAULT 'app',
+                        last_modified INTEGER NOT NULL DEFAULT 0
+                    )
+                """)
+                // FTS5 sanal tablo — unicode61 tokenizer, content= ile gölge tabloya bağlı
+                db.execSQL("""
+                    CREATE VIRTUAL TABLE search_fts USING fts5(
+                        search_text, keywords,
+                        content='search_documents',
+                        content_rowid='docId',
+                        tokenize='unicode61 tokenchars=çğıöşüÇĞİÖŞÜ'
+                    )
+                """)
+                // FTS5 senkronizasyon trigger'ları
+                db.execSQL("""
+                    CREATE TRIGGER IF NOT EXISTS search_fts_ai AFTER INSERT ON search_documents BEGIN
+                        INSERT INTO search_fts(rowid, search_text, keywords)
+                        VALUES (new.docId, new.title || ' ' || new.subtitle, '');
+                    END
+                """)
+                db.execSQL("""
+                    CREATE TRIGGER IF NOT EXISTS search_fts_ad AFTER DELETE ON search_documents BEGIN
+                        INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
+                        VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
+                    END
+                """)
+                db.execSQL("""
+                    CREATE TRIGGER IF NOT EXISTS search_fts_au AFTER UPDATE ON search_documents BEGIN
+                        INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
+                        VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
+                        INSERT INTO search_fts(rowid, search_text, keywords)
+                        VALUES (new.docId, new.title || ' ' || new.subtitle, '');
+                    END
+                """)
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -95,7 +149,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_4_5,
                         MIGRATION_5_6,
                         MIGRATION_6_7,
-                        MIGRATION_7_8
+                        MIGRATION_7_8,
+                        MIGRATION_8_9
                     )
                     .build()
 

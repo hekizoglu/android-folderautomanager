@@ -1,15 +1,20 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,36 +26,73 @@ internal fun FolderStatsRow(
     folders: List<AppFolder>,
     onOpenFolderStats: () -> Unit = {},
     onOpenAppStats: () -> Unit = {},
+    onOpenDashboard: () -> Unit = {},
+    onOpenUsageReport: () -> Unit = {},
 ) {
     val totalApps = folders.sumOf { it.apps.size }
     val totalFolders = folders.size
-    if (totalFolders > 0) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+    if (totalFolders == 0) return
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        StatChip(
+            label = "Uygulama",
+            value = "$totalApps",
+            modifier = Modifier.weight(1f),
+            onClick = onOpenAppStats,
+        )
+        StatChip(
+            label = "Klasör",
+            value = "$totalFolders",
+            modifier = Modifier.weight(1f),
+            onClick = onOpenFolderStats,
+        )
+        StatChip(
+            label = "Dashboard",
+            value = "↗",
+            modifier = Modifier.weight(1f),
+            onClick = onOpenDashboard,
+        )
+        StatChip(
+            label = "Kullanım",
+            value = "↗",
+            modifier = Modifier.weight(1f),
+            onClick = onOpenUsageReport,
+        )
+    }
+}
+
+@Composable
+private fun StatChip(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "$totalFolders klasör",
-                color = Color.White.copy(alpha = 0.45f),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-                modifier = Modifier.clickable(onClick = onOpenFolderStats),
+                text = value,
+                color = Color.White.copy(alpha = 0.90f),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "  ·  ",
-                color = Color.White.copy(alpha = 0.30f),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = "$totalApps uygulama",
+                text = label,
                 color = Color.White.copy(alpha = 0.45f),
-                fontSize = 12.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.clickable(onClick = onOpenAppStats),
             )
         }
     }

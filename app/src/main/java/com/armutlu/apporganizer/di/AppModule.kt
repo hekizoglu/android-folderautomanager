@@ -5,7 +5,10 @@ import androidx.room.Room
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.local.SearchDao
+import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,6 +35,18 @@ object AppModule {
 
     @Provides
     fun provideCategoryDao(db: AppDatabase): CategoryDao = db.categoryDao()
+
+    @Provides
+    fun provideSearchDao(db: AppDatabase): SearchDao = db.searchDao()
+
+    @Provides
+    @Singleton
+    fun provideSearchRepository(
+        searchDao: SearchDao,
+        appDao: AppDao,
+        categoryDao: CategoryDao,
+        indexer: SearchIndexer
+    ): SearchRepository = SearchRepository(searchDao, appDao, categoryDao, indexer)
 
     @Provides
     @Singleton

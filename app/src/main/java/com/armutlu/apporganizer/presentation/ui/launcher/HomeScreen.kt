@@ -145,6 +145,7 @@ fun HomeScreen(
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
+    var searchBarPosition    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)) }
     var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
     var focusModeEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)) }
     var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
@@ -212,6 +213,8 @@ fun HomeScreen(
                     homeSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_APP_SEARCH_ENABLED ->
                     homeAppSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SEARCH_BAR_POSITION ->
+                    searchBarPosition = com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AUTO_RESIZE ->
                     widgetAutoResize = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_QUICK_WHEEL ->
@@ -470,6 +473,17 @@ fun HomeScreen(
                     }
             )
 
+            // Uygulama arama çubuğu — TOP konumundaysa saat widget'ının altında
+            if (homeAppSearchEnabled && searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
+                HomeAppSearchBar(
+                    allApps = allApps,
+                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
+
             // Google arama çubuğu — Pixel Launcher stili, tıklayınca Google'ı açar
             GoogleSearchBar(
                 modifier = Modifier
@@ -477,8 +491,8 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
-            // Uygulama arama çubuğu — Google Search altında, tüm uygulamalarda arama yapar
-            if (homeAppSearchEnabled) {
+            // Uygulama arama çubuğu — BOTTOM konumundaysa (varsayılan) Google Search altında
+            if (homeAppSearchEnabled && searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
                 HomeAppSearchBar(
                     allApps = allApps,
                     onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
@@ -561,11 +575,25 @@ fun HomeScreen(
                 },
                 onOpenAppStats = {
                     val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.APP_LIST)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }
+                },
+                onOpenDashboard = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }
+                },
+                onOpenUsageReport = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
                         putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.USAGE_REPORT)
                         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     runCatching { context.startActivity(intent) }
-                }
+                },
             )
 
             // Folder grid — sayfa başına klasör sayısı: kullanıcı tercihi veya ekran yüksekliğine göre adaptif

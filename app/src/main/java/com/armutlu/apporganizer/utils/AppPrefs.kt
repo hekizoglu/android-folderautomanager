@@ -449,5 +449,16 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_MANUAL_CAT_OVERRIDES, map.toJsonString()).apply()
     }
 
+    // Search bar konumu — TOP veya BOTTOM snap noktası
+    const val KEY_SEARCH_BAR_POSITION = "search_bar_position"
+    const val SEARCH_BAR_POS_TOP = "TOP"
+    const val SEARCH_BAR_POS_BOTTOM = "BOTTOM"
+
+    fun getSearchBarPosition(context: Context): String =
+        prefs(context).getString(KEY_SEARCH_BAR_POSITION, SEARCH_BAR_POS_BOTTOM) ?: SEARCH_BAR_POS_BOTTOM
+
+    fun setSearchBarPosition(context: Context, position: String) =
+        prefs(context).edit().putString(KEY_SEARCH_BAR_POSITION, position).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
