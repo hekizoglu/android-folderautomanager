@@ -37,6 +37,11 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var packageManagerHelper: PackageManagerHelper
 
     private val viewModel: AppListViewModel by viewModels()
+    private val pendingRoute = mutableStateOf<String?>(null)
+
+    companion object {
+        const val EXTRA_OPEN_ROUTE = "open_route"
+    }
 
     // Android 10+ RoleManager launcher seçim sonucu
     private val roleRequestLauncher = registerForActivityResult(
@@ -74,18 +79,24 @@ class MainActivity : ComponentActivity() {
                         if (!isDefaultLauncher()) requestDefaultLauncher()
                     })
                 } else {
-                    AppNavigation(viewModel = viewModel)
+                    AppNavigation(
+                        viewModel = viewModel,
+                        externalRoute = pendingRoute.value,
+                        onExternalRouteConsumed = { pendingRoute.value = null }
+                    )
                 }
             }
         }
 
         if (onboardingDone) scanApps()
 
+        pendingRoute.value = intent?.getStringExtra(EXTRA_OPEN_ROUTE)
         applyOpenCategoryIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        pendingRoute.value = intent.getStringExtra(EXTRA_OPEN_ROUTE)
         applyOpenCategoryIntent(intent)
     }
 

@@ -14,6 +14,7 @@ object SearchHistoryPrefs {
     }
 
     fun addQuery(context: Context, query: String) {
+        if (!AppPrefs.isSearchHistoryEnabled(context)) return
         val trimmed = query.trim()
         if (trimmed.length < 2) return
         val current = getHistory(context).toMutableList()

@@ -320,6 +320,42 @@ object AppPrefs {
     fun isDoubleTapSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_DOUBLE_TAP_SEARCH, true)
     fun setDoubleTapSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_DOUBLE_TAP_SEARCH, v).apply()
 
+    // Arama kaynaklari ve profil ayarlari
+    const val KEY_SEARCH_HISTORY_ENABLED = "search_history_enabled"
+    const val KEY_SEARCH_SOURCE_APPS = "search_source_apps"
+    const val KEY_SEARCH_SOURCE_CATEGORIES = "search_source_categories"
+    const val KEY_SEARCH_SOURCE_CONTACTS = "search_source_contacts"
+    const val KEY_SEARCH_SOURCE_FILES = "search_source_files"
+    const val KEY_SEARCH_RANKING_PROFILE = "search_ranking_profile"
+
+    enum class SearchRankingProfile {
+        APPS_FIRST,
+        BALANCED,
+        CATEGORIES_FIRST,
+    }
+
+    fun isSearchHistoryEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_HISTORY_ENABLED, true)
+    fun setSearchHistoryEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_HISTORY_ENABLED, v).apply()
+
+    fun isSearchSourceAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_APPS, true)
+    fun setSearchSourceAppsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_APPS, v).apply()
+
+    fun isSearchSourceCategoriesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CATEGORIES, true)
+    fun setSearchSourceCategoriesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CATEGORIES, v).apply()
+
+    fun isSearchSourceContactsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CONTACTS, false)
+    fun setSearchSourceContactsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
+
+    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, false)
+    fun setSearchSourceFilesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_FILES, v).apply()
+
+    fun getSearchRankingProfile(context: Context): SearchRankingProfile =
+        runCatching { SearchRankingProfile.valueOf(prefs(context).getString(KEY_SEARCH_RANKING_PROFILE, null) ?: "") }
+            .getOrDefault(SearchRankingProfile.APPS_FIRST)
+
+    fun setSearchRankingProfile(context: Context, profile: SearchRankingProfile) =
+        prefs(context).edit().putString(KEY_SEARCH_RANKING_PROFILE, profile.name).apply()
+
     // Assistant Kartları — ana ekranda kullanım içgörü kartları
     const val KEY_ASSISTANT_CARDS = "assistant_cards_enabled"
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)

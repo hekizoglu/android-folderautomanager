@@ -14,7 +14,7 @@
 5. Uygulama araması: varsayılan açık, izin gerekmez
 6. Kategori araması: varsayılan açık, izin gerekmez
 7. Kişi araması: varsayılan kapalı, `READ_CONTACTS` izni gerektirir; toggle'a basınca izin gerekçesi gösterilir
-8. Dosya adı araması: varsayılan kapalı, `READ_EXTERNAL_STORAGE` / `READ_MEDIA_*` gerektirir; "Cihaz depolama indeksi" etiketiyle ayrı sunulur
+8. Dosya adı araması: varsayılan kapalı, `MediaStore` + SAF ile çalışır; ek izin gerekmez, `MANAGE_EXTERNAL_STORAGE` kullanılmaz; "Cihaz depolama indeksi" etiketiyle ayrı sunulur
 
 ---
 
@@ -82,7 +82,7 @@ Settings > Arama Kaynakları
   ─ Uygulamalar    [açık, toggle devre dışı — zorunlu kaynak]
   ─ Kategoriler    [açık]
   ─ Kişiler        [kapalı] → READ_CONTACTS izin badge
-  ─ Dosya Adları   [kapalı] → Depolama izni badge + uyarı notu
+  ─ Dosya Adları   [kapalı] → MediaStore indeks badge + "arka planda taranacak" notu
   ─ [İndeks durumu özeti bölümü]
 ```
 
@@ -141,7 +141,7 @@ Klasör grid'inin hemen üstü, dock'un üzerinde (`BOTTOM` snap). Kullanıcı s
 | 5 | Kişi toggle → izin reddedilirse toggle açık kalır | Toggle izin reddedilince otomatik kapansın (race condition) |
 | 6 | Dashboard ile UsageReportScreen çakışıyor | Dashboard = özet; UsageReport = detay; Dashboard'dan link |
 | 7 | Klasör tıklaması / istatistik kartı yanlış tetiklenir | Bant ile grid arasında 12dp boşluk zorunlu |
-| 8 | Dosya araması 3 ayrı izin diyaloğu açar | Toggle öncesi özet ekranı: "Bu izinlere ihtiyaç duyulacak" |
+| 8 | Dosya aramasında indeks tarama süresi kullanıcıyı bekletir | Toggle açılınca arka planda başlar; UI'da "İndeks oluşturuluyor…" chip göster |
 | 9 | Search bar konum değişince IME açıkken layout shift | Konum değişimi yalnızca drag bırakıldıktan sonra, IME açıkken hiçbir şey oynamamalı |
 | 10 | Arama geçmişi gizlilik riski | Geçmiş sadece cihazda; Settings > Arama > "Geçmişi Temizle" her zaman görünür |
 

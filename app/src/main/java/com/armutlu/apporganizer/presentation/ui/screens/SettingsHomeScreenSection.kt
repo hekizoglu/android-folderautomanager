@@ -21,7 +21,9 @@ import androidx.compose.ui.unit.sp
  * SettingsScreen LazyColumn içinde item{} bloklarıyla çağrılır.
  */
 @Composable
-fun SettingsHomeScreenSection() {
+fun SettingsHomeScreenSection(
+    onNavigateToSearchSettings: () -> Unit = {},
+) {
     val context = LocalContext.current
 
     // ── Ana Ekran Özellikleri ─────────────────────────────────────────────
@@ -38,34 +40,16 @@ fun SettingsHomeScreenSection() {
     var favoritesEnabled         by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
     var favoritesEnabledAllApps  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
-    var homeSearchEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
-    var homeAppSearchEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
-    var doubleTapSearchEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     var assistantCardsEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
     var contextualDockEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isContextualDockEnabled(context)) }
 
     SettingsCard {
-        SettingsSwitchRow(
+        SettingsButtonRow(
             icon = Icons.Default.Search,
-            title = "Uygulama Arama Çubuğu",
-            subtitle = "Google arama çubuğunun hemen altında uygulama arama — yazınca anlık sonuçlar",
-            checked = homeAppSearchEnabled,
-            onCheckedChange = {
-                homeAppSearchEnabled = it
-                com.armutlu.apporganizer.utils.AppPrefs.setHomeAppSearchEnabled(context, it)
-            }
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        SettingsSwitchRow(
-            icon = Icons.Default.Search,
-            title = "Klasör Arama",
-            subtitle = "Google arama çubuğunun altında klasör filtresi (30s hareketsizlikte otomatik sıfırlanır)",
-            checked = homeSearchEnabled,
-            onCheckedChange = {
-                homeSearchEnabled = it
-                com.armutlu.apporganizer.utils.AppPrefs.setHomeSearchEnabled(context, it)
-            }
+            title = "Arama Ayarlari",
+            subtitle = "Kaynaklar, gecmis, cift tikla arama ve sonuc profilleri",
+            onClick = onNavigateToSearchSettings,
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
@@ -138,17 +122,6 @@ fun SettingsHomeScreenSection() {
             onCheckedChange = {
                 swipeHintEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, it)
-            }
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        SettingsSwitchRow(
-            icon = Icons.Default.TouchApp,
-            title = "Çift Tıkla Arama",
-            subtitle = "Ana ekrana çift tıklayınca tüm uygulamalar açılır ve arama kutusuna odaklanır",
-            checked = doubleTapSearchEnabled,
-            onCheckedChange = {
-                doubleTapSearchEnabled = it
-                com.armutlu.apporganizer.utils.AppPrefs.setDoubleTapSearchEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

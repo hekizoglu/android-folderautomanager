@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,11 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.Category
 
 @Composable
-internal fun FolderStatsRow(folders: List<AppFolder>) {
+internal fun FolderStatsRow(
+    folders: List<AppFolder>,
+    onOpenFolderStats: () -> Unit = {},
+    onOpenAppStats: () -> Unit = {},
+) {
     val totalApps = folders.sumOf { it.apps.size }
     val totalFolders = folders.size
     if (totalFolders > 0) {
@@ -25,13 +30,27 @@ internal fun FolderStatsRow(folders: List<AppFolder>) {
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 2.dp),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "$totalFolders klasör  ·  $totalApps uygulama",
+                text = "$totalFolders klasör",
                 color = Color.White.copy(alpha = 0.45f),
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.clickable(onClick = onOpenFolderStats),
+            )
+            Text(
+                text = "  ·  ",
+                color = Color.White.copy(alpha = 0.30f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
+            )
+            Text(
+                text = "$totalApps uygulama",
+                color = Color.White.copy(alpha = 0.45f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.clickable(onClick = onOpenAppStats),
             )
         }
     }
@@ -77,7 +96,7 @@ internal fun HomeScreenOverlays(
     onWallpaper: () -> Unit,
     onSettings: () -> Unit,
     onDockEdit: () -> Unit,
-    onAddWidget: () -> Unit
+    onAddWidget: () -> Unit,
 ) {
     if (dockEditOpen) {
         DockEditSheet(
@@ -85,7 +104,7 @@ internal fun HomeScreenOverlays(
             dockPackages = dockPackages,
             onAdd = onDockAdd,
             onRemove = onDockRemove,
-            onDismiss = onDockEditDismiss
+            onDismiss = onDockEditDismiss,
         )
     }
 
@@ -101,7 +120,7 @@ internal fun HomeScreenOverlays(
             onChangeCategory = { onChangeCategory(app) },
             onHideApp = { hidden -> onHideApp(app, hidden) },
             onSaveNote = { note -> onSaveNote(app, note) },
-            onToggleFavorite = { _ -> onToggleFavorite(app) }
+            onToggleFavorite = { _ -> onToggleFavorite(app) },
         )
     }
 
@@ -110,7 +129,7 @@ internal fun HomeScreenOverlays(
             app = app,
             categories = categories,
             onDismiss = onCategoryPickerDismiss,
-            onCategorySelected = { catId -> onCategorySelected(app, catId) }
+            onCategorySelected = { catId -> onCategorySelected(app, catId) },
         )
     }
 
@@ -130,7 +149,7 @@ internal fun HomeScreenOverlays(
             onWallpaper = onWallpaper,
             onSettings = onSettings,
             onDockEdit = onDockEdit,
-            onAddWidget = onAddWidget
+            onAddWidget = onAddWidget,
         )
     }
 
@@ -141,7 +160,7 @@ internal fun HomeScreenOverlays(
             onDismiss = onFolderContextMenuDismiss,
             onOpenFolder = { onOpenFolder(folder) },
             onOpenAllApps = onOpenAllApps,
-            onMove = { newIndex -> onMoveFolder(folder, newIndex) }
+            onMove = { newIndex -> onMoveFolder(folder, newIndex) },
         )
     }
 }

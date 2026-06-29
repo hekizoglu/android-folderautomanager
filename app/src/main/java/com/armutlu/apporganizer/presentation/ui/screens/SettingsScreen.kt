@@ -45,7 +45,9 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToPrivacyPolicy: () -> Unit = {},
     onNavigateToUsageReport: () -> Unit = {},
-    onNavigateToDashboard: () -> Unit = {}
+    onNavigateToDashboard: () -> Unit = {},
+    onNavigateToReportsCenter: () -> Unit = {},
+    onNavigateToSearchSettings: () -> Unit = {},
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
     val state           by viewModel.screenState.collectAsState()
@@ -346,7 +348,7 @@ fun SettingsScreen(
             item { WidgetSuggestionSection(viewModel = viewModel) }
 
             // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
-            item { SettingsHomeScreenSection() }
+            item { SettingsHomeScreenSection(onNavigateToSearchSettings = onNavigateToSearchSettings) }
 
             // Uygulama Listesi / Yönetimi / Gizli / Diğer → SettingsAppsSection.kt
             settingsAppsSection(
@@ -387,6 +389,16 @@ fun SettingsScreen(
                     SettingsInfoRow(icon = Icons.Default.BarChart, title = "En Çok Dolu Kategori", subtitle = topCategory)
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsInfoRow(icon = Icons.Default.Backup, title = "Son Yedekleme", subtitle = lastBackupText)
+                }
+            }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Dashboard,
+                        title = "Raporlar Merkezi",
+                        subtitle = "Genel bakis ve kullanim raporlarini tek yerden ac",
+                        onClick = onNavigateToReportsCenter,
+                    )
                 }
             }
 

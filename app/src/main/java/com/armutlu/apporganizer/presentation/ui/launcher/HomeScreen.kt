@@ -77,6 +77,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalConfiguration
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.presentation.navigation.Routes
+import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppAnalytics
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -548,7 +550,23 @@ fun HomeScreen(
                 }
             } else {
             // İstatistik bandı — toplam klasör ve uygulama sayısı
-            FolderStatsRow(folders = folders)
+            FolderStatsRow(
+                folders = folders,
+                onOpenFolderStats = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.REPORTS_CENTER)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }
+                },
+                onOpenAppStats = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.USAGE_REPORT)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }
+                }
+            )
 
             // Folder grid — sayfa başına klasör sayısı: kullanıcı tercihi veya ekran yüksekliğine göre adaptif
             val screenHeightDp = LocalConfiguration.current.screenHeightDp

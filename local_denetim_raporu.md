@@ -94,8 +94,10 @@
 | 2026-06-29 19:50 | T1 | Accessibility/A11y | Test Coverage | Bulunamadi |
 | 2026-06-29 20:08 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi |
 | 2026-06-29 20:22 | T2 | Accessibility/A11y + CE | Test Coverage | Bulunamadi |
+| 2026-06-29 21:03 | T1 | Dock/Widget/Backup | StateFlow/ViewModel | Bulunamadi |
+| 2026-06-30 00:35 | **T3** | A11y + CE + Compose+Dep+APK+Skill+Dead | Test Coverage | Bulunamadi |
 
-*61 tur, 0 bug*
+*63 tur, 0 bug | T3: BOM 2024.09.03 · SDK 35/35 · APK 25.03MB*
 
 *51 tur, 0 bug | IMP#4: derivedStateOf fix*
 

@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-29 23:04
-> Dongu: **#168** | Tier: **2**
-> Ana tur odak: **Kategori ekleme/duzenleme/silme** (Category_CRUD)
-> Ekstra denetim: **AppRepository, DAO, data mapping, sorgu dogrulama** (Repository_DataLayer)
+> Son denetim: 2026-06-30 00:14
+> Dongu: **#170** | Tier: **3**
+> Ana tur odak: **Recomposition, cache, IO, performans** (Performance_Memory)
+> Ekstra denetim: **Hassas veri, log, izin, data export/import guvenligi** (Privacy_Security)
 
 ---
 
@@ -18,11 +18,21 @@
 | DUSUK | 0 | Acik dusuk bulgu |
 | TOPLAM | 2 | |
 
+### Tier 3 Notlari
+- Compose: metrics dosyasi yok (build sonrasi olusur)
+- Compose BOM: 2024.09.03
+- Compose Compiler: 1.5.15
+- compileSdk: 35
+- targetSdk: 35
+- APK: 25.03 MB
+- Skill: 2 kontrol edildi
+- TODO/FIXME: temiz
+
 ---
 
 ## YUKSEK
 
-- CE7 | `app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt:255` | AppPrefs remember{} keysiz okunuyor - Settings donus guncellenmez. DisposableEffect + listener kullan. (E6 tekrari)
+- CE7 | `app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt:258` | AppPrefs remember{} keysiz okunuyor - Settings donus guncellenmez. DisposableEffect + listener kullan. (E6 tekrari)
 
 ## ORTA
 
@@ -30,4 +40,4 @@
 
 ---
 
-*Denetim tarihi: 2026-06-29 23:04 | Dongu: #168 | Tier: 2 | Ana: Kategori ekleme/duzenleme/silme | Ekstra: AppRepository, DAO, data mapping, sorgu dogrulama*
+*Denetim tarihi: 2026-06-30 00:14 | Dongu: #170 | Tier: 3 | Ana: Recomposition, cache, IO, performans | Ekstra: Hassas veri, log, izin, data export/import guvenligi*
