@@ -53,9 +53,9 @@
 | Sorun | Sıklık | Tahmini Kayıp/döngü | Durum |
 |-------|--------|----------------------|-------|
 | Gradle build dir kilitlenme (genel) | Eskiden Sık | 20-40 dk | ✅ Çözüldü — Defender exclusion (Döngü 72, 74x hız) |
-| merged_res kilidi | Zaman zaman | 5-15 dk | Açık — full clean gerekiyor |
+| merged_res kilidi | Zaman zaman | 5-15 dk | Kabul edildi — full clean ile geçici çözüm |
 | git push non-fast-forward | Her 3-4 döngüde | 2-3 dk | Çözüm: `git pull --rebase` önce çalıştır (D142) |
-| KAPT incremental cache bozulması | Zaman zaman | 10-20 dk | Açık — KSP geçişi gündemde |
+| KAPT incremental cache bozulması | Zaman zaman | 10-20 dk | FİKİRLER.md'ye eklendi (11p Beklet) |
 
 
 | 2026-06-16 | Döngü 70 başlangıç | Döngü 70 bitiş | ~30dk | KOD+DÖKÜMAN | Performans opt: gradle.properties, build.ps1, git config, smart_push, MD düzeltmeleri, SETUP.md, cloud schedule | Beklenti: kilit hatası sıfır, %40-60 hız |
