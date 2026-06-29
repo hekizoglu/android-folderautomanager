@@ -436,6 +436,24 @@ fun SettingsScreen(
                 }
             }
 
+            // ── Quick Wheel ───────────────────────────────────────────────────
+            item { SettingsSectionTitle("Hızlı Erişim") }
+            item {
+                var quickWheel by remember { mutableStateOf(AppPrefs.isQuickWheelEnabled(context)) }
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Widgets,
+                        title = "Quick Wheel (Radyal Çark)",
+                        subtitle = "Boş alana uzun bas → en sık 6 uygulama radyal açılır",
+                        checked = quickWheel,
+                        onCheckedChange = {
+                            quickWheel = it
+                            AppPrefs.setQuickWheelEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
             item { SettingsSectionTitle("Geri Bildirim") }
             item {
                 SettingsCard {

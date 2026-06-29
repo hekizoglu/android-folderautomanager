@@ -137,6 +137,7 @@ fun HomeScreen(
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
+    var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -201,6 +202,8 @@ fun HomeScreen(
                     homeAppSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AUTO_RESIZE ->
                     widgetAutoResize = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_QUICK_WHEEL ->
+                    quickWheelEnabled = com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -218,6 +221,9 @@ fun HomeScreen(
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
     var folderContextMenu by remember { mutableStateOf<AppFolder?>(null) }
     var homeLongPressOpen by remember { mutableStateOf(false) }
+    var quickWheelVisible by remember { mutableStateOf(false) }
+    var quickWheelX by remember { mutableStateOf(0f) }
+    var quickWheelY by remember { mutableStateOf(0f) }
     var folderSearchQuery by remember { mutableStateOf("") }
     var folderSearchCountdown by remember { mutableStateOf(30) }
 
@@ -386,10 +392,14 @@ fun HomeScreen(
                             viewModel.dispatchGestureAction(context, gestureDoubleTap)
                         }
                     },
-                    onLongPress = {
+                    onLongPress = { pressOffset ->
                         if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            if (gestureLongPress == com.armutlu.apporganizer.utils.AppPrefs.GestureAction.OPEN_APP_MANAGER) {
+                            if (quickWheelEnabled) {
+                                quickWheelX = pressOffset.x
+                                quickWheelY = pressOffset.y
+                                quickWheelVisible = true
+                            } else if (gestureLongPress == com.armutlu.apporganizer.utils.AppPrefs.GestureAction.OPEN_APP_MANAGER) {
                                 homeLongPressOpen = true
                             } else {
                                 viewModel.dispatchGestureAction(context, gestureLongPress)
@@ -716,6 +726,20 @@ fun HomeScreen(
                 },
                 focusSearchOnOpen = focusSearchOnOpen,
                 onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen
+            )
+        }
+
+        // Quick Wheel overlay — uzun bas ile radyal uygulama çarkı
+        if (quickWheelVisible) {
+            val metrics = android.content.res.Resources.getSystem().displayMetrics
+            QuickWheelOverlay(
+                apps = allApps,
+                pressX = quickWheelX,
+                pressY = quickWheelY,
+                screenWidthPx = metrics.widthPixels.toFloat(),
+                screenHeightPx = metrics.heightPixels.toFloat(),
+                onLaunch = { pkg -> viewModel.launchApp(context, pkg) },
+                onDismiss = { quickWheelVisible = false }
             )
         }
     }

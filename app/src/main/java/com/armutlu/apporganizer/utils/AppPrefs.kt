@@ -345,6 +345,11 @@ object AppPrefs {
     fun isBadgeIntelligenceEnabled(context: Context) = prefs(context).getBoolean(KEY_BADGE_INTELLIGENCE, true)
     fun setBadgeIntelligenceEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_BADGE_INTELLIGENCE, v).apply()
 
+    // Quick Wheel / Pie Mode — uzun bas ile radyal uygulama çarkı (varsayılan kapalı)
+    const val KEY_QUICK_WHEEL = "quick_wheel_enabled"
+    fun isQuickWheelEnabled(context: Context) = prefs(context).getBoolean(KEY_QUICK_WHEEL, false)
+    fun setQuickWheelEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_QUICK_WHEEL, v).apply()
+
     // Contextual Dock — 2 sabit + 2 akıllı öneri
     const val KEY_CONTEXTUAL_DOCK = "contextual_dock_enabled"
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)
