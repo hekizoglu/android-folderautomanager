@@ -290,6 +290,9 @@ fun SettingsScreen(
                 }
             }
 
+            // ── Gesture Aksiyonları ────────────────────────────────────────────
+            item { SettingsGestureSection() }
+
             // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
             item { SettingsHomeScreenSection() }
 

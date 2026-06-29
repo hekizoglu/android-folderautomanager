@@ -68,5 +68,6 @@
 | 2026-06-29 02:35 | T1 | State/SharedPrefs | Memory/Lifecycle | Bulunamadi |
 | 2026-06-29 03:09 | **T3** | Category CRUD + CE + Compose+Dep+APK+Skill+Dead | RoomDB v8 OK | Bulunamadi |
 | 2026-06-29 03:28 | T2 | State/SharedPrefs + CE | WorkManager OK | Bulunamadi |
+| 2026-06-29 03:47 | T1 | Category CRUD | Repository/DataLayer | Bulunamadi |
 
-*34 tur, 0 bug | Meta-audit: 5/17 (%29) | Sonraki: #142 T1*
+*35 tur, 0 bug | Sonraki: #143 T2*

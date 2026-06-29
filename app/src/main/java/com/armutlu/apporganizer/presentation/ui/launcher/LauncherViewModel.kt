@@ -610,4 +610,20 @@ class LauncherViewModel @Inject constructor(
             Timber.e(e, "openManager failed")
         }
     }
+
+    fun dispatchGestureAction(context: Context, action: AppPrefs.GestureAction, onOpenManager: () -> Unit = {}) {
+        when (action) {
+            AppPrefs.GestureAction.OPEN_DRAWER       -> openAllApps()
+            AppPrefs.GestureAction.OPEN_SEARCH       -> openAllAppsWithSearch()
+            AppPrefs.GestureAction.OPEN_APP_MANAGER  -> openManager(context)
+            AppPrefs.GestureAction.LAUNCH_CAMERA     -> {
+                runCatching {
+                    val intent = Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
+            }
+            AppPrefs.GestureAction.DO_NOTHING        -> Unit
+        }
+    }
 }

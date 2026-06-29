@@ -330,6 +330,40 @@ object AppPrefs {
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)
     fun setContextualDockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTEXTUAL_DOCK, v).apply()
 
+    // Gesture Aksiyon Engine — her jest için özelleştirilebilir aksiyon
+    enum class GestureAction(val label: String) {
+        OPEN_DRAWER("Uygulama Çekmecesi"),
+        OPEN_SEARCH("Arama ile Çekmece"),
+        OPEN_APP_MANAGER("App Organizer"),
+        LAUNCH_CAMERA("Kamera"),
+        DO_NOTHING("Hiçbir Şey Yapma")
+    }
+
+    const val KEY_GESTURE_DOUBLE_TAP   = "gesture_double_tap"
+    const val KEY_GESTURE_LONG_PRESS   = "gesture_long_press_home"
+    const val KEY_GESTURE_SWIPE_UP     = "gesture_swipe_up"
+
+    fun getGestureDoubleTap(context: Context): GestureAction =
+        runCatching { GestureAction.valueOf(prefs(context).getString(KEY_GESTURE_DOUBLE_TAP, null) ?: "") }
+            .getOrDefault(GestureAction.OPEN_SEARCH)
+
+    fun setGestureDoubleTap(context: Context, action: GestureAction) =
+        prefs(context).edit().putString(KEY_GESTURE_DOUBLE_TAP, action.name).apply()
+
+    fun getGestureLongPress(context: Context): GestureAction =
+        runCatching { GestureAction.valueOf(prefs(context).getString(KEY_GESTURE_LONG_PRESS, null) ?: "") }
+            .getOrDefault(GestureAction.OPEN_APP_MANAGER)
+
+    fun setGestureLongPress(context: Context, action: GestureAction) =
+        prefs(context).edit().putString(KEY_GESTURE_LONG_PRESS, action.name).apply()
+
+    fun getGestureSwipeUp(context: Context): GestureAction =
+        runCatching { GestureAction.valueOf(prefs(context).getString(KEY_GESTURE_SWIPE_UP, null) ?: "") }
+            .getOrDefault(GestureAction.OPEN_DRAWER)
+
+    fun setGestureSwipeUp(context: Context, action: GestureAction) =
+        prefs(context).edit().putString(KEY_GESTURE_SWIPE_UP, action.name).apply()
+
     // Manuel Kategori Ezmeler — kullanıcı tarafından atanmış paket→kategori haritası
     // AppClassifier bu haritayı exactMatch'ten önce kontrol eder (en yüksek öncelik)
     const val KEY_MANUAL_CAT_OVERRIDES = "manual_category_overrides"

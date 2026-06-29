@@ -229,6 +229,11 @@ fun HomeScreen(
     var dragOffsetX by remember { mutableStateOf(0f) }
     var dragOffsetY by remember { mutableStateOf(0f) }
 
+    // Gesture aksiyon ayarları
+    var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
+    var gestureLongPress by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)) }
+    var gestureSwipeUp   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)) }
+
     // Dock sistem gesture exclusion rect — sadece deger degisince guncellenir, her layout'ta degil
     val dockRectHolder = remember { object { var rect: android.graphics.Rect? = null } }
 
@@ -255,7 +260,7 @@ fun HomeScreen(
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                 if (!currentAllAppsOpen && !swipeLock && available.y < -200f) {
                     AppAnalytics.allAppsOpened()
-                    viewModel.openAllApps()
+                    viewModel.dispatchGestureAction(context, gestureSwipeUp)
                 }
                 return Velocity.Zero
             }
@@ -378,14 +383,17 @@ fun HomeScreen(
                     onDoubleTap = {
                         if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            if (doubleTapSearchEnabled) viewModel.openAllAppsWithSearch()
-                            else viewModel.openAllApps()
+                            viewModel.dispatchGestureAction(context, gestureDoubleTap)
                         }
                     },
                     onLongPress = {
                         if (!currentAllAppsOpen) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            homeLongPressOpen = true
+                            if (gestureLongPress == com.armutlu.apporganizer.utils.AppPrefs.GestureAction.OPEN_APP_MANAGER) {
+                                homeLongPressOpen = true
+                            } else {
+                                viewModel.dispatchGestureAction(context, gestureLongPress)
+                            }
                         }
                     }
                 )
@@ -406,7 +414,7 @@ fun HomeScreen(
                                 change.consume()
                                 accumulated = 0f
                                 AppAnalytics.allAppsOpened()
-                                viewModel.openAllApps()
+                                viewModel.dispatchGestureAction(context, gestureSwipeUp)
                             }
                         }
                     }
