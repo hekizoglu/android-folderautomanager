@@ -293,6 +293,9 @@ fun SettingsScreen(
             // ── Gesture Aksiyonları ────────────────────────────────────────────
             item { SettingsGestureSection() }
 
+            // ── Widget Önerileri ──────────────────────────────────────────────
+            item { WidgetSuggestionSection(viewModel = viewModel) }
+
             // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
             item { SettingsHomeScreenSection() }
 

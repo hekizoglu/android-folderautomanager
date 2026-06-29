@@ -11,6 +11,8 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.service.LauncherAccessibilityService
 import com.armutlu.apporganizer.utils.LauncherOrganizer
+import com.armutlu.apporganizer.utils.WidgetSuggestion
+import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
@@ -70,6 +72,11 @@ class AppListViewModel @Inject constructor(
     val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
+
+    // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar
+    val widgetSuggestions: StateFlow<List<WidgetSuggestion>> = repository.getAllAppsFlow()
+        .map { apps -> WidgetSuggestionEngine.getSuggestions(getApplication(), apps) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // LLM kategorize durumu — DeepSeek fallback
     private val _llmCategorizing = MutableStateFlow(false)

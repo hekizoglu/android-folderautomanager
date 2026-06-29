@@ -11,6 +11,7 @@ import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
+import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.PackageManagerHelper
@@ -610,6 +611,13 @@ class LauncherViewModel @Inject constructor(
             Timber.e(e, "openManager failed")
         }
     }
+
+    // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar
+    val widgetSuggestions = repository.getAllAppsFlow()
+        .map { apps ->
+            WidgetSuggestionEngine.getSuggestions(getApplication(), apps.filter { !it.isHidden })
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun dispatchGestureAction(context: Context, action: AppPrefs.GestureAction, onOpenManager: () -> Unit = {}) {
         when (action) {
