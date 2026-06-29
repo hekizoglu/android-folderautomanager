@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 147 — 2026-06-29 [GESTURE ACTION ENGINE]
+
+**Yapılanlar:** GestureActionEngine v1 (14p) — AppPrefs.GestureAction enum (5 aksiyon), dispatchGestureAction() dispatcher, HomeScreen çift tık/uzun bas/swipe-up → AppPrefs'ten okur, SettingsGestureSection.kt dropdown seçici. Batch Kategori Değiştirme: mevcut olduğu tespit edildi (AppListScreen.kt:120). Push: df23ba5.
+**Agent:** —
+**Sonraki:** Widget Öneri Motoru (14p), Backup/Restore JSON (14p), ShortcutManager (14p)
+
+---
+
 ## Döngü 146 — 2026-06-29 [MANUAL CATEGORY OVERRIDE]
 
 **Yapılanlar:** Manual Category Override (15p) — AppPrefs.KEY_MANUAL_CAT_OVERRIDES (JSON harita), AppClassifier.classifyApp() override'ı exactMatch'ten önce kontrol eder, LauncherViewModel.updateAppCategory() override'ı kaydeder. UI mevcut CategoryPickerSheet'i kullanıyor — ek UI değişikliği gerekmedi. BUILD SUCCESSFUL (25MB). Push: 3c36a6f.

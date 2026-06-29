@@ -48,7 +48,7 @@
 
 | Tarih | Kaynak | Madde | Durum |
 |-------|--------|-------|-------|
-| 2026-06-29 | Rekabet | **GestureActionEngine** — Swipe up/down/left/right + çift tık + long press home + saat tıklama + klasör swipe-up için özelleştirilebilir aksiyon tablosu. Aksiyonlar: drawer aç, bildirimler, hızlı ayarlar, ekran kilitle, screenshot, belirli uygulama aç, focus mode. (KV:4 · U:3 · BR:3 · EA:4 = **14p**) | Bekliyor |
+| 2026-06-29 | Rekabet | **GestureActionEngine** — Swipe up/down/left/right + çift tık + long press home + saat tıklama + klasör swipe-up için özelleştirilebilir aksiyon tablosu. Aksiyonlar: drawer aç, bildirimler, hızlı ayarlar, ekran kilitle, screenshot, belirli uygulama aç, focus mode. (KV:4 · U:3 · BR:3 · EA:4 = **14p**) | [TAMAMLANDI v1 — AppPrefs.GestureAction, SettingsGestureSection.kt, HomeScreen dispatch] |
 | 2026-06-29 | Rekabet | **Backup / Restore JSON** — dock apps + folder order + manual category overrides + tema + gesture ayarları + gizlenen uygulamalar. Google Drive SAF entegrasyonu var, format standardize edilmeli. Neo'da mevcut. (KV:4 · U:3 · BR:4 · EA:3 = **14p**) | Bekliyor |
 | 2026-06-29 | Rekabet | **ShortcutManager Entegrasyonu** — Long press app → Android dynamic/static shortcuts göster: WhatsApp'ta "Son kişi / Yeni mesaj / Kamera", Haritalar'da "Eve git / İşe git". ShortcutManagerCompat kullan. (KV:4 · U:3 · BR:3 · EA:4 = **14p**) | Bekliyor |
 | 2026-06-29 | Rekabet | **Notification Badge Intelligence** — Mevcut kırmızı badge yeterli değil. Renk sistemi: Kırmızı=çağrı/alarm, Yeşil=mesajlaşma, Sarı=sistem/güncelleme, Gri=düşük önem. Kanal importance + package prefix bazlı, içerik okunmaz. (KV:3 · U:4 · BR:3 · EA:3 = **13p**) | Bekliyor |
