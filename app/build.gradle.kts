@@ -37,8 +37,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0.1"
+        versionCode = 4
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -141,6 +141,9 @@ afterEvaluate {
 dependencies {
     // Color picker
     implementation("com.github.skydoves:colorpicker-compose:1.1.2")
+
+    // Biometric (Settings Lock)
+    implementation("androidx.biometric:biometric:1.1.0")
 
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")

@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 151 — 2026-06-29 [BİOMETRİK AYARLAR KİLİDİ]
+
+**Yapılanlar:** BiometricHelper.kt (FragmentActivity+BiometricPrompt), SettingsScreen'de açılışta LaunchedEffect biometric doğrulama (kilitseyse geri döner), AppPrefs.KEY_BIOMETRIC_SETTINGS_LOCK toggle, SettingsScreen "Güvenlik" bölümü Switch eklenmiş (biometric yoksa disabled). build.gradle.kts'e `androidx.biometric:1.1.0` eklendi. Versiyon 1.0.2 / versionCode 4. BUILD SUCCESSFUL (24.5MB).
+**Agent:** —
+**Sonraki:** Weekly Digest (13p), Quick Wheel/Pie Mode (13p), Icon Pack UI (12p)
+
+---
+
 ## Döngü 150 — 2026-06-29 [BADGE INTELLIGENCE + SHORTCUT MEVCUT]
 
 **Yapılanlar:** BadgeColorEngine.kt (yeşil=mesajlaşma, kırmızı=alarm/finans, sarı=güncelleme — paket+kategori bazlı), AppIconView.kt+FolderTile.kt badge rengi BadgeColorEngine'e bağlandı, AppPrefs.KEY_BADGE_INTELLIGENCE toggle, SettingsScreen'e "Akıllı Badge Rengi" switch eklendi. ShortcutManager mevcut [AppContextMenu.kt:85] tespit edildi — FİKİRLER.md güncellendi. BUILD SUCCESSFUL (24.4MB).

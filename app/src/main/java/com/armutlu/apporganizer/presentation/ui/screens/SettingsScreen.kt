@@ -32,7 +32,9 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import androidx.fragment.app.FragmentActivity
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.BiometricHelper
 import com.armutlu.apporganizer.utils.DockPrefs
 import kotlinx.coroutines.launch
 
@@ -53,6 +55,27 @@ fun SettingsScreen(
     val llmProgress      by viewModel.llmProgress.collectAsState()
     val classifyResult   by viewModel.classifyResult.collectAsState()
     val context          = LocalContext.current
+
+    // Biometric Settings Lock — açılışta kilidi doğrula
+    var biometricUnlocked by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val lockEnabled = AppPrefs.isBiometricSettingsLockEnabled(context)
+        if (!lockEnabled) {
+            biometricUnlocked = true
+            return@LaunchedEffect
+        }
+        val activity = context as? FragmentActivity
+        if (activity == null || !BiometricHelper.isAvailable(activity)) {
+            biometricUnlocked = true
+            return@LaunchedEffect
+        }
+        BiometricHelper.authenticate(
+            activity = activity,
+            onSuccess = { biometricUnlocked = true },
+            onFailure = { onNavigateBack() }
+        )
+    }
+    if (!biometricUnlocked) return
 
     // classifyResult değişince Toast göster
     LaunchedEffect(classifyResult) {
@@ -378,6 +401,41 @@ fun SettingsScreen(
 
 
             // ── Geri Bildirim ────────────────────────────────────────────────
+            // ── Güvenlik ──────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Güvenlik") }
+            item {
+                var biometricLock by remember { mutableStateOf(AppPrefs.isBiometricSettingsLockEnabled(context)) }
+                val activity = context as? FragmentActivity
+                val biometricAvailable = remember(context) {
+                    activity != null && BiometricHelper.isAvailable(activity)
+                }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Fingerprint, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Ayarlar Kilidi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                if (biometricAvailable) "Ayarlar açılışında parmak izi / yüz doğrulama" else "Cihazda biyometrik doğrulama bulunamadı",
+                                fontSize = 12.sp,
+                                color = if (biometricAvailable) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                            )
+                        }
+                        Switch(
+                            checked = biometricLock,
+                            enabled = biometricAvailable,
+                            onCheckedChange = {
+                                biometricLock = it
+                                AppPrefs.setBiometricSettingsLockEnabled(context, it)
+                            }
+                        )
+                    }
+                }
+            }
+
             item { SettingsSectionTitle("Geri Bildirim") }
             item {
                 SettingsCard {

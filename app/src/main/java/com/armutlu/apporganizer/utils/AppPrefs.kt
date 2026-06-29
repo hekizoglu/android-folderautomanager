@@ -325,6 +325,11 @@ object AppPrefs {
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)
     fun setAssistantCardsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_ASSISTANT_CARDS, v).apply()
 
+    // Biometric Settings Lock — Ayarlar ekranını parmak izi/yüz kilidi arkasına al
+    const val KEY_BIOMETRIC_SETTINGS_LOCK = "biometric_settings_lock"
+    fun isBiometricSettingsLockEnabled(context: Context) = prefs(context).getBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, false)
+    fun setBiometricSettingsLockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, v).apply()
+
     // Badge Intelligence — bildirim badge rengi kategori bazlı (yeşil/sarı/kırmızı)
     const val KEY_BADGE_INTELLIGENCE = "badge_intelligence_enabled"
     fun isBadgeIntelligenceEnabled(context: Context) = prefs(context).getBoolean(KEY_BADGE_INTELLIGENCE, true)
