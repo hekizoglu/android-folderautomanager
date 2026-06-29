@@ -36,7 +36,7 @@
 3. **Composable @Stable/@Immutable audit** — unstable class'larin recomposition etkisi
 4. **Timber log kalitesi** — Timber.e() exception'siz, Timber.d() production kodda
 5. **String resource hardcoding** — Turkce/Ingilizce string'lerin strings.xml'de olup olmadigi
-6. **BackHandler tutarliligi** — her ekranda back press dogru handle ediliyor mu
+6. ~~**BackHandler tutarliligi** — her ekranda back press dogru handle ediliyor mu~~ **Eklendi D168** (OnboardingScreen.kt stepIndex-- BackHandler)
 7. **Permission flow butunlugu** — izin isteyen her ekranin rationale + deny fallback'i var mi
 8. **ViewModel scope dogrulama** — AndroidViewModel vs ViewModel secimi, Application leak riski
 9. ~~**Room query performansi** — @Query'de SELECT *, LIMIT olmayan sorgular~~ **Eklendi D164** (CS13 — AppDao SELECT * ORDER BY LIMIT yok)
