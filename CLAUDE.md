@@ -97,6 +97,12 @@ Her döngü sonunda yeni fikir/görev FİKİRLER.md'ye eklenince puanla (agent i
 - **15+ puan** → ROADMAP.md ⭐ Yüksek Puanlı bölümüne de ekle (puan + görev + durum)
 - **10-14 puan** → FİKİRLER.md 🟡 Değerlendir olarak kalır
 - **9-** → FİKİRLER.md ⏸ Beklet
+- **Yeniden Puanlama:** Hüseyin istediğinde veya 3+ döngü sonra bekleyen fikirleri yeniden puanla — rekabet ve tamamlanan fikirler puanı değiştirir
+
+### AppOrganizer Dashboard Kuralı
+- Dashboard (`AppOrganizerDashboardScreen.kt`) mevcut verileri aggregate eder: `UsageStatsHelper` + `InsightEngine` + Room applar + kategoriler
+- Settings > "AppOrganizer Dashboard" → `Routes.DASHBOARD` yönlendirmesi
+- Yeni istatistik eklemek için: `DashboardStats.compute()` içine alan ekle → `EfficiencyCard` veya yeni `@Composable` bileşen
 
 ### Görev Zorluk Puanı Kuralı
 Her döngü başında yapılacak görev için **1-10** arası zorluk puanı ver, ardından çalış:
