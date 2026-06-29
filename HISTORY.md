@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 165 — 2026-06-29 [BUILD v1.0.6]
+
+**Yapılanlar:** versionCode=8, versionName=1.0.6. assembleDebug basarili (24.57 MB). KotlinFrontEndException incremental compile hatasi clean build ile cozuldu. Telegram engelli — APK manuel gonderilmeli.
+**Agent:** —
+**Sonraki:** D169 build dongusu (D165+4)
+
+---
+
 ## Döngü 164 — 2026-06-29 [goAsync FIX + CS13 KURAL]
 
 **Yapılanlar:** PackageChangeReceiver.kt goAsync() + pendingResult.finish() eklendi (BroadcastReceiver coroutine lifecycle fix, D164). CS13 audit kuralı eklendi (AppDao SELECT * LIMIT yok). audit_improvements.md item 9 isaretlendi.
