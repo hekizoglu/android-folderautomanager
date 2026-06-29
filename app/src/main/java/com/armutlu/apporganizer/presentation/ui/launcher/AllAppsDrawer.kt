@@ -596,18 +596,24 @@ fun AllAppsDrawer(
         val base = if (searchQuery.isBlank()) afterFilter
         else {
             val q = searchQuery.lowercase(trLocale)
+            // Smart Search: categoryId → categoryName (Türkçe) haritası
+            val catNames = com.armutlu.apporganizer.domain.models.Category.getDefaultCategories()
+                .associate { it.categoryId to it.categoryName.lowercase(trLocale) }
             val exact    = mutableListOf<AppInfo>()
             val starts   = mutableListOf<AppInfo>()
             val contains = mutableListOf<AppInfo>()
+            val catMatch = mutableListOf<AppInfo>()
             val fuzzy    = mutableListOf<Pair<AppInfo, Int>>()
             for (app in afterFilter) {
                 val n = app.appName.lowercase(trLocale)
                 val pkg = app.packageName.lowercase(trLocale)
+                val catName = catNames[app.categoryId] ?: ""
                 when {
-                    n == q                    -> exact.add(app)
-                    n.startsWith(q)           -> starts.add(app)
-                    n.contains(q)             -> contains.add(app)
-                    pkg.contains(q)           -> contains.add(app)
+                    n == q                      -> exact.add(app)
+                    n.startsWith(q)             -> starts.add(app)
+                    n.contains(q)               -> contains.add(app)
+                    pkg.contains(q)             -> contains.add(app)
+                    catName.contains(q)         -> catMatch.add(app)
                     else -> {
                         val dist = n.split(" ").minOf { fuzzyEditDistance(it.take(20), q.take(20)) }
                         if (dist <= maxOf(2, q.length / 3))
@@ -615,7 +621,7 @@ fun AllAppsDrawer(
                     }
                 }
             }
-            exact + starts + contains + fuzzy.sortedBy { it.second }.map { it.first }
+            exact + starts + contains + catMatch.sortedByDescending { it.usageCount } + fuzzy.sortedBy { it.second }.map { it.first }
         }
         when (sortMode) {
             AllAppsSortMode.ALPHA            -> base.sortedBy { it.appName.lowercase(Locale("tr")) }

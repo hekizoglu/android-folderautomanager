@@ -518,8 +518,9 @@ internal fun RecentAppsRow(
 
 @Composable
 internal fun SwipeHint(context: Context, visible: Boolean) {
-    // swipeHintEnabled — HomeScreen'den `visible` parametresi zaten bunu taşıyor
-    val showSwipeHint = visible && remember { AppPrefs.shouldShowSwipeHint(context) }
+    // swipeHintEnabled — SharedPrefs'ten reaktif okuma; incrementSwipeHintCount sonrası state güncellenir
+    var hintAllowed by remember { mutableStateOf(AppPrefs.shouldShowSwipeHint(context)) }
+    val showSwipeHint = visible && hintAllowed
     val infiniteTransition = rememberInfiniteTransition(label = "swipe_hint")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -533,6 +534,7 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
     LaunchedEffect(showSwipeHint) {
         if (showSwipeHint) {
             AppPrefs.incrementSwipeHintCount(context)
+            hintAllowed = AppPrefs.shouldShowSwipeHint(context)
         }
     }
     if (showSwipeHint && visible) {

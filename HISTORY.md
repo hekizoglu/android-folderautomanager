@@ -4,6 +4,13 @@
 
 ---
 
+## Döngü 141 — 2026-06-29 [SMART SEARCH v1]
+**Yapılanlar:** Smart Search v1 (16p) — AllAppsDrawer.kt:587'de `catMatch` bucket eklendi. Kullanıcı "finans" yazınca Finans kategorisindeki tüm uygulamalar gelir; "spor" → Spor kategorisi; catMatch'ler usageCount'a göre sıralı. HomeScreenComponents.kt:522 fix (hintAllowed mutableStateOf + increment sonrası re-read).
+**Agent:** —
+**Sonraki:** UsageScore v2 (17p), AppOrganizer Assistant Kartları (16p)
+
+---
+
 ## Döngü 140 — 2026-06-29 [5 ARAÇ KURULUM + PRIVACY CENTER]
 **Yapılanlar:** Privacy Center UI TAMAMLANDI (SettingsBackupAboutSection + AppListViewModel). ast-grep 0.44.0 kuruldu+PATH, sgconfig.yml+sg-rules/, repomix.config.json+.repomixignore+scripts/repomix-run.ps1 oluşturuldu. ast-grep ilk taramada gerçek sorun buldu: HomeScreenComponents.kt:522'de AppPrefs `remember{}` içinde (Settings'ten dönünce güncellenmez).
 **Agent:** —
