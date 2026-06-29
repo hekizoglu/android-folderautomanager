@@ -110,7 +110,9 @@ $tier1Rules = @(
     @{ Code = "Y7"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'Modifier\.size\(\d+\.dp\)'; Description = "Hardcoded dp boyut - responsive tasma riski."; Focus = @("UI_Settings_Labels","Performance_Memory") },
     @{ Code = "Y8"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LauncherActivity\('; Description = "HomeScreen yenileme/refresh tetikleyici kaynak kod hatti."; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
     # D191-YENI: AppPrefs remember{} + DisposableEffect cross-ref (T1'e alindi - gercek bug yakaladi)
-    @{ Code = "CE9"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'remember\s*\{[^}]*AppPrefs\.'; Description = "AppPrefs remember{} keysiz okunuyor - tum KEY_*'ler DisposableEffect listener'da olmali. Eksik: KEY_DOUBLE_TAP_SEARCH/KEY_ASSISTANT_CARDS gibi yeni eklenenler. (D191'de yakalandi)"; Focus = @("Data_State_Persistence","UI_Settings_Labels") }
+    @{ Code = "CE9"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'remember\s*\{[^}]*AppPrefs\.'; Description = "AppPrefs remember{} keysiz okunuyor - tum KEY_*'ler DisposableEffect listener'da olmali. Eksik: KEY_DOUBLE_TAP_SEARCH/KEY_ASSISTANT_CARDS gibi yeni eklenenler. (D191'de yakalandi)"; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
+    # D191-YENI (0 sonuc kuyrugu): Null safety — !! operatoru ViewModel'lerde
+    @{ Code = "CE10"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = '\w+!!'; Description = "!! operatoru NPE riski - ?.let veya ?: fallback kullan. (Agent D191: cachedSuggestedApps!! satir 549)"; Focus = @("Data_State_Persistence","Performance_Memory") }
 )
 
 # ============================================================

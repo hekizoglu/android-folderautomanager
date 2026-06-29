@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 159 — 2026-06-29 [VERIFYERROR DÜZELTME + v1.0.4]
+
+**Yapılanlar:** AllAppsDrawer VerifyError (DEX register taşması) — `rememberDrawerData()` composable AllAppsDrawerUtils.kt'ye eklendi, `DrawerComputedData` veri sınıfı oluşturuldu. AllAppsDrawer.kt'den 5 büyük `remember` bloğu ve `sortedApps`/`grouped`/`sidebarEntries`/`quickFilterCounts` hesaplamaları bu fonksiyona taşındı. versionCode 5→6, versionName 1.0.3→1.0.4. BUILD SUCCESSFUL 28s, APK 24.57 MB.
+**Agent:** —
+**Sonraki:** Loop 3 saate çıkarıldı, akıllı-claudemd ayrı döngü kuruldu
+
+---
+
 ## Döngü 158 — 2026-06-29 [FOCUS MODE / MİNİMAL MOD]
 
 **Yapılanlar:** Focus Mode (9p) — AppPrefs.KEY_FOCUS_MODE, HomeScreen.kt: focusModeEnabled state + DisposableEffect reactive, klasör grid + stats + sayfa göstergesi + swipe hint gizlenir, "Odak Modu Aktif" banner gösterilir, dock+favoriler kalır. SettingsScreen "Hızlı Erişim" bölümüne DoNotDisturb toggle eklendi. BUILD SUCCESSFUL 2m51s.

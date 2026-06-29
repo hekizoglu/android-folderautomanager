@@ -74,5 +74,6 @@
 | 2026-06-29 05:00 | T1 | Gesture/Swipe/Drawer | Timber log quality | Bulunamadi |
 | 2026-06-29 05:18 | T1 | Accessibility/A11y | Widget OK | Bulunamadi |
 | 2026-06-29 08:04 | **T2** | Izin/Onboarding + CE | **2 BULGU: CE7(Settings:255) + CE9(HomeScreen:89)** | **DUZELTILDI** |
+| 2026-06-29 08:47 | T1 | State/SharedPrefs | IconCache OK | Bulunamadi → **CE10 (!! null safety) eklendi** |
 
-*40 tur, 2 BULGU → D191 agent analizi: 42 BULGU (13 ViewModel + 16 AppPrefs cross-ref + 16 Compose UI). Kritik: AppListViewModel Flow.first() hang + resetFilters SharedPrefs desync + HomeScreen gesture 3 KEY eksik + modifier order.*
+*41 tur, 2 BULGU → 42 agent bulgusu analizde. 0 sonuclu dongu: CE10 eklendi.*
