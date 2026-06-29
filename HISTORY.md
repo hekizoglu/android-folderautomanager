@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 164 — 2026-06-29 [goAsync FIX + CS13 KURAL]
+
+**Yapılanlar:** PackageChangeReceiver.kt goAsync() + pendingResult.finish() eklendi (BroadcastReceiver coroutine lifecycle fix, D164). CS13 audit kuralı eklendi (AppDao SELECT * LIMIT yok). audit_improvements.md item 9 isaretlendi.
+**Agent:** —
+**Sonraki:** D165 build dongusu (D161+4) — versionCode=8, versionName=1.0.6
+
+---
+
 ## Döngü 163 — 2026-06-29 [0 BULGU]
 
 **Yapılanlar:** Denetim #151 T1 UI_Settings_Labels+Navigation_Routing — 0 bulgu. CS-3 UAC bekliyor. Tüm FİKİRLER.md maddeleri tamamlandı.

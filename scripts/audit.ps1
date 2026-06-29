@@ -110,8 +110,10 @@ $tier1Rules = @(
     @{ Code = "Y7"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\FolderTile.kt"; Pattern = 'Modifier\.size\(\d+\.dp\)'; Description = "Hardcoded dp boyut - responsive tasma riski."; Focus = @("UI_Settings_Labels","Performance_Memory") },
     @{ Code = "Y8"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\HomeScreen.kt"; Pattern = 'LauncherActivity\('; Description = "HomeScreen yenileme/refresh tetikleyici kaynak kod hatti."; Focus = @("Data_State_Persistence","UI_Settings_Labels") },
     # CE9 kaldirildi D160: regex cok genis, DisposableEffect listener tamam (KEY_DOUBLE_TAP_SEARCH+KEY_ASSISTANT_CARDS D42e63cd), false positive uretiyordu
-    # D191-YENI (0 sonuc kuyrugu): Null safety — !! operatoru ViewModel'lerde
-    @{ Code = "CE10"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = '\w+!!'; Description = "!! operatoru NPE riski - ?.let veya ?: fallback kullan. cachedSuggestedApps!! D160'da duzeltildi - ?: emptyList()"; Focus = @("Data_State_Persistence","Performance_Memory") }
+    # D191-YENI (0 sonuc kuyrugu): Null safety -- !! operatoru ViewModel'lerde
+    @{ Code = "CE10"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = '\w+!!'; Description = "!! operatoru NPE riski - ?.let veya ?: fallback kullan. cachedSuggestedApps!! D160'da duzeltildi - ?: emptyList()"; Focus = @("Data_State_Persistence","Performance_Memory") },
+    # D164-YENI (0 sonuc kuyrugu item 9): Room SELECT * sorgu performansi
+    @{ Code = "CS13"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\data\local\AppDao.kt"; Pattern = '@Query\("SELECT \* FROM apps ORDER BY'; Description = "AppDao SELECT * ORDER BY LIMIT yok - 500+ uygulama icin yavas. Pagination veya specific column sec."; Focus = @("Performance_Memory","Repository_DataLayer") }
 )
 
 # ============================================================

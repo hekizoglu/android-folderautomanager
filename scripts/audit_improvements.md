@@ -39,7 +39,7 @@
 6. **BackHandler tutarliligi** — her ekranda back press dogru handle ediliyor mu
 7. **Permission flow butunlugu** — izin isteyen her ekranin rationale + deny fallback'i var mi
 8. **ViewModel scope dogrulama** — AndroidViewModel vs ViewModel secimi, Application leak riski
-9. **Room query performansi** — @Query'de SELECT *, LIMIT olmayan sorgular
+9. ~~**Room query performansi** — @Query'de SELECT *, LIMIT olmayan sorgular~~ **Eklendi D164** (CS13 — AppDao SELECT * ORDER BY LIMIT yok)
 10. **Compose preview derleme** — @Preview fonksiyonlarinin parametresiz olup olmadigi
 
 ---

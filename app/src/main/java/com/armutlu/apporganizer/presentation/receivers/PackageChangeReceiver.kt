@@ -37,7 +37,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun onPackageAdded(context: Context, packageName: String, pendingResult: PendingResult) {
+    private fun onPackageAdded(context: Context, packageName: String, pendingResult: BroadcastReceiver.PendingResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -53,7 +53,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun onPackageRemoved(context: Context, packageName: String, pendingResult: PendingResult) {
+    private fun onPackageRemoved(context: Context, packageName: String, pendingResult: BroadcastReceiver.PendingResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -69,7 +69,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun onPackageChanged(context: Context, packageName: String, pendingResult: PendingResult) {
+    private fun onPackageChanged(context: Context, packageName: String, pendingResult: BroadcastReceiver.PendingResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
