@@ -119,14 +119,20 @@ fun HomeScreen(
     var autoFolderSizeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
     val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
-    val screenColumns = when {
-        configuration.screenWidthDp >= 840 -> 6
-        isTablet -> 5
-        else -> 4
+    val isTablet = remember(configuration.screenWidthDp) { configuration.screenWidthDp >= 600 }
+    val screenColumns = remember(configuration.screenWidthDp) {
+        when {
+            configuration.screenWidthDp >= 840 -> 6
+            configuration.screenWidthDp >= 600 -> 5
+            else -> 4
+        }
     }
-    val maxFolderSizeDp = ((configuration.screenWidthDp - 32) / screenColumns).coerceIn(48, 96)
-    val effectiveFolderSizeDp = if (autoFolderSizeEnabled) maxFolderSizeDp else folderSizeDp.coerceAtMost(maxFolderSizeDp)
+    val maxFolderSizeDp = remember(configuration.screenWidthDp, screenColumns) {
+        ((configuration.screenWidthDp - 32) / screenColumns).coerceIn(48, 96)
+    }
+    val effectiveFolderSizeDp = remember(autoFolderSizeEnabled, maxFolderSizeDp, folderSizeDp) {
+        if (autoFolderSizeEnabled) maxFolderSizeDp else folderSizeDp.coerceAtMost(maxFolderSizeDp)
+    }
     var labelColorHex by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
     // Ayar toggle'ları — DisposableEffect listener ile reaktif
     var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }

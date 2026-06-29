@@ -79,5 +79,8 @@
 | 2026-06-29 10:32 | T1 | Accessibility/A11y | DockPrefs OK | Bulunamadi → CE11 eklendi |
 | 2026-06-29 10:55 | T1 | State/SharedPrefs | BackupWorker OK | Bulunamadi → CE12 eklendi |
 | 2026-06-29 11:08 | T2 | Dock/Widget/Backup + CE | StateFlow/ViewModel | Bulunamadi |
+| 2026-06-29 11:30 | T1 | Izin/Onboarding | Theme OK | Bulunamadi → CE13 eklendi |
+| 2026-06-29 11:52 | T1 | Category CRUD | AppClassifier OK | Bulunamadi |
+| 2026-06-29 12:08 | T2 | Dock/Widget/Backup + CE | StateFlow/ViewModel | Bulunamadi |
 
-*46 tur | CE12 path fix (dizin->dosya)*
+*49 tur, 0 bug*

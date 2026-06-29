@@ -95,10 +95,10 @@ fun AppIconView(
     newBadgeEnabled: Boolean = true,
 ) {
     val context = LocalContext.current
-    val userIconScale = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context) }
+    val userIconScale = com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context)
     val effectiveIconSize = iconSize * userIconScale
     val px = (effectiveIconSize.value * context.resources.displayMetrics.density).toInt()
-    val iconPackPkg = remember { com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context) }
+    val iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
     val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
 
     val icon: ImageBitmap? by produceState<ImageBitmap?>(

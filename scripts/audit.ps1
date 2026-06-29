@@ -129,7 +129,9 @@ $tier2Rules = @(
     # D191-YENI (0 sonuc kuyrugu): Modifier sirasi
     @{ Code = "CE11"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\AllAppsDrawer.kt"; Pattern = '\.clickable.*\.padding'; Description = "Modifier sirasi: clickable padding'den once - tik alani daralmis. .padding().clickable() olmali. (Agent D191)"; Focus = @("UI_Settings_Labels","Gesture_Swipe_Drawer") },
     # D191-YENI (0 sonuc kuyrugu): Timber.e() exception'siz cagri
-    @{ Code = "CE12"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = 'Timber\.e\([^,)]*\)'; Description = "Timber.e() exception parametresiz - stack trace kaybolur. Timber.e(exception, mesaj) kullan."; Focus = @("Error_Handling_Logging") }
+    @{ Code = "CE12"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = 'Timber\.e\([^,)]*\)'; Description = "Timber.e() exception parametresiz - stack trace kaybolur. Timber.e(exception, mesaj) kullan."; Focus = @("Error_Handling_Logging") },
+    # D191-YENI (0 sonuc kuyrugu): Hardcoded Turkce string (R.string kullanilmamis)
+    @{ Code = "CE13"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'Text\(""\w*[çğıöşüÇĞİÖŞÜ]'; Description = "Hardcoded Turkce string - R.string kullanilmali. (Agent D191: contentDescription eksikleriyle iliskili)"; Focus = @("UI_Settings_Labels") }
 )
 
 # ============================================================
