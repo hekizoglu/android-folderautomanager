@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
+import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -32,6 +33,7 @@ class AppOrganizerApp : Application() {
         if (AppPrefs.isAutoBackupEnabled(this)) {
             BackupWorker.schedule(this)
         }
+        WeeklyDigestWorker.schedule(this)
         createNotificationChannels()
         fetchFcmToken()
     }

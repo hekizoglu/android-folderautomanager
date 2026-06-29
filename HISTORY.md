@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 152 — 2026-06-29 [WEEKLY DIGEST + ONBOARDING RESTART]
+
+**Yapılanlar:** WeeklyDigestWorker.kt (PeriodicWork 7gün, lastUsedTimestamp+installTime tabanlı, notification channel "weekly_digest"), AppOrganizerApp'e schedule çağrısı, AppPrefs.KEY_WEEKLY_DIGEST toggle, SettingsBackupAboutSection'a digest switch + "Kurulum Sihirbazını Yeniden Başlat" butonu (AlertDialog → KEY_ONBOARDING_DONE=false → clear task restart). BUILD SUCCESSFUL (24.9MB).
+**Agent:** —
+**Sonraki:** Quick Wheel/Pie Mode (13p), Icon Pack UI (12p)
+
+---
+
 ## Döngü 151 — 2026-06-29 [BİOMETRİK AYARLAR KİLİDİ]
 
 **Yapılanlar:** BiometricHelper.kt (FragmentActivity+BiometricPrompt), SettingsScreen'de açılışta LaunchedEffect biometric doğrulama (kilitseyse geri döner), AppPrefs.KEY_BIOMETRIC_SETTINGS_LOCK toggle, SettingsScreen "Güvenlik" bölümü Switch eklenmiş (biometric yoksa disabled). build.gradle.kts'e `androidx.biometric:1.1.0` eklendi. Versiyon 1.0.2 / versionCode 4. BUILD SUCCESSFUL (24.5MB).

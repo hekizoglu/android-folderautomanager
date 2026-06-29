@@ -40,7 +40,7 @@
 | 2026-06-29 | **15 ⭐** | **Manual Category Override** — Long press uygulama → "Kategori Değiştir" → seçim + "Bu kararı hatırla" checkbox. ManualCategoryOverride tablosu (Room) — AppClassifier bu tabloyu exactMatch'ten önce kontrol eder. "Aynı tür uygulamalara uygula" opsiyonu. (KV:4 · U:4 · BR:4 · EA:3) | [TAMAMLANDI — AppPrefs.KEY_MANUAL_CAT_OVERRIDES, AppClassifier.classifyApp(), LauncherViewModel.updateAppCategory()] |
 | 2026-06-29 | **14 🟡** | **Batch Kategori Değiştirme** — AppListScreen çoklu seçim modu: birden fazla uygulama checkbox ile seçilir, tek seferde kategori atanır. "Tümünü Seç" + "Seçimi Temizle" butonları. Kategori taşıma sonrası seçim korunur — zincirleme düzenleme kolaylığı. (KV:4 · U:4 · BR:2 · EA:4) | [MEVCUT — AppListScreen.kt:120-139, AppListViewModel.kt:287-353, AppListDialogs.kt:BulkCategoryPicker] |
 | 2026-06-29 | **14 🟡** | **Widget Öneri Motoru** — Kullanıcının en çok kullandığı uygulamaların widget'larını öner. AppWidgetManager.getInstalledProviders() ile cihazdaki widget'ları tara, kullanım verisiyle eşleştir, "WhatsApp için 3 widget var" toast + Settings'te öneri listesi. (KV:4 · U:4 · BR:3 · EA:3) | [TAMAMLANDI — WidgetSuggestionEngine.kt, WidgetSuggestionSection.kt, AppListViewModel+LauncherViewModel] |
-| 2026-06-29 | **13 🟡** | **Weekly Digest (Kullanılmayan Uygulama Raporu)** — Her hafta "7+ gündür açılmayan X uygulama var" notification. Settings'te detaylı rapor: hangi uygulamalar, kaç gündür kapalı, toplu gizleme/kaldırma önerisi. UsageStatsManager + WorkManager PeriodicWork. (KV:4 · U:4 · BR:2 · EA:3) | Bekliyor |
+| 2026-06-29 | **13 🟡** | **Weekly Digest (Kullanılmayan Uygulama Raporu)** — Her hafta "7+ gündür açılmayan X uygulama var" notification. Settings'te detaylı rapor: hangi uygulamalar, kaç gündür kapalı, toplu gizleme/kaldırma önerisi. UsageStatsManager + WorkManager PeriodicWork. (KV:4 · U:4 · BR:2 · EA:3) | [TAMAMLANDI — WeeklyDigestWorker.kt PeriodicWork 7gün, lastUsedTimestamp tabanlı, AppPrefs.KEY_WEEKLY_DIGEST, SettingsBackupAboutSection switch] |
 
 ---
 
@@ -58,7 +58,7 @@
 | 2026-06-29 | Rekabet | **Icon Pack Desteği** — Üçüncü taraf icon pack uygulamalarından ikon yükleme. IconPackManager mevcut ama UI eksik. Settings > Görünüm'e seçici ekle. (KV:3 · U:3 · BR:3 · EA:3 = **12p**) | Bekliyor |
 | 2026-06-29 | Hüseyin | **claude-code-templates mobile-design skill** — Tablet/foldable desteği planlandığında ekle (şimdi marginal fayda) | Bekliyor |
 | 2026-06-29 | Yeni | **Klasör Rengi Otomatik (Dominant İkon)** — Klasör oluşturulunca içindeki uygulamaların ikonundan dominant renk hesaplanıp otomatik atanır. Manuel değiştirilebilir. (KV:3 · U:4 · BR:2 · EA:4 = **13p**) | Bekliyor |
-| 2026-06-29 | Yeni | **Onboarding Yeniden Başlatma** — Settings > Hakkında'ya "Kurulum Sihirbazını Yeniden Başlat" butonu ekle. (KV:3 · U:5 · BR:1 · EA:3 = **12p**) | Bekliyor |
+| 2026-06-29 | Yeni | **Onboarding Yeniden Başlatma** — Settings > Hakkında'ya "Kurulum Sihirbazını Yeniden Başlat" butonu ekle. (KV:3 · U:5 · BR:1 · EA:3 = **12p**) | [TAMAMLANDI — SettingsBackupAboutSection.kt "Hakkında" bölümüne SettingsButtonRow + AlertDialog: KEY_ONBOARDING_DONE=false → MainActivity clear task restart] |
 
 ---
 

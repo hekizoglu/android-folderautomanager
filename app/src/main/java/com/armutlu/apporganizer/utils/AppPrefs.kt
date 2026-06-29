@@ -325,6 +325,11 @@ object AppPrefs {
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)
     fun setAssistantCardsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_ASSISTANT_CARDS, v).apply()
 
+    // Weekly Digest — haftalık kullanılmayan uygulama raporu bildirimi
+    const val KEY_WEEKLY_DIGEST = "weekly_digest_enabled"
+    fun isWeeklyDigestEnabled(context: Context) = prefs(context).getBoolean(KEY_WEEKLY_DIGEST, true)
+    fun setWeeklyDigestEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WEEKLY_DIGEST, v).apply()
+
     // Biometric Settings Lock — Ayarlar ekranını parmak izi/yüz kilidi arkasına al
     const val KEY_BIOMETRIC_SETTINGS_LOCK = "biometric_settings_lock"
     fun isBiometricSettingsLockEnabled(context: Context) = prefs(context).getBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, false)

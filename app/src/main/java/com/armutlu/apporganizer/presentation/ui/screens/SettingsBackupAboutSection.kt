@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
+import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -417,16 +418,69 @@ internal fun LazyListScope.settingsBackupAboutSection(
         }
     }
 
+    // ── Haftalık Digest Bildirimi ────────────────────────────────────────
+    item {
+        val context = LocalContext.current
+        var weeklyDigest by remember { mutableStateOf(AppPrefs.isWeeklyDigestEnabled(context)) }
+        SettingsCard {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Haftalık Uygulama Raporu", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("7+ gündür açılmayan uygulamalar için haftalık bildirim", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(
+                    checked = weeklyDigest,
+                    onCheckedChange = {
+                        weeklyDigest = it
+                        AppPrefs.setWeeklyDigestEnabled(context, it)
+                        if (it) WeeklyDigestWorker.schedule(context)
+                        else WeeklyDigestWorker.cancel(context)
+                    }
+                )
+            }
+        }
+    }
+
     // ── Hakkında (gizlilik + versiyon) ──────────────────────────────────
     item { SettingsSectionTitle("Hakkında") }
     item {
+        val context = LocalContext.current
+        var showRestartDialog by remember { mutableStateOf(false) }
         SettingsCard {
             SettingsButtonRow(Icons.Default.PrivacyTip, "Gizlilik Politikası",
                 "Veri toplama ve kullanım hakkınızda bilgi alın",
                 showChevron = true,
                 onClick = onNavigateToPrivacyPolicy)
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
-            SettingsInfoRow(Icons.Default.Info, "Versiyon", "AppOrganizer 1.0.0 — Haziran 2026")
+            SettingsButtonRow(Icons.Default.RestartAlt, "Kurulum Sihirbazını Yeniden Başlat",
+                "Onboarding adımlarını sıfırla ve başa dön",
+                showChevron = false,
+                onClick = { showRestartDialog = true }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsInfoRow(Icons.Default.Info, "Versiyon", "AppOrganizer 1.0.2 — Haziran 2026")
+        }
+        if (showRestartDialog) {
+            AlertDialog(
+                onDismissRequest = { showRestartDialog = false },
+                title = { Text("Kurulum Sihirbazı") },
+                text = { Text("Onboarding adımları sıfırlanacak. Uygulama yeniden başlatılacak.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                            .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, false).apply()
+                        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                            ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        if (intent != null) context.startActivity(intent)
+                    }) { Text("Sıfırla ve Başlat") }
+                },
+                dismissButton = { TextButton(onClick = { showRestartDialog = false }) { Text("İptal") } }
+            )
         }
     }
 
