@@ -86,11 +86,11 @@ import java.util.Locale
 internal fun PixelClockWidget(modifier: Modifier = Modifier) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val dateFormat = remember { SimpleDateFormat("EEEE, d MMMM", Locale("tr")) }
-    var now by remember { mutableStateOf(Date()) }
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
 
     LaunchedEffect(Unit) {
         while (true) {
-            now = Date()
+            now = System.currentTimeMillis()
             delay(1_000)
         }
     }

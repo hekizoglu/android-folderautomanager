@@ -92,8 +92,10 @@
 | 2026-06-29 19:05 | T1 | Category CRUD | Repository/DataLayer | Bulunamadi |
 | 2026-06-29 19:25 | T2 | Gesture/Swipe/Drawer + CE | Timber log | Bulunamadi |
 | 2026-06-29 19:50 | T1 | Accessibility/A11y | Test Coverage | Bulunamadi |
+| 2026-06-29 20:08 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi |
+| 2026-06-29 20:22 | T2 | Accessibility/A11y + CE | Test Coverage | Bulunamadi |
 
-*59 tur, 0 bug*
+*61 tur, 0 bug*
 
 *51 tur, 0 bug | IMP#4: derivedStateOf fix*
 
