@@ -480,21 +480,31 @@ class LauncherViewModel @Inject constructor(
     @Volatile private var cacheTimestamp: Long = 0L
     private val CACHE_DURATION_MS = 30 * 60 * 1000L  // 30 dakika
 
-    // Akıllı öneriler — time-slot aware (Yaklaşım B)
+    // Akıllı öneriler — UsageScore v2: recency+frequency+timeSlot + dock/notif boost
     val suggestedApps: StateFlow<List<AppInfo>> = combine(
         repository.getAllAppsFlow(),
         _suggestionTick
     ) { apps, _ ->
         val now = System.currentTimeMillis()
-        // Cache süresi dolduysa yenile
         if (cachedSuggestedApps == null || now - cacheTimestamp > CACHE_DURATION_MS) {
             val ctx = getApplication<Application>()
             val visible = apps.filter { !it.isHidden }
+            // UsageScore v2 boost faktörleri (anlık snapshot)
+            val dockPkgs = _dockPackages.value
+            val favPkgs = _favoritePkgs.value
+            val notifCounts = AppNotificationListenerService.badgeCounts.value
             val result = if (UsageStatsHelper.hasPermission(ctx)) {
-                val scores = UsageStatsHelper.getWeightedScores(ctx, days = 28)
+                val baseScores = UsageStatsHelper.getWeightedScores(ctx, days = 28)
+                // v2 boost: dock/favorite +0.15, aktif bildirim +0.2
+                val boosted = baseScores.mapValues { (pkg, score) ->
+                    var s = score
+                    if (dockPkgs.contains(pkg) || favPkgs.contains(pkg)) s += 0.15f
+                    if ((notifCounts[pkg] ?: 0) > 0) s += 0.2f
+                    s
+                }
                 visible
-                    .filter { scores.containsKey(it.packageName) }
-                    .sortedByDescending { scores[it.packageName] ?: 0f }
+                    .filter { boosted.containsKey(it.packageName) }
+                    .sortedByDescending { boosted[it.packageName] ?: 0f }
                     .take(4)
                     .ifEmpty {
                         visible.filter { it.usageCount > 0 }

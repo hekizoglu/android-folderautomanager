@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 142 — 2026-06-29 [USAGESCORE v2]
+
+**Yapılanlar:** UsageScore v2 (17p) — LauncherViewModel.kt:483 `suggestedApps` güncellendi. Dock/favorite +0.15, aktif bildirim +0.2 boost. UsageStatsHelper.getWeightedScores base: recency+frequency+timeSlot. Sonuç: dock'taki ve bildirimli uygulamalar öneri sırasında yükseliyor.
+**Agent:** —
+**Sonraki:** AppOrganizer Assistant Kartları (16p), Contextual Dock v1 (15p)
+
+---
+
 ## Döngü 141 — 2026-06-29 [SMART SEARCH v1]
 **Yapılanlar:** Smart Search v1 (16p) — AllAppsDrawer.kt:587'de `catMatch` bucket eklendi. Kullanıcı "finans" yazınca Finans kategorisindeki tüm uygulamalar gelir; "spor" → Spor kategorisi; catMatch'ler usageCount'a göre sıralı. HomeScreenComponents.kt:522 fix (hintAllowed mutableStateOf + increment sonrası re-read).
 **Agent:** —
