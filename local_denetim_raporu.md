@@ -72,5 +72,6 @@
 | 2026-06-29 04:10 | T1 | Gesture/Swipe/Drawer | NotificationListener OK | Bulunamadi |
 | 2026-06-29 04:35 | T2 | Category CRUD + CE | Onboarding 17 adim OK | Bulunamadi |
 | 2026-06-29 05:00 | T1 | Gesture/Swipe/Drawer | Timber log quality | Bulunamadi |
+| 2026-06-29 05:18 | T1 | Accessibility/A11y | Widget OK | Bulunamadi |
 
-*38 tur, 0 bug | Sonraki: #146 T2*
+*39 tur, 0 bug | Sonraki: #147 T2 (CE)*
