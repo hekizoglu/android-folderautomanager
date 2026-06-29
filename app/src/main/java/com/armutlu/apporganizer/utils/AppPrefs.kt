@@ -345,6 +345,11 @@ object AppPrefs {
     fun isBadgeIntelligenceEnabled(context: Context) = prefs(context).getBoolean(KEY_BADGE_INTELLIGENCE, true)
     fun setBadgeIntelligenceEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_BADGE_INTELLIGENCE, v).apply()
 
+    // Focus Mode / Minimal Mod — sadece dock + favoriler, klasör grid ve drawer gizlenir
+    const val KEY_FOCUS_MODE = "focus_mode_enabled"
+    fun isFocusModeEnabled(context: Context) = prefs(context).getBoolean(KEY_FOCUS_MODE, false)
+    fun setFocusModeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOCUS_MODE, v).apply()
+
     // Quick Wheel / Pie Mode — uzun bas ile radyal uygulama çarkı (varsayılan kapalı)
     const val KEY_QUICK_WHEEL = "quick_wheel_enabled"
     fun isQuickWheelEnabled(context: Context) = prefs(context).getBoolean(KEY_QUICK_WHEEL, false)

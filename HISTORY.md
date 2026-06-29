@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 158 — 2026-06-29 [FOCUS MODE / MİNİMAL MOD]
+
+**Yapılanlar:** Focus Mode (9p) — AppPrefs.KEY_FOCUS_MODE, HomeScreen.kt: focusModeEnabled state + DisposableEffect reactive, klasör grid + stats + sayfa göstergesi + swipe hint gizlenir, "Odak Modu Aktif" banner gösterilir, dock+favoriler kalır. SettingsScreen "Hızlı Erişim" bölümüne DoNotDisturb toggle eklendi. BUILD SUCCESSFUL 2m51s.
+**Agent:** —
+**Sonraki:** FİKİRLER.md tüm Beklet maddeleri tamamlandı — yeni fikir üretimi veya Play Store hazırlığı
+
+---
+
 ## Döngü 157 — 2026-06-29 [BUILD v1.0.3]
 
 **Yapılanlar:** Build döngüsü — versionCode 4→5, versionName 1.0.2→1.0.3. BUILD SUCCESSFUL 33s, APK 24.6MB. Telegram bu ortamda engelli.

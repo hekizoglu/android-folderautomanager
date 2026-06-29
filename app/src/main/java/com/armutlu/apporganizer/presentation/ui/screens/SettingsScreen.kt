@@ -436,10 +436,11 @@ fun SettingsScreen(
                 }
             }
 
-            // ── Quick Wheel ───────────────────────────────────────────────────
+            // ── Quick Wheel + Focus Mode ──────────────────────────────────────
             item { SettingsSectionTitle("Hızlı Erişim") }
             item {
                 var quickWheel by remember { mutableStateOf(AppPrefs.isQuickWheelEnabled(context)) }
+                var focusMode by remember { mutableStateOf(AppPrefs.isFocusModeEnabled(context)) }
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Widgets,
@@ -449,6 +450,17 @@ fun SettingsScreen(
                         onCheckedChange = {
                             quickWheel = it
                             AppPrefs.setQuickWheelEnabled(context, it)
+                        }
+                    )
+                    androidx.compose.material3.Divider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.DoNotDisturb,
+                        title = "Odak Modu",
+                        subtitle = "Klasör gridi gizlenir, yalnızca dock + favoriler görünür",
+                        checked = focusMode,
+                        onCheckedChange = {
+                            focusMode = it
+                            AppPrefs.setFocusModeEnabled(context, it)
                         }
                     )
                 }

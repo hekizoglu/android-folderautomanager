@@ -138,6 +138,7 @@ fun HomeScreen(
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
+    var focusModeEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -204,6 +205,8 @@ fun HomeScreen(
                     widgetAutoResize = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_QUICK_WHEEL ->
                     quickWheelEnabled = com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOCUS_MODE ->
+                    focusModeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -515,6 +518,21 @@ fun HomeScreen(
                 AssistantInsightRow(cards = insightCards)
             }
 
+            // Odak Modu aktifken klasör grid ve istatistik gizlenir
+            if (focusModeEnabled) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.material3.Text(
+                        text = "Odak Modu Aktif",
+                        color = Color.White.copy(alpha = 0.55f),
+                        fontSize = 14.sp
+                    )
+                }
+            } else {
             // İstatistik bandı — toplam klasör ve uygulama sayısı
             FolderStatsRow(folders = folders)
 
@@ -628,6 +646,7 @@ fun HomeScreen(
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
+            } // end else !focusModeEnabled
 
             // Drag pill handle — above dock, pure Pixel style
             Box(
