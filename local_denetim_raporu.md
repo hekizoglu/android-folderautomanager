@@ -70,5 +70,7 @@
 | 2026-06-29 03:28 | T2 | State/SharedPrefs + CE | WorkManager OK | Bulunamadi |
 | 2026-06-29 03:47 | T1 | Category CRUD | Repository/DataLayer | Bulunamadi |
 | 2026-06-29 04:10 | T1 | Gesture/Swipe/Drawer | NotificationListener OK | Bulunamadi |
+| 2026-06-29 04:35 | T2 | Category CRUD + CE | Onboarding 17 adim OK | Bulunamadi |
+| 2026-06-29 05:00 | T1 | Gesture/Swipe/Drawer | Timber log quality | Bulunamadi |
 
-*36 tur, 0 bug | Sonraki: #144 T2 (CE + meta-audit)*
+*38 tur, 0 bug | Sonraki: #146 T2*
