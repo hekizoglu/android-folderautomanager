@@ -224,14 +224,21 @@ class AppClassifierTest {
 
     @Test
     fun `manufacturerClassify_enabled_samsung_prefix_CAT_SAMSUNG_dondurur`() {
-        classifier.manufacturerClassifyEnabled = true
-        assertEquals(Category.CAT_SAMSUNG, classifier.classifyApp(appInfo("com.samsung.unknownfeature", "Samsung Unknown")))
+        assertEquals(
+            Category.CAT_SAMSUNG,
+            classifier.classifyApp(
+                appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
+                manufacturerClassifyEnabled = true
+            )
+        )
     }
 
     @Test
     fun `manufacturerClassify_disabled_samsung_prefix_atlanir`() {
-        classifier.manufacturerClassifyEnabled = false
-        val result = classifier.classifyApp(appInfo("com.samsung.unknownfeature", "Samsung Unknown"))
+        val result = classifier.classifyApp(
+            appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
+            manufacturerClassifyEnabled = false
+        )
         assertNotEquals(Category.CAT_SAMSUNG, result)
     }
 

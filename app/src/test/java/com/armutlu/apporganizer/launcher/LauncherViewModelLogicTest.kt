@@ -15,11 +15,13 @@ import org.junit.Test
  */
 class LauncherViewModelLogicTest {
 
+    private val categories = Category.getDefaultCategories()
+
     // ── buildFolders ──────────────────────────────────────────────────────────
 
     @Test
     fun `buildFolders_bos_liste_donduruyor_bos_girdi_icin`() {
-        assertTrue(buildFolders(emptyList()).isEmpty())
+        assertTrue(buildFolders(emptyList(), categories).isEmpty())
     }
 
     @Test
@@ -28,7 +30,7 @@ class LauncherViewModelLogicTest {
             app("com.instagram.android", "Instagram", "social"),
             app("com.game1", "Game One", "games")
         )
-        val folders = buildFolders(apps)
+        val folders = buildFolders(apps, categories)
         val socialFolder = folders.first { it.category.categoryId == "social" }
         assertEquals(1, socialFolder.apps.size)
         assertEquals("Instagram", socialFolder.apps[0].appName)
@@ -37,7 +39,7 @@ class LauncherViewModelLogicTest {
     @Test
     fun `buildFolders_bos_kategorileri_dislar`() {
         val apps = listOf(app("com.instagram", "Instagram", "social"))
-        val folders = buildFolders(apps)
+        val folders = buildFolders(apps, categories)
         assertFalse("Oyun uygulaması yokken games klasörü olmamalı",
             folders.any { it.category.categoryId == "games" })
     }
@@ -47,7 +49,7 @@ class LauncherViewModelLogicTest {
         val apps = listOf(
             app("com.x", "App X", Category.CAT_UNCATEGORIZED)
         )
-        val folders = buildFolders(apps)
+        val folders = buildFolders(apps, categories)
         assertFalse(folders.any { it.category.categoryId == Category.CAT_UNCATEGORIZED })
         assertTrue("Kategorisiz uygulama klasör oluşturmamalı", folders.isEmpty())
     }
@@ -59,7 +61,7 @@ class LauncherViewModelLogicTest {
             app("pkg.a", "Alpha App", "games"),
             app("pkg.m", "Middle App", "games")
         )
-        val folder = buildFolders(apps).first { it.category.categoryId == "games" }
+        val folder = buildFolders(apps, categories).first { it.category.categoryId == "games" }
         assertEquals(listOf("Alpha App", "Middle App", "Zebra App"),
             folder.apps.map { it.appName })
     }
@@ -71,7 +73,7 @@ class LauncherViewModelLogicTest {
             app("p1", "App1", "games"),
             app("p2", "App2", "social")
         )
-        val folders = buildFolders(apps)
+        val folders = buildFolders(apps, categories)
         val socialIdx = folders.indexOfFirst { it.category.categoryId == "social" }
         val gamesIdx  = folders.indexOfFirst { it.category.categoryId == "games" }
         assertTrue("Social (order=1) games'ten (order=3) önce gelmeli", socialIdx < gamesIdx)
@@ -84,7 +86,7 @@ class LauncherViewModelLogicTest {
             app("b", "App B", "social"),
             app("c", "App C", "social")
         )
-        val folder = buildFolders(apps).first { it.category.categoryId == "social" }
+        val folder = buildFolders(apps, categories).first { it.category.categoryId == "social" }
         assertEquals(3, folder.apps.size)
     }
 
@@ -95,14 +97,14 @@ class LauncherViewModelLogicTest {
         val apps = allCats.mapIndexed { i, cat ->
             app("pkg.$i", "App $i", cat.categoryId)
         }
-        val folders = buildFolders(apps)
+        val folders = buildFolders(apps, allCats)
         assertEquals(allCats.size, folders.size)
     }
 
     @Test
     fun `buildFolders_kategori_nesnesi_dogru_ataniyor`() {
         val apps = listOf(app("com.x", "SomeApp", "social"))
-        val folder = buildFolders(apps).first()
+        val folder = buildFolders(apps, categories).first()
         assertEquals("social", folder.category.categoryId)
         assertEquals("Sosyal Medya", folder.category.categoryName)
         assertEquals("👥", folder.category.iconEmoji)

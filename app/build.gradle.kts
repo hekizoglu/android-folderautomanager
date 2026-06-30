@@ -118,23 +118,71 @@ kapt {
     }
 }
 
-// Workaround: Hilt ASM transform output lands in "dirs/" but Gradle's BuiltinClassLoader
-// cannot load .class files from directories on the @argfile classpath when the path
-// contains non-ASCII characters (Türkçe klasör adı). We jar up the output and add it
-// to the test classpath explicitly so the classloader can find the classes.
+// Workaround: local JVM test class discovery/runtime breaks when directory-based classpath
+// entries live under a non-ASCII workspace path (ör. "Klasörleri"). We mirror the
+// relevant test class directories into an ASCII-only temp folder and point Gradle's
+// test scanning/runtime at those copies.
 afterEvaluate {
-    val jarAsmDirs = tasks.register<Jar>("jarHiltAsmTestClasses") {
+    val asciiTestClasspathRoot = File(System.getProperty("java.io.tmpdir"), "apporganizer-test-classpath")
+    val syncDebugAsmDirs = tasks.register<Sync>("syncDebugAsmClassesAscii") {
+        dependsOn("transformDebugClassesWithAsm")
+        from(layout.buildDirectory.dir(
+            "intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
+        ))
+        into(File(asciiTestClasspathRoot, "debug-asm-classes"))
+        include("**/*.class")
+    }
+    val syncDebugKotlinClasses = tasks.register<Sync>("syncDebugKotlinClassesAscii") {
+        dependsOn("compileDebugKotlin")
+        from(layout.buildDirectory.dir("tmp/kotlin-classes/debug"))
+        into(File(asciiTestClasspathRoot, "debug-kotlin-classes"))
+        include("**/*.class")
+    }
+    val syncDebugJavaClasses = tasks.register<Sync>("syncDebugJavaClassesAscii") {
+        dependsOn("compileDebugJavaWithJavac")
+        from(layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes"))
+        into(File(asciiTestClasspathRoot, "debug-java-classes"))
+        include("**/*.class")
+    }
+    val syncAsmDirs = tasks.register<Sync>("syncHiltAsmTestClassesAscii") {
         dependsOn("transformDebugUnitTestClassesWithAsm")
-        archiveFileName.set("hilt-asm-test-classes.jar")
-        destinationDirectory.set(layout.buildDirectory.dir("tmp/hilt-asm-workaround"))
         from(layout.buildDirectory.dir(
             "intermediates/classes/debugUnitTest/transformDebugUnitTestClassesWithAsm/dirs"
         ))
+        into(File(asciiTestClasspathRoot, "hilt-asm-test-classes"))
+        include("**/*.class")
+    }
+    val syncUnitTestKotlinClasses = tasks.register<Sync>("syncDebugUnitTestKotlinClassesAscii") {
+        dependsOn("compileDebugUnitTestKotlin")
+        from(layout.buildDirectory.dir("tmp/kotlin-classes/debugUnitTest"))
+        into(File(asciiTestClasspathRoot, "debug-unit-test-kotlin-classes"))
+        include("**/*.class")
+    }
+    val syncUnitTestJavaClasses = tasks.register<Sync>("syncDebugUnitTestJavaClassesAscii") {
+        dependsOn("compileDebugUnitTestJavaWithJavac")
+        from(layout.buildDirectory.dir("intermediates/javac/debugUnitTest/compileDebugUnitTestJavaWithJavac/classes"))
+        into(File(asciiTestClasspathRoot, "debug-unit-test-java-classes"))
         include("**/*.class")
     }
     tasks.withType<Test>().configureEach {
-        dependsOn(jarAsmDirs)
-        classpath = jarAsmDirs.get().outputs.files + classpath
+        dependsOn(
+            syncDebugAsmDirs,
+            syncDebugKotlinClasses,
+            syncDebugJavaClasses,
+            syncAsmDirs,
+            syncUnitTestKotlinClasses,
+            syncUnitTestJavaClasses
+        )
+        val debugAsmDir = File(asciiTestClasspathRoot, "debug-asm-classes")
+        val debugKotlinDir = File(asciiTestClasspathRoot, "debug-kotlin-classes")
+        val debugJavaDir = File(asciiTestClasspathRoot, "debug-java-classes")
+        val asmDir = File(asciiTestClasspathRoot, "hilt-asm-test-classes")
+        val kotlinTestDir = File(asciiTestClasspathRoot, "debug-unit-test-kotlin-classes")
+        val javaTestDir = File(asciiTestClasspathRoot, "debug-unit-test-java-classes")
+        testClassesDirs = files(kotlinTestDir, javaTestDir)
+        classpath =
+            files(debugAsmDir, debugKotlinDir, debugJavaDir, asmDir, kotlinTestDir, javaTestDir) +
+            classpath
     }
 }
 

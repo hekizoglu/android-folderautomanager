@@ -4,7 +4,9 @@ import android.app.Application
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.remote.FetchResult
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
@@ -44,12 +46,14 @@ class AppListViewModelTest {
 
     private lateinit var mockApplication: Application
     private lateinit var mockRepository: AppRepository
+    private lateinit var mockSearchRepository: SearchRepository
     private lateinit var mockClassifier: AppClassifier
     private lateinit var mockLlmFallback: CategoryLLMFallback
     private lateinit var mockDbService: AppDatabaseService
 
     /** Flow that the fake repository emits apps through. */
     private val appsFlow = MutableStateFlow<List<AppInfo>>(emptyList())
+    private val categoriesFlow = MutableStateFlow(Category.getDefaultCategories())
 
     private lateinit var viewModel: AppListViewModel
 
@@ -59,12 +63,15 @@ class AppListViewModelTest {
 
         mockApplication  = mockk(relaxed = true)
         mockRepository   = mockk(relaxed = true)
+        mockSearchRepository = mockk(relaxed = true)
         mockClassifier   = mockk(relaxed = true)
         mockLlmFallback  = mockk(relaxed = true)
         mockDbService    = mockk(relaxed = true)
 
         // Repository returns our controllable flow
         every { mockRepository.getAllAppsFlow() } returns appsFlow
+        every { mockRepository.getAllCategoriesFlow() } returns categoriesFlow
+        coEvery { mockRepository.ensureDefaultCategories() } returns Unit
 
         // AppDatabaseService returns a quick success so init does not block
         coEvery { mockDbService.fetchAndCache() } returns FetchResult.FromCache(0, 1)
@@ -72,6 +79,7 @@ class AppListViewModelTest {
         viewModel = AppListViewModel(
             application        = mockApplication,
             repository         = mockRepository,
+            searchRepository   = mockSearchRepository,
             classifier         = mockClassifier,
             llmFallback        = mockLlmFallback,
             appDatabaseService = mockDbService
