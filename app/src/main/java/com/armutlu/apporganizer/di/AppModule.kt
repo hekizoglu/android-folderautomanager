@@ -4,6 +4,8 @@ import android.content.Context
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.local.ContactsIndexer
+import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchHistoryDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
@@ -40,14 +42,23 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideFilesIndexer(
+        @ApplicationContext context: Context,
+        searchDao: SearchDao
+    ): FilesIndexer = FilesIndexer(context, searchDao)
+
+    @Provides
+    @Singleton
     fun provideSearchRepository(
         @ApplicationContext context: Context,
         searchDao: SearchDao,
         appDao: AppDao,
         categoryDao: CategoryDao,
         indexer: SearchIndexer,
+        contactsIndexer: ContactsIndexer,
+        filesIndexer: FilesIndexer,
         db: AppDatabase
-    ): SearchRepository = SearchRepository(context, searchDao, appDao, categoryDao, indexer, db)
+    ): SearchRepository = SearchRepository(context, searchDao, appDao, categoryDao, indexer, contactsIndexer, filesIndexer, db)
 
     @Provides
     @Singleton

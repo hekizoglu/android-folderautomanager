@@ -77,6 +77,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -585,6 +586,10 @@ internal fun HomeAppSearchBar(
             .sortedBy { it.appName }
             .take(6)
     }
+    val historyItems = remember(query) {
+        if (query.isNotBlank()) emptyList()
+        else SearchHistoryPrefs.getHistory(context)
+    }
 
     // Drag handle state
     var isDragging by remember { mutableStateOf(false) }
@@ -626,7 +631,7 @@ internal fun HomeAppSearchBar(
                 .fillMaxWidth()
                 .scale(barScale)
                 .pointerInput(Unit) {
-                    androidx.compose.foundation.gestures.detectTapGestures(
+                    detectTapGestures(
                         onLongPress = {
                             isDragging = true
                             showGhostZones = true
@@ -715,6 +720,33 @@ internal fun HomeAppSearchBar(
             }
         }
 
+        // Arama geçmişi chip row — sorgu boşken gösterilir
+        if (historyItems.isNotEmpty() && query.isBlank() && !isDragging) {
+            Spacer(Modifier.height(6.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(historyItems) { histQuery ->
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.White.copy(alpha = 0.12f))
+                            .clickable { query = histQuery }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(Icons.Default.Search, null,
+                            tint = Color.White.copy(alpha = 0.50f), modifier = Modifier.size(12.dp))
+                        Text(histQuery, color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
+                        Icon(Icons.Default.Close, null,
+                            tint = Color.White.copy(alpha = 0.40f),
+                            modifier = Modifier.size(12.dp).clickable {
+                                SearchHistoryPrefs.clear(context)
+                            })
+                    }
+                }
+            }
+        }
+
         // Sonuç listesi
         if (results.isNotEmpty() && !isDragging) {
             Spacer(Modifier.height(4.dp))
@@ -724,7 +756,11 @@ internal fun HomeAppSearchBar(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { query = ""; onAppClick(app.packageName) }
+                                .clickable {
+                                    SearchHistoryPrefs.addQuery(context, query)
+                                    query = ""
+                                    onAppClick(app.packageName)
+                                }
                                 .padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)

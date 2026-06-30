@@ -5,6 +5,8 @@ import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.local.ContactsIndexer
+import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.domain.models.SearchDocument
@@ -22,6 +24,8 @@ class SearchRepository(
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
     private val indexer: SearchIndexer,
+    private val contactsIndexer: ContactsIndexer,
+    private val filesIndexer: FilesIndexer,
     private val db: AppDatabase
 ) {
 
@@ -135,9 +139,39 @@ class SearchRepository(
             searchDao.insertAll(docs)
 
             Timber.d("bootstrapIndex: ${docs.size} döküman indekslendi (${apps.size} app, ${categories.size} kategori)")
+
+            // Rehber ve dosya kaynakları açıksa paralel indeksle
+            if (AppPrefs.isSearchSourceContactsEnabled(context)) {
+                contactsIndexer.indexAll()
+            }
+            if (AppPrefs.isSearchSourceFilesEnabled(context)) {
+                filesIndexer.indexAll()
+            }
         }.onFailure {
             Timber.e(it, "bootstrapIndex hatası")
         }
+    }
+
+    /** Rehber kaynağı açılınca veya izin verilince çağrılır. */
+    suspend fun enableContactsSource() = withContext(Dispatchers.IO) {
+        contactsIndexer.indexAll()
+        contactsIndexer.registerObserver()
+    }
+
+    /** Rehber kaynağı kapatılınca. */
+    suspend fun disableContactsSource() = withContext(Dispatchers.IO) {
+        contactsIndexer.unregisterObserver()
+        contactsIndexer.clearIndex()
+    }
+
+    /** Dosya kaynağı açılınca çağrılır. */
+    suspend fun enableFilesSource() = withContext(Dispatchers.IO) {
+        filesIndexer.indexAll()
+    }
+
+    /** Dosya kaynağı kapatılınca. */
+    suspend fun disableFilesSource() = withContext(Dispatchers.IO) {
+        filesIndexer.clearIndex()
     }
 
     /**

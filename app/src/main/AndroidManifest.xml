@@ -33,6 +33,9 @@
     <!-- Sistem duvar kağıdı ayarlama -->
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
 
+    <!-- Rehber arama (C1) — opt-in, kullanıcı izin verirse SearchRepository tarafından kullanılır -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
     <application
         android:name=".AppOrganizerApp"
         android:allowBackup="true"
