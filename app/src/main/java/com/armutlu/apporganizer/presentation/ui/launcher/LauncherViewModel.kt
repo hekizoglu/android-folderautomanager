@@ -551,15 +551,28 @@ class LauncherViewModel @Inject constructor(
         cachedSuggestedApps ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // Assistant Kartları — kural bazlı içgörü (AI gerektirmez)
+    // Assistant Kartları — 7 kart türü, rotation + son 3 kart hafızası
     val insightCards: StateFlow<List<InsightCard>> = repository.getAllAppsFlow()
         .map { apps ->
+            val ctx = getApplication<Application>()
             InsightEngine.generate(
+                context = ctx,
                 apps = apps.filter { !it.isHidden },
                 categories = Category.getDefaultCategories(),
                 badgeCounts = AppNotificationListenerService.badgeCounts.value
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun refreshInsightsIfStale() {
+        val ctx = getApplication<Application>()
+        if (InsightEngine.shouldRefresh(ctx)) {
+            InsightEngine.markRefreshed(ctx)
+            viewModelScope.launch(Dispatchers.IO) {
+                // Yeni emit için flow'u yeniden değerlendirtmek amacıyla mevcut veriden tetikle
+                _folderOrder.update { it.toList() }
+            }
+        }
+    }
 
     // Contextual Dock — 2 sabit (kullanici) + 2 akilli öneri (saat/gun/kullanim)
     val contextualDockPackages: StateFlow<List<String>> = combine(

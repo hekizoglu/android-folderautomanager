@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
@@ -31,6 +33,7 @@ import com.armutlu.apporganizer.utils.InsightType
 @Composable
 fun AssistantInsightRow(
     cards: List<InsightCard>,
+    onCardClick: (InsightCard) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (cards.isEmpty()) return
@@ -42,24 +45,37 @@ fun AssistantInsightRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         cards.forEach { card ->
-            InsightChip(card = card, modifier = Modifier.weight(1f))
+            InsightChip(
+                card = card,
+                onClick = { onCardClick(card) },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
-private fun InsightChip(card: InsightCard, modifier: Modifier = Modifier) {
+private fun InsightChip(
+    card: InsightCard,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val (icon, tint) = when (card.type) {
         InsightType.MORNING_HABIT        -> Icons.Default.Star to Color(0xFFFFD54F)
         InsightType.UNREAD_NOTIFICATIONS -> Icons.Default.Notifications to Color(0xFF4FC3F7)
         InsightType.UNUSED_APPS          -> Icons.Default.Warning to Color(0xFFFFB74D)
         InsightType.TOP_IN_FOLDER        -> Icons.Default.Info to Color(0xFF80CBC4)
+        InsightType.NEVER_OPENED         -> Icons.Default.Warning to Color(0xFFEF9A9A)
+        InsightType.NEWLY_INSTALLED      -> Icons.Default.Add to Color(0xFFA5D6A7)
+        InsightType.CATEGORY_SUMMARY     -> Icons.Default.Info to Color(0xFFCE93D8)
+        InsightType.WEEKLY_QUESTION      -> Icons.Default.Star to Color(0xFF90CAF9)
     }
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White.copy(alpha = 0.10f))
+            .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 194 — 2026-06-30 [İÇGÖRÜ KARTI ÇEŞİTLİLİĞİ + REPO TEMİZLİĞİ]
+
+**Yapılanlar:** `InsightEngine.kt` 4→8 kart türüne genişletildi (MORNING_HABIT, UNREAD_NOTIFICATIONS, UNUSED_APPS, TOP_IN_FOLDER, NEVER_OPENED, NEWLY_INSTALLED, CATEGORY_SUMMARY, WEEKLY_QUESTION). Rotation sistemi: son 3 kart SharedPrefs'te saklanır, aynı kartın üst üste gelmesi engellenir. 15 dakikada bir `LaunchedEffect` + `refreshInsightsIfStale()` ile otomatik yenileme. `AssistantInsightRow.kt`: tüm kart türleri için ikonlar + `onCardClick` ile uygulama başlatma. Repo temizliği: 14 build log artığı + 2 .bak + 2 UUID klasör silindi; `local_denetim_*.md` → `docs/internal/`; `ADJUSTMENT_CYCLE*.ps1` → `scripts/`; script yol referansları güncellendi. v1.0.8 (versionCode=10) build ve push edildi.
+**Agent:** —
+**Sonraki:** ROADMAP orta öncelik: NotificationListenerService cihaz testi, Firebase Crashlytics kurulumu
+
+---
+
 ## Döngü 193 — 2026-06-30 [CONTEXTUAL SEARCH PERMISSIONS + ROADMAP SYNC]
 
 **Yapılanlar:** SearchSettings kaynak toggle'ları artık sadece pref yazmıyor; kişi kaynağında contextual izin açıklaması + `READ_CONTACTS` istemi, dosya kaynağında privacy-first onay diyaloğu sonrası `SearchRepository.enable*/disable*` akışları tetikleniyor. `ContextualPermissionDialog` ilk istek ile kalıcı red ayrımını saklayarak erken ayarlara yönlendirme hatasını düzeltti. ROADMAP senkronize edildi: O1/O2/O3 ve Contacts/Files opt-in dialog maddeleri tamamlandı olarak işlendi.

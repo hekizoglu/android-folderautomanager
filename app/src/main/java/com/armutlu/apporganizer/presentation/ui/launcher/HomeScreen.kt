@@ -315,6 +315,14 @@ fun HomeScreen(
         }
     }
 
+    // İçgörü kartları 15 dakikada bir yenile
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(15L * 60 * 1000)
+            viewModel.refreshInsightsIfStale()
+        }
+    }
+
     // Klasör arama 30s otomatik sıfırlama — yeni sorgu gelince eski sayaç iptal edilir
     LaunchedEffect(Unit) {
         snapshotFlow { folderSearchQuery }
@@ -537,9 +545,21 @@ fun HomeScreen(
                 )
             }
 
-            // Assistant kartları — kullanım içgörüleri (kural bazlı, AI gerektirmez)
+            // Assistant kartları — kullanım içgörüleri (kural bazlı, 7 tür, 15dk rotation)
             if (assistantCardsEnabled && insightCards.isNotEmpty()) {
-                AssistantInsightRow(cards = insightCards)
+                AssistantInsightRow(
+                    cards = insightCards,
+                    onCardClick = { card ->
+                        card.packageName?.let { pkg ->
+                            runCatching {
+                                context.startActivity(
+                                    context.packageManager.getLaunchIntentForPackage(pkg)
+                                        ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            }
+                        }
+                    }
+                )
             }
 
             // Odak Modu aktifken klasör grid ve istatistik gizlenir
