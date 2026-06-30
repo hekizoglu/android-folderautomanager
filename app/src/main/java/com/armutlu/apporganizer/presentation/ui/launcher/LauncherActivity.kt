@@ -130,9 +130,9 @@ class LauncherActivity : ComponentActivity() {
         viewModel.loadWidgetIds(this)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
-                HomeScreen(
+                LauncherNavGraph(
                     viewModel = viewModel,
-                    onLaunchWidgetPicker = { launchWidgetPicker() }
+                    onLaunchWidgetPicker = { launchWidgetPicker() },
                 )
             }
         }

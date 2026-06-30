@@ -28,13 +28,13 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 Uygulama sırası: bağımlılık zincirine göre.
 
-#### 🔴 Sprint 0: Onboarding Kurtarma (kritik — kullanıcı kaçağı)
+#### ✅ Sprint 0: Onboarding Kurtarma — Tamamlandı
 
-| # | Puan | Görev | EA | Durum |
-|---|------|-------|-----|-------|
-| O1 | **19⭐** | **Onboarding 18→5 adım radikal kesme** — Mevcut 18 adımlı onboarding kullanıcıların ~%72'sini kaybediyor. 5 adıma indir: (1) Hoşgeldin+değer önerisi, (2) Varsayılan launcher yap, (3) Tema seç, (4) Hızlı ayarlar (widget/öneri/arama/blur), (5) Varsayılan tarayıcı seç + Tamam. Tüm izinler ve özellik turları → contextual prompt'a taşınsın. (KV:5 · U:4 · BR:4 · EA:3 = **16p** + browser yenilik bonusu **19p**) | EA:3 | Bekliyor |
-| O2 | **15⭐** | **Varsayılan Tarayıcı Seçimi (DONE adımı)** — Setup sonunda `RoleManager.ROLE_BROWSER` ile sistem diyaloğu açılsın. Kullanıcı Chrome/Firefox/Brave/Vivaldi arasından seçsin. `RoleManager.createRequestRoleIntent()` + API 29+ sistem UI. Cihazdaki yüklü tarayıcılar listelensin, "Sonra seçerim" skippable. (KV:4 · U:4 · BR:4 · EA:4 = **16p**) | EA:4 | Bekliyor |
-| O3 | **14⭐** | **Contextual Permission Priming** — Kesilen 13 adımdaki izinler, ilgili özellik ilk kullanıldığında özel açıklama ekranı + OS diyaloğu ile sorulsun. İzin öncesi "Neden gerekli?" kartı → 20-40% daha yüksek opt-in. (KV:4 · U:3 · BR:3 · EA:4 = **14p**) | EA:4 | Bekliyor |
+| # | Puan | Görev | Durum |
+|---|------|-------|-------|
+| O1 | **19⭐** | Onboarding 18→5 adım | ✅ Tamamlandı |
+| O2 | **15⭐** | Varsayılan Tarayıcı Seçimi (RoleManager.ROLE_BROWSER) | ✅ Tamamlandı |
+| O3 | **14⭐** | ContextualPermissionDialog | ✅ Tamamlandı |
 
 #### Sprint A: FTS5 Canlıya Alma (tamamlandı)
 

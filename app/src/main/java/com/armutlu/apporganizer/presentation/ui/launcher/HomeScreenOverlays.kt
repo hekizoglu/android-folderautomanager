@@ -104,8 +104,6 @@ internal fun HomeScreenOverlays(
     allApps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
     folders: List<AppFolder>,
     dockPackages: List<String>,
-    openFolder: AppFolder?,
-    folderSheetState: androidx.compose.material3.SheetState,
     dockEditOpen: Boolean,
     contextMenuApp: com.armutlu.apporganizer.domain.models.AppInfo?,
     favoritePackages: Set<String>,
@@ -130,8 +128,6 @@ internal fun HomeScreenOverlays(
     onSaveNote: (com.armutlu.apporganizer.domain.models.AppInfo, String) -> Unit,
     onToggleFavorite: (com.armutlu.apporganizer.domain.models.AppInfo) -> Unit,
     onCategorySelected: (com.armutlu.apporganizer.domain.models.AppInfo, String) -> Unit,
-    onFolderDismiss: () -> Unit,
-    onFolderAppLongClick: (com.armutlu.apporganizer.domain.models.AppInfo) -> Unit,
     onOpenFolder: (AppFolder) -> Unit,
     onOpenAllApps: () -> Unit,
     onMoveFolder: (AppFolder, Int) -> Unit,
@@ -172,16 +168,6 @@ internal fun HomeScreenOverlays(
             categories = categories,
             onDismiss = onCategoryPickerDismiss,
             onCategorySelected = { catId -> onCategorySelected(app, catId) },
-        )
-    }
-
-    openFolder?.let { folder ->
-        FolderSheet(
-            folder = folder,
-            sheetState = folderSheetState,
-            onDismiss = onFolderDismiss,
-            onAppClick = onLaunchApp,
-            onAppLongClick = onFolderAppLongClick,
         )
     }
 

@@ -85,7 +85,8 @@ import com.armutlu.apporganizer.utils.AppAnalytics
 @Composable
 fun HomeScreen(
     viewModel: LauncherViewModel,
-    onLaunchWidgetPicker: () -> Unit = {}
+    onLaunchWidgetPicker: () -> Unit = {},
+    onNavigateToFolder: (AppFolder) -> Unit = {},
 ) {
     val context = LocalContext.current
     var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
@@ -383,16 +384,9 @@ fun HomeScreen(
     }
 
     val scope = rememberCoroutineScope()
-    val folderSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    BackHandler(enabled = allAppsOpen || openFolder != null) {
-        if (allAppsOpen) viewModel.closeAllApps()
-        else {
-            scope.launch {
-                folderSheetState.hide()
-                viewModel.closeFolder()
-            }
-        }
+    BackHandler(enabled = allAppsOpen) {
+        viewModel.closeAllApps()
     }
 
     // Root box — duvar kağıdı (transparent) veya düz renk arka plan
@@ -642,7 +636,7 @@ fun HomeScreen(
                 folderShape = folderShape,
                 folderGlassEnabled = folderBlurEnabled,
                 haptic = haptic,
-                onFolderClick = { viewModel.openFolder(it) },
+                onFolderClick = { onNavigateToFolder(it) },
                 onFolderLongClick = { folderContextMenu = it },
                 onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                 onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
@@ -828,8 +822,6 @@ fun HomeScreen(
         allApps = allApps,
         folders = folders,
         dockPackages = dockPackages,
-        openFolder = openFolder,
-        folderSheetState = folderSheetState,
         dockEditOpen = dockEditOpen,
         contextMenuApp = contextMenuApp,
         favoritePackages = favoriteApps.mapTo(mutableSetOf()) { it.packageName },
@@ -861,21 +853,10 @@ fun HomeScreen(
         onToggleFavorite = { app -> viewModel.toggleFavorite(context, app.packageName) },
         onCategorySelected = { app, catId ->
             viewModel.updateAppCategory(app.packageName, catId)
-            viewModel.closeFolder()
-        },
-        onFolderDismiss = {
-            scope.launch {
-                folderSheetState.hide()
-                viewModel.closeFolder()
-            }
-        },
-        onFolderAppLongClick = { app ->
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            contextMenuPkg = app.packageName
         },
         onOpenFolder = { folder ->
             folderContextMenu = null
-            viewModel.openFolder(folder)
+            onNavigateToFolder(folder)
         },
         onOpenAllApps = {
             folderContextMenu = null

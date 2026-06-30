@@ -45,7 +45,7 @@ import com.armutlu.apporganizer.utils.AppAnalytics
 
 private val FolderSheetScrim = Color(0x66000000)
 
-private fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
+internal fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
     AllAppsSortMode.ALPHA            -> sortedBy { it.appName.lowercase() }
     AllAppsSortMode.ALPHA_DESC       -> sortedByDescending { it.appName.lowercase() }
     AllAppsSortMode.USAGE            -> sortedByDescending { it.usageCount }
