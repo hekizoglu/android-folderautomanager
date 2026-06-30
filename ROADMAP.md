@@ -1,8 +1,10 @@
 # ROADMAP.md — AppOrganizer Yol Haritası
 
-> Son güncelleme: 2026-06-30 (D192). Puanlama → FİKİRLER.md. Yüksek puanlı + basit (EA≥4) → buraya.
+> Son güncelleme: 2026-07-01 (D195). Puanlama → FİKİRLER.md. Yüksek puanlı + basit (EA≥4) → buraya.
 > İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 · Puanlar FİKİRLER.md tablosundan (15+ = bu listeye girer)
 > **Kural:** Tamamlanan görevler bu dosyadan silinir → HISTORY.md Tamamlananlar Arşivi'ne taşınır.
+> **🔴 Kritik UX (U1-U10):** Kullanıcı talepleri 2026-07-01. Onay bekleniyor — kod yazılmadı.
+> **🔴 Kritik Build (B1-B5):** Raporlardan (time_token_analysis + issue_mitigation). Öneri aşamasında.
 
 ---
 
@@ -15,7 +17,49 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 ## 📋 Bekleyen Görevler
 
-### 🔴 Kritik (Engel)
+### 🔴 Kritik — UX & Kararlılık (Kullanıcı Tarafından İstenenler)
+
+> Eklenme tarihi: 2026-07-01. Kod yazılmayacak, önce bu liste onaylanacak.
+
+| # | Görev | Sorun | Öneri |
+|---|-------|-------|-------|
+| **U1** | **Ayarlar sayfası basitleştirilsin** | Çok fazla bölüm, görseli kötü, "orijinal Android ayarları" hissi yok | Material 3 PreferenceScreen benzeri hiyerarşik yapı; her kategori ayrı sayfa (Görünüm, Bildirim, Arama, Güvenlik, Hakkında) — Arama ayarları kendi sayfası |
+| **U2** | **Arama — varsayılan tümünü ara** | Kişi/dosya araması varsayılan kapalı, kullanıcı habersiz | Varsayılanları aç (izin varsa kişiler otomatik, dosya opsiyonel kalır); SearchSettingsScreen görsel iyileştirilsin |
+| **U3** | **Dosya araması sistem çöküşü** | Dosya arama açıkken crash / sistem donması | FilesIndexer'da MediaStore sorgusu ana thread'i bloklama riski; WorkManager'a tam geçiş + hata yakalama şart |
+| **U4** | **Bildirim çok fazla → klasörler aşağı kayıyor** | PermissionsBanner + Insight kartları + StatChips üst üste gelince grid itiliyor | Üst bölgeye max yükseklik kısıtı + HorizontalPager için sabit `fillMaxHeight` ayrılsın |
+| **U5** | **Klasör arama çubuğu altına gelsin** | Arama yapınca klasörler kayıyor; arama bar altındaki klasör değişiyor | FolderSearchBar veya HomeAppSearchBar "Klasör" modu; pager grid'in üstüne değil altına konumlandırılsın |
+| **U6** | **Sürükle-bırak iyileştirilsin** | Klasörlerin yeri değiştirilemiyor ya da çok hantal | DragAndDrop API (Android 7+) ile klasör sıralama; haptic feedback; ghost preview |
+| **U7** | **Ana ekran görselleştirme kötü** | Glassmorphism tutarsız, font boyutları, padding dengesiz | Rakip analiz raporu (competitor_user_research) + açık kaynak referans launcher'dan ilham al; Niagara/Smart Launcher benzeri temiz tasarım |
+| **U8** | **Ayarlar hiyerarşik olsun — Arama kendi sayfasında** | Ayarlar tek uzun liste; Arama ayarları da aynı listede, kayboluyor | NavController ile Settings → SearchSettings → alt ekranlar; her kategori MaterialCard header ile açılır-kapanır |
+| **U9** | **Sağ alt köşe butonu işlevsiz** | Uygulama listesi ekranında sağ altta FAB var, hiçbir şey yapmıyor | FAB'a işlev ver (hızlı kategori ekle / uygulama gizle) veya kaldır |
+| **U10** | **Açık kaynak referans launcher ile ana ekran revizyonu** | Mevcut tasarım tutarsız; kullanıcı "yeniden tasarla" dedi | Açık kaynak launcher'ları tara (KISS, Lawnchair, Kvaesitso); bizim yapıya en uygun olanı referans al; HomeScreen.kt revizyonu |
+
+### 🔴 Kritik — Build & Ortam (Raporlardan)
+
+| # | Görev | Kaynak | Öneri |
+|---|-------|--------|-------|
+| **B1** | **Gradle build dir lock — kalıcı çözüm** | time_token_analysis + issue_mitigation | `org.gradle.vfs.watch=false` flag + Defender exclusion tam listesi; `build.ps1 -Clean` otomatik retry geliştirilsin |
+| **B2** | **merged_res tekrarlı maliyet** | issue_mitigation raporu | `gradlew --profile` ile gerçek ölçüm al; ağır PNG'leri WebP'ye çevir; duplicate drawable temizle |
+| **B3** | **KAPT incremental cache bozulması** | time_token_analysis | Kotlin build report (`kotlin.build.report.output=file`) aç; KAPT pahalıysa KSP geçişini planla |
+| **B4** | **git pull.rebase=true standart yap** | issue_mitigation | `git config --global pull.rebase true`; push öncesi fetch+rebase akışı |
+| **B5** | **Configuration cache dene** | issue_mitigation | `org.gradle.configuration-cache=true` + `problems=warn`; Hilt/KAPT uyumluluk benchmark |
+
+<!-- DOCS_SCORE_HIGH_START -->
+### Kirmizi Kritik - Docs/Rapor Skor Taramasi (Otomatik)
+
+> Kaynak: docs/internal/docs_backlog_score.md. Kural: KV+U+BR+EA >= 15 ROADMAP'e girer. scripts/score_docs_backlog.ps1 -UpdateRoadmap her dongude bu blogu yeniler.
+
+| # | Puan | Kaynak | Gorev | Oneri | Durum |
+|---|------|--------|-------|-------|-------|
+| **DSR1** | **18** | docs/time_token_analysis_2026-06-30.md; docs/AI_ORCHESTRATION_PLAN.md | **Docs backlog skorlayici donguye eklensin** | Her dongude docs raporlari puanlansin; 15+ maddeler ROADMAP'teki otomatik blokta yenilensin. | Bekliyor |
+| **DSR2** | **17** | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | **Arama sonuclari kaynak bazinda gruplansin** | AllApps/Search UI sonuclari Uygulamalar, Kategoriler, Kisiler, Dosyalar bolumleriyle gostersin. | Bekliyor |
+| **DSR4** | **17** | docs/UX_SEARCH_REPORTS_SPEC.md; docs/internal/local_denetim_raporu.md | **Permission reddi fallback ve ayar yonlendirme** | Kisiler/dosya izin reddinde toggle geri kapansin; kalici redde sistem ayarlari deeplink'i gosterilsin. | Bekliyor |
+| **DSR3** | **16** | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | **Uygulama arama kaynagi kilitli kalsin** | SearchSettings'te Uygulamalar kaynagi acik ve kapatilamaz olsun; bos/yanlis arama durumlari engellensin. | Bekliyor |
+| **DSR5** | **16** | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | **Play Store gorsel ve mesaj QA paketi** | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. | Bekliyor |
+| **DSR6** | **15** | docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md | **Build warning debt cleanup** | Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin. | Bekliyor |
+<!-- DOCS_SCORE_HIGH_END -->
+
+### 🔴 Kritik — Kararlılık (Play Store Öncesi Engel)
 
 | Görev | Neden Kritik | Durum |
 |-------|-------------|-------|
@@ -75,9 +119,11 @@ Uygulama sırası: bağımlılık zincirine göre.
 | **Firebase Crashlytics kurulumu** | `google-services.json` + service account | Bekliyor |
 | **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
 | **AppNotificationListenerService ilk açılışta restart** | gerçek cihaz test gerekli | Bekliyor |
-| **Klasör taşma (overflow) sorunu** | `FolderTile`, `HomeScreen` — çok fazla uygulama/klasör ekrandan taşıyor; adaptive layout ile kısmen cozuldu (D174 tablet), phone'a uyarlanmali | Bekliyor |
-| **Klasör değiştirmeden sonra görsel güncelleme kalıyor** | Kategori değişikliği sonrası ilk sayfa yenilenene kadar eski görsel görünüyor; stale UI state sorunu | Bekliyor |
-| **Geri tuşuyla ilk sayfa yenileniyor (eski/yavaş cihaz sorunu)** | Back press tetikliyor yenileme; eski/performans düşük cihazlarda istenmeyen yavaşlama/geçiş yaşanabilir | Bekliyor |
+| **Klasör taşma (overflow) sorunu** | `FolderTile`, `HomeScreen` — çok fazla uygulama/klasör ekrandan taşıyor | Bekliyor |
+| **Klasör değiştirmeden sonra görsel güncelleme kalıyor** | stale UI state sorunu | Bekliyor |
+| **Geri tuşuyla ilk sayfa yenileniyor** | eski/yavaş cihazlarda istenmeyen yavaşlama | Bekliyor |
+| **Token logu ekle** | issue_mitigation raporu — "ölçmediğin şeyi optimize edemezsin" | Bekliyor |
+| **Rakip analiz — Smart Launcher / Niagara referans** | competitor_user_research raporu — tasarım karar belgesi için | Bekliyor |
 
 ### 🟢 Düşük Öncelik
 

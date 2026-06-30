@@ -12,6 +12,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 $counterPath = Join-Path $scriptDir "loop_count.txt"
 $auditScript = Join-Path $scriptDir "audit.ps1"
+$docsScoreScript = Join-Path $scriptDir "score_docs_backlog.ps1"
 $manualChecklistPath = Join-Path $projectRoot "docs\internal\local_denetim_manuel_checklist.md"
 $reportPath = Join-Path $projectRoot "docs\internal\local_denetim_raporu.md"
 $unresolvedPath = Join-Path $projectRoot "COZULEMEYEN_SORUNLAR.md"
@@ -122,6 +123,8 @@ function Stage-ProjectChanges {
         "docs\internal\local_denetim_tamamlananlar.md",
         "docs\internal\local_denetim_manuel_checklist.md",
         "docs\internal\local_denetim_kurallari.md",
+        "docs\internal\docs_backlog_score.md",
+        "ROADMAP.md",
         "COZULEMEYEN_SORUNLAR.md",
         "scripts"
     )) {
@@ -129,6 +132,20 @@ function Stage-ProjectChanges {
             git add -- $path
         }
     }
+}
+
+function Update-DocsBacklogScore {
+    if (-not (Test-Path $docsScoreScript)) { return }
+
+    & $docsScoreScript -UpdateRoadmap
+    if ($LASTEXITCODE -ne 0) {
+        throw "score_docs_backlog.ps1 basarisiz oldu."
+    }
+
+    Append-RunNote -Title "Docs Backlog Skor Taramasi" -Lines @(
+        "Docs raporlari puanlandi; 15+ maddeler ROADMAP otomatik bloguna islendi.",
+        'Skor raporu: `docs/internal/docs_backlog_score.md`'
+    )
 }
 
 if (-not (Test-Path $counterPath)) {
@@ -177,6 +194,8 @@ if ($Mode -eq "Full") {
         )
     }
 }
+
+Update-DocsBacklogScore
 
 $shouldBuild = ($cycleNumber % 3 -eq 0)
 if ($Mode -eq "Resolve" -or $shouldBuild) {
