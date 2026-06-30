@@ -17,6 +17,15 @@ Set-Location $project
 
 $target = if ($Release) { "bundleRelease" } else { "assembleDebug" }
 $gradleArgs = @($target, "--build-cache", "--parallel")
+$buildMutex = [System.Threading.Mutex]::new($false, "Global\AppOrganizerGradleBuild")
+$buildLockAcquired = $false
+
+try {
+    Write-Host "[build.ps1] Waiting for build lock..." -ForegroundColor DarkCyan
+    $buildLockAcquired = $buildMutex.WaitOne([TimeSpan]::FromMinutes(90))
+    if (-not $buildLockAcquired) {
+        throw "Timed out waiting for AppOrganizer Gradle build lock."
+    }
 
 function Remove-BuildSubdirs {
     param(
@@ -89,3 +98,9 @@ if (-not $Clean) {
 
 Write-Host "[build.ps1] Clean retry failed. Check Gradle output above." -ForegroundColor Red
 exit $exitCode
+} finally {
+    if ($buildLockAcquired) {
+        $buildMutex.ReleaseMutex() | Out-Null
+    }
+    $buildMutex.Dispose()
+}
