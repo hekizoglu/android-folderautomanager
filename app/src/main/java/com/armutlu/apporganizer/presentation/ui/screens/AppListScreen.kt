@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -29,13 +30,23 @@ fun AppListScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val searchQuery     by viewModel.searchQuery.collectAsState()
     val sortOption      by viewModel.sortOption.collectAsState()
+    val classifyLoading by viewModel.classifyLoading.collectAsState()
+    val classifyResult  by viewModel.classifyResult.collectAsState()
     val selectionCount  = screenState.selectedApps.size
     val isSelecting     = selectionCount > 0
+    val hasUnclassifiedApps = screenState.apps.any { it.categoryId == Category.CAT_UNCATEGORIZED }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var showMenu       by remember { mutableStateOf(false) }
     var showSortMenu   by remember { mutableStateOf(false) }
     var appForCategory by remember { mutableStateOf<AppInfo?>(null) }
     var showResetCategoriesDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(classifyResult) {
+        if (classifyResult.isNotBlank()) {
+            snackbarHostState.showSnackbar(classifyResult)
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -99,13 +110,29 @@ fun AppListScreen(
                 )
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (!isSelecting) {
-                FloatingActionButton(
-                    onClick = { viewModel.classifyUnclassifiedApps() },
+            if (!isSelecting && hasUnclassifiedApps) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (!classifyLoading) viewModel.classifyUnclassifiedApps()
+                    },
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır", tint = MaterialTheme.colorScheme.onPrimary)
+                    if (classifyLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (classifyLoading) "Sınıflandırılıyor" else "Sınıflandır",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         },
