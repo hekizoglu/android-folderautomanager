@@ -42,26 +42,25 @@ Uygulama sırası: bağımlılık zincirine göre.
 |---|------|-------|-----|-------|
 | A1 | **17⭐** | **FTS5 Bootstrap Tetikleme** — app+kategori indeksi sync sonrası oluşur. | EA:5 | Tamamlandı |
 | A2 | **16⭐** | **App Install/Uninstall → Anlık FTS Delta** — `PackageChangeReceiver` → `searchRepository.indexApp/removeApp`. | EA:5 | Tamamlandı |
-| A3 | **15⭐** | **FTS5 Türkçe Arama Testi** — Türkçe karakter ve tırnaklı sorgu doğrulaması. | EA:5 | Bekliyor |
-
 #### Sprint B: Arama UX (A1 sonrası)
 
 | # | Puan | Görev | EA | Durum |
 |---|------|-------|-----|-------|
-| B1 | **16⭐** | **Arama Geçmişi (Room tabanlı)** — `SearchHistory` entity, son 20 arama chip row, tek tuşla temizleme. | EA:5 | Bekliyor |
-| B2 | **15⭐** | **Arama Kaynakları Ayar Bölümü** — Settings'te kaynak toggle'ları + indeks durum chip'i. | EA:4 | Bekliyor |
+| B2 | **15⭐** | **Arama Kaynakları Ayar Bölümü** — Settings'te kaynak toggle'ları + indeks durum chip'i. | EA:4 | Tamamlandı (SearchSettingsScreen.kt) |
 
 #### Sprint C: Birleşik Arama Genişletme (orta efor)
 
-| # | Puan | Görev | EA | Durum |
-|---|------|-------|-----|-------|
-| C1 | **17⭐** | **Yerel Arama İndeksi v1 — Contacts** — `READ_CONTACTS` + ContentObserver + opt-in. Sprint 2. | EA:3 | Bekliyor |
-| C2 | **17⭐** | **Yerel Arama İndeksi v1 — Files** — `MediaStore` + SAF + WorkManager periodic. Sprint 3. | EA:3 | Bekliyor |
+— Tüm Sprint C görevleri tamamlandı.
 
 #### ✅ Tamamlanan Yüksek Puanlı
 
 | Puan | Görev |
 |------|-------|
+| 19p | **Onboarding 18→5 adım** — `OnboardingScreen.kt`, `OnboardingModels.kt` [865e... önceki] |
+| 17p | **Rehber Arama İndeksi (C1)** — `ContactsIndexer.kt` + ContentObserver + `READ_CONTACTS` [865e964] |
+| 17p | **Dosya Arama İndeksi (C2)** — `FilesIndexer.kt` + `FilesIndexWorker.kt` + WorkManager 24h [865e964] |
+| 16p | **Arama Geçmişi UI** — chip row HomeScreen'e entegre, `SearchHistoryPrefs` [865e964] |
+| 15p | **FTS5 Türkçe Arama Testi (A3)** — `TurkishSearchTest.kt` 20 unit test [865e964] |
 | 18p | **AppOrganizer Dashboard** — `AppOrganizerDashboardScreen.kt` [TAMAMLANDI] |
 | 17p | **Room FTS5 Backend İskeleti** — `SearchDocument`, `SearchDao`, `SearchIndexer`, `SearchRepository`, v8→v9 migration [D171] |
 
@@ -69,6 +68,7 @@ Uygulama sırası: bağımlılık zincirine göre.
 
 | Görev | Alan | Durum |
 |-------|------|-------|
+| **Contacts/Files arama opt-in izin dialog** — ContextualPermissionDialog entegrasyonu | `ContextualPermissionDialog.kt` + Settings | Bekliyor |
 | **Android 14 NotificationListenerService gerçek cihaz testi** | `AppNotificationListenerService.kt` | Bekliyor |
 | **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
 | **Firebase Crashlytics kurulumu** | `google-services.json` + service account | Bekliyor |
