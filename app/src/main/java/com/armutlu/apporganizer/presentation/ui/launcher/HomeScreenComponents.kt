@@ -91,8 +91,9 @@ import java.util.Locale
 @Composable
 internal fun PixelClockWidget(modifier: Modifier = Modifier) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val dateFormat = remember { SimpleDateFormat("EEEE, d MMMM", Locale("tr")) }
+    val dateFormat = remember { SimpleDateFormat("EEE, d MMM", Locale("tr")) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -113,15 +114,49 @@ internal fun PixelClockWidget(modifier: Modifier = Modifier) {
             letterSpacing = (-3).sp,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
-            color = Color.White.copy(alpha = 0.85f),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.Center,
-            letterSpacing = 0.sp
-        )
+        Spacer(modifier = Modifier.height(4.dp))
+        // Tarih + hava durumu yan yana
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White.copy(alpha = 0.10f))
+                .border(0.5.dp, Color.White.copy(alpha = 0.20f), RoundedCornerShape(20.dp))
+                .clickable {
+                    // Sistem hava durumu uygulamasını aç
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setClassName("com.google.android.googlequicksearchbox", "com.google.android.googlequicksearchbox.SearchActivity")
+                        putExtra("query", "hava durumu")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }.onFailure {
+                        val fallback = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.com/search?q=hava+durumu")).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(fallback) }
+                    }
+                }
+                .padding(horizontal = 16.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = dateFormat.format(now).replaceFirstChar { it.uppercase() },
+                color = Color.White.copy(alpha = 0.90f),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Normal,
+                letterSpacing = 0.sp
+            )
+            Text(
+                text = "  ·  🌤️",
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 15.sp
+            )
+            Text(
+                text = " Hava",
+                color = Color.White.copy(alpha = 0.70f),
+                fontSize = 13.sp
+            )
+        }
     }
 }
 
@@ -575,16 +610,28 @@ internal fun HomeAppSearchBar(
     allApps: List<AppInfo>,
     onAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onPositionSnap: ((String) -> Unit)? = null
+    onPositionSnap: ((String) -> Unit)? = null,
+    folderQuery: String? = null,
+    onFolderQueryChange: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
-    val results = remember(query, allApps) {
-        if (query.isBlank()) emptyList()
+    // Klasör arama modu: false=uygulama, true=klasör
+    var folderMode by remember { mutableStateOf(false) }
+    val activeFolderMode = folderMode && folderQuery != null
+
+    val results = remember(query, allApps, activeFolderMode) {
+        if (activeFolderMode || query.isBlank()) emptyList()
         else allApps
             .filter { it.appName.lowercase(Locale("tr")).contains(query.lowercase(Locale("tr"))) }
             .sortedBy { it.appName }
             .take(6)
+    }
+
+    // Klasör arama modundayken folderQuery'yi güncelle
+    LaunchedEffect(query, activeFolderMode) {
+        if (activeFolderMode) onFolderQueryChange?.invoke(query)
+        else if (!activeFolderMode && folderQuery != null) onFolderQueryChange?.invoke("")
     }
     val historyItems = remember(query) {
         if (query.isNotBlank()) emptyList()
@@ -668,31 +715,66 @@ internal fun HomeAppSearchBar(
             backgroundAlpha = if (isDragging) 0.22f else 0.12f,
             borderAlpha = if (isDragging) 0.45f else 0.25f
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Icon(Icons.Default.Search, contentDescription = "Uygulama ara",
-                    tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(18.dp))
-                BasicTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    singleLine = true,
-                    textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
-                    modifier = Modifier.weight(1f),
-                    decorationBox = { inner ->
-                        Box(Modifier.weight(1f)) {
-                            if (query.isEmpty()) Text("Uygulama, kategori ara…",
-                                color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp)
-                            inner()
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                // Sekme row — sadece klasör araması da etkinse göster
+                if (folderQuery != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(false to "Uygulama", true to "Klasör").forEach { (isFolderTab, label) ->
+                            val selected = activeFolderMode == isFolderTab
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        if (selected) Color.White.copy(alpha = 0.22f)
+                                        else Color.Transparent
+                                    )
+                                    .clickable {
+                                        folderMode = isFolderTab
+                                        query = ""
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    label,
+                                    color = Color.White.copy(alpha = if (selected) 1f else 0.45f),
+                                    fontSize = 11.sp,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
                         }
                     }
-                )
-                if (query.isNotEmpty()) {
-                    Icon(Icons.Default.Close, contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.60f),
-                        modifier = Modifier.size(18.dp).clickable { query = "" })
+                    Spacer(Modifier.height(6.dp))
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Ara",
+                        tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(18.dp))
+                    BasicTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        singleLine = true,
+                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                        modifier = Modifier.weight(1f),
+                        decorationBox = { inner ->
+                            Box(Modifier.weight(1f)) {
+                                if (query.isEmpty()) Text(
+                                    if (activeFolderMode) "Klasör ara…" else "Uygulama, kategori ara…",
+                                    color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp
+                                )
+                                inner()
+                            }
+                        }
+                    )
+                    if (query.isNotEmpty()) {
+                        Icon(Icons.Default.Close, contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.60f),
+                            modifier = Modifier.size(18.dp).clickable { query = "" })
+                    }
                 }
             }
         }

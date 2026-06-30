@@ -475,37 +475,26 @@ fun HomeScreen(
                     }
             )
 
-            // Uygulama arama çubuğu — TOP konumundaysa saat widget'ının altında
-            if (homeAppSearchEnabled && searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
-                HomeAppSearchBar(
-                    allApps = allApps,
-                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            }
-
-            // Google arama çubuğu — Pixel Launcher stili, tıklayınca Google'ı açar
+            // Google arama çubuğu — Pixel Launcher stili
             GoogleSearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
-            // Uygulama arama çubuğu — BOTTOM konumundaysa (varsayılan) Google Search altında
-            if (homeAppSearchEnabled && searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
+            // Birleşik arama çubuğu — uygulama + klasör filtresi tek çubukta
+            if (homeAppSearchEnabled) {
                 HomeAppSearchBar(
                     allApps = allApps,
                     onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                    folderQuery = if (homeSearchEnabled) folderSearchQuery else null,
+                    onFolderQueryChange = if (homeSearchEnabled) ({ folderSearchQuery = it }) else null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 )
-            }
-
-            // Klasör arama çubuğu — HomeScreenComponents.FolderSearchBar
-            if (homeSearchEnabled) {
+            } else if (homeSearchEnabled) {
+                // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
                 FolderSearchBar(
                     query = folderSearchQuery,
                     onQueryChange = { folderSearchQuery = it },
