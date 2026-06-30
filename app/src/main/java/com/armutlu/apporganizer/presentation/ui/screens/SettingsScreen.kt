@@ -278,6 +278,78 @@ fun SettingsScreen(
                 }
             }
 
+            // ── Akıllı Bildirimler ────────────────────────────────────────────
+            item { SettingsSectionTitle("Akıllı Bildirimler") }
+            item {
+                var masterEnabled  by remember { mutableStateOf(AppPrefs.isSmartNotifEnabled(context)) }
+                var expanded       by remember { mutableStateOf(masterEnabled) }
+                var dailyUsage     by remember { mutableStateOf(AppPrefs.isSmartNotifDailyUsage(context)) }
+                var unusedApps     by remember { mutableStateOf(AppPrefs.isSmartNotifUnusedApps(context)) }
+                var catStats       by remember { mutableStateOf(AppPrefs.isSmartNotifCatStats(context)) }
+                val workerCtx = context
+                SettingsCard {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = !expanded }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Akıllı Bildirimler", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                if (masterEnabled) "Günlük içgörüler ve temizlik önerileri" else "Kapalı",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp).padding(end = 4.dp)
+                        )
+                        Switch(
+                            checked = masterEnabled,
+                            onCheckedChange = { v ->
+                                masterEnabled = v
+                                AppPrefs.setSmartNotifEnabled(workerCtx, v)
+                                com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
+                                if (v) expanded = true
+                            }
+                        )
+                    }
+                    if (expanded && masterEnabled) {
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        SettingsSwitchRow(
+                            icon = Icons.Default.BarChart,
+                            title = "Günlük Kullanım",
+                            subtitle = "En çok kullandığın uygulamayı ve oturum sayısını bildir",
+                            checked = dailyUsage,
+                            onCheckedChange = { dailyUsage = it; AppPrefs.setSmartNotifDailyUsage(workerCtx, it) }
+                        )
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        SettingsSwitchRow(
+                            icon = Icons.Default.DeleteSweep,
+                            title = "Kullanılmayan Uygulamalar",
+                            subtitle = "3+ haftadır açılmayan uygulamalar için temizlik önerisi",
+                            checked = unusedApps,
+                            onCheckedChange = { unusedApps = it; AppPrefs.setSmartNotifUnusedApps(workerCtx, it) }
+                        )
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        SettingsSwitchRow(
+                            icon = Icons.Default.FolderOpen,
+                            title = "Klasör İstatistikleri",
+                            subtitle = "Kalabalık klasörler için organizasyon önerileri",
+                            checked = catStats,
+                            onCheckedChange = { catStats = it; AppPrefs.setSmartNotifCatStats(workerCtx, it) }
+                        )
+                    }
+                }
+            }
+
             // ── Dock Yönetimi ─────────────────────────────────────────────────
             item { SettingsSectionTitle("Dock Uygulamaları") }
             item {

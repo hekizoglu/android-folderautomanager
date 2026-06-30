@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
+import com.armutlu.apporganizer.workers.SmartInsightWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -34,6 +35,7 @@ class AppOrganizerApp : Application() {
             BackupWorker.schedule(this)
         }
         WeeklyDigestWorker.schedule(this)
+        SmartInsightWorker.schedule(this)
         createNotificationChannels()
         fetchFcmToken()
     }

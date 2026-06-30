@@ -460,5 +460,27 @@ object AppPrefs {
     fun setSearchBarPosition(context: Context, position: String) =
         prefs(context).edit().putString(KEY_SEARCH_BAR_POSITION, position).apply()
 
+    // Akıllı Bildirimler (SmartInsight) — ana toggle + alt seçenekler
+    const val KEY_SMART_NOTIF_ENABLED       = "smart_notif_enabled"
+    const val KEY_SMART_NOTIF_DAILY_USAGE   = "smart_notif_daily_usage"
+    const val KEY_SMART_NOTIF_UNUSED_APPS   = "smart_notif_unused_apps"
+    const val KEY_SMART_NOTIF_CAT_STATS     = "smart_notif_cat_stats"
+    const val KEY_SMART_NOTIF_HOUR          = "smart_notif_hour"  // 0-23
+
+    fun isSmartNotifEnabled(context: Context)     = prefs(context).getBoolean(KEY_SMART_NOTIF_ENABLED, true)
+    fun setSmartNotifEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_ENABLED, v).apply()
+
+    fun isSmartNotifDailyUsage(context: Context)  = prefs(context).getBoolean(KEY_SMART_NOTIF_DAILY_USAGE, true)
+    fun setSmartNotifDailyUsage(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_DAILY_USAGE, v).apply()
+
+    fun isSmartNotifUnusedApps(context: Context)  = prefs(context).getBoolean(KEY_SMART_NOTIF_UNUSED_APPS, true)
+    fun setSmartNotifUnusedApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_UNUSED_APPS, v).apply()
+
+    fun isSmartNotifCatStats(context: Context)    = prefs(context).getBoolean(KEY_SMART_NOTIF_CAT_STATS, true)
+    fun setSmartNotifCatStats(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_CAT_STATS, v).apply()
+
+    fun getSmartNotifHour(context: Context): Int  = prefs(context).getInt(KEY_SMART_NOTIF_HOUR, 20)
+    fun setSmartNotifHour(context: Context, h: Int) = prefs(context).edit().putInt(KEY_SMART_NOTIF_HOUR, h).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
