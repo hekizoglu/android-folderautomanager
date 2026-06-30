@@ -36,8 +36,8 @@ internal fun FolderStatsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         StatChip(
             label = "Uygulama",
@@ -78,20 +78,20 @@ private fun StatChip(
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White.copy(alpha = 0.10f))
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 6.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = value,
                 color = Color.White.copy(alpha = 0.90f),
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = label,
                 color = Color.White.copy(alpha = 0.45f),
-                fontSize = 10.sp,
+                fontSize = 9.sp,
                 fontWeight = FontWeight.Normal,
             )
         }

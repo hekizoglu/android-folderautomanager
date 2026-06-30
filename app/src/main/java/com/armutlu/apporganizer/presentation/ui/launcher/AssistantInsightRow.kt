@@ -44,7 +44,7 @@ fun AssistantInsightRow(
             .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        cards.forEach { card ->
+        cards.take(2).forEach { card ->
             InsightChip(
                 card = card,
                 onClick = { onCardClick(card) },
@@ -90,7 +90,7 @@ private fun InsightChip(
                 text = card.message,
                 color = Color.White.copy(alpha = 0.85f),
                 fontSize = 11.sp,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }

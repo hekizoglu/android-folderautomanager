@@ -10,15 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
@@ -77,16 +74,10 @@ internal fun FolderPager(
     ) { page ->
         val pageStart = page * pageSize
         val pageFolders = displayFolders.drop(pageStart).take(pageSize)
-        val rowCount = remember(pageFolders.size, columns, pageSize) {
-            val totalSlots = pageSize.coerceAtLeast(pageFolders.size)
-            (totalSlots + columns - 1) / columns
-        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = ((rowCount * 96) + 24).dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
             userScrollEnabled = false
