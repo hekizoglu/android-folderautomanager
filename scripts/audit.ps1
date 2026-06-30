@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Guncel local denetim raporunu uretir -- tiered frequency sistemi ile.
     Tier 1 (her dongu): Core rules (K1, Y1-Y8, D1) -- hizli regex
@@ -19,7 +19,7 @@ $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
-$reportPath = Join-Path $projectRoot "local_denetim_otomatik_rapor.md"
+$reportPath = Join-Path $projectRoot "docs\internal\local_denetim_otomatik_rapor.md"
 $envPath = Join-Path $projectRoot ".env"
 $timestamp = Get-Date
 $timestampText = $timestamp.ToString("yyyy-MM-dd HH:mm")
@@ -135,7 +135,7 @@ $tier2Rules = @(
     # D191-YENI (0 sonuc kuyrugu): Hardcoded Turkce string (R.string kullanilmamis)
     @{ Code = "CE13"; Severity = "DUSUK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"; Pattern = 'Text\(""\w*[çğıöşüÇĞİÖŞÜ]'; Description = "Hardcoded Turkce string - R.string kullanilmali."; Focus = @("UI_Settings_Labels") },
     # D191-YENI (0 sonuc kuyrugu): Permission flow butunlugu
-    @{ Code = "CE14"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer"; Pattern = 'shouldShowRequestPermissionRationale'; Description = "Permission rationale kontrolu: her requestPermissions() oncesi rationale gosteriliyor mu? OnboardingScreen'te kontrol et."; Focus = @("Permission_Izin") }
+    @{ Code = "CE14"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\OnboardingScreen.kt"; Pattern = 'shouldShowRequestPermissionRationale'; Description = "Permission rationale kontrolu: her requestPermissions() oncesi rationale gosteriliyor mu?"; Focus = @("Permission_Izin") }
 )
 
 # ============================================================

@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$CommitMessage = "",
     [switch]$SendTelegram = $false,
     [ValidateSet("Full","Resolve")]
@@ -12,8 +12,8 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 $counterPath = Join-Path $scriptDir "loop_count.txt"
 $auditScript = Join-Path $scriptDir "audit.ps1"
-$manualChecklistPath = Join-Path $projectRoot "local_denetim_manuel_checklist.md"
-$reportPath = Join-Path $projectRoot "local_denetim_raporu.md"
+$manualChecklistPath = Join-Path $projectRoot "docs\internal\local_denetim_manuel_checklist.md"
+$reportPath = Join-Path $projectRoot "docs\internal\local_denetim_raporu.md"
 $unresolvedPath = Join-Path $projectRoot "COZULEMEYEN_SORUNLAR.md"
 $encoding = [System.Text.Encoding]::UTF8
 
@@ -118,10 +118,10 @@ function Append-UnresolvedPlaceholder {
 function Stage-ProjectChanges {
     git add --update
     foreach ($path in @(
-        "local_denetim_raporu.md",
-        "local_denetim_tamamlananlar.md",
-        "local_denetim_manuel_checklist.md",
-        "local_denetim_kurallari.md",
+        "docs\internal\local_denetim_raporu.md",
+        "docs\internal\local_denetim_tamamlananlar.md",
+        "docs\internal\local_denetim_manuel_checklist.md",
+        "docs\internal\local_denetim_kurallari.md",
         "COZULEMEYEN_SORUNLAR.md",
         "scripts"
     )) {
@@ -163,7 +163,7 @@ if ($Mode -eq "Full") {
     Append-RunNote -Title "Tam Denetim Turu" -Lines $notes
 } else {
     # Sadece gercek acik bulgu varsa COZULEMEYEN_SORUNLAR.md'ye yaz
-    $reportContent = if (Test-Path "local_denetim_raporu.md") { Get-Content "local_denetim_raporu.md" -Raw -Encoding UTF8 } else { "" }
+    $reportContent = if (Test-Path "docs\internal\local_denetim_raporu.md") { Get-Content "docs\internal\local_denetim_raporu.md" -Raw -Encoding UTF8 } else { "" }
     $hasOpenFindings = $reportContent -match 'TOPLAM\s*\|\s*[1-9]'
     if ($hasOpenFindings) {
         Append-UnresolvedPlaceholder
@@ -173,7 +173,7 @@ if ($Mode -eq "Full") {
         )
     } else {
         Append-RunNote -Title "Cozum Sirasi Hazirligi" -Lines @(
-            "Rapor incelendi — acik bulgu yok, COZULEMEYEN_SORUNLAR.md guncellenmedi."
+            "Rapor incelendi - acik bulgu yok, COZULEMEYEN_SORUNLAR.md guncellenmedi."
         )
     }
 }

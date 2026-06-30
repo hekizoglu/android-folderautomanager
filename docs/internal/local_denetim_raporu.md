@@ -99,11 +99,31 @@
 | 2026-06-30 00:52 | T2 | Dock/Widget/Backup + CE | StateFlow/ViewModel | Bulunamadi |
 | 2026-06-30 01:40 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi → CE14 eklendi |
 | 2026-06-30 02:03 | T1 | Izin/Onboarding | OEM Compatibility | Bulunamadi |
+| 2026-06-30 02:28 | T2 | Accessibility/A11y + CE | Test Coverage | Bulunamadi |
+| 2026-06-30 03:44 | T1 | Category CRUD | Repository/DataLayer | Bulunamadi |
+| 2026-06-30 05:08 | T1 | Dock/Widget/Backup | StateFlow/ViewModel | Bulunamadi |
+| 2026-06-30 06:03 | T2 | Settings UI/Labels + CE | Navigation/Routing | Bulunamadi |
+| 2026-06-30 07:05 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi |
+| 2026-06-30 08:03 | T1 | Izin/Onboarding | OEM Compatibility | Bulunamadi |
+| 2026-06-30 09:03 | **T3** | State/SharedPrefs + CE + Compose+Dep+APK+Skill+Dead | Memory/Lifecycle | Bulunamadi |
+| 2026-06-30 10:05 | T1 | Accessibility/A11y | Test Coverage | Bulunamadi |
+| 2026-06-30 11:03 | T1 | Performance/Memory | Privacy/Security | Bulunamadi |
+| 2026-06-30 12:03 | T2 | Category CRUD + CE | Repository/DataLayer | Bulunamadi |
+| 2026-06-30 13:03 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi |
+| 2026-06-30 14:05 | T1 | Dock/Widget/Backup | StateFlow/ViewModel | Bulunamadi |
+| 2026-06-30 15:04 | T2 | Settings UI/Labels + CE | Navigation/Routing | Bulunamadi |
+| 2026-06-30 16:03 | T1 | Gesture/Swipe/Drawer | Timber log | Bulunamadi |
+| 2026-06-30 17:03 | T1 | Izin/Onboarding | OEM Compatibility | Bulunamadi |
+| 2026-06-30 18:03 | T2 | State/SharedPrefs + CE | Memory/Lifecycle | Bulunamadi |
 
-*66 tur, 0 bug*
+*82 tur, 0 bug | Sonraki: **#190 T3** 🎯*
 
 *51 tur, 0 bug | IMP#4: derivedStateOf fix*
 
 *50 tur, 0 bug*
 
 *49 tur, 0 bug*
+
+## Cozum Sirasi Hazirligi - 2026-06-30 03:15
+
+- Rapor incelendi - acik bulgu yok, COZULEMEYEN_SORUNLAR.md guncellenmedi.

@@ -1,8 +1,8 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-30 02:10
-> Dongu: **#173** | Tier: **1**
+> Son denetim: 2026-06-30 17:10
+> Dongu: **#188** | Tier: **1**
 > Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
 > Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
 
@@ -26,4 +26,4 @@
 
 ---
 
-*Denetim tarihi: 2026-06-30 02:10 | Dongu: #173 | Tier: 1 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*
+*Denetim tarihi: 2026-06-30 17:10 | Dongu: #188 | Tier: 1 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*

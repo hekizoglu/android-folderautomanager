@@ -3,8 +3,8 @@
 # Kullanım: .\scripts\fix_denetim_encoding.ps1
 
 $files = @(
-    "local_denetim_otomatik_rapor.md",
-    "local_denetim_raporu.md",
+    "docs\internal\local_denetim_otomatik_rapor.md",
+    "docs\internal\local_denetim_raporu.md",
     "qa\local_denetim_raporu.md"
 )
 

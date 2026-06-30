@@ -54,6 +54,10 @@ qa/reports/
 *.bak
 build_out*.txt
 apk_build_latest.txt
+build_cycle*.txt
+build_warn.txt
+build_test_out.txt
+gradle_test_run*.txt
 
 # Python
 __pycache__/
