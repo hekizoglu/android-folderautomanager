@@ -64,6 +64,34 @@ Uygulama sırası: bağımlılık zincirine göre.
 | 18p | **AppOrganizer Dashboard** — `AppOrganizerDashboardScreen.kt` [TAMAMLANDI] |
 | 17p | **Room FTS5 Backend İskeleti** — `SearchDocument`, `SearchDao`, `SearchIndexer`, `SearchRepository`, v8→v9 migration [D171] |
 
+### ⭐ Yeni Görev — Ana Ekran İçgörü Kartı Çeşitliliği (17p)
+
+**Sorun:** `AssistantInsightRow` hep aynı içgörüyü gösteriyor ("en çok açılan uygulama: Telegram"). Statik ve tekrar eden içerik kullanıcının gözünde değersizleşiyor.
+
+**Çözüm:** Her oturumda/her N dakikada bir rastgele içgörü türü seçilsin:
+
+| İçgörü Türü | Örnek | Veri Kaynağı |
+|-------------|-------|-------------|
+| En çok açılan | "Bu hafta en çok Telegram kullandın" | `usageCount` |
+| Hiç açılmayan | "Instagram'ı 30 gündür açmadın, silmeyi düşün?" | `usageCount == 0 \|\| lastUsed < 30d` |
+| Yeni yüklenen | "Instagram geçen hafta kuruldu, bir bak?" | `installTime < 7d` |
+| Büyük uygulama | "WhatsApp 120MB yer kaplıyor" | `appSizeBytes` |
+| Bildirim yoğunu | "Email uygulaması bugün 14 bildirim gönderdi" | `notificationCount` |
+| Kategori özeti | "Oyun klasöründe 8 uygulama var, kaçını açtın?" | `folders + usageCount` |
+| Motivasyon/soru | "Bu hafta kaç farklı uygulama kullandın?" | `distinct usageCount > 0` |
+
+**Teknik notlar:**
+- `InsightEngine.kt` — `List<InsightCard>` üret, `Random.nextInt()` ile seç
+- Aynı kart 3 kez üst üste çıkmasın → `SharedPrefs`'te son 3 kart ID sakla
+- Kart tıklanabilir → ilgili uygulamayı aç veya klasöre git
+- Refresh: her `onResume` + 15 dakikada bir `LaunchedEffect`
+
+**Dosyalar:** `AssistantInsightRow.kt`, yeni `InsightEngine.kt`, `LauncherViewModel.kt` (insightCards flow)
+
+**Puan:** KV:4 · U:4 · BR:4 · EA:4 = **16p** + UX özgünlük bonusu = **17p**
+
+---
+
 ### 🟡 Orta Öncelik
 
 | Görev | Alan | Durum |
