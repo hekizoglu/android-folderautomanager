@@ -1,5 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.presentation.viewmodel.SearchSettingsViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 
@@ -40,8 +45,10 @@ import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 @Composable
 fun SearchSettingsScreen(
     onNavigateBack: () -> Unit,
+    viewModel: SearchSettingsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val sourceOpInFlight by viewModel.sourceOpInFlight.collectAsState()
     var homeAppSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeAppSearchEnabled(context)) }
     var homeSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeSearchEnabled(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(AppPrefs.isDoubleTapSearchEnabled(context)) }
@@ -52,6 +59,37 @@ fun SearchSettingsScreen(
     var filesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
     var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
     var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
+    var pendingPermission by remember { mutableStateOf<ContextualPermission?>(null) }
+
+    pendingPermission?.let { permission ->
+        ContextualPermissionDialog(
+            permission = permission,
+            onGranted = {
+                when (permission) {
+                    ContextualPermission.CONTACTS -> {
+                        contactsSourceEnabled = true
+                        AppPrefs.setSearchSourceContactsEnabled(context, true)
+                        viewModel.enableContactsSource()
+                    }
+                    ContextualPermission.FILES -> {
+                        filesSourceEnabled = true
+                        AppPrefs.setSearchSourceFilesEnabled(context, true)
+                        viewModel.enableFilesSource()
+                    }
+                    else -> Unit
+                }
+                pendingPermission = null
+            },
+            onDismiss = {
+                when (permission) {
+                    ContextualPermission.CONTACTS -> contactsSourceEnabled = AppPrefs.isSearchSourceContactsEnabled(context)
+                    ContextualPermission.FILES -> filesSourceEnabled = AppPrefs.isSearchSourceFilesEnabled(context)
+                    else -> Unit
+                }
+                pendingPermission = null
+            }
+        )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -174,9 +212,26 @@ fun SearchSettingsScreen(
                         subtitle = "Opsiyonel. Ileride izin verilirse kisi kartlari aranabilir",
                         checked = contactsSourceEnabled,
                         onCheckedChange = {
-                            contactsSourceEnabled = it
-                            AppPrefs.setSearchSourceContactsEnabled(context, it)
+                            if (it) {
+                                val hasContactsPermission = ContextCompat.checkSelfPermission(
+                                    context,
+                                    android.Manifest.permission.READ_CONTACTS
+                                ) == PackageManager.PERMISSION_GRANTED
+                                if (hasContactsPermission) {
+                                    contactsSourceEnabled = true
+                                    AppPrefs.setSearchSourceContactsEnabled(context, true)
+                                    viewModel.enableContactsSource()
+                                } else {
+                                    contactsSourceEnabled = false
+                                    pendingPermission = ContextualPermission.CONTACTS
+                                }
+                            } else {
+                                contactsSourceEnabled = false
+                                AppPrefs.setSearchSourceContactsEnabled(context, false)
+                                viewModel.disableContactsSource()
+                            }
                         },
+                        enabled = !sourceOpInFlight,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
@@ -185,9 +240,16 @@ fun SearchSettingsScreen(
                         subtitle = "Varsayilan kapali. Acilirsa cihaz dosya adlari indekslenir",
                         checked = filesSourceEnabled,
                         onCheckedChange = {
-                            filesSourceEnabled = it
-                            AppPrefs.setSearchSourceFilesEnabled(context, it)
+                            if (it) {
+                                filesSourceEnabled = false
+                                pendingPermission = ContextualPermission.FILES
+                            } else {
+                                filesSourceEnabled = false
+                                AppPrefs.setSearchSourceFilesEnabled(context, false)
+                                viewModel.disableFilesSource()
+                            }
                         },
+                        enabled = !sourceOpInFlight,
                     )
                 }
             }
@@ -218,7 +280,7 @@ fun SearchSettingsScreen(
             item {
                 Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 14.dp)) {
                     Text(
-                        text = "Not: Kisi ve dosya kaynaklari privacy-first tasarlanir. Dosya aramasi varsayilan kapali tutulur ve gercek indeksleme ayri turde devreye alinacaktir.",
+                        text = "Not: Kişi kaynağı ilk açılışta izin ister. Dosya araması varsayılan kapalıdır ve açıldığında yalnızca ad/yol bilgisi yerel indekse eklenir.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )

@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 193 — 2026-06-30 [CONTEXTUAL SEARCH PERMISSIONS + ROADMAP SYNC]
+
+**Yapılanlar:** SearchSettings kaynak toggle'ları artık sadece pref yazmıyor; kişi kaynağında contextual izin açıklaması + `READ_CONTACTS` istemi, dosya kaynağında privacy-first onay diyaloğu sonrası `SearchRepository.enable*/disable*` akışları tetikleniyor. `ContextualPermissionDialog` ilk istek ile kalıcı red ayrımını saklayarak erken ayarlara yönlendirme hatasını düzeltti. ROADMAP senkronize edildi: O1/O2/O3 ve Contacts/Files opt-in dialog maddeleri tamamlandı olarak işlendi.
+**Agent:** Codex GPT-5
+**Sonraki:** Play Store kritikleri için repo dışı işler — QUERY_ALL_PACKAGES beyanı, content rating, screenshot üretimi ve GitHub Pages privacy policy aktivasyonu
+
+---
+
 ## Döngü 192 — 2026-06-30 [FTS5 BACKEND + FiKiRLER/ROADMAP]
 
 **Yapılanlar:** Room FTS5 birleşik arama backend iskeleti tamamlandı: SearchDocument entity, SearchFts mapping, SearchDao (MATCH prefix + CRUD), SearchIndexer (App/Category→Document donusturucu), SearchRepository (search+bootstrap+delta). AppDatabase v8→v9 MIGRATION_8_9 (raw SQL FTS5 + trigger'lar). DI modulu AppDatabase.getInstance()'e gecirildi (migration zinciri aktif). FiKiRLER.md: 2 puansiz fikir puanlandi (mobile-design 9p, Duvar Kagidi 13p), Beklet'teki TAMAMLANDI'lar Temizlendi, 4 yeni FTS5 quick-win fikri eklendi (17p+16p+16p+15p). ROADMAP.md: Sprint A/B/C yapisi kuruldu. Denetim raporlari: CS13 kapatildi (tasarim karari), qa/ stale kopyalar silindi, .bak temizlendi, encoding duzeltildi.

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import com.armutlu.apporganizer.utils.AppPrefs
 
 // İzin türü tanımı
 enum class ContextualPermission(
@@ -33,7 +34,8 @@ enum class ContextualPermission(
     val icon: ImageVector,
     val title: String,
     val reason: String,
-    val privacyNote: String
+    val privacyNote: String,
+    val actionLabel: String = "İzin Ver"
 ) {
     USAGE_ACCESS(
         permission = null,
@@ -55,6 +57,21 @@ enum class ContextualPermission(
         title = "Bildirim Erişimi",
         reason = "Uygulama simgelerinde bildirim sayısını göstermek için bu izne ihtiyaç var.",
         privacyNote = "Bildirim içerikleri okunmaz, sadece sayılar takip edilir."
+    ),
+    CONTACTS(
+        permission = android.Manifest.permission.READ_CONTACTS,
+        icon = Icons.Default.Info,
+        title = "Kişi Erişimi",
+        reason = "Aramada kişi kartlarını gösterebilmemiz için rehberinizi okumamız gerekiyor.",
+        privacyNote = "Kişi verileri sadece cihaz içinde indekslenir, sunucuya gönderilmez."
+    ),
+    FILES(
+        permission = null,
+        icon = Icons.Default.Info,
+        title = "Dosya Adları",
+        reason = "Dosya aramasını açınca cihazınızdaki medya ve indirme adlarını yerel arama indeksine ekleriz.",
+        privacyNote = "Yalnızca ad ve klasör yolu okunur; dosya içeriği açılmaz veya dışarı aktarılmaz.",
+        actionLabel = "İndekslemeyi Aç"
     )
 }
 
@@ -65,6 +82,9 @@ fun ContextualPermissionDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val permissionPrefs = remember {
+        context.getSharedPreferences(AppPrefs.PREFS_NAME, Activity.MODE_PRIVATE)
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -151,9 +171,11 @@ fun ContextualPermissionDialog(
                                         context, android.Manifest.permission.POST_NOTIFICATIONS
                                     ) == PermissionChecker.PERMISSION_GRANTED
                                     if (alreadyGranted) { onGranted(); return@Button }
+                                    val askedBefore = permissionPrefs.getBoolean("asked_post_notifications", false)
                                     val shouldShow = (context as? Activity)
                                         ?.shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS) != false
-                                    if (shouldShow) {
+                                    if (!askedBefore || shouldShow) {
+                                        permissionPrefs.edit().putBoolean("asked_post_notifications", true).apply()
                                         permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                                     } else {
                                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -163,14 +185,38 @@ fun ContextualPermissionDialog(
                                     }
                                 } else onGranted()
                             }
+                            ContextualPermission.CONTACTS -> {
+                                val alreadyGranted = ContextCompat.checkSelfPermission(
+                                    context, android.Manifest.permission.READ_CONTACTS
+                                ) == PermissionChecker.PERMISSION_GRANTED
+                                if (alreadyGranted) {
+                                    onGranted()
+                                    return@Button
+                                }
+                                val askedBefore = permissionPrefs.getBoolean("asked_read_contacts", false)
+                                val activity = context as? Activity
+                                val shouldShow = activity?.shouldShowRequestPermissionRationale(
+                                    android.Manifest.permission.READ_CONTACTS
+                                ) != false
+                                if (!askedBefore || shouldShow) {
+                                    permissionPrefs.edit().putBoolean("asked_read_contacts", true).apply()
+                                    permissionLauncher.launch(android.Manifest.permission.READ_CONTACTS)
+                                } else {
+                                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                        .setData(Uri.parse("package:${context.packageName}"))
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                    onDismiss()
+                                }
+                            }
                             ContextualPermission.NOTIFICATION_LISTENER -> {
                                 context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                                 onDismiss()
                             }
+                            ContextualPermission.FILES -> onGranted()
                         }
                     }) {
-                        Text("İzin Ver")
+                        Text(permission.actionLabel)
                     }
                 }
             }

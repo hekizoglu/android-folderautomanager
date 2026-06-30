@@ -96,7 +96,7 @@ Uygulama sırası: bağımlılık zincirine göre.
 
 | Görev | Alan | Durum |
 |-------|------|-------|
-| **Contacts/Files arama opt-in izin dialog** — ContextualPermissionDialog entegrasyonu | `ContextualPermissionDialog.kt` + Settings | Bekliyor |
+| **Contacts/Files arama opt-in izin dialog** — ContextualPermissionDialog entegrasyonu | `ContextualPermissionDialog.kt` + Settings | Tamamlandı |
 | **Android 14 NotificationListenerService gerçek cihaz testi** | `AppNotificationListenerService.kt` | Bekliyor |
 | **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
 | **Firebase Crashlytics kurulumu** | `google-services.json` + service account | Bekliyor |
