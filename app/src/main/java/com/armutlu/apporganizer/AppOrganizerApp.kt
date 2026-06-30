@@ -1,9 +1,12 @@
 package com.armutlu.apporganizer
 
+import android.Manifest
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
@@ -34,10 +37,22 @@ class AppOrganizerApp : Application() {
         if (AppPrefs.isAutoBackupEnabled(this)) {
             BackupWorker.schedule(this)
         }
+        enableGrantedContactSearchByDefault()
         WeeklyDigestWorker.schedule(this)
         SmartInsightWorker.schedule(this)
         createNotificationChannels()
         fetchFcmToken()
+    }
+
+    private fun enableGrantedContactSearchByDefault() {
+        val contactsGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_CONTACTS
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (contactsGranted && !AppPrefs.hasSearchSourceContactsPreference(this)) {
+            AppPrefs.setSearchSourceContactsEnabled(this, true)
+        }
     }
 
     /** Bildirim kanallarını oluştur (Android 8+). */
