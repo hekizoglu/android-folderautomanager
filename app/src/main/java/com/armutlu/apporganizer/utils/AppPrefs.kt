@@ -356,6 +356,47 @@ object AppPrefs {
     fun setSearchRankingProfile(context: Context, profile: SearchRankingProfile) =
         prefs(context).edit().putString(KEY_SEARCH_RANKING_PROFILE, profile.name).apply()
 
+    // ── Gelişmiş Arama Ayarları ───────────────────────────────────────────────
+    // Fuzzy arama — "ytb" → YouTube, "wtsp" → WhatsApp
+    const val KEY_SEARCH_FUZZY = "search_fuzzy_enabled"
+    fun isSearchFuzzyEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_FUZZY, true)
+    fun setSearchFuzzyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_FUZZY, v).apply()
+
+    // Türkçe fonetik toleransı — ş→s, ü→u, ö→o, ç→c, ğ→g, ı→i (ASCII-fold)
+    const val KEY_SEARCH_PHONETIC = "search_phonetic_enabled"
+    fun isSearchPhoneticEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_PHONETIC, true)
+    fun setSearchPhoneticEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_PHONETIC, v).apply()
+
+    // Anlık arama — her tuş vuruşunda sonuç (false = Enter'da)
+    const val KEY_SEARCH_INSTANT = "search_instant_enabled"
+    fun isSearchInstantEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_INSTANT, true)
+    fun setSearchInstantEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_INSTANT, v).apply()
+
+    // Kullanım sıklığına göre önceliklendir
+    const val KEY_SEARCH_SORT_BY_USAGE = "search_sort_by_usage"
+    fun isSearchSortByUsage(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SORT_BY_USAGE, true)
+    fun setSearchSortByUsage(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SORT_BY_USAGE, v).apply()
+
+    // Maksimum gösterilecek sonuç sayısı (HomeAppSearchBar için)
+    const val KEY_SEARCH_MAX_RESULTS = "search_max_results"
+    fun getSearchMaxResults(context: Context) = prefs(context).getInt(KEY_SEARCH_MAX_RESULTS, 6)
+    fun setSearchMaxResults(context: Context, n: Int) = prefs(context).edit().putInt(KEY_SEARCH_MAX_RESULTS, n).apply()
+
+    // Arama geçmişi kaç sorgu saklansın
+    const val KEY_SEARCH_HISTORY_LIMIT = "search_history_limit"
+    fun getSearchHistoryLimit(context: Context) = prefs(context).getInt(KEY_SEARCH_HISTORY_LIMIT, 8)
+    fun setSearchHistoryLimit(context: Context, n: Int) = prefs(context).edit().putInt(KEY_SEARCH_HISTORY_LIMIT, n).apply()
+
+    // Sonuçlarda app ikonunu göster/gizle
+    const val KEY_SEARCH_SHOW_ICONS = "search_show_icons"
+    fun isSearchShowIcons(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHOW_ICONS, true)
+    fun setSearchShowIcons(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SHOW_ICONS, v).apply()
+
+    // Kişi aramasında avatar göster/gizle
+    const val KEY_SEARCH_SHOW_CONTACT_AVATAR = "search_show_contact_avatar"
+    fun isSearchShowContactAvatar(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHOW_CONTACT_AVATAR, true)
+    fun setSearchShowContactAvatar(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SHOW_CONTACT_AVATAR, v).apply()
+
     // Assistant Kartları — ana ekranda kullanım içgörü kartları
     const val KEY_ASSISTANT_CARDS = "assistant_cards_enabled"
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)

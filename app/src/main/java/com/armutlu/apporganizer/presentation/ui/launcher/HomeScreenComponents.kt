@@ -33,10 +33,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -77,6 +80,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SearchCache
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -616,16 +620,44 @@ internal fun HomeAppSearchBar(
 ) {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
-    // Klasör arama modu: false=uygulama, true=klasör
     var folderMode by remember { mutableStateOf(false) }
     val activeFolderMode = folderMode && folderQuery != null
 
-    val results = remember(query, allApps, activeFolderMode) {
+    // Arama ayarları — her recompose'da SharedPrefs okumak pahalı, remember ile
+    val fuzzy         = remember { AppPrefs.isSearchFuzzyEnabled(context) }
+    val phonetic      = remember { AppPrefs.isSearchPhoneticEnabled(context) }
+    val sortByUsage   = remember { AppPrefs.isSearchSortByUsage(context) }
+    val maxResults    = remember { AppPrefs.getSearchMaxResults(context) }
+    val showIcons     = remember { AppPrefs.isSearchShowIcons(context) }
+    val showAvatar    = remember { AppPrefs.isSearchShowContactAvatar(context) }
+    val contactsOn    = remember { AppPrefs.isSearchSourceContactsEnabled(context) }
+
+    // Cache'i allApps değişince güncelle
+    LaunchedEffect(allApps) {
+        withContext(Dispatchers.IO) { SearchCache.warmApps(allApps) }
+    }
+
+    // Kişi cache'ini başlat (izin varsa)
+    LaunchedEffect(contactsOn) {
+        if (contactsOn) {
+            val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.READ_CONTACTS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (hasPermission) {
+                SearchCache.loadContacts(context)
+                SearchCache.observeContacts(context)
+            }
+        }
+    }
+
+    // Sonuçlar: app + kişi
+    val appResults = remember(query, allApps, activeFolderMode, fuzzy, phonetic, sortByUsage, maxResults) {
         if (activeFolderMode || query.isBlank()) emptyList()
-        else allApps
-            .filter { it.appName.lowercase(Locale("tr")).contains(query.lowercase(Locale("tr"))) }
-            .sortedBy { it.appName }
-            .take(6)
+        else SearchCache.searchApps(query, maxResults, phonetic, fuzzy, sortByUsage)
+    }
+    val contactResults = remember(query, contactsOn, activeFolderMode) {
+        if (!contactsOn || activeFolderMode || query.isBlank()) emptyList()
+        else SearchCache.searchContacts(query, 3, phonetic = true, fuzzy = true)
     }
 
     // Klasör arama modundayken folderQuery'yi güncelle
@@ -829,12 +861,14 @@ internal fun HomeAppSearchBar(
             }
         }
 
-        // Sonuç listesi
-        if (results.isNotEmpty() && !isDragging) {
+        // Sonuç listesi — uygulamalar + kişiler
+        if ((appResults.isNotEmpty() || contactResults.isNotEmpty()) && !isDragging) {
             Spacer(Modifier.height(4.dp))
             GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.18f) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    results.forEach { app ->
+
+                    // App sonuçları
+                    appResults.forEach { app ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -847,27 +881,108 @@ internal fun HomeAppSearchBar(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            val cacheKey = "${app.packageName}_32_${app.lastUpdatedTime}"
-                            val icon by produceState<ImageBitmap?>(null, cacheKey) {
-                                value = withContext(Dispatchers.IO) {
-                                    iconCacheInternal[cacheKey] ?: run {
-                                        val bmp = runCatching {
-                                            com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 64)?.asImageBitmap()
-                                        }.getOrNull()
-                                        if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
-                                        bmp
+                            if (showIcons) {
+                                val cacheKey = "${app.packageName}_32_${app.lastUpdatedTime}"
+                                val icon by produceState<ImageBitmap?>(null, cacheKey) {
+                                    value = withContext(Dispatchers.IO) {
+                                        iconCacheInternal[cacheKey] ?: run {
+                                            val bmp = runCatching {
+                                                com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 64)?.asImageBitmap()
+                                            }.getOrNull()
+                                            if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                            bmp
+                                        }
+                                    }
+                                }
+                                if (icon != null) {
+                                    Image(bitmap = icon!!, contentDescription = null,
+                                        modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
+                                } else {
+                                    Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White.copy(alpha = 0.2f)))
+                                }
+                            }
+                            Text(app.appName, color = Color.White.copy(alpha = 0.90f),
+                                fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f))
+                        }
+                    }
+
+                    // Kişi sonuçları — ayraç
+                    if (contactResults.isNotEmpty()) {
+                        if (appResults.isNotEmpty()) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Person, null,
+                                tint = Color.White.copy(alpha = 0.40f), modifier = Modifier.size(11.dp))
+                            Text("Kişiler", color = Color.White.copy(alpha = 0.40f), fontSize = 11.sp)
+                        }
+                        contactResults.forEach { contact ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        SearchHistoryPrefs.addQuery(context, query)
+                                        query = ""
+                                        // Kişi tıklaması: arama ekranına veya telefon dialer'a
+                                        val dialIntent = android.content.Intent(
+                                            android.content.Intent.ACTION_DIAL,
+                                            android.net.Uri.parse("tel:${contact.phone}")
+                                        ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
+                                        runCatching { context.startActivity(dialIntent) }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                if (showAvatar) {
+                                    val avatarBitmap by produceState<ImageBitmap?>(null, contact.photoUri) {
+                                        value = withContext(Dispatchers.IO) {
+                                            if (contact.photoUri != null) {
+                                                runCatching {
+                                                    val uri = android.net.Uri.parse(contact.photoUri)
+                                                    context.contentResolver.openInputStream(uri)?.use {
+                                                        android.graphics.BitmapFactory.decodeStream(it)?.asImageBitmap()
+                                                    }
+                                                }.getOrNull()
+                                            } else null
+                                        }
+                                    }
+                                    if (avatarBitmap != null) {
+                                        Image(bitmap = avatarBitmap!!, contentDescription = null,
+                                            modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp)),
+                                            contentScale = ContentScale.Crop)
+                                    } else {
+                                        Box(
+                                            modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
+                                                .background(Color.White.copy(alpha = 0.20f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                contact.displayName.take(1).uppercase(),
+                                                color = Color.White.copy(alpha = 0.80f),
+                                                fontSize = 13.sp, fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(contact.displayName, color = Color.White.copy(alpha = 0.90f),
+                                        fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    if (contact.phone.isNotBlank()) {
+                                        Text(contact.phone, color = Color.White.copy(alpha = 0.45f),
+                                            fontSize = 11.sp, maxLines = 1)
                                     }
                                 }
                             }
-                            if (icon != null) {
-                                Image(bitmap = icon!!, contentDescription = null,
-                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
-                            } else {
-                                Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
-                                    .background(Color.White.copy(alpha = 0.2f)))
-                            }
-                            Text(app.appName, color = Color.White.copy(alpha = 0.90f),
-                                fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }

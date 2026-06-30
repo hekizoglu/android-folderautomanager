@@ -17,6 +17,13 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -60,6 +67,16 @@ fun SearchSettingsScreen(
     var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
     var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
     var pendingPermission by remember { mutableStateOf<ContextualPermission?>(null) }
+
+    // Gelişmiş arama ayarları
+    var fuzzyEnabled      by remember { mutableStateOf(AppPrefs.isSearchFuzzyEnabled(context)) }
+    var phoneticEnabled   by remember { mutableStateOf(AppPrefs.isSearchPhoneticEnabled(context)) }
+    var instantEnabled    by remember { mutableStateOf(AppPrefs.isSearchInstantEnabled(context)) }
+    var sortByUsage       by remember { mutableStateOf(AppPrefs.isSearchSortByUsage(context)) }
+    var maxResults        by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
+    var historyLimit      by remember { mutableStateOf(AppPrefs.getSearchHistoryLimit(context)) }
+    var showIcons         by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
+    var showContactAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
 
     pendingPermission?.let { permission ->
         ContextualPermissionDialog(
@@ -274,11 +291,119 @@ fun SearchSettingsScreen(
                             AppPrefs.setSearchRankingProfile(context, rankingProfile)
                         },
                     )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Sort,
+                        title = "Kullanım Sıklığına Göre Sırala",
+                        subtitle = "Eşit sonuçlarda daha sık açılan uygulama üste çıkar",
+                        checked = sortByUsage,
+                        onCheckedChange = {
+                            sortByUsage = it
+                            AppPrefs.setSearchSortByUsage(context, it)
+                        }
+                    )
+                }
+            }
+
+            // ── Gelişmiş Arama ────────────────────────────────────────────────
+            item { SettingsSectionTitle("Gelişmiş Arama") }
+            item {
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Tune,
+                        title = "Fuzzy Arama",
+                        subtitle = "\"ytb\" → YouTube, \"wtsp\" → WhatsApp — yakın eşleşmeleri bul",
+                        checked = fuzzyEnabled,
+                        onCheckedChange = {
+                            fuzzyEnabled = it
+                            AppPrefs.setSearchFuzzyEnabled(context, it)
+                        }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Translate,
+                        title = "Türkçe Fonetik Toleransı",
+                        subtitle = "\"sube\" ile \"şube\" bulunur — ş→s, ü→u, ö→o, ç→c, ğ→g",
+                        checked = phoneticEnabled,
+                        onCheckedChange = {
+                            phoneticEnabled = it
+                            AppPrefs.setSearchPhoneticEnabled(context, it)
+                        }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Search,
+                        title = "Anlık Arama",
+                        subtitle = "Her tuşta sonuç güncellenir — kapalıysa Enter'da arar",
+                        checked = instantEnabled,
+                        onCheckedChange = {
+                            instantEnabled = it
+                            AppPrefs.setSearchInstantEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
+            // ── Sonuç Görünümü ────────────────────────────────────────────────
+            item { SettingsSectionTitle("Sonuç Görünümü") }
+            item {
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Image,
+                        title = "Uygulama İkonları",
+                        subtitle = "Arama sonuçlarında uygulama simgelerini göster",
+                        checked = showIcons,
+                        onCheckedChange = {
+                            showIcons = it
+                            AppPrefs.setSearchShowIcons(context, it)
+                        }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.AccountCircle,
+                        title = "Kişi Avatarları",
+                        subtitle = "Rehber sonuçlarında profil fotoğraflarını göster",
+                        checked = showContactAvatar,
+                        onCheckedChange = {
+                            showContactAvatar = it
+                            AppPrefs.setSearchShowContactAvatar(context, it)
+                        }
+                    )
+                }
+            }
+
+            // ── Limitler ─────────────────────────────────────────────────────
+            item { SettingsSectionTitle("Limitler") }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Numbers,
+                        title = "Maksimum Sonuç Sayısı",
+                        subtitle = "Şu an: $maxResults sonuç — dokunarak değiştir (4 / 6 / 8 / 10)",
+                        onClick = {
+                            maxResults = when (maxResults) {
+                                4 -> 6; 6 -> 8; 8 -> 10; else -> 4
+                            }
+                            AppPrefs.setSearchMaxResults(context, maxResults)
+                        }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.History,
+                        title = "Arama Geçmişi Limiti",
+                        subtitle = "Şu an: $historyLimit sorgu saklanır — dokunarak değiştir (5 / 8 / 12 / 20)",
+                        onClick = {
+                            historyLimit = when (historyLimit) {
+                                5 -> 8; 8 -> 12; 12 -> 20; else -> 5
+                            }
+                            AppPrefs.setSearchHistoryLimit(context, historyLimit)
+                        }
+                    )
                 }
             }
 
             item {
-                Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 14.dp)) {
+                androidx.compose.foundation.layout.Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 14.dp)) {
                     Text(
                         text = "Not: Kişi kaynağı ilk açılışta izin ister. Dosya araması varsayılan kapalıdır ve açıldığında yalnızca ad/yol bilgisi yerel indekse eklenir.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
