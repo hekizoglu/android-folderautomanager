@@ -545,23 +545,6 @@ fun HomeScreen(
                 )
             }
 
-            // Assistant kartları — kullanım içgörüleri (kural bazlı, 7 tür, 15dk rotation)
-            if (assistantCardsEnabled && insightCards.isNotEmpty()) {
-                AssistantInsightRow(
-                    cards = insightCards,
-                    onCardClick = { card ->
-                        card.packageName?.let { pkg ->
-                            runCatching {
-                                context.startActivity(
-                                    context.packageManager.getLaunchIntentForPackage(pkg)
-                                        ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                )
-                            }
-                        }
-                    }
-                )
-            }
-
             // Odak Modu aktifken klasör grid ve istatistik gizlenir
             if (focusModeEnabled) {
                 androidx.compose.foundation.layout.Box(
@@ -717,6 +700,23 @@ fun HomeScreen(
 
             // Sayfa noktaciklari — HomeScreenPageIndicator.kt
             HomePageIndicator(pageCount = pageCount, pagerState = pagerState)
+
+            // Assistant kartları — klasörlerin altında, dock'tan önce
+            if (assistantCardsEnabled && insightCards.isNotEmpty()) {
+                AssistantInsightRow(
+                    cards = insightCards,
+                    onCardClick = { card ->
+                        card.packageName?.let { pkg ->
+                            runCatching {
+                                context.startActivity(
+                                    context.packageManager.getLaunchIntentForPackage(pkg)
+                                        ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            }
+                        }
+                    }
+                )
+            }
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
