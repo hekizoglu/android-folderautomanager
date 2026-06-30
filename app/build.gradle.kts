@@ -171,6 +171,8 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
 
+    // Bundled SQLite with FTS5 — platform SQLite'da FTS5 eksikse fallback LIKE kullanılır
+
     // Hilt Dependency Injection
     implementation("com.google.dagger:hilt-android:2.52")
     kapt("com.google.dagger:hilt-compiler:2.52")

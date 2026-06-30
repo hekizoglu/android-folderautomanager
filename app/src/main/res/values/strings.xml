@@ -198,6 +198,11 @@
     <string name="onb_done_desc">AppOrganizer kurulumu tamamlandı. İyi kullanımlar!</string>
     <string name="onb_done_btn">Başla</string>
 
+    <!-- Onboarding Browser Select (O2) -->
+    <string name="onb_browser_title">Varsayılan Tarayıcı</string>
+    <string name="onb_browser_desc">Hangi tarayıcıyı varsayılan yapmak istersiniz? Bağlantılar bu tarayıcıda açılır.</string>
+    <string name="onb_browser_btn">Tarayıcı Seç</string>
+
     <string name="onb_continue">Devam Et</string>
     <string name="onb_skip">Atla</string>
     <string name="onb_skip_now">Şimdi Değil</string>

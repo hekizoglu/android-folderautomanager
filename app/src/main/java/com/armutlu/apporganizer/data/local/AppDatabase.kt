@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
+import com.armutlu.apporganizer.domain.models.SearchHistory
 import timber.log.Timber
 
 /**
@@ -19,15 +20,16 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class],
-    version = 9,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, SearchHistory::class],
+    version = 10,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
-    
+
     abstract fun appDao(): AppDao
     abstract fun categoryDao(): CategoryDao
     abstract fun searchDao(): SearchDao
+    abstract fun searchHistoryDao(): SearchHistoryDao
     
     companion object {
         @Volatile
@@ -85,12 +87,24 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v8→v9: FTS5 search tablosu eklendi (birleşik arama Sprint 1)
+        // v9→v10: SearchHistory tablosu eklendi (arama geçmişi B1)
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS search_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        query TEXT NOT NULL,
+                        timestamp INTEGER NOT NULL DEFAULT 0
+                    )
+                """)
+            }
+        }
+
+        // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Gölge tablo — SearchDocument entity
                 db.execSQL("""
-                    CREATE TABLE search_documents (
+                    CREATE TABLE IF NOT EXISTS search_documents (
                         docId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         source_type TEXT NOT NULL,
                         source_id TEXT NOT NULL,
@@ -101,16 +115,21 @@ abstract class AppDatabase : RoomDatabase() {
                         last_modified INTEGER NOT NULL DEFAULT 0
                     )
                 """)
-                // FTS5 sanal tablo — unicode61 tokenizer, content= ile gölge tabloya bağlı
+                ensureSearchTables(db)
+            }
+        }
+
+        // FTS5 bazı AOSP build'lerinde yoktur; try/catch ile graceful degrade
+        internal fun ensureSearchTables(db: SupportSQLiteDatabase) {
+            try {
                 db.execSQL("""
-                    CREATE VIRTUAL TABLE search_fts USING fts5(
+                    CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
                         search_text, keywords,
                         content='search_documents',
                         content_rowid='docId',
                         tokenize='unicode61'
                     )
                 """)
-                // FTS5 senkronizasyon trigger'ları
                 db.execSQL("""
                     CREATE TRIGGER IF NOT EXISTS search_fts_ai AFTER INSERT ON search_documents BEGIN
                         INSERT INTO search_fts(rowid, search_text, keywords)
@@ -131,38 +150,19 @@ abstract class AppDatabase : RoomDatabase() {
                         VALUES (new.docId, new.title || ' ' || new.subtitle, '');
                     END
                 """)
+                Timber.d("FTS5 sanal tablosu ve trigger'lar oluşturuldu")
+            } catch (e: Exception) {
+                Timber.w("FTS5 desteklenmiyor, LIKE araması kullanılacak: ${e.message}")
             }
         }
 
-        private fun ensureSearchTables(db: SupportSQLiteDatabase) {
-            db.execSQL("""
-                CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
-                    search_text, keywords,
-                    content='search_documents',
-                    content_rowid='docId',
-                    tokenize='unicode61'
-                )
-            """)
-            db.execSQL("""
-                CREATE TRIGGER IF NOT EXISTS search_fts_ai AFTER INSERT ON search_documents BEGIN
-                    INSERT INTO search_fts(rowid, search_text, keywords)
-                    VALUES (new.docId, new.title || ' ' || new.subtitle, '');
-                END
-            """)
-            db.execSQL("""
-                CREATE TRIGGER IF NOT EXISTS search_fts_ad AFTER DELETE ON search_documents BEGIN
-                    INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
-                    VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
-                END
-            """)
-            db.execSQL("""
-                CREATE TRIGGER IF NOT EXISTS search_fts_au AFTER UPDATE ON search_documents BEGIN
-                    INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
-                    VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
-                    INSERT INTO search_fts(rowid, search_text, keywords)
-                    VALUES (new.docId, new.title || ' ' || new.subtitle, '');
-                END
-            """)
+        fun isFts5Available(db: SupportSQLiteDatabase): Boolean {
+            return try {
+                db.query("SELECT * FROM search_fts LIMIT 0", emptyArray<Any?>()).close()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
 
         fun getInstance(context: Context): AppDatabase {
@@ -181,7 +181,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_5_6,
                         MIGRATION_6_7,
                         MIGRATION_7_8,
-                        MIGRATION_8_9
+                        MIGRATION_8_9,
+                        MIGRATION_9_10
                     )
                     .build()
 

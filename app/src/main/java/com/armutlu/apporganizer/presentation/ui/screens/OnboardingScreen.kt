@@ -1,20 +1,26 @@
-﻿package com.armutlu.apporganizer.presentation.ui.screens
+package com.armutlu.apporganizer.presentation.ui.screens
 
-import android.Manifest
-import android.app.Activity
+import android.app.role.RoleManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,95 +33,68 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.armutlu.apporganizer.R
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.UsageStatsHelper
 import kotlinx.coroutines.launch
+
+// Yüklü tarayıcıları listele (ACTION_VIEW + http scheme destekleyenler)
+private fun installedBrowsers(context: android.content.Context): List<android.content.pm.ResolveInfo> {
+    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("http://example.com"))
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        context.packageManager.queryIntentActivities(
+            intent,
+            PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+        )
+    } else {
+        @Suppress("DEPRECATION")
+        context.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+    }
+}
 
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit,
     viewModel: AppListViewModel = hiltViewModel()
 ) {
-    val context    = LocalContext.current
-    var stepIndex  by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+    var stepIndex by remember { mutableStateOf(0) }
     val steps = listOf(
-        OnboardingStep.WELCOME, OnboardingStep.RESTORE_BACKUP, OnboardingStep.QUERY_PACKAGES,
-        OnboardingStep.USAGE_ACCESS,
-        OnboardingStep.NOTIFICATIONS, OnboardingStep.UNUSED_GREY, OnboardingStep.AUTO_BACKUP,
-        OnboardingStep.NOTIF_TEXT, OnboardingStep.NOTIF_ACCESS, OnboardingStep.SWIPE_HINT,
-        OnboardingStep.NEW_BADGE, OnboardingStep.FOLDER_COUNT, OnboardingStep.NAV_HIDE,
-        OnboardingStep.THEME_SELECT, OnboardingStep.QUICK_SETTINGS,
-        OnboardingStep.CLASSIFY_MODE, OnboardingStep.SET_LAUNCHER, OnboardingStep.DONE,
+        OnboardingStep.WELCOME,
+        OnboardingStep.SET_LAUNCHER,
+        OnboardingStep.THEME_SELECT,
+        OnboardingStep.QUICK_SETTINGS,
+        OnboardingStep.BROWSER_SELECT,
+        OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
 
     // ── State ────────────────────────────────────────────────────────────
-    var launcherSet       by remember { mutableStateOf(isDefaultLauncherApp(context)) }
-    var notifGranted      by remember {
-        mutableStateOf(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PermissionChecker.PERMISSION_GRANTED
-            else true)
-    }
-    var notifRequestAttempted by remember { mutableStateOf(false) }
-    var notifAccessGranted by remember {
-        mutableStateOf(Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
-            ?.contains(context.packageName) == true)
-    }
-    var usageStatsGranted by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
-    var unusedGreyDays    by remember { mutableStateOf(AppPrefs.getUnusedGreyDays(context)) }
-    var autoBackupEnabled by remember { mutableStateOf(true) }
-    var notifTextEnabled  by remember { mutableStateOf(true) }
-    var swipeHintEnabled  by remember { mutableStateOf(true) }
-    var newBadgeEnabled   by remember { mutableStateOf(true) }
-    var folderCountEnabled by remember { mutableStateOf(true) }
-    var navHideEnabled    by remember { mutableStateOf(false) }
-    var selectedTheme     by remember { mutableStateOf(AppTheme.TEAL) }
-    var selectedFont      by remember { mutableStateOf(AppFont.DEFAULT) }
-    var restoreResult     by remember { mutableStateOf<String?>(null) }
-    var restoreSuccess    by remember { mutableStateOf<Boolean?>(null) }
-    val scope         = rememberCoroutineScope()
-    val themePrefs    = remember { ThemePreferences(context) }
+    var launcherSet by remember { mutableStateOf(isDefaultLauncherApp(context)) }
+    var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
+    var selectedFont by remember { mutableStateOf(AppFont.DEFAULT) }
+    val scope = rememberCoroutineScope()
+    val themePrefs = remember { ThemePreferences(context) }
+
+    // Browser state
+    val browsers = remember { installedBrowsers(context) }
+    var selectedBrowserPkg by remember { mutableStateOf<String?>(null) }
+    var browserRoleSet by remember { mutableStateOf(false) }
 
     // ── Launchers ────────────────────────────────────────────────────────
-    val restoreFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) scope.launch {
-            runCatching {
-                val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return@launch
-                val result = viewModel.importBackup(json)
-                restoreSuccess = result.success
-                restoreResult = if (result.success) context.getString(R.string.onb_restore_success, result.updatedCount)
-                                else context.getString(R.string.onb_restore_fail, result.error ?: "")
-            }.onFailure { restoreSuccess = false; restoreResult = context.getString(R.string.onb_restore_read_fail, it.message ?: "") }
-        }
-    }
     val roleRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         launcherSet = isDefaultLauncherApp(context)
         if (launcherSet) stepIndex++
     }
-    val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        notifGranted = granted
-        notifRequestAttempted = true
-        if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val activity = context as? Activity
-            if (activity != null && !activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                context.startActivity(
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = android.net.Uri.parse("package:${context.packageName}")
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                )
-            }
-        }
+
+    val browserRoleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        browserRoleSet = true
         stepIndex++
     }
 
@@ -126,25 +105,20 @@ fun OnboardingScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 launcherSet = isDefaultLauncherApp(context)
-                notifAccessGranted = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
-                    ?.contains(context.packageName) == true
-                usageStatsGranted = UsageStatsHelper.hasPermission(context)
                 if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) stepIndex++
-                if (notifAccessGranted && currentStep == OnboardingStep.NOTIF_ACCESS) stepIndex++
-                if (usageStatsGranted && currentStep == OnboardingStep.USAGE_ACCESS) stepIndex++
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Adim icinde geri gitme; stepIndex==0'da sistem back'e birak (ekrandan cik)
     BackHandler(enabled = stepIndex > 0) { stepIndex-- }
 
     // ── UI ───────────────────────────────────────────────────────────────
     Box(Modifier.fillMaxSize().background(OnboardingBackgroundGradient)) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .statusBarsPadding().navigationBarsPadding()
                 .padding(horizontal = 28.dp)
                 .verticalScroll(rememberScrollState()),
@@ -161,59 +135,20 @@ fun OnboardingScreen(
             OnboardingWhyBox(currentStep)
             if (currentStep.whyRes != 0) Spacer(Modifier.height(16.dp))
 
-            OnboardingStatusBadge(currentStep, launcherSet, notifGranted, notifAccessGranted, usageStatsGranted, unusedGreyDays)
-            if (currentStep in listOf(OnboardingStep.SET_LAUNCHER, OnboardingStep.QUERY_PACKAGES,
-                    OnboardingStep.USAGE_ACCESS, OnboardingStep.NOTIFICATIONS, OnboardingStep.NOTIF_ACCESS, OnboardingStep.UNUSED_GREY))
-                Spacer(Modifier.height(12.dp))
-
-            // RESTORE_BACKUP sonucu
-            if (currentStep == OnboardingStep.RESTORE_BACKUP && restoreResult != null) {
-                val result = restoreResult ?: ""
-                val isSuccess = restoreSuccess == true
-                Spacer(Modifier.height(8.dp))
+            // SET_LAUNCHER durum göstergesi
+            if (currentStep == OnboardingStep.SET_LAUNCHER && launcherSet) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                        .background(if (isSuccess) Color(0xFF00897B).copy(0.25f) else Color(0xFFB00020).copy(0.25f))
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF00897B).copy(0.25f))
                         .padding(12.dp)
-                ) { Text(result, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium) }
-                if (isSuccess) {
-                    Spacer(Modifier.height(12.dp))
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(12.dp))
-                            .background(OnboardingTealGradient).clickable { stepIndex++ },
-                        contentAlignment = Alignment.Center
-                    ) { Text(stringResource(R.string.onb_continue), color = Color.White, fontWeight = FontWeight.SemiBold) }
+                ) {
+                    Text(stringResource(R.string.onb_status_launcher_set), fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
                 }
                 Spacer(Modifier.height(12.dp))
             }
 
-            // Toggle seçici (AUTO_BACKUP, NOTIF_TEXT, SWIPE_HINT vb.)
-            val toggleState: Boolean? = when (currentStep) {
-                OnboardingStep.AUTO_BACKUP    -> autoBackupEnabled
-                OnboardingStep.NOTIF_TEXT     -> notifTextEnabled
-                OnboardingStep.SWIPE_HINT     -> swipeHintEnabled
-                OnboardingStep.NEW_BADGE      -> newBadgeEnabled
-                OnboardingStep.FOLDER_COUNT   -> folderCountEnabled
-                OnboardingStep.NAV_HIDE       -> navHideEnabled
-                else -> null
-            }
-            if (toggleState != null) {
-                Spacer(Modifier.height(8.dp))
-                OnboardingToggleRow(toggleState) { value ->
-                    when (currentStep) {
-                        OnboardingStep.AUTO_BACKUP    -> autoBackupEnabled  = value
-                        OnboardingStep.NOTIF_TEXT     -> notifTextEnabled   = value
-                        OnboardingStep.SWIPE_HINT     -> swipeHintEnabled   = value
-                        OnboardingStep.NEW_BADGE      -> newBadgeEnabled    = value
-                        OnboardingStep.FOLDER_COUNT   -> folderCountEnabled = value
-                        OnboardingStep.NAV_HIDE       -> navHideEnabled     = value
-                        else -> {}
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-            }
-
-            // Tema / yazı tipi seçici
+            // THEME_SELECT
             if (currentStep == OnboardingStep.THEME_SELECT) {
                 Spacer(Modifier.height(8.dp))
                 OnboardingThemeSelector(
@@ -222,49 +157,7 @@ fun OnboardingScreen(
                 )
             }
 
-            if (currentStep == OnboardingStep.CLASSIFY_MODE) {
-                Spacer(Modifier.height(8.dp))
-                val classifyOptions = listOf(
-                    "category"     to (stringResource(R.string.onb_classify_cat_title) to stringResource(R.string.onb_classify_cat_desc)),
-                    "manufacturer" to (stringResource(R.string.onb_classify_mfr_title) to stringResource(R.string.onb_classify_mfr_desc))
-                )
-                var selectedClassify by remember {
-                    mutableStateOf(if (com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(context)) "manufacturer" else "category")
-                }
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    classifyOptions.forEach { (key, pair) ->
-                        val (title, subtitle) = pair
-                        val isSelected = selectedClassify == key
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    if (isSelected) Color(0xFF00897B).copy(0.3f)
-                                    else Color.White.copy(0.08f)
-                                )
-                                .border(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) Color(0xFF00897B) else Color.White.copy(0.2f),
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .clickable {
-                                    selectedClassify = key
-                                    com.armutlu.apporganizer.utils.AppPrefs.setManufacturerClassifyEnabled(context, key == "manufacturer")
-                                }
-                                .padding(16.dp)
-                        ) {
-                            Column {
-                                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.White)
-                                Spacer(Modifier.height(4.dp))
-                                Text(subtitle, fontSize = 13.sp, color = Color.White.copy(0.7f))
-                            }
-                        }
-                    }
-                }
-            }
-
-            // QUICK_SETTINGS: ek ayarlar (widget, öneri, arama)
+            // QUICK_SETTINGS
             if (currentStep == OnboardingStep.QUICK_SETTINGS) {
                 Spacer(Modifier.height(8.dp))
                 val quickItems = listOf(
@@ -313,80 +206,114 @@ fun OnboardingScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            // BROWSER_SELECT
+            if (currentStep == OnboardingStep.BROWSER_SELECT) {
+                Spacer(Modifier.height(8.dp))
+                if (browsers.isEmpty()) {
+                    Text("Yüklü tarayıcı bulunamadı.", color = Color.White.copy(0.6f), fontSize = 14.sp)
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        browsers.forEach { info ->
+                            val pkg = info.activityInfo.packageName
+                            val label = info.loadLabel(context.packageManager).toString()
+                            val isSelected = selectedBrowserPkg == pkg
+                            Box(
+                                modifier = Modifier.fillMaxWidth()
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(if (isSelected) OnboardingAccentPurple.copy(0.25f) else Color.White.copy(0.07f))
+                                    .border(
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) OnboardingAccentPurple else Color.White.copy(0.15f),
+                                        shape = RoundedCornerShape(14.dp)
+                                    )
+                                    .clickable { selectedBrowserPkg = pkg }
+                                    .padding(14.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Language, null,
+                                        tint = if (isSelected) OnboardingAccentPurpleLight else Color.White.copy(0.5f),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Text(label, color = Color.White, fontSize = 15.sp,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal)
+                                    if (isSelected) {
+                                        Spacer(Modifier.weight(1f))
+                                        Icon(Icons.Default.CheckCircle, null,
+                                            tint = OnboardingAccentPurpleLight, modifier = Modifier.size(20.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             // ── Ana buton ────────────────────────────────────────────────
             val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
                 OnboardingTealGradient else OnboardingButtonGradient
+
             Box(
                 modifier = Modifier.fillMaxWidth().height(56.dp)
                     .clip(RoundedCornerShape(16.dp)).background(buttonGradient)
-                    .clickable { handleOnboardingStep(
-                        step = currentStep, context = context, scope = scope,
-                        themePrefs = themePrefs, viewModel = viewModel,
-                        launcherSet = launcherSet, notifGranted = notifGranted, notifAccessGranted = notifAccessGranted,
-                        usageStatsGranted = usageStatsGranted,
-                        unusedGreyDays = unusedGreyDays, autoBackupEnabled = autoBackupEnabled,
-                        notifTextEnabled = notifTextEnabled, swipeHintEnabled = swipeHintEnabled,
-                        newBadgeEnabled = newBadgeEnabled, folderCountEnabled = folderCountEnabled,
-                        navHideEnabled = navHideEnabled, selectedTheme = selectedTheme, selectedFont = selectedFont,
-                        restoreFilePicker = { restoreFilePicker.launch("application/json") },
-                        onRequestRole = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                val rm = context.getSystemService(android.app.role.RoleManager::class.java)
-                                if (rm?.isRoleAvailable(android.app.role.RoleManager.ROLE_HOME) == true)
-                                    roleRequestLauncher.launch(rm.createRequestRoleIntent(android.app.role.RoleManager.ROLE_HOME))
-                                else stepIndex++
-                            } else {
-                                context.startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    .clickable {
+                        when (currentStep) {
+                            OnboardingStep.WELCOME -> stepIndex++
+
+                            OnboardingStep.SET_LAUNCHER -> {
+                                if (launcherSet) {
+                                    stepIndex++
+                                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    val rm = context.getSystemService(RoleManager::class.java)
+                                    if (rm?.isRoleAvailable(RoleManager.ROLE_HOME) == true)
+                                        roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
+                                    else stepIndex++
+                                } else {
+                                    context.startActivity(Intent(Intent.ACTION_MAIN)
+                                        .addCategory(Intent.CATEGORY_HOME)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                }
                             }
-                        },
-                        onRequestNotif = {
-                            if (
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                                notifRequestAttempted &&
-                                (context as? Activity)?.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) == false &&
-                                !notifGranted
-                            ) {
-                                context.startActivity(
-                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                        data = android.net.Uri.parse("package:${context.packageName}")
-                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    }
-                                )
-                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else stepIndex++
-                        },
-                        onNotifAccess = {
-                            context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                        },
-                        onUsageAccess = { UsageStatsHelper.openPermissionSettings(context) },
-                        onFinish = onFinish,
-                        onNextStep = { stepIndex++ }
-                    )},
+
+                            OnboardingStep.THEME_SELECT -> {
+                                scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }
+                                stepIndex++
+                            }
+
+                            OnboardingStep.QUICK_SETTINGS -> stepIndex++
+
+                            OnboardingStep.BROWSER_SELECT -> {
+                                val pkg = selectedBrowserPkg
+                                if (pkg != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    val rm = context.getSystemService(RoleManager::class.java)
+                                    if (rm?.isRoleAvailable(RoleManager.ROLE_BROWSER) == true) {
+                                        val intent = rm.createRequestRoleIntent(RoleManager.ROLE_BROWSER)
+                                        browserRoleLauncher.launch(intent)
+                                    } else stepIndex++
+                                } else stepIndex++
+                            }
+
+                            OnboardingStep.DONE -> {
+                                context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                                    .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
+                                onFinish()
+                            }
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
-                        currentStep == OnboardingStep.USAGE_ACCESS && usageStatsGranted -> stringResource(R.string.onb_continue)
-                        currentStep == OnboardingStep.NOTIFICATIONS && notifGranted -> stringResource(R.string.onb_continue)
-                        currentStep == OnboardingStep.NOTIF_ACCESS && notifAccessGranted -> stringResource(R.string.onb_continue)
                         else -> stringResource(currentStep.buttonLabelRes)
                     },
                     fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
                 )
-            }
-
-            // UNUSED_GREY gün chip'leri
-            if (currentStep == OnboardingStep.UNUSED_GREY) {
-                Spacer(Modifier.height(12.dp))
-                OnboardingGreyDayChips(unusedGreyDays) { days ->
-                    unusedGreyDays = days
-                    AppPrefs.setUnusedGreyDays(context, days)
-                }
             }
 
             // SET_LAUNCHER için "Şimdi Değil"
@@ -399,7 +326,7 @@ fun OnboardingScreen(
             }
 
             // İsteğe bağlı adımlar için "Atla"
-            if (currentStep.isSkippable && currentStep != OnboardingStep.SET_LAUNCHER && currentStep != OnboardingStep.UNUSED_GREY) {
+            if (currentStep.isSkippable) {
                 Spacer(Modifier.height(4.dp))
                 Box(
                     modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
@@ -408,61 +335,6 @@ fun OnboardingScreen(
             } else {
                 Spacer(Modifier.height(40.dp))
             }
-        }
-    }
-}
-
-// ── Buton aksiyonu yardımcısı ────────────────────────────────────────────────
-
-private fun handleOnboardingStep(
-    step: OnboardingStep,
-    context: android.content.Context,
-    scope: kotlinx.coroutines.CoroutineScope,
-    themePrefs: ThemePreferences,
-    @Suppress("UNUSED_PARAMETER") viewModel: AppListViewModel,
-    launcherSet: Boolean,
-    notifGranted: Boolean,
-    notifAccessGranted: Boolean,
-    usageStatsGranted: Boolean,
-    unusedGreyDays: Int,
-    autoBackupEnabled: Boolean,
-    notifTextEnabled: Boolean,
-    swipeHintEnabled: Boolean,
-    newBadgeEnabled: Boolean,
-    folderCountEnabled: Boolean,
-    navHideEnabled: Boolean,
-    selectedTheme: AppTheme,
-    selectedFont: AppFont,
-    restoreFilePicker: () -> Unit,
-    onRequestRole: () -> Unit,
-    onRequestNotif: () -> Unit,
-    onNotifAccess: () -> Unit,
-    onUsageAccess: () -> Unit,
-    onFinish: () -> Unit,
-    onNextStep: () -> Unit
-) {
-    when (step) {
-        OnboardingStep.WELCOME        -> onNextStep()
-        OnboardingStep.RESTORE_BACKUP -> restoreFilePicker()
-        OnboardingStep.QUERY_PACKAGES -> onNextStep()
-        OnboardingStep.USAGE_ACCESS   -> if (usageStatsGranted) onNextStep() else onUsageAccess()
-        OnboardingStep.NOTIFICATIONS  -> if (notifGranted) onNextStep() else onRequestNotif()
-        OnboardingStep.UNUSED_GREY    -> { AppPrefs.setUnusedGreyDays(context, unusedGreyDays); onNextStep() }
-        OnboardingStep.AUTO_BACKUP    -> { AppPrefs.setAutoBackupEnabled(context, autoBackupEnabled); onNextStep() }
-        OnboardingStep.NOTIF_TEXT     -> { AppPrefs.setNotificationTextEnabled(context, notifTextEnabled); onNextStep() }
-        OnboardingStep.NOTIF_ACCESS   -> if (notifAccessGranted) onNextStep() else onNotifAccess()
-        OnboardingStep.SWIPE_HINT     -> { AppPrefs.setSwipeHintEnabled(context, swipeHintEnabled); onNextStep() }
-        OnboardingStep.NEW_BADGE      -> { AppPrefs.setNewBadgeEnabled(context, newBadgeEnabled); onNextStep() }
-        OnboardingStep.FOLDER_COUNT   -> { AppPrefs.setFolderCountVisible(context, folderCountEnabled); onNextStep() }
-        OnboardingStep.NAV_HIDE       -> { AppPrefs.setNavButtonsHidden(context, navHideEnabled); onNextStep() }
-        OnboardingStep.THEME_SELECT   -> { scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }; onNextStep() }
-        OnboardingStep.SET_LAUNCHER   -> if (launcherSet) onNextStep() else onRequestRole()
-        OnboardingStep.CLASSIFY_MODE  -> onNextStep()
-        OnboardingStep.QUICK_SETTINGS -> onNextStep()
-        OnboardingStep.DONE           -> {
-            context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-                .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
-            onFinish()
         }
     }
 }

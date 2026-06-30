@@ -5,6 +5,7 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.SearchDao
+import com.armutlu.apporganizer.data.local.SearchHistoryDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.repository.SearchRepository
@@ -35,14 +36,18 @@ object AppModule {
     fun provideSearchDao(db: AppDatabase): SearchDao = db.searchDao()
 
     @Provides
+    fun provideSearchHistoryDao(db: AppDatabase): SearchHistoryDao = db.searchHistoryDao()
+
+    @Provides
     @Singleton
     fun provideSearchRepository(
         @ApplicationContext context: Context,
         searchDao: SearchDao,
         appDao: AppDao,
         categoryDao: CategoryDao,
-        indexer: SearchIndexer
-    ): SearchRepository = SearchRepository(context, searchDao, appDao, categoryDao, indexer)
+        indexer: SearchIndexer,
+        db: AppDatabase
+    ): SearchRepository = SearchRepository(context, searchDao, appDao, categoryDao, indexer, db)
 
     @Provides
     @Singleton

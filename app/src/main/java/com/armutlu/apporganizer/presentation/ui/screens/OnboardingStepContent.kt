@@ -136,24 +136,19 @@ internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
     }
 }
 
-/** Durum göstergesi (izin verildi / ayarlandı vb.) */
+/** Durum göstergesi — yalnızca SET_LAUNCHER adımında launcher ayarlandıysa gösterilir */
 @Composable
 internal fun OnboardingStatusBadge(
     currentStep: OnboardingStep,
     launcherSet: Boolean,
-    notifGranted: Boolean,
-    notifAccessGranted: Boolean,
-    usageStatsGranted: Boolean,
-    unusedGreyDays: Int
+    notifGranted: Boolean = false,
+    notifAccessGranted: Boolean = false,
+    usageStatsGranted: Boolean = false,
+    unusedGreyDays: Int = 0
 ) {
     val isLauncher = currentStep == OnboardingStep.SET_LAUNCHER
     val statusText = when (currentStep) {
         OnboardingStep.SET_LAUNCHER -> if (launcherSet) stringResource(R.string.onb_status_launcher_set) else null
-        OnboardingStep.QUERY_PACKAGES -> stringResource(R.string.onb_status_permission_granted)
-        OnboardingStep.USAGE_ACCESS -> if (usageStatsGranted) stringResource(R.string.onb_status_usage_access) else null
-        OnboardingStep.NOTIFICATIONS -> if (notifGranted) stringResource(R.string.onb_status_permission_granted) else null
-        OnboardingStep.NOTIF_ACCESS -> if (notifAccessGranted) stringResource(R.string.onb_status_notif_access) else null
-        OnboardingStep.UNUSED_GREY -> if (unusedGreyDays > 0) stringResource(R.string.onb_status_grey_days, unusedGreyDays) else null
         else -> null
     } ?: return
     Box(

@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.data.repository
 import android.content.Context
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
@@ -14,49 +15,49 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Singleton
 
-/**
- * Birleşik arama repository'si.
- *
- * Sorumluluklar:
- * - FTS5 prefix-match sorgusunu çalıştırmak (Sprint 1: App + Category)
- * - İlk indekslemeyi (bootstrap) yapmak
- * - Delta güncellemeleri (app ekleme/silme, kategori değişimi) indekse yansıtmak
- *
- * Sprint 2-3: Contacts ve Files indeksleme buraya eklenecek.
- */
 @Singleton
 class SearchRepository(
     private val context: Context,
     private val searchDao: SearchDao,
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
-    private val indexer: SearchIndexer
+    private val indexer: SearchIndexer,
+    private val db: AppDatabase
 ) {
 
-    /**
-     * Prefix-match arama.
-     *
-     * Sorgu "wa" → FTS5'te `"wa"*` olarak çalışır, "WhatsApp" ve "Walmart" ile eşleşir.
-     * Sonuçlar sourceGroup (app→category) sırasında, grup içi bm25 ile sıralanır.
-     *
-     * @param rawQuery Kullanıcının yazdığı ham metin
-     * @param limit Maksimum sonuç sayısı
-     * @return sourceType'a göre gruplandırılmış sonuçlar
-     */
+    // FTS5 runtime check — bazı AOSP build'lerinde fts5 modülü yoktur
+    private val fts5Available: Boolean by lazy {
+        try {
+            AppDatabase.isFts5Available(db.openHelper.writableDatabase)
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     suspend fun search(rawQuery: String, limit: Int = 50): Map<SourceType, List<SearchDocument>> {
         val trimmed = rawQuery.trim()
         if (trimmed.isEmpty()) return emptyMap()
 
-        // FTS5 prefix-match: her terimin sonuna * ekle
-        val ftsQuery = trimmed.split("\\s+".toRegex())
-            .filter { it.isNotBlank() }
-            .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
-
         return withContext(Dispatchers.IO) {
             val allowedSources = enabledSources()
             if (allowedSources.isEmpty()) return@withContext emptyMap()
-            val docs = searchDao.search(buildSearchQuery(ftsQuery, limit, allowedSources))
-            docs.groupBy { SourceType.fromKey(it.sourceType) }
+            runCatching {
+                val docs = if (fts5Available) {
+                    val ftsQuery = trimmed.split("\\s+".toRegex())
+                        .filter { it.isNotBlank() }
+                        .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
+                    searchDao.search(buildFts5Query(ftsQuery, limit, allowedSources))
+                } else {
+                    searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                }
+                docs.groupBy { SourceType.fromKey(it.sourceType) }
+            }.getOrElse { e ->
+                Timber.w(e, "search hatası, LIKE fallback deneniyor")
+                runCatching {
+                    val docs = searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                    docs.groupBy { SourceType.fromKey(it.sourceType) }
+                }.getOrDefault(emptyMap())
+            }
         }
     }
 
@@ -67,7 +68,7 @@ class SearchRepository(
         if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)
     }
 
-    private fun buildSearchQuery(ftsQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {
+    private fun buildFts5Query(ftsQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {
         val placeholders = allowedSources.joinToString(",") { "?" }
         val args = (listOf<Any>(ftsQuery) + allowedSources + limit).toTypedArray()
         return SimpleSQLiteQuery(
@@ -86,6 +87,28 @@ class SearchRepository(
                         ELSE 9
                     END ASC,
                     bm25(search_fts) ASC,
+                    title ASC
+                LIMIT ?
+            """.trimIndent(),
+            args,
+        )
+    }
+
+    private fun buildLikeQuery(rawQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {
+        val pattern = "%${rawQuery.replace("%", "\\%").replace("_", "\\_")}%"
+        val placeholders = allowedSources.joinToString(",") { "?" }
+        val args = (listOf<Any>(pattern, pattern) + allowedSources + limit).toTypedArray()
+        return SimpleSQLiteQuery(
+            """
+                SELECT * FROM search_documents
+                WHERE (title LIKE ? OR subtitle LIKE ?)
+                    AND source_type IN ($placeholders)
+                ORDER BY
+                    CASE source_group
+                        WHEN 'app' THEN 0
+                        WHEN 'category' THEN 1
+                        ELSE 9
+                    END ASC,
                     title ASC
                 LIMIT ?
             """.trimIndent(),
