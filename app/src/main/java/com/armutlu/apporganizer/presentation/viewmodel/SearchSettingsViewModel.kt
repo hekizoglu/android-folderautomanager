@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @HiltViewModel
 class SearchSettingsViewModel @Inject constructor(
@@ -39,6 +40,8 @@ class SearchSettingsViewModel @Inject constructor(
             _sourceOpInFlight.value = true
             try {
                 block()
+            } catch (e: Exception) {
+                Timber.e(e, "Search source operation failed")
             } finally {
                 _sourceOpInFlight.value = false
             }

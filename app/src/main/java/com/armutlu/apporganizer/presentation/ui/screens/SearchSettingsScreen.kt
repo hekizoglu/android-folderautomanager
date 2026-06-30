@@ -254,7 +254,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.Description,
                         title = "Dosya Adlari",
-                        subtitle = "Varsayilan kapali. Acilirsa cihaz dosya adlari indekslenir",
+                        subtitle = "Varsayilan kapali. Acilirsa cihaz dosya adlari arka planda indekslenir",
                         checked = filesSourceEnabled,
                         onCheckedChange = {
                             if (it) {

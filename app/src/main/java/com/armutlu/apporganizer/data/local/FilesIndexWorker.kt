@@ -3,8 +3,10 @@ package com.armutlu.apporganizer.data.local
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -42,6 +44,24 @@ class FilesIndexWorker(
 
     companion object {
         private const val WORK_NAME = "files_index_periodic"
+        private const val ONE_TIME_WORK_NAME = "files_index_once"
+
+        fun enqueueNow(context: Context) {
+            val request = OneTimeWorkRequestBuilder<FilesIndexWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                        .build()
+                )
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                ONE_TIME_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+            Timber.d("FilesIndexWorker: tek seferlik gorev planlandi")
+        }
 
         fun schedule(context: Context) {
             val request = PeriodicWorkRequestBuilder<FilesIndexWorker>(24, TimeUnit.HOURS)
@@ -62,6 +82,7 @@ class FilesIndexWorker(
         }
 
         fun cancel(context: Context) {
+            WorkManager.getInstance(context).cancelUniqueWork(ONE_TIME_WORK_NAME)
             WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
         }
     }

@@ -7,6 +7,7 @@ import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.ContactsIndexer
 import com.armutlu.apporganizer.data.local.FilesIndexer
+import com.armutlu.apporganizer.data.local.FilesIndexWorker
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.domain.models.SearchDocument
@@ -166,7 +167,8 @@ class SearchRepository(
 
     /** Dosya kaynağı açılınca çağrılır. */
     suspend fun enableFilesSource() = withContext(Dispatchers.IO) {
-        filesIndexer.indexAll()
+        FilesIndexWorker.enqueueNow(context)
+        FilesIndexWorker.schedule(context)
     }
 
     /** Dosya kaynağı kapatılınca. */

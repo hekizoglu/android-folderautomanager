@@ -1,11 +1,14 @@
 package com.armutlu.apporganizer.data.local
 
+import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.utils.AppPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Singleton
 
@@ -31,8 +34,8 @@ class FilesIndexer(
     }
 
     /** MediaStore'dan dosya adlarını indeksler. */
-    suspend fun indexAll() {
-        if (!AppPrefs.isSearchSourceFilesEnabled(context)) return
+    suspend fun indexAll() = withContext(Dispatchers.IO) {
+        if (!AppPrefs.isSearchSourceFilesEnabled(context)) return@withContext
 
         val docs = loadFiles()
         searchDao.deleteBySource(SOURCE_FILE)
@@ -41,7 +44,7 @@ class FilesIndexer(
     }
 
     /** Tüm dosya dökümanlarını temizler. */
-    suspend fun clearIndex() {
+    suspend fun clearIndex() = withContext(Dispatchers.IO) {
         searchDao.deleteBySource(SOURCE_FILE)
         Timber.d("FilesIndexer: dosya indeksi temizlendi")
     }
@@ -66,14 +69,18 @@ class FilesIndexer(
         var total = 0
         for ((uri, mimeHint) in collections) {
             if (total >= MAX_FILES) break
-            val remaining = MAX_FILES - total
-            val cursor = context.contentResolver.query(
-                uri,
-                projection,
-                null,
-                null,
-                "${MediaStore.MediaColumns.DATE_MODIFIED} DESC LIMIT $remaining"
-            ) ?: continue
+            val cursor = try {
+                context.contentResolver.query(
+                    uri,
+                    projection,
+                    null,
+                    null,
+                    "${MediaStore.MediaColumns.DATE_MODIFIED} DESC"
+                )
+            } catch (e: Exception) {
+                Timber.w(e, "FilesIndexer: MediaStore query skipped: $uri")
+                continue
+            } ?: continue
 
             cursor.use { c ->
                 val idIdx = c.getColumnIndex(MediaStore.MediaColumns._ID)
@@ -90,7 +97,7 @@ class FilesIndexer(
                     val path = if (pathIdx >= 0) c.getString(pathIdx) ?: "" else ""
                     val dateModified = if (dateIdx >= 0) c.getLong(dateIdx) * 1000L else 0L
                     val mime = if (mimeIdx >= 0) c.getString(mimeIdx) ?: mimeHint else mimeHint
-                    val fileUri = Uri.withAppendedPath(uri, id.toString()).toString()
+                    val fileUri = ContentUris.withAppendedId(uri, id).toString()
 
                     docs.add(
                         SearchDocument(
