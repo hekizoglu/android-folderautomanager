@@ -804,7 +804,8 @@ fun HomeScreen(
                     viewModel.launchApp(context, pkg)
                 },
                 focusSearchOnOpen = focusSearchOnOpen,
-                onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen
+                onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
+                categories = categories
             )
         }
 

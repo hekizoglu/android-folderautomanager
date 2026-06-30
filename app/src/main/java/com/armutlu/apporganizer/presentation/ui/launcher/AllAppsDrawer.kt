@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
@@ -240,6 +241,34 @@ private fun DrawerSearchBar(
     Spacer(Modifier.height(4.dp))
 }
 
+// ── Kaynak grubu başlık chip'i ────────────────────────────────────────────────
+@Composable
+private fun SourceGroupHeader(label: String, count: Int) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(onSurface.copy(alpha = 0.12f))
+                .padding(horizontal = 8.dp, vertical = 3.dp)
+        ) {
+            Text(
+                text = "$label  $count",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = onSurface.copy(alpha = 0.65f)
+            )
+        }
+        Box(Modifier.weight(1f).height(1.dp).background(onSurface.copy(alpha = 0.08f)))
+    }
+}
+
 // ── Liste bölümü ──────────────────────────────────────────────────────────────
 @Composable
 private fun DrawerAppList(
@@ -256,10 +285,23 @@ private fun DrawerAppList(
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    saveSearchIfNeeded: () -> Unit
+    saveSearchIfNeeded: () -> Unit,
+    categories: List<Category> = emptyList()
 ) {
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
+    val trLocale      = java.util.Locale("tr")
+
+    // Arama modundayken kategori eşleşmelerini grupla
+    val categoryMatches = remember(searchQuery, categories) {
+        if (searchQuery.isBlank()) emptyList()
+        else {
+            val q = searchQuery.lowercase(trLocale)
+            categories.filter { it.categoryName.lowercase(trLocale).contains(q) }
+        }
+    }
+    val hasSearchGroups = searchQuery.isNotBlank() && (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty())
+
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
             if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
@@ -299,13 +341,19 @@ private fun DrawerAppList(
         }
     } else {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-            if (state.sortedApps.isEmpty()) {
+            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty()) {
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
                         Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
                     }
                 }
             } else {
+                // Arama modunda kaynak bazlı gruplama
+                if (hasSearchGroups && state.sortedApps.isNotEmpty()) {
+                    item(key = "source_header_apps") {
+                        SourceGroupHeader(label = "Uygulamalar", count = state.sortedApps.size)
+                    }
+                }
                 items(items = state.sortedApps, key = { it.packageName }) { app ->
                     NiagaraAppRow(
                         app = app, iconSize = iconSize, isActive = false,
@@ -321,6 +369,36 @@ private fun DrawerAppList(
                         },
                         onLongClick = { onAppLongClick?.invoke(app) }
                     )
+                }
+                // Kategori eşleşmeleri
+                if (hasSearchGroups && categoryMatches.isNotEmpty()) {
+                    item(key = "source_header_categories") {
+                        SourceGroupHeader(label = "Kategoriler", count = categoryMatches.size)
+                    }
+                    items(items = categoryMatches, key = { "cat_${it.categoryId}" }) { cat ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { /* kategori açma — HomeScreen'de folder ile yönetiliyor */ }
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(onSurface.copy(alpha = 0.10f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(cat.iconEmoji.ifBlank { "📁" }, fontSize = 18.sp)
+                            }
+                            Column {
+                                Text(cat.categoryName, color = onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                                Text("Kategori", color = textSecondary, fontSize = 11.sp)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -523,6 +601,7 @@ fun AllAppsDrawer(
     onRecentAppClick: (String) -> Unit = {},
     focusSearchOnOpen: Boolean = false,
     onFocusSearchConsumed: () -> Unit = {},
+    categories: List<Category> = emptyList(),
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -650,7 +729,8 @@ fun AllAppsDrawer(
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
                         haptic = haptic,
-                        saveSearchIfNeeded = saveSearchIfNeeded
+                        saveSearchIfNeeded = saveSearchIfNeeded,
+                        categories = categories
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {

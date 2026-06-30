@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -35,8 +38,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -562,12 +567,14 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
 
 /**
  * Ana ekran uygulama arama çubuğu — allApps içinde isim arar, sonuçlar anlık gösterilir.
+ * Long-press (300ms) → drag handle görünür + scale(1.04f); bırakınca snap noktasına oturur.
  */
 @Composable
 internal fun HomeAppSearchBar(
     allApps: List<AppInfo>,
     onAppClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPositionSnap: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
@@ -579,13 +586,82 @@ internal fun HomeAppSearchBar(
             .take(6)
     }
 
+    // Drag handle state
+    var isDragging by remember { mutableStateOf(false) }
+    var dragOffsetY by remember { mutableStateOf(0f) }
+    var showGhostZones by remember { mutableStateOf(false) }
+    val barScale by animateFloatAsState(
+        targetValue = if (isDragging) 1.04f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "search_bar_scale"
+    )
+
     Column(modifier = modifier) {
-        // Arama alanı — glass kart stilinde
+        // Ghost zones — TOP / BOTTOM snap hedefleri
+        if (showGhostZones) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (dragOffsetY < 0) Color.White.copy(alpha = 0.18f)
+                        else Color.White.copy(alpha = 0.07f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "↑ Üst",
+                    color = Color.White.copy(alpha = if (dragOffsetY < 0) 0.80f else 0.30f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+
+        // Arama alanı — glass kart stilinde + drag handle
         GlassCard(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .scale(barScale)
+                .pointerInput(Unit) {
+                    androidx.compose.foundation.gestures.detectTapGestures(
+                        onLongPress = {
+                            isDragging = true
+                            showGhostZones = true
+                        }
+                    )
+                }
+                .then(
+                    if (isDragging) Modifier.pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                val snapPos = if (dragOffsetY < 0)
+                                    AppPrefs.SEARCH_BAR_POS_TOP
+                                else
+                                    AppPrefs.SEARCH_BAR_POS_BOTTOM
+                                AppPrefs.setSearchBarPosition(context, snapPos)
+                                onPositionSnap?.invoke(snapPos)
+                                isDragging = false
+                                showGhostZones = false
+                                dragOffsetY = 0f
+                            },
+                            onDragCancel = {
+                                isDragging = false
+                                showGhostZones = false
+                                dragOffsetY = 0f
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                dragOffsetY += dragAmount.y
+                            }
+                        )
+                    } else Modifier
+                ),
             cornerRadius = 28.dp,
-            backgroundAlpha = 0.12f,
-            borderAlpha = 0.25f
+            backgroundAlpha = if (isDragging) 0.22f else 0.12f,
+            borderAlpha = if (isDragging) 0.45f else 0.25f
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -616,8 +692,31 @@ internal fun HomeAppSearchBar(
             }
         }
 
+        // Ghost zone — BOTTOM
+        if (showGhostZones) {
+            Spacer(Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (dragOffsetY > 0) Color.White.copy(alpha = 0.18f)
+                        else Color.White.copy(alpha = 0.07f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "↓ Alt",
+                    color = Color.White.copy(alpha = if (dragOffsetY > 0) 0.80f else 0.30f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
         // Sonuç listesi
-        if (results.isNotEmpty()) {
+        if (results.isNotEmpty() && !isDragging) {
             Spacer(Modifier.height(4.dp))
             GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.18f) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
