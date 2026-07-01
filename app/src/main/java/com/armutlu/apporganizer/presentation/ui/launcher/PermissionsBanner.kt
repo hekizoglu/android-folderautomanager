@@ -49,7 +49,7 @@ import com.armutlu.apporganizer.utils.UsageStatsHelper
 private val BannerBg   = Color(0xCC1A1A2E)
 private val WarnColor  = Color(0xFFFFB300)
 private val TealColor  = Color(0xFF00897B)
-private const val BANNER_SNOOZE_DAYS = 7L
+private const val BANNER_SNOOZE_DAYS = 3L
 
 private fun isNotifGranted(context: Context): Boolean =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
