@@ -17,7 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -132,7 +132,7 @@ fun FolderScreen(
                         onBack()
                     }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Geri",
                             tint = onSurface,
                         )
@@ -384,7 +384,6 @@ fun FolderScreen(
 
             // Uygulama context menüsü (uzun bas)
             contextMenuApp?.let { app ->
-                val allApps by viewModel.allApps.collectAsState()
                 val dockPackages by viewModel.dockPackages.collectAsState()
                 val categories by viewModel.categories.collectAsState()
                 var categoryPickerApp by remember { mutableStateOf<AppInfo?>(null) }

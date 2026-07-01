@@ -79,7 +79,8 @@ $candidates = @(
         -Title "Build warning debt cleanup" `
         -Source "docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md" `
         -KV 3 -U 4 -BR 4 -EA 4 `
-        -Recommendation "Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin."),
+        -Recommendation "Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin." `
+        -Status "Tamamlandi"),
     (New-Candidate `
         -Id "DSR7" `
         -Title "Token ve sure telemetry logu" `
@@ -101,8 +102,8 @@ $candidates = @(
 )
 
 $now = Get-Date -Format "yyyy-MM-dd HH:mm"
-$high = $candidates | Where-Object { $_.Score -ge 15 -and $_.Status -ne "Tamamlandi" } | Sort-Object @{ Expression = "Score"; Descending = $true }, Id
-$all = $candidates | Sort-Object @{ Expression = "Score"; Descending = $true }, Id
+$high = @($candidates | Where-Object { $_.Score -ge 15 -and $_.Status -ne "Tamamlandi" } | Sort-Object @{ Expression = "Score"; Descending = $true }, Id)
+$all = @($candidates | Sort-Object @{ Expression = "Score"; Descending = $true }, Id)
 
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add("# Docs Backlog Score")

@@ -1,6 +1,6 @@
 # Docs Backlog Score
 
-> Generated: 2026-07-01 08:09
+> Generated: 2026-07-01 08:12
 > Rule: KV + U + BR + EA >= 15 goes to ROADMAP.
 
 Scoring follows the project idea model:
@@ -15,7 +15,6 @@ Scoring follows the project idea model:
 | # | Score | KV | U | BR | EA | Source | Task | Recommendation | Status |
 |---|-------|----|---|----|----|--------|------|----------------|--------|
 | DSR5 | **16** | 4 | 4 | 5 | 3 | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | Play Store gorsel ve mesaj QA paketi | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. | Bekliyor |
-| DSR6 | **15** | 3 | 4 | 4 | 4 | docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md | Build warning debt cleanup | Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin. | Bekliyor |
 
 ## All Scored Items
 

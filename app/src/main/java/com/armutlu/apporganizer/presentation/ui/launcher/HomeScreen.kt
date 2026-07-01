@@ -91,7 +91,6 @@ fun HomeScreen(
     val context = LocalContext.current
     var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
-    val openFolder by viewModel.openFolder.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
     val focusSearchOnOpen by viewModel.focusSearchOnOpen.collectAsState()
     val allApps by viewModel.allApps.collectAsState()

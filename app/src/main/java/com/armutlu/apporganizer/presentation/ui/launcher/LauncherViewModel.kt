@@ -674,7 +674,7 @@ class LauncherViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    fun dispatchGestureAction(context: Context, action: AppPrefs.GestureAction, onOpenManager: () -> Unit = {}) {
+    fun dispatchGestureAction(context: Context, action: AppPrefs.GestureAction) {
         when (action) {
             AppPrefs.GestureAction.OPEN_DRAWER       -> openAllApps()
             AppPrefs.GestureAction.OPEN_SEARCH       -> openAllAppsWithSearch()

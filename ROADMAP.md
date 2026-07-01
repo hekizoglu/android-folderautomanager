@@ -52,7 +52,6 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | # | Puan | Kaynak | Gorev | Oneri | Durum |
 |---|------|--------|-------|-------|-------|
 | **DSR5** | **16** | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | **Play Store gorsel ve mesaj QA paketi** | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. | Bekliyor |
-| **DSR6** | **15** | docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md | **Build warning debt cleanup** | Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin. | Bekliyor |
 <!-- DOCS_SCORE_HIGH_END -->
 
 ### 🔴 Kritik — Kararlılık (Play Store Öncesi Engel)
