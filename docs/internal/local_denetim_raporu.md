@@ -127,3 +127,12 @@
 ## Cozum Sirasi Hazirligi - 2026-06-30 03:15
 
 - Rapor incelendi - acik bulgu yok, COZULEMEYEN_SORUNLAR.md guncellenmedi.
+
+## Cozum Sirasi Hazirligi - 2026-07-01 07:59
+
+- Rapor incelendi - acik bulgu yok, COZULEMEYEN_SORUNLAR.md guncellenmedi.
+
+## Docs Backlog Skor Taramasi - 2026-07-01 07:59
+
+- Docs raporlari puanlandi; 15+ maddeler ROADMAP otomatik bloguna islendi.
+- Skor raporu: `docs/internal/docs_backlog_score.md`

@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
-> Dongu: tiered frequency (T1:her Â· T2:3dongu Â· T3:10dongu)
-> Son denetim: 2026-06-30 17:10
-> Dongu: **#188** | Tier: **1**
-> Ana tur odak: **Izin akislari, onboarding, fallback** (Permission_Izin)
-> Ekstra denetim: **Samsung/Xiaomi/Huawei varyasyonlari, edge cases** (OEM_Compatibility)
+> Dongu: tiered frequency (T1:her · T2:3dongu · T3:10dongu)
+> Son denetim: 2026-07-01 07:59
+> Dongu: **#189** | Tier: **2**
+> Ana tur odak: **State yonetimi, SharedPrefs, kalicilik** (Data_State_Persistence)
+> Ekstra denetim: **Activity/Fragment leak, Flow collect, DisposableEffect** (Memory_Lifecycle)
 
 ---
 
@@ -13,12 +13,16 @@
 | Oncelik | Sayi | Aciklama |
 |---------|------|----------|
 | KRITIK | 0 | Acik kritik bulgu |
-| YUKSEK | 0 | Acik yuksek bulgu |
+| YUKSEK |  | Acik yuksek bulgu |
 | ORTA |  | Acik orta bulgu |
 | DUSUK | 0 | Acik dusuk bulgu |
-| TOPLAM |  | |
+| TOPLAM | 2 | |
 
 ---
+
+## YUKSEK
+
+- CE7 | `app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt:258` | AppPrefs remember{} keysiz okunuyor - Settings donus guncellenmez. DisposableEffect + listener kullan. (E6 tekrari)
 
 ## ORTA
 
@@ -26,4 +30,4 @@
 
 ---
 
-*Denetim tarihi: 2026-06-30 17:10 | Dongu: #188 | Tier: 1 | Ana: Izin akislari, onboarding, fallback | Ekstra: Samsung/Xiaomi/Huawei varyasyonlari, edge cases*
+*Denetim tarihi: 2026-07-01 07:59 | Dongu: #189 | Tier: 2 | Ana: State yonetimi, SharedPrefs, kalicilik | Ekstra: Activity/Fragment leak, Flow collect, DisposableEffect*

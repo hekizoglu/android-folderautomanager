@@ -1,6 +1,6 @@
 # Docs Backlog Score
 
-> Generated: 2026-07-01 02:14
+> Generated: 2026-07-01 07:59
 > Rule: KV + U + BR + EA >= 15 goes to ROADMAP.
 
 Scoring follows the project idea model:
