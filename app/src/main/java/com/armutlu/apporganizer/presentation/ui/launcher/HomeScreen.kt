@@ -315,14 +315,6 @@ fun HomeScreen(
         }
     }
 
-    // İçgörü kartları 15 dakikada bir yenile
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(15L * 60 * 1000)
-            viewModel.refreshInsightsIfStale()
-        }
-    }
-
     // Klasör arama 30s otomatik sıfırlama — yeni sorgu gelince eski sayaç iptal edilir
     LaunchedEffect(Unit) {
         snapshotFlow { folderSearchQuery }
@@ -534,6 +526,27 @@ fun HomeScreen(
                 )
             }
 
+            // Assistant kartları — kullanım içgörüleri, her onResume'da rastgele seçim
+            if (assistantCardsEnabled) {
+                LaunchedEffect(Unit) {
+                    viewModel.refreshInsights(context)
+                }
+                if (insightCards.isNotEmpty()) {
+                    AssistantInsightRow(
+                        cards = insightCards,
+                        onCardClick = { card ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            when {
+                                card.packageName != null -> viewModel.launchApp(context, card.packageName)
+                                card.categoryId != null -> {
+                                    val folder = folders.find { it.category.categoryId == card.categoryId }
+                                    if (folder != null) onNavigateToFolder(folder)
+                                }
+                            }
+                        },
+                    )
+                }
+            }
             // Odak Modu aktifken klasör grid ve istatistik gizlenir
             if (focusModeEnabled) {
                 androidx.compose.foundation.layout.Box(
@@ -689,23 +702,6 @@ fun HomeScreen(
 
             // Sayfa noktaciklari — HomeScreenPageIndicator.kt
             HomePageIndicator(pageCount = pageCount, pagerState = pagerState)
-
-            // Assistant kartları — klasörlerin altında, dock'tan önce
-            if (assistantCardsEnabled && insightCards.isNotEmpty()) {
-                AssistantInsightRow(
-                    cards = insightCards,
-                    onCardClick = { card ->
-                        card.packageName?.let { pkg ->
-                            runCatching {
-                                context.startActivity(
-                                    context.packageManager.getLaunchIntentForPackage(pkg)
-                                        ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                )
-                            }
-                        }
-                    }
-                )
-            }
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)

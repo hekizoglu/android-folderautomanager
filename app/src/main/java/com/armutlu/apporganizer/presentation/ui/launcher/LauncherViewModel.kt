@@ -570,26 +570,19 @@ class LauncherViewModel @Inject constructor(
         cachedSuggestedApps ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // Assistant Kartları — 7 kart türü, rotation + son 3 kart hafızası
-    val insightCards: StateFlow<List<InsightCard>> = repository.getAllAppsFlow()
-        .map { apps ->
-            val ctx = getApplication<Application>()
-            InsightEngine.generate(
-                context = ctx,
-                apps = apps.filter { !it.isHidden },
-                categories = Category.getDefaultCategories(),
-                badgeCounts = AppNotificationListenerService.badgeCounts.value
-            )
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    // Assistant Kartları — her refresh'te rastgele seçim, tekrar önleme
+    private val _insightCards = MutableStateFlow<List<InsightCard>>(emptyList())
+    val insightCards: StateFlow<List<InsightCard>> = _insightCards.asStateFlow()
 
-    fun refreshInsightsIfStale() {
-        val ctx = getApplication<Application>()
-        if (InsightEngine.shouldRefresh(ctx)) {
-            InsightEngine.markRefreshed(ctx)
-            viewModelScope.launch(Dispatchers.IO) {
-                // Yeni emit için flow'u yeniden değerlendirtmek amacıyla mevcut veriden tetikle
-                _folderOrder.update { it.toList() }
-            }
+    fun refreshInsights(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val apps = repository.getAllApps().filter { !it.isHidden }
+            _insightCards.value = InsightEngine.generate(
+                apps = apps,
+                categories = Category.getDefaultCategories(),
+                badgeCounts = AppNotificationListenerService.badgeCounts.value,
+                context = context,
+            )
         }
     }
 
