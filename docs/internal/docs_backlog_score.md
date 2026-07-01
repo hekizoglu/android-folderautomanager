@@ -1,6 +1,6 @@
 # Docs Backlog Score
 
-> Generated: 2026-07-01 08:12
+> Generated: 2026-07-01 08:13
 > Rule: KV + U + BR + EA >= 15 goes to ROADMAP.
 
 Scoring follows the project idea model:
@@ -14,21 +14,20 @@ Scoring follows the project idea model:
 
 | # | Score | KV | U | BR | EA | Source | Task | Recommendation | Status |
 |---|-------|----|---|----|----|--------|------|----------------|--------|
-| DSR5 | **16** | 4 | 4 | 5 | 3 | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | Play Store gorsel ve mesaj QA paketi | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. | Bekliyor |
 
 ## All Scored Items
 
-| # | Score | Source | Task | Recommendation |
-|---|-------|--------|------|----------------|
-| DSR1 | 18 | docs/time_token_analysis_2026-06-30.md; docs/AI_ORCHESTRATION_PLAN.md | Docs backlog skorlayici donguye eklensin | Her dongude docs raporlari puanlansin; 15+ maddeler ROADMAP'teki otomatik blokta yenilensin. |
-| DSR2 | 17 | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | Arama sonuclari kaynak bazinda gruplansin | AllApps/Search UI sonuclari Uygulamalar, Kategoriler, Kisiler, Dosyalar bolumleriyle gostersin. |
-| DSR4 | 17 | docs/UX_SEARCH_REPORTS_SPEC.md; docs/internal/local_denetim_raporu.md | Permission reddi fallback ve ayar yonlendirme | Kisiler/dosya izin reddinde toggle geri kapansin; kalici redde sistem ayarlari deeplink'i gosterilsin. |
-| DSR3 | 16 | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | Uygulama arama kaynagi kilitli kalsin | SearchSettings'te Uygulamalar kaynagi acik ve kapatilamaz olsun; bos/yanlis arama durumlari engellensin. |
-| DSR5 | 16 | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | Play Store gorsel ve mesaj QA paketi | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. |
-| DSR6 | 15 | docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md | Build warning debt cleanup | Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin. |
-| DSR7 | 14 | docs/time_token_analysis_2026-06-30.md; docs/issue_mitigation_research_2026-06-30.md | Token ve sure telemetry logu | Dongu sonunda yaklasik token/sure notu append eden sade bir log tutulabilsin. |
-| DSR8 | 14 | docs/competitor_user_research_2026-06-30.md | Rakip referans tasarim karar belgesi | Smart Launcher, Niagara ve Kvaesitso referanslari icin uygulanabilir UI karar listesi cikarilsin. |
-| DSR9 | 13 | docs/issue_mitigation_research_2026-06-30.md; docs/internal/build_benchmark_latest.md | Configuration cache guard benchmark | Configuration cache sadece benchmark/CLI profilinde kalsin; kalici ayar icin uyumluluk kaniti istensin. |
+| # | Score | Source | Task | Recommendation | Status |
+|---|-------|--------|------|----------------|--------|
+| DSR1 | 18 | docs/time_token_analysis_2026-06-30.md; docs/AI_ORCHESTRATION_PLAN.md | Docs backlog skorlayici donguye eklensin | Her dongude docs raporlari puanlansin; 15+ maddeler ROADMAP'teki otomatik blokta yenilensin. | Tamamlandi |
+| DSR2 | 17 | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | Arama sonuclari kaynak bazinda gruplansin | AllApps/Search UI sonuclari Uygulamalar, Kategoriler, Kisiler, Dosyalar bolumleriyle gostersin. | Tamamlandi |
+| DSR4 | 17 | docs/UX_SEARCH_REPORTS_SPEC.md; docs/internal/local_denetim_raporu.md | Permission reddi fallback ve ayar yonlendirme | Kisiler/dosya izin reddinde toggle geri kapansin; kalici redde sistem ayarlari deeplink'i gosterilsin. | Tamamlandi |
+| DSR3 | 16 | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | Uygulama arama kaynagi kilitli kalsin | SearchSettings'te Uygulamalar kaynagi acik ve kapatilamaz olsun; bos/yanlis arama durumlari engellensin. | Tamamlandi |
+| DSR5 | 16 | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | Play Store gorsel ve mesaj QA paketi | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. | Tamamlandi |
+| DSR6 | 15 | docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md | Build warning debt cleanup | Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin. | Tamamlandi |
+| DSR7 | 14 | docs/time_token_analysis_2026-06-30.md; docs/issue_mitigation_research_2026-06-30.md | Token ve sure telemetry logu | Dongu sonunda yaklasik token/sure notu append eden sade bir log tutulabilsin. | Bekliyor |
+| DSR8 | 14 | docs/competitor_user_research_2026-06-30.md | Rakip referans tasarim karar belgesi | Smart Launcher, Niagara ve Kvaesitso referanslari icin uygulanabilir UI karar listesi cikarilsin. | Bekliyor |
+| DSR9 | 13 | docs/issue_mitigation_research_2026-06-30.md; docs/internal/build_benchmark_latest.md | Configuration cache guard benchmark | Configuration cache sadece benchmark/CLI profilinde kalsin; kalici ayar icin uyumluluk kaniti istensin. | Bekliyor |
 
 ## Notes
 

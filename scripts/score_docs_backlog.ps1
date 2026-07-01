@@ -73,7 +73,8 @@ $candidates = @(
         -Title "Play Store gorsel ve mesaj QA paketi" `
         -Source "docs/competitor_user_research_2026-06-30.md; docs/store_listing.md" `
         -KV 4 -U 4 -BR 5 -EA 3 `
-        -Recommendation "Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin."),
+        -Recommendation "Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin." `
+        -Status "Tamamlandi"),
     (New-Candidate `
         -Id "DSR6" `
         -Title "Build warning debt cleanup" `
@@ -129,10 +130,10 @@ foreach ($candidate in $high) {
 $lines.Add("")
 $lines.Add("## All Scored Items")
 $lines.Add("")
-$lines.Add("| # | Score | Source | Task | Recommendation |")
-$lines.Add("|---|-------|--------|------|----------------|")
+$lines.Add("| # | Score | Source | Task | Recommendation | Status |")
+$lines.Add("|---|-------|--------|------|----------------|--------|")
 foreach ($candidate in $all) {
-    $lines.Add("| $($candidate.Id) | $($candidate.Score) | $($candidate.Source) | $($candidate.Title) | $($candidate.Recommendation) |")
+    $lines.Add("| $($candidate.Id) | $($candidate.Score) | $($candidate.Source) | $($candidate.Title) | $($candidate.Recommendation) | $($candidate.Status) |")
 }
 
 $lines.Add("")
