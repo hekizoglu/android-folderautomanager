@@ -337,8 +337,15 @@ object AppPrefs {
     fun isSearchHistoryEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_HISTORY_ENABLED, true)
     fun setSearchHistoryEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_HISTORY_ENABLED, v).apply()
 
-    fun isSearchSourceAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_APPS, true)
-    fun setSearchSourceAppsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_APPS, v).apply()
+    fun isSearchSourceAppsEnabled(context: Context): Boolean {
+        if (!prefs(context).getBoolean(KEY_SEARCH_SOURCE_APPS, true)) {
+            prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_APPS, true).apply()
+        }
+        return true
+    }
+    @Suppress("UNUSED_PARAMETER")
+    fun setSearchSourceAppsEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_APPS, true).apply()
 
     fun isSearchSourceCategoriesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CATEGORIES, true)
     fun setSearchSourceCategoriesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CATEGORIES, v).apply()

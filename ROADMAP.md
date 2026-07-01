@@ -51,10 +51,8 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 | # | Puan | Kaynak | Gorev | Oneri | Durum |
 |---|------|--------|-------|-------|-------|
-| **DSR1** | **18** | docs/time_token_analysis_2026-06-30.md; docs/AI_ORCHESTRATION_PLAN.md | **Docs backlog skorlayici donguye eklensin** | Her dongude docs raporlari puanlansin; 15+ maddeler ROADMAP'teki otomatik blokta yenilensin. | Bekliyor |
 | **DSR2** | **17** | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | **Arama sonuclari kaynak bazinda gruplansin** | AllApps/Search UI sonuclari Uygulamalar, Kategoriler, Kisiler, Dosyalar bolumleriyle gostersin. | Bekliyor |
 | **DSR4** | **17** | docs/UX_SEARCH_REPORTS_SPEC.md; docs/internal/local_denetim_raporu.md | **Permission reddi fallback ve ayar yonlendirme** | Kisiler/dosya izin reddinde toggle geri kapansin; kalici redde sistem ayarlari deeplink'i gosterilsin. | Bekliyor |
-| **DSR3** | **16** | docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md | **Uygulama arama kaynagi kilitli kalsin** | SearchSettings'te Uygulamalar kaynagi acik ve kapatilamaz olsun; bos/yanlis arama durumlari engellensin. | Bekliyor |
 | **DSR5** | **16** | docs/competitor_user_research_2026-06-30.md; docs/store_listing.md | **Play Store gorsel ve mesaj QA paketi** | Light/dark screenshot seti, privacy-first metin ve QUERY_ALL_PACKAGES aciklamasi tek QA paketinde kontrol edilsin. | Bekliyor |
 | **DSR6** | **15** | docs/internal/build_benchmark_latest.md; docs/issue_mitigation_research_2026-06-30.md | **Build warning debt cleanup** | Deprecated/unused compose ve icon uyarilari temizlenip build ciktisi daha okunur hale getirilsin. | Bekliyor |
 <!-- DOCS_SCORE_HIGH_END -->

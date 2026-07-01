@@ -45,7 +45,8 @@ $candidates = @(
         -Title "Docs backlog skorlayici donguye eklensin" `
         -Source "docs/time_token_analysis_2026-06-30.md; docs/AI_ORCHESTRATION_PLAN.md" `
         -KV 4 -U 4 -BR 5 -EA 5 `
-        -Recommendation "Her dongude docs raporlari puanlansin; 15+ maddeler ROADMAP'teki otomatik blokta yenilensin."),
+        -Recommendation "Her dongude docs raporlari puanlansin; 15+ maddeler ROADMAP'teki otomatik blokta yenilensin." `
+        -Status "Tamamlandi"),
     (New-Candidate `
         -Id "DSR2" `
         -Title "Arama sonuclari kaynak bazinda gruplansin" `
@@ -57,7 +58,8 @@ $candidates = @(
         -Title "Uygulama arama kaynagi kilitli kalsin" `
         -Source "docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md" `
         -KV 4 -U 4 -BR 3 -EA 5 `
-        -Recommendation "SearchSettings'te Uygulamalar kaynagi acik ve kapatilamaz olsun; bos/yanlis arama durumlari engellensin."),
+        -Recommendation "SearchSettings'te Uygulamalar kaynagi acik ve kapatilamaz olsun; bos/yanlis arama durumlari engellensin." `
+        -Status "Tamamlandi"),
     (New-Candidate `
         -Id "DSR4" `
         -Title "Permission reddi fallback ve ayar yonlendirme" `
@@ -97,7 +99,7 @@ $candidates = @(
 )
 
 $now = Get-Date -Format "yyyy-MM-dd HH:mm"
-$high = $candidates | Where-Object { $_.Score -ge 15 } | Sort-Object @{ Expression = "Score"; Descending = $true }, Id
+$high = $candidates | Where-Object { $_.Score -ge 15 -and $_.Status -ne "Tamamlandi" } | Sort-Object @{ Expression = "Score"; Descending = $true }, Id
 $all = $candidates | Sort-Object @{ Expression = "Score"; Descending = $true }, Id
 
 $lines = [System.Collections.Generic.List[string]]::new()

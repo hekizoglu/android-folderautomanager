@@ -67,7 +67,7 @@ class SearchRepository(
     }
 
     private fun enabledSources(): List<String> = buildList {
-        if (AppPrefs.isSearchSourceAppsEnabled(context)) add(SourceType.APP.key)
+        add(SourceType.APP.key)
         if (AppPrefs.isSearchSourceCategoriesEnabled(context)) add(SourceType.CATEGORY.key)
         if (AppPrefs.isSearchSourceContactsEnabled(context)) add(SourceType.CONTACT.key)
         if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)

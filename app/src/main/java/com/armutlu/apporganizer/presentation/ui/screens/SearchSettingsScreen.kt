@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
@@ -60,7 +61,7 @@ fun SearchSettingsScreen(
     var homeSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeSearchEnabled(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(AppPrefs.isDoubleTapSearchEnabled(context)) }
     var searchHistoryEnabled by remember { mutableStateOf(AppPrefs.isSearchHistoryEnabled(context)) }
-    var appsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceAppsEnabled(context)) }
+    val appsSourceEnabled = true
     var categoriesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceCategoriesEnabled(context)) }
     var contactsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
     var filesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
@@ -204,12 +205,10 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.PhoneAndroid,
                         title = "Uygulamalar",
-                        subtitle = "Yuklu uygulamalar aramaya dahil edilir",
+                        subtitle = "Temel arama kaynagi; kapatilamaz",
                         checked = appsSourceEnabled,
-                        onCheckedChange = {
-                            appsSourceEnabled = it
-                            AppPrefs.setSearchSourceAppsEnabled(context, it)
-                        },
+                        onCheckedChange = { AppPrefs.setSearchSourceAppsEnabled(context, true) },
+                        enabled = false,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
@@ -293,7 +292,7 @@ fun SearchSettingsScreen(
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
-                        icon = Icons.Default.Sort,
+                        icon = Icons.AutoMirrored.Filled.Sort,
                         title = "Kullanım Sıklığına Göre Sırala",
                         subtitle = "Eşit sonuçlarda daha sık açılan uygulama üste çıkar",
                         checked = sortByUsage,
