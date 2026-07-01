@@ -6,8 +6,11 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.models.SearchDocument
+import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
@@ -80,6 +83,7 @@ internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
 class LauncherViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository,
+    private val searchRepository: SearchRepository,
     private val packageManagerHelper: PackageManagerHelper
 ) : AndroidViewModel(application) {
 
@@ -114,6 +118,21 @@ class LauncherViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    @OptIn(FlowPreview::class)
+    val searchResults: StateFlow<Map<SourceType, List<SearchDocument>>> = _searchQuery
+        .debounce(250)
+        .map { query ->
+            val trimmed = query.trim()
+            if (trimmed.length < 2) {
+                emptyMap()
+            } else {
+                runCatching { searchRepository.search(trimmed, limit = 24) }
+                    .onFailure { Timber.w(it, "Launcher search results failed") }
+                    .getOrDefault(emptyMap())
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val categories: StateFlow<List<Category>> = repository.getAllCategoriesFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, Category.getDefaultCategories())

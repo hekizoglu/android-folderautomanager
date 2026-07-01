@@ -52,7 +52,8 @@ $candidates = @(
         -Title "Arama sonuclari kaynak bazinda gruplansin" `
         -Source "docs/UX_SEARCH_REPORTS_SPEC.md; docs/search-architecture-report.md" `
         -KV 4 -U 5 -BR 4 -EA 4 `
-        -Recommendation "AllApps/Search UI sonuclari Uygulamalar, Kategoriler, Kisiler, Dosyalar bolumleriyle gostersin."),
+        -Recommendation "AllApps/Search UI sonuclari Uygulamalar, Kategoriler, Kisiler, Dosyalar bolumleriyle gostersin." `
+        -Status "Tamamlandi"),
     (New-Candidate `
         -Id "DSR3" `
         -Title "Uygulama arama kaynagi kilitli kalsin" `

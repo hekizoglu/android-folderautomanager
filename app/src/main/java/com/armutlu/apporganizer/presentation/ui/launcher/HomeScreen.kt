@@ -96,6 +96,7 @@ fun HomeScreen(
     val focusSearchOnOpen by viewModel.focusSearchOnOpen.collectAsState()
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
     var widgetAreaEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
     var widgetAutoResize by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)) }
@@ -808,7 +809,8 @@ fun HomeScreen(
                 },
                 focusSearchOnOpen = focusSearchOnOpen,
                 onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
-                categories = categories
+                categories = categories,
+                searchResults = searchResults
             )
         }
 

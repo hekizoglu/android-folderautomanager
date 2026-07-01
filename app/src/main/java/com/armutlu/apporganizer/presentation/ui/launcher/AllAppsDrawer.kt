@@ -1,5 +1,10 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.ContactsContract
+
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -62,10 +67,13 @@ import androidx.compose.ui.platform.LocalDensity
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.models.SearchDocument
+import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.Locale
 import kotlin.math.abs
 
@@ -269,6 +277,59 @@ private fun SourceGroupHeader(label: String, count: Int) {
     }
 }
 
+@Composable
+private fun SearchDocumentRow(
+    document: SearchDocument,
+    badge: String,
+    onClick: () -> Unit
+) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val textSecondary = onSurface.copy(alpha = 0.55f)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(onSurface.copy(alpha = 0.10f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(badge, color = onSurface.copy(alpha = 0.75f), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
+        Column(Modifier.weight(1f)) {
+            Text(document.title, color = onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val subtitle = document.subtitle.ifBlank { document.sourceId }
+            Text(subtitle, color = textSecondary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+private fun openSearchDocument(context: Context, document: SearchDocument) {
+    val intent = when (document.sourceType) {
+        SourceType.CONTACT.key -> {
+            val contactId = document.sourceId.removePrefix("contact:")
+            Intent(
+                Intent.ACTION_VIEW,
+                Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId)
+            )
+        }
+        SourceType.FILE.key -> {
+            Intent(Intent.ACTION_VIEW, Uri.parse(document.sourceId))
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        else -> return
+    }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    runCatching { context.startActivity(intent) }
+        .onFailure { Timber.w(it, "Search document could not be opened: ${document.sourceType}") }
+}
+
 // ── Liste bölümü ──────────────────────────────────────────────────────────────
 @Composable
 private fun DrawerAppList(
@@ -286,11 +347,13 @@ private fun DrawerAppList(
     onAppLongClick: ((AppInfo) -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     saveSearchIfNeeded: () -> Unit,
-    categories: List<Category> = emptyList()
+    categories: List<Category> = emptyList(),
+    searchResults: Map<SourceType, List<SearchDocument>> = emptyMap()
 ) {
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
     val trLocale      = java.util.Locale("tr")
+    val context       = LocalContext.current
 
     // Arama modundayken kategori eşleşmelerini grupla
     val categoryMatches = remember(searchQuery, categories) {
@@ -300,7 +363,10 @@ private fun DrawerAppList(
             categories.filter { it.categoryName.lowercase(trLocale).contains(q) }
         }
     }
-    val hasSearchGroups = searchQuery.isNotBlank() && (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty())
+    val contactMatches = searchResults[SourceType.CONTACT].orEmpty()
+    val fileMatches = searchResults[SourceType.FILE].orEmpty()
+    val hasSearchGroups = searchQuery.isNotBlank() &&
+        (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty() || contactMatches.isNotEmpty() || fileMatches.isNotEmpty())
 
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
@@ -341,7 +407,7 @@ private fun DrawerAppList(
         }
     } else {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty()) {
+            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && contactMatches.isEmpty() && fileMatches.isEmpty()) {
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
                         Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
@@ -398,6 +464,36 @@ private fun DrawerAppList(
                                 Text("Kategori", color = textSecondary, fontSize = 11.sp)
                             }
                         }
+                    }
+                }
+                if (hasSearchGroups && contactMatches.isNotEmpty()) {
+                    item(key = "source_header_contacts") {
+                        SourceGroupHeader(label = "Kisiler", count = contactMatches.size)
+                    }
+                    items(items = contactMatches, key = { "contact_${it.sourceId}" }) { document ->
+                        SearchDocumentRow(
+                            document = document,
+                            badge = "K",
+                            onClick = {
+                                saveSearchIfNeeded()
+                                openSearchDocument(context, document)
+                            }
+                        )
+                    }
+                }
+                if (hasSearchGroups && fileMatches.isNotEmpty()) {
+                    item(key = "source_header_files") {
+                        SourceGroupHeader(label = "Dosyalar", count = fileMatches.size)
+                    }
+                    items(items = fileMatches, key = { "file_${it.sourceId}" }) { document ->
+                        SearchDocumentRow(
+                            document = document,
+                            badge = "D",
+                            onClick = {
+                                saveSearchIfNeeded()
+                                openSearchDocument(context, document)
+                            }
+                        )
                     }
                 }
             }
@@ -602,6 +698,7 @@ fun AllAppsDrawer(
     focusSearchOnOpen: Boolean = false,
     onFocusSearchConsumed: () -> Unit = {},
     categories: List<Category> = emptyList(),
+    searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -730,7 +827,8 @@ fun AllAppsDrawer(
                         onAppLongClick = onAppLongClick,
                         haptic = haptic,
                         saveSearchIfNeeded = saveSearchIfNeeded,
-                        categories = categories
+                        categories = categories,
+                        searchResults = searchResults
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {
