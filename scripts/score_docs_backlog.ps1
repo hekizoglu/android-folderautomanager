@@ -66,7 +66,8 @@ $candidates = @(
         -Title "Permission reddi fallback ve ayar yonlendirme" `
         -Source "docs/UX_SEARCH_REPORTS_SPEC.md; docs/internal/local_denetim_raporu.md" `
         -KV 5 -U 4 -BR 4 -EA 4 `
-        -Recommendation "Kisiler/dosya izin reddinde toggle geri kapansin; kalici redde sistem ayarlari deeplink'i gosterilsin."),
+        -Recommendation "Kisiler/dosya izin reddinde toggle geri kapansin; kalici redde sistem ayarlari deeplink'i gosterilsin." `
+        -Status "Tamamlandi"),
     (New-Candidate `
         -Id "DSR5" `
         -Title "Play Store gorsel ve mesaj QA paketi" `
