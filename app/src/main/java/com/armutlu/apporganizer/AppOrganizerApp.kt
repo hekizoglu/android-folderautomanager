@@ -26,13 +26,10 @@ class AppOrganizerApp : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
         com.armutlu.apporganizer.utils.CrashReporter.install(this)
-        FirebaseApp.initializeApp(this)
-        val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
-        // Firebase Analytics debug mode — Console > DebugView'de anlık event görünümü
-        if (isDebug) {
-            FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(true)
-        }
+        // google-services.json olmadan derlenen (skipGoogleServices) yapılandırmalarda
+        // varsayılan FirebaseApp başlatılamaz — Firebase'i güvenli şekilde başlat,
+        // başarısız olursa uygulama çökmeden Firebase'siz devam etsin.
+        val firebaseReady = initFirebase()
         AppAnalytics.appStarted(this)
         if (AppPrefs.isAutoBackupEnabled(this)) {
             BackupWorker.schedule(this)
@@ -41,7 +38,31 @@ class AppOrganizerApp : Application() {
         WeeklyDigestWorker.schedule(this)
         SmartInsightWorker.schedule(this)
         createNotificationChannels()
-        fetchFcmToken()
+        if (firebaseReady) fetchFcmToken()
+    }
+
+    /**
+     * Firebase'i güvenli başlatır. google-services.json yoksa initializeApp null döner
+     * ve sonraki Firebase çağrıları "Default FirebaseApp is not initialized" ile çökerdi.
+     * @return Firebase kullanılabilir durumdaysa true.
+     */
+    private fun initFirebase(): Boolean {
+        return try {
+            if (FirebaseApp.initializeApp(this) == null) {
+                Timber.w("Firebase başlatılamadı — google-services.json bulunamadı")
+                return false
+            }
+            val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
+            // Firebase Analytics debug mode — Console > DebugView'de anlık event görünümü
+            if (isDebug) {
+                FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(true)
+            }
+            true
+        } catch (e: Exception) {
+            Timber.w(e, "Firebase yapılandırması başarısız — Firebase'siz devam ediliyor")
+            false
+        }
     }
 
     private fun enableGrantedContactSearchByDefault() {
