@@ -3,8 +3,8 @@
 > Son güncelleme: 2026-07-01 (D195). Puanlama → FİKİRLER.md. Yüksek puanlı + basit (EA≥4) → buraya.
 > İnsan onayı gereken kararlar ⚠️ · Güvenlik kritik 🔒 · Puanlar FİKİRLER.md tablosundan (15+ = bu listeye girer)
 > **Kural:** Tamamlanan görevler bu dosyadan silinir → HISTORY.md Tamamlananlar Arşivi'ne taşınır.
-> **🔴 Kritik UX (U1-U10):** Kullanıcı talepleri 2026-07-01. Onay bekleniyor — kod yazılmadı.
-> **🔴 Kritik Build (B1-B5):** Raporlardan (time_token_analysis + issue_mitigation). Öneri aşamasında.
+> **🔴 Kritik UX (U1-U10):** Kullanıcı talepleri 2026-07-01. D201'de U2/U3/U4/U6/U8/U9 doğrulandı+çözüldü; U1/U7/U10 kısmen/kapsam dışı, aşağıda kaldı.
+> **🔴 Kritik Build (B1-B5):** Raporlardan (time_token_analysis + issue_mitigation). D201'de B1/B3 zaten mevcut, B2 gereksiz, B5 kapalı, B4 kapsam dışı — tamamı kapandı.
 
 ---
 
@@ -61,7 +61,7 @@ Uygulama sırası: bağımlılık zincirine göre.
 
 | # | Puan | Görev | Durum |
 |---|------|-------|-------|
-| O1 | **19⭐** | Onboarding 18→5 adım | ✅ Tamamlandı |
+| O1 | **19⭐** | Onboarding 17→6 adım | ✅ Tamamlandı |
 | O2 | **15⭐** | Varsayılan Tarayıcı Seçimi (RoleManager.ROLE_BROWSER) | ✅ Tamamlandı |
 | O3 | **14⭐** | ContextualPermissionDialog | ✅ Tamamlandı |
 

@@ -106,15 +106,18 @@
 3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
 4. Build + commit + push
 
-### Onboarding Adım Sırası (D173 güncel — 17 adım)
-WELCOME → RESTORE_BACKUP → QUERY_PACKAGES → NOTIFICATIONS → UNUSED_GREY → AUTO_BACKUP → NOTIF_TEXT → NOTIF_ACCESS → SWIPE_HINT → NEW_BADGE → FOLDER_COUNT → NAV_HIDE → THEME_SELECT → QUICK_SETTINGS → CLASSIFY_MODE → SET_LAUNCHER → DONE
-Son üç adım: CLASSIFY_MODE → SET_LAUNCHER → DONE sırası değiştirilemez (D120'de SET_LAUNCHER sona alındı — kullanıcı talebi). ~~16 adım~~ → 17 adım (D173'te QUICK_SETTINGS eklendi).
+### Onboarding Adım Sırası (D201 güncel — 6 adım, 19⭐ radikal kesme)
+WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE
+~~17 adım~~ → 6 adıma indirildi (kullanıcı kaybı %72'den düşürmek için — bkz. FİKİRLER.md 19⭐). CLASSIFY_MODE, RESTORE_BACKUP, QUERY_PACKAGES, NOTIFICATIONS, UNUSED_GREY, AUTO_BACKUP, NOTIF_TEXT, NOTIF_ACCESS, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE adımları kaldırıldı — ilgili izinler/ayarlar artık özellik ilk kullanıldığında contextual olarak soruluyor. BROWSER_SELECT (RoleManager.ROLE_BROWSER) yeni eklendi.
 
 ### Room DB Versiyon Geçmişi
 - v1-v5: temel alanlar
 - v6: `customNotes`, `notificationText` alanları eklendi
 - v7: 18 yeni kategori (CAT_COMMUNICATION, CAT_MUSIC, CAT_VIDEO... vs.) — şema değişimi yok, MIGRATION_6_7 boş migration ile eklendi
-- v8: boş migration (2026-06-16) — şema değişimi yok, MIGRATION_7_8 eklendi
+- v8: `firstInstalledTime`, `lastUpdatedTime`, `targetSdkVersion`, `versionName` alanları eklendi (MIGRATION_7_8)
+- v9: `search_documents` tablosu + FTS5 sanal tablo (birleşik arama)
+- v10: `search_history` tablosu (arama geçmişi)
+- v11: `apps` tablosuna `idx_apps_appName`, `idx_apps_categoryId`, `idx_apps_appName_categoryId` index'leri (CS13 performans fix'i, D198)
 
 > **UYARI:** `fallbackToDestructiveMigration()` — Döngü#19'da KALDIRILDI. Yeni versiyon eklerken mutlaka `MIGRATION_x_y` oluştur, boş bile olsa.
 

@@ -157,7 +157,7 @@ Bir dosyada Türkçe karakter bozukluğu (`Ã¶`, `Ä±`, `ÅŸ` vb.) tespit edi
 - Yarım bırakma — başlanan her görev aynı döngüde tamamlanmalı; multi-dosya işlemler bölünmez
 - Bir görevi "devam edeyim mi?" diye sorarak bırakma — tüm ilgili dosyaları aynı anda bitir
 - Encoding bozukluğu — her zaman UTF-8 kaydet
-- Onboarding'in son 3 adımı MUTLAKA CLASSIFY_MODE → SET_LAUNCHER → DONE sırasında olmalı — hiçbir değişiklik bu sırayı bozamaz. (D120'de SET_LAUNCHER en sona alındı — kullanıcı talebi)
+- Onboarding sırası MUTLAKA WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE olmalı — hiçbir değişiklik bu sırayı bozamaz. (D201'de 19⭐ radikal kesme ile 17 adımdan 6 adıma indirildi, CLASSIFY_MODE kaldırıldı)
 - **Yan etki yaratma:** Bir dosyayı değiştirirken ilgili tüm dosyaları (ViewModel, Repository, Model, UI) önce oku. Yeni sabit/fonksiyon eklenince tüm kullanım noktaları güncellenmeli. Değişiklik sonrası build al — kırmızı alan kalmamalı.
 
 ### Değişiklik Güvenlik Protokolü
@@ -365,8 +365,8 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ### Önemli Mimari Notlar
 - **AppClassifier:** 3702 benzersiz paket, `assets/app_categories.json` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
-- **Room DB:** v8 (v7→v8 boş migration, 2026-06-16)
-- **Onboarding:** 17 adım (WELCOME → ... → THEME_SELECT → QUICK_SETTINGS → CLASSIFY_MODE → SET_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`
+- **Room DB:** v11 (v10→v11: apps tablosuna index'ler eklendi, CS13 fix, D198)
+- **Onboarding:** 6 adım (WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE` (19⭐ radikal kesme, D201'de doğrulandı)
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor
 
