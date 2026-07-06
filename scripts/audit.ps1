@@ -113,7 +113,7 @@ $tier1Rules = @(
     # D191-YENI (0 sonuc kuyrugu): Null safety -- !! operatoru ViewModel'lerde
     @{ Code = "CE10"; Severity = "YUKSEK"; Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\launcher\LauncherViewModel.kt"; Pattern = '\w+!!'; Description = "!! operatoru NPE riski - ?.let veya ?: fallback kullan. cachedSuggestedApps!! D160'da duzeltildi - ?: emptyList()"; Focus = @("Data_State_Persistence","Performance_Memory") },
     # D164-YENI (0 sonuc kuyrugu item 9): Room SELECT * sorgu performansi
-    @{ Code = "CS13"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\data\local\AppDao.kt"; Pattern = '@Query\("SELECT \* FROM apps ORDER BY'; Description = "AppDao SELECT * ORDER BY LIMIT yok - 500+ uygulama icin yavas. Pagination veya specific column sec."; Focus = @("Performance_Memory","Repository_DataLayer") }
+    @{ Code = "CS13"; Severity = "ORTA"; Path = "app\src\main\java\com\armutlu\apporganizer\data\local\AppDao.kt"; Pattern = '@Query\("SELECT \* FROM apps ORDER BY [^"]*"\)\s*\n\s*(suspend |)fun (getAllApps|getAllAppsFlow)\(\)'; Description = "AppDao SELECT * ORDER BY LIMIT yok - 500+ uygulama icin yavas. Pagination veya specific column sec."; Focus = @("Performance_Memory","Repository_DataLayer") }
 )
 
 # ============================================================

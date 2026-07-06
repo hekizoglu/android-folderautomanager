@@ -21,7 +21,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, SearchHistory::class],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -97,6 +97,15 @@ abstract class AppDatabase : RoomDatabase() {
                         timestamp INTEGER NOT NULL DEFAULT 0
                     )
                 """)
+            }
+        }
+
+        // v10→v11: apps tablosuna query optimize için index'ler eklendi (CS13: SELECT * ORDER BY appName sınırsız)
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_apps_appName ON apps(appName)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_apps_categoryId ON apps(categoryId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_apps_appName_categoryId ON apps(appName, categoryId)")
             }
         }
 
@@ -182,7 +191,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_6_7,
                         MIGRATION_7_8,
                         MIGRATION_8_9,
-                        MIGRATION_9_10
+                        MIGRATION_9_10,
+                        MIGRATION_10_11
                     )
                     .build()
 

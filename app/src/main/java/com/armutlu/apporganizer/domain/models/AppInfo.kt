@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.domain.models
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.io.Serializable
 
@@ -8,7 +9,14 @@ import java.io.Serializable
  * Data model representing an installed application on the device.
  * This model is saved in Room database for persistence.
  */
-@Entity(tableName = "apps")
+@Entity(
+    tableName = "apps",
+    indices = [
+        Index(value = ["appName"]),
+        Index(value = ["categoryId"]),
+        Index(value = ["appName", "categoryId"])
+    ]
+)
 data class AppInfo(
     @PrimaryKey
     val packageName: String,

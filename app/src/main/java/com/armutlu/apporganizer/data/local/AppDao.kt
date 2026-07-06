@@ -62,11 +62,12 @@ interface AppDao {
      */
     @Query("SELECT * FROM apps WHERE packageName = :packageName")
     suspend fun getAppByPackageName(packageName: String): AppInfo?
-    
+
     /**
      * Get all apps (one-time)
+     * Limited to 1000 apps for performance; use pagination for larger datasets
      */
-    @Query("SELECT * FROM apps ORDER BY appName ASC")
+    @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT 1000")
     suspend fun getAllApps(): List<AppInfo>
 
     /**
@@ -74,11 +75,12 @@ interface AppDao {
      */
     @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT :limit OFFSET :offset")
     suspend fun getAppsPage(limit: Int, offset: Int = 0): List<AppInfo>
-    
+
     /**
      * Get all apps as Flow (real-time updates)
+     * Limited to 1000 apps for performance; use pagination for larger datasets
      */
-    @Query("SELECT * FROM apps ORDER BY appName ASC")
+    @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT 1000")
     fun getAllAppsFlow(): Flow<List<AppInfo>>
     
     /**

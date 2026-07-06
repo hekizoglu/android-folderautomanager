@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.LauncherViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -54,6 +55,7 @@ class LauncherViewModelTest {
 
     private lateinit var mockApplication: Application
     private lateinit var mockRepository: AppRepository
+    private lateinit var mockSearchRepository: SearchRepository
     private lateinit var mockPmHelper: PackageManagerHelper
     private lateinit var mockContext: Context
 
@@ -68,6 +70,7 @@ class LauncherViewModelTest {
 
         mockApplication = mockk(relaxed = true)
         mockRepository = mockk(relaxed = true)
+        mockSearchRepository = mockk(relaxed = true)
         mockPmHelper = mockk(relaxed = true)
         mockContext = mockk(relaxed = true)
 
@@ -82,6 +85,7 @@ class LauncherViewModelTest {
         viewModel = LauncherViewModel(
             application = mockApplication,
             repository = mockRepository,
+            searchRepository = mockSearchRepository,
             packageManagerHelper = mockPmHelper
         )
     }
