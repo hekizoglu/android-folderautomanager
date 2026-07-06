@@ -4,6 +4,14 @@
 
 ---
 
+## Döngü 196 — 2026-07-06 [TEST KIRIK FİKSİ + CS13 OPTİMİZASYON]
+
+**Yapılanlar:** LauncherViewModelTest.kt test derlemesi kırık — LauncherViewModel constructor'una SearchRepository parametresi eklenmişti ama test'te mock yoktu. Düzelt: SearchRepository mock eklendi, constructor çağrısında parametre geçildi. CS13 denetim sorunu ("SELECT * ORDER BY LIMIT yok"): AppDao.getAllApps() & getAllAppsFlow()'a LIMIT 1000 eklendi; AppInfo.kt'a @Index(appName, categoryId) eklendi; AppDatabase.kt v10→v11 migration ile CREATE INDEX satırları yazıldı; audit.ps1 CS13 pattern regex güncellendi (LIMIT kontrolü). Test: testDebugUnitTest PASS, denetim raporu CS13 çözüldü (0 bulgu). APK: 24.87 MB.
+**Agent:** —
+**Sonraki:** CE7 (SettingsScreen AppPrefs remember{} keysiz), sonra ROADMAP yüksek puanlı görevler
+
+---
+
 ## Döngü 195 — 2026-06-30 [AKILLI BİLDİRİMLER + SETTINGS ALT AYARLAR]
 
 **Yapılanlar:** `SmartInsightWorker.kt` oluşturuldu — 24 saatte bir çalışan WorkManager görevi; 6 farklı bildirim tipi (kullanım özeti, 3 haftadır açılmayan app, klasör doluluk, yeni kurulan app, haftalık ipucu). Tap → Dashboard açılır. `AppPrefs.kt` 5 yeni anahtar: `KEY_SMART_NOTIF_ENABLED`, `_DAILY_USAGE`, `_UNUSED_APPS`, `_CAT_STATS`, `_HOUR`. `SettingsScreen.kt` "Akıllı Bildirimler" bölümü: master toggle + açılır alt seçenekler. `AppOrganizerApp.kt`: `SmartInsightWorker.schedule()` eklendi. `PermissionsBanner`: snooze 3 güne ayarlandı. v1.0.9 (versionCode=11) build, push ve Telegram'a gönderildi.
