@@ -26,14 +26,22 @@ class AppOrganizerApp : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
         com.armutlu.apporganizer.utils.CrashReporter.install(this)
-        FirebaseApp.initializeApp(this)
+        // google-services.json yoksa initializeApp null döner — Firebase çağrıları o durumda atlanır
+        // (skipGoogleServices ile alınan build'ler açılışta ÇÖKMEZ; json eklenince otomatik aktifleşir)
+        val firebaseApp = runCatching { FirebaseApp.initializeApp(this) }.getOrNull()
         val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
-        // Firebase Analytics debug mode — Console > DebugView'de anlık event görünümü
-        if (isDebug) {
-            FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(true)
+        if (firebaseApp != null) {
+            runCatching {
+                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
+                // Firebase Analytics debug mode — Console > DebugView'de anlık event görünümü
+                if (isDebug) {
+                    FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(true)
+                }
+            }.onFailure { Timber.w(it, "Firebase servisleri başlatılamadı") }
+        } else {
+            Timber.w("Firebase devre dışı — google-services.json bulunamadı")
         }
-        AppAnalytics.appStarted(this)
+        runCatching { AppAnalytics.appStarted(this) }
         if (AppPrefs.isAutoBackupEnabled(this)) {
             BackupWorker.schedule(this)
         }
@@ -41,7 +49,7 @@ class AppOrganizerApp : Application() {
         WeeklyDigestWorker.schedule(this)
         SmartInsightWorker.schedule(this)
         createNotificationChannels()
-        fetchFcmToken()
+        if (firebaseApp != null) fetchFcmToken()
     }
 
     private fun enableGrantedContactSearchByDefault() {

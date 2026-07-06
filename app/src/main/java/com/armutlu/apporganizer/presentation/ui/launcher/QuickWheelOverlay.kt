@@ -65,7 +65,6 @@ fun QuickWheelOverlay(
     val MAX_ITEMS = 6
     val RADIUS_DP = 90.dp
     val ICON_DP = 52.dp
-    val context = LocalContext.current
     val density = LocalDensity.current
 
     val topApps = remember(apps) {

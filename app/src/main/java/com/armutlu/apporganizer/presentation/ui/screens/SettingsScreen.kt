@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -48,6 +49,7 @@ fun SettingsScreen(
     onNavigateToDashboard: () -> Unit = {},
     onNavigateToReportsCenter: () -> Unit = {},
     onNavigateToSearchSettings: () -> Unit = {},
+    onNavigateToNotificationReport: () -> Unit = {},
 ) {
     val showSystemApps  by viewModel.showSystemApps.collectAsState()
     val state           by viewModel.screenState.collectAsState()
@@ -122,6 +124,9 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
+
+            // ── Eksik İzinler — sadece eksik izin varsa görünür ──────────────
+            item { SettingsPermissionsCard() }
 
             // ── Gorunum ───────────────────────────────────────────────────────
             item { SettingsSectionTitle("Görünüm") }
@@ -498,7 +503,7 @@ fun SettingsScreen(
                             AppPrefs.setQuickWheelEnabled(context, it)
                         }
                     )
-                    androidx.compose.material3.Divider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
+                    HorizontalDivider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
                     SettingsSwitchRow(
                         icon = Icons.Default.DoNotDisturb,
                         title = "Odak Modu",
@@ -544,7 +549,7 @@ fun SettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsInfoRow(icon = Icons.Default.Folder, title = "Kategori Sayısı", subtitle = "${state.categories.size}")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.HelpOutline, title = "Sınıflandırılmamış", subtitle = "${otherApps.size} uygulama")
+                    SettingsInfoRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = "Sınıflandırılmamış", subtitle = "${otherApps.size} uygulama")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsInfoRow(icon = Icons.Default.VisibilityOff, title = "Gizli Uygulama", subtitle = "${hiddenApps.size}")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -560,6 +565,13 @@ fun SettingsScreen(
                         title = "Raporlar Merkezi",
                         subtitle = "Genel bakis ve kullanim raporlarini tek yerden ac",
                         onClick = onNavigateToReportsCenter,
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.Notifications,
+                        title = "Bildirim Raporu",
+                        subtitle = "Çok konuşan, rahatsız eden ve dikkat dağıtan uygulamalar",
+                        onClick = onNavigateToNotificationReport,
                     )
                 }
             }

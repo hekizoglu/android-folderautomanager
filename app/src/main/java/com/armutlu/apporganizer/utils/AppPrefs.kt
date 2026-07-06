@@ -200,6 +200,26 @@ object AppPrefs {
     fun isHomeAppSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_HOME_APP_SEARCH_ENABLED, true)
     fun setHomeAppSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_APP_SEARCH_ENABLED, v).apply()
 
+    // Klasör içi arama çubuğu — varsayılan KAPALI (ekranı sadeleştirme)
+    const val KEY_FOLDER_SEARCH_ENABLED = "folder_search_enabled"
+    fun isFolderSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_SEARCH_ENABLED, false)
+    fun setFolderSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SEARCH_ENABLED, v).apply()
+
+    // Haber şeridi (ticker) — klasör/içgörü/bildirim haberleri ana ekranda akar
+    const val KEY_TICKER_ENABLED = "home_ticker_enabled"
+    fun isTickerEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_ENABLED, true)
+    fun setTickerEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_ENABLED, v).apply()
+
+    // Arama çubuğu elmas parlaması — 10-15 sn'de bir gradient süpürme animasyonu
+    const val KEY_SEARCH_SHINE_ENABLED = "search_shine_enabled"
+    fun isSearchShineEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHINE_ENABLED, true)
+    fun setSearchShineEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SHINE_ENABLED, v).apply()
+
+    // Bildirim analizi — notification_events tablosuna kayıt (rapor sayfası için)
+    const val KEY_NOTIF_ANALYTICS_ENABLED = "notif_analytics_enabled"
+    fun isNotifAnalyticsEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIF_ANALYTICS_ENABLED, true)
+    fun setNotifAnalyticsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIF_ANALYTICS_ENABLED, v).apply()
+
     // Uygulama önerileri — en sık kullanılan 4 uygulama ana ekranda gösterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
@@ -360,7 +380,7 @@ object AppPrefs {
     fun hasSearchSourceContactsPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_CONTACTS)
     fun setSearchSourceContactsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
 
-    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, false)
+    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, true)
     fun setSearchSourceFilesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_FILES, v).apply()
 
     fun getSearchRankingProfile(context: Context): SearchRankingProfile =

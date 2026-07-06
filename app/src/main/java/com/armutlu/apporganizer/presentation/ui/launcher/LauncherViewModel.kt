@@ -523,8 +523,10 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    // Memory cache: öneri skorları 30 dakikada bir yenilenir
-    @Volatile private var cachedSuggestedApps: List<AppInfo>? = null
+    // Memory cache: SADECE pahalı UsageStats skorları 30 dakika cache'lenir.
+    // Uygulama listesi değişimi (kurulum/güncelleme/silme) her emisyonda anında yansır
+    // — stale liste bug'ı (öneriler yenilenmiyor) bu ayrımla çözüldü.
+    @Volatile private var cachedScores: Map<String, Float>? = null
     @Volatile private var cacheTimestamp: Long = 0L
     private val CACHE_DURATION_MS = 30 * 60 * 1000L  // 30 dakika
 
@@ -534,40 +536,39 @@ class LauncherViewModel @Inject constructor(
         _suggestionTick
     ) { apps, _ ->
         val now = System.currentTimeMillis()
-        if (cachedSuggestedApps == null || now - cacheTimestamp > CACHE_DURATION_MS) {
-            val ctx = getApplication<Application>()
-            val visible = apps.filter { !it.isHidden }
-            // UsageScore v2 boost faktörleri (anlık snapshot)
-            val dockPkgs = _dockPackages.value
-            val favPkgs = _favoritePkgs.value
-            val notifCounts = AppNotificationListenerService.badgeCounts.value
-            val result = if (UsageStatsHelper.hasPermission(ctx)) {
-                val baseScores = UsageStatsHelper.getWeightedScores(ctx, days = 28)
-                // v2 boost: dock/favorite +0.15, aktif bildirim +0.2
-                val boosted = baseScores.mapValues { (pkg, score) ->
-                    var s = score
-                    if (dockPkgs.contains(pkg) || favPkgs.contains(pkg)) s += 0.15f
-                    if ((notifCounts[pkg] ?: 0) > 0) s += 0.2f
-                    s
+        val ctx = getApplication<Application>()
+        val visible = apps.filter { !it.isHidden }
+        // UsageScore v2 boost faktörleri (anlık snapshot)
+        val dockPkgs = _dockPackages.value
+        val favPkgs = _favoritePkgs.value
+        val notifCounts = AppNotificationListenerService.badgeCounts.value
+        if (UsageStatsHelper.hasPermission(ctx)) {
+            val baseScores = cachedScores.takeIf { it != null && now - cacheTimestamp <= CACHE_DURATION_MS }
+                ?: UsageStatsHelper.getWeightedScores(ctx, days = 28).also {
+                    cachedScores = it
+                    cacheTimestamp = now
                 }
-                visible
-                    .filter { boosted.containsKey(it.packageName) }
-                    .sortedByDescending { boosted[it.packageName] ?: 0f }
-                    .take(4)
-                    .ifEmpty {
-                        visible.filter { it.usageCount > 0 }
-                            .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                            .take(4)
-                    }
-            } else {
-                visible.filter { it.usageCount > 0 }
-                    .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                    .take(4)
+            // v2 boost: dock/favorite +0.15, aktif bildirim +0.2
+            val boosted = baseScores.mapValues { (pkg, score) ->
+                var s = score
+                if (dockPkgs.contains(pkg) || favPkgs.contains(pkg)) s += 0.15f
+                if ((notifCounts[pkg] ?: 0) > 0) s += 0.2f
+                s
             }
-            cachedSuggestedApps = result
-            cacheTimestamp = now
+            visible
+                .filter { boosted.containsKey(it.packageName) }
+                .sortedByDescending { boosted[it.packageName] ?: 0f }
+                .take(4)
+                .ifEmpty {
+                    visible.filter { it.usageCount > 0 }
+                        .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                        .take(4)
+                }
+        } else {
+            visible.filter { it.usageCount > 0 }
+                .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                .take(4)
         }
-        cachedSuggestedApps ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Assistant Kartları — her refresh'te rastgele seçim, tekrar önleme
@@ -585,6 +586,41 @@ class LauncherViewModel @Inject constructor(
             )
         }
     }
+
+    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti tek akışta.
+    // Dokunma hedefleri: klasör haberi → FolderSheet, bildirim haberi → Bildirim Raporu, içgörü → Dashboard.
+    val tickerItems: StateFlow<List<TickerItem>> = combine(
+        folders,
+        insightCards,
+        AppNotificationListenerService.badgeCounts
+    ) { folderList, cards, badges ->
+        buildList {
+            folderList.sortedByDescending { it.apps.size }.take(5).forEach { f ->
+                add(TickerItem(
+                    text = "${f.category.categoryName} klasöründe ${f.apps.size} uygulama var",
+                    emoji = f.category.iconEmoji.ifBlank { "📁" },
+                    categoryId = f.category.categoryId
+                ))
+            }
+            cards.forEach { card ->
+                add(TickerItem(
+                    text = card.message,
+                    emoji = "💡",
+                    categoryId = card.categoryId,
+                    route = if (card.categoryId == null)
+                        com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD else null
+                ))
+            }
+            val totalNotif = badges.values.sum()
+            if (totalNotif > 0) {
+                add(TickerItem(
+                    text = "$totalNotif aktif bildirim — analiz raporu için dokun",
+                    emoji = "🔔",
+                    route = com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
+                ))
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Contextual Dock — 2 sabit (kullanici) + 2 akilli öneri (saat/gun/kullanim)
     val contextualDockPackages: StateFlow<List<String>> = combine(

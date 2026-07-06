@@ -79,6 +79,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchCache
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
@@ -92,8 +93,12 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+/**
+ * @param compact Dar ekran / kalabalık ana ekranda saat küçülür (84sp→56sp) ve tarih pili gizlenir
+ *                — klasörler kaybolmasın diye alan saate değil klasörlere verilir.
+ */
 @Composable
-internal fun PixelClockWidget(modifier: Modifier = Modifier) {
+internal fun PixelClockWidget(modifier: Modifier = Modifier, compact: Boolean = false) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val dateFormat = remember { SimpleDateFormat("EEE, d MMM", Locale("tr")) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
@@ -113,14 +118,14 @@ internal fun PixelClockWidget(modifier: Modifier = Modifier) {
         Text(
             text = timeFormat.format(now),
             color = Color.White,
-            fontSize = 84.sp,
+            fontSize = if (compact) 56.sp else 84.sp,
             fontWeight = FontWeight.Thin,
-            letterSpacing = (-3).sp,
+            letterSpacing = if (compact) (-2).sp else (-3).sp,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(4.dp))
-        // Tarih + hava durumu yan yana
-        Row(
+        // Tarih + hava durumu yan yana — compact modda gizli
+        if (!compact) Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
@@ -280,7 +285,12 @@ internal fun DockIcon(
 ) {
     val context = LocalContext.current
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
-    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_$px" else "${packageName}_${px}_$iconPackPkg"
+    // lastUpdateTime key'de: uygulama güncellenince eski logo cache'i geçersizleşir
+    val lastUpdated = remember(packageName) {
+        runCatching { context.packageManager.getPackageInfo(packageName, 0).lastUpdateTime }.getOrDefault(0L)
+    }
+    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_${lastUpdated}_$px"
+        else "${packageName}_${lastUpdated}_${px}_$iconPackPkg"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
         key1 = cacheKey
@@ -398,7 +408,9 @@ private fun SuggestionAppItem(
     val context = LocalContext.current
     val iconSize = 48.dp
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
-    val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
+    // lastUpdatedTime key'de: uygulama güncellenince eski logo cache'i geçersizleşir (isim/logo uyumsuzluğu fix)
+    val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_${app.lastUpdatedTime}_$px"
+        else "${app.packageName}_${app.lastUpdatedTime}_${px}_$iconPackPkg"
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCacheInternal[cacheKey],
         key1 = cacheKey
@@ -631,6 +643,7 @@ internal fun HomeAppSearchBar(
     val showIcons     = remember { AppPrefs.isSearchShowIcons(context) }
     val showAvatar    = remember { AppPrefs.isSearchShowContactAvatar(context) }
     val contactsOn    = remember { AppPrefs.isSearchSourceContactsEnabled(context) }
+    val shineEnabled  = remember { AppPrefs.isSearchShineEnabled(context) }
 
     // Cache'i allApps değişince güncelle
     LaunchedEffect(allApps) {
@@ -704,11 +717,12 @@ internal fun HomeAppSearchBar(
             Spacer(Modifier.height(4.dp))
         }
 
-        // Arama alanı — glass kart stilinde + drag handle
+        // Arama alanı — glass kart stilinde + drag handle + elmas parlaması
         GlassCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .scale(barScale)
+                .diamondShine(shineEnabled, RoundedCornerShape(28.dp))
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = {

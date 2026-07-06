@@ -4,6 +4,25 @@
 
 ---
 
+## Döngü 203 — 2026-07-07 [v1.2.0 BÜYÜK UI YENİLEME — Fable 5 + Sonnet agent]
+
+**Yapılanlar:** Kullanıcının 10+ maddelik talimat listesi tek döngüde tamamlandı, emülatörde ekran görüntülü uçtan uca doğrulandı (crash yok):
+- **Bug fix:** Öneriler stale-cache (LauncherViewModel — skorlar 30dk cache'te kalır, liste her emisyonda yenilenir) + ikon cache key'e `lastUpdatedTime` (SuggestionAppItem/DockIcon isim-logo uyumsuzluğu bitti)
+- **Klasör kırpılma fix (B1/B2):** `HomeLayoutMath.folderCapacity` + BoxWithConstraints ile `effectivePageSize = min(istek, kapasite)`; saat kompakt moda geçer (84→56sp); kapasite aşımında layout bozulmadan snackbar
+- **İzinler:** PermissionsBanner ana ekrandan SİLİNDİ → `SettingsPermissionsCard` (Settings en üstü, ON_RESUME'da yenilenir)
+- **Haber şeridi (C2):** `HomeTickerRow` — "X klasöründe N uygulama var" + içgörüler + bildirim özeti; dokun→hedef, kaydır→önceki/sonraki, 6sn otomatik; FolderStatsRow/AssistantInsightRow yerine (toggle ile eskiye dönülebilir)
+- **Elmas parlaması (C3):** `Modifier.diamondShine` — 10-15sn arayla gradient süpürme, Home+Drawer arama çubuklarında
+- **Material You (C4):** `AppTheme.DYNAMIC` — Android 12+ default, tema seçicilerde (API<31 gizli)
+- **Bildirim Analiz Raporu (C5):** Room v11→v12 `notification_events` + `NotificationAnalyzer` (çok konuşan/rahatsız eden/dikkat dağıtan) + `NotificationReportScreen` (Sonnet agent yazdı) + Settings/ticker girişleri; emülatörde 5 test bildirimiyle doğrulandı
+- **Arama:** geçmiş 2 saat TTL (`SearchHistoryPrefs` `query::ts` formatı); klasör içi arama default KAPALI (FolderSheet+FolderScreen, toggle eklendi); dosya kaynağı default açık
+- **Crash fix'leri:** Firebase null-guard (AppOrganizerApp + AppAnalytics — skipGoogleServices build'leri artık çökmüyor) + Room migration index adı onarımı (idx_apps_*→index_apps_*, LEARNINGS'e tuzak yazıldı)
+- **Docs:** ROADMAP/FİKİRLER tamamlananlar temizlendi + S1/S2 (birleşik "her şeyi ara" + rehber kişisi) ve K1 (KSP geçişi) eklendi; CLAUDE.md'ye Otomatik Model Seçimi kuralı (Fable 5 tanımı dahil) + local.properties notu; versionCode 13 / versionName 1.2.0
+**Agent:** Sonnet (NotificationReportScreen+VM, ~65k token) — Fable sadece orkestrasyon/entegrasyon (model ekonomisi kuralı ilk uygulama)
+**CLAUDE.md/LEARNINGS.md:** CLAUDE.md — model seçim kuralı + Room v12 + build notları; LEARNINGS — migration index adı, Firebase null-guard, KAPT kilit döngüsü (3 yeni tuzak)
+**Sonraki:** S1 birleşik arama (ana ekran tek çubuk her şeyi arasın + Klasör sekmesi kalksın) → sonra K1 KSP geçişi
+
+---
+
 ## Döngü 202 — 2026-07-06 [BUILD DOĞRULAMA — Döngü 199+201 birleşik]
 
 **Yapılanlar:** Döngü 199 (kullanım bilgisi özelliği, görsel/Settings) + Döngü 201 (arama çubuğu TOP/BOTTOM, Dashboard link, UX risk kapanışları) birlikte `.\gradlew assembleDebug` ile derlendi — **BUILD SUCCESSFUL** (2m 22s), hata yok, sadece 3 mevcut deprecation uyarısı (ArrowBack/TrendingUp/unused param — yeni değil). APK: **24.88 MB** (26.088.967 byte). Commit + push + Telegram APK gönderimi yapıldı.

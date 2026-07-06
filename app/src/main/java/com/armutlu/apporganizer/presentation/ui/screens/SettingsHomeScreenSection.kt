@@ -58,6 +58,54 @@ fun SettingsHomeScreenSection(
             onClick = onNavigateToSearchSettings,
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
+        SettingsSwitchRow(
+            icon = Icons.Default.Campaign,
+            title = "Haber Şeridi",
+            subtitle = "Klasör ve bildirim haberleri akan şerit — dokun: aç, kaydır: sonraki",
+            checked = tickerEnabled,
+            onCheckedChange = {
+                tickerEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setTickerEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        var shineEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSearchShineEnabled(context)) }
+        SettingsSwitchRow(
+            icon = Icons.Default.AutoAwesome,
+            title = "Arama Çubuğu Parlaması",
+            subtitle = "Arama çubuğu ara sıra elmas gibi parlayarak dikkat çeker",
+            checked = shineEnabled,
+            onCheckedChange = {
+                shineEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setSearchShineEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        var folderSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSearchEnabled(context)) }
+        SettingsSwitchRow(
+            icon = Icons.Default.FolderOpen,
+            title = "Klasör İçi Arama",
+            subtitle = "Klasör açıldığında arama çubuğu göster (varsayılan: kapalı)",
+            checked = folderSearchEnabled,
+            onCheckedChange = {
+                folderSearchEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setFolderSearchEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        var notifAnalytics by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotifAnalyticsEnabled(context)) }
+        SettingsSwitchRow(
+            icon = Icons.Default.Notifications,
+            title = "Bildirim Analizi",
+            subtitle = "Bildirim sayıları kaydedilir, Bildirim Raporu'nu besler (içerik saklanmaz)",
+            checked = notifAnalytics,
+            onCheckedChange = {
+                notifAnalytics = it
+                com.armutlu.apporganizer.utils.AppPrefs.setNotifAnalyticsEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = "Favoriler",

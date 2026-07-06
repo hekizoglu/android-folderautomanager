@@ -182,8 +182,9 @@ fun FolderScreen(
                     }
                 }
 
-                // Arama çubuğu
-                Row(
+                // Arama çubuğu — varsayılan KAPALI, Ayarlar > Klasör İçi Arama ile açılır
+                val folderSearchEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderSearchEnabled(context) }
+                if (folderSearchEnabled) Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp)

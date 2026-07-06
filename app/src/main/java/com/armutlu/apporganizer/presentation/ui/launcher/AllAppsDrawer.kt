@@ -69,6 +69,7 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
+import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
@@ -127,11 +128,14 @@ private fun DrawerSearchBar(
         Text(countText, fontSize = 12.sp, color = textSecondary)
     }
 
-    // Arama + kapat
+    // Arama + kapat — elmas parlaması dikkat çeker
+    val shineEnabled = androidx.compose.runtime.remember { AppPrefs.isSearchShineEnabled(context) }
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.weight(1f).height(44.dp)
-                .clip(RoundedCornerShape(22.dp)).background(searchBg).padding(horizontal = 14.dp),
+                .clip(RoundedCornerShape(22.dp)).background(searchBg)
+                .diamondShine(shineEnabled, RoundedCornerShape(22.dp))
+                .padding(horizontal = 14.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {

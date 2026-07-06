@@ -21,6 +21,14 @@ enum class AppTheme(
     val background: Color,
     val surface: Color
 ) {
+    /** Material You — duvar kağıdından türetilen dinamik renkler (Android 12+). Renkler fallback (API <31 = TEAL görünümü). */
+    DYNAMIC(
+        label = "Dinamik (Material You)",
+        primary = Color(0xFF00897B),
+        secondary = Color(0xFF26C6DA),
+        background = Color(0xFF1A1A2E),
+        surface = Color(0xFF16213E)
+    ),
     TEAL(
         label = "Turkuaz",
         primary = Color(0xFF00897B),
@@ -75,7 +83,11 @@ enum class AppTheme(
 
     companion object {
         fun fromName(name: String): AppTheme =
-            entries.firstOrNull { it.name == name } ?: TEAL
+            entries.firstOrNull { it.name == name } ?: default()
+
+        /** Varsayılan tema: Android 12+ → Material You dinamik, altı → Turkuaz. */
+        fun default(): AppTheme =
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) DYNAMIC else TEAL
     }
 }
 
@@ -99,7 +111,7 @@ class ThemePreferences @Inject constructor(
     private val FONT_KEY  = stringPreferencesKey("app_font")
 
     val themeFlow: Flow<AppTheme> = context.themeDataStore.data
-        .map { prefs -> AppTheme.fromName(prefs[THEME_KEY] ?: AppTheme.TEAL.name) }
+        .map { prefs -> AppTheme.fromName(prefs[THEME_KEY] ?: AppTheme.default().name) }
 
     val fontFlow: Flow<AppFont> = context.themeDataStore.data
         .map { prefs -> AppFont.fromName(prefs[FONT_KEY] ?: AppFont.DEFAULT.name) }

@@ -23,6 +23,7 @@ object Routes {
     const val DASHBOARD = "dashboard"
     const val REPORTS_CENTER = "reports_center"
     const val SEARCH_SETTINGS = "search_settings"
+    const val NOTIFICATION_REPORT = "notification_report"
 }
 
 @Composable
@@ -61,7 +62,8 @@ fun AppNavigation(
                 onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
                 onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) },
                 onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
-                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) }
+                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
+                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) }
             )
         }
         composable(Routes.PRIVACY_POLICY) {
@@ -91,6 +93,11 @@ fun AppNavigation(
         }
         composable(Routes.SEARCH_SETTINGS) {
             SearchSettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Routes.NOTIFICATION_REPORT) {
+            com.armutlu.apporganizer.presentation.ui.screens.NotificationReportScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

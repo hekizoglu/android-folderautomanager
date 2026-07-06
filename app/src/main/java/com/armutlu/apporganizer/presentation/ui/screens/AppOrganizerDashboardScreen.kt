@@ -9,12 +9,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -66,7 +66,7 @@ fun AppOrganizerDashboardScreen(
                 title = { Text("AppOrganizer Dashboard") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -418,7 +418,7 @@ private fun EfficiencyCard(stats: DashboardStats) {
                 color = Color(0xFF00897B)
             )
             EfficiencyRow(
-                icon = Icons.Default.TrendingUp,
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
                 label = "Bu Hafta Toplam Kullanim",
                 value = if (stats.totalUsageMinutesThisWeek >= 60)
                     "${stats.totalUsageMinutesThisWeek / 60}s ${stats.totalUsageMinutesThisWeek % 60}d"

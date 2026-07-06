@@ -20,8 +20,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, SearchHistory::class],
-    version = 11,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, SearchHistory::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class],
+    version = 12,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun searchDao(): SearchDao
     abstract fun searchHistoryDao(): SearchHistoryDao
+    abstract fun notificationEventDao(): NotificationEventDao
     
     companion object {
         @Volatile
@@ -101,11 +102,36 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         // v10→v11: apps tablosuna query optimize için index'ler eklendi (CS13: SELECT * ORDER BY appName sınırsız)
+        // NOT: Index adları Room'un entity'den ürettiği adlarla (index_apps_*) birebir aynı olmalı —
+        // aksi halde bir sonraki migration'da şema doğrulaması "Migration didn't properly handle" ile çöker.
         private val MIGRATION_10_11 = object : Migration(10, 11) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_apps_appName ON apps(appName)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_apps_categoryId ON apps(categoryId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_apps_appName_categoryId ON apps(appName, categoryId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName ON apps(appName)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_categoryId ON apps(categoryId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName_categoryId ON apps(appName, categoryId)")
+            }
+        }
+
+        // v11→v12: notification_events tablosu — Bildirim Analiz Raporu veri kaynağı.
+        // Ayrıca eski MIGRATION_10_11'in yanlış adla (idx_apps_*) oluşturduğu index'ler
+        // Room'un beklediği adlarla (index_apps_*) onarılır — v11 cihazlarda upgrade çökmesini önler.
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP INDEX IF EXISTS idx_apps_appName")
+                db.execSQL("DROP INDEX IF EXISTS idx_apps_categoryId")
+                db.execSQL("DROP INDEX IF EXISTS idx_apps_appName_categoryId")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName ON apps(appName)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_categoryId ON apps(categoryId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName_categoryId ON apps(appName, categoryId)")
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS notification_events (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        packageName TEXT NOT NULL,
+                        postedAt INTEGER NOT NULL
+                    )
+                """)
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_packageName ON notification_events(packageName)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_postedAt ON notification_events(postedAt)")
             }
         }
 
@@ -192,7 +218,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_7_8,
                         MIGRATION_8_9,
                         MIGRATION_9_10,
-                        MIGRATION_10_11
+                        MIGRATION_10_11,
+                        MIGRATION_11_12
                     )
                     .build()
 

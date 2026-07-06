@@ -41,6 +41,10 @@ object AppModule {
     fun provideSearchHistoryDao(db: AppDatabase): SearchHistoryDao = db.searchHistoryDao()
 
     @Provides
+    fun provideNotificationEventDao(db: AppDatabase): com.armutlu.apporganizer.data.local.NotificationEventDao =
+        db.notificationEventDao()
+
+    @Provides
     @Singleton
     fun provideFilesIndexer(
         @ApplicationContext context: Context,

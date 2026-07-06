@@ -109,6 +109,8 @@ fun HomeScreen(
     var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
+    var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
+    val tickerItems by viewModel.tickerItems.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
@@ -229,6 +231,8 @@ fun HomeScreen(
                     doubleTapSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ASSISTANT_CARDS ->
                     assistantCardsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_ENABLED ->
+                    tickerEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
                     gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_LONG_PRESS ->
@@ -257,6 +261,9 @@ fun HomeScreen(
     var quickWheelY by remember { mutableStateOf(0f) }
     var folderSearchQuery by remember { mutableStateOf("") }
     var folderSearchCountdown by remember { mutableStateOf(30) }
+    // Kapasite aşımı uyarısı — aynı (istek, kapasite) çifti için bir kez gösterilir
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    var lastCapacityWarning by rememberSaveable { mutableStateOf<Pair<Int, Int>?>(null) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -457,14 +464,16 @@ fun HomeScreen(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.Top
         ) {
-            // İzin uyarı banner'ı (kapatılabilir)
-            PermissionsBanner()
+            // İzin uyarıları artık ana ekranda değil — Ayarlar > Eksik İzinler bölümünde
 
             // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
+            // Dar ekran / kalabalık grid'de kompakt: klasörler kaybolmasın diye saat küçülür
+            val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700
             PixelClockWidget(
+                compact = compactClock,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 32.dp, bottom = 8.dp)
+                    .padding(top = if (compactClock) 16.dp else 32.dp, bottom = 8.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(onLongPress = { viewModel.openManager(context) })
                     }
@@ -528,7 +537,6 @@ fun HomeScreen(
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
                 onAppLongClick = { pkg -> contextMenuPkg = pkg },
                 screenHeightDp = LocalConfiguration.current.screenHeightDp,
-                folderSizeDp = effectiveFolderSizeDp
             )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
@@ -543,11 +551,13 @@ fun HomeScreen(
                 )
             }
 
-            // Assistant kartları — kullanım içgörüleri, her onResume'da rastgele seçim
-            if (assistantCardsEnabled) {
-                LaunchedEffect(Unit) {
-                    viewModel.refreshInsights(context)
-                }
+            // İçgörüler ticker açıkken de gerekli (haber şeridine akar) — her açılışta yenile
+            LaunchedEffect(Unit) {
+                viewModel.refreshInsights(context)
+            }
+
+            // Assistant kartları — ticker açıkken gizli (içerik haber şeridinde akar)
+            if (assistantCardsEnabled && !tickerEnabled) {
                 if (insightCards.isNotEmpty()) {
                     // Dashboard kısayolu — FolderStatsRow.onOpenDashboard ile aynı intent
                     val openDashboard = {
@@ -591,6 +601,29 @@ fun HomeScreen(
                     )
                 }
             } else {
+            // Haber şeridi — "Alışveriş klasöründe 5 uygulama var" tarzı akan bilgiler.
+            // Dokunma → hedef açılır; kaydırma → önceki/sonraki haber. Kapalıysa eski istatistik bandı döner.
+            if (tickerEnabled) {
+                HomeTickerRow(
+                    items = tickerItems,
+                    onItemClick = { item ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        when {
+                            item.categoryId != null -> {
+                                val folder = folders.find { it.category.categoryId == item.categoryId }
+                                if (folder != null) onNavigateToFolder(folder)
+                            }
+                            item.route != null -> {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, item.route)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            }
+                        }
+                    }
+                )
+            } else
             // İstatistik bandı — toplam klasör ve uygulama sayısı
             FolderStatsRow(
                 folders = folders,
@@ -628,7 +661,7 @@ fun HomeScreen(
             val screenHeightDp = LocalConfiguration.current.screenHeightDp
             // Aktif özellik sayısı — fazla içerik varsa daha az klasör göster
             val activeFeatureCount = listOf(favoritesEnabled, suggestionsEnabled, recentAppsEnabled).count { it }
-            val effectivePageSize = if (pageFolderCount == 8) {
+            val requestedPageSize = if (pageFolderCount == 8) {
                 // Varsayılan değerdeyse otomatik adaptif hesapla
                 when {
                     screenHeightDp < 640 -> 4
@@ -645,9 +678,31 @@ fun HomeScreen(
                     folder.apps.any { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
                 }
             } else baseFolders
-            val pageSize = effectivePageSize
+
+            // Kalan gerçek yükseklik ölçülür; sığmayan klasör KIRPILMAZ, sonraki sayfaya taşar
+            androidx.compose.foundation.layout.BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth().weight(1f)
+            ) {
+            val availableHeightDp = with(density) { constraints.maxHeight.toDp().value.toInt() }
+            val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns) {
+                HomeLayoutMath.folderCapacity(availableHeightDp, effectiveFolderSizeDp, screenColumns)
+            }
+            val pageSize = minOf(requestedPageSize, folderCapacity)
+            // Kullanıcının manuel seçtiği sayfa boyutu ekrana sığmıyorsa görüntüyü bozmadan uyar
+            LaunchedEffect(pageFolderCount, folderCapacity) {
+                if (pageFolderCount != 8 && pageFolderCount > folderCapacity &&
+                    lastCapacityWarning != pageFolderCount to folderCapacity
+                ) {
+                    lastCapacityWarning = pageFolderCount to folderCapacity
+                    snackbarHostState.showSnackbar(
+                        "Bu ekranda en fazla $folderCapacity klasör sığıyor — Ayarlar'dan sayfa boyutunu küçültebilirsin"
+                    )
+                }
+            }
             val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
             val pagerState = rememberPagerState(pageCount = { pageCount })
+
+            Column(modifier = Modifier.fillMaxSize()) {
 
             FolderPager(
                 pagerState = pagerState,
@@ -735,6 +790,8 @@ fun HomeScreen(
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
+            } // end inner Column
+            } // end BoxWithConstraints
             } // end else !focusModeEnabled
 
             // Drag pill handle — above dock, pure Pixel style
@@ -838,6 +895,12 @@ fun HomeScreen(
                 searchResults = searchResults
             )
         }
+
+        // Kapasite aşımı snackbar'ı — layout'u bozmadan dock'un üzerinde görünür
+        androidx.compose.material3.SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp)
+        )
 
         // Quick Wheel overlay — uzun bas ile radyal uygulama çarkı
         if (quickWheelVisible) {

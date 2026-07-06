@@ -161,7 +161,9 @@ fun FolderSheet(
                 )
             }
 
-            Row(
+            // Klasör içi arama — varsayılan KAPALI, Ayarlar'dan açılabilir
+            val folderSearchEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderSearchEnabled(context) }
+            if (folderSearchEnabled) Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)
                     .height(40.dp).clip(RoundedCornerShape(20.dp))
                     .background(onSurface.copy(alpha = 0.10f)).padding(horizontal = 12.dp),

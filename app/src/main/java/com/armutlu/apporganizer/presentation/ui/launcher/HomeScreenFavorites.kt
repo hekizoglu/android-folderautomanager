@@ -28,18 +28,9 @@ internal fun HomeFavoritesSection(
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
     screenHeightDp: Int = 800,
-    folderSizeDp: Int = 72,  // HomeScreen'den gelen klasör boyutu
 ) {
     // Küçük ekranlarda (< 640dp) sadece favorileri göster — öneri+son kullanılanlar grid'i iter
     val compactMode = screenHeightDp < 640
-
-    // Cache destekli öneri uygulamaları - remember key ile 30dklık cache süresi simülasyonu
-    androidx.compose.runtime.remember(suggestedApps, suggestionsEnabled) {
-        if (suggestionsEnabled) suggestedApps else emptyList()
-    }
-
-    // Adaptif boyut - folderSizeDp'e göre satır yüksekliği
-    val rowHeightDp = (folderSizeDp * 0.68f).toInt().coerceIn(48, 72).dp
 
     if (favoritesEnabled && favoriteApps.isNotEmpty()) {
         FavoritesRow(

@@ -3,16 +3,34 @@ package com.armutlu.apporganizer.service
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.domain.models.NotificationEvent
+import com.armutlu.apporganizer.utils.AppPrefs
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Aktif bildirimleri sayar ve son bildirim metnini (package -> text) yayinlar.
  * LauncherViewModel bu flow'u dinleyerek AppInfo.notificationCount ve notificationText'i gunceller.
+ *
+ * Ayrıca her bildirim `notification_events` tablosuna loglanır (Bildirim Analiz Raporu):
+ * yalnızca paket adı + zaman damgası — içerik saklanmaz, veri cihazda kalır.
  */
+@AndroidEntryPoint
 class AppNotificationListenerService : NotificationListenerService() {
+
+    @Inject lateinit var notificationEventDao: NotificationEventDao
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
@@ -32,6 +50,16 @@ class AppNotificationListenerService : NotificationListenerService() {
                 }
                 if (combined.isNotBlank()) {
                     _latestTexts.update { current -> current + (sbn.packageName to combined) }
+                }
+                // Bildirim analizi — yalnızca paket + zaman kaydı (Ayarlar'dan kapatılabilir)
+                if (AppPrefs.isNotifAnalyticsEnabled(this)) {
+                    serviceScope.launch {
+                        runCatching {
+                            notificationEventDao.insert(
+                                NotificationEvent(packageName = sbn.packageName, postedAt = System.currentTimeMillis())
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -54,6 +82,12 @@ class AppNotificationListenerService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         rebuildCounts()
+        // 30 günden eski analiz kayıtlarını temizle — bağlantı başına bir kez yeterli
+        serviceScope.launch {
+            runCatching {
+                notificationEventDao.deleteOlderThan(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000)
+            }
+        }
     }
 
     // Servis bağlantısı kesilince (sistem yeniden başlatma, izin iptali vs.)
@@ -61,6 +95,11 @@ class AppNotificationListenerService : NotificationListenerService() {
     override fun onListenerDisconnected() {
         _badgeCounts.value = emptyMap()
         _latestTexts.value = emptyMap()
+    }
+
+    override fun onDestroy() {
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
     private fun rebuildCounts() {

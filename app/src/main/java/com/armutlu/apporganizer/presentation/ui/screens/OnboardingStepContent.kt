@@ -171,8 +171,13 @@ internal fun OnboardingThemeSelector(
 ) {
     Text(stringResource(R.string.appearance_color_theme), fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
     Spacer(Modifier.height(8.dp))
+    // DYNAMIC (Material You) yalnızca Android 12+ cihazlarda listelenir
+    val onboardingThemes = AppTheme.entries.filter {
+        it != AppTheme.DYNAMIC ||
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+    }
     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(AppTheme.entries, key = { it.name }) { theme ->
+        items(onboardingThemes, key = { it.name }) { theme ->
             val isSelected = selectedTheme == theme
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

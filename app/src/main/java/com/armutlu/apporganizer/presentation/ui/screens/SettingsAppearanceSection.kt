@@ -52,8 +52,13 @@ fun SettingsAppearanceSection(
     SettingsCard {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.appearance_color_theme), fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            // DYNAMIC (Material You) yalnızca Android 12+ cihazlarda listelenir
+            val availableThemes = AppTheme.entries.filter {
+                it != AppTheme.DYNAMIC ||
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+            }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(AppTheme.entries.toList(), key = { it.name }) { theme ->
+                items(availableThemes, key = { it.name }) { theme ->
                     val isSelected = currentTheme == theme
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,

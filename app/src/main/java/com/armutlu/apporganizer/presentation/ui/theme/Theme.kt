@@ -4,6 +4,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -117,14 +119,24 @@ fun AppOrganizerTheme(
 ) {
     val context = LocalContext.current
     val currentTheme by context.themeDataStore.data
-        .map { prefs -> AppTheme.fromName(prefs[THEME_KEY] ?: AppTheme.TEAL.name) }
-        .collectAsState(initial = AppTheme.TEAL)
+        .map { prefs -> AppTheme.fromName(prefs[THEME_KEY] ?: AppTheme.default().name) }
+        .collectAsState(initial = AppTheme.default())
     val currentFont by context.themeDataStore.data
         .map { prefs -> AppFont.fromName(prefs[FONT_KEY] ?: AppFont.DEFAULT.name) }
         .collectAsState(initial = AppFont.DEFAULT)
 
+    // Material You — Android 12+ dinamik renk şeması, duvar kağıdına uyum sağlar
+    val colorScheme = if (
+        currentTheme == AppTheme.DYNAMIC &&
+        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+    ) {
+        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        buildColorScheme(currentTheme, darkTheme)
+    }
+
     MaterialTheme(
-        colorScheme = buildColorScheme(currentTheme, darkTheme),
+        colorScheme = colorScheme,
         typography  = buildTypography(currentFont),
         content     = content,
     )

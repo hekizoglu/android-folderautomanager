@@ -172,6 +172,8 @@ Her agent görevi sonunda (build almadan önce):
 ## 4. Araçlar ve Servisler
 
 ### Build Komutları
+> **local.properties yoksa build "SDK location not found" verir** — oluştur: `sdk.dir=C\:\\Users\\hekizoglu\\AppData\\Local\\Android\\Sdk` (escape'li backslash şart). Shell'de `$env:ANDROID_HOME` da set edilmeli.
+> **google-services.json yokken:** `-PskipGoogleServices` flag'i ile build al.
 ```powershell
 cd "c:\Users\hekizoglu\Documents\AppOrganizer"
 .\gradlew assembleDebug        # Debug APK (veya: .\build.ps1)
@@ -318,13 +320,19 @@ DB versiyonu artışında zorunlu adımlar:
 | Plan | Mimari karar |
 | DeepSeek | Kod review, analiz |
 
-### Model Katmanlama
-| Görev | Model |
-|-------|-------|
-| Mimari, karmaşık analiz | Opus 4.6 |
-| Kodlama, refactor | Sonnet 4.6 (varsayılan) |
-| Lint, basit görevler | Haiku 4.5 |
-| Doküman araştırması | Gemini |
+### Otomatik Model Seçimi Kuralı (ZORUNLU — 2026-07-07)
+Her talimat/görev için zorluk puanına göre model OTOMATİK seçilir — Fable 5 en kıymetli kaynak, mekanik işe harcanmaz:
+
+| Model | Tanım | Ne Zaman Kullan |
+|-------|-------|-----------------|
+| **Fable 5** (`claude-fable-5`) | EN GÜÇLÜ model (Mythos sınıfı, Opus'un üstü). Pahalı — kıymetli. | SADECE: orkestrasyon, mimari karar, çok-dosyalı kritik entegrasyon, zor debugging, plan/review |
+| **Opus** (`claude-opus-4-8`) | Güçlü genel model | Karmaşık analiz, Fable gerektirmeyen zor görevler |
+| **Sonnet** (`claude-sonnet-5`) | Dengeli kod modeli (agent varsayılanı) | Ekran/ViewModel yazımı, refactor, boilerplate — Agent tool `model: "sonnet"` ile spec verilerek devret |
+| **Haiku** (`claude-haiku-4-5`) | Hızlı/ucuz | Lint, basit düzeltme, dosya tarama, rutin loop iterasyonu |
+| **Lokal AI / DeepSeek** | `localhost:20128` (`all99`) / `deepseek-chat` | Araştırma, ikinci görüş, doküman analizi — ÖNCE lokal |
+
+Uygulama: Zorluk 1-3 → Haiku/lokal · 4-6 → Sonnet agent'a spec'le devret · 7-10 → Fable planlar, Sonnet uygular, Fable entegre eder.
+Örnek (D202): NotificationReportScreen+VM Sonnet agent'a yazdırıldı (~65k token Sonnet'te), Fable sadece navigasyon/DI entegrasyonu yaptı.
 
 ### Kurulu Agent'lar (`.claude/agents/`)
 | Agent | Model | Görev |
@@ -365,7 +373,10 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ### Önemli Mimari Notlar
 - **AppClassifier:** 3702 benzersiz paket, `assets/app_categories.json` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
-- **Room DB:** v11 (v10→v11: apps tablosuna index'ler eklendi, CS13 fix, D198)
+- **Room DB:** v12 (v11→v12: `notification_events` tablosu — Bildirim Analiz Raporu + eski `idx_apps_*` index adları `index_apps_*` olarak onarıldı, D202)
+- **Bildirim Analizi:** `AppNotificationListenerService` her bildirimi loglar (paket+zaman, içerik YOK) → `NotificationAnalyzer` (çok konuşan/rahatsız eden/dikkat dağıtan) → `NotificationReportScreen` (Routes.NOTIFICATION_REPORT)
+- **Haber Şeridi:** `HomeTickerRow` + `LauncherViewModel.tickerItems` (klasör istatistikleri + içgörüler + bildirim özeti); dokun→hedef açılır, kaydır→sonraki; `KEY_TICKER_ENABLED`
+- **Tema:** Material You `DYNAMIC` Android 12+ default (`AppTheme.default()`); build'e `-PskipGoogleServices` verilirse Firebase null-guard'lı çalışır (çökmez)
 - **Onboarding:** 6 adım (WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE` (19⭐ radikal kesme, D201'de doğrulandı)
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor

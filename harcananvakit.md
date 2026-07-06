@@ -99,3 +99,8 @@
 | 2026-06-23 | 10:55 | 11:10 | ~15dk | KOD | Döngü D141 — folderBlurEnabled ölü kod aktif edildi | FolderTile/FolderPager folderGlassEnabled parametre zinciri |
 | 2026-06-23 | 11:10 | 11:15 | ~5dk | BUILD+DÖKÜMAN | Döngü D143 — Agent-only döngü: BUILD 25.70MB 2m27s, schemas doğrulandı | 2 agent paralel, dragOffsetX @Suppress, CLAUDE.md güncellendi |
 | 2026-06-23~29 | — | — | ~480dk (toplu) | KOD | Döngü D144-D182 (39 döngü, ~5 gün) — audit sistemi upgrade, CE1-CE8 kuralları, meta-audit, Minimax entegrasyonu, cron 29 tur, Onboarding QUICK_SETTINGS, launcher kill fix, klasör hint fix, Tablet Desteği, Gesture Uyumlulugu, Safe Mode, Edge-to-Edge, Google Drive Sync, Yedek Karsilastirma, Compose Compiler Raporu, LEARNINGS Audit Matrix, Kullanim Raporu Ekrani, Cift Tiklama Arama, audit tiered frequency optimizasyonu | Toplu ozet — detaylar HISTORY.md D144-D182 |
+
+## D203 - 2026-07-06 19:00 - 2026-07-07 00:45 | KOD+BUILD+TEST
+- KOD: v1.2.0 UI yenileme (ticker, Material You, bildirim raporu, overflow fix) ~3.5sa
+- BUILD: 24.9 MB APK, 3 kilit temizligi + 2 crash fix sonrasi basarili
+- TEST: emulatorde ekran goruntulu uctan uca dogrulama

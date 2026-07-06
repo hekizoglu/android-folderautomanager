@@ -5,6 +5,27 @@
 
 ---
 
+## 🆕 D202 (2026-07-07) Tuzakları
+
+### Room Migration Index Adı Tuzağı (KRİTİK)
+Migration'da elle `CREATE INDEX` yazarken ad, Room'un entity'den ürettiği adla (`index_<tablo>_<kolonlar>`) BİREBİR aynı olmalı.
+- **Yaşanan:** MIGRATION_10_11 `idx_apps_appName` adıyla index açtı; entity `index_apps_appName` bekliyordu. v11'de sorun görünmedi (validation tetiklenmedi), v11→v12 migration'ı çalışınca `Migration didn't properly handle: apps` fatal'ı geldi.
+- **Fix:** MIGRATION_11_12 içinde `DROP INDEX IF EXISTS idx_apps_*` + doğru adla yeniden oluşturma (onarım migration'ı).
+- **Kural:** Yeni index migration'ı yazarken adı schema JSON'undan (app/schemas/) kopyala, uydurma.
+
+### Firebase Null-Guard (skipGoogleServices build'leri)
+`google-services.json` yokken `FirebaseApp.initializeApp()` null döner; sonrasındaki HER `getInstance()` çağrısı IllegalStateException ile ÇÖKER.
+- **Yaşanan:** Açılışta `FirebaseCrashlytics.getInstance()` (AppOrganizerApp) + her UI etkileşiminde `Firebase.analytics` (AppAnalytics) crash.
+- **Fix:** `AppOrganizerApp` firebaseApp null kontrolü; `AppAnalytics` nullable lazy + tüm event'ler `runCatching` no-op.
+- **Kural:** Firebase'e dokunan HER yeni kod `FirebaseApp.getApps(ctx).isEmpty()` guard'ı ile yazılır.
+
+### Windows KAPT Kilit Döngüsü
+`kaptGenerateStubsDebugKotlin` "Unable to delete directory" hatası tek dizin temizliğiyle çözülmüyor — kilit `app\build` altında geziniyor (snapshot → tmp\kapt3 → kotlin\cacheable).
+- **Çalışan çözüm:** `gradlew --stop` + java kill + **app\build ve build dizinlerini robocopy /MIR ile KOMPLE sil** + sıfırdan build.
+- **Kalıcı çözüm adayı:** KAPT→KSP geçişi (ROADMAP K1) + Defender exclusion'ları.
+
+---
+
 ## 📊 Metrik Hedefler (Firebase ile İzlenecek)
 
 | Metrik | Hedef | Nasıl Ölçülür |
