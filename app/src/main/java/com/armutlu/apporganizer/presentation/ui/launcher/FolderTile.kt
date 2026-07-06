@@ -77,6 +77,7 @@ fun FolderTile(
     folderCountVisible: Boolean = true,
     folderSwipeHintEnabled: Boolean = true,
     notifTextEnabled: Boolean = false,
+    unusedInfoEnabled: Boolean = false,
     folderShape: String = "circle",
     folderGlassEnabled: Boolean = true,
 ) {
@@ -248,10 +249,11 @@ fun FolderTile(
             modifier = Modifier.width(tileWidth)
         )
         // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
+        // Renk: effectiveLabelColor — açık duvar kağıdı/açık klasör renginde de okunur (D199 görsel düzeltme)
         if (folderCountVisible) {
             Text(
                 text = "${folder.apps.size}",
-                color = Color.White.copy(alpha = 0.50f),
+                color = effectiveLabelColor.copy(alpha = 0.50f * textAlpha),
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center
             )
@@ -266,14 +268,14 @@ fun FolderTile(
             ) {
                 Text(
                     text = "↑",
-                    color = Color.White.copy(alpha = 0.40f),
+                    color = effectiveLabelColor.copy(alpha = 0.40f * textAlpha),
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.width(3.dp))
                 Text(
                     text = topApp.appName,
-                    color = Color.White.copy(alpha = 0.45f),
+                    color = effectiveLabelColor.copy(alpha = 0.45f * textAlpha),
                     fontSize = 10.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -283,41 +285,73 @@ fun FolderTile(
         }
         // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
         // notifTextEnabled — HomeScreen'den reaktif parametre olarak gelir
-        if (notifTextEnabled) {
-            // Önce bildirim metni olan uygulamayı bul; yoksa badge > 0 olan uygulamayı al
-            val latestNotifApp = remember(folder.apps) {
-                folder.apps.filter { it.notificationText.isNotBlank() }
+        // Önce bildirim metni olan uygulamayı bul; yoksa badge > 0 olan uygulamayı al
+        val latestNotifApp = remember(folder.apps) {
+            folder.apps.filter { it.notificationText.isNotBlank() }
+                .maxByOrNull { it.notificationCount }
+                ?: folder.apps.filter { it.notificationCount > 0 }
                     .maxByOrNull { it.notificationCount }
-                    ?: folder.apps.filter { it.notificationCount > 0 }
-                        .maxByOrNull { it.notificationCount }
+        }
+        val showNotifText = notifTextEnabled && latestNotifApp != null
+        if (showNotifText && latestNotifApp != null) {
+            val notifDisplayText = when {
+                latestNotifApp.notificationText.isNotBlank() ->
+                    "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
+                totalBadge == 1 -> "${latestNotifApp.appName}: 1 yeni bildirim"
+                totalBadge > 1  -> "$totalBadge yeni bildirim"
+                else -> "${latestNotifApp.appName}: yeni bildirim"
             }
-            if (latestNotifApp != null) {
-                val notifDisplayText = when {
-                    latestNotifApp.notificationText.isNotBlank() ->
-                        "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
-                    totalBadge == 1 -> "${latestNotifApp.appName}: 1 yeni bildirim"
-                    totalBadge > 1  -> "$totalBadge yeni bildirim"
-                    else -> "${latestNotifApp.appName}: yeni bildirim"
+            Text(
+                text = notifDisplayText,
+                color = effectiveLabelColor.copy(alpha = 0.65f * textAlpha),
+                fontSize = 9.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .width(tileWidth)
+                    .then(
+                        if (onNotificationTap != null) {
+                            Modifier.combinedClickable(
+                                onClick = {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onNotificationTap(latestNotifApp.packageName)
+                                }
+                            )
+                        } else Modifier
+                    )
+            )
+        }
+        // Kullanım bilgisi alt yazısı — "X gündür açılmadı" / "Hiç açılmadı"
+        // unusedInfoEnabled — HomeScreen'den reaktif parametre olarak gelir
+        // Bildirim metni gösteriliyorsa bu satır gizlenir (iki bilgi aynı anda gösterilmez)
+        if (unusedInfoEnabled && !showNotifText) {
+            val unusedInfoText = remember(folder.apps) {
+                val now = System.currentTimeMillis()
+                // Önce hiç açılmamış uygulama; yoksa en uzun süredir (7+ gün) açılmayan uygulama
+                val neverOpened = folder.apps.firstOrNull {
+                    it.lastUsedTimestamp == 0L && it.firstInstalledTime > 0L
                 }
+                if (neverOpened != null) {
+                    "${neverOpened.appName}: hiç açılmadı"
+                } else {
+                    folder.apps.filter { it.lastUsedTimestamp > 0L }
+                        .minByOrNull { it.lastUsedTimestamp }
+                        ?.let { app ->
+                            val days = (now - app.lastUsedTimestamp) / (1000L * 60 * 60 * 24)
+                            if (days >= 7L) "${app.appName}: $days gündür açılmadı" else null
+                        }
+                }
+            }
+            if (unusedInfoText != null) {
                 Text(
-                    text = notifDisplayText,
-                    color = Color.White.copy(alpha = 0.65f),
+                    text = unusedInfoText,
+                    color = effectiveLabelColor.copy(alpha = 0.55f * textAlpha),
                     fontSize = 9.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .width(tileWidth)
-                        .then(
-                            if (onNotificationTap != null) {
-                                Modifier.combinedClickable(
-                                    onClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onNotificationTap(latestNotifApp.packageName)
-                                    }
-                                )
-                            } else Modifier
-                        )
+                    modifier = Modifier.width(tileWidth)
                 )
             }
         }

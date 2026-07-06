@@ -19,30 +19,21 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 ### 🔴 Kritik — UX & Kararlılık (Kullanıcı Tarafından İstenenler)
 
-> Eklenme tarihi: 2026-07-01. Kod yazılmayacak, önce bu liste onaylanacak.
+> Eklenme tarihi: 2026-07-01. D201 (2026-07-06) denetimi: U2/U3/U4/U6/U8/U9 kodda zaten çözülmüş,
+> U5 düzeltildi → HISTORY.md "Döngü 201". Kalanlar aşağıda.
 
 | # | Görev | Sorun | Öneri |
 |---|-------|-------|-------|
-| **U1** | **Ayarlar sayfası basitleştirilsin** | Çok fazla bölüm, görseli kötü, "orijinal Android ayarları" hissi yok | Material 3 PreferenceScreen benzeri hiyerarşik yapı; her kategori ayrı sayfa (Görünüm, Bildirim, Arama, Güvenlik, Hakkında) — Arama ayarları kendi sayfası |
-| **U2** | **Arama — varsayılan tümünü ara** | Kişi/dosya araması varsayılan kapalı, kullanıcı habersiz | Varsayılanları aç (izin varsa kişiler otomatik, dosya opsiyonel kalır); SearchSettingsScreen görsel iyileştirilsin |
-| **U3** | **Dosya araması sistem çöküşü** | Dosya arama açıkken crash / sistem donması | FilesIndexer'da MediaStore sorgusu ana thread'i bloklama riski; WorkManager'a tam geçiş + hata yakalama şart |
-| **U4** | **Bildirim çok fazla → klasörler aşağı kayıyor** | PermissionsBanner + Insight kartları + StatChips üst üste gelince grid itiliyor | Üst bölgeye max yükseklik kısıtı + HorizontalPager için sabit `fillMaxHeight` ayrılsın |
-| **U5** | **Klasör arama çubuğu altına gelsin** | Arama yapınca klasörler kayıyor; arama bar altındaki klasör değişiyor | FolderSearchBar veya HomeAppSearchBar "Klasör" modu; pager grid'in üstüne değil altına konumlandırılsın |
-| **U6** | **Sürükle-bırak iyileştirilsin** | Klasörlerin yeri değiştirilemiyor ya da çok hantal | DragAndDrop API (Android 7+) ile klasör sıralama; haptic feedback; ghost preview |
-| **U7** | **Ana ekran görselleştirme kötü** | Glassmorphism tutarsız, font boyutları, padding dengesiz | Rakip analiz raporu (competitor_user_research) + açık kaynak referans launcher'dan ilham al; Niagara/Smart Launcher benzeri temiz tasarım |
-| **U8** | **Ayarlar hiyerarşik olsun — Arama kendi sayfasında** | Ayarlar tek uzun liste; Arama ayarları da aynı listede, kayboluyor | NavController ile Settings → SearchSettings → alt ekranlar; her kategori MaterialCard header ile açılır-kapanır |
-| **U9** | **Sağ alt köşe butonu işlevsiz** | Uygulama listesi ekranında sağ altta FAB var, hiçbir şey yapmıyor | FAB'a işlev ver (hızlı kategori ekle / uygulama gizle) veya kaldır |
-| **U10** | **Açık kaynak referans launcher ile ana ekran revizyonu** | Mevcut tasarım tutarsız; kullanıcı "yeniden tasarla" dedi | Açık kaynak launcher'ları tara (KISS, Lawnchair, Kvaesitso); bizim yapıya en uygun olanı referans al; HomeScreen.kt revizyonu |
+| **U1** | **Ayarlar tam alt-ekran hiyerarşisi** | D199 SettingsExpandableCard + bölüm başlıkları + Arama ayrı sayfa mevcut (kısmen çözüldü); "her kategori ayrı sayfa" kısmı kaldı | Görünüm/Bildirim/Güvenlik/Hakkında için ayrı route + ekran — büyük refactor, build'li bir döngüde yapılmalı |
+| **U7** | **Ana ekran görselleştirme** | GlassCard/StatChip stili tutarlı, D201'de bant-grid boşluğu düzeltildi; kapsamlı redesign kaldı | U10 ile birlikte ele alınmalı (referans launcher analizi gerektirir) |
+| **U10** | **Açık kaynak referans launcher ile ana ekran revizyonu** | Mevcut tasarım tutarsız; kullanıcı "yeniden tasarla" dedi — D201'de KAPSAM DIŞI bırakıldı (tasarım araştırması gerektirir) | Açık kaynak launcher'ları tara (KISS, Lawnchair, Kvaesitso); bizim yapıya en uygun olanı referans al; HomeScreen.kt revizyonu |
 
 ### 🔴 Kritik — Build & Ortam (Raporlardan)
 
-| # | Görev | Kaynak | Öneri |
-|---|-------|--------|-------|
-| **B1** | **Gradle build dir lock — kalıcı çözüm** | time_token_analysis + issue_mitigation | `org.gradle.vfs.watch=false` flag + Defender exclusion tam listesi; `build.ps1 -Clean` otomatik retry geliştirilsin |
-| **B2** | **merged_res tekrarlı maliyet** | issue_mitigation raporu | `gradlew --profile` ile gerçek ölçüm al; ağır PNG'leri WebP'ye çevir; duplicate drawable temizle |
-| **B3** | **KAPT incremental cache bozulması** | time_token_analysis | Kotlin build report (`kotlin.build.report.output=file`) aç; KAPT pahalıysa KSP geçişini planla |
-| **B4** | **git pull.rebase=true standart yap** | issue_mitigation | `git config --global pull.rebase true`; push öncesi fetch+rebase akışı |
-| **B5** | **Configuration cache dene** | issue_mitigation | `org.gradle.configuration-cache=true` + `problems=warn`; Hilt/KAPT uyumluluk benchmark |
+> D201 denetimi: B1 (`org.gradle.vfs.watch=false`) ve B3 (`kotlin.build.report.output=file`)
+> gradle.properties'te zaten mevcut; B2 incelendi — res'te hiç PNG yok, işlem gereksiz; B5 daha önce
+> denenmiş, KAPT+Hilt uyumsuz notuyla kapalı (gradle.properties:15-16). B4 git config değişikliği
+> güvenlik kuralı gereği yapılmadı — kullanıcı isterse manuel: `git config --global pull.rebase true`.
 
 <!-- DOCS_SCORE_HIGH_START -->
 ### Kirmizi Kritik - Docs/Rapor Skor Taramasi (Otomatik)

@@ -71,7 +71,7 @@ fun UsageReportScreen(
                 title = { Text("Kullanım Raporu") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, null)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
                     }
                 }
             )

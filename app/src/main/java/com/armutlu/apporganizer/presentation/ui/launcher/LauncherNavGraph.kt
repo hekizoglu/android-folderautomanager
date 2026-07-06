@@ -1,5 +1,8 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
@@ -17,13 +20,15 @@ fun LauncherNavGraph(
 ) {
     val navController = rememberNavController()
 
+    // Geçiş hız/eğrileri AllAppsDrawer ile aynı (tween 300 LinearOutSlowIn / 220 FastOutLinearIn)
+    // — "invisible launcher" hissi için tüm ekran geçişleri tutarlı olmalı (D199)
     NavHost(
         navController = navController,
         startDestination = ROUTE_HOME,
-        enterTransition = { slideInVertically { it } },
-        exitTransition = { slideOutVertically { -it / 8 } },
-        popEnterTransition = { slideInVertically { -it / 8 } },
-        popExitTransition = { slideOutVertically { it } },
+        enterTransition = { slideInVertically(tween(300, easing = LinearOutSlowInEasing)) { it } },
+        exitTransition = { slideOutVertically(tween(220, easing = FastOutLinearInEasing)) { -it / 8 } },
+        popEnterTransition = { slideInVertically(tween(300, easing = LinearOutSlowInEasing)) { -it / 8 } },
+        popExitTransition = { slideOutVertically(tween(220, easing = FastOutLinearInEasing)) { it } },
     ) {
         composable(ROUTE_HOME) {
             HomeScreen(

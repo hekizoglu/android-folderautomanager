@@ -36,7 +36,8 @@ internal fun FolderStatsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            // Alt boşluk 12dp — klasör grid ile yanlış tetiklemeyi önler (spec Risk 7)
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         StatChip(

@@ -76,7 +76,9 @@ fun AppNavigation(
         composable(Routes.DASHBOARD) {
             AppOrganizerDashboardScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                // Dashboard → detay raporu ("Detaylı Rapor →" linki, spec Risk 6)
+                onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) }
             )
         }
         composable(Routes.REPORTS_CENTER) {

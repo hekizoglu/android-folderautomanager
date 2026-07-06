@@ -803,7 +803,7 @@ internal fun HomeAppSearchBar(
                         }
                     )
                     if (query.isNotEmpty()) {
-                        Icon(Icons.Default.Close, contentDescription = null,
+                        Icon(Icons.Default.Close, contentDescription = "Aramayı temizle",
                             tint = Color.White.copy(alpha = 0.60f),
                             modifier = Modifier.size(18.dp).clickable { query = "" })
                     }
@@ -851,7 +851,7 @@ internal fun HomeAppSearchBar(
                         Icon(Icons.Default.Search, null,
                             tint = Color.White.copy(alpha = 0.50f), modifier = Modifier.size(12.dp))
                         Text(histQuery, color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
-                        Icon(Icons.Default.Close, null,
+                        Icon(Icons.Default.Close, contentDescription = "Arama geçmişini temizle",
                             tint = Color.White.copy(alpha = 0.40f),
                             modifier = Modifier.size(12.dp).clickable {
                                 SearchHistoryPrefs.clear(context)

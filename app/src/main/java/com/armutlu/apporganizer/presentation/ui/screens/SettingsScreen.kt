@@ -109,7 +109,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -256,6 +256,16 @@ fun SettingsScreen(
             // Badge Intelligence toggle
             item {
                 var badgeIntelligence by remember { mutableStateOf(AppPrefs.isBadgeIntelligenceEnabled(context)) }
+                DisposableEffect(context) {
+                    val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                    val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                        if (key == AppPrefs.KEY_BADGE_INTELLIGENCE) {
+                            badgeIntelligence = AppPrefs.isBadgeIntelligenceEnabled(context)
+                        }
+                    }
+                    prefs.registerOnSharedPreferenceChangeListener(listener)
+                    onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+                }
                 SettingsCard {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
@@ -278,6 +288,41 @@ fun SettingsScreen(
                 }
             }
 
+            // Kullanım Bilgisi toggle — klasör altında "X gündür açılmadı" alt yazısı
+            item {
+                var unusedInfoEnabled by remember { mutableStateOf(AppPrefs.isUnusedInfoEnabled(context)) }
+                DisposableEffect(context) {
+                    val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                    val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                        if (key == AppPrefs.KEY_UNUSED_INFO_ENABLED) {
+                            unusedInfoEnabled = AppPrefs.isUnusedInfoEnabled(context)
+                        }
+                    }
+                    prefs.registerOnSharedPreferenceChangeListener(listener)
+                    onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+                }
+                SettingsCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.History, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Kullanım Bilgisi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("Klasör altında \"X gündür açılmadı\" göster — bildirim metni önceliklidir", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = unusedInfoEnabled,
+                            onCheckedChange = {
+                                unusedInfoEnabled = it
+                                AppPrefs.setUnusedInfoEnabled(context, it)
+                            }
+                        )
+                    }
+                }
+            }
+
             // ── Akıllı Bildirimler ────────────────────────────────────────────
             item { SettingsSectionTitle("Akıllı Bildirimler") }
             item {
@@ -287,6 +332,19 @@ fun SettingsScreen(
                 var unusedApps     by remember { mutableStateOf(AppPrefs.isSmartNotifUnusedApps(context)) }
                 var catStats       by remember { mutableStateOf(AppPrefs.isSmartNotifCatStats(context)) }
                 val workerCtx = context
+                DisposableEffect(context) {
+                    val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                    val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                        when (key) {
+                            AppPrefs.KEY_SMART_NOTIF_ENABLED -> masterEnabled = AppPrefs.isSmartNotifEnabled(context)
+                            AppPrefs.KEY_SMART_NOTIF_DAILY_USAGE -> dailyUsage = AppPrefs.isSmartNotifDailyUsage(context)
+                            AppPrefs.KEY_SMART_NOTIF_UNUSED_APPS -> unusedApps = AppPrefs.isSmartNotifUnusedApps(context)
+                            AppPrefs.KEY_SMART_NOTIF_CAT_STATS -> catStats = AppPrefs.isSmartNotifCatStats(context)
+                        }
+                    }
+                    prefs.registerOnSharedPreferenceChangeListener(listener)
+                    onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+                }
                 SettingsCard {
                     Row(
                         modifier = Modifier
@@ -422,6 +480,38 @@ fun SettingsScreen(
             // ── Ana Ekran / Widget / Ikon Paketi ──────────────────────────────
             item { SettingsHomeScreenSection(onNavigateToSearchSettings = onNavigateToSearchSettings) }
 
+            // ── Quick Wheel + Focus Mode ──────────────────────────────────────
+            // Ana ekran davranış ayarları olduğu için Ana Ekran bölümünün hemen
+            // altına taşındı — mantıksal gruplama (D199)
+            item { SettingsSectionTitle("Hızlı Erişim") }
+            item {
+                var quickWheel by remember { mutableStateOf(AppPrefs.isQuickWheelEnabled(context)) }
+                var focusMode by remember { mutableStateOf(AppPrefs.isFocusModeEnabled(context)) }
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Widgets,
+                        title = "Quick Wheel (Radyal Çark)",
+                        subtitle = "Boş alana uzun bas → en sık 6 uygulama radyal açılır",
+                        checked = quickWheel,
+                        onCheckedChange = {
+                            quickWheel = it
+                            AppPrefs.setQuickWheelEnabled(context, it)
+                        }
+                    )
+                    androidx.compose.material3.Divider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.DoNotDisturb,
+                        title = "Odak Modu",
+                        subtitle = "Klasör gridi gizlenir, yalnızca dock + favoriler görünür",
+                        checked = focusMode,
+                        onCheckedChange = {
+                            focusMode = it
+                            AppPrefs.setFocusModeEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
             // Uygulama Listesi / Yönetimi / Gizli / Diğer → SettingsAppsSection.kt
             settingsAppsSection(
                 showSystemApps = showSystemApps,
@@ -519,36 +609,6 @@ fun SettingsScreen(
                             }
                         )
                     }
-                }
-            }
-
-            // ── Quick Wheel + Focus Mode ──────────────────────────────────────
-            item { SettingsSectionTitle("Hızlı Erişim") }
-            item {
-                var quickWheel by remember { mutableStateOf(AppPrefs.isQuickWheelEnabled(context)) }
-                var focusMode by remember { mutableStateOf(AppPrefs.isFocusModeEnabled(context)) }
-                SettingsCard {
-                    SettingsSwitchRow(
-                        icon = Icons.Default.Widgets,
-                        title = "Quick Wheel (Radyal Çark)",
-                        subtitle = "Boş alana uzun bas → en sık 6 uygulama radyal açılır",
-                        checked = quickWheel,
-                        onCheckedChange = {
-                            quickWheel = it
-                            AppPrefs.setQuickWheelEnabled(context, it)
-                        }
-                    )
-                    androidx.compose.material3.Divider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
-                    SettingsSwitchRow(
-                        icon = Icons.Default.DoNotDisturb,
-                        title = "Odak Modu",
-                        subtitle = "Klasör gridi gizlenir, yalnızca dock + favoriler görünür",
-                        checked = focusMode,
-                        onCheckedChange = {
-                            focusMode = it
-                            AppPrefs.setFocusModeEnabled(context, it)
-                        }
-                    )
                 }
             }
 

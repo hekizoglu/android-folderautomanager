@@ -78,6 +78,12 @@ object AppPrefs {
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
     fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
 
+    // Kullanım bilgisi alt yazısı — klasör altında "X gündür açılmadı" / "Hiç açılmadı" göster
+    // Bildirim metni varsa o önceliklidir; bu bilgi yalnızca bildirim yokken görünür
+    const val KEY_UNUSED_INFO_ENABLED = "unused_info_enabled"
+    fun isUnusedInfoEnabled(context: Context) = prefs(context).getBoolean(KEY_UNUSED_INFO_ENABLED, true)
+    fun setUnusedInfoEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_UNUSED_INFO_ENABLED, v).apply()
+
     // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
     const val KEY_ICON_PACK = "icon_pack_package"
     fun getIconPack(context: Context): String = prefs(context).getString(KEY_ICON_PACK, "") ?: ""

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.NewReleases
@@ -40,6 +41,7 @@ fun AssistantInsightRow(
     cards: List<InsightCard>,
     modifier: Modifier = Modifier,
     onCardClick: (InsightCard) -> Unit = {},
+    onOpenDashboard: (() -> Unit)? = null,
 ) {
     if (cards.isEmpty()) return
 
@@ -48,6 +50,7 @@ fun AssistantInsightRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         cards.forEach { card ->
             InsightChip(
@@ -55,6 +58,32 @@ fun AssistantInsightRow(
                 modifier = Modifier.weight(1f),
                 onClick = { onCardClick(card) },
             )
+        }
+        // "Bugün ne kullandın" — Dashboard'a kısayol chip'i, kullanıcıyı rapora teşvik eder
+        if (onOpenDashboard != null) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White.copy(alpha = 0.10f))
+                    .clickable(onClick = onOpenDashboard)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.BarChart,
+                        contentDescription = "Dashboard raporunu aç",
+                        tint = Color(0xFF26C6DA),
+                        modifier = Modifier.size(14.dp),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "Rapor",
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                    )
+                }
+            }
         }
     }
 }

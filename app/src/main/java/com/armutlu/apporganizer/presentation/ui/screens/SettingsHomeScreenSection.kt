@@ -44,7 +44,13 @@ fun SettingsHomeScreenSection(
     var assistantCardsEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
     var contextualDockEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isContextualDockEnabled(context)) }
 
-    SettingsCard {
+    // Genişleyebilir kart — 13 ayar tek başlık altında, scroll yorgunluğunu azaltır (D199)
+    SettingsExpandableCard(
+        icon = Icons.Default.Home,
+        title = "Ana Ekran Ayarları",
+        subtitle = "Arama, favoriler, öneriler, rozetler ve görünüm anahtarları",
+        initiallyExpanded = false
+    ) {
         SettingsButtonRow(
             icon = Icons.Default.Search,
             title = "Arama Ayarlari",
@@ -292,7 +298,13 @@ fun SettingsHomeScreenSection(
     SettingsSectionTitle("İkon Paketi")
     val iconPacks = remember { com.armutlu.apporganizer.utils.IconPackManager.getInstalledIconPacks(context) }
     var selectedPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
-    SettingsCard {
+    // Genişleyebilir kart — kurulu paket listesi uzayabilir, kapalı başlar (D199)
+    SettingsExpandableCard(
+        icon = Icons.Default.Palette,
+        title = "İkon Paketi Seçimi",
+        subtitle = if (selectedPack.isEmpty()) "Sistem ikonları kullanılıyor" else "Özel ikon paketi aktif",
+        initiallyExpanded = false
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

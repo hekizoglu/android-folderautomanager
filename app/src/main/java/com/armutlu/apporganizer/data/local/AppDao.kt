@@ -65,22 +65,24 @@ interface AppDao {
 
     /**
      * Get all apps (one-time)
-     * Limited to 1000 apps for performance; use pagination for larger datasets
+     * Performans: idx_apps_appName index'i ile karsilanir (Migration 10->11) - LIMIT kullanilmaz,
+     * cunku BackupManager/SmartInsightWorker gibi tuketiciler tam listeye ihtiyac duyar (D196'da
+     * LIMIT 1000 eklenmisti, 1000+ app'li cihazlarda yedekte veri kaybina yol acmasi nedeniyle geri alindi).
      */
-    @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT 1000")
+    @Query("SELECT * FROM apps ORDER BY appName ASC")
     suspend fun getAllApps(): List<AppInfo>
 
     /**
-     * Get apps page for large datasets.
+     * Get apps page for large datasets (UI pagination icin - opsiyonel kullanim).
      */
     @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT :limit OFFSET :offset")
     suspend fun getAppsPage(limit: Int, offset: Int = 0): List<AppInfo>
 
     /**
      * Get all apps as Flow (real-time updates)
-     * Limited to 1000 apps for performance; use pagination for larger datasets
+     * Performans: idx_apps_appName index'i ile karsilanir - LIMIT yok (bkz. getAllApps() notu).
      */
-    @Query("SELECT * FROM apps ORDER BY appName ASC LIMIT 1000")
+    @Query("SELECT * FROM apps ORDER BY appName ASC")
     fun getAllAppsFlow(): Flow<List<AppInfo>>
     
     /**

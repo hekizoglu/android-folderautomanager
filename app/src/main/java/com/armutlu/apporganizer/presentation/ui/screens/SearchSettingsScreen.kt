@@ -4,13 +4,19 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
@@ -25,6 +31,7 @@ import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -40,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -179,6 +187,17 @@ fun SearchSettingsScreen(
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    // Geçmişi Temizle — her zaman görünür (spec Risk 10: geçmiş sadece cihazda)
+                    SettingsButtonRow(
+                        icon = Icons.Default.Delete,
+                        title = "Geçmişi Temizle",
+                        subtitle = "Kayıtlı tüm arama sorgularını siler — geçmiş yalnızca cihazda tutulur",
+                        onClick = {
+                            SearchHistoryPrefs.clear(context)
+                            android.widget.Toast.makeText(context, "Arama geçmişi temizlendi", android.widget.Toast.LENGTH_SHORT).show()
+                        },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.SwapVert,
                         title = "Arama Cubugu Konumu",
@@ -267,6 +286,27 @@ fun SearchSettingsScreen(
                         },
                         enabled = !sourceOpInFlight,
                     )
+                    // İndeksleme devam ederken kullanıcıya durum göster (spec Risk 4/8)
+                    if (sourceOpInFlight) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "İndeks oluşturuluyor… Arka planda taranıyor, uygulamayı kullanmaya devam edebilirsin.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
 

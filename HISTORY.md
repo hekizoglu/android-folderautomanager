@@ -4,6 +4,60 @@
 
 ---
 
+## Döngü 202 — 2026-07-06 [BUILD DOĞRULAMA — Döngü 199+201 birleşik]
+
+**Yapılanlar:** Döngü 199 (kullanım bilgisi özelliği, görsel/Settings) + Döngü 201 (arama çubuğu TOP/BOTTOM, Dashboard link, UX risk kapanışları) birlikte `.\gradlew assembleDebug` ile derlendi — **BUILD SUCCESSFUL** (2m 22s), hata yok, sadece 3 mevcut deprecation uyarısı (ArrowBack/TrendingUp/unused param — yeni değil). APK: **24.88 MB** (26.088.967 byte). Commit + push + Telegram APK gönderimi yapıldı.
+**Agent:** —
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekli tespit edildi (Fable D201 notu) — Onboarding artık 6 adım, sıradaki döngüde CLAUDE.md §7 + LEARNINGS.md düzeltilmeli.
+**Sonraki:** CLAUDE.md/LEARNINGS.md onboarding adım sayısı düzeltmesi; emülatörde arama çubuğu TOP/BOTTOM + Dashboard linki + FolderTile alt yazı görsel testi.
+
+---
+
+## Döngü 201 — 2026-07-06 [FABLE: ROADMAP U/B DENETİMİ + UX SPEC RİSK KAPANIŞI + FİKİRLER SENKRONU]
+
+**Yapılanlar:** FABLE_GOREVLERI.md (D201) uçtan uca işlendi — önce kod doğrulaması, sonra sadece gerçek eksikler kodlandı. **Kod değişiklikleri (4 gerçek eksik):** (1) U5/spec kabul-2: `searchBarPosition` prefs'i okunuyordu ama layout'a uygulanmıyordu — `HomeScreen.kt:473-516` arama çubuğu `searchBarSection` lambda'sına alındı, TOP=saat altı / BOTTOM=Google araması altı konumlandırma eklendi (bar her iki konumda grid'in üstünde sabit). (2) Risk 6: `AppOrganizerDashboardScreen.kt` "Detaylı Rapor →" TextButton + `AppNavigation.kt:79-82` Routes.USAGE_REPORT bağlantısı. (3) Risk 7: `HomeScreenOverlays.kt:40` FolderStatsRow alt boşluk 4dp→12dp. (4) Risk 4+10: `SearchSettingsScreen.kt` "Geçmişi Temizle" butonu (SearchHistoryPrefs.clear+Toast) + `sourceOpInFlight` iken "İndeks oluşturuluyor…" göstergesi. **Zaten mevcut çıkanlar:** U2 (kaynaklar varsayılan kapalı+kartlı ekran), U3 (FilesIndexer IO+try/catch, FilesIndexWorker WorkManager), U4 (pager weight(1f)+adaptif pageSize+compactMode), U6 (drag&drop+haptic+ghost FolderPager'da), U8 (SEARCH_SETTINGS rotası), U9 (FAB="Sınıflandır" işlevli), B1/B3 (gradle.properties'te), Risk 1/2/3/5/8/9 + kabul kriterleri 1,3-8,10. **B2:** res'te 0 PNG — WebP dönüşümü anlamsız, kapatıldı. **B5:** daha önce denenmiş, KAPT+Hilt uyumsuz notuyla kapalı. **B4:** git config güvenlik kuralı gereği YAPILMADI — kullanıcı isterse manuel: `git config --global pull.rebase true`. **U10:** kapsam dışı (ROADMAP'ta notla duruyor). **U1/U7:** kısmen — tam alt-ekran mimarisi + kapsamlı redesign ROADMAP'ta güncellenmiş notla bırakıldı. **FİKİRLER.md senkronu:** 19⭐ Onboarding (kod gerçeği: 6 adım — WELCOME→SET_LAUNCHER→THEME_SELECT→QUICK_SETTINGS→BROWSER_SELECT→DONE), 16⭐ Tarayıcı (ROLE_BROWSER OnboardingScreen.kt:294), 17⭐ Yerel İndeks, 16⭐ Arama Geçmişi (prefs tabanlı), 15⭐ TurkishSearchTest.kt, 15⭐ Arama Kaynakları, 14p Sürükle-Bırak Search Bar → hepsi [TAMAMLANDI] işaretlendi. Build **alınmadı** (görev kuralı). Statik doğrulama: brace/paren dengesi 0, curly quote 0.
+**Agent:** — (Fable doğrudan; grep + Python statik kontrol)
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi — ANCAK TESPİT: CLAUDE.md §7 + LEARNINGS.md "Onboarding 17 adım (D173)" ve "son 3 adım CLASSIFY_MODE→SET_LAUNCHER→DONE" notları BAYAT — kod 6 adım ve SET_LAUNCHER 2. sırada (19⭐ radikal kesme uygulanmış). Sonraki döngüde ana model bu iki dosyayı kod gerçeğine göre düzeltmeli.
+**Sonraki:** `.\gradlew assembleDebug` ile 5 dosyalık değişikliğin derleme doğrulaması (HomeScreen, HomeScreenOverlays, SearchSettingsScreen, AppOrganizerDashboardScreen, AppNavigation); emülatörde arama çubuğu TOP/BOTTOM konum geçişi + Dashboard "Detaylı Rapor →" testi; CLAUDE.md/LEARNINGS.md onboarding notlarının güncellenmesi.
+
+---
+
+## Döngü 200 — 2026-07-06 [BUILD DOĞRULAMA — Döngü 199 Fable Değişiklikleri]
+
+**Yapılanlar:** Döngü 199'daki Fable değişiklikleri (kullanım bilgisi özelliği, görsel/Settings iyileştirme) `.\gradlew assembleDebug` ile derlendi — **BUILD SUCCESSFUL** (3m 9s), hata yok, sadece 4 mevcut uyarı (Divider/HelpOutline/ArrowBack deprecated, unused variable — proje geneli, bu döngüde yeni değil). APK: **24.88 MB** (26.088.967 byte).
+**Agent:** —
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi.
+**Sonraki:** Emülatörde açık duvar kağıdıyla FolderTile alt yazı okunurluğu ve expandable Settings kartları görsel testi; ardından commit + push + Telegram APK gönderimi.
+
+---
+
+## Döngü 199 — 2026-07-06 [FABLE: KULLANIM BİLGİSİ ÖZELLİĞİ + GÖRSEL/SETTINGS İYİLEŞTİRME]
+
+**Yapılanlar:** FABLE_GOREVLERI.md 6 bölüm uçtan uca işlendi. (1) **Yeni özellik — Kullanım Bilgisi:** `FolderTile.kt:325-360` klasör altına "AppAdı: X gündür açılmadı" / "hiç açılmadı" alt yazısı (bildirim metni öncelikli, aynı anda ikisi gösterilmez); `AppPrefs.kt:81-85` KEY_UNUSED_INFO_ENABLED (varsayılan açık); `SettingsScreen.kt:291-324` reaktif toggle (badgeIntelligence DisposableEffect pattern'i birebir); zincir: HomeScreen.kt:146,210,656 → HomeScreenFolderPager.kt:50,117 → FolderTile.kt:80. (2) **Görsel:** FolderTile alt yazıları (sayı/ipucu/bildirim) hardcoded `Color.White` yerine `effectiveLabelColor`+`textAlpha` — açık duvar kağıdında okunurluk; AppIconView.kt:224 badge'e FolderTile ile tutarlı shadow. (3) **Settings:** `SettingsComponents.kt:SettingsExpandableCard` yeni bileşen; Ana Ekran Ayarları (13 satır) + İkon Paketi expandable; "Hızlı Erişim" bloğu Ana Ekran bölümünün altına taşındı; geri butonlarına ve tıklanabilir Close ikonlarına contentDescription (SettingsScreen, UsageReportScreen, HomeScreenComponents). (4) **Doğrulama:** AppDao LIMIT'siz + BackupManager/SmartInsightWorker/WeeklyDigestWorker regresyonsuz ✓; SettingsScreen 5 toggle reaktif ✓; keysiz remember taraması: HomeScreen+AllAppsDrawer tüm okumalar listener'lı, Settings ekranları yazan taraf — kalıntı yok ✓. (5) **Ekstra:** AssistantInsightRow'a Dashboard "Rapor" chip'i; LauncherNavGraph klasör geçişleri AllAppsDrawer ile aynı tween(300/220) eğrisine alındı; onboarding ilk izlenim testi FİKİRLER.md'ye (14p). Build **alınmadı** (görev kuralı).
+**Agent:** — (Fable doğrudan; statik doğrulama grep + brace-balance script)
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi — mevcut pattern'ler (Reaktif AppPrefs §5, FolderTile alt yazı slotu) yeniden kullanıldı.
+**Sonraki:** `.\gradlew assembleDebug` ile derleme doğrulaması + emülatörde açık duvar kağıdıyla FolderTile alt yazı okunurluğu ve expandable Settings kartları kontrolü; ardından commit (kullanıcı yapacak).
+
+---
+
+## Döngü 198 — 2026-07-06 [LIMIT VERİ KAYBI RİSKİ FİKSİ + 4 TOGGLE REAKTİVİTE]
+
+**Yapılanlar:** Kendi kendine mantık hatası taraması (Explore agent) D196'daki CS13 fix'inin yan etkisini buldu: `AppDao.kt:70,83` `LIMIT 1000` — `BackupManager.kt`, `SmartInsightWorker.kt`, `WeeklyDigestWorker.kt` de aynı fonksiyonları kullandığından 1000+ app'li cihazlarda **yedekte veri kaybı** riski oluşuyordu. Fix: LIMIT kaldırıldı, performans amacı zaten Migration 10→11 index'leri (idx_apps_appName) ile karşılanıyor — LIMIT gereksiz ve riskliydi. Ayrıca SettingsScreen.kt:294-298 (`masterEnabled`, `dailyUsage`, `unusedApps`, `catStats`) CE7 ile aynı reaktivite sorununu taşıyordu — DisposableEffect+OnSharedPreferenceChangeListener eklendi (badgeIntelligence pattern'i tekrar kullanıldı). Build **alınmadı** (kullanıcı talebi: kod düzeltmesi, derleme değil).
+**Agent:** Explore agent — AppDao/AppDatabase/SettingsScreen/LauncherViewModel mantık hatası taraması, 4 bulgu raporladı (LIMIT veri kaybı kritik, 4 toggle orta, migration sırası kozmetik)
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi — "Reaktif AppPrefs" pattern'i (§5) tekrarlandı.
+**Sonraki:** Değişiklikler henüz derlenmedi — sıradaki döngüde `.\gradlew assembleDebug` ile doğrulanmalı, ardından test+audit+commit.
+
+---
+
+## Döngü 197 — 2026-07-06 [CE7 FİKSİ — Badge Intelligence Reaktivite]
+
+**Yapılanlar:** `SettingsScreen.kt:258` CE7 bulgusu — `badgeIntelligence` `remember{}` ile keysiz okunuyordu, başka yerden değişirse Settings'e dönüşte güncellenmiyordu. HomeScreen.kt'deki mevcut `DisposableEffect(context)` + `OnSharedPreferenceChangeListener` pattern'i uygulandı (`AppPrefs.KEY_BADGE_INTELLIGENCE` mevcut sabit kullanıldı, yeni import gerekmedi — `androidx.compose.runtime.*` zaten wildcard). Build **alınmadı** (kullanıcı talebi). Sadece `scripts/audit.ps1` statik denetim çalıştırıldı: YÜKSEK bulgu 0'a düştü, toplam açık bulgu 0.
+**Agent:** —
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi — mevcut "Reaktif AppPrefs" pattern'i (§5) tekrar kullanıldı.
+**Sonraki:** ROADMAP.md'deki bir sonraki orta öncelikli görev (U3 dosya araması stabilizasyonu veya Play Store hazırlıkları); değişiklik henüz derlenmedi — sıradaki döngüde `.\gradlew assembleDebug` ile doğrulanmalı.
+
+---
+
 ## Döngü 196 — 2026-07-06 [TEST KIRIK FİKSİ + CS13 OPTİMİZASYON]
 
 **Yapılanlar:** LauncherViewModelTest.kt test derlemesi kırık — LauncherViewModel constructor'una SearchRepository parametresi eklenmişti ama test'te mock yoktu. Düzelt: SearchRepository mock eklendi, constructor çağrısında parametre geçildi. CS13 denetim sorunu ("SELECT * ORDER BY LIMIT yok"): AppDao.getAllApps() & getAllAppsFlow()'a LIMIT 1000 eklendi; AppInfo.kt'a @Index(appName, categoryId) eklendi; AppDatabase.kt v10→v11 migration ile CREATE INDEX satırları yazıldı; audit.ps1 CS13 pattern regex güncellendi (LIMIT kontrolü). Test: testDebugUnitTest PASS, denetim raporu CS13 çözüldü (0 bulgu). APK: 24.87 MB.

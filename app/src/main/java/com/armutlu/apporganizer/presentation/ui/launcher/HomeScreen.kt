@@ -143,6 +143,7 @@ fun HomeScreen(
     var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var unusedInfoEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
@@ -206,6 +207,8 @@ fun HomeScreen(
                     folderSwipeHint = com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_INFO_ENABLED ->
+                    unusedInfoEnabled = com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
                     folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BLUR ->
@@ -467,6 +470,39 @@ fun HomeScreen(
                     }
             )
 
+            // Birleşik arama çubuğu bölümü — uygulama + klasör filtresi tek çubukta.
+            // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
+            // BOTTOM = Google aramasının altı (spec: UX_SEARCH_REPORTS_SPEC §5).
+            val searchBarSection: @Composable () -> Unit = {
+                if (homeAppSearchEnabled) {
+                    HomeAppSearchBar(
+                        allApps = allApps,
+                        onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                        folderQuery = if (homeSearchEnabled) folderSearchQuery else null,
+                        onFolderQueryChange = if (homeSearchEnabled) ({ folderSearchQuery = it }) else null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                } else if (homeSearchEnabled) {
+                    // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
+                    FolderSearchBar(
+                        query = folderSearchQuery,
+                        onQueryChange = { folderSearchQuery = it },
+                        onClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
+                        countdown = folderSearchCountdown,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            // TOP konumu: arama çubuğu saat widget'ının hemen altında
+            if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
+                searchBarSection()
+            }
+
             // Google arama çubuğu — Pixel Launcher stili
             GoogleSearchBar(
                 modifier = Modifier
@@ -474,28 +510,9 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
 
-            // Birleşik arama çubuğu — uygulama + klasör filtresi tek çubukta
-            if (homeAppSearchEnabled) {
-                HomeAppSearchBar(
-                    allApps = allApps,
-                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-                    folderQuery = if (homeSearchEnabled) folderSearchQuery else null,
-                    onFolderQueryChange = if (homeSearchEnabled) ({ folderSearchQuery = it }) else null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            } else if (homeSearchEnabled) {
-                // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
-                FolderSearchBar(
-                    query = folderSearchQuery,
-                    onQueryChange = { folderSearchQuery = it },
-                    onClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
-                    countdown = folderSearchCountdown,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                )
+            // BOTTOM (varsayılan) konumu: Google aramasının altında
+            if (searchBarPosition != com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
+                searchBarSection()
             }
 
             // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
@@ -532,6 +549,15 @@ fun HomeScreen(
                     viewModel.refreshInsights(context)
                 }
                 if (insightCards.isNotEmpty()) {
+                    // Dashboard kısayolu — FolderStatsRow.onOpenDashboard ile aynı intent
+                    val openDashboard = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                        Unit
+                    }
                     AssistantInsightRow(
                         cards = insightCards,
                         onCardClick = { card ->
@@ -542,8 +568,11 @@ fun HomeScreen(
                                     val folder = folders.find { it.category.categoryId == card.categoryId }
                                     if (folder != null) onNavigateToFolder(folder)
                                 }
+                                // Hedefi olmayan kartlar (motivasyon vb.) Dashboard'ı açar
+                                else -> openDashboard()
                             }
                         },
+                        onOpenDashboard = openDashboard,
                     )
                 }
             }
@@ -638,6 +667,7 @@ fun HomeScreen(
                 folderCountVisible = folderCountVisible,
                 folderSwipeHint = folderSwipeHint,
                 notifTextEnabled = notifTextEnabled,
+                unusedInfoEnabled = unusedInfoEnabled,
                 folderShape = folderShape,
                 folderGlassEnabled = folderBlurEnabled,
                 haptic = haptic,

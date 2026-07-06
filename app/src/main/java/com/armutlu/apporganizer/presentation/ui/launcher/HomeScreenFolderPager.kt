@@ -47,6 +47,7 @@ internal fun FolderPager(
     folderCountVisible: Boolean,
     folderSwipeHint: Boolean,
     notifTextEnabled: Boolean,
+    unusedInfoEnabled: Boolean = false,
     folderShape: String,
     folderGlassEnabled: Boolean = true,
     haptic: HapticFeedback,
@@ -113,6 +114,7 @@ internal fun FolderPager(
                     folderCountVisible = folderCountVisible,
                     folderSwipeHintEnabled = folderSwipeHint,
                     notifTextEnabled = notifTextEnabled,
+                    unusedInfoEnabled = unusedInfoEnabled,
                     folderShape = folderShape,
                     folderGlassEnabled = folderGlassEnabled,
                     modifier = Modifier

@@ -38,7 +38,8 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun AppOrganizerDashboardScreen(
     viewModel: AppListViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToUsageReport: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val screenState by viewModel.screenState.collectAsState()
@@ -90,6 +91,20 @@ fun AppOrganizerDashboardScreen(
             item { UnusedAppsCard(stats.unusedCount, stats.neverUsedCount) }
             item { DashSectionHeader("Verimlilik Ozeti") }
             item { EfficiencyCard(stats) }
+            // Dashboard = genel ozet, UsageReport = uygulama bazli detay (spec Risk 6)
+            item {
+                TextButton(
+                    onClick = onNavigateToUsageReport,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Detaylı Rapor →",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             item { Spacer(Modifier.height(24.dp)) }
         }
     }
