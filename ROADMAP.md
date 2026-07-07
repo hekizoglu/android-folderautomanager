@@ -32,7 +32,6 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | **Content rating anketi** | Play Store — göndermeden önce doldurulmalı | ⚠️ Bekliyor |
 | **Screenshots** | Play Store — Pixel 6 emülatörü, light + dark mode | Bekliyor |
 | **Release keystore (`release.jks`)** | AAB imzalamak için şart | ⚠️ Kullanıcı oluşturmalı |
-| **`google-services.json`** | Firebase/Crashlytics/FCM aktivasyonu — kod hazır, dosya bekleniyor | ⚠️ Kullanıcı indirmeli |
 
 ### 🟡 Orta Öncelik
 
