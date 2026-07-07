@@ -4,6 +4,28 @@
 
 ---
 
+## Döngü 213 — 2026-07-07 [Ayarlar audit → 10 madde tamamlandı — orkestrasyon: Sonnet + 2 paralel Sonnet agent]
+
+**Yapılanlar:** `ayarşar-raporlar.md` + `ayarlar-inceleme-talepleri.md` audit dokümanlarından FİKİRLER.md'ye işlenen maddeler, yüksek puanlıdan başlayarak tamamlandı:
+1. **Double-tap search / gesture çakışması (14p):** `HomeScreen.kt:430-436` — `doubleTapSearchEnabled` false iken `gestureDoubleTap=OPEN_SEARCH` olsa bile artık arama açılmıyor.
+2. **`search_source_files` varsayılanı (14p):** `AppPrefs.kt:388` `true`→`false`, UI metniyle tutarlı.
+3. **Arama geçmişi limiti (13p):** `SearchHistoryPrefs.kt` sabit `MAX=5` kaldırıldı, `AppPrefs.getSearchHistoryLimit()` gerçekten okunuyor (yazma+okuma).
+4. **Bildirim erişimi reaktifliği (12p):** `SettingsNotificationsScreen.kt` `ON_RESUME` lifecycle observer ile güncelleniyor (`SettingsPermissionsSection.kt`'deki `isNotificationListenerGranted` yeniden kullanıldı).
+5. **Akıllı Bildirim saati (12p):** `SmartInsightWorker.kt` `calculateInitialDelayMs()` ile seçilen saate göre zamanlanıyor, `SettingsNotificationsScreen.kt`'ye saat seçici (8/12/18/20/22) eklendi, policy `REPLACE`'e çevrildi.
+6. **Otomatik yedekleme zamanlaması (12p):** `BackupWorker.kt` `calculateInitialDelayMs()` ile gün/saat/dakika tercihine göre zamanlanıyor, `SettingsBackupAboutSection.kt`'deki sabit "Pazartesi 03:00" metni dinamik hale getirildi + gün/saat/dakika seçicileri eklendi.
+7. **HomeAppSearchBar reaktifliği (12p):** fuzzy/phonetic/sort/max/icon/avatar/shine ayarları artık `SharedPreferences` listener ile canlı güncelleniyor.
+8. **İkon pack tekrarı (11p):** `SettingsHomeScreenSection.kt`'deki kopya kaldırıldı, tek sahip Görünüm ekranı; Launcher'da kısayol bilgi satırı bırakıldı.
+9. **Kullanılmayan-gri tekrarı (11p):** `SettingsAppsSection.kt`'deki kopya kaldırıldı, tek sahip Görünüm ekranı.
+10. **"Yukarı Kaydırma İpucu" başlık çakışması (10p):** `SettingsHomeScreenSection.kt:239` → "Klasör Alt Yazısı" olarak yeniden adlandırıldı.
+
+Build: `assembleDebug -PskipGoogleServices` başarılı (versionCode 14→15, versionName 1.2.1→1.2.2). Emülatörde kurulum + `monkey` (500 event) ile smoke test — crash yok.
+
+**Agent:** 2 paralel Sonnet agent (background) — "Akıllı Bildirim saati UI+worker" ve "Otomatik yedekleme zamanlama UI+worker"; ikisi de kendi build'lerini `assembleDebug` ile doğruladı (BUILD SUCCESSFUL), ana session sonda birleşik build+versiyon+commit yaptı.
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi — mevcut Reaktif AppPrefs pattern'i ve model seçim kuralı birebir uygulandı.
+**Sonraki:** FİKİRLER.md'deki kalan ⏸ Beklet maddeleri (Haftalık Rapor birleşimi, Hakkında ekranı bölünmesi, DeepSeek API key şifreleme, ayarlar arama, kart radius, ayar-etki-matrisi.md ve diğer inceleme raporları) — sıradaki döngüde ele alınabilir.
+
+---
+
 ## Döngü 212 — 2026-07-07 [UX_SEARCH_SPEC güncellemesi + 5 bug fix + CLAUDE.md sadeleştirme — Sonnet doğrudan]
 
 **Yapılanlar:** Kullanıcının "orkestra şefi gibi çalış" talimatıyla tek döngüde çoklu iş:

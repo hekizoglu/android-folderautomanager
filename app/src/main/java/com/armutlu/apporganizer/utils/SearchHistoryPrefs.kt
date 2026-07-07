@@ -11,7 +11,6 @@ import java.util.Locale
 object SearchHistoryPrefs {
     private const val PREFS = "search_history"
     private const val KEY   = "recent_queries"
-    private const val MAX   = 5
     private const val SEP   = "||"
     private const val TS_SEP = "::"
     private const val TTL_MS = 2 * 60 * 60 * 1000L  // 2 saat
@@ -34,7 +33,7 @@ object SearchHistoryPrefs {
         if (fresh.size != raw.split(SEP).count { it.isNotBlank() }) {
             persist(context, fresh)
         }
-        return fresh.map { it.first }
+        return fresh.map { it.first }.take(AppPrefs.getSearchHistoryLimit(context))
     }
 
     fun addQuery(context: Context, query: String) {
@@ -46,7 +45,7 @@ object SearchHistoryPrefs {
             .filterNot { it.first.lowercase(trLocale) == trimmed.lowercase(trLocale) }
             .toMutableList()
         current.add(0, trimmed to now)
-        persist(context, current.take(MAX))
+        persist(context, current.take(AppPrefs.getSearchHistoryLimit(context)))
     }
 
     fun clear(context: Context) {

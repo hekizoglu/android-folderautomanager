@@ -429,8 +429,11 @@ fun HomeScreen(
                 detectTapGestures(
                     onDoubleTap = {
                         if (!currentAllAppsOpen) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.dispatchGestureAction(context, gestureDoubleTap)
+                            val isSearchAction = gestureDoubleTap == com.armutlu.apporganizer.utils.AppPrefs.GestureAction.OPEN_SEARCH
+                            if (!isSearchAction || doubleTapSearchEnabled) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                viewModel.dispatchGestureAction(context, gestureDoubleTap)
+                            }
                         }
                     },
                     onLongPress = { pressOffset ->

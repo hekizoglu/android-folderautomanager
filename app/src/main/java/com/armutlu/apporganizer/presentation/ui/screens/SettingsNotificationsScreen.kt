@@ -13,9 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.utils.AppPrefs
 
 /**
@@ -33,9 +36,16 @@ fun SettingsNotificationsScreen(onNavigateBack: () -> Unit) {
         // ── Bildirim İzni ─────────────────────────────────────────────────
         item { SettingsSectionTitle("Bildirim Erişimi") }
         item {
-            val notifListenerOk = remember {
-                val flat = android.provider.Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: ""
-                flat.contains(context.packageName)
+            var notifListenerOk by remember { mutableStateOf(isNotificationListenerGranted(context)) }
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        notifListenerOk = isNotificationListenerGranted(context)
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
             }
             SettingsCard {
                 Row(
@@ -172,6 +182,8 @@ fun SettingsNotificationsScreen(onNavigateBack: () -> Unit) {
             var dailyUsage     by remember { mutableStateOf(AppPrefs.isSmartNotifDailyUsage(context)) }
             var unusedApps     by remember { mutableStateOf(AppPrefs.isSmartNotifUnusedApps(context)) }
             var catStats       by remember { mutableStateOf(AppPrefs.isSmartNotifCatStats(context)) }
+            var notifHour      by remember { mutableStateOf(AppPrefs.getSmartNotifHour(context)) }
+            var hourMenuExpanded by remember { mutableStateOf(false) }
             val workerCtx = context
             DisposableEffect(context) {
                 val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -181,6 +193,7 @@ fun SettingsNotificationsScreen(onNavigateBack: () -> Unit) {
                         AppPrefs.KEY_SMART_NOTIF_DAILY_USAGE -> dailyUsage = AppPrefs.isSmartNotifDailyUsage(context)
                         AppPrefs.KEY_SMART_NOTIF_UNUSED_APPS -> unusedApps = AppPrefs.isSmartNotifUnusedApps(context)
                         AppPrefs.KEY_SMART_NOTIF_CAT_STATS -> catStats = AppPrefs.isSmartNotifCatStats(context)
+                        AppPrefs.KEY_SMART_NOTIF_HOUR -> notifHour = AppPrefs.getSmartNotifHour(context)
                     }
                 }
                 prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -245,6 +258,41 @@ fun SettingsNotificationsScreen(onNavigateBack: () -> Unit) {
                         checked = catStats,
                         onCheckedChange = { catStats = it; AppPrefs.setSmartNotifCatStats(workerCtx, it) }
                     )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    Box(Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { hourMenuExpanded = true }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                            Spacer(Modifier.width(14.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text("Bildirim Saati", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                                Text(
+                                    "Saat %02d:00".format(notifHour),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Icon(Icons.Default.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                        }
+                        DropdownMenu(expanded = hourMenuExpanded, onDismissRequest = { hourMenuExpanded = false }) {
+                            listOf(8, 12, 18, 20, 22).forEach { hour ->
+                                DropdownMenuItem(
+                                    text = { Text("Saat %02d:00".format(hour)) },
+                                    onClick = {
+                                        notifHour = hour
+                                        AppPrefs.setSmartNotifHour(workerCtx, hour)
+                                        com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
+                                        hourMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

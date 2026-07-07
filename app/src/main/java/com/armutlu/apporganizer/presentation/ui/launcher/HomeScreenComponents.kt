@@ -650,14 +650,30 @@ internal fun HomeAppSearchBar(
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
 
-    // Arama ayarları — her recompose'da SharedPrefs okumak pahalı, remember ile
-    val fuzzy         = remember { AppPrefs.isSearchFuzzyEnabled(context) }
-    val phonetic      = remember { AppPrefs.isSearchPhoneticEnabled(context) }
-    val sortByUsage   = remember { AppPrefs.isSearchSortByUsage(context) }
-    val maxResults    = remember { AppPrefs.getSearchMaxResults(context) }
-    val showIcons     = remember { AppPrefs.isSearchShowIcons(context) }
-    val showAvatar    = remember { AppPrefs.isSearchShowContactAvatar(context) }
-    val shineEnabled  = remember { AppPrefs.isSearchShineEnabled(context) }
+    // Arama ayarları — Ayarlar ekranından dönünce canlı güncellensin (Reaktif AppPrefs pattern'i, LEARNINGS)
+    var fuzzy         by remember { mutableStateOf(AppPrefs.isSearchFuzzyEnabled(context)) }
+    var phonetic      by remember { mutableStateOf(AppPrefs.isSearchPhoneticEnabled(context)) }
+    var sortByUsage   by remember { mutableStateOf(AppPrefs.isSearchSortByUsage(context)) }
+    var maxResults    by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
+    var showIcons     by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
+    var showAvatar    by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
+    var shineEnabled  by remember { mutableStateOf(AppPrefs.isSearchShineEnabled(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                AppPrefs.KEY_SEARCH_FUZZY -> fuzzy = AppPrefs.isSearchFuzzyEnabled(context)
+                AppPrefs.KEY_SEARCH_PHONETIC -> phonetic = AppPrefs.isSearchPhoneticEnabled(context)
+                AppPrefs.KEY_SEARCH_SORT_BY_USAGE -> sortByUsage = AppPrefs.isSearchSortByUsage(context)
+                AppPrefs.KEY_SEARCH_MAX_RESULTS -> maxResults = AppPrefs.getSearchMaxResults(context)
+                AppPrefs.KEY_SEARCH_SHOW_ICONS -> showIcons = AppPrefs.isSearchShowIcons(context)
+                AppPrefs.KEY_SEARCH_SHOW_CONTACT_AVATAR -> showAvatar = AppPrefs.isSearchShowContactAvatar(context)
+                AppPrefs.KEY_SEARCH_SHINE_ENABLED -> shineEnabled = AppPrefs.isSearchShineEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     // Kişi kaynağı — Settings'ten dönünce güncellensin (Reaktif AppPrefs pattern'i, LEARNINGS)
     var contactsOn by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }

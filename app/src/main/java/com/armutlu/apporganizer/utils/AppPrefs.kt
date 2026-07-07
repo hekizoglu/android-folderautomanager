@@ -385,7 +385,7 @@ object AppPrefs {
     fun hasSearchSourceContactsPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_CONTACTS)
     fun setSearchSourceContactsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
 
-    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, true)
+    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, false)
     fun setSearchSourceFilesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_FILES, v).apply()
 
     fun getSearchRankingProfile(context: Context): SearchRankingProfile =

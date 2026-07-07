@@ -54,35 +54,18 @@ internal fun LazyListScope.settingsAppsSection(
     }
 
     // ── Kullanılmayan gri seçeneği ───────────────────────────────────────
+    // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) — burada sadece kısayol bilgisi gösterilir.
     item {
-        val context = LocalContext.current
-        var unusedGreyDays by remember { mutableStateOf(AppPrefs.getUnusedGreyDays(context)) }
-        val greyOptions = listOf(0 to "Kapalı", 7 to "7 gün", 14 to "14 gün", 30 to "30 gün")
         SettingsCard {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
-                        Text("Hiç açılmamış uygulamalar soluk gösterilir", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    greyOptions.forEach { (days, label) ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (days == unusedGreyDays) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { unusedGreyDays = days; AppPrefs.setUnusedGreyDays(context, days) }
-                                .padding(horizontal = 12.dp, vertical = 7.dp)
-                        ) {
-                            Text(label, fontSize = 12.sp,
-                                color = if (days == unusedGreyDays) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = if (days == unusedGreyDays) FontWeight.Bold else FontWeight.Normal)
-                        }
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
+                    Text("Görünüm ekranından değiştirilir", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

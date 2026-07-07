@@ -148,9 +148,90 @@ internal fun LazyListScope.settingsBackupAboutSection(
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.History, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
-                Column {
-                    Text("Son yedekleme: $lastBackupText", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Yedekleme zamanı: Pazartesi 03:00", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Son yedekleme: $lastBackupText", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+
+            // ── Yedekleme gün/saat/dakika seçimi ──
+            val gunAdlari = listOf("Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar")
+            var backupDay by remember { mutableStateOf(AppPrefs.getBackupDayOfWeek(context)) }
+            var backupHour by remember { mutableStateOf(AppPrefs.getBackupHour(context)) }
+            var backupMinute by remember { mutableStateOf(AppPrefs.getBackupMinute(context)) }
+            var showDayMenu by remember { mutableStateOf(false) }
+            var showHourMenu by remember { mutableStateOf(false) }
+            var showMinuteMenu by remember { mutableStateOf(false) }
+
+            fun rescheduleIfEnabled() {
+                if (AppPrefs.isAutoBackupEnabled(context)) BackupWorker.schedule(context)
+            }
+
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    "Yedekleme zamanı: ${gunAdlari[backupDay - 1]} %02d:%02d".format(backupHour, backupMinute),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Gün seçici
+                Box {
+                    AssistChip(onClick = { showDayMenu = true }, label = { Text(gunAdlari[backupDay - 1]) })
+                    DropdownMenu(expanded = showDayMenu, onDismissRequest = { showDayMenu = false }) {
+                        gunAdlari.forEachIndexed { index, gunAdi ->
+                            DropdownMenuItem(
+                                text = { Text(gunAdi) },
+                                onClick = {
+                                    backupDay = index + 1
+                                    AppPrefs.setBackupDayOfWeek(context, index + 1)
+                                    showDayMenu = false
+                                    rescheduleIfEnabled()
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.width(8.dp))
+                // Saat seçici
+                Box {
+                    AssistChip(onClick = { showHourMenu = true }, label = { Text("%02d".format(backupHour)) })
+                    DropdownMenu(expanded = showHourMenu, onDismissRequest = { showHourMenu = false }) {
+                        (0..23).forEach { h ->
+                            DropdownMenuItem(
+                                text = { Text("%02d".format(h)) },
+                                onClick = {
+                                    backupHour = h
+                                    AppPrefs.setBackupHour(context, h)
+                                    showHourMenu = false
+                                    rescheduleIfEnabled()
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.width(4.dp))
+                Text(":", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(4.dp))
+                // Dakika seçici
+                Box {
+                    AssistChip(onClick = { showMinuteMenu = true }, label = { Text("%02d".format(backupMinute)) })
+                    DropdownMenu(expanded = showMinuteMenu, onDismissRequest = { showMinuteMenu = false }) {
+                        listOf(0, 15, 30, 45).forEach { m ->
+                            DropdownMenuItem(
+                                text = { Text("%02d".format(m)) },
+                                onClick = {
+                                    backupMinute = m
+                                    AppPrefs.setBackupMinute(context, m)
+                                    showMinuteMenu = false
+                                    rescheduleIfEnabled()
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

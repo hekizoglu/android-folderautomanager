@@ -171,14 +171,30 @@ class SmartInsightWorker(
                 WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
                 return
             }
+            val targetHour = AppPrefs.getSmartNotifHour(context)
+            val initialDelayMs = calculateInitialDelayMs(targetHour)
             val request = PeriodicWorkRequestBuilder<SmartInsightWorker>(24, TimeUnit.HOURS)
-                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.UPDATE,
+                ExistingPeriodicWorkPolicy.REPLACE,
                 request
             )
+        }
+
+        /** Şimdiki zamandan sonraki en yakın hedef-saat:00'a kalan süreyi (ms) hesaplar. */
+        private fun calculateInitialDelayMs(targetHour: Int): Long {
+            val calendar = java.util.Calendar.getInstance()
+            val now = calendar.timeInMillis
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, targetHour)
+            calendar.set(java.util.Calendar.MINUTE, 0)
+            calendar.set(java.util.Calendar.SECOND, 0)
+            calendar.set(java.util.Calendar.MILLISECOND, 0)
+            if (calendar.timeInMillis <= now) {
+                calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+            }
+            return calendar.timeInMillis - now
         }
 
         fun cancel(context: Context) {

@@ -77,20 +77,43 @@ class BackupWorker(
                 WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
                 return
             }
-            // Her 7 gunde bir calisdiran periyodik gorev
+            // Her 7 gunde bir calisdiran periyodik gorev — kullanicinin sectigi gun/saat/dakikaya gore ilk calisma zamani
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
                 .setRequiresBatteryNotLow(true)
                 .build()
+            val initialDelayMs = calculateInitialDelayMs(context)
             val request = PeriodicWorkRequestBuilder<BackupWorker>(7, TimeUnit.DAYS)
                 .setConstraints(constraints)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)
+                .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.UPDATE,
                 request
             )
+        }
+
+        /** Kullanicinin sectigi gun (1=Pzt..7=Paz) + saat + dakikaya gore bir sonraki eslesen zamana kadar olan gecikmeyi hesaplar. */
+        private fun calculateInitialDelayMs(context: Context): Long {
+            val prefDay = AppPrefs.getBackupDayOfWeek(context) // 1=Pzt..7=Paz
+            val hour = AppPrefs.getBackupHour(context)
+            val minute = AppPrefs.getBackupMinute(context)
+            val targetCalendarDow = if (prefDay == 7) java.util.Calendar.SUNDAY else prefDay + 1 // Calendar: Paz=1..Cmt=7
+
+            val now = java.util.Calendar.getInstance()
+            val target = java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.DAY_OF_WEEK, targetCalendarDow)
+                set(java.util.Calendar.HOUR_OF_DAY, hour)
+                set(java.util.Calendar.MINUTE, minute)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            if (!target.after(now)) {
+                target.add(java.util.Calendar.WEEK_OF_YEAR, 1)
+            }
+            return (target.timeInMillis - now.timeInMillis).coerceAtLeast(0L)
         }
 
         fun cancel(context: Context) {
