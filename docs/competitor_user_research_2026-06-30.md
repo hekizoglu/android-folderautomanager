@@ -441,6 +441,46 @@ Eger AppOrganizer:
 
 tek pakette netlestirirse, Smart Launcher ve Niagara arasinda gercek bir alan acabilir.
 
+## Ek Derinlemesine Analiz — Smart Launcher ve Niagara (guncelleme: 2026-07-07)
+
+ROADMAP maddesi geregi bu iki rakip icin UX ozellik duzeyinde derinlemesine inceleme yapildi (WebSearch, 2026-07-07).
+
+### Smart Launcher 6 — UX Ozellikleri
+
+- **Adaptif ikonlar:** Android 8+ adaptive icon formatini tam destekliyor; ikonlar buyuk ve tutarli gorunuyor, sekil ozellestirilebiliyor.
+- **Fluid Grid System:** Klasik grid yerine "petal-shaped" (yaprak) varsayilan duzen; kullanici isterse geleneksel grid'e donebiliyor. Grid boyutu (satir/sutun) manuel ayarlanabiliyor — daha fazla ikon vs. daha az gorsel yogunluk arasi denge kullanicida.
+- **Gesture bar / gesture sistemi:** Cift-tik, sola/saga/yukari/asagi kaydirma gibi hareketlere ozel aksiyon atanabiliyor (Pro).
+- **Otomatik kategori atama (ana fark yaratici ozellik):** Yeni uygulama kurulunca otomatik olarak dogru kategoriye (Iletisim, Oyun, Medya vb.) yerlestiriliyor — AppOrganizer'in ana deger onermesiyle dogrudan orten tek buyuk rakip.
+- Bildirim rozeti, ek temalar ve ek home-screen duzenleri Pro'da kilitli — freemium siniri net.
+
+Kaynaklar: https://www.smartlauncher.net/ · https://docs.smartlauncher.net/faq/personalization/gestures · https://www.androidcentral.com/smart-launcher-5-review · https://www.techwench.com/best-android-launchers-2026/
+
+### Niagara Launcher — UX Ozellikleri
+
+- **Dikey liste tabanli minimal ana ekran:** Klasik grid yok; favori uygulamalar tek sutunda dikey liste halinde, sag tarafta alfabetik hizli-kaydirma cubugu.
+- **Kullanim sikligina gore otomatik siralama:** Uygulamalar home ekraninda kullanim sikligina gore otomatik yeniden siralaniyor; ayrica "pop-up folders" ile tur/fonksiyona gore otomatik gruplama var.
+- **Arama odakli tasarim:** Ekranin altinda daima gorunen buyuk bir arama (magnifying glass) ana navigasyon araci; uygulama + web icerigini birlikte ariyor.
+- **Bildirim entegrasyonu:** Bildirimler liste satirinin yaninda kucuk gostergeyle beliriyor (ayri badge ekrani yerine).
+- **Font/boyut ozellestirme siniri:** Uygulama ici dinamik "kullanima gore font buyutme" ozelligi resmi olarak YOK — kullanicilar bunu Android sistem font ayari veya tema font secimiyle manuel yapiyor (GitHub issue #263'te community talebi acik, cozulmemis). Yani "kullanim sikligina gore dinamik font boyutu" iddiasi kismen yanlis anlasilma — asil ayirt edici ozellik **siralama**, font degil.
+- Material You dinamik tema (duvar kagidina gore) destekleniyor.
+
+Kaynaklar: https://help.niagaralauncher.app/article/55-change-font-size · https://github.com/8bitPit/Niagara-Issues/issues/263 · https://www.androidauthority.com/niagara-launcher-productivity-setup-3580969/ · https://en.todoandroid.es/Detailed-review-of-Niagara-Launcher:-The-minimalist-revolution-on-Android/
+
+### AppOrganizer Icin Kod Tabani Kontrolu
+
+`LauncherViewModel.kt` ve ilgili dosyalar tarandi (`usageScore`, `fontSize`, `dynamicFont`, `sortByUsage` icin grep) — **hicbir sonuc bulunamadi.** Yani:
+
+- Kullanima gore dock/klasor SIRALAMASI icin bir altyapi (`AppUsageStats` benzeri) var ama Niagara tarzi "en cok kullanilan en ust/en buyuk" otomatik dinamik siralama HENUZ UI'da uygulanmis degil.
+- Kullanima gore font/ikon BUYUKLUGU degisimi (Smart Launcher'in "buyuk ikon" hissi ile karistirilmamali) sistemde YOK.
+
+### Somut, Uygulanabilir 3 Fikir
+
+1. **Home ekraninda "en cok kullanilan uygulama" otomatik on plana cikarma** (Niagara pattern) — dock veya klasor ic sirasinda `lastUsedTimestamp`/kullanim sayisina gore agirlikli siralama. Mevcut `AppInfo` modelinde `lastUsedTimestamp` zaten var (bkz. `MIGRATION_3_4`), sadece siralama mantigi eksik. -> FİKİRLER.md'ye eklendi (asagida).
+2. **Fluid Grid benzeri "yogunluk" ayari** (Smart Launcher pattern) — Ayarlar'da grid satir/sutun sayisini kullanicinin manuel secebilecegi bir slider; su an sabit degerler kullaniliyor olabilir, kontrol edilmeli. -> FİKİRLER.md'ye eklendi.
+3. **Arama cubugunu ana navigasyon vurgusuna tasima** (Niagara pattern) — mevcut arama zaten var (S1/S2 dongusunde birlestirildi, bkz. HISTORY Dongu 207) ama "her zaman gorunur, one cikan" konumlandirma Niagara kadar guclu degil; HomeScreen'de arama cubugunun sabit/sticky ust konumu degerlendirilebilir. Bu netlestirilmis bir gorev degil, orta vadeli tasarim notu olarak birakildi.
+
+---
+
 ## Kaynaklar
 
 Resmi ve haber kaynaklari:

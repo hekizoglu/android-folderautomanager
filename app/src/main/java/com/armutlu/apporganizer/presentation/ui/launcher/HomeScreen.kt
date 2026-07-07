@@ -41,6 +41,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -399,6 +402,18 @@ fun HomeScreen(
         viewModel.closeAllApps()
     }
 
+    // Ana ekrana her gelişte (ON_RESUME) 1 kez elmas parlaması tetiklensin — sürekli
+    // tekrarlayan zamanlayıcı değil (D210 fix, bkz. ShineEffect.kt).
+    var homeResumeTrigger by remember { mutableStateOf(0) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) homeResumeTrigger++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     // Root box — duvar kağıdı (transparent) veya düz renk arka plan
     // NOT: .haze() gesture'lardan SONRA — Haze 0.7.3 önce gelince pointer event tüketiyor
     Box(
@@ -499,6 +514,7 @@ fun HomeScreen(
                         searchResults = searchResults,
                         onQueryChange = viewModel::setSearchQuery,
                         onEnableContactsSource = viewModel::enableContactsSearchSource,
+                        homeResumeTrigger = homeResumeTrigger,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -710,7 +726,14 @@ fun HomeScreen(
                 }
             }
             val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
-            val pagerState = rememberPagerState(pageCount = { pageCount })
+            // Son görüntülenen sayfa AppPrefs'ten okunur — geri tuşu/process death sonrası
+            // ilk sayfaya sıfırlanmasın (D210 fix). pageCount değişirse sınır dışına taşmasın.
+            val initialPage = remember { com.armutlu.apporganizer.utils.AppPrefs.getLastHomePage(context).coerceIn(0, pageCount - 1) }
+            val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { pageCount })
+            LaunchedEffect(pagerState) {
+                snapshotFlow { pagerState.currentPage }
+                    .collect { page -> com.armutlu.apporganizer.utils.AppPrefs.setLastHomePage(context, page) }
+            }
 
             Column(modifier = Modifier.fillMaxSize()) {
 

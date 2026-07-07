@@ -10,7 +10,14 @@ import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
 import com.armutlu.apporganizer.presentation.ui.screens.ReportsCenterScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SearchSettingsScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsAboutScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppearanceScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppsScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsLauncherScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsNotificationsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsSecurityScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsStatsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.UsageReportScreen
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
@@ -24,6 +31,15 @@ object Routes {
     const val REPORTS_CENTER = "reports_center"
     const val SEARCH_SETTINGS = "search_settings"
     const val NOTIFICATION_REPORT = "notification_report"
+
+    // U1: Ayarlar alt-ekran hiyerarşisi — her ana kategori kendi route'unda
+    const val SETTINGS_APPEARANCE = "settings_appearance"
+    const val SETTINGS_LAUNCHER = "settings_launcher"
+    const val SETTINGS_NOTIFICATIONS = "settings_notifications"
+    const val SETTINGS_APPS = "settings_apps"
+    const val SETTINGS_STATS = "settings_stats"
+    const val SETTINGS_SECURITY = "settings_security"
+    const val SETTINGS_ABOUT = "settings_about"
 }
 
 @Composable
@@ -55,15 +71,57 @@ fun AppNavigation(
             )
         }
         composable(Routes.SETTINGS) {
+            // U1: Ayarlar hub'ı — her kategori satırı kendi alt route'una gider
             SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
+                onNavigateToLauncher = { navController.navigate(Routes.SETTINGS_LAUNCHER) },
+                onNavigateToNotifications = { navController.navigate(Routes.SETTINGS_NOTIFICATIONS) },
+                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
+                onNavigateToApps = { navController.navigate(Routes.SETTINGS_APPS) },
+                onNavigateToStats = { navController.navigate(Routes.SETTINGS_STATS) },
+                onNavigateToSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
+                onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) }
+            )
+        }
+        // U1: Ayarlar alt ekranları
+        composable(Routes.SETTINGS_APPEARANCE) {
+            SettingsAppearanceScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Routes.SETTINGS_LAUNCHER) {
+            SettingsLauncherScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) }
+            )
+        }
+        composable(Routes.SETTINGS_NOTIFICATIONS) {
+            SettingsNotificationsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Routes.SETTINGS_APPS) {
+            SettingsAppsScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.SETTINGS_STATS) {
+            SettingsStatsScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
+                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) }
+            )
+        }
+        composable(Routes.SETTINGS_SECURITY) {
+            SettingsSecurityScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Routes.SETTINGS_ABOUT) {
+            SettingsAboutScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) },
                 onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
-                onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) },
-                onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
-                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
-                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) }
+                onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) }
             )
         }
         composable(Routes.PRIVACY_POLICY) {

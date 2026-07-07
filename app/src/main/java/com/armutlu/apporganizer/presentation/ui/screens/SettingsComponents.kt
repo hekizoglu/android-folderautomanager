@@ -2,8 +2,11 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -172,6 +175,40 @@ internal fun SettingsInfoRow(icon: ImageVector, title: String, subtitle: String)
                 color = MaterialTheme.colorScheme.onSurface)
             Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+// ── Alt ekran iskeleti (U1: Ayarlar alt-ekran hiyerarşisi) ────────────────
+// Her ayar kategorisi kendi route'unda aynı TopAppBar + LazyColumn düzenini
+// paylaşır — SearchSettingsScreen pattern'inin genelleştirilmiş hali.
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun SettingsSubScreenScaffold(
+    title: String,
+    onNavigateBack: () -> Unit,
+    content: LazyListScope.() -> Unit,
+) {
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = { Text(title, fontWeight = FontWeight.SemiBold) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(bottom = 32.dp)
+        ) { content() }
     }
 }
 

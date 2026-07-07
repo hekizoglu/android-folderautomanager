@@ -1,6 +1,6 @@
 # AppOrganizer — Claude Çalışma Talimatları
 
-> **Meta:** ~390 satır · Son güncelleme: 2026-06-30 · Döngü logları → HISTORY.md · Mimari kararlar → LEARNINGS.md · Görevler → FİKİRLER.md · Yol haritası → ROADMAP.md (15+ puan)
+> **Meta:** ~390 satır · Son güncelleme: 2026-07-07 (D210 sadeleştirme) · Döngü logları → HISTORY.md · Mimari kararlar/SOP → LEARNINGS.md · Görevler → FİKİRLER.md · Yol haritası → ROADMAP.md (15+ puan)
 
 ---
 
@@ -116,24 +116,8 @@ Puan yüksekse araştırma tamamlanmadan kod yazılmaz.
 **CLAUDE.md'ye eklenir:** kalıcı kural, build hatası+çözümü, kritik mimari karar.
 **CLAUDE.md'ye eklenmez:** döngü özeti (→ HISTORY.md), tek seferlik not, geçici durum.
 
-### MD Denetim Raporu Kuralı
-Her döngüde proje kökünde `MD_DENETIM_*.md` dosyası varsa:
-1. Openclaw agent (`gh/claude-haiku-4.5`, http://localhost:20128/v1) ile içeriği analiz et — Claude orkestra şefi, agent icracı
-2. Her maddeyi tek tek ele al: 1-2 madde/döngü
-3. Çözülen maddeyi HISTORY.md'ye `[ÇÖZÜLDÜ]` + kısa açıklama ile taşı; rapordan sil
-4. Çözülemeyen/gerekmeyen maddeyi HISTORY.md'ye `[ÇÖZÜLMEDI — sebep]` ile taşı; rapordan sil
-5. Rapor tamamen boşalınca (0 madde) → dosyayı sil, HISTORY.md'ye "MD Denetim KAPANDI" notu ekle
-- Sıralı döngülerde son döngüde build alınır, aradaki döngülerde build atlanır
-
-### Denetim İyileştirme Kuralı (D191)
-Her 0 sonuçlu denetim döngüsünde 1 yeni tespit yöntemi ekle:
-1. `scripts/audit_improvements.md`'deki "Bekleyen Tespit Yontemleri" kuyruğundan sıradakini al
-2. audit.ps1'a yeni kural olarak ekle (T1/T2/T3 uygun katmanına)
-3. Kuyruktaki maddeyi "Eklendi D[xxx]" olarak işaretle
-4. Kuyruk boşalırsa: agent ile yeni tespit açıları araştır, kuyruğa 3+ yeni madde ekle
-5. Her 10 döngüde bir: agent ile LEARNINGS.md E-katalogundaki hataları tara, kapsanmayanlardan yeni kural türet
-- Regex yetmez — cross-reference (iki dosya arası tutarlılık), null safety, coroutine scope kontrolü gibi çok katmanlı analiz şart
-- Aynı hatayı iki kez yakalama: bulunan her bug için otomatik kural ekle (örn: CE9 HomeScreen DisposableEffect eksik KEY)
+### MD Denetim Raporu Kuralı ve Denetim İyileştirme Kuralı
+Detaylı SOP → **LEARNINGS.md** "SOP — Nadiren Tetiklenen Prosedürler". Kısa özet: `MD_DENETIM_*.md` varsa maddeleri tek tek çöz, rapordan sil, HISTORY.md'ye taşı; 0 sonuçlu denetim döngüsünde audit.ps1'a yeni tespit kuralı ekle.
 
 ### Döngü Sonu Özet Formatı
 ```
@@ -144,13 +128,8 @@ Her 0 sonuçlu denetim döngüsünde 1 yeni tespit yöntemi ekle:
 **Sonraki:** [en öncelikli görev]
 ```
 
-### Encoding Otomatik Tespit ve Düzeltme Kuralı
-Bir dosyada Türkçe karakter bozukluğu (`Ã¶`, `Ä±`, `ÅŸ` vb.) tespit edilirse:
-1. `PYTHONIOENCODING=utf-8 python scripts/fix_encoding.py <dosya>` — çalıştır
-2. Bozukluk devam ediyorsa 2. deneme: `python -c "..."` ile TURKISH_DOUBLE_ENCODED tablosunu uygula
-3. 3. denemede de çözülemediyse `COZULEMEYEN_SORUNLAR.md`'ye ekle ve kullanıcıya bildir
-- PowerShell'de `Add-Content` kullanma (double-encode üretir) — her zaman `Write-Output | Out-File -Encoding utf8` veya Python `write_text(encoding='utf-8')` kullan
-- PowerShell heredoc: `@'...'@` — kapatan `'@` mutlaka sıfır indent (satır başı) olmalı, `<<'EOF'` bash syntax PS5'te çalışmaz
+### Encoding Bozukluğu Tespit Edilirse
+`scripts/fix_encoding.py` çalıştır, 3 denemede çözülmezse `COZULEMEYEN_SORUNLAR.md`'ye ekle. Detaylı adımlar → LEARNINGS.md SOP bölümü.
 
 ### Asla Yapma
 - Küçük değişiklik için "onaylıyor musun?" deme — yap, test et, bildir
@@ -161,66 +140,36 @@ Bir dosyada Türkçe karakter bozukluğu (`Ã¶`, `Ä±`, `ÅŸ` vb.) tespit edi
 - **Yan etki yaratma:** Bir dosyayı değiştirirken ilgili tüm dosyaları (ViewModel, Repository, Model, UI) önce oku. Yeni sabit/fonksiyon eklenince tüm kullanım noktaları güncellenmeli. Değişiklik sonrası build al — kırmızı alan kalmamalı.
 
 ### Değişiklik Güvenlik Protokolü
-Her agent görevi sonunda (build almadan önce):
-1. Değiştirilen dosyalardaki tüm import'ları doğrula (unresolved referans yok)
-2. Eklenen her yeni sabit/fonksiyon — tüm kullanım noktaları güncellendi mi?
-3. Silinen/yeniden adlandırılan her şey — eski adı kullanan başka dosya var mı? (`grep` ile kontrol)
-4. Her görev sonunda `.\gradlew assembleDebug` — build hataları commit öncesi düzeltilmeli
+Her agent görevi sonunda (build almadan önce): import doğrula, yeni sabit/fonksiyonun tüm kullanım noktalarını güncelle, silinen/yeniden adlandırılan şeyi grep ile ara. Detaylı adımlar → LEARNINGS.md SOP bölümü.
 
 ---
 
 ## 4. Araçlar ve Servisler
 
 ### Build Komutları
-> **local.properties yoksa build "SDK location not found" verir** — oluştur: `sdk.dir=C\:\\Users\\hekizoglu\\AppData\\Local\\Android\\Sdk` (escape'li backslash şart). Shell'de `$env:ANDROID_HOME` da set edilmeli.
+> Proje dizini: `c:\Users\huseyinekizoglu\android-folderautomanager`. `local.properties` yoksa `sdk.dir=` ekle.
 > **google-services.json yokken:** `-PskipGoogleServices` flag'i ile build al.
 ```powershell
-cd "c:\Users\hekizoglu\Documents\AppOrganizer"
-.\gradlew assembleDebug        # Debug APK (veya: .\build.ps1)
+cd "c:\Users\huseyinekizoglu\android-folderautomanager"
+.\gradlew assembleDebug        # Debug APK
 .\gradlew bundleRelease        # Play Store AAB (imzalı — keystore.properties gerekli)
-.\build.ps1                    # Akıllı build: cache+parallel, otomatik hata retry
-.\build.ps1 -Clean             # Kilitli build dizinlerini temizleyip yeniden build
 
-# Emülatör
-$em = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\emulator\emulator.exe"
-Start-Process $em -ArgumentList "-avd","Pixel6_AOSP33","-no-snapshot-save"
+# Emülatör (AVD: Pixel6_API33, Xiaomi_HyperOS_API34)
+$emu = "C:\Android\Sdk\emulator\emulator.exe"; & $emu -avd Pixel6_API33 -no-snapshot-save
 
 # APK yükle
-$adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+$adb = "C:\Android\Sdk\platform-tools\adb.exe"
 & $adb install -r app\build\outputs\apk\debug\app-debug.apk
-& $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.launcher.LauncherActivity"
+& $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.MainActivity"
 ```
 
-### Telegram Bot
-- Token: `.env` → `TELEGRAM_BOT_TOKEN`
-- Chat ID: `.env` → `TELEGRAM_CHAT_ID` (937179261)
-- Bot: `@claudetestbotibm_bot`
-```powershell
-$t = $env:TELEGRAM_BOT_TOKEN; $c = $env:TELEGRAM_CHAT_ID
-curl.exe -s -X POST "https://api.telegram.org/bot$t/sendDocument" -F "chat_id=$c" -F "caption=<mesaj>" -F "document=@app\build\outputs\apk\debug\app-debug.apk"
-```
-
-### Lokal AI Gateway (ÖNCELİKLİ — SADECE LOCAL)
-- Endpoint: `http://localhost:20128/v1` · Key: `.env` → `LOCAL_AI_KEY` · Model: `all99` (80 model round-robin)
-- Çağrı: `python scripts/local_ai.py "soru"` veya `--model gh/claude-haiku-4.5` gibi spesifik model
-- Araştırma, analiz, ikinci görüş için → **önce bu sistemi kullan** (ucuz, hızlı, yerel)
-- Offline ise (localhost:20128 erişilemiyor) → DeepSeek API'ye geç
-
-### DeepSeek API
-- Model: `deepseek-chat` · Key: `.env` → `DEEPSEEK_API_KEY` · Yedek: lokal AI offline ise kullan
-
-### Remote Ortam Notu
-`dl.google.com` ve `api.telegram.org` bu ortamda engelli — build ve Telegram gönderimi yerel makinede yapılmalı.
+### Telegram / AI Servisleri
+- Telegram Bot: token/chat ID → `.env` (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`). Gönderim: `curl.exe -X POST "https://api.telegram.org/bot$t/sendDocument" -F "chat_id=$c" -F "document=@<apk>"`
+- Lokal AI Gateway (öncelikli, ucuz): `http://localhost:20128/v1`, `.env` → `LOCAL_AI_KEY`, model `all99`. Offline ise DeepSeek API'ye (`deepseek-chat`, `.env` → `DEEPSEEK_API_KEY`) geç.
+- Windows Defender exclusion (build kilidi önlemi, Admin gerekir): `app\build`, `.gradle`, `.android` klasörlerini ekle.
 
 ### Zaman Loglama
-`harcananvakit.md` — her döngüde başlangıç/bitiş saati ve kategori (BUILD/KOD/ORTAM/GİT/DÖKÜMAN) loglanır.
-Her 6 saatte bir otomatik MD denetimi yapılır → Telegram'a rapor → **onay gelmeden değişiklik yapılmaz**.
-Windows Defender exclusion (Admin PowerShell gerekli):
-```powershell
-Add-MpPreference -ExclusionPath "C:\Users\hekizoglu\Documents\AppOrganizer\app\build"
-Add-MpPreference -ExclusionPath "$env:USERPROFILE\.gradle"
-Add-MpPreference -ExclusionPath "$env:USERPROFILE\.android"
-```
+`harcananvakit.md` — her döngüde başlangıç/bitiş saati ve kategori (BUILD/KOD/ORTAM/GİT/DÖKÜMAN).
 
 ---
 
@@ -358,16 +307,16 @@ Android launcher — uygulamaları otomatik kategorilere göre klasörlere böle
 ```
 app/src/main/java/com/armutlu/apporganizer/
 ├── presentation/ui/
-│   ├── launcher/    # HomeScreen, FolderTile, AllAppsDrawer, FolderSheet, HomeScreenComponents
+│   ├── launcher/    # HomeScreen, FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents
 │   ├── screens/     # AppListScreen, SettingsScreen, OnboardingScreen
 │   └── theme/       # Theme.kt (turkuaz, DataStore reaktif)
 ├── domain/
 │   ├── models/      # AppInfo, Category, AppFolder
 │   └── usecase/classify/  # AppClassifier (3702 paket), KeywordDatabase (32 kategori)
 ├── data/
-│   ├── local/       # AppDao, AppDatabase (Room v8)
+│   ├── local/       # AppDao, AppDatabase (Room v12)
 │   ├── remote/      # BackupSyncService
-│   └── repository/  # AppRepository
+│   └── repository/  # AppRepository, SearchRepository
 └── utils/           # AppPrefs, IconPackManager, ShortcutHelper, WidgetPrefs, WidgetHostManager
 ```
 
@@ -377,9 +326,10 @@ app/src/main/java/com/armutlu/apporganizer/
 - **Bildirim Analizi:** `AppNotificationListenerService` her bildirimi loglar (paket+zaman, içerik YOK) → `NotificationAnalyzer` (çok konuşan/rahatsız eden/dikkat dağıtan) → `NotificationReportScreen` (Routes.NOTIFICATION_REPORT)
 - **Haber Şeridi:** `HomeTickerRow` + `LauncherViewModel.tickerItems` (klasör istatistikleri + içgörüler + bildirim özeti); dokun→hedef açılır, kaydır→sonraki; `KEY_TICKER_ENABLED`
 - **Tema:** Material You `DYNAMIC` Android 12+ default (`AppTheme.default()`); build'e `-PskipGoogleServices` verilirse Firebase null-guard'lı çalışır (çökmez)
-- **Onboarding:** 6 adım (WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE` (19⭐ radikal kesme, D201'de doğrulandı)
+- **Onboarding:** 6 adım (WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`, state `rememberSaveable` (rotation-safe, D209)
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
-- **Firebase Analytics:** Entegrasyon planlanıyor — `google-services.json` bekleniyor
+- **Firebase:** Gerçek proje bağlı (`com-armutlu-apporganizer`) — Analytics + Crashlytics aktif, emülatörde doğrulandı (D205)
+- **Birleşik arama:** Ana ekran tek arama çubuğu 4 kaynak grubunda sonuç gösterir (Uygulamalar/Klasörler/Kişiler/Dosyalar) — `SearchRepository` FTS5 (D207)
 
 ### Özellik Durum Özeti
 | Özellik | Durum |
@@ -393,7 +343,7 @@ app/src/main/java/com/armutlu/apporganizer/
 | Bildirim badge + metin | ✅ |
 | Klasör özelleştirme (ad+emoji+renk) | ✅ |
 | BackupWorker haftalık | ✅ |
-| Firebase Analytics | ❌ bekliyor |
+| Firebase Analytics + Crashlytics | ✅ gerçek proje bağlı (D205) |
 | FCM Push (uzaktan DB güncelleme) | ✅ `AppFirebaseMessagingService.kt` (2026-06-18) |
 | DeepSeek API | ✅ `.env`'de |
 | Telegram Bot | ✅ yeni token |
@@ -419,14 +369,14 @@ app/src/main/java/com/armutlu/apporganizer/
 | 3 | RoleManager launcher dialog | `MainActivity.kt`, `SettingsScreen.kt` | ✅ |
 | 4 | AllAppsDrawer blur(20.dp) | `AllAppsDrawer.kt` | ✅ |
 | 5 | Icon async produceState + LRU-200 | `AppIconView.kt`, `FolderTile.kt` | ✅ |
-| 6 | Haptic long-press | `HomeScreen.kt`, `FolderSheet.kt` | ✅ |
+| 6 | Haptic long-press | `HomeScreen.kt`, `FolderScreen.kt` | ✅ |
 | 7 | Haptic tap (uygulama başlatma) | `HomeScreen.kt`, `AllAppsDrawer.kt` | ✅ |
 | 8 | DockEditSheet | `DockEditSheet.kt` | ✅ |
 | 9 | SettingsScreen varsayılan launcher butonu | `SettingsScreen.kt` | ✅ |
 | 10 | Bildirim badge UI | `AppIconView.kt`, `FolderTile.kt` | ✅ |
 | 11 | NotificationListenerService | `AppNotificationListenerService.kt` | ✅ |
 | 12 | AppListScreen max 300 satır | `AppListScreen.kt` | ✅ 244 satır |
-| 13 | Firebase Analytics | `LauncherApplication.kt` | ❌ bekliyor |
+| 13 | Firebase Analytics + Crashlytics | `AppOrganizerApp.kt` | ✅ D205 |
 
 ---
 
@@ -438,4 +388,4 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ---
 
-*Son güncelleme: 2026-06-29 — CLAUDE.md v5.2: onboarding 17 adim guncellendi (D173), KiloCode audit encoding kurali eklendi (D191), MD denetim N1-N9 kapatildi.*
+*Son güncelleme: 2026-07-07 — CLAUDE.md v6.0 (D210): time_token_analysis önerisiyle sadeleştirildi (441→391 satır) — nadiren tetiklenen SOP'lar (MD Denetim, Denetim İyileştirme, Encoding detayları, Değişiklik Güvenlik Protokolü) LEARNINGS.md'ye taşındı; bayat bilgiler düzeltildi (FolderSheet→FolderScreen, Room v8→v12, build yolları, Firebase Analytics/Crashlytics aktif durumu).*

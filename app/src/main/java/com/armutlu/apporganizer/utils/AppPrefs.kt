@@ -122,6 +122,11 @@ object AppPrefs {
     fun isAutoFolderSizeEnabled(context: Context) = prefs(context).getBoolean(KEY_AUTO_FOLDER_SIZE, false)
     fun setAutoFolderSizeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_AUTO_FOLDER_SIZE, v).apply()
 
+    // Son görüntülenen klasör sayfası — process death/geri tuşu sonrası ilk sayfaya sıfırlanmasın (D210)
+    const val KEY_LAST_HOME_PAGE = "last_home_page"
+    fun getLastHomePage(context: Context): Int = prefs(context).getInt(KEY_LAST_HOME_PAGE, 0)
+    fun setLastHomePage(context: Context, page: Int) = prefs(context).edit().putInt(KEY_LAST_HOME_PAGE, page).apply()
+
     // Sayfa başına klasör sayısı — 4/6/8/12 (varsayılan 8 = 4x2)
     const val KEY_PAGE_SIZE = "page_folder_count"
     fun getPageSize(context: Context): Int = prefs(context).getInt(KEY_PAGE_SIZE, 8)

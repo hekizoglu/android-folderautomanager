@@ -29,16 +29,11 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 | Görev | Alan | Durum |
 |-------|------|-------|
-| **U1: Ayarlar tam alt-ekran hiyerarşisi** | Görünüm/Bildirim/Güvenlik/Hakkında ayrı route + ekran — büyük refactor | Bekliyor |
 | **U10: Açık kaynak referans launcher ile ana ekran revizyonu** | KISS/Lawnchair/Kvaesitso analizi + HomeScreen revizyonu (U7 dahil) | Bekliyor |
-| **Ölü kod: Room `search_history` tablosu kaldırma** | UI kullanmıyor (SharedPreferences'ta yaşıyor); v13 migration gerekir | Bekliyor |
-| **CLAUDE.md sadeleştirme** | ~390 satır → ~250; rutinleşen bölümler LEARNINGS'e | Bekliyor |
 | **Android 14 NotificationListenerService gerçek cihaz testi** | `AppNotificationListenerService.kt` | Bekliyor |
 | **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
 | **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
-| **Geri tuşuyla ilk sayfa yenileniyor** | eski/yavaş cihazlarda istenmeyen yavaşlama | Bekliyor |
 | **Token logu ekle** | issue_mitigation raporu — "ölçmediğin şeyi optimize edemezsin" | Bekliyor |
-| **Rakip analiz — Smart Launcher / Niagara referans** | tasarım karar belgesi için | Bekliyor |
 
 <!-- DOCS_SCORE_HIGH_START -->
 ### Kirmizi Kritik - Docs/Rapor Skor Taramasi (Otomatik)

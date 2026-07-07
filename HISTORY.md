@@ -4,6 +4,42 @@
 
 ---
 
+## Döngü 212 — 2026-07-07 [UX_SEARCH_SPEC güncellemesi + 5 bug fix + CLAUDE.md sadeleştirme — Sonnet doğrudan]
+
+**Yapılanlar:** Kullanıcının "orkestra şefi gibi çalış" talimatıyla tek döngüde çoklu iş:
+1. **UX_SEARCH_REPORTS_SPEC.md** — tüm kabul kriterleri kodda doğrulandı (dosya:satır ile), doküman TAMAMLANDI durumuna güncellenip kısaltıldı.
+2. **CLAUDE.md sadeleştirme** — 441→391 satır. Nadiren tetiklenen SOP'lar (MD Denetim Kuralı, Denetim İyileştirme Kuralı, Encoding detaylı adımlar, Değişiklik Güvenlik Protokolü) LEARNINGS.md'ye taşındı; bayat bilgiler düzeltildi (FolderSheet→FolderScreen referansı, Room v8→v12, build yolları `hekizoglu`→`huseyinekizoglu`, Firebase Analytics/Crashlytics artık aktif durumu).
+3. **Geri tuşu bug'ı:** `AppPrefs.KEY_LAST_HOME_PAGE` eklendi; `HomeScreen.kt` pager'ı artık son görüntülenen sayfadan başlıyor (`rememberPagerState(initialPage=...)` + `snapshotFlow` ile her sayfa değişiminde persist) — process death/geri tuşu sonrası ilk sayfaya sıfırlanmıyor.
+4. **Sıralama butonları tekilleştirildi:** `FolderScreen.kt`'deki 8 ayrı chip (A-Z, Z-A, Kullanım↓, Kullanım↑, Boyut↓, Boyut↑, Yükleme↓, Yükleme↑) → 4 tek butona indirildi (`AllAppsSortMode.baseMode()`/`.opposite()` — zaten AllAppsDrawerUtils.kt'de vardı, tekrar kullanıldı); aktif butona tekrar basınca yön değişiyor.
+5. **Bildirim banner:** `LauncherViewModel.kt:626-633` zaten `badges.values.sum() > 0` koşuluyla reaktif — doğrulandı, değişiklik gerekmedi.
+6. **Parlama efekti fix:** `ShineEffect.kt`'deki `while(isActive) delay(10-15sn)` sonsuz döngüsü kaldırıldı; `diamondShine()` artık `trigger` parametresi değiştiğinde BİR KEZ oynuyor. `HomeScreen.kt`'ye `ON_RESUME` lifecycle observer ile `homeResumeTrigger` sayacı eklendi — ana ekrana her gelişte 1 kez parlıyor.
+7. **KRİTİK BUG FİX — Klasör isimleri kayboluyordu:** `FolderTile.kt:162-172`'de `effectiveLabelColor`, klasörün özel rengine (`customColor` — ikon dairesinin rengi) göre kontrast hesaplıyordu ("açık renk → koyu metin") ama etiket metni gerçekte dairenin DIŞINDA, duvar kağıdının üzerinde duruyor — açık özel renkli klasörlerde metin neredeyse siyah (`0xFF212121`) oluyor, koyu duvar kağıdında görünmez kalıyordu. Fix: `effectiveLabelColor = labelColor` (HomeScreen'den gelen, gerçek arka plana göre hesaplanmış renk) — customColor'a bağımlılık tamamen kaldırıldı.
+8. **Ölü kod: Room `search_history` tablosu kaldırıldı** — `SearchHistoryDao.kt` ve `domain/models/SearchHistory.kt` silindi, `AppModule.kt`'den DI provider kaldırıldı, `AppDatabase.kt` v12→v13 (`MIGRATION_12_13`: `DROP TABLE IF EXISTS search_history`). Gerçek arama geçmişi zaten `SearchHistoryPrefs.kt` (SharedPreferences) üzerinden çalışıyordu — Room tablosu hiç kullanılmıyordu.
+Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 ayrı derleme, hepsi BUILD SUCCESSFUL).
+**Agent:** — (tamamen Sonnet; paralel olarak Fable U1'i, Sonnet-agent rakip analizi işledi — bkz. Döngü 210/211)
+**CLAUDE.md/LEARNINGS.md:** CLAUDE.md sadeleştirildi (yukarıda); LEARNINGS.md'ye SOP bölümü eklendi.
+**Sonraki:** Tüm değişiklikler (Döngü 209-212) birlikte tam `assembleDebug` + emülatör smoke test; commit+push.
+
+---
+
+## Döngü 211 — 2026-07-07 [U1: Ayarlar tam alt-ekran hiyerarşisi — büyük navigasyon refactor'ü]
+
+**Yapılanlar:** ROADMAP U1 uygulandı — `SettingsScreen.kt` tek uzun listeden "menü/hub" ekranına dönüştürüldü; her ana kategori kendi route'una gidiyor (SearchSettingsScreen pattern'i örnek alındı). Yeni dosyalar: `SettingsAppearanceScreen.kt` (Görünüm), `SettingsLauncherScreen.kt` (varsayılan launcher + dock + gesture + widget önerileri + ana ekran + hızlı erişim), `SettingsNotificationsScreen.kt` (bildirim erişimi + akıllı badge + kullanım bilgisi + akıllı bildirimler), `SettingsAppsScreen.kt` (settingsAppsSection + LLM classify toast), `SettingsStatsScreen.kt` (istatistikler + rapor kısayolları), `SettingsSecurityScreen.kt` (biyometrik kilit), `SettingsAboutScreen.kt` (settingsBackupAboutSection + geri bildirim). `SettingsComponents.kt`'ye ortak `SettingsSubScreenScaffold` eklendi (TopAppBar + LazyColumn). `AppNavigation.kt`'ye 7 yeni route (`SETTINGS_APPEARANCE/LAUNCHER/NOTIFICATIONS/APPS/STATS/SECURITY/ABOUT`) + composable eklendi; hub `SettingsScreen` artık viewModel almıyor, sadece kategori satırları (ikon+başlık+açıklama+chevron) listeliyor. Mevcut section composable'ları (SettingsAppearanceSection, SettingsHomeScreenSection vb.) SİLİNMEDİ — wrapper ekranlara taşındı, hiçbir toggle/ayar kaybolmadı. Biometric gate hub'da korundu. Statik doğrulama: brace/paren dengesi 0, 8 string kaynağı + 20 AppPrefs üyesi + 8 ViewModel property grep ile doğrulandı, curly quote yok. Build alınmadı (görev tanımı gereği ana model yapacak). ROADMAP.md'den U1 satırı silindi.
+**Agent:** — (Fable subagent doğrudan; agent spawn edilmedi)
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi (yeni tuzak yok; mevcut Reaktif AppPrefs pattern'i taşınan kodda korundu).
+**Sonraki:** `.\gradlew assembleDebug` ile build doğrulaması + emülatörde Ayarlar hub → alt ekranlar → geri navigasyon testi; commit+push.
+
+---
+
+## Döngü 210 — 2026-07-07 [DOKÜMAN: Rakip analiz — Smart Launcher / Niagara derinleştirme — Sonnet doğrudan]
+
+**Yapılanlar:** ROADMAP "Rakip analiz — Smart Launcher / Niagara referans" görevi tamamlandı. `docs/competitor_user_research_2026-06-30.md`'ye WebSearch ile güncel UX detayları eklendi: Smart Launcher (adaptif ikon, Fluid Grid, gesture bar, otomatik kategori atama — Pro kilitleri) ve Niagara (dikey liste, kullanım sıklığına göre otomatik sıralama + pop-up folder, arama-öncelikli tasarım; "dinamik font boyutu" iddiası araştırmayla düzeltildi — resmi olarak yok, community talebi açık issue). Kod tabanı grep ile kontrol edildi (`usageScore`/`fontSize`/`dynamicFont`/`sortByUsage`) — hiçbiri bulunamadı, yani kullanım sıklığına göre dock sıralaması henüz uygulanmamış. 2 somut fikir FİKİRLER.md'ye eklendi: "Home/dock kullanım sıklığı sıralaması" (13p, 🟡 Orta) ve "Grid yoğunluk slider'ı" (11p, ⏸ Beklet). FİKİRLER.md "📊 Rekabet Pozisyonlama Özeti" tablosuna Smart Launcher ve Niagara satırları eklendi. ROADMAP.md'den tamamlanan madde silindi.
+**Agent:** — (tamamen Sonnet; 2x WebSearch paralel — Smart Launcher + Niagara)
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi (doküman-only görev, kalıcı kural/tuzak yok).
+**Sonraki:** FİKİRLER.md'deki yeni "kullanım sıklığı sıralaması" fikri (13p) ROADMAP eşiğine (15p) yakın — ileride puanlama tekrar gözden geçirilebilir; öncelik hâlâ onboarding tam emülatör testi (Döngü 209'dan devam).
+
+---
+
 ## Döngü 209 — 2026-07-07 [ONBOARDING FİKS: state kaybı + race condition + ölü kod — Sonnet doğrudan]
 
 **Yapılanlar:** Explore agent ile onboarding akışı uçtan uca incelendi, kullanıcıya plan sunuldu ve onay alındı. 4 madde uygulandı: (1) **State kaybı fix (yüksek öncelik):** `OnboardingScreen.kt` — `stepIndex`, `selectedTheme`, `selectedFont`, `selectedBrowserPkg` `remember`'dan `rememberSaveable`'a geçirildi; rotation/process death'te onboarding artık WELCOME'a sıfırlanmıyor. (2) **Race condition fix:** SET_LAUNCHER adımında `ON_RESUME` lifecycle observer + `ActivityResult` callback'inin aynı anda `stepIndex++` tetikleyip çift adım atlama riski — yeni `launcherStepAdvanced` (rememberSaveable) bayrağı ile idempotent hale getirildi. (3) **Ölü kod temizliği:** `OnboardingStepContent.kt` — hiçbir yerden çağrılmayan `OnboardingStatusBadge` composable'ı (eski 17 adımlık akıştan kalma, `notifGranted`/`usageStatsGranted` gibi kullanılmayan parametrelerle) tamamen silindi. (4) **BROWSER_SELECT UX tutarsızlığı:** cihazda üçüncü parti tarayıcı yoksa artık buton "Devam Et" yazıyor (eskiden `onb_browser_btn` metniyle kafa karıştırıyordu) ve çakışan ayrı "Atla" linki gizleniyor. Build: **BUILD SUCCESSFUL** (1m 29s). Emülatörde doğrulama: temiz kurulum → SET_LAUNCHER adımına ilerlendi → ekran yatay döndürüldü → **onboarding hâlâ SET_LAUNCHER'da (2. nokta işaretli), WELCOME'a sıfırlanmadı** — rememberSaveable fix'i ekran görüntüsüyle kanıtlandı.

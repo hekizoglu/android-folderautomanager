@@ -5,6 +5,43 @@
 
 ---
 
+## 📋 SOP — Nadiren Tetiklenen Prosedürler (D210'da CLAUDE.md'den taşındı, token tasarrufu)
+
+### MD Denetim Raporu Kuralı
+Her döngüde proje kökünde `MD_DENETIM_*.md` dosyası varsa:
+1. Openclaw agent (`gh/claude-haiku-4.5`, http://localhost:20128/v1) ile içeriği analiz et
+2. Her maddeyi tek tek ele al: 1-2 madde/döngü
+3. Çözülen maddeyi HISTORY.md'ye `[ÇÖZÜLDÜ]` + kısa açıklama ile taşı; rapordan sil
+4. Çözülemeyen/gerekmeyen maddeyi HISTORY.md'ye `[ÇÖZÜLMEDI — sebep]` ile taşı; rapordan sil
+5. Rapor tamamen boşalınca (0 madde) → dosyayı sil, HISTORY.md'ye "MD Denetim KAPANDI" notu ekle
+- Sıralı döngülerde son döngüde build alınır, aradaki döngülerde build atlanır
+
+### Denetim İyileştirme Kuralı (D191)
+Her 0 sonuçlu denetim döngüsünde 1 yeni tespit yöntemi ekle:
+1. `scripts/audit_improvements.md`'deki "Bekleyen Tespit Yontemleri" kuyruğundan sıradakini al
+2. audit.ps1'a yeni kural olarak ekle (T1/T2/T3 uygun katmanına)
+3. Kuyruktaki maddeyi "Eklendi D[xxx]" olarak işaretle
+4. Kuyruk boşalırsa: agent ile yeni tespit açıları araştır, kuyruğa 3+ yeni madde ekle
+5. Her 10 döngüde bir: agent ile LEARNINGS.md E-katalogundaki hataları tara, kapsanmayanlardan yeni kural türet
+- Regex yetmez — cross-reference, null safety, coroutine scope kontrolü gibi çok katmanlı analiz şart
+- Aynı hatayı iki kez yakalama: bulunan her bug için otomatik kural ekle
+
+### Encoding Otomatik Tespit ve Düzeltme — Detaylı Adımlar
+Bir dosyada Türkçe karakter bozukluğu (`Ã¶`, `Ä±`, `ÅŸ` vb.) tespit edilirse:
+1. `PYTHONIOENCODING=utf-8 python scripts/fix_encoding.py <dosya>` — çalıştır
+2. Bozukluk devam ediyorsa: `python -c "..."` ile TURKISH_DOUBLE_ENCODED tablosunu uygula
+3. 3. denemede de çözülemediyse `COZULEMEYEN_SORUNLAR.md`'ye ekle ve kullanıcıya bildir
+- PowerShell'de `Add-Content` kullanma (double-encode üretir) — her zaman `Out-File -Encoding utf8` veya Python `write_text(encoding='utf-8')`
+- PowerShell heredoc: `@'...'@` — kapatan `'@` mutlaka sıfır indent, `<<'EOF'` bash syntax PS5'te çalışmaz
+
+### Değişiklik Güvenlik Protokolü (her agent görevi sonunda, build öncesi)
+1. Değiştirilen dosyalardaki tüm import'ları doğrula (unresolved referans yok)
+2. Eklenen her yeni sabit/fonksiyon — tüm kullanım noktaları güncellendi mi?
+3. Silinen/yeniden adlandırılan her şey — eski adı kullanan başka dosya var mı? (`grep` ile kontrol)
+4. Her görev sonunda `.\gradlew assembleDebug` — build hataları commit öncesi düzeltilmeli
+
+---
+
 ## 🆕 D206 (2026-07-07) Tuzakları
 
 ### SQLite ADD COLUMN İdempotent Değil (KRİTİK)

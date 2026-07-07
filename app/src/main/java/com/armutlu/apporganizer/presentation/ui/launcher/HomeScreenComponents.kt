@@ -644,7 +644,8 @@ internal fun HomeAppSearchBar(
     onFolderClick: (AppFolder) -> Unit = {},
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     onQueryChange: (String) -> Unit = {},
-    onEnableContactsSource: () -> Unit = {}
+    onEnableContactsSource: () -> Unit = {},
+    homeResumeTrigger: Int = 0
 ) {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
@@ -790,7 +791,7 @@ internal fun HomeAppSearchBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .scale(barScale)
-                .diamondShine(shineEnabled, RoundedCornerShape(28.dp))
+                .diamondShine(shineEnabled, RoundedCornerShape(28.dp), trigger = homeResumeTrigger)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = {

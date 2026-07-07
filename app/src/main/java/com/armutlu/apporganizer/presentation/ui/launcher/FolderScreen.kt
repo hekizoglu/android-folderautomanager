@@ -288,7 +288,11 @@ fun FolderScreen(
                     Spacer(Modifier.fillMaxWidth().height(1.dp).background(dividerColor))
                 }
 
-                // Sıralama chip'leri
+                // Sıralama chip'leri — her kriter (A-Z, Kullanım, Boyut, Yükleme) TEK buton;
+                // aktif kriterin butonuna tekrar basınca yön (asc/desc) değişir (D210 — çift buton kaldırıldı)
+                val sortBaseModes = remember {
+                    listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
+                }
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -296,20 +300,20 @@ fun FolderScreen(
                         .fillMaxWidth()
                         .padding(top = 6.dp, bottom = 8.dp),
                 ) {
-                    itemsIndexed(AllAppsSortMode.entries, key = { _, mode -> mode.name }) { _, mode ->
-                        val active = sortMode == mode
+                    itemsIndexed(sortBaseModes, key = { _, mode -> mode.name }) { _, baseMode ->
+                        val active = sortMode.baseMode() == baseMode
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(if (active) primary else onSurface.copy(alpha = 0.12f))
                                 .clickable {
-                                    sortMode = mode
-                                    AppPrefs.setFolderSortMode(context, mode.name)
+                                    sortMode = if (active) sortMode.opposite() else baseMode
+                                    AppPrefs.setFolderSortMode(context, sortMode.name)
                                 }
                                 .padding(horizontal = 11.dp, vertical = 5.dp),
                         ) {
                             Text(
-                                mode.label,
+                                if (active) sortMode.label else baseMode.label,
                                 fontSize = 11.sp,
                                 fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
                                 color = if (active) MaterialTheme.colorScheme.onPrimary else textSecondary,

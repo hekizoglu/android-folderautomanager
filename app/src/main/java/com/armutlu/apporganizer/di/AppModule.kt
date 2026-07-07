@@ -7,7 +7,6 @@ import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.ContactsIndexer
 import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.SearchDao
-import com.armutlu.apporganizer.data.local.SearchHistoryDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.repository.SearchRepository
@@ -36,9 +35,6 @@ object AppModule {
 
     @Provides
     fun provideSearchDao(db: AppDatabase): SearchDao = db.searchDao()
-
-    @Provides
-    fun provideSearchHistoryDao(db: AppDatabase): SearchHistoryDao = db.searchHistoryDao()
 
     @Provides
     fun provideNotificationEventDao(db: AppDatabase): com.armutlu.apporganizer.data.local.NotificationEventDao =

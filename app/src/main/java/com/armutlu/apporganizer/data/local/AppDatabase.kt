@@ -9,7 +9,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
-import com.armutlu.apporganizer.domain.models.SearchHistory
 import timber.log.Timber
 
 /**
@@ -20,8 +19,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, SearchHistory::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class],
-    version = 12,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class],
+    version = 13,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,7 +28,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appDao(): AppDao
     abstract fun categoryDao(): CategoryDao
     abstract fun searchDao(): SearchDao
-    abstract fun searchHistoryDao(): SearchHistoryDao
     abstract fun notificationEventDao(): NotificationEventDao
     
     companion object {
@@ -132,6 +130,14 @@ abstract class AppDatabase : RoomDatabase() {
                 """)
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_packageName ON notification_events(packageName)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_postedAt ON notification_events(postedAt)")
+            }
+        }
+
+        // v12→v13: search_history tablosu kaldırıldı — UI hiç kullanmıyordu, gerçek arama geçmişi
+        // SearchHistoryPrefs.kt (SharedPreferences, 2sa TTL) üzerinden yönetiliyor (ölü kod temizliği, D210)
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS search_history")
             }
         }
 
@@ -240,7 +246,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_8_9,
                         MIGRATION_9_10,
                         MIGRATION_10_11,
-                        MIGRATION_11_12
+                        MIGRATION_11_12,
+                        MIGRATION_12_13
                     )
                     .build()
 
