@@ -4,6 +4,15 @@
 
 ---
 
+## Döngü 206 — 2026-07-07 [KRİTİK FİKS: Migration "duplicate column name" çökmesi — Sonnet doğrudan]
+
+**Yapılanlar:** Kullanıcı `android.database.sqlite.SQLiteException: duplicate column name: customNotes ... ALTER TABLE apps ADD COLUMN customNotes` hatası bildirdi. Kök neden: SQLite'ta `ALTER TABLE ADD COLUMN IF NOT EXISTS` yok; `MIGRATION_5_6` (ve tüm diğer ADD COLUMN migration'ları: 1_2, 2_3, 3_4, 4_5, 7_8) ham `execSQL("ALTER TABLE ... ADD COLUMN ...")` kullanıyordu — eğer cihazda `user_version` ile gerçek şema arasında uyuşmazlık varsa (backup/restore, eski DB dosyası kopyalama, vb.) migration tekrar tetiklenip "duplicate column" ile çöküyordu. **Fix:** `AppDatabase.kt`'ye `SupportSQLiteDatabase.addColumnIfNotExists(table, column, definition)` extension eklendi — `PRAGMA table_info` ile sütun varlığını kontrol edip yoksa ALTER çalıştırıyor, varsa Timber uyarısıyla atlıyor. Tüm 5 ADD-COLUMN migration'ı (`MIGRATION_1_2` notificationCount, `2_3` isHidden, `3_4` lastUsedTimestamp, `4_5` notificationText, `5_6` customNotes, `7_8` 4 sütun) bu helper'a geçirildi. Emülatörde temiz kurulum + çalıştırma ile regresyon olmadığı doğrulandı (FATAL EXCEPTION yok). Build: **BUILD SUCCESSFUL** (2m 46s).
+**Agent:** — (tamamen Sonnet)
+**CLAUDE.md/LEARNINGS.md:** LEARNINGS.md'ye eklenmeli — "SQLite ADD COLUMN idempotent değil" yeni tuzak (henüz eklenmedi, sıradaki döngüde).
+**Sonraki:** LEARNINGS.md'ye bu tuzağı ekle; commit+push; ROADMAP.md S1/S2/K1 maddelerine başla (kullanıcı talebi: model otomatik seçilsin, ROADMAP'ı sırayla tamamla).
+
+---
+
 ## Döngü 205 — 2026-07-07 [FIREBASE CRASHLYTICS EMÜLATÖR DOĞRULAMASI — Sonnet doğrudan]
 
 **Yapılanlar:** Kullanıcı gerçek `app/google-services.json`'ı yerleştirdi (proje: `com-armutlu-apporganizer`, package name eşleşiyor). Doğrulama: (1) `.\gradlew assembleDebug` → `processDebugGoogleServices` task'ı UP-TO-DATE değil, gerçekten çalıştı ve yeni dosyayı doğruladı. (2) Emülatör (`Pixel6_API33`, `C:\Android\Sdk`) başlatıldı, APK kuruldu. (3) `AppOrganizerApp.kt`'ye GEÇİCİ test kodu eklendi: `setCrashlyticsCollectionEnabled(true)` (debug'da da açık) + `recordException(RuntimeException("D204 test non-fatal"))`. (4) Uygulama başlatıldı, `adb run-as` ile `/data/data/.../files/.crashlytics.v3/.../open-sessions/.../event0000000000` dosyasında test exception mesajı birebir doğrulandı; `com.crashlytics.settings.json`'da gerçek Firebase backend'inden `"status":"activated"` + gerçek `org_id` görüldü (mock değil). (5) `am force-stop` + yeniden başlatma ile oturum kapatıldı, logcat'te `TRuntime.CctTransportBackend: Making request to: https://crashlyticsreports-pa.googleapis.com/v1/firelog/legacy/batchlog` görüldü — gerçek Google sunucusuna upload isteği. Eski oturum klasörü silinip yeni oturum açıldığı doğrulandı (rapor işlendi). (6) Geçici test kodu `AppOrganizerApp.kt`'den kaldırıldı, temiz build alınıp tekrar kuruldu, crash olmadığı doğrulandı (logcat'te FATAL EXCEPTION yok). **Sonuç: Firebase Crashlytics gerçek projeye bağlı ve çalışır durumda.**

@@ -39,35 +39,35 @@ abstract class AppDatabase : RoomDatabase() {
         // v1→v2: notificationCount sütunu eklendi
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE apps ADD COLUMN notificationCount INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "notificationCount", "INTEGER NOT NULL DEFAULT 0")
             }
         }
 
         // v2→v3: isHidden sütunu eklendi
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE apps ADD COLUMN isHidden INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "isHidden", "INTEGER NOT NULL DEFAULT 0")
             }
         }
 
         // v3→v4: lastUsedTimestamp sütunu eklendi
         private val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE apps ADD COLUMN lastUsedTimestamp INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "lastUsedTimestamp", "INTEGER NOT NULL DEFAULT 0")
             }
         }
 
         // v4→v5: notificationText sütunu eklendi
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE apps ADD COLUMN notificationText TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("apps", "notificationText", "TEXT NOT NULL DEFAULT ''")
             }
         }
 
         // v5→v6: customNotes sütunu eklendi
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE apps ADD COLUMN customNotes TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("apps", "customNotes", "TEXT NOT NULL DEFAULT ''")
             }
         }
 
@@ -81,10 +81,10 @@ abstract class AppDatabase : RoomDatabase() {
         // v7→v8: AppInfo'ya firstInstalledTime, lastUpdatedTime, targetSdkVersion, versionName eklendi
         private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE apps ADD COLUMN firstInstalledTime INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE apps ADD COLUMN lastUpdatedTime INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE apps ADD COLUMN targetSdkVersion INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE apps ADD COLUMN versionName TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("apps", "firstInstalledTime", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "lastUpdatedTime", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "targetSdkVersion", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "versionName", "TEXT NOT NULL DEFAULT ''")
             }
         }
 
@@ -151,6 +151,27 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 """)
                 ensureSearchTables(db)
+            }
+        }
+
+        /**
+         * SQLite'ta "ALTER TABLE ADD COLUMN IF NOT EXISTS" yok — sütun zaten varsa
+         * "duplicate column name" ile çöker (backup/restore veya versiyon karışıklığında
+         * user_version ile gerçek şema uyuşmayabilir). PRAGMA table_info ile önce kontrol et.
+         */
+        internal fun SupportSQLiteDatabase.addColumnIfNotExists(table: String, column: String, definition: String) {
+            val exists = query("PRAGMA table_info($table)").use { cursor ->
+                val nameIdx = cursor.getColumnIndex("name")
+                var found = false
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(nameIdx) == column) { found = true; break }
+                }
+                found
+            }
+            if (!exists) {
+                execSQL("ALTER TABLE $table ADD COLUMN $column $definition")
+            } else {
+                Timber.w("Migration atlandı — $table.$column zaten mevcut (şema/versiyon uyuşmazlığı)")
             }
         }
 

@@ -5,6 +5,14 @@
 
 ---
 
+## 🆕 D206 (2026-07-07) Tuzakları
+
+### SQLite ADD COLUMN İdempotent Değil (KRİTİK)
+`ALTER TABLE ... ADD COLUMN` SQLite'ta "IF NOT EXISTS" desteklemez — sütun zaten varsa `duplicate column name` ile çöker.
+- **Yaşanan:** `MIGRATION_5_6` cihazda customNotes zaten varken tekrar eklemeye çalıştı, crash. Kök neden muhtemelen backup/restore veya DB dosyası kopyalama sırasında `user_version` ile gerçek şema arasında oluşan uyuşmazlık.
+- **Fix:** `AppDatabase.kt` içinde `SupportSQLiteDatabase.addColumnIfNotExists(table, column, definition)` — `PRAGMA table_info` ile kontrol edip yoksa ekler. Tüm ADD COLUMN migration'ları (1_2, 2_3, 3_4, 4_5, 5_6, 7_8) buna geçirildi.
+- **Kural:** Yeni bir ADD COLUMN migration'ı yazarken ham `execSQL("ALTER TABLE...")` YAZMA — her zaman `addColumnIfNotExists()` kullan.
+
 ## 🆕 D202 (2026-07-07) Tuzakları
 
 ### Room Migration Index Adı Tuzağı (KRİTİK)
