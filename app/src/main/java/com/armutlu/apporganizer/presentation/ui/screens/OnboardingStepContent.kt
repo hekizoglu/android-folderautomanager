@@ -136,31 +136,6 @@ internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
     }
 }
 
-/** Durum göstergesi — yalnızca SET_LAUNCHER adımında launcher ayarlandıysa gösterilir */
-@Composable
-internal fun OnboardingStatusBadge(
-    currentStep: OnboardingStep,
-    launcherSet: Boolean,
-    notifGranted: Boolean = false,
-    notifAccessGranted: Boolean = false,
-    usageStatsGranted: Boolean = false,
-    unusedGreyDays: Int = 0
-) {
-    val isLauncher = currentStep == OnboardingStep.SET_LAUNCHER
-    val statusText = when (currentStep) {
-        OnboardingStep.SET_LAUNCHER -> if (launcherSet) stringResource(R.string.onb_status_launcher_set) else null
-        else -> null
-    } ?: return
-    Box(
-        modifier = Modifier.fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (isLauncher) Color(0xFF00897B).copy(0.25f) else OnboardingAccentPurple.copy(0.20f))
-            .padding(12.dp)
-    ) {
-        Text(stringResource(R.string.onb_status_ok, statusText), fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
-    }
-}
-
 /** THEME_SELECT adımı UI */
 @Composable
 internal fun OnboardingThemeSelector(

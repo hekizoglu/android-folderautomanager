@@ -29,9 +29,8 @@
 
 | Tarih | Puan | Madde | Durum |
 |-------|------|-------|-------|
-| 2026-07-07 | **18 ⭐** | **Birleşik "her şeyi ara" ana ekran araması (S1)** — tek çubuk: uygulama + kategori + klasör + rehber kişisi + dosya; "Uygulama/Klasör" sekmesi ana ekrandan kaldırılır. (KV:5 · U:4 · BR:4 · EA:5) | ROADMAP S1 — Bekliyor |
-| 2026-07-07 | **16 ⭐** | **Rehber kişisi araması default etkin (S2)** — ana ekran aramasında kişiler de çıksın; izin yoksa sonuç grubunda "izin ver" kısayolu. (KV:4 · U:4 · BR:4 · EA:4) | ROADMAP S2 — Bekliyor |
-| 2026-07-07 | **17 ⭐** | **KAPT → KSP geçişi (K1)** — Windows build kilitlerinin ana kaynağı KAPT; KSP ile kilitler biter, build ~%30 hızlanır, configuration cache açılabilir. (KV:4 · U:5 · BR:4 · EA:4) | ROADMAP K1 — Bekliyor |
+
+*(Şu an bekleyen yüksek puanlı madde yok — S1/S2/K1 tamamlandı, bkz. HISTORY.md Döngü 207-208.)*
 
 ---
 
@@ -71,4 +70,4 @@
 ---
 
 *Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-07-07*
-*Not: 2026-06-29 rekabet analizi [TAMAMLANDI] maddeleri HISTORY.md Tamamlananlar Arşivi'ne taşındı (v1.2.0 döngüsü).*
+*Not: 2026-06-29 rekabet analizi [TAMAMLANDI] maddeleri HISTORY.md Tamamlananlar Arşivi'ne taşındı (v1.2.0 döngüsü). S1/S2/K1 (Döngü 207-208) tamamlandı, HISTORY.md'ye taşındı.*

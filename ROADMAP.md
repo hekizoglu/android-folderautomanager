@@ -15,12 +15,6 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 ## 📋 Bekleyen Görevler
 
-### 🔴 Kritik — Kullanıcı Talepleri (2026-07-07)
-
-| # | Puan | Görev | Öneri |
-|---|------|-------|-------|
-| **K1** | **17⭐** | **KAPT → KSP geçişi** — build kilitlerinin ve yavaşlığın ana kaynağı; Hilt 2.52 + Room KSP destekli (Kotlin 1.9.25) | Ayrı döngüde tek başına: plugin değişimi + `kapt(...)`→`ksp(...)` + tam build + emülatör smoke; sonra configuration cache açılabilir |
-
 ### 🔴 Kritik — Kararlılık (Play Store Öncesi Engel)
 
 | Görev | Neden Kritik | Durum |

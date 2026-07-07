@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Language
@@ -64,7 +65,8 @@ fun OnboardingScreen(
     viewModel: AppListViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    var stepIndex by remember { mutableStateOf(0) }
+    // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix)
+    var stepIndex by rememberSaveable { mutableStateOf(0) }
     val steps = listOf(
         OnboardingStep.WELCOME,
         OnboardingStep.SET_LAUNCHER,
@@ -77,20 +79,27 @@ fun OnboardingScreen(
 
     // ── State ────────────────────────────────────────────────────────────
     var launcherSet by remember { mutableStateOf(isDefaultLauncherApp(context)) }
-    var selectedTheme by remember { mutableStateOf(AppTheme.TEAL) }
-    var selectedFont by remember { mutableStateOf(AppFont.DEFAULT) }
+    var selectedTheme by rememberSaveable { mutableStateOf(AppTheme.TEAL) }
+    var selectedFont by rememberSaveable { mutableStateOf(AppFont.DEFAULT) }
     val scope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferences(context) }
 
     // Browser state
     val browsers = remember { installedBrowsers(context) }
-    var selectedBrowserPkg by remember { mutableStateOf<String?>(null) }
+    var selectedBrowserPkg by rememberSaveable { mutableStateOf<String?>(null) }
     var browserRoleSet by remember { mutableStateOf(false) }
+
+    // SET_LAUNCHER'da ON_RESUME ve ActivityResult callback'i aynı anda stepIndex++ tetikleyebilir
+    // (Activity result sırası garantili değil) — bu bayrak çift artışı engeller (D209 fix).
+    var launcherStepAdvanced by rememberSaveable { mutableStateOf(false) }
 
     // ── Launchers ────────────────────────────────────────────────────────
     val roleRequestLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         launcherSet = isDefaultLauncherApp(context)
-        if (launcherSet) stepIndex++
+        if (launcherSet && !launcherStepAdvanced) {
+            launcherStepAdvanced = true
+            stepIndex++
+        }
     }
 
     val browserRoleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -105,7 +114,10 @@ fun OnboardingScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 launcherSet = isDefaultLauncherApp(context)
-                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER) stepIndex++
+                if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER && !launcherStepAdvanced) {
+                    launcherStepAdvanced = true
+                    stepIndex++
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -310,6 +322,7 @@ fun OnboardingScreen(
                 Text(
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
+                        currentStep == OnboardingStep.BROWSER_SELECT && browsers.isEmpty() -> stringResource(R.string.onb_continue)
                         else -> stringResource(currentStep.buttonLabelRes)
                     },
                     fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
@@ -325,8 +338,10 @@ fun OnboardingScreen(
                 ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             }
 
-            // İsteğe bağlı adımlar için "Atla"
-            if (currentStep.isSkippable) {
+            // İsteğe bağlı adımlar için "Atla" — BROWSER_SELECT'te tarayıcı yoksa ana buton zaten
+            // skip işlevi görüyor (bkz. yukarı), ayrı "Atla" linki göstermek kafa karıştırır.
+            val hideRedundantSkipLink = currentStep == OnboardingStep.BROWSER_SELECT && browsers.isEmpty()
+            if (currentStep.isSkippable && !hideRedundantSkipLink) {
                 Spacer(Modifier.height(4.dp))
                 Box(
                     modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
