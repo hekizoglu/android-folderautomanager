@@ -79,6 +79,17 @@ internal fun AllAppsSortMode.baseMode(): AllAppsSortMode = when (this) {
     else -> this
 }
 
+internal fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
+    AllAppsSortMode.ALPHA            -> sortedBy { it.appName.lowercase() }
+    AllAppsSortMode.ALPHA_DESC       -> sortedByDescending { it.appName.lowercase() }
+    AllAppsSortMode.USAGE            -> sortedByDescending { it.usageCount }
+    AllAppsSortMode.USAGE_ASC        -> sortedBy { it.usageCount }
+    AllAppsSortMode.SIZE_DESC        -> sortedByDescending { it.appSizeBytes }
+    AllAppsSortMode.SIZE_ASC         -> sortedBy { it.appSizeBytes }
+    AllAppsSortMode.INSTALL_DATE     -> sortedByDescending { it.installTime }
+    AllAppsSortMode.INSTALL_DATE_ASC -> sortedBy { it.installTime }
+}
+
 internal fun formatUsageMs(ms: Long): String = when {
     ms <= 0L         -> "—"
     ms < 60_000L     -> "${ms / 1000} sn"

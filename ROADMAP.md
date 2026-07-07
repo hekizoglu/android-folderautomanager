@@ -45,7 +45,6 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | **Android 14 NotificationListenerService gerçek cihaz testi** | `AppNotificationListenerService.kt` | Bekliyor |
 | **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
 | **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
-| **Klasör değiştirmeden sonra görsel güncelleme kalıyor** | stale UI state sorunu | Bekliyor |
 | **Geri tuşuyla ilk sayfa yenileniyor** | eski/yavaş cihazlarda istenmeyen yavaşlama | Bekliyor |
 | **Token logu ekle** | issue_mitigation raporu — "ölçmediğin şeyi optimize edemezsin" | Bekliyor |
 | **Rakip analiz — Smart Launcher / Niagara referans** | tasarım karar belgesi için | Bekliyor |

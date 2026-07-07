@@ -153,7 +153,7 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _openFolderId = MutableStateFlow<String?>(null)
-    // folders flow'undan türetilir — kategori değişince FolderSheet anlık güncellenir
+    // folders flow'undan türetilir — kategori değişince FolderScreen anlık güncellenir
     val openFolder: StateFlow<AppFolder?> = combine(
         _openFolderId,
         folders
@@ -588,7 +588,7 @@ class LauncherViewModel @Inject constructor(
     }
 
     // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti tek akışta.
-    // Dokunma hedefleri: klasör haberi → FolderSheet, bildirim haberi → Bildirim Raporu, içgörü → Dashboard.
+    // Dokunma hedefleri: klasör haberi → FolderScreen, bildirim haberi → Bildirim Raporu, içgörü → Dashboard.
     val tickerItems: StateFlow<List<TickerItem>> = combine(
         folders,
         insightCards,

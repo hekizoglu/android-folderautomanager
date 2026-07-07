@@ -4,6 +4,15 @@
 
 ---
 
+## Döngü 204 — 2026-07-07 [DEAD CODE TEMİZLİĞİ — v1.2.0 üzerine, Sonnet doğrudan]
+
+**Yapılanlar:** Kullanıcı Firebase Crashlytics durumunu sordu — ROADMAP.md:35'te zaten doğru not var (kod hazır, `google-services.json` placeholder, kullanıcı Firebase Console'dan gerçek dosya indirmeli). Ardından "Klasör taşma"/"stale UI" ROADMAP maddeleri incelendi: **`FolderSheet.kt` tamamen ölü kod** olduğu doğrulandı (v1.2.0 commit'i de bu dosyaya 4 satır dokunmuş ama hâlâ hiçbir yerden çağrılmıyor — `git grep "FolderSheet("` sadece kendi tanımını buluyor); gerçek klasör ekranı `FolderScreen.kt` zaten `openFolder` reaktif Flow + `weight(1f)` taşma koruması + v1.2.0'ın `HomeLayoutMath` kapasite clamp'i ile korunuyor. Dosya silindi; `sortedByMode` extension (FolderScreen.kt'nin de kullandığı, yanlışlıkla FolderSheet.kt'de tanımlıydı) `AllAppsDrawerUtils.kt`'ye taşındı. `LauncherViewModel.kt:156,591` bayat "FolderSheet" yorumları → "FolderScreen" düzeltildi. ROADMAP.md'den "Klasör değiştirmeden sonra görsel güncelleme kalıyor" satırı kaldırıldı (zaten `openFolder` combine Flow ile reaktif, doğrulandı). **Not:** İlk push denemesi `non-fast-forward` ile reddedildi (uzak repoya bilinmeyen v1.2.0 commit'i push edilmişti) — rebase conflict'e girince abort edilip origin/main üzerine sıfırdan uygulandı (`backup-679e425` branch'inde eski deneme yedeklendi). Build: **BUILD SUCCESSFUL** (2m 27s), sadece mevcut deprecation uyarıları.
+**Agent:** — (tamamen Sonnet, Fable çağrılmadı — kullanıcı talebi: kota tüketme)
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi.
+**Sonraki:** Telegram gönderimi denendi ama kullanıcının verdiği bot token geçersizdi (401) — geçerli token/chat ID ile tekrar denenmeli. `backup-679e425` local branch'i temizlenebilir (artık gereksiz).
+
+---
+
 ## Döngü 203 — 2026-07-07 [v1.2.0 BÜYÜK UI YENİLEME — Fable 5 + Sonnet agent]
 
 **Yapılanlar:** Kullanıcının 10+ maddelik talimat listesi tek döngüde tamamlandı, emülatörde ekran görüntülü uçtan uca doğrulandı (crash yok):
