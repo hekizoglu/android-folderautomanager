@@ -29,8 +29,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Person
@@ -47,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,6 +84,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.SearchDocument
+import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchCache
@@ -618,7 +625,11 @@ internal fun SwipeHint(context: Context, visible: Boolean) {
 }
 
 /**
- * Ana ekran uygulama arama çubuğu — allApps içinde isim arar, sonuçlar anlık gösterilir.
+ * Ana ekran birleşik arama çubuğu (S1) — tek sorguda uygulama + klasör + kişi + dosya
+ * sonuçları kaynak gruplarıyla gösterilir (AllAppsDrawer'daki SourceGroupHeader pattern'i).
+ * "Uygulama / Klasör" sekmesi kaldırıldı; klasör eşleşmeleri "Klasörler" sonuç grubudur.
+ * Kişi araması izin verilmişse varsayılan etkindir; izin yoksa "Kişiler" grubunda
+ * "izin ver" kısayolu görünür (S2).
  * Long-press (300ms) → drag handle görünür + scale(1.04f); bırakınca snap noktasına oturur.
  */
 @Composable
@@ -627,13 +638,16 @@ internal fun HomeAppSearchBar(
     onAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onPositionSnap: ((String) -> Unit)? = null,
-    folderQuery: String? = null,
-    onFolderQueryChange: ((String) -> Unit)? = null
+    folders: List<AppFolder> = emptyList(),
+    folderCustomNames: Map<String, String> = emptyMap(),
+    folderCustomEmojis: Map<String, String> = emptyMap(),
+    onFolderClick: (AppFolder) -> Unit = {},
+    searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
+    onQueryChange: (String) -> Unit = {},
+    onEnableContactsSource: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
-    var folderMode by remember { mutableStateOf(false) }
-    val activeFolderMode = folderMode && folderQuery != null
 
     // Arama ayarları — her recompose'da SharedPrefs okumak pahalı, remember ile
     val fuzzy         = remember { AppPrefs.isSearchFuzzyEnabled(context) }
@@ -642,42 +656,96 @@ internal fun HomeAppSearchBar(
     val maxResults    = remember { AppPrefs.getSearchMaxResults(context) }
     val showIcons     = remember { AppPrefs.isSearchShowIcons(context) }
     val showAvatar    = remember { AppPrefs.isSearchShowContactAvatar(context) }
-    val contactsOn    = remember { AppPrefs.isSearchSourceContactsEnabled(context) }
     val shineEnabled  = remember { AppPrefs.isSearchShineEnabled(context) }
+
+    // Kişi kaynağı — Settings'ten dönünce güncellensin (Reaktif AppPrefs pattern'i, LEARNINGS)
+    var contactsOn by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
+    // Kullanıcı Ayarlar'dan kişi kaynağını BİLİNÇLİ kapattıysa "izin ver" kısayolu da gizlenir
+    var contactsOptedOut by remember {
+        mutableStateOf(
+            AppPrefs.hasSearchSourceContactsPreference(context) &&
+                !AppPrefs.isSearchSourceContactsEnabled(context)
+        )
+    }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) {
+                contactsOn = AppPrefs.isSearchSourceContactsEnabled(context)
+                contactsOptedOut = AppPrefs.hasSearchSourceContactsPreference(context) && !contactsOn
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
+    // READ_CONTACTS izin durumu + istek launcher'ı (S2: sonuç grubunda "izin ver" kısayolu)
+    var contactsPermGranted by remember {
+        mutableStateOf(
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.READ_CONTACTS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        )
+    }
+    // Spec §5: kullanıcı bir kez reddederse o oturumda tekrar sorulmaz
+    var contactsPermDeniedSession by remember { mutableStateOf(false) }
+    val contactsPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            contactsPermGranted = true
+            AppPrefs.setSearchSourceContactsEnabled(context, true)
+            SearchCache.loadContacts(context)
+            SearchCache.observeContacts(context)
+            onEnableContactsSource() // FTS indeksi (ContactsIndexer) arka planda başlar
+        } else {
+            contactsPermDeniedSession = true
+        }
+    }
 
     // Cache'i allApps değişince güncelle
     LaunchedEffect(allApps) {
         withContext(Dispatchers.IO) { SearchCache.warmApps(allApps) }
     }
 
-    // Kişi cache'ini başlat (izin varsa)
-    LaunchedEffect(contactsOn) {
-        if (contactsOn) {
-            val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
-                context, android.Manifest.permission.READ_CONTACTS
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            if (hasPermission) {
-                SearchCache.loadContacts(context)
-                SearchCache.observeContacts(context)
-            }
+    // Kişi cache'ini başlat (kaynak açık + izin varsa)
+    LaunchedEffect(contactsOn, contactsPermGranted) {
+        if (contactsOn && contactsPermGranted) {
+            SearchCache.loadContacts(context)
+            SearchCache.observeContacts(context)
         }
     }
 
-    // Sonuçlar: app + kişi
-    val appResults = remember(query, allApps, activeFolderMode, fuzzy, phonetic, sortByUsage, maxResults) {
-        if (activeFolderMode || query.isBlank()) emptyList()
+    // Sonuç grupları: uygulama + klasör + kişi + dosya (S1 — birleşik arama)
+    val appResults = remember(query, allApps, fuzzy, phonetic, sortByUsage, maxResults) {
+        if (query.isBlank()) emptyList()
         else SearchCache.searchApps(query, maxResults, phonetic, fuzzy, sortByUsage)
     }
-    val contactResults = remember(query, contactsOn, activeFolderMode) {
-        if (!contactsOn || activeFolderMode || query.isBlank()) emptyList()
+    // Klasörler — eski "Klasör" sekmesinin yerine sonuç grubu; özel klasör adı varsa onunla eşleşir
+    val folderResults = remember(query, folders, folderCustomNames) {
+        if (query.isBlank() || folders.isEmpty()) emptyList()
+        else {
+            val q = query.trim().lowercase(Locale("tr"))
+            folders.filter { folder ->
+                val displayName = folderCustomNames[folder.category.categoryId]
+                    ?: folder.category.categoryName
+                displayName.lowercase(Locale("tr")).contains(q)
+            }.take(4)
+        }
+    }
+    val contactResults = remember(query, contactsOn, contactsPermGranted) {
+        if (!contactsOn || !contactsPermGranted || query.isBlank()) emptyList()
         else SearchCache.searchContacts(query, 3, phonetic = true, fuzzy = true)
     }
+    // Dosya adları — SearchRepository FTS5 indeksinden (LauncherViewModel.searchResults akışı)
+    val fileResults = if (query.isBlank()) emptyList()
+        else searchResults[SourceType.FILE].orEmpty().take(4)
+    // İzin yoksa "Kişiler" grubunda izin kısayolu göster (kullanıcı kaynağı kapatmadıysa)
+    val showContactsPermissionHint = query.isNotBlank() && !contactsPermGranted &&
+        !contactsOptedOut && !contactsPermDeniedSession
 
-    // Klasör arama modundayken folderQuery'yi güncelle
-    LaunchedEffect(query, activeFolderMode) {
-        if (activeFolderMode) onFolderQueryChange?.invoke(query)
-        else if (!activeFolderMode && folderQuery != null) onFolderQueryChange?.invoke("")
-    }
+    // Sorguyu ViewModel'e ilet — FTS5 çok-kaynak araması (dosyalar) debounce ile orada çalışır
+    LaunchedEffect(query) { onQueryChange(query) }
     val historyItems = remember(query) {
         if (query.isNotBlank()) emptyList()
         else SearchHistoryPrefs.getHistory(context)
@@ -762,38 +830,7 @@ internal fun HomeAppSearchBar(
             borderAlpha = if (isDragging) 0.45f else 0.25f
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                // Sekme row — sadece klasör araması da etkinse göster
-                if (folderQuery != null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        listOf(false to "Uygulama", true to "Klasör").forEach { (isFolderTab, label) ->
-                            val selected = activeFolderMode == isFolderTab
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(
-                                        if (selected) Color.White.copy(alpha = 0.22f)
-                                        else Color.Transparent
-                                    )
-                                    .clickable {
-                                        folderMode = isFolderTab
-                                        query = ""
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    label,
-                                    color = Color.White.copy(alpha = if (selected) 1f else 0.45f),
-                                    fontSize = 11.sp,
-                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
-                                )
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(6.dp))
-                }
+                // "Uygulama / Klasör" sekmesi kaldırıldı (S1) — klasörler artık sonuç grubu
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -808,8 +845,9 @@ internal fun HomeAppSearchBar(
                         modifier = Modifier.weight(1f),
                         decorationBox = { inner ->
                             Box(Modifier.weight(1f)) {
+                                // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez
                                 if (query.isEmpty()) Text(
-                                    if (activeFolderMode) "Klasör ara…" else "Uygulama, kategori ara…",
+                                    "Uygulama, kategori ara…",
                                     color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp
                                 )
                                 inner()
@@ -875,13 +913,25 @@ internal fun HomeAppSearchBar(
             }
         }
 
-        // Sonuç listesi — uygulamalar + kişiler
-        if ((appResults.isNotEmpty() || contactResults.isNotEmpty()) && !isDragging) {
+        // Sonuç listesi — kaynak grupları: Uygulamalar / Klasörler / Kişiler / Dosyalar (S1)
+        val hasAnyResult = appResults.isNotEmpty() || folderResults.isNotEmpty() ||
+            contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint
+        if (hasAnyResult && !isDragging) {
+            // Tek grup varsa başlık gereksiz kalabalık — yalnızca çoklu grupta göster
+            val multiGroup = listOf(
+                appResults.isNotEmpty(),
+                folderResults.isNotEmpty(),
+                contactResults.isNotEmpty() || showContactsPermissionHint,
+                fileResults.isNotEmpty()
+            ).count { it } > 1
             Spacer(Modifier.height(4.dp))
             GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.18f) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
 
                     // App sonuçları
+                    if (appResults.isNotEmpty() && multiGroup) {
+                        HomeSearchGroupHeader(label = "Uygulamalar", icon = Icons.Default.Search)
+                    }
                     appResults.forEach { app ->
                         Row(
                             modifier = Modifier
@@ -922,23 +972,58 @@ internal fun HomeAppSearchBar(
                         }
                     }
 
-                    // Kişi sonuçları — ayraç
-                    if (contactResults.isNotEmpty()) {
+                    // Klasör sonuçları — eski "Klasör" sekmesinin yerini alan sonuç grubu (S1)
+                    if (folderResults.isNotEmpty()) {
                         if (appResults.isNotEmpty()) {
                             HorizontalDivider(
                                 Modifier.padding(horizontal = 16.dp),
                                 color = Color.White.copy(alpha = 0.10f)
                             )
                         }
-                        Row(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Person, null,
-                                tint = Color.White.copy(alpha = 0.40f), modifier = Modifier.size(11.dp))
-                            Text("Kişiler", color = Color.White.copy(alpha = 0.40f), fontSize = 11.sp)
+                        HomeSearchGroupHeader(label = "Klasörler", icon = Icons.Default.Folder)
+                        folderResults.forEach { folder ->
+                            val displayName = folderCustomNames[folder.category.categoryId]
+                                ?: folder.category.categoryName
+                            val emoji = (folderCustomEmojis[folder.category.categoryId]
+                                ?: folder.category.iconEmoji).ifBlank { "📁" }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        SearchHistoryPrefs.addQuery(context, query)
+                                        query = ""
+                                        onFolderClick(folder)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(emoji, fontSize = 16.sp)
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(displayName, color = Color.White.copy(alpha = 0.90f),
+                                        fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text("${folder.apps.size} uygulama",
+                                        color = Color.White.copy(alpha = 0.45f), fontSize = 11.sp)
+                                }
+                            }
                         }
+                    }
+
+                    // Kişi sonuçları — ayraç
+                    if (contactResults.isNotEmpty()) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty()) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        HomeSearchGroupHeader(label = "Kişiler", icon = Icons.Default.Person)
                         contactResults.forEach { contact ->
                             Row(
                                 modifier = Modifier
@@ -999,9 +1084,114 @@ internal fun HomeAppSearchBar(
                             }
                         }
                     }
+
+                    // İzin kısayolu — kişi araması etkin ama READ_CONTACTS yok (S2)
+                    if (showContactsPermissionHint) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty()) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        HomeSearchGroupHeader(label = "Kişiler", icon = Icons.Default.Person)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.70f), modifier = Modifier.size(18.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Kişilerde de ara", color = Color.White.copy(alpha = 0.90f),
+                                    fontSize = 14.sp)
+                                Text("Rehber sonuçları için dokunup izin ver",
+                                    color = Color.White.copy(alpha = 0.45f), fontSize = 11.sp)
+                            }
+                        }
+                    }
+
+                    // Dosya sonuçları — FTS5 indeksinden (kaynak Ayarlar > Arama'dan kapatılabilir)
+                    if (fileResults.isNotEmpty()) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty() ||
+                            contactResults.isNotEmpty() || showContactsPermissionHint
+                        ) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        HomeSearchGroupHeader(label = "Dosyalar", icon = Icons.Default.Description)
+                        fileResults.forEach { document ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        SearchHistoryPrefs.addQuery(context, query)
+                                        query = ""
+                                        // AllAppsDrawer.openSearchDocument ile aynı pattern
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(document.sourceId))
+                                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        runCatching { context.startActivity(intent) }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Description, contentDescription = null,
+                                        tint = Color.White.copy(alpha = 0.70f), modifier = Modifier.size(16.dp))
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(document.title, color = Color.White.copy(alpha = 0.90f),
+                                        fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    val subtitle = document.subtitle.ifBlank { document.sourceId }
+                                    Text(subtitle, color = Color.White.copy(alpha = 0.45f),
+                                        fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+/**
+ * Ana ekran arama sonuç grubu başlığı — glass stilinde küçük kaynak etiketi
+ * (AllAppsDrawer.SourceGroupHeader'ın home karşılığı).
+ */
+@Composable
+private fun HomeSearchGroupHeader(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null
+) {
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null,
+                tint = Color.White.copy(alpha = 0.40f), modifier = Modifier.size(11.dp))
+        }
+        Text(label, color = Color.White.copy(alpha = 0.40f), fontSize = 11.sp)
     }
 }
 

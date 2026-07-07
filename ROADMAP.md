@@ -19,8 +19,6 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 | # | Puan | Görev | Öneri |
 |---|------|-------|-------|
-| **S1** | **18⭐** | **Birleşik "her şeyi ara" ana ekran araması** — tek arama çubuğu uygulama + kategori + klasör + rehber kişisi + dosya arasın; "Uygulama / Klasör" sekmesi ana ekrandan KALDIRILSIN | `HomeAppSearchBar`'ı `SearchRepository` (FTS5 çok-kaynak) ile birleştir; klasör filtresi ayrı sekme değil sonuç grubu olsun; kaynak kapatma SearchSettingsScreen'de zaten var |
-| **S2** | **16⭐** | **Rehber kişisi araması ana ekranda default etkin** — kullanıcı arama yaptığında kişiler de sonuçlarda çıksın (izin verilmişse) | S1 içinde `ContactsIndexer` sonuçlarını HomeAppSearchBar'a bağla; izin yoksa sonuç grubunda "izin ver" kısayolu |
 | **K1** | **17⭐** | **KAPT → KSP geçişi** — build kilitlerinin ve yavaşlığın ana kaynağı; Hilt 2.52 + Room KSP destekli (Kotlin 1.9.25) | Ayrı döngüde tek başına: plugin değişimi + `kapt(...)`→`ksp(...)` + tam build + emülatör smoke; sonra configuration cache açılabilir |
 
 ### 🔴 Kritik — Kararlılık (Play Store Öncesi Engel)

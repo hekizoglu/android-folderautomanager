@@ -479,7 +479,8 @@ fun HomeScreen(
                     }
             )
 
-            // Birleşik arama çubuğu bölümü — uygulama + klasör filtresi tek çubukta.
+            // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,
+            // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
             // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
             // BOTTOM = Google aramasının altı (spec: UX_SEARCH_REPORTS_SPEC §5).
             val searchBarSection: @Composable () -> Unit = {
@@ -487,8 +488,17 @@ fun HomeScreen(
                     HomeAppSearchBar(
                         allApps = allApps,
                         onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-                        folderQuery = if (homeSearchEnabled) folderSearchQuery else null,
-                        onFolderQueryChange = if (homeSearchEnabled) ({ folderSearchQuery = it }) else null,
+                        // Klasör grubu "Klasor ve Kategori Aramasi" toggle'ına bağlı kalır
+                        folders = if (homeSearchEnabled) folders else emptyList(),
+                        folderCustomNames = customFolderNames,
+                        folderCustomEmojis = customFolderEmojis,
+                        onFolderClick = { folder ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onNavigateToFolder(folder)
+                        },
+                        searchResults = searchResults,
+                        onQueryChange = viewModel::setSearchQuery,
+                        onEnableContactsSource = viewModel::enableContactsSearchSource,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp)

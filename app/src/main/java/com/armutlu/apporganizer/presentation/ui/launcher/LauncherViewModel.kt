@@ -326,6 +326,18 @@ class LauncherViewModel @Inject constructor(
         _searchQuery.value = q
     }
 
+    /**
+     * S2: Ana ekran aramasında rehber izni verilince kişi kaynağının FTS indeksini
+     * arka planda başlatır (ContactsIndexer.indexAll + ContentObserver kaydı).
+     * AppPrefs.setSearchSourceContactsEnabled(true) çağrı yerinde (HomeAppSearchBar) yapılır.
+     */
+    fun enableContactsSearchSource() {
+        viewModelScope.launch {
+            runCatching { searchRepository.enableContactsSource() }
+                .onFailure { Timber.w(it, "Kişi arama kaynağı etkinleştirilemedi") }
+        }
+    }
+
     /** Paketi launcher üzerinden başlatır ve kullanım sayacını artırır. */
     fun launchApp(context: Context, packageName: String) {
         try {

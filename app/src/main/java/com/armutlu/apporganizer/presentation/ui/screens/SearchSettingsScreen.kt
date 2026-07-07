@@ -244,7 +244,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.Person,
                         title = "Kisiler",
-                        subtitle = "Opsiyonel. Ileride izin verilirse kisi kartlari aranabilir",
+                        subtitle = "Izin verilmisse ana ekran aramasinda kisiler de listelenir",
                         checked = contactsSourceEnabled,
                         onCheckedChange = {
                             if (it) {
