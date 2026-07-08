@@ -4,6 +4,26 @@
 
 ---
 
+## Döngü 215 — 2026-07-08 [10 GÖREV audit turu (Fable orkestrasyon) + tüm çözüm önerileri uygulandı]
+
+**Yapılanlar:** Kullanıcı 10 ayrı dar-kapsamlı GÖREV (1-10) sıraladı, her biri "SADECE şu dosyalara bak" kısıtıyla analiz istedi; sonunda "tüm çözüm önerilerini uygula" talimatıyla bulguların kod/doküman karşılıkları uygulandı:
+1. **GÖREV 1-2 (CS-3 Defender):** `scripts/add_defender_exclusion.ps1`'deki eski path bug'ı düzeltildi, `scripts/clear_build_lock.ps1` eklendi (admin gerektirmeyen güvenli acil workaround).
+2. **GÖREV 3 (Akıllı Bildirim skor bağlantısı):** FİKİRLER.md'ye 15p'lik KV/U/BR/EA kırılımı eklendi, ROADMAP.md'deki R7/Detay bölümüne çapraz referans eklendi.
+3. **GÖREV 4-5 (SmartInsightWorker + notification content doğrulama):** Saat değişince yeniden planlama ve master-kapat→cancel akışı doğrulandı (sorun yok); `notification_events` tablosunun yalnızca packageName+postedAt tuttuğu, bildirim metninin sadece RAM'de (`_latestTexts`) kaldığı teyit edildi.
+4. **GÖREV 6 (ayarlar tekrarı) → uygulandı:** `SettingsNotificationsScreen.kt` — "Kullanım Bilgisi" toggle'ı artık "Bildirim Metni" açıkken görsel olarak devre dışı gösteriliyor (aynı UI alanını paylaştıkları netleştirildi). `SettingsBackupAboutSection.kt` — "Haftalık Uygulama Raporu" alt yazısına "Kullanılmayan Uygulamalar" ile ilişkisini açıklayan not eklendi (tam birleştirme/taşıma yapılmadı — büyük UI refactor, ayrı onay gerektirir).
+5. **GÖREV 7 (YENİ BULGU — Accessibility Service belgesizliği):** `LauncherAccessibilityService.kt` (drag&drop için, şu an boş stub) `AndroidManifest.xml`'de kayıtlıydı ama privacy_policy.html/ROADMAP/FİKİRLER'in hiçbirinde geçmiyordu. `privacy_policy.html` §6'ya servisin gerçek davranışı (şu an no-op) net şekilde eklendi; FİKİRLER.md'ye 16p madde olarak işlenip aynı döngüde tamamlandı işaretlendi.
+6. **GÖREV 8 (QA checklist):** 10 maddelik gerçek-cihaz test listesi üretildi (dosyaya yazılmadı, talep gereği kısa tutuldu).
+7. **GÖREV 9 (FİKİRLER/ROADMAP senkronizasyonu) → uygulandı:** ROADMAP.md 🔴 tablosundaki stale satırlar güncellendi — "Privacy Policy sayfası" ✅ yayında olarak işaretlendi, "Privacy Policy URL doğrulama" satırı kaldırıldı (tamamen bitti), "Data Safety uyum paketi" satırı "kod tarafı bitti, Play Console formu bekliyor" diye daraltıldı.
+8. **GÖREV 10 (build engeli taraması):** Kritik engel bulunamadı; `.claude/rules/build.md`'deki eski AGP/Kotlin/SDK sürüm numaraları düzeltilmek istendi ama Claude Code auto-mode classifier'ı "protected agent-config path, kullanıcı talebi yok" gerekçesiyle reddetti → COZULEMEYEN_SORUNLAR.md'ye [CS-5] olarak eklendi.
+9. **Çözülemeyen (COZULEMEYEN_SORUNLAR.md'ye taşındı):** [CS-4] ROADMAP.md'nin `DOCS_SCORE_HIGH` bloğu `score_docs_backlog.ps1` tarafından otomatik yenilendiği için elle "Tamamlandı" işaretlenemedi (kaynak dosya `docs/internal/docs_backlog_score.md` güncellenmeli, kapsam dışı). [CS-5] build.md izin reddi.
+
+Build: `compileDebugKotlin` + `assembleDebug -PskipGoogleServices` başarılı (versionCode 16→17, versionName 1.2.3→1.2.4). Emülatör bu turda da bağlı değildi — değişiklikler Compose state/UI metni seviyesinde, düşük riskli, derleme temiz geçti.
+
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi.
+**Sonraki:** "Haftalık Uygulama Raporu" ↔ "Kullanılmayan Uygulamalar" tam birleştirmesi (ekranlar arası taşıma) hâlâ FİKİRLER.md ⏸ Beklet'te (10p) — kullanıcı onayı bekliyor. Emülatör açılınca UI smoke testi tekrarlanmalı.
+
+---
+
 ## Döngü 214 — 2026-07-08 [Play Store privacy/data-safety uyumu — 4 madde tamamlandı, 18p madde kısmen]
 
 **Yapılanlar:** FİKİRLER.md'deki ⭐ Yüksek Puanlı (15+) Play Store hazırlık maddeleri, kod-uygulanabilir kısımlarıyla ele alındı:

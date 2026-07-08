@@ -34,5 +34,19 @@ C:\Users\huseyinekizoglu\.android
 
 ---
 
-*Son güncelleme: 2026-06-28 | Çözülenler → HISTORY.md "Tamamlananlar Arşivi" bölümüne taşındı*
+### [CS-4] ROADMAP.md DOCS_SCORE_HIGH bloğu elle güncellenemiyor
+**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — otomasyon sahipliği Claude'da değil
+**Sorun:** `ROADMAP.md`'deki `<!-- DOCS_SCORE_HIGH_START/END -->` bloğu (R1-R7 satırları), kendi başlığına göre `scripts/score_docs_backlog.ps1 -UpdateRoadmap` tarafından `docs/internal/docs_backlog_score.md` kaynağından her döngüde otomatik yenileniyor. Döngü 214-215'te R2 (Privacy Policy URL), R3 (rehber/bildirim metni çelişkileri) ve R5 (Firebase Analytics azaltma) fiilen kodda tamamlandı, ama bu blok içindeki "Durum: Bekliyor" etiketlerini elle "Tamamlandı" yapmak script'in bir sonraki `-UpdateRoadmap` çalıştırmasında sessizce üzerine yazılır (kaynak dosya değişmediği için).
+**Denenen:** Blok dışındaki 🔴/🟡 tablo satırları ve FİKİRLER.md güncellendi (gerçek kaynak-of-truth burada tutuluyor); blok içine elle dokunulmadı.
+**Kullanıcıdan beklenen:** Kalıcı çözüm için `docs/internal/docs_backlog_score.md` içindeki R2/R3/R5 kaynak satırlarının durumunun güncellenmesi veya `score_docs_backlog.ps1`'in tamamlanan maddeleri otomatik algılayacak bir mekanizma kazanması gerekiyor — bu script'in kendisi mevcut GÖREV kapsamlarının hiçbirinde yoktu.
+
+### [CS-5] `.claude/rules/build.md` eski AGP/Kotlin/SDK sürümleri
+**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — izin reddi
+**Sorun:** Dosya "AGP 8.2.0, Kotlin 1.9.22, targetSdk/compileSdk 34" yazıyor; gerçek `build.gradle.kts`/`app/build.gradle.kts` AGP 8.6.1, Kotlin 1.9.25, compileSdk/targetSdk 35 kullanıyor (build zaten bu değerlerle başarılı çalışıyor — sadece dokümantasyon drift'i, build'i bloklamıyor).
+**Denenen:** Edit tool ile düzeltme denendi → Claude Code auto-mode classifier reddetti: `.claude/rules/` "protected agent-config path", kullanıcının bu spesifik değişikliği açıkça talep etmemiş olması nedeniyle self-modification olarak engellendi.
+**Kullanıcıdan beklenen:** Kullanıcı ya dosyayı elle güncellemeli ya da Claude'a bu spesifik dosya için açık düzenleme izni vermeli (`.claude/settings.json`'a Bash/Edit izin kuralı ekleyerek).
+
+---
+
+*Son güncelleme: 2026-07-08 | Çözülenler → HISTORY.md "Tamamlananlar Arşivi" bölümüne taşındı*
 *Not: LD-* sahte girişler (2026-06-28 03:33-10:33) temizlendi - run_local_denetim_cycle.ps1 koşulsuz yazıyordu, D168'de düzeltildi.*

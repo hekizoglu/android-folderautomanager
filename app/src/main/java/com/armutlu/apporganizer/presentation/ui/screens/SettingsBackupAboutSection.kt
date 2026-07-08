@@ -524,7 +524,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Haftalık Uygulama Raporu", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                    Text("7+ gündür açılmayan uygulamalar için haftalık bildirim", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("7+ gündür açılmayan uygulamalar için haftalık bildirim — Bildirimler > Akıllı Bildirimler'deki \"Kullanılmayan Uygulamalar\" (3+ hafta) ile benzer amaçlı, farklı eşik", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(
                     checked = weeklyDigest,

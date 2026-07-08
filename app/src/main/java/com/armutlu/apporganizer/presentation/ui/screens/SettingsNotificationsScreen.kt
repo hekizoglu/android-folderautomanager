@@ -140,13 +140,16 @@ fun SettingsNotificationsScreen(onNavigateBack: () -> Unit) {
         }
 
         // Kullanım Bilgisi toggle — klasör altında "X gündür açılmadı" alt yazısı
+        // "Bildirim Metni" (Launcher > Ana Ekran) açıkken aynı alanı kullanıyor ve önceliklidir — çakışmayı görünür kılmak için burada devre dışı gösterilir.
         item {
             var unusedInfoEnabled by remember { mutableStateOf(AppPrefs.isUnusedInfoEnabled(context)) }
+            var notifTextEnabled by remember { mutableStateOf(AppPrefs.isNotificationTextEnabled(context)) }
             DisposableEffect(context) {
                 val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                 val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                    if (key == AppPrefs.KEY_UNUSED_INFO_ENABLED) {
-                        unusedInfoEnabled = AppPrefs.isUnusedInfoEnabled(context)
+                    when (key) {
+                        AppPrefs.KEY_UNUSED_INFO_ENABLED -> unusedInfoEnabled = AppPrefs.isUnusedInfoEnabled(context)
+                        AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED -> notifTextEnabled = AppPrefs.isNotificationTextEnabled(context)
                     }
                 }
                 prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -157,14 +160,28 @@ fun SettingsNotificationsScreen(onNavigateBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.History, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                    Icon(
+                        Icons.Default.History, null,
+                        tint = if (notifTextEnabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("Kullanım Bilgisi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                        Text("Klasör altında \"X gündür açılmadı\" göster — bildirim metni önceliklidir", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Kullanım Bilgisi",
+                            fontWeight = FontWeight.Medium, fontSize = 15.sp,
+                            color = if (notifTextEnabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            if (notifTextEnabled) "Bildirim Metni açık olduğu için pasif — aynı alanı kullanıyor"
+                            else "Klasör altında \"X gündür açılmadı\" göster",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     Switch(
-                        checked = unusedInfoEnabled,
+                        checked = unusedInfoEnabled && !notifTextEnabled,
+                        enabled = !notifTextEnabled,
                         onCheckedChange = {
                             unusedInfoEnabled = it
                             AppPrefs.setUnusedInfoEnabled(context, it)
