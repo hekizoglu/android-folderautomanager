@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private const val PP_WEB_URL = "https://hekizoglu.github.io/android-folderautomanager/docs/privacy_policy.html"
+private const val PP_WEB_URL = "https://hekizoglu.github.io/android-folderautomanager/privacy_policy.html"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -16,9 +16,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
 
-    <!-- Google Drive specific -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-
     <!-- Bildirim izni (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

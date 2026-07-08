@@ -10,8 +10,9 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
+$repoRoot = Split-Path -Parent $PSScriptRoot
 $paths = @(
-    "C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\app\build",
+    "$repoRoot\app\build",
     "$env:USERPROFILE\.gradle",
     "$env:USERPROFILE\.android"
 )

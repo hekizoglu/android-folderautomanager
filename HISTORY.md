@@ -4,6 +4,21 @@
 
 ---
 
+## Döngü 214 — 2026-07-08 [Play Store privacy/data-safety uyumu — 4 madde tamamlandı, 18p madde kısmen]
+
+**Yapılanlar:** FİKİRLER.md'deki ⭐ Yüksek Puanlı (15+) Play Store hazırlık maddeleri, kod-uygulanabilir kısımlarıyla ele alındı:
+1. **Gereksiz `GET_ACCOUNTS` izni kaldırıldı (14p):** `AndroidManifest.xml` — kodda hiçbir `AccountManager`/`GoogleSignIn` kullanımı yok, Drive entegrasyonu SAF (`OpenDocumentTree`) üzerinden çalışıyor, gerçek Google Drive API entegrasyonu (`BackupSyncService.kt`) henüz implement edilmemiş durumda.
+2. **Firebase Analytics'ten `package_name` kaldırıldı (15p madde katkısı):** `AppAnalytics.kt` — `appLaunched`, `categoryReclassified`, `shortcutUsed` event'leri artık hangi uygulamayı kullandığınızı Firebase'e (üçüncü taraf) göndermiyor; sadece kaynak/kategori/shortcut id gibi kişisel olmayan sinyaller kalıyor. 6 çağrı noktası (`HomeScreenFavorites.kt`, `FolderScreen.kt` x3, `AllAppsDrawer.kt` x2) güncellendi.
+3. **`privacy_policy.html` kod gerçeğiyle uyumlu hale getirildi (16p madde):** Üç gerçek çelişki düzeltildi — (a) "hiçbir veri analitik platforma gönderilmez" iddiası Firebase Analytics/Crashlytics aktifken yanlıştı, Bölüm 2/3/4'e dürüst açıklama eklendi; (b) "kişi rehberi depolanmayan veriler" listesindeydi ama `ContactsIndexer` arama için ad/telefon indeksliyor — isteğe bağlı olduğu ve sunucuya gitmediği netleştirildi; (c) "bildirim içeriği okunmaz" iddiası "Bildirim Metni" özelliğiyle çelişiyordu — özelliğin ne yaptığı (yalnızca cihazda) açıklandı.
+4. **Privacy Policy URL 404 bug'ı düzeltildi (17p madde):** `PrivacyPolicyScreen.kt:19` ve `docs/store_listing.md:62` `/docs/privacy_policy.html` kullanıyordu → gerçek GitHub Pages yayını `docs/` klasörünü site köküne map'liyor, doğru URL `/privacy_policy.html` (curl ile doğrulandı: eski URL 404, yeni URL 200). `AndroidManifest.xml` zaten doğruydu.
+
+Build: `compileDebugKotlin` ve `assembleDebug -PskipGoogleServices` başarılı.
+
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi.
+**Sonraki:** 18p "Play Store Privacy/Data Safety uyum paketi" kısmen tamamlandı — kalan kısmı (Play Console Data Safety formu doldurma) dış aksiyon, kullanıcı onayı/erişimi gerekiyor. Release keystore, content rating, screenshot paketi de dış aksiyon olarak FİKİRLER.md'de işaretlendi.
+
+---
+
 ## Döngü 213 — 2026-07-07 [Ayarlar audit → 10 madde tamamlandı — orkestrasyon: Sonnet + 2 paralel Sonnet agent]
 
 **Yapılanlar:** `ayarşar-raporlar.md` + `ayarlar-inceleme-talepleri.md` audit dokümanlarından FİKİRLER.md'ye işlenen maddeler, yüksek puanlıdan başlayarak tamamlandı:

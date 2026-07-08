@@ -46,10 +46,11 @@ object AppAnalytics {
         })
     }
 
-    fun appLaunched(packageName: String, source: String) {
+    // Not: package_name kasıtlı olarak GÖNDERİLMEZ — hangi uygulamaları kullandığı
+    // Firebase'e (üçüncü taraf) sızdırılmaz; privacy-first vaadiyle çelişir (Data Safety uyumu).
+    fun appLaunched(source: String) {
         // source: "home", "folder", "all_apps", "suggestions", "favorites", "recent"
         log("app_launched", Bundle().apply {
-            putString("package_name", packageName)
             putString("source", source)
         })
     }
@@ -58,18 +59,16 @@ object AppAnalytics {
         log("all_apps_opened")
     }
 
-    fun categoryReclassified(packageName: String, fromCategory: String, toCategory: String) {
+    fun categoryReclassified(fromCategory: String, toCategory: String) {
         // Kullanıcı bir uygulamanın kategorisini değiştirince — öğrenme sinyali
         log("category_reclassified", Bundle().apply {
-            putString("package_name", packageName)
             putString("from_category", fromCategory)
             putString("to_category", toCategory)
         })
     }
 
-    fun shortcutUsed(packageName: String, shortcutId: String) {
+    fun shortcutUsed(shortcutId: String) {
         log("shortcut_used", Bundle().apply {
-            putString("package_name", packageName)
             putString("shortcut_id", shortcutId)
         })
     }

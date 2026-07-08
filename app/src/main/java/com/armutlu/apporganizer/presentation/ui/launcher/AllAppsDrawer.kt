@@ -401,7 +401,7 @@ private fun DrawerAppList(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             saveSearchIfNeeded()
-                            AppAnalytics.appLaunched(app.packageName, "all_apps")
+                            AppAnalytics.appLaunched("all_apps")
                             onAppClick(app.packageName)
                         },
                         onLongClick = { onAppLongClick?.invoke(app) }
@@ -434,7 +434,7 @@ private fun DrawerAppList(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             saveSearchIfNeeded()
-                            AppAnalytics.appLaunched(app.packageName, "all_apps")
+                            AppAnalytics.appLaunched("all_apps")
                             onAppClick(app.packageName)
                         },
                         onLongClick = { onAppLongClick?.invoke(app) }

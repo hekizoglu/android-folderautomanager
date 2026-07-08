@@ -59,4 +59,4 @@ Araçlar / Tools
 Herkes / Everyone
 
 ## Gizlilik Politikası URL
-https://hekizoglu.github.io/android-folderautomanager/docs/privacy_policy.html
+https://hekizoglu.github.io/android-folderautomanager/privacy_policy.html

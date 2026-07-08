@@ -245,14 +245,14 @@ fun FolderScreen(
                                         contentDescription = "${app.appName}, $count bildirim"
                                         onClick(label = "Uygulamayı aç") {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            AppAnalytics.appLaunched(app.packageName, "folder_screen")
+                                            AppAnalytics.appLaunched("folder_screen")
                                             viewModel.launchApp(context, app.packageName)
                                             true
                                         }
                                     }
                                     .clickable {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        AppAnalytics.appLaunched(app.packageName, "folder_screen")
+                                        AppAnalytics.appLaunched("folder_screen")
                                         viewModel.launchApp(context, app.packageName)
                                     }
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
@@ -351,7 +351,7 @@ fun FolderScreen(
                                 app = app,
                                 onClick = {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    AppAnalytics.appLaunched(app.packageName, "folder_screen")
+                                    AppAnalytics.appLaunched("folder_screen")
                                     viewModel.launchApp(context, app.packageName)
                                 },
                                 onLongClick = {

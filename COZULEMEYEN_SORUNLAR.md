@@ -16,19 +16,19 @@
 2. Task Scheduler SYSTEM hesabı → `HRESULT 0x80070005` erişim engeli
 3. `gradle.daemon.idletimeout=300000` → kilit hâlâ oluşuyor
 4. **UAC Self-Elevation script** → `scripts/add_defender_exclusion.ps1` oluşturuldu - çift tıklayınca UAC kutusu çıkar, "Evet" deyince exclusion eklenir. **Henüz kullanıcı tarafından test edilmedi.**
+5. **Path bug bulundu ve düzeltildi (2026-07-08):** Script'teki `app\build` yolu eski kullanıcı/klasör adına (`hekizoglu\Github Klasörleri\...`) sabitlenmişti — proje `huseyinekizoglu\android-folderautomanager`'a taşındıktan sonra script var olmayan bir yolu sessizce "OK" işaretleyip gerçek build klasörünü hiç dışlamıyordu. `$PSScriptRoot`'tan relative hesaplamaya çevrildi, artık kullanıcı/klasör adı bağımsız.
 
 **Önerilen çözüm:** `scripts/add_defender_exclusion.ps1` üzerine çift tıkla → UAC "Evet" de.  
 **Alternatif (GUI):** Windows Güvenlik → Virüs ve tehdit koruması → Ayarlar → Dışlamalar → Klasör ekle:
 ```
-C:\Users\hekizoglu\Github Klasörleri\android-folderautomanager\android-folderautomanager\app\build
-C:\Users\hekizoglu\.gradle
-C:\Users\hekizoglu\.android
+C:\Users\huseyinekizoglu\android-folderautomanager\app\build
+C:\Users\huseyinekizoglu\.gradle
+C:\Users\huseyinekizoglu\.android
 ```
 
-**Acil workaround (build kilitleninceye kadar):**
+**Acil workaround (build kilitleninceye kadar):** `scripts/clear_build_lock.ps1` çalıştır (admin GEREKMEZ, sadece `app\build`'i siler — kaynak kod/git'e dokunmaz) → ardından `.\gradlew assembleDebug`.
 ```powershell
-Get-Process java | Stop-Process -Force
-Remove-Item -Recurse -Force app\build
+.\scripts\clear_build_lock.ps1
 .\gradlew assembleDebug
 ```
 

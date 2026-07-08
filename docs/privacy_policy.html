@@ -33,11 +33,13 @@
 <body>
 
 <h1>AppOrganizer</h1>
-<p class="subtitle">Gizlilik Politikası — Son güncelleme: 21 Haziran 2026</p>
+<p class="subtitle">Gizlilik Politikası — Son güncelleme: 8 Temmuz 2026</p>
 
 <div class="highlight">
-    <strong>Özet:</strong> AppOrganizer, kişisel verilerinizi üçüncü taraflarla paylaşmaz ve reklam göstermez.
-    Tüm veriler cihazınızda yerel olarak saklanır.
+    <strong>Özet:</strong> AppOrganizer verilerinizi satmaz ve reklam göstermez. Uygulama kullanımı,
+    kategoriler ve ayarlar cihazınızda yerel olarak saklanır. Uygulama iyileştirme amacıyla
+    sınırlı, kişisel olmayan kullanım istatistikleri Firebase (Google) üzerinden toplanır —
+    detaylar aşağıdadır.
 </div>
 
 <div class="section">
@@ -55,8 +57,11 @@
     <ul>
         <li><strong>Yüklü uygulamalar listesi:</strong> Kategori tespiti ve klasörleme için.</li>
         <li><strong>Uygulama kullanım istatistikleri:</strong> "Son kullanılanlar" özelliği için (UsageStatsManager). Bu veriler cihazınızda yerel kalır.</li>
-        <li><strong>Bildirim sayıları:</strong> Uygulama simgelerinde rozet göstermek için. İçerik okunmaz, yalnızca sayı saklanır.</li>
+        <li><strong>Bildirim sayıları ve (isteğe bağlı) son bildirim metni:</strong> Uygulama simgelerinde rozet göstermek için sayı okunur. Kullanıcı Ayarlar'dan "Bildirim Metni" özelliğini açarsa, klasör/uygulama altında son bildirimin kısa metni de gösterilir — bu metin yalnızca cihazda işlenir, hiçbir sunucuya gönderilmez.</li>
+        <li><strong>Kişi rehberi (isteğe bağlı):</strong> Kullanıcı Ayarlar &gt; Arama'dan "Kişi Kaynağı"nı açıkça açarsa, ad/telefon/profil fotoğrafı arama sonuçlarında gösterilmek üzere yalnızca cihazda indekslenir. Hiçbir sunucuya gönderilmez, kapatılınca indeks silinir.</li>
         <li><strong>Ana ekran widget'ları:</strong> Kullanıcının eklediği widget'ları görüntülemek için.</li>
+        <li><strong>Anonim kullanım istatistikleri (Firebase Analytics):</strong> Hangi ekranların/özelliklerin kullanıldığı (ör. "klasör açıldı", "arama yapıldı") — hangi uygulamaları yüklediğiniz veya hangi uygulamaları açtığınız GÖNDERİLMEZ. Bkz. Bölüm 4.</li>
+        <li><strong>Çökme raporları (Firebase Crashlytics):</strong> Uygulama çökerse hatayı düzeltmek için teknik hata kaydı (stack trace, cihaz modeli) gönderilir. Kişisel veri veya kullanım geçmişi içermez.</li>
     </ul>
 </div>
 
@@ -64,21 +69,28 @@
     <h2>3. Depolanmayan / Paylaşılmayan Veriler</h2>
     <ul>
         <li>Kişisel kimlik bilgisi (ad, e-posta, telefon, konum)</li>
-        <li>Kişi rehberi, mesajlar, fotoğraflar</li>
+        <li>Mesajlar, fotoğraflar</li>
         <li>Finansal bilgiler</li>
         <li>Şifreler veya kimlik doğrulama verileri</li>
         <li>Cihaz tanımlayıcıları (IMEI, MAC adresi vb.)</li>
+        <li>Hangi uygulamaları yüklediğiniz veya açtığınız (paket adı bazında) — analitik sağlayıcıya gönderilmez</li>
     </ul>
-    <p>Hiçbir veri üçüncü taraf sunuculara, analitik platformlara veya reklam ağlarına gönderilmez.</p>
+    <p>Veriler reklam ağlarına asla gönderilmez veya satılmaz. Bölüm 2 ve 4'te açıklanan sınırlı istisnalar dışında hiçbir veri üçüncü taraf sunuculara gönderilmez.</p>
 </div>
 
 <div class="section">
-    <h2>4. İnternet İzni</h2>
+    <h2>4. İnternet İzni ve Üçüncü Taraf Servisler</h2>
     <p>
         Uygulama isteğe bağlı olarak <strong>DeepSeek yapay zeka API'si</strong>ne bağlanabilir —
         yalnızca kullanıcı "Bilinmeyen uygulamaları kategorize et" özelliğini açıkça etkinleştirip
         kendi API anahtarını girdiğinde. Bu durumda yalnızca uygulama adı ve paket adı gönderilir;
         kişisel veri içermez.
+    </p>
+    <p>
+        Uygulama, ürünü iyileştirmek için <strong>Firebase Analytics ve Crashlytics</strong> (Google)
+        kullanır. Gönderilen veriler ekran/özellik kullanım sayaçları ve çökme teknik kayıtlarıyla
+        sınırlıdır; hangi uygulamaları kullandığınızı içermez. Firebase'in kendi gizlilik politikası
+        için: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.
     </p>
 </div>
 
@@ -95,7 +107,7 @@
     <h2>6. İzinler</h2>
     <ul>
         <li><strong>QUERY_ALL_PACKAGES:</strong> Yüklü uygulamaları listelemek için (Android 11+).</li>
-        <li><strong>BIND_NOTIFICATION_LISTENER_SERVICE:</strong> Bildirim rozetleri için. Bildirim içeriği okunmaz.</li>
+        <li><strong>BIND_NOTIFICATION_LISTENER_SERVICE:</strong> Bildirim rozetleri için sayı okunur. "Bildirim Metni" özelliği açıksa son bildirimin kısa metni de yalnızca cihazda gösterilir (bkz. Bölüm 2) — hiçbir bildirim içeriği sunucuya gönderilmez.</li>
         <li><strong>PACKAGE_USAGE_STATS:</strong> Son kullanım istatistikleri için. Kullanıcının açıkça izin vermesi gerekir.</li>
         <li><strong>BIND_APPWIDGET:</strong> Ana ekranda widget göstermek için.</li>
     </ul>

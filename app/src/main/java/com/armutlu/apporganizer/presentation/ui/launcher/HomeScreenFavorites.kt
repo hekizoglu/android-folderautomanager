@@ -38,7 +38,7 @@ internal fun HomeFavoritesSection(
             iconPackPkg = iconPackPkg,
             onAppClick = { pkg ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                AppAnalytics.appLaunched(pkg, "favorites")
+                AppAnalytics.appLaunched("favorites")
                 onLaunchApp(pkg)
             },
             onAppLongClick = { pkg ->
