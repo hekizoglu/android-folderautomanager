@@ -34,19 +34,29 @@ C:\Users\huseyinekizoglu\.android
 
 ---
 
-### [CS-4] ROADMAP.md DOCS_SCORE_HIGH bloğu elle güncellenemiyor
-**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — otomasyon sahipliği Claude'da değil
-**Sorun:** `ROADMAP.md`'deki `<!-- DOCS_SCORE_HIGH_START/END -->` bloğu (R1-R7 satırları), kendi başlığına göre `scripts/score_docs_backlog.ps1 -UpdateRoadmap` tarafından `docs/internal/docs_backlog_score.md` kaynağından her döngüde otomatik yenileniyor. Döngü 214-215'te R2 (Privacy Policy URL), R3 (rehber/bildirim metni çelişkileri) ve R5 (Firebase Analytics azaltma) fiilen kodda tamamlandı, ama bu blok içindeki "Durum: Bekliyor" etiketlerini elle "Tamamlandı" yapmak script'in bir sonraki `-UpdateRoadmap` çalıştırmasında sessizce üzerine yazılır (kaynak dosya değişmediği için).
-**Denenen:** Blok dışındaki 🔴/🟡 tablo satırları ve FİKİRLER.md güncellendi (gerçek kaynak-of-truth burada tutuluyor); blok içine elle dokunulmadı.
-**Kullanıcıdan beklenen:** Kalıcı çözüm için `docs/internal/docs_backlog_score.md` içindeki R2/R3/R5 kaynak satırlarının durumunun güncellenmesi veya `score_docs_backlog.ps1`'in tamamlanan maddeleri otomatik algılayacak bir mekanizma kazanması gerekiyor — bu script'in kendisi mevcut GÖREV kapsamlarının hiçbirinde yoktu.
-
 ### [CS-5] `.claude/rules/build.md` eski AGP/Kotlin/SDK sürümleri
-**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — izin reddi
+**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — izin reddi (2 kez denendi)
 **Sorun:** Dosya "AGP 8.2.0, Kotlin 1.9.22, targetSdk/compileSdk 34" yazıyor; gerçek `build.gradle.kts`/`app/build.gradle.kts` AGP 8.6.1, Kotlin 1.9.25, compileSdk/targetSdk 35 kullanıyor (build zaten bu değerlerle başarılı çalışıyor — sadece dokümantasyon drift'i, build'i bloklamıyor).
-**Denenen:** Edit tool ile düzeltme denendi → Claude Code auto-mode classifier reddetti: `.claude/rules/` "protected agent-config path", kullanıcının bu spesifik değişikliği açıkça talep etmemiş olması nedeniyle self-modification olarak engellendi.
+**Denenen:** Edit tool ile düzeltme iki ayrı oturumda denendi → Claude Code auto-mode classifier ikisinde de reddetti: `.claude/rules/` "protected agent-config path", kullanıcının bu spesifik değişikliği açıkça talep etmemiş olması nedeniyle self-modification olarak engellendi.
 **Kullanıcıdan beklenen:** Kullanıcı ya dosyayı elle güncellemeli ya da Claude'a bu spesifik dosya için açık düzenleme izni vermeli (`.claude/settings.json`'a Bash/Edit izin kuralı ekleyerek).
+
+### [CS-6] Play Console dış aksiyonları — Claude'un hesap erişimi yok
+**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — hesap erişimi gerektiriyor
+**Sorun:** Aşağıdaki 3 madde Play Console'a giriş yapılmasını gerektiriyor, Claude'un böyle bir erişimi/oturumu yok:
+1. **Data Safety formu** — kod/dokuman tarafı hazır (`privacy_policy.html` Firebase/Crashlytics/Contacts/Bildirim/Accessibility Service'i doğru anlatıyor, Döngü 214-215), ama Play Console'daki asıl form doldurulmadı.
+2. **QUERY_ALL_PACKAGES beyan formu** — taslak metin `docs/internal/play_store_qa_pack.md`'de hazır ("QUERY_ALL_PACKAGES Declaration Draft" bölümü), Play Console'a girilmedi.
+3. **Accessibility Service Prominent Disclosure** — `privacy_policy.html`'de servisin ne yaptığı/yapmadığı netleştirildi (Döngü 215), ama Play Console'un ayrı Accessibility Declaration formu ve uygulama-içi izin öncesi açıklama ekranı henüz yok.
+**Denenen:** Kod ve dokümantasyon tarafı olabildiğince hazırlandı (bkz. yukarı), form doldurma denenmedi — erişim yok.
+**Kullanıcıdan beklenen:** Play Console'a giriş yapıp yukarıdaki 3 formu `docs/privacy_policy.html` ve `docs/internal/play_store_qa_pack.md` içeriğiyle uyumlu şekilde doldurmalı.
+
+### [CS-7] Gerçek cihaz QA paketi — fiziksel cihaz gerektiriyor
+**Tarih:** 2026-07-08 | **Durum:** ⚠️ Çözülemedi — Claude'un fiziksel/gerçek Android cihaz erişimi yok
+**Sorun:** 10 maddelik QA checklist üretildi (NotificationListener aç/kapa, Accessibility Service davranışı, backup/restore uçtan uca, Akıllı Bildirim/Yedekleme worker schedule doğrulama, blur/API26 performansı, AllApps double-tap, üretici kategorileri, Play Store screenshot seti) ama hiçbiri gerçek cihazda/emülatörde koşulmadı — bu oturumda emülatör de bağlı değildi.
+**Denenen:** Checklist maddeleri kod incelemesiyle mümkün olduğunca doğrulandı (ör. duplicate notification riski, DB kayıt ilkesi) — ama "gerçek cihazda kanıtlı test" gerektiren maddeler çözülmedi.
+**Kullanıcıdan beklenen:** Emülatörü/fiziksel cihazı açıp checklist'i koşmalı. Checklist detayı: bu oturumun GÖREV 8 çıktısında (konuşma geçmişinde).
 
 ---
 
 *Son güncelleme: 2026-07-08 | Çözülenler → HISTORY.md "Tamamlananlar Arşivi" bölümüne taşındı*
 *Not: LD-* sahte girişler (2026-06-28 03:33-10:33) temizlendi - run_local_denetim_cycle.ps1 koşulsuz yazıyordu, D168'de düzeltildi.*
+*Not: [CS-4] çözüldü (Döngü 216) — kayıttan kaldırıldı, detay HISTORY.md Döngü 216'da.*

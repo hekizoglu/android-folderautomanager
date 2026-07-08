@@ -4,6 +4,19 @@
 
 ---
 
+## Döngü 217 — 2026-07-08 [guncel-todo-raporu.md kapatıldı — COZULEMEYEN_SORUNLAR.md'ye CS-6/CS-7 eklendi]
+
+**Yapılanlar:** Kullanıcı "yaptıklarını sil, yapamadıklarını çözülemeyenlere at" dedi. `guncel-todo-raporu-2026-07-08.md`'deki 14 madde dispozisyona bağlandı:
+- **Silinen (tamamlandı):** CS-4 kök neden düzeltmesi, Akıllı Bildirim alt görev bölme, scripts/README.md, Privacy/Store Listing tutarlılık kontrolü, HISTORY/ROADMAP/FİKİRLER senkronu, CLAUDE_NOKTA_ATISI.md.
+- **COZULEMEYEN_SORUNLAR.md'ye taşınan:** [CS-6] Play Console dış aksiyonları (Data Safety formu, QUERY_ALL_PACKAGES beyanı, Accessibility Prominent Disclosure — hesap erişimi yok) ve [CS-7] Gerçek cihaz QA paketi (10 maddelik checklist var, fiziksel cihaz erişimi yok) yeni eklendi. [CS-4] çözüldüğü için kayıttan kaldırıldı (detay Döngü 216'da). [CS-5] (build.md izin reddi) 2. deneme notuyla güncellendi.
+- **Zaten başka yerde kayıtlı olduğu için taşınmayan:** Defender script gerçek-makine doğrulaması (zaten CS-3'ün kendi "beklenen" adımı), release keystore (zaten ROADMAP.md 🔴 tablosunda "Kullanıcı oluşturmalı" — teknik engel değil, kullanıcı onayı bekliyor).
+- `guncel-todo-raporu-2026-07-08.md` silindi — tüm maddeleri ya tamamlandı ya da kalıcı bir kayıt dosyasına taşındı.
+
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi.
+**Sonraki:** CS-3 (Defender), CS-5 (build.md), CS-6 (Play Console), CS-7 (gerçek cihaz QA) — hepsi kullanıcı aksiyonu bekliyor, Claude tarafında bekleyen bir iş yok.
+
+---
+
 ## Döngü 216 — 2026-07-08 [guncel-todo-raporu takibi — CS-4 kök neden bulundu ve düzeltildi]
 
 **Yapılanlar:** Kullanıcının `guncel-todo-raporu-2026-07-08.md` dosyasından "güncel todo tamamla" talimatıyla 14 maddelik listeden uygulanabilir olanlar işlendi:
