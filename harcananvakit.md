@@ -104,3 +104,4 @@
 - KOD: v1.2.0 UI yenileme (ticker, Material You, bildirim raporu, overflow fix) ~3.5sa
 - BUILD: 24.9 MB APK, 3 kilit temizligi + 2 crash fix sonrasi basarili
 - TEST: emulatorde ekran goruntulu uctan uca dogrulama
+| 2026-07-08 | — | — | ~10dk | BUILD | Döngü 217 — BUILD 25 MB APK (v1.2.5, versionCode 18) | assembleDebug başarılı, emülatör bağlı değildi |
