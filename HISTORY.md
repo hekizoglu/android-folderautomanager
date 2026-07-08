@@ -4,6 +4,25 @@
 
 ---
 
+## Döngü 216 — 2026-07-08 [guncel-todo-raporu takibi — CS-4 kök neden bulundu ve düzeltildi]
+
+**Yapılanlar:** Kullanıcının `guncel-todo-raporu-2026-07-08.md` dosyasından "güncel todo tamamla" talimatıyla 14 maddelik listeden uygulanabilir olanlar işlendi:
+1. **KRİTİK BULGU — CS-4 kök neden:** `scripts/score_docs_backlog.ps1` incelendiğinde ROADMAP.md'deki `DOCS_SCORE_HIGH` bloğundaki R1-R7 satırlarının bu script tarafından **hiç üretilmediği** ortaya çıktı — script'in kendi hardcoded `$candidates` listesi DSR1-DSR9'du, R1-R7 elle (başka bir oturumda) eklenmişti. R1-R7'nin kaynak gösterdiği dosyalar (`play-store-hazirlik-risk-raporu.md`, `izin-veri-haritasi.md` vb.) repoda hiç yok — phantom referanslar. `docs_backlog_score.md`'nin gerçek High Score tablosu boştu (tüm gerçek DSR maddeleri "Tamamlandı" ya da <15p). Todo raporundaki "adım 5" (`-UpdateRoadmap` çalıştır) önerisi bu haliyle **R1-R7'yi tamamen silip boş tabloyla değiştirirdi** — uygulanmadı, önce script düzeltildi.
+2. **CS-4 çözümü:** `score_docs_backlog.ps1`'e R1-R7 gerçek kaynaklarla (FİKİRLER.md, ROADMAP.md, HISTORY.md Döngü 214-215) ve doğru güncel durumlarıyla (R2/R3/R5 artık "Tamamlandi", R1/R4/R6/R7 "Bekliyor") eklendi. Script çalıştırıldı (`-UpdateRoadmap`), ROADMAP.md'nin otomatik bloğu artık doğru 4 maddeyi (R1, R4, R6, R7) gösteriyor — R2/R3/R5 gerçekten bitti diye bloktan düştü.
+3. **CS-5 tekrar denendi:** `.claude/rules/build.md` sürüm drift düzeltmesi ikinci kez talep edildi, auto-mode classifier yine reddetti ("protected path, retry without new explicit authorization") — kullanıcı elle düzeltmeli veya izin vermeli.
+4. **Akıllı Bildirim Analiz Sistemi alt görevlere bölündü:** ROADMAP.md'nin Detay bölümüne 7 maddelik somut checklist eklendi (2'si GÖREV 4-5'te zaten doğrulanmıştı: DB kayıt ilkesi ✅, duplicate notification riski düşük ✅; kalan 5'i gerçek cihaz/kod incelemesi bekliyor).
+5. **scripts/README.md güncellendi:** `add_defender_exclusion.ps1` (kalıcı, admin gerekli) ile `clear_build_lock.ps1` (acil, admin gerekmez) arasındaki fark tek tabloda netleştirildi; `score_docs_backlog.ps1` satırı eklendi.
+6. **Privacy Policy ↔ Store Listing tutarlılık kontrolü:** Yeni çelişki bulunmadı — `store_listing.md` teknik veri iddiası içermiyor, sadece pazarlama metni.
+7. **FİKİRLER.md temizliği:** Tamamlanan Accessibility Service maddesi (16p) tablodan kaldırıldı (HISTORY.md'de zaten kayıtlı), kapanış notuna R1-R7 kaynak düzeltmesi eklendi.
+8. **CLAUDE_NOKTA_ATISI.md oluşturuldu:** Gelecekteki dar-kapsamlı "GÖREV" tarzı görevler için şablon + bu oturumdan öğrenilen 3 tuzak (otomatik-üretilen bloklar, phantom kaynak dosyalar, protected path).
+
+**Yapılamayan (dış aksiyon/izin):** Defender script'in gerçek makinede UAC ile doğrulanması (kullanıcı etkileşimi gerektirir), Play Console formları (hesap erişimi gerektirir), release keystore oluşturma (geri alınamaz/hassas, açık onay istendi ama bu döngüde üretilmedi), gerçek cihaz QA (fiziksel cihaz gerektirir), `.claude/rules/build.md` (izin reddi).
+
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi.
+**Sonraki:** Kullanıcı release keystore oluşturmak isterse açık onay vermeli (`.\gradlew bundleRelease` öncesi geri alınamaz bir adım). `.claude/rules/build.md` için ya kullanıcı elle düzeltmeli ya da Claude'a bu dosya için açık izin vermeli.
+
+---
+
 ## Döngü 215 — 2026-07-08 [10 GÖREV audit turu (Fable orkestrasyon) + tüm çözüm önerileri uygulandı]
 
 **Yapılanlar:** Kullanıcı 10 ayrı dar-kapsamlı GÖREV (1-10) sıraladı, her biri "SADECE şu dosyalara bak" kısıtıyla analiz istedi; sonunda "tüm çözüm önerilerini uygula" talimatıyla bulguların kod/doküman karşılıkları uygulandı:

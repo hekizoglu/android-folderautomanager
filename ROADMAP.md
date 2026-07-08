@@ -83,6 +83,15 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 - Privacy Policy + Data Safety + ayar ekranı açıklamaları kodla çelişmez.
 - Build ve en az bir gerçek cihaz smoke testi tamamlanmadan Play öncesi tamamlandı sayılmaz.
 
+**Alt görevler (Döngü 215'te kod incelemesiyle bölündü):**
+1. ✅ DB kayıt ilkesi doğrulandı — `notification_events` yalnızca `packageName`+`postedAt` tutuyor, içerik yok (`NotificationEvent.kt`).
+2. ⏳ Analiz kapalıyken yeni kayıt yazılmadığı testi — kod `AppNotificationListenerService.kt`'de ayarlanabilir gibi görünüyor, gerçek cihazda doğrulanmadı.
+3. ✅ 30 gün temizlik davranışı kodda var (`deleteOlderThan`), gerçek cihazda uzun süreli testi yapılmadı.
+4. ⏳ `NotificationAnalyzer` çok konuşan/rahatsız eden/dikkat dağıtan senaryoları test edilmedi.
+5. ✅ `SmartInsightWorker` duplicate notification riski incelendi (GÖREV 4) — `enqueueUniquePeriodicWork` + `REPLACE` policy ile risk düşük.
+6. ⏳ `POST_NOTIFICATIONS` izni yoksa worker'ın sessiz davrandığı doğrulanmadı.
+7. ⏳ UI'da boş durum, izin kapalı durum, analiz kapalı durum ayrımı `NotificationReportScreen`'de gözden geçirilmedi.
+
 <!-- DOCS_SCORE_HIGH_START -->
 ### Kirmizi Kritik - Docs/Rapor Skor Taramasi (Otomatik)
 
@@ -90,13 +99,10 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 | # | Puan | Kaynak | Gorev | Oneri | Durum |
 |---|------|--------|-------|-------|-------|
-| R1 | 18 | play-store-hazirlik-risk-raporu.md; izin-veri-haritasi.md | Play Store Privacy/Data Safety uyum paketi | Privacy policy, Data Safety, Firebase/Crashlytics/Analytics/FCM, DeepSeek, Drive/SAF ve package inventory beyanlari ayni hikayeye cekilsin. | Bekliyor |
-| R2 | 17 | play-store-hazirlik-risk-raporu.md | Privacy Policy URL ve GitHub Pages dogrulama | Manifest/store listing URL'i gercek yayin URL'iyle ayni olsun; `/docs/privacy_policy.html` ile Pages yolu netlestirilsin. | Bekliyor |
-| R3 | 16 | izin-veri-haritasi.md | Rehber ve bildirim metni privacy policy celiskilerini duzelt | ContactsIndexer ve NotificationListener gercegi policy'deki "rehber saklanmaz/icerik okunmaz" iddialariyla uyumlu hale getirilsin. | Bekliyor |
-| R4 | 16 | play-store-hazirlik-risk-raporu.md | Play Store release imza ve submission kapisi | Release keystore, content rating, QUERY_ALL_PACKAGES declaration ve final AAB temiz committen build akisina baglansin. | Bekliyor |
-| R5 | 15 | izin-veri-haritasi.md | Firebase Analytics veri azaltma ve beyan uyumu | PackageName/category/query_length eventleri Data Safety ve privacy-first mesajiyla uyumlu hale getirilsin veya azaltilsin. | Bekliyor |
-| R6 | 15 | gercek-cihaz-test-plani.md | Gercek cihaz Play-oncesi QA paketi | Android 14 NotificationListener, screenshot smoke, backup/restore, worker schedule ve blur/API26 tek kanitli pakette kosulsun. | Bekliyor |
-| R7 | 15 | Kullanıcı talebi | Akilli Bildirim Analiz Sistemi | NotificationListener + notification_events + NotificationAnalyzer + SmartInsightWorker hatti privacy-first rapor, oneri ve gunluk akilli bildirim sistemine tamamlanmali. | Bekliyor |
+| **R1** | **18** | FIKIRLER.md; HISTORY.md Dongu 214-215 | **Play Store Privacy/Data Safety uyum paketi** | Privacy policy, Data Safety, Firebase/Crashlytics/Analytics/FCM, DeepSeek, Drive/SAF ve package inventory beyanlari ayni hikayeye cekilsin. Kod tarafi tamamlandi (Dongu 214-215); Play Console Data Safety formu doldurma dis aksiyon olarak kaliyor. | Bekliyor |
+| **R4** | **16** | ROADMAP.md | **Play Store release imza ve submission kapisi** | Release keystore, content rating, QUERY_ALL_PACKAGES declaration ve final AAB temiz committen build akisina baglansin. | Bekliyor |
+| **R6** | **15** | ROADMAP.md | **Gercek cihaz Play-oncesi QA paketi** | Android 14 NotificationListener, screenshot smoke, backup/restore, worker schedule ve blur/API26 tek kanitli pakette kosulsun. | Bekliyor |
+| **R7** | **15** | ROADMAP.md; FIKIRLER.md | **Akilli Bildirim Analiz Sistemi** | NotificationListener + notification_events + NotificationAnalyzer + SmartInsightWorker hatti privacy-first rapor, oneri ve gunluk akilli bildirim sistemine tamamlanmali. Detay ve kabul kriterleri ROADMAP.md'deki Detay bolumunde. | Bekliyor |
 <!-- DOCS_SCORE_HIGH_END -->
 
 ### 🟢 Düşük Öncelik

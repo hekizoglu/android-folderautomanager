@@ -10,8 +10,15 @@
 | `strip_exact_map.py` | `python scripts/strip_exact_map.py` | Kotlin haritasından exact match satırlarını kaldırır. |
 | `local_ai.py` | `python scripts/local_ai.py "soru"` | Lokal AI gateway (localhost:20128) üzerinden model sorgusu. Offline ise hata verir. |
 | `audit.ps1` | `.\scripts\audit.ps1` | 15 dakikalık odak rotasyonlu statik kod denetimi. Çıktı: local_denetim_raporu.md |
-| `add_defender_exclusion.ps1` | Çift tıkla → UAC Evet | Windows Defender'dan Gradle build dizinini çıkarır (CS-3 için). |
 | `version_bump.ps1` | `.\scripts\version_bump.ps1 patch` | versionCode+1, versionName patch/minor/major artırır. app/build.gradle.kts günceller. |
+| `score_docs_backlog.ps1` | `.\scripts\score_docs_backlog.ps1 [-UpdateRoadmap]` | `docs/` altındaki raporları KV+U+BR+EA puanlar, `docs/internal/docs_backlog_score.md` üretir; `-UpdateRoadmap` ile ROADMAP.md'deki `DOCS_SCORE_HIGH` bloğunu (15+ puanlılar) senkronize eder. |
+
+### CS-3 Build Kilidi (Windows Defender) Araçları
+
+| Script | Ne zaman kullan | Admin gerekir mi | Ne yapar |
+|--------|-----------------|-------------------|----------|
+| `add_defender_exclusion.ps1` | **Kalıcı çözüm** — build kilidi tekrar tekrar oluşuyorsa bir kez çalıştır | ✅ Evet (UAC self-elevation) | `app\build`, `.gradle`, `.android` klasörlerini Windows Defender gerçek zamanlı taramadan kalıcı olarak dışlar. |
+| `clear_build_lock.ps1` | **Acil workaround** — build şu an kilitliyse, kalıcı çözümü henüz çalıştırmadıysan | ❌ Hayır | Sadece bu projenin `app\build` klasörünü siler + `java.exe` süreçlerini durdurur; kaynak koda/git'e dokunmaz. Sonrasında `.\gradlew assembleDebug` ile yeniden build al. |
 
 ## Notlar
 

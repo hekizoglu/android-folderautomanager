@@ -99,7 +99,56 @@ $candidates = @(
         -Title "Configuration cache guard benchmark" `
         -Source "docs/issue_mitigation_research_2026-06-30.md; docs/internal/build_benchmark_latest.md" `
         -KV 3 -U 3 -BR 4 -EA 3 `
-        -Recommendation "Configuration cache sadece benchmark/CLI profilinde kalsin; kalici ayar icin uyumluluk kaniti istensin.")
+        -Recommendation "Configuration cache sadece benchmark/CLI profilinde kalsin; kalici ayar icin uyumluluk kaniti istensin."),
+    (New-Candidate `
+        -Id "R1" `
+        -Title "Play Store Privacy/Data Safety uyum paketi" `
+        -Source "FIKIRLER.md; HISTORY.md Dongu 214-215" `
+        -KV 5 -U 5 -BR 5 -EA 3 `
+        -Recommendation "Privacy policy, Data Safety, Firebase/Crashlytics/Analytics/FCM, DeepSeek, Drive/SAF ve package inventory beyanlari ayni hikayeye cekilsin. Kod tarafi tamamlandi (Dongu 214-215); Play Console Data Safety formu doldurma dis aksiyon olarak kaliyor." `
+        -Status "Bekliyor"),
+    (New-Candidate `
+        -Id "R2" `
+        -Title "Privacy Policy URL ve GitHub Pages dogrulama" `
+        -Source "FIKIRLER.md; HISTORY.md Dongu 214" `
+        -KV 5 -U 4 -BR 3 -EA 5 `
+        -Recommendation "Manifest/store listing URL'i gercek yayin URL'iyle ayni olsun. Dongu 214'te PrivacyPolicyScreen.kt ve store_listing.md'deki 404 veren /docs/ onekli URL duzeltildi, curl ile 200 dogrulandi." `
+        -Status "Tamamlandi"),
+    (New-Candidate `
+        -Id "R3" `
+        -Title "Rehber ve bildirim metni privacy policy celiskilerini duzelt" `
+        -Source "FIKIRLER.md; HISTORY.md Dongu 214-215" `
+        -KV 4 -U 4 -BR 4 -EA 4 `
+        -Recommendation "ContactsIndexer ve NotificationListener gercegi policy'deki iddialarla uyumlu hale getirilsin. Dongu 214'te Firebase/kisi rehberi/bildirim metni celiskileri, Dongu 215'te Accessibility Service beyani duzeltildi." `
+        -Status "Tamamlandi"),
+    (New-Candidate `
+        -Id "R4" `
+        -Title "Play Store release imza ve submission kapisi" `
+        -Source "ROADMAP.md" `
+        -KV 5 -U 4 -BR 4 -EA 3 `
+        -Recommendation "Release keystore, content rating, QUERY_ALL_PACKAGES declaration ve final AAB temiz committen build akisina baglansin." `
+        -Status "Bekliyor"),
+    (New-Candidate `
+        -Id "R5" `
+        -Title "Firebase Analytics veri azaltma ve beyan uyumu" `
+        -Source "FIKIRLER.md; HISTORY.md Dongu 214" `
+        -KV 4 -U 4 -BR 4 -EA 3 `
+        -Recommendation "PackageName/category/query_length eventleri Data Safety ve privacy-first mesajiyla uyumlu hale getirilsin veya azaltilsin. Dongu 214'te AppAnalytics.kt'den package_name kaldirildi (appLaunched/categoryReclassified/shortcutUsed)." `
+        -Status "Tamamlandi"),
+    (New-Candidate `
+        -Id "R6" `
+        -Title "Gercek cihaz Play-oncesi QA paketi" `
+        -Source "ROADMAP.md" `
+        -KV 4 -U 4 -BR 4 -EA 3 `
+        -Recommendation "Android 14 NotificationListener, screenshot smoke, backup/restore, worker schedule ve blur/API26 tek kanitli pakette kosulsun." `
+        -Status "Bekliyor"),
+    (New-Candidate `
+        -Id "R7" `
+        -Title "Akilli Bildirim Analiz Sistemi" `
+        -Source "ROADMAP.md; FIKIRLER.md" `
+        -KV 4 -U 3 -BR 4 -EA 4 `
+        -Recommendation "NotificationListener + notification_events + NotificationAnalyzer + SmartInsightWorker hatti privacy-first rapor, oneri ve gunluk akilli bildirim sistemine tamamlanmali. Detay ve kabul kriterleri ROADMAP.md'deki Detay bolumunde." `
+        -Status "Bekliyor")
 )
 
 $now = Get-Date -Format "yyyy-MM-dd HH:mm"
