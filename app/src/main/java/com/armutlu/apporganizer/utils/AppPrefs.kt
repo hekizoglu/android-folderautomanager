@@ -63,7 +63,9 @@ object AppPrefs {
 
     // AllAppsDrawer arka plan opakligi (0.0 - 1.0)
     const val KEY_ALLAPPS_BG_ALPHA = "allapps_bg_alpha"
-    fun getAllAppsBgAlpha(context: Context) = prefs(context).getFloat(KEY_ALLAPPS_BG_ALPHA, 0.85f)
+    // Varsayılan yükseltildi (D226): ilk kurulumda arkadaki uygulamalar çok görünüyor,
+    // AllApps ekranıyla karışıyordu.
+    fun getAllAppsBgAlpha(context: Context) = prefs(context).getFloat(KEY_ALLAPPS_BG_ALPHA, 0.95f)
     fun setAllAppsBgAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_ALLAPPS_BG_ALPHA, v).apply()
 
     // AllApps sıralama modu
@@ -80,9 +82,17 @@ object AppPrefs {
 
     // Kullanım bilgisi alt yazısı — klasör altında "X gündür açılmadı" / "Hiç açılmadı" göster
     // Bildirim metni varsa o önceliklidir; bu bilgi yalnızca bildirim yokken görünür
+    // Varsayılan kapalı (D226) — Home ekranında kalabalık/karışıklık yaratıyordu.
     const val KEY_UNUSED_INFO_ENABLED = "unused_info_enabled"
-    fun isUnusedInfoEnabled(context: Context) = prefs(context).getBoolean(KEY_UNUSED_INFO_ENABLED, true)
+    fun isUnusedInfoEnabled(context: Context) = prefs(context).getBoolean(KEY_UNUSED_INFO_ENABLED, false)
     fun setUnusedInfoEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_UNUSED_INFO_ENABLED, v).apply()
+
+    // Klasör üzerinde toplam bildirim rozeti (sayı) — Home'daki klasör ikonunda gösterilir.
+    // Varsayılan kapalı (D226): klasör içine girmeden rozet kalabalığı olmasın; FolderScreen
+    // içindeki uygulama bazlı bildirim rozetleri bundan etkilenmez, her zaman görünür kalır.
+    const val KEY_FOLDER_BADGE_ENABLED = "folder_badge_enabled"
+    fun isFolderBadgeEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_BADGE_ENABLED, false)
+    fun setFolderBadgeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_BADGE_ENABLED, v).apply()
 
     // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
     const val KEY_ICON_PACK = "icon_pack_package"

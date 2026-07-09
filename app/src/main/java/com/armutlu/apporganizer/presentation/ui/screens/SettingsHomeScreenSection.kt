@@ -98,6 +98,18 @@ fun SettingsHomeScreenSection(
         HomeSettingsGroupTitle("Öneriler ve bildirimler")
         // "Bildirim Analizi" toggle'ı Ayarlar > Bildirimler ekranına taşındı (Döngü 226) —
         // ana ekran ayarı değil, bildirim veri toplama ayarıdır.
+        var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
+        SettingsSwitchRow(
+            icon = Icons.Default.Notifications,
+            title = "Klasör Bildirim Rozeti",
+            subtitle = "Klasör ikonunda toplam bildirim sayısı gösterilir (varsayılan: kapalı, klasör içindeki uygulama rozetleri etkilenmez)",
+            checked = folderBadgeEnabled,
+            onCheckedChange = {
+                folderBadgeEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setFolderBadgeEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = "Favoriler",

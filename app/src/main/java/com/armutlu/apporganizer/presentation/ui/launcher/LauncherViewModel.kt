@@ -599,14 +599,22 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    // Dokunulan/görülen ticker haberleri bu oturum boyunca tekrar gösterilmez (D226) —
+    // aksi halde her recomposition'da aynı en-büyük-5-klasör listesi sabit kalıyordu.
+    private val _dismissedTickerKeys = MutableStateFlow<Set<String>>(emptySet())
+
+    fun dismissTickerItem(key: String) {
+        _dismissedTickerKeys.value = _dismissedTickerKeys.value + key
+    }
+
     // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti tek akışta.
     // Dokunma hedefleri: klasör haberi → FolderScreen, bildirim haberi → Bildirim Raporu, içgörü → Dashboard.
     val tickerItems: StateFlow<List<TickerItem>> = combine(
         folders,
         insightCards,
-        AppNotificationListenerService.badgeCounts
-    ) { folderList, cards, badges ->
-        buildList {
+        AppNotificationListenerService.badgeCounts,
+        _dismissedTickerKeys
+    ) { folderList, cards, badges, dismissed -> buildList {
             folderList.sortedByDescending { it.apps.size }.take(5).forEach { f ->
                 add(TickerItem(
                     text = "${f.category.categoryName} klasöründe ${f.apps.size} uygulama var",
@@ -631,6 +639,18 @@ class LauncherViewModel @Inject constructor(
                     route = com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
                 ))
             }
+        }.filterNot { it.key in dismissed }.let { visible ->
+            // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
+            // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
+            if (visible.isEmpty()) buildList {
+                folderList.sortedByDescending { it.apps.size }.take(5).forEach { f ->
+                    add(TickerItem(
+                        text = "${f.category.categoryName} klasöründe ${f.apps.size} uygulama var",
+                        emoji = f.category.iconEmoji.ifBlank { "📁" },
+                        categoryId = f.category.categoryId
+                    ))
+                }
+            } else visible
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

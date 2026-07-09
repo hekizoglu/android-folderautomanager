@@ -80,6 +80,7 @@ fun FolderTile(
     unusedInfoEnabled: Boolean = false,
     folderShape: String = "circle",
     folderGlassEnabled: Boolean = true,
+    folderBadgeEnabled: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -199,7 +200,9 @@ fun FolderTile(
             }
         }
         // Klasör badge — renk: en yüksek bildirimli uygulamanın kategorisine göre
-        if (totalBadge > 0) {
+        // folderBadgeEnabled — HomeScreen'den reaktif parametre, varsayılan kapalı (D226):
+        // klasör içindeki uygulama bazlı bildirim rozetleri (FolderScreen) etkilenmez.
+        if (folderBadgeEnabled && totalBadge > 0) {
             val badgeText = if (totalBadge > 99) "99+" else totalBadge.toString()
             val badgeW = if (totalBadge > 9) 20.dp else 16.dp
             val topNotifApp = folder.apps.maxByOrNull { it.notificationCount }
@@ -233,8 +236,11 @@ fun FolderTile(
 
         Spacer(Modifier.height(4.dp))
 
+        // Klasör adı + sayı tek satırda "Ad (N)" — bir satır kazandırır (D226).
+        // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
+        val displayName = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName
         Text(
-            text = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName,
+            text = if (folderCountVisible) "$displayName (${folder.apps.size})" else displayName,
             color = effectiveLabelColor.copy(alpha = textAlpha),
             fontSize = 11.sp,
             maxLines = 2,
@@ -243,16 +249,6 @@ fun FolderTile(
             lineHeight = 13.sp,
             modifier = Modifier.width(tileWidth)
         )
-        // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
-        // Renk: effectiveLabelColor — açık duvar kağıdı/açık klasör renginde de okunur (D199 görsel düzeltme)
-        if (folderCountVisible) {
-            Text(
-                text = "${folder.apps.size}",
-                color = effectiveLabelColor.copy(alpha = 0.50f * textAlpha),
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center
-            )
-        }
         // Hizli acma ipucu — klasor uzerinde yukari kaydirinca en cok kullanilan uygulama acilir
         // folderSwipeHintEnabled — HomeScreen'den reaktif parametre olarak gelir
         if (folderSwipeHintEnabled && topApp != null && onSwipeUp != null) {

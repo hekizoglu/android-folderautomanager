@@ -149,6 +149,7 @@ fun HomeScreen(
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedInfoEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)) }
+    var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
@@ -214,6 +215,8 @@ fun HomeScreen(
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_INFO_ENABLED ->
                     unusedInfoEnabled = com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BADGE_ENABLED ->
+                    folderBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
                     folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BLUR ->
@@ -639,6 +642,8 @@ fun HomeScreen(
                     items = tickerItems,
                     onItemClick = { item ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        // Dokunulan haber bu oturumda tekrar gösterilmesin — ticker çeşitlensin (D226)
+                        viewModel.dismissTickerItem(item.key)
                         when {
                             item.categoryId != null -> {
                                 val folder = folders.find { it.category.categoryId == item.categoryId }
@@ -761,6 +766,7 @@ fun HomeScreen(
                 folderSwipeHint = folderSwipeHint,
                 notifTextEnabled = notifTextEnabled,
                 unusedInfoEnabled = unusedInfoEnabled,
+                folderBadgeEnabled = folderBadgeEnabled,
                 folderShape = folderShape,
                 folderGlassEnabled = folderBlurEnabled,
                 haptic = haptic,

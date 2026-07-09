@@ -4,6 +4,23 @@
 
 ---
 
+## Döngü 227 — 2026-07-09 [Home/Klasör UX toplu iyileştirme + Fable kategorileme danışmanlığı]
+
+**Yapılanlar (kullanıcı talebi, 7 madde):**
+1. **Klasör adı+sayısı tek satırda:** `FolderTile.kt` — "Seyahat" + ayrı "13" satırı yerine tek satırda "Seyahat (13)" gösteriliyor, bir satır kazanıldı.
+2. **Ana ekran ticker navigasyonu doğrulandı:** `LauncherViewModel.tickerItems` zaten `categoryId`/`route` ile doğru hedefe (klasör/rapor/dashboard) yönlendiriyordu — kod incelemesiyle onaylandı, değişiklik gerekmedi.
+3. **Klasör bildirim rozeti varsayılan kapalı:** Yeni `AppPrefs.KEY_FOLDER_BADGE_ENABLED` (varsayılan false) + `FolderTile.kt`'de `folderBadgeEnabled` parametresi — Home'daki klasör ikonu üzerindeki toplam bildirim sayısı artık varsayılan gizli; `SettingsHomeScreenSection.kt`'ye "Klasör Bildirim Rozeti" toggle'ı eklendi. **Klasör içindeki uygulama bazlı bildirim rozetleri (FolderScreen) etkilenmedi, her zaman görünür.**
+4. **Kullanım bilgisi alt yazısı varsayılan kapalı:** `AppPrefs.isUnusedInfoEnabled` varsayılanı `true`→`false` — Home'da klasör altında "X: hiç açılmadı" gibi metinler artık varsayılan gizli.
+5. **Ticker çeşitlendirme:** `TickerItem.key` eklendi, `LauncherViewModel`'e `_dismissedTickerKeys` state'i ve `dismissTickerItem()` eklendi — dokunulan haber bu oturumda tekrar gösterilmiyor (hepsi tükenirse otomatik sıfırlanır). Önceden aynı en-büyük-5-klasör listesi sürekli sabit dönüyordu.
+6. **AllApps arka plan opaklığı artırıldı:** `AppPrefs.getAllAppsBgAlpha` varsayılanı `0.85f`→`0.95f` — ilk kurulumda arkadaki uygulamalar çok görünüp AllApps ekranıyla karışıyordu.
+7. **Fable 5 danışmanlığı — Akıllı Kategorileme:** Mevcut statik kategori+keyword+LLM zincirinin zayıflıkları analiz edildi, FİKİRLER.md'ye 4 öneri eklendi: K1 (16p⭐ `ApplicationInfo.category` yerel sinyali + kalıcı LLM cache, zorluk 3/10), K2 (14p override-öğrenme), K3 (14p confidence-tabanlı doğrulama), K4 (13p bağlamsal akıllı klasör). Bonus: `AppClassifier.kt:107`'de `lowercase()` Locale("tr") kullanmadığı tespit edildi, Beklet'e not düşüldü.
+
+**Build/Test:** `assembleDebug -PskipGoogleServices` başarılı, `testDebugUnitTest` tüm suite başarılı. Versiyon: versionCode 21→22, versionName 1.2.8→1.2.9.
+
+**Sonraki:** K1 önerisi (16p) yüksek değer/düşük zorluk — ROADMAP ⭐'a taşınmalı. Settings hiyerarşi/Search smoke testleri hâlâ açık.
+
+---
+
 ## Döngü 226 — 2026-07-09 [Akıllı Bildirim raporu — kullanıcı dostu state ayrımı (UX, Fable 5)]
 
 **Yapılanlar:** Döngü 221/223'te tespit edilen UX kafa karışıklığı çözüldü: rapor boşken kullanıcı "veri henüz yok" ile "analizi sen kapattın" arasındaki farkı göremiyordu. `NotificationReportViewModel.kt`'ye `NotificationReportUiState` sealed interface eklendi (Loading / PermissionMissing / AnalyticsDisabled / CollectingData / Ready) — saf `from()` eşleme fonksiyonu test edilebilir; öncelik: veri varsa her zaman rapor (sorunlar banner bayrağı), veri yoksa izin > analiz kapalı > veri toplanıyor. `NotificationReportScreen.kt` yeniden yazıldı: her boş durum ikon+başlık+açıklama+eylem butonlu tam-ekran panel ("Analiz kapalı" durumunda "Analizi Aç" butonu toggle'ı ayara gitmeden tek dokunuşla açar — `enableAnalytics()`; "Veri toplanıyor" durumunda "birkaç gün kullanım sonrası rapor oluşur" açıklaması); ON_RESUME'da `refresh()` eklendi (izin verip sistem ayarından dönünce ekran güncellenir); tüm metinler hardcoded literal yerine `strings.xml`'e taşındı (TR `values/` + EN `values-en/`, 32 yeni string). Ayrıca yanlış konumlanmış "Bildirim Analizi" toggle'ı `SettingsHomeScreenSection.kt`'den (Ana Ekran Ayarları'na gömülüydü) `SettingsNotificationsScreen.kt`'ye taşındı — reaktif SharedPreferences listener pattern'i ile — ve yanına "Bildirim Raporu" kısayol satırı eklendi (`AppNavigation.kt`'ye `onNavigateToNotificationReport` bağlandı). Versiyon: versionCode 20→21, versionName 1.2.7→1.2.8.
