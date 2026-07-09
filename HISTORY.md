@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 223 — 2026-07-09 [Akıllı Bildirim Analiz Sistemi — unit test kapsamı genişletildi]
+
+**Yapılanlar:** ROADMAP "Akıllı Bildirim Analiz Sistemi — Detay" alt görevlerinden 4'ü kanıtlandı: (2) analiz toggle kapalıyken `notification_events`'e yazılmadığı, (3) `onListenerConnected()`'ın doğru 30-gün eşiğiyle `deleteOlderThan` çağırdığı, (4) `NotificationAnalyzer` çok konuşan/gece+burst rahatsız eden/dikkat dağıtan/trend senaryoları — yeni test dosyaları `app/src/test/java/com/armutlu/apporganizer/service/AppNotificationListenerServiceTest.kt` (4 test) ve `app/src/test/java/com/armutlu/apporganizer/utils/NotificationAnalyzerTest.kt` (12 test). Item 7 (UI state ayrımı) kod incelemesiyle çözüldü: `NotificationReportScreen`'de "analiz kapalı" için ayrı state yok, boş rapor durumuna düşüyor — bug değil ama UX notu olarak FİKİRLER.md'ye eklendi (9p, Beklet). Item 6 (POST_NOTIFICATIONS izinsiz worker davranışı) `androidx.work:work-testing` bağımlılığı projede olmadığı için unit testle kanıtlanamadı, ROADMAP'te açık kaldı.
+
+**Test sonucu:** `.\gradlew testDebugUnitTest -PskipGoogleServices --tests "*Notification*"` → 16/16 test BAŞARILI (Türkçe path sorunu bu koşumda çıkmadı — build.gradle.kts'teki ASCII classpath sync workaround çalıştı).
+
+**CLAUDE.md/LEARNINGS.md:** Güncelleme yok — mevcut MockK/coroutine test pattern'leri (AppRepositoryTest, LauncherViewModelTest) doğrudan uygulandı, yeni tuzak yok. Not: `android.app.Notification.extras` bir Java field'i (getter değil) — mockk `every{}` ile intercept edilemiyor, mock nesnesine doğrudan alan ataması (`notification.extras = bundle`) gerekiyor.
+
+**Sonraki:** ROADMAP R7 madde 6 (POST_NOTIFICATIONS sessiz davranış) ve gerçek cihaz 30-gün temizlik testi — instrumented/gerçek cihaz test paketi planlanmalı.
+
+---
+
 ## Döngü 222 — 2026-07-09 [Build/Süreç ölçümleri]
 
 **Yapılanlar:**

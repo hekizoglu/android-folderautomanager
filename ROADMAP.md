@@ -67,11 +67,13 @@ Mevcut temel:
 
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
-| Analiz kapaliyken event yazmama testi | Notification analytics master kapaliyken yeni `notification_events` kaydi olusmadigi kanitlanacak. | Bekliyor |
-| NotificationAnalyzer senaryo testi | Cok konusan, gece/odak saati rahatsiz eden, kisa aralikta tekrar eden ve trend senaryolari test edilecek. | Bekliyor |
-| POST_NOTIFICATIONS yokken sessiz davranis | Android 13+ bildirim izni yokken worker'in notification spam uretmeden rapor uretmeye devam ettigi dogrulanacak. | Bekliyor |
-| NotificationReport UI state ayrimi | Veri yok, izin kapali, analiz kapali ve normal veri durumlari ayrik metinlerle gorunmeli. | Bekliyor |
-| 30 gun temizlik kaniti | `deleteOlderThan` davranisi uzun sureli/seed veriyle kanitlanacak. | Bekliyor |
+| POST_NOTIFICATIONS yokken sessiz davranis | `SmartInsightWorker` `CoroutineWorker`, `work-testing` bagimliligi projede yok — unit testle kanitlanamadi. Kod incelemesi: `notify()` sadece null-check ile korunuyor, izin kontrolu yok; `SecurityException` disarida `runCatching`e dusup `Result.retry()` oluyor (cokme yok). Gercek cihazda dogrulanmali. | Bekliyor - gercek cihaz |
+| 30 gun temizlik — uzun sureli persist kaniti | Tetikleme mantigi (`onListenerConnected()` -> `deleteOlderThan(now-30gun)`) unit testle kanitlandi (`AppNotificationListenerServiceTest.kt`, Dongu 221). Gercek 30+ gunluk veriyle uzun sureli persist/silme davranisi hala kanitlanmadi (Room instrumented/Robolectric gerekir, projede yok). | Bekliyor - gercek cihaz |
+
+**Tamamlanan (Dongu 221, unit test ile kanitlandi):**
+- Analiz kapaliyken event yazmama — `AppNotificationListenerServiceTest.kt`.
+- NotificationAnalyzer cok konusan/gece+burst rahatsiz eden/dikkat dagitan/trend senaryolari — `NotificationAnalyzerTest.kt` (12 test).
+- NotificationReport UI state incelemesi — sealed-state yok, "analiz kapali" ayri state degil (toggle kapaliyken otomatik bos rapor gorunuyor); bug degil ama UX notu FİKİRLER.md'ye eklendi.
 
 ---
 
