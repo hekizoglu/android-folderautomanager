@@ -85,12 +85,12 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 
 **Alt görevler (Döngü 215'te kod incelemesiyle bölündü):**
 1. ✅ DB kayıt ilkesi doğrulandı — `notification_events` yalnızca `packageName`+`postedAt` tutuyor, içerik yok (`NotificationEvent.kt`).
-2. ⏳ Analiz kapalıyken yeni kayıt yazılmadığı testi — kod `AppNotificationListenerService.kt`'de ayarlanabilir gibi görünüyor, gerçek cihazda doğrulanmadı.
-3. ✅ 30 gün temizlik davranışı kodda var (`deleteOlderThan`), gerçek cihazda uzun süreli testi yapılmadı.
-4. ⏳ `NotificationAnalyzer` çok konuşan/rahatsız eden/dikkat dağıtan senaryoları test edilmedi.
+2. ✅ Analiz kapalıyken yeni kayıt yazılmadığı unit testle kanıtlandı — `AppNotificationListenerServiceTest.kt` (`onNotificationPosted does NOT insert event when analytics toggle is disabled`), Döngü 221.
+3. ✅ 30 gün temizlik davranışı kodda var (`deleteOlderThan`) + `onListenerConnected()` doğru eşik (now-30gün) ile tetiklediği unit testle kanıtlandı (`AppNotificationListenerServiceTest.kt`, Döngü 221); gerçek cihazda uzun süreli (30+ gün) persist/silme testi hâlâ yapılmadı (Room in-memory instrumented test veya Robolectric gerekir, mevcut kurulumda yok).
+4. ✅ `NotificationAnalyzer` çok konuşan/rahatsız eden(gece+burst)/dikkat dağıtan/trend senaryoları unit testle kanıtlandı — `NotificationAnalyzerTest.kt` (12 test), Döngü 221.
 5. ✅ `SmartInsightWorker` duplicate notification riski incelendi (GÖREV 4) — `enqueueUniquePeriodicWork` + `REPLACE` policy ile risk düşük.
-6. ⏳ `POST_NOTIFICATIONS` izni yoksa worker'ın sessiz davrandığı doğrulanmadı.
-7. ⏳ UI'da boş durum, izin kapalı durum, analiz kapalı durum ayrımı `NotificationReportScreen`'de gözden geçirilmedi.
+6. ⏳ `POST_NOTIFICATIONS` izni yoksa worker'ın sessiz davrandığı doğrulanmadı — `SmartInsightWorker` bir `CoroutineWorker`, `androidx.work:work-testing` bağımlılığı projede yok; unit testle kanıtlanamadı, gerçek cihaz/instrumented test gerekir. Kod incelemesi: `notify()` çağrısı yalnızca null-check ile korunuyor (izin kontrolü yok), `SecurityException` dış `runCatching` tarafından yakalanıp `Result.retry()`'a düşüyor — çökme riski yok ama izin kontrolü eksik olabilir, gerçek cihazda doğrulanmalı.
+7. ✅ Kod incelemesi yapıldı (Döngü 221) — `NotificationReportScreen`/`NotificationReportViewModel`'de sealed-state yok: `uiState: StateFlow<Report?>` (`null`=yükleniyor) + `listenerPermissionGranted: StateFlow<Boolean>` (izin kapalı uyarı kartı) kullanılıyor. "Analiz kapalı" için ayrı bir state YOK — toggle kapalıyken events birikmediği için rapor otomatik olarak boş rapor durumuna düşüyor (aynı "veri yok" render'ı). Bu mantıksal olarak tutarlı (bug değil) ama kullanıcıya "neden boş" açıklaması eksik — UX iyileştirmesi olarak FİKİRLER.md'ye not düşüldü, unit/UI testle ayrıca kanıtlanacak bir "durum" yok çünkü kod zaten tek durumu kullanıyor.
 
 <!-- DOCS_SCORE_HIGH_START -->
 ### Kirmizi Kritik - Docs/Rapor Skor Taramasi (Otomatik)
