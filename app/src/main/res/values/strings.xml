@@ -193,6 +193,14 @@
     <string name="onb_quick_settings_desc">Tüm tercihlerinizi tek ekranda gözden geçirin ve değiştirin.</string>
     <string name="onb_quick_settings_btn">Kaydet ve Devam Et</string>
     <string name="onb_quick_settings_why">Bu ayarları daha sonra Ayarlar menüsünden değiştirebilirsiniz.</string>
+    <string name="onb_quick_widget_title">Widget Alanı</string>
+    <string name="onb_quick_widget_desc">Ana ekranda saat/hava durumu widget\'ı göster</string>
+    <string name="onb_quick_suggestions_title">Uygulama Önerileri</string>
+    <string name="onb_quick_suggestions_desc">En çok kullandıklarını ana ekranda göster</string>
+    <string name="onb_quick_home_search_title">Ana Ekran Araması</string>
+    <string name="onb_quick_home_search_desc">Klasörler arasında arama çubuğu</string>
+    <string name="onb_quick_folder_blur_title">Klasör Blur Efekti</string>
+    <string name="onb_quick_folder_blur_desc">Frosted glass efekti (performans gerektirir)</string>
 
     <string name="onb_done_title">Hazırsınız!</string>
     <string name="onb_done_desc">AppOrganizer kurulumu tamamlandı. İyi kullanımlar!</string>
@@ -233,6 +241,18 @@
     <string name="appearance_blur_effect">Klasör Blur Efekti</string>
     <string name="appearance_blur_effect_desc">Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)</string>
     <string name="appearance_folder_shape">Klasör Şekli</string>
+    <string name="theme_dynamic">Dinamik (Material You)</string>
+    <string name="theme_teal">Turkuaz</string>
+    <string name="theme_purple">Mor</string>
+    <string name="theme_ocean">Okyanus</string>
+    <string name="theme_sunset">Gün Batımı</string>
+    <string name="theme_mono">Mono</string>
+    <string name="theme_ios">iOS</string>
+    <string name="theme_amoled">AMOLED</string>
+    <string name="font_default">Sistem</string>
+    <string name="font_rounded">Yuvarlatılmış</string>
+    <string name="font_mono">Mono</string>
+    <string name="font_serif">Serif</string>
 
     <!-- Akıllı Öneriler Row -->
     <string name="suggestions_label_morning">Sabah Önerileri</string>

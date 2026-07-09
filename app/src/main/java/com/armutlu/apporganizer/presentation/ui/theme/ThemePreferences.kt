@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.armutlu.apporganizer.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,6 +17,7 @@ val Context.themeDataStore by preferencesDataStore(name = "theme_prefs")
 
 enum class AppTheme(
     val label: String,
+    val labelRes: Int,
     val primary: Color,
     val secondary: Color,
     val background: Color,
@@ -24,6 +26,7 @@ enum class AppTheme(
     /** Material You — duvar kağıdından türetilen dinamik renkler (Android 12+). Renkler fallback (API <31 = TEAL görünümü). */
     DYNAMIC(
         label = "Dinamik (Material You)",
+        labelRes = R.string.theme_dynamic,
         primary = Color(0xFF00897B),
         secondary = Color(0xFF26C6DA),
         background = Color(0xFF1A1A2E),
@@ -31,6 +34,7 @@ enum class AppTheme(
     ),
     TEAL(
         label = "Turkuaz",
+        labelRes = R.string.theme_teal,
         primary = Color(0xFF00897B),
         secondary = Color(0xFF26C6DA),
         background = Color(0xFF1A1A2E),
@@ -38,6 +42,7 @@ enum class AppTheme(
     ),
     PURPLE(
         label = "Mor",
+        labelRes = R.string.theme_purple,
         primary = Color(0xFF7B1FA2),
         secondary = Color(0xFFCE93D8),
         background = Color(0xFF1A1025),
@@ -45,6 +50,7 @@ enum class AppTheme(
     ),
     OCEAN(
         label = "Okyanus",
+        labelRes = R.string.theme_ocean,
         primary = Color(0xFF1565C0),
         secondary = Color(0xFF42A5F5),
         background = Color(0xFF0A1628),
@@ -52,6 +58,7 @@ enum class AppTheme(
     ),
     SUNSET(
         label = "Gün Batımı",
+        labelRes = R.string.theme_sunset,
         primary = Color(0xFFE64A19),
         secondary = Color(0xFFFFB74D),
         background = Color(0xFF1C1008),
@@ -59,6 +66,7 @@ enum class AppTheme(
     ),
     MONO(
         label = "Mono",
+        labelRes = R.string.theme_mono,
         primary = Color(0xFF607D8B),
         secondary = Color(0xFF90A4AE),
         background = Color(0xFF121212),
@@ -66,6 +74,7 @@ enum class AppTheme(
     ),
     IOS(
         label = "iOS",
+        labelRes = R.string.theme_ios,
         primary = Color(0xFF007AFF),
         secondary = Color(0xFF5AC8FA),
         background = Color(0xFF1C1C1E),
@@ -73,6 +82,7 @@ enum class AppTheme(
     ),
     AMOLED(
         label = "AMOLED",
+        labelRes = R.string.theme_amoled,
         primary = Color(0xFF00E5FF),
         secondary = Color(0xFF69FF47),
         background = Color(0xFF000000),
@@ -91,11 +101,11 @@ enum class AppTheme(
     }
 }
 
-enum class AppFont(val label: String) {
-    DEFAULT("Sistem"),
-    ROUNDED("Yuvarlatılmış"),
-    MONO("Mono"),
-    SERIF("Serif");
+enum class AppFont(val label: String, val labelRes: Int) {
+    DEFAULT("Sistem", R.string.font_default),
+    ROUNDED("Yuvarlatılmış", R.string.font_rounded),
+    MONO("Mono", R.string.font_mono),
+    SERIF("Serif", R.string.font_serif);
 
     companion object {
         fun fromName(name: String): AppFont =

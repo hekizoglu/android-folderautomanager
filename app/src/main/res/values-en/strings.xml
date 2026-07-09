@@ -179,6 +179,14 @@
     <string name="onb_quick_settings_desc">Review and change all your preferences on one screen.</string>
     <string name="onb_quick_settings_why">You can change these settings later from the Settings menu.</string>
     <string name="onb_quick_settings_btn">Save and Continue</string>
+    <string name="onb_quick_widget_title">Widget Area</string>
+    <string name="onb_quick_widget_desc">Show clock/weather widgets on the home screen</string>
+    <string name="onb_quick_suggestions_title">App Suggestions</string>
+    <string name="onb_quick_suggestions_desc">Show your most-used apps on the home screen</string>
+    <string name="onb_quick_home_search_title">Home Screen Search</string>
+    <string name="onb_quick_home_search_desc">Search bar between folders</string>
+    <string name="onb_quick_folder_blur_title">Folder Blur Effect</string>
+    <string name="onb_quick_folder_blur_desc">Frosted glass effect (requires performance headroom)</string>
 
     <string name="onb_browser_title">Default Browser</string>
     <string name="onb_browser_desc">Which browser would you like to set as default? Links will open in this browser.</string>
@@ -231,6 +239,18 @@
     <string name="appearance_blur_effect">Folder Blur Effect</string>
     <string name="appearance_blur_effect_desc">Background blurs when folder opens (HyperOS style)</string>
     <string name="appearance_folder_shape">Folder Shape</string>
+    <string name="theme_dynamic">Dynamic (Material You)</string>
+    <string name="theme_teal">Teal</string>
+    <string name="theme_purple">Purple</string>
+    <string name="theme_ocean">Ocean</string>
+    <string name="theme_sunset">Sunset</string>
+    <string name="theme_mono">Mono</string>
+    <string name="theme_ios">iOS</string>
+    <string name="theme_amoled">AMOLED</string>
+    <string name="font_default">System</string>
+    <string name="font_rounded">Rounded</string>
+    <string name="font_mono">Mono</string>
+    <string name="font_serif">Serif</string>
 
     <!-- Smart Suggestions Row -->
     <string name="suggestions_label_morning">Morning Picks</string>

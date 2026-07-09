@@ -50,8 +50,11 @@ Kalan ana kapilar:
 
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
-| U10: Acik kaynak referans launcher ile Home revizyonu | Lawnchair/Kvaesitso referanslariyla sade home, search-first akis ve ayar yogunlugu karar listesi cikarilip HomeScreen revizyonu dar parcalara bolunecek. Smart/Niagara notlari HISTORY Dongu 210'da arsivli. | Bekliyor |
-| Setup friction azaltma | Ilk kurulumda izinler ve launcher varsayilan yapma akisi daha az zihinsel yuk yaratacak sekilde incelenecek. | Bekliyor |
+| U10: Acik kaynak referans launcher ile Home revizyonu | `docs/internal/home_revizyon_karar_listesi.md` ile Lawnchair/Kvaesitso referanslari, kalacak/gidecek/yeniden gruplancak karar listesi ve Home revizyonu uygulama parcalari cikarildi. | Tamamlandi - kod okuma/dokuman |
+| Setup friction azaltma | Onboarding zaten launcher secimi ve "Simdi Degil" sundugu icin `MainActivity.kt` icindeki tekrar otomatik launcher picker tetiklemesi kaldirildi; kullanici Settings > Launcher uzerinden manuel devam eder. | Tamamlandi - statik dogrulandi |
+| Search-first Home modu | Mevcut `KEY_FOCUS_MODE` search-first davranisa genisletildi: Home arama cubugu korunuyor, klasor pager gizleniyor, dock/favoriler/oneriler/son kullanilanlar one cikiyor; kucuk ekranda ikincil satirlar bu modda saklanmiyor. | Tamamlandi - statik dogrulandi |
+| Home onerileri tekrar azaltma | Home ust satirlarinda oncelik sirasi Dock > Favoriler > Oneriler > Son Kullanilanlar olacak sekilde `HomeFavoritesSection.kt` filtrelendi; `HomeScreen.kt` aktif contextual dock paketlerini section'a geciyor. | Tamamlandi - statik dogrulandi |
+| Settings Home bilgi mimarisi | `SettingsHomeScreenSection.kt` icindeki Home ayarlari Arama / Oneriler ve bildirimler / Temel davranislar / Gorsel alt basliklarina ayrildi; davranis degismeden taranabilirlik artirildi. | Tamamlandi - statik dogrulandi |
 | Settings hiyerarsi smoke | Settings alt route'lari emulator/cihazda gezilip navigation kopuklugu olmadigi kanitlanacak. | Bekliyor |
 | Search/launcher regression smoke | Search bar TOP/BOTTOM, kaynak toggle'lari, AllApps gruplama, contacts/files izin red fallback akislari tek smoke senaryoda kosulacak. | Bekliyor |
 

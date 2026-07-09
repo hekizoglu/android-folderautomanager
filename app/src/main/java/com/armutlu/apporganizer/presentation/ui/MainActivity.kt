@@ -1,17 +1,13 @@
 package com.armutlu.apporganizer.presentation.ui
 
-import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -43,11 +39,6 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_OPEN_ROUTE = "open_route"
     }
 
-    // Android 10+ RoleManager launcher seçim sonucu
-    private val roleRequestLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { /* Seçim yapıldı ya da iptal — devam et */ }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
@@ -61,11 +52,6 @@ class MainActivity : ComponentActivity() {
         val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
         val onboardingDone = prefs.getBoolean(AppPrefs.KEY_ONBOARDING_DONE, false)
 
-        // Onboarding bittiyse launcher seçimini kontrol et
-        if (onboardingDone && !isDefaultLauncher()) {
-            requestDefaultLauncher()
-        }
-
         setContent {
             AppOrganizerTheme {
                 var showOnboarding by remember { mutableStateOf(!onboardingDone) }
@@ -75,8 +61,6 @@ class MainActivity : ComponentActivity() {
                         prefs.edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
                         showOnboarding = false
                         scanApps()
-                        // Onboarding bitti, launcher seçimini tetikle
-                        if (!isDefaultLauncher()) requestDefaultLauncher()
                     })
                 } else {
                     AppNavigation(
@@ -98,32 +82,6 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         pendingRoute.value = intent.getStringExtra(EXTRA_OPEN_ROUTE)
         applyOpenCategoryIntent(intent)
-    }
-
-    private fun isDefaultLauncher(): Boolean {
-        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        val info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return info?.activityInfo?.packageName == packageName
-    }
-
-    private fun requestDefaultLauncher() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10+ — RoleManager ile doğrudan "Ev ekranı uygulaması" dialog'u
-                val roleManager = getSystemService(RoleManager::class.java)
-                if (roleManager != null && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
-                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-                    roleRequestLauncher.launch(intent)
-                }
-            } else {
-                // Android 9 ve altı — HOME intent gönder, sistem seçtirsin
-                val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "requestDefaultLauncher failed")
-        }
     }
 
     private fun applyOpenCategoryIntent(intent: Intent?) {

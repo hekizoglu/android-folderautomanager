@@ -79,7 +79,7 @@ fun SettingsAppearanceSection(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            theme.label,
+                            stringResource(theme.labelRes),
                             fontSize = 11.sp,
                             color = if (isSelected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -95,7 +95,7 @@ fun SettingsAppearanceSection(
                     FilterChip(
                         selected = isSelected,
                         onClick = { scope.launch { themePrefs.setFont(font) } },
-                        label = { Text(font.label, fontSize = 12.sp) }
+                        label = { Text(stringResource(font.labelRes), fontSize = 12.sp) }
                     )
                 }
             }

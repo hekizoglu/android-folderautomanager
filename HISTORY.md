@@ -4,6 +4,32 @@
 
 ---
 
+## Döngü 224 — 2026-07-09 [UX/Ürün smoke testi: gerçek crash bulundu ve düzeltildi + sistemik lokalizasyon bulgusu]
+
+**Yapılanlar:** ROADMAP "Orta Oncelik - UX ve Urun" için Settings hiyerarşisi/Search smoke testi emülatörde manuel yürütüldü (Pixel6_API33). Settings ekranına giden UI yolu keşfedilirken (long-press → "Ana Ekran" menüsü → "Widget Ekle") gerçek bir crash tetiklendi ve kök nedeni bulundu: `LauncherActivity.kt:widgetPickerLauncher` içinde `widgetConfigureLauncher.launch(configIntent)` try/catch'siz çağrılıyordu — bazı sistem widget'larının (örn. Google Arama Stocks widget'ı) configure aktivitesi export edilmemiş olabiliyor, bu durumda `SecurityException` fırlatıp TÜM launcher'ı çökertiyordu. `LauncherActivity.kt:52-59` civarı `runCatching { }` ile sarmalandı, launch başarısızsa widget doğrudan `viewModel.addWidgetId` ile eklenip config adımı atlanıyor artık.
+
+**İkinci bulgu (sistemik):** Emülatörün sistem dili `en-US` olduğu halde HomeScreen'in büyük çoğunluğu (klasör adları, arama kutusu, filtre chip'leri) hardcoded Türkçe literal kullanıyor — cihaz dilini hiç görmüyor. Buna karşın gerçekten `stringResource()` kullanan birkaç nokta (context menü "Open Folder/Move Position/Go to All Apps", ticker "Midday Picks", `isLoading` fallback ekranı "Launcher Settings/App Settings") doğru şekilde İngilizce render oluyor — sonuç karma dilli, dağınık bir UI. FİKİRLER.md'deki mevcut 14p madde bu somut kanıtla güncellendi (13p, Döngü 224 referansı eklendi).
+
+**Build:** `.\gradlew compileDebugKotlin -PskipGoogleServices` başarılı.
+**Sonraki:** Widget crash fix'i tam `assembleDebug` ile build edip emülatörde tekrar doğrula, commit+push et. Sistemik lokalizasyon envanterinin çıkarılması ayrı, büyük bir görev olarak FİKİRLER.md'de bekliyor.
+
+---
+
+## Dongu 224 - 2026-07-09 [ROADMAP UX kolay kapatma turu - build yok]
+
+**Yapilanlar:** ROADMAP "Orta Oncelik - UX ve Urun" bolumunde build/cihaz/Play Console gerektirmeyen en kolay bes madde kapatildi.
+1. **Setup friction azaltma:** `MainActivity.kt` icindeki onboarding sonrasi ve sonraki acilislarda otomatik `requestDefaultLauncher()` tetiklemesi kaldirildi. Onboarding zaten SET_LAUNCHER adimi ve "Simdi Degil" secenegi sunuyor; kullanici secim yapmazsa artik tekrar zorlanmiyor, Settings > Launcher ekranindan manuel devam ediyor.
+2. **U10 Home revizyonu:** `docs/internal/home_revizyon_karar_listesi.md` olusturuldu. Lawnchair/Kvaesitso referanslari, mevcut Home kod yuzeyleri, kalacak/gidecek/yeniden gruplancak kararlar ve sonraki dar uygulama parcalari belgelendi. ROADMAP U10 kapatildi; yeni parcalar `Search-first Home modu`, `Home onerileri tekrar azaltma`, `Settings Home bilgi mimarisi` olarak aktif listeye ayrildi.
+3. **Settings Home bilgi mimarisi:** `SettingsHomeScreenSection.kt` icindeki kalabalik Home ayarlari Arama / Oneriler ve bildirimler / Temel davranislar / Gorsel alt basliklarina ayrildi; davranis degistirilmedi.
+4. **Home onerileri tekrar azaltma:** `HomeFavoritesSection.kt` dock ve favorilerde gorunen paketleri onerilerden, oneri satirinda gorunenleri de son kullanilanlardan dusuyor. `HomeScreen.kt` contextual dock paketlerini Home favori/oneriler section'ina aktariyor; davranis dar kapsamli tutuldu.
+5. **Search-first Home modu:** Yeni preference eklenmeden mevcut `KEY_FOCUS_MODE` search-first davranisa genisletildi. Bu modda arama cubugu/dock/favoriler/oneriler/son kullanilanlar kalir, klasor pager gizlenir; kucuk ekranda oneri ve son kullanilan satirlari saklanmaz. `SettingsLauncherScreen.kt` etiketi davranisa uygun hale getirildi.
+
+**Dogrulama:** Build calistirilmadi. Statik arama ile `MainActivity.kt` icinde otomatik launcher picker cagrisi kalmadigi, Home tekrar filtrelerinin aktif oldugu, Search-first parametrelerinin baglandigi ve Settings Home grup basliklarinin eklendigi dogrulandi; `git diff --check` yalnizca CRLF uyarilari verdi.
+
+**Sonraki:** Build kullanmadan devam edilecek yerel kolay UX maddesi kalmadi; cihaz/emulator isteyen smoke maddeleri ve build/profiling/Play Console isleri acik kalmali.
+
+---
+
 ## Döngü 223 — 2026-07-09 [Akıllı Bildirim Analiz Sistemi — unit test kapsamı genişletildi]
 
 **Yapılanlar:** ROADMAP "Akıllı Bildirim Analiz Sistemi — Detay" alt görevlerinden 4'ü kanıtlandı: (2) analiz toggle kapalıyken `notification_events`'e yazılmadığı, (3) `onListenerConnected()`'ın doğru 30-gün eşiğiyle `deleteOlderThan` çağırdığı, (4) `NotificationAnalyzer` çok konuşan/gece+burst rahatsız eden/dikkat dağıtan/trend senaryoları — yeni test dosyaları `app/src/test/java/com/armutlu/apporganizer/service/AppNotificationListenerServiceTest.kt` (4 test) ve `app/src/test/java/com/armutlu/apporganizer/utils/NotificationAnalyzerTest.kt` (12 test). Item 7 (UI state ayrımı) kod incelemesiyle çözüldü: `NotificationReportScreen`'de "analiz kapalı" için ayrı state yok, boş rapor durumuna düşüyor — bug değil ama UX notu olarak FİKİRLER.md'ye eklendi (9p, Beklet). Item 6 (POST_NOTIFICATIONS izinsiz worker davranışı) `androidx.work:work-testing` bağımlılığı projede olmadığı için unit testle kanıtlanamadı, ROADMAP'te açık kaldı.

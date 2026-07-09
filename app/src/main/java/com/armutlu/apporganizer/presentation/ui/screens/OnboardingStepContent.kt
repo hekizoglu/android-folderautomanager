@@ -165,7 +165,7 @@ internal fun OnboardingThemeSelector(
                             if (isSelected) Color.White else Color.White.copy(0.3f), CircleShape)
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(theme.label, fontSize = 11.sp, color = if (isSelected) Color.White else Color.White.copy(0.5f))
+                Text(stringResource(theme.labelRes), fontSize = 11.sp, color = if (isSelected) Color.White else Color.White.copy(0.5f))
             }
         }
     }
@@ -183,7 +183,7 @@ internal fun OnboardingThemeSelector(
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(font.label, fontSize = 13.sp, color = Color.White,
+                Text(stringResource(font.labelRes), fontSize = 13.sp, color = Color.White,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
             }
         }

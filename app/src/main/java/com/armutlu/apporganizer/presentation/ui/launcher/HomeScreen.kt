@@ -561,11 +561,13 @@ fun HomeScreen(
                 suggestedApps = suggestedApps,
                 recentAppsEnabled = recentAppsEnabled,
                 recentApps = recentApps,
+                dockPackages = contextualDockPackages,
                 iconPackPkg = suggestionIconPack,
                 haptic = haptic,
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
                 onAppLongClick = { pkg -> contextMenuPkg = pkg },
                 screenHeightDp = LocalConfiguration.current.screenHeightDp,
+                showSecondaryRowsInCompactMode = focusModeEnabled,
             )
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
@@ -624,7 +626,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     androidx.compose.material3.Text(
-                        text = "Odak Modu Aktif",
+                        text = "Search-first Home modu aktif",
                         color = Color.White.copy(alpha = 0.55f),
                         fontSize = 14.sp
                     )

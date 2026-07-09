@@ -146,13 +146,13 @@ fun OnboardingScreen(
             if (currentStep == OnboardingStep.QUICK_SETTINGS) {
                 Spacer(Modifier.height(8.dp))
                 val quickItems = listOf(
-                    Triple("Widget Alanı", "Ana ekranda saat/hava durumu widget\'ı göster",
+                    Triple(R.string.onb_quick_widget_title, R.string.onb_quick_widget_desc,
                         AppPrefs.isWidgetAreaEnabled(context)) to { v: Boolean -> AppPrefs.setWidgetAreaEnabled(context, v) },
-                    Triple("Uygulama Önerileri", "En çok kullandıklarını ana ekranda göster",
+                    Triple(R.string.onb_quick_suggestions_title, R.string.onb_quick_suggestions_desc,
                         AppPrefs.isSuggestionsEnabled(context)) to { v: Boolean -> AppPrefs.setSuggestionsEnabled(context, v) },
-                    Triple("Ana Ekran Araması", "Klasörler arasında arama çubuğu",
+                    Triple(R.string.onb_quick_home_search_title, R.string.onb_quick_home_search_desc,
                         AppPrefs.isHomeSearchEnabled(context)) to { v: Boolean -> AppPrefs.setHomeSearchEnabled(context, v) },
-                    Triple("Klasör Blur Efekti", "Frosted glass efekti (performans gerektirir)",
+                    Triple(R.string.onb_quick_folder_blur_title, R.string.onb_quick_folder_blur_desc,
                         AppPrefs.isFolderBlurEnabled(context)) to { v: Boolean -> AppPrefs.setFolderBlurEnabled(context, v) }
                 )
                 var quickStates by remember {
@@ -160,7 +160,7 @@ fun OnboardingScreen(
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     quickItems.forEachIndexed { idx, (triple, setter) ->
-                        val (title, subtitle, _) = triple
+                        val (titleRes, subtitleRes, _) = triple
                         val enabled = quickStates[idx]
                         Box(
                             modifier = Modifier.fillMaxWidth()
@@ -179,10 +179,10 @@ fun OnboardingScreen(
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
-                                    Text(title, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                                    Text(subtitle, color = Color.White.copy(0.55f), fontSize = 12.sp)
+                                    Text(stringResource(titleRes), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(stringResource(subtitleRes), color = Color.White.copy(0.55f), fontSize = 12.sp)
                                 }
-                                Text(if (enabled) "Açık" else "Kapalı",
+                                Text(if (enabled) stringResource(R.string.onb_on) else stringResource(R.string.onb_off),
                                     color = if (enabled) Color(0xFF26C6DA) else Color.White.copy(0.35f),
                                     fontSize = 13.sp, fontWeight = FontWeight.Medium)
                             }

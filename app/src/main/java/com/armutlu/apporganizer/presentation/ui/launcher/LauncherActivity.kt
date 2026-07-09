@@ -55,7 +55,12 @@ class LauncherActivity : ComponentActivity() {
                     component = info.configure
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
                 }
-                widgetConfigureLauncher.launch(configIntent)
+                // Bazi widget'larin configure aktivitesi disariya export edilmemis olabilir
+                // (ör. Google arama araclari) — SecurityException tum launcher'i cokertmesin.
+                val launched = runCatching { widgetConfigureLauncher.launch(configIntent) }.isSuccess
+                if (!launched) {
+                    viewModel.addWidgetId(this, widgetId)
+                }
             } else {
                 viewModel.addWidgetId(this, widgetId)
             }

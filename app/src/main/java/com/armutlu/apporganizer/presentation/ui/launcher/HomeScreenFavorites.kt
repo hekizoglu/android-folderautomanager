@@ -23,14 +23,29 @@ internal fun HomeFavoritesSection(
     suggestedApps: List<AppInfo>,
     recentAppsEnabled: Boolean,
     recentApps: List<AppInfo>,
+    dockPackages: List<String> = emptyList(),
     iconPackPkg: String,
     haptic: HapticFeedback,
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
     screenHeightDp: Int = 800,
+    showSecondaryRowsInCompactMode: Boolean = false,
 ) {
     // Küçük ekranlarda (< 640dp) sadece favorileri göster — öneri+son kullanılanlar grid'i iter
-    val compactMode = screenHeightDp < 640
+    val compactMode = screenHeightDp < 640 && !showSecondaryRowsInCompactMode
+    val dockPkgs = dockPackages.toSet()
+    val favoritePkgs = favoriteApps.mapTo(mutableSetOf()) { it.packageName }
+    val visibleSuggestions = suggestedApps
+        .filter { it.packageName !in dockPkgs && it.packageName !in favoritePkgs }
+        .take(4)
+    val suggestionPkgs = visibleSuggestions.mapTo(mutableSetOf()) { it.packageName }
+    val visibleRecent = recentApps
+        .filter {
+            it.packageName !in dockPkgs &&
+                it.packageName !in favoritePkgs &&
+                it.packageName !in suggestionPkgs
+        }
+        .take(4)
 
     if (favoritesEnabled && favoriteApps.isNotEmpty()) {
         FavoritesRow(
@@ -48,9 +63,9 @@ internal fun HomeFavoritesSection(
         )
     }
 
-    if (!compactMode && suggestionsEnabled && suggestedApps.isNotEmpty()) {
+    if (!compactMode && suggestionsEnabled && visibleSuggestions.isNotEmpty()) {
         AppSuggestionsRow(
-            apps = suggestedApps,
+            apps = visibleSuggestions,
             iconPackPkg = iconPackPkg,
             onAppClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -63,9 +78,9 @@ internal fun HomeFavoritesSection(
         )
     }
 
-    if (!compactMode && recentAppsEnabled && recentApps.isNotEmpty()) {
+    if (!compactMode && recentAppsEnabled && visibleRecent.isNotEmpty()) {
         RecentAppsRow(
-            apps = recentApps,
+            apps = visibleRecent,
             iconPackPkg = iconPackPkg,
             onAppClick = { pkg ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)

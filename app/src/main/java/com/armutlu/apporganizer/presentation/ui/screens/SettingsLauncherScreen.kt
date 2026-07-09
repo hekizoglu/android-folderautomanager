@@ -198,8 +198,8 @@ fun SettingsLauncherScreen(
                 HorizontalDivider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
                 SettingsSwitchRow(
                     icon = Icons.Default.DoNotDisturb,
-                    title = "Odak Modu",
-                    subtitle = "Klasör gridi gizlenir, yalnızca dock + favoriler görünür",
+                    title = "Search-first / Odak Modu",
+                    subtitle = "Klasör gridi gizlenir; arama, dock, favoriler, öneriler ve son kullanılanlar öne çıkar",
                     checked = focusMode,
                     onCheckedChange = {
                         focusMode = it

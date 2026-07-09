@@ -48,9 +48,10 @@ fun SettingsHomeScreenSection(
     SettingsExpandableCard(
         icon = Icons.Default.Home,
         title = "Ana Ekran Ayarları",
-        subtitle = "Arama, favoriler, öneriler, rozetler ve görünüm anahtarları",
+        subtitle = "Arama, öneriler, temel davranışlar ve görsel ayarlar",
         initiallyExpanded = false
     ) {
+        HomeSettingsGroupTitle("Arama")
         SettingsButtonRow(
             icon = Icons.Default.Search,
             title = "Arama Ayarlari",
@@ -94,6 +95,7 @@ fun SettingsHomeScreenSection(
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HomeSettingsGroupTitle("Öneriler ve bildirimler")
         var notifAnalytics by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotifAnalyticsEnabled(context)) }
         SettingsSwitchRow(
             icon = Icons.Default.Notifications,
@@ -168,6 +170,7 @@ fun SettingsHomeScreenSection(
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HomeSettingsGroupTitle("Temel davranışlar")
         SettingsSwitchRow(
             icon = Icons.Default.SwipeUp,
             title = "Yukarı Kaydırma İpucu",
@@ -201,6 +204,7 @@ fun SettingsHomeScreenSection(
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HomeSettingsGroupTitle("Görsel")
         SettingsSwitchRow(
             icon = Icons.Default.NewReleases,
             title = "YENİ Rozeti",
@@ -358,4 +362,15 @@ fun SettingsHomeScreenSection(
             }
         }
     }
+}
+
+@Composable
+private fun HomeSettingsGroupTitle(title: String) {
+    Text(
+        text = title,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp, end = 16.dp)
+    )
 }
