@@ -96,7 +96,10 @@ fun AppNavigation(
             )
         }
         composable(Routes.SETTINGS_NOTIFICATIONS) {
-            SettingsNotificationsScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsNotificationsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) }
+            )
         }
         composable(Routes.SETTINGS_APPS) {
             SettingsAppsScreen(

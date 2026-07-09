@@ -232,6 +232,40 @@
     <string name="appearance_blur_effect_desc">Background blurs when folder opens (HyperOS style)</string>
     <string name="appearance_folder_shape">Folder Shape</string>
 
+    <!-- Notification Report (Cycle 224 — state separation) -->
+    <string name="notif_report_title">Notification Report</string>
+    <string name="notif_report_back">Back</string>
+    <string name="notif_report_perm_title">Notification access required</string>
+    <string name="notif_report_perm_desc">AppOrganizer needs to see notifications to build this report. After you grant access, data is collected on your device only — content is never stored, just app name and time.</string>
+    <string name="notif_report_perm_btn">Open Notification Access</string>
+    <string name="notif_report_disabled_title">Notification Analysis is off</string>
+    <string name="notif_report_disabled_desc">You turned Notification Analysis off — while it\'s off, no new data is collected and no report is built. If you enable it, data stays on your device; notification content is never stored.</string>
+    <string name="notif_report_disabled_btn">Enable Analysis</string>
+    <string name="notif_report_collecting_title">Collecting data</string>
+    <string name="notif_report_collecting_desc">Analysis is on, but not enough notifications have accumulated yet. After a few days of normal use, your report will appear here.</string>
+    <string name="notif_report_paused_banner">Notification Analysis is off — the report is not being updated.</string>
+    <string name="notif_report_perm_banner">Notification access not granted — the report is not being updated.</string>
+    <string name="notif_report_perm_banner_btn">Grant Access</string>
+    <string name="notif_report_summary_period">Last 7 days</string>
+    <string name="notif_report_summary_total">total notifications</string>
+    <string name="notif_report_summary_top">%1$s sent %2$d notifications</string>
+    <string name="notif_report_section_talkative">📢 Most Talkative</string>
+    <string name="notif_report_section_disturbing">🌙 Disturbing</string>
+    <string name="notif_report_section_distracting">🎯 Distracting</string>
+    <string name="notif_report_distracting_hint">Apps that send many notifications but are rarely used — consider muting them.</string>
+    <string name="notif_report_no_disturbing">No apps disturbing you at night 🎉</string>
+    <string name="notif_report_no_distracting">No distracting apps detected ✨</string>
+    <string name="notif_report_night_ratio">%1$d%% at night</string>
+    <string name="notif_report_burst">up to %1$d per hour</string>
+    <string name="notif_report_count_usage">%1$d notifications / %2$d min of use</string>
+
+    <!-- Notification Analysis settings (SettingsNotificationsScreen) -->
+    <string name="settings_notif_analytics_section">Notification Analysis</string>
+    <string name="settings_notif_analytics_title">Notification Analysis</string>
+    <string name="settings_notif_analytics_desc">Notification counts are recorded to feed the Notification Report (content is never stored)</string>
+    <string name="settings_notif_report_title">Notification Report</string>
+    <string name="settings_notif_report_desc">See last 7 days of notification behavior — talkative, disturbing, distracting</string>
+
     <!-- Smart Suggestions Row -->
     <string name="suggestions_label_morning">Morning Picks</string>
     <string name="suggestions_label_noon">Midday Picks</string>

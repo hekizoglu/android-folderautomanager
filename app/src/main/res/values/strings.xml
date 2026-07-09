@@ -234,6 +234,40 @@
     <string name="appearance_blur_effect_desc">Klasör açılınca arka plan bulanıklaşır (HyperOS tarzı)</string>
     <string name="appearance_folder_shape">Klasör Şekli</string>
 
+    <!-- Bildirim Raporu (Döngü 224 — durum ayrımı) -->
+    <string name="notif_report_title">Bildirim Raporu</string>
+    <string name="notif_report_back">Geri</string>
+    <string name="notif_report_perm_title">Bildirim erişimi gerekli</string>
+    <string name="notif_report_perm_desc">Raporun oluşabilmesi için AppOrganizer\'ın bildirimleri görmesi gerekiyor. İzin verdikten sonra veriler cihazında toplanmaya başlar — içerik saklanmaz, yalnızca uygulama adı ve zaman kaydedilir.</string>
+    <string name="notif_report_perm_btn">Bildirim Erişimini Aç</string>
+    <string name="notif_report_disabled_title">Bildirim Analizi kapalı</string>
+    <string name="notif_report_disabled_desc">Bildirim Analizi\'ni kapatmışsın — kapalıyken yeni veri toplanmaz ve rapor oluşmaz. Açarsan veriler yalnızca cihazında tutulur; bildirim içeriği hiç saklanmaz.</string>
+    <string name="notif_report_disabled_btn">Analizi Aç</string>
+    <string name="notif_report_collecting_title">Veri toplanıyor</string>
+    <string name="notif_report_collecting_desc">Analiz açık ama henüz yeterli bildirim birikmedi. Birkaç günlük normal kullanımdan sonra rapor burada oluşur.</string>
+    <string name="notif_report_paused_banner">Bildirim Analizi kapalı — rapor yeni veriyle güncellenmiyor.</string>
+    <string name="notif_report_perm_banner">Bildirim erişimi verilmemiş — rapor güncellenmiyor.</string>
+    <string name="notif_report_perm_banner_btn">İzin Ver</string>
+    <string name="notif_report_summary_period">Son 7 gün</string>
+    <string name="notif_report_summary_total">toplam bildirim</string>
+    <string name="notif_report_summary_top">%1$s %2$d bildirim gönderdi</string>
+    <string name="notif_report_section_talkative">📢 Çok Konuşanlar</string>
+    <string name="notif_report_section_disturbing">🌙 Rahatsız Edenler</string>
+    <string name="notif_report_section_distracting">🎯 Dikkat Dağıtanlar</string>
+    <string name="notif_report_distracting_hint">Çok bildirim gönderip az kullanılan uygulamalar — kapatmayı düşünebilirsin.</string>
+    <string name="notif_report_no_disturbing">Gece rahatsız eden uygulama yok 🎉</string>
+    <string name="notif_report_no_distracting">Dikkat dağıtan uygulama tespit edilmedi ✨</string>
+    <string name="notif_report_night_ratio">gece %%%1$d</string>
+    <string name="notif_report_burst">saatte en çok %1$d</string>
+    <string name="notif_report_count_usage">%1$d bildirim / %2$d dk kullanım</string>
+
+    <!-- Bildirim Analizi ayarları (SettingsNotificationsScreen) -->
+    <string name="settings_notif_analytics_section">Bildirim Analizi</string>
+    <string name="settings_notif_analytics_title">Bildirim Analizi</string>
+    <string name="settings_notif_analytics_desc">Bildirim sayıları kaydedilir, Bildirim Raporu\'nu besler (içerik saklanmaz)</string>
+    <string name="settings_notif_report_title">Bildirim Raporu</string>
+    <string name="settings_notif_report_desc">Son 7 günün bildirim davranışını gör — çok konuşan, rahatsız eden, dikkat dağıtan</string>
+
     <!-- Akıllı Öneriler Row -->
     <string name="suggestions_label_morning">Sabah Önerileri</string>
     <string name="suggestions_label_noon">Öğle Önerileri</string>

@@ -94,18 +94,8 @@ fun SettingsHomeScreenSection(
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        var notifAnalytics by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotifAnalyticsEnabled(context)) }
-        SettingsSwitchRow(
-            icon = Icons.Default.Notifications,
-            title = "Bildirim Analizi",
-            subtitle = "Bildirim sayıları kaydedilir, Bildirim Raporu'nu besler (içerik saklanmaz)",
-            checked = notifAnalytics,
-            onCheckedChange = {
-                notifAnalytics = it
-                com.armutlu.apporganizer.utils.AppPrefs.setNotifAnalyticsEnabled(context, it)
-            }
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        // "Bildirim Analizi" toggle'ı Ayarlar > Bildirimler ekranına taşındı (Döngü 224) —
+        // ana ekran ayarı değil, bildirim veri toplama ayarıdır.
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = "Favoriler",

@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 224 — 2026-07-09 [Akıllı Bildirim raporu — kullanıcı dostu state ayrımı (UX)]
+
+**Yapılanlar:** Döngü 221/223'te tespit edilen UX kafa karışıklığı çözüldü: rapor boşken kullanıcı "veri henüz yok" ile "analizi sen kapattın" arasındaki farkı göremiyordu. `NotificationReportViewModel.kt`'ye `NotificationReportUiState` sealed interface eklendi (Loading / PermissionMissing / AnalyticsDisabled / CollectingData / Ready) — saf `from()` eşleme fonksiyonu test edilebilir; öncelik: veri varsa her zaman rapor (sorunlar banner bayrağı), veri yoksa izin > analiz kapalı > veri toplanıyor. `NotificationReportScreen.kt` yeniden yazıldı: her boş durum ikon+başlık+açıklama+eylem butonlu tam-ekran panel ("Analiz kapalı" durumunda "Analizi Aç" butonu toggle'ı ayara gitmeden tek dokunuşla açar — `enableAnalytics()`; "Veri toplanıyor" durumunda "birkaç gün kullanım sonrası rapor oluşur" açıklaması); ON_RESUME'da `refresh()` eklendi (izin verip sistem ayarından dönünce ekran güncellenir); tüm metinler hardcoded literal yerine `strings.xml`'e taşındı (TR `values/` + EN `values-en/`, 32 yeni string). Ayrıca yanlış konumlanmış "Bildirim Analizi" toggle'ı `SettingsHomeScreenSection.kt`'den (Ana Ekran Ayarları'na gömülüydü) `SettingsNotificationsScreen.kt`'ye taşındı — reaktif SharedPreferences listener pattern'i ile — ve yanına "Bildirim Raporu" kısayol satırı eklendi (`AppNavigation.kt`'ye `onNavigateToNotificationReport` bağlandı). Versiyon: versionCode 20→21, versionName 1.2.7→1.2.8.
+
+**Test:** Yeni `NotificationReportUiStateTest.kt` (9 test) — null→Loading, boş+izinsiz→PermissionMissing (analiz kapalıyken de izin öncelikli), boş+analiz kapalı→AnalyticsDisabled, boş+her şey açık→CollectingData, veri varken Ready + bayrak kombinasyonları.
+
+**Değişen dosyalar:** `NotificationReportViewModel.kt`, `NotificationReportScreen.kt`, `SettingsNotificationsScreen.kt`, `SettingsHomeScreenSection.kt`, `AppNavigation.kt`, `values/strings.xml`, `values-en/strings.xml`, `app/build.gradle.kts`, `NotificationReportUiStateTest.kt` (yeni).
+
+**Sonraki:** ROADMAP R7 kalan maddeler (POST_NOTIFICATIONS sessiz davranış + 30 gün temizlik) gerçek cihaz testi.
+
+---
+
 ## Döngü 223 — 2026-07-09 [Akıllı Bildirim Analiz Sistemi — unit test kapsamı genişletildi]
 
 **Yapılanlar:** ROADMAP "Akıllı Bildirim Analiz Sistemi — Detay" alt görevlerinden 4'ü kanıtlandı: (2) analiz toggle kapalıyken `notification_events`'e yazılmadığı, (3) `onListenerConnected()`'ın doğru 30-gün eşiğiyle `deleteOlderThan` çağırdığı, (4) `NotificationAnalyzer` çok konuşan/gece+burst rahatsız eden/dikkat dağıtan/trend senaryoları — yeni test dosyaları `app/src/test/java/com/armutlu/apporganizer/service/AppNotificationListenerServiceTest.kt` (4 test) ve `app/src/test/java/com/armutlu/apporganizer/utils/NotificationAnalyzerTest.kt` (12 test). Item 7 (UI state ayrımı) kod incelemesiyle çözüldü: `NotificationReportScreen`'de "analiz kapalı" için ayrı state yok, boş rapor durumuna düşüyor — bug değil ama UX notu olarak FİKİRLER.md'ye eklendi (9p, Beklet). Item 6 (POST_NOTIFICATIONS izinsiz worker davranışı) `androidx.work:work-testing` bağımlılığı projede olmadığı için unit testle kanıtlanamadı, ROADMAP'te açık kaldı.
