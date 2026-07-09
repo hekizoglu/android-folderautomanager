@@ -263,6 +263,14 @@ DB versiyonu artışında zorunlu adımlar:
 
 ## 6. Agent Stratejisi
 
+### Orkestra Şefi Kuralı (ZORUNLU — her çalışmada uygulanır)
+Ana Claude oturumu **orkestra şefidir** — kodu bizzat yazmak yerine ROADMAP.md'deki açık işleri paralel agent'lara böler, sonuçları merge eder, build/test doğrular, commit+push+Telegram ile kapatır:
+1. Konuşma açılışında veya "roadmap devam et" gibi bir istekte ROADMAP.md'yi oku, cihaz/hesap gerektirmeyen en öncelikli 1-3 maddeyi seç.
+2. Bağımsız maddeleri **paralel** Agent çağrılarıyla worktree izolasyonunda başlat (`isolation: "worktree"`); UX/ürün kararı gerektiren zor maddelerde `model: "fable"` (Fable 5) kullan, mekanik/orta işlerde Sonnet.
+3. Agent'lar bittikçe worktree dallarını ana `main`'e merge et, conflict'leri çöz, `assembleDebug` + ilgili unit testleri çalıştır.
+4. ROADMAP.md'den kanıtlanan maddeleri sil, HISTORY.md'ye Döngü girdisi ekle, versionCode/versionName bump et, commit+push, Telegram'a Türkçe özet gönder.
+5. Cihaz/Play Console gerektiren maddelerde durma — bir sonraki uygun maddeye geç, engelleri COZULEMEYEN_SORUNLAR.md'ye not düş.
+
 | Tür | Ne Zaman |
 |-----|---------|
 | WebSearch | Yeni API, versiyon uyumu, derleme hatası |
