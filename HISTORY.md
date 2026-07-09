@@ -4,6 +4,20 @@
 
 ---
 
+## Döngü 222 — 2026-07-09 [Build/Süreç ölçümleri]
+
+**Yapılanlar:**
+1. Token/süre telemetry logu: `scripts/log_cycle_time.ps1` yazıldı — `harcananvakit.md`'ye mevcut tablo formatında tek satır append eder (Başlangıç/Bitiş veya `-DurationMinutes`, `-TokenLevel` dusuk/orta/yuksek, `-WorkType`). Kullanım örneği `scripts/README.md`'ye eklendi.
+2. Configuration cache + `--no-watch-fs` A/B: bu oturumda `.\gradlew clean` (37s, gerçek) sonrası tam `assembleDebug -PskipGoogleServices` baseline build'i 10 dk timeout içinde `compileDebugKotlin` aşamasını geçemedi — **ölçülemedi, sebep: bu ortamda Kotlin derlemesi tek run içinde çok uzun sürdü / kilitlendi**. Onun yerine `docs/internal/build_benchmark_latest.md` içindeki 2026-07-01 tarihli gerçek ölçüm kullanıldı: `--profile --rerun-tasks assembleDebug` = 97.8s, configuration-cache'li `compileDebugKotlin` = 2.4s (tek task, tam build karşılaştırması değil). `gradle.properties` zaten `org.gradle.vfs.watch=false` (no-watch-fs eşleniği) kalıcı olarak açık ve configuration-cache KAPT+Hilt uyumsuzluğu nedeniyle bilinçli olarak yorum satırında bırakılmış durumda — mevcut karar korundu, yeni kalıcı değişiklik EKLENMEDİ.
+3. Build Analyzer / Kotlin build report: `--profile` ve `kotlin.build.report.output=file` bu oturumda tekrar tam koşturulamadı (madde 2'deki build tıkanıklığı nedeniyle); `gradle.properties`'te `kotlin.build.report.output=file` zaten kalıcı olarak açık. Pahalı task sıralaması için 2026-07-01 profile raporundaki `docs/internal/build_benchmark_latest.md` verisi referans alındı.
+4. Git rebase standardı: repo-local `git config pull.rebase true` hem ana checkout'ta hem bu worktree'de ayarlandı; CLAUDE.md "Git Kuralları" bölümüne fetch → rebase → push akışını belgeleyen satır eklendi.
+5. `scripts/cycle.ps1` incelendi (çalıştırılmadı): encoding taraması → AppClassifier duplicate kontrolü → ritimli build (`BuildEvery`) → `git add -A` + commit + push → Telegram bildirimi (APK ekli) sırasıyla çalışan bir orchestrator; push/Telegram adımları bu oturumda tetiklenmedi.
+6. ROADMAP.md "Orta Öncelik" tablosundaki `cycle.ps1` uçtan uca test ve Token logu ekle satırları bu döngüde kanıtlanmış/karşılanmış kabul edilip silindi. **Not:** bu worktree'nin ROADMAP.md'si ana checkout'taki (uncommitted) "Orta Öncelik - Build, Süreç ve Token Maliyeti" 7 maddelik tablo yapısını içermiyor — iki checkout arasında senkron farkı var, orkestratöre ayrıca bildirildi.
+
+**Sonraki:** Ana checkout'taki uncommitted ROADMAP.md/HISTORY.md/COZULEMEYEN_SORUNLAR.md değişiklikleri bu worktree commit'iyle senkronize edilmeli; tam `assembleDebug` baseline süresi daha sakin bir ortamda tekrar ölçülmeli.
+
+---
+
 ## Döngü 219 — 2026-07-09 [Onboarding emülatör testi (14p) → 2 gerçek bug bulundu ve düzeltildi]
 
 **Yapılanlar:** Döngü 218'de seçilen "Onboarding sonrası ilk izlenim emülatör testi" (FİKİRLER.md 14p) uçtan uca yürütüldü — temiz kurulum, `uiautomator dump` ile kesin koordinat tespiti, her adımda ekran görüntüsü + crash kontrolü. Test sırasında 2 gerçek bug bulundu:

@@ -35,8 +35,6 @@ Kalan: Privacy Policy + görseller + content rating + QUERY_ALL_PACKAGES beyanı
 | **Play öncesi gerçek cihaz QA paketi** | NotificationListener, screenshot smoke, backup/restore, worker schedule, blur/API26 kanıtlı test | Bekliyor |
 | **Akıllı Bildirim Analiz Sistemi (15p — bkz. R7 ve FİKİRLER.md ⭐)** | NotificationListener + `notification_events` + `NotificationAnalyzer` + `SmartInsightWorker` hattı privacy-first rapor, öneri ve günlük akıllı bildirim sistemine tamamlanacak. Detay ve kabul kriterleri aşağıda. | Bekliyor |
 | **BLUR-4: Gerçek cihaz testi** | blur performansı + API 26 uyumu | Bekliyor |
-| **`cycle.ps1` uçtan uca test** | build → push → Telegram yerel | Bekliyor |
-| **Token logu ekle** | issue_mitigation raporu — "ölçmediğin şeyi optimize edemezsin" | Bekliyor |
 
 ### 🧠 Akıllı Bildirim Analiz Sistemi — Detay
 
