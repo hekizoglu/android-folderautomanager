@@ -17,6 +17,19 @@
 
 ---
 
+## Dongu 221 - 2026-07-09 [Cozulemeyen sorunlari azaltma turu]
+
+**Yapilanlar:** `COZULEMEYEN_SORUNLAR.md` icindeki maddeler yeniden denendi.
+- **CS-5 kapatildi:** `.claude/rules/build.md` protected path artik kullanici talebi kapsaminda guncellendi; AGP `8.6.1`, Kotlin `1.9.25`, minSdk `26`, targetSdk/compileSdk `35` olarak gercek Gradle dosyalariyla uyumlu.
+- **CS-3 repo tarafi iyilestirildi:** `scripts/add_defender_exclusion.ps1` dosyasina admin gerektirmeyen `-CheckOnly` modu eklendi. `scripts/clear_build_lock.ps1` tum `java.exe` sureclerini oldurmek yerine `gradlew --stop` kullanacak sekilde daraltildi ve sadece bu projenin `app\build` klasorunu temizliyor.
+- **CS-6 release hazirligi iyilestirildi:** `scripts/create_release_keystore.ps1` eklendi. Script, kullanicidan interaktif sifre alarak yerel `release.jks` ve gitignore kapsamindaki `keystore.properties` dosyasini uretiyor.
+- **CS-7 tekrar kontrol edildi:** Bu makinede `adb` bulunmadigi icin gercek cihaz/emulator QA kosulamadi; madde dis cihaz engeli olarak kaldi.
+
+**Dogrulama:** `scripts/add_defender_exclusion.ps1 -CheckOnly` basarili; PowerShell scriptblock parse kontrolu basarili; `.claude/rules/build.md` degerleri Gradle dosyalariyla karsilastirildi.
+**Build:** Henuz calistirilmadi; degisiklikler script/dokuman ve agent-rule duzeltmesi agirlikli.
+
+---
+
 ## Dongu 220 - 2026-07-09 [Rapor kalabaligi temizlendi - aktif isler ROADMAP.md'de toplandi]
 
 **Yapilanlar:** Kullanici "butun bu dosyalardaki yapilacaklari tek bir dosyada birlestir, diger dosyalari sil; cozduklerini HISTORY'ye, cozulemeyenleri COZULEMEYEN_SORUNLAR'a at" dedi. Gecici ve ara raporlar tek tek okundu, aktif isler `ROADMAP.md` icinde tek kaynak olacak sekilde toplandi:

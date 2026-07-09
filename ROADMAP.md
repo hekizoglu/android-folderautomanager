@@ -28,7 +28,7 @@ Kalan ana kapilar:
 | Content rating | Play Console content rating anketi doldurulacak. | Bekliyor - dis aksiyon |
 | Privacy Policy URL | GitHub Pages URL'i Play Console'a girilecek; policy dosyasi ve manifest URL'i ayni hikayeyi anlatmali. | Bekliyor - dis aksiyon |
 | Accessibility Service declaration | Drag/drop icin tanimli servisin ne yaptigi/yapmadigi Play Console ve uygulama ici prominent disclosure ile uyumlu anlatilacak. | Bekliyor - dis aksiyon |
-| Release keystore | Kullanici tarafindan kalici release key olusturulacak, guvenli saklanacak ve final AAB temiz committen imzalanacak. | Bekliyor - kullanici aksiyonu |
+| Release keystore | `scripts/create_release_keystore.ps1` hazir. Kullanici scripti calistirip kalici release key'i guvenli saklayacak; final AAB temiz committen imzalanacak. | Bekliyor - kullanici aksiyonu |
 | Screenshot seti | Light/dark phone screenshot seti alinacak: Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore. Kisisel veri gorunmeyecek. | Bekliyor - cihaz/emulator |
 
 ---
