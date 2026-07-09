@@ -84,7 +84,8 @@ class LauncherViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository,
     private val searchRepository: SearchRepository,
-    private val packageManagerHelper: PackageManagerHelper
+    private val packageManagerHelper: PackageManagerHelper,
+    private val classifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 ) : AndroidViewModel(application) {
 
     private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -637,6 +638,18 @@ class LauncherViewModel @Inject constructor(
                     text = "$totalNotif aktif bildirim — analiz raporu için dokun",
                     emoji = "🔔",
                     route = com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
+                ))
+            }
+            // Dusuk guvenli otomatik kategorileme uyarisi (K3, Dongu 227, Fable danismanligi) —
+            // getConfidence() mevcuttu ama hicbir UX'e baglanmamisti. Esik: 60 altinda "belirsiz" sayilir.
+            val lowConfidenceCount = folderList.sumOf { f ->
+                f.apps.count { classifier.getConfidence(it, f.category.categoryId) < 60 }
+            }
+            if (lowConfidenceCount > 0) {
+                add(TickerItem(
+                    text = "$lowConfidenceCount uygulamanın kategorisi belirsiz — gözden geçirmek ister misin?",
+                    emoji = "🤔",
+                    route = com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
                 ))
             }
         }.filterNot { it.key in dismissed }.let { visible ->

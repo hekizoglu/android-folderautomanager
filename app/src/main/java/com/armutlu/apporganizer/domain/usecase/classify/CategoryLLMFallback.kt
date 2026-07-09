@@ -1,6 +1,9 @@
 package com.armutlu.apporganizer.domain.usecase.classify
 
+import android.content.Context
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.utils.AppPrefs
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -16,14 +19,17 @@ import javax.inject.Singleton
  * DeepSeek API ile bilinmeyen paketleri kategorilere atar.
  * - try/catch: hata durumunda CAT_OTHER döner
  * - withTimeout(10_000L): 10 sn üstünde CAT_OTHER
- * - Cache: aynı paketi tekrar sorgulamaz
+ * - Cache: aynı paketi tekrar sorgulamaz (in-memory + AppPrefs'te kalıcı, K1 Dongu 227)
  */
 @Singleton
-class CategoryLLMFallback @Inject constructor() {
+class CategoryLLMFallback @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     // packageName → categoryId cache (uygulama yaşam süresi boyunca)
     // ConcurrentHashMap: classify() ve classifyBatch() paralel çağrılsa bile thread-safe
-    private val cache = java.util.concurrent.ConcurrentHashMap<String, String>()
+    // Ilk deger AppPrefs'teki kalici cache'den yuklenir — yeniden baslatmada DeepSeek'e tekrar gidilmez.
+    private val cache = java.util.concurrent.ConcurrentHashMap<String, String>(AppPrefs.getLlmCategoryCache(context))
 
     /**
      * Tek paket için kategori döndürür.
@@ -37,6 +43,7 @@ class CategoryLLMFallback @Inject constructor() {
                 val result = callDeepSeek(listOf(packageName), apiKey)
                 val category = result[packageName] ?: Category.CAT_OTHER
                 cache[packageName] = category
+                AppPrefs.putLlmCategoryCache(context, packageName, category)
                 category
             }
         } catch (e: Exception) {
@@ -64,11 +71,14 @@ class CategoryLLMFallback @Inject constructor() {
             try {
                 withTimeout(10_000L) {
                     val batchResult = callDeepSeek(batch, apiKey)
+                    val toPersist = mutableMapOf<String, String>()
                     batch.forEach { pkg ->
                         val category = batchResult[pkg] ?: Category.CAT_OTHER
                         cache[pkg] = category
                         results[pkg] = category
+                        toPersist[pkg] = category
                     }
+                    AppPrefs.putLlmCategoryCacheAll(context, toPersist)
                 }
             } catch (e: Exception) {
                 Timber.w(e, "LLM batch fallback failed for ${batch.size} packages")

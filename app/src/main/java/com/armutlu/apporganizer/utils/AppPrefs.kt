@@ -539,6 +539,26 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_MANUAL_CAT_OVERRIDES, map.toJsonString()).apply()
     }
 
+    // DeepSeek LLM kategorileme sonucu kalıcı cache — kurulum sonrası her acilista ayni
+    // bilinmeyen paketler icin tekrar API cagrisi yapilmasin (K1, Dongu 227, Fable danismanligi).
+    const val KEY_LLM_CATEGORY_CACHE = "llm_category_cache"
+
+    fun getLlmCategoryCache(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_LLM_CATEGORY_CACHE, null) ?: "").parseJsonMap()
+
+    fun putLlmCategoryCache(context: Context, packageName: String, categoryId: String) {
+        val map = getLlmCategoryCache(context).toMutableMap()
+        map[packageName] = categoryId
+        prefs(context).edit().putString(KEY_LLM_CATEGORY_CACHE, map.toJsonString()).apply()
+    }
+
+    fun putLlmCategoryCacheAll(context: Context, entries: Map<String, String>) {
+        if (entries.isEmpty()) return
+        val map = getLlmCategoryCache(context).toMutableMap()
+        map.putAll(entries)
+        prefs(context).edit().putString(KEY_LLM_CATEGORY_CACHE, map.toJsonString()).apply()
+    }
+
     // Search bar konumu — TOP veya BOTTOM snap noktası
     const val KEY_SEARCH_BAR_POSITION = "search_bar_position"
     const val SEARCH_BAR_POS_TOP = "TOP"

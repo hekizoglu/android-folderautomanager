@@ -58,6 +58,7 @@ class LauncherViewModelTest {
     private lateinit var mockSearchRepository: SearchRepository
     private lateinit var mockPmHelper: PackageManagerHelper
     private lateinit var mockContext: Context
+    private lateinit var mockClassifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 
     /** Repository'den yayılan kontrol edilebilir flow */
     private val appsFlow = MutableStateFlow<List<AppInfo>>(emptyList())
@@ -73,6 +74,7 @@ class LauncherViewModelTest {
         mockSearchRepository = mockk(relaxed = true)
         mockPmHelper = mockk(relaxed = true)
         mockContext = mockk(relaxed = true)
+        mockClassifier = mockk(relaxed = true)
 
         every { mockRepository.getAllAppsFlow() } returns appsFlow
 
@@ -86,7 +88,8 @@ class LauncherViewModelTest {
             application = mockApplication,
             repository = mockRepository,
             searchRepository = mockSearchRepository,
-            packageManagerHelper = mockPmHelper
+            packageManagerHelper = mockPmHelper,
+            classifier = mockClassifier
         )
     }
 

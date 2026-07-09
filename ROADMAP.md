@@ -94,13 +94,9 @@ Mevcut temel:
 
 ---
 
-## Yuksek Puanli - Akilli Kategorileme (Fable danismanligi, Dongu 227)
+## Yuksek Puanli - Akilli Kategorileme (Fable danismanligi, Dongu 227-228)
 
-| Gorev | Minimum cozum | Durum |
-|---|---|---|
-| K1 (16p): ApplicationInfo.category sinyali + kalici LLM cache | `AppClassifier.kt` exactMap sonrasi Android'in ucretsiz offline `packageManager.getApplicationInfo(pkg).category` sinyali eklensin; `CategoryLLMFallback` sonuclari AppPrefs/Room'a kalici yazilsin (su an sadece in-memory, her acilista ayni paketler DeepSeek'e tekrar gidiyor). Zorluk 3/10. | Bekliyor |
-
-Detay ve diger oneriler (K2/K3/K4): FİKİRLER.md ⭐/🟡 bolumlerinde.
+K1 ve K3 Dongu 228'de tamamlandi (bkz. HISTORY.md). K2 (override-ogrenme) ve K4 (baglamsal akilli klasor) FİKİRLER.md'de onay bekliyor.
 
 ---
 

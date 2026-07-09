@@ -68,7 +68,30 @@ class AppClassifier @Inject constructor(
         if (manufacturerClassifyEnabled) {
             classifyByManufacturerPrefix(appInfo.packageName, appInfo.appName)?.let { return it }
         }
+        // Android 8+ ücretsiz/offline Play Store kategori sinyali — exactMap'te olmayan
+        // paketler icin keyword'den once denenir (K1, Dongu 227, Fable danismanligi).
+        classifyByPlayStoreCategory(appInfo.packageName)?.let { return it }
         return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
+    }
+
+    // ApplicationInfo.category (API 26+) — uygulama gelistiricisinin manifestte beyan ettigi
+    // resmi Play Store kategorisi. Cihaz icinde, agsiz, ucretsiz bir sinyal.
+    private fun classifyByPlayStoreCategory(packageName: String): String? {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) return null
+        val category = runCatching {
+            context.packageManager.getApplicationInfo(packageName, 0).category
+        }.getOrNull() ?: return null
+        return when (category) {
+            android.content.pm.ApplicationInfo.CATEGORY_GAME -> Category.CAT_GAMES
+            android.content.pm.ApplicationInfo.CATEGORY_AUDIO -> Category.CAT_MUSIC
+            android.content.pm.ApplicationInfo.CATEGORY_VIDEO -> Category.CAT_VIDEO
+            android.content.pm.ApplicationInfo.CATEGORY_IMAGE -> Category.CAT_PHOTOGRAPHY
+            android.content.pm.ApplicationInfo.CATEGORY_SOCIAL -> Category.CAT_SOCIAL
+            android.content.pm.ApplicationInfo.CATEGORY_NEWS -> Category.CAT_NEWS
+            android.content.pm.ApplicationInfo.CATEGORY_MAPS -> Category.CAT_MAPS
+            android.content.pm.ApplicationInfo.CATEGORY_PRODUCTIVITY -> Category.CAT_PRODUCTIVITY
+            else -> null
+        }
     }
 
     fun classifyApps(
@@ -104,7 +127,7 @@ class AppClassifier @Inject constructor(
     }
 
     private fun classifyByKeywords(appName: String, packageName: String): String? {
-        val lowerName = appName.lowercase()
+        val lowerName = appName.lowercase(java.util.Locale("tr"))
         val lowerPkg  = packageName.lowercase()
         KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
             keywords.forEach { kw ->

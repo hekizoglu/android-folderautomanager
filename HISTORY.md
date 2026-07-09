@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 228 — 2026-07-09 [Akıllı Kategorileme K1 + K3 uygulandı]
+
+**Yapılanlar (kullanıcı talebi: Fable önerileri K1 ve K3):**
+- **K1 — `ApplicationInfo.category` sinyali + kalıcı LLM cache:** `AppClassifier.kt`'ye `classifyByPlayStoreCategory()` eklendi — Android 8+'ın ücretsiz/offline Play Store kategori beyanı (GAME/AUDIO/VIDEO/IMAGE/SOCIAL/NEWS/MAPS/PRODUCTIVITY) artık exactMap+üretici sonrası, keyword'den önce denenir. `CategoryLLMFallback.kt` artık `AppPrefs`'e (yeni `KEY_LLM_CATEGORY_CACHE`) kalıcı yazıyor ve başlangıçta oradan yüklüyor — aynı bilinmeyen paket için uygulama her açılışta DeepSeek'e tekrar gitmiyor. Bonus: `AppClassifier.kt`'deki `lowercase()` çağrısına eksik `Locale("tr")` eklendi (Fable'ın tespit ettiği ayrı bug).
+- **K3 — Confidence tabanlı doğrulama akışı:** Var olan ama hiç kullanılmayan `AppClassifier.getConfidence()` artık `LauncherViewModel.tickerItems`'a bağlandı — güveni 60'ın altında olan uygulama sayısı hesaplanıp "N uygulamanın kategorisi belirsiz — gözden geçirmek ister misin?" ticker kartı olarak gösteriliyor, dokununca `Routes.APP_LIST`'e (mevcut kategori değiştirme ekranı) yönlendiriyor. Yeni UI/ekran eklenmedi, mevcut akışlar yeniden kullanıldı.
+
+**Build/Test:** `assembleDebug -PskipGoogleServices` ve `testDebugUnitTest` (tüm suite) başarılı. `LauncherViewModelTest.kt`'ye yeni `classifier` constructor parametresi eklendi (test @Ignore olduğu için sadece derleme uyumu). Versiyon: versionCode 22→23, versionName 1.2.9→1.3.0.
+
+**Sonraki:** K2 (override-öğrenme) ve K4 (bağlamsal akıllı klasör) FİKİRLER.md'de bekliyor, onay gerektiriyor.
+
+---
+
 ## Döngü 227 — 2026-07-09 [Home/Klasör UX toplu iyileştirme + Fable kategorileme danışmanlığı]
 
 **Yapılanlar (kullanıcı talebi, 7 madde):**
