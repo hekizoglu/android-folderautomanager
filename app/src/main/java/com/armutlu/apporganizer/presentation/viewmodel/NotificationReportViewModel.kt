@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,57 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 /**
+ * Bildirim Raporu ekranının net UI durumları (Döngü 224 — UX ayrımı).
+ *
+ * Eski model `Report?` idi: izin kapalı / analiz kapalı / veri yok üçü de aynı
+ * "boş rapor" görünümüne düşüyordu ve kullanıcı sebebini ayırt edemiyordu.
+ * Bu sealed model her boş-durumu kendi açıklaması + eylem önerisiyle ayırır.
+ */
+sealed interface NotificationReportUiState {
+    /** İlk yükleme — spinner. */
+    data object Loading : NotificationReportUiState
+
+    /** Bildirim erişim izni verilmemiş ve gösterilecek geçmiş veri de yok. */
+    data object PermissionMissing : NotificationReportUiState
+
+    /** Kullanıcı "Bildirim Analizi" anahtarını kapatmış ve gösterilecek veri yok. */
+    data object AnalyticsDisabled : NotificationReportUiState
+
+    /** İzin ve analiz açık ama henüz bildirim verisi birikmedi. */
+    data object CollectingData : NotificationReportUiState
+
+    /** Normal rapor. Bayraklar açıkken üstte uyarı bandı gösterilir. */
+    data class Ready(
+        val report: NotificationAnalyzer.Report,
+        val permissionMissing: Boolean,
+        val analyticsDisabled: Boolean,
+    ) : NotificationReportUiState
+
+    companion object {
+        /**
+         * Saf durum eşlemesi — unit test edilebilir (NotificationReportUiStateTest).
+         * Öncelik: veri varsa her zaman rapor göster (bayraklarla uyar);
+         * veri yoksa sebep sırası izin > analiz anahtarı > veri toplanıyor.
+         */
+        fun from(
+            report: NotificationAnalyzer.Report?,
+            permissionGranted: Boolean,
+            analyticsEnabled: Boolean,
+        ): NotificationReportUiState = when {
+            report == null -> Loading
+            report.totalNotifications > 0 -> Ready(
+                report = report,
+                permissionMissing = !permissionGranted,
+                analyticsDisabled = !analyticsEnabled,
+            )
+            !permissionGranted -> PermissionMissing
+            !analyticsEnabled -> AnalyticsDisabled
+            else -> CollectingData
+        }
+    }
+}
+
+/**
  * Son 7 günün bildirim davranışını analiz eder — NotificationAnalyzer'ı DB verisiyle besler.
  */
 @HiltViewModel
@@ -30,18 +82,17 @@ class NotificationReportViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<NotificationAnalyzer.Report?>(null)
-    val uiState: StateFlow<NotificationAnalyzer.Report?> = _uiState.asStateFlow()
-
-    private val _listenerPermissionGranted = MutableStateFlow(checkListenerPermission())
-    val listenerPermissionGranted: StateFlow<Boolean> = _listenerPermissionGranted.asStateFlow()
+    private val _uiState =
+        MutableStateFlow<NotificationReportUiState>(NotificationReportUiState.Loading)
+    val uiState: StateFlow<NotificationReportUiState> = _uiState.asStateFlow()
 
     init {
         refresh()
     }
 
     fun refresh() {
-        _listenerPermissionGranted.value = checkListenerPermission()
+        val permissionGranted = checkListenerPermission()
+        val analyticsEnabled = AppPrefs.isNotifAnalyticsEnabled(context)
         viewModelScope.launch {
             val report = withContext(Dispatchers.IO) {
                 runCatching {
@@ -60,8 +111,14 @@ class NotificationReportViewModel @Inject constructor(
                     NotificationAnalyzer.Report(0, emptyList(), emptyList(), emptyList(), emptyList())
                 )
             }
-            _uiState.value = report
+            _uiState.value = NotificationReportUiState.from(report, permissionGranted, analyticsEnabled)
         }
+    }
+
+    /** "Analiz kapalı" durumundan tek dokunuşla çıkış — ayara gitmeye gerek yok. */
+    fun enableAnalytics() {
+        AppPrefs.setNotifAnalyticsEnabled(context, true)
+        refresh()
     }
 
     private fun checkListenerPermission(): Boolean {

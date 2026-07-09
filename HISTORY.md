@@ -4,7 +4,19 @@
 
 ---
 
-## Döngü 224 — 2026-07-09 [UX/Ürün smoke testi: gerçek crash bulundu ve düzeltildi + sistemik lokalizasyon bulgusu]
+## Döngü 226 — 2026-07-09 [Akıllı Bildirim raporu — kullanıcı dostu state ayrımı (UX, Fable 5)]
+
+**Yapılanlar:** Döngü 221/223'te tespit edilen UX kafa karışıklığı çözüldü: rapor boşken kullanıcı "veri henüz yok" ile "analizi sen kapattın" arasındaki farkı göremiyordu. `NotificationReportViewModel.kt`'ye `NotificationReportUiState` sealed interface eklendi (Loading / PermissionMissing / AnalyticsDisabled / CollectingData / Ready) — saf `from()` eşleme fonksiyonu test edilebilir; öncelik: veri varsa her zaman rapor (sorunlar banner bayrağı), veri yoksa izin > analiz kapalı > veri toplanıyor. `NotificationReportScreen.kt` yeniden yazıldı: her boş durum ikon+başlık+açıklama+eylem butonlu tam-ekran panel ("Analiz kapalı" durumunda "Analizi Aç" butonu toggle'ı ayara gitmeden tek dokunuşla açar — `enableAnalytics()`; "Veri toplanıyor" durumunda "birkaç gün kullanım sonrası rapor oluşur" açıklaması); ON_RESUME'da `refresh()` eklendi (izin verip sistem ayarından dönünce ekran güncellenir); tüm metinler hardcoded literal yerine `strings.xml`'e taşındı (TR `values/` + EN `values-en/`, 32 yeni string). Ayrıca yanlış konumlanmış "Bildirim Analizi" toggle'ı `SettingsHomeScreenSection.kt`'den (Ana Ekran Ayarları'na gömülüydü) `SettingsNotificationsScreen.kt`'ye taşındı — reaktif SharedPreferences listener pattern'i ile — ve yanına "Bildirim Raporu" kısayol satırı eklendi (`AppNavigation.kt`'ye `onNavigateToNotificationReport` bağlandı). Versiyon: versionCode 20→21, versionName 1.2.7→1.2.8.
+
+**Test:** Yeni `NotificationReportUiStateTest.kt` (9 test) — null→Loading, boş+izinsiz→PermissionMissing (analiz kapalıyken de izin öncelikli), boş+analiz kapalı→AnalyticsDisabled, boş+her şey açık→CollectingData, veri varken Ready + bayrak kombinasyonları.
+
+**Değişen dosyalar:** `NotificationReportViewModel.kt`, `NotificationReportScreen.kt`, `SettingsNotificationsScreen.kt`, `SettingsHomeScreenSection.kt`, `AppNavigation.kt`, `values/strings.xml`, `values-en/strings.xml`, `app/build.gradle.kts`, `NotificationReportUiStateTest.kt` (yeni).
+
+**Sonraki:** ROADMAP R7 kalan maddeler (POST_NOTIFICATIONS sessiz davranış + 30 gün temizlik) gerçek cihaz testi.
+
+---
+
+## Döngü 225 — 2026-07-09 [UX/Ürün smoke testi: gerçek crash bulundu ve düzeltildi + sistemik lokalizasyon bulgusu]
 
 **Yapılanlar:** ROADMAP "Orta Oncelik - UX ve Urun" için Settings hiyerarşisi/Search smoke testi emülatörde manuel yürütüldü (Pixel6_API33). Settings ekranına giden UI yolu keşfedilirken (long-press → "Ana Ekran" menüsü → "Widget Ekle") gerçek bir crash tetiklendi ve kök nedeni bulundu: `LauncherActivity.kt:widgetPickerLauncher` içinde `widgetConfigureLauncher.launch(configIntent)` try/catch'siz çağrılıyordu — bazı sistem widget'larının (örn. Google Arama Stocks widget'ı) configure aktivitesi export edilmemiş olabiliyor, bu durumda `SecurityException` fırlatıp TÜM launcher'ı çökertiyordu. `LauncherActivity.kt:52-59` civarı `runCatching { }` ile sarmalandı, launch başarısızsa widget doğrudan `viewModel.addWidgetId` ile eklenip config adımı atlanıyor artık.
 

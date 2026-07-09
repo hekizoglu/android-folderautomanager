@@ -76,7 +76,9 @@ Mevcut temel:
 **Tamamlanan (Dongu 221, unit test ile kanitlandi):**
 - Analiz kapaliyken event yazmama — `AppNotificationListenerServiceTest.kt`.
 - NotificationAnalyzer cok konusan/gece+burst rahatsiz eden/dikkat dagitan/trend senaryolari — `NotificationAnalyzerTest.kt` (12 test).
-- NotificationReport UI state incelemesi — sealed-state yok, "analiz kapali" ayri state degil (toggle kapaliyken otomatik bos rapor gorunuyor); bug degil ama UX notu FİKİRLER.md'ye eklendi.
+
+**Tamamlanan (Dongu 224 — UX iyilestirmesi):**
+- NotificationReport UI state ayrimi COZULDU: `NotificationReportUiState` sealed interface eklendi (Loading / PermissionMissing / AnalyticsDisabled / CollectingData / Ready). "Analiz kapali", "izin yok" ve "veri henuz yok" artik ayri tam-ekran durumlar; her biri aciklama + eylem butonu iceriyor ("Analizi Ac" tek dokunusla toggle'i acar, ayara gitmeye gerek yok). Veri varken sorunlar banner olarak gosterilir. Ekran ON_RESUME'da yenilenir (izin verip donunce takili kalmaz). "Bildirim Analizi" toggle'i Ana Ekran Ayarlari'ndan Ayarlar > Bildirimler'e tasindi ve yanina "Bildirim Raporu" kisayolu eklendi. Rapor ekrani metinleri strings.xml'e tasindi (TR+EN). State eslemesi `NotificationReportUiStateTest.kt` (9 test) ile kanitlandi.
 
 ---
 
