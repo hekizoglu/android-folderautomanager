@@ -86,6 +86,7 @@ fun SearchSettingsScreen(
     var historyLimit      by remember { mutableStateOf(AppPrefs.getSearchHistoryLimit(context)) }
     var showIcons         by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
     var showContactAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
+    var searchStatsEnabled by remember { mutableStateOf(AppPrefs.isSearchStatsEnabled(context)) }
 
     pendingPermission?.let { permission ->
         ContextualPermissionDialog(
@@ -406,6 +407,23 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             showContactAvatar = it
                             AppPrefs.setSearchShowContactAvatar(context, it)
+                        }
+                    )
+                }
+            }
+
+            // ── Arama İstatistikleri ────────────────────────────────────────
+            item { SettingsSectionTitle("Arama İstatistikleri") }
+            item {
+                SettingsCard {
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Search,
+                        title = "Arama İstatistikleri",
+                        subtitle = "İstatistikler yalnızca cihazında tutulur; aranan metin kaydedilmez.",
+                        checked = searchStatsEnabled,
+                        onCheckedChange = {
+                            searchStatsEnabled = it
+                            AppPrefs.setSearchStatsEnabled(context, it)
                         }
                     )
                 }

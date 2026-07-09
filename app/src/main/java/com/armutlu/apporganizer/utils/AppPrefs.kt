@@ -592,5 +592,10 @@ object AppPrefs {
     fun getSmartNotifHour(context: Context): Int  = prefs(context).getInt(KEY_SMART_NOTIF_HOUR, 20)
     fun setSmartNotifHour(context: Context, h: Int) = prefs(context).edit().putInt(KEY_SMART_NOTIF_HOUR, h).apply()
 
+    // Arama istatistikleri - anonim sayaclar (SearchStatsPrefs). Kapatilinca loglama durur.
+    const val KEY_SEARCH_STATS_ENABLED = "search_stats_enabled"
+    fun isSearchStatsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_STATS_ENABLED, true)
+    fun setSearchStatsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_STATS_ENABLED, v).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

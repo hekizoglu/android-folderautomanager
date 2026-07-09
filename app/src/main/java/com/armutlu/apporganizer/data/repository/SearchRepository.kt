@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.data.repository
 
 import android.content.Context
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
@@ -15,6 +16,7 @@ import com.armutlu.apporganizer.domain.models.SourceType
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.system.measureTimeMillis
 import timber.log.Timber
 import javax.inject.Singleton
 
@@ -43,27 +45,37 @@ class SearchRepository(
         val trimmed = rawQuery.trim()
         if (trimmed.isEmpty()) return emptyMap()
 
-        return withContext(Dispatchers.IO) {
-            val allowedSources = enabledSources()
-            if (allowedSources.isEmpty()) return@withContext emptyMap()
-            runCatching {
-                val docs = if (fts5Available) {
-                    val ftsQuery = trimmed.split("\\s+".toRegex())
-                        .filter { it.isNotBlank() }
-                        .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
-                    searchDao.search(buildFts5Query(ftsQuery, limit, allowedSources))
-                } else {
-                    searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
-                }
-                docs.groupBy { SourceType.fromKey(it.sourceType) }
-            }.getOrElse { e ->
-                Timber.w(e, "search hatası, LIKE fallback deneniyor")
+        var result: Map<SourceType, List<SearchDocument>> = emptyMap()
+        val elapsedMs = measureTimeMillis {
+            result = withContext(Dispatchers.IO) {
+                val allowedSources = enabledSources()
+                if (allowedSources.isEmpty()) return@withContext emptyMap()
                 runCatching {
-                    val docs = searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                    val docs = if (fts5Available) {
+                        val ftsQuery = trimmed.split("\\s+".toRegex())
+                            .filter { it.isNotBlank() }
+                            .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
+                        searchDao.search(buildFts5Query(ftsQuery, limit, allowedSources))
+                    } else {
+                        searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                    }
                     docs.groupBy { SourceType.fromKey(it.sourceType) }
-                }.getOrDefault(emptyMap())
+                }.getOrElse { e ->
+                    Timber.w(e, "search hatası, LIKE fallback deneniyor")
+                    runCatching {
+                        val docs = searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                        docs.groupBy { SourceType.fromKey(it.sourceType) }
+                    }.getOrDefault(emptyMap())
+                }
             }
         }
+
+        if (AppPrefs.isSearchStatsEnabled(context)) {
+            val resultCount = result.values.sumOf { it.size }
+            SearchStatsPrefs.logSearch(context, trimmed.length, resultCount, elapsedMs)
+        }
+
+        return result
     }
 
     private fun enabledSources(): List<String> = buildList {

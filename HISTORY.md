@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 229 — 2026-07-10 [Ticker çeşitlilik + Universal Search istatistikleri v1.3.1]
+
+**Yapılanlar (kullanıcı talebi: Universal Search analizi + yaratıcı ticker; 2 paralel Sonnet agent, Fable entegrasyon):**
+- **TickerComposer.kt (yeni):** Günlük seed'li şablon çeşitliliği (aynı gün deterministik, ertesi gün farklı cümle), yeni haber tipleri: unutulan uygulama (45+ gün), günün şampiyonu, saat bazlı selamlama (sabah/öğle/akşam/gece), 7 ipuçlu özellik keşif havuzu, pazartesi haftalık özeti. `LauncherViewModel.tickerItems` refactor edildi (dismiss/fallback davranışı korundu). 21 unit test.
+- **SearchStatsPrefs.kt (yeni):** Tamamen lokal anonim arama sayaçları (aranan metin ASLA kaydedilmez) — toplam arama, sıfır sonuç, gecikme EMA, tip/aksiyon dağılımı. `SearchRepository.search()` measureTimeMillis ile logluyor; `KEY_SEARCH_STATS_ENABLED` toggle (SearchSettingsScreen). SettingsStatsScreen'e "Arama İstatistikleri" bölümü + sıfırlama.
+- **Kişi hızlı aksiyonları:** HomeAppSearchBar + AllAppsDrawer kişi sonuçlarına Ara (ACTION_DIAL) / WhatsApp (wa.me) / SMS ikonları; aksiyon logları.
+- **Ticker ↔ istatistik köprüsü (Fable):** 5+ arama sonrası "N arama yaptın, %X ilk sonuçta buldu" haberi → SETTINGS_STATS rotası.
+- FİKİRLER.md: web fallback (13p), Play Store fallback (11p), ayar araması (13p), arama kalitesi öğrenmesi (12p) eklendi.
+
+**Bug:** Build 2 kez kırıldı — (1) Windows build kilidi → `clear_build_lock.ps1`, (2) google-services.json yok → `-PskipGoogleServices`. Testler yeşil, APK 25.0 MB.
+**Sonraki:** Wrapped haftalık rapor MVP (Döngü 230, agent çalışıyor).
+
 ## Döngü 228 — 2026-07-09 [Akıllı Kategorileme K1 + K3 uygulandı]
 
 **Yapılanlar (kullanıcı talebi: Fable önerileri K1 ve K3):**

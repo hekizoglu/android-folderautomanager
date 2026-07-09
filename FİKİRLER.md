@@ -80,6 +80,10 @@
 | 2026-07-07 | performans-bellek-build-raporu.md | **Worker schedule listesini app acilisinda logla** — Backup/SmartInsight/WeeklyDigest/FilesIndex worker durumlari debug logda gorulsun, duplicate schedule takibi kolaylassin. (KV:2 · U:3 · BR:2 · EA:4) | 11p |
 | 2026-07-07 | ana-ekran-rekabet-revizyon-raporu.md | **Home ilk ekran deger onerisi testi** — ilk ekranda "otomatik klasorlendi + arama hazir + dock akilli" mesaji 3 saniyede anlasiliyor mu screenshot/QA ile kontrol edilsin. (KV:3 · U:3 · BR:1 · EA:3) | 10p |
 | 2026-07-09 | Fable danışmanlık | **`AppClassifier.classifyByKeywords` Locale("tr") eksik** — `AppClassifier.kt:107-108`'de `lowercase()` locale'siz çağrılıyor; CLAUDE.md §5 Türkçe Locale kuralına aykırı (İ/ı riski). Keyword'ler ASCII olduğu için etki düşük ama bir sonraki AppClassifier dokunuşunda düzeltilmeli. (KV:2 · U:5 · BR:2 · EA:1) | 10p |
+| 2026-07-10 | Universal Search analizi (Fable) | **Web fallback araması** — sıfır sonuçta "Google'da ara: {q}" satırı; ACTION_WEB_SEARCH intent, sunucu yok. (KV:4 · U:5 · BR:1 · EA:3) | 13p |
+| 2026-07-10 | Universal Search analizi (Fable) | **Play Store fallback** — uygulama bulunamayınca "Play Store'da ara" satırı; market:// intent. (KV:3 · U:5 · BR:1 · EA:2) | 11p |
+| 2026-07-10 | Universal Search analizi (Fable) | **Ayar araması (SETTING source)** — Wi-Fi/Bluetooth/Bildirim gibi ~20 statik sistem ayarı SearchDocument olarak indekslenir, Settings.ACTION_* intent ile açılır. (KV:4 · U:4 · BR:2 · EA:3) | 13p |
+| 2026-07-10 | Universal Search analizi (Fable) | **Arama kalitesi öğrenmesi** — başarısız arama sonrası elle açılan uygulamayı tespit edip sıralamada boost et (query abandon sinyali). (KV:4 · U:2 · BR:3 · EA:3) | 12p |
 
 ---
 

@@ -26,8 +26,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -72,6 +75,7 @@ import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
+import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -285,10 +289,16 @@ private fun SourceGroupHeader(label: String, count: Int) {
 private fun SearchDocumentRow(
     document: SearchDocument,
     badge: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    showContactActions: Boolean = false
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
+    val context = LocalContext.current
+    // Rehber sonucunda telefon numarasi document.subtitle'da tutulur (ContactsIndexer.loadPrimaryPhone).
+    // Numara yoksa hizli aksiyonlar gizlenir.
+    val phone = document.subtitle.trim()
+    val showActions = showContactActions && phone.isNotBlank()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -310,6 +320,62 @@ private fun SearchDocumentRow(
             Text(document.title, color = onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val subtitle = document.subtitle.ifBlank { document.sourceId }
             Text(subtitle, color = textSecondary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        if (showActions) {
+            ContactQuickActions(context = context, phone = phone)
+        }
+    }
+}
+
+/**
+ * Kisi hizli aksiyonlari - Ara / WhatsApp / SMS. CALL_PHONE izni GEREKMEZ
+ * (ACTION_DIAL kullanilir, cagriyi kullanici dialer'da baslatir).
+ * Her aksiyon SearchStatsPrefs.logAction ile anonim sayaca isaretlenir.
+ */
+@Composable
+private fun ContactQuickActions(context: Context, phone: String) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        IconButton(
+            onClick = {
+                SearchStatsPrefs.logAction(context, "CALL")
+                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                runCatching { context.startActivity(intent) }
+                    .onFailure { Timber.w(it, "ACTION_DIAL baslatilamadi") }
+            },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(Icons.Default.Call, contentDescription = "Ara",
+                tint = onSurface.copy(alpha = 0.70f), modifier = Modifier.size(16.dp))
+        }
+        IconButton(
+            onClick = {
+                val normalized = phone.filter { it.isDigit() || it == '+' }
+                runCatching {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$normalized"))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                    SearchStatsPrefs.logAction(context, "WHATSAPP")
+                }.onFailure { Timber.w(it, "WhatsApp acilamadi, yuklu olmayabilir") }
+            },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "WhatsApp",
+                tint = onSurface.copy(alpha = 0.70f), modifier = Modifier.size(16.dp))
+        }
+        IconButton(
+            onClick = {
+                SearchStatsPrefs.logAction(context, "SMS")
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phone"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                runCatching { context.startActivity(intent) }
+                    .onFailure { Timber.w(it, "SMS baslatilamadi") }
+            },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "SMS",
+                tint = onSurface.copy(alpha = 0.70f), modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -474,14 +540,16 @@ private fun DrawerAppList(
                     item(key = "source_header_contacts") {
                         SourceGroupHeader(label = "Kisiler", count = contactMatches.size)
                     }
-                    items(items = contactMatches, key = { "contact_${it.sourceId}" }) { document ->
+                    itemsIndexed(items = contactMatches, key = { _, doc -> "contact_${doc.sourceId}" }) { index, document ->
                         SearchDocumentRow(
                             document = document,
                             badge = "K",
                             onClick = {
+                                SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, index)
                                 saveSearchIfNeeded()
                                 openSearchDocument(context, document)
-                            }
+                            },
+                            showContactActions = true
                         )
                     }
                 }
@@ -489,11 +557,12 @@ private fun DrawerAppList(
                     item(key = "source_header_files") {
                         SourceGroupHeader(label = "Dosyalar", count = fileMatches.size)
                     }
-                    items(items = fileMatches, key = { "file_${it.sourceId}" }) { document ->
+                    itemsIndexed(items = fileMatches, key = { _, doc -> "file_${doc.sourceId}" }) { index, document ->
                         SearchDocumentRow(
                             document = document,
                             badge = "D",
                             onClick = {
+                                SearchStatsPrefs.logClick(context, SourceType.FILE.key, index)
                                 saveSearchIfNeeded()
                                 openSearchDocument(context, document)
                             }

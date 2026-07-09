@@ -105,3 +105,4 @@
 - BUILD: 24.9 MB APK, 3 kilit temizligi + 2 crash fix sonrasi basarili
 - TEST: emulatorde ekran goruntulu uctan uca dogrulama
 | 2026-07-08 | — | — | ~10dk | BUILD | Döngü 217 — BUILD 25 MB APK (v1.2.5, versionCode 18) | assembleDebug başarılı, emülatör bağlı değildi |
+| 2026-07-10 | ~13:30 | ~14:30 | KOD+BUILD | Döngü 229: ticker çeşitlilik + arama istatistikleri; APK 25.0 MB |

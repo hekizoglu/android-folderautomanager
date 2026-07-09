@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
@@ -39,8 +40,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.layout.ContentScale
@@ -90,6 +94,7 @@ import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchCache
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
+import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -949,11 +954,12 @@ internal fun HomeAppSearchBar(
                     if (appResults.isNotEmpty() && multiGroup) {
                         HomeSearchGroupHeader(label = "Uygulamalar", icon = Icons.Default.Search)
                     }
-                    appResults.forEach { app ->
+                    appResults.forEachIndexed { index, app ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
+                                    SearchStatsPrefs.logClick(context, SourceType.APP.key, index)
                                     SearchHistoryPrefs.addQuery(context, query)
                                     query = ""
                                     onAppClick(app.packageName)
@@ -998,7 +1004,7 @@ internal fun HomeAppSearchBar(
                             )
                         }
                         HomeSearchGroupHeader(label = "Klasörler", icon = Icons.Default.Folder)
-                        folderResults.forEach { folder ->
+                        folderResults.forEachIndexed { index, folder ->
                             val displayName = folderCustomNames[folder.category.categoryId]
                                 ?: folder.category.categoryName
                             val emoji = (folderCustomEmojis[folder.category.categoryId]
@@ -1007,6 +1013,7 @@ internal fun HomeAppSearchBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
+                                        SearchStatsPrefs.logClick(context, SourceType.CATEGORY.key, index)
                                         SearchHistoryPrefs.addQuery(context, query)
                                         query = ""
                                         onFolderClick(folder)
@@ -1041,11 +1048,12 @@ internal fun HomeAppSearchBar(
                             )
                         }
                         HomeSearchGroupHeader(label = "Kişiler", icon = Icons.Default.Person)
-                        contactResults.forEach { contact ->
+                        contactResults.forEachIndexed { index, contact ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
+                                        SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, index)
                                         SearchHistoryPrefs.addQuery(context, query)
                                         query = ""
                                         // Kişi tıklaması: arama ekranına veya telefon dialer'a
@@ -1096,6 +1104,55 @@ internal fun HomeAppSearchBar(
                                     if (contact.phone.isNotBlank()) {
                                         Text(contact.phone, color = Color.White.copy(alpha = 0.45f),
                                             fontSize = 11.sp, maxLines = 1)
+                                    }
+                                }
+                                // Hizli aksiyonlar - numara varsa gosterilir; satirin kendisi ayri
+                                // olarak dialer'i acmaya devam eder (mevcut davranis korunur)
+                                if (contact.phone.isNotBlank()) {
+                                    IconButton(
+                                        onClick = {
+                                            SearchStatsPrefs.logAction(context, "CALL")
+                                            val intent = android.content.Intent(
+                                                android.content.Intent.ACTION_DIAL,
+                                                android.net.Uri.parse("tel:${contact.phone}")
+                                            ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
+                                            runCatching { context.startActivity(intent) }
+                                        },
+                                        modifier = Modifier.size(30.dp)
+                                    ) {
+                                        Icon(Icons.Default.Call, contentDescription = "Ara",
+                                            tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(15.dp))
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            val normalized = contact.phone.filter { it.isDigit() || it == '+' }
+                                            runCatching {
+                                                val intent = android.content.Intent(
+                                                    android.content.Intent.ACTION_VIEW,
+                                                    android.net.Uri.parse("https://wa.me/$normalized")
+                                                ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
+                                                context.startActivity(intent)
+                                                SearchStatsPrefs.logAction(context, "WHATSAPP")
+                                            }
+                                        },
+                                        modifier = Modifier.size(30.dp)
+                                    ) {
+                                        Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "WhatsApp",
+                                            tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(15.dp))
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            SearchStatsPrefs.logAction(context, "SMS")
+                                            val intent = android.content.Intent(
+                                                android.content.Intent.ACTION_SENDTO,
+                                                android.net.Uri.parse("smsto:${contact.phone}")
+                                            ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
+                                            runCatching { context.startActivity(intent) }
+                                        },
+                                        modifier = Modifier.size(30.dp)
+                                    ) {
+                                        Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "SMS",
+                                            tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(15.dp))
                                     }
                                 }
                             }
@@ -1149,11 +1206,12 @@ internal fun HomeAppSearchBar(
                             )
                         }
                         HomeSearchGroupHeader(label = "Dosyalar", icon = Icons.Default.Description)
-                        fileResults.forEach { document ->
+                        fileResults.forEachIndexed { index, document ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
+                                        SearchStatsPrefs.logClick(context, SourceType.FILE.key, index)
                                         SearchHistoryPrefs.addQuery(context, query)
                                         query = ""
                                         // AllAppsDrawer.openSearchDocument ile aynı pattern

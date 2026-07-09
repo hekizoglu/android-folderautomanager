@@ -608,63 +608,93 @@ class LauncherViewModel @Inject constructor(
         _dismissedTickerKeys.value = _dismissedTickerKeys.value + key
     }
 
-    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti tek akışta.
+    /** TickerSpec.routeKey -> Routes sabiti eslemesi (TickerComposer Routes'a bagimli degil). */
+    private fun resolveTickerRoute(routeKey: String?): String? = when (routeKey) {
+        "DASHBOARD" -> com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
+        "NOTIFICATION_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
+        "APP_LIST" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
+        "SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
+        else -> null
+    }
+
+    /** Arama istatistigi haberi — SearchStatsPrefs anonim agregatlarindan uretilir; 5+ arama olunca gorunur. */
+    private fun buildSearchStatsTicker(): List<TickerItem> = runCatching {
+        val ctx = getApplication<Application>()
+        if (!AppPrefs.isSearchStatsEnabled(ctx)) return@runCatching emptyList()
+        val s = com.armutlu.apporganizer.utils.SearchStatsPrefs.getSummary(ctx)
+        if (s.totalSearches < 5) return@runCatching emptyList()
+        val text = if (s.totalClicks > 0) {
+            val firstPct = s.firstResultClicks * 100 / s.totalClicks
+            "${s.totalSearches} arama yaptın, %$firstPct ilk sonuçta buldu — detay için dokun"
+        } else {
+            "${s.totalSearches} arama yaptın — istatistikler için dokun"
+        }
+        listOf(TickerItem(
+            text = text,
+            emoji = "🔎",
+            route = com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
+        ))
+    }.getOrDefault(emptyList())
+
+    private fun com.armutlu.apporganizer.utils.TickerSpec.toTickerItem() = TickerItem(
+        text = text,
+        emoji = emoji.ifBlank { "📰" },
+        categoryId = categoryId,
+        route = resolveTickerRoute(routeKey)
+    )
+
+    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + saat bazlı
+    // selamlama + unutulan uygulama + günün şampiyonu + ipucu (TickerComposer, D227 çeşitlilik).
     // Dokunma hedefleri: klasör haberi → FolderScreen, bildirim haberi → Bildirim Raporu, içgörü → Dashboard.
     val tickerItems: StateFlow<List<TickerItem>> = combine(
         folders,
         insightCards,
         AppNotificationListenerService.badgeCounts,
         _dismissedTickerKeys
-    ) { folderList, cards, badges, dismissed -> buildList {
-            folderList.sortedByDescending { it.apps.size }.take(5).forEach { f ->
-                add(TickerItem(
-                    text = "${f.category.categoryName} klasöründe ${f.apps.size} uygulama var",
-                    emoji = f.category.iconEmoji.ifBlank { "📁" },
-                    categoryId = f.category.categoryId
-                ))
-            }
-            cards.forEach { card ->
-                add(TickerItem(
-                    text = card.message,
-                    emoji = "💡",
-                    categoryId = card.categoryId,
-                    route = if (card.categoryId == null)
-                        com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD else null
-                ))
-            }
-            val totalNotif = badges.values.sum()
-            if (totalNotif > 0) {
-                add(TickerItem(
-                    text = "$totalNotif aktif bildirim — analiz raporu için dokun",
-                    emoji = "🔔",
-                    route = com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
-                ))
-            }
-            // Dusuk guvenli otomatik kategorileme uyarisi (K3, Dongu 227, Fable danismanligi) —
-            // getConfidence() mevcuttu ama hicbir UX'e baglanmamisti. Esik: 60 altinda "belirsiz" sayilir.
-            val lowConfidenceCount = folderList.sumOf { f ->
-                f.apps.count { classifier.getConfidence(it, f.category.categoryId) < 60 }
-            }
-            if (lowConfidenceCount > 0) {
-                add(TickerItem(
-                    text = "$lowConfidenceCount uygulamanın kategorisi belirsiz — gözden geçirmek ister misin?",
-                    emoji = "🤔",
-                    route = com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
-                ))
-            }
-        }.filterNot { it.key in dismissed }.let { visible ->
-            // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
-            // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
-            if (visible.isEmpty()) buildList {
-                folderList.sortedByDescending { it.apps.size }.take(5).forEach { f ->
-                    add(TickerItem(
-                        text = "${f.category.categoryName} klasöründe ${f.apps.size} uygulama var",
-                        emoji = f.category.iconEmoji.ifBlank { "📁" },
-                        categoryId = f.category.categoryId
-                    ))
-                }
-            } else visible
+    ) { folderList, cards, badges, dismissed ->
+        val folderSnapshots = folderList.map { f ->
+            com.armutlu.apporganizer.utils.FolderSnapshot(
+                categoryId = f.category.categoryId,
+                categoryName = f.category.categoryName,
+                emoji = f.category.iconEmoji,
+                appCount = f.apps.size,
+            )
         }
+        val appSnapshots = folderList.flatMap { it.apps }.map { a ->
+            com.armutlu.apporganizer.utils.AppSnapshot(
+                packageName = a.packageName,
+                appName = a.appName,
+                usageCount = a.usageCount,
+                lastUsedTimestamp = a.lastUsedTimestamp,
+            )
+        }
+        val insightSnapshots = cards.map { card ->
+            com.armutlu.apporganizer.utils.InsightSnapshot(
+                id = card.id,
+                message = card.message,
+                categoryId = card.categoryId,
+            )
+        }
+        // Dusuk guvenli otomatik kategorileme uyarisi (K3, Dongu 227, Fable danismanligi) —
+        // getConfidence() mevcuttu ama hicbir UX'e baglanmamisti. Esik: 60 altinda "belirsiz" sayilir.
+        val lowConfidenceCount = folderList.sumOf { f ->
+            f.apps.count { classifier.getConfidence(it, f.category.categoryId) < 60 }
+        }
+        val totalNotif = badges.values.sum()
+
+        val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
+            folders = folderSnapshots,
+            apps = appSnapshots,
+            badgeTotal = totalNotif,
+            insights = insightSnapshots,
+            lowConfidenceCount = lowConfidenceCount,
+            nowMillis = System.currentTimeMillis(),
+        ).map { it.toTickerItem() } + buildSearchStatsTicker()
+
+        val visible = composed.filterNot { it.key in dismissed }
+        // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
+        // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
+        if (visible.isEmpty()) composed else visible
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Contextual Dock — 2 sabit (kullanici) + 2 akilli öneri (saat/gun/kullanim)
