@@ -73,13 +73,6 @@ internal enum class OnboardingStep(
         whyRes = R.string.onb_quick_settings_why,
         isSkippable = true
     ),
-    BROWSER_SELECT(
-        titleRes = R.string.onb_browser_title,
-        descriptionRes = R.string.onb_browser_desc,
-        icon = Icons.Default.Language,
-        buttonLabelRes = R.string.onb_browser_btn,
-        isSkippable = true
-    ),
     DONE(
         titleRes = R.string.onb_done_title,
         descriptionRes = R.string.onb_done_desc,

@@ -4,6 +4,38 @@
 
 ---
 
+## Döngü 219 — 2026-07-09 [Onboarding emülatör testi (14p) → 2 gerçek bug bulundu ve düzeltildi]
+
+**Yapılanlar:** Döngü 218'de seçilen "Onboarding sonrası ilk izlenim emülatör testi" (FİKİRLER.md 14p) uçtan uca yürütüldü — temiz kurulum, `uiautomator dump` ile kesin koordinat tespiti, her adımda ekran görüntüsü + crash kontrolü. Test sırasında 2 gerçek bug bulundu:
+
+1. **KRİTİK — 16 onboarding stringi EN cihazda Türkçe fallback yapıyordu:** `values-en/strings.xml`'de `onb_theme_why`, tüm `onb_quick_settings_*` (title/desc/btn/why), tüm `onb_browser_*`, ve 9 diğer `*_why`/`*_privacy` key'i eksikti — `comm -23` ile kesin tespit edildi. Android, eksik key'lerde sessizce `values/strings.xml` (TR) değerine düşüyor; THEME_SELECT/QUICK_SETTINGS/BROWSER_SELECT ekranları İngilizce cihazda yarı-Türkçe görünüyordu. 16 çeviri eklendi, ikinci test turunda doğrulandı (başlık/alt yazı/info kutusu artık EN — sadece `ThemePreferences.kt`'deki tema/font adları ve Quick Settings toggle metinleri hâlâ hardcoded TR, ayrı FİKİRLER.md maddesi olarak kaydedildi, 14p).
+2. **BROWSER_SELECT adımı kaldırıldı (kullanıcı onayıyla):** Kod incelemesinde `selectedBrowserPkg`/`ROLE_BROWSER`'ın uygulamanın hiçbir yerinde kullanılmadığı (sadece onboarding'in kendi içinde set edilip hiç okunmadığı) doğrulandı — launcher işleviyle alakasız bir adımdı, üstelik bu adım az önce bulunan lokalizasyon bug'ının 3 eksik key'ine sahipti. `OnboardingModels.kt`'den enum girişi, `OnboardingScreen.kt`'den `installedBrowsers()`, `browserRoleLauncher`, ilgili state ve UI bloğu kaldırıldı. Onboarding 6→5 adıma indi. `CLAUDE.md`'nin "sıra bozulamaz" kuralı ve mimari not güncellendi.
+
+**Doğrulama:** Temiz kurulumla iki tam tur test edildi (fix öncesi/sonrası) — WELCOME→SET_LAUNCHER→THEME_SELECT→QUICK_SETTINGS→DONE→ana ekran, hiçbir adımda crash yok. `compileDebugKotlin` + `assembleDebug` başarılı.
+
+**Ek bulgu (SET_LAUNCHER testinde):** Bu AVD'de rakip launcher olmadığı için `isDefaultLauncherApp()` onboarding'in en başında `true` dönüyor (sistem otomatik atıyor) — uygulama davranışı doğru, sadece test ortamına özgü bir durum, bug değil.
+
+**CLAUDE.md/LEARNINGS.md:** CLAUDE.md §3 (Asla Yapma) ve §7 (Onboarding mimari notu) güncellendi — 5 adım, BROWSER_SELECT kaldırıldı.
+**Sonraki:** `ThemePreferences.kt` + Quick Settings hardcoded TR metinleri (14p, FİKİRLER.md) — Settings ekranlarının genelinde de benzer sorun olabilir, tam kapsam çıkarılmadı.
+
+---
+
+## Döngü 218 — 2026-07-08 [AI_ORCHESTRATION_PLAN.md + search-architecture-report.md arşivlendi — tamamen koda yansımış]
+
+**Yapılanlar:** Kullanıcı "AI Orkestrasyon Planına göre sonraki görevi tamamla" dedi. Plan incelendiğinde 3 paketin de (Codex/Claude/DeepSeek Pro) tamamlandığı doğrulandı:
+- **Paket 1 (Codex — Reports/Navigation/Settings):** `UX_SEARCH_REPORTS_SPEC.md` zaten "TAMAMLANDI (Döngü 201+207)" işaretliydi, tüm kabul kriterleri dosya:satır kanıtlarıyla listelenmiş.
+- **Paket 2 (Claude — premium search bar + drag/snap):** `AppPrefs.KEY_SEARCH_BAR_POSITION` ile statik konum seçimi (`HomeScreen.kt:152,222,484,521`) ve glassmorphism search bar (Döngü 210) kodda mevcut.
+- **Paket 3 (DeepSeek Pro — FTS5 mimarisi):** `SearchFts.kt`, `SearchIndexer.kt`, `SearchDao.kt`, `SearchRepository.kt` tam FTS5 implementasyonu içeriyor; `search-architecture-report.md`'deki tasarım kararları (Contacts→ContentObserver delta, MANAGE_EXTERNAL_STORAGE kullanılmayacak, Room FTS5 vs AppSearch) birebir koda yansımış.
+
+Plan içindeki "Şimdilik Yapılmayacaklar" listesi (gerçek dosya indeksleme, MANAGE_EXTERNAL_STORAGE, kişi araması erken izin ekranı, büyük navigation refactor) hâlâ doğru şekilde uygulanmıyor — kasıtlı sınır, ihlal yok.
+
+`AI_ORCHESTRATION_PLAN.md` ve `docs/search-architecture-report.md` silindi — içerikleri kodda ve `UX_SEARCH_REPORTS_SPEC.md`'de kalıcı olarak kayıtlı, aktif iş takibi için artık gereksiz.
+
+**CLAUDE.md/LEARNINGS.md:** Güncelleme gerekmedi.
+**Sonraki:** Orkestrasyon planında iş kalmadığı için canlı backlog'a (FİKİRLER.md) dönüldü — en yüksek puanlı uygulanabilir madde "Onboarding sonrası ilk izlenim emülatör testi" (14p) seçildi, emülatör zaten açık olduğu için hemen yürütülüyor.
+
+---
+
 ## Döngü 217 — 2026-07-08 [guncel-todo-raporu.md kapatıldı — COZULEMEYEN_SORUNLAR.md'ye CS-6/CS-7 eklendi]
 
 **Yapılanlar:** Kullanıcı "yaptıklarını sil, yapamadıklarını çözülemeyenlere at" dedi. `guncel-todo-raporu-2026-07-08.md`'deki 14 madde dispozisyona bağlandı:

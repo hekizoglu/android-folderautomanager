@@ -131,40 +131,58 @@
 
     <string name="onb_unused_title">Unused Apps</string>
     <string name="onb_unused_desc">Show apps you never open in a faded color?</string>
+    <string name="onb_unused_why">Lets you visually tell apart apps you don\'t use.</string>
     <string name="onb_unused_btn">Continue</string>
 
     <string name="onb_autobackup_title">Auto Backup</string>
     <string name="onb_autobackup_desc">Automatically save a JSON backup of your category assignments on each launch?</string>
+    <string name="onb_autobackup_why">Weekly background backup — you won\'t lose your data.</string>
     <string name="onb_autobackup_btn">Continue</string>
 
     <string name="onb_notiftext_title">Notification Text</string>
     <string name="onb_notiftext_desc">Show the latest notification below folders and apps?</string>
+    <string name="onb_notiftext_why">See the latest message without opening the app.</string>
     <string name="onb_notiftext_btn">Continue</string>
 
     <string name="onb_notifaccess_title">Notification Access</string>
     <string name="onb_notifaccess_desc">Full access is required to show real notification counts on app icons.</string>
     <string name="onb_notifaccess_why">Android requires a separate permission for this.</string>
+    <string name="onb_notifaccess_privacy">🔒 All notification data stays on your device only — nothing leaves it.</string>
     <string name="onb_notifaccess_btn">Allow Access</string>
 
     <string name="onb_swipe_title">Swipe-up Hint</string>
     <string name="onb_swipe_desc">Show swipe-up animation on the home screen?</string>
+    <string name="onb_swipe_why">Helps new users discover the feature.</string>
     <string name="onb_swipe_btn">Continue</string>
 
     <string name="onb_newbadge_title">NEW Badge</string>
     <string name="onb_newbadge_desc">Show a \'NEW\' badge on apps installed within the last 7 days?</string>
+    <string name="onb_newbadge_why">Makes it easy to keep track of apps you just installed.</string>
     <string name="onb_newbadge_btn">Continue</string>
 
     <string name="onb_foldercount_title">Folder App Count</string>
     <string name="onb_foldercount_desc">Show the number of apps below each folder icon?</string>
+    <string name="onb_foldercount_why">Quickly see how many apps are in each folder.</string>
     <string name="onb_foldercount_btn">Continue</string>
 
     <string name="onb_navhide_title">Hide System Navigation</string>
     <string name="onb_navhide_desc">Hide Back/Home/Recents buttons for a full-screen launcher.</string>
+    <string name="onb_navhide_why">The bottom of the screen is fully dedicated to content, giving you a wider view.</string>
     <string name="onb_navhide_btn">Continue</string>
 
     <string name="onb_theme_title">Choose Color Theme</string>
     <string name="onb_theme_desc">Pick your preferred color theme and font.</string>
+    <string name="onb_theme_why">Your selected theme is applied throughout the launcher.</string>
     <string name="onb_theme_btn">Apply</string>
+
+    <string name="onb_quick_settings_title">Quick Settings</string>
+    <string name="onb_quick_settings_desc">Review and change all your preferences on one screen.</string>
+    <string name="onb_quick_settings_why">You can change these settings later from the Settings menu.</string>
+    <string name="onb_quick_settings_btn">Save and Continue</string>
+
+    <string name="onb_browser_title">Default Browser</string>
+    <string name="onb_browser_desc">Which browser would you like to set as default? Links will open in this browser.</string>
+    <string name="onb_browser_btn">Select Browser</string>
 
     <string name="onb_setlauncher_title">Default Launcher</string>
     <string name="onb_setlauncher_desc">Set AppOrganizer as your default launcher.</string>

@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.app.role.RoleManager
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -45,20 +43,6 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import kotlinx.coroutines.launch
 
-// Yüklü tarayıcıları listele (ACTION_VIEW + http scheme destekleyenler)
-private fun installedBrowsers(context: android.content.Context): List<android.content.pm.ResolveInfo> {
-    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("http://example.com"))
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        context.packageManager.queryIntentActivities(
-            intent,
-            PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
-        )
-    } else {
-        @Suppress("DEPRECATION")
-        context.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-    }
-}
-
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit,
@@ -72,7 +56,6 @@ fun OnboardingScreen(
         OnboardingStep.SET_LAUNCHER,
         OnboardingStep.THEME_SELECT,
         OnboardingStep.QUICK_SETTINGS,
-        OnboardingStep.BROWSER_SELECT,
         OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
@@ -83,11 +66,6 @@ fun OnboardingScreen(
     var selectedFont by rememberSaveable { mutableStateOf(AppFont.DEFAULT) }
     val scope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferences(context) }
-
-    // Browser state
-    val browsers = remember { installedBrowsers(context) }
-    var selectedBrowserPkg by rememberSaveable { mutableStateOf<String?>(null) }
-    var browserRoleSet by remember { mutableStateOf(false) }
 
     // SET_LAUNCHER'da ON_RESUME ve ActivityResult callback'i aynı anda stepIndex++ tetikleyebilir
     // (Activity result sırası garantili değil) — bu bayrak çift artışı engeller (D209 fix).
@@ -100,11 +78,6 @@ fun OnboardingScreen(
             launcherStepAdvanced = true
             stepIndex++
         }
-    }
-
-    val browserRoleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        browserRoleSet = true
-        stepIndex++
     }
 
     // ── Lifecycle observer ───────────────────────────────────────────────
@@ -218,52 +191,6 @@ fun OnboardingScreen(
                 }
             }
 
-            // BROWSER_SELECT
-            if (currentStep == OnboardingStep.BROWSER_SELECT) {
-                Spacer(Modifier.height(8.dp))
-                if (browsers.isEmpty()) {
-                    Text("Yüklü tarayıcı bulunamadı.", color = Color.White.copy(0.6f), fontSize = 14.sp)
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        browsers.forEach { info ->
-                            val pkg = info.activityInfo.packageName
-                            val label = info.loadLabel(context.packageManager).toString()
-                            val isSelected = selectedBrowserPkg == pkg
-                            Box(
-                                modifier = Modifier.fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(if (isSelected) OnboardingAccentPurple.copy(0.25f) else Color.White.copy(0.07f))
-                                    .border(
-                                        width = if (isSelected) 2.dp else 1.dp,
-                                        color = if (isSelected) OnboardingAccentPurple else Color.White.copy(0.15f),
-                                        shape = RoundedCornerShape(14.dp)
-                                    )
-                                    .clickable { selectedBrowserPkg = pkg }
-                                    .padding(14.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Language, null,
-                                        tint = if (isSelected) OnboardingAccentPurpleLight else Color.White.copy(0.5f),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Text(label, color = Color.White, fontSize = 15.sp,
-                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal)
-                                    if (isSelected) {
-                                        Spacer(Modifier.weight(1f))
-                                        Icon(Icons.Default.CheckCircle, null,
-                                            tint = OnboardingAccentPurpleLight, modifier = Modifier.size(20.dp))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             Spacer(Modifier.height(16.dp))
 
             // ── Ana buton ────────────────────────────────────────────────
@@ -299,17 +226,6 @@ fun OnboardingScreen(
 
                             OnboardingStep.QUICK_SETTINGS -> stepIndex++
 
-                            OnboardingStep.BROWSER_SELECT -> {
-                                val pkg = selectedBrowserPkg
-                                if (pkg != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    val rm = context.getSystemService(RoleManager::class.java)
-                                    if (rm?.isRoleAvailable(RoleManager.ROLE_BROWSER) == true) {
-                                        val intent = rm.createRequestRoleIntent(RoleManager.ROLE_BROWSER)
-                                        browserRoleLauncher.launch(intent)
-                                    } else stepIndex++
-                                } else stepIndex++
-                            }
-
                             OnboardingStep.DONE -> {
                                 context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                                     .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
@@ -322,7 +238,6 @@ fun OnboardingScreen(
                 Text(
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
-                        currentStep == OnboardingStep.BROWSER_SELECT && browsers.isEmpty() -> stringResource(R.string.onb_continue)
                         else -> stringResource(currentStep.buttonLabelRes)
                     },
                     fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
@@ -338,10 +253,8 @@ fun OnboardingScreen(
                 ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             }
 
-            // İsteğe bağlı adımlar için "Atla" — BROWSER_SELECT'te tarayıcı yoksa ana buton zaten
-            // skip işlevi görüyor (bkz. yukarı), ayrı "Atla" linki göstermek kafa karıştırır.
-            val hideRedundantSkipLink = currentStep == OnboardingStep.BROWSER_SELECT && browsers.isEmpty()
-            if (currentStep.isSkippable && !hideRedundantSkipLink) {
+            // İsteğe bağlı adımlar için "Atla"
+            if (currentStep.isSkippable) {
                 Spacer(Modifier.height(4.dp))
                 Box(
                     modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
