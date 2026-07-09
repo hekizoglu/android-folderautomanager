@@ -50,6 +50,7 @@ Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 - Semantic versioning: MAJOR.MINOR.PATCH — `versionCode` ve `versionName` her release'te artır (`app/build.gradle.kts`)
 - **Her build'de versiyon güncelle:** `versionCode` +1, `versionName` PATCH +1 — commit öncesi `app/build.gradle.kts` güncellenmeli
 - Git hook aktifleştirme: `git config core.hooksPath .githooks` — ilk kurulumda çalıştır (pre-commit check_duplicates.py için)
+- Rebase standardı: repo local `pull.rebase=true` ayarlı (Döngü 222) — akış her zaman `git fetch` → `git rebase origin/main` → `git push`; merge commit'i tercih etme
 
 ### Paralel Agent Kullanımı
 Bağımsız araştırma/analiz görevlerinde tek mesajda birden fazla Agent çağrısı yap — bekleme süresini yarıya indirir.

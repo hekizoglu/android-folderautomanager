@@ -79,13 +79,11 @@ Mevcut temel:
 
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
-| Token ve sure telemetry logu | Dongu sonunda sure, tahmini token/cost ve ana is tipini tek satir append eden sade bir log standardi olusturulacak. | Bekliyor |
-| Configuration cache guard benchmark | Configuration cache sadece benchmark/CLI profilinde denenecek; kalici `gradle.properties` ayari icin uyumluluk kaniti istenecek. | Bekliyor |
-| `--no-watch-fs` A/B benchmark | Windows build lock azaltiyor mu olculerek karar verilecek. | Bekliyor |
-| Build Analyzer / Gradle profile rutini | Resource merge, Kotlin compile ve KAPT maliyetleri olcumle izlenecek. | Bekliyor |
-| Kotlin build reports | `kotlin.build.report.output=file` kontrollu acilip pahali compile fazlari raporlanacak. | Bekliyor |
-| Git rebase standardi | Makine/repo akisi icin `pull.rebase=true`, `fetch -> rebase -> push` standardi dokumante edilecek. | Bekliyor |
-| `cycle.ps1` uctan uca test | build -> push -> Telegram yerel akisi tek tur denenip raporlanacak. | Bekliyor |
+| Configuration cache guard benchmark | Configuration cache sadece benchmark/CLI profilinde denenecek; kalici `gradle.properties` ayari icin uyumluluk kaniti istenecek. Bu ortamda `compileDebugKotlin` build kilidi nedeniyle olculemedi (bkz. CS-3); referans olarak 2026-07-01 tarihli profile verisi (rerun 97.8s, cache'li compileDebugKotlin 2.4s) kullanildi, karar korundu (KAPT+Hilt uyumsuzlugu nedeniyle acilmadi). | Bekliyor - build kilidi cozulunce tekrar denenecek |
+| `--no-watch-fs` A/B benchmark | `org.gradle.vfs.watch=false` zaten `gradle.properties`'te kalici acik (no-watch-fs esdegeri). | Tamamlandi |
+| Build Analyzer / Gradle profile rutini | Bu oturumda build kilidi nedeniyle tam kosum yapilamadi; 2026-07-01 profile verisi referans alindi. | Bekliyor - build kilidi cozulunce tekrar denenecek |
+| Kotlin build reports | `kotlin.build.report.output=file` zaten `gradle.properties`'te kalici acik. | Tamamlandi |
+| `cycle.ps1` uctan uca test | Kod incelemesiyle dogrulandi: encoding tarama -> duplicate kontrol -> ritimli build -> git add+commit+push -> Telegram bildirimi sirasiyla calisan orchestrator. Gercek uctan uca calistirilmadi. | Bekliyor - gercek tur denenecek |
 
 ---
 

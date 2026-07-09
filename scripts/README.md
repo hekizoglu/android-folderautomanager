@@ -13,6 +13,8 @@
 | `version_bump.ps1` | `.\scripts\version_bump.ps1 patch` | `versionCode` ve `versionName` artirir. |
 | `score_docs_backlog.ps1` | `.\scripts\score_docs_backlog.ps1 [-UpdateRoadmap] [-WriteReport]` | Script icindeki aday listesini puanlar; varsayilan davranis `ROADMAP.md` dosyasini tek aktif kaynak tutmaktir. `-WriteReport` verilirse ayrica `docs/internal/docs_backlog_score.md` snapshot'i uretir. |
 | `create_release_keystore.ps1` | `.\scripts\create_release_keystore.ps1` | Release imzalama icin yerel `release.jks` ve gitignore kapsamindaki `keystore.properties` dosyasini interaktif sifreyle uretir. |
+| `log_cycle_time.ps1` | `.\scripts\log_cycle_time.ps1 -StartTime "14:05" -EndTime "14:22" -TokenLevel orta -WorkType BUILD -Note "assembleDebug baseline"` | `harcananvakit.md`'ye mevcut tablo formatina uygun tek satir append eder. `-StartTime` verilmezse `-DurationMinutes` ile geriye hesaplar. `-TokenLevel`: dusuk/orta/yuksek, `-WorkType`: KOD/BUILD/GIT/ORTAM/DOKUMAN/HATA_GIDER/ARASTIRMA/TEST. |
+| `benchmark_build.ps1` | `.\scripts\benchmark_build.ps1 [-SkipProfile] [-SkipConfigurationCache]` | `--profile --rerun-tasks assembleDebug` ve configuration-cache'li `compileDebugKotlin` calistirir, `docs/internal/build_benchmark_latest.md` uretir. |
 
 ## CS-3 Build Kilidi Araclari
 

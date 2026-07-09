@@ -4,6 +4,19 @@
 
 ---
 
+## Döngü 222 — 2026-07-09 [Build/Süreç ölçümleri]
+
+**Yapılanlar:**
+1. Token/süre telemetry logu: `scripts/log_cycle_time.ps1` yazıldı — `harcananvakit.md`'ye mevcut tablo formatında tek satır append eder (Başlangıç/Bitiş veya `-DurationMinutes`, `-TokenLevel` dusuk/orta/yuksek, `-WorkType`). Kullanım örneği `scripts/README.md`'ye eklendi.
+2. Configuration cache + `--no-watch-fs` A/B: bu oturumda `.\gradlew clean` (37s, gerçek) sonrası tam `assembleDebug -PskipGoogleServices` baseline build'i 10 dk timeout içinde `compileDebugKotlin` aşamasını geçemedi — **ölçülemedi, sebep: bu ortamda Kotlin derlemesi tek run içinde çok uzun sürdü / kilitlendi**. Onun yerine 2026-07-01 tarihli gerçek ölçüm kullanıldı: `--profile --rerun-tasks assembleDebug` = 97.8s, configuration-cache'li `compileDebugKotlin` = 2.4s (tek task, tam build karşılaştırması değil). `gradle.properties` zaten `org.gradle.vfs.watch=false` (no-watch-fs eşleniği) kalıcı olarak açık ve configuration-cache KAPT+Hilt uyumsuzluğu nedeniyle bilinçli olarak yorum satırında bırakılmış durumda — mevcut karar korundu, yeni kalıcı değişiklik EKLENMEDİ.
+3. Build Analyzer / Kotlin build report: `--profile` ve `kotlin.build.report.output=file` bu oturumda tekrar tam koşturulamadı (madde 2'deki build tıkanıklığı nedeniyle); `gradle.properties`'te `kotlin.build.report.output=file` zaten kalıcı olarak açık.
+4. Git rebase standardı: repo-local `git config pull.rebase true` ayarlandı; CLAUDE.md "Git Kuralları" bölümüne fetch → rebase → push akışını belgeleyen satır eklendi.
+5. `scripts/cycle.ps1` incelendi (çalıştırılmadı): encoding taraması → AppClassifier duplicate kontrolü → ritimli build (`BuildEvery`) → `git add -A` + commit + push → Telegram bildirimi (APK ekli) sırasıyla çalışan bir orchestrator; push/Telegram adımları bu oturumda tetiklenmedi.
+
+**Sonraki:** Tam `assembleDebug` baseline süresi build kilidi olmayan bir ortamda tekrar ölçülmeli; `cycle.ps1` gerçek uçtan uca bir turda denenmeli.
+
+---
+
 ## Dongu 220 - 2026-07-09 [Rapor kalabaligi temizlendi - aktif isler ROADMAP.md'de toplandi]
 
 **Yapilanlar:** Kullanici "butun bu dosyalardaki yapilacaklari tek bir dosyada birlestir, diger dosyalari sil; cozduklerini HISTORY'ye, cozulemeyenleri COZULEMEYEN_SORUNLAR'a at" dedi. Gecici ve ara raporlar tek tek okundu, aktif isler `ROADMAP.md` icinde tek kaynak olacak sekilde toplandi:
