@@ -84,6 +84,24 @@ fun FolderScreen(
         var customColor by remember(catId) {
             mutableStateOf(AppPrefs.getFolderCustomColors(context)[catId] ?: "")
         }
+        // Reaktivite (Fix 2a, LEARNINGS E6 pattern): customName/Emoji/Color eskiden sadece
+        // remember(catId) ile bir kez okunuyordu — FolderRenameDialog dışında (örn. HomeScreen'de
+        // düzenleme sonrası) değişirse FolderScreen açıkken güncellenmiyordu.
+        DisposableEffect(context, catId) {
+            val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                when (key) {
+                    AppPrefs.KEY_FOLDER_CUSTOM_NAMES ->
+                        customName = AppPrefs.getFolderCustomNames(context)[catId] ?: ""
+                    AppPrefs.KEY_FOLDER_CUSTOM_EMOJIS ->
+                        customEmoji = AppPrefs.getFolderCustomEmojis(context)[catId] ?: ""
+                    AppPrefs.KEY_FOLDER_CUSTOM_COLORS ->
+                        customColor = AppPrefs.getFolderCustomColors(context)[catId] ?: ""
+                }
+            }
+            prefs.registerOnSharedPreferenceChangeListener(listener)
+            onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+        }
         var showEditDialog by remember { mutableStateOf(false) }
         var contextMenuApp by remember { mutableStateOf<AppInfo?>(null) }
 

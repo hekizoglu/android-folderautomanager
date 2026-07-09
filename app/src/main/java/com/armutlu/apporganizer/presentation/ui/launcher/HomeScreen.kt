@@ -94,6 +94,7 @@ fun HomeScreen(
     val context = LocalContext.current
     var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
+    val initialLoadDone by viewModel.initialLoadDone.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
     val focusSearchOnOpen by viewModel.focusSearchOnOpen.collectAsState()
     val allApps by viewModel.allApps.collectAsState()
@@ -323,7 +324,9 @@ fun HomeScreen(
         }
     }
 
-    val isLoading = folders.isEmpty() && allApps.isEmpty()
+    // Fix 3: initialLoadDone false iken Room'dan henuz emit gelmedi demektir — cold resume'da
+    // gercekten bos DB ile ilk-emit-bekleniyor durumunu ayirt eder, yanlis "yukleniyor" flasini onler.
+    val isLoading = !initialLoadDone && folders.isEmpty() && allApps.isEmpty()
 
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { msg ->

@@ -93,7 +93,6 @@ import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchCache
-import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -768,10 +767,6 @@ internal fun HomeAppSearchBar(
 
     // Sorguyu ViewModel'e ilet — FTS5 çok-kaynak araması (dosyalar) debounce ile orada çalışır
     LaunchedEffect(query) { onQueryChange(query) }
-    val historyItems = remember(query) {
-        if (query.isNotBlank()) emptyList()
-        else SearchHistoryPrefs.getHistory(context)
-    }
 
     // Drag handle state
     var isDragging by remember { mutableStateOf(false) }
@@ -908,33 +903,6 @@ internal fun HomeAppSearchBar(
             }
         }
 
-        // Arama geçmişi chip row — sorgu boşken gösterilir
-        if (historyItems.isNotEmpty() && query.isBlank() && !isDragging) {
-            Spacer(Modifier.height(6.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(historyItems) { histQuery ->
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color.White.copy(alpha = 0.12f))
-                            .clickable { query = histQuery }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(Icons.Default.Search, null,
-                            tint = Color.White.copy(alpha = 0.50f), modifier = Modifier.size(12.dp))
-                        Text(histQuery, color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
-                        Icon(Icons.Default.Close, contentDescription = "Arama geçmişini temizle",
-                            tint = Color.White.copy(alpha = 0.40f),
-                            modifier = Modifier.size(12.dp).clickable {
-                                SearchHistoryPrefs.clear(context)
-                            })
-                    }
-                }
-            }
-        }
-
         // Sonuç listesi — kaynak grupları: Uygulamalar / Klasörler / Kişiler / Dosyalar (S1)
         val hasAnyResult = appResults.isNotEmpty() || folderResults.isNotEmpty() ||
             contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint
@@ -960,7 +928,6 @@ internal fun HomeAppSearchBar(
                                 .fillMaxWidth()
                                 .clickable {
                                     SearchStatsPrefs.logClick(context, SourceType.APP.key, index)
-                                    SearchHistoryPrefs.addQuery(context, query)
                                     query = ""
                                     onAppClick(app.packageName)
                                 }
@@ -1014,7 +981,6 @@ internal fun HomeAppSearchBar(
                                     .fillMaxWidth()
                                     .clickable {
                                         SearchStatsPrefs.logClick(context, SourceType.CATEGORY.key, index)
-                                        SearchHistoryPrefs.addQuery(context, query)
                                         query = ""
                                         onFolderClick(folder)
                                     }
@@ -1054,7 +1020,6 @@ internal fun HomeAppSearchBar(
                                     .fillMaxWidth()
                                     .clickable {
                                         SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, index)
-                                        SearchHistoryPrefs.addQuery(context, query)
                                         query = ""
                                         // Kişi tıklaması: arama ekranına veya telefon dialer'a
                                         val dialIntent = android.content.Intent(
@@ -1212,7 +1177,6 @@ internal fun HomeAppSearchBar(
                                     .fillMaxWidth()
                                     .clickable {
                                         SearchStatsPrefs.logClick(context, SourceType.FILE.key, index)
-                                        SearchHistoryPrefs.addQuery(context, query)
                                         query = ""
                                         // AllAppsDrawer.openSearchDocument ile aynı pattern
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(document.sourceId))

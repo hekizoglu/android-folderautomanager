@@ -362,7 +362,6 @@ object AppPrefs {
     fun setDoubleTapSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_DOUBLE_TAP_SEARCH, v).apply()
 
     // Arama kaynaklari ve profil ayarlari
-    const val KEY_SEARCH_HISTORY_ENABLED = "search_history_enabled"
     const val KEY_SEARCH_SOURCE_APPS = "search_source_apps"
     const val KEY_SEARCH_SOURCE_CATEGORIES = "search_source_categories"
     const val KEY_SEARCH_SOURCE_CONTACTS = "search_source_contacts"
@@ -374,9 +373,6 @@ object AppPrefs {
         BALANCED,
         CATEGORIES_FIRST,
     }
-
-    fun isSearchHistoryEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_HISTORY_ENABLED, true)
-    fun setSearchHistoryEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_HISTORY_ENABLED, v).apply()
 
     fun isSearchSourceAppsEnabled(context: Context): Boolean {
         if (!prefs(context).getBoolean(KEY_SEARCH_SOURCE_APPS, true)) {
@@ -430,11 +426,6 @@ object AppPrefs {
     const val KEY_SEARCH_MAX_RESULTS = "search_max_results"
     fun getSearchMaxResults(context: Context) = prefs(context).getInt(KEY_SEARCH_MAX_RESULTS, 6)
     fun setSearchMaxResults(context: Context, n: Int) = prefs(context).edit().putInt(KEY_SEARCH_MAX_RESULTS, n).apply()
-
-    // Arama geçmişi kaç sorgu saklansın
-    const val KEY_SEARCH_HISTORY_LIMIT = "search_history_limit"
-    fun getSearchHistoryLimit(context: Context) = prefs(context).getInt(KEY_SEARCH_HISTORY_LIMIT, 8)
-    fun setSearchHistoryLimit(context: Context, n: Int) = prefs(context).edit().putInt(KEY_SEARCH_HISTORY_LIMIT, n).apply()
 
     // Sonuçlarda app ikonunu göster/gizle
     const val KEY_SEARCH_SHOW_ICONS = "search_show_icons"

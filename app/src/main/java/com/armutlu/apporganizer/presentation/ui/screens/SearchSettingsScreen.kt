@@ -16,9 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
@@ -55,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.SearchSettingsViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +65,6 @@ fun SearchSettingsScreen(
     var homeAppSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeAppSearchEnabled(context)) }
     var homeSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeSearchEnabled(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(AppPrefs.isDoubleTapSearchEnabled(context)) }
-    var searchHistoryEnabled by remember { mutableStateOf(AppPrefs.isSearchHistoryEnabled(context)) }
     val appsSourceEnabled = true
     var categoriesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceCategoriesEnabled(context)) }
     var contactsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
@@ -83,7 +79,6 @@ fun SearchSettingsScreen(
     var instantEnabled    by remember { mutableStateOf(AppPrefs.isSearchInstantEnabled(context)) }
     var sortByUsage       by remember { mutableStateOf(AppPrefs.isSearchSortByUsage(context)) }
     var maxResults        by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
-    var historyLimit      by remember { mutableStateOf(AppPrefs.getSearchHistoryLimit(context)) }
     var showIcons         by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
     var showContactAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
     var searchStatsEnabled by remember { mutableStateOf(AppPrefs.isSearchStatsEnabled(context)) }
@@ -173,29 +168,6 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             doubleTapSearchEnabled = it
                             AppPrefs.setDoubleTapSearchEnabled(context, it)
-                        },
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsSwitchRow(
-                        icon = Icons.Default.History,
-                        title = "Arama Gecmisi",
-                        subtitle = "Son sorgular kaydedilsin ve onerilsin",
-                        checked = searchHistoryEnabled,
-                        onCheckedChange = {
-                            searchHistoryEnabled = it
-                            AppPrefs.setSearchHistoryEnabled(context, it)
-                            if (!it) SearchHistoryPrefs.clear(context)
-                        },
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    // Geçmişi Temizle — her zaman görünür (spec Risk 10: geçmiş sadece cihazda)
-                    SettingsButtonRow(
-                        icon = Icons.Default.Delete,
-                        title = "Geçmişi Temizle",
-                        subtitle = "Kayıtlı tüm arama sorgularını siler — geçmiş yalnızca cihazda tutulur",
-                        onClick = {
-                            SearchHistoryPrefs.clear(context)
-                            android.widget.Toast.makeText(context, "Arama geçmişi temizlendi", android.widget.Toast.LENGTH_SHORT).show()
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -442,18 +414,6 @@ fun SearchSettingsScreen(
                                 4 -> 6; 6 -> 8; 8 -> 10; else -> 4
                             }
                             AppPrefs.setSearchMaxResults(context, maxResults)
-                        }
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsButtonRow(
-                        icon = Icons.Default.History,
-                        title = "Arama Geçmişi Limiti",
-                        subtitle = "Şu an: $historyLimit sorgu saklanır — dokunarak değiştir (5 / 8 / 12 / 20)",
-                        onClick = {
-                            historyLimit = when (historyLimit) {
-                                5 -> 8; 8 -> 12; 12 -> 20; else -> 5
-                            }
-                            AppPrefs.setSearchHistoryLimit(context, historyLimit)
                         }
                     )
                 }

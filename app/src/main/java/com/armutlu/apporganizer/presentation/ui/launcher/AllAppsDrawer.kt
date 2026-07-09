@@ -10,8 +10,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -74,7 +72,6 @@ import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
@@ -90,11 +87,8 @@ private fun DrawerSearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onClose: () -> Unit,
-    searchHistory: List<String>,
-    onHistoryClear: () -> Unit,
     searchFocusRequester: FocusRequester,
     keyboardController: androidx.compose.ui.platform.SoftwareKeyboardController?,
-    saveSearchIfNeeded: () -> Unit,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     totalCount: Int,
     filteredCount: Int,
@@ -162,7 +156,7 @@ private fun DrawerSearchBar(
             }
         }
         IconButton(
-            onClick = { saveSearchIfNeeded(); keyboardController?.hide(); onClose() },
+            onClick = { keyboardController?.hide(); onClose() },
             modifier = Modifier.size(40.dp)
         ) {
             Icon(Icons.Default.Close, "Kapat", tint = textSecondary, modifier = Modifier.size(20.dp))
@@ -170,35 +164,6 @@ private fun DrawerSearchBar(
     }
 
     Spacer(Modifier.height(8.dp))
-
-    // Son aramalar
-    if (searchQuery.isEmpty() && searchHistory.isNotEmpty()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.Search, "Arama geçmişi", tint = textSecondary, modifier = Modifier.size(14.dp))
-            searchHistory.forEach { q ->
-                Box(
-                    modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.10f))
-                        .semantics {
-                            contentDescription = "$q arama geçmişi"
-                            onClick(label = "Ara") { true }
-                        }
-                        .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onSearchQueryChange(q) }
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
-                ) { Text(q, fontSize = 12.sp, color = Color.White.copy(alpha = 0.75f), maxLines = 1) }
-            }
-            Box(
-                modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                    .clickable { SearchHistoryPrefs.clear(context); onHistoryClear() }
-                    .padding(horizontal = 8.dp, vertical = 5.dp)
-            ) { Text("Temizle", fontSize = 11.sp, color = Color.White.copy(alpha = 0.3f)) }
-        }
-        Spacer(Modifier.height(6.dp))
-    }
 
     // Hızlı filtre chip'leri
     androidx.compose.foundation.lazy.LazyRow(
@@ -416,7 +381,6 @@ private fun DrawerAppList(
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    saveSearchIfNeeded: () -> Unit,
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap()
 ) {
@@ -466,7 +430,6 @@ private fun DrawerAppList(
                         iconPackPkg = state.iconPackPkg,
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            saveSearchIfNeeded()
                             AppAnalytics.appLaunched("all_apps")
                             onAppClick(app.packageName)
                         },
@@ -499,7 +462,6 @@ private fun DrawerAppList(
                         iconPackPkg = state.iconPackPkg,
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            saveSearchIfNeeded()
                             AppAnalytics.appLaunched("all_apps")
                             onAppClick(app.packageName)
                         },
@@ -546,7 +508,6 @@ private fun DrawerAppList(
                             badge = "K",
                             onClick = {
                                 SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, index)
-                                saveSearchIfNeeded()
                                 openSearchDocument(context, document)
                             },
                             showContactActions = true
@@ -563,7 +524,6 @@ private fun DrawerAppList(
                             badge = "D",
                             onClick = {
                                 SearchStatsPrefs.logClick(context, SourceType.FILE.key, index)
-                                saveSearchIfNeeded()
                                 openSearchDocument(context, document)
                             }
                         )
@@ -798,15 +758,7 @@ fun AllAppsDrawer(
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
     }
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }
-    var searchHistory    by remember { mutableStateOf(SearchHistoryPrefs.getHistory(context)) }
     var quickFilter      by remember { mutableStateOf(0) }
-
-    val saveSearchIfNeeded = {
-        if (searchQuery.trim().length >= 2) {
-            SearchHistoryPrefs.addQuery(context, searchQuery)
-            searchHistory = SearchHistoryPrefs.getHistory(context)
-        }
-    }
 
     var bgAlpha          by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
@@ -854,7 +806,7 @@ fun AllAppsDrawer(
             detectVerticalDragGestures(
                 onDragEnd = {
                     val swipeDownThreshold = with(density) { SWIPE_DOWN_THRESHOLD.dp.toPx() }
-                    if (dragOffset > swipeDownThreshold) { saveSearchIfNeeded(); keyboardController?.hide(); onClose() }
+                    if (dragOffset > swipeDownThreshold) { keyboardController?.hide(); onClose() }
                     dragOffset = 0f
                 },
                 onDragCancel = { dragOffset = 0f },
@@ -870,11 +822,8 @@ fun AllAppsDrawer(
                         searchQuery = searchQuery,
                         onSearchQueryChange = onSearchQueryChange,
                         onClose = onClose,
-                        searchHistory = searchHistory,
-                        onHistoryClear = { searchHistory = emptyList() },
                         searchFocusRequester = searchFocusRequester,
                         keyboardController = keyboardController,
-                        saveSearchIfNeeded = saveSearchIfNeeded,
                         haptic = haptic,
                         totalCount = apps.size,
                         filteredCount = sortedApps.size,
@@ -899,7 +848,6 @@ fun AllAppsDrawer(
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
                         haptic = haptic,
-                        saveSearchIfNeeded = saveSearchIfNeeded,
                         categories = categories,
                         searchResults = searchResults
                     )

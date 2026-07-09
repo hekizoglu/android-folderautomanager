@@ -5,6 +5,22 @@
 
 ---
 
+## 🔄 Reaktivite ve Akış Tuzakları (D231 teşhisi, Fable)
+
+### Dock kararsızlık zinciri — DB'ye her yazım tüm türev akışları tetikler
+Bildirim badge'i `apps` tablosuna yazılınca (`updateNotificationCount`) `getAllAppsFlow()` yeniden emit eder; `distinctUntilChanged` liste alanı değiştiği için işe yaramaz. Öneri/dock gibi türev akışlar SADECE ilgilendikleri alanlara `distinctUntilChanged { }` predicate'i ile bağlanmalı — aksi halde her bildirimde dock/öneri sıralaması değişir. Genel kural: bir StateFlow zincirine kaynak eklerken "bu kaynak hangi sıklıkta emit eder?" sorusu sorulmalı.
+
+### İkon cache anahtarı tutarlılığı — lastUpdateTime her yerde olmalı
+`DockIcon` cache anahtarına `getPackageInfo().lastUpdateTime` ekliyor ama `MiniAppIcon` (FolderTile önizleme) eklemiyordu → uygulama güncellenince önizleme ikonu bayat kalıyordu. Kural: `produceState` ikon cache anahtarı HER ZAMAN `pkg_px_lastUpdateTime(_iconPack)` formatında olmalı; yeni ikon composable'ı eklerken mevcutlardan kopyala.
+
+### Eagerly + initialValue=emptyList() = cold resume'da sahte "yükleniyor"
+Process LMK ile öldükten sonra dönüşte StateFlow'lar ilk Room emit'ine kadar boş — `isEmpty()` tabanlı loading koşulu sahte loading ekranı gösterir. Kural: loading UI koşulu `!initialLoadDone && list.isEmpty()` olmalı; `initialLoadDone` Room'un ilk emisyonuyla true'ya döner.
+
+### Cold start borç listesi (D231, henüz yapılmadı)
+`AppOrganizerApp.onCreate` main thread'de senkron: Firebase init + 3 worker schedule + FCM token. Baseline profile YOK (macrobenchmark modülü yok) — cold start iyileştirmesinin en yüksek getirili adımı. 7+ `Eagerly` StateFlow ViewModel init'te aynı anda ayağa kalkıyor; kritik olmayanlar (`widgetSuggestions`, `tickerItems`) `WhileSubscribed`'e adaydır (folders/allApps DEĞİL — bkz. Flow Sıcaklığı kuralı).
+
+---
+
 ## 📋 SOP — Nadiren Tetiklenen Prosedürler (D210'da CLAUDE.md'den taşındı, token tasarrufu)
 
 ### MD Denetim Raporu Kuralı

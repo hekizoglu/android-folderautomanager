@@ -391,7 +391,12 @@ private fun MiniAppIcon(
     val context = LocalContext.current
     val density = androidx.compose.ui.platform.LocalDensity.current
     val pxSize = with(density) { size.roundToPx() }
-    val cacheKey = "${app.packageName}_$pxSize"
+    // lastUpdateTime key'de (Fix 2b, HomeScreenComponents.DockIcon ile aynı pattern):
+    // uygulama güncellenince eski önizleme ikonu cache'te takılı kalmasın.
+    val lastUpdated = remember(app.packageName) {
+        runCatching { context.packageManager.getPackageInfo(app.packageName, 0).lastUpdateTime }.getOrDefault(0L)
+    }
+    val cacheKey = "${app.packageName}_${lastUpdated}_$pxSize"
 
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCache[cacheKey],

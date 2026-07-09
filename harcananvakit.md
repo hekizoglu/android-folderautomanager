@@ -107,3 +107,4 @@
 | 2026-07-08 | — | — | ~10dk | BUILD | Döngü 217 — BUILD 25 MB APK (v1.2.5, versionCode 18) | assembleDebug başarılı, emülatör bağlı değildi |
 | 2026-07-10 | ~13:30 | ~14:30 | KOD+BUILD | Döngü 229: ticker çeşitlilik + arama istatistikleri; APK 25.0 MB |
 | 2026-07-10 | ~14:30 | ~15:30 | KOD+BUILD | Döngü 230: Wrapped haftalık rapor MVP; APK build+test yeşil |
+| 2026-07-10 | ~15:30 | ~16:30 | KOD+BUILD | Döngü 231: 4 hata fix (dock, reaktivite, geri tuşu, arama geçmişi kaldırma) + FİKİRLER temizliği |

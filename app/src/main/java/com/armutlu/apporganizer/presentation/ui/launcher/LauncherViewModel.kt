@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -165,6 +166,13 @@ class LauncherViewModel @Inject constructor(
     val allApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
         .map { buildAllApps(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Room'dan ilk emisyon geldi mi — cold resume'da yanlis "yukleniyor" flasini onler (Fix 3):
+    // process yeniden yaratildiginda folders/allApps baslangicta emptyList() ile basliyor,
+    // ilk Room emit'ine kadar HomeScreen "Uygulamalar yukleniyor..." flasi gosteriyordu.
+    val initialLoadDone: StateFlow<Boolean> = repository.getAllAppsFlow()
+        .map { true }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
@@ -543,9 +551,19 @@ class LauncherViewModel @Inject constructor(
     @Volatile private var cacheTimestamp: Long = 0L
     private val CACHE_DURATION_MS = 30 * 60 * 1000L  // 30 dakika
 
-    // Akıllı öneriler — UsageScore v2: recency+frequency+timeSlot + dock/notif boost
+    // Akıllı öneriler — UsageScore v2: recency+frequency+timeSlot + dock boost
+    // Dock kararlılığı (Fix 1): giriş akışı sadece sıralamayı etkileyen alanlar değişince
+    // yeniden emit eder — her bildirimde updateNotificationCount() DB'ye yazınca
+    // getAllAppsFlow() yeniden emit oluyordu, bu da suggestedApps'i (ve dolayısıyla
+    // contextualDockPackages'ı) her seferinde yeniden sıralayıp dock'u kararsız yapıyordu.
     val suggestedApps: StateFlow<List<AppInfo>> = combine(
-        repository.getAllAppsFlow(),
+        repository.getAllAppsFlow()
+            .distinctUntilChanged { old, new ->
+                old.size == new.size && old.zip(new).all { (a, b) ->
+                    a.packageName == b.packageName && a.usageCount == b.usageCount &&
+                    a.lastUsedTimestamp == b.lastUsedTimestamp && a.isHidden == b.isHidden
+                }
+            },
         _suggestionTick
     ) { apps, _ ->
         val now = System.currentTimeMillis()
@@ -554,18 +572,18 @@ class LauncherViewModel @Inject constructor(
         // UsageScore v2 boost faktörleri (anlık snapshot)
         val dockPkgs = _dockPackages.value
         val favPkgs = _favoritePkgs.value
-        val notifCounts = AppNotificationListenerService.badgeCounts.value
         if (UsageStatsHelper.hasPermission(ctx)) {
             val baseScores = cachedScores.takeIf { it != null && now - cacheTimestamp <= CACHE_DURATION_MS }
                 ?: UsageStatsHelper.getWeightedScores(ctx, days = 28).also {
                     cachedScores = it
                     cacheTimestamp = now
                 }
-            // v2 boost: dock/favorite +0.15, aktif bildirim +0.2
+            // v2 boost: dock/favorite +0.15. Bildirim boost'u (+0.2) KALDIRILDI (Fix 1) —
+            // dock kararlılığı bildirim tazeliğinden daha önemli; bildirim geldikçe
+            // sıralama değişip contextualDockPackages'taki akıllı slotlar zıplıyordu.
             val boosted = baseScores.mapValues { (pkg, score) ->
                 var s = score
                 if (dockPkgs.contains(pkg) || favPkgs.contains(pkg)) s += 0.15f
-                if ((notifCounts[pkg] ?: 0) > 0) s += 0.2f
                 s
             }
             visible

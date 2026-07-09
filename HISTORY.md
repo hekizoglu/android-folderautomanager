@@ -4,6 +4,27 @@
 
 ---
 
+## Döngü 231 — 2026-07-10 [Kullanıcı hata raporları: dock/reaktivite/geri tuşu/arama geçmişi v1.3.3]
+
+**Yapılanlar (kullanıcı şikayetleri; Explore teşhis agent'ı + Sonnet fix agent'ı + Sonnet FİKİRLER temizliği, Fable orkestrasyon):**
+- **Dock kararsızlığı FIX:** Kök neden kanıtlandı — her bildirim `updateNotificationCount` ile DB'ye yazınca `getAllAppsFlow` emit ediyor, `suggestedApps` yeniden sıralanıyor, dock akıllı slotları değişiyordu. `suggestedApps` girişine alan-bazlı `distinctUntilChanged` (packageName/usageCount/lastUsed/isHidden) eklendi; +0.2 bildirim boost'u kaldırıldı.
+- **Reaktivite FIX (E6):** FolderScreen custom ad/emoji/renk artık `DisposableEffect` + `OnSharedPreferenceChangeListener` ile canlı; `MiniAppIcon` cache anahtarına `lastUpdateTime` eklendi (DockIcon ile tutarlı — güncellenen uygulamanın önizleme ikonu tazeleniyor).
+- **Geri tuşu "yükleniyor" flaşı FIX:** `initialLoadDone` StateFlow eklendi; loading ekranı artık sadece Room'un ilk emisyonundan önce görünüyor (cold resume'da sahte loading yok).
+- **Arama geçmişi TAMAMEN kaldırıldı:** SearchHistoryPrefs.kt silindi; AllAppsDrawer "Son aramalar" chip'leri, HomeScreenComponents geçmiş satırı, 4 addQuery çağrısı, SearchSettings toggle/temizle/limit butonları, AppPrefs key'leri — grep doğrulaması: canlı referans 0.
+- **FİKİRLER temizliği:** 3 tamamlanmış madde (K1, K3, Home UX karar listesi) HISTORY arşivine taşındı.
+- **LEARNINGS.md:** D231 bölümü — dock kararsızlık zinciri, ikon cache anahtarı kuralı, Eagerly+emptyList sahte loading tuzağı, cold start borç listesi (baseline profile yok).
+
+**Bekleyen:** Cold start iyileştirmesi (baseline profile + Application.onCreate async init) — LEARNINGS'te borç listesi olarak kayıtlı, sonraki döngü adayı.
+**Sonraki:** Emülatörde gerçek cihaz doğrulaması (dock sabitliği + geri tuşu + klasör rengi canlı güncelleme).
+
+## FİKİRLER Temizliği — 2026-07-10
+
+- [TAMAMLANDI] Akıllı Kategorileme K1 — `ApplicationInfo.category` yerel sinyal katmanı + kalıcı LLM cache (Döngü 228)
+- [TAMAMLANDI] Akıllı Kategorileme K3 — Confidence tabanlı doğrulama akışı, Home ticker uyarısı (Döngü 228)
+- [TAMAMLANDI] Home UX karar listesi — `docs/internal/home_revizyon_karar_listesi.md` (Döngü 224)
+
+---
+
 ## Döngü 230 — 2026-07-10 [Haftalık Rapor (Wrapped) MVP v1.3.2]
 
 **Yapılanlar (kullanıcı talebi: Spotify Wrapped tarzı haftalık rapor; Sonnet agent + Fable entegrasyon):**
