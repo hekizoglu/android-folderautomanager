@@ -31,6 +31,7 @@ object Routes {
     const val REPORTS_CENTER = "reports_center"
     const val SEARCH_SETTINGS = "search_settings"
     const val NOTIFICATION_REPORT = "notification_report"
+    const val WRAPPED_REPORT = "wrapped_report"
 
     // U1: Ayarlar alt-ekran hiyerarşisi — her ana kategori kendi route'unda
     const val SETTINGS_APPEARANCE = "settings_appearance"
@@ -150,6 +151,13 @@ fun AppNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) },
                 onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
+                onNavigateToWrappedReport = { navController.navigate(Routes.WRAPPED_REPORT) },
+            )
+        }
+        composable(Routes.WRAPPED_REPORT) {
+            com.armutlu.apporganizer.presentation.ui.screens.WrappedReportScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
             )
         }
         composable(Routes.SEARCH_SETTINGS) {

@@ -12,6 +12,7 @@ import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.EntryPoint
@@ -54,6 +55,15 @@ class WeeklyDigestWorker(
                 sendDigestNotification(totalUnused, unusedApps.take(3).map { it.appName })
             }
             Timber.d("WeeklyDigest: $totalUnused kullanılmayan uygulama tespit edildi")
+
+            // Haftalık Rapor (Wrapped) için kategori bazlı kullanım snapshot'ı kaydet.
+            // Mevcut davranışı etkilemesin diye ayrı runCatching ile izole edildi.
+            runCatching {
+                val categoryUsage = apps.groupBy { it.categoryId }
+                    .mapValues { (_, list) -> list.sumOf { it.usageCount } }
+                WrappedSnapshotPrefs.saveCurrent(applicationContext, categoryUsage, apps.size)
+            }.onFailure { e -> Timber.e(e, "Wrapped snapshot kaydı başarısız") }
+
             Result.success()
         }.getOrElse { e ->
             Timber.e(e, "WeeklyDigest hatası")

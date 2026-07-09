@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 230 — 2026-07-10 [Haftalık Rapor (Wrapped) MVP v1.3.2]
+
+**Yapılanlar (kullanıcı talebi: Spotify Wrapped tarzı haftalık rapor; Sonnet agent + Fable entegrasyon):**
+- **WrappedEngine.kt (yeni, pure Kotlin):** Dijital Yaşam Skoru 0-100 (şeffaf sebep listesi), kişilik tipi (Üretici/Sosyal Kelebek/Oyuncu/Finans Kurdu/Öğrenci/Dengeli), ilginç istatistikler (en çok/az açılan, en büyük, en eski, en yeni, en uzun süredir açılmayan), 7 rozet, haftalık kategori büyüme karşılaştırması. Uydurma metrik YOK (gece kuşu rozeti veri olmadığı için bilinçli atlandı).
+- **WrappedSnapshotPrefs.kt (yeni):** Haftalık kategori agregat snapshot'ı (SharedPrefs+JSON, Room migration yok, kişisel veri yok); WeeklyDigestWorker'a runCatching ile bağlandı.
+- **WrappedReportScreen + WrappedViewModel (yeni):** Story tarzı ekran — animasyonlu skor halkası, kişilik kartı, istatistik/rozet grid'leri, kategori büyüme çubukları, bildirim raporu linki; UsageStats izni yoksa nazik izin kartı + izinsiz bölümler yine görünür. Routes.WRAPPED_REPORT + ReportsCenter "🎁 Haftalık Rapor" girişi + KEY_WRAPPED_ENABLED toggle (SettingsStats).
+- **Ticker teaser (Fable):** Cmt/Paz/Pzt günleri "🎁 Haftalık raporun hazır" haberi → rapora gider.
+- Triyaj: tasarruf hesabı, RAM/pil sağlığı, pil/veri/fiyat istatistikleri, gelecek tahmini, kohort karşılaştırması ÇIKARILDI (sahte/erişilemez veri). Phase 2 (gizlilik analizi 14p, oturum altyapısı 15p→ROADMAP, AI koçu 13p, hedef 13p, kilit sayacı 12p) FİKİRLER'e puanlandı.
+
+**Bug:** Agent WrappedReportScreen'de LazyColumn import'unu unutmuş (Fable düzeltti); 2x Windows build kilidi (clear_build_lock + retry).
+**Sonraki:** Döngü 231 — kullanıcı hata raporları (dock kararsızlığı, reaktivite, geri tuşu, arama geçmişi kaldırma, yavaş açılış) + FİKİRLER temizliği. Teşhis agent'ı çalışıyor.
+
 ## Döngü 229 — 2026-07-10 [Ticker çeşitlilik + Universal Search istatistikleri v1.3.1]
 
 **Yapılanlar (kullanıcı talebi: Universal Search analizi + yaratıcı ticker; 2 paralel Sonnet agent, Fable entegrasyon):**

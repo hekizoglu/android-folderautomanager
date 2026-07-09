@@ -617,6 +617,21 @@ class LauncherViewModel @Inject constructor(
         else -> null
     }
 
+    /** Haftalik Rapor (Wrapped) teaser haberi — hafta sonu ve pazartesi gorunur, dokununca rapor acilir. */
+    private fun buildWrappedTicker(): List<TickerItem> = runCatching {
+        val ctx = getApplication<Application>()
+        if (!AppPrefs.isWrappedEnabled(ctx)) return@runCatching emptyList()
+        val day = java.time.LocalDate.now().dayOfWeek
+        val weekendOrMonday = day == java.time.DayOfWeek.SATURDAY ||
+            day == java.time.DayOfWeek.SUNDAY || day == java.time.DayOfWeek.MONDAY
+        if (!weekendOrMonday) return@runCatching emptyList()
+        listOf(TickerItem(
+            text = "Haftalık raporun hazır — skorunu ve rozetlerini gör",
+            emoji = "🎁",
+            route = com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
+        ))
+    }.getOrDefault(emptyList())
+
     /** Arama istatistigi haberi — SearchStatsPrefs anonim agregatlarindan uretilir; 5+ arama olunca gorunur. */
     private fun buildSearchStatsTicker(): List<TickerItem> = runCatching {
         val ctx = getApplication<Application>()
@@ -689,7 +704,7 @@ class LauncherViewModel @Inject constructor(
             insights = insightSnapshots,
             lowConfidenceCount = lowConfidenceCount,
             nowMillis = System.currentTimeMillis(),
-        ).map { it.toTickerItem() } + buildSearchStatsTicker()
+        ).map { it.toTickerItem() } + buildSearchStatsTicker() + buildWrappedTicker()
 
         val visible = composed.filterNot { it.key in dismissed }
         // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki

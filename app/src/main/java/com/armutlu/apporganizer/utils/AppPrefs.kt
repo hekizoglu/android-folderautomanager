@@ -461,6 +461,12 @@ object AppPrefs {
     fun isWeeklyDigestEnabled(context: Context) = prefs(context).getBoolean(KEY_WEEKLY_DIGEST, true)
     fun setWeeklyDigestEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WEEKLY_DIGEST, v).apply()
 
+    // Haftalık Rapor (Wrapped) — Spotify Wrapped tarzı haftalık özet ekranı; kapalıysa
+    // ReportsCenter girişi gizlenir. Tüm veri lokal, sunucuya gönderilmez.
+    const val KEY_WRAPPED_ENABLED = "wrapped_report_enabled"
+    fun isWrappedEnabled(context: Context) = prefs(context).getBoolean(KEY_WRAPPED_ENABLED, true)
+    fun setWrappedEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WRAPPED_ENABLED, v).apply()
+
     // Biometric Settings Lock — Ayarlar ekranını parmak izi/yüz kilidi arkasına al
     const val KEY_BIOMETRIC_SETTINGS_LOCK = "biometric_settings_lock"
     fun isBiometricSettingsLockEnabled(context: Context) = prefs(context).getBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, false)

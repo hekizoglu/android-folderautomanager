@@ -100,6 +100,16 @@ K1 ve K3 Dongu 228'de tamamlandi (bkz. HISTORY.md). K2 (override-ogrenme) ve K4 
 
 ---
 
+## Yuksek Puanli - Wrapped Phase 2 (Fable analizi, Dongu 230)
+
+| Puan | Gorev | Durum |
+|---|---|---|
+| 15p | UsageEvents oturum altyapisi - gunluk agregat oturum verisi (acilis sayisi, oturum suresi, saat dagilimi); isi haritasi, zaman tuneli, dikkat daginiklari ve bagimlilik endeksinin ortak temeli | Bekliyor |
+
+Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da tamamlandi. Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, kilit sayaci 12p) FİKİRLER.md'de.
+
+---
+
 ## Dusuk Oncelik ve Uzun Vade
 
 | Gorev | Alan | Durum |

@@ -143,6 +143,24 @@ fun SettingsStatsScreen(
                 )
             }
         }
+
+        // ── Haftalık Rapor (Wrapped) ayarı ──────────────────────────────────
+        item { SettingsSectionTitle("Haftalik Rapor") }
+        item {
+            var wrappedEnabled by remember { mutableStateOf(AppPrefs.isWrappedEnabled(context)) }
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.EmojiEvents,
+                    title = "Haftalik Rapor",
+                    subtitle = "Dijital yasam skoru, kisilik tipi ve rozetler — Raporlar Merkezi'nde gosterilir",
+                    checked = wrappedEnabled,
+                    onCheckedChange = {
+                        wrappedEnabled = it
+                        AppPrefs.setWrappedEnabled(context, it)
+                    },
+                )
+            }
+        }
     }
 }
 

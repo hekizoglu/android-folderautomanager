@@ -19,9 +19,9 @@
 
 ## 🔴 Kritik
 
-| Tarih | Kaynak | Madde | Durum |
-|-------|--------|-------|-------|
-| 2026-06-16 | ROADMAP | **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir | Bekliyor ⚠️ |
+| Tarih | Puan | Kaynak | Madde | Durum |
+|-------|------|--------|-------|-------|
+| 2026-06-16 | 19p | ROADMAP | **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir. Play Console'da temel işlev gerekçesi, kullanıcı faydası ve daha dar görünürlük alternatiflerinin neden yetersiz olduğu kanıtlanmalı. (KV:5 · U:5 · BR:5 · EA:4 = **19p**) | Bekliyor ⚠️ — dış aksiyon (Play Console) gerekli |
 
 ---
 
@@ -84,6 +84,12 @@
 | 2026-07-10 | Universal Search analizi (Fable) | **Play Store fallback** — uygulama bulunamayınca "Play Store'da ara" satırı; market:// intent. (KV:3 · U:5 · BR:1 · EA:2) | 11p |
 | 2026-07-10 | Universal Search analizi (Fable) | **Ayar araması (SETTING source)** — Wi-Fi/Bluetooth/Bildirim gibi ~20 statik sistem ayarı SearchDocument olarak indekslenir, Settings.ACTION_* intent ile açılır. (KV:4 · U:4 · BR:2 · EA:3) | 13p |
 | 2026-07-10 | Universal Search analizi (Fable) | **Arama kalitesi öğrenmesi** — başarısız arama sonrası elle açılan uygulamayı tespit edip sıralamada boost et (query abandon sinyali). (KV:4 · U:2 · BR:3 · EA:3) | 12p |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Gizlilik analizi ekranı** — mikrofon/konum/kamera izni kullanan uygulamaların listesi (PackageManager, tamamen lokal); Wrapped'a gizlilik kartı. (KV:5 · U:4 · BR:1 · EA:4) | 14p |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **UsageEvents oturum altyapısı** — günlük agregat oturum verisi (açılış sayısı, oturum süresi, saat dağılımı); ısı haritası, zaman tüneli, dikkat dağıtıcılar ve bağımlılık endeksinin ortak temeli. (KV:4 · U:3 · BR:3 · EA:5) | 15p |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Kilit açma sayacı** — UsageEvents KEYGUARD_HIDDEN ile günlük telefon açma sayısı + haftalık trend; Wrapped kartı. (KV:4 · U:3 · BR:2 · EA:3) | 12p |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **AI koçu haftalık yorumu** — WrappedReport verisini lokal AI/DeepSeek'e özetletip 2 cümlelik kişisel yorum (opt-in, sadece agregat veri gider). (KV:4 · U:3 · BR:3 · EA:3) | 13p |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Hedef sistemi** — haftalık kategori kullanım hedefi + rozet ödülü; oturum altyapısına bağımlı. (KV:4 · U:2 · BR:3 · EA:4) | 13p |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **ÇIKARILDI (kayıt):** tasarruf hesabı (uydurma metrik), RAM/pil sağlık puanı (API kısıtlı), pil/veri/fiyat istatistikleri (erişim yok), gelecek tahmini (spekülatif), kohort karşılaştırması (sunucu verisi yok) — güven zedeleyen/sahte veri gösterilmez. | - |
 
 ---
 

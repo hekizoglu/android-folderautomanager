@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,9 +26,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +39,10 @@ fun ReportsCenterScreen(
     onNavigateBack: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToUsageReport: () -> Unit,
+    onNavigateToWrappedReport: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val wrappedEnabled = AppPrefs.isWrappedEnabled(context)
     val screenState by viewModel.screenState.collectAsState()
     val appCount = screenState.apps.size
     val categoryCount = screenState.categories.size
@@ -110,6 +116,18 @@ fun ReportsCenterScreen(
                         subtitle = "En cok kullanilanlar, hic acilmayanlar ve gizleme onerileri",
                         onClick = onNavigateToUsageReport,
                     )
+                }
+            }
+            if (wrappedEnabled) {
+                item {
+                    SettingsCard {
+                        SettingsButtonRow(
+                            icon = Icons.Default.EmojiEvents,
+                            title = "🎁 Haftalik Rapor",
+                            subtitle = "Dijital yasam skorun, kisilik tipin ve rozetlerin",
+                            onClick = onNavigateToWrappedReport,
+                        )
+                    }
                 }
             }
             item { SettingsSectionTitle("Hizli Erisim") }

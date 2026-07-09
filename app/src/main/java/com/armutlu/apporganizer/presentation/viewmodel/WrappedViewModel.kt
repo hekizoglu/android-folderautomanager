@@ -1,0 +1,134 @@
+package com.armutlu.apporganizer.presentation.viewmodel
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.NotificationAnalyzer
+import com.armutlu.apporganizer.utils.UsageStatsHelper
+import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+
+data class WrappedUiState(
+    val loading: Boolean = true,
+    val hasUsagePermission: Boolean = false,
+    val report: WrappedEngine.WrappedReport? = null,
+    val previousScore: Int? = null,
+)
+
+/**
+ * Haftalık Rapor (Wrapped) ekranı için veri hazırlar — AppRepository (Room apps) +
+ * NotificationEventDao (bildirim özeti, içerik hariç) + WrappedSnapshotPrefs (geçen hafta
+ * kategori agregatı) girdilerini WrappedEngine.compute()'a besler. Tüm işlem cihazda,
+ * sunucuya hiçbir şey gönderilmez.
+ */
+@HiltViewModel
+class WrappedViewModel @Inject constructor(
+    private val appRepository: AppRepository,
+    private val notificationEventDao: NotificationEventDao,
+    @ApplicationContext private val context: Context,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(WrappedUiState())
+    val uiState: StateFlow<WrappedUiState> = _uiState.asStateFlow()
+
+    init {
+        refresh()
+    }
+
+    fun refresh() {
+        _uiState.value = _uiState.value.copy(loading = true)
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching { buildReport() }
+                    .onFailure { e -> Timber.e(e, "WrappedReport üretilemedi") }
+                    .getOrNull()
+            }
+            _uiState.value = WrappedUiState(
+                loading = false,
+                hasUsagePermission = UsageStatsHelper.hasPermission(context),
+                report = result,
+                previousScore = WrappedSnapshotPrefs.getLastScore(context),
+            )
+            // Bir sonraki karşılaştırma için mevcut skoru kaydet.
+            result?.let { WrappedSnapshotPrefs.setLastScore(context, it.score.score) }
+        }
+    }
+
+    private suspend fun buildReport(): WrappedEngine.WrappedReport {
+        val apps = appRepository.getAllApps()
+        val snapshots = apps.map { app ->
+            WrappedEngine.AppSnapshot(
+                packageName = app.packageName,
+                appName = app.appName,
+                categoryId = app.categoryId,
+                usageCount = app.usageCount,
+                lastUsedTimestamp = app.lastUsedTimestamp,
+                installTime = app.installTime,
+                firstInstalledTime = app.firstInstalledTime,
+                appSizeBytes = app.appSizeBytes,
+                isHidden = app.isHidden,
+                isSystemApp = app.isSystemApp,
+            )
+        }
+
+        val notifSummary = runCatching {
+            val since = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
+            val events = notificationEventDao.eventsSince(since)
+            if (events.isEmpty()) return@runCatching null
+            val appNames = apps.associate { it.packageName to it.appName }
+            val usageMs = if (UsageStatsHelper.hasPermission(context)) {
+                UsageStatsHelper.getUsageCounts(context, days = 7)
+            } else emptyMap()
+            val report = NotificationAnalyzer.analyze(events, appNames, usageMs)
+            WrappedEngine.NotificationSummary(
+                totalNotifications = report.totalNotifications,
+                disturbingCount = report.disturbing.size,
+                distractingCount = report.distracting.size,
+            )
+        }.onFailure { e -> Timber.e(e, "Bildirim ozeti alinamadi") }.getOrNull()
+
+        val previousSnapshot = WrappedSnapshotPrefs.getPrevious(context)
+
+        val folderCount = apps
+            .filter { !it.isHidden && it.categoryId != "uncategorized" }
+            .groupBy { it.categoryId }
+            .count { (_, list) -> list.isNotEmpty() }
+
+        val launcherInstalledDays = runCatching {
+            val pkgInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            ((System.currentTimeMillis() - pkgInfo.firstInstallTime) / (24L * 60 * 60 * 1000)).toInt()
+        }.getOrDefault(0)
+
+        val input = WrappedEngine.WrappedInput(
+            apps = snapshots,
+            notificationSummary = notifSummary,
+            previousSnapshot = previousSnapshot,
+            folderCount = folderCount,
+            launcherInstalledDays = launcherInstalledDays,
+        )
+
+        return WrappedEngine.compute(input)
+    }
+
+    fun enableUsagePermission() {
+        UsageStatsHelper.openPermissionSettings(context)
+    }
+
+    companion object {
+        fun isFeatureEnabled(context: Context): Boolean = AppPrefs.isWrappedEnabled(context)
+    }
+}
