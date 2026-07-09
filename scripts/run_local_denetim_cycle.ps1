@@ -123,7 +123,6 @@ function Stage-ProjectChanges {
         "docs\internal\local_denetim_tamamlananlar.md",
         "docs\internal\local_denetim_manuel_checklist.md",
         "docs\internal\local_denetim_kurallari.md",
-        "docs\internal\docs_backlog_score.md",
         "ROADMAP.md",
         "COZULEMEYEN_SORUNLAR.md",
         "scripts"
@@ -143,8 +142,8 @@ function Update-DocsBacklogScore {
     }
 
     Append-RunNote -Title "Docs Backlog Skor Taramasi" -Lines @(
-        "Docs raporlari puanlandi; 15+ maddeler ROADMAP otomatik bloguna islendi.",
-        'Skor raporu: `docs/internal/docs_backlog_score.md`'
+        "Docs/rapor aday listesi puanlandi; 15+ maddeler ROADMAP otomatik bloguna islendi.",
+        "Ayrica docs/internal/docs_backlog_score.md uretilmedi; ROADMAP.md tek aktif kaynak olarak kalir."
     )
 }
 

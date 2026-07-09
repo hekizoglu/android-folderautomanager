@@ -1,27 +1,27 @@
-# scripts/ — AppOrganizer Yardımcı Araçlar
+# scripts/ - AppOrganizer Yardimci Araclar
 
-| Script | Kullanım | Açıklama |
+| Script | Kullanim | Aciklama |
 |--------|----------|----------|
-| `fix_encoding.py` | `python scripts/fix_encoding.py <dosya>` | Curly quote, mojibake, Türkçe double-encode düzeltir. `.bak` yedek alır. |
-| `fix_denetim_encoding.ps1` | `.\scripts\fix_denetim_encoding.ps1` | KiloCode'un bozduğu local_denetim_*.md dosyalarını toplu düzeltir. |
-| `check_duplicates.py` | `python scripts/check_duplicates.py assets/app_categories.json` | JSON'daki duplicate key'leri tespit eder (pre-commit hook tarafından çalıştırılır). |
-| `dedup_classifier.py` | `python scripts/dedup_classifier.py` | app_categories.json'dan duplicate entry'leri temizler, merge conflict sonrası kullan. |
-| `export_classifier_json.py` | `python scripts/export_classifier_json.py` | AppClassifier Kotlin kodundan JSON'a export eder (tek seferlik migrasyon). |
-| `strip_exact_map.py` | `python scripts/strip_exact_map.py` | Kotlin haritasından exact match satırlarını kaldırır. |
-| `local_ai.py` | `python scripts/local_ai.py "soru"` | Lokal AI gateway (localhost:20128) üzerinden model sorgusu. Offline ise hata verir. |
-| `audit.ps1` | `.\scripts\audit.ps1` | 15 dakikalık odak rotasyonlu statik kod denetimi. Çıktı: local_denetim_raporu.md |
-| `version_bump.ps1` | `.\scripts\version_bump.ps1 patch` | versionCode+1, versionName patch/minor/major artırır. app/build.gradle.kts günceller. |
-| `score_docs_backlog.ps1` | `.\scripts\score_docs_backlog.ps1 [-UpdateRoadmap]` | `docs/` altındaki raporları KV+U+BR+EA puanlar, `docs/internal/docs_backlog_score.md` üretir; `-UpdateRoadmap` ile ROADMAP.md'deki `DOCS_SCORE_HIGH` bloğunu (15+ puanlılar) senkronize eder. |
+| `fix_encoding.py` | `python scripts/fix_encoding.py <dosya>` | Curly quote, mojibake ve Turkce double-encode duzeltir. `.bak` yedek alir. |
+| `fix_denetim_encoding.ps1` | `.\scripts\fix_denetim_encoding.ps1` | Local denetim markdown dosyalarindaki encoding bozulmalarini toplu duzeltir. |
+| `check_duplicates.py` | `python scripts/check_duplicates.py assets/app_categories.json` | JSON duplicate key tespiti yapar; pre-commit hook tarafindan calistirilir. |
+| `dedup_classifier.py` | `python scripts/dedup_classifier.py` | `app_categories.json` duplicate entry temizligi icin kullanilir. |
+| `export_classifier_json.py` | `python scripts/export_classifier_json.py` | AppClassifier Kotlin kodundan JSON export eder. |
+| `strip_exact_map.py` | `python scripts/strip_exact_map.py` | Kotlin haritasindan exact-match satirlarini kaldirir. |
+| `local_ai.py` | `python scripts/local_ai.py "soru"` | Lokal AI gateway uzerinden model sorgusu yapar. |
+| `audit.ps1` | `.\scripts\audit.ps1` | Odak rotasyonlu statik kod denetimi uretir. |
+| `version_bump.ps1` | `.\scripts\version_bump.ps1 patch` | `versionCode` ve `versionName` artirir. |
+| `score_docs_backlog.ps1` | `.\scripts\score_docs_backlog.ps1 [-UpdateRoadmap] [-WriteReport]` | Script icindeki aday listesini puanlar; varsayilan davranis `ROADMAP.md` dosyasini tek aktif kaynak tutmaktir. `-WriteReport` verilirse ayrica `docs/internal/docs_backlog_score.md` snapshot'i uretir. |
+| `create_release_keystore.ps1` | `.\scripts\create_release_keystore.ps1` | Release imzalama icin yerel `release.jks` ve gitignore kapsamindaki `keystore.properties` dosyasini interaktif sifreyle uretir. |
 
-### CS-3 Build Kilidi (Windows Defender) Araçları
+## CS-3 Build Kilidi Araclari
 
 | Script | Ne zaman kullan | Admin gerekir mi | Ne yapar |
 |--------|-----------------|-------------------|----------|
-| `add_defender_exclusion.ps1` | **Kalıcı çözüm** — build kilidi tekrar tekrar oluşuyorsa bir kez çalıştır | ✅ Evet (UAC self-elevation) | `app\build`, `.gradle`, `.android` klasörlerini Windows Defender gerçek zamanlı taramadan kalıcı olarak dışlar. |
-| `clear_build_lock.ps1` | **Acil workaround** — build şu an kilitliyse, kalıcı çözümü henüz çalıştırmadıysan | ❌ Hayır | Sadece bu projenin `app\build` klasörünü siler + `java.exe` süreçlerini durdurur; kaynak koda/git'e dokunmaz. Sonrasında `.\gradlew assembleDebug` ile yeniden build al. |
+| `add_defender_exclusion.ps1` | Kalici cozum; build kilidi tekrar tekrar olusuyorsa bir kez calistir. | Evet, UAC self-elevation kullanir. | `app\build`, `.gradle`, `.android` klasorlerini Windows Defender real-time taramasindan dislar. `-CheckOnly` admin gerektirmeden path kontrolu yapar. |
+| `clear_build_lock.ps1` | Acil workaround; build su an kilitliyse kullan. | Hayir. | `gradlew --stop` ile Gradle daemon'u durdurur ve sadece bu projenin `app\build` klasorunu siler. Kaynak koda ve git'e dokunmaz. |
 
 ## Notlar
 
-- `fix_encoding.py` Windows cp1254 terminalinde doğrudan çalışır (`sys.stdout.reconfigure` ile).
-- `check_duplicates.py` pre-commit hook `.githooks/pre-commit` tarafından otomatik çalıştırılır.
-- Hook aktifleştirme: `git config core.hooksPath .githooks`
+- Hook aktifi: `git config core.hooksPath .githooks`
+- `release.jks` ve `keystore.properties` commitlenmemelidir; `.gitignore` kapsaminda kalir.

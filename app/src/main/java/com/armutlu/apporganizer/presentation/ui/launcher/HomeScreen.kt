@@ -500,7 +500,7 @@ fun HomeScreen(
             // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,
             // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
             // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
-            // BOTTOM = Google aramasının altı (spec: UX_SEARCH_REPORTS_SPEC §5).
+            // BOTTOM = below the Google search affordance.
             val searchBarSection: @Composable () -> Unit = {
                 if (homeAppSearchEnabled) {
                     HomeAppSearchBar(

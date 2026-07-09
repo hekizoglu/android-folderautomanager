@@ -4,6 +4,25 @@
 
 ---
 
+## Dongu 220 - 2026-07-09 [Rapor kalabaligi temizlendi - aktif isler ROADMAP.md'de toplandi]
+
+**Yapilanlar:** Kullanici "butun bu dosyalardaki yapilacaklari tek bir dosyada birlestir, diger dosyalari sil; cozduklerini HISTORY'ye, cozulemeyenleri COZULEMEYEN_SORUNLAR'a at" dedi. Gecici ve ara raporlar tek tek okundu, aktif isler `ROADMAP.md` icinde tek kaynak olacak sekilde toplandi:
+- `docs/time_token_analysis_2026-06-30.md` ve `docs/issue_mitigation_research_2026-06-30.md`: build/ortam, token/sure telemetry, configuration cache, `--no-watch-fs`, Kotlin build report ve git rebase maddeleri ROADMAP "Build, Surec ve Token Maliyeti" bolumune tasindi.
+- `docs/UX_SEARCH_REPORTS_SPEC.md`: arama/rapor UX kabul kriterleri daha once kodda tamamlandigi icin aktif kaynak olmaktan cikarildi; regression smoke maddesi ROADMAP'e dar gorev olarak eklendi.
+- `docs/competitor_user_research_2026-06-30.md`: Smart/Niagara/Lawnchair/Kvaesitso rekabet bulgulari ROADMAP U10 ve setup-friction maddelerine indirildi; onceki derinlestirme HISTORY Dongu 210'da korunuyor.
+- `docs/internal/roadmap_completion_audit_2026-07-01.md`, `docs/internal/local_denetim_raporu.md`, `docs/internal/20gorevcikti.md`, `docs/internal/play_store_qa_pack.md`, `docs/internal/docs_backlog_score.md`, `docs/internal/build_benchmark_latest.md`: aktif/pasif ayrimi yapildi; tamamlanan dogrulamalar HISTORY'de, dis aksiyonlar COZULEMEYEN_SORUNLAR.md'de, kalan yapilacaklar ROADMAP.md'de toplandi.
+
+**Cozulen/kapananlar:** 20 gorevlik gecici kuyruk tamamlanmis kabul edildi; UX search/report spec, local denetim 0-bulgu raporu, Play Store QA pack hazirlik taslagi ve docs score/build benchmark snapshotlari artik ayri aktif kaynak degil.
+
+**Cozulemeyen/dis aksiyon:** Play Console formlari, QUERY_ALL_PACKAGES declaration, Data Safety, Content rating, release keystore, Accessibility declaration ve gercek cihaz QA maddeleri `COZULEMEYEN_SORUNLAR.md` icindeki CS-6/CS-7 kayitlarinda guncellendi.
+
+**Silinen raporlar:** `docs/time_token_analysis_2026-06-30.md`, `docs/issue_mitigation_research_2026-06-30.md`, `docs/competitor_user_research_2026-06-30.md`, `docs/UX_SEARCH_REPORTS_SPEC.md`, `docs/internal/roadmap_completion_audit_2026-07-01.md`, `docs/internal/local_denetim_raporu.md`, `docs/internal/20gorevcikti.md`, `docs/internal/play_store_qa_pack.md`, `docs/internal/docs_backlog_score.md`, `docs/internal/build_benchmark_latest.md`.
+
+**Build:** Calistirilmadi; degisiklik dokuman ve rapor temizligi.
+**Sonraki:** ROADMAP.md tek aktif is listesi olarak kullanilacak; yeni gecici rapor olusursa kapanista yine HISTORY/COZULEMEYEN/ROADMAP'e dagitilip silinecek.
+
+---
+
 ## Döngü 219 — 2026-07-09 [Onboarding emülatör testi (14p) → 2 gerçek bug bulundu ve düzeltildi]
 
 **Yapılanlar:** Döngü 218'de seçilen "Onboarding sonrası ilk izlenim emülatör testi" (FİKİRLER.md 14p) uçtan uca yürütüldü — temiz kurulum, `uiautomator dump` ile kesin koordinat tespiti, her adımda ekran görüntüsü + crash kontrolü. Test sırasında 2 gerçek bug bulundu:
