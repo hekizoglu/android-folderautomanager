@@ -48,9 +48,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.SearchSettingsViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 
@@ -141,8 +143,8 @@ fun SearchSettingsScreen(
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Search,
-                        title = "Ana Ekran Uygulama Aramasi",
-                        subtitle = "Premium arama cubugu icinde uygulama sonuclari gosterilir",
+                        title = "Ana Ekran Arama",
+                        subtitle = "Ana ekrandaki arama çubuğunda uygulama sonuçları gösterilir",
                         checked = homeAppSearchEnabled,
                         onCheckedChange = {
                             homeAppSearchEnabled = it
@@ -152,8 +154,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Category,
-                        title = "Klasor ve Kategori Aramasi",
-                        subtitle = "Ana ekranda klasor filtresi ve kategori eslesmeleri acik kalir",
+                        title = "Klasör ve Kategori Arama",
+                        subtitle = "Klasör filtresi ve kategori eşleşmeleri açık kalır",
                         checked = homeSearchEnabled,
                         onCheckedChange = {
                             homeSearchEnabled = it
@@ -163,8 +165,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.TouchApp,
-                        title = "Cift Tikla Arama",
-                        subtitle = "Bos ana ekranda cift tiklama tum uygulamalari arama ile acsin",
+                        title = "Çift Dokunarak Arama",
+                        subtitle = "Boş ana ekranda çift dokununca tüm uygulamalar arama ile açılsın",
                         checked = doubleTapSearchEnabled,
                         onCheckedChange = {
                             doubleTapSearchEnabled = it
@@ -174,7 +176,7 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.SwapVert,
-                        title = "Arama Cubugu Konumu",
+                        title = "Arama Çubuğu Konumu",
                         subtitle = if (searchBarPosition == AppPrefs.SEARCH_BAR_POS_TOP) {
                             "Saat widget'inin altinda"
                         } else {
@@ -198,7 +200,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.PhoneAndroid,
                         title = "Uygulamalar",
-                        subtitle = "Temel arama kaynagi; kapatilamaz",
+                        subtitle = "Temel arama kaynağı; sabit açık",
                         checked = appsSourceEnabled,
                         onCheckedChange = { AppPrefs.setSearchSourceAppsEnabled(context, true) },
                         enabled = false,
@@ -207,7 +209,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.Category,
                         title = "Kategoriler",
-                        subtitle = "Kategori ve klasor isimleri aramaya dahil edilir",
+                        subtitle = "Kategori ve klasör adları aramaya dahil edilir",
                         checked = categoriesSourceEnabled,
                         onCheckedChange = {
                             categoriesSourceEnabled = it
@@ -217,8 +219,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Person,
-                        title = "Kisiler",
-                        subtitle = "Izin verilmisse ana ekran aramasinda kisiler de listelenir",
+                        title = "Kişiler",
+                        subtitle = "İzin verilmişse kişi sonuçları da listelenir",
                         checked = contactsSourceEnabled,
                         onCheckedChange = {
                             if (it) {
@@ -245,8 +247,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Description,
-                        title = "Dosya Adlari",
-                        subtitle = "Varsayilan kapali. Acilirsa cihaz dosya adlari arka planda indekslenir",
+                        title = "Dosya Adları",
+                        subtitle = "Varsayılan kapalı. Açılırsa yalnızca adlar yerel indekse eklenir",
                         checked = filesSourceEnabled,
                         onCheckedChange = {
                             if (it) {
@@ -289,7 +291,7 @@ fun SearchSettingsScreen(
                 SettingsCard {
                     SettingsButtonRow(
                         icon = Icons.Default.SwapVert,
-                        title = "Varsayilan Sonuc Profili",
+                        title = "Varsayılan Sonuç Profili",
                         subtitle = when (rankingProfile) {
                             AppPrefs.SearchRankingProfile.BALANCED -> "Dengeli"
                             AppPrefs.SearchRankingProfile.CATEGORIES_FIRST -> "Kategoriler once"
@@ -308,7 +310,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.AutoMirrored.Filled.Sort,
                         title = "Kullanım Sıklığına Göre Sırala",
-                        subtitle = "Eşit sonuçlarda daha sık açılan uygulama üste çıkar",
+                        subtitle = "Eşit sonuçlarda daha sık açılan uygulama önce görünür",
                         checked = sortByUsage,
                         onCheckedChange = {
                             sortByUsage = it
@@ -324,8 +326,8 @@ fun SearchSettingsScreen(
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Tune,
-                        title = "Fuzzy Arama",
-                        subtitle = "\"ytb\" → YouTube, \"wtsp\" → WhatsApp — yakın eşleşmeleri bul",
+                        title = "Yakın Eşleşme Arama",
+                        subtitle = "\"ytb\" → YouTube, \"wtsp\" → WhatsApp gibi yazımları da yakalar",
                         checked = fuzzyEnabled,
                         onCheckedChange = {
                             fuzzyEnabled = it
@@ -335,8 +337,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Translate,
-                        title = "Türkçe Fonetik Toleransı",
-                        subtitle = "\"sube\" ile \"şube\" bulunur — ş→s, ü→u, ö→o, ç→c, ğ→g",
+                        title = "Türkçe Yazım Toleransı",
+                        subtitle = "\"sube\" ile \"şube\" gibi yakın yazımlar eşleşebilir",
                         checked = phoneticEnabled,
                         onCheckedChange = {
                             phoneticEnabled = it
@@ -347,7 +349,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.Search,
                         title = "Anlık Arama",
-                        subtitle = "Her tuşta sonuç güncellenir — kapalıysa Enter'da arar",
+                        subtitle = "Her tuşta sonuç yenilenir; kapalıysa Enter ile arar",
                         checked = instantEnabled,
                         onCheckedChange = {
                             instantEnabled = it
@@ -363,8 +365,8 @@ fun SearchSettingsScreen(
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Image,
-                        title = "Uygulama İkonları",
-                        subtitle = "Arama sonuçlarında uygulama simgelerini göster",
+                        title = "Uygulama Simgeleri",
+                        subtitle = "Arama sonuçlarında uygulama ikonlarını göster",
                         checked = showIcons,
                         onCheckedChange = {
                             showIcons = it
@@ -374,7 +376,7 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.AccountCircle,
-                        title = "Kişi Avatarları",
+                        title = "Kişi Fotoğrafları",
                         subtitle = "Rehber sonuçlarında profil fotoğraflarını göster",
                         checked = showContactAvatar,
                         onCheckedChange = {
@@ -385,8 +387,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Search,
-                        title = "Web ve Play Store Fallback",
-                        subtitle = "Sonuç bulunamayınca web/Play Store araması öner",
+                        title = stringResource(R.string.search_settings_web_fallback_title),
+                        subtitle = stringResource(R.string.search_settings_web_fallback_desc),
                         checked = webFallbackEnabled,
                         onCheckedChange = {
                             webFallbackEnabled = it
@@ -397,13 +399,13 @@ fun SearchSettingsScreen(
             }
 
             // ── Arama İstatistikleri ────────────────────────────────────────
-            item { SettingsSectionTitle("Arama İstatistikleri") }
+            item { SettingsSectionTitle(stringResource(R.string.search_settings_stats_title)) }
             item {
                 SettingsCard {
                     SettingsSwitchRow(
                         icon = Icons.Default.Search,
-                        title = "Arama İstatistikleri",
-                        subtitle = "İstatistikler yalnızca cihazında tutulur; aranan metin kaydedilmez.",
+                        title = stringResource(R.string.search_settings_stats_title),
+                        subtitle = stringResource(R.string.search_settings_stats_desc),
                         checked = searchStatsEnabled,
                         onCheckedChange = {
                             searchStatsEnabled = it
@@ -420,7 +422,7 @@ fun SearchSettingsScreen(
                     SettingsButtonRow(
                         icon = Icons.Default.Numbers,
                         title = "Maksimum Sonuç Sayısı",
-                        subtitle = "Şu an: $maxResults sonuç — dokunarak değiştir (4 / 6 / 8 / 10)",
+                        subtitle = "Şu an: $maxResults sonuç. Dokunarak 4, 6, 8 veya 10 yap",
                         onClick = {
                             maxResults = when (maxResults) {
                                 4 -> 6; 6 -> 8; 8 -> 10; else -> 4
@@ -434,7 +436,7 @@ fun SearchSettingsScreen(
             item {
                 androidx.compose.foundation.layout.Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 14.dp)) {
                     Text(
-                        text = "Not: Kişi kaynağı ilk açılışta izin ister. Dosya araması varsayılan kapalıdır ve açıldığında yalnızca ad/yol bilgisi yerel indekse eklenir.",
+                        text = "Not: Kişiler ilk kullanımda izin ister. Dosya araması kapalı başlar ve açıldığında yalnızca ad bilgisi yerel indekse eklenir.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )

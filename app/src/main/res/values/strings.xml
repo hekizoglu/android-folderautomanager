@@ -294,4 +294,64 @@
     <string name="suggestions_label_afternoon">Öğleden Sonra Önerileri</string>
     <string name="suggestions_label_evening">Akşam Önerileri</string>
     <string name="suggestions_label_default">Sık Kullanılanlar</string>
+
+    <!-- Wrapped Report (Haftalık Rapor) -->
+    <string name="wrapped_title">🎁 Haftalık Rapor</string>
+    <string name="wrapped_back">Geri</string>
+    <string name="wrapped_empty_title">Henüz yeterli veri yok</string>
+    <string name="wrapped_empty_desc">Birkaç uygulama kullandıktan sonra haftalık raporun burada oluşacak.</string>
+    <string name="wrapped_perm_card_title">Bazı bölümler kısıtlı</string>
+    <string name="wrapped_perm_card_desc">Kullanım erişimi izni verirsen skor ve rozetler daha doğru hesaplanır.</string>
+    <string name="wrapped_perm_card_btn">İzin Ver</string>
+    <string name="wrapped_score_title">Dijital Yaşam Skorun</string>
+    <string name="wrapped_score_max">/ 100</string>
+    <string name="wrapped_score_delta_vs_last_week">%1$s geçen haftaya göre</string>
+    <string name="wrapped_personality_title">Dijital Kişiliğin</string>
+    <string name="wrapped_personality_dominant_pct">%%%1$d baskın kullanım</string>
+    <string name="wrapped_stats_title">İlginç İstatistikler</string>
+    <string name="wrapped_stat_most_opened">🔥 En Çok Açılan</string>
+    <string name="wrapped_stat_least_opened">🐢 En Az Açılan</string>
+    <string name="wrapped_stat_largest_app">💽 En Büyük Uygulama</string>
+    <string name="wrapped_stat_oldest_installed">🕰️ En Eski Kurulu</string>
+    <string name="wrapped_stat_newest_installed">✨ En Yeni Yüklenen</string>
+    <string name="wrapped_stat_longest_unused">😴 En Uzun Süre Açılmayan</string>
+    <string name="wrapped_stat_usage_count">%1$d kez</string>
+    <string name="wrapped_badges_title">Rozetlerin</string>
+    <string name="wrapped_growth_title">Bu Hafta En Çok Büyüyenler</string>
+    <string name="wrapped_comparison_pending">Veri birikiyor, gelecek hafta karşılaştırma hazır</string>
+    <string name="wrapped_notif_link_title">Bildirim Özetin</string>
+    <string name="wrapped_notif_link_desc">Detaylı bildirim raporunu incele</string>
+    <string name="wrapped_notif_link_open">Aç</string>
+
+    <!-- HomeTickerRow — sessize alma menüsü -->
+    <string name="ticker_mute_8h">8 saat sessize al</string>
+    <string name="ticker_mute_1d">1 gün sessize al</string>
+    <string name="ticker_mute_7d">7 gün sessize al</string>
+
+    <!-- Arama fallback satırları -->
+    <string name="search_fallback_google">Google\'da ara: %1$s</string>
+    <string name="search_fallback_play_store">Play Store\'da ara: %1$s</string>
+
+    <!-- SettingsStatsScreen -->
+    <string name="settings_stats_search_section">Arama İstatistikleri</string>
+    <string name="settings_stats_search_empty_title">Arama İstatistikleri</string>
+    <string name="settings_stats_search_empty_subtitle">Henüz arama yapılmadı</string>
+    <string name="settings_stats_search_total">Toplam Arama</string>
+    <string name="settings_stats_search_zero_result_rate">Sıfır Sonuç Oranı</string>
+    <string name="settings_stats_search_avg_latency">Ortalama Gecikme</string>
+    <string name="settings_stats_search_avg_latency_value">%1$d ms</string>
+    <string name="settings_stats_search_first_click_rate">İlk Sonuç Tıklama Oranı</string>
+    <string name="settings_stats_search_type_distribution">Tip Dağılımı</string>
+    <string name="settings_stats_search_top_action">En Çok Kullanılan Aksiyon</string>
+    <string name="settings_stats_search_reset_title">İstatistikleri Sıfırla</string>
+    <string name="settings_stats_search_reset_subtitle">Tüm arama sayaçlarını siler</string>
+    <string name="settings_stats_weekly_report_section">Haftalık Rapor</string>
+    <string name="settings_stats_weekly_report_title">Haftalık Rapor</string>
+    <string name="settings_stats_weekly_report_desc">Dijital yaşam skoru, kişilik tipi ve rozetler — Raporlar Merkezi\'nde gösterilir</string>
+
+    <!-- SearchSettingsScreen -->
+    <string name="search_settings_web_fallback_title">Web ve Play Store Fallback</string>
+    <string name="search_settings_web_fallback_desc">Sonuç bulunamayınca web/Play Store araması öner</string>
+    <string name="search_settings_stats_title">Arama İstatistikleri</string>
+    <string name="search_settings_stats_desc">İstatistikler yalnızca cihazında tutulur; aranan metin kaydedilmez.</string>
 </resources>

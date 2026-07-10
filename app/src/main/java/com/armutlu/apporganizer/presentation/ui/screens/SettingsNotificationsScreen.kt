@@ -66,7 +66,7 @@ fun SettingsNotificationsScreen(
                     Column(Modifier.weight(1f)) {
                         Text("Bildirim Erişimi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                         Text(
-                            if (notifListenerOk) "Aktif — badge sayıları çalışıyor" else "Kapalı — badge'ler görünmez",
+                            if (notifListenerOk) "Açık — rozet sayıları güncel" else "Kapalı — rozet sayıları görünmez",
                             fontSize = 12.sp,
                             color = if (notifListenerOk) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -129,7 +129,7 @@ fun SettingsNotificationsScreen(
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Akıllı Badge Rengi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                        Text("Mesaj=yeşil · Alarm=kırmızı · Güncelleme=sarı", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Bildirim türüne göre rozet rengini ayarlar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
                         checked = badgeIntelligence,
@@ -176,7 +176,7 @@ fun SettingsNotificationsScreen(
                             color = if (notifTextEnabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            if (notifTextEnabled) "Bildirim Metni açık olduğu için pasif — aynı alanı kullanıyor"
+                            if (notifTextEnabled) "Bildirim Metni açık olduğu için bu satır pasif"
                             else "Klasör altında \"X gündür açılmadı\" göster",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -212,7 +212,7 @@ fun SettingsNotificationsScreen(
                 SettingsSwitchRow(
                     icon = Icons.Default.Insights,
                     title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_notif_analytics_title),
-                    subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_notif_analytics_desc),
+                    subtitle = "Bildirim sayıları kaydedilir; içerik saklanmaz",
                     checked = notifAnalytics,
                     onCheckedChange = {
                         notifAnalytics = it
@@ -267,7 +267,7 @@ fun SettingsNotificationsScreen(
                     Column(Modifier.weight(1f)) {
                         Text("Akıllı Bildirimler", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                         Text(
-                            if (masterEnabled) "Günlük içgörüler ve temizlik önerileri" else "Kapalı",
+                            if (masterEnabled) "Günlük özetler ve düzen önerileri açık" else "Kapalı",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -293,7 +293,7 @@ fun SettingsNotificationsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.BarChart,
                         title = "Günlük Kullanım",
-                        subtitle = "En çok kullandığın uygulamayı ve oturum sayısını bildir",
+                        subtitle = "En çok kullandığın uygulamayı ve kullanım özetini gösterir",
                         checked = dailyUsage,
                         onCheckedChange = { dailyUsage = it; AppPrefs.setSmartNotifDailyUsage(workerCtx, it) }
                     )
@@ -301,7 +301,7 @@ fun SettingsNotificationsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.DeleteSweep,
                         title = "Kullanılmayan Uygulamalar",
-                        subtitle = "3+ haftadır açılmayan uygulamalar için temizlik önerisi",
+                        subtitle = "Uzun süredir açmadığın uygulamalar için hatırlatma verir",
                         checked = unusedApps,
                         onCheckedChange = { unusedApps = it; AppPrefs.setSmartNotifUnusedApps(workerCtx, it) }
                     )
@@ -309,7 +309,7 @@ fun SettingsNotificationsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.FolderOpen,
                         title = "Klasör İstatistikleri",
-                        subtitle = "Kalabalık klasörler için organizasyon önerileri",
+                        subtitle = "Kalabalık klasörler için düzen önerileri sunar",
                         checked = catStats,
                         onCheckedChange = { catStats = it; AppPrefs.setSmartNotifCatStats(workerCtx, it) }
                     )

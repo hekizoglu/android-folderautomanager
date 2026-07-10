@@ -25,7 +25,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.presentation.viewmodel.WrappedViewModel
@@ -59,10 +61,10 @@ fun WrappedReportScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("🎁 Haftalik Rapor", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.wrapped_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.wrapped_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -100,14 +102,14 @@ private fun EmptyWrappedState(padding: PaddingValues) {
         Text("📊", fontSize = 40.sp)
         Spacer(Modifier.height(12.dp))
         Text(
-            "Henuz yeterli veri yok",
+            stringResource(R.string.wrapped_empty_title),
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            "Birkac uygulama kullandiktan sonra haftalik raporun burada olusacak.",
+            stringResource(R.string.wrapped_empty_desc),
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -165,16 +167,16 @@ private fun UsagePermissionCard(onRequestPermission: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Bazi bolumler kisitli", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Text(stringResource(R.string.wrapped_perm_card_title), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                "Kullanim erisimi izni verirsen skor ve rozetler daha dogru hesaplanir.",
+                stringResource(R.string.wrapped_perm_card_desc),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(12.dp))
-            Button(onClick = onRequestPermission) { Text("Izin Ver") }
+            Button(onClick = onRequestPermission) { Text(stringResource(R.string.wrapped_perm_card_btn)) }
         }
     }
 }
@@ -192,7 +194,7 @@ private fun ScoreCard(score: WrappedEngine.DigitalLifeScore, previousScore: Int?
             modifier = Modifier.padding(20.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Dijital Yasam Skorun", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Text(stringResource(R.string.wrapped_score_title), fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
             Spacer(Modifier.height(16.dp))
             ScoreCircle(score.score)
             if (previousScore != null) {
@@ -209,7 +211,7 @@ private fun ScoreCard(score: WrappedEngine.DigitalLifeScore, previousScore: Int?
                     color = deltaColor.copy(alpha = 0.12f),
                 ) {
                     Text(
-                        "$deltaText gecen haftaya gore",
+                        stringResource(R.string.wrapped_score_delta_vs_last_week, deltaText),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = deltaColor,
@@ -263,7 +265,7 @@ private fun ScoreCircle(score: Int) {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
             )
-            Text("/ 100", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.wrapped_score_max), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -303,7 +305,7 @@ private fun PersonalityCard(personality: WrappedEngine.PersonalityResult) {
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Dijital Kisiligin", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Text(stringResource(R.string.wrapped_personality_title), fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(personality.type.emoji, fontSize = 40.sp)
@@ -312,7 +314,7 @@ private fun PersonalityCard(personality: WrappedEngine.PersonalityResult) {
                     Text(personality.type.label, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     if (personality.dominantPercentage > 0) {
                         Text(
-                            "%${personality.dominantPercentage} baskin kullanim",
+                            stringResource(R.string.wrapped_personality_dominant_pct, personality.dominantPercentage),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -365,18 +367,24 @@ private fun PersonalityBar(label: String, percent: Int) {
 
 @Composable
 private fun InterestingStatsGrid(stats: WrappedEngine.InterestingStats) {
+    val mostOpenedTitle = stringResource(R.string.wrapped_stat_most_opened)
+    val leastOpenedTitle = stringResource(R.string.wrapped_stat_least_opened)
+    val largestAppTitle = stringResource(R.string.wrapped_stat_largest_app)
+    val oldestInstalledTitle = stringResource(R.string.wrapped_stat_oldest_installed)
+    val newestInstalledTitle = stringResource(R.string.wrapped_stat_newest_installed)
+    val longestUnusedTitle = stringResource(R.string.wrapped_stat_longest_unused)
     val entries = buildList {
-        stats.mostOpenedApp?.let { add(Triple("🔥 En Cok Acilan", it.appName, "${it.usageCount} kez")) }
-        stats.leastOpenedApp?.let { add(Triple("🐢 En Az Acilan", it.appName, "${it.usageCount} kez")) }
-        stats.largestApp?.let { add(Triple("💽 En Buyuk Uygulama", it.appName, formatSizeMb(it.appSizeBytes))) }
-        stats.oldestInstalledApp?.let { add(Triple("🕰️ En Eski Kurulu", it.appName, null)) }
-        stats.newestInstalledApp?.let { add(Triple("✨ En Yeni Yuklenen", it.appName, null)) }
-        stats.longestUnusedApp?.let { add(Triple("😴 En Uzun Sure Acilmayan", it.appName, null)) }
+        stats.mostOpenedApp?.let { add(Triple(mostOpenedTitle, it.appName, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
+        stats.leastOpenedApp?.let { add(Triple(leastOpenedTitle, it.appName, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
+        stats.largestApp?.let { add(Triple(largestAppTitle, it.appName, formatSizeMb(it.appSizeBytes))) }
+        stats.oldestInstalledApp?.let { add(Triple(oldestInstalledTitle, it.appName, null)) }
+        stats.newestInstalledApp?.let { add(Triple(newestInstalledTitle, it.appName, null)) }
+        stats.longestUnusedApp?.let { add(Triple(longestUnusedTitle, it.appName, null)) }
     }
     if (entries.isEmpty()) return
 
     Column {
-        Text("Ilginc Istatistikler", fontWeight = FontWeight.SemiBold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 10.dp))
+        Text(stringResource(R.string.wrapped_stats_title), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 10.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             entries.chunked(2).forEach { rowEntries ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -419,7 +427,7 @@ private fun formatSizeMb(bytes: Long): String {
 private fun BadgesGrid(badges: List<WrappedEngine.Badge>) {
     if (badges.isEmpty()) return
     Column {
-        Text("Rozetlerin", fontWeight = FontWeight.SemiBold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 10.dp))
+        Text(stringResource(R.string.wrapped_badges_title), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 10.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             badges.chunked(2).forEach { rowBadges ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -481,7 +489,7 @@ private fun CategoryGrowthCard(topGrowing: List<WrappedEngine.CategoryGrowth>) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.TrendingUp, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Bu Hafta En Cok Buyuyenler", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Text(stringResource(R.string.wrapped_growth_title), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
             }
             Spacer(Modifier.height(12.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -524,7 +532,7 @@ private fun ComparisonPendingCard() {
             Text("⏳", fontSize = 20.sp)
             Spacer(Modifier.width(10.dp))
             Text(
-                "Veri birikiyor, gelecek hafta karsilastirma hazir",
+                stringResource(R.string.wrapped_comparison_pending),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -550,14 +558,14 @@ private fun NotificationLinkCard(onClick: () -> Unit) {
             Icon(Icons.Default.Notifications, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text("Bildirim Ozetin", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.wrapped_notif_link_title), fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 Text(
-                    "Detayli bildirim raporunu incele",
+                    stringResource(R.string.wrapped_notif_link_desc),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TextButton(onClick = onClick) { Text("Ac") }
+            TextButton(onClick = onClick) { Text(stringResource(R.string.wrapped_notif_link_open)) }
         }
     }
 }

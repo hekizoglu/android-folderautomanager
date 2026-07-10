@@ -16,6 +16,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -119,6 +124,10 @@ fun OnboardingScreen(
             Spacer(Modifier.height(28.dp))
             OnboardingStepHeader(steps, stepIndex)
             Spacer(Modifier.height(24.dp))
+            if (currentStep == OnboardingStep.WELCOME) {
+                OnboardingStrengthsCard()
+                Spacer(Modifier.height(16.dp))
+            }
             OnboardingWhyBox(currentStep)
             if (currentStep.whyRes != 0) Spacer(Modifier.height(16.dp))
 
@@ -264,6 +273,44 @@ fun OnboardingScreen(
                 ) { Text(stringResource(R.string.onb_skip), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
             } else {
                 Spacer(Modifier.height(40.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnboardingStrengthsCard() {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White.copy(alpha = 0.08f),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = "İşte güçlü taraflarımız",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(12.dp))
+            listOf(
+                Triple(Icons.Default.AutoAwesome, "Otomatik düzen", "Uygulamaları kendi kendine sınıflandırır ve klasörlere dizer."),
+                Triple(Icons.Default.Folder, "Akıllı klasörler", "Kalabalığı toparlar, düzeni tek bakışta görünür yapar."),
+                Triple(Icons.Default.Search, "Hızlı arama", "Uygulama, kişi, klasör ve dosya adlarına tek yerden ulaşır."),
+                Triple(Icons.Default.SmartDisplay, "Ana ekran gücü", "Dock, widget ve ana ekran davranışını birlikte kontrol eder."),
+                Triple(Icons.Default.Shield, "Gizlilik odaklı", "Çok şey yapar ama veriyi mümkün olduğunca cihazda tutar."),
+            ).forEach { (icon, title, desc) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Icon(icon, contentDescription = null, tint = Color(0xFF26C6DA), modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Text(text = desc, color = Color.White.copy(alpha = 0.70f), fontSize = 12.sp, lineHeight = 16.sp)
+                    }
+                }
             }
         }
     }

@@ -69,7 +69,7 @@ fun SettingsLauncherScreen(
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.settings_default_launcher), fontWeight = FontWeight.Medium, fontSize = 15.sp)
                         Text(
-                            if (isDefault) "Aktif" else "Ayarlanmadı",
+                            if (isDefault) "Aktif" else "Henüz seçilmedi",
                             fontSize = 12.sp,
                             color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -100,7 +100,7 @@ fun SettingsLauncherScreen(
                             onClick = launcherAction,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
-                        ) { Text("Ayarla", fontSize = 13.sp) }
+                        ) { Text("Seç", fontSize = 13.sp) }
                     }
                 }
             }
@@ -188,7 +188,7 @@ fun SettingsLauncherScreen(
                 SettingsSwitchRow(
                     icon = Icons.Default.Widgets,
                     title = "Quick Wheel (Radyal Çark)",
-                    subtitle = "Boş alana uzun bas → en sık 6 uygulama radyal açılır",
+                    subtitle = "Boş alana uzun basınca sık kullanılanlar çember halinde açılır",
                     checked = quickWheel,
                     onCheckedChange = {
                         quickWheel = it
@@ -199,7 +199,7 @@ fun SettingsLauncherScreen(
                 SettingsSwitchRow(
                     icon = Icons.Default.DoNotDisturb,
                     title = "Search-first / Odak Modu",
-                    subtitle = "Klasör gridi gizlenir; arama, dock, favoriler, öneriler ve son kullanılanlar öne çıkar",
+                    subtitle = "Daha sade bir ana ekran görünümü sağlar",
                     checked = focusMode,
                     onCheckedChange = {
                         focusMode = it

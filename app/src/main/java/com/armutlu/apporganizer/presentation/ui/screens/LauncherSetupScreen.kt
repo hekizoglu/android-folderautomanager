@@ -149,7 +149,7 @@ fun LauncherSetupScreen(
                 Spacer(Modifier.height(12.dp))
 
                 Text(
-                    text = "Uygulamalarınız kategorilere ayrıldı.\nArtık AppOrganizer'ı ana ekranınız yapabilirsiniz.",
+                    text = "Uygulamalarınızı düzenledik.\nŞimdi isterseniz AppOrganizer’ı ana ekranınız yapıp bu düzeni gerçek bir launcher deneyimine dönüştürebilirsiniz.",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -171,7 +171,7 @@ fun LauncherSetupScreen(
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            text = "📱 Launcher Önizleme",
+                            text = "Sizi bekleyen ana ekran",
                             color = Color.White.copy(alpha = 0.6f),
                             fontSize = 12.sp,
                             modifier = Modifier.padding(bottom = 12.dp),
@@ -230,9 +230,9 @@ fun LauncherSetupScreen(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            text = "• Aşağıdaki butona basınca sistem başlatıcı seçici açılır\n" +
-                                "• Listeden \"AppOrganizer\" seçin\n" +
-                                "• Bundan sonra Ana Ekran tuşu AppOrganizer'ı açar",
+                            text = "• Aşağıdaki butona basınca telefonunuzun seçim ekranı açılır\n" +
+                                "• Listeden AppOrganizer’ı seçin\n" +
+                                "• Sonrasında Ana Ekran tuşu sizi doğrudan buraya getirir",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 18.sp,
@@ -258,7 +258,7 @@ fun LauncherSetupScreen(
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text(text = "Başlatıcı Olarak Ayarla", fontSize = 16.sp)
+                    Text(text = "Ana ekranım yap", fontSize = 16.sp)
                 }
 
                 Spacer(Modifier.height(12.dp))
@@ -270,13 +270,13 @@ fun LauncherSetupScreen(
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                 ) {
-                    Text(text = "Daha Sonra Ayarlayacağım")
+                    Text(text = "Sonra ayarlarım")
                 }
 
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = "Ayarlar > Uygulamalar > Varsayılan Uygulamalar > Başlatıcı\nyolundan istediğiniz zaman değiştirebilirsiniz.",
+                    text = "Daha sonra Ayarlar üzerinden istediğiniz zaman değiştirebilirsiniz.",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),

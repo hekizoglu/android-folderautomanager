@@ -546,12 +546,12 @@ internal fun LazyListScope.settingsBackupAboutSection(
         var showRestartDialog by remember { mutableStateOf(false) }
         SettingsCard {
             SettingsButtonRow(Icons.Default.PrivacyTip, "Gizlilik Politikası",
-                "Veri toplama ve kullanım hakkınızda bilgi alın",
+                "Veri toplama ve kullanım özetini aç",
                 showChevron = true,
                 onClick = onNavigateToPrivacyPolicy)
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsButtonRow(Icons.Default.RestartAlt, "Kurulum Sihirbazını Yeniden Başlat",
-                "Onboarding adımlarını sıfırla ve başa dön",
+                "İlk kurulum adımlarını sıfırla ve başa dön",
                 showChevron = false,
                 onClick = { showRestartDialog = true }
             )
@@ -596,7 +596,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
                             Text("Güvenli Mod Aktif", fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.error)
-                            Text("Uygulama güvenli modda başlatıldı. Çıkmak için tıklayın.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Uygulama güvenli modda başlatıldı. Çıkmak için dokun.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     if (crashLogs.isNotEmpty()) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
@@ -612,7 +612,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
                             Text("Hata Raporları", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                            Text("${crashLogs.size} crash kaydedildi — görmek için tıklayın", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${crashLogs.size} crash kaydedildi — ayrıntıları aç", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

@@ -54,7 +54,7 @@ internal fun LazyListScope.settingsAppsSection(
     }
 
     // ── Kullanılmayan gri seçeneği ───────────────────────────────────────
-    // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) — burada sadece kısayol bilgisi gösterilir.
+    // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) — burada yalnızca yönlendirme bilgisi gösterilir.
     item {
         SettingsCard {
             Row(
@@ -65,7 +65,7 @@ internal fun LazyListScope.settingsAppsSection(
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
-                    Text("Görünüm ekranından değiştirilir", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Ayar Görünüm ekranında", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

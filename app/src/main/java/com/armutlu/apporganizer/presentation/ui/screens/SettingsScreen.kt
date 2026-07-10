@@ -118,28 +118,28 @@ fun SettingsScreen(
                     SettingsButtonRow(
                         icon = Icons.Default.Palette,
                         title = "Görünüm",
-                        subtitle = "Tema rengi ve yazı tipi",
+                        subtitle = "Görünümünü sana uygun hale getir",
                         onClick = onNavigateToAppearance,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Home,
                         title = "Launcher",
-                        subtitle = "Varsayılan launcher, dock, gesture'lar, ana ekran ve widget'lar",
+                        subtitle = "Ana ekran davranışı, dock, hareketler ve widget alanı",
                         onClick = onNavigateToLauncher,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Notifications,
                         title = "Bildirimler",
-                        subtitle = "Bildirim erişimi, badge'ler ve akıllı bildirimler",
+                        subtitle = "Bildirim izni, rozetler ve akıllı bildirimler",
                         onClick = onNavigateToNotifications,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Search,
                         title = "Arama",
-                        subtitle = "Kaynaklar, geçmiş, fuzzy arama ve sonuç profilleri",
+                        subtitle = "Arama kaynakları, hız ve sonuç düzeni",
                         onClick = onNavigateToSearchSettings,
                     )
                 }
@@ -152,14 +152,14 @@ fun SettingsScreen(
                     SettingsButtonRow(
                         icon = Icons.Default.Apps,
                         title = "Uygulamalar",
-                        subtitle = "Sistem uygulamaları, gizli uygulamalar ve Diğer klasörü",
+                        subtitle = "Uygulama listesi, gizliler ve diğer klasörü",
                         onClick = onNavigateToApps,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.BarChart,
                         title = "İstatistikler & Raporlar",
-                        subtitle = "Özet sayılar, raporlar merkezi ve bildirim raporu",
+                        subtitle = "Özetler, raporlar ve kullanım içgörüleri",
                         onClick = onNavigateToStats,
                     )
                 }
@@ -172,14 +172,14 @@ fun SettingsScreen(
                     SettingsButtonRow(
                         icon = Icons.Default.Fingerprint,
                         title = "Güvenlik",
-                        subtitle = "Biyometrik ayarlar kilidi",
+                        subtitle = "Ayarlar ekranını kilitle",
                         onClick = onNavigateToSecurity,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Info,
                         title = "Hakkında & Yedekleme",
-                        subtitle = "Uygulama bilgisi, gizlilik, yedekle/geri yükle ve geri bildirim",
+                        subtitle = "Hakkında, gizlilik, yedekleme ve geri bildirim",
                         onClick = onNavigateToAbout,
                     )
                 }

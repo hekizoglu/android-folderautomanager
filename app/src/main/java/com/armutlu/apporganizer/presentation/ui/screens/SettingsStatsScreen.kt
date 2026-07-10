@@ -16,7 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
@@ -75,14 +77,14 @@ fun SettingsStatsScreen(
 
         // ── Arama İstatistikleri ─────────────────────────────────────────
         // Gizlilik: yalnizca anonim sayaclar (SearchStatsPrefs) - aranan metin/kisi/numara ASLA kaydedilmez.
-        item { SettingsSectionTitle("Arama İstatistikleri") }
+        item { SettingsSectionTitle(stringResource(R.string.settings_stats_search_section)) }
         item {
             var resetTrigger by remember { mutableIntStateOf(0) }
             val summary = remember(resetTrigger) { SearchStatsPrefs.getSummary(context) }
 
             if (summary.totalSearches == 0) {
                 SettingsCard {
-                    SettingsInfoRow(icon = Icons.Default.Search, title = "Arama İstatistikleri", subtitle = "Henüz arama yapılmadı")
+                    SettingsInfoRow(icon = Icons.Default.Search, title = stringResource(R.string.settings_stats_search_empty_title), subtitle = stringResource(R.string.settings_stats_search_empty_subtitle))
                 }
             } else {
                 val zeroResultPct = (summary.zeroResultCount * 100.0 / summary.totalSearches).roundToInt()
@@ -98,25 +100,25 @@ fun SettingsStatsScreen(
                     ?.let { (type, count) -> "${actionTypeLabel(type)} ($count)" } ?: "—"
 
                 SettingsCard {
-                    SettingsInfoRow(icon = Icons.Default.Search, title = "Toplam Arama", subtitle = "${summary.totalSearches}")
+                    SettingsInfoRow(icon = Icons.Default.Search, title = stringResource(R.string.settings_stats_search_total), subtitle = "${summary.totalSearches}")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = "Sıfır Sonuç Oranı", subtitle = "%$zeroResultPct")
+                    SettingsInfoRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = stringResource(R.string.settings_stats_search_zero_result_rate), subtitle = "%$zeroResultPct")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.Timer, title = "Ortalama Gecikme", subtitle = "${summary.avgLatencyMs} ms")
+                    SettingsInfoRow(icon = Icons.Default.Timer, title = stringResource(R.string.settings_stats_search_avg_latency), subtitle = stringResource(R.string.settings_stats_search_avg_latency_value, summary.avgLatencyMs))
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.TouchApp, title = "İlk Sonuç Tıklama Oranı", subtitle = "%$firstResultPct")
+                    SettingsInfoRow(icon = Icons.Default.TouchApp, title = stringResource(R.string.settings_stats_search_first_click_rate), subtitle = "%$firstResultPct")
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.PieChart, title = "Tip Dağılımı", subtitle = typeDistribution)
+                    SettingsInfoRow(icon = Icons.Default.PieChart, title = stringResource(R.string.settings_stats_search_type_distribution), subtitle = typeDistribution)
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.Bolt, title = "En Çok Kullanılan Aksiyon", subtitle = topAction)
+                    SettingsInfoRow(icon = Icons.Default.Bolt, title = stringResource(R.string.settings_stats_search_top_action), subtitle = topAction)
                 }
             }
 
             SettingsCard {
                 SettingsButtonRow(
                     icon = Icons.Default.Delete,
-                    title = "İstatistikleri Sıfırla",
-                    subtitle = "Tüm arama sayaçlarını siler",
+                    title = stringResource(R.string.settings_stats_search_reset_title),
+                    subtitle = stringResource(R.string.settings_stats_search_reset_subtitle),
                     onClick = {
                         SearchStatsPrefs.reset(context)
                         resetTrigger++
@@ -131,28 +133,28 @@ fun SettingsStatsScreen(
                 SettingsButtonRow(
                     icon = Icons.Default.Dashboard,
                     title = "Raporlar Merkezi",
-                    subtitle = "Genel bakis ve kullanim raporlarini tek yerden ac",
+                    subtitle = "Genel bakış ve kullanım raporlarını tek yerden aç",
                     onClick = onNavigateToReportsCenter,
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SettingsButtonRow(
                     icon = Icons.Default.Notifications,
                     title = "Bildirim Raporu",
-                    subtitle = "Çok konuşan, rahatsız eden ve dikkat dağıtan uygulamalar",
+                    subtitle = "Çok konuşan, rahatsız eden ve dikkat dağıtan uygulamaları aç",
                     onClick = onNavigateToNotificationReport,
                 )
             }
         }
 
         // ── Haftalık Rapor (Wrapped) ayarı ──────────────────────────────────
-        item { SettingsSectionTitle("Haftalik Rapor") }
+        item { SettingsSectionTitle(stringResource(R.string.settings_stats_weekly_report_section)) }
         item {
             var wrappedEnabled by remember { mutableStateOf(AppPrefs.isWrappedEnabled(context)) }
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.EmojiEvents,
-                    title = "Haftalik Rapor",
-                    subtitle = "Dijital yasam skoru, kisilik tipi ve rozetler — Raporlar Merkezi'nde gosterilir",
+                    title = stringResource(R.string.settings_stats_weekly_report_title),
+                    subtitle = stringResource(R.string.settings_stats_weekly_report_desc),
                     checked = wrappedEnabled,
                     onCheckedChange = {
                         wrappedEnabled = it

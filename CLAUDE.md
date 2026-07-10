@@ -279,6 +279,12 @@ Ana Claude oturumu **orkestra şefidir** — kodu bizzat yazmak yerine ROADMAP.m
 4. ROADMAP.md'den kanıtlanan maddeleri sil, HISTORY.md'ye Döngü girdisi ekle, versionCode/versionName bump et, commit+push, Telegram'a Türkçe özet gönder.
 5. Cihaz/Play Console gerektiren maddelerde durma — bir sonraki uygun maddeye geç, engelleri COZULEMEYEN_SORUNLAR.md'ye not düş.
 
+### Ayarlar Metin ve Kod İnceleme Kuralı
+- Ayarlar ekranında her satır önce "gerçek ayar mı, bilgi mi, yönlendirme mi?" diye sınıflandırılır; bilgi satırları ayar gibi davranmaz.
+- Kullanıcıya teknik detay gösterilecekse sadece güvenliği bozmayacak kadar göster; deşifre/kolay kopyalama riski olan metinleri sadeleştir.
+- Görsel kayma, üst üste binme veya sistem çubuklarına taşma varsa önce `WindowInsets.safeDrawing` ve ilgili padding doğrulanır, sonra ekran içi yerleşim düzeltilir.
+- Ayarlar ile onboarding metinleri sempatik, açıklayıcı ve yeni kullanıcı dostu olmalı; ama hassas uygulama içi mantık dışarı sızdırılmamalı.
+
 | Tür | Ne Zaman |
 |-----|---------|
 | WebSearch | Yeni API, versiyon uyumu, derleme hatası |
