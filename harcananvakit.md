@@ -111,3 +111,5 @@
 | 2026-07-10 | 02:44 | 03:13 | ~29dk | ARAŞTIRMA+KOD+TEST+DÖKÜMAN | Döngü 232: Play yayın kapıları, privacy uyumu, UsageEvents günlük agregatörü; unit test/build başarılı, lint mevcut 4 hatada kaldı; APK 25.63 MB |
 | 2026-07-10 | 03:14 | 03:20 | ~6dk | ARAŞTIRMA+KOD+TEST | Döngü 233: Dock ayar/Home kaynak birliği + REQUEST_DELETE_PACKAGES kaldırma fix; unit test ve debug build başarılı |
 | 2026-07-10 | ~16:30 | ~17:45 | KOD+TEST | Döngü 233: onboarding sırası + ticker mute + emülatör smoke (13 rota, crash yok) |
+| 2026-07-10 | ~17:45 | ~18:15 | KOD | Döngü 234: splash ActionBar fix + cold start bg-init (build yok) |
+| 2026-07-10 | ~18:15 | ~18:45 | KOD+BUILD | Döngü 235: web/PlayStore fallback + kapanış build'i v1.3.5 |

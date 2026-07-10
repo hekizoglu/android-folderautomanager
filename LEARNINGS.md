@@ -5,6 +5,19 @@
 
 ---
 
+## 🔒 Build Kilidi Kök Nedenleri (D235 — 6 kilit vakasının otopsisi)
+
+### VSCode redhat.java dil sunucusu R.jar'ı kilitler
+`Get-Process java` çıktısında `redhat.java-*/jre/*/bin/java.exe` görünüyorsa VSCode Java LS, Gradle çıktılarını (özellikle R.jar) açık tutuyor olabilir — Gradle daemon'ları durdurmak YETMEZ. Çözüm sırası:
+1. `Get-Process java | Stop-Process -Force` (VSCode LS dahil hepsi — LS kendini yeniden başlatır, zararsız)
+2. 3 sn bekle → `Remove-Item -Recurse -Force app\build`
+3. Defender exclusion'ları ayrıca şart (Hüseyin D235'te ekledi) ama tek başına yeterli değil
+
+### app\build altında SEÇİCİ silme yapma
+Sadece `generated`/tek klasör silmek Gradle incremental state'ini bozar → `Cannot access output property ... does not exist` (compileDebugKotlin MD5 hatası). Kural: app\build ya komple silinir ya hiç dokunulmaz.
+
+---
+
 ## 🔄 Reaktivite ve Akış Tuzakları (D231 teşhisi, Fable)
 
 ### Dock kararsızlık zinciri — DB'ye her yazım tüm türev akışları tetikler

@@ -82,6 +82,7 @@ fun SearchSettingsScreen(
     var showIcons         by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
     var showContactAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
     var searchStatsEnabled by remember { mutableStateOf(AppPrefs.isSearchStatsEnabled(context)) }
+    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
 
     pendingPermission?.let { permission ->
         ContextualPermissionDialog(
@@ -379,6 +380,17 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             showContactAvatar = it
                             AppPrefs.setSearchShowContactAvatar(context, it)
+                        }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Search,
+                        title = "Web ve Play Store Fallback",
+                        subtitle = "Sonuç bulunamayınca web/Play Store araması öner",
+                        checked = webFallbackEnabled,
+                        onCheckedChange = {
+                            webFallbackEnabled = it
+                            AppPrefs.setSearchWebFallbackEnabled(context, it)
                         }
                     )
                 }

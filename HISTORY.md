@@ -4,6 +4,25 @@
 
 ---
 
+## Döngü 235 — 2026-07-10 [Web/Play Store arama fallback v1.3.5 — sıralı koşu kapanış build'i]
+
+**Yapılanlar (FİKİRLER 13p+11p, Sonnet agent):**
+- **Sıfır sonuç fallback'leri:** Home arama çubuğu + AllAppsDrawer'da sorgu >= 2 karakter ve 0 sonuçta "🌐 Google'da ara" (ACTION_WEB_SEARCH, https fallback) ve "▶️ Play Store'da ara" (market://, https fallback) satırları; SearchStatsPrefs'e WEB_FALLBACK/PLAY_FALLBACK aksiyonu loglanıyor.
+- **Ayar:** KEY_SEARCH_WEB_FALLBACK_ENABLED (varsayılan açık) + SearchSettingsScreen "Web ve Play Store Fallback" toggle'ı.
+- FİKİRLER'den 2 madde silindi (bu girişle arşivlendi): Web fallback araması [TAMAMLANDI], Play Store fallback [TAMAMLANDI].
+
+**Build:** Sıralı koşu kapanışı — D234+D235 tek build'de (assembleDebug + testDebugUnitTest).
+**Sonraki:** Ayar araması (SETTING source, 13p) veya gizlilik analizi (14p) — FİKİRLER'de bekliyor.
+
+## Döngü 234 — 2026-07-10 [Gri ActionBar fix + cold start optimizasyonu — build YOK (sıralı döngü)]
+
+**Yapılanlar:**
+- **Gri "App Organizer" başlık çubuğu FIX (D233 gözlemi):** Kök neden WebSearch ile doğrulandı — `installSplashScreen()` `super.onCreate()`'ten SONRA çağrılıyordu; AndroidX resmi kılavuz ÖNCE çağrılmasını şart koşar, geç çağrıda `postSplashScreenTheme` uygulanmayıp DeviceDefault başlık çubuğu kalıyor. `MainActivity.kt` düzeltildi + `themes.xml` splash temasına `windowActionBar=false`/`windowNoTitle=true` güvencesi eklendi. CLAUDE.md §5'teki YANLIŞ kural (super.onCreate sonrası) düzeltildi.
+- **Cold start optimizasyonu (LEARNINGS D231 borç listesinden):** `AppOrganizerApp.onCreate`'te worker scheduling (Backup/WeeklyDigest/SmartInsight), AppAnalytics, bildirim kanalları ve FCM token "app-init-bg" thread'ine taşındı — Timber/CrashReporter/Firebase init crash güvenliği için main'de kaldı. `widgetSuggestions` ve `tickerItems` StateFlow'ları `Eagerly` → `WhileSubscribed(5s)` (folders/allApps Flow Sıcaklığı kuralı gereği dokunulmadı).
+
+**Build:** YOK — kullanıcı talimatı: sıralı döngü, build en sonda.
+**Sonraki:** D235 — web/Play Store arama fallback'i (Sonnet agent çalışıyor).
+
 ## Döngü 233 — 2026-07-10 [ROADMAP temizliği + onboarding sırası + ticker sessize alma + emülatör smoke v1.3.4]
 
 **Yapılanlar (kullanıcı talepleri: ROADMAP temizliği, orta öncelik tamamlama, launcher sorusu en sona, ticker mute):**

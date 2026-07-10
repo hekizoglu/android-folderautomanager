@@ -235,6 +235,11 @@ object AppPrefs {
     fun isSearchShineEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHINE_ENABLED, true)
     fun setSearchShineEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SHINE_ENABLED, v).apply()
 
+    // Sonuç bulunamayınca web/Play Store araması öner (fallback satırları)
+    const val KEY_SEARCH_WEB_FALLBACK_ENABLED = "search_web_fallback_enabled"
+    fun isSearchWebFallbackEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, true)
+    fun setSearchWebFallbackEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, v).apply()
+
     // Bildirim analizi — notification_events tablosuna kayıt (rapor sayfası için)
     const val KEY_NOTIF_ANALYTICS_ENABLED = "notif_analytics_enabled"
     fun isNotifAnalyticsEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIF_ANALYTICS_ENABLED, true)

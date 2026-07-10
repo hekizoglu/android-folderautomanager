@@ -40,13 +40,16 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // installSplashScreen super.onCreate'ten ONCE cagrilmali (AndroidX resmi kilavuz) —
+        // gec cagrilinca postSplashScreenTheme uygulanmiyor ve DeviceDefault gri baslik
+        // cubugu ("App Organizer") tum MainActivity ekranlarinda kaliyordu (D234 fix).
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        installSplashScreen()
         CrashReporter.install(this)
 
         val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)

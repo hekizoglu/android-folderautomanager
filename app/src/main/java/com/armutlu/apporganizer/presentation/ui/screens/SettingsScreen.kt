@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.screens
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.armutlu.apporganizer.R
@@ -86,6 +88,7 @@ fun SettingsScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.SemiBold) },

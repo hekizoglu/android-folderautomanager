@@ -132,6 +132,14 @@ Detaylı SOP → **LEARNINGS.md** "SOP — Nadiren Tetiklenen Prosedürler". Kı
 ### Encoding Bozukluğu Tespit Edilirse
 `scripts/fix_encoding.py` çalıştır, 3 denemede çözülmezse `COZULEMEYEN_SORUNLAR.md`'ye ekle. Detaylı adımlar → LEARNINGS.md SOP bölümü.
 
+### Ortam Sorunu Bildirim Kuralı (Hüseyin talebi, D235)
+Build kilidi, dosya silinememe, daemon çökmesi, emülatör/ADB kopması gibi **ortam kaynaklı** her sorunda:
+1. Sorunu o anda kullanıcıya AÇIKÇA bildir (sessizce retry yapıp geçme) — kısa format: ne oldu + kök neden + ne yapıldı
+2. Aynı sorun bir oturumda 2+ kez tekrarlarsa kalıcı çözüm öner ve kullanıcı aksiyonu gerekiyorsa komutuyla birlikte ver (örn. Defender exclusion → Admin PowerShell komutları)
+3. Telegram raporlarına da ortam sorunu özetini ekle (kaç kez, hangi aşamada)
+4. Kalıcı çözüm uygulandıktan sonra sonuç doğrulanınca bunu da bildir
+- Örnek (D233-235): 5x build kilidi → Defender exclusion önerildi → Hüseyin uyguladı
+
 ### Asla Yapma
 - Küçük değişiklik için "onaylıyor musun?" deme — yap, test et, bildir
 - Yarım bırakma — başlanan her görev aynı döngüde tamamlanmalı; multi-dosya işlemler bölünmez
@@ -230,7 +238,7 @@ Launcher kök akışları (`folders`/`allApps`) `SharingStarted.Eagerly` — `Wh
 `derivedStateOf` ile türetilen değerleri doğrudan UI bağımlılığı olarak kullan; scroll ve offset gibi sık değişen girdilerde gereksiz recomposition'ı azaltır.
 
 ### `installSplashScreen()` Sırası
-`installSplashScreen()` çağrısı `super.onCreate()` sonrası, `setContentView()` öncesi olmalı; splash yaşam döngüsü bu sıraya bağlıdır.
+`installSplashScreen()` çağrısı `super.onCreate()` ÖNCESİNDE olmalı (AndroidX resmi kılavuz) — geç çağrılırsa `postSplashScreenTheme` uygulanmaz, DeviceDefault gri başlık çubuğu tüm MainActivity ekranlarında görünür (D234'te kanıtlandı ve düzeltildi).
 
 ### Async İkon Yükleme
 `produceState<ImageBitmap?>` + IO thread + ortak `iconCacheInternal` (LRU-200).

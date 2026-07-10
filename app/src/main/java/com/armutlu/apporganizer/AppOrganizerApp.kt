@@ -41,15 +41,22 @@ class AppOrganizerApp : Application() {
         } else {
             Timber.w("Firebase devre dışı — google-services.json bulunamadı")
         }
-        runCatching { AppAnalytics.appStarted(this) }
-        if (AppPrefs.isAutoBackupEnabled(this)) {
-            BackupWorker.schedule(this)
-        }
-        enableGrantedContactSearchByDefault()
-        WeeklyDigestWorker.schedule(this)
-        SmartInsightWorker.schedule(this)
-        createNotificationChannels()
-        if (firebaseApp != null) fetchFcmToken()
+        // Cold start optimizasyonu (D234): asagidaki isler ilk frame yolunda olmak zorunda degil —
+        // WorkManager enqueue disk IO yapar, kanallar binder cagrisi, FCM zaten async.
+        // Crash guvenligi icin Timber/CrashReporter/Firebase init yukarida main thread'de kaldi.
+        Thread({
+            runCatching {
+                AppAnalytics.appStarted(this)
+                if (AppPrefs.isAutoBackupEnabled(this)) {
+                    BackupWorker.schedule(this)
+                }
+                enableGrantedContactSearchByDefault()
+                WeeklyDigestWorker.schedule(this)
+                SmartInsightWorker.schedule(this)
+                createNotificationChannels()
+                if (firebaseApp != null) fetchFcmToken()
+            }.onFailure { Timber.e(it, "Arka plan init hatasi") }
+        }, "app-init-bg").start()
     }
 
     private fun enableGrantedContactSearchByDefault() {

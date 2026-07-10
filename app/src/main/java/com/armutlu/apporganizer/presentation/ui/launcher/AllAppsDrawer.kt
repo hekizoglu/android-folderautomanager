@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -345,6 +346,72 @@ private fun ContactQuickActions(context: Context, phone: String) {
     }
 }
 
+/**
+ * Sıfır sonuçta gösterilen iki fallback satırı — Web'de ara / Play Store'da ara.
+ * ACTION_WEB_SEARCH / market:// başarısız olursa https:// ACTION_VIEW'a düşer.
+ * HomeAppSearchBar.SearchFallbackRows ile aynı davranış (HomeScreenComponents.kt).
+ */
+@Composable
+private fun DrawerSearchFallbackRows(context: Context, query: String) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                SearchStatsPrefs.logAction(context, "WEB_FALLBACK")
+                val webIntent = Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, query)
+                runCatching { context.startActivity(webIntent) }.onFailure {
+                    val fallback = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.google.com/search?q=" + Uri.encode(query))
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(fallback) }
+                }
+            }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("🌐", fontSize = 16.sp)
+        Text(
+            "Google'da ara: $query",
+            color = onSurface.copy(alpha = 0.85f),
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                SearchStatsPrefs.logAction(context, "PLAY_FALLBACK")
+                val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=" + Uri.encode(query)))
+                runCatching { context.startActivity(marketIntent) }.onFailure {
+                    val fallback = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/search?q=" + Uri.encode(query))
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(fallback) }
+                }
+            }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("▶️", fontSize = 16.sp)
+        Text(
+            "Play Store'da ara: $query",
+            color = onSurface.copy(alpha = 0.85f),
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
 private fun openSearchDocument(context: Context, document: SearchDocument) {
     val intent = when (document.sourceType) {
         SourceType.CONTACT.key -> {
@@ -401,6 +468,19 @@ private fun DrawerAppList(
     val fileMatches = searchResults[SourceType.FILE].orEmpty()
     val hasSearchGroups = searchQuery.isNotBlank() &&
         (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty() || contactMatches.isNotEmpty() || fileMatches.isNotEmpty())
+    // Web/Play Store fallback — filtrelenmiş liste + SearchDocument sonuçları boşsa gösterilir (Ayarlar > Arama)
+    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) {
+                webFallbackEnabled = AppPrefs.isSearchWebFallbackEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    val showWebFallback = webFallbackEnabled && searchQuery.trim().length >= 2 && !hasSearchGroups
 
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
@@ -444,6 +524,13 @@ private fun DrawerAppList(
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
                         Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
+                    }
+                }
+                if (showWebFallback) {
+                    item(key = "web_fallback_rows") {
+                        Column(Modifier.padding(top = 12.dp)) {
+                            DrawerSearchFallbackRows(context = context, query = searchQuery.trim())
+                        }
                     }
                 }
             } else {

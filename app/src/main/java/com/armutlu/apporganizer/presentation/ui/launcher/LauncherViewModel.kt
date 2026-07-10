@@ -727,7 +727,9 @@ class LauncherViewModel @Inject constructor(
         // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
         // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
         if (visible.isEmpty()) composed else visible
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+        // WhileSubscribed: ticker yalnizca HomeScreen gorunurken hesaplanir; initial emptyList
+        // HomeTickerRow'da erken-donus ile guvenli — cold start yuku azaltildi (D234).
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // Contextual Dock — 2 sabit (kullanici) + 2 akilli öneri (saat/gun/kullanim)
     val contextualDockPackages: StateFlow<List<String>> = combine(
@@ -803,12 +805,13 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar
+    // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar.
+    // WhileSubscribed: sadece widget seçici açıkken hesaplanır — cold start yükü azaltıldı (D234).
     val widgetSuggestions = repository.getAllAppsFlow()
         .map { apps ->
             WidgetSuggestionEngine.getSuggestions(getApplication(), apps.filter { !it.isHidden })
         }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     fun dispatchGestureAction(context: Context, action: AppPrefs.GestureAction) {
         when (action) {

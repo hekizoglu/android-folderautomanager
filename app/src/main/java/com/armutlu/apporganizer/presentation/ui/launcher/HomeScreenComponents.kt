@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -765,6 +766,22 @@ internal fun HomeAppSearchBar(
     val showContactsPermissionHint = query.isNotBlank() && !contactsPermGranted &&
         !contactsOptedOut && !contactsPermDeniedSession
 
+    // Web/Play Store fallback — sorgu >= 2 karakter, tüm kaynaklar sıfır sonuç verince gösterilir (Ayarlar > Arama'dan kapatılabilir)
+    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) {
+                webFallbackEnabled = AppPrefs.isSearchWebFallbackEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    val showWebFallback = webFallbackEnabled && query.trim().length >= 2 &&
+        appResults.isEmpty() && folderResults.isEmpty() && contactResults.isEmpty() &&
+        fileResults.isEmpty() && !showContactsPermissionHint
+
     // Sorguyu ViewModel'e ilet — FTS5 çok-kaynak araması (dosyalar) debounce ile orada çalışır
     LaunchedEffect(query) { onQueryChange(query) }
 
@@ -905,7 +922,8 @@ internal fun HomeAppSearchBar(
 
         // Sonuç listesi — kaynak grupları: Uygulamalar / Klasörler / Kişiler / Dosyalar (S1)
         val hasAnyResult = appResults.isNotEmpty() || folderResults.isNotEmpty() ||
-            contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint
+            contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint ||
+            showWebFallback
         if (hasAnyResult && !isDragging) {
             // Tek grup varsa başlık gereksiz kalabalık — yalnızca çoklu grupta göster
             val multiGroup = listOf(
@@ -1206,9 +1224,82 @@ internal fun HomeAppSearchBar(
                             }
                         }
                     }
+
+                    // Web/Play Store fallback — sıfır sonuçta arama devam ettirilebilsin (Ayarlar > Arama)
+                    if (showWebFallback) {
+                        SearchFallbackRows(context = context, query = query.trim())
+                    }
                 }
             }
         }
+    }
+}
+
+/**
+ * Sıfır sonuçta gösterilen iki fallback satırı — Web'de ara / Play Store'da ara.
+ * ACTION_WEB_SEARCH / market:// başarısız olursa https:// ACTION_VIEW'a düşer.
+ */
+@Composable
+private fun SearchFallbackRows(context: Context, query: String) {
+    HorizontalDivider(
+        Modifier.padding(horizontal = 16.dp),
+        color = Color.White.copy(alpha = 0.10f)
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                SearchStatsPrefs.logAction(context, "WEB_FALLBACK")
+                val webIntent = Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, query)
+                runCatching { context.startActivity(webIntent) }.onFailure {
+                    val fallback = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.google.com/search?q=" + Uri.encode(query))
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(fallback) }
+                }
+            }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("🌐", fontSize = 16.sp)
+        Text(
+            "Google'da ara: $query",
+            color = Color.White.copy(alpha = 0.85f),
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                SearchStatsPrefs.logAction(context, "PLAY_FALLBACK")
+                val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=" + Uri.encode(query)))
+                runCatching { context.startActivity(marketIntent) }.onFailure {
+                    val fallback = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/search?q=" + Uri.encode(query))
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(fallback) }
+                }
+            }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("▶️", fontSize = 16.sp)
+        Text(
+            "Play Store'da ara: $query",
+            color = Color.White.copy(alpha = 0.85f),
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
