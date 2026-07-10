@@ -51,11 +51,13 @@ fun OnboardingScreen(
     val context = LocalContext.current
     // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix)
     var stepIndex by rememberSaveable { mutableStateOf(0) }
+    // Varsayilan launcher sorusu EN SONDA sorulur (kullanici talebi, D233) —
+    // tum ayarlar bitmeden kullaniciya kalici karar dayatilmaz.
     val steps = listOf(
         OnboardingStep.WELCOME,
-        OnboardingStep.SET_LAUNCHER,
         OnboardingStep.THEME_SELECT,
         OnboardingStep.QUICK_SETTINGS,
+        OnboardingStep.SET_LAUNCHER,
         OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])

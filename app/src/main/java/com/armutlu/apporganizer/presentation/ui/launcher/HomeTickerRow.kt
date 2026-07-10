@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,10 +72,13 @@ internal fun HomeTickerRow(
     items: List<TickerItem>,
     onItemClick: (TickerItem) -> Unit,
     modifier: Modifier = Modifier,
+    onMute: ((durationMillis: Long) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
     var index by remember(items.size) { mutableStateOf(0) }
     var direction by remember { mutableStateOf(1) } // 1 = ileri, -1 = geri
+    // Basili tut -> sessize alma menusu (8 saat / 1 gun / 7 gun) (D233)
+    var muteMenuOpen by remember { mutableStateOf(false) }
     val current = items[index.coerceIn(0, items.lastIndex)]
 
     // Otomatik ilerleme — index veya liste değişince sayaç sıfırlanır
@@ -100,6 +105,7 @@ internal fun HomeTickerRow(
             .border(0.5.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
             .pointerInputTicker(
                 onTap = { onItemClick(current) },
+                onLongPress = { if (onMute != null) muteMenuOpen = true },
                 onSwipe = { forward ->
                     direction = if (forward) 1 else -1
                     index = if (forward) (index + 1) % items.size
@@ -143,16 +149,36 @@ internal fun HomeTickerRow(
             color = Color.White.copy(alpha = 0.45f),
             fontSize = 10.sp
         )
+
+        // Sessize alma menusu — basili tutunca acilir; secilen sure kadar serit gizlenir (D233)
+        if (onMute != null) {
+            DropdownMenu(expanded = muteMenuOpen, onDismissRequest = { muteMenuOpen = false }) {
+                listOf(
+                    "8 saat sessize al" to 8L * 60 * 60 * 1000,
+                    "1 gün sessize al" to 24L * 60 * 60 * 1000,
+                    "7 gün sessize al" to 7L * 24 * 60 * 60 * 1000,
+                ).forEach { (label, duration) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            muteMenuOpen = false
+                            onMute(duration)
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
-/** Tap + yatay swipe'ı tek modifier'da birleştirir — grid gesture'larıyla çakışmaz. */
+/** Tap + basili tutma + yatay swipe'ı tek modifier'da birleştirir — grid gesture'larıyla çakışmaz. */
 private fun Modifier.pointerInputTicker(
     onTap: () -> Unit,
+    onLongPress: () -> Unit,
     onSwipe: (forward: Boolean) -> Unit,
 ): Modifier = this
     .pointerInput("ticker_tap") {
-        detectTapGestures(onTap = { onTap() })
+        detectTapGestures(onTap = { onTap() }, onLongPress = { onLongPress() })
     }
     .pointerInput("ticker_swipe") {
         var accumulated = 0f

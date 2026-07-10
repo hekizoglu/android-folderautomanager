@@ -98,8 +98,8 @@ class LauncherViewModel @Inject constructor(
     private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
     val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
-    // Klasör sırası ve dock paketleri ilk yüklemede SharedPrefs'ten okunur;
-    // sonraki resume'larda _dockPackages ViewModel metotlarıyla güncel tutulur — yeniden okuma gerekmez.
+    // Klasör sırası ilk yüklemede okunur. Dock ise Settings/restore gibi ViewModel dışı
+    // yazımları da yakalamak için her onResume'da DockPrefs ile uzlaştırılır.
     @Volatile private var dockLoaded = false
 
     // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
@@ -379,15 +379,14 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun loadDockPackages(context: Context) {
-        // İlk yüklemede hem dock paketleri hem klasör sırası SharedPrefs'ten okunur.
-        // Sonraki resume'larda _dockPackages, saveDockPackages/addToDock/removeFromDock ile
-        // her zaman güncel — tekrar SharedPrefs okumaya gerek yok.
+        val persistedPackages = DockPrefs.getDockPackages(context)
+        if (persistedPackages != _dockPackages.value) {
+            _dockPackages.value = persistedPackages
+        }
+
+        // Klasör sırası yalnız ilk yüklemede okunur; dock senkronundan bağımsızdır.
         if (!dockLoaded) {
             dockLoaded = true
-            val newPackages = DockPrefs.getDockPackages(context)
-            if (newPackages != _dockPackages.value) {
-                _dockPackages.value = newPackages
-            }
             val prefs = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
             val saved = prefs.getString(KEY_FOLDER_ORDER, null)
             if (!saved.isNullOrBlank()) {

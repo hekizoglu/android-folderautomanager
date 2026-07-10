@@ -70,12 +70,17 @@ class WrappedViewModel @Inject constructor(
 
     private suspend fun buildReport(): WrappedEngine.WrappedReport {
         val apps = appRepository.getAllApps()
+        val dailySessionResult = UsageStatsHelper.getDailySessionUsage(context, days = 7)
+        val dailySessions = (dailySessionResult as? UsageStatsHelper.DailySessionResult.Available)
+            ?.days
+        val weeklyLaunches = dailySessions?.groupBy { it.packageName }
+            ?.mapValues { (_, days) -> days.sumOf { it.launchCount }.toLong() }
         val snapshots = apps.map { app ->
             WrappedEngine.AppSnapshot(
                 packageName = app.packageName,
                 appName = app.appName,
                 categoryId = app.categoryId,
-                usageCount = app.usageCount,
+                usageCount = weeklyLaunches?.get(app.packageName) ?: app.usageCount,
                 lastUsedTimestamp = app.lastUsedTimestamp,
                 installTime = app.installTime,
                 firstInstalledTime = app.firstInstalledTime,
@@ -90,9 +95,9 @@ class WrappedViewModel @Inject constructor(
             val events = notificationEventDao.eventsSince(since)
             if (events.isEmpty()) return@runCatching null
             val appNames = apps.associate { it.packageName to it.appName }
-            val usageMs = if (UsageStatsHelper.hasPermission(context)) {
-                UsageStatsHelper.getUsageCounts(context, days = 7)
-            } else emptyMap()
+            val usageMs = dailySessions?.groupBy { it.packageName }
+                ?.mapValues { (_, days) -> days.sumOf { it.foregroundDurationMs } }
+                ?: emptyMap()
             val report = NotificationAnalyzer.analyze(events, appNames, usageMs)
             WrappedEngine.NotificationSummary(
                 totalNotifications = report.totalNotifications,

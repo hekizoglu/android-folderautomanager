@@ -1,23 +1,101 @@
 package com.armutlu.apporganizer.utils
 
+import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.os.Build
+import android.os.Process
 import android.provider.Settings
+import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
+import com.armutlu.apporganizer.domain.usecase.usage.UsageEvent
+import com.armutlu.apporganizer.domain.usecase.usage.UsageEventType
+import com.armutlu.apporganizer.domain.usecase.usage.UsageSessionAggregator
+import java.time.ZoneId
 import java.util.Calendar
 
 object UsageStatsHelper {
 
+    sealed interface DailySessionResult {
+        data class Available(val days: List<DailyPackageUsage>) : DailySessionResult
+        data class Unavailable(val reason: Reason) : DailySessionResult
+
+        enum class Reason { PERMISSION_DENIED, NO_EVENT_DATA, QUERY_FAILED }
+    }
+
+    @Suppress("DEPRECATION")
     fun hasPermission(context: Context): Boolean {
         return try {
-            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-            val cal = Calendar.getInstance()
-            val end = cal.timeInMillis
-            cal.add(Calendar.DAY_OF_YEAR, -1)
-            val stats = manager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, cal.timeInMillis, end)
-            stats != null && stats.isNotEmpty()
+            val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    Process.myUid(),
+                    context.packageName,
+                )
+            } else {
+                appOps.checkOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    Process.myUid(),
+                    context.packageName,
+                )
+            }
+            mode == AppOpsManager.MODE_ALLOWED
         } catch (e: Exception) {
             false
+        }
+    }
+
+    /**
+     * UsageEvents olaylarını cihaz dışına çıkarmadan günlük paket oturumlarına dönüştürür.
+     * Sistem olayları yalnız birkaç gün saklayabildiği için eski/boş pencere "0 kullanım" sayılmaz.
+     */
+    fun getDailySessionUsage(
+        context: Context,
+        days: Int = 7,
+        nowMillis: Long = System.currentTimeMillis(),
+        zoneId: ZoneId = ZoneId.systemDefault(),
+    ): DailySessionResult {
+        require(days > 0) { "days must be positive" }
+        if (!hasPermission(context)) {
+            return DailySessionResult.Unavailable(DailySessionResult.Reason.PERMISSION_DENIED)
+        }
+
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate()
+            val rangeStart = today.minusDays(days.toLong() - 1L)
+                .atStartOfDay(zoneId).toInstant().toEpochMilli()
+            val replayStart = today.minusDays(days.toLong())
+                .atStartOfDay(zoneId).toInstant().toEpochMilli()
+            val usageEvents = manager.queryEvents(replayStart, nowMillis)
+                ?: return DailySessionResult.Unavailable(DailySessionResult.Reason.NO_EVENT_DATA)
+            val mapped = buildList {
+                val event = UsageEvents.Event()
+                while (usageEvents.hasNextEvent()) {
+                    usageEvents.getNextEvent(event)
+                    val type = event.eventType.toDomainEventType() ?: continue
+                    add(
+                        UsageEvent(
+                            packageName = event.packageName.orEmpty(),
+                            className = event.className ?: event.packageName.orEmpty(),
+                            eventType = type,
+                            timestamp = event.timeStamp,
+                        ),
+                    )
+                }
+            }
+            if (mapped.isEmpty()) {
+                DailySessionResult.Unavailable(DailySessionResult.Reason.NO_EVENT_DATA)
+            } else {
+                DailySessionResult.Available(
+                    UsageSessionAggregator(zoneId).aggregate(mapped, rangeStart, nowMillis),
+                )
+            }
+        } catch (_: SecurityException) {
+            DailySessionResult.Unavailable(DailySessionResult.Reason.PERMISSION_DENIED)
+        } catch (_: Exception) {
+            DailySessionResult.Unavailable(DailySessionResult.Reason.QUERY_FAILED)
         }
     }
 
@@ -87,7 +165,7 @@ object UsageStatsHelper {
                 val event = UsageEvents.Event()
                 while (events.hasNextEvent()) {
                     events.getNextEvent(event)
-                    if (event.eventType != UsageEvents.Event.MOVE_TO_FOREGROUND) continue
+                    if (event.eventType != UsageEvents.Event.ACTIVITY_RESUMED) continue
                     val pkg = event.packageName
                     if (pkg.isNullOrEmpty()) continue
                     launchCounts[pkg] = (launchCounts[pkg] ?: 0) + 1
@@ -157,5 +235,17 @@ object UsageStatsHelper {
         in 11..13 -> 1
         in 14..17 -> 2
         else      -> 3
+    }
+
+    private fun Int.toDomainEventType(): UsageEventType? = when (this) {
+        UsageEvents.Event.ACTIVITY_RESUMED -> UsageEventType.RESUMED
+        UsageEvents.Event.ACTIVITY_PAUSED -> UsageEventType.PAUSED
+        UsageEvents.Event.ACTIVITY_STOPPED -> UsageEventType.STOPPED
+        UsageEvents.Event.KEYGUARD_SHOWN -> UsageEventType.KEYGUARD_SHOWN
+        UsageEvents.Event.KEYGUARD_HIDDEN -> UsageEventType.KEYGUARD_HIDDEN
+        UsageEvents.Event.SCREEN_NON_INTERACTIVE -> UsageEventType.SCREEN_NON_INTERACTIVE
+        UsageEvents.Event.SCREEN_INTERACTIVE -> UsageEventType.SCREEN_INTERACTIVE
+        UsageEvents.Event.DEVICE_SHUTDOWN -> UsageEventType.DEVICE_SHUTDOWN
+        else -> null
     }
 }

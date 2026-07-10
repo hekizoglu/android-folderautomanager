@@ -300,7 +300,14 @@ fun AppContextMenu(
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
                         runCatching { context.startActivity(intent) }
-                        onDismiss()
+                            .onSuccess { onDismiss() }
+                            .onFailure {
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "Uygulama kaldırma ekranı açılamadı",
+                                    android.widget.Toast.LENGTH_LONG,
+                                ).show()
+                            }
                     }
                 )
             }

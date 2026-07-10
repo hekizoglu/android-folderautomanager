@@ -51,11 +51,11 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
         ) {
             PolicySection(
                 title = "AppOrganizer Gizlilik Politikası",
-                body = "Son güncelleme: 21 Haziran 2026\n\nBu gizlilik politikası, AppOrganizer uygulamasının kişisel verilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar."
+                body = "Son güncelleme: 10 Temmuz 2026\n\nBu gizlilik politikası, AppOrganizer uygulamasının eriştiği verileri nasıl kullandığını, sakladığını ve koruduğunu açıklar."
             )
             PolicySection(
                 title = "Toplanan Veriler",
-                body = "• Yüklü uygulama listesi: Uygulamaları kategorilere ayırmak için cihazınızdaki uygulamalar okunur. Bu veriler yalnızca cihazınızda saklanır, hiçbir sunucuya gönderilmez.\n\n• Kullanım istatistikleri: Hangi uygulamaları ne sıklıkta kullandığınız (UsageStats API). Yalnızca ana ekranda öneriler için kullanılır, cihaz dışına çıkmaz.\n\n• Bildirim erişimi: Bildirim sayılarını (badge) görüntülemek için. Bildirim içerikleri saklanmaz.\n\n• Ayarlar ve tercihler: Cihazınızdaki SharedPreferences'te saklanır."
+                body = "• Yüklü uygulama listesi: Tüm uygulamaları listelemek, aramak, kategorilere ayırmak ve başlatmak için okunur. Paket bazlı envanter cihazda kalır; reklam veya analitik sağlayıcılarına gönderilmez.\n\n• Kullanım istatistikleri: Hangi uygulamaları ne sıklıkta kullandığınız (UsageStats API). Öneriler ve haftalık raporlar için cihazda işlenir.\n\n• Bildirim erişimi: Rozet için sayı saklanır. Bildirim Metni özelliğini açarsanız son bildirimin kısa metni yalnızca cihazda saklanıp gösterilir.\n\n• İsteğe bağlı kişiler ve dosya dizini: Arama kaynağını açarsanız yalnız cihazda indekslenir; kaynak kapatılınca indeks temizlenir.\n\n• Ayarlar ve tercihler: Uygulamanın yerel veritabanında ve SharedPreferences dosyalarında saklanır."
             )
             PolicySection(
                 title = "Toplanmayan Veriler",
@@ -63,15 +63,19 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
             )
             PolicySection(
                 title = "Üçüncü Taraflar",
-                body = "AppOrganizer, kullanıcı verilerini hiçbir üçüncü tarafla paylaşmaz, satmaz veya kiralamaz.\n\nİsteğe bağlı olarak etkinleştirilen DeepSeek API entegrasyonu (bilinmeyen uygulamaları kategorize etmek için), yalnızca uygulama adı ve paket adını anonim olarak gönderir. Kişisel veri içermez."
+                body = "AppOrganizer verilerinizi satmaz ve reklam ağlarıyla paylaşmaz.\n\nFirebase Analytics özellik/ekran kullanım olaylarını; Firebase Crashlytics teknik çökme kayıtlarını Google'a gönderebilir. Yüklü veya açılan uygulamaların paket adları bu analitik olaylarına eklenmez.\n\nİsteğe bağlı DeepSeek entegrasyonu etkinleştirilirse bilinmeyen uygulamanın adı ve paket adı kategorileme amacıyla DeepSeek'e gönderilir."
             )
             PolicySection(
                 title = "Veri Güvenliği",
-                body = "Tüm veriler cihazınızda yerel olarak saklanır. Uygulama internet bağlantısı yalnızca isteğe bağlı DeepSeek kategorize özelliği için kullanılır ve HTTPS ile şifrelenir."
+                body = "Yerel uygulama envanteri, kullanım geçmişi, bildirim verileri ve arama indeksleri cihazda saklanır. Firebase ve isteğe bağlı DeepSeek aktarımı HTTPS üzerinden yapılır. Yedek dosyası yalnız sizin seçtiğiniz Android belge sağlayıcısına yazılır; Google Drive gibi bir bulut sağlayıcısı seçerseniz sağlayıcının kendi saklama ve gizlilik koşulları geçerlidir."
+            )
+            PolicySection(
+                title = "Saklama Süresi",
+                body = "Yerel veriler özellik çalıştığı veya siz silene kadar tutulur. Bildirim analiz olayları 30 günden eski olduğunda temizlenir. Kişi/dosya arama kaynağı kapatıldığında ilgili indeks silinir. Firebase ve DeepSeek tarafındaki saklama süreleri ilgili sağlayıcının politikasına tabidir."
             )
             PolicySection(
                 title = "Veri Silme",
-                body = "Tüm uygulama verilerini silmek için: Ayarlar → Uygulamalar → AppOrganizer → Depolamayı Temizle seçeneğini kullanabilirsiniz. Uygulama kaldırıldığında tüm veriler otomatik olarak silinir."
+                body = "Yerel kullanım ve kişiselleştirme verilerini Ayarlar → Hakkında & Yedekleme → Tüm Verileri Sıfırla ile temizleyebilirsiniz. Tam silme için Android Ayarlar → Uygulamalar → AppOrganizer → Depolamayı Temizle seçeneğini kullanın. Uygulama kaldırıldığında yerel veriler silinir; dışa aktardığınız yedekler seçtiğiniz konumda kalır ve ayrıca silinmelidir. Firebase/DeepSeek hakkında silme talebi veya gizlilik sorusu için aşağıdaki iletişim adresini kullanabilirsiniz."
             )
             PolicySection(
                 title = "İletişim",

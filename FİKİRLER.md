@@ -50,6 +50,13 @@
 | 2026-07-07 | ana-ekran-rekabet-revizyon-raporu.md | **Minimal Search Mode / Focus Mode revizyonu** — klasor istemeyen kullanici icin search bar + favorites + recent odakli mod, mevcut Focus Mode uzerinden yeniden tasarlanmali. (KV:3 · U:4 · BR:2 · EA:3 = **12p**) | Bekliyor |
 | 2026-07-09 | Fable danışmanlık | **Akıllı Kategorileme K2 — Override'lardan öğrenen öneri katmanı** — Manuel override'lar (`AppPrefs.getManualCategoryOverrides`) şu an tek paket bazlı, genelleme yok. Kullanıcı bir uygulamayı elle başka klasöre taşıyınca aynı üretici prefix'i/keyword kümesi/LLM kategorisindeki benzer uygulamalar için "Bunları da taşıyalım mı?" öneri chip'i göster; kabul edilen paternler yerel olarak öğrenilir (cihaz dışına veri çıkmaz). Statik taksonominin kullanıcı tercihine uyarlanmasının en ucuz yolu. Dosyalar: `AppClassifier.kt`, `LauncherViewModel.kt`, `FolderScreen.kt`, `AppPrefs.kt`. Zorluk: 6/10. (KV:4 · U:3 · BR:4 · EA:3 = **14p**) | Bekliyor |
 | 2026-07-09 | Fable danışmanlık | **Akıllı Kategorileme K4 — Kullanım paternine göre bağlamsal akıllı klasör** — Room `usageCount`/`lastUsedTimestamp` + `UsageStatsHelper` saat-dilimi histogramıyla "Sabah Rutini / İş Saatleri / Akşam" tarzı sanal (dinamik) klasör veya klasör içi otomatik yeniden sıralama; tamamen cihaz içi, hiçbir veri dışarı çıkmaz. Mevcut 13p "kullanım sıklığına göre dock sıralama" fikriyle sinerjik — birlikte tek epik olarak ele alınabilir. Dosyalar: `LauncherViewModel.kt`, `HomeScreen.kt`, `UsageStatsHelper.kt`, `InsightEngine.kt`. Zorluk: 7/10 — CLAUDE.md kuralı gereği uygulamadan önce 2+ kaynak araştırma + Hüseyin onayı gerekir. (KV:4 · U:3 · BR:3 · EA:3 = **13p**) | Bekliyor |
+| 2026-07-10 | Universal Search analizi (Fable) | **Web fallback araması** — sıfır sonuçta "Google'da ara: {q}" satırı; ACTION_WEB_SEARCH intent, sunucu yok. (KV:4 · U:5 · BR:1 · EA:3 = **13p**) | Bekliyor |
+| 2026-07-10 | Universal Search analizi (Fable) | **Ayar araması (SETTING source)** — Wi-Fi/Bluetooth/Bildirim gibi ~20 statik sistem ayarı SearchDocument olarak indekslenir, Settings.ACTION_* intent ile açılır. (KV:4 · U:4 · BR:2 · EA:3 = **13p**) | Bekliyor |
+| 2026-07-10 | Universal Search analizi (Fable) | **Arama kalitesi öğrenmesi** — başarısız arama sonrası elle açılan uygulamayı tespit edip sıralamada boost et (query abandon sinyali). (KV:4 · U:2 · BR:3 · EA:3 = **12p**) | Bekliyor |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Gizlilik analizi ekranı** — mikrofon/konum/kamera izni kullanan uygulamaların listesi (PackageManager, tamamen lokal); Wrapped'a gizlilik kartı. (KV:5 · U:4 · BR:1 · EA:4 = **14p**) | Bekliyor |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Kilit açma sayacı** — UsageEvents KEYGUARD_HIDDEN ile günlük telefon açma sayısı + haftalık trend; Wrapped kartı. (KV:4 · U:3 · BR:2 · EA:3 = **12p**) | Bekliyor |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **AI koçu haftalık yorumu** — WrappedReport verisini lokal AI/DeepSeek'e özetletip 2 cümlelik kişisel yorum (opt-in, sadece agregat veri gider). (KV:4 · U:3 · BR:3 · EA:3 = **13p**) | Bekliyor |
+| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Hedef sistemi** — haftalık kategori kullanım hedefi + rozet ödülü; oturum altyapısına bağımlı. (KV:4 · U:2 · BR:3 · EA:4 = **13p**) | Bekliyor |
 
 ---
 
@@ -76,16 +83,11 @@
 | 2026-07-07 | performans-bellek-build-raporu.md | **Worker schedule listesini app acilisinda logla** — Backup/SmartInsight/WeeklyDigest/FilesIndex worker durumlari debug logda gorulsun, duplicate schedule takibi kolaylassin. (KV:2 · U:3 · BR:2 · EA:4) | 11p |
 | 2026-07-07 | ana-ekran-rekabet-revizyon-raporu.md | **Home ilk ekran deger onerisi testi** — ilk ekranda "otomatik klasorlendi + arama hazir + dock akilli" mesaji 3 saniyede anlasiliyor mu screenshot/QA ile kontrol edilsin. (KV:3 · U:3 · BR:1 · EA:3) | 10p |
 | 2026-07-09 | Fable danışmanlık | **`AppClassifier.classifyByKeywords` Locale("tr") eksik** — `AppClassifier.kt:107-108`'de `lowercase()` locale'siz çağrılıyor; CLAUDE.md §5 Türkçe Locale kuralına aykırı (İ/ı riski). Keyword'ler ASCII olduğu için etki düşük ama bir sonraki AppClassifier dokunuşunda düzeltilmeli. (KV:2 · U:5 · BR:2 · EA:1) | 10p |
-| 2026-07-10 | Universal Search analizi (Fable) | **Web fallback araması** — sıfır sonuçta "Google'da ara: {q}" satırı; ACTION_WEB_SEARCH intent, sunucu yok. (KV:4 · U:5 · BR:1 · EA:3) | 13p |
 | 2026-07-10 | Universal Search analizi (Fable) | **Play Store fallback** — uygulama bulunamayınca "Play Store'da ara" satırı; market:// intent. (KV:3 · U:5 · BR:1 · EA:2) | 11p |
-| 2026-07-10 | Universal Search analizi (Fable) | **Ayar araması (SETTING source)** — Wi-Fi/Bluetooth/Bildirim gibi ~20 statik sistem ayarı SearchDocument olarak indekslenir, Settings.ACTION_* intent ile açılır. (KV:4 · U:4 · BR:2 · EA:3) | 13p |
-| 2026-07-10 | Universal Search analizi (Fable) | **Arama kalitesi öğrenmesi** — başarısız arama sonrası elle açılan uygulamayı tespit edip sıralamada boost et (query abandon sinyali). (KV:4 · U:2 · BR:3 · EA:3) | 12p |
-| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Gizlilik analizi ekranı** — mikrofon/konum/kamera izni kullanan uygulamaların listesi (PackageManager, tamamen lokal); Wrapped'a gizlilik kartı. (KV:5 · U:4 · BR:1 · EA:4) | 14p |
-| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **UsageEvents oturum altyapısı** — günlük agregat oturum verisi (açılış sayısı, oturum süresi, saat dağılımı); ısı haritası, zaman tüneli, dikkat dağıtıcılar ve bağımlılık endeksinin ortak temeli. (KV:4 · U:3 · BR:3 · EA:5) | 15p |
-| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Kilit açma sayacı** — UsageEvents KEYGUARD_HIDDEN ile günlük telefon açma sayısı + haftalık trend; Wrapped kartı. (KV:4 · U:3 · BR:2 · EA:3) | 12p |
-| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **AI koçu haftalık yorumu** — WrappedReport verisini lokal AI/DeepSeek'e özetletip 2 cümlelik kişisel yorum (opt-in, sadece agregat veri gider). (KV:4 · U:3 · BR:3 · EA:3) | 13p |
-| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **Hedef sistemi** — haftalık kategori kullanım hedefi + rozet ödülü; oturum altyapısına bağımlı. (KV:4 · U:2 · BR:3 · EA:4) | 13p |
-| 2026-07-10 | Wrapped Phase 2 analizi (Fable) | **ÇIKARILDI (kayıt):** tasarruf hesabı (uydurma metrik), RAM/pil sağlık puanı (API kısıtlı), pil/veri/fiyat istatistikleri (erişim yok), gelecek tahmini (spekülatif), kohort karşılaştırması (sunucu verisi yok) — güven zedeleyen/sahte veri gösterilmez. | - |
+
+### Çıkarılan Fikirler — Puanlama Dışı Kayıt
+
+- **Wrapped Phase 2:** Tasarruf hesabı (uydurma metrik), RAM/pil sağlık puanı (API kısıtlı), pil/veri/fiyat istatistikleri (erişim yok), gelecek tahmini (spekülatif) ve kohort karşılaştırması (sunucu verisi yok) çıkarıldı. Güven zedeleyen veya sahte veri gösterilmez.
 
 ---
 

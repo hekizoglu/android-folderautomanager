@@ -255,7 +255,6 @@ fun HomeScreen(
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
     val dockPackages by viewModel.dockPackages.collectAsState()
-    val contextualDockPackages by viewModel.contextualDockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
@@ -567,7 +566,7 @@ fun HomeScreen(
                 suggestedApps = suggestedApps,
                 recentAppsEnabled = recentAppsEnabled,
                 recentApps = recentApps,
-                dockPackages = contextualDockPackages,
+                dockPackages = dockPackages,
                 iconPackPkg = suggestionIconPack,
                 haptic = haptic,
                 onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
@@ -639,9 +638,24 @@ fun HomeScreen(
                 }
             } else {
             // Haber şeridi — "Alışveriş klasöründe 5 uygulama var" tarzı akan bilgiler.
-            // Dokunma → hedef açılır; kaydırma → önceki/sonraki haber. Kapalıysa eski istatistik bandı döner.
-            if (tickerEnabled) {
+            // Dokunma → hedef açılır; kaydırma → önceki/sonraki haber; basılı tut → sessize al (8s/1g/7g).
+            // Kapalıysa eski istatistik bandı döner. Sessizdeyken hiçbir şey gösterilmez, süre dolunca geri gelir.
+            var tickerMutedUntil by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
+            val tickerMuted = tickerMutedUntil > System.currentTimeMillis()
+            if (tickerMuted) {
+                // Süre dolduğunda ana ekran açıkken bile şerit kendiliğinden geri gelsin
+                LaunchedEffect(tickerMutedUntil) {
+                    kotlinx.coroutines.delay((tickerMutedUntil - System.currentTimeMillis()).coerceAtLeast(0L))
+                    tickerMutedUntil = 0L
+                }
+            }
+            if (tickerEnabled && !tickerMuted) {
                 HomeTickerRow(
+                    onMute = { duration ->
+                        val until = System.currentTimeMillis() + duration
+                        com.armutlu.apporganizer.utils.AppPrefs.setTickerMutedUntil(context, until)
+                        tickerMutedUntil = until
+                    },
                     items = tickerItems,
                     onItemClick = { item ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -662,8 +676,8 @@ fun HomeScreen(
                         }
                     }
                 )
-            } else
-            // İstatistik bandı — toplam klasör ve uygulama sayısı
+            } else if (!tickerEnabled)
+            // İstatistik bandı — toplam klasör ve uygulama sayısı (sessize alınmışsa hiçbiri gösterilmez)
             FolderStatsRow(
                 folders = folders,
                 onOpenFolderStats = {
@@ -861,7 +875,7 @@ fun HomeScreen(
 
             // Bottom dock — frosted pill (uzun bas → düzenle)
             PixelDock(
-                packages = contextualDockPackages,
+                packages = dockPackages,
                 iconPackPkg = suggestionIconPack,
                 onLaunchApp = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)

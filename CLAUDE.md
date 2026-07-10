@@ -137,7 +137,7 @@ Detaylı SOP → **LEARNINGS.md** "SOP — Nadiren Tetiklenen Prosedürler". Kı
 - Yarım bırakma — başlanan her görev aynı döngüde tamamlanmalı; multi-dosya işlemler bölünmez
 - Bir görevi "devam edeyim mi?" diye sorarak bırakma — tüm ilgili dosyaları aynı anda bitir
 - Encoding bozukluğu — her zaman UTF-8 kaydet
-- Onboarding sırası MUTLAKA WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → DONE olmalı — hiçbir değişiklik bu sırayı bozamaz. (D201'de 19⭐ radikal kesme ile 17 adımdan 6 adıma indirildi, CLASSIFY_MODE kaldırıldı; BROWSER_SELECT Döngü 218'de kaldırıldı — uygulamanın hiçbir yerinde kullanılmayan, launcher işleviyle alakasız bir ROLE_BROWSER isteğiydi, 6→5 adım)
+- Onboarding sırası MUTLAKA WELCOME → THEME_SELECT → QUICK_SETTINGS → SET_LAUNCHER → DONE olmalı — hiçbir değişiklik bu sırayı bozamaz. (D201 radikal kesme; D233: Hüseyin'in talebiyle SET_LAUNCHER en sona alındı — tüm ayarlar bitmeden kalıcı launcher kararı dayatılmaz)
 - **Yan etki yaratma:** Bir dosyayı değiştirirken ilgili tüm dosyaları (ViewModel, Repository, Model, UI) önce oku. Yeni sabit/fonksiyon eklenince tüm kullanım noktaları güncellenmeli. Değişiklik sonrası build al — kırmızı alan kalmamalı.
 
 ### Değişiklik Güvenlik Protokolü
@@ -335,7 +335,7 @@ app/src/main/java/com/armutlu/apporganizer/
 - **Bildirim Analizi:** `AppNotificationListenerService` her bildirimi loglar (paket+zaman, içerik YOK) → `NotificationAnalyzer` (çok konuşan/rahatsız eden/dikkat dağıtan) → `NotificationReportScreen` (Routes.NOTIFICATION_REPORT)
 - **Haber Şeridi:** `HomeTickerRow` + `LauncherViewModel.tickerItems` (klasör istatistikleri + içgörüler + bildirim özeti); dokun→hedef açılır, kaydır→sonraki; `KEY_TICKER_ENABLED`
 - **Tema:** Material You `DYNAMIC` Android 12+ default (`AppTheme.default()`); build'e `-PskipGoogleServices` verilirse Firebase null-guard'lı çalışır (çökmez)
-- **Onboarding:** 5 adım (WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE`, state `rememberSaveable` (rotation-safe, D209)
+- **Onboarding:** 5 adım (WELCOME → THEME_SELECT → QUICK_SETTINGS → SET_LAUNCHER → DONE), `AppPrefs.PREFS_NAME` + `KEY_ONBOARDING_DONE` (D233: launcher sorusu en sonda)
 - **HomeScreen sayfalama:** 8 klasör/sayfa, `HorizontalPager`
 - **Firebase:** Gerçek proje bağlı (`com-armutlu-apporganizer`) — Analytics + Crashlytics aktif, emülatörde doğrulandı (D205)
 - **Birleşik arama:** Ana ekran tek arama çubuğu 4 kaynak grubunda sonuç gösterir (Uygulamalar/Klasörler/Kişiler/Dosyalar) — `SearchRepository` FTS5 (D207)

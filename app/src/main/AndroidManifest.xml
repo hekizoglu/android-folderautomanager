@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
+    <!-- Sistem uygulama kaldırma onay ekranını açmak için (targetSdk 28+) -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+
     <!-- Internet for Google Drive sync -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

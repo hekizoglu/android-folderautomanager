@@ -33,7 +33,7 @@
 <body>
 
 <h1>AppOrganizer</h1>
-<p class="subtitle">Gizlilik Politikası — Son güncelleme: 8 Temmuz 2026</p>
+<p class="subtitle">Gizlilik Politikası — Son güncelleme: 10 Temmuz 2026</p>
 
 <div class="highlight">
     <strong>Özet:</strong> AppOrganizer verilerinizi satmaz ve reklam göstermez. Uygulama kullanımı,
@@ -55,8 +55,8 @@
     <h2>2. Toplanan Veriler</h2>
     <p>AppOrganizer yalnızca uygulamanın çalışması için gerekli minimum verilere erişir:</p>
     <ul>
-        <li><strong>Yüklü uygulamalar listesi:</strong> Kategori tespiti ve klasörleme için.</li>
-        <li><strong>Uygulama kullanım istatistikleri:</strong> "Son kullanılanlar" özelliği için (UsageStatsManager). Bu veriler cihazınızda yerel kalır.</li>
+        <li><strong>Yüklü uygulamalar listesi:</strong> Tüm uygulamaları listelemek, aramak, kategorilere ayırmak ve başlatmak için. Paket bazlı envanter cihazda kalır; reklam veya analitik sağlayıcılarına gönderilmez.</li>
+        <li><strong>Uygulama kullanım istatistikleri:</strong> "Son kullanılanlar", öneriler ve haftalık raporlar için (UsageStatsManager). Bu veriler cihazınızda yerel kalır.</li>
         <li><strong>Bildirim sayıları ve (isteğe bağlı) son bildirim metni:</strong> Uygulama simgelerinde rozet göstermek için sayı okunur. Kullanıcı Ayarlar'dan "Bildirim Metni" özelliğini açarsa, klasör/uygulama altında son bildirimin kısa metni de gösterilir — bu metin yalnızca cihazda işlenir, hiçbir sunucuya gönderilmez.</li>
         <li><strong>Kişi rehberi (isteğe bağlı):</strong> Kullanıcı Ayarlar &gt; Arama'dan "Kişi Kaynağı"nı açıkça açarsa, ad/telefon/profil fotoğrafı arama sonuçlarında gösterilmek üzere yalnızca cihazda indekslenir. Hiçbir sunucuya gönderilmez, kapatılınca indeks silinir.</li>
         <li><strong>Ana ekran widget'ları:</strong> Kullanıcının eklediği widget'ları görüntülemek için.</li>
@@ -98,8 +98,9 @@
     <h2>5. Yerel Yedekleme</h2>
     <p>
         Uygulama, kullanıcının isteğiyle kategori tercihlerini ve ayarları yerel bir JSON dosyasına
-        yedekler. Bu dosya yalnızca kullanıcının seçtiği depolama konumuna (cihaz içi) kaydedilir,
-        hiçbir sunucuya yüklenmez.
+        yedekler. Dosya yalnızca kullanıcının Android belge seçicisinde belirlediği konuma yazılır.
+        Google Drive gibi bir bulut belge sağlayıcısı seçilirse dosya o sağlayıcının hizmeti üzerinden
+        senkronize edilebilir ve sağlayıcının kendi gizlilik/saklama koşulları geçerli olur.
     </p>
 </div>
 
@@ -115,7 +116,24 @@
 </div>
 
 <div class="section">
-    <h2>7. Çocukların Gizliliği</h2>
+    <h2>7. Veri Saklama ve Silme</h2>
+    <p>
+        Yerel uygulama envanteri, kullanım istatistikleri, tercihler ve arama indeksleri ilgili özellik
+        çalıştığı veya kullanıcı silene kadar tutulur. Bildirim analiz olayları 30 günden eski olduğunda
+        temizlenir. Kişi veya dosya arama kaynağı kapatıldığında ilgili yerel indeks silinir.
+    </p>
+    <p>
+        Kullanıcı, uygulama içindeki Ayarlar &gt; Hakkında &amp; Yedekleme &gt; Tüm Verileri Sıfırla
+        seçeneğiyle yerel kullanım ve kişiselleştirme verilerini temizleyebilir. Tam silme için Android
+        Ayarlar &gt; Uygulamalar &gt; AppOrganizer &gt; Depolamayı Temizle kullanılabilir. Uygulama
+        kaldırıldığında yerel veriler silinir; dışa aktarılan yedekler seçilen konumda kalır ve kullanıcı
+        tarafından ayrıca silinmelidir. Firebase ve DeepSeek tarafındaki saklama/silme koşulları ilgili
+        sağlayıcı politikalarına tabidir; talepler için aşağıdaki iletişim adresi kullanılabilir.
+    </p>
+</div>
+
+<div class="section">
+    <h2>8. Çocukların Gizliliği</h2>
     <p>
         AppOrganizer 13 yaş altı kullanıcılara yönelik değildir ve bu kullanıcılardan
         bilerek kişisel veri toplamaz.
@@ -123,7 +141,7 @@
 </div>
 
 <div class="section">
-    <h2>8. Değişiklikler</h2>
+    <h2>9. Değişiklikler</h2>
     <p>
         Bu politika güncellendiğinde bu sayfada yayımlanır.
         Önemli değişiklikler uygulama içi bildirimle duyurulur.
@@ -131,7 +149,7 @@
 </div>
 
 <div class="section">
-    <h2>9. İletişim</h2>
+    <h2>10. İletişim</h2>
     <p>
         Sorularınız için: <a href="mailto:huseyinekizoglu@gmail.com">huseyinekizoglu@gmail.com</a>
     </p>

@@ -63,6 +63,8 @@ Build kilitlenirse gecici workaround:
 
 **Kullanicidan beklenen:** Release imzasi icin `.\scripts\create_release_keystore.ps1` calistirip olusan hassas dosyalari guvenli saklamak; Play Console'a girip ROADMAP.md "Kritik - Play Store ve Release Kapisi" bolumundeki maddeleri sirayla tamamlamak.
 
+**Tam adimlar ve kanit listesi:** `docs/PLAY_RELEASE_EVIDENCE_CHECKLIST.md`. Yerel hazirlik tamamlanmis olsa bile Play Console formu, yukleme readback'i ve inceleme sonucu olmadan bu sorun kapatilmaz.
+
 ---
 
 ### [CS-7] Gercek cihaz QA paketi

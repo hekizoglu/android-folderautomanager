@@ -4,6 +4,59 @@
 
 ---
 
+## Döngü 233 — 2026-07-10 [ROADMAP temizliği + onboarding sırası + ticker sessize alma + emülatör smoke v1.3.4]
+
+**Yapılanlar (kullanıcı talepleri: ROADMAP temizliği, orta öncelik tamamlama, launcher sorusu en sona, ticker mute):**
+- **ROADMAP temizliği:** 10 tamamlanmış kayıt HISTORY arşivine taşındı (UX 5, build 2, bildirim 2, kategorileme bölümü).
+- **Onboarding sırası değişti (Hüseyin talebi):** SET_LAUNCHER artık EN SONDA — yeni sıra WELCOME → THEME_SELECT → QUICK_SETTINGS → SET_LAUNCHER → DONE. CLAUDE.md kuralı güncellendi. Emülatörde adım adım doğrulandı (2. adım tema, 4. adım launcher).
+- **Ticker sessize alma (Hüseyin talebi):** Şeride basılı tut → "8 saat / 1 gün / 7 gün sessize al" menüsü; süre boyunca şerit tamamen gizli (istatistik bandı da gösterilmez), süre dolunca kendiliğinden döner (LaunchedEffect timer + AppPrefs.KEY_TICKER_MUTED_UNTIL). Emülatörde menü + kaybolma doğrulandı.
+- **Settings hiyerarşi smoke TAMAMLANDI:** 13 rota (settings + 7 alt ekran + search_settings + reports_center + wrapped_report + notification_report + dashboard) emülatörde gezildi — CRASH YOK. ROADMAP'tan silindi.
+- **Search/launcher regression smoke TAMAMLANDI:** Home arama "bin" → Binance sonucu; kişiler kaynağı izinsizken doğru davet fallback'i; arama geçmişi chip'lerinin kaldırıldığı canlıda doğrulandı. Wrapped raporu gerçek veriyle render oldu (skor 60/100, kişilik Dengeli). ROADMAP'tan silindi.
+- **Yeni ticker canlı doğrulama:** "1/11" haber, saat bazlı selamlama + "En kalabalık köşen: Araçlar" şablon çeşitliliği ekranda görüldü.
+
+**Gözlem:** Onboarding/MainActivity üstünde gri "App Organizer" ActionBar'ı görünüyor (LauncherActivity home'da yok) — tema tutarlılığı için ele alınmalı (FİKİRLER adayı).
+**Sonraki:** Cold start baseline profile (LEARNINGS borç listesi) veya kalan Kritik QA maddeleri (gerçek cihaz).
+
+## ROADMAP Temizligi — 2026-07-10 (Dongu 233)
+
+ROADMAP'tan silinen tamamlanmis kayitlar:
+- [TAMAMLANDI] U10: Acik kaynak referans launcher ile Home revizyonu
+- [TAMAMLANDI] Setup friction azaltma
+- [TAMAMLANDI] Search-first Home modu
+- [TAMAMLANDI] Home onerileri tekrar azaltma
+- [TAMAMLANDI] Settings Home bilgi mimarisi
+- [TAMAMLANDI] --no-watch-fs A/B benchmark
+- [TAMAMLANDI] Kotlin build reports
+- [TAMAMLANDI] Bildirim analiz Dongu 221 test kanitlari
+- [TAMAMLANDI] NotificationReport UI state ayrimi (Dongu 224)
+- [TAMAMLANDI] Akilli Kategorileme bolumu (K1/K3 tamam; K2/K4 FIKIRLER'de bekliyor)
+
+## Döngü 233 — 2026-07-10 [Dock kaynak birliği + uygulama kaldırma düzeltmesi]
+
+**Yapılanlar:** Dock ayarları ile ana ekran farklı kaynaklardan besleniyordu. `LauncherViewModel.loadDockPackages()` artık her `onResume` çağrısında `DockPrefs` ile StateFlow'u uzlaştırıyor; ana ekrandaki `PixelDock` ve öneri filtreleri doğrudan kullanıcının seçtiği `dockPackages` listesini kullanıyor. Seçilen son iki uygulamayı otomatik önerilerle değiştiren ve birebir eşleşmeyi bozan Akıllı Dock ayarı UI'dan kaldırıldı.
+
+**Bug:** `ACTION_DELETE` doğru kurulmuştu fakat targetSdk 35 için zorunlu `REQUEST_DELETE_PACKAGES` manifest izni yoktu; Android kaldırıcı ekranı sessizce kapanabiliyordu. İzin eklendi. Kaldırma ekranı açılamazsa hata artık yutulmuyor, kullanıcıya Toast gösteriliyor; menü yalnız sistem ekranı başarıyla başlatılırsa kapanıyor.
+
+**Test:** `testDebugUnitTest -PskipGoogleServices` başarılı; `assembleDebug -PskipGoogleServices` başarılı. Birleşmiş manifestte `android.permission.REQUEST_DELETE_PACKAGES` doğrulandı. Gerçek kaldırma onayı ve Settings → Home dock eşleşmesi cihazda dış doğrulama gerektirir.
+
+**Sonraki:** Fiziksel cihazda dört farklı dock uygulaması seçip Home'da birebir karşılaştır; üçüncü taraf uygulamada Kaldır → sistem onay ekranı → iptal/onay → PACKAGE_REMOVED akışını doğrula.
+
+## Döngü 232 — 2026-07-10 [Play yayın kapıları + UsageEvents günlük oturum altyapısı]
+
+**Yapılanlar:**
+- FİKİRLER puan yerleşimi düzeltildi: 15+ Yüksek, 12-14 Orta, <=11 Beklet; 8 yanlış kayıt taşındı, çıkarılan fikirler puanlama dışı ayrı kayda alındı.
+- Privacy Policy/Data Safety kod tutarlılığı düzeltildi: uygulama içi ve web politikası kurulu uygulama envanteri, UsageStats, isteğe bağlı bildirim metni, kişiler/dosyalar, Firebase, DeepSeek, SAF/Drive, saklama ve silme davranışlarında eşitlendi.
+- `UsageSessionAggregator.kt`: saf Kotlin günlük paket agregatörü eklendi; açılış sayısı, foreground süre, 24 saatlik dağılım, global union, çoklu activity, kilit/ekran, shutdown, aralık clamp ve DST desteği.
+- `UsageStatsHelper.kt`: AppOps tabanlı gerçek Usage Access kontrolü ve `DailySessionResult` eklendi; boş/erişilemeyen olay verisi yanlışlıkla sıfır kullanım sayılmıyor.
+- `WrappedViewModel.kt`: veri varsa son 7 günlük gerçek açılış/süre agregatlarını kullanıyor; olay verisi yoksa mevcut güvenli fallback korunuyor.
+- `docs/PLAY_RELEASE_EVIDENCE_CHECKLIST.md`: QUERY_ALL_PACKAGES beyan metni, Data Safety/Privacy ve imzalı AAB için sahip/adım/kanıt listesi eklendi.
+
+**Test:** `UsageSessionAggregatorTest` 11/11 başarılı; tüm `testDebugUnitTest` başarılı; `assembleDebug` başarılı (26,878,048 byte). `lintDebug` 4 mevcut/ilgisiz hata nedeniyle başarısız: `LauncherActivity.kt:255`, `HomeScreen.kt:667`, `Theme.kt:122,125`; bu turdaki dosyalarda lint error yok.
+
+**Dış doğrulama gerekli:** Play Console formları/yükleme yapılmadı; QUERY_ALL_PACKAGES onayı alınmadı; imzalı release AAB üretilmedi; gerçek cihaz/OEM UsageEvents akışı kanıtlanmadı.
+
+**Sonraki:** Play Console hesap sahibinin `docs/PLAY_RELEASE_EVIDENCE_CHECKLIST.md` adımlarını tamamlaması ve UsageEvents API28/29+, split-screen, kilit/reboot, izin aç/kapa cihaz matrisini çalıştırması.
+
 ## Döngü 231 — 2026-07-10 [Kullanıcı hata raporları: dock/reaktivite/geri tuşu/arama geçmişi v1.3.3]
 
 **Yapılanlar (kullanıcı şikayetleri; Explore teşhis agent'ı + Sonnet fix agent'ı + Sonnet FİKİRLER temizliği, Fable orkestrasyon):**

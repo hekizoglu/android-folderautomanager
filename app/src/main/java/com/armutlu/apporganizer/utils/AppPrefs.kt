@@ -225,6 +225,11 @@ object AppPrefs {
     fun isTickerEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_ENABLED, true)
     fun setTickerEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_ENABLED, v).apply()
 
+    // Ticker sessize alma — basili tut menusunden secilen zamana kadar serit gizlenir (D233)
+    const val KEY_TICKER_MUTED_UNTIL = "home_ticker_muted_until"
+    fun getTickerMutedUntil(context: Context) = prefs(context).getLong(KEY_TICKER_MUTED_UNTIL, 0L)
+    fun setTickerMutedUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, untilMillis).apply()
+
     // Arama çubuğu elmas parlaması — 10-15 sn'de bir gradient süpürme animasyonu
     const val KEY_SEARCH_SHINE_ENABLED = "search_shine_enabled"
     fun isSearchShineEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHINE_ENABLED, true)

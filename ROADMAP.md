@@ -50,13 +50,6 @@ Kalan ana kapilar:
 
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
-| U10: Acik kaynak referans launcher ile Home revizyonu | `docs/internal/home_revizyon_karar_listesi.md` ile Lawnchair/Kvaesitso referanslari, kalacak/gidecek/yeniden gruplancak karar listesi ve Home revizyonu uygulama parcalari cikarildi. | Tamamlandi - kod okuma/dokuman |
-| Setup friction azaltma | Onboarding zaten launcher secimi ve "Simdi Degil" sundugu icin `MainActivity.kt` icindeki tekrar otomatik launcher picker tetiklemesi kaldirildi; kullanici Settings > Launcher uzerinden manuel devam eder. | Tamamlandi - statik dogrulandi |
-| Search-first Home modu | Mevcut `KEY_FOCUS_MODE` search-first davranisa genisletildi: Home arama cubugu korunuyor, klasor pager gizleniyor, dock/favoriler/oneriler/son kullanilanlar one cikiyor; kucuk ekranda ikincil satirlar bu modda saklanmiyor. | Tamamlandi - statik dogrulandi |
-| Home onerileri tekrar azaltma | Home ust satirlarinda oncelik sirasi Dock > Favoriler > Oneriler > Son Kullanilanlar olacak sekilde `HomeFavoritesSection.kt` filtrelendi; `HomeScreen.kt` aktif contextual dock paketlerini section'a geciyor. | Tamamlandi - statik dogrulandi |
-| Settings Home bilgi mimarisi | `SettingsHomeScreenSection.kt` icindeki Home ayarlari Arama / Oneriler ve bildirimler / Temel davranislar / Gorsel alt basliklarina ayrildi; davranis degismeden taranabilirlik artirildi. | Tamamlandi - statik dogrulandi |
-| Settings hiyerarsi smoke | Settings alt route'lari emulator/cihazda gezilip navigation kopuklugu olmadigi kanitlanacak. | Bekliyor |
-| Search/launcher regression smoke | Search bar TOP/BOTTOM, kaynak toggle'lari, AllApps gruplama, contacts/files izin red fallback akislari tek smoke senaryoda kosulacak. | Bekliyor |
 
 ---
 
@@ -73,13 +66,6 @@ Mevcut temel:
 | POST_NOTIFICATIONS yokken sessiz davranis | `SmartInsightWorker` `CoroutineWorker`, `work-testing` bagimliligi projede yok — unit testle kanitlanamadi. Kod incelemesi: `notify()` sadece null-check ile korunuyor, izin kontrolu yok; `SecurityException` disarida `runCatching`e dusup `Result.retry()` oluyor (cokme yok). Gercek cihazda dogrulanmali. | Bekliyor - gercek cihaz |
 | 30 gun temizlik — uzun sureli persist kaniti | Tetikleme mantigi (`onListenerConnected()` -> `deleteOlderThan(now-30gun)`) unit testle kanitlandi (`AppNotificationListenerServiceTest.kt`, Dongu 221). Gercek 30+ gunluk veriyle uzun sureli persist/silme davranisi hala kanitlanmadi (Room instrumented/Robolectric gerekir, projede yok). | Bekliyor - gercek cihaz |
 
-**Tamamlanan (Dongu 221, unit test ile kanitlandi):**
-- Analiz kapaliyken event yazmama — `AppNotificationListenerServiceTest.kt`.
-- NotificationAnalyzer cok konusan/gece+burst rahatsiz eden/dikkat dagitan/trend senaryolari — `NotificationAnalyzerTest.kt` (12 test).
-
-**Tamamlanan (Dongu 224 — UX iyilestirmesi):**
-- NotificationReport UI state ayrimi COZULDU: `NotificationReportUiState` sealed interface eklendi (Loading / PermissionMissing / AnalyticsDisabled / CollectingData / Ready). "Analiz kapali", "izin yok" ve "veri henuz yok" artik ayri tam-ekran durumlar; her biri aciklama + eylem butonu iceriyor ("Analizi Ac" tek dokunusla toggle'i acar, ayara gitmeye gerek yok). Veri varken sorunlar banner olarak gosterilir. Ekran ON_RESUME'da yenilenir (izin verip donunce takili kalmaz). "Bildirim Analizi" toggle'i Ana Ekran Ayarlari'ndan Ayarlar > Bildirimler'e tasindi ve yanina "Bildirim Raporu" kisayolu eklendi. Rapor ekrani metinleri strings.xml'e tasindi (TR+EN). State eslemesi `NotificationReportUiStateTest.kt` (9 test) ile kanitlandi.
-
 ---
 
 ## Orta Oncelik - Build, Surec ve Token Maliyeti
@@ -87,26 +73,18 @@ Mevcut temel:
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
 | Configuration cache guard benchmark | Configuration cache sadece benchmark/CLI profilinde denenecek; kalici `gradle.properties` ayari icin uyumluluk kaniti istenecek. Bu ortamda `compileDebugKotlin` build kilidi nedeniyle olculemedi (bkz. CS-3); referans olarak 2026-07-01 tarihli profile verisi (rerun 97.8s, cache'li compileDebugKotlin 2.4s) kullanildi, karar korundu (KAPT+Hilt uyumsuzlugu nedeniyle acilmadi). | Bekliyor - build kilidi cozulunce tekrar denenecek |
-| `--no-watch-fs` A/B benchmark | `org.gradle.vfs.watch=false` zaten `gradle.properties`'te kalici acik (no-watch-fs esdegeri). | Tamamlandi |
 | Build Analyzer / Gradle profile rutini | Bu oturumda build kilidi nedeniyle tam kosum yapilamadi; 2026-07-01 profile verisi referans alindi. | Bekliyor - build kilidi cozulunce tekrar denenecek |
-| Kotlin build reports | `kotlin.build.report.output=file` zaten `gradle.properties`'te kalici acik. | Tamamlandi |
 | `cycle.ps1` uctan uca test | Kod incelemesiyle dogrulandi: encoding tarama -> duplicate kontrol -> ritimli build -> git add+commit+push -> Telegram bildirimi sirasiyla calisan orchestrator. Gercek uctan uca calistirilmadi. | Bekliyor - gercek tur denenecek |
 
 ---
 
-## Yuksek Puanli - Akilli Kategorileme (Fable danismanligi, Dongu 227-228)
-
-K1 ve K3 Dongu 228'de tamamlandi (bkz. HISTORY.md). K2 (override-ogrenme) ve K4 (baglamsal akilli klasor) FİKİRLER.md'de onay bekliyor.
-
----
-
-## Yuksek Puanli - Wrapped Phase 2 (Fable analizi, Dongu 230)
+## Yuksek Puanli - Wrapped Phase 2 (Fable analizi, Dongu 230-232)
 
 | Puan | Gorev | Durum |
 |---|---|---|
-| 15p | UsageEvents oturum altyapisi - gunluk agregat oturum verisi (acilis sayisi, oturum suresi, saat dagilimi); isi haritasi, zaman tuneli, dikkat daginiklari ve bagimlilik endeksinin ortak temeli | Bekliyor |
+| 15p | UsageEvents oturum altyapisi gercek cihaz/OEM dogrulamasi - yerel agregator, AppOps izin kontrolu, Wrapped 7 gun entegrasyonu ve 11 unit test Dongu 232'de tamamlandi; API 28/29+, split-screen, kilit/ac, reboot ve grant/revoke olaylari fiziksel cihazda kanitlanacak | Bekliyor - dis dogrulama gerekli |
 
-Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da tamamlandi. Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, kilit sayaci 12p) FİKİRLER.md'de.
+Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da; UsageEvents yerel oturum agregatoru Dongu 232'de tamamlandi. Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, kilit sayaci 12p) FİKİRLER.md'de.
 
 ---
 
