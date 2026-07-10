@@ -10,11 +10,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.map
 
 private val ErrorColor = Color(0xFFCF6679)
 
@@ -109,21 +108,15 @@ private fun buildTypography(font: AppFont): Typography {
     )
 }
 
-private val THEME_KEY = stringPreferencesKey("app_theme")
-private val FONT_KEY  = stringPreferencesKey("app_font")
-
 @Composable
 fun AppOrganizerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val currentTheme by context.themeDataStore.data
-        .map { prefs -> AppTheme.fromName(prefs[THEME_KEY] ?: AppTheme.default().name) }
-        .collectAsState(initial = AppTheme.default())
-    val currentFont by context.themeDataStore.data
-        .map { prefs -> AppFont.fromName(prefs[FONT_KEY] ?: AppFont.DEFAULT.name) }
-        .collectAsState(initial = AppFont.DEFAULT)
+    val themePrefs = remember { ThemePreferences(context) }
+    val currentTheme by themePrefs.themeFlow.collectAsState(initial = AppTheme.default())
+    val currentFont by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
 
     // Material You — Android 12+ dinamik renk şeması, duvar kağıdına uyum sağlar
     val colorScheme = if (

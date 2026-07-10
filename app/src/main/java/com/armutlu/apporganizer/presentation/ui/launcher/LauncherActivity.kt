@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.annotation.SuppressLint
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -251,6 +252,7 @@ class LauncherActivity : ComponentActivity() {
     }
 
     // Launcher'da back tuşu uygulamayı kapatmamalı
+    @SuppressLint("MissingSuperCall")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // intentionally no-op: HomeScreen'deki BackHandler halleder

@@ -113,3 +113,4 @@
 | 2026-07-10 | ~16:30 | ~17:45 | KOD+TEST | Döngü 233: onboarding sırası + ticker mute + emülatör smoke (13 rota, crash yok) |
 | 2026-07-10 | ~17:45 | ~18:15 | KOD | Döngü 234: splash ActionBar fix + cold start bg-init (build yok) |
 | 2026-07-10 | ~18:15 | ~18:45 | KOD+BUILD | Döngü 235: web/PlayStore fallback + kapanış build'i v1.3.5 |
+| 2026-07-10 | ~19:00 | ~20:15 | KOD+BUILD+TEST | Döngü 236: R8 release smoke (10.3 MB, crash yok) + 47 EN string + 8 store screenshot |

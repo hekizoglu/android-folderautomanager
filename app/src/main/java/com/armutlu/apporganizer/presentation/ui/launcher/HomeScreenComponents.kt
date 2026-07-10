@@ -1265,7 +1265,7 @@ private fun SearchFallbackRows(context: Context, query: String) {
     ) {
         Text("🌐", fontSize = 16.sp)
         Text(
-            "Google'da ara: $query",
+            stringResource(R.string.search_fallback_google, query),
             color = Color.White.copy(alpha = 0.85f),
             fontSize = 14.sp,
             maxLines = 1,
@@ -1293,7 +1293,7 @@ private fun SearchFallbackRows(context: Context, query: String) {
     ) {
         Text("▶️", fontSize = 16.sp)
         Text(
-            "Play Store'da ara: $query",
+            stringResource(R.string.search_fallback_play_store, query),
             color = Color.White.copy(alpha = 0.85f),
             fontSize = 14.sp,
             maxLines = 1,

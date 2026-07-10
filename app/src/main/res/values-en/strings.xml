@@ -292,4 +292,64 @@
     <string name="suggestions_label_afternoon">Afternoon Picks</string>
     <string name="suggestions_label_evening">Evening Picks</string>
     <string name="suggestions_label_default">Frequent Apps</string>
+
+    <!-- Wrapped Report -->
+    <string name="wrapped_title">🎁 Weekly Report</string>
+    <string name="wrapped_back">Back</string>
+    <string name="wrapped_empty_title">Not enough data yet</string>
+    <string name="wrapped_empty_desc">Your weekly report will appear here after you use a few apps.</string>
+    <string name="wrapped_perm_card_title">Some sections are limited</string>
+    <string name="wrapped_perm_card_desc">Grant usage access for a more accurate score and badges.</string>
+    <string name="wrapped_perm_card_btn">Grant Permission</string>
+    <string name="wrapped_score_title">Your Digital Life Score</string>
+    <string name="wrapped_score_max">/ 100</string>
+    <string name="wrapped_score_delta_vs_last_week">%1$s vs. last week</string>
+    <string name="wrapped_personality_title">Your Digital Personality</string>
+    <string name="wrapped_personality_dominant_pct">%1$d%% dominant usage</string>
+    <string name="wrapped_stats_title">Interesting Stats</string>
+    <string name="wrapped_stat_most_opened">🔥 Most Opened</string>
+    <string name="wrapped_stat_least_opened">🐢 Least Opened</string>
+    <string name="wrapped_stat_largest_app">💽 Largest App</string>
+    <string name="wrapped_stat_oldest_installed">🕰️ Oldest Installed</string>
+    <string name="wrapped_stat_newest_installed">✨ Newest Installed</string>
+    <string name="wrapped_stat_longest_unused">😴 Longest Unused</string>
+    <string name="wrapped_stat_usage_count">%1$d times</string>
+    <string name="wrapped_badges_title">Your Badges</string>
+    <string name="wrapped_growth_title">Fastest Growing This Week</string>
+    <string name="wrapped_comparison_pending">Gathering data — comparison ready next week</string>
+    <string name="wrapped_notif_link_title">Your Notification Summary</string>
+    <string name="wrapped_notif_link_desc">See the detailed notification report</string>
+    <string name="wrapped_notif_link_open">Open</string>
+
+    <!-- HomeTickerRow — mute menu -->
+    <string name="ticker_mute_8h">Mute for 8 hours</string>
+    <string name="ticker_mute_1d">Mute for 1 day</string>
+    <string name="ticker_mute_7d">Mute for 7 days</string>
+
+    <!-- Search fallback rows -->
+    <string name="search_fallback_google">Search Google: %1$s</string>
+    <string name="search_fallback_play_store">Search Play Store: %1$s</string>
+
+    <!-- SettingsStatsScreen -->
+    <string name="settings_stats_search_section">Search Statistics</string>
+    <string name="settings_stats_search_empty_title">Search Statistics</string>
+    <string name="settings_stats_search_empty_subtitle">No searches yet</string>
+    <string name="settings_stats_search_total">Total Searches</string>
+    <string name="settings_stats_search_zero_result_rate">Zero-Result Rate</string>
+    <string name="settings_stats_search_avg_latency">Average Latency</string>
+    <string name="settings_stats_search_avg_latency_value">%1$d ms</string>
+    <string name="settings_stats_search_first_click_rate">First Result Click Rate</string>
+    <string name="settings_stats_search_type_distribution">Type Distribution</string>
+    <string name="settings_stats_search_top_action">Most Used Action</string>
+    <string name="settings_stats_search_reset_title">Reset Statistics</string>
+    <string name="settings_stats_search_reset_subtitle">Deletes all search counters</string>
+    <string name="settings_stats_weekly_report_section">Weekly Report</string>
+    <string name="settings_stats_weekly_report_title">Weekly Report</string>
+    <string name="settings_stats_weekly_report_desc">Digital life score, personality type and badges — shown in the Reports Center</string>
+
+    <!-- SearchSettingsScreen -->
+    <string name="search_settings_web_fallback_title">Web and Play Store Fallback</string>
+    <string name="search_settings_web_fallback_desc">Suggest a web/Play Store search when no results are found</string>
+    <string name="search_settings_stats_title">Search Statistics</string>
+    <string name="search_settings_stats_desc">Statistics stay on your device only; searched text is never recorded.</string>
 </resources>

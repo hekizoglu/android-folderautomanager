@@ -39,9 +39,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import kotlinx.coroutines.delay
 
 /**
@@ -154,9 +156,9 @@ internal fun HomeTickerRow(
         if (onMute != null) {
             DropdownMenu(expanded = muteMenuOpen, onDismissRequest = { muteMenuOpen = false }) {
                 listOf(
-                    "8 saat sessize al" to 8L * 60 * 60 * 1000,
-                    "1 gün sessize al" to 24L * 60 * 60 * 1000,
-                    "7 gün sessize al" to 7L * 24 * 60 * 60 * 1000,
+                    stringResource(R.string.ticker_mute_8h) to 8L * 60 * 60 * 1000,
+                    stringResource(R.string.ticker_mute_1d) to 24L * 60 * 60 * 1000,
+                    stringResource(R.string.ticker_mute_7d) to 7L * 24 * 60 * 60 * 1000,
                 ).forEach { (label, duration) ->
                     DropdownMenuItem(
                         text = { Text(label) },

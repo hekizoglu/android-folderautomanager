@@ -37,8 +37,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 28
-        versionName = "1.3.5"
+        versionCode = 29
+        versionName = "1.3.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -63,7 +63,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            // Keystore yoksa debug imzaya dus — R8/minify release build'i keystore beklemeden
+            // test edilebilsin (D236). Gercek yayin AAB'si icin keystore.properties SART;
+            // debug imzali release APK Play'e YUKLENEMEZ, sadece yerel dogrulama icindir.
+            signingConfig = if (rootProject.file("keystore.properties").exists())
+                signingConfigs.getByName("release")
+            else {
+                println("[uyari] keystore.properties yok - release build DEBUG imzayla aliniyor (yalnizca test)")
+                signingConfigs.getByName("debug")
+            }
         }
         debug {
             isMinifyEnabled = false

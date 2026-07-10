@@ -4,6 +4,17 @@
 
 ---
 
+## Döngü 236 — 2026-07-10 [Canlıya alma hazırlığı: R8 release testi + EN strings + store görselleri v1.3.6]
+
+**Yapılanlar (kullanıcı talebi: canlıya alma eksiklerini çöz; Fable + Sonnet agent paralel):**
+- **R8/minify release build İLK KEZ test edildi (kritik #1):** build.gradle.kts'e keystore-yoksa-debug-imza fallback'i eklendi (uyarı loglu; gerçek yayın AAB'si için keystore.properties şart). `assembleRelease` başarılı — APK 10.3 MB (debug 25 MB'dan %59 küçük). Emülatörde cold start + ekran smoke'u CRASH'SİZ. Proguard kuralları mevcut haliyle yeterli çıktı.
+- **EN strings (orta #4, Sonnet agent):** 47 anahtar values/strings.xml (TR) + values-en (EN) — Wrapped ekranı, ticker sessize alma menüsü, web/PlayStore fallback satırları, arama istatistikleri bölümü, yeni ayar toggle'ları. TickerComposer/WrappedEngine şablonları bilinçli TR bırakıldı (pure Kotlin, ayrı iş — FİKİRLER'de).
+- **Store screenshot seti (orta #5):** docs/store_assets/ altına 8 ekran (home, all apps, klasör, arama ayarları, ayarlar, dashboard, wrapped, bildirim raporu). Not: force-stop sonrası rota açılışı cold start ~7-12 sn sürüyor — screenshot beklemeleri buna göre ayarlandı.
+- **Sürüm önerisi (orta #6):** Yayın AAB'si için versionName önerisi: mevcut 1.3.x hattı korunur (1.0.0'a dönmek versionCode geriye gidemeyeceği için anlamsız).
+
+**Kalan (canlıya alma):** google-services.json + keystore + Play Console formları (Hüseyin), gerçek cihaz QA paketi (CS-7), baseline profile (düşük).
+**Sonraki:** Gerçek cihaz QA senaryo listesi hazırlanabilir; ayar araması (13p) / gizlilik analizi (14p) kod adayları.
+
 ## Döngü 235 — 2026-07-10 [Web/Play Store arama fallback v1.3.5 — sıralı koşu kapanış build'i]
 
 **Yapılanlar (FİKİRLER 13p+11p, Sonnet agent):**
