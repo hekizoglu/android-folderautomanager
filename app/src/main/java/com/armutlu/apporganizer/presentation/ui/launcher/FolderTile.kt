@@ -276,21 +276,37 @@ fun FolderTile(
         }
         // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
         // notifTextEnabled — HomeScreen'den reaktif parametre olarak gelir
-        // Önce bildirim metni olan uygulamayı bul; yoksa badge > 0 olan uygulamayı al
+        // EN YENI/ONEMLI bildirimi sec: AppInfo'da ayri bir "son bildirim zamani" alani yok,
+        // bu yuzden en guncel bildirimi mevcut sinyallerden turetiyoruz:
+        //   1) notificationImportance — IMPORTANCE_HIGH vb. => en dikkat cekici/oncelikli
+        //      bildirim (aktif/yeni bildirimler genelde yuksek importance tasir)
+        //   2) esitlikte lastUsedTimestamp — en son etkilesim goren uygulama = en guncel
+        // Boylece ESKI davranis (notificationCount'a gore "en cok bildirimli") yerine
+        // "en yeni ve en onemli" bildirim gosterilir. Once metni olan uygulamalar denenir,
+        // yoksa badge > 0 olan uygulamalar arasindan ayni sinyalle secilir.
+        val notifRecencyComparator = remember {
+            compareBy<com.armutlu.apporganizer.domain.models.AppInfo>(
+                { it.notificationImportance },
+                { it.lastUsedTimestamp }
+            )
+        }
         val latestNotifApp = remember(folder.apps) {
             folder.apps.filter { it.notificationText.isNotBlank() }
-                .maxByOrNull { it.notificationCount }
+                .maxWithOrNull(notifRecencyComparator)
                 ?: folder.apps.filter { it.notificationCount > 0 }
-                    .maxByOrNull { it.notificationCount }
+                    .maxWithOrNull(notifRecencyComparator)
         }
         val showNotifText = notifTextEnabled && latestNotifApp != null
         if (showNotifText && latestNotifApp != null) {
+            // (b) Bildirim ozeti HER ZAMAN uygulama adini icersin — kullanici hangi
+            // uygulamadan bildirim geldigini net gorsun. Metin varsa "AppAdi: mesaj",
+            // metin yoksa jenerik "N yeni bildirim" yerine "AppAdi • N bildirim" formati.
+            val appNotifCount = latestNotifApp.notificationCount.coerceAtLeast(1)
             val notifDisplayText = when {
                 latestNotifApp.notificationText.isNotBlank() ->
                     "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
-                totalBadge == 1 -> "${latestNotifApp.appName}: 1 yeni bildirim"
-                totalBadge > 1  -> "$totalBadge yeni bildirim"
-                else -> "${latestNotifApp.appName}: yeni bildirim"
+                else ->
+                    "${latestNotifApp.appName} • $appNotifCount bildirim"
             }
             Text(
                 text = notifDisplayText,
