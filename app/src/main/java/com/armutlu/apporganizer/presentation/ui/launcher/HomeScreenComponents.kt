@@ -73,6 +73,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import android.provider.Settings
+import com.armutlu.apporganizer.presentation.ui.MainActivity
+import com.armutlu.apporganizer.presentation.navigation.Routes
+import com.armutlu.apporganizer.presentation.ui.screens.isNotificationListenerGranted
+import com.armutlu.apporganizer.utils.UsageStatsHelper
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -791,6 +799,37 @@ internal fun HomeAppSearchBar(
     // Sorguyu ViewModel'e ilet — FTS5 çok-kaynak araması (dosyalar) debounce ile orada çalışır
     LaunchedEffect(query) { onQueryChange(query) }
 
+    // İzin ipucu (E10) — Kullanım Erişimi veya Bildirim Erişimi eksikse arama çubuğu altında göster.
+    // ON_RESUME'da yeniden kontrol: Ayarlar'dan izin verilince ipucu anında kaybolur.
+    var usageGranted by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
+    var notifListenerGranted by remember { mutableStateOf(isNotificationListenerGranted(context)) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val obs = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                usageGranted = UsageStatsHelper.hasPermission(context)
+                notifListenerGranted = isNotificationListenerGranted(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(obs)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(obs) }
+    }
+    val permMissing = !usageGranted || !notifListenerGranted
+    // Bu oturumda X ile kapatıldı mı (aktif ipucu için geçici gizleme)
+    var permHintSessionDismissed by remember { mutableStateOf(false) }
+    // Kaç açılışta gösterildi — MAX'a ulaşınca rahatsız etmeyen pasif linke döner
+    val permHintCount = remember { AppPrefs.getSearchPermHintCount(context) }
+    val permHintPassiveMode = permHintCount >= AppPrefs.SEARCH_PERM_HINT_MAX
+    // Pasif link kalıcı kapatıldıysa bir daha hiç gösterme
+    val permHintPermDismissed = remember { AppPrefs.isSearchPermHintDismissed(context) }
+    val showPermHint = permMissing && !permHintSessionDismissed && !permHintPermDismissed
+    // Aktif modda ilk gösterimde sayaç artır — birkaç açılış sonra pasif moda geçsin
+    LaunchedEffect(showPermHint, permHintPassiveMode) {
+        if (showPermHint && !permHintPassiveMode) {
+            AppPrefs.incrementSearchPermHintCount(context)
+        }
+    }
+
     // Drag handle state
     var isDragging by remember { mutableStateOf(false) }
     var dragOffsetY by remember { mutableStateOf(0f) }
@@ -906,6 +945,75 @@ internal fun HomeAppSearchBar(
                             modifier = Modifier.size(18.dp).clickable { query = "" })
                     }
                 }
+            }
+        }
+
+        // İzin ipucu satırı (E10) — arama çubuğunun hemen altında; sürükleme sırasında gizli
+        if (showPermHint && !isDragging) {
+            Spacer(Modifier.height(4.dp))
+            val permHintText = when {
+                permHintPassiveMode -> "İzinler ayarlardan yönetilebilir →"
+                !usageGranted -> "🔍 Daha iyi arama ve öneriler için kullanım erişimi gerekli — Ver"
+                else -> "🔔 Bildirim rozetleri için erişim gerekli — Ver"
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White.copy(alpha = 0.10f))
+                    .clickable {
+                        if (permHintPassiveMode) {
+                            // Rahatsız etmeden İzinler rehberine yönlendir (MainActivity → PERMISSIONS_GUIDE)
+                            val intent = Intent(context, MainActivity::class.java).apply {
+                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.PERMISSIONS_GUIDE)
+                                addFlags(
+                                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                )
+                            }
+                            runCatching { context.startActivity(intent) }
+                        } else {
+                            // Eksik olan izni doğrudan sistem ayarında aç
+                            if (!usageGranted) {
+                                UsageStatsHelper.openPermissionSettings(context)
+                            } else {
+                                runCatching {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    permHintText,
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "İpucunu kapat",
+                    tint = Color.White.copy(alpha = 0.55f),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable {
+                            permHintSessionDismissed = true
+                            if (permHintPassiveMode) {
+                                // Pasif link kapatıldıysa kalıcı gizle — bir daha rahatsız etme
+                                AppPrefs.setSearchPermHintDismissed(context, true)
+                            } else {
+                                // Aktif ipucu kapatıldıysa sayacı ilerlet (pasif moda daha çabuk geçsin)
+                                AppPrefs.incrementSearchPermHintCount(context)
+                            }
+                        }
+                )
             }
         }
 

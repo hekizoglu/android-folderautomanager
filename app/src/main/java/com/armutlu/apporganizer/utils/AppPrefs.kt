@@ -34,6 +34,27 @@ object AppPrefs {
         prefs.edit().putInt(KEY_SWIPE_HINT_COUNT, current + 1).apply()
     }
 
+    // Arama çubuğu izin ipucu (E10) — kullanım/bildirim erişimi eksikse arama çubuğu altında
+    // küçük ipucu göster. En fazla SEARCH_PERM_HINT_MAX açılışta aktif "Ver" ipucu görünür;
+    // sonra rahatsız etmeyen "İzinler ayarlardan yönetilebilir →" pasif linkine döner.
+    const val KEY_SEARCH_PERM_HINT_COUNT = "search_perm_hint_count"
+    const val KEY_SEARCH_PERM_HINT_DISMISSED = "search_perm_hint_dismissed"
+    const val SEARCH_PERM_HINT_MAX = 3
+
+    fun getSearchPermHintCount(context: Context): Int =
+        prefs(context).getInt(KEY_SEARCH_PERM_HINT_COUNT, 0)
+
+    fun incrementSearchPermHintCount(context: Context) {
+        val p = prefs(context)
+        p.edit().putInt(KEY_SEARCH_PERM_HINT_COUNT, p.getInt(KEY_SEARCH_PERM_HINT_COUNT, 0) + 1).apply()
+    }
+
+    fun isSearchPermHintDismissed(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_SEARCH_PERM_HINT_DISMISSED, false)
+
+    fun setSearchPermHintDismissed(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_SEARCH_PERM_HINT_DISMISSED, v).apply()
+
     // Özellik toggle'ları — SettingsScreen'den yönetilir
     const val KEY_SWIPE_HINT_ENABLED   = "swipe_hint_enabled"
     const val KEY_NEW_BADGE_ENABLED    = "new_badge_enabled"
