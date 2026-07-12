@@ -77,7 +77,7 @@ fun SettingsScreen(
         }
         val activity = context as? FragmentActivity
         if (activity == null || !BiometricHelper.isAvailable(activity)) {
-            biometricUnlocked = true
+            onNavigateBack()
             return@LaunchedEffect
         }
         BiometricHelper.authenticate(

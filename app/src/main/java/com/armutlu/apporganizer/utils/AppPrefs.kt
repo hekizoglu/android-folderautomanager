@@ -140,6 +140,11 @@ object AppPrefs {
     fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
     fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
 
+    const val KEY_OVERRIDE_SUGGESTIONS_ENABLED = "override_suggestions_enabled"
+    fun isOverrideSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_OVERRIDE_SUGGESTIONS_ENABLED, true)
+    fun setOverrideSuggestionsEnabled(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_OVERRIDE_SUGGESTIONS_ENABLED, v).apply()
+
     // Klasör şekli — "circle", "rounded", "square", "triangle"
     const val KEY_FOLDER_SHAPE = "folder_shape"
     fun getFolderShape(context: Context): String = prefs(context).getString(KEY_FOLDER_SHAPE, "circle") ?: "circle"
@@ -573,6 +578,7 @@ object AppPrefs {
     // Manuel Kategori Ezmeler — kullanıcı tarafından atanmış paket→kategori haritası
     // AppClassifier bu haritayı exactMatch'ten önce kontrol eder (en yüksek öncelik)
     const val KEY_MANUAL_CAT_OVERRIDES = "manual_category_overrides"
+    const val KEY_ACCEPTED_OVERRIDE_PATTERNS = "accepted_override_patterns"
 
     fun getManualCategoryOverrides(context: Context): Map<String, String> =
         (prefs(context).getString(KEY_MANUAL_CAT_OVERRIDES, null) ?: "").parseJsonMap()
@@ -591,6 +597,16 @@ object AppPrefs {
 
     fun clearManualCategoryOverrides(context: Context) =
         prefs(context).edit().remove(KEY_MANUAL_CAT_OVERRIDES).apply()
+
+    fun getAcceptedOverridePatterns(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_ACCEPTED_OVERRIDE_PATTERNS, emptySet()) ?: emptySet()
+
+    fun addAcceptedOverridePattern(context: Context, categoryId: String, packages: List<String>) {
+        if (packages.isEmpty()) return
+        val next = getAcceptedOverridePatterns(context).toMutableSet()
+        next += "$categoryId:${packages.sorted().joinToString(",")}"
+        prefs(context).edit().putStringSet(KEY_ACCEPTED_OVERRIDE_PATTERNS, next).apply()
+    }
 
     // DeepSeek LLM kategorileme sonucu kalıcı cache — kurulum sonrası her acilista ayni
     // bilinmeyen paketler icin tekrar API cagrisi yapilmasin (K1, Dongu 227, Fable danismanligi).

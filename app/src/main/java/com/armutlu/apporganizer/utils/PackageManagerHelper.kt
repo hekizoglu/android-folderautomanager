@@ -198,6 +198,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
         return try {
             val intent = packageManager.getLaunchIntentForPackage(packageName)
             if (intent != null) {
+                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
                 true
             } else {
@@ -217,6 +218,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
         return try {
             val intent = android.content.Intent(android.content.Intent.ACTION_DELETE).apply {
                 data = android.net.Uri.parse("package:$packageName")
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
             true

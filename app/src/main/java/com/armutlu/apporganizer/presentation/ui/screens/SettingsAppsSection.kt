@@ -78,12 +78,24 @@ internal fun LazyListScope.settingsAppsSection(
         var showResetDialog by remember { mutableStateOf(false) }
         SettingsCard {
             var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
+            var overrideSuggestions by remember { mutableStateOf(AppPrefs.isOverrideSuggestionsEnabled(context)) }
             SettingsSwitchRow(
                 icon = Icons.Default.PhoneAndroid,
                 title = "Üretici Sınıflandırması",
                 subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilendir",
                 checked = manufacturerClassify,
                 onCheckedChange = { manufacturerClassify = it; AppPrefs.setManufacturerClassifyEnabled(context, it) }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(
+                icon = Icons.Default.Lightbulb,
+                title = "Benzer Uygulama Önerileri",
+                subtitle = "Elle taşıdığın uygulamalardan öğrenip benzerlerini önerir",
+                checked = overrideSuggestions,
+                onCheckedChange = {
+                    overrideSuggestions = it
+                    AppPrefs.setOverrideSuggestionsEnabled(context, it)
+                }
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsButtonRow(icon = Icons.Default.AutoFixHigh,

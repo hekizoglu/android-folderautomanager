@@ -115,6 +115,32 @@ class AppClassifier @Inject constructor(
         else -> 50
     }
 
+    fun isLowConfidence(appInfo: AppInfo, categoryId: String): Boolean =
+        getConfidence(appInfo, categoryId) < LOW_CONFIDENCE_THRESHOLD
+
+    fun findSimilarApps(
+        packageName: String,
+        categoryId: String,
+        allApps: List<AppInfo>
+    ): List<AppInfo> {
+        val source = allApps.firstOrNull { it.packageName == packageName } ?: return emptyList()
+        val manualOverrides = AppPrefs.getManualCategoryOverrides(context)
+        return allApps
+            .asSequence()
+            .filter { it.packageName != packageName }
+            .filter { it.packageName !in manualOverrides }
+            .filter { it.categoryId != categoryId }
+            .filter { candidate ->
+                hasSameManufacturerSignal(source, candidate) ||
+                    hasKeywordMatch(candidate.appName, categoryId) ||
+                    hasPackageKeywordMatch(candidate.packageName, categoryId) ||
+                    classifyByPlayStoreCategory(candidate.packageName) == categoryId
+            }
+            .sortedWith(compareBy<AppInfo> { it.appName.lowercase(java.util.Locale("tr")) })
+            .take(8)
+            .toList()
+    }
+
     // Üretici paket prefix'i veya uygulama adı → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
     // Nokta/tire normalize edilir; büyük/küçük harf toleransı sağlanır.
     private fun classifyByManufacturerPrefix(packageName: String, appName: String = ""): String? {
@@ -124,6 +150,12 @@ class AppClassifier @Inject constructor(
         // Uygulama adında üretici adı varsa da eşleştir (Samsung/SAMSUNG/samsung toleranslı)
         val lowerName = appName.lowercase(java.util.Locale("tr"))
         return MANUFACTURER_NAME_MAP.entries.firstOrNull { (mfr, _) -> lowerName.contains(mfr) }?.value
+    }
+
+    private fun hasSameManufacturerSignal(a: AppInfo, b: AppInfo): Boolean {
+        val aCategory = classifyByManufacturerPrefix(a.packageName, a.appName)
+        val bCategory = classifyByManufacturerPrefix(b.packageName, b.appName)
+        return aCategory != null && aCategory == bCategory
     }
 
     private fun classifyByKeywords(appName: String, packageName: String): String? {
@@ -145,6 +177,10 @@ class AppClassifier @Inject constructor(
 
     private fun hasPackageKeywordMatch(packageName: String, categoryId: String) =
         KeywordDatabase.getKeywords(categoryId).any { packageName.lowercase().contains(it) }
+
+    private companion object {
+        const val LOW_CONFIDENCE_THRESHOLD = 60
+    }
 }
 
 

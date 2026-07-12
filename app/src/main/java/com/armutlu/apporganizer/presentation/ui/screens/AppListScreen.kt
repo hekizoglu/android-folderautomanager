@@ -32,7 +32,10 @@ fun AppListScreen(
     val sortOption      by viewModel.sortOption.collectAsState()
     val classifyLoading by viewModel.classifyLoading.collectAsState()
     val classifyResult  by viewModel.classifyResult.collectAsState()
-    val selectionCount  = screenState.selectedApps.size
+    val selectedApps    by viewModel.selectedApps.collectAsState()
+    val suggestedSimilarApps by viewModel.suggestedSimilarApps.collectAsState()
+    val suggestedSimilarCategoryId by viewModel.suggestedSimilarCategoryId.collectAsState()
+    val selectionCount  = selectedApps.size
     val isSelecting     = selectionCount > 0
     val hasUnclassifiedApps = screenState.apps.any { it.categoryId == Category.CAT_UNCATEGORIZED }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -158,7 +161,7 @@ fun AppListScreen(
                         BulkCategoryPicker(
                             categories = screenState.categories,
                             onCategorySelected = { catId ->
-                                viewModel.updateAppsCategory(screenState.selectedApps.toList(), catId)
+                                viewModel.updateAppsCategory(selectedApps.toList(), catId)
                                 showBulkCategory = false
                             },
                             onDismiss = { showBulkCategory = false }
@@ -238,7 +241,7 @@ fun AppListScreen(
                 )
                 else -> AppListContent(
                     apps = screenState.filteredApps,
-                    selectedApps = screenState.selectedApps,
+                    selectedApps = selectedApps,
                     categories = screenState.categories,
                     onAppClick = { app ->
                         if (isSelecting) viewModel.toggleAppSelection(app.packageName)
@@ -263,6 +266,37 @@ fun AppListScreen(
                 appForCategory = null
             },
             onDismiss = { appForCategory = null }
+        )
+    }
+
+    if (suggestedSimilarApps.isNotEmpty() && suggestedSimilarCategoryId != null) {
+        val categoryName = screenState.categories
+            .firstOrNull { it.categoryId == suggestedSimilarCategoryId }
+            ?.categoryName
+            ?: "seçilen kategori"
+        AlertDialog(
+            onDismissRequest = { viewModel.clearSimilarCategorySuggestions() },
+            title = { Text("Benzer uygulamalar bulundu") },
+            text = {
+                Text(
+                    suggestedSimilarApps
+                        .take(4)
+                        .joinToString(
+                            separator = "\n",
+                            prefix = "$categoryName için bunları da taşıyalım mı?\n\n",
+                        ) { "• ${it.appName}" }
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.acceptSimilarCategorySuggestions() }) {
+                    Text("Taşı")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.clearSimilarCategorySuggestions() }) {
+                    Text("Atla")
+                }
+            }
         )
     }
 

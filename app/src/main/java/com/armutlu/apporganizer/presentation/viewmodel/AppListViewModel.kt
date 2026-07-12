@@ -1,4 +1,4 @@
-package com.armutlu.apporganizer.presentation.viewmodel
+﻿package com.armutlu.apporganizer.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -9,7 +9,6 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.LauncherOrganizer
 import com.armutlu.apporganizer.utils.WidgetSuggestion
 import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.domain.models.AppInfo
@@ -42,7 +41,7 @@ class AppListViewModel @Inject constructor(
     private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
 ) : AndroidViewModel(application) {
 
-    // ── Log sistemi — MUTLAKA ilk sırada olmalı (init'ten önce hazır) ─────────
+    // â”€â”€ Log sistemi â€” MUTLAKA ilk sÄ±rada olmalÄ± (init'ten Ã¶nce hazÄ±r) â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private val _liveDebugLogs = MutableStateFlow<List<String>>(emptyList())
     val liveDebugLogs: StateFlow<List<String>> = _liveDebugLogs.asStateFlow()
 
@@ -69,22 +68,27 @@ class AppListViewModel @Inject constructor(
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
 
-    // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar
+    // Widget Ã¶neri listesi â€” en Ã§ok kullanÄ±lan ve widget'Ä± olan uygulamalar
     val widgetSuggestions: StateFlow<List<WidgetSuggestion>> = repository.getAllAppsFlow()
         .map { apps -> WidgetSuggestionEngine.getSuggestions(getApplication(), apps) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // LLM kategorize durumu — DeepSeek fallback
+    // LLM kategorize durumu â€” DeepSeek fallback
     private val _llmCategorizing = MutableStateFlow(false)
     val llmCategorizing: StateFlow<Boolean> = _llmCategorizing.asStateFlow()
     private val _llmProgress = MutableStateFlow("")
     val llmProgress: StateFlow<String> = _llmProgress.asStateFlow()
 
-    // Sınıflandırılmamışları sınıflandır yükleme durumu (layout jump → mail bug önlemi)
+    // SÄ±nÄ±flandÄ±rÄ±lmamÄ±ÅŸlarÄ± sÄ±nÄ±flandÄ±r yÃ¼kleme durumu (layout jump â†’ mail bug Ã¶nlemi)
     private val _classifyLoading = MutableStateFlow(false)
     val classifyLoading: StateFlow<Boolean> = _classifyLoading.asStateFlow()
     private val _classifyResult = MutableStateFlow("")
     val classifyResult: StateFlow<String> = _classifyResult.asStateFlow()
+
+    private val _suggestedSimilarApps = MutableStateFlow<List<AppInfo>>(emptyList())
+    val suggestedSimilarApps: StateFlow<List<AppInfo>> = _suggestedSimilarApps.asStateFlow()
+    private val _suggestedSimilarCategoryId = MutableStateFlow<String?>(null)
+    val suggestedSimilarCategoryId: StateFlow<String?> = _suggestedSimilarCategoryId.asStateFlow()
     
     // Initialization
     init {
@@ -96,19 +100,19 @@ class AppListViewModel @Inject constructor(
      */
     private fun initializeScreen() {
         viewModelScope.launch {
-            // Uygulama veritabanını arka planda indir
+            // Uygulama veritabanÄ±nÄ± arka planda indir
             launch {
-                appendDebugLog("AppDatabase indirme başlıyor...")
+                appendDebugLog("AppDatabase indirme baÅŸlÄ±yor...")
                 val result = appDatabaseService.fetchAndCache()
                 when (result) {
                     is com.armutlu.apporganizer.data.remote.FetchResult.Success ->
-                        appendDebugLog("✅ AppDatabase: ${result.count} uygulama indirildi (v${result.version})")
+                        appendDebugLog("âœ… AppDatabase: ${result.count} uygulama indirildi (v${result.version})")
                     is com.armutlu.apporganizer.data.remote.FetchResult.FromCache ->
-                        appendDebugLog("AppDatabase: cache'den ${result.count} uygulama yüklendi")
+                        appendDebugLog("AppDatabase: cache'den ${result.count} uygulama yÃ¼klendi")
                     is com.armutlu.apporganizer.data.remote.FetchResult.Error ->
-                        appendDebugLog("⚠️ AppDatabase indirilemedi: ${result.message}")
+                        appendDebugLog("âš ï¸ AppDatabase indirilemedi: ${result.message}")
                     com.armutlu.apporganizer.data.remote.FetchResult.NoCache ->
-                        appendDebugLog("⚠️ AppDatabase: cache yok, internet bağlantısını kontrol edin")
+                        appendDebugLog("âš ï¸ AppDatabase: cache yok, internet baÄŸlantÄ±sÄ±nÄ± kontrol edin")
                 }
             }
         }
@@ -117,14 +121,15 @@ class AppListViewModel @Inject constructor(
                 Timber.d("Initializing screen...")
                 repository.ensureDefaultCategories()
                 
-                // Get apps from repository — tüm filtre flow'larını combine et
+                // Get apps from repository â€” tÃ¼m filtre flow'larÄ±nÄ± combine et
                 combine(
                     repository.getAllAppsFlow(),
                     repository.getAllCategoriesFlow(),
                     _selectedCategory,
                     _searchQuery,
                     _sortOption,
-                    _showSystemApps
+                    _showSystemApps,
+                    _selectedApps
                 ) { values ->
                     @Suppress("UNCHECKED_CAST")
                     createScreenState(
@@ -133,7 +138,8 @@ class AppListViewModel @Inject constructor(
                         category = values[2] as String,
                         query = values[3] as String,
                         sort = values[4] as SortOption,
-                        showSystem = values[5] as Boolean
+                        showSystem = values[5] as Boolean,
+                        selectedApps = values[6] as Set<String>
                     )
                 }
                     .collect { state ->
@@ -157,9 +163,11 @@ class AppListViewModel @Inject constructor(
         category: String,
         query: String = _searchQuery.value,
         sort: SortOption = _sortOption.value,
-        showSystem: Boolean = _showSystemApps.value
+        showSystem: Boolean = _showSystemApps.value,
+        selectedApps: Set<String> = _selectedApps.value
     ): AppListScreenState {
-        val categoryStats = computeCategoryStats(apps, categories)
+        val visibleApps = if (showSystem) apps else apps.filter { !it.isSystemApp }
+        val categoryStats = computeCategoryStats(visibleApps, categories)
         val filteredApps = computeFilteredApps(apps, category, query, showSystem, sort)
         return AppListScreenState(
             apps = apps,
@@ -168,7 +176,7 @@ class AppListViewModel @Inject constructor(
             searchQuery = query,
             showSystemApps = showSystem,
             sortBy = sort,
-            selectedApps = _selectedApps.value,
+            selectedApps = selectedApps,
             filteredApps = filteredApps,
             visibleCategories = computeVisibleCategories(categories, categoryStats),
             categoryStats = categoryStats,
@@ -181,7 +189,7 @@ class AppListViewModel @Inject constructor(
      * Sync installed apps from device
      */
     fun syncInstalledApps(installedApps: List<AppInfo>) {
-        appendDebugLog("syncInstalledApps: ${installedApps.size} uygulama tarandı")
+        appendDebugLog("syncInstalledApps: ${installedApps.size} uygulama tarandÄ±")
         viewModelScope.launch {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
@@ -208,7 +216,9 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.updateAppCategory(packageName, categoryId)
+                AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                prepareSimilarCategorySuggestions(packageName, categoryId)
                 Timber.d("Updated $packageName to $categoryId")
             } catch (e: Exception) {
                 Timber.e(e, "Error updating app category")
@@ -223,7 +233,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             val trimmedName = name.trim()
             if (trimmedName.isEmpty()) {
-                _screenState.value = _screenState.value.copy(error = "Kategori adı boş olamaz")
+                _screenState.value = _screenState.value.copy(error = "Kategori adÄ± boÅŸ olamaz")
                 return@launch
             }
             if (repository.findCategoryByName(trimmedName) != null) {
@@ -254,7 +264,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             val trimmedName = category.categoryName.trim()
             if (trimmedName.isEmpty()) {
-                _screenState.value = _screenState.value.copy(error = "Kategori adı boş olamaz")
+                _screenState.value = _screenState.value.copy(error = "Kategori adÄ± boÅŸ olamaz")
                 return@launch
             }
             val duplicate = repository.findCategoryByName(trimmedName)
@@ -269,7 +279,7 @@ class AppListViewModel @Inject constructor(
                 searchRepository.reindexCategory(oldCategory, updatedCategory)
             }.onFailure {
                 Timber.e(it, "Error updating category")
-                _screenState.value = _screenState.value.copy(error = "Kategori güncellenemedi")
+                _screenState.value = _screenState.value.copy(error = "Kategori gÃ¼ncellenemedi")
             }
         }
     }
@@ -305,6 +315,7 @@ class AppListViewModel @Inject constructor(
             try {
                 repository.updateAppsCategory(packageNames, categoryId)
                 packageNames.forEach { packageName ->
+                    AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
                     repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
                 }
                 clearSelection()
@@ -313,6 +324,30 @@ class AppListViewModel @Inject constructor(
                 Timber.e(e, "Error updating apps category")
             }
         }
+    }
+
+    fun acceptSimilarCategorySuggestions() {
+        val apps = _suggestedSimilarApps.value
+        val categoryId = _suggestedSimilarCategoryId.value
+        if (apps.isEmpty() || categoryId == null) {
+            clearSimilarCategorySuggestions()
+            return
+        }
+        viewModelScope.launch {
+            val packageNames = apps.map { it.packageName }
+            repository.updateAppsCategory(packageNames, categoryId)
+            packageNames.forEach { packageName ->
+                AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
+                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+            }
+            AppPrefs.addAcceptedOverridePattern(getApplication(), categoryId, packageNames)
+            clearSimilarCategorySuggestions()
+        }
+    }
+
+    fun clearSimilarCategorySuggestions() {
+        _suggestedSimilarApps.value = emptyList()
+        _suggestedSimilarCategoryId.value = null
     }
     
     /**
@@ -414,6 +449,17 @@ class AppListViewModel @Inject constructor(
     fun getCategoryStats(): Map<String, Int> {
         return _screenState.value.categoryStats
     }
+
+    private suspend fun prepareSimilarCategorySuggestions(packageName: String, categoryId: String) {
+        val context = getApplication<Application>()
+        if (!AppPrefs.isOverrideSuggestionsEnabled(context)) {
+            clearSimilarCategorySuggestions()
+            return
+        }
+        val suggestions = classifier.findSimilarApps(packageName, categoryId, repository.getAllApps())
+        _suggestedSimilarApps.value = suggestions
+        _suggestedSimilarCategoryId.value = categoryId.takeIf { suggestions.isNotEmpty() }
+    }
     
     /**
      * Delete app
@@ -447,8 +493,8 @@ class AppListViewModel @Inject constructor(
                 }
 
                 if (unclassifiedApps.isEmpty()) {
-                    _classifyResult.value = "Tüm uygulamalar zaten sınıflandırılmış."
-                    appendDebugLog("ℹ️ Tüm uygulamalar zaten sınıflandırılmış.")
+                    _classifyResult.value = "TÃ¼m uygulamalar zaten sÄ±nÄ±flandÄ±rÄ±lmÄ±ÅŸ."
+                    appendDebugLog("â„¹ï¸ TÃ¼m uygulamalar zaten sÄ±nÄ±flandÄ±rÄ±lmÄ±ÅŸ.")
                     _screenState.value = _screenState.value.copy(isRefreshing = false)
                     _classifyLoading.value = false
                     return@launch
@@ -465,7 +511,7 @@ class AppListViewModel @Inject constructor(
 
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
                 _classifyResult.value = "$classified / ${unclassifiedApps.size} uygulama kategorilendi."
-                appendDebugLog("✅ AI sınıflandırma: $classified/${unclassifiedApps.size} uygulama kategorilendi")
+                appendDebugLog("âœ… AI sÄ±nÄ±flandÄ±rma: $classified/${unclassifiedApps.size} uygulama kategorilendi")
             } catch (e: Exception) {
                 Timber.e(e, "Error classifying apps")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
@@ -486,14 +532,14 @@ class AppListViewModel @Inject constructor(
             try {
                 val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).firstOrNull() ?: emptyList()
                 if (otherAppsList.isEmpty()) {
-                    _llmProgress.value = "Diger klasoru bos — kategorize edilecek uygulama yok."
+                    _llmProgress.value = "Diger klasoru bos â€” kategorize edilecek uygulama yok."
                     appendDebugLog("LLM: Diger klasoru bos.")
                     return@launch
                 }
                 _llmProgress.value = "Hazirlaniyor (${otherAppsList.size} uygulama)..."
                 appendDebugLog("LLM kategorize basliyor: ${otherAppsList.size} uygulama")
                 val packageNames = otherAppsList.map { it.packageName }
-                // Batch'lere bölerek ilerleme raporla
+                // Batch'lere bÃ¶lerek ilerleme raporla
                 val results = mutableMapOf<String, String>()
                 packageNames.chunked(15).forEachIndexed { idx, batch ->
                     _llmProgress.value = "Kategorize ediliyor: ${(idx * 15).coerceAtMost(packageNames.size)}/${packageNames.size}"
@@ -534,18 +580,23 @@ class AppListViewModel @Inject constructor(
     }
 
     fun launchApp(packageName: String) {
-        try {
-            val ctx = getApplication<Application>()
-            val intent = ctx.packageManager.getLaunchIntentForPackage(packageName)
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                ctx.startActivity(intent)
-            } else {
-                Timber.w("No launch intent for $packageName")
-                _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
+        viewModelScope.launch {
+            try {
+                val ctx = getApplication<Application>()
+                val intent = ctx.packageManager.getLaunchIntentForPackage(packageName)
+                if (intent != null) {
+                    val now = System.currentTimeMillis()
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    ctx.startActivity(intent)
+                    repository.incrementLaunchCount(packageName)
+                    repository.updateLastUsedTimestamp(packageName, now)
+                } else {
+                    Timber.w("No launch intent for $packageName")
+                    _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error launching $packageName")
             }
-        } catch (e: Exception) {
-            Timber.e(e, "Error launching $packageName")
         }
     }
 
@@ -557,9 +608,9 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
-                appendDebugLog("Tüm kategoriler sıfırlanıyor...")
+                appendDebugLog("TÃ¼m kategoriler sÄ±fÄ±rlanÄ±yor...")
                 repository.resetAllCategories()
-                appendDebugLog("Kategoriler sıfırlandı — yeniden sınıflandırılıyor...")
+                appendDebugLog("Kategoriler sÄ±fÄ±rlandÄ± â€” yeniden sÄ±nÄ±flandÄ±rÄ±lÄ±yor...")
                 val apps = _screenState.value.apps
                 val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs
                     .isManufacturerClassifyEnabled(getApplication())
@@ -569,7 +620,7 @@ class AppListViewModel @Inject constructor(
                         repository.updateAppCategory(app.packageName, category)
                     }
                 }
-                appendDebugLog("✅ ${apps.size} uygulama yeniden sınıflandırıldı")
+                appendDebugLog("âœ… ${apps.size} uygulama yeniden sÄ±nÄ±flandÄ±rÄ±ldÄ±")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
             } catch (e: Exception) {
                 Timber.e(e, "Error resetting and reclassifying")
@@ -616,8 +667,8 @@ class AppListViewModel @Inject constructor(
                 }
                 context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                     .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
-                Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
-            }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
+                Timber.d("Privacy reset: tÃ¼m kullanÄ±m verisi temizlendi")
+            }.onFailure { Timber.e(it, "resetAllPrivacyData hatasÄ±") }
         }
     }
 

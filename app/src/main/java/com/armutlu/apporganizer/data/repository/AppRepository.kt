@@ -294,26 +294,58 @@ class AppRepository @Inject constructor(
      */
     suspend fun syncInstalledApps(installedApps: List<AppInfo>) {
         try {
-            val existingPackages = appDao.getAllPackageNames()
-            
-            // Insert new or update existing apps
+            val existingApps = appDao.getAllApps()
+            val existingByPackage = existingApps.associateBy { it.packageName }
+            val existingPackages = existingByPackage.keys
+            val installedPackages = installedApps.map { it.packageName }.toSet()
+
             val appsToInsert = installedApps.filter { app ->
-                !existingPackages.contains(app.packageName)
+                app.packageName !in existingPackages
             }
-            
+
             if (appsToInsert.isNotEmpty()) {
                 insertApps(appsToInsert)
             }
-            
-            // Remove uninstalled apps
-            val installedPackages = installedApps.map { it.packageName }.toSet()
-            existingPackages.forEach { existing ->
-                if (!installedPackages.contains(existing)) {
-                    deleteApp(existing)
+
+            var updatedCount = 0
+            installedApps.forEach { scannedApp ->
+                val existing = existingByPackage[scannedApp.packageName] ?: return@forEach
+                val merged = scannedApp.copy(
+                    categoryId = existing.categoryId,
+                    iconUrl = existing.iconUrl,
+                    customNotes = existing.customNotes,
+                    usageCount = existing.usageCount,
+                    launchCount = existing.launchCount,
+                    lastUsedTimestamp = existing.lastUsedTimestamp,
+                    notificationCount = existing.notificationCount,
+                    notificationImportance = existing.notificationImportance,
+                    notificationText = existing.notificationText,
+                    isHidden = existing.isHidden,
+                    installTime = existing.installTime,
+                    firstInstalledTime = if (existing.firstInstalledTime > 0L) {
+                        existing.firstInstalledTime
+                    } else {
+                        scannedApp.firstInstalledTime
+                    },
+                    lastUpdated = System.currentTimeMillis(),
+                )
+                if (merged != existing) {
+                    updateApp(merged)
+                    updatedCount++
                 }
             }
-            
-            Timber.d("Synced installed apps - Added: ${appsToInsert.size}, Removed: ${existingPackages.size - installedPackages.size}")
+
+            var removedCount = 0
+            existingPackages.forEach { existing ->
+                if (existing !in installedPackages) {
+                    deleteApp(existing)
+                    removedCount++
+                }
+            }
+
+            Timber.d(
+                "Synced installed apps - Added: ${appsToInsert.size}, Updated: $updatedCount, Removed: $removedCount",
+            )
         } catch (e: Exception) {
             Timber.e(e, "Error syncing installed apps")
         }

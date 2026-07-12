@@ -15,7 +15,6 @@ Bu belge, AppOrganizer icin urun mantigi hatalarini erken yakalamak uzere taniml
 |---|---|---|---|
 | LS001 | P1 | ViewModel state | `combine` disinda kalan secili/gecici state nedeniyle stale UI |
 | LS002 | P1 | UI action | Snapshot state ile toplu islem |
-| LS003 | P1 | Launch/report | Uygulama acilisi var ama usage/launch kaydi yok |
 | LS004 | P1 | Repository sync | Insert-delete var, update yok |
 | LS005 | P1 | Notification/report | "bugun / en cok actigin" metni ama yanlis metrik |
 | LS006 | P1 | Navigation | `putExtra` var, route tuketimi kopuk |

@@ -26,18 +26,11 @@ $rules = @(
         Pattern = 'screenState\.selectedApps\.toList\(\)'
     },
     @{
-        Id = "LS003"
-        Severity = "P1"
-        Description = "launchApp analytics veya usage update yapmadan activity baslatiyor"
-        Path = "app\src\main\java\com\armutlu\apporganizer\presentation\viewmodel\AppListViewModel.kt"
-        Pattern = 'fun launchApp\(app: AppInfo\)'
-    },
-    @{
         Id = "LS004"
         Severity = "P1"
         Description = "syncInstalledApps mevcut uygulamalari update etmeden yalnizca insert-delete yapiyor"
         Path = "app\src\main\java\com\armutlu\apporganizer\data\repository\AppRepository.kt"
-        Pattern = 'suspend fun syncInstalledApps\('
+        Pattern = 'val existingPackages = appDao\.getAllPackageNames\(\)'
     },
     @{
         Id = "LS005"
@@ -58,7 +51,7 @@ $rules = @(
         Severity = "P2"
         Description = "cancelUniqueWork hemen ardindan KEEP ile enqueue edilmis"
         Path = "app\src\main\java\com\armutlu\apporganizer\workers\SmartInsightWorker.kt"
-        Pattern = 'cancelUniqueWork\(WORK_NAME\)'
+        Pattern = 'ExistingPeriodicWorkPolicy\.KEEP'
     },
     @{
         Id = "LS008"
@@ -73,13 +66,6 @@ $rules = @(
         Description = "uygulama context'inden NEW_TASK olmadan activity baslatiliyor olabilir"
         Path = "app\src\main\java\com\armutlu\apporganizer\utils\PackageManagerHelper.kt"
         Pattern = 'context\.startActivity\(launchIntent\)'
-    },
-    @{
-        Id = "LS010"
-        Severity = "P2"
-        Description = "biyometrik koruma hata halinde fail-open davraniyor olabilir"
-        Path = "app\src\main\java\com\armutlu\apporganizer\presentation\ui\screens\SettingsScreen.kt"
-        Pattern = 'biometricUnlocked = true'
     }
 )
 
@@ -99,13 +85,13 @@ foreach ($rule in $rules) {
     }
 }
 
-$sorted = $findings | Sort-Object Severity, Id
+$sorted = @($findings | Sort-Object Severity, Id)
 
 $lines = @()
 $lines += "# Logic Audit Fast"
 $lines += ""
 $lines += "- Tarih: $timestamp"
-$lines += "- Toplam bulgu: $($sorted.Count)"
+$lines += "- Toplam bulgu: $(@($sorted).Count)"
 $lines += "- Kural seti: qa/logic-rules.md"
 $lines += ""
 

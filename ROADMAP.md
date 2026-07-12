@@ -1,4 +1,4 @@
-# ROADMAP.md - AppOrganizer Aktif Yol Haritasi
+﻿# ROADMAP.md - AppOrganizer Aktif Yol Haritasi
 
 > Son guncelleme: 2026-07-12.
 > Bu dosya aktif yapilacaklar icin tek kaynak olarak kullanilir.
@@ -93,32 +93,14 @@ Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da; Usag
 
 Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazirlandi. Her madde: sorun, dokunulacak dosyalar, adim adim cozum tarifi, kabul kriteri iceriyor. Kod degisikligi bu dokumanda yapilmadi. NOT: Gizlilik analizi (14p) LISTEDEN CIKARILDI - PrivacyReportScreen/PrivacyAnalyzer olarak D238'de zaten uygulandi ve baglandi; Codex yeniden yapmasin.
 
-### Akilli Kategorileme K2 - Override'lardan ogrenen oneri katmani (14p)
-
-**Sorun/istek:** `AppPrefs.getManualCategoryOverrides` su an tek paket bazli calisiyor, genelleme yok. Kullanici bir uygulamayi elle baska klasore tasiyinca ayni uretici prefix'i/keyword kumesi/LLM kategorisindeki benzer uygulamalar icin oneri gosterilmiyor.
-
-**Cozum tarifi:**
-1. `AppClassifier.kt` icine `findSimilarApps(packageName: String, categoryId: String, allApps: List<AppInfo>): List<AppInfo>` fonksiyonu ekle — ayni `MANUFACTURER_PREFIX_MAP` prefix'i veya ayni keyword kategorisi eslesen, henuz manuel override edilmemis diger uygulamalari bul.
-2. `AppPrefs.kt`'ye `KEY_OVERRIDE_SUGGESTIONS_ENABLED` + getter/setter ekle (varsayilan: acik), SettingsScreen'e toggle.
-3. `LauncherViewModel.kt` veya `AppListViewModel.kt` icinde `updateAppCategory` cagrisi sonrasi (manuel override yazildiginda) `findSimilarApps` calistir, sonucu bir `StateFlow<List<AppInfo>>` (`suggestedSimilarApps`) olarak yayinla.
-4. `FolderScreen.kt` (veya kategori degistirme dialogunun oldugu ekran) icinde bu flow'u dinleyip "Bunlari da tasiyalim mi?" oneri chip'i/snackbar'i goster; kabul edilirse `updateAppsCategory` (batch) cagir.
-5. Kabul edilen paternler `AppPrefs`'e yerel bir set olarak yazilabilir (ornek: `KEY_ACCEPTED_OVERRIDE_PATTERNS`) — cihaz disina veri cikmaz.
-6. `AppClassifier.kt`, `LauncherViewModel.kt`, `FolderScreen.kt`, `AppPrefs.kt` disinda yeni dosya acmaya gerek yok.
-
-**Kabul kriteri:**
-- Bir uygulama elle baska kategoriye tasindiginda, ayni uretici/keyword grubundaki en az 1 diger uygulama icin oneri UI'da gorunur.
-- Toggle kapatilinca oneri hic tetiklenmez.
-
----
-
 ### Akilli Kategorileme K4 - Kullanim paternine gore baglamsal akilli klasor (13p)
 
 **Sorun/istek:** Room `usageCount`/`lastUsedTimestamp` + `UsageStatsHelper` saat-dilimi verisi var ama "Sabah Rutini / Is Saatleri / Aksam" gibi dinamik/sanal klasor veya klasor ici otomatik yeniden siralama yok. 13p "kullanim sikligina gore dock siralama" fikriyle sinerjik, birlikte tek epik olarak ele alinabilir.
 
-**Not:** CLAUDE.md kurali geregi bu madde zorluk 7/10 — uygulamadan once mimari karar gerekiyor. Codex once 2 kaynaktan (WebSearch + kod analizi) arastirma yapip 2+ secenek sunmali, sonra Huseyin onayi beklemeli. Direkt kod yazma.
+**Not:** CLAUDE.md kurali geregi bu madde zorluk 7/10 â€” uygulamadan once mimari karar gerekiyor. Codex once 2 kaynaktan (WebSearch + kod analizi) arastirma yapip 2+ secenek sunmali, sonra Huseyin onayi beklemeli. Direkt kod yazma.
 
 **Cozum tarifi (arastirma + tasarim adimlari):**
-1. `UsageStatsHelper.kt`'yi oku — saat-dilimi histogram cikarma yetenegi var mi dogrula (yoksa once bu eklenmeli).
+1. `UsageStatsHelper.kt`'yi oku â€” saat-dilimi histogram cikarma yetenegi var mi dogrula (yoksa once bu eklenmeli).
 2. `InsightEngine.kt` icindeki mevcut zaman-bazli insight uretme pattern'ini incele, ayni yaklasimla "su an hangi zaman dilimindeyiz" -> "bu dilimde en cok kullanilan N uygulama" hesaplamasi tasarla.
 3. Secenek A: `HomeScreen.kt`'de mevcut klasorlerin ustune gecici bir "Simdi" seridi/karti ekle (kalici klasor degil, sadece siralama onerisi).
    Secenek B: `LauncherViewModel.kt`'deki dock/quick-access sec-4-uygulama mantigina (zaten `boosted` skor sistemi var, satir ~634-654) zaman-dilimi boost'u ekle.
@@ -138,8 +120,8 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 **Cozum tarifi:**
 1. `SearchRepository.kt` icindeki mevcut `SearchDocument` modelini ve source_type alanini incele (ornek: APP/FOLDER/CONTACT/FILE gibi mevcut turler).
 2. Yeni bir `SearchDocumentType.SETTING` (veya string sabiti) ekle.
-3. Sabit bir liste olustur (yeni dosya: `utils/SystemSettingsCatalog.kt`) — her satir: baslik (Wi-Fi, Bluetooth, Bildirim Erisimi, Konum, vb.), eslesen `Settings.ACTION_*` intent sabiti (ornek: `Settings.ACTION_WIFI_SETTINGS`, `Settings.ACTION_BLUETOOTH_SETTINGS`, `Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS`).
-4. `SearchRepository.bootstrapIndex()` (AppListViewModel.kt satir 190 civarinda cagrilan yer) icine bu sabit listeyi FTS indeksine ekleyen bir adim koy — uygulama/klasor indexleme pattern'iyle ayni sekilde.
+3. Sabit bir liste olustur (yeni dosya: `utils/SystemSettingsCatalog.kt`) â€” her satir: baslik (Wi-Fi, Bluetooth, Bildirim Erisimi, Konum, vb.), eslesen `Settings.ACTION_*` intent sabiti (ornek: `Settings.ACTION_WIFI_SETTINGS`, `Settings.ACTION_BLUETOOTH_SETTINGS`, `Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS`).
+4. `SearchRepository.bootstrapIndex()` (AppListViewModel.kt satir 190 civarinda cagrilan yer) icine bu sabit listeyi FTS indeksine ekleyen bir adim koy â€” uygulama/klasor indexleme pattern'iyle ayni sekilde.
 5. Arama sonuc tiklamasinda `SETTING` turu icin `Intent(action).let { context.startActivity(it) }` cagir (AppListViewModel.launchIntent zaten var, onu kullan).
 6. `AppPrefs.kt`'ye `KEY_SEARCH_SETTINGS_SOURCE_ENABLED` + SettingsScreen toggle (Universal Search bolumune).
 
@@ -156,8 +138,8 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 **Cozum tarifi:**
 1. Mevcut `CategoryLLMFallback.kt`'deki DeepSeek/lokal AI cagri pattern'ini (API key okuma, `.env`/AppPrefs'ten key alma, hata durumunda sessiz devam) referans al.
 2. `WrappedReport` modelinin bulundugu dosyayi bul (Wrapped MVP Dongu 230 - `grep -r "WrappedReport" app/src`), agregat alanlarini (skor, en cok kullanilan kategori, trend) cikar.
-3. Yeni fonksiyon: `WrappedAiCoach.summarize(report: WrappedReport, apiKey: String): String` — sadece agregat sayisal veri (paket adi/icerik YOK) prompt'a gider.
-4. `AppPrefs.kt`'ye `KEY_WRAPPED_AI_COACH_ENABLED` (varsayilan KAPALI — opt-in, disaridan veri gittigi icin varsayilan acik olmamali) + SettingsScreen toggle, acik aciklama metniyle ("haftalik ozet skorun DeepSeek'e gonderilir, uygulama adi gitmez").
+3. Yeni fonksiyon: `WrappedAiCoach.summarize(report: WrappedReport, apiKey: String): String` â€” sadece agregat sayisal veri (paket adi/icerik YOK) prompt'a gider.
+4. `AppPrefs.kt`'ye `KEY_WRAPPED_AI_COACH_ENABLED` (varsayilan KAPALI â€” opt-in, disaridan veri gittigi icin varsayilan acik olmamali) + SettingsScreen toggle, acik aciklama metniyle ("haftalik ozet skorun DeepSeek'e gonderilir, uygulama adi gitmez").
 5. Wrapped rapor ekraninda (WrappedReportScreen veya benzeri) toggle aciksa bu yorumu bir kart olarak goster, yuklenirken skeleton/loading state.
 6. Hata/API-key-yok durumunda kart hic gosterilmez (sessiz basarisizlik, CLAUDE.md "Asla Yapma" kuralina uygun degil ama Play Store guvenlik/gizlilik onceligi burada gecerli).
 
@@ -172,9 +154,9 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 **Sorun/istek:** Haftalik kategori kullanim hedefi + rozet odulu yok; oturum altyapisina (UsageEvents, Dongu 232) bagimli.
 
 **Cozum tarifi:**
-1. Dongu 232'de eklenen UsageEvents yerel oturum agregatorunu bul (`grep -r "UsageEvents" app/src` ile dosyayi dogrula) — haftalik kategori bazli kullanim suresi zaten hesaplaniyor olmali.
-2. Room'a yeni tablo/entity: `WeeklyGoal` (categoryId, targetMinutes, weekStartEpochDay) — Room Migration sablonuna uy (CLAUDE.md §5 "Room Migration Sablonu": schemaLocation + Migration class + addMigrations, fallbackToDestructiveMigration YASAK).
-3. `AppPrefs.kt`'ye `KEY_GOALS_ENABLED` + toggle; hedef belirleme UI'i (yeni ekran veya Dashboard'a ek bolum — `AppOrganizerDashboardScreen.kt`'deki `DashboardStats.compute()` pattern'ini kullan).
+1. Dongu 232'de eklenen UsageEvents yerel oturum agregatorunu bul (`grep -r "UsageEvents" app/src` ile dosyayi dogrula) â€” haftalik kategori bazli kullanim suresi zaten hesaplaniyor olmali.
+2. Room'a yeni tablo/entity: `WeeklyGoal` (categoryId, targetMinutes, weekStartEpochDay) â€” Room Migration sablonuna uy (CLAUDE.md Â§5 "Room Migration Sablonu": schemaLocation + Migration class + addMigrations, fallbackToDestructiveMigration YASAK).
+3. `AppPrefs.kt`'ye `KEY_GOALS_ENABLED` + toggle; hedef belirleme UI'i (yeni ekran veya Dashboard'a ek bolum â€” `AppOrganizerDashboardScreen.kt`'deki `DashboardStats.compute()` pattern'ini kullan).
 4. Haftalik kontrol: mevcut `SmartInsightWorker` veya `WeeklyDigestWorker` (hangisi haftalik tetikleniyor, dogrula) icine hedef karsilastirma + rozet hak edildiyse bildirim ekle.
 5. Rozet gosterimi icin Wrapped/Dashboard ekranina basit bir liste/kart.
 
@@ -190,10 +172,10 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 
 **Cozum tarifi:**
 1. Dongu 232'deki UsageEvents agregator dosyasini bul, `UsageEvents.Event.KEYGUARD_HIDDEN` (API 28+) event turunu okuyup gunluk sayaca ekleyen bir fonksiyon ekle (mevcut oturum sayma pattern'iyle ayni yapida).
-2. API 28 altinda bu event yok — `Build.VERSION.SDK_INT >= 28` guard'i sart, altinda ozellik sessizce gizlenir (Wrapped karti gorunmez).
+2. API 28 altinda bu event yok â€” `Build.VERSION.SDK_INT >= 28` guard'i sart, altinda ozellik sessizce gizlenir (Wrapped karti gorunmez).
 3. Gunluk sayim `WrappedSnapshotPrefs` (mevcut `updateDailyScore` pattern'i) benzeri bir yapida haftalik trend icin saklanabilir.
 4. Wrapped rapor ekranina yeni bir kart: "Bu hafta telefonunu X kez actin, gecen haftaya gore %Y" .
-5. `AppPrefs.kt`'ye ayri toggle gerekmez — mevcut `KEY_WRAPPED_ENABLED` semsiyesine dahil edilebilir (Wrapped zaten opt-in ise).
+5. `AppPrefs.kt`'ye ayri toggle gerekmez â€” mevcut `KEY_WRAPPED_ENABLED` semsiyesine dahil edilebilir (Wrapped zaten opt-in ise).
 
 **Kabul kriteri:**
 - API 28+ cihazda Wrapped raporunda kilit acma sayisi karti goruluyor, API 28 altinda kart hic render edilmiyor (crash yok).
@@ -209,19 +191,19 @@ val lowConfidenceCount = folderList.sumOf { f ->
     f.apps.count { classifier.getConfidence(it, f.category.categoryId) < 60 }
 }
 ```
-`AppClassifier.kt` satir 110-116'da `getConfidence` skor 50 donduren durum "hicbir exact/keyword/package-keyword eslesme yok" (else -> 50) — yani "belirsiz" aslinda cok gevsek bir tanim, cogu normal kategorize uygulamayi da kapsayabilir.
+`AppClassifier.kt` satir 110-116'da `getConfidence` skor 50 donduren durum "hicbir exact/keyword/package-keyword eslesme yok" (else -> 50) â€” yani "belirsiz" aslinda cok gevsek bir tanim, cogu normal kategorize uygulamayi da kapsayabilir.
 
 Bu sayi `TickerComposer.kt` satir 320-325'te "$lowConfidenceCount uygulamanin kategorisi belirsiz" mesajina donusuyor ve `routeKey = "APP_LIST"` ile Routes.APP_LIST'e yonlendiriyor (LauncherViewModel.kt satir 684: `"APP_LIST" -> Routes.APP_LIST`).
 
-Ama `Routes.APP_LIST` parametresiz genel listeye gidiyor (`AppNavigation.kt` satir 88-89) ve `AppListScreen.kt`/`AppListViewModel.kt` hicbir "confidence" veya "belirsiz" filtresi bilmiyor — sadece `selectedCategory`/`searchQuery`/`showSystemApps`/`sortBy` filtreleri var (`AppListScreenState.kt` satir 59-87, `computeFilteredApps`). Sonuc: tiklaninca ayni "belirsiz" hesabini kullanan bir liste ACILMIYOR, genel "Tumu" listesi aciliyor — kullanici 44 sayisini goremiyor.
+Ama `Routes.APP_LIST` parametresiz genel listeye gidiyor (`AppNavigation.kt` satir 88-89) ve `AppListScreen.kt`/`AppListViewModel.kt` hicbir "confidence" veya "belirsiz" filtresi bilmiyor â€” sadece `selectedCategory`/`searchQuery`/`showSystemApps`/`sortBy` filtreleri var (`AppListScreenState.kt` satir 59-87, `computeFilteredApps`). Sonuc: tiklaninca ayni "belirsiz" hesabini kullanan bir liste ACILMIYOR, genel "Tumu" listesi aciliyor â€” kullanici 44 sayisini goremiyor.
 
 **Cozum tarifi:**
-1. `presentation/navigation/AppNavigation.kt` — `Routes.APP_LIST` rotasina opsiyonel bir NavArgument ekle: `const val APP_LIST = "app_list"` yaninda `const val APP_LIST_FILTER_UNCERTAIN = "app_list?filter=uncertain"` gibi bir varyant VEYA `composable("app_list?filter={filter}", arguments = listOf(navArgument("filter") { defaultValue = ""; nullable = true }))` seklinde route'u parametrik yap.
+1. `presentation/navigation/AppNavigation.kt` â€” `Routes.APP_LIST` rotasina opsiyonel bir NavArgument ekle: `const val APP_LIST = "app_list"` yaninda `const val APP_LIST_FILTER_UNCERTAIN = "app_list?filter=uncertain"` gibi bir varyant VEYA `composable("app_list?filter={filter}", arguments = listOf(navArgument("filter") { defaultValue = ""; nullable = true }))` seklinde route'u parametrik yap.
 2. `LauncherViewModel.kt` satir 681-689 `resolveTickerRoute` fonksiyonuna yeni bir routeKey ekle: `"APP_LIST_UNCERTAIN" -> "${Routes.APP_LIST}?filter=uncertain"`.
 3. `TickerComposer.kt` satir 325 civarinda `routeKey = "APP_LIST"` yerine `routeKey = "APP_LIST_UNCERTAIN"` kullan.
-4. `AppListViewModel.kt`'ye yeni bir `_confidenceFilter: MutableStateFlow<Boolean>` (veya nav arg'dan set edilen bir `setUncertainFilterEnabled(true)` fonksiyonu) ekle; `createScreenState`/`computeFilteredApps` (AppListScreenState.kt satir 59-87) icine `classifier.getConfidence(...)` kontrolu ekleyen bir ek filtre parametresi koy — AYNI esik (<60) ve AYNI classifier cagrisi kullanilmali (LauncherViewModel'deki ile birebir ayni fonksiyon/esik).
+4. `AppListViewModel.kt`'ye yeni bir `_confidenceFilter: MutableStateFlow<Boolean>` (veya nav arg'dan set edilen bir `setUncertainFilterEnabled(true)` fonksiyonu) ekle; `createScreenState`/`computeFilteredApps` (AppListScreenState.kt satir 59-87) icine `classifier.getConfidence(...)` kontrolu ekleyen bir ek filtre parametresi koy â€” AYNI esik (<60) ve AYNI classifier cagrisi kullanilmali (LauncherViewModel'deki ile birebir ayni fonksiyon/esik).
 5. `AppListScreen.kt`'de nav'dan gelen filter parametresini oku (composable arguments), ViewModel'e ilet, ekranda "Belirsiz Kategoriler" basligi/filtre chip'i olarak goster.
-6. Sayim ve liste ayni fonksiyondan beslenmeli: ideal olarak `AppClassifier.kt`'ye tek bir `fun isLowConfidence(app: AppInfo, categoryId: String): Boolean = getConfidence(app, categoryId) < 60` ekle, hem `LauncherViewModel.tickerItems` hem `AppListViewModel`/`computeFilteredApps` bu fonksiyonu cagirsin — esik degisirse tek yerden degisir.
+6. Sayim ve liste ayni fonksiyondan beslenmeli: ideal olarak `AppClassifier.kt`'ye tek bir `fun isLowConfidence(app: AppInfo, categoryId: String): Boolean = getConfidence(app, categoryId) < 60` ekle, hem `LauncherViewModel.tickerItems` hem `AppListViewModel`/`computeFilteredApps` bu fonksiyonu cagirsin â€” esik degisirse tek yerden degisir.
 
 **Kabul kriteri:**
 - Ticker'da "N uygulamanin kategorisi belirsiz" yaziyorsa, tiklaninca acilan listede TAM OLARAK N uygulama gorunuyor.
@@ -229,67 +211,24 @@ Ama `Routes.APP_LIST` parametresiz genel listeye gidiyor (`AppNavigation.kt` sat
 
 ---
 
-### B2 - Kategori ekraninda sayi ile icerik uyusmazligi
-
-**Kok neden (kod kaniti):** `AppListScreenState.kt` satir 89-95:
-```kotlin
-internal fun computeCategoryStats(apps: List<AppInfo>, categories: List<Category>): Map<String, Int> {
-    val counts = apps.groupingBy { it.categoryId }.eachCount()
-    return categories.associate { category -> category.categoryId to (counts[category.categoryId] ?: 0) }
-}
-```
-Bu fonksiyon TUM `apps` listesini sayar (parametre olarak gelen ham `AppInfo` listesi — sistem uygulamalari DAHIL, gizli/hidden uygulamalar DAHIL).
-
-Ayni dosyada `computeFilteredApps` (satir 59-87) ise:
-```kotlin
-if (!showSystemApps) {
-    result = result.filter { !it.isSystemApp }
-}
-```
-`showSystemApps` varsayilan `false` (`AppListScreenState` data class satir 19: `val showSystemApps: Boolean = false`, ve `AppListViewModel.kt` satir 59-61'de `AppPrefs.isShowSystemApps(application)` ile baslatiliyor, kullanici acmadikca kapali kalir).
-
-Sonuc: `AppListScreen.kt` satir 208-216'daki kategori chip'leri `screenState.countAppsByCategory(cat.categoryId)` (TUM uygulamalar dahil sayi) gosteriyor, ama `screenState.filteredApps` (satir 239-240'ta listelenen) sistem uygulamalarini FILTRELIYOR. "Kamera 1" gibi sayilar sistem kamera app'ini sayiyor ama liste onu gostermiyor (bos gorunuyor); "Xiaomi 15" gibi sayilar da ayni sekilde OEM sistem uygulamalarini sayip listede goster(e)miyor.
-
-Not: `computeVisibleCategories` (satir 97-107) da ayni `categoryStats`'i (sistem-dahil sayi) kullanarak "hangi kategori chip'i gosterilsin" karari veriyor — bu da sistem uygulamasi ICEREN ama gorunur listede BOS kalabilen kategorilerin chip olarak gorunmesine yol aciyor.
-
-**Cozum tarifi:**
-1. `AppListScreenState.kt` icinde `computeCategoryStats` fonksiyonuna `showSystemApps: Boolean` parametresi ekle; `apps` listesini saymadan once `computeFilteredApps` ile AYNI on-filtreyi (sadece kategori/arama/sort haric, sadece `showSystemApps` filtresi) uygula:
-   ```kotlin
-   internal fun computeCategoryStats(apps: List<AppInfo>, categories: List<Category>, showSystemApps: Boolean): Map<String, Int> {
-       val visible = if (showSystemApps) apps else apps.filter { !it.isSystemApp }
-       val counts = visible.groupingBy { it.categoryId }.eachCount()
-       return categories.associate { it.categoryId to (counts[it.categoryId] ?: 0) }
-   }
-   ```
-   Ideal refaktor: ortak bir `internal fun visibleApps(apps: List<AppInfo>, showSystemApps: Boolean): List<AppInfo> = if (showSystemApps) apps else apps.filter { !it.isSystemApp }` fonksiyonu cikar, hem `computeCategoryStats` hem `computeFilteredApps` bunu ilk adim olarak cagirsin (tek predicate, iki tuketici).
-2. `AppListViewModel.kt` satir 162'deki `computeCategoryStats(apps, categories)` cagrisini `computeCategoryStats(apps, categories, showSystem)` olarak guncelle (parametre zaten `createScreenState` fonksiyonunda mevcut).
-3. Hidden uygulamalar icin de ayni sorun olasi — `apps` kaynagi `repository.getAllAppsFlow()`'un hidden uygulamalari icerip icermedigini kontrol et (`AppRepository.kt`, `getAllAppsFlow`); iceriyorsa `visibleApps` helper'ina `!it.isHidden` filtresini de ekle (AppListContent zaten hidden'lari nasil ele aliyor, tutarli olsun diye dogrula).
-4. Build sonrasi `apps/build/outputs` gerekmez (bu gorev Codex'e devrediliyor, kural geregi bu oturumda build yok) ama Codex tarafinda `computeCategoryStats` cagrildigi TUM yerler (`grep -rn "computeCategoryStats" app/src`) guncellenmeli — su an tek cagri noktasi `AppListViewModel.kt:162`.
-
-**Kabul kriteri:**
-- `showSystemApps=false` (varsayilan) iken bir kategori chip'i "N" gosteriyorsa, o kategoriye tiklaninca acilan listede TAM OLARAK N uygulama gorunuyor.
-- `showSystemApps` toggle acilinca hem sayi hem liste ayni anda sistem uygulamalarini icerecek sekilde guncelleniyor (ikisi de ayni `visibleApps` helper'indan besleniyor).
-
----
-
 ### B3 - Ticker tiklamasi sonrasi ana ekrana hizli donuste bildirimler kilitleniyor
 
-**Kok neden (kod kaniti):** `HomeScreen.kt` satir 660-672'de ticker `onItemClick` cagrildiginda `Intent(context, MainActivity::class.java)` ile MainActivity aciliyor (LauncherActivity arka plana geciyor, `onPause`/`onStop` tetiklenmiyor cunku activity yigin ustunde kaliyor — sadece durduruluyor).
+**Kok neden (kod kaniti):** `HomeScreen.kt` satir 660-672'de ticker `onItemClick` cagrildiginda `Intent(context, MainActivity::class.java)` ile MainActivity aciliyor (LauncherActivity arka plana geciyor, `onPause`/`onStop` tetiklenmiyor cunku activity yigin ustunde kaliyor â€” sadece durduruluyor).
 
 Kullanici geri donunce `LauncherActivity.onResume()` (`LauncherActivity.kt` satir 221-239) senkron/yari-senkron sekilde su zinciri tetikliyor:
-- `viewModel.refreshLastLaunched()` — tek paket icin `updateLastUsedTimestamp` (hafif).
-- `AppPrefs.shouldReconcile(this)` true ise `viewModel.reconcileIfNeeded(this)` — TUM yuklu paketleri `packageManagerHelper.getInstalledApps(includeSystem = true, ...)` ile tarayip DB ile karsilastiriyor (`LauncherViewModel.kt` satir 257-282), potansiyel olarak `loadAppsIfEmpty()` (satir 285-337) tetikleyip her degisen app icin ayri ayri `repository.updateApp(...)` cagirabiliyor.
-- `AppPrefs.shouldSyncUsageStats(this)` true ise `viewModel.syncUsageStats(this)` (satir 835+) — UsageStatsManager sorgusu, potansiyel agir IO.
+- `viewModel.refreshLastLaunched()` â€” tek paket icin `updateLastUsedTimestamp` (hafif).
+- `AppPrefs.shouldReconcile(this)` true ise `viewModel.reconcileIfNeeded(this)` â€” TUM yuklu paketleri `packageManagerHelper.getInstalledApps(includeSystem = true, ...)` ile tarayip DB ile karsilastiriyor (`LauncherViewModel.kt` satir 257-282), potansiyel olarak `loadAppsIfEmpty()` (satir 285-337) tetikleyip her degisen app icin ayri ayri `repository.updateApp(...)` cagirabiliyor.
+- `AppPrefs.shouldSyncUsageStats(this)` true ise `viewModel.syncUsageStats(this)` (satir 835+) â€” UsageStatsManager sorgusu, potansiyel agir IO.
 
 Bunlarin YANI SIRA, HER ZAMAN calisan (onResume'a bagli olmayan, `init` bloguna bagli, activity/process suresince surekli aktif) `AppNotificationListenerService.badgeCounts.onEach` collector'i (`LauncherViewModel.kt` satir 196-212) her badge degisiminde:
 ```kotlin
 counts.forEach { (pkg, count) -> repository.updateNotificationCount(pkg, count) }
 ```
-seklinde HER PAKET ICIN AYRI bir `suspend fun updateNotificationCount` DAO cagrisi yapiyor (`AppDao.kt` satir 203, tek satirlik UPDATE, `@Transaction` YOK). `AppRepository.kt` satir 361-362'de de sarma katmani transaction eklemiyor. MainActivity'den donusce, arka planda birikmis bildirimler varsa bu forEach dongusu N ayri DB islemi calistiriyor — Room'un tek-yazici (single writer) kisitlamasi nedeniyle bu N ayri UPDATE, ayni anda `reconcileIfNeeded`/`syncUsageStats`'in okuma sorgulariyla siraya giriyor ve UI thread'e baglı Flow collector'lari (badge/folder UI) bu kuyruk bosalana kadar guncellenmeden bekliyor — "birkac saniye donma" hissi budur.
+seklinde HER PAKET ICIN AYRI bir `suspend fun updateNotificationCount` DAO cagrisi yapiyor (`AppDao.kt` satir 203, tek satirlik UPDATE, `@Transaction` YOK). `AppRepository.kt` satir 361-362'de de sarma katmani transaction eklemiyor. MainActivity'den donusce, arka planda birikmis bildirimler varsa bu forEach dongusu N ayri DB islemi calistiriyor â€” Room'un tek-yazici (single writer) kisitlamasi nedeniyle bu N ayri UPDATE, ayni anda `reconcileIfNeeded`/`syncUsageStats`'in okuma sorgulariyla siraya giriyor ve UI thread'e baglÄ± Flow collector'lari (badge/folder UI) bu kuyruk bosalana kadar guncellenmeden bekliyor â€” "birkac saniye donma" hissi budur.
 
 **Muhtemel cozumler (onerilen sira):**
-1. **(A - en yuksek etki, dusuk risk) Badge DB yazimini tek transaction'a topla:** `AppDao.kt`'ye yeni bir `@Transaction suspend fun updateNotificationCounts(counts: Map<String, Int>)` ekle (Room'da `@Transaction` + icinde bir `@Update`/dogrudan SQL `UPDATE apps SET notification_count = :count WHERE package_name = :pkg` dongusu, veya tek SQL ile `CASE WHEN package_name = ... THEN ... END` toplu update) — DAO metodunun govdesinde Kotlin `forEach` ile ayni ayri cagrilar olsa bile `@Transaction` sarmali TEK commit'e indirger, ara kilitlenmeyi onler. `LauncherViewModel.kt` satir 196-212'deki `counts.forEach { ... }` blogunu `repository.updateNotificationCounts(counts)` (tek cagri) ile degistir; `toReset` blogu icin de ayni pattern (`resetNotificationCounts(List<String>)`).
-2. **(B) onResume zincirini debounce/gecikmeli calistir:** `LauncherActivity.kt` satir 221-239'daki `reconcileIfNeeded`/`syncUsageStats` cagrilarini `lifecycleScope.launch { delay(300) ... }` gibi kucuk bir gecikmeyle veya `Dispatchers.Default` uzerinde arka plana atarak ilk frame'in UI thread'i bloklamasini engelle (bu cagrilarin ic gövdesi zaten `Dispatchers.IO` ama Flow collector tetiklemesi ve Room writer sirasi paylasimli).
+1. **(A - en yuksek etki, dusuk risk) Badge DB yazimini tek transaction'a topla:** `AppDao.kt`'ye yeni bir `@Transaction suspend fun updateNotificationCounts(counts: Map<String, Int>)` ekle (Room'da `@Transaction` + icinde bir `@Update`/dogrudan SQL `UPDATE apps SET notification_count = :count WHERE package_name = :pkg` dongusu, veya tek SQL ile `CASE WHEN package_name = ... THEN ... END` toplu update) â€” DAO metodunun govdesinde Kotlin `forEach` ile ayni ayri cagrilar olsa bile `@Transaction` sarmali TEK commit'e indirger, ara kilitlenmeyi onler. `LauncherViewModel.kt` satir 196-212'deki `counts.forEach { ... }` blogunu `repository.updateNotificationCounts(counts)` (tek cagri) ile degistir; `toReset` blogu icin de ayni pattern (`resetNotificationCounts(List<String>)`).
+2. **(B) onResume zincirini debounce/gecikmeli calistir:** `LauncherActivity.kt` satir 221-239'daki `reconcileIfNeeded`/`syncUsageStats` cagrilarini `lifecycleScope.launch { delay(300) ... }` gibi kucuk bir gecikmeyle veya `Dispatchers.Default` uzerinde arka plana atarak ilk frame'in UI thread'i bloklamasini engelle (bu cagrilarin ic gÃ¶vdesi zaten `Dispatchers.IO` ama Flow collector tetiklemesi ve Room writer sirasi paylasimli).
 3. **(C) dismissTickerItem sonrasi ticker recompute'unu hafiflet:** Bu senaryoda dogrudan ilgili degil (ticker zaten `WhileSubscribed(5_000L)`), oncelik A ve B'de.
 
 Codex A'yi once uygulamali (en dogrudan kok nedene cozum), B'yi ikinci katman iyilestirme olarak ekleyebilir.
@@ -309,15 +248,15 @@ Codex A'yi once uygulamali (en dogrudan kok nedene cozum), B'yi ikinci katman iy
 2. `AppRepository.kt` satir 361-362 civarina karsilik gelen sarma fonksiyonlari ekle (`updateNotificationCounts`, `resetNotificationCounts`), try/catch + Timber.e pattern'i koru.
 3. `LauncherViewModel.kt` satir 196-212'yi guncelle:
    ```kotlin
-   counts.forEach { (pkg, count) -> repository.updateNotificationCount(pkg, count) } // ESKİ
+   counts.forEach { (pkg, count) -> repository.updateNotificationCount(pkg, count) } // ESKÄ°
    ```
    yerine
    ```kotlin
-   repository.updateNotificationCounts(counts) // YENİ — tek transaction
+   repository.updateNotificationCounts(counts) // YENÄ° â€” tek transaction
    ```
    ve `toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }` yerine `repository.resetNotificationCounts(toReset.map { it.packageName })`.
-4. Ayni pattern `latestTexts.onEach` blogu (satir 214-230) icin de tekrarlanabilir (`updateNotificationTexts`/`resetNotificationTexts`) — ayni kok neden.
-5. (Opsiyonel B) `LauncherActivity.kt` `onResume()` icindeki `reconcileIfNeeded`/`syncUsageStats` cagrilarini olcup, gercekten frame droplarina sebep oluyorsa `viewModelScope.launch { delay(250); ... }` ile hafif geciktir — ama once (1)'in etkisini olcmeden bu adimi atlama, cogu durumda (1) yeterli olabilir.
+4. Ayni pattern `latestTexts.onEach` blogu (satir 214-230) icin de tekrarlanabilir (`updateNotificationTexts`/`resetNotificationTexts`) â€” ayni kok neden.
+5. (Opsiyonel B) `LauncherActivity.kt` `onResume()` icindeki `reconcileIfNeeded`/`syncUsageStats` cagrilarini olcup, gercekten frame droplarina sebep oluyorsa `viewModelScope.launch { delay(250); ... }` ile hafif geciktir â€” ama once (1)'in etkisini olcmeden bu adimi atlama, cogu durumda (1) yeterli olabilir.
 
 **Kabul kriteri:**
 - Arka planda 10+ bildirim birikmisken ticker'a tiklayip MainActivity'ye gidip hemen geri donuldugunde, badge/folder UI'i 1 saniyeden kisa surede tepki veriyor (once birkac saniye donma varken).

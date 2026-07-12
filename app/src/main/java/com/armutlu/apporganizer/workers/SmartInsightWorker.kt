@@ -15,8 +15,11 @@ import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
+import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
@@ -38,6 +41,7 @@ class SmartInsightWorker(
         fun categoryDao(): CategoryDao
     }
 
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     override suspend fun doWork(): Result {
         return runCatching {
             val ctx = applicationContext
@@ -53,14 +57,30 @@ class SmartInsightWorker(
             val apps = repo.getAllApps().filter { !it.isHidden && !it.isSystemApp }
             val now = System.currentTimeMillis()
             val dayMs = 24L * 60 * 60 * 1000
+            val todayUsage = todayUsage(ctx)
+            val todayLaunchCountByPackage = todayUsage.associate { it.packageName to it.launchCount.toLong() }
+            val todayForegroundMsByPackage = todayUsage.associate { it.packageName to it.foregroundDurationMs }
 
             val candidates = buildList<Pair<String, String>> {
                 if (AppPrefs.isSmartNotifDailyUsage(ctx)) {
-                    val topApp = apps.maxByOrNull { it.usageCount }
-                    if (topApp != null && topApp.usageCount > 0L) {
-                        add("Gunluk Kullanim" to "${topApp.appName} bugun en cok actigin uygulama. Ekran suren nasil gidiyor?")
+                    val topLaunchApp = apps.maxByOrNull { todayLaunchCountByPackage[it.packageName] ?: 0L }
+                    val topLaunchCount = topLaunchApp?.let { todayLaunchCountByPackage[it.packageName] ?: 0L } ?: 0L
+                    if (topLaunchApp != null && topLaunchCount > 0L) {
+                        add(
+                            "Gunluk Kullanim" to
+                                "${topLaunchApp.appName} bugun en cok actigin uygulama. Ekran suren nasil gidiyor?",
+                        )
+                    } else {
+                        val topForegroundApp = apps.maxByOrNull { todayForegroundMsByPackage[it.packageName] ?: 0L }
+                        val topForegroundMs = topForegroundApp?.let { todayForegroundMsByPackage[it.packageName] ?: 0L } ?: 0L
+                        if (topForegroundApp != null && topForegroundMs > 0L) {
+                            add(
+                                "Gunluk Kullanim" to
+                                    "${topForegroundApp.appName} bugun en cok vakit gecirdigin uygulama gibi gorunuyor.",
+                            )
+                        }
                     }
-                    val sessionCount = apps.sumOf { it.launchCount }.coerceAtMost(99L)
+                    val sessionCount = todayLaunchCountByPackage.values.sum().coerceAtMost(99L)
                     if (sessionCount > 10L) {
                         add("Gunluk Kullanim" to "Bugun toplam $sessionCount uygulama acilisi yaptin. Verimliligini takip et!")
                     }
@@ -99,7 +119,7 @@ class SmartInsightWorker(
 
                 val newApps = apps.filter { (now - it.installTime) <= 3 * dayMs && it.installTime > 0L }
                 if (newApps.isNotEmpty()) {
-                    val app = newApps.first()
+                    val app = requireNotNull(newApps.maxByOrNull { maxOf(it.firstInstalledTime, it.installTime) })
                     add("Yeni Uygulama" to "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?")
                 }
 
@@ -138,7 +158,7 @@ class SmartInsightWorker(
 
         val tapIntent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("open_tab", "dashboard")
+            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
         }
         val pending = PendingIntent.getActivity(
             applicationContext,
@@ -193,11 +213,9 @@ class SmartInsightWorker(
             val request = PeriodicWorkRequestBuilder<SmartInsightWorker>(24, TimeUnit.HOURS)
                 .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
                 .build()
-            val wm = WorkManager.getInstance(context)
-            wm.cancelUniqueWork(WORK_NAME)
-            wm.enqueueUniquePeriodicWork(
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request,
             )
         }
@@ -222,6 +240,13 @@ class SmartInsightWorker(
 
         fun cancel(context: Context) {
             WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+        }
+    }
+
+    private fun todayUsage(context: Context): List<DailyPackageUsage> {
+        return when (val result = UsageStatsHelper.getDailySessionUsage(context, days = 1)) {
+            is UsageStatsHelper.DailySessionResult.Available -> result.days.filterNot { it.isPartial }
+            is UsageStatsHelper.DailySessionResult.Unavailable -> emptyList()
         }
     }
 }
