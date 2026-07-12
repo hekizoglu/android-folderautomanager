@@ -1,4 +1,4 @@
-# Gradle
+﻿# Gradle
 .gradle/
 build/
 app/build/
@@ -13,7 +13,7 @@ local.properties
 *.iws
 *.ipr
 
-# Keystore ve imzalama bilgileri — ASLA commit etme
+# Keystore ve imzalama bilgileri â€” ASLA commit etme
 *.jks
 *.keystore
 keystore.properties
@@ -37,18 +37,19 @@ chroma.sqlite3
 .mempalace/
 .codex/
 *-*-*-*-*/
-.claude/
+.claude/*
 !.claude/agents/
+!.claude/skills/
 .env
 
 nul
 
-# docs klasöründeki geçici dosyalar (full_source.txt CI tarafından yönetilir)
+# docs klasÃ¶rÃ¼ndeki geÃ§ici dosyalar (full_source.txt CI tarafÄ±ndan yÃ¶netilir)
 docs/all_code.txt
 docs/task/
 app/google-services.json
 
-# QA otomatik raporlar (geçici build artifact)
+# QA otomatik raporlar (geÃ§ici build artifact)
 qa/reports/
 
 *.bak
