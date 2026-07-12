@@ -550,6 +550,10 @@ class LauncherViewModel @Inject constructor(
     @Volatile private var cacheTimestamp: Long = 0L
     private val CACHE_DURATION_MS = 30 * 60 * 1000L  // 30 dakika
 
+    // "Bu saatte en çok" — saat dilimine bağlı cache (dilim değişince yenilenir)
+    @Volatile private var cachedSlotApps: List<String>? = null
+    @Volatile private var cachedSlotHour: Int = -1
+
     // Akıllı öneriler — UsageScore v2: recency+frequency+timeSlot + dock boost
     // Dock kararlılığı (Fix 1): giriş akışı sadece sıralamayı etkileyen alanlar değişince
     // yeniden emit eder — her bildirimde updateNotificationCount() DB'ye yazınca
@@ -572,6 +576,20 @@ class LauncherViewModel @Inject constructor(
         val dockPkgs = _dockPackages.value
         val favPkgs = _favoritePkgs.value
         if (UsageStatsHelper.hasPermission(ctx)) {
+            // "Bu saatte en çok kullandıkların" — birincil kaynak: şu anki saat dilimindeki
+            // mutlak başlatma sıralaması. Dilim değişince cache yenilenir.
+            val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+            val slotApps = cachedSlotApps.takeIf {
+                it != null && cachedSlotHour >= 0 &&
+                    UsageStatsHelper.slotOf(cachedSlotHour) == UsageStatsHelper.slotOf(currentHour)
+            } ?: UsageStatsHelper.getCurrentSlotTopApps(ctx, days = 28).also {
+                cachedSlotApps = it
+                cachedSlotHour = currentHour
+            }
+            val visibleByPkg = visible.associateBy { it.packageName }
+            val slotPicks = slotApps.mapNotNull { visibleByPkg[it] }.take(4)
+
+            // 4'ü doldurmak için ağırlıklı skorla tamamla (saat verisi yetersizse)
             val baseScores = cachedScores.takeIf { it != null && now - cacheTimestamp <= CACHE_DURATION_MS }
                 ?: UsageStatsHelper.getWeightedScores(ctx, days = 28).also {
                     cachedScores = it
@@ -585,10 +603,11 @@ class LauncherViewModel @Inject constructor(
                 if (dockPkgs.contains(pkg) || favPkgs.contains(pkg)) s += 0.15f
                 s
             }
-            visible
-                .filter { boosted.containsKey(it.packageName) }
+            val slotPkgs = slotPicks.map { it.packageName }.toSet()
+            val fill = visible
+                .filter { boosted.containsKey(it.packageName) && it.packageName !in slotPkgs }
                 .sortedByDescending { boosted[it.packageName] ?: 0f }
-                .take(4)
+            (slotPicks + fill).take(4)
                 .ifEmpty {
                     visible.filter { it.usageCount > 0 }
                         .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })

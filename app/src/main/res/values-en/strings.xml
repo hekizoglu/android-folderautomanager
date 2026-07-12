@@ -287,10 +287,10 @@
     <string name="settings_notif_report_desc">See last 7 days of notification behavior — talkative, disturbing, distracting</string>
 
     <!-- Smart Suggestions Row -->
-    <string name="suggestions_label_morning">Morning Picks</string>
-    <string name="suggestions_label_noon">Midday Picks</string>
-    <string name="suggestions_label_afternoon">Afternoon Picks</string>
-    <string name="suggestions_label_evening">Evening Picks</string>
+    <string name="suggestions_label_morning">Your morning most-used</string>
+    <string name="suggestions_label_noon">Your midday most-used</string>
+    <string name="suggestions_label_afternoon">Your afternoon most-used</string>
+    <string name="suggestions_label_evening">Your evening most-used</string>
     <string name="suggestions_label_default">Frequent Apps</string>
 
     <!-- Wrapped Report -->

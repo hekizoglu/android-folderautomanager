@@ -229,6 +229,37 @@ object UsageStatsHelper {
         }
     }
 
+    /**
+     * "Bu saatte en çok kullandıkların" — şu anki saat dilimindeki MUTLAK başlatma sayısına
+     * göre sıralı paket listesi (son [days] gün). getWeightedScores'tan farkı: burada saat dilimi
+     * tek ölçüt ve app-içi değil app-LERARASI mutlak sayım — gerçekten bu saatte en çok açtıkların.
+     * queryEvents desteklenmiyorsa boş liste döner (çağıran taraf fallback yapar).
+     */
+    fun getCurrentSlotTopApps(context: Context, days: Int = 28): List<String> {
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val now = System.currentTimeMillis()
+            val windowStart = now - days.toLong() * 24 * 3600 * 1000
+            val currentSlot = timeSlot(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
+            val slotCounts = mutableMapOf<String, Int>()
+            val events = manager.queryEvents(windowStart, now)
+            val event = UsageEvents.Event()
+            val cal = Calendar.getInstance()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (event.eventType != UsageEvents.Event.ACTIVITY_RESUMED) continue
+                val pkg = event.packageName ?: continue
+                cal.timeInMillis = event.timeStamp
+                if (timeSlot(cal.get(Calendar.HOUR_OF_DAY)) == currentSlot) {
+                    slotCounts[pkg] = (slotCounts[pkg] ?: 0) + 1
+                }
+            }
+            slotCounts.entries.sortedByDescending { it.value }.map { it.key }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     // 0=sabah(06-11), 1=öğle(11-14), 2=öğleden sonra(14-18), 3=akşam/gece(18-06)
     private fun timeSlot(hour: Int): Int = when (hour) {
         in 6..10  -> 0
@@ -236,6 +267,9 @@ object UsageStatsHelper {
         in 14..17 -> 2
         else      -> 3
     }
+
+    /** Saat -> dilim (0..3). Çağıranların cache'i dilim değişince yenilemesi için public. */
+    fun slotOf(hour: Int): Int = timeSlot(hour)
 
     private fun Int.toDomainEventType(): UsageEventType? = when (this) {
         UsageEvents.Event.ACTIVITY_RESUMED -> UsageEventType.RESUMED

@@ -289,10 +289,10 @@
     <string name="settings_notif_report_desc">Son 7 günün bildirim davranışını gör — çok konuşan, rahatsız eden, dikkat dağıtan</string>
 
     <!-- Akıllı Öneriler Row -->
-    <string name="suggestions_label_morning">Sabah Önerileri</string>
-    <string name="suggestions_label_noon">Öğle Önerileri</string>
-    <string name="suggestions_label_afternoon">Öğleden Sonra Önerileri</string>
-    <string name="suggestions_label_evening">Akşam Önerileri</string>
+    <string name="suggestions_label_morning">Sabahları en çok kullandıkların</string>
+    <string name="suggestions_label_noon">Öğlen en çok kullandıkların</string>
+    <string name="suggestions_label_afternoon">Öğleden sonra en çok kullandıkların</string>
+    <string name="suggestions_label_evening">Akşamları en çok kullandıkların</string>
     <string name="suggestions_label_default">Sık Kullanılanlar</string>
 
     <!-- Wrapped Report (Haftalık Rapor) -->
