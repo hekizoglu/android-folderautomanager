@@ -1,0 +1,56 @@
+# AppOrganizer CI — push/PR'da Linux'ta derle + unit testleri kos.
+# Windows'taki dosya kilidi sorunlarindan bagimsiz ikinci dogrulama hatti (D238).
+# google-services.json repo'da yoksa -PskipGoogleServices ile Firebase adimlari atlanir.
+name: Android CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JDK 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Duplicate kategori kontrolu
+        run: python scripts/check_duplicates.py assets/app_categories.json
+
+      # Windows'tan commit'lenen gradlew'de exec biti olmayabilir
+      - name: gradlew calistirilabilir yap
+        run: chmod +x gradlew
+
+      - name: Derle + unit testler
+        run: ./gradlew assembleDebug testDebugUnitTest -PskipGoogleServices --console=plain
+
+      - name: Test raporlarini artifact olarak sakla (hata durumunda)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: app/build/reports/tests/
+          retention-days: 7
+
+      - name: Debug APK artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
