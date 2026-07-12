@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -39,10 +41,13 @@ fun ReportsCenterScreen(
     onNavigateBack: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToUsageReport: () -> Unit,
+    onNavigateToNotificationReport: () -> Unit = {},
     onNavigateToWrappedReport: () -> Unit = {},
+    onNavigateToPrivacyReport: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val wrappedEnabled = AppPrefs.isWrappedEnabled(context)
+    val privacyReportEnabled = AppPrefs.isPrivacyReportEnabled(context)
     val screenState by viewModel.screenState.collectAsState()
     val appCount = screenState.apps.size
     val categoryCount = screenState.categories.size
@@ -116,6 +121,16 @@ fun ReportsCenterScreen(
                         subtitle = "En cok kullanilanlar, hic acilmayanlar ve gizleme onerileri",
                         onClick = onNavigateToUsageReport,
                     )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsButtonRow(
+                        icon = Icons.Default.NotificationsActive,
+                        title = "Bildirim Raporu",
+                        subtitle = "Hangi uygulama ne kadar bildirim gonderiyor gorebilirsin",
+                        onClick = onNavigateToNotificationReport,
+                    )
                 }
             }
             if (wrappedEnabled) {
@@ -126,6 +141,18 @@ fun ReportsCenterScreen(
                             title = "🎁 Haftalik Rapor",
                             subtitle = "Dijital yasam skorun, kisilik tipin ve rozetlerin",
                             onClick = onNavigateToWrappedReport,
+                        )
+                    }
+                }
+            }
+            if (privacyReportEnabled) {
+                item {
+                    SettingsCard {
+                        SettingsButtonRow(
+                            icon = Icons.Default.Security,
+                            title = "🔐 Gizlilik Analizi",
+                            subtitle = "Hangi uygulama kamera, mikrofon, konuma erisebiliyor",
+                            onClick = onNavigateToPrivacyReport,
                         )
                     }
                 }

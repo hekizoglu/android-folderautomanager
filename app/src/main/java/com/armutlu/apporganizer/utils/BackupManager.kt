@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.models.Category
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -72,6 +73,35 @@ object BackupManager {
                     put("folderShape", AppPrefs.getFolderShape(context))
                     put("folderSizeDp", AppPrefs.getFolderSizeDp(context))
                     put("bgType", AppPrefs.getBgType(context))
+                    put("bgColor", AppPrefs.getBgColor(context))
+                    put("textAlpha", AppPrefs.getTextAlpha(context))
+                    put("iconScale", AppPrefs.getIconScale(context))
+                    put("pageSize", AppPrefs.getPageSize(context))
+                    put("homeSearchEnabled", AppPrefs.isHomeSearchEnabled(context))
+                    put("homeAppSearchEnabled", AppPrefs.isHomeAppSearchEnabled(context))
+                    put("folderSearchEnabled", AppPrefs.isFolderSearchEnabled(context))
+                    put("tickerEnabled", AppPrefs.isTickerEnabled(context))
+                    put("folderBlurEnabled", AppPrefs.isFolderBlurEnabled(context))
+                    put("widgetAreaEnabled", AppPrefs.isWidgetAreaEnabled(context))
+                    put("widgetAutoResizeEnabled", AppPrefs.isWidgetAutoResizeEnabled(context))
+                    put("favoritesEnabled", AppPrefs.isFavoritesEnabled(context))
+                    put("favoritesEnabledAllApps", AppPrefs.isFavoritesEnabledAllApps(context))
+                    put("recentAppsEnabled", AppPrefs.isRecentAppsEnabled(context))
+                    put("recentAppsEnabledAllApps", AppPrefs.isRecentAppsEnabledAllApps(context))
+                    put("notifAnalyticsEnabled", AppPrefs.isNotifAnalyticsEnabled(context))
+                    put("suggestionsEnabled", AppPrefs.isSuggestionsEnabled(context))
+                    put("searchBarPosition", AppPrefs.getSearchBarPosition(context))
+                    put("searchFuzzyEnabled", AppPrefs.isSearchFuzzyEnabled(context))
+                    put("searchPhoneticEnabled", AppPrefs.isSearchPhoneticEnabled(context))
+                    put("searchInstantEnabled", AppPrefs.isSearchInstantEnabled(context))
+                    put("searchSortByUsage", AppPrefs.isSearchSortByUsage(context))
+                    put("searchMaxResults", AppPrefs.getSearchMaxResults(context))
+                    put("searchShowIcons", AppPrefs.isSearchShowIcons(context))
+                    put("searchShowContactAvatar", AppPrefs.isSearchShowContactAvatar(context))
+                    put("weeklyDigestEnabled", AppPrefs.isWeeklyDigestEnabled(context))
+                    put("wrappedEnabled", AppPrefs.isWrappedEnabled(context))
+                    put("privacyReportEnabled", AppPrefs.isPrivacyReportEnabled(context))
+                    put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
                     put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
                     put("assistantCardsEnabled", AppPrefs.isAssistantCardsEnabled(context))
                 })
@@ -142,6 +172,11 @@ object BackupManager {
 
             // ── Uygulama listesi ──────────────────────────────────────────────
             if (appsArray != null) {
+                repository.getAllApps().forEach { app ->
+                    repository.updateAppCategory(app.packageName, Category.CAT_UNCATEGORIZED)
+                    repository.updateAppHidden(app.packageName, false)
+                    repository.updateNotificationCount(app.packageName, 0)
+                }
                 for (i in 0 until appsArray.length()) {
                     val obj = appsArray.getJSONObject(i)
                     val pkg = obj.getString("packageName")
@@ -153,9 +188,11 @@ object BackupManager {
                         val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
                         val launchCount = obj.optLong("launchCount", 0L)
                         val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
+                        val notificationCount = obj.optInt("notificationCount", 0)
                         if (usageCount > 0) repository.updateUsageTimeMs(pkg, usageCount)
                         if (launchCount > 0) repository.updateLaunchCount(pkg, launchCount)
                         if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
+                        repository.updateNotificationCount(pkg, notificationCount)
                         updated++
                     } else {
                         missing.add(pkg)
@@ -164,6 +201,9 @@ object BackupManager {
             }
 
             if (version >= 3) {
+                DockPrefs.saveDockPackages(context, emptyList())
+                AppPrefs.clearFolderCustomizations(context)
+                AppPrefs.clearManualCategoryOverrides(context)
                 // ── Dock ──────────────────────────────────────────────────────
                 root.optJSONArray("dockPackages")?.let { arr ->
                     val pkgs = (0 until arr.length()).map { arr.getString(it) }
@@ -209,6 +249,37 @@ object BackupManager {
                     s.optString("folderShape").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setFolderShape(context, it) }
                     if (s.has("folderSizeDp")) AppPrefs.setFolderSizeDp(context, s.getInt("folderSizeDp"))
+                    s.optString("bgType").takeIf { it.isNotEmpty() }
+                        ?.let { AppPrefs.setBgType(context, it) }
+                    if (s.has("bgColor")) AppPrefs.setBgColor(context, s.getInt("bgColor"))
+                    if (s.has("textAlpha")) AppPrefs.setTextAlpha(context, s.getDouble("textAlpha").toFloat())
+                    if (s.has("iconScale")) AppPrefs.setIconScale(context, s.getDouble("iconScale").toFloat())
+                    if (s.has("pageSize")) AppPrefs.setPageSize(context, s.getInt("pageSize"))
+                    if (s.has("homeSearchEnabled")) AppPrefs.setHomeSearchEnabled(context, s.getBoolean("homeSearchEnabled"))
+                    if (s.has("homeAppSearchEnabled")) AppPrefs.setHomeAppSearchEnabled(context, s.getBoolean("homeAppSearchEnabled"))
+                    if (s.has("folderSearchEnabled")) AppPrefs.setFolderSearchEnabled(context, s.getBoolean("folderSearchEnabled"))
+                    if (s.has("tickerEnabled")) AppPrefs.setTickerEnabled(context, s.getBoolean("tickerEnabled"))
+                    if (s.has("folderBlurEnabled")) AppPrefs.setFolderBlurEnabled(context, s.getBoolean("folderBlurEnabled"))
+                    if (s.has("widgetAreaEnabled")) AppPrefs.setWidgetAreaEnabled(context, s.getBoolean("widgetAreaEnabled"))
+                    if (s.has("widgetAutoResizeEnabled")) AppPrefs.setWidgetAutoResizeEnabled(context, s.getBoolean("widgetAutoResizeEnabled"))
+                    if (s.has("favoritesEnabled")) AppPrefs.setFavoritesEnabled(context, s.getBoolean("favoritesEnabled"))
+                    if (s.has("favoritesEnabledAllApps")) AppPrefs.setFavoritesEnabledAllApps(context, s.getBoolean("favoritesEnabledAllApps"))
+                    if (s.has("recentAppsEnabled")) AppPrefs.setRecentAppsEnabled(context, s.getBoolean("recentAppsEnabled"))
+                    if (s.has("recentAppsEnabledAllApps")) AppPrefs.setRecentAppsEnabledAllApps(context, s.getBoolean("recentAppsEnabledAllApps"))
+                    if (s.has("notifAnalyticsEnabled")) AppPrefs.setNotifAnalyticsEnabled(context, s.getBoolean("notifAnalyticsEnabled"))
+                    if (s.has("suggestionsEnabled")) AppPrefs.setSuggestionsEnabled(context, s.getBoolean("suggestionsEnabled"))
+                    s.optString("searchBarPosition").takeIf { it.isNotEmpty() }
+                        ?.let { AppPrefs.setSearchBarPosition(context, it) }
+                    if (s.has("searchFuzzyEnabled")) AppPrefs.setSearchFuzzyEnabled(context, s.getBoolean("searchFuzzyEnabled"))
+                    if (s.has("searchPhoneticEnabled")) AppPrefs.setSearchPhoneticEnabled(context, s.getBoolean("searchPhoneticEnabled"))
+                    if (s.has("searchInstantEnabled")) AppPrefs.setSearchInstantEnabled(context, s.getBoolean("searchInstantEnabled"))
+                    if (s.has("searchSortByUsage")) AppPrefs.setSearchSortByUsage(context, s.getBoolean("searchSortByUsage"))
+                    if (s.has("searchMaxResults")) AppPrefs.setSearchMaxResults(context, s.getInt("searchMaxResults"))
+                    if (s.has("searchShowIcons")) AppPrefs.setSearchShowIcons(context, s.getBoolean("searchShowIcons"))
+                    if (s.has("searchShowContactAvatar")) AppPrefs.setSearchShowContactAvatar(context, s.getBoolean("searchShowContactAvatar"))
+                    if (s.has("weeklyDigestEnabled")) AppPrefs.setWeeklyDigestEnabled(context, s.getBoolean("weeklyDigestEnabled"))
+                    if (s.has("wrappedEnabled")) AppPrefs.setWrappedEnabled(context, s.getBoolean("wrappedEnabled"))
+                    if (s.has("privacyReportEnabled")) AppPrefs.setPrivacyReportEnabled(context, s.getBoolean("privacyReportEnabled"))
                     if (s.has("contextualDockEnabled")) AppPrefs.setContextualDockEnabled(context, s.getBoolean("contextualDockEnabled"))
                     if (s.has("assistantCardsEnabled")) AppPrefs.setAssistantCardsEnabled(context, s.getBoolean("assistantCardsEnabled"))
                 }

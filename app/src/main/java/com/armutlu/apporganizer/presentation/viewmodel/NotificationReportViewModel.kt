@@ -1,12 +1,12 @@
 package com.armutlu.apporganizer.presentation.viewmodel
 
 import android.content.Context
-import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.NotificationAccessUtils
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +40,8 @@ sealed interface NotificationReportUiState {
 
     /** İzin ve analiz açık ama henüz bildirim verisi birikmedi. */
     data object CollectingData : NotificationReportUiState
+
+    data class Error(val message: String) : NotificationReportUiState
 
     /** Normal rapor. Bayraklar açıkken üstte uyarı bandı gösterilir. */
     data class Ready(
@@ -94,7 +96,7 @@ class NotificationReportViewModel @Inject constructor(
         val permissionGranted = checkListenerPermission()
         val analyticsEnabled = AppPrefs.isNotifAnalyticsEnabled(context)
         viewModelScope.launch {
-            val report = withContext(Dispatchers.IO) {
+            val result = withContext(Dispatchers.IO) {
                 runCatching {
                     val since = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
                     val events = notificationEventDao.eventsSince(since)
@@ -105,13 +107,17 @@ class NotificationReportViewModel @Inject constructor(
                         emptyMap()
                     }
                     NotificationAnalyzer.analyze(events, appNames, usageMs)
-                }.onFailure { e ->
-                    Timber.e(e, "Bildirim raporu üretilemedi")
-                }.getOrDefault(
-                    NotificationAnalyzer.Report(0, emptyList(), emptyList(), emptyList(), emptyList())
-                )
+                }
             }
-            _uiState.value = NotificationReportUiState.from(report, permissionGranted, analyticsEnabled)
+            _uiState.value = result.fold(
+                onSuccess = { report ->
+                    NotificationReportUiState.from(report, permissionGranted, analyticsEnabled)
+                },
+                onFailure = { error ->
+                    Timber.e(error, "Bildirim raporu üretilemedi")
+                    NotificationReportUiState.Error("Bildirim raporu su anda yuklenemedi.")
+                }
+            )
         }
     }
 
@@ -122,14 +128,6 @@ class NotificationReportViewModel @Inject constructor(
     }
 
     private fun checkListenerPermission(): Boolean {
-        return try {
-            val enabled = Settings.Secure.getString(
-                context.contentResolver,
-                "enabled_notification_listeners"
-            )
-            enabled?.contains(context.packageName) == true
-        } catch (e: Exception) {
-            false
-        }
+        return NotificationAccessUtils.isNotificationListenerEnabled(context)
     }
 }

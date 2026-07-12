@@ -36,7 +36,7 @@ class BackupWorker(
                 applicationContext,
                 BackupWorkerEntryPoint::class.java
             ).appRepository()
-            val json = BackupManager.exportToJson(repo)
+            val json = BackupManager.exportToJson(applicationContext, repo)
             val file = File(applicationContext.filesDir, "auto_backup.json")
             file.writeText(json)
             Timber.d("Otomatik yedekleme tamamlandi: ${file.absolutePath}")
@@ -88,9 +88,11 @@ class BackupWorker(
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)
                 .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
                 .build()
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            val wm = WorkManager.getInstance(context)
+            wm.cancelUniqueWork(WORK_NAME)
+            wm.enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.UPDATE,
+                ExistingPeriodicWorkPolicy.KEEP,
                 request
             )
         }

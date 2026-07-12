@@ -281,6 +281,26 @@
     <string name="notif_report_burst">saatte en çok %1$d</string>
     <string name="notif_report_count_usage">%1$d bildirim / %2$d dk kullanım</string>
 
+    <!-- Gizlilik Analizi (Gizlilik Raporu) -->
+    <string name="privacy_report_title">Gizlilik Analizi</string>
+    <string name="privacy_report_back">Geri</string>
+    <string name="privacy_report_summary">%1$d uygulama hassas izinlere erişebiliyor</string>
+    <string name="privacy_report_summary_none">Hiçbir uygulama hassas izinlere erişemiyor</string>
+    <string name="privacy_report_group_granted_count">%1$d uygulama erişebiliyor</string>
+    <string name="privacy_report_group_requested_not_granted">%1$d uygulama istedi, verilmedi</string>
+    <string name="privacy_report_empty_title">Gizliliğin güvende 🎉</string>
+    <string name="privacy_report_empty_desc">Hiçbir uygulamaya kamera, mikrofon, konum gibi hassas izinler verilmemiş.</string>
+    <string name="privacy_report_disabled_title">Gizlilik Analizi kapalı</string>
+    <string name="privacy_report_disabled_desc">Gizlilik Analizi\'ni kapatmışsın. Açarsan yüklü uygulamaların hassas izinlerini cihazında görebilirsin — hiçbir veri dışarı gönderilmez.</string>
+    <string name="privacy_report_disabled_btn">Analizi Aç</string>
+    <string name="privacy_report_footer_note">Tüm analiz cihazında yapılır, hiçbir veri dışarı gönderilmez.</string>
+
+    <!-- Gizlilik Analizi ayarları (SettingsSecurityScreen) -->
+    <string name="settings_privacy_report_title">Gizlilik Analizi</string>
+    <string name="settings_privacy_report_desc">Hangi uygulamanın kamera, mikrofon, konum gibi izinlere erişebildiğini gör</string>
+    <string name="settings_privacy_report_toggle_title">Gizlilik Analizi</string>
+    <string name="settings_privacy_report_toggle_desc">Rapor Merkezi\'nde Gizlilik Analizi girişini göster</string>
+
     <!-- Bildirim Analizi ayarları (SettingsNotificationsScreen) -->
     <string name="settings_notif_analytics_section">Bildirim Analizi</string>
     <string name="settings_notif_analytics_title">Bildirim Analizi</string>

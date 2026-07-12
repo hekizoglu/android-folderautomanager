@@ -311,8 +311,9 @@ fun FolderTile(
             Text(
                 text = notifDisplayText,
                 color = effectiveLabelColor.copy(alpha = 0.65f * textAlpha),
-                fontSize = 9.sp,
-                maxLines = 1,
+                fontSize = 8.sp,
+                lineHeight = 10.sp,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
                 modifier = Modifier

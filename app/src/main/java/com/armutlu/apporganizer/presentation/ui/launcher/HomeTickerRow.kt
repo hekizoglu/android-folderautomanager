@@ -56,9 +56,10 @@ data class TickerItem(
     val emoji: String = "📰",
     val categoryId: String? = null,
     val route: String? = null,
+    val packageName: String? = null,
 ) {
     /** Dismiss/rotasyon takibi için kararlı kimlik — aynı haber tekrar tekrar dönmesin (D226). */
-    val key: String get() = "${categoryId ?: ""}|${route ?: ""}|$text"
+    val key: String get() = "${packageName ?: ""}|${categoryId ?: ""}|${route ?: ""}|$text"
 }
 
 /**

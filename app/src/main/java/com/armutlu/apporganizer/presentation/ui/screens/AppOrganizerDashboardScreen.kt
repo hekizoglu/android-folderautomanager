@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +34,8 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,9 +50,20 @@ fun AppOrganizerDashboardScreen(
     val allApps = screenState.apps
     val categories = screenState.categories
 
-    val hasUsagePermission = remember { UsageStatsHelper.hasPermission(context) }
+    var hasUsagePermission by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    val usageTimes = remember(hasUsagePermission) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasUsagePermission = UsageStatsHelper.hasPermission(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val usageTimes = remember(hasUsagePermission, allApps) {
         if (hasUsagePermission) UsageStatsHelper.getUsageCounts(context, days = 7) else emptyMap()
     }
 
@@ -68,7 +82,7 @@ fun AppOrganizerDashboardScreen(
         allApps.filter { !it.isHidden && !it.isSystemApp }
             .map { app ->
                 val value = when (usageMetric) {
-                    UsageMetric.DURATION -> app.usageCount   // ön plan süresi (ms)
+                    UsageMetric.DURATION -> usageTimes[app.packageName] ?: app.usageCount
                     UsageMetric.COUNT -> app.launchCount     // kaç kez açıldı
                 }
                 app to value
@@ -105,11 +119,11 @@ fun AppOrganizerDashboardScreen(
             item { UsageMetricToggleRow(usageMetric) { usageMetric = it } }
             item { TopAppsCard(topAppsForMetric, hasUsagePermission, usageMetric) }
             item { DashSectionHeader("Kategori Yogunlugu") }
-            item { CategoryBreakdownCard(stats.categoryBreakdown) }
+            item { CategoryBreakdownCard(stats.categoryBreakdown, onClick = onNavigateToUsageReport) }
             item { DashSectionHeader("Kullanilmayan Uygulamalar") }
-            item { UnusedAppsCard(stats.unusedCount, stats.neverUsedCount) }
+            item { UnusedAppsCard(stats.unusedCount, stats.neverUsedCount, onClick = onNavigateToUsageReport) }
             item { DashSectionHeader("Verimlilik Ozeti") }
-            item { EfficiencyCard(stats) }
+            item { EfficiencyCard(stats, onClick = onNavigateToUsageReport) }
             // Dashboard = genel ozet, UsageReport = uygulama bazli detay (spec Risk 6)
             item {
                 TextButton(
@@ -177,8 +191,11 @@ private data class DashboardStats(
             val totalMs = usageTimes.values.sumOf { it }
             val totalMinutes = totalMs / 60_000
 
-            val organizedPercent = if (apps.isEmpty()) 0
-            else (visible.count { it.categoryId.isNotBlank() } * 100 / visible.size.coerceAtLeast(1))
+            val organizedPercent = if (visible.isEmpty()) 0
+            else (
+                visible.count { it.categoryId.isNotBlank() && it.categoryId != Category.CAT_UNCATEGORIZED } *
+                    100 / visible.size
+                )
 
             return DashboardStats(
                 totalApps = visible.size,
@@ -370,8 +387,13 @@ private fun TopAppRow(rank: Int, app: AppInfo, value: Long, maxValue: Long, metr
 }
 
 @Composable
-private fun CategoryBreakdownCard(breakdown: List<Pair<String, Int>>) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+private fun CategoryBreakdownCard(breakdown: List<Pair<String, Int>>, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (breakdown.isEmpty()) {
                 Text("Kategori verisi yok.", fontSize = 13.sp,
@@ -416,8 +438,13 @@ private fun CategoryBar(name: String, count: Int, max: Int) {
 }
 
 @Composable
-private fun UnusedAppsCard(unusedCount: Int, neverUsedCount: Int) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+private fun UnusedAppsCard(unusedCount: Int, neverUsedCount: Int, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Row(
             modifier = Modifier.padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -448,8 +475,13 @@ private fun UnusedChip(modifier: Modifier, value: String, label: String, color: 
 }
 
 @Composable
-private fun EfficiencyCard(stats: DashboardStats) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+private fun EfficiencyCard(stats: DashboardStats, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             EfficiencyRow(
                 icon = Icons.Default.Category,

@@ -132,7 +132,10 @@ class LauncherActivity : ComponentActivity() {
         // taraması yerine ucuz sayı kontrolü — DB ↔ cihaz paket sayısı eşitse hiçbir tarama
         // yapılmaz (çökme/yavaşlık kaynağı buydu). İlk açılışta (DB boş) sayı farkı olur ve
         // reconcileIfNeeded zaten loadAppsIfEmpty'i tetikler.
-        viewModel.reconcileIfNeeded(this)
+        if (AppPrefs.shouldReconcile(this)) {
+            viewModel.reconcileIfNeeded(this)
+            AppPrefs.markReconciled(this)
+        }
         viewModel.initFavorites(this)
         viewModel.syncUsageStats(this)
         AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin

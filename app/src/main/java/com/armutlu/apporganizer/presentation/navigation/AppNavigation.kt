@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,6 +34,7 @@ object Routes {
     const val SEARCH_SETTINGS = "search_settings"
     const val NOTIFICATION_REPORT = "notification_report"
     const val WRAPPED_REPORT = "wrapped_report"
+    const val PRIVACY_REPORT = "privacy_report"
 
     // U1: Ayarlar alt-ekran hiyerarşisi — her ana kategori kendi route'unda
     const val SETTINGS_APPEARANCE = "settings_appearance"
@@ -55,7 +57,13 @@ fun AppNavigation(
 
     androidx.compose.runtime.LaunchedEffect(externalRoute) {
         val route = externalRoute ?: return@LaunchedEffect
-        navController.navigate(route)
+        navController.navigate(route) {
+            launchSingleTop = true
+            restoreState = true
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+        }
         onExternalRouteConsumed()
     }
 
@@ -157,7 +165,9 @@ fun AppNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) },
                 onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
+                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
                 onNavigateToWrappedReport = { navController.navigate(Routes.WRAPPED_REPORT) },
+                onNavigateToPrivacyReport = { navController.navigate(Routes.PRIVACY_REPORT) },
             )
         }
         composable(Routes.WRAPPED_REPORT) {
@@ -171,6 +181,11 @@ fun AppNavigation(
         }
         composable(Routes.NOTIFICATION_REPORT) {
             com.armutlu.apporganizer.presentation.ui.screens.NotificationReportScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.PRIVACY_REPORT) {
+            com.armutlu.apporganizer.presentation.ui.screens.PrivacyReportScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

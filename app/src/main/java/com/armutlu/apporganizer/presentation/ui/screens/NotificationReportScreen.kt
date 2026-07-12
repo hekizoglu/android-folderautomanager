@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -106,6 +107,15 @@ fun NotificationReportScreen(
                 description = stringResource(R.string.notif_report_collecting_desc),
                 buttonText = null,
                 onButtonClick = null
+            )
+
+            is NotificationReportUiState.Error -> ReportStatusPane(
+                padding = padding,
+                icon = Icons.Default.Warning,
+                title = "Rapor yuklenemedi",
+                description = s.message,
+                buttonText = "Tekrar dene",
+                onButtonClick = { viewModel.refresh() }
             )
 
             is NotificationReportUiState.Ready -> ReportContent(
@@ -321,10 +331,13 @@ private fun EmptyStateText(text: String) {
 
 @Composable
 private fun TalkativeRow(stat: NotificationAnalyzer.AppNotifStats) {
+    val context = LocalContext.current
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { openAppInfoSettings(context, stat.packageName) }
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
@@ -365,10 +378,13 @@ private fun TalkativeRow(stat: NotificationAnalyzer.AppNotifStats) {
 
 @Composable
 private fun DisturbingRow(stat: NotificationAnalyzer.AppNotifStats) {
+    val context = LocalContext.current
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { openAppInfoSettings(context, stat.packageName) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -394,10 +410,13 @@ private fun DisturbingRow(stat: NotificationAnalyzer.AppNotifStats) {
 
 @Composable
 private fun DistractingRow(stat: NotificationAnalyzer.AppNotifStats) {
+    val context = LocalContext.current
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { openAppInfoSettings(context, stat.packageName) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),

@@ -31,6 +31,7 @@ class AppNotificationListenerService : NotificationListenerService() {
     @Inject lateinit var notificationEventDao: NotificationEventDao
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val knownNotificationKeys = LinkedHashSet<String>()
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
@@ -45,9 +46,8 @@ class AppNotificationListenerService : NotificationListenerService() {
                     else -> text
                 }
                 // atomic update — race condition'u önler
-                _badgeCounts.update { counts ->
-                    counts + (sbn.packageName to ((counts[sbn.packageName] ?: 0) + 1))
-                }
+                knownNotificationKeys += sbn.key
+                rebuildCounts()
                 if (combined.isNotBlank()) {
                     _latestTexts.update { current -> current + (sbn.packageName to combined) }
                 }
@@ -68,7 +68,7 @@ class AppNotificationListenerService : NotificationListenerService() {
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         runCatching {
             sbn?.packageName?.let { pkg ->
-                // Rebuild badge counts atomically from system source of truth
+                sbn.key?.let { knownNotificationKeys.remove(it) }
                 rebuildCounts()
                 val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
                 if (!hasActive) {
@@ -93,6 +93,7 @@ class AppNotificationListenerService : NotificationListenerService() {
     // Servis bağlantısı kesilince (sistem yeniden başlatma, izin iptali vs.)
     // stale badge ve metin verilerini temizle.
     override fun onListenerDisconnected() {
+        knownNotificationKeys.clear()
         _badgeCounts.value = emptyMap()
         _latestTexts.value = emptyMap()
     }
@@ -103,10 +104,12 @@ class AppNotificationListenerService : NotificationListenerService() {
     }
 
     private fun rebuildCounts() {
+        knownNotificationKeys.clear()
         val counts = mutableMapOf<String, Int>()
         runCatching {
             activeNotifications?.forEach { sbn ->
                 if (!sbn.isOngoing) {
+                    knownNotificationKeys += sbn.key
                     counts[sbn.packageName] = (counts[sbn.packageName] ?: 0) + 1
                 }
             }

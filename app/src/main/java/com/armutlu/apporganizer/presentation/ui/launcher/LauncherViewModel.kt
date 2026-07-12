@@ -257,13 +257,23 @@ class LauncherViewModel @Inject constructor(
     fun reconcileIfNeeded(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
-                val pm = context.packageManager
-                val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-                val installedCount = pm.queryIntentActivities(launchIntent, 0)
-                    .mapTo(mutableSetOf()) { it.activityInfo.packageName }
-                    .count { !PackageManagerHelper.shouldHide(it) }
-                val dbCount = repository.countApps()
-                if (installedCount != dbCount) {
+                val installed = packageManagerHelper
+                    .getInstalledApps(includeSystem = true, onlyLaunchable = true)
+                    .associateBy { it.packageName }
+                val existing = repository.getAllApps()
+                val installedCount = installed.size
+                val dbCount = existing.size
+                val needsRefresh =
+                    installedCount != dbCount ||
+                        existing.any { dbApp ->
+                            val installedApp = installed[dbApp.packageName] ?: return@any true
+                            dbApp.appName != installedApp.appName ||
+                                dbApp.isSystemApp != installedApp.isSystemApp ||
+                                dbApp.lastUpdatedTime != installedApp.lastUpdatedTime ||
+                                dbApp.versionName != installedApp.versionName ||
+                                dbApp.targetSdkVersion != installedApp.targetSdkVersion
+                        }
+                if (needsRefresh) {
                     Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
                     loadAppsIfEmpty()
                 }
@@ -295,6 +305,29 @@ class LauncherViewModel @Inject constructor(
                     if (newApps.isNotEmpty()) {
                         repository.insertApps(newApps)
                         Timber.d("Reconcile: ${newApps.size} yeni uygulama eklendi")
+                    }
+                    val installedByPkg = installed.associateBy { it.packageName }
+                    existing.forEach { dbApp ->
+                        val installedApp = installedByPkg[dbApp.packageName] ?: return@forEach
+                        if (
+                            dbApp.appName != installedApp.appName ||
+                            dbApp.isSystemApp != installedApp.isSystemApp ||
+                            dbApp.lastUpdatedTime != installedApp.lastUpdatedTime ||
+                            dbApp.versionName != installedApp.versionName ||
+                            dbApp.targetSdkVersion != installedApp.targetSdkVersion
+                        ) {
+                            repository.updateApp(
+                                dbApp.copy(
+                                    appName = installedApp.appName,
+                                    isSystemApp = installedApp.isSystemApp,
+                                    lastUpdated = System.currentTimeMillis(),
+                                    lastUpdatedTime = installedApp.lastUpdatedTime,
+                                    versionName = installedApp.versionName,
+                                    targetSdkVersion = installedApp.targetSdkVersion,
+                                    iconUrl = installedApp.iconUrl,
+                                )
+                            )
+                        }
                     }
                 }
             } finally {
@@ -650,6 +683,7 @@ class LauncherViewModel @Inject constructor(
         "NOTIFICATION_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
         "APP_LIST" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
         "SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
+        "SETTINGS_STATS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
         "WRAPPED_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
         else -> null
     }
@@ -692,7 +726,8 @@ class LauncherViewModel @Inject constructor(
         text = text,
         emoji = emoji.ifBlank { "📰" },
         categoryId = categoryId,
-        route = resolveTickerRoute(routeKey)
+        route = resolveTickerRoute(routeKey),
+        packageName = packageName,
     )
 
     // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + saat bazlı

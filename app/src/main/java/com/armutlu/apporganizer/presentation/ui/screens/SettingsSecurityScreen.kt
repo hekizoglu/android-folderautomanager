@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -64,6 +65,37 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                         onCheckedChange = {
                             biometricLock = it
                             AppPrefs.setBiometricSettingsLockEnabled(context, it)
+                        }
+                    )
+                }
+            }
+        }
+        item {
+            var privacyReportEnabled by remember { mutableStateOf(AppPrefs.isPrivacyReportEnabled(context)) }
+            SettingsCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Security, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_privacy_report_toggle_title),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_privacy_report_toggle_desc),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = privacyReportEnabled,
+                        onCheckedChange = {
+                            privacyReportEnabled = it
+                            AppPrefs.setPrivacyReportEnabled(context, it)
                         }
                     )
                 }

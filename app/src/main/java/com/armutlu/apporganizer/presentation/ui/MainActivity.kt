@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         pendingRoute.value = intent.getStringExtra(EXTRA_OPEN_ROUTE)
         applyOpenCategoryIntent(intent)
     }

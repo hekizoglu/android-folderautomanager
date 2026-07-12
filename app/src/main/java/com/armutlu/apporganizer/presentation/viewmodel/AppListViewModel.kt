@@ -288,6 +288,13 @@ class AppListViewModel @Inject constructor(
         }
         viewModelScope.launch {
             runCatching {
+                val affectedPackages = repository.getAllApps()
+                    .filter { it.categoryId == category.categoryId }
+                    .map { it.packageName }
+                if (affectedPackages.isNotEmpty()) {
+                    repository.updateAppsCategory(affectedPackages, Category.CAT_UNCATEGORIZED)
+                    affectedPackages.forEach { AppPrefs.clearManualCategoryOverride(getApplication(), it) }
+                }
                 repository.deleteCategory(category.categoryId)
                 searchRepository.removeCategory(category.categoryId)
             }.onFailure {
@@ -656,8 +663,11 @@ class AppListViewModel @Inject constructor(
     suspend fun exportBackup(context: android.content.Context): android.content.Intent? =
         com.armutlu.apporganizer.utils.BackupManager.exportAndShare(context, repository)
 
-    suspend fun importBackup(json: String): com.armutlu.apporganizer.utils.BackupManager.ImportResult =
-        com.armutlu.apporganizer.utils.BackupManager.importFromJson(json, repository)
+    suspend fun importBackup(
+        context: android.content.Context,
+        json: String
+    ): com.armutlu.apporganizer.utils.BackupManager.ImportResult =
+        com.armutlu.apporganizer.utils.BackupManager.importFromJson(context, json, repository)
 
     fun getDebugLogs(): String {
         val state = _screenState.value

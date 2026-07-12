@@ -46,6 +46,7 @@ data class TickerSpec(
     val emoji: String,
     val categoryId: String? = null,
     val routeKey: String? = null,
+    val packageName: String? = null,
     /** Karistirma sirasinda ilk sirada tutulmasi gereken "taze" sinyaller icin (bildirim, selamlama). */
     val priority: Int = 0,
 )
@@ -266,7 +267,7 @@ object TickerComposer {
                     TickerSpec(
                         text = pool[idx](app.appName, daysSince),
                         emoji = "🕰️",
-                        routeKey = "APP_LIST",
+                        packageName = app.packageName,
                         priority = 40,
                     )
                 )
@@ -282,6 +283,7 @@ object TickerComposer {
                     TickerSpec(
                         text = pool[idx](champion.appName),
                         emoji = "🏆",
+                        packageName = champion.packageName,
                         priority = 50,
                     )
                 )
@@ -369,7 +371,7 @@ object TickerComposer {
                     text = pool[idx](digitalLifeScore, arrow),
                     emoji = "📈",
                     routeKey = "WRAPPED_REPORT",
-                    priority = 45,
+                    priority = 70,
                 )
             )
         }

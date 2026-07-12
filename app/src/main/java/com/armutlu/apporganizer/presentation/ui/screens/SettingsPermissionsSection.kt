@@ -44,6 +44,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.utils.NotificationAccessUtils
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 
 /**
@@ -62,8 +63,7 @@ fun isNotifGranted(context: Context): Boolean =
     else true
 
 fun isNotificationListenerGranted(context: Context): Boolean {
-    val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: return false
-    return flat.contains(context.packageName)
+    return NotificationAccessUtils.isNotificationListenerEnabled(context)
 }
 
 fun isDefaultLauncher(context: Context): Boolean {

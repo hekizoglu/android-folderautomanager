@@ -185,6 +185,7 @@ class SearchRepository(
 
     /** Dosya kaynağı kapatılınca. */
     suspend fun disableFilesSource() = withContext(Dispatchers.IO) {
+        FilesIndexWorker.cancel(context)
         filesIndexer.clearIndex()
     }
 

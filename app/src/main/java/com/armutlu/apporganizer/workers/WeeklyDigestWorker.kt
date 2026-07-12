@@ -3,7 +3,10 @@ package com.armutlu.apporganizer.workers
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.app.PendingIntent
+import android.content.Intent
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -11,6 +14,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.presentation.navigation.Routes
+import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.android.EntryPointAccessors
@@ -72,16 +77,27 @@ class WeeklyDigestWorker(
     }
 
     private fun sendDigestNotification(count: Int, sampleApps: List<String>) {
+        if (!NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) return
         val mgr = applicationContext.getSystemService(NotificationManager::class.java) ?: return
         ensureChannel(mgr)
         val sample = if (sampleApps.isNotEmpty()) " (${sampleApps.joinToString(", ")}…)" else ""
         val body = "$count uygulama 7+ gündür açılmadı$sample. Gizleyebilir veya kaldırabilirsin."
+        val contentIntent = PendingIntent.getActivity(
+            applicationContext,
+            NOTIF_ID,
+            Intent(applicationContext, MainActivity::class.java).apply {
+                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.USAGE_REPORT)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Haftalık Uygulama Raporu")
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(contentIntent)
             .setAutoCancel(true)
             .build()
         mgr.notify(NOTIF_ID, notification)
@@ -108,9 +124,11 @@ class WeeklyDigestWorker(
             val request = PeriodicWorkRequestBuilder<WeeklyDigestWorker>(7, TimeUnit.DAYS)
                 .setInitialDelay(1, TimeUnit.DAYS)
                 .build()
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            val wm = WorkManager.getInstance(context)
+            wm.cancelUniqueWork(WORK_NAME)
+            wm.enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.UPDATE,
+                ExistingPeriodicWorkPolicy.KEEP,
                 request
             )
         }

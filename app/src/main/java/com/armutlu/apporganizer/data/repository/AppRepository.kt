@@ -179,6 +179,15 @@ class AppRepository @Inject constructor(
             Timber.e(e, "Error updating app category")
         }
     }
+
+    suspend fun updateApp(app: AppInfo) {
+        try {
+            appDao.updateApp(app)
+            Timber.d("Updated app metadata for ${app.packageName}")
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating app")
+        }
+    }
     
     /**
      * Update multiple apps' category

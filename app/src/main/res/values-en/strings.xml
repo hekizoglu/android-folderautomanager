@@ -279,6 +279,26 @@
     <string name="notif_report_burst">up to %1$d per hour</string>
     <string name="notif_report_count_usage">%1$d notifications / %2$d min of use</string>
 
+    <!-- Privacy Analysis (Privacy Report) -->
+    <string name="privacy_report_title">Privacy Analysis</string>
+    <string name="privacy_report_back">Back</string>
+    <string name="privacy_report_summary">%1$d apps can access sensitive permissions</string>
+    <string name="privacy_report_summary_none">No app can access sensitive permissions</string>
+    <string name="privacy_report_group_granted_count">%1$d apps can access</string>
+    <string name="privacy_report_group_requested_not_granted">%1$d apps requested, not granted</string>
+    <string name="privacy_report_empty_title">Your privacy is safe 🎉</string>
+    <string name="privacy_report_empty_desc">No app has been granted sensitive permissions like camera, microphone, or location.</string>
+    <string name="privacy_report_disabled_title">Privacy Analysis is off</string>
+    <string name="privacy_report_disabled_desc">You have turned off Privacy Analysis. Turn it on to see which sensitive permissions your installed apps have — nothing is ever sent anywhere.</string>
+    <string name="privacy_report_disabled_btn">Turn On Analysis</string>
+    <string name="privacy_report_footer_note">All analysis happens on your device — nothing is ever sent anywhere.</string>
+
+    <!-- Privacy Analysis settings (SettingsSecurityScreen) -->
+    <string name="settings_privacy_report_title">Privacy Analysis</string>
+    <string name="settings_privacy_report_desc">See which apps can access camera, microphone, location and more</string>
+    <string name="settings_privacy_report_toggle_title">Privacy Analysis</string>
+    <string name="settings_privacy_report_toggle_desc">Show the Privacy Analysis entry in the Reports Center</string>
+
     <!-- Notification Analysis settings (SettingsNotificationsScreen) -->
     <string name="settings_notif_analytics_section">Notification Analysis</string>
     <string name="settings_notif_analytics_title">Notification Analysis</string>

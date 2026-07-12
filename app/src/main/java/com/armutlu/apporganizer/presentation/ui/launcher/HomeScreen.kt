@@ -663,6 +663,7 @@ fun HomeScreen(
                         // Dokunulan haber bu oturumda tekrar gösterilmesin — ticker çeşitlensin (D226)
                         viewModel.dismissTickerItem(item.key)
                         when {
+                            item.packageName != null -> viewModel.launchApp(context, item.packageName)
                             item.categoryId != null -> {
                                 val folder = folders.find { it.category.categoryId == item.categoryId }
                                 if (folder != null) onNavigateToFolder(folder)

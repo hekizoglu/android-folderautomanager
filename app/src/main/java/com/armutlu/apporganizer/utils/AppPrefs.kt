@@ -332,6 +332,14 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_FOLDER_CUSTOM_COLORS, map.toJsonString()).apply()
     }
 
+    fun clearFolderCustomizations(context: Context) {
+        prefs(context).edit()
+            .remove(KEY_FOLDER_CUSTOM_NAMES)
+            .remove(KEY_FOLDER_CUSTOM_EMOJIS)
+            .remove(KEY_FOLDER_CUSTOM_COLORS)
+            .apply()
+    }
+
     private fun String.parseJsonMap(): Map<String, String> {
         if (isBlank()) return emptyMap()
         return runCatching {
@@ -489,6 +497,13 @@ object AppPrefs {
     fun isWrappedEnabled(context: Context) = prefs(context).getBoolean(KEY_WRAPPED_ENABLED, true)
     fun setWrappedEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WRAPPED_ENABLED, v).apply()
 
+    // Gizlilik Analizi — Rapor Merkezi'nde hangi uygulamanın hassas izinlere (kamera,
+    // mikrofon, konum vb.) erişebildiğini gösteren rapor. Tüm analiz cihazda yapılır,
+    // hiçbir veri dışarı gönderilmez. Varsayılan açık.
+    const val KEY_PRIVACY_REPORT_ENABLED = "privacy_report_enabled"
+    fun isPrivacyReportEnabled(context: Context) = prefs(context).getBoolean(KEY_PRIVACY_REPORT_ENABLED, true)
+    fun setPrivacyReportEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_PRIVACY_REPORT_ENABLED, v).apply()
+
     // Biometric Settings Lock — Ayarlar ekranını parmak izi/yüz kilidi arkasına al
     const val KEY_BIOMETRIC_SETTINGS_LOCK = "biometric_settings_lock"
     fun isBiometricSettingsLockEnabled(context: Context) = prefs(context).getBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, false)
@@ -566,6 +581,9 @@ object AppPrefs {
         map.remove(packageName)
         prefs(context).edit().putString(KEY_MANUAL_CAT_OVERRIDES, map.toJsonString()).apply()
     }
+
+    fun clearManualCategoryOverrides(context: Context) =
+        prefs(context).edit().remove(KEY_MANUAL_CAT_OVERRIDES).apply()
 
     // DeepSeek LLM kategorileme sonucu kalıcı cache — kurulum sonrası her acilista ayni
     // bilinmeyen paketler icin tekrar API cagrisi yapilmasin (K1, Dongu 227, Fable danismanligi).

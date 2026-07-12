@@ -192,6 +192,28 @@ class TickerComposerTest {
         )
         val championSpec = result.first { it.priority == 50 }
         assertTrue(championSpec.text.contains("High Usage"))
+        assertEquals("com.high", championSpec.packageName)
+    }
+
+    @Test
+    fun `forgotten app ticker carries package name for direct launch`() {
+        val now = millisAt(20000L, 12)
+        val dayMs = 24L * 3600 * 1000
+        val forgottenApp = AppSnapshot("com.forgotten", "Forgotten App", 5, now - 46 * dayMs)
+
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = listOf(forgottenApp),
+            badgeTotal = 0,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = now,
+            epochDay = 20000L,
+            zone = zone,
+        )
+
+        val forgottenSpec = result.first { it.priority == 40 }
+        assertEquals("com.forgotten", forgottenSpec.packageName)
     }
 
     // ── saat dilimi selamlaması ──────────────────────────────────────────────
@@ -260,6 +282,25 @@ class TickerComposerTest {
         )
         assertEquals(100, result.first().priority)
         assertTrue(result.first().text.contains("5 aktif bildirim"))
+    }
+
+    @Test
+    fun `digital score has stronger priority when shown`() {
+        val result = TickerComposer.compose(
+            folders = sampleFolders,
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(20000L, 12),
+            digitalLifeScore = 78,
+            digitalLifeScorePrevious = 74,
+            epochDay = 20000L,
+            zone = zone,
+        )
+
+        result.firstOrNull { it.routeKey == "WRAPPED_REPORT" && it.text.contains("78/100") }
+            ?.let { assertEquals(70, it.priority) }
     }
 
     // ── haftalık özet sadece pazartesi ───────────────────────────────────────

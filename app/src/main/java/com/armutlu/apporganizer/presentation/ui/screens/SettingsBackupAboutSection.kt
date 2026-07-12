@@ -27,7 +27,10 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
+import java.io.BufferedReader
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 
@@ -165,11 +168,12 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 if (AppPrefs.isAutoBackupEnabled(context)) BackupWorker.schedule(context)
             }
 
+            val backupDayIndex = (backupDay - 1).coerceIn(0, gunAdlari.lastIndex)
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "Yedekleme zamanı: ${gunAdlari[backupDay - 1]} %02d:%02d".format(backupHour, backupMinute),
+                    "Yedekleme zamanı: ${gunAdlari[backupDayIndex]} %02d:%02d".format(backupHour, backupMinute),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -180,7 +184,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
             ) {
                 // Gün seçici
                 Box {
-                    AssistChip(onClick = { showDayMenu = true }, label = { Text(gunAdlari[backupDay - 1]) })
+                    AssistChip(onClick = { showDayMenu = true }, label = { Text(gunAdlari[backupDayIndex]) })
                     DropdownMenu(expanded = showDayMenu, onDismissRequest = { showDayMenu = false }) {
                         gunAdlari.forEachIndexed { index, gunAdi ->
                             DropdownMenuItem(
@@ -247,10 +251,14 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 // Kalıcı okuma+yazma izni al
                 val flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
                         android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(uri, flags)
-                AppPrefs.setDriveFolderUri(context, uri.toString())
-                driveFolderUri = uri.toString()
-                android.widget.Toast.makeText(context, "Drive klasörü seçildi", android.widget.Toast.LENGTH_SHORT).show()
+                runCatching {
+                    context.contentResolver.takePersistableUriPermission(uri, flags)
+                    AppPrefs.setDriveFolderUri(context, uri.toString())
+                    driveFolderUri = uri.toString()
+                    android.widget.Toast.makeText(context, "Drive klasörü seçildi", android.widget.Toast.LENGTH_SHORT).show()
+                }.onFailure {
+                    android.widget.Toast.makeText(context, "Klasör izni alınamadı", android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         }
         SettingsCard {
@@ -389,7 +397,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 confirmButton = {
                     TextButton(onClick = {
                         // Hepsini sırayla Play Store'da aç
-                        missingPackages.forEach { pkg ->
+                        missingPackages.firstOrNull()?.let { pkg ->
                             val intent = android.content.Intent(
                                 android.content.Intent.ACTION_VIEW,
                                 android.net.Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
@@ -397,7 +405,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                             context.startActivity(intent)
                         }
                         showMissingDialog = false
-                    }) { Text("Hepsini Play Store'da Aç") }
+                    }) { Text("Play Store'da Aç") }
                 },
                 dismissButton = {
                     TextButton(onClick = {
@@ -424,8 +432,12 @@ internal fun LazyListScope.settingsBackupAboutSection(
                         coroutineScope.launch {
                             backupLoading = true
                             runCatching {
-                                val json = context.contentResolver.openInputStream(pendingRestoreUri!!)?.bufferedReader()?.readText() ?: return@runCatching
-                                val result = viewModel.importBackup(json)
+                                val json = withContext(Dispatchers.IO) {
+                                    context.contentResolver.openInputStream(pendingRestoreUri!!)
+                                        ?.bufferedReader()
+                                        ?.use(BufferedReader::readText)
+                                } ?: return@runCatching
+                                val result = viewModel.importBackup(context, json)
                                 if (result.success) {
                                     android.widget.Toast.makeText(context,
                                         "${result.updatedCount} uygulama geri yüklendi",

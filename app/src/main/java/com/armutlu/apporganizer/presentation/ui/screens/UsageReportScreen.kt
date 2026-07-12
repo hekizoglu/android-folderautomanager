@@ -20,12 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -39,7 +42,19 @@ fun UsageReportScreen(
     val context = LocalContext.current
     val screenState by viewModel.screenState.collectAsState()
     val allApps = screenState.apps
-    val hasPermission = remember { UsageStatsHelper.hasPermission(context) }
+    val visibleUserApps = remember(allApps) { allApps.filter { !it.isHidden && !it.isSystemApp } }
+    var hasPermission by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasPermission = UsageStatsHelper.hasPermission(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val now = System.currentTimeMillis()
     val thirtyDaysMs = TimeUnit.DAYS.toMillis(30)
@@ -47,8 +62,8 @@ fun UsageReportScreen(
     // Kullanım metriği toggle: Süre (ön plan ms) / Adet (kaç kez açıldı) — madde 1
     var usageMetric by remember { mutableStateOf(UsageMetric.DURATION) }
 
-    val appsSorted = remember(allApps, usageMetric) {
-        allApps.filter { !it.isHidden }.map { app ->
+    val appsSorted = remember(visibleUserApps, usageMetric) {
+        visibleUserApps.map { app ->
             val value = when (usageMetric) {
                 UsageMetric.DURATION -> app.usageCount   // ön plan süresi (ms)
                 UsageMetric.COUNT -> app.launchCount     // kaç kez açıldı
@@ -57,16 +72,15 @@ fun UsageReportScreen(
         }.sortedByDescending { (_, v) -> v }
     }
 
-    val unusedApps = remember(allApps) {
-        allApps.filter { app ->
-            !app.isHidden &&
+    val unusedApps = remember(visibleUserApps) {
+        visibleUserApps.filter { app ->
             app.lastUsedTimestamp > 0L &&
             (now - app.lastUsedTimestamp) > thirtyDaysMs
         }.sortedBy { it.lastUsedTimestamp }
     }
 
-    val neverUsed = remember(allApps) {
-        allApps.filter { it.lastUsedTimestamp == 0L && !it.isHidden }
+    val neverUsed = remember(visibleUserApps) {
+        visibleUserApps.filter { it.lastUsedTimestamp == 0L }
     }
 
     val maxValue = (appsSorted.firstOrNull()?.second ?: 1L).coerceAtLeast(1L)
@@ -118,7 +132,7 @@ fun UsageReportScreen(
                         Text("Son 30 Gün Özeti", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Spacer(Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            SummaryChip("Toplam", "${allApps.size} uygulama")
+                            SummaryChip("Toplam", "${visibleUserApps.size} uygulama")
                             SummaryChip("Kullanılan", "${appsSorted.count { it.second > 0 }}")
                             SummaryChip("30g+ Açılmadı", "${unusedApps.size}")
                         }
