@@ -88,53 +88,6 @@ Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da; Usag
 
 ---
 
-## Yuksek Puanli - Kullanici Geri Bildirimi (2026-07-12, kod bulgulari agent ile dogrulandi)
-
-> Kullanici testi sonrasi 13 madde + 4 iyilestirme onerisi onaylandi. Her madde koda oturtuldu (dosya:satir).
-> Onerilen calisma sirasi: A (temel veri) -> D (cokme) -> B/C -> E.
-
-### Paket A - Kullanim metrigi (KOK SORUN)
-
-| Puan | Gorev | Kok neden / dosya:satir | Durum |
-|---|---|---|---|
-| 17p | usageCount alanini ikiye ayir: launchCount (adet) + usageTimeMs (sure) | `AppInfo.usageCount` (AppInfo.kt:40) hem `+1` (LauncherViewModel.kt:363) hem `= totalTimeInForeground` ms (LauncherViewModel.kt:764) olarak yaziliyor; sync adet degerini ms ile eziyor -> "milyon adet" bug. Room migration + tum okuma noktalari (InsightEngine, WrappedEngine, WrappedReportScreen, NiagaraComponents, AppContextMenu) guncellenecek. | Bekliyor |
-| 17p | S1 hotfix: Paket A bitene kadar raporlarda degeri sure olarak goster | Gecici kilif - `formatUsageTime(usageCount)` ile milyon gizlenir. Hizli, tek noktada. | Bekliyor |
-| 15p | Raporda "saate gore / adete gore" toggle | Su an hicbir toggle yok; metrik secimi implicit ve tutarsiz. launchCount/usageTimeMs ayrimi sonrasi eklenecek. | Bekliyor |
-| 15p | Oneri bolumu -> "Bu saatte en cok kullandiklarin" | Su an genel oneri (AppSuggestionsRow, HomeScreenComponents.kt:356). Saat dilimi bazli kullanim kovalari + baslik degisimi. UsageSessionAggregator (launchCount event bazli) beslenecek. Paket A verisine bagimli. | Bekliyor |
-
-### Paket D - Performans ve cokme (KRITIK)
-
-| Puan | Gorev | Kok neden / dosya:satir | Durum |
-|---|---|---|---|
-| 16p | Cold start: yuklu paket imzasi (adet+hash) cache'le, degismemisse PM taramasini atla | Kategorizasyon zaten cache'li (loadAppsIfEmpty delta, LauncherViewModel.kt:275-304); ama `getInstalledApps()` (:279) delta bos olsa bile her acilista TUM paketleri PM'den tariyor + init'te 4+ SharingStarted.Eagerly StateFlow (:155,168,602,747,756) ayni anda tetikleniyor -> cokme/yavaslik. | Bekliyor |
-
-### Paket B - Oneri ve bilgilendirme UX
-
-| Puan | Gorev | Kok neden / dosya:satir | Durum |
-|---|---|---|---|
-| 17p | Oneri ikon/etiket uyumsuzlugu fix (Instagram logo + Akbank yazi) | `AppSuggestionsRow` `Row.forEach` `key` YOK (HomeScreenComponents.kt:399); `produceState` key degisince eski ikonu tutuyor, etiket aninda guncelleniyor. `key` ekle + `AppIconView.kt:103` cache key'ine lastUpdatedTime ekle. | Bekliyor |
-| 16p | Rapor/Dashboard satirlarini tiklanabilir yap | `TopAppRow`, `UsageRow`, `CategoryBar` onClick YOK (AppOrganizerDashboardScreen.kt, UsageReportScreen.kt). Satir -> uygulama detayi / ilgili rapor. | Bekliyor |
-| 15p | Dijital yasam skorunu ana ekranda goster (+ S3 trend yonu) | `DigitalLifeScore`/`computeScore` var (WrappedEngine.kt:55,138) ama sadece Wrapped ekraninda. Ticker/oneride ara sira goster; anti-repeat zaten var (TickerComposer). S3: skorla birlikte haftalik trend (yukari/asagi). | Bekliyor |
-| 15p | Ana ekran bilgilendirme deep-link denetimi | Ticker + AssistantInsightRow zaten onClick ile uygulamaya/klasore gidiyor (HomeScreen.kt:607-622, 660); packageName bos kalan kartlar dashboard'a dusuyor -> hedefi bos kartlari denetle/doldur. | Bekliyor |
-
-### Paket C - Yeni uygulama ve bildirim netligi
-
-| Puan | Gorev | Kok neden / dosya:satir | Durum |
-|---|---|---|---|
-| 17p | Yeni uygulama kategori bildirimi (+ S2 tek dokunusla duzelt) | onPackageAdded kategori atiyor ama bildirim YOK (PackageChangeReceiver.kt:42-58, LauncherViewModel.kt:470-483). "X -> Y kategorisine eklendi", tik -> klasor ac. S2: bildirimde yanlis kategoriyi tek dokunusla degistir (categoryReclassified ogrenme sinyali zaten var). | Bekliyor |
-| 15p | Bildirim icerigi netlestir | Metin yoksa jenerik "1 yeni bildirim" (FolderTile.kt:288-294); ayrica en YENI degil en cok bildirimli uygulamayi gosteriyor (:280-284). En yeni bildirimi goster + fallback metni duzelt. | Bekliyor |
-
-### Paket E - Izin ve arama bari
-
-| Puan | Gorev | Kok neden / dosya:satir | Durum |
-|---|---|---|---|
-| 16p | "Tam Performans / Gerekli Izinler" ekrani (+ S4 somut ornekler) | SettingsPermissionsCard var (SettingsPermissionsSection.kt:75-170, eksik izinleri gosterir). Tam ekrana genislet: her izin + neden gerekli + S4 "kapaliyken ne olmaz" (orn. kullanim erisimi kapali -> raporlar bos). | Bekliyor |
-| 15p | Fihrist (A-Z) titresim bug: cok fazla titriyor | `AllAppsDrawer.kt:737-762` sidebar scrubber onDrag her harf degisiminde `LongPress` (guclu) tetikliyor -> bir kaydirmada onlarca guclu buzz. Hafif tick (SegmentTick/TextHandleMove) + throttle. | Bekliyor |
-| 15p | Arama bari focus gorseli | Focus'ta gorsel degisim YOK; alpha yalniz drag'e tepki (HomeScreenComponents.kt:863). isFocused -> renk/border degisimi. | Bekliyor |
-| 14p | Arama barinda izin ipucu + tekrar iste | Eksik izinlerde arama alaninda ipucu goster; kullanici vermezse Paket E ekranina yonlendir. SettingsPermissionsCard ON_RESUME re-check zaten var (:85-96). | Bekliyor |
-
----
-
 ## Dusuk Oncelik ve Uzun Vade
 
 | Gorev | Alan | Durum |

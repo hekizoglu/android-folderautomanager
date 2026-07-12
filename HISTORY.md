@@ -4,6 +4,19 @@
 
 ---
 
+## Döngü 237 — 2026-07-12 [Kullanıcı geri bildirimi: 13 madde + 4 öneri v1.3.7→1.3.8]
+
+**Yapılanlar (kullanıcı testi sonrası tespit; kök nedenler agent ile koda oturtuldu, 5 pakete bölündü, çoğu paralel worktree agent'la):**
+- **Paket A — Kullanım metriği (kök sorun):** "Milyon adet" bug'ı çözüldü — `usageCount` alanı hem +1 adet hem UsageStats ms yazılıyordu, sync ms'i eziyordu. Ayrım: `usageCount`=süre(ms, gerçek kullanım büyüklüğü, ~35 sıralama/skor noktası dokunulmadı), yeni `launchCount`=adet. Room v13→v14 migration. "Kez açıldı" metinleri launchCount okur (WidgetSuggestionSection, WrappedReport, SmartInsightWorker). Raporlara "Süre/Adet" toggle. Öneriler "Bu saatte en çok kullandıkların" (UsageStatsHelper.getCurrentSlotTopApps — mutlak saat-dilimi sıralaması).
+- **Paket D — Cold start çökme:** onCreate her açılışta ağır getInstalledApps() tam taraması yapıyordu → reconcileIfNeeded (ucuz sayı kontrolü, eşitse sıfır tarama). Eagerly akışlar LEARNINGS uyarısı gereği dokunulmadı.
+- **Paket B — UX:** Öneri ikon/etiket uyuşmazlığı (Instagram logo+Akbank yazı) — forEach'e key(packageName), produceState artık eski ikonu tutmuyor. Rapor satırları tıklanabilir (→ Uygulama Bilgisi). Dijital yaşam skoru ana ekran ticker'ında + trend oku (↑/↓/→, gerçek sinyallerden). Bilgilendirme deep-link denetimi (klasör bulunamazsa Dashboard).
+- **Paket C — Bildirim:** Yeni uygulama kategori bildirimi (NewAppNotifier, "X→Y kategorisine eklendi", tık kategori açar, "Kategoriyi Değiştir" aksiyonu). Klasör bildirim özeti netleştirildi (en yeni/önemli + uygulama adı+sayı).
+- **Paket E — İzin & arama:** Arama barı focus görseli. Tam Performans/İzinler rehber ekranı (her izin + neden + kapalıyken ne olmaz). Fihrist A-Z titreşim (LongPress→TextHandleMove hafif tick). Arama barı izin ipucu + tekrar iste (3 açılış sonra pasif linke döner).
+
+**Not:** Bu ortamda Android SDK/dl.google.com yok — build yerel makinede alınmalı (Room v14 şeması build'de üretilir). Değişiklikler pure Kotlin/Compose + Room migration.
+
+---
+
 ## Döngü 236 — 2026-07-10 [Canlıya alma hazırlığı: R8 release testi + EN strings + store görselleri v1.3.6]
 
 **Yapılanlar (kullanıcı talebi: canlıya alma eksiklerini çöz; Fable + Sonnet agent paralel):**
