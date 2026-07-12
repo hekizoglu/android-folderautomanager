@@ -41,6 +41,8 @@ Sirayla uygula. Her adim basarisiz olursa once asagidaki "Bilinen Sorunlar" bolu
 | `Unable to delete ... R.jar` / `checkDebugAarMetadata` / `packageDebug` kilidi | `Get-Process java \| Stop-Process -Force` (VSCode Java LS dahil — kendini yeniden baslatir) → 3 sn bekle → yeniden build. Hala kilitliyse `.\scripts\clear_build_lock.ps1` |
 | `FileAlreadyExistsException` (KSP generated) veya `Cannot access output property` (kotlin-classes MD5) | Incremental state bozuk — `app\build` KOMPLE silinir (secici silme YASAK), sonra build |
 | `Resource and asset merger ... merged.dir` | Ayni: tam temizlik + build |
+| strings.xml/res degisti (onceki build'den beri) | Incremental resource merge NEREDEYSE HEP bozuluyor (D236/238/239'da 3 kez) — beklemeden dogrudan tam temizlikle basla |
+| Unit test `Verification failed ... was not called` (MockK) | Kod tarafina yeni AppPrefs.isX() cagrisi eklendiyse mockkObject'li testlerde stub eksiktir — setup()'a `every { AppPrefs.isX(any()) } returns <varsayilan>` ekle |
 | `google-services.json is missing` | `-PskipGoogleServices` ekle |
 | Commit "pathspec ... did not match" hatasi | Commit mesajindaki cift tirnaklar — mesaji tirnak icermeyecek sekilde yeniden yaz |
 

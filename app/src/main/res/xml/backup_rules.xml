@@ -8,4 +8,8 @@
     <exclude domain="file" path="logs" />
     <exclude domain="file" path="temp" />
     <exclude domain="file" path="no_backup" />
+    <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si yedeğe dahil edilmez -->
+    <exclude domain="database" path="app_organizer_db" />
+    <exclude domain="database" path="app_organizer_db-wal" />
+    <exclude domain="database" path="app_organizer_db-shm" />
 </full-backup-content>

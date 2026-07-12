@@ -366,6 +366,10 @@ class AppRepository @Inject constructor(
         try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) { Timber.e(e) }
     }
 
+    suspend fun clearAllNotificationTexts() {
+        try { appDao.clearAllNotificationTexts() } catch (e: Exception) { Timber.e(e) }
+    }
+
     fun getHiddenApps(): Flow<List<AppInfo>> =
         appDao.getHiddenApps().distinctUntilChanged().flowOn(Dispatchers.IO)
 

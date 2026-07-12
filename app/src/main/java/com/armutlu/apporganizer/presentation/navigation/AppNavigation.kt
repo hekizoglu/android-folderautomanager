@@ -45,6 +45,17 @@ object Routes {
     const val SETTINGS_SECURITY = "settings_security"
     const val SETTINGS_ABOUT = "settings_about"
     const val PERMISSIONS_GUIDE = "permissions_guide"
+
+    // Güvenlik: MainActivity EXTRA_OPEN_ROUTE dışarıdan (üçüncü parti intent) gelebilir —
+    // yalnızca burada tanımlı bilinen route'lara navigate edilmeli (whitelist doğrulaması).
+    val ALL: Set<String> = setOf(
+        APP_LIST, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
+        REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT,
+        SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
+        SETTINGS_STATS, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE
+    )
+
+    fun isValid(route: String?): Boolean = route != null && route in ALL
 }
 
 @Composable
@@ -57,6 +68,13 @@ fun AppNavigation(
 
     androidx.compose.runtime.LaunchedEffect(externalRoute) {
         val route = externalRoute ?: return@LaunchedEffect
+        // Güvenlik: exported MainActivity üzerinden dışarıdan enjekte edilebilecek route
+        // string'i whitelist'e karşı doğrulanmadan navController'a verilmez.
+        if (!Routes.isValid(route)) {
+            timber.log.Timber.w("Bilinmeyen/gecersiz externalRoute yok sayildi: %s", route)
+            onExternalRouteConsumed()
+            return@LaunchedEffect
+        }
         navController.navigate(route) {
             launchSingleTop = true
             restoreState = true

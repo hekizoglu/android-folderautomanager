@@ -109,6 +109,19 @@
 -keep class timber.log.** { *; }
 
 # ============================================================
+# Log stripping (guvenlik/gizlilik) — release'te android.util.Log
+# cagrilarinin gövdesi R8 tarafindan tamamen kaldirilir.
+# ============================================================
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int e(...);
+    public static int wtf(...);
+}
+
+# ============================================================
 # JSON (org.json — DeepSeek API çağrıları)
 # ============================================================
 -keep class org.json.** { *; }

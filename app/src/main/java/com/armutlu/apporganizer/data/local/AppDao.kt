@@ -205,6 +205,10 @@ interface AppDao {
     @Query("UPDATE apps SET notificationText = :text WHERE packageName = :packageName")
     suspend fun updateNotificationText(packageName: String, text: String)
 
+    // Gizlilik: bildirim metni ayarı kapatılınca tüm kayıtlı metinleri temizler
+    @Query("UPDATE apps SET notificationText = ''")
+    suspend fun clearAllNotificationTexts()
+
     @Query("SELECT * FROM apps WHERE isHidden = 1 ORDER BY appName ASC")
     fun getHiddenApps(): Flow<List<AppInfo>>
 

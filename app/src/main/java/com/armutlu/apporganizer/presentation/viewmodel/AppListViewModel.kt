@@ -3,15 +3,12 @@ package com.armutlu.apporganizer.presentation.viewmodel
 import android.app.Application
 import android.content.Intent
 import android.os.Build
-import android.view.accessibility.AccessibilityManager
-import android.accessibilityservice.AccessibilityServiceInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.service.LauncherAccessibilityService
 import com.armutlu.apporganizer.utils.LauncherOrganizer
 import com.armutlu.apporganizer.utils.WidgetSuggestion
 import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
@@ -52,10 +49,6 @@ class AppListViewModel @Inject constructor(
     // Launcher organize state
     private val _organizeState = MutableStateFlow<OrganizeState>(OrganizeState.Idle)
     val organizeState: StateFlow<OrganizeState> = _organizeState.asStateFlow()
-
-    // Accessibility service bağlantı durumu
-    private val _isA11yConnected = MutableStateFlow(false)
-    val isA11yConnected: StateFlow<Boolean> = _isA11yConnected.asStateFlow()
 
     // Private state flows
     private val _screenState = MutableStateFlow(AppListScreenState.loading())
@@ -528,7 +521,7 @@ class AppListViewModel @Inject constructor(
         }
     }
 
-    fun organizeOnLauncher(@Suppress("UNUSED_PARAMETER") useAccessibility: Boolean) {
+    fun organizeOnLauncher() {
         _organizeState.value = OrganizeState.Done(true, "Launcher otomatik kategorileme aktif.")
     }
 
@@ -625,18 +618,6 @@ class AppListViewModel @Inject constructor(
                     .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
                 Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
             }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
-        }
-    }
-
-    fun isAccessibilityServiceEnabledInSystem(): Boolean {
-        return try {
-            val am = getApplication<Application>()
-                .getSystemService(AccessibilityManager::class.java) ?: return false
-            val pkg = getApplication<Application>().packageName
-            am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-                .any { it.resolveInfo.serviceInfo.packageName == pkg }
-        } catch (e: Exception) {
-            false
         }
     }
 

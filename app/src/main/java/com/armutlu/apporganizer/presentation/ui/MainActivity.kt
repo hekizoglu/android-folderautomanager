@@ -90,6 +90,12 @@ class MainActivity : ComponentActivity() {
 
     private fun applyOpenCategoryIntent(intent: Intent?) {
         val categoryId = intent?.getStringExtra("open_category") ?: return
+        // Güvenlik: exported Activity'ye dışarıdan gelen extra — boş veya asırı uzun
+        // (gerçek kategori id'leri kısa sabit string'lerdir) değerleri yok say.
+        if (categoryId.isBlank() || categoryId.length > 64) {
+            Timber.w("Gecersiz open_category extra yok sayildi (uzunluk=${categoryId.length})")
+            return
+        }
         lifecycleScope.launch {
             viewModel.screenState.first { !it.isLoading && !it.isInitializing }
             viewModel.setSelectedCategory(categoryId)

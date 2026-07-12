@@ -19,11 +19,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Aktif bildirimleri sayar ve son bildirim metnini (package -> text) yayinlar.
- * LauncherViewModel bu flow'u dinleyerek AppInfo.notificationCount ve notificationText'i gunceller.
+ * Aktif bildirimleri sayar (badge) ve — yalnızca Ayarlar'dan "bildirim metni göster"
+ * açıkken — son bildirim metnini (package -> text) yayınlar; bu metin LauncherViewModel
+ * tarafından `apps.notificationText` sütununa kalıcı yazılır (varsayılan: KAPALI).
  *
  * Ayrıca her bildirim `notification_events` tablosuna loglanır (Bildirim Analiz Raporu):
- * yalnızca paket adı + zaman damgası — içerik saklanmaz, veri cihazda kalır.
+ * yalnızca paket adı + zaman damgası — bu tabloya içerik saklanmaz, veri cihazda kalır.
  */
 @AndroidEntryPoint
 class AppNotificationListenerService : NotificationListenerService() {
@@ -48,7 +49,8 @@ class AppNotificationListenerService : NotificationListenerService() {
                 // atomic update — race condition'u önler
                 knownNotificationKeys += sbn.key
                 rebuildCounts()
-                if (combined.isNotBlank()) {
+                // Gizlilik: bildirim metni yalnızca ayar açıkken yayınlanır/DB'ye yazılır (varsayılan kapalı)
+                if (combined.isNotBlank() && AppPrefs.isNotificationTextEnabled(this)) {
                     _latestTexts.update { current -> current + (sbn.packageName to combined) }
                 }
                 // Bildirim analizi — yalnızca paket + zaman kaydı (Ayarlar'dan kapatılabilir)

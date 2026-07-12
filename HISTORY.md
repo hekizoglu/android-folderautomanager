@@ -4,6 +4,19 @@
 
 ---
 
+## Döngü 239 — 2026-07-13 [Güvenlik denetimi fix'leri v1.3.9 — Play reject riskleri kapatıldı]
+
+**Yapılanlar (kullanıcı onaylı 4 fix; Sonnet agent + Fable test düzeltme):**
+- **Accessibility Service TAMAMEN kaldırıldı (YÜKSEK):** Boş stub + geniş beyan (canRetrieveWindowContent) Play reject profiliydi. Servis, manifest bloğu, config XML, string'ler, AppListViewModel'deki ölü a11y state'leri silindi — canlı referans 0. Kazanç: Play Console Accessibility beyan formu artık GEREKMİYOR.
+- **Bildirim metni gizlilik fix'i (YÜKSEK):** `latestTexts` yayını artık KEY_NOTIFICATION_TEXT_ENABLED (varsayılan kapalı) guard'lı — ayar kapalıyken bildirim içeriği DB'ye HİÇ yazılmıyor; toggle kapatılınca `clearAllNotificationTexts()` mevcut metinleri siliyor; Room DB cloud-backup ve device-transfer kapsamı DIŞINA alındı (data_extraction_rules + backup_rules). Data Safety formu artık kod gerçeğiyle uyumlu doldurulabilir.
+- **Route whitelist (ORTA):** `Routes.ALL` + `isValid()`; dışarıdan gelen `EXTRA_OPEN_ROUTE` bilinmiyorsa yok sayılıyor; `open_category` boş/64+ karakter reddi.
+- **Release log kapatma (ORTA):** Timber yalnızca BuildConfig.DEBUG'da; proguard'a Log stripping eklendi.
+- **Test fix (Fable):** Yeni AppPrefs guard çağrısı MockK'ta stub'lanmadığı için AppNotificationListenerServiceTest kırıldı — setup()'a varsayılan stub eklendi. 285 test yeşil.
+- /apk-teslim skill'ine 2 yeni bilinen-sorun satırı (res değişiminde direkt tam temizlik; MockK stub eksikliği).
+
+**Ortam:** 1x resource merger bozulması (res değişimi sonrası, bilinen kalıp) — tam temizlikle çözüldü; build.gradle.kts anlık dosya kilidi — Edit tool ile aşıldı.
+**Sonraki:** emulator-tester smoke sonucu + Telegram teslimi; ardından Play Console formları (Hüseyin) — Accessibility beyanı listeden düştü.
+
 ## Döngü 237 — 2026-07-12 [Kullanıcı geri bildirimi: 13 madde + 4 öneri v1.3.7→1.3.8]
 
 **Yapılanlar (kullanıcı testi sonrası tespit; kök nedenler agent ile koda oturtuldu, 5 pakete bölündü, çoğu paralel worktree agent'la):**

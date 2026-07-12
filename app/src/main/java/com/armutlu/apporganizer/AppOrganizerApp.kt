@@ -24,7 +24,10 @@ class AppOrganizerApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Timber.plant(Timber.DebugTree())
+        // Güvenlik/gizlilik: release APK'da Logcat'e hiç log basılmaz (Crashlytics ayrı ele alınır).
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
         com.armutlu.apporganizer.utils.CrashReporter.install(this)
         // google-services.json yoksa initializeApp null döner — Firebase çağrıları o durumda atlanır
         // (skipGoogleServices ile alınan build'ler açılışta ÇÖKMEZ; json eklenince otomatik aktifleşir)

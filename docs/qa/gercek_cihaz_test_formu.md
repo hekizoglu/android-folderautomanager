@@ -22,6 +22,7 @@ Test sirasinda ilgili alanlari doldurmak yeterlidir.
 ## 1. Temiz Kurulum ve Onboarding
 
 - [ ] Uygulama temiz kuruldu
+uygulama kurulum sırasında en son default launcher seçildikten sonra . kurulumu başa aldı . bir de kurulum aşamasında biraz daha uygulamanın başarısından bahset.
 - [ ] Ilk acilis sorunsuz
 - [ ] Onboarding sirasi dogru
 - [ ] Tema secimi calisiyor

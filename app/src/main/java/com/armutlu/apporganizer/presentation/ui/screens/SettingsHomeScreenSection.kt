@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 /**
  * Ana Ekran Özellikleri, Widget ve İkon Paketi bölümü.
@@ -25,6 +26,7 @@ fun SettingsHomeScreenSection(
     onNavigateToSearchSettings: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     // ── Ana Ekran Özellikleri ─────────────────────────────────────────────
     SettingsSectionTitle("Ana Ekran Özellikleri")
@@ -246,6 +248,16 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 notifTextEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setNotificationTextEnabled(context, it)
+                if (!it) {
+                    // Gizlilik: ayar kapatılınca DB'de kayıtlı tüm bildirim metinlerini temizle
+                    scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        runCatching {
+                            com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context)
+                                .appDao()
+                                .clearAllNotificationTexts()
+                        }
+                    }
+                }
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">App Organizer</string>
-    <string name="accessibility_service_description">App Organizer uses this permission to automatically group your apps by category in the launcher. No personal data is collected.</string>
     <string name="app_version">0.1.0 Beta</string>
 
     <!-- Screen Titles -->
