@@ -114,24 +114,6 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 ---
 
 
-### AI kocu haftalik yorumu (13p)
-
-**Sorun/istek:** `WrappedReport` verisi var ama lokal AI/DeepSeek'e ozetletip 2 cumlelik kisisel yorum uretilmiyor.
-
-**Cozum tarifi:**
-1. Mevcut `CategoryLLMFallback.kt`'deki DeepSeek/lokal AI cagri pattern'ini (API key okuma, `.env`/AppPrefs'ten key alma, hata durumunda sessiz devam) referans al.
-2. `WrappedReport` modelinin bulundugu dosyayi bul (Wrapped MVP Dongu 230 - `grep -r "WrappedReport" app/src`), agregat alanlarini (skor, en cok kullanilan kategori, trend) cikar.
-3. Yeni fonksiyon: `WrappedAiCoach.summarize(report: WrappedReport, apiKey: String): String` â€” sadece agregat sayisal veri (paket adi/icerik YOK) prompt'a gider.
-4. `AppPrefs.kt`'ye `KEY_WRAPPED_AI_COACH_ENABLED` (varsayilan KAPALI â€” opt-in, disaridan veri gittigi icin varsayilan acik olmamali) + SettingsScreen toggle, acik aciklama metniyle ("haftalik ozet skorun DeepSeek'e gonderilir, uygulama adi gitmez").
-5. Wrapped rapor ekraninda (WrappedReportScreen veya benzeri) toggle aciksa bu yorumu bir kart olarak goster, yuklenirken skeleton/loading state.
-6. Hata/API-key-yok durumunda kart hic gosterilmez (sessiz basarisizlik, CLAUDE.md "Asla Yapma" kuralina uygun degil ama Play Store guvenlik/gizlilik onceligi burada gecerli).
-
-**Kabul kriteri:**
-- Toggle kapaliyken (varsayilan) hicbir veri disari gitmiyor, kart gorunmuyor.
-- Toggle acilinca Wrapped ekraninda 2 cumlelik yorum karti beliriyor, sadece agregat veri gonderildigi kod incelemesiyle dogrulanabiliyor.
-
----
-
 ### Hedef sistemi (13p)
 
 **Sorun/istek:** Haftalik kategori kullanim hedefi + rozet odulu yok; oturum altyapisina (UsageEvents, Dongu 232) bagimli.

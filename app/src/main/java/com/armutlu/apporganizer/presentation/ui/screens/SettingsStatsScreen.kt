@@ -150,6 +150,7 @@ fun SettingsStatsScreen(
         item { SettingsSectionTitle(stringResource(R.string.settings_stats_weekly_report_section)) }
         item {
             var wrappedEnabled by remember { mutableStateOf(AppPrefs.isWrappedEnabled(context)) }
+            var wrappedAiCoachEnabled by remember { mutableStateOf(AppPrefs.isWrappedAiCoachEnabled(context)) }
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.EmojiEvents,
@@ -159,6 +160,17 @@ fun SettingsStatsScreen(
                     onCheckedChange = {
                         wrappedEnabled = it
                         AppPrefs.setWrappedEnabled(context, it)
+                    },
+                )
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                SettingsSwitchRow(
+                    icon = Icons.Default.Psychology,
+                    title = "AI Koçu Haftalık Yorumu",
+                    subtitle = "Varsayılan kapalı. Açılırsa yalnız agregat Wrapped skorun DeepSeek'e gider; uygulama adı ve paket adı gönderilmez.",
+                    checked = wrappedAiCoachEnabled,
+                    onCheckedChange = {
+                        wrappedAiCoachEnabled = it
+                        AppPrefs.setWrappedAiCoachEnabled(context, it)
                     },
                 )
             }

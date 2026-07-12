@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedAiCoach
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
@@ -27,6 +28,8 @@ data class WrappedUiState(
     val hasUsagePermission: Boolean = false,
     val report: WrappedEngine.WrappedReport? = null,
     val previousScore: Int? = null,
+    val aiCoachLoading: Boolean = false,
+    val aiCoachComment: String? = null,
 )
 
 /**
@@ -39,6 +42,7 @@ data class WrappedUiState(
 class WrappedViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val notificationEventDao: NotificationEventDao,
+    private val wrappedAiCoach: WrappedAiCoach,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -62,9 +66,30 @@ class WrappedViewModel @Inject constructor(
                 hasUsagePermission = UsageStatsHelper.hasPermission(context),
                 report = result,
                 previousScore = WrappedSnapshotPrefs.getLastScore(context),
+                aiCoachLoading = shouldLoadAiCoach(result),
             )
             // Bir sonraki karşılaştırma için mevcut skoru kaydet.
             result?.let { WrappedSnapshotPrefs.setLastScore(context, it.score.score) }
+            loadAiCoachIfNeeded(result)
+        }
+    }
+
+    private fun shouldLoadAiCoach(report: WrappedEngine.WrappedReport?): Boolean =
+        report != null &&
+            AppPrefs.isWrappedAiCoachEnabled(context) &&
+            AppPrefs.getDeepSeekApiKey(context).isNotBlank()
+
+    private fun loadAiCoachIfNeeded(report: WrappedEngine.WrappedReport?) {
+        if (!shouldLoadAiCoach(report)) return
+        viewModelScope.launch {
+            val apiKey = AppPrefs.getDeepSeekApiKey(context)
+            val comment = withContext(Dispatchers.IO) {
+                wrappedAiCoach.summarize(report!!, apiKey)
+            }
+            _uiState.value = _uiState.value.copy(
+                aiCoachLoading = false,
+                aiCoachComment = comment,
+            )
         }
     }
 

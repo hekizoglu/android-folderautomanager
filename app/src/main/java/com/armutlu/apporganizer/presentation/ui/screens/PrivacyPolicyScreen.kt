@@ -63,7 +63,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
             )
             PolicySection(
                 title = "Üçüncü Taraflar",
-                body = "AppOrganizer verilerinizi satmaz ve reklam ağlarıyla paylaşmaz.\n\nFirebase Analytics özellik/ekran kullanım olaylarını; Firebase Crashlytics teknik çökme kayıtlarını Google'a gönderebilir. Yüklü veya açılan uygulamaların paket adları bu analitik olaylarına eklenmez.\n\nİsteğe bağlı DeepSeek entegrasyonu etkinleştirilirse bilinmeyen uygulamanın adı ve paket adı kategorileme amacıyla DeepSeek'e gönderilir."
+                body = "AppOrganizer verilerinizi satmaz ve reklam ağlarıyla paylaşmaz.\n\nFirebase Analytics özellik/ekran kullanım olaylarını; Firebase Crashlytics teknik çökme kayıtlarını Google'a gönderebilir. Yüklü veya açılan uygulamaların paket adları bu analitik olaylarına eklenmez.\n\nİsteğe bağlı DeepSeek entegrasyonu etkinleştirilirse bilinmeyen uygulamanın adı ve paket adı kategorileme amacıyla DeepSeek'e gönderilir. AI Koçu ayrıca açıkça etkinleştirilirse yalnız agregat haftalık Wrapped skorunu ve özet sinyalleri DeepSeek'e gönderir; uygulama adı veya paket adı göndermez."
             )
             PolicySection(
                 title = "Veri Güvenliği",

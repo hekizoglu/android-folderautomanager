@@ -85,6 +85,8 @@ fun WrappedReportScreen(
                 padding = padding,
                 report = state.report!!,
                 hasUsagePermission = state.hasUsagePermission,
+                aiCoachLoading = state.aiCoachLoading,
+                aiCoachComment = state.aiCoachComment,
                 onRequestPermission = { viewModel.enableUsagePermission() },
                 onNavigateToNotificationReport = onNavigateToNotificationReport,
             )
@@ -122,6 +124,8 @@ private fun WrappedContent(
     padding: PaddingValues,
     report: WrappedEngine.WrappedReport,
     hasUsagePermission: Boolean,
+    aiCoachLoading: Boolean,
+    aiCoachComment: String?,
     onRequestPermission: () -> Unit,
     onNavigateToNotificationReport: () -> Unit,
 ) {
@@ -135,6 +139,10 @@ private fun WrappedContent(
         }
 
         item { ScoreCard(report.score, report.weeklyComparison?.previousScore) }
+
+        if (aiCoachLoading || !aiCoachComment.isNullOrBlank()) {
+            item { AiCoachCard(aiCoachLoading, aiCoachComment) }
+        }
 
         item { PersonalityCard(report.personality) }
 
@@ -182,6 +190,36 @@ private fun UsagePermissionCard(onRequestPermission: () -> Unit) {
 }
 
 // ── a) Skor dairesi ──────────────────────────────────────────────────────
+
+@Composable
+private fun AiCoachCard(loading: Boolean, comment: String?) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (loading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+            } else {
+                Text("AI", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text("AI Koçu", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    comment ?: "Haftalık yorum hazırlanıyor...",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun ScoreCard(score: WrappedEngine.DigitalLifeScore, previousScore: Int?) {

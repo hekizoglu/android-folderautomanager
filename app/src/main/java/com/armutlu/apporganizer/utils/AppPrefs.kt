@@ -513,6 +513,10 @@ object AppPrefs {
     fun isWrappedEnabled(context: Context) = prefs(context).getBoolean(KEY_WRAPPED_ENABLED, true)
     fun setWrappedEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WRAPPED_ENABLED, v).apply()
 
+    const val KEY_WRAPPED_AI_COACH_ENABLED = "wrapped_ai_coach_enabled"
+    fun isWrappedAiCoachEnabled(context: Context) = prefs(context).getBoolean(KEY_WRAPPED_AI_COACH_ENABLED, false)
+    fun setWrappedAiCoachEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WRAPPED_AI_COACH_ENABLED, v).apply()
+
     // Gizlilik Analizi — Rapor Merkezi'nde hangi uygulamanın hassas izinlere (kamera,
     // mikrofon, konum vb.) erişebildiğini gösteren rapor. Tüm analiz cihazda yapılır,
     // hiçbir veri dışarı gönderilmez. Varsayılan açık.
