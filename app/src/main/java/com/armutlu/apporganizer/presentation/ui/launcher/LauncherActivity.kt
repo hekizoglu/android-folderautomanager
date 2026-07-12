@@ -128,7 +128,11 @@ class LauncherActivity : ComponentActivity() {
             com.armutlu.apporganizer.utils.CrashReporter.exitSafeMode(this)
         }
 
-        viewModel.loadAppsIfEmpty()
+        // Cold start optimizasyonu (madde 7/D): her açılışta ağır getInstalledApps() tam
+        // taraması yerine ucuz sayı kontrolü — DB ↔ cihaz paket sayısı eşitse hiçbir tarama
+        // yapılmaz (çökme/yavaşlık kaynağı buydu). İlk açılışta (DB boş) sayı farkı olur ve
+        // reconcileIfNeeded zaten loadAppsIfEmpty'i tetikler.
+        viewModel.reconcileIfNeeded(this)
         viewModel.initFavorites(this)
         viewModel.syncUsageStats(this)
         AppPrefs.markUsageStatsSynced(this)  // onResume'da tekrar tetiklenmesin
