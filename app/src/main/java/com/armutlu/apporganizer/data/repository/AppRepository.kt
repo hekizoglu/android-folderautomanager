@@ -317,12 +317,16 @@ class AppRepository @Inject constructor(
         return appDao.appExists(packageName)
     }
 
-    suspend fun incrementUsageCount(packageName: String) {
-        try { appDao.incrementUsageCount(packageName) } catch (e: Exception) { Timber.e(e) }
+    suspend fun incrementLaunchCount(packageName: String) {
+        try { appDao.incrementLaunchCount(packageName) } catch (e: Exception) { Timber.e(e) }
     }
 
-    suspend fun updateUsageCount(packageName: String, count: Long) {
-        try { appDao.updateUsageCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
+    suspend fun updateUsageTimeMs(packageName: String, timeMs: Long) {
+        try { appDao.updateUsageTimeMs(packageName, timeMs) } catch (e: Exception) { Timber.e(e) }
+    }
+
+    suspend fun updateLaunchCount(packageName: String, count: Long) {
+        try { appDao.updateLaunchCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
     }
 
     fun getAllAppsSortedByUsage(): Flow<List<AppInfo>> =

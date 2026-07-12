@@ -69,7 +69,7 @@ fun WidgetSuggestionSection(viewModel: AppListViewModel) {
                         Column(Modifier.weight(1f)) {
                             Text(suggestion.appName, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                             Text(
-                                "${suggestion.widgetCount} widget • ${suggestion.usageCount} kez açıldı",
+                                "${suggestion.widgetCount} widget • ${suggestion.launchCount} kez açıldı",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

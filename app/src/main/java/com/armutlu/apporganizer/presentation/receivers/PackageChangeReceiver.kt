@@ -89,6 +89,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
                     categoryId   = existing.categoryId,
                     isHidden     = existing.isHidden,
                     usageCount   = existing.usageCount,
+                    launchCount  = existing.launchCount,
                     lastUsedTimestamp = existing.lastUsedTimestamp,
                     notificationCount = existing.notificationCount
                 )

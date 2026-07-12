@@ -608,7 +608,8 @@ class AppListViewModel @Inject constructor(
             runCatching {
                 repository.resetAllCategories()
                 repository.getAllApps().forEach { app ->
-                    repository.updateUsageCount(app.packageName, 0)
+                    repository.updateUsageTimeMs(app.packageName, 0)
+                    repository.updateLaunchCount(app.packageName, 0)
                     repository.updateLastUsedTimestamp(app.packageName, 0L)
                     repository.updateNotificationCount(app.packageName, 0)
                     repository.updateCustomNotes(app.packageName, "")

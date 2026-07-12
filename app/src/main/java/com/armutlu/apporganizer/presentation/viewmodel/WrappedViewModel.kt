@@ -80,7 +80,9 @@ class WrappedViewModel @Inject constructor(
                 packageName = app.packageName,
                 appName = app.appName,
                 categoryId = app.categoryId,
-                usageCount = weeklyLaunches?.get(app.packageName) ?: app.usageCount,
+                // AppSnapshot.usageCount = adet (kez açıldı) — tutarlı olsun: gerçek haftalık
+                // başlatma sayısı yoksa launcher launchCount'a düş (app.usageCount ms tutar, kullanma).
+                usageCount = weeklyLaunches?.get(app.packageName) ?: app.launchCount,
                 lastUsedTimestamp = app.lastUsedTimestamp,
                 installTime = app.installTime,
                 firstInstalledTime = app.firstInstalledTime,

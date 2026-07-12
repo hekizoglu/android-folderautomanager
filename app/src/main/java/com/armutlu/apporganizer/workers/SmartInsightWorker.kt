@@ -55,7 +55,8 @@ class SmartInsightWorker(
                     if (topApp != null && topApp.usageCount > 0L) {
                         add("Günlük Kullanım" to "📱 ${topApp.appName} bugün en çok açtığın uygulama. Ekran süren nasıl gidiyor?")
                     }
-                    val sessionCount = apps.sumOf { it.usageCount }.coerceAtMost(99L)
+                    // Açılış adedi launchCount'tan gelir (usageCount ms tutar — toplamı milyonlarca çıkar)
+                    val sessionCount = apps.sumOf { it.launchCount }.coerceAtMost(99L)
                     if (sessionCount > 10L) {
                         add("Günlük Kullanım" to "📊 Bugün toplam $sessionCount uygulama açılışı yaptın. Verimliliğini takip et!")
                     }

@@ -177,12 +177,19 @@ interface AppDao {
     @Query("UPDATE apps SET categoryId = 'uncategorized'")
     suspend fun resetAllAppCategories()
 
-    @Query("UPDATE apps SET usageCount = usageCount + 1 WHERE packageName = :packageName")
-    suspend fun incrementUsageCount(packageName: String)
+    // Adet: launcher'dan her başlatmada +1 (kez açıldı)
+    @Query("UPDATE apps SET launchCount = launchCount + 1 WHERE packageName = :packageName")
+    suspend fun incrementLaunchCount(packageName: String)
 
-    @Query("UPDATE apps SET usageCount = :count WHERE packageName = :packageName")
-    suspend fun updateUsageCount(packageName: String, count: Long)
+    // Süre: UsageStats ön plan süresi (ms) — syncUsageStats yazar. Alan adı tarihsel: usageCount.
+    @Query("UPDATE apps SET usageCount = :timeMs WHERE packageName = :packageName")
+    suspend fun updateUsageTimeMs(packageName: String, timeMs: Long)
 
+    // Adet: yedekten geri yükleme için doğrudan set (increment değil)
+    @Query("UPDATE apps SET launchCount = :count WHERE packageName = :packageName")
+    suspend fun updateLaunchCount(packageName: String, count: Long)
+
+    // Süre (ms) bazlı sıralama — gerçek kullanım büyüklüğü (usageCount alanı ms tutar)
     @Query("SELECT * FROM apps ORDER BY usageCount DESC, appName ASC")
     fun getAllAppsSortedByUsage(): Flow<List<AppInfo>>
 

@@ -37,7 +37,15 @@ data class AppInfo(
     
     val customNotes: String = "",
 
+    // Sure (ms): sistem UsageStats'ten gelen toplam on plan suresi. syncUsageStats yazar.
+    // TARIHSEL NOT: Alan adi "usageCount" ama gercek kullanim BUYUKLUGUNU (ms) tutar —
+    // siralama/skor/kullanilmama tespiti icin dogru sinyal budur. Adet (kez acildi) icin
+    // ayri launchCount alani var. "Milyon adet" bug'i bu ms degerinin "kez acildi" metninde
+    // adet sanilmasindan cikiyordu; artik o metinler launchCount kullanir.
     val usageCount: Long = 0L,
+
+    // Adet: kullanicinin bu launcher'dan uygulamayi kac kez baslattigi (+1 increment).
+    val launchCount: Long = 0L,
 
     val lastUsedTimestamp: Long = 0L,
 

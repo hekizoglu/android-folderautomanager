@@ -20,7 +20,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class],
-    version = 13,
+    version = 14,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -141,6 +141,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v13→v14: launchCount sütunu eklendi — "milyon adet" bug fix.
+        // Önceden usageCount alanına hem +1 adet hem UsageStats ms yazılıyordu; sync ms değeri
+        // adet sayacını eziyordu ve "kez açıldı" metni milyonlarca ms gösteriyordu.
+        // Artık: usageCount = ön plan süresi (ms, gerçek kullanım büyüklüğü, sıralama/skor için),
+        // launchCount = kez açıldı (adet). "Kez açıldı" metinleri launchCount okur.
+        private val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.addColumnIfNotExists("apps", "launchCount", "INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -247,7 +258,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_9_10,
                         MIGRATION_10_11,
                         MIGRATION_11_12,
-                        MIGRATION_12_13
+                        MIGRATION_12_13,
+                        MIGRATION_13_14
                     )
                     .build()
 

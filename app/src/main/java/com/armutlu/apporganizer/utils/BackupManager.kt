@@ -38,6 +38,7 @@ object BackupManager {
                             put("categoryId", app.categoryId)
                             put("isHidden", app.isHidden)
                             put("usageCount", app.usageCount)
+                            put("launchCount", app.launchCount)
                             put("lastUsedTimestamp", app.lastUsedTimestamp)
                             put("notificationCount", app.notificationCount)
                         })
@@ -92,6 +93,7 @@ object BackupManager {
                             put("categoryId", app.categoryId)
                             put("isHidden", app.isHidden)
                             put("usageCount", app.usageCount)
+                            put("launchCount", app.launchCount)
                             put("lastUsedTimestamp", app.lastUsedTimestamp)
                             put("notificationCount", app.notificationCount)
                         })
@@ -148,9 +150,11 @@ object BackupManager {
                     if (repository.appExists(pkg)) {
                         repository.updateAppCategory(pkg, cat)
                         repository.updateAppHidden(pkg, hidden)
-                        val usageCount = obj.optLong("usageCount", 0L)
+                        val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
+                        val launchCount = obj.optLong("launchCount", 0L)
                         val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
-                        if (usageCount > 0) repository.updateUsageCount(pkg, usageCount)
+                        if (usageCount > 0) repository.updateUsageTimeMs(pkg, usageCount)
+                        if (launchCount > 0) repository.updateLaunchCount(pkg, launchCount)
                         if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
                         updated++
                     } else {
@@ -233,9 +237,11 @@ object BackupManager {
                     if (repository.appExists(pkg)) {
                         repository.updateAppCategory(pkg, cat)
                         repository.updateAppHidden(pkg, hidden)
-                        val usageCount = obj.optLong("usageCount", 0L)
+                        val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
+                        val launchCount = obj.optLong("launchCount", 0L)
                         val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
-                        if (usageCount > 0) repository.updateUsageCount(pkg, usageCount)
+                        if (usageCount > 0) repository.updateUsageTimeMs(pkg, usageCount)
+                        if (launchCount > 0) repository.updateLaunchCount(pkg, launchCount)
                         if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
                         updated++
                     } else {

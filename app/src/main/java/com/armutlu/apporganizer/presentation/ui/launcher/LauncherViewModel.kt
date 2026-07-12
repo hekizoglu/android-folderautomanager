@@ -360,7 +360,7 @@ class LauncherViewModel @Inject constructor(
             lastLaunchedTs = ts
             context.startActivity(intent)
             viewModelScope.launch(Dispatchers.IO) {
-                repository.incrementUsageCount(packageName)
+                repository.incrementLaunchCount(packageName)
                 repository.updateLastUsedTimestamp(packageName, ts)
             }
         } catch (e: Exception) {
@@ -761,7 +761,7 @@ class LauncherViewModel @Inject constructor(
             if (!UsageStatsHelper.hasPermission(context)) return@launch
             runCatching {
                 val counts = UsageStatsHelper.getUsageCounts(context, days = 30)
-                counts.forEach { (pkg, ms) -> repository.updateUsageCount(pkg, ms) }
+                counts.forEach { (pkg, ms) -> repository.updateUsageTimeMs(pkg, ms) }
                 val lastUsed = UsageStatsHelper.getLastUsedTimes(context, days = 90)
                 // IfNewer: launchApp'ın anlık timestamp'ini daha eski UsageStats verisiyle ezme
                 lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestampIfNewer(pkg, ts) }
