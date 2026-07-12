@@ -7,6 +7,13 @@ object AppPrefs {
     const val KEY_ONBOARDING_DONE = "onboarding_done"
     const val KEY_LAUNCHER_SETUP_SHOWN = "launcher_setup_shown"
 
+    // Onboarding adim kaliciligi (D240): varsayilan launcher secimi sistemin gorevi yeniden
+    // baslatmasina yol acabiliyor — rememberSaveable yeni activity kaydinda korunmadigi icin
+    // kurulum basa sariyordu. Adim her degisimde buraya yazilir, acilista geri yuklenir.
+    const val KEY_ONBOARDING_STEP = "onboarding_step"
+    fun getOnboardingStep(context: Context): Int = prefs(context).getInt(KEY_ONBOARDING_STEP, 0)
+    fun setOnboardingStep(context: Context, step: Int) = prefs(context).edit().putInt(KEY_ONBOARDING_STEP, step).apply()
+
     // Kullanılmayan uygulamaları gri göster — gün cinsinden (0 = kapalı)
     const val KEY_UNUSED_GREY_DAYS = "unused_grey_days"
     const val UNUSED_GREY_DEFAULT = 0  // varsayılan kapalı

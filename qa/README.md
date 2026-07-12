@@ -24,7 +24,7 @@
 
 Her APK üretilmeden önce şu komut geçmeli:
 ```bash
-./gradlew clean check lintDebug testDebugUnitTest detekt ktlintCheck
+./gradlew clean check lintDebug testDebugUnitTest detekt ktlintCheck logicAuditFast
 ```
 
 Eğer Compose kullanılıyorsa ekle:
@@ -41,6 +41,13 @@ Eğer Compose kullanılıyorsa ekle:
 - Android Studio = profil, APK, crash, UI inceleme
 - GitHub Actions = CI kalite kapısı
 - local_denetim raporu = döngüsel sonuç takibi
+
+## Logic Sentinel
+
+- Hızlı tarama: `./gradlew logicAuditFast`
+- Semantik tarama: `./gradlew logicAuditSemantic`
+- Kural seti: `qa/logic-rules.md`
+- Rapor şeması: `qa/report-schema.md`
 
 ---
 

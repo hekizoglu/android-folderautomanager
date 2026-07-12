@@ -106,7 +106,7 @@
 
     <!-- Onboarding -->
     <string name="onb_welcome_title">Welcome to AppOrganizer</string>
-    <string name="onb_welcome_desc">The smart launcher that automatically organizes your apps.</string>
+    <string name="onb_welcome_desc">Your apps get sorted into smart folders in seconds, powered by a 3,700+ app category database. Weekly digital life reports, smart suggestions and one search box that finds everything. All your data stays on your device.</string>
     <string name="onb_welcome_btn">Get Started</string>
 
     <string name="onb_restore_title">Have a Previous Backup?</string>
@@ -205,7 +205,7 @@
     <string name="onb_classify_mfr_desc">Google, Samsung, Microsoft…</string>
 
     <string name="onb_done_title">You\'re All Set!</string>
-    <string name="onb_done_desc">AppOrganizer setup is complete. Enjoy!</string>
+    <string name="onb_done_desc">Setup complete — your apps are already organized! Smart folders, your weekly report and universal search are waiting on the home screen. Enjoy exploring!</string>
     <string name="onb_done_btn">Start</string>
 
     <string name="onb_continue">Continue</string>

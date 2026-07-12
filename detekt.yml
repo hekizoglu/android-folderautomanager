@@ -1,0 +1,103 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+  exclude:
+    - 'ProjectStatisticsReport'
+    - 'ComplexityReport'
+    - 'NotificationReport'
+
+output-reports:
+  active: true
+
+comments:
+  active: true
+  CommentOverPrivateFunction:
+    active: false
+  EndOfSentenceFormat:
+    active: false
+
+complexity:
+  active: true
+  LongMethod:
+    threshold: 90
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 9
+  TooManyFunctions:
+    thresholdInFiles: 22
+    thresholdInClasses: 20
+    thresholdInInterfaces: 20
+    thresholdInObjects: 20
+    thresholdInEnums: 20
+
+coroutines:
+  active: true
+  GlobalCoroutineUsage:
+    active: true
+  InjectDispatcher:
+    active: false
+  RedundantSuspendModifier:
+    active: true
+
+empty-blocks:
+  active: true
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: true
+    ignoredExceptionTypes:
+      - 'InterruptedException'
+
+formatting:
+  active: true
+  autoCorrect: false
+  MaximumLineLength:
+    maxLineLength: 140
+  NoWildcardImports:
+    active: false
+
+naming:
+  active: true
+  FunctionNaming:
+    ignoreAnnotated:
+      - 'Composable'
+
+performance:
+  active: true
+  SpreadOperator:
+    active: false
+
+potential-bugs:
+  active: true
+  EqualsAlwaysReturnsTrueOrFalse:
+    active: true
+  IgnoredReturnValue:
+    active: false
+  UnsafeCallOnNullableType:
+    active: true
+  UnreachableCode:
+    active: true
+
+style:
+  active: true
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreNamedArgument: true
+  MaxLineLength:
+    maxLineLength: 140
+  ReturnCount:
+    max: 4
+    excludedFunctions:
+      - 'when'

@@ -4,6 +4,16 @@
 
 ---
 
+## Döngü 240 — 2026-07-13 [Onboarding başa sarma fix'i + değer anlatan kurulum metinleri v1.3.10]
+
+**Yapılanlar (gerçek cihaz geri bildirimi):**
+- **Onboarding başa sarma FIX:** Varsayılan launcher seçilince sistem görevi yeniden başlatıyor, `rememberSaveable` yeni activity kaydında korunmadığı için kurulum WELCOME'a dönüyordu. Adım artık her değişimde `AppPrefs.KEY_ONBOARDING_STEP`'e yazılıyor, açılışta geri yükleniyor (coerceIn 0-4); DONE'da sıfırlanıyor.
+- **Kurulum metinleri zenginleştirildi (TR+EN):** WELCOME artık değer anlatıyor (3700+ uygulamalık kategori veritabanı, haftalık rapor, evrensel arama, veriler cihazda); DONE "uygulamaların otomatik kategorilendi bile!" ile kapanıyor.
+- Res değişimi kuralı ilk kez uygulandı: build öncesi doğrudan tam temizlik — merger bozulması hiç yaşanmadı.
+
+**Doğrulama:** 285 test yeşil; emulator-tester ile force-stop sonrası adım kalıcılığı senaryosu koşuldu (sonuç commit mesajında).
+**Sonraki:** Gerçek cihazda launcher seçimi akışının yeniden testi (Hüseyin) — docs/qa/gercek_cihaz_test_formu.md satır 25 kapatılabilir.
+
 ## Döngü 239 — 2026-07-13 [Güvenlik denetimi fix'leri v1.3.9 — Play reject riskleri kapatıldı]
 
 **Yapılanlar (kullanıcı onaylı 4 fix; Sonnet agent + Fable test düzeltme):**

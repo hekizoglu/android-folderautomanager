@@ -106,7 +106,7 @@
 
     <!-- Onboarding -->
     <string name="onb_welcome_title">AppOrganizer\'a Hoş Geldiniz</string>
-    <string name="onb_welcome_desc">Uygulamalarınızı otomatik olarak düzenleyen akıllı launcher.</string>
+    <string name="onb_welcome_desc">Uygulamaların saniyeler içinde otomatik klasörlenir: 3700+ uygulamalık akıllı kategori veritabanı seni tanır. Haftalık dijital yaşam raporu, akıllı öneriler ve her şeyi bulan tek arama kutusu seni bekliyor. Tüm verilerin cihazında kalır.</string>
     <string name="onb_welcome_btn">Başla</string>
 
     <string name="onb_restore_title">Önceki Yedeğiniz Var Mı?</string>
@@ -202,7 +202,7 @@
     <string name="onb_quick_folder_blur_desc">Frosted glass efekti (performans gerektirir)</string>
 
     <string name="onb_done_title">Hazırsınız!</string>
-    <string name="onb_done_desc">AppOrganizer kurulumu tamamlandı. İyi kullanımlar!</string>
+    <string name="onb_done_desc">Kurulum tamam — uygulamaların otomatik kategorilendi bile! Ana ekranda akıllı klasörlerin, haftalık raporun ve evrensel araman hazır. İyi keşifler!</string>
     <string name="onb_done_btn">Başla</string>
 
     <!-- Onboarding Browser Select (O2) -->

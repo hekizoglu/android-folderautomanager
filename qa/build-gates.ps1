@@ -79,11 +79,25 @@ if (Test-Path $detektConfig) {
 }
 
 Write-Host ""
-Write-Host "[4/4] ktlint..." -ForegroundColor Yellow
+Write-Host "[4/5] ktlint..." -ForegroundColor Yellow
 if ($DryRun) {
     Write-Host "  DRYRUN - atlaniyor" -ForegroundColor Gray
 } else {
     & .\gradlew.bat ktlintCheck --quiet
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  PASS" -ForegroundColor Green
+    } else {
+        Write-Host "  FAIL" -ForegroundColor Red
+        $errors = $errors + 1
+    }
+}
+
+Write-Host ""
+Write-Host "[5/5] Logic Audit Fast..." -ForegroundColor Yellow
+if ($DryRun) {
+    Write-Host "  DRYRUN - atlaniyor" -ForegroundColor Gray
+} else {
+    & .\gradlew.bat logicAuditFast --quiet
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  PASS" -ForegroundColor Green
     } else {

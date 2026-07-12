@@ -55,8 +55,11 @@ fun OnboardingScreen(
     viewModel: AppListViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix)
-    var stepIndex by rememberSaveable { mutableStateOf(0) }
+    // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix).
+    // D240: varsayilan launcher secimi sistemin gorevi YENIDEN baslatmasina yol acabiliyor;
+    // yeni activity kaydinda saveable state korunmaz — adim SharedPrefs'ten geri yuklenir.
+    var stepIndex by rememberSaveable { mutableStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 4)) }
+    LaunchedEffect(stepIndex) { AppPrefs.setOnboardingStep(context, stepIndex) }
     // Varsayilan launcher sorusu EN SONDA sorulur (kullanici talebi, D233) —
     // tum ayarlar bitmeden kullaniciya kalici karar dayatilmaz.
     val steps = listOf(
@@ -241,6 +244,7 @@ fun OnboardingScreen(
                             OnboardingStep.DONE -> {
                                 context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                                     .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
+                                AppPrefs.setOnboardingStep(context, 0) // kalici adim sifirlanir (D240)
                                 onFinish()
                             }
                         }
