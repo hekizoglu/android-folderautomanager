@@ -59,6 +59,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -396,13 +398,17 @@ internal fun AppSuggestionsRow(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // key(packageName): forEach'te kararlı kimlik — liste değişince produceState'in
+                // önceki ikonu tutup yeni etiketle eşleşmesini (Instagram logo + Akbank yazı) önler.
                 apps.forEach { app ->
-                    SuggestionAppItem(
-                        app = app,
-                        iconPackPkg = iconPackPkg,
-                        onClick = { onAppClick(app) },
-                        onLongClick = { onAppLongClick(app) }
-                    )
+                    key(app.packageName) {
+                        SuggestionAppItem(
+                            app = app,
+                            iconPackPkg = iconPackPkg,
+                            onClick = { onAppClick(app) },
+                            onLongClick = { onAppLongClick(app) }
+                        )
+                    }
                 }
             }
         }
@@ -788,6 +794,8 @@ internal fun HomeAppSearchBar(
     // Drag handle state
     var isDragging by remember { mutableStateOf(false) }
     var dragOffsetY by remember { mutableStateOf(0f) }
+    // Focus state — arama alanı seçilince kart belirginleşir (E9)
+    var isFocused by remember { mutableStateOf(false) }
     var showGhostZones by remember { mutableStateOf(false) }
     val barScale by animateFloatAsState(
         targetValue = if (isDragging) 1.04f else 1f,
@@ -860,8 +868,9 @@ internal fun HomeAppSearchBar(
                     } else Modifier
                 ),
             cornerRadius = 28.dp,
-            backgroundAlpha = if (isDragging) 0.22f else 0.12f,
-            borderAlpha = if (isDragging) 0.45f else 0.25f
+            // Focus'ta da belirginleş — seçili olduğu net görünsün (E9)
+            backgroundAlpha = if (isDragging || isFocused) 0.22f else 0.12f,
+            borderAlpha = if (isDragging) 0.45f else if (isFocused) 0.40f else 0.25f
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // "Uygulama / Klasör" sekmesi kaldırıldı (S1) — klasörler artık sonuç grubu
@@ -870,13 +879,16 @@ internal fun HomeAppSearchBar(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Icon(Icons.Default.Search, contentDescription = "Ara",
-                        tint = Color.White.copy(alpha = 0.65f), modifier = Modifier.size(18.dp))
+                        tint = if (isFocused) Color.White else Color.White.copy(alpha = 0.65f),
+                        modifier = Modifier.size(18.dp))
                     BasicTextField(
                         value = query,
                         onValueChange = { query = it },
                         singleLine = true,
                         textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .onFocusChanged { isFocused = it.isFocused },
                         decorationBox = { inner ->
                             Box(Modifier.weight(1f)) {
                                 // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez

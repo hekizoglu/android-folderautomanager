@@ -741,7 +741,7 @@ private fun DrawerSidebar(
                         if (n > 0 && boxHeightPx > 0f) {
                             val idx = (offset.y / (boxHeightPx / n)).toInt().coerceIn(0, sidebarEntries.lastIndex)
                             onActivate(idx)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
                         }
                     },
@@ -754,7 +754,7 @@ private fun DrawerSidebar(
                             val idx = (change.position.y / (boxHeightPx / n)).toInt().coerceIn(0, sidebarEntries.lastIndex)
                             if (activeSidebarIdx != idx) {
                                 onActivate(idx)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
                             }
                         }
@@ -767,7 +767,7 @@ private fun DrawerSidebar(
                     if (n > 0 && boxHeightPx > 0f) {
                         val idx = (offset.y / (boxHeightPx / n)).toInt().coerceIn(0, sidebarEntries.lastIndex)
                         onActivate(idx)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         scope.launch { listState.scrollToItem(sidebarEntries[idx].scrollIndex) }
                     }
                 }
