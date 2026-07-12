@@ -23,6 +23,11 @@ object WrappedSnapshotPrefs {
 
     private const val KEY_LAST_SCORE = "last_score"
 
+    // Ticker "Dijital Yasam Skoru" trendi icin gunluk rotasyonlu skor (haftalik last_score'dan ayri).
+    private const val KEY_SCORE_CURRENT = "ticker_score_current"
+    private const val KEY_SCORE_CURRENT_DAY = "ticker_score_current_day"
+    private const val KEY_SCORE_PREVIOUS = "ticker_score_previous"
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private fun nowEpochDay(): Long = System.currentTimeMillis() / (24L * 60 * 60 * 1000)
@@ -72,6 +77,37 @@ object WrappedSnapshotPrefs {
     fun setLastScore(context: Context, score: Int) {
         runCatching { prefs(context).edit().putInt(KEY_LAST_SCORE, score).apply() }
             .onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.setLastScore basarisiz") }
+    }
+
+    /**
+     * Ticker "Dijital Yaşam Skoru" için günlük skor rotasyonu — trend oku (↑/↓/→) baseline'ini döndürür.
+     * Aynı gün içinde tekrar çağrılırsa baseline değişmez (arrow sabit kalır); yeni bir güne geçildiğinde
+     * dünkü skor "previous" konumuna kaydırılır ve yeni skor "current" olarak yazılır.
+     *
+     * @return karşılaştırma için bir önceki günün skoru (0-100), veya henüz baseline yoksa null.
+     */
+    fun updateDailyScore(context: Context, score: Int, epochDay: Long): Int? {
+        return runCatching {
+            val p = prefs(context)
+            val currentDay = p.getLong(KEY_SCORE_CURRENT_DAY, -1L)
+            val currentScore = p.getInt(KEY_SCORE_CURRENT, -1)
+            val previousScore = p.getInt(KEY_SCORE_PREVIOUS, -1)
+
+            if (currentDay == epochDay) {
+                // Bugun zaten rotasyon yapildi — baseline dunku (previous) skor, tekrar yazma.
+                return@runCatching previousScore.takeIf { it in 0..100 }
+            }
+
+            // Yeni gun: dunku current -> previous, bugunku skor -> current.
+            val editor = p.edit()
+            if (currentScore in 0..100) editor.putInt(KEY_SCORE_PREVIOUS, currentScore)
+            editor.putInt(KEY_SCORE_CURRENT, score)
+            editor.putLong(KEY_SCORE_CURRENT_DAY, epochDay)
+            editor.apply()
+
+            // Baseline = bir onceki gunun (yeni previous) skoru; ilk kayitta null.
+            currentScore.takeIf { it in 0..100 }
+        }.onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.updateDailyScore basarisiz") }.getOrNull()
     }
 
     private fun mapToJson(map: Map<String, Long>): String {

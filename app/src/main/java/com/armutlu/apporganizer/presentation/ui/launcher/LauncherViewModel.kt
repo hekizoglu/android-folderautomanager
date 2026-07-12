@@ -650,6 +650,7 @@ class LauncherViewModel @Inject constructor(
         "NOTIFICATION_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
         "APP_LIST" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
         "SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
+        "WRAPPED_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
         else -> null
     }
 
@@ -733,6 +734,25 @@ class LauncherViewModel @Inject constructor(
         }
         val totalNotif = badges.values.sum()
 
+        // Dijital yasam skoru (ticker) — GERCEK sinyallerden turetilir, Wrapped toggle'ina baglidir.
+        // updateDailyScore ile gunluk rotasyon: trend oku (↑/↓/→) icin dunku skor baseline olarak alinir.
+        val ctx = getApplication<Application>()
+        var digitalLifeScore: Int? = null
+        var digitalLifeScorePrevious: Int? = null
+        if (AppPrefs.isWrappedEnabled(ctx)) {
+            val s = com.armutlu.apporganizer.utils.TickerComposer.computeDigitalLifeScore(
+                folders = folderSnapshots,
+                apps = appSnapshots,
+                nowMillis = System.currentTimeMillis(),
+            )
+            if (s != null) {
+                val epochDay = java.time.LocalDate.now().toEpochDay()
+                digitalLifeScore = s
+                digitalLifeScorePrevious =
+                    com.armutlu.apporganizer.utils.WrappedSnapshotPrefs.updateDailyScore(ctx, s, epochDay)
+            }
+        }
+
         val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,
             apps = appSnapshots,
@@ -740,6 +760,8 @@ class LauncherViewModel @Inject constructor(
             insights = insightSnapshots,
             lowConfidenceCount = lowConfidenceCount,
             nowMillis = System.currentTimeMillis(),
+            digitalLifeScore = digitalLifeScore,
+            digitalLifeScorePrevious = digitalLifeScorePrevious,
         ).map { it.toTickerItem() } + buildSearchStatsTicker() + buildWrappedTicker()
 
         val visible = composed.filterNot { it.key in dismissed }
