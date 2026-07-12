@@ -612,7 +612,8 @@ fun HomeScreen(
                                 card.packageName != null -> viewModel.launchApp(context, card.packageName)
                                 card.categoryId != null -> {
                                     val folder = folders.find { it.category.categoryId == card.categoryId }
-                                    if (folder != null) onNavigateToFolder(folder)
+                                    // Klasör bulunamazsa sessiz kalma — Dashboard'a düş (B4)
+                                    if (folder != null) onNavigateToFolder(folder) else openDashboard()
                                 }
                                 // Hedefi olmayan kartlar (motivasyon vb.) Dashboard'ı açar
                                 else -> openDashboard()
