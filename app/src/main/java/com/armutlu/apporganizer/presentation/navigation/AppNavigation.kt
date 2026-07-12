@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.AppOrganizerDashboardScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
+import com.armutlu.apporganizer.presentation.ui.screens.PermissionsGuideScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
 import com.armutlu.apporganizer.presentation.ui.screens.ReportsCenterScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SearchSettingsScreen
@@ -41,6 +42,7 @@ object Routes {
     const val SETTINGS_STATS = "settings_stats"
     const val SETTINGS_SECURITY = "settings_security"
     const val SETTINGS_ABOUT = "settings_about"
+    const val PERMISSIONS_GUIDE = "permissions_guide"
 }
 
 @Composable
@@ -82,7 +84,8 @@ fun AppNavigation(
                 onNavigateToApps = { navController.navigate(Routes.SETTINGS_APPS) },
                 onNavigateToStats = { navController.navigate(Routes.SETTINGS_STATS) },
                 onNavigateToSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
-                onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) }
+                onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) },
+                onNavigateToPermissionsGuide = { navController.navigate(Routes.PERMISSIONS_GUIDE) }
             )
         }
         // U1: Ayarlar alt ekranları
@@ -118,6 +121,9 @@ fun AppNavigation(
         }
         composable(Routes.SETTINGS_SECURITY) {
             SettingsSecurityScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Routes.PERMISSIONS_GUIDE) {
+            PermissionsGuideScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Routes.SETTINGS_ABOUT) {
             SettingsAboutScreen(

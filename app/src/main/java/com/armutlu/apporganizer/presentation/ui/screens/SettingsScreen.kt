@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,6 +62,7 @@ fun SettingsScreen(
     onNavigateToStats: () -> Unit = {},
     onNavigateToSecurity: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
+    onNavigateToPermissionsGuide: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -169,6 +171,13 @@ fun SettingsScreen(
             item { SettingsSectionTitle("Sistem") }
             item {
                 SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.VerifiedUser,
+                        title = "Tam Performans / İzinler",
+                        subtitle = "Gerekli izinler, neden gerekli ve kapalıyken ne çalışmaz",
+                        onClick = onNavigateToPermissionsGuide,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Fingerprint,
                         title = "Güvenlik",

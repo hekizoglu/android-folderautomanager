@@ -29,17 +29,26 @@ class PackageChangeReceiver : BroadcastReceiver() {
         val packageName = intent.data?.schemeSpecificPart ?: return
         Timber.d("Package event: ${intent.action} for $packageName")
 
+        // EXTRA_REPLACING=true → mevcut uygulamanın güncellenmesi (gerçek yeni yükleme değil).
+        // Yeni-uygulama bildirimini sadece gerçek ilk yüklemede göster.
+        val isReplacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)
+
         // goAsync() ile Android'e "henuz bitmedi" sinyali verilir; coroutine bitince finish() cagrilir
         val pendingResult = goAsync()
         when (intent.action) {
-            Intent.ACTION_PACKAGE_ADDED   -> onPackageAdded(context, packageName, pendingResult)
+            Intent.ACTION_PACKAGE_ADDED   -> onPackageAdded(context, packageName, isReplacing, pendingResult)
             Intent.ACTION_PACKAGE_REMOVED -> onPackageRemoved(context, packageName, pendingResult)
             Intent.ACTION_PACKAGE_CHANGED -> onPackageChanged(context, packageName, pendingResult)
             else                          -> pendingResult.finish()
         }
     }
 
-    private fun onPackageAdded(context: Context, packageName: String, pendingResult: BroadcastReceiver.PendingResult) {
+    private fun onPackageAdded(
+        context: Context,
+        packageName: String,
+        isReplacing: Boolean,
+        pendingResult: BroadcastReceiver.PendingResult
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -47,8 +56,23 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 val helper = getPackageManagerHelper(context)
                 val appInfo = helper.getAppInfo(packageName) ?: return@launch
                 repo.insertApps(listOf(appInfo))
-                searchRepo.indexApp(repo.getAppByPackageName(packageName) ?: appInfo)
+                // insertApps kategori atar; taze kaydı DB'den çek (categoryId dolu gelir)
+                val stored = repo.getAppByPackageName(packageName) ?: appInfo
+                searchRepo.indexApp(stored)
                 Timber.d("Added new app to DB: $packageName")
+
+                // Sadece GERÇEK yeni yüklemede (güncelleme değil) kullanıcıya kategori bildirimi göster
+                if (!isReplacing) {
+                    val categoryId = stored.categoryId
+                    val categoryName = repo.getCategoryById(categoryId)?.categoryName ?: categoryId
+                    com.armutlu.apporganizer.utils.NewAppNotifier.notifyCategorized(
+                        context = context,
+                        packageName = packageName,
+                        appName = stored.appName,
+                        categoryId = categoryId,
+                        categoryName = categoryName
+                    )
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Error adding app: $packageName")
             } finally {

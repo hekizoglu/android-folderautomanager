@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.screens
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -60,6 +61,23 @@ fun AppOrganizerDashboardScreen(
         DashboardStats.compute(allApps, categories, usageTimes, now, sevenDaysMs, thirtyDaysMs)
     }
 
+    // Metrik toggle: Süre (ön plan ms) / Adet (kaç kez açıldı) — madde 1
+    var usageMetric by remember { mutableStateOf(UsageMetric.DURATION) }
+
+    val topAppsForMetric = remember(allApps, usageMetric) {
+        allApps.filter { !it.isHidden && !it.isSystemApp }
+            .map { app ->
+                val value = when (usageMetric) {
+                    UsageMetric.DURATION -> app.usageCount   // ön plan süresi (ms)
+                    UsageMetric.COUNT -> app.launchCount     // kaç kez açıldı
+                }
+                app to value
+            }
+            .filter { it.second > 0 }
+            .sortedByDescending { it.second }
+            .take(5)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,7 +102,8 @@ fun AppOrganizerDashboardScreen(
         ) {
             item { HeroStatsRow(stats) }
             item { DashSectionHeader("Bu Hafta En Cok Kullanilanlar") }
-            item { TopAppsCard(stats.topApps, hasUsagePermission) }
+            item { UsageMetricToggleRow(usageMetric) { usageMetric = it } }
+            item { TopAppsCard(topAppsForMetric, hasUsagePermission, usageMetric) }
             item { DashSectionHeader("Kategori Yogunlugu") }
             item { CategoryBreakdownCard(stats.categoryBreakdown) }
             item { DashSectionHeader("Kullanilmayan Uygulamalar") }
@@ -255,7 +274,23 @@ private fun DashSectionHeader(title: String) {
 }
 
 @Composable
-private fun TopAppsCard(topApps: List<Pair<AppInfo, Long>>, hasPermission: Boolean) {
+private fun UsageMetricToggleRow(selected: UsageMetric, onSelect: (UsageMetric) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = selected == UsageMetric.DURATION,
+            onClick = { onSelect(UsageMetric.DURATION) },
+            label = { Text("Süre") }
+        )
+        FilterChip(
+            selected = selected == UsageMetric.COUNT,
+            onClick = { onSelect(UsageMetric.COUNT) },
+            label = { Text("Adet") }
+        )
+    }
+}
+
+@Composable
+private fun TopAppsCard(topApps: List<Pair<AppInfo, Long>>, hasPermission: Boolean, metric: UsageMetric) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             if (!hasPermission) {
@@ -271,9 +306,9 @@ private fun TopAppsCard(topApps: List<Pair<AppInfo, Long>>, hasPermission: Boole
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 return@Column
             }
-            val maxMs = topApps.first().second.coerceAtLeast(1)
-            topApps.forEachIndexed { index, (app, ms) ->
-                TopAppRow(rank = index + 1, app = app, ms = ms, maxMs = maxMs)
+            val maxValue = topApps.first().second.coerceAtLeast(1)
+            topApps.forEachIndexed { index, (app, value) ->
+                TopAppRow(rank = index + 1, app = app, value = value, maxValue = maxValue, metric = metric)
                 if (index < topApps.lastIndex) Spacer(Modifier.height(8.dp))
             }
         }
@@ -281,12 +316,17 @@ private fun TopAppsCard(topApps: List<Pair<AppInfo, Long>>, hasPermission: Boole
 }
 
 @Composable
-private fun TopAppRow(rank: Int, app: AppInfo, ms: Long, maxMs: Long) {
-    val minutes = ms / 60_000
-    val fraction = (ms.toFloat() / maxMs).coerceIn(0f, 1f)
+private fun TopAppRow(rank: Int, app: AppInfo, value: Long, maxValue: Long, metric: UsageMetric) {
+    val context = LocalContext.current
+    val fraction = (value.toFloat() / maxValue).coerceIn(0f, 1f)
     val animFraction by animateFloatAsState(targetValue = fraction, animationSpec = tween(600))
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { openAppInfoSettings(context, app.packageName) },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             "$rank",
             fontSize = 12.sp,
@@ -321,10 +361,10 @@ private fun TopAppRow(rank: Int, app: AppInfo, ms: Long, maxMs: Long) {
         }
         Spacer(Modifier.width(8.dp))
         Text(
-            if (minutes >= 60) "${minutes / 60}s ${minutes % 60}d" else "${minutes}d",
+            formatUsageMetric(value, metric),
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(52.dp)
+            modifier = Modifier.width(56.dp)
         )
     }
 }

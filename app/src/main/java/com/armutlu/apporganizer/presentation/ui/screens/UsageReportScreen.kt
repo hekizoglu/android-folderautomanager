@@ -1,6 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,19 +41,20 @@ fun UsageReportScreen(
     val allApps = screenState.apps
     val hasPermission = remember { UsageStatsHelper.hasPermission(context) }
 
-    val usageTimes = remember(hasPermission) {
-        if (hasPermission) UsageStatsHelper.getUsageCounts(context, days = 30) else emptyMap()
-    }
-
     val now = System.currentTimeMillis()
     val thirtyDaysMs = TimeUnit.DAYS.toMillis(30)
-    val sevenDaysMs = TimeUnit.DAYS.toMillis(7)
 
-    val appsSorted = remember(allApps, usageTimes) {
+    // Kullanım metriği toggle: Süre (ön plan ms) / Adet (kaç kez açıldı) — madde 1
+    var usageMetric by remember { mutableStateOf(UsageMetric.DURATION) }
+
+    val appsSorted = remember(allApps, usageMetric) {
         allApps.filter { !it.isHidden }.map { app ->
-            val foregroundMs = usageTimes[app.packageName] ?: 0L
-            app to foregroundMs
-        }.sortedByDescending { (_, ms) -> ms }
+            val value = when (usageMetric) {
+                UsageMetric.DURATION -> app.usageCount   // ön plan süresi (ms)
+                UsageMetric.COUNT -> app.launchCount     // kaç kez açıldı
+            }
+            app to value
+        }.sortedByDescending { (_, v) -> v }
     }
 
     val unusedApps = remember(allApps) {
@@ -63,7 +69,7 @@ fun UsageReportScreen(
         allApps.filter { it.lastUsedTimestamp == 0L && !it.isHidden }
     }
 
-    val maxMs = appsSorted.firstOrNull()?.second ?: 1L
+    val maxValue = (appsSorted.firstOrNull()?.second ?: 1L).coerceAtLeast(1L)
 
     Scaffold(
         topBar = {
@@ -120,14 +126,32 @@ fun UsageReportScreen(
                 }
             }
 
+            // Metrik toggle: Süre / Adet
+            item {
+                UsageMetricToggle(selected = usageMetric, onSelect = { usageMetric = it })
+            }
+
             // En çok kullanılanlar
             if (appsSorted.any { it.second > 0 }) {
                 item {
-                    Text("En Çok Kullanılan (30 gün)", fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+                    Text(
+                        if (usageMetric == UsageMetric.DURATION)
+                            "En Çok Kullanılan · Süre (30 gün)"
+                        else
+                            "En Çok Açılan · Adet (30 gün)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
-                itemsIndexed(appsSorted.filter { it.second > 0 }.take(10)) { index, (app, ms) ->
-                    UsageRow(app = app, foregroundMs = ms, maxMs = maxMs, rank = index + 1)
+                itemsIndexed(appsSorted.filter { it.second > 0 }.take(10)) { index, (app, value) ->
+                    UsageRow(
+                        app = app,
+                        value = value,
+                        maxValue = maxValue,
+                        rank = index + 1,
+                        metric = usageMetric,
+                        onClick = { openAppInfoSettings(context, app.packageName) }
+                    )
                 }
             }
 
@@ -148,9 +172,9 @@ fun UsageReportScreen(
                     }
                 }
                 itemsIndexed(unusedApps.take(15)) { _, app ->
-                    UnusedRow(app = app, now = now, onHide = {
-                        viewModel.setAppHidden(app.packageName, true)
-                    })
+                    UnusedRow(app = app, now = now,
+                        onClick = { openAppInfoSettings(context, app.packageName) },
+                        onHide = { viewModel.setAppHidden(app.packageName, true) })
                 }
             }
 
@@ -163,9 +187,9 @@ fun UsageReportScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 itemsIndexed(neverUsed.take(10)) { _, app ->
-                    UnusedRow(app = app, now = now, onHide = {
-                        viewModel.setAppHidden(app.packageName, true)
-                    })
+                    UnusedRow(app = app, now = now,
+                        onClick = { openAppInfoSettings(context, app.packageName) },
+                        onHide = { viewModel.setAppHidden(app.packageName, true) })
                 }
             }
 
@@ -184,12 +208,18 @@ private fun SummaryChip(label: String, value: String) {
 }
 
 @Composable
-private fun UsageRow(app: AppInfo, foregroundMs: Long, maxMs: Long, rank: Int) {
-    val minutes = foregroundMs / 60000
-    val barFraction = (foregroundMs.toFloat() / maxMs).coerceIn(0f, 1f)
+private fun UsageRow(
+    app: AppInfo,
+    value: Long,
+    maxValue: Long,
+    rank: Int,
+    metric: UsageMetric,
+    onClick: () -> Unit
+) {
+    val barFraction = (value.toFloat() / maxValue).coerceIn(0f, 1f)
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("$rank", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -211,20 +241,20 @@ private fun UsageRow(app: AppInfo, foregroundMs: Long, maxMs: Long, rank: Int) {
         }
         Spacer(Modifier.width(8.dp))
         Text(
-            text = if (minutes >= 60) "${minutes / 60}s ${minutes % 60}d" else "${minutes}d",
+            text = formatUsageMetric(value, metric),
             fontSize = 12.sp, color = MaterialTheme.colorScheme.primary
         )
     }
 }
 
 @Composable
-private fun UnusedRow(app: AppInfo, now: Long, onHide: () -> Unit) {
+private fun UnusedRow(app: AppInfo, now: Long, onClick: () -> Unit, onHide: () -> Unit) {
     val daysSince = if (app.lastUsedTimestamp > 0L)
         TimeUnit.MILLISECONDS.toDays(now - app.lastUsedTimestamp)
     else -1L
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
@@ -242,5 +272,46 @@ private fun UnusedRow(app: AppInfo, now: Long, onHide: () -> Unit) {
             Spacer(Modifier.width(4.dp))
             Text("Gizle", fontSize = 12.sp)
         }
+    }
+}
+
+// ── Metrik toggle (Süre / Adet) ──────────────────────────────────────────────
+
+/** Kullanım metriği: DURATION = ön plan süresi (ms), COUNT = kaç kez açıldı (adet). */
+internal enum class UsageMetric { DURATION, COUNT }
+
+@Composable
+private fun UsageMetricToggle(selected: UsageMetric, onSelect: (UsageMetric) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = selected == UsageMetric.DURATION,
+            onClick = { onSelect(UsageMetric.DURATION) },
+            label = { Text("Süre") }
+        )
+        FilterChip(
+            selected = selected == UsageMetric.COUNT,
+            onClick = { onSelect(UsageMetric.COUNT) },
+            label = { Text("Adet") }
+        )
+    }
+}
+
+/** Süre modunda "2sa 15dk", adet modunda "12 kez" formatlar. */
+internal fun formatUsageMetric(value: Long, metric: UsageMetric): String = when (metric) {
+    UsageMetric.COUNT -> "$value kez"
+    UsageMetric.DURATION -> {
+        val minutes = value / 60_000
+        if (minutes >= 60) "${minutes / 60}sa ${minutes % 60}dk" else "${minutes}dk"
+    }
+}
+
+/** Uygulamanın sistem "Uygulama Bilgisi" ekranını açar (bazı cihazlarda desteklenmeyebilir). */
+internal fun openAppInfoSettings(context: Context, packageName: String) {
+    runCatching {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", packageName, null)
+        ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+        context.startActivity(intent)
     }
 }
