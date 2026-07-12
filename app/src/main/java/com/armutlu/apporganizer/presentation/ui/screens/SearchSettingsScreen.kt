@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.AccountCircle
@@ -69,6 +70,7 @@ fun SearchSettingsScreen(
     var doubleTapSearchEnabled by remember { mutableStateOf(AppPrefs.isDoubleTapSearchEnabled(context)) }
     val appsSourceEnabled = true
     var categoriesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceCategoriesEnabled(context)) }
+    var settingsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceSettingsEnabled(context)) }
     var contactsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
     var filesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
     var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
@@ -214,6 +216,17 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             categoriesSourceEnabled = it
                             AppPrefs.setSearchSourceCategoriesEnabled(context, it)
+                        },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Settings,
+                        title = "Android Ayarları",
+                        subtitle = "Wi-Fi, bildirim erişimi ve kullanım erişimi gibi sistem ayarları. Ek izin gerekmez.",
+                        checked = settingsSourceEnabled,
+                        onCheckedChange = {
+                            settingsSourceEnabled = it
+                            AppPrefs.setSearchSourceSettingsEnabled(context, it)
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

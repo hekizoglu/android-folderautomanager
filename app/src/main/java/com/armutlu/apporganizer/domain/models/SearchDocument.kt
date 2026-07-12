@@ -47,8 +47,9 @@ data class SearchDocument(
 enum class SourceType(val key: String, val groupOrder: Int) {
     APP("app", 0),
     CATEGORY("category", 1),
-    CONTACT("contact", 2),
-    FILE("file", 3);
+    SETTING("setting", 2),
+    CONTACT("contact", 3),
+    FILE("file", 4);
 
     companion object {
         fun fromKey(key: String): SourceType = entries.first { it.key == key }

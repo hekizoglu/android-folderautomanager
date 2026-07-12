@@ -113,23 +113,6 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 
 ---
 
-### Ayar aramasi (SETTING source) (13p)
-
-**Sorun/istek:** Wi-Fi/Bluetooth/Bildirim gibi ~20 statik sistem ayari birlesik aramada bulunmuyor.
-
-**Cozum tarifi:**
-1. `SearchRepository.kt` icindeki mevcut `SearchDocument` modelini ve source_type alanini incele (ornek: APP/FOLDER/CONTACT/FILE gibi mevcut turler).
-2. Yeni bir `SearchDocumentType.SETTING` (veya string sabiti) ekle.
-3. Sabit bir liste olustur (yeni dosya: `utils/SystemSettingsCatalog.kt`) â€” her satir: baslik (Wi-Fi, Bluetooth, Bildirim Erisimi, Konum, vb.), eslesen `Settings.ACTION_*` intent sabiti (ornek: `Settings.ACTION_WIFI_SETTINGS`, `Settings.ACTION_BLUETOOTH_SETTINGS`, `Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS`).
-4. `SearchRepository.bootstrapIndex()` (AppListViewModel.kt satir 190 civarinda cagrilan yer) icine bu sabit listeyi FTS indeksine ekleyen bir adim koy â€” uygulama/klasor indexleme pattern'iyle ayni sekilde.
-5. Arama sonuc tiklamasinda `SETTING` turu icin `Intent(action).let { context.startActivity(it) }` cagir (AppListViewModel.launchIntent zaten var, onu kullan).
-6. `AppPrefs.kt`'ye `KEY_SEARCH_SETTINGS_SOURCE_ENABLED` + SettingsScreen toggle (Universal Search bolumune).
-
-**Kabul kriteri:**
-- Ana arama cubugunda "wifi" yazinca Wi-Fi ayarlari sonuc olarak cikiyor, tiklaninca `Settings.ACTION_WIFI_SETTINGS` aciliyor.
-- Toggle kapatilinca SETTING sonuclari aramadan cikiyor.
-
----
 
 ### AI kocu haftalik yorumu (13p)
 

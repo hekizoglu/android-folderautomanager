@@ -415,6 +415,7 @@ object AppPrefs {
     // Arama kaynaklari ve profil ayarlari
     const val KEY_SEARCH_SOURCE_APPS = "search_source_apps"
     const val KEY_SEARCH_SOURCE_CATEGORIES = "search_source_categories"
+    const val KEY_SEARCH_SOURCE_SETTINGS = "search_source_settings"
     const val KEY_SEARCH_SOURCE_CONTACTS = "search_source_contacts"
     const val KEY_SEARCH_SOURCE_FILES = "search_source_files"
     const val KEY_SEARCH_RANKING_PROFILE = "search_ranking_profile"
@@ -437,6 +438,9 @@ object AppPrefs {
 
     fun isSearchSourceCategoriesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CATEGORIES, true)
     fun setSearchSourceCategoriesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CATEGORIES, v).apply()
+
+    fun isSearchSourceSettingsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_SETTINGS, true)
+    fun setSearchSourceSettingsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_SETTINGS, v).apply()
 
     fun isSearchSourceContactsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CONTACTS, false)
     fun hasSearchSourceContactsPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_CONTACTS)

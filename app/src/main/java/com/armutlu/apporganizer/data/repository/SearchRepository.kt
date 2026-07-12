@@ -13,6 +13,7 @@ import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
+import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,6 +34,8 @@ class SearchRepository(
 ) {
 
     // FTS5 runtime check — bazı AOSP build'lerinde fts5 modülü yoktur
+    private var settingsSeeded = false
+
     private val fts5Available: Boolean by lazy {
         try {
             AppDatabase.isFts5Available(db.openHelper.writableDatabase)
@@ -50,6 +53,7 @@ class SearchRepository(
             result = withContext(Dispatchers.IO) {
                 val allowedSources = enabledSources()
                 if (allowedSources.isEmpty()) return@withContext emptyMap()
+                ensureSettingsIndexedIfNeeded(allowedSources)
                 runCatching {
                     val docs = if (fts5Available) {
                         val ftsQuery = trimmed.split("\\s+".toRegex())
@@ -81,8 +85,16 @@ class SearchRepository(
     private fun enabledSources(): List<String> = buildList {
         add(SourceType.APP.key)
         if (AppPrefs.isSearchSourceCategoriesEnabled(context)) add(SourceType.CATEGORY.key)
+        if (AppPrefs.isSearchSourceSettingsEnabled(context)) add(SourceType.SETTING.key)
         if (AppPrefs.isSearchSourceContactsEnabled(context)) add(SourceType.CONTACT.key)
         if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)
+    }
+
+    private suspend fun ensureSettingsIndexedIfNeeded(allowedSources: List<String>) {
+        if (settingsSeeded || SourceType.SETTING.key !in allowedSources) return
+        searchDao.deleteBySource(SourceType.SETTING.key)
+        searchDao.insertAll(SystemSettingsCatalog.documents())
+        settingsSeeded = true
     }
 
     private fun buildFts5Query(ftsQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {
@@ -99,8 +111,9 @@ class SearchRepository(
                     CASE source_group
                         WHEN 'app' THEN 0
                         WHEN 'category' THEN 1
-                        WHEN 'contact' THEN 2
-                        WHEN 'file' THEN 3
+                        WHEN 'setting' THEN 2
+                        WHEN 'contact' THEN 3
+                        WHEN 'file' THEN 4
                         ELSE 9
                     END ASC,
                     bm25(search_fts) ASC,
@@ -124,6 +137,9 @@ class SearchRepository(
                     CASE source_group
                         WHEN 'app' THEN 0
                         WHEN 'category' THEN 1
+                        WHEN 'setting' THEN 2
+                        WHEN 'contact' THEN 3
+                        WHEN 'file' THEN 4
                         ELSE 9
                     END ASC,
                     title ASC
@@ -147,6 +163,7 @@ class SearchRepository(
 
             docs.addAll(indexer.indexApps(apps, categories))
             docs.addAll(indexer.indexCategories(categories))
+            docs.addAll(SystemSettingsCatalog.documents())
 
             searchDao.deleteAll()
             searchDao.insertAll(docs)

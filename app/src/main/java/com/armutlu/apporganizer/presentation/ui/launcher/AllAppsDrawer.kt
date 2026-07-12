@@ -75,6 +75,7 @@ import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
+import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Locale
@@ -284,7 +285,7 @@ private fun SearchDocumentRow(
         }
         Column(Modifier.weight(1f)) {
             Text(document.title, color = onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val subtitle = document.subtitle.ifBlank { document.sourceId }
+            val subtitle = document.subtitle.substringBefore(" | ").ifBlank { document.sourceId }
             Text(subtitle, color = textSecondary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         if (showActions) {
@@ -425,6 +426,10 @@ private fun openSearchDocument(context: Context, document: SearchDocument) {
             Intent(Intent.ACTION_VIEW, Uri.parse(document.sourceId))
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+        SourceType.SETTING.key -> {
+            SystemSettingsCatalog.open(context, document)
+            return
+        }
         else -> return
     }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
@@ -465,9 +470,10 @@ private fun DrawerAppList(
         }
     }
     val contactMatches = searchResults[SourceType.CONTACT].orEmpty()
+    val settingMatches = searchResults[SourceType.SETTING].orEmpty()
     val fileMatches = searchResults[SourceType.FILE].orEmpty()
     val hasSearchGroups = searchQuery.isNotBlank() &&
-        (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty() || contactMatches.isNotEmpty() || fileMatches.isNotEmpty())
+        (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty() || settingMatches.isNotEmpty() || contactMatches.isNotEmpty() || fileMatches.isNotEmpty())
     // Web/Play Store fallback — filtrelenmiş liste + SearchDocument sonuçları boşsa gösterilir (Ayarlar > Arama)
     var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
     DisposableEffect(context) {
@@ -520,7 +526,7 @@ private fun DrawerAppList(
         }
     } else {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && contactMatches.isEmpty() && fileMatches.isEmpty()) {
+            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() && contactMatches.isEmpty() && fileMatches.isEmpty()) {
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
                         Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
@@ -583,6 +589,21 @@ private fun DrawerAppList(
                                 Text("Kategori", color = textSecondary, fontSize = 11.sp)
                             }
                         }
+                    }
+                }
+                if (hasSearchGroups && settingMatches.isNotEmpty()) {
+                    item(key = "source_header_settings") {
+                        SourceGroupHeader(label = "Ayarlar", count = settingMatches.size)
+                    }
+                    itemsIndexed(items = settingMatches, key = { _, doc -> "setting_${doc.sourceId}" }) { index, document ->
+                        SearchDocumentRow(
+                            document = document,
+                            badge = "A",
+                            onClick = {
+                                SearchStatsPrefs.logClick(context, SourceType.SETTING.key, index)
+                                openSearchDocument(context, document)
+                            }
+                        )
                     }
                 }
                 if (hasSearchGroups && contactMatches.isNotEmpty()) {

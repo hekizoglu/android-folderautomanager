@@ -105,6 +105,7 @@ import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchCache
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
+import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -776,6 +777,8 @@ internal fun HomeAppSearchBar(
     // Dosya adları — SearchRepository FTS5 indeksinden (LauncherViewModel.searchResults akışı)
     val fileResults = if (query.isBlank()) emptyList()
         else searchResults[SourceType.FILE].orEmpty().take(4)
+    val settingResults = if (query.isBlank()) emptyList()
+        else searchResults[SourceType.SETTING].orEmpty().take(4)
     // İzin yoksa "Kişiler" grubunda izin kısayolu göster (kullanıcı kaynağı kapatmadıysa)
     val showContactsPermissionHint = query.isNotBlank() && !contactsPermGranted &&
         !contactsOptedOut && !contactsPermDeniedSession
@@ -794,7 +797,7 @@ internal fun HomeAppSearchBar(
     }
     val showWebFallback = webFallbackEnabled && query.trim().length >= 2 &&
         appResults.isEmpty() && folderResults.isEmpty() && contactResults.isEmpty() &&
-        fileResults.isEmpty() && !showContactsPermissionHint
+        settingResults.isEmpty() && fileResults.isEmpty() && !showContactsPermissionHint
 
     // Sorguyu ViewModel'e ilet — FTS5 çok-kaynak araması (dosyalar) debounce ile orada çalışır
     LaunchedEffect(query) { onQueryChange(query) }
@@ -1042,13 +1045,14 @@ internal fun HomeAppSearchBar(
 
         // Sonuç listesi — kaynak grupları: Uygulamalar / Klasörler / Kişiler / Dosyalar (S1)
         val hasAnyResult = appResults.isNotEmpty() || folderResults.isNotEmpty() ||
-            contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint ||
+            settingResults.isNotEmpty() || contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint ||
             showWebFallback
         if (hasAnyResult && !isDragging) {
             // Tek grup varsa başlık gereksiz kalabalık — yalnızca çoklu grupta göster
             val multiGroup = listOf(
                 appResults.isNotEmpty(),
                 folderResults.isNotEmpty(),
+                settingResults.isNotEmpty(),
                 contactResults.isNotEmpty() || showContactsPermissionHint,
                 fileResults.isNotEmpty()
             ).count { it } > 1
@@ -1143,9 +1147,49 @@ internal fun HomeAppSearchBar(
                         }
                     }
 
+                    // Android ayarları sonuçları — Wi-Fi, bildirim erişimi, kullanım erişimi vb.
+                    if (settingResults.isNotEmpty()) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty()) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        HomeSearchGroupHeader(label = "Ayarlar", icon = Icons.Default.Search)
+                        settingResults.forEachIndexed { index, document ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        SearchStatsPrefs.logClick(context, SourceType.SETTING.key, index)
+                                        query = ""
+                                        SystemSettingsCatalog.open(context, document)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Search, contentDescription = null,
+                                        tint = Color.White.copy(alpha = 0.70f), modifier = Modifier.size(16.dp))
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(document.title, color = Color.White.copy(alpha = 0.90f),
+                                        fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text(document.subtitle.substringBefore(" | "), color = Color.White.copy(alpha = 0.45f),
+                                        fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                            }
+                        }
+                    }
+
                     // Kişi sonuçları — ayraç
                     if (contactResults.isNotEmpty()) {
-                        if (appResults.isNotEmpty() || folderResults.isNotEmpty()) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty() || settingResults.isNotEmpty()) {
                             HorizontalDivider(
                                 Modifier.padding(horizontal = 16.dp),
                                 color = Color.White.copy(alpha = 0.10f)
@@ -1264,7 +1308,7 @@ internal fun HomeAppSearchBar(
 
                     // İzin kısayolu — kişi araması etkin ama READ_CONTACTS yok (S2)
                     if (showContactsPermissionHint) {
-                        if (appResults.isNotEmpty() || folderResults.isNotEmpty()) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty() || settingResults.isNotEmpty()) {
                             HorizontalDivider(
                                 Modifier.padding(horizontal = 16.dp),
                                 color = Color.White.copy(alpha = 0.10f)
@@ -1301,7 +1345,7 @@ internal fun HomeAppSearchBar(
                     // Dosya sonuçları — FTS5 indeksinden (kaynak Ayarlar > Arama'dan kapatılabilir)
                     if (fileResults.isNotEmpty()) {
                         if (appResults.isNotEmpty() || folderResults.isNotEmpty() ||
-                            contactResults.isNotEmpty() || showContactsPermissionHint
+                            settingResults.isNotEmpty() || contactResults.isNotEmpty() || showContactsPermissionHint
                         ) {
                             HorizontalDivider(
                                 Modifier.padding(horizontal = 16.dp),
