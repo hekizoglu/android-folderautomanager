@@ -114,7 +114,7 @@ fun SettingsLauncherScreen(
                 SettingsSwitchRow(
                     icon = Icons.Default.AutoAwesome,
                     title = "Akilli Dock",
-                    subtitle = "Ilk 2 sabit uygulamayi korur, son 2 slotu saate ve kullanim aliskanligina gore onerir",
+                    subtitle = "Sectigin uygulamalar aynen korunur; bos kalan dock slotlarini saate ve kullanim aliskanligina gore doldurur",
                     checked = contextualDock,
                     onCheckedChange = {
                         contextualDock = it

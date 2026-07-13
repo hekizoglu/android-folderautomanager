@@ -862,18 +862,22 @@ class LauncherViewModel @Inject constructor(
         // HomeTickerRow'da erken-donus ile guvenli — cold start yuku azaltildi (D234).
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
-    // Contextual Dock — 2 sabit (kullanici) + 2 akilli öneri (saat/gun/kullanim)
+    // Contextual Dock — kullanicinin sectigi TUM slotlar korunur; akilli oneriler
+    // (saat/gun/kullanim) SADECE bos kalan slotlari doldurur (max 4).
+    // Eski davranis (ilk 2 sabit + son 2 akilli) kullanicinin sectigi dock'u sessizce
+    // eziyordu — "sectigim dock'ta kamera var ama ekranda WhatsApp cikiyor" bug'i (D257).
     val contextualDockPackages: StateFlow<List<String>> = combine(
         dockPackages,
         suggestedApps
     ) { fixed, suggested ->
         val ctx = getApplication<Application>()
         if (!AppPrefs.isContextualDockEnabled(ctx)) return@combine fixed
-        val fixedSlots = fixed.take(2)
+        val fixedSlots = fixed.take(4)
+        if (fixedSlots.size >= 4) return@combine fixedSlots
         val smartSlots = suggested
             .map { it.packageName }
             .filter { it !in fixedSlots }
-            .take(2)
+            .take(4 - fixedSlots.size)
         fixedSlots + smartSlots
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

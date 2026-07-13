@@ -151,9 +151,9 @@ object AppPrefs {
     fun getFolderShape(context: Context): String = prefs(context).getString(KEY_FOLDER_SHAPE, "circle") ?: "circle"
     fun setFolderShape(context: Context, shape: String) = prefs(context).edit().putString(KEY_FOLDER_SHAPE, shape).apply()
 
-    // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 72dp)
+    // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 96dp = en büyük, Hüseyin kararı D257)
     const val KEY_FOLDER_SIZE = "folder_size_dp"
-    fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
+    fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 96)
     fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
 
     // Öneriler satırı ikon boyutu — 32-52dp arası (varsayılan 40dp, önceki hardcoded 48dp'den
