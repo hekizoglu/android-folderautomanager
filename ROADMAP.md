@@ -67,6 +67,7 @@ Kalan ana kapilar:
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
 | Dock: gercek Android varsayilanlari + klasor destegi + ilk kurulumda Sosyal Medya (14p, arastirma tamamlandi Dongu 243) | Telefon/SMS/tarayici icin varsayilan handler intent cozumleme, kamera fallback aday listesi, `folder:<categoryId>` dock item'i, DockEditSheet klasor sekmesi ve Sosyal Medya klasoru otomatik ekleme uygulandi. `compileDebugKotlin` ve `LauncherViewModelLogicTest` gecti. | Tamamlandi - yerel; cihaz smoke bekliyor |
+| Klasor alti "X gundur acilmadi" bilgisi cok kucuk/anlasilmiyordu | `FolderTile.kt`: duz metin yerine mini cerceve (chip) — saat ikonu + hafif kontrast arka plan (RoundedCornerShape 8dp, siyah alpha 0.22) + daha yuksek metin alfa (0.55->0.80) + FontWeight.Medium. Tek dosya, davranis degismedi (hala `unusedInfoEnabled` toggle'ina bagli, varsayilan kapali). Build henuz dogrulanmadi (kullanici build'i iptal etti) — bir sonraki build turunda derleme kontrolu yapilmali. | Kod yazildi - build dogrulamasi bekliyor |
 
 ### Dock — Gercek Varsayilanlar + Klasor Destegi — Arastirma (Dongu 243)
 

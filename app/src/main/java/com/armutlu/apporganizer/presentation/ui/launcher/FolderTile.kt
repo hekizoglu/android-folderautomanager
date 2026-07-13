@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -352,15 +354,30 @@ fun FolderTile(
                 }
             }
             if (unusedInfoText != null) {
-                Text(
-                    text = unusedInfoText,
-                    color = effectiveLabelColor.copy(alpha = 0.55f * textAlpha),
-                    fontSize = 9.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.width(tileWidth)
-                )
+                // Mini çerçeve (chip) — düz metin arka planla karışıp okunmuyordu (D243).
+                // Saat ikonu + hafif kontrast arka plan ile anlaşılırlık artırıldı.
+                Row(
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .widthIn(max = tileWidth + 16.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Black.copy(alpha = 0.22f * textAlpha))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "⏱", fontSize = 9.sp)
+                    Spacer(Modifier.width(3.dp))
+                    Text(
+                        text = unusedInfoText,
+                        color = effectiveLabelColor.copy(alpha = 0.80f * textAlpha),
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
