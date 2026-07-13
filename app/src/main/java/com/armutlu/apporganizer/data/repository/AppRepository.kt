@@ -394,8 +394,18 @@ class AppRepository @Inject constructor(
         try { appDao.updateNotificationCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
     }
 
+    suspend fun updateNotificationCounts(counts: Map<String, Int>) {
+        if (counts.isEmpty()) return
+        try { appDao.updateNotificationCounts(counts) } catch (e: Exception) { Timber.e(e) }
+    }
+
     suspend fun updateNotificationText(packageName: String, text: String) {
         try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) { Timber.e(e) }
+    }
+
+    suspend fun updateNotificationTexts(texts: Map<String, String>) {
+        if (texts.isEmpty()) return
+        try { appDao.updateNotificationTexts(texts) } catch (e: Exception) { Timber.e(e) }
     }
 
     suspend fun clearAllNotificationTexts() {

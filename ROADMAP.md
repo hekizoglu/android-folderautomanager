@@ -113,59 +113,6 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 
 ---
 
-### B3 - Ticker tiklamasi sonrasi ana ekrana hizli donuste bildirimler kilitleniyor
-
-**Kok neden (kod kaniti):** `HomeScreen.kt` satir 660-672'de ticker `onItemClick` cagrildiginda `Intent(context, MainActivity::class.java)` ile MainActivity aciliyor (LauncherActivity arka plana geciyor, `onPause`/`onStop` tetiklenmiyor cunku activity yigin ustunde kaliyor â€” sadece durduruluyor).
-
-Kullanici geri donunce `LauncherActivity.onResume()` (`LauncherActivity.kt` satir 221-239) senkron/yari-senkron sekilde su zinciri tetikliyor:
-- `viewModel.refreshLastLaunched()` â€” tek paket icin `updateLastUsedTimestamp` (hafif).
-- `AppPrefs.shouldReconcile(this)` true ise `viewModel.reconcileIfNeeded(this)` â€” TUM yuklu paketleri `packageManagerHelper.getInstalledApps(includeSystem = true, ...)` ile tarayip DB ile karsilastiriyor (`LauncherViewModel.kt` satir 257-282), potansiyel olarak `loadAppsIfEmpty()` (satir 285-337) tetikleyip her degisen app icin ayri ayri `repository.updateApp(...)` cagirabiliyor.
-- `AppPrefs.shouldSyncUsageStats(this)` true ise `viewModel.syncUsageStats(this)` (satir 835+) â€” UsageStatsManager sorgusu, potansiyel agir IO.
-
-Bunlarin YANI SIRA, HER ZAMAN calisan (onResume'a bagli olmayan, `init` bloguna bagli, activity/process suresince surekli aktif) `AppNotificationListenerService.badgeCounts.onEach` collector'i (`LauncherViewModel.kt` satir 196-212) her badge degisiminde:
-```kotlin
-counts.forEach { (pkg, count) -> repository.updateNotificationCount(pkg, count) }
-```
-seklinde HER PAKET ICIN AYRI bir `suspend fun updateNotificationCount` DAO cagrisi yapiyor (`AppDao.kt` satir 203, tek satirlik UPDATE, `@Transaction` YOK). `AppRepository.kt` satir 361-362'de de sarma katmani transaction eklemiyor. MainActivity'den donusce, arka planda birikmis bildirimler varsa bu forEach dongusu N ayri DB islemi calistiriyor â€” Room'un tek-yazici (single writer) kisitlamasi nedeniyle bu N ayri UPDATE, ayni anda `reconcileIfNeeded`/`syncUsageStats`'in okuma sorgulariyla siraya giriyor ve UI thread'e baglÄ± Flow collector'lari (badge/folder UI) bu kuyruk bosalana kadar guncellenmeden bekliyor â€” "birkac saniye donma" hissi budur.
-
-**Muhtemel cozumler (onerilen sira):**
-1. **(A - en yuksek etki, dusuk risk) Badge DB yazimini tek transaction'a topla:** `AppDao.kt`'ye yeni bir `@Transaction suspend fun updateNotificationCounts(counts: Map<String, Int>)` ekle (Room'da `@Transaction` + icinde bir `@Update`/dogrudan SQL `UPDATE apps SET notification_count = :count WHERE package_name = :pkg` dongusu, veya tek SQL ile `CASE WHEN package_name = ... THEN ... END` toplu update) â€” DAO metodunun govdesinde Kotlin `forEach` ile ayni ayri cagrilar olsa bile `@Transaction` sarmali TEK commit'e indirger, ara kilitlenmeyi onler. `LauncherViewModel.kt` satir 196-212'deki `counts.forEach { ... }` blogunu `repository.updateNotificationCounts(counts)` (tek cagri) ile degistir; `toReset` blogu icin de ayni pattern (`resetNotificationCounts(List<String>)`).
-2. **(B) onResume zincirini debounce/gecikmeli calistir:** `LauncherActivity.kt` satir 221-239'daki `reconcileIfNeeded`/`syncUsageStats` cagrilarini `lifecycleScope.launch { delay(300) ... }` gibi kucuk bir gecikmeyle veya `Dispatchers.Default` uzerinde arka plana atarak ilk frame'in UI thread'i bloklamasini engelle (bu cagrilarin ic gÃ¶vdesi zaten `Dispatchers.IO` ama Flow collector tetiklemesi ve Room writer sirasi paylasimli).
-3. **(C) dismissTickerItem sonrasi ticker recompute'unu hafiflet:** Bu senaryoda dogrudan ilgili degil (ticker zaten `WhileSubscribed(5_000L)`), oncelik A ve B'de.
-
-Codex A'yi once uygulamali (en dogrudan kok nedene cozum), B'yi ikinci katman iyilestirme olarak ekleyebilir.
-
-**Cozum tarifi:**
-1. `AppDao.kt` satir ~203 civarina ekle:
-   ```kotlin
-   @Transaction
-   suspend fun updateNotificationCounts(counts: Map<String, Int>) {
-       counts.forEach { (pkg, count) -> updateNotificationCount(pkg, count) }
-   }
-   @Transaction
-   suspend fun resetNotificationCounts(packageNames: List<String>) {
-       packageNames.forEach { updateNotificationCount(it, 0) }
-   }
-   ```
-2. `AppRepository.kt` satir 361-362 civarina karsilik gelen sarma fonksiyonlari ekle (`updateNotificationCounts`, `resetNotificationCounts`), try/catch + Timber.e pattern'i koru.
-3. `LauncherViewModel.kt` satir 196-212'yi guncelle:
-   ```kotlin
-   counts.forEach { (pkg, count) -> repository.updateNotificationCount(pkg, count) } // ESKÄ°
-   ```
-   yerine
-   ```kotlin
-   repository.updateNotificationCounts(counts) // YENÄ° â€” tek transaction
-   ```
-   ve `toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }` yerine `repository.resetNotificationCounts(toReset.map { it.packageName })`.
-4. Ayni pattern `latestTexts.onEach` blogu (satir 214-230) icin de tekrarlanabilir (`updateNotificationTexts`/`resetNotificationTexts`) â€” ayni kok neden.
-5. (Opsiyonel B) `LauncherActivity.kt` `onResume()` icindeki `reconcileIfNeeded`/`syncUsageStats` cagrilarini olcup, gercekten frame droplarina sebep oluyorsa `viewModelScope.launch { delay(250); ... }` ile hafif geciktir â€” ama once (1)'in etkisini olcmeden bu adimi atlama, cogu durumda (1) yeterli olabilir.
-
-**Kabul kriteri:**
-- Arka planda 10+ bildirim birikmisken ticker'a tiklayip MainActivity'ye gidip hemen geri donuldugunde, badge/folder UI'i 1 saniyeden kisa surede tepki veriyor (once birkac saniye donma varken).
-- `AppDao`/`AppRepository` degisikligi sonrasi mevcut `AppNotificationListenerServiceTest.kt` (Dongu 221) testleri hala geciyor; yeni transaction fonksiyonu icin en az 1 unit test eklendi.
-
----
-
 ## Dusuk Oncelik ve Uzun Vade
 
 | Gorev | Alan | Durum |

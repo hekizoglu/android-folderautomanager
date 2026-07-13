@@ -197,14 +197,12 @@ class LauncherViewModel @Inject constructor(
             .onEach { counts ->
                 viewModelScope.launch(Dispatchers.IO) {
                     runCatching {
-                        counts.forEach { (pkg, count) ->
-                            repository.updateNotificationCount(pkg, count)
-                        }
+                        repository.updateNotificationCounts(counts)
                         val knownPkgs = counts.keys
                         val toReset = repository.getAllApps()
                             .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
                         if (toReset.isNotEmpty()) {
-                            toReset.forEach { repository.updateNotificationCount(it.packageName, 0) }
+                            repository.updateNotificationCounts(toReset.associate { it.packageName to 0 })
                         }
                     }.onFailure { Timber.e(it, "badgeCounts observer hatası") }
                 }
@@ -215,14 +213,12 @@ class LauncherViewModel @Inject constructor(
             .onEach { texts ->
                 viewModelScope.launch(Dispatchers.IO) {
                     runCatching {
-                        texts.forEach { (pkg, text) ->
-                            repository.updateNotificationText(pkg, text)
-                        }
+                        repository.updateNotificationTexts(texts)
                         val knownPkgs = texts.keys
                         val toClean = repository.getAllApps()
                             .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
                         if (toClean.isNotEmpty()) {
-                            toClean.forEach { repository.updateNotificationText(it.packageName, "") }
+                            repository.updateNotificationTexts(toClean.associate { it.packageName to "" })
                         }
                     }.onFailure { Timber.e(it, "latestTexts observer hatası") }
                 }

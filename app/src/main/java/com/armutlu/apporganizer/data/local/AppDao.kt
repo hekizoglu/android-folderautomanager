@@ -202,8 +202,22 @@ interface AppDao {
     @Query("UPDATE apps SET notificationCount = :count WHERE packageName = :packageName")
     suspend fun updateNotificationCount(packageName: String, count: Int)
 
+    @Transaction
+    suspend fun updateNotificationCounts(counts: Map<String, Int>) {
+        counts.forEach { (packageName, count) ->
+            updateNotificationCount(packageName, count)
+        }
+    }
+
     @Query("UPDATE apps SET notificationText = :text WHERE packageName = :packageName")
     suspend fun updateNotificationText(packageName: String, text: String)
+
+    @Transaction
+    suspend fun updateNotificationTexts(texts: Map<String, String>) {
+        texts.forEach { (packageName, text) ->
+            updateNotificationText(packageName, text)
+        }
+    }
 
     // Gizlilik: bildirim metni ayarı kapatılınca tüm kayıtlı metinleri temizler
     @Query("UPDATE apps SET notificationText = ''")

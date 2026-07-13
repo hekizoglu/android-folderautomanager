@@ -333,6 +333,26 @@ class AppRepositoryTest {
         coVerify { mockAppDao.updateNotificationCount("com.telegram", 5) }
     }
 
+    @Test
+    fun `updateNotificationCounts delegates batch to dao`() = runTest {
+        val counts = mapOf("com.telegram" to 5, "com.whatsapp" to 2)
+
+        repository.updateNotificationCounts(counts)
+        advanceUntilIdle()
+
+        coVerify { mockAppDao.updateNotificationCounts(counts) }
+    }
+
+    @Test
+    fun `updateNotificationTexts delegates batch to dao`() = runTest {
+        val texts = mapOf("com.telegram" to "Yeni mesaj", "com.mail" to "Inbox")
+
+        repository.updateNotificationTexts(texts)
+        advanceUntilIdle()
+
+        coVerify { mockAppDao.updateNotificationTexts(texts) }
+    }
+
     // ── resetAllCategories ────────────────────────────────────────────────────
 
     @Test
