@@ -193,6 +193,23 @@ fun SettingsLauncherScreen(
         // ── Ana Ekran / Widget / İkon Paketi ──────────────────────────────
         item { SettingsHomeScreenSection(onNavigateToSearchSettings = onNavigateToSearchSettings) }
 
+        item { SettingsSectionTitle("Klasor Gecisleri") }
+        item {
+            var folderCarousel by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.Folder,
+                    title = "Fihrist Klasor Gecisi",
+                    subtitle = "Klasor acikken sag/sol kaydirarak onceki ve sonraki klasore animasyonlu gec",
+                    checked = folderCarousel,
+                    onCheckedChange = {
+                        folderCarousel = it
+                        AppPrefs.setFolderCarouselEnabled(context, it)
+                    }
+                )
+            }
+        }
+
         // ── Quick Wheel + Focus Mode ──────────────────────────────────────
         // Ana ekran davranış ayarları — mantıksal gruplama (D199)
         item { SettingsSectionTitle("Hızlı Erişim") }

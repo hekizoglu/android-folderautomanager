@@ -343,8 +343,12 @@ class LauncherViewModel @Inject constructor(
         if (folderList.size < 2) return false
         val currentIndex = folderList.indexOfFirst { it.category.categoryId == currentId }
         if (currentIndex == -1) return false
-        val targetIndex = if (next) currentIndex + 1 else currentIndex - 1
-        val target = folderList.getOrNull(targetIndex) ?: return false
+        val targetIndex = if (next) {
+            (currentIndex + 1) % folderList.size
+        } else {
+            (currentIndex - 1 + folderList.size) % folderList.size
+        }
+        val target = folderList[targetIndex]
         _openFolderId.value = target.category.categoryId
         return true
     }

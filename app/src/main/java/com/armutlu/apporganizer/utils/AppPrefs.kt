@@ -189,6 +189,12 @@ object AppPrefs {
     fun setFolderSortMode(context: Context, mode: String) =
         prefs(context).edit().putString(KEY_FOLDER_SORT_MODE, mode).apply()
 
+    const val KEY_FOLDER_CAROUSEL_ENABLED = "folder_carousel_enabled"
+    fun isFolderCarouselEnabled(context: Context) =
+        prefs(context).getBoolean(KEY_FOLDER_CAROUSEL_ENABLED, true)
+    fun setFolderCarouselEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_CAROUSEL_ENABLED, enabled).apply()
+
     // Widget alanı — ana ekranda widget göster
     const val KEY_WIDGET_AREA_ENABLED = "widget_area_enabled"
     fun isWidgetAreaEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AREA_ENABLED, true)

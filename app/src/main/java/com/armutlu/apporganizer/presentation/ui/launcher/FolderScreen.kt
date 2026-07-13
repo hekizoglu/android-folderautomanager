@@ -2,6 +2,8 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -27,6 +29,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -55,9 +58,22 @@ fun FolderScreen(
     onBack: () -> Unit,
 ) {
     val folder by viewModel.openFolder.collectAsState()
+    val folders by viewModel.folders.collectAsState()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
+    var folderCarouselEnabled by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
+
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == AppPrefs.KEY_FOLDER_CAROUSEL_ENABLED) {
+                folderCarouselEnabled = AppPrefs.isFolderCarouselEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     BackHandler { onBack() }
 
@@ -110,6 +126,42 @@ fun FolderScreen(
         var showEditDialog by remember { mutableStateOf(false) }
         var contextMenuApp by remember { mutableStateOf<AppInfo?>(null) }
         val folderSwipeThresholdPx = with(density) { 96.dp.toPx() }
+        val folderTransitionOffsetPx = with(density) { 54.dp.toPx() }
+        var transitionDirection by remember { mutableIntStateOf(1) }
+        var hasRenderedFolder by remember { mutableStateOf(false) }
+        val contentOffset = remember { Animatable(0f) }
+
+        LaunchedEffect(catId, folderCarouselEnabled) {
+            if (!folderCarouselEnabled) {
+                contentOffset.snapTo(0f)
+                hasRenderedFolder = true
+                return@LaunchedEffect
+            }
+            if (hasRenderedFolder) {
+                contentOffset.snapTo(transitionDirection * folderTransitionOffsetPx)
+                contentOffset.animateTo(0f, tween(durationMillis = 220))
+            } else {
+                hasRenderedFolder = true
+            }
+        }
+
+        val folderIndex = remember(folders, catId) {
+            folders.indexOfFirst { it.category.categoryId == catId }
+        }
+        val previousFolder = remember(folders, folderIndex, folderCarouselEnabled) {
+            if (folderCarouselEnabled && folderIndex >= 0 && folders.size > 1) {
+                folders[(folderIndex - 1 + folders.size) % folders.size]
+            } else {
+                null
+            }
+        }
+        val nextFolder = remember(folders, folderIndex, folderCarouselEnabled) {
+            if (folderCarouselEnabled && folderIndex >= 0 && folders.size > 1) {
+                folders[(folderIndex + 1) % folders.size]
+            } else {
+                null
+            }
+        }
 
         val catColor = remember(f.category.colorHex, customColor) {
             val hex = customColor.ifBlank { null } ?: f.category.colorHex
@@ -132,31 +184,43 @@ fun FolderScreen(
             f.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
         }
 
+        fun navigateAdjacentFolder(next: Boolean) {
+            if (!folderCarouselEnabled) return
+            transitionDirection = if (next) 1 else -1
+            if (viewModel.openAdjacentFolder(next)) {
+                searchQuery = ""
+            }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(catId, folderSwipeThresholdPx) {
-                    var accumulatedX = 0f
-                    var switched = false
-                    detectHorizontalDragGestures(
-                        onDragStart = {
-                            accumulatedX = 0f
-                            switched = false
-                        },
-                        onHorizontalDrag = { change, dragAmount ->
-                            if (switched) return@detectHorizontalDragGestures
-                            accumulatedX += dragAmount
-                            if (abs(accumulatedX) >= folderSwipeThresholdPx) {
-                                val moved = viewModel.openAdjacentFolder(next = accumulatedX > 0f)
-                                if (moved) {
-                                    switched = true
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    change.consume()
-                                }
-                            }
-                        },
-                    )
-                }
+                .then(
+                    if (folderCarouselEnabled && folders.size > 1) {
+                        Modifier.pointerInput(catId, folderSwipeThresholdPx) {
+                            var accumulatedX = 0f
+                            var switched = false
+                            detectHorizontalDragGestures(
+                                onDragStart = {
+                                    accumulatedX = 0f
+                                    switched = false
+                                },
+                                onHorizontalDrag = { change, dragAmount ->
+                                    if (switched) return@detectHorizontalDragGestures
+                                    accumulatedX += dragAmount
+                                    if (abs(accumulatedX) >= folderSwipeThresholdPx) {
+                                        navigateAdjacentFolder(next = accumulatedX > 0f)
+                                        switched = true
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        change.consume()
+                                    }
+                                },
+                            )
+                        }
+                    } else {
+                        Modifier
+                    }
+                )
                 .background(surface.copy(alpha = 0.95f))
         ) {
             Column(
@@ -164,6 +228,14 @@ fun FolderScreen(
                     .fillMaxSize()
                     .statusBarsPadding()
                     .navigationBarsPadding()
+                    .graphicsLayer {
+                        translationX = if (folderCarouselEnabled) contentOffset.value else 0f
+                        alpha = if (folderCarouselEnabled) {
+                            1f - (abs(contentOffset.value) / folderTransitionOffsetPx).coerceIn(0f, 0.22f)
+                        } else {
+                            1f
+                        }
+                    }
             ) {
                 // Üst bar — geri + klasör başlık + düzenle
                 Row(
@@ -412,6 +484,38 @@ fun FolderScreen(
                 }
             }
 
+            previousFolder?.let { previewFolder ->
+                FolderCarouselPeek(
+                    folder = previewFolder,
+                    label = "Onceki",
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 8.dp),
+                    context = context,
+                    onSurface = onSurface,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        navigateAdjacentFolder(next = false)
+                    },
+                )
+            }
+
+            nextFolder?.let { previewFolder ->
+                FolderCarouselPeek(
+                    folder = previewFolder,
+                    label = "Sonraki",
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 8.dp),
+                    context = context,
+                    onSurface = onSurface,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        navigateAdjacentFolder(next = true)
+                    },
+                )
+            }
+
             // Klasör düzenleme dialog'u
             if (showEditDialog) {
                 FolderRenameDialog(
@@ -486,6 +590,61 @@ fun FolderScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FolderCarouselPeek(
+    folder: AppFolder,
+    label: String,
+    modifier: Modifier = Modifier,
+    context: android.content.Context,
+    onSurface: Color,
+    onClick: () -> Unit,
+) {
+    val catId = folder.category.categoryId
+    val customName = AppPrefs.getFolderCustomNames(context)[catId].orEmpty()
+    val customEmoji = AppPrefs.getFolderCustomEmojis(context)[catId].orEmpty()
+    val customColor = AppPrefs.getFolderCustomColors(context)[catId].orEmpty()
+    val color = remember(folder.category.colorHex, customColor) {
+        val hex = customColor.ifBlank { folder.category.colorHex }
+        runCatching { Color(android.graphics.Color.parseColor(hex)) }
+            .getOrDefault(onSurface.copy(alpha = 0.35f))
+    }
+    val title = customName.ifBlank { folder.category.categoryName }
+
+    Box(
+        modifier = modifier
+            .width(76.dp)
+            .clip(RoundedCornerShape(22.dp))
+            .background(onSurface.copy(alpha = 0.10f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Text(label, color = onSurface.copy(alpha = 0.52f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.28f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 20.sp)
+            }
+            Text(
+                title,
+                color = onSurface.copy(alpha = 0.82f),
+                fontSize = 10.sp,
+                maxLines = 2,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text("${folder.apps.size}", color = onSurface.copy(alpha = 0.48f), fontSize = 10.sp)
         }
     }
 }
