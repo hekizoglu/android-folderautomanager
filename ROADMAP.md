@@ -161,6 +161,7 @@ Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da; Usag
 | Kendi sunucu API'si | `packageName -> category` endpoint; DeepSeek fallback alternatifi | Bekliyor |
 | Wear OS companion app | Uzun vade companion deneyimi | Bekliyor |
 | Widget ekran genisletme | Launcher disi hizli gorunum | Bekliyor |
+| Coklu cihaz senkronizasyonu (Firebase Auth+Firestore+E2EE, 9 faz) | v1.0 Play Store yayini SONRASI ele alinacak — 11p fizibilite puani, 3-6 ay efor, Blaze plan + Play beyan hikayesi yeniden yazimi gerektiriyor. Detay: asagidaki "Analiz — Coklu Cihaz Senkronizasyonu" bolumu. Kullanici karariyla (2026-07-13) uzun vadeye tasindi; ara adim olarak "Yedekle ve Yedekten Don" (Drive/SAF) guclendirilmesi tercih edildi. | Bekliyor - uzun vade |
 
 ---
 
