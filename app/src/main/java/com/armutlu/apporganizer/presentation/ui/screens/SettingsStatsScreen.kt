@@ -151,6 +151,7 @@ fun SettingsStatsScreen(
         item {
             var wrappedEnabled by remember { mutableStateOf(AppPrefs.isWrappedEnabled(context)) }
             var wrappedAiCoachEnabled by remember { mutableStateOf(AppPrefs.isWrappedAiCoachEnabled(context)) }
+            var goalsEnabled by remember { mutableStateOf(AppPrefs.isGoalsEnabled(context)) }
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.EmojiEvents,
@@ -171,6 +172,17 @@ fun SettingsStatsScreen(
                     onCheckedChange = {
                         wrappedAiCoachEnabled = it
                         AppPrefs.setWrappedAiCoachEnabled(context, it)
+                    },
+                )
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                SettingsSwitchRow(
+                    icon = Icons.Default.Flag,
+                    title = "Haftalik Hedef Sistemi",
+                    subtitle = "Dashboard'da kategori bazli haftalik dakika hedefleri belirle ve ilerlemeyi izle.",
+                    checked = goalsEnabled,
+                    onCheckedChange = {
+                        goalsEnabled = it
+                        AppPrefs.setGoalsEnabled(context, it)
                     },
                 )
             }

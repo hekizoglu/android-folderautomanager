@@ -114,23 +114,6 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 ---
 
 
-### Hedef sistemi (13p)
-
-**Sorun/istek:** Haftalik kategori kullanim hedefi + rozet odulu yok; oturum altyapisina (UsageEvents, Dongu 232) bagimli.
-
-**Cozum tarifi:**
-1. Dongu 232'de eklenen UsageEvents yerel oturum agregatorunu bul (`grep -r "UsageEvents" app/src` ile dosyayi dogrula) â€” haftalik kategori bazli kullanim suresi zaten hesaplaniyor olmali.
-2. Room'a yeni tablo/entity: `WeeklyGoal` (categoryId, targetMinutes, weekStartEpochDay) â€” Room Migration sablonuna uy (CLAUDE.md Â§5 "Room Migration Sablonu": schemaLocation + Migration class + addMigrations, fallbackToDestructiveMigration YASAK).
-3. `AppPrefs.kt`'ye `KEY_GOALS_ENABLED` + toggle; hedef belirleme UI'i (yeni ekran veya Dashboard'a ek bolum â€” `AppOrganizerDashboardScreen.kt`'deki `DashboardStats.compute()` pattern'ini kullan).
-4. Haftalik kontrol: mevcut `SmartInsightWorker` veya `WeeklyDigestWorker` (hangisi haftalik tetikleniyor, dogrula) icine hedef karsilastirma + rozet hak edildiyse bildirim ekle.
-5. Rozet gosterimi icin Wrapped/Dashboard ekranina basit bir liste/kart.
-
-**Kabul kriteri:**
-- Kullanici bir kategoriye haftalik dakika hedefi belirleyebiliyor, hafta sonunda hedefe ulasilip ulasilmadigi Dashboard'da goruluyor.
-- Room migration test edilmis (schema dosyasi commit'li).
-
----
-
 ### Kilit acma sayaci (12p)
 
 **Sorun/istek:** UsageEvents `KEYGUARD_HIDDEN` ile gunluk telefon acma sayisi + haftalik trend Wrapped'a eklenmemis.

@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.models.WeeklyGoal
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -49,6 +51,8 @@ fun AppOrganizerDashboardScreen(
     val screenState by viewModel.screenState.collectAsState()
     val allApps = screenState.apps
     val categories = screenState.categories
+    val weeklyGoals by viewModel.weeklyGoals.collectAsState()
+    var goalsEnabled by remember { mutableStateOf(AppPrefs.isGoalsEnabled(context)) }
 
     var hasUsagePermission by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -118,6 +122,18 @@ fun AppOrganizerDashboardScreen(
             item { DashSectionHeader("Bu Hafta En Cok Kullanilanlar") }
             item { UsageMetricToggleRow(usageMetric) { usageMetric = it } }
             item { TopAppsCard(topAppsForMetric, hasUsagePermission, usageMetric) }
+            if (goalsEnabled) {
+                item { DashSectionHeader("Haftalik Hedefler") }
+                item {
+                    WeeklyGoalsCard(
+                        goals = weeklyGoals,
+                        categories = categories,
+                        categoryUsageMinutes = stats.categoryUsageMinutes,
+                        onSaveGoal = viewModel::setWeeklyGoal,
+                        onDeleteGoal = viewModel::deleteWeeklyGoal,
+                    )
+                }
+            }
             item { DashSectionHeader("Kategori Yogunlugu") }
             item { CategoryBreakdownCard(stats.categoryBreakdown, onClick = onNavigateToUsageReport) }
             item { DashSectionHeader("Kullanilmayan Uygulamalar") }
@@ -151,6 +167,7 @@ private data class DashboardStats(
     val hiddenApps: Int,
     val topApps: List<Pair<AppInfo, Long>>,
     val categoryBreakdown: List<Pair<String, Int>>,
+    val categoryUsageMinutes: Map<String, Long>,
     val unusedCount: Int,
     val neverUsedCount: Int,
     val totalUsageMinutesThisWeek: Long,
@@ -190,6 +207,11 @@ private data class DashboardStats(
 
             val totalMs = usageTimes.values.sumOf { it }
             val totalMinutes = totalMs / 60_000
+            val categoryUsageMinutes = visible
+                .groupBy { it.categoryId }
+                .mapValues { (_, list) ->
+                    list.sumOf { app -> (usageTimes[app.packageName] ?: app.usageCount) / 60_000 }
+                }
 
             val organizedPercent = if (visible.isEmpty()) 0
             else (
@@ -203,6 +225,7 @@ private data class DashboardStats(
                 hiddenApps = apps.count { it.isHidden },
                 topApps = topApps,
                 categoryBreakdown = catBreakdown,
+                categoryUsageMinutes = categoryUsageMinutes,
                 unusedCount = unusedCount,
                 neverUsedCount = neverUsedCount,
                 totalUsageMinutesThisWeek = totalMinutes,
@@ -213,6 +236,80 @@ private data class DashboardStats(
 }
 
 // ── Bilesenler ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun WeeklyGoalsCard(
+    goals: List<WeeklyGoal>,
+    categories: List<Category>,
+    categoryUsageMinutes: Map<String, Long>,
+    onSaveGoal: (String, Int) -> Unit,
+    onDeleteGoal: (String) -> Unit,
+) {
+    if (categories.isEmpty()) return
+    var selectedIndex by remember(categories) { mutableStateOf(0) }
+    var targetText by remember { mutableStateOf("120") }
+    val selectedCategory = categories[selectedIndex.coerceIn(0, categories.lastIndex)]
+    val categoryNames = remember(categories) { categories.associate { it.categoryId to it.categoryName } }
+
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Bu hafta bir kategori hedefi koy", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                AssistChip(
+                    onClick = { selectedIndex = (selectedIndex + 1) % categories.size },
+                    label = { Text(categoryNames[selectedCategory.categoryId] ?: selectedCategory.categoryName) },
+                )
+                OutlinedTextField(
+                    value = targetText,
+                    onValueChange = { targetText = it.filter(Char::isDigit).take(4) },
+                    label = { Text("Dakika") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                Button(
+                    onClick = {
+                        val minutes = targetText.toIntOrNull() ?: return@Button
+                        onSaveGoal(selectedCategory.categoryId, minutes)
+                    },
+                    enabled = (targetText.toIntOrNull() ?: 0) > 0,
+                ) { Text("Kaydet") }
+            }
+
+            if (goals.isEmpty()) {
+                Text(
+                    "Hedef ekleyince bu kart haftalik ilerlemeyi yuzde olarak gosterecek.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                goals.forEach { goal ->
+                    val used = categoryUsageMinutes[goal.categoryId] ?: 0L
+                    val progress = (used.toFloat() / goal.targetMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(categoryNames[goal.categoryId] ?: goal.categoryId, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            TextButton(onClick = { onDeleteGoal(goal.categoryId) }) { Text("Sil") }
+                        }
+                        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                        Text(
+                            "${used.coerceAtMost(goal.targetMinutes.toLong())}/${goal.targetMinutes} dk (${(progress * 100).toInt()}%)",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun HeroStatsRow(stats: DashboardStats) {

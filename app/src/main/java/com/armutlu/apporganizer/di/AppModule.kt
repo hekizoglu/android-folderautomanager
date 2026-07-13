@@ -41,6 +41,10 @@ object AppModule {
         db.notificationEventDao()
 
     @Provides
+    fun provideWeeklyGoalDao(db: AppDatabase): com.armutlu.apporganizer.data.local.WeeklyGoalDao =
+        db.weeklyGoalDao()
+
+    @Provides
     @Singleton
     fun provideFilesIndexer(
         @ApplicationContext context: Context,

@@ -13,10 +13,12 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.WeekUtils
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
@@ -33,16 +35,19 @@ class WeeklyDigestWorker(
     @dagger.hilt.InstallIn(SingletonComponent::class)
     interface DigestEntryPoint {
         fun appRepository(): AppRepository
+        fun weeklyGoalDao(): WeeklyGoalDao
     }
 
     override suspend fun doWork(): Result {
         return runCatching {
             if (!AppPrefs.isWeeklyDigestEnabled(applicationContext)) return@runCatching Result.success()
 
-            val repo = EntryPointAccessors.fromApplication(
+            val entryPoint = EntryPointAccessors.fromApplication(
                 applicationContext,
                 DigestEntryPoint::class.java
-            ).appRepository()
+            )
+            val repo = entryPoint.appRepository()
+            val weeklyGoalDao = entryPoint.weeklyGoalDao()
 
             val apps = repo.getAllApps().filter { !it.isHidden && !it.isSystemApp }
             val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
@@ -67,6 +72,7 @@ class WeeklyDigestWorker(
                 val categoryUsage = apps.groupBy { it.categoryId }
                     .mapValues { (_, list) -> list.sumOf { it.usageCount } }
                 WrappedSnapshotPrefs.saveCurrent(applicationContext, categoryUsage, apps.size)
+                checkWeeklyGoals(weeklyGoalDao, categoryUsage.mapValues { it.value / 60_000 }, now)
             }.onFailure { e -> Timber.e(e, "Wrapped snapshot kaydı başarısız") }
 
             Result.success()
@@ -74,6 +80,50 @@ class WeeklyDigestWorker(
             Timber.e(e, "WeeklyDigest hatası")
             Result.retry()
         }
+    }
+
+    private suspend fun checkWeeklyGoals(
+        weeklyGoalDao: WeeklyGoalDao,
+        categoryUsageMinutes: Map<String, Long>,
+        now: Long,
+    ) {
+        if (!AppPrefs.isGoalsEnabled(applicationContext)) return
+        val weekStart = WeekUtils.currentWeekStartEpochDay(now)
+        val achieved = weeklyGoalDao.getGoalsForWeek(weekStart).filter { goal ->
+            goal.achievedAt == 0L && (categoryUsageMinutes[goal.categoryId] ?: 0L) >= goal.targetMinutes
+        }
+        achieved.forEach { goal -> weeklyGoalDao.markAchieved(goal.categoryId, weekStart, now) }
+        if (achieved.isNotEmpty()) sendGoalNotification(achieved.size)
+    }
+
+    private fun sendGoalNotification(count: Int) {
+        if (!NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) return
+        val mgr = applicationContext.getSystemService(NotificationManager::class.java) ?: return
+        ensureChannel(mgr)
+        val body = if (count == 1) {
+            "Bu hafta 1 kategori hedefini tamamladin. Dashboard'da rozetini gorebilirsin."
+        } else {
+            "Bu hafta $count kategori hedefini tamamladin. Dashboard'da rozetlerini gorebilirsin."
+        }
+        val contentIntent = PendingIntent.getActivity(
+            applicationContext,
+            NOTIF_ID + 1,
+            Intent(applicationContext, MainActivity::class.java).apply {
+                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Haftalik hedef tamamlandi")
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(contentIntent)
+            .setAutoCancel(true)
+            .build()
+        mgr.notify(NOTIF_ID + 1, notification)
     }
 
     private fun sendDigestNotification(count: Int, sampleApps: List<String>) {
