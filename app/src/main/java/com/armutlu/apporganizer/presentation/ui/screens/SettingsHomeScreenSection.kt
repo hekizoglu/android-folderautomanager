@@ -352,6 +352,49 @@ fun SettingsHomeScreenSection(
             }
         }
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        var searchBarPosition by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)) }
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_search_bar_position_title),
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+            )
+            Text(
+                androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_search_bar_position_desc),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val positions = listOf(
+                    com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP to com.armutlu.apporganizer.R.string.settings_search_bar_position_top,
+                    com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM to com.armutlu.apporganizer.R.string.settings_search_bar_position_bottom,
+                )
+                positions.forEach { (posKey, labelRes) ->
+                    val selected = searchBarPosition == posKey
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            )
+                            .clickable {
+                                searchBarPosition = posKey
+                                com.armutlu.apporganizer.utils.AppPrefs.setSearchBarPosition(context, posKey)
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    ) {
+                        Text(
+                            androidx.compose.ui.res.stringResource(labelRes),
+                            fontSize = 13.sp,
+                            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_score_visible_title),
