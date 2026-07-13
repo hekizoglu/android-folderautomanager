@@ -85,6 +85,7 @@ fun WrappedReportScreen(
                 padding = padding,
                 report = state.report!!,
                 hasUsagePermission = state.hasUsagePermission,
+                previousScore = state.previousScore,
                 aiCoachLoading = state.aiCoachLoading,
                 aiCoachComment = state.aiCoachComment,
                 unlockCount = state.unlockCount,
@@ -126,6 +127,7 @@ private fun WrappedContent(
     padding: PaddingValues,
     report: WrappedEngine.WrappedReport,
     hasUsagePermission: Boolean,
+    previousScore: Int?,
     aiCoachLoading: Boolean,
     aiCoachComment: String?,
     unlockCount: Int?,
@@ -142,7 +144,12 @@ private fun WrappedContent(
             item { UsagePermissionCard(onRequestPermission) }
         }
 
-        item { ScoreCard(report.score, report.weeklyComparison?.previousScore) }
+        // D244 bug fix: previousScore artık WrappedSnapshotPrefs → ViewModel.previousScore →
+        // buradaki state parametresinden akar (engine'in hep null dönen weeklyComparison
+        // alanı yerine). "Geçen haftaya göre" rozeti artık gerçekten görünür.
+        item { ScoreCard(report.score, previousScore) }
+
+        item { PulseSubScoresCard(report.pulse) }
 
         if (aiCoachLoading || !aiCoachComment.isNullOrBlank()) {
             item { AiCoachCard(aiCoachLoading, aiCoachComment) }
@@ -385,6 +392,29 @@ private fun ScoreReasonRow(reason: WrappedEngine.ScoreReason) {
                 fontWeight = FontWeight.Bold,
                 color = color,
             )
+        }
+    }
+}
+
+// ── Dijital Nabız alt skorları (V2, D244) — tek motor DigitalPulseEngine ────
+
+@Composable
+private fun PulseSubScoresCard(pulse: com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Alt Skorlar", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Spacer(Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PersonalityBar("Düzen", pulse.organization)
+                PersonalityBar("Dikkat Yönetimi", pulse.attention)
+                PersonalityBar("Kullanım Dengesi", pulse.balance)
+                PersonalityBar("Dijital Temizlik", pulse.cleanup)
+                PersonalityBar("İstikrar", pulse.consistency)
+            }
         }
     }
 }

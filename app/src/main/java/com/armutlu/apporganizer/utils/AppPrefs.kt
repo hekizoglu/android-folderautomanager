@@ -259,6 +259,31 @@ object AppPrefs {
     fun isFolderSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_SEARCH_ENABLED, false)
     fun setFolderSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SEARCH_ENABLED, v).apply()
 
+    // ── Saat ve Dijital Nabız (Pulse Clock, D244) ─────────────────────────
+    // Saat stili: minimal (sadece saat+tarih) / pulse (skor+içgörü, varsayılan) / glass (cam yüzey)
+    const val KEY_CLOCK_STYLE = "home_clock_style"
+    const val CLOCK_STYLE_MINIMAL = "minimal"
+    const val CLOCK_STYLE_PULSE = "pulse"
+    const val CLOCK_STYLE_GLASS = "glass"
+    fun getClockStyle(context: Context): String =
+        prefs(context).getString(KEY_CLOCK_STYLE, CLOCK_STYLE_PULSE) ?: CLOCK_STYLE_PULSE
+    fun setClockStyle(context: Context, v: String) = prefs(context).edit().putString(KEY_CLOCK_STYLE, v).apply()
+
+    // Ana ekranda Dijital Yaşam Skoru halkası görünürlüğü
+    const val KEY_HOME_SCORE_VISIBLE = "home_score_visible"
+    fun isHomeScoreVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_SCORE_VISIBLE, true)
+    fun setHomeScoreVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_SCORE_VISIBLE, v).apply()
+
+    // Ana ekranda tek satırlık içgörü görünürlüğü
+    const val KEY_HOME_INSIGHT_VISIBLE = "home_insight_visible"
+    fun isHomeInsightVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_INSIGHT_VISIBLE, true)
+    fun setHomeInsightVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_INSIGHT_VISIBLE, v).apply()
+
+    // Son gösterilen içgörü id'si — aynı mesaj her açılışta tekrarlanmasın (dönüşümlü gösterim)
+    const val KEY_PULSE_LAST_INSIGHT_ID = "pulse_last_insight_id"
+    fun getPulseLastInsightId(context: Context): String? = prefs(context).getString(KEY_PULSE_LAST_INSIGHT_ID, null)
+    fun setPulseLastInsightId(context: Context, id: String) = prefs(context).edit().putString(KEY_PULSE_LAST_INSIGHT_ID, id).apply()
+
     // Haber şeridi (ticker) — klasör/içgörü/bildirim haberleri ana ekranda akar
     const val KEY_TICKER_ENABLED = "home_ticker_enabled"
     fun isTickerEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_ENABLED, true)

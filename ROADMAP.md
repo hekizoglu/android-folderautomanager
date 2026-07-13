@@ -6,6 +6,23 @@
 
 ---
 
+## ⭐ Yüksek Puanlı - Pulse Clock / Dijital Nabız (D244 devamı)
+
+Döngü 244'te previousScore kritik bug'ı, tek skor motoru (DigitalPulseEngine V2, sosyal/oyun
+otomatik cezası kaldırıldı) ve Pulse Clock widget temel görünümü (Minimal/Pulse/Glass) teslim
+edildi. Aşağıdakiler kapsam nedeniyle BEKLİYOR — sessizce atlanmadı, HISTORY.md Döngü 244'te de not düşüldü:
+
+| Puan | Görev | Durum |
+|---|---|---|
+| 16 | `ReportsCenterScreen` üst özet kartı: toplam skor + confidence + en güçlü/zayıf alt skor + tek öneri, altında 5 alt skor progress + detay giriş kartları | Bekliyor |
+| 14 | `WrappedReportScreen` madde sırası tam speke göre revize (skor→alt skor→en önemli içgörü→profil→istatistik→bildirim özeti→rozet→değişim→detay) | Bekliyor |
+| 12 | Rozet kriterlerini "anlamlı hale getirme" — Bildirim Terbiyecisi, Sessiz Gece, Hedef Takipçisi gibi yeni/iyileştirilmiş rozetler; izin yoksa "erişimle ölçülür" açıklaması | Bekliyor |
+| 10 | Canvas grafikleri: haftalık kullanım trendi (7 bar), bildirim trendi (7 sparkline, gece işaretli), kategori dağılımı (ilk 5 yatay bar) — harici kütüphane yok | Bekliyor |
+| 8 | Glass saat stili görsel ayrımı (Pulse'tan daha belirgin cam/gradient) güçlendirme | Bekliyor |
+| — | Emülatörde manuel doğrulama: Pulse Clock 3 stil, skor/içgörü toggle'ları, uzun basma → yönetim ekranı, kompakt ekranda grid kaybolmuyor | Bekliyor - cihaz/emülatör |
+
+---
+
 ## Hedef
 
 Play Store yayini icin Production AAB v1.0.0 hazir.

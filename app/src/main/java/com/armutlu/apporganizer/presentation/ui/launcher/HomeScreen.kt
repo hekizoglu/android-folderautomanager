@@ -497,14 +497,26 @@ fun HomeScreen(
             // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
             // Dar ekran / kalabalık grid'de kompakt: klasörler kaybolmasın diye saat küçülür
             val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700
-            PixelClockWidget(
+            PulseClockWidget(
                 compact = compactClock,
+                onOpenWeeklyReport = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }
+                },
+                onOpenScoreDetails = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    runCatching { context.startActivity(intent) }
+                },
+                onLongPress = { viewModel.openManager(context) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = if (compactClock) 16.dp else 32.dp, bottom = 8.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures(onLongPress = { viewModel.openManager(context) })
-                    }
             )
 
             // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,

@@ -1,11 +1,18 @@
 package com.armutlu.apporganizer.domain.usecase.wrapped
 
+import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseEngine
+import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore
+import com.armutlu.apporganizer.domain.usecase.pulse.PulseInput
+import com.armutlu.apporganizer.domain.usecase.pulse.PulseNotificationSignals
 import kotlin.math.roundToInt
 
 /**
  * Haftalık Rapor ("Wrapped") motoru — saf Kotlin, Android bağımlılığı yok, unit test edilebilir.
  * Tüm hesaplar AppInfo/NotificationEvent tabanlı hafif snapshot'lardan türetilir; hiçbir veri
  * sunucuya gitmez, uydurma metrik gösterilmez (veri yoksa ilgili bölüm null/boş döner).
+ *
+ * Skor: V2'den itibaren TEK motor [DigitalPulseEngine] kullanılır — ana ekran (Pulse Clock),
+ * Rapor Merkezi ve bu rapor farklı skor hesaplamaz.
  */
 object WrappedEngine {
 
@@ -30,6 +37,7 @@ object WrappedEngine {
         val totalNotifications: Int,
         val disturbingCount: Int,
         val distractingCount: Int,
+        val nightCount: Int = 0,
     )
 
     /** Geçen haftanın kategori bazlı kullanım agregatı — WrappedSnapshotPrefs'ten okunur. */
@@ -46,6 +54,9 @@ object WrappedEngine {
         val folderCount: Int = 0,
         val launcherInstalledDays: Int = 0,
         val nowMillis: Long = System.currentTimeMillis(),
+        val unlockCount: Int? = null,
+        val previousUnlockCount: Int? = null,
+        val hasUsageAccess: Boolean = true,
     )
 
     // ── Çıktı modelleri ─────────────────────────────────────────────────────
@@ -94,9 +105,11 @@ object WrappedEngine {
         val deltaPercent: Int, // pozitif = büyüme, negatif = azalma
     )
 
+    // NOT: previousScore alanı KALDIRILDI (D244 bug fix) — skor karşılaştırması
+    // WrappedSnapshotPrefs → ViewModel.previousScore akışıyla taşınır; engine hep null
+    // döndürdüğü için UI'da "geçen haftaya göre" rozeti hiç görünmüyordu.
     data class WeeklyComparison(
         val topGrowingCategories: List<CategoryGrowth>, // en cok buyuyen 3
-        val previousScore: Int?,
     )
 
     data class WrappedReport(
@@ -105,6 +118,7 @@ object WrappedEngine {
         val stats: InterestingStats,
         val badges: List<Badge>,
         val weeklyComparison: WeeklyComparison?, // null = "veri birikiyor"
+        val pulse: DigitalPulseScore, // V2 alt skorlar + confidence — tek motor
     )
 
     private const val DAY_MS = 24L * 60 * 60 * 1000
@@ -119,80 +133,48 @@ object WrappedEngine {
 
     fun compute(input: WrappedInput): WrappedReport {
         val relevantApps = input.apps.filter { !it.isHidden }
-        val score = computeScore(relevantApps, input.notificationSummary)
+        val pulse = DigitalPulseEngine.compute(
+            PulseInput(
+                apps = relevantApps,
+                notification = input.notificationSummary?.let {
+                    PulseNotificationSignals(
+                        totalNotifications = it.totalNotifications,
+                        disturbingCount = it.disturbingCount,
+                        distractingCount = it.distractingCount,
+                        nightCount = it.nightCount,
+                    )
+                },
+                previousCategoryUsage = input.previousSnapshot?.categoryUsage,
+                folderCount = input.folderCount,
+                unlockCount = input.unlockCount,
+                previousUnlockCount = input.previousUnlockCount,
+                hasUsageAccess = input.hasUsageAccess,
+                nowMillis = input.nowMillis,
+            )
+        )
+        // Geriye uyumluluk: DigitalLifeScore.reasons AI Coach prompt'u için ASCII log
+        // etiketleriyle doldurulur (kullanıcıya gösterilmez — UI pulse.reasons'ı resource ile çözer).
+        val score = DigitalLifeScore(
+            score = pulse.total,
+            reasons = pulse.reasons.map { ScoreReason(it.id.logLabel, it.delta) },
+        )
         val personality = computePersonality(relevantApps)
         val stats = computeInterestingStats(relevantApps, input.nowMillis)
         val badges = computeBadges(relevantApps, personality, input)
-        val comparison = computeWeeklyComparison(relevantApps, input.previousSnapshot, score.score)
+        val comparison = computeWeeklyComparison(relevantApps, input.previousSnapshot)
         return WrappedReport(
             score = score,
             personality = personality,
             stats = stats,
             badges = badges,
             weeklyComparison = comparison,
+            pulse = pulse,
         )
     }
 
     // ── a) Dijital Yaşam Skoru ──────────────────────────────────────────────
-
-    private fun computeScore(apps: List<AppSnapshot>, notif: NotificationSummary?): DigitalLifeScore {
-        if (apps.isEmpty()) {
-            return DigitalLifeScore(
-                score = 50,
-                reasons = listOf(ScoreReason("Yeterli veri yok, notr baslangic puani", 0)),
-            )
-        }
-        val reasons = mutableListOf<ScoreReason>()
-        var total = 50 // notr baslangic
-
-        val now = System.currentTimeMillis()
-        val unusedCount = apps.count { app ->
-            val last = if (app.lastUsedTimestamp > 0L) app.lastUsedTimestamp else app.installTime
-            last > 0L && (now - last) >= UNUSED_THRESHOLD_DAYS * DAY_MS
-        }
-        val unusedRatio = unusedCount.toFloat() / apps.size
-        if (unusedRatio < 0.15f) {
-            reasons += ScoreReason("Uygulamalarinin cogu duzenli kullaniliyor", 15)
-            total += 15
-        } else if (unusedRatio > 0.4f) {
-            reasons += ScoreReason("Uygulamalarin %${(unusedRatio * 100).roundToInt()}'i 60+ gundur acilmamis", -15)
-            total -= 15
-        }
-
-        val totalUsage = apps.sumOf { it.usageCount }.coerceAtLeast(1L)
-        val socialGameUsage = apps.filter { it.categoryId in SOCIAL_CATEGORIES || it.categoryId in GAME_CATEGORIES }
-            .sumOf { it.usageCount }
-        val socialGameRatio = socialGameUsage.toFloat() / totalUsage
-        if (socialGameRatio > 0.5f) {
-            reasons += ScoreReason("Sosyal/oyun kategorisi kullanimin %${(socialGameRatio * 100).roundToInt()}'ini kapliyor", -15)
-            total -= 15
-        } else if (socialGameRatio < 0.2f) {
-            reasons += ScoreReason("Sosyal/oyun kullanimin dusuk, dengeli bir profil", 10)
-            total += 10
-        }
-
-        val categorizedCount = apps.count { it.categoryId != "uncategorized" && it.categoryId != "other" }
-        val categorizedRatio = categorizedCount.toFloat() / apps.size
-        if (categorizedRatio > 0.85f) {
-            reasons += ScoreReason("Uygulamalarin %${(categorizedRatio * 100).roundToInt()}'i duzenli kategorilenmis", 10)
-            total += 10
-        } else if (categorizedRatio < 0.5f) {
-            reasons += ScoreReason("Uygulamalarin cogu kategorisiz, duzen dagitilabilir", -5)
-            total -= 5
-        }
-
-        if (notif != null) {
-            if (notif.disturbingCount == 0 && notif.distractingCount == 0) {
-                reasons += ScoreReason("Rahatsiz edici veya dikkat dagitici bildirim yuku yok", 10)
-                total += 10
-            } else if (notif.disturbingCount + notif.distractingCount >= 3) {
-                reasons += ScoreReason("${notif.disturbingCount + notif.distractingCount} uygulama bildirimle rahatsiz ediyor", -10)
-                total -= 10
-            }
-        }
-
-        return DigitalLifeScore(score = total.coerceIn(0, 100), reasons = reasons)
-    }
+    // V2: skor hesabı DigitalPulseEngine'e taşındı (tek motor kuralı) — sosyal/oyun
+    // kullanımına otomatik ceza veren V1 computeScore KALDIRILDI.
 
     // ── b) Kişilik tipi ──────────────────────────────────────────────────────
 
@@ -343,7 +325,6 @@ object WrappedEngine {
     private fun computeWeeklyComparison(
         apps: List<AppSnapshot>,
         previous: PreviousSnapshot?,
-        currentScore: Int,
     ): WeeklyComparison? {
         if (previous == null) return null
 
@@ -363,9 +344,6 @@ object WrappedEngine {
 
         val topGrowing = deltas.sortedByDescending { it.deltaPercent }.take(3)
 
-        return WeeklyComparison(
-            topGrowingCategories = topGrowing,
-            previousScore = null, // skor gecmisi ayri tutulur (WrappedSnapshotPrefs.lastScore) — caller doldurur
-        )
+        return WeeklyComparison(topGrowingCategories = topGrowing)
     }
 }

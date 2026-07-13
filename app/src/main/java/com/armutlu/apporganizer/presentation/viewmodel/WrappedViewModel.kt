@@ -58,25 +58,31 @@ class WrappedViewModel @Inject constructor(
     fun refresh() {
         _uiState.value = _uiState.value.copy(loading = true)
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                runCatching { buildReport() }
-                    .onFailure { e -> Timber.e(e, "WrappedReport üretilemedi") }
-                    .getOrNull()
-            }
             val unlockCount = withContext(Dispatchers.IO) {
                 UsageStatsHelper.getUnlockCount(context, days = 7)
             }
+            val previousUnlockCount = WrappedSnapshotPrefs.getPreviousUnlockCount(context)
+            val result = withContext(Dispatchers.IO) {
+                runCatching { buildReport(unlockCount, previousUnlockCount) }
+                    .onFailure { e -> Timber.e(e, "WrappedReport üretilemedi") }
+                    .getOrNull()
+            }
+            // D244 bug fix: previousScore artık haftalık rotasyonla üretilir ve ScoreCard'a
+            // state üzerinden akar (WrappedSnapshotPrefs → previousScore → WrappedContent →
+            // ScoreCard). İlk hafta null döner — sahte +0 karşılaştırması gösterilmez.
+            val previousScore = result?.let {
+                WrappedSnapshotPrefs.updateWeeklyPulseScore(context, it.pulse.total)
+            }
+            result?.let { WrappedSnapshotPrefs.setLatestPulseScore(context, it.pulse.total) }
             _uiState.value = WrappedUiState(
                 loading = false,
                 hasUsagePermission = UsageStatsHelper.hasPermission(context),
                 report = result,
-                previousScore = WrappedSnapshotPrefs.getLastScore(context),
+                previousScore = previousScore,
                 aiCoachLoading = shouldLoadAiCoach(result),
                 unlockCount = unlockCount,
-                previousUnlockCount = WrappedSnapshotPrefs.getPreviousUnlockCount(context),
+                previousUnlockCount = previousUnlockCount,
             )
-            // Bir sonraki karşılaştırma için mevcut skoru kaydet.
-            result?.let { WrappedSnapshotPrefs.setLastScore(context, it.score.score) }
             loadAiCoachIfNeeded(result)
         }
     }
@@ -100,7 +106,10 @@ class WrappedViewModel @Inject constructor(
         }
     }
 
-    private suspend fun buildReport(): WrappedEngine.WrappedReport {
+    private suspend fun buildReport(
+        unlockCount: Int?,
+        previousUnlockCount: Int?,
+    ): WrappedEngine.WrappedReport {
         val apps = appRepository.getAllApps()
         val dailySessionResult = UsageStatsHelper.getDailySessionUsage(context, days = 7)
         val dailySessions = (dailySessionResult as? UsageStatsHelper.DailySessionResult.Available)
@@ -137,6 +146,7 @@ class WrappedViewModel @Inject constructor(
                 totalNotifications = report.totalNotifications,
                 disturbingCount = report.disturbing.size,
                 distractingCount = report.distracting.size,
+                nightCount = report.appStats.sumOf { it.nightCount },
             )
         }.onFailure { e -> Timber.e(e, "Bildirim ozeti alinamadi") }.getOrNull()
 
@@ -158,6 +168,9 @@ class WrappedViewModel @Inject constructor(
             previousSnapshot = previousSnapshot,
             folderCount = folderCount,
             launcherInstalledDays = launcherInstalledDays,
+            unlockCount = unlockCount,
+            previousUnlockCount = previousUnlockCount,
+            hasUsageAccess = UsageStatsHelper.hasPermission(context),
         )
 
         return WrappedEngine.compute(input)
