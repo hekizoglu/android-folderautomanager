@@ -42,6 +42,7 @@ object Routes {
     const val NOTIFICATION_REPORT = "notification_report"
     const val WRAPPED_REPORT = "wrapped_report"
     const val PRIVACY_REPORT = "privacy_report"
+    const val MISSIONS = "missions"
 
     // U1: Ayarlar alt-ekran hiyerarşisi — her ana kategori kendi route'unda
     const val SETTINGS_APPEARANCE = "settings_appearance"
@@ -59,7 +60,7 @@ object Routes {
     // yalnızca burada tanımlı bilinen route'lara navigate edilmeli (whitelist doğrulaması).
     val ALL: Set<String> = setOf(
         APP_LIST, APP_LIST_UNCERTAIN, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
-        REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT,
+        REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
         CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS
@@ -179,7 +180,8 @@ fun AppNavigation(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
-                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) }
+                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
+                onNavigateToMissions = { navController.navigate(Routes.MISSIONS) }
             )
         }
         composable(Routes.SETTINGS_SECURITY) {
@@ -241,6 +243,11 @@ fun AppNavigation(
         }
         composable(Routes.PRIVACY_REPORT) {
             com.armutlu.apporganizer.presentation.ui.screens.PrivacyReportScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.MISSIONS) {
+            com.armutlu.apporganizer.presentation.ui.screens.MissionsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

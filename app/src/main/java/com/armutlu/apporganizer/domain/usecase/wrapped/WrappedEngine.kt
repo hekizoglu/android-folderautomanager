@@ -57,6 +57,8 @@ object WrappedEngine {
         val unlockCount: Int? = null,
         val previousUnlockCount: Int? = null,
         val hasUsageAccess: Boolean = true,
+        /** Gece (23:00-06:00) kullanim orani 0.0-1.0 — null = saatlik veri yok (Gece Kusu atlanir). */
+        val nightUsageRatio: Double? = null,
     )
 
     // ── Çıktı modelleri ─────────────────────────────────────────────────────
@@ -74,6 +76,10 @@ object WrappedEngine {
         GAMER("🎮", "Oyuncu"),
         FINANCE_WOLF("💰", "Finans Kurdu"),
         STUDENT("📚", "Ogrenci"),
+        NIGHT_OWL("🦉", "Gece Kusu"),
+        NEWS_HUNTER("📰", "Haber Avcisi"),
+        EXPLORER("🧭", "Kasif"),
+        MINIMALIST("🍃", "Minimalist"),
         BALANCED("⚖️", "Dengeli"),
     }
 
@@ -130,6 +136,14 @@ object WrappedEngine {
     private val FINANCE_CATEGORIES = setOf("finance", "business")
     private val PRODUCTIVITY_CATEGORIES = setOf("productivity", "utilities")
     private val EDUCATION_CATEGORIES = setOf("education", "books")
+    private val NEWS_CATEGORIES = setOf("news", "magazines")
+
+    // Genişletilmiş kişilik eşikleri (D257) — deterministik, öncelik sırası computePersonality'de.
+    private const val NIGHT_OWL_RATIO_THRESHOLD = 0.35
+    private const val DOMINANT_THRESHOLD = 30
+    private const val MINIMALIST_MAX_APPS = 30
+    private const val MINIMALIST_MAX_CATEGORIES = 3
+    private const val EXPLORER_MIN_CATEGORIES = 8
 
     fun compute(input: WrappedInput): WrappedReport {
         val relevantApps = input.apps.filter { !it.isHidden }
@@ -158,7 +172,7 @@ object WrappedEngine {
             score = pulse.total,
             reasons = pulse.reasons.map { ScoreReason(it.id.logLabel, it.delta) },
         )
-        val personality = computePersonality(relevantApps)
+        val personality = computePersonality(relevantApps, input.nightUsageRatio)
         val stats = computeInterestingStats(relevantApps, input.nowMillis)
         val badges = computeBadges(relevantApps, personality, input)
         val comparison = computeWeeklyComparison(relevantApps, input.previousSnapshot)
@@ -178,7 +192,17 @@ object WrappedEngine {
 
     // ── b) Kişilik tipi ──────────────────────────────────────────────────────
 
-    private fun computePersonality(apps: List<AppSnapshot>): PersonalityResult {
+    /**
+     * Deterministik kişilik sınıflandırması (D257 genişletme — 10 tip).
+     * Öncelik sırası: 1) Gece Kuşu (saatlik veri varsa) 2) dominant kategori (>= %30)
+     * 3) Minimalist (az uygulama) 4) Kaşif (çok kategori, dengeli dağılım) 5) Dengeli.
+     * Mevcut V1 davranışı korunur: nightUsageRatio verilmezse ve dominant >= %30 ise
+     * sonuç birebir eskisiyle aynıdır.
+     */
+    fun computePersonality(
+        apps: List<AppSnapshot>,
+        nightUsageRatio: Double? = null,
+    ): PersonalityResult {
         val totalUsage = apps.sumOf { it.usageCount }
         if (totalUsage <= 0L) {
             return PersonalityResult(PersonalityType.BALANCED, emptyMap(), 0)
@@ -193,19 +217,31 @@ object WrappedEngine {
             "games" to ratioOf(GAME_CATEGORIES),
             "finance" to ratioOf(FINANCE_CATEGORIES),
             "education" to ratioOf(EDUCATION_CATEGORIES),
+            "news" to ratioOf(NEWS_CATEGORIES),
         )
 
         val (dominantKey, dominantValue) = percentages.entries.maxByOrNull { it.value }
             ?.let { it.key to it.value } ?: ("balanced" to 0)
 
-        val type = if (dominantValue < 30) {
-            PersonalityType.BALANCED
-        } else when (dominantKey) {
-            "productivity" -> PersonalityType.PRODUCER
-            "social" -> PersonalityType.SOCIAL_BUTTERFLY
-            "games" -> PersonalityType.GAMER
-            "finance" -> PersonalityType.FINANCE_WOLF
-            "education" -> PersonalityType.STUDENT
+        // Uygulama çeşitliliği sinyalleri — kullanılan (usageCount > 0) uygulamalar üzerinden.
+        val usedApps = apps.filter { it.usageCount > 0 }
+        val usedCategoryCount = usedApps.map { it.categoryId }.distinct().size
+
+        val type = when {
+            nightUsageRatio != null && nightUsageRatio >= NIGHT_OWL_RATIO_THRESHOLD ->
+                PersonalityType.NIGHT_OWL
+            dominantValue >= DOMINANT_THRESHOLD -> when (dominantKey) {
+                "productivity" -> PersonalityType.PRODUCER
+                "social" -> PersonalityType.SOCIAL_BUTTERFLY
+                "games" -> PersonalityType.GAMER
+                "finance" -> PersonalityType.FINANCE_WOLF
+                "education" -> PersonalityType.STUDENT
+                "news" -> PersonalityType.NEWS_HUNTER
+                else -> PersonalityType.BALANCED
+            }
+            apps.size <= MINIMALIST_MAX_APPS && usedCategoryCount <= MINIMALIST_MAX_CATEGORIES ->
+                PersonalityType.MINIMALIST
+            usedCategoryCount >= EXPLORER_MIN_CATEGORIES -> PersonalityType.EXPLORER
             else -> PersonalityType.BALANCED
         }
 

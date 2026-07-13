@@ -92,6 +92,7 @@ internal fun PulseClockWidget(
     var scoreVisible by remember { mutableStateOf(AppPrefs.isHomeScoreVisible(context)) }
     var insightVisible by remember { mutableStateOf(AppPrefs.isHomeInsightVisible(context)) }
     var usageChartVisible by remember { mutableStateOf(AppPrefs.isHomeUsageChartVisible(context)) }
+    var missionsEnabled by remember { mutableStateOf(AppPrefs.isMissionsEnabled(context)) }
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -100,6 +101,7 @@ internal fun PulseClockWidget(
                 AppPrefs.KEY_HOME_SCORE_VISIBLE -> scoreVisible = AppPrefs.isHomeScoreVisible(context)
                 AppPrefs.KEY_HOME_INSIGHT_VISIBLE -> insightVisible = AppPrefs.isHomeInsightVisible(context)
                 AppPrefs.KEY_HOME_USAGE_CHART_VISIBLE -> usageChartVisible = AppPrefs.isHomeUsageChartVisible(context)
+                AppPrefs.KEY_MISSIONS_ENABLED -> missionsEnabled = AppPrefs.isMissionsEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -129,6 +131,7 @@ internal fun PulseClockWidget(
             scoreVisible = scoreVisible,
             insightVisible = insightVisible,
             usageChartVisible = usageChartVisible,
+            missionsEnabled = missionsEnabled,
             uiState = uiState,
             onOpenWeeklyReport = onOpenWeeklyReport,
             onOpenScoreDetails = onOpenScoreDetails,
@@ -182,6 +185,7 @@ private fun PulseCard(
     scoreVisible: Boolean,
     insightVisible: Boolean,
     usageChartVisible: Boolean,
+    missionsEnabled: Boolean,
     uiState: PulseClockViewModel.PulseClockUiState,
     onOpenWeeklyReport: () -> Unit,
     onOpenScoreDetails: () -> Unit,
@@ -306,6 +310,7 @@ private fun PulseCard(
                     delta = uiState.scoreDelta,
                     weeklyScreenTimeMinutes = uiState.weeklyScreenTimeMinutes,
                     hourlyUsageMinutes = if (usageChartVisible) uiState.hourlyUsageMinutes else null,
+                    personalityLabel = if (missionsEnabled) uiState.personalityLabel else null,
                     compact = compact,
                     onClick = onOpenScoreDetails,
                 )
@@ -320,6 +325,7 @@ private fun PulseScoreRing(
     delta: Int?,
     weeklyScreenTimeMinutes: Int?,
     hourlyUsageMinutes: List<Int>?,
+    personalityLabel: String?,
     compact: Boolean,
     onClick: () -> Unit,
 ) {
@@ -414,6 +420,17 @@ private fun PulseScoreRing(
                 HourlyUsageSparkline(
                     minutes = hourlyUsageMinutes,
                     barColor = pulseScoreColor(score),
+                )
+            }
+            // D257: dijital kişilik etiketi — Ayarlar > Görevler kapalıyken gizli (compact'ta da yok)
+            if (!personalityLabel.isNullOrBlank()) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = personalityLabel,
+                    color = Color.White.copy(alpha = 0.45f),
+                    fontSize = 9.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
