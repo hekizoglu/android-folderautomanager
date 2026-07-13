@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 253 - 2026-07-13 [Klasör geçişi 3D sayfa çevirme efekti + orta navigatör overlay fix]
+
+**Yapılanlar:** `FolderScreen.kt` — kullanıcı geri bildirimi: klasör içindeyken sağa/sola kaydırma "defter yaprağı çeviriyormuş gibi" hissetmiyordu ve ortada istenmeyen bir "sonraki klasör" butonu beliriyordu. (1) `FOLDER_CAROUSEL_POS_MIDDLE` durumundaki `FolderIndexNavigator` artık `contentOffset.value`'a bağlı `animateFloatAsState` ile alpha kontrollü — aktif sürükleme/geçiş sırasında (offset sıfırdan uzaklaşınca) sönükleşip kayboluyor, sadece klasör dinlenme halindeyken (offset≈0) görünüyor. (2) Ana içerik `Column`'un `graphicsLayer`'ına `rotationY` (sürüklenme yönüne göre ±14°), `cameraDistance` (10×density, aşırı kavis önlemi), `transformOrigin` (menteşe sabit kenarda) ve hafif `scaleX/scaleY` (progress'e bağlı %4'e kadar küçülme) eklendi — kağıt gibi 3D dönme hissi. (3) `FolderPageTurnPeek`/`FolderPageEdgeStrip` yeniden yazıldı: gelen komşu klasör önizlemesi artık düz kayan renkli şerit değil, `rotationY` (±22°'den 0°'ye düzleşerek) + ölçekleme (0.92→1.0) + `Brush.horizontalGradient` ile kenar tarafında koyulaşan "ciltli kağıt kenarı" gölgesi içeren 3D flip illüzyonu. Canvas kullanılmadı, tamamen `graphicsLayer` (GPU hızlandırmalı, ucuz) ile yapıldı — her drag frame'inde performans sorunu yok. `folderCarouselEnabled=false` iken efekt hiç render edilmiyor (mevcut davranış korundu).
+
+**Doğrulama:** `.\gradlew compileDebugKotlin -PskipGoogleServices` ve `.\gradlew assembleDebug -PskipGoogleServices` ikisi de BUILD SUCCESSFUL. Emülatör açık değildi (`adb devices` boş) — görsel doğrulama atlandı, build yeterli kabul edildi. `versionCode` 35→36, `versionName` 1.3.12→1.3.13.
+
+**Sonraki:** Emülatör açıldığında bu değişiklik için görsel smoke test (klasöre gir → sağa/sola kaydır → orta navigatör kaybolduğunu ve 3D geçişi gözle doğrula) yapılmalı.
+
+---
+
 ## Döngü 252 - 2026-07-13 [Coklu Play Store acma + K2 tek tek secilebilir kategori onerisi]
 
 **Yapilanlar:** (1) `SettingsBackupAboutSection.kt` restore-sonrasi eksik uygulama dialogu checkbox'li coklu secime cevrildi; `PlayStoreQueueHelper.kt` (yeni) index-tabanli "sirayla ac" mantigini sarmaliyor, buton "Sonraki Uygulamayi Ac (X/Y)" seklinde ilerliyor, Kopyala sadece secilenleri kopyaliyor. (2) `AppClassifier.kt`'ye `findSimilarUnclassifiedApps()` eklendi (uretici prefix/keyword sinyaliyle eski kategoride kalan, override'i olmayan adaylari bulur, limit 10). `AppListViewModel.updateAppCategory` eski kategoriyi de tasiyip bu fonksiyonu cagiriyor; eski toplu-oneri AlertDialog'u `SimilarAppsSuggestionDialog.kt` (yeni) ile degistirildi — her satir kendi checkbox'iyla bagimsiz secilebiliyor, "Hepsini Sec / Hicbirini Secme" kisayollari var ama zorunlu degil.
