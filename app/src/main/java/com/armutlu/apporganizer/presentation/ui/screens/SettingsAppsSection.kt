@@ -37,7 +37,9 @@ internal fun LazyListScope.settingsAppsSection(
     hiddenApps: List<AppInfo>,
     otherApps: List<AppInfo>,
     llmCategorizing: Boolean,
-    llmProgress: String
+    llmProgress: String,
+    onNavigateToClassificationReview: () -> Unit,
+    onNavigateToFolderSuggestions: () -> Unit
 ) {
     // ── Uygulama Listesi → Sistem Uygulamaları ─────────────────────────────────
     item { SettingsSectionTitle("Uygulama Listesi") }
@@ -97,6 +99,16 @@ internal fun LazyListScope.settingsAppsSection(
                     AppPrefs.setOverrideSuggestionsEnabled(context, it)
                 }
             )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsButtonRow(icon = Icons.Default.CheckCircle,
+                title = "Kontrol Bekleyenler",
+                subtitle = "Dusuk guvenli siniflandirmalari onayla veya duzelt",
+                onClick = onNavigateToClassificationReview)
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsButtonRow(icon = Icons.Default.Folder,
+                title = "Klasor Onerileri",
+                subtitle = "Kalabalik, kucuk veya uzun suredir kullanilmayan klasorleri duzenle",
+                onClick = onNavigateToFolderSuggestions)
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsButtonRow(icon = Icons.Default.AutoFixHigh,
                 title = "Sınıflandırılmamışları Sınıflandır",

@@ -186,6 +186,10 @@
     <string name="onb_quick_home_search_desc">Search bar between folders</string>
     <string name="onb_quick_folder_blur_title">Folder Blur Effect</string>
     <string name="onb_quick_folder_blur_desc">Frosted glass effect (requires performance headroom)</string>
+    <string name="onb_org_preview_title">Preview Organization</string>
+    <string name="onb_org_preview_desc">See the automatic folder layout and review queue before setup finishes.</string>
+    <string name="onb_org_preview_why">Low-confidence decisions wait for your approval; incorrect folders are not locked automatically.</string>
+    <string name="onb_org_preview_btn">Organization Looks Good</string>
 
     <string name="onb_browser_title">Default Browser</string>
     <string name="onb_browser_desc">Which browser would you like to set as default? Links will open in this browser.</string>

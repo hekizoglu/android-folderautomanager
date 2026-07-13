@@ -136,6 +136,12 @@ class AppRepository @Inject constructor(
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }
+
+    fun getPendingClassificationApps(): Flow<List<AppInfo>> {
+        return appDao.getPendingClassificationApps()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
     
     /**
      * Get app by package name
@@ -218,6 +224,48 @@ class AppRepository @Inject constructor(
         }
     }
 
+    suspend fun confirmClassification(packageName: String) {
+        try {
+            appDao.confirmClassification(
+                packageName = packageName,
+                version = CLASSIFICATION_ENGINE_VERSION,
+            )
+            Timber.d("Confirmed classification for $packageName")
+        } catch (e: Exception) {
+            Timber.e(e, "Error confirming classification")
+        }
+    }
+
+    suspend fun skipClassificationReview(packageName: String, days: Int = 7) {
+        try {
+            val snoozedUntil = System.currentTimeMillis() + days.coerceAtLeast(1) * 24L * 60L * 60L * 1000L
+            appDao.skipClassificationReview(packageName, snoozedUntil)
+            Timber.d("Skipped classification review for $packageName")
+        } catch (e: Exception) {
+            Timber.e(e, "Error skipping classification review")
+        }
+    }
+
+    suspend fun restoreClassificationFromBackup(app: AppInfo, categoryId: String) {
+        try {
+            appDao.updateAppCategoryWithClassification(
+                packageName = app.packageName,
+                categoryId = categoryId,
+                source = app.classificationSource.ifBlank { ClassificationSource.USER_CORRECTED.name },
+                confidence = app.classificationConfidence.coerceIn(0, 100),
+                reason = app.classificationReason.ifBlank { ClassificationReason.USER_SELECTION.name },
+                reviewState = app.classificationReviewState.ifBlank { ClassificationReviewState.CORRECTED.name },
+                locked = app.isCategoryLocked,
+                version = app.classificationVersion.coerceAtLeast(1),
+                classifiedAt = app.lastClassifiedAt,
+                reviewedAt = app.lastReviewedAt,
+                snoozedUntil = app.reviewSnoozedUntil,
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Error restoring classification metadata")
+        }
+    }
+
     suspend fun updateApp(app: AppInfo) {
         try {
             appDao.updateApp(app)
@@ -270,6 +318,19 @@ class AppRepository @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "Error auto-updating multiple apps")
         }
+    }
+
+    suspend fun migrateManualOverrides(overrides: Map<String, String>): Int {
+        if (overrides.isEmpty()) return 0
+        var migrated = 0
+        overrides.forEach { (packageName, categoryId) ->
+            val app = appDao.getAppByPackageName(packageName) ?: return@forEach
+            if (!app.isCategoryLocked || app.categoryId != categoryId) {
+                updateAppCategory(packageName, categoryId)
+                migrated++
+            }
+        }
+        return migrated
     }
     
     /**

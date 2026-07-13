@@ -126,6 +126,47 @@ interface AppDao {
      */
     @Query("SELECT * FROM apps WHERE categoryId = 'uncategorized' ORDER BY appName ASC")
     fun getUncategorizedApps(): Flow<List<AppInfo>>
+
+    @Query("""
+        SELECT * FROM apps
+        WHERE classificationReviewState = 'PENDING'
+            AND isSystemApp = 0
+            AND (reviewSnoozedUntil = 0 OR reviewSnoozedUntil <= :now)
+        ORDER BY classificationConfidence ASC, appName ASC
+    """)
+    fun getPendingClassificationApps(now: Long = System.currentTimeMillis()): Flow<List<AppInfo>>
+
+    @Query("""
+        UPDATE apps
+        SET classificationSource = 'USER_CONFIRMED',
+            classificationConfidence = 100,
+            classificationReason = 'USER_SELECTION',
+            classificationReviewState = 'CONFIRMED',
+            isCategoryLocked = 1,
+            classificationVersion = :version,
+            lastReviewedAt = :timestamp,
+            reviewSnoozedUntil = 0,
+            lastUpdated = :timestamp
+        WHERE packageName = :packageName
+    """)
+    suspend fun confirmClassification(
+        packageName: String,
+        version: Int,
+        timestamp: Long = System.currentTimeMillis()
+    )
+
+    @Query("""
+        UPDATE apps
+        SET classificationReviewState = 'SKIPPED',
+            reviewSnoozedUntil = :snoozedUntil,
+            lastUpdated = :timestamp
+        WHERE packageName = :packageName
+    """)
+    suspend fun skipClassificationReview(
+        packageName: String,
+        snoozedUntil: Long,
+        timestamp: Long = System.currentTimeMillis()
+    )
     
     /**
      * Count total apps

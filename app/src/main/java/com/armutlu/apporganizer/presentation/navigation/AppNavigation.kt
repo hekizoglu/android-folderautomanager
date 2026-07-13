@@ -9,6 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.AppOrganizerDashboardScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
+import com.armutlu.apporganizer.presentation.ui.screens.ClassificationReviewScreen
+import com.armutlu.apporganizer.presentation.ui.screens.FolderSuggestionsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PermissionsGuideScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
 import com.armutlu.apporganizer.presentation.ui.screens.ReportsCenterScreen
@@ -50,6 +52,8 @@ object Routes {
     const val SETTINGS_SECURITY = "settings_security"
     const val SETTINGS_ABOUT = "settings_about"
     const val PERMISSIONS_GUIDE = "permissions_guide"
+    const val CLASSIFICATION_REVIEW = "classification_review"
+    const val FOLDER_SUGGESTIONS = "folder_suggestions"
 
     // Güvenlik: MainActivity EXTRA_OPEN_ROUTE dışarıdan (üçüncü parti intent) gelebilir —
     // yalnızca burada tanımlı bilinen route'lara navigate edilmeli (whitelist doğrulaması).
@@ -57,7 +61,8 @@ object Routes {
         APP_LIST, APP_LIST_UNCERTAIN, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
-        SETTINGS_STATS, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE
+        SETTINGS_STATS, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
+        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS
     )
 
     fun isValid(route: String?): Boolean = route != null && route in ALL
@@ -151,6 +156,20 @@ fun AppNavigation(
         }
         composable(Routes.SETTINGS_APPS) {
             SettingsAppsScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) },
+                onNavigateToFolderSuggestions = { navController.navigate(Routes.FOLDER_SUGGESTIONS) }
+            )
+        }
+        composable(Routes.CLASSIFICATION_REVIEW) {
+            ClassificationReviewScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.FOLDER_SUGGESTIONS) {
+            FolderSuggestionsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() }
             )

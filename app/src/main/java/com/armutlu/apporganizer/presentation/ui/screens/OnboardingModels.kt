@@ -73,6 +73,13 @@ internal enum class OnboardingStep(
         whyRes = R.string.onb_quick_settings_why,
         isSkippable = true
     ),
+    ORGANIZATION_PREVIEW(
+        titleRes = R.string.onb_org_preview_title,
+        descriptionRes = R.string.onb_org_preview_desc,
+        icon = Icons.Default.Folder,
+        buttonLabelRes = R.string.onb_org_preview_btn,
+        whyRes = R.string.onb_org_preview_why
+    ),
     DONE(
         titleRes = R.string.onb_done_title,
         descriptionRes = R.string.onb_done_desc,

@@ -50,6 +50,7 @@ internal fun fmtMonth(ts: Long): String =
     if (ts == 0L) "?" else monthFmt.format(Date(ts))
 
 enum class AllAppsSortMode(val label: String) {
+    SMART("Akilli"),
     ALPHA("A–Z"),
     ALPHA_DESC("Z–A"),
     USAGE("Kullanım ↓"),
@@ -61,6 +62,7 @@ enum class AllAppsSortMode(val label: String) {
 }
 
 internal fun AllAppsSortMode.opposite(): AllAppsSortMode = when (this) {
+    AllAppsSortMode.SMART          -> AllAppsSortMode.SMART
     AllAppsSortMode.ALPHA          -> AllAppsSortMode.ALPHA_DESC
     AllAppsSortMode.ALPHA_DESC     -> AllAppsSortMode.ALPHA
     AllAppsSortMode.USAGE          -> AllAppsSortMode.USAGE_ASC
@@ -80,6 +82,7 @@ internal fun AllAppsSortMode.baseMode(): AllAppsSortMode = when (this) {
 }
 
 internal fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = when (mode) {
+    AllAppsSortMode.SMART            -> sortedWith(compareByDescending<AppInfo> { it.smartSortScore() }.thenBy { it.appName.lowercase() })
     AllAppsSortMode.ALPHA            -> sortedBy { it.appName.lowercase() }
     AllAppsSortMode.ALPHA_DESC       -> sortedByDescending { it.appName.lowercase() }
     AllAppsSortMode.USAGE            -> sortedByDescending { it.usageCount }
@@ -88,6 +91,16 @@ internal fun List<AppInfo>.sortedByMode(mode: AllAppsSortMode): List<AppInfo> = 
     AllAppsSortMode.SIZE_ASC         -> sortedBy { it.appSizeBytes }
     AllAppsSortMode.INSTALL_DATE     -> sortedByDescending { it.installTime }
     AllAppsSortMode.INSTALL_DATE_ASC -> sortedBy { it.installTime }
+}
+
+private fun AppInfo.smartSortScore(now: Long = System.currentTimeMillis()): Long {
+    val recentBoost = when {
+        lastUsedTimestamp <= 0L -> 0L
+        now - lastUsedTimestamp < 24L * 60L * 60L * 1000L -> 3_600_000L
+        now - lastUsedTimestamp < 7L * 24L * 60L * 60L * 1000L -> 1_800_000L
+        else -> 0L
+    }
+    return usageCount + (launchCount * 60_000L) + recentBoost
 }
 
 internal fun formatUsageMs(ms: Long): String = when {
@@ -129,6 +142,7 @@ internal fun buildSidebarEntries(
 ): List<SidebarEntry> {
     if (apps.isEmpty()) return emptyList()
     return when (mode) {
+        AllAppsSortMode.SMART -> emptyList()
         AllAppsSortMode.ALPHA_DESC -> buildSidebarEntries(apps, AllAppsSortMode.ALPHA)
         AllAppsSortMode.USAGE_ASC -> buildSidebarEntries(apps.reversed(), AllAppsSortMode.USAGE)
         AllAppsSortMode.INSTALL_DATE_ASC -> emptyList()
@@ -249,6 +263,7 @@ internal fun rememberDrawerData(
                 fuzzy.sortedBy { it.second }.map { it.first }
         }
         when (sortMode) {
+            AllAppsSortMode.SMART            -> base.sortedWith(compareByDescending<AppInfo> { it.smartSortScore() }.thenBy { it.appName.lowercase(java.util.Locale("tr")) })
             AllAppsSortMode.ALPHA            -> base.sortedBy { it.appName.lowercase(java.util.Locale("tr")) }
             AllAppsSortMode.ALPHA_DESC       -> base.sortedByDescending { it.appName.lowercase(java.util.Locale("tr")) }
             AllAppsSortMode.USAGE            -> base.sortedByDescending { it.usageCount }

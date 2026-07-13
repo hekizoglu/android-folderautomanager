@@ -16,6 +16,8 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 fun SettingsAppsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit,
+    onNavigateToClassificationReview: () -> Unit,
+    onNavigateToFolderSuggestions: () -> Unit,
 ) {
     val context = LocalContext.current
     val showSystemApps by viewModel.showSystemApps.collectAsState()
@@ -40,7 +42,9 @@ fun SettingsAppsScreen(
             hiddenApps = hiddenApps,
             otherApps = otherApps,
             llmCategorizing = llmCategorizing,
-            llmProgress = llmProgress
+            llmProgress = llmProgress,
+            onNavigateToClassificationReview = onNavigateToClassificationReview,
+            onNavigateToFolderSuggestions = onNavigateToFolderSuggestions
         )
     }
 }

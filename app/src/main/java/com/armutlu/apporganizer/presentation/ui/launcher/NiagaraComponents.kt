@@ -75,7 +75,7 @@ fun NiagaraAppRow(
             if (app.installTime > 0) fmtMonth(app.installTime) else null
         AllAppsSortMode.USAGE, AllAppsSortMode.USAGE_ASC ->
             if (app.usageCount > 0) formatUsageMs(app.usageCount) else null
-        AllAppsSortMode.ALPHA, AllAppsSortMode.ALPHA_DESC -> null
+        AllAppsSortMode.SMART, AllAppsSortMode.ALPHA, AllAppsSortMode.ALPHA_DESC -> null
     }
 
     Row(

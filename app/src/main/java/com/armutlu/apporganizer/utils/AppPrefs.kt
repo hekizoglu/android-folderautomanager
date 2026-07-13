@@ -623,6 +623,9 @@ object AppPrefs {
     // AppClassifier bu haritayı exactMatch'ten önce kontrol eder (en yüksek öncelik)
     const val KEY_MANUAL_CAT_OVERRIDES = "manual_category_overrides"
     const val KEY_ACCEPTED_OVERRIDE_PATTERNS = "accepted_override_patterns"
+    const val KEY_MANUAL_OVERRIDES_ROOM_MIGRATED = "manual_overrides_room_migrated"
+    const val KEY_DISMISSED_FOLDER_SUGGESTIONS = "dismissed_folder_suggestions"
+    const val KEY_SNOOZED_FOLDER_SUGGESTIONS = "snoozed_folder_suggestions"
 
     fun getManualCategoryOverrides(context: Context): Map<String, String> =
         (prefs(context).getString(KEY_MANUAL_CAT_OVERRIDES, null) ?: "").parseJsonMap()
@@ -642,6 +645,12 @@ object AppPrefs {
     fun clearManualCategoryOverrides(context: Context) =
         prefs(context).edit().remove(KEY_MANUAL_CAT_OVERRIDES).apply()
 
+    fun isManualOverridesRoomMigrated(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_MANUAL_OVERRIDES_ROOM_MIGRATED, false)
+
+    fun setManualOverridesRoomMigrated(context: Context, migrated: Boolean) =
+        prefs(context).edit().putBoolean(KEY_MANUAL_OVERRIDES_ROOM_MIGRATED, migrated).apply()
+
     fun getAcceptedOverridePatterns(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_ACCEPTED_OVERRIDE_PATTERNS, emptySet()) ?: emptySet()
 
@@ -650,6 +659,29 @@ object AppPrefs {
         val next = getAcceptedOverridePatterns(context).toMutableSet()
         next += "$categoryId:${packages.sorted().joinToString(",")}"
         prefs(context).edit().putStringSet(KEY_ACCEPTED_OVERRIDE_PATTERNS, next).apply()
+    }
+
+    fun getDismissedFolderSuggestions(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_DISMISSED_FOLDER_SUGGESTIONS, emptySet()) ?: emptySet()
+
+    fun setDismissedFolderSuggestions(context: Context, values: Set<String>) =
+        prefs(context).edit().putStringSet(KEY_DISMISSED_FOLDER_SUGGESTIONS, values).apply()
+
+    fun dismissFolderSuggestion(context: Context, suggestionId: String) {
+        val next = getDismissedFolderSuggestions(context).toMutableSet().also { it.add(suggestionId) }
+        setDismissedFolderSuggestions(context, next)
+    }
+
+    fun getSnoozedFolderSuggestions(context: Context): Map<String, String> =
+        (prefs(context).getString(KEY_SNOOZED_FOLDER_SUGGESTIONS, null) ?: "").parseJsonMap()
+
+    fun setSnoozedFolderSuggestions(context: Context, values: Map<String, String>) =
+        prefs(context).edit().putString(KEY_SNOOZED_FOLDER_SUGGESTIONS, values.toJsonString()).apply()
+
+    fun snoozeFolderSuggestion(context: Context, suggestionId: String, untilMillis: Long) {
+        val next = getSnoozedFolderSuggestions(context).toMutableMap()
+        next[suggestionId] = untilMillis.toString()
+        setSnoozedFolderSuggestions(context, next)
     }
 
     // DeepSeek LLM kategorileme sonucu kalıcı cache — kurulum sonrası her acilista ayni

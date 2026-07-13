@@ -20,6 +20,7 @@ edildi. Aşağıdakiler kapsam nedeniyle BEKLİYOR — sessizce atlanmadı, HIST
 | 10 | Canvas grafikleri: haftalık kullanım trendi (7 bar), bildirim trendi (7 sparkline, gece işaretli), kategori dağılımı (ilk 5 yatay bar) — harici kütüphane yok | Bekliyor |
 | 8 | Glass saat stili görsel ayrımı (Pulse'tan daha belirgin cam/gradient) güçlendirme | Bekliyor |
 | — | Emülatörde manuel doğrulama: Pulse Clock 3 stil, skor/içgörü toggle'ları, uzun basma → yönetim ekranı, kompakt ekranda grid kaybolmuyor | Bekliyor - cihaz/emülatör |
+| 9 | Skor halkasının altına (mini açıklama "Denge" etiketinin yanına/altına) ekran kullanım süresi de yazılsın — örn. "Denge · 3sa 12dk" gibi günlük/haftalık toplam ekran süresi. `UsageStatsHelper` zaten süre verisini üretiyor, `PulseClockViewModel.PulseClockUiState`'e alan eklenip `PulseScoreRing`'in altına küçük bir satır olarak basılabilir. Kullanıcı talebi — kod yazılmadı, sadece backlog. | Bekliyor |
 
 ---
 
@@ -30,13 +31,13 @@ Amaç: AppOrganizer'ın ana vaadini güçlendirmek; uygulamaları açıklanabili
 | Alt iş | Durum |
 |---|---|
 | Classification Decision V2 | Tamamlandı - yerel çekirdek: `ClassificationDecision`, source/confidence/reason/review metadata, kullanıcı kararı önceliği, remote catalog bağlantısı, legacy string API uyumu |
-| Kalıcı Kullanıcı Kararları | Kısmen tamamlandı - Room `apps` metadata alanları ve v15->v16 migration eklendi; manuel repository güncellemeleri `USER_CORRECTED` + lock yazıyor; eski `KEY_MANUAL_CAT_OVERRIDES` Room'a toplu migration henüz bekliyor |
-| Kontrol Bekleyenler | Bekliyor - yeni route/ViewModel/screen, confirm/correct/skip/snooze akışı |
-| Onboarding Düzen Önizlemesi | Bekliyor - tarama özeti, pending count, review bağlantısı |
-| Klasör İçi Akıllı Sıralama | Bekliyor - `KEY_FOLDER_SORT_MODE` gerçek folder render sıralamasına bağlanacak, usage fallback ve testler |
-| Bölme/Birleştirme/Temizlik Önerileri | Bekliyor - FolderHealth/Suggestion engine, persistence, preview, accept/dismiss/snooze |
+| Kalıcı Kullanıcı Kararları | Tamamlandı - Room `apps` metadata alanları ve v15->v16 migration eklendi; manuel repository güncellemeleri `USER_CORRECTED` + lock yazıyor; eski `KEY_MANUAL_CAT_OVERRIDES` ilk açılışta Room metadata'ya taşınıyor |
+| Kontrol Bekleyenler | Tamamlandı - `classification_review` route'u, ViewModel queue, confirm/correct/7 gün skip akışı ve Ayarlar > Uygulamalar girişi eklendi |
+| Onboarding Düzen Önizlemesi | Tamamlandı - kurulumda uygulama/klasör/kategorili/kontrol bekleyen sayaçları gösteriliyor |
+| Klasör İçi Akıllı Sıralama | Tamamlandı - `SMART` sıralama modu `KEY_FOLDER_SORT_MODE` ile folder render'a bağlandı; kullanım süresi, launch count ve son kullanım sinyali birlikte kullanılıyor |
+| Bölme/Birleştirme/Temizlik Önerileri | Tamamlandı - `FolderSuggestionEngine`, öneri ekranı, accept/dismiss/7 gün snooze persistence ve v4 backup/restore desteği eklendi |
 
-Doğrulama: `compileDebugKotlin` geçti; `AppClassifierTest` ve `AppRepositoryTest` geçti. İlk birleşik test komutu zaman aşımına girdi, sonra hedefli testler ayrı ayrı başarıyla koşuldu.
+Doğrulama: `compileDebugKotlin` geçti; `AppClassifierTest` ve `AppRepositoryTest` geçti. Tam debug build bu turun sonunda çalıştırılacak.
 
 ---
 

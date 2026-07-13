@@ -18,7 +18,7 @@ import java.util.Locale
 object BackupManager {
 
     private val dateFmt = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-    private const val BACKUP_VERSION = 3
+    private const val BACKUP_VERSION = 4
 
     /**
      * Uygulama kategori atamaları, ayarlar ve özelleştirmeleri JSON olarak dışa aktarır.
@@ -42,6 +42,15 @@ object BackupManager {
                             put("launchCount", app.launchCount)
                             put("lastUsedTimestamp", app.lastUsedTimestamp)
                             put("notificationCount", app.notificationCount)
+                            put("classificationSource", app.classificationSource)
+                            put("classificationConfidence", app.classificationConfidence)
+                            put("classificationReason", app.classificationReason)
+                            put("classificationReviewState", app.classificationReviewState)
+                            put("isCategoryLocked", app.isCategoryLocked)
+                            put("classificationVersion", app.classificationVersion)
+                            put("lastClassifiedAt", app.lastClassifiedAt)
+                            put("lastReviewedAt", app.lastReviewedAt)
+                            put("reviewSnoozedUntil", app.reviewSnoozedUntil)
                         })
                     }
                 })
@@ -56,6 +65,8 @@ object BackupManager {
 
                 // ── Manuel kategori ezmeler ───────────────────────────────────────
                 put("manualCategoryOverrides", JSONObject(AppPrefs.getManualCategoryOverrides(context)))
+                put("dismissedFolderSuggestions", JSONArray(AppPrefs.getDismissedFolderSuggestions(context).toList()))
+                put("snoozedFolderSuggestions", JSONObject(AppPrefs.getSnoozedFolderSuggestions(context)))
 
                 // ── Gesture aksiyonları ───────────────────────────────────────────
                 put("gestures", JSONObject().apply {
@@ -173,8 +184,11 @@ object BackupManager {
 
             // ── Uygulama listesi ──────────────────────────────────────────────
             if (appsArray != null) {
-                repository.getAllApps().forEach { app ->
-                    repository.updateAppCategory(app.packageName, Category.CAT_UNCATEGORIZED)
+                val currentApps = repository.getAllApps()
+                currentApps.map { it.packageName }.takeIf { it.isNotEmpty() }?.let { packages ->
+                    repository.updateAppsCategoryAutomatically(packages, Category.CAT_UNCATEGORIZED)
+                }
+                currentApps.forEach { app ->
                     repository.updateAppHidden(app.packageName, false)
                     repository.updateNotificationCount(app.packageName, 0)
                 }
@@ -183,8 +197,27 @@ object BackupManager {
                     val pkg = obj.getString("packageName")
                     val cat = obj.optString("categoryId", "uncategorized")
                     val hidden = obj.optBoolean("isHidden", false)
-                    if (repository.appExists(pkg)) {
-                        repository.updateAppCategory(pkg, cat)
+                    val current = repository.getAppByPackageName(pkg)
+                    if (current != null) {
+                        if (version >= 4 || obj.has("classificationSource")) {
+                            repository.restoreClassificationFromBackup(
+                                current.copy(
+                                    categoryId = cat,
+                                    classificationSource = obj.optString("classificationSource", current.classificationSource),
+                                    classificationConfidence = obj.optInt("classificationConfidence", current.classificationConfidence),
+                                    classificationReason = obj.optString("classificationReason", current.classificationReason),
+                                    classificationReviewState = obj.optString("classificationReviewState", current.classificationReviewState),
+                                    isCategoryLocked = obj.optBoolean("isCategoryLocked", current.isCategoryLocked),
+                                    classificationVersion = obj.optInt("classificationVersion", current.classificationVersion),
+                                    lastClassifiedAt = obj.optLong("lastClassifiedAt", current.lastClassifiedAt),
+                                    lastReviewedAt = obj.optLong("lastReviewedAt", current.lastReviewedAt),
+                                    reviewSnoozedUntil = obj.optLong("reviewSnoozedUntil", current.reviewSnoozedUntil),
+                                ),
+                                cat
+                            )
+                        } else {
+                            repository.updateAppCategory(pkg, cat)
+                        }
                         repository.updateAppHidden(pkg, hidden)
                         val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
                         val launchCount = obj.optLong("launchCount", 0L)
@@ -225,6 +258,18 @@ object BackupManager {
                 // ── Manuel kategori ezmeler ───────────────────────────────────
                 root.optJSONObject("manualCategoryOverrides")?.let { obj ->
                     obj.keys().forEach { k -> AppPrefs.setManualCategoryOverride(context, k, obj.getString(k)) }
+                }
+                root.optJSONArray("dismissedFolderSuggestions")?.let { arr ->
+                    AppPrefs.setDismissedFolderSuggestions(
+                        context,
+                        (0 until arr.length()).map { arr.getString(it) }.toSet()
+                    )
+                }
+                root.optJSONObject("snoozedFolderSuggestions")?.let { obj ->
+                    AppPrefs.setSnoozedFolderSuggestions(
+                        context,
+                        obj.keys().asSequence().associateWith { obj.getString(it) }
+                    )
                 }
 
                 // ── Gesture aksiyonları ───────────────────────────────────────

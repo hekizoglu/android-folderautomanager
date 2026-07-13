@@ -58,7 +58,7 @@ fun OnboardingScreen(
     // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix).
     // D240: varsayilan launcher secimi sistemin gorevi YENIDEN baslatmasina yol acabiliyor;
     // yeni activity kaydinda saveable state korunmaz — adim SharedPrefs'ten geri yuklenir.
-    var stepIndex by rememberSaveable { mutableStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 4)) }
+    var stepIndex by rememberSaveable { mutableStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 5)) }
     LaunchedEffect(stepIndex) { AppPrefs.setOnboardingStep(context, stepIndex) }
     // Varsayilan launcher sorusu EN SONDA sorulur (kullanici talebi, D233) —
     // tum ayarlar bitmeden kullaniciya kalici karar dayatilmaz.
@@ -66,6 +66,7 @@ fun OnboardingScreen(
         OnboardingStep.WELCOME,
         OnboardingStep.THEME_SELECT,
         OnboardingStep.QUICK_SETTINGS,
+        OnboardingStep.ORGANIZATION_PREVIEW,
         OnboardingStep.SET_LAUNCHER,
         OnboardingStep.DONE,
     )
@@ -206,6 +207,11 @@ fun OnboardingScreen(
                 }
             }
 
+            if (currentStep == OnboardingStep.ORGANIZATION_PREVIEW) {
+                Spacer(Modifier.height(8.dp))
+                OnboardingOrganizationPreview(viewModel)
+            }
+
             Spacer(Modifier.height(16.dp))
 
             // ── Ana buton ────────────────────────────────────────────────
@@ -240,6 +246,7 @@ fun OnboardingScreen(
                             }
 
                             OnboardingStep.QUICK_SETTINGS -> stepIndex++
+                            OnboardingStep.ORGANIZATION_PREVIEW -> stepIndex++
 
                             OnboardingStep.DONE -> {
                                 context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -318,5 +325,54 @@ private fun OnboardingStrengthsCard() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun OnboardingOrganizationPreview(viewModel: AppListViewModel) {
+    val state by viewModel.screenState.collectAsState()
+    val pending by viewModel.pendingClassificationApps.collectAsState()
+    val categorized = state.apps.count { it.categoryId != com.armutlu.apporganizer.domain.models.Category.CAT_UNCATEGORIZED }
+    val activeFolders = state.categories.count { category ->
+        state.apps.any { it.categoryId == category.categoryId }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            OnboardingPreviewMetric("Uygulama", state.apps.size.toString(), Modifier.weight(1f))
+            OnboardingPreviewMetric("Klasor", activeFolders.toString(), Modifier.weight(1f))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            OnboardingPreviewMetric("Kategorili", categorized.toString(), Modifier.weight(1f))
+            OnboardingPreviewMetric("Kontrol", pending.size.toString(), Modifier.weight(1f))
+        }
+        Box(
+            modifier = Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White.copy(0.08f))
+                .border(1.dp, Color.White.copy(0.12f), RoundedCornerShape(16.dp))
+                .padding(14.dp)
+        ) {
+            Text(
+                "Daha sonra Ayarlar > Uygulamalar > Kontrol Bekleyenler ekranindan dusuk guvenli kararları onaylayabilirsin.",
+                color = Color.White.copy(0.72f),
+                fontSize = 13.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun OnboardingPreviewMetric(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(0.10f))
+            .border(1.dp, Color.White.copy(0.16f), RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(value, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        Text(label, color = Color.White.copy(0.62f), fontSize = 12.sp)
     }
 }

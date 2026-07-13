@@ -200,6 +200,10 @@
     <string name="onb_quick_home_search_desc">Klasörler arasında arama çubuğu</string>
     <string name="onb_quick_folder_blur_title">Klasör Blur Efekti</string>
     <string name="onb_quick_folder_blur_desc">Frosted glass efekti (performans gerektirir)</string>
+    <string name="onb_org_preview_title">Düzeni Önizle</string>
+    <string name="onb_org_preview_desc">Otomatik klasörleme sonucunu ve kontrol bekleyen kararları kurulum bitmeden gör.</string>
+    <string name="onb_org_preview_why">Düşük güvenli kararlar kullanıcı onayı bekler; yanlış klasörler otomatik olarak kilitlenmez.</string>
+    <string name="onb_org_preview_btn">Düzen Tamam</string>
 
     <string name="onb_done_title">Hazırsınız!</string>
     <string name="onb_done_desc">Kurulum tamam — uygulamaların otomatik kategorilendi bile! Ana ekranda akıllı klasörlerin, haftalık raporun ve evrensel araman hazır. İyi keşifler!</string>

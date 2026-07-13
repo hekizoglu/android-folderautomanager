@@ -23,6 +23,8 @@ import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewPolicy
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
+import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestion
+import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestionEngine
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreenState
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import com.armutlu.apporganizer.presentation.ui.screens.computeCategoryStats
@@ -103,6 +105,28 @@ class AppListViewModel @Inject constructor(
     val suggestedSimilarApps: StateFlow<List<AppInfo>> = _suggestedSimilarApps.asStateFlow()
     private val _suggestedSimilarCategoryId = MutableStateFlow<String?>(null)
     val suggestedSimilarCategoryId: StateFlow<String?> = _suggestedSimilarCategoryId.asStateFlow()
+    private val _folderSuggestionRefresh = MutableStateFlow(0)
+
+    val pendingClassificationApps: StateFlow<List<AppInfo>> =
+        repository.getPendingClassificationApps()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    val folderSuggestions: StateFlow<List<FolderSuggestion>> =
+        combine(
+            repository.getAllAppsFlow(),
+            repository.getAllCategoriesFlow(),
+            _folderSuggestionRefresh,
+        ) { apps, categories, _ ->
+            val context = getApplication<Application>()
+            val snoozed = AppPrefs.getSnoozedFolderSuggestions(context)
+                .mapValues { (_, value) -> value.toLongOrNull() ?: 0L }
+            FolderSuggestionEngine.generate(
+                apps = apps,
+                categories = categories,
+                dismissedIds = AppPrefs.getDismissedFolderSuggestions(context),
+                snoozedUntilById = snoozed,
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
     
     // Initialization
     init {
@@ -134,6 +158,7 @@ class AppListViewModel @Inject constructor(
             try {
                 Timber.d("Initializing screen...")
                 repository.ensureDefaultCategories()
+                migrateManualOverridesIfNeeded()
                 
                 // Get apps from repository â€” tÃ¼m filtre flow'larÄ±nÄ± combine et
                 combine(
@@ -167,6 +192,16 @@ class AppListViewModel @Inject constructor(
                 Timber.e(e, "Error initializing screen")
                 _screenState.value = AppListScreenState.error("Failed to load apps: ${e.message}")
             }
+        }
+    }
+
+    private suspend fun migrateManualOverridesIfNeeded() {
+        val context = getApplication<Application>()
+        if (AppPrefs.isManualOverridesRoomMigrated(context)) return
+        val migrated = repository.migrateManualOverrides(AppPrefs.getManualCategoryOverrides(context))
+        AppPrefs.setManualOverridesRoomMigrated(context, true)
+        if (migrated > 0) {
+            appendDebugLog("Manuel kategori kararları Room metadata'ya taşındı: $migrated")
         }
     }
     
@@ -251,6 +286,23 @@ class AppListViewModel @Inject constructor(
                     error = "Failed to update category"
                 )
             }
+        }
+    }
+
+    fun confirmPendingClassification(packageName: String) {
+        viewModelScope.launch {
+            repository.confirmClassification(packageName)
+            repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+        }
+    }
+
+    fun correctPendingClassification(packageName: String, categoryId: String) {
+        updateAppCategory(packageName, categoryId)
+    }
+
+    fun skipPendingClassification(packageName: String) {
+        viewModelScope.launch {
+            repository.skipClassificationReview(packageName, days = 7)
         }
     }
 
@@ -373,6 +425,30 @@ class AppListViewModel @Inject constructor(
     fun clearSimilarCategorySuggestions() {
         _suggestedSimilarApps.value = emptyList()
         _suggestedSimilarCategoryId.value = null
+    }
+
+    fun acceptFolderSuggestion(suggestionId: String) {
+        val suggestion = folderSuggestions.value.firstOrNull { it.id == suggestionId } ?: return
+        viewModelScope.launch {
+            repository.updateAppsCategory(suggestion.packageNames, suggestion.targetCategoryId)
+            suggestion.packageNames.forEach { packageName ->
+                AppPrefs.setManualCategoryOverride(getApplication(), packageName, suggestion.targetCategoryId)
+                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+            }
+            AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
+            _folderSuggestionRefresh.value += 1
+        }
+    }
+
+    fun dismissFolderSuggestion(suggestionId: String) {
+        AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
+        _folderSuggestionRefresh.value += 1
+    }
+
+    fun snoozeFolderSuggestion(suggestionId: String) {
+        val until = System.currentTimeMillis() + 7L * 24L * 60L * 60L * 1000L
+        AppPrefs.snoozeFolderSuggestion(getApplication(), suggestionId, until)
+        _folderSuggestionRefresh.value += 1
     }
 
     fun setWeeklyGoal(categoryId: String, targetMinutes: Int) {

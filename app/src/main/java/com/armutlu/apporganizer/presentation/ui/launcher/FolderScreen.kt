@@ -309,7 +309,7 @@ fun FolderScreen(
                 // Sıralama chip'leri — her kriter (A-Z, Kullanım, Boyut, Yükleme) TEK buton;
                 // aktif kriterin butonuna tekrar basınca yön (asc/desc) değişir (D210 — çift buton kaldırıldı)
                 val sortBaseModes = remember {
-                    listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
+                    listOf(AllAppsSortMode.SMART, AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
                 }
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
