@@ -91,9 +91,10 @@ object AppPrefs {
 
     // AllAppsDrawer arka plan opakligi (0.0 - 1.0)
     const val KEY_ALLAPPS_BG_ALPHA = "allapps_bg_alpha"
-    // Varsayılan yükseltildi (D226): ilk kurulumda arkadaki uygulamalar çok görünüyor,
-    // AllApps ekranıyla karışıyordu.
-    fun getAllAppsBgAlpha(context: Context) = prefs(context).getFloat(KEY_ALLAPPS_BG_ALPHA, 0.95f)
+    // Varsayılan yükseltildi (D226, sonra D245): ilk kurulumda arkadaki uygulamalar çok
+    // görünüyordu, AllApps ekranıyla karışıyordu. Kullanıcı talebiyle neredeyse tam opak
+    // yapıldı — Settings'ten hâlâ şeffaflaştırılabilir.
+    fun getAllAppsBgAlpha(context: Context) = prefs(context).getFloat(KEY_ALLAPPS_BG_ALPHA, 0.98f)
     fun setAllAppsBgAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_ALLAPPS_BG_ALPHA, v).apply()
 
     // AllApps sıralama modu

@@ -148,14 +148,31 @@ fun UsageReportScreen(
             // En çok kullanılanlar
             if (appsSorted.any { it.second > 0 }) {
                 item {
-                    Text(
-                        if (usageMetric == UsageMetric.DURATION)
-                            "En Çok Kullanılan · Süre (30 gün)"
-                        else
-                            "En Çok Açılan · Adet (30 gün)",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp)
-                    )
+                    // D245: baslik yanina toplam hesaplama rozeti — daha "havali" ve bilgilendirici.
+                    val topTen = appsSorted.filter { it.second > 0 }.take(10)
+                    val totalValue = topTen.sumOf { it.second }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            if (usageMetric == UsageMetric.DURATION)
+                                "En Çok Kullanılan · Süre (30 gün)"
+                            else
+                                "En Çok Açılan · Adet (30 gün)",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                        )
+                        if (totalValue > 0) {
+                            Text(
+                                "Toplam: ${formatUsageMetric(totalValue, usageMetric)}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
                 }
                 itemsIndexed(appsSorted.filter { it.second > 0 }.take(10)) { index, (app, value) ->
                     UsageRow(

@@ -5,6 +5,11 @@ import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewState
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -156,8 +161,8 @@ class AppRepository @Inject constructor(
             // classifyApp CPU-bound — Dispatchers.Default kullan, IO thread'ini bloke etme
             val classifiedApps = withContext(Dispatchers.Default) {
                 apps.map { app ->
-                    val category = classifier.classifyApp(app)
-                    app.copy(categoryId = category)
+                    val decision = classifier.classifyAppDecision(app)
+                    app.withClassification(decision)
                 }
             }
 
@@ -173,10 +178,43 @@ class AppRepository @Inject constructor(
      */
     suspend fun updateAppCategory(packageName: String, categoryId: String) {
         try {
-            appDao.updateAppCategory(packageName, categoryId)
+            appDao.updateAppCategoryWithClassification(
+                packageName = packageName,
+                categoryId = categoryId,
+                source = ClassificationSource.USER_CORRECTED.name,
+                confidence = 100,
+                reason = ClassificationReason.USER_SELECTION.name,
+                reviewState = ClassificationReviewState.CORRECTED.name,
+                locked = true,
+                version = CLASSIFICATION_ENGINE_VERSION,
+                classifiedAt = System.currentTimeMillis(),
+                reviewedAt = System.currentTimeMillis(),
+                snoozedUntil = 0L,
+            )
             Timber.d("Updated category for $packageName to $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating app category")
+        }
+    }
+
+    suspend fun updateAppCategoryAutomatically(packageName: String, decision: ClassificationDecision) {
+        try {
+            appDao.updateAppCategoryWithClassification(
+                packageName = packageName,
+                categoryId = decision.categoryId,
+                source = decision.source.name,
+                confidence = decision.confidence,
+                reason = decision.reasonCode.name,
+                reviewState = decision.reviewState.name,
+                locked = false,
+                version = decision.engineVersion,
+                classifiedAt = System.currentTimeMillis(),
+                reviewedAt = 0L,
+                snoozedUntil = 0L,
+            )
+            Timber.d("Auto-classified $packageName to ${decision.categoryId}")
+        } catch (e: Exception) {
+            Timber.e(e, "Error auto-classifying app")
         }
     }
 
@@ -194,10 +232,43 @@ class AppRepository @Inject constructor(
      */
     suspend fun updateAppsCategory(packageNames: List<String>, categoryId: String) {
         try {
-            appDao.updateAppsCategory(packageNames, categoryId)
+            appDao.updateAppsCategoryWithClassification(
+                packageNames = packageNames,
+                categoryId = categoryId,
+                source = ClassificationSource.USER_CORRECTED.name,
+                confidence = 100,
+                reason = ClassificationReason.USER_SELECTION.name,
+                reviewState = ClassificationReviewState.CORRECTED.name,
+                locked = true,
+                version = CLASSIFICATION_ENGINE_VERSION,
+                classifiedAt = System.currentTimeMillis(),
+                reviewedAt = System.currentTimeMillis(),
+                snoozedUntil = 0L,
+            )
             Timber.d("Updated ${packageNames.size} apps to category $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating multiple apps")
+        }
+    }
+
+    suspend fun updateAppsCategoryAutomatically(packageNames: List<String>, categoryId: String) {
+        try {
+            appDao.updateAppsCategoryWithClassification(
+                packageNames = packageNames,
+                categoryId = categoryId,
+                source = ClassificationSource.FALLBACK_OTHER.name,
+                confidence = 25,
+                reason = ClassificationReason.NO_RELIABLE_MATCH.name,
+                reviewState = ClassificationReviewState.PENDING.name,
+                locked = false,
+                version = CLASSIFICATION_ENGINE_VERSION,
+                classifiedAt = System.currentTimeMillis(),
+                reviewedAt = 0L,
+                snoozedUntil = 0L,
+            )
+            Timber.d("Auto-updated ${packageNames.size} apps to category $categoryId")
+        } catch (e: Exception) {
+            Timber.e(e, "Error auto-updating multiple apps")
         }
     }
     
@@ -322,6 +393,15 @@ class AppRepository @Inject constructor(
                     notificationText = existing.notificationText,
                     isHidden = existing.isHidden,
                     installTime = existing.installTime,
+                    classificationSource = existing.classificationSource,
+                    classificationConfidence = existing.classificationConfidence,
+                    classificationReason = existing.classificationReason,
+                    classificationReviewState = existing.classificationReviewState,
+                    isCategoryLocked = existing.isCategoryLocked,
+                    classificationVersion = existing.classificationVersion,
+                    lastClassifiedAt = existing.lastClassifiedAt,
+                    lastReviewedAt = existing.lastReviewedAt,
+                    reviewSnoozedUntil = existing.reviewSnoozedUntil,
                     firstInstalledTime = if (existing.firstInstalledTime > 0L) {
                         existing.firstInstalledTime
                     } else {
@@ -426,5 +506,23 @@ class AppRepository @Inject constructor(
 
     suspend fun updateCustomNotes(packageName: String, note: String) {
         try { appDao.updateCustomNotes(packageName, note) } catch (e: Exception) { Timber.e(e) }
+    }
+
+    private fun AppInfo.withClassification(decision: ClassificationDecision): AppInfo {
+        val now = System.currentTimeMillis()
+        val locked = decision.source == ClassificationSource.USER_CONFIRMED ||
+            decision.source == ClassificationSource.USER_CORRECTED
+        return copy(
+            categoryId = decision.categoryId,
+            classificationSource = decision.source.name,
+            classificationConfidence = decision.confidence,
+            classificationReason = decision.reasonCode.name,
+            classificationReviewState = decision.reviewState.name,
+            isCategoryLocked = locked,
+            classificationVersion = decision.engineVersion,
+            lastClassifiedAt = now,
+            lastReviewedAt = if (locked) now else 0L,
+            reviewSnoozedUntil = 0L,
+        )
     }
 }

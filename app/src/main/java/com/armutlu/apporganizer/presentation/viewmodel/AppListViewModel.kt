@@ -18,6 +18,11 @@ import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.WeeklyGoal
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
+import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewPolicy
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreenState
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import com.armutlu.apporganizer.presentation.ui.screens.computeCategoryStats
@@ -315,7 +320,7 @@ class AppListViewModel @Inject constructor(
                     .filter { it.categoryId == category.categoryId }
                     .map { it.packageName }
                 if (affectedPackages.isNotEmpty()) {
-                    repository.updateAppsCategory(affectedPackages, Category.CAT_UNCATEGORIZED)
+                    repository.updateAppsCategoryAutomatically(affectedPackages, Category.CAT_UNCATEGORIZED)
                     affectedPackages.forEach { AppPrefs.clearManualCategoryOverride(getApplication(), it) }
                 }
                 repository.deleteCategory(category.categoryId)
@@ -551,9 +556,9 @@ class AppListViewModel @Inject constructor(
 
                 var classified = 0
                 unclassifiedApps.forEach { app ->
-                    val category = classifier.classifyApp(app, manufacturerClassifyEnabled)
-                    if (category != "uncategorized") {
-                        repository.updateAppCategory(app.packageName, category)
+                    val decision = classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                    if (decision.categoryId != "uncategorized") {
+                        repository.updateAppCategoryAutomatically(app.packageName, decision)
                         classified++
                     }
                 }
@@ -598,7 +603,23 @@ class AppListViewModel @Inject constructor(
                 var updated = 0
                 results.forEach { (pkg, catId) ->
                     if (catId != Category.CAT_OTHER) {
-                        repository.updateAppCategory(pkg, catId)
+                        val (requiresReview, reviewState) = ClassificationReviewPolicy.resolve(
+                            categoryId = catId,
+                            confidence = 65,
+                            source = ClassificationSource.LLM_LEGACY,
+                        )
+                        repository.updateAppCategoryAutomatically(
+                            pkg,
+                            ClassificationDecision(
+                                categoryId = catId,
+                                confidence = 65,
+                                source = ClassificationSource.LLM_LEGACY,
+                                reasonCode = ClassificationReason.LEGACY_AI_RESULT,
+                                requiresReview = requiresReview,
+                                reviewState = reviewState,
+                                engineVersion = CLASSIFICATION_ENGINE_VERSION,
+                            )
+                        )
                         updated++
                     }
                 }
@@ -664,9 +685,9 @@ class AppListViewModel @Inject constructor(
                 val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs
                     .isManufacturerClassifyEnabled(getApplication())
                 apps.forEach { app ->
-                    val category = classifier.classifyApp(app, manufacturerClassifyEnabled)
-                    if (category != "uncategorized") {
-                        repository.updateAppCategory(app.packageName, category)
+                    val decision = classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                    if (decision.categoryId != "uncategorized") {
+                        repository.updateAppCategoryAutomatically(app.packageName, decision)
                     }
                 }
                 appendDebugLog("âœ… ${apps.size} uygulama yeniden sÄ±nÄ±flandÄ±rÄ±ldÄ±")

@@ -1,6 +1,7 @@
 ﻿package com.armutlu.apporganizer.domain.usecase.classify
 
 import android.content.Context
+import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -10,8 +11,11 @@ import javax.inject.Singleton
 
 @Singleton
 class AppClassifier @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val appDatabaseService: AppDatabaseService
 ) {
+    constructor(context: Context) : this(context, AppDatabaseService(context))
+
     // Üretici prefix → üretici kategorisi: exactMap'ten sonra, keyword'den önce kontrol edilir
     private val MANUFACTURER_PREFIX_MAP = mapOf(
         // Google
@@ -61,18 +65,201 @@ class AppClassifier @Inject constructor(
     private val exactMatchMap: Map<String, String> get() = AppClassifierAssets.getExactMatchMap(context)
 
 
-    fun classifyApp(appInfo: AppInfo, manufacturerClassifyEnabled: Boolean = true): String {
-        // Manuel override — kullanici secimi tum otomatik siniflandirmanin onunde gelir
-        AppPrefs.getManualCategoryOverrides(context)[appInfo.packageName]?.let { return it }
-        exactMatchMap[appInfo.packageName]?.let { return it }
-        if (manufacturerClassifyEnabled) {
-            classifyByManufacturerPrefix(appInfo.packageName, appInfo.appName)?.let { return it }
+    fun classifyApp(appInfo: AppInfo, manufacturerClassifyEnabled: Boolean = true): String =
+        classifyAppDecision(appInfo, manufacturerClassifyEnabled).categoryId
+
+    fun classifyAppDecision(
+        appInfo: AppInfo,
+        manufacturerClassifyEnabled: Boolean = true
+    ): ClassificationDecision {
+        userDecision(appInfo)?.let { return it }
+        remoteCatalogDecision(appInfo.packageName)?.let { return it }
+        bundledCatalogDecision(appInfo.packageName)?.let { return it }
+        val androidDecision = androidCategoryDecision(appInfo.packageName)
+        val manufacturerDecision = if (manufacturerClassifyEnabled) {
+            manufacturerDecision(appInfo.packageName, appInfo.appName)
+        } else {
+            null
         }
-        // Android 8+ ücretsiz/offline Play Store kategori sinyali — exactMap'te olmayan
-        // paketler icin keyword'den once denenir (K1, Dongu 227, Fable danismanligi).
-        classifyByPlayStoreCategory(appInfo.packageName)?.let { return it }
-        return classifyByKeywords(appInfo.appName, appInfo.packageName) ?: Category.CAT_OTHER
+        val appNameDecision = appNameKeywordDecision(appInfo.appName)
+        val packageDecision = packageKeywordDecision(appInfo.packageName)
+        val keywordDecision = strongestKeywordDecision(appNameDecision, packageDecision)
+        val conflict = hasConflictingSignals(androidDecision, keywordDecision)
+        if (conflict && androidDecision != null) {
+            return androidDecision.copy(
+                confidence = ClassificationConfidence.clampAutomatic(androidDecision.confidence - 20),
+                reasonCode = ClassificationReason.CONFLICTING_SIGNALS,
+                requiresReview = true,
+                reviewState = ClassificationReviewState.PENDING,
+            )
+        }
+        androidDecision?.let { return it }
+        manufacturerDecision?.let { return it }
+        keywordDecision?.let { return it }
+        legacyLlmDecision(appInfo.packageName)?.let { return it }
+        return fallbackDecision()
     }
+
+    private fun userDecision(appInfo: AppInfo): ClassificationDecision? {
+        if (appInfo.isCategoryLocked) {
+            val source = runCatching {
+                ClassificationSource.valueOf(appInfo.classificationSource)
+            }.getOrDefault(ClassificationSource.USER_CORRECTED)
+            if (source == ClassificationSource.USER_CONFIRMED || source == ClassificationSource.USER_CORRECTED) {
+                return userDecision(appInfo.categoryId, source)
+            }
+        }
+        return AppPrefs.getManualCategoryOverrides(context)[appInfo.packageName]
+            ?.let { userDecision(it, ClassificationSource.USER_CORRECTED) }
+    }
+
+    private fun userDecision(categoryId: String, source: ClassificationSource): ClassificationDecision =
+        ClassificationDecision(
+            categoryId = categoryId,
+            confidence = ClassificationConfidence.USER_DECISION,
+            source = source,
+            reasonCode = ClassificationReason.USER_SELECTION,
+            requiresReview = false,
+            reviewState = if (source == ClassificationSource.USER_CONFIRMED) {
+                ClassificationReviewState.CONFIRMED
+            } else {
+                ClassificationReviewState.CORRECTED
+            },
+        )
+
+    private fun remoteCatalogDecision(packageName: String): ClassificationDecision? {
+        val categoryId = appDatabaseService.getCategoryForPackage(packageName) ?: return null
+        return autoDecision(
+            categoryId = categoryId,
+            confidence = ClassificationConfidence.REMOTE_CATALOG_EXACT,
+            source = ClassificationSource.REMOTE_CATALOG,
+            reasonCode = ClassificationReason.UPDATED_CATALOG_MATCH,
+        )
+    }
+
+    private fun bundledCatalogDecision(packageName: String): ClassificationDecision? =
+        exactMatchMap[packageName]?.let { categoryId ->
+            autoDecision(
+                categoryId = categoryId,
+                confidence = ClassificationConfidence.BUNDLED_CATALOG_EXACT,
+                source = ClassificationSource.BUNDLED_CATALOG,
+                reasonCode = ClassificationReason.EXACT_PACKAGE_MATCH,
+            )
+        }
+
+    private fun androidCategoryDecision(packageName: String): ClassificationDecision? =
+        classifyByPlayStoreCategory(packageName)?.let { categoryId ->
+            autoDecision(
+                categoryId = categoryId,
+                confidence = ClassificationConfidence.ANDROID_CATEGORY,
+                source = ClassificationSource.ANDROID_CATEGORY,
+                reasonCode = ClassificationReason.ANDROID_DECLARED_CATEGORY,
+            )
+        }
+
+    private fun manufacturerDecision(packageName: String, appName: String): ClassificationDecision? =
+        classifyByManufacturerPrefix(packageName, appName)?.let { categoryId ->
+            autoDecision(
+                categoryId = categoryId,
+                confidence = ClassificationConfidence.MANUFACTURER_RULE,
+                source = ClassificationSource.MANUFACTURER_RULE,
+                reasonCode = ClassificationReason.MANUFACTURER_PACKAGE_MATCH,
+            )
+        }
+
+    private fun appNameKeywordDecision(appName: String): ClassificationDecision? {
+        val lowerName = appName.lowercase(java.util.Locale("tr"))
+        KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
+            if (keywords.any { lowerName.contains(it) }) {
+                return autoDecision(
+                    categoryId = category,
+                    confidence = ClassificationConfidence.APP_NAME_KEYWORD,
+                    source = ClassificationSource.APP_NAME_KEYWORD,
+                    reasonCode = ClassificationReason.APP_NAME_MATCH,
+                )
+            }
+        }
+        return null
+    }
+
+    private fun packageKeywordDecision(packageName: String): ClassificationDecision? {
+        val lowerPkg = packageName.lowercase()
+        KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
+            if (keywords.any { lowerPkg.contains(it) }) {
+                return autoDecision(
+                    categoryId = category,
+                    confidence = ClassificationConfidence.PACKAGE_NAME_KEYWORD,
+                    source = ClassificationSource.PACKAGE_NAME_KEYWORD,
+                    reasonCode = ClassificationReason.PACKAGE_NAME_MATCH,
+                )
+            }
+        }
+        return null
+    }
+
+    private fun strongestKeywordDecision(
+        appNameDecision: ClassificationDecision?,
+        packageDecision: ClassificationDecision?
+    ): ClassificationDecision? {
+        if (appNameDecision == null) return packageDecision
+        if (packageDecision == null) return appNameDecision
+        if (appNameDecision.categoryId == packageDecision.categoryId) {
+            return appNameDecision.copy(
+                confidence = ClassificationConfidence.clampAutomatic(appNameDecision.confidence + 5)
+            )
+        }
+        return appNameDecision.copy(
+            confidence = ClassificationConfidence.clampAutomatic(appNameDecision.confidence - 15),
+            reasonCode = ClassificationReason.CONFLICTING_SIGNALS,
+            requiresReview = true,
+            reviewState = ClassificationReviewState.PENDING,
+        )
+    }
+
+    private fun legacyLlmDecision(packageName: String): ClassificationDecision? =
+        AppPrefs.getLlmCategoryCache(context)[packageName]?.let { categoryId ->
+            autoDecision(
+                categoryId = categoryId,
+                confidence = ClassificationConfidence.LLM_LEGACY,
+                source = ClassificationSource.LLM_LEGACY,
+                reasonCode = ClassificationReason.LEGACY_AI_RESULT,
+            )
+        }
+
+    private fun fallbackDecision(): ClassificationDecision =
+        autoDecision(
+            categoryId = Category.CAT_OTHER,
+            confidence = ClassificationConfidence.FALLBACK_OTHER,
+            source = ClassificationSource.FALLBACK_OTHER,
+            reasonCode = ClassificationReason.NO_RELIABLE_MATCH,
+        )
+
+    private fun autoDecision(
+        categoryId: String,
+        confidence: Int,
+        source: ClassificationSource,
+        reasonCode: ClassificationReason,
+    ): ClassificationDecision {
+        val safeConfidence = ClassificationConfidence.clampAutomatic(confidence)
+        val (requiresReview, reviewState) = ClassificationReviewPolicy.resolve(
+            categoryId = categoryId,
+            confidence = safeConfidence,
+            source = source,
+        )
+        return ClassificationDecision(
+            categoryId = categoryId,
+            confidence = safeConfidence,
+            source = source,
+            reasonCode = reasonCode,
+            requiresReview = requiresReview,
+            reviewState = reviewState,
+        )
+    }
+
+    private fun hasConflictingSignals(
+        first: ClassificationDecision?,
+        second: ClassificationDecision?
+    ): Boolean = first != null && second != null && first.categoryId != second.categoryId
 
     // ApplicationInfo.category (API 26+) — uygulama gelistiricisinin manifestte beyan ettigi
     // resmi Play Store kategorisi. Cihaz icinde, agsiz, ucretsiz bir sinyal.
@@ -107,12 +294,16 @@ class AppClassifier @Inject constructor(
         }
     }
 
-    fun getConfidence(appInfo: AppInfo, categoryId: String): Int = when {
-        categoryId == Category.CAT_OTHER -> 30
-        hasExactMatch(appInfo.packageName, categoryId) -> 95
-        hasKeywordMatch(appInfo.appName, categoryId) -> 80
-        hasPackageKeywordMatch(appInfo.packageName, categoryId) -> 70
-        else -> 50
+    fun getConfidence(appInfo: AppInfo, categoryId: String): Int {
+        val decision = classifyAppDecision(appInfo)
+        if (decision.categoryId == categoryId) return decision.confidence
+        return when {
+            categoryId == Category.CAT_OTHER -> ClassificationConfidence.FALLBACK_OTHER
+            hasExactMatch(appInfo.packageName, categoryId) -> ClassificationConfidence.BUNDLED_CATALOG_EXACT
+            hasKeywordMatch(appInfo.appName, categoryId) -> ClassificationConfidence.APP_NAME_KEYWORD
+            hasPackageKeywordMatch(appInfo.packageName, categoryId) -> ClassificationConfidence.PACKAGE_NAME_KEYWORD
+            else -> 50
+        }
     }
 
     fun isLowConfidence(appInfo: AppInfo, categoryId: String): Boolean =
@@ -179,7 +370,7 @@ class AppClassifier @Inject constructor(
         KeywordDatabase.getKeywords(categoryId).any { packageName.lowercase().contains(it) }
 
     private companion object {
-        const val LOW_CONFIDENCE_THRESHOLD = 60
+        const val LOW_CONFIDENCE_THRESHOLD = ClassificationConfidence.REVIEW_THRESHOLD
     }
 }
 

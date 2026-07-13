@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 245 - 2026-07-13 [Pulse Clock geri bildirim turu: kesilen metin, mini açıklama, AllApps opaklık]
+
+**Yapılanlar (kullanıcı geri bildirimi, 4 madde):**
+1. **Skor halkası altına mini açıklama:** `PulseClockWidget.kt` — halka+delta'nın altına "Denge" (EN: "Balance") etiketi eklendi (`pulse_score_ring_caption`), skorun ne anlama geldiği ilk bakışta belli oluyor.
+2. **İçgörü metni kesilme bug'ı düzeltildi:** Aynı dosyada sabit `widthIn(max = 220.dp)` kısıtı çok dar olduğu için kısa cümleler bile ortadan kesilip Compose ellipsis'i devreye giriyordu ("…" görünüyordu, kullanıcı bunu "3 nokta kalmış" olarak algılamış). Sabit genişlik kaldırıldı, kolonun gerçek genişliği (`fillMaxWidth`) kullanılıyor, normal modda 2 satıra kadar izin veriliyor (compact modda 1 satır kalıyor).
+3. **"En Çok Kullanılan" başlığına toplam rozeti:** `UsageReportScreen.kt` — başlığın sağına listelenen ilk 10 uygulamanın toplam süre/adet değerini gösteren küçük vurgu metni eklendi (örn. "Toplam: 3sa 20dk"), `formatUsageMetric` yeniden kullanıldı.
+4. **AllApps çekmecesi varsayılan opaklık artırıldı:** `AppPrefs.getAllAppsBgAlpha` varsayılanı 0.95f→0.98f (D226'da 0.85→0.95 yapılmıştı, kullanıcı hâlâ arka planın göründüğünü bildirdi) — Settings'ten hâlâ şeffaflaştırılabilir.
+
+**Build/Test:** `compileDebugKotlin`, `testDebugUnitTest` ve `assembleDebug` (`-PskipGoogleServices`) başarılı. Versiyon: versionCode 34→35, versionName 1.3.11→1.3.12.
+
+---
+
 ## Döngü 244 - 2026-07-13 [Pulse Clock + Dijital Nabız raporlama revizyonu v1.3.11]
 
 **Yapılanlar (kapsamlı ürün revizyonu, tek motor mimarisi):**

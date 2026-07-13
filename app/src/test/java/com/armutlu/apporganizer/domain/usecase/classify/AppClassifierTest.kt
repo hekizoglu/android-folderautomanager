@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.domain.usecase.classify
 
 import android.content.Context
+import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import io.mockk.every
@@ -25,6 +26,7 @@ class AppClassifierTest {
 
     private lateinit var classifier: AppClassifier
     private lateinit var mockContext: Context
+    private lateinit var mockDbService: AppDatabaseService
 
     // Test icin kullanilan minimal exact match haritasi (gercek JSON'un kucuk orn.)
     private val fakeExactMap = mapOf(
@@ -56,9 +58,11 @@ class AppClassifierTest {
     @Before
     fun setUp() {
         mockContext = mockk(relaxed = true)
+        mockDbService = mockk(relaxed = true)
         mockkObject(AppClassifierAssets)
         every { AppClassifierAssets.getExactMatchMap(any()) } returns fakeExactMap
-        classifier = AppClassifier(mockContext)
+        every { mockDbService.getCategoryForPackage(any()) } returns null
+        classifier = AppClassifier(mockContext, mockDbService)
     }
 
     @After
@@ -159,6 +163,57 @@ class AppClassifierTest {
     @Test
     fun `getConfidence exact match returns 95`() {
         assertEquals(95, classifier.getConfidence(appInfo("com.instagram.android", "Instagram"), Category.CAT_SOCIAL))
+    }
+
+    @Test
+    fun `decision exact match includes bundled catalog metadata`() {
+        val decision = classifier.classifyAppDecision(appInfo("com.instagram.android", "Instagram"))
+
+        assertEquals(Category.CAT_SOCIAL, decision.categoryId)
+        assertEquals(ClassificationSource.BUNDLED_CATALOG, decision.source)
+        assertEquals(ClassificationReason.EXACT_PACKAGE_MATCH, decision.reasonCode)
+        assertEquals(95, decision.confidence)
+        assertFalse(decision.requiresReview)
+    }
+
+    @Test
+    fun `remote catalog has priority over bundled catalog`() {
+        every { mockDbService.getCategoryForPackage("com.instagram.android") } returns Category.CAT_PRODUCTIVITY
+
+        val decision = classifier.classifyAppDecision(appInfo("com.instagram.android", "Instagram"))
+
+        assertEquals(Category.CAT_PRODUCTIVITY, decision.categoryId)
+        assertEquals(ClassificationSource.REMOTE_CATALOG, decision.source)
+        assertEquals(ClassificationReason.UPDATED_CATALOG_MATCH, decision.reasonCode)
+        assertEquals(97, decision.confidence)
+    }
+
+    @Test
+    fun `locked user corrected decision has max priority`() {
+        every { mockDbService.getCategoryForPackage("com.instagram.android") } returns Category.CAT_PRODUCTIVITY
+        val app = appInfo("com.instagram.android", "Instagram").copy(
+            categoryId = Category.CAT_FINANCE,
+            classificationSource = ClassificationSource.USER_CORRECTED.name,
+            isCategoryLocked = true,
+        )
+
+        val decision = classifier.classifyAppDecision(app)
+
+        assertEquals(Category.CAT_FINANCE, decision.categoryId)
+        assertEquals(ClassificationSource.USER_CORRECTED, decision.source)
+        assertEquals(100, decision.confidence)
+        assertFalse(decision.requiresReview)
+    }
+
+    @Test
+    fun `unknown app returns reviewable fallback decision`() {
+        val decision = classifier.classifyAppDecision(appInfo("com.randomxyz.nothing", "XYZ App 123"))
+
+        assertEquals(Category.CAT_OTHER, decision.categoryId)
+        assertEquals(ClassificationSource.FALLBACK_OTHER, decision.source)
+        assertEquals(ClassificationReviewState.PENDING, decision.reviewState)
+        assertTrue(decision.requiresReview)
+        assertTrue(decision.confidence in 0..100)
     }
 
     @Test

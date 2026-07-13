@@ -23,6 +23,23 @@ edildi. Aşağıdakiler kapsam nedeniyle BEKLİYOR — sessizce atlanmadı, HIST
 
 ---
 
+## Yüksek Puanlı - Klasör Zekâsı ve Akıllı Düzenleme
+
+Amaç: AppOrganizer'ın ana vaadini güçlendirmek; uygulamaları açıklanabilir ve güven puanlı kararlarla doğru klasörlere yerleştirmek, emin olunmayanları kullanıcıya kontrol ettirmek ve kullanıcı düzeltmelerini kalıcı öğrenmek.
+
+| Alt iş | Durum |
+|---|---|
+| Classification Decision V2 | Tamamlandı - yerel çekirdek: `ClassificationDecision`, source/confidence/reason/review metadata, kullanıcı kararı önceliği, remote catalog bağlantısı, legacy string API uyumu |
+| Kalıcı Kullanıcı Kararları | Kısmen tamamlandı - Room `apps` metadata alanları ve v15->v16 migration eklendi; manuel repository güncellemeleri `USER_CORRECTED` + lock yazıyor; eski `KEY_MANUAL_CAT_OVERRIDES` Room'a toplu migration henüz bekliyor |
+| Kontrol Bekleyenler | Bekliyor - yeni route/ViewModel/screen, confirm/correct/skip/snooze akışı |
+| Onboarding Düzen Önizlemesi | Bekliyor - tarama özeti, pending count, review bağlantısı |
+| Klasör İçi Akıllı Sıralama | Bekliyor - `KEY_FOLDER_SORT_MODE` gerçek folder render sıralamasına bağlanacak, usage fallback ve testler |
+| Bölme/Birleştirme/Temizlik Önerileri | Bekliyor - FolderHealth/Suggestion engine, persistence, preview, accept/dismiss/snooze |
+
+Doğrulama: `compileDebugKotlin` geçti; `AppClassifierTest` ve `AppRepositoryTest` geçti. İlk birleşik test komutu zaman aşımına girdi, sonra hedefli testler ayrı ayrı başarıyla koşuldu.
+
+---
+
 ## Hedef
 
 Play Store yayini icin Production AAB v1.0.0 hazir.

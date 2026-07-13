@@ -212,13 +212,17 @@ private fun PulseCard(
                         label = "pulse_insight_crossfade",
                     ) { text ->
                         if (!text.isNullOrBlank()) {
+                            // D245: sabit 220dp genislik metni yariladan kesiyordu (kisa
+                            // cumlelerde bile). Kolonun gercek genisligini kullan, 2 satira
+                            // kadar izin ver — ellipsis artik sadece gercekten sigmayinca devreye girer.
                             Text(
                                 text = text,
                                 color = Color.White.copy(alpha = 0.70f),
                                 fontSize = if (compact) 11.sp else 13.sp,
-                                maxLines = 1,
+                                lineHeight = if (compact) 13.sp else 16.sp,
+                                maxLines = if (compact) 1 else 2,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.widthIn(max = 220.dp),
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
                     }
@@ -345,6 +349,15 @@ private fun PulseScoreRing(
                 color = arrowColor,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,
+            )
+        }
+        // Mini açıklama — skorun ne anlama geldiği ilk bakışta belli olsun (D245)
+        if (!compact) {
+            Spacer(Modifier.height(1.dp))
+            Text(
+                text = stringResource(R.string.pulse_score_ring_caption),
+                color = Color.White.copy(alpha = 0.45f),
+                fontSize = 9.sp,
             )
         }
     }

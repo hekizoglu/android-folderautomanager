@@ -358,6 +358,7 @@
     <string name="pulse_score_delta_down">azaldı</string>
     <string name="pulse_clock_open_weekly_report">Haftalık Dijital Nabız raporunu aç</string>
     <string name="pulse_clock_score_ring_desc">Skor ayrıntıları için dokun</string>
+    <string name="pulse_score_ring_caption">Denge</string>
     <string name="settings_clock_pulse_title">Saat ve Dijital Nabız</string>
     <string name="settings_clock_style_title">Saat Stili</string>
     <string name="settings_clock_style_minimal">Minimal</string>

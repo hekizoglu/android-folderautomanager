@@ -21,7 +21,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -169,6 +169,22 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v15->v16: classification decision metadata. Existing rows remain pending/unknown
+        // until the next safe classification pass; user decisions are not invented.
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.addColumnIfNotExists("apps", "classificationSource", "TEXT NOT NULL DEFAULT 'UNKNOWN'")
+                db.addColumnIfNotExists("apps", "classificationConfidence", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "classificationReason", "TEXT NOT NULL DEFAULT 'NO_RELIABLE_MATCH'")
+                db.addColumnIfNotExists("apps", "classificationReviewState", "TEXT NOT NULL DEFAULT 'PENDING'")
+                db.addColumnIfNotExists("apps", "isCategoryLocked", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "classificationVersion", "INTEGER NOT NULL DEFAULT 1")
+                db.addColumnIfNotExists("apps", "lastClassifiedAt", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "lastReviewedAt", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "reviewSnoozedUntil", "INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -277,7 +293,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_11_12,
                         MIGRATION_12_13,
                         MIGRATION_13_14,
-                        MIGRATION_14_15
+                        MIGRATION_14_15,
+                        MIGRATION_15_16
                     )
                     .build()
 

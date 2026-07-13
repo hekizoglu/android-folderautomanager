@@ -4,6 +4,11 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewState
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -63,6 +68,16 @@ class AppRepositoryTest {
     private fun app(pkg: String, name: String, cat: String = "social") =
         AppInfo(packageName = pkg, appName = name, categoryId = cat)
 
+    private fun decision(categoryId: String) = ClassificationDecision(
+        categoryId = categoryId,
+        confidence = 95,
+        source = ClassificationSource.BUNDLED_CATALOG,
+        reasonCode = ClassificationReason.EXACT_PACKAGE_MATCH,
+        requiresReview = false,
+        reviewState = ClassificationReviewState.NOT_REQUIRED,
+        engineVersion = CLASSIFICATION_ENGINE_VERSION,
+    )
+
     // ── getAllApps ────────────────────────────────────────────────────────────
 
     @Test
@@ -113,8 +128,8 @@ class AppRepositoryTest {
             app("com.instagram.android", "Instagram", "other"),
             app("com.pubg.mobile", "PUBG", "other")
         )
-        every { mockClassifier.classifyApp(match { it.packageName == "com.instagram.android" }) } returns "social"
-        every { mockClassifier.classifyApp(match { it.packageName == "com.pubg.mobile" }) } returns "games"
+        every { mockClassifier.classifyAppDecision(match { it.packageName == "com.instagram.android" }) } returns decision("social")
+        every { mockClassifier.classifyAppDecision(match { it.packageName == "com.pubg.mobile" }) } returns decision("games")
 
         repository.insertApps(apps)
         advanceUntilIdle()
@@ -130,7 +145,7 @@ class AppRepositoryTest {
     @Test
     fun `insertApps silently handles exception`() = runTest {
         coEvery { mockAppDao.insertApps(any()) } throws RuntimeException("insert failed")
-        every { mockClassifier.classifyApp(any()) } returns "social"
+        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
 
         // Should not throw
         repository.insertApps(listOf(app("com.a", "App A")))
@@ -144,12 +159,42 @@ class AppRepositoryTest {
         repository.updateAppCategory("com.test.app", "productivity")
         advanceUntilIdle()
 
-        coVerify { mockAppDao.updateAppCategory("com.test.app", "productivity", any()) }
+        coVerify {
+            mockAppDao.updateAppCategoryWithClassification(
+                packageName = "com.test.app",
+                categoryId = "productivity",
+                source = ClassificationSource.USER_CORRECTED.name,
+                confidence = 100,
+                reason = ClassificationReason.USER_SELECTION.name,
+                reviewState = ClassificationReviewState.CORRECTED.name,
+                locked = true,
+                version = CLASSIFICATION_ENGINE_VERSION,
+                classifiedAt = any(),
+                reviewedAt = any(),
+                snoozedUntil = 0L,
+                timestamp = any(),
+            )
+        }
     }
 
     @Test
     fun `updateAppCategory silently handles exception`() = runTest {
-        coEvery { mockAppDao.updateAppCategory(any(), any()) } throws RuntimeException("dao error")
+        coEvery {
+            mockAppDao.updateAppCategoryWithClassification(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        } throws RuntimeException("dao error")
 
         repository.updateAppCategory("com.test.app", "productivity")
         advanceUntilIdle()
@@ -164,7 +209,22 @@ class AppRepositoryTest {
         repository.updateAppsCategory(packages, "games")
         advanceUntilIdle()
 
-        coVerify { mockAppDao.updateAppsCategory(packages, "games", any()) }
+        coVerify {
+            mockAppDao.updateAppsCategoryWithClassification(
+                packageNames = packages,
+                categoryId = "games",
+                source = ClassificationSource.USER_CORRECTED.name,
+                confidence = 100,
+                reason = ClassificationReason.USER_SELECTION.name,
+                reviewState = ClassificationReviewState.CORRECTED.name,
+                locked = true,
+                version = CLASSIFICATION_ENGINE_VERSION,
+                classifiedAt = any(),
+                reviewedAt = any(),
+                snoozedUntil = 0L,
+                timestamp = any(),
+            )
+        }
     }
 
     // ── deleteApp ─────────────────────────────────────────────────────────────
@@ -248,7 +308,7 @@ class AppRepositoryTest {
     @Test
     fun `syncInstalledApps inserts only new apps`() = runTest {
         coEvery { mockAppDao.getAllApps() } returns listOf(app("com.existing", "Existing"))
-        every { mockClassifier.classifyApp(any()) } returns "social"
+        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
 
         val installed = listOf(
             app("com.existing", "Existing"),
@@ -271,7 +331,7 @@ class AppRepositoryTest {
             app("com.installed", "Still Here"),
             app("com.uninstalled", "Removed")
         )
-        every { mockClassifier.classifyApp(any()) } returns "social"
+        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
 
         val installed = listOf(app("com.installed", "Still Here"))
 
@@ -284,7 +344,7 @@ class AppRepositoryTest {
     @Test
     fun `syncInstalledApps with all new apps inserts all`() = runTest {
         coEvery { mockAppDao.getAllApps() } returns emptyList()
-        every { mockClassifier.classifyApp(any()) } returns "social"
+        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
 
         val apps = listOf(app("com.a", "App A"), app("com.b", "App B"))
 

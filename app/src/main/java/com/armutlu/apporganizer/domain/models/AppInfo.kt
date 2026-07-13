@@ -65,7 +65,25 @@ data class AppInfo(
 
     val targetSdkVersion: Int = 0,
 
-    val versionName: String = ""
+    val versionName: String = "",
+
+    val classificationSource: String = "UNKNOWN",
+
+    val classificationConfidence: Int = 0,
+
+    val classificationReason: String = "NO_RELIABLE_MATCH",
+
+    val classificationReviewState: String = "PENDING",
+
+    val isCategoryLocked: Boolean = false,
+
+    val classificationVersion: Int = 1,
+
+    val lastClassifiedAt: Long = 0L,
+
+    val lastReviewedAt: Long = 0L,
+
+    val reviewSnoozedUntil: Long = 0L
 ) : Serializable {
     
     companion object {

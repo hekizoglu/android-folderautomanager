@@ -38,6 +38,36 @@ interface AppDao {
         categoryId: String,
         timestamp: Long = System.currentTimeMillis()
     )
+
+    @Query("""
+        UPDATE apps
+        SET categoryId = :categoryId,
+            classificationSource = :source,
+            classificationConfidence = :confidence,
+            classificationReason = :reason,
+            classificationReviewState = :reviewState,
+            isCategoryLocked = :locked,
+            classificationVersion = :version,
+            lastClassifiedAt = :classifiedAt,
+            lastReviewedAt = :reviewedAt,
+            reviewSnoozedUntil = :snoozedUntil,
+            lastUpdated = :timestamp
+        WHERE packageName = :packageName
+    """)
+    suspend fun updateAppCategoryWithClassification(
+        packageName: String,
+        categoryId: String,
+        source: String,
+        confidence: Int,
+        reason: String,
+        reviewState: String,
+        locked: Boolean,
+        version: Int,
+        classifiedAt: Long,
+        reviewedAt: Long,
+        snoozedUntil: Long,
+        timestamp: Long = System.currentTimeMillis()
+    )
     
     /**
      * Delete a single app
@@ -158,6 +188,36 @@ interface AppDao {
         categoryId: String,
         timestamp: Long = System.currentTimeMillis()
     )
+
+    @Query("""
+        UPDATE apps
+        SET categoryId = :categoryId,
+            classificationSource = :source,
+            classificationConfidence = :confidence,
+            classificationReason = :reason,
+            classificationReviewState = :reviewState,
+            isCategoryLocked = :locked,
+            classificationVersion = :version,
+            lastClassifiedAt = :classifiedAt,
+            lastReviewedAt = :reviewedAt,
+            reviewSnoozedUntil = :snoozedUntil,
+            lastUpdated = :timestamp
+        WHERE packageName IN (:packageNames)
+    """)
+    suspend fun updateAppsCategoryWithClassification(
+        packageNames: List<String>,
+        categoryId: String,
+        source: String,
+        confidence: Int,
+        reason: String,
+        reviewState: String,
+        locked: Boolean,
+        version: Int,
+        classifiedAt: Long,
+        reviewedAt: Long,
+        snoozedUntil: Long,
+        timestamp: Long = System.currentTimeMillis()
+    )
     
     /**
      * Check if app exists
@@ -174,7 +234,20 @@ interface AppDao {
     /**
      * Reset all app categories back to uncategorized
      */
-    @Query("UPDATE apps SET categoryId = 'uncategorized'")
+    @Query("""
+        UPDATE apps
+        SET categoryId = 'uncategorized',
+            classificationSource = 'UNKNOWN',
+            classificationConfidence = 0,
+            classificationReason = 'NO_RELIABLE_MATCH',
+            classificationReviewState = 'PENDING',
+            isCategoryLocked = 0,
+            classificationVersion = 1,
+            lastClassifiedAt = 0,
+            lastReviewedAt = 0,
+            reviewSnoozedUntil = 0
+        WHERE isCategoryLocked = 0
+    """)
     suspend fun resetAllAppCategories()
 
     // Adet: launcher'dan her başlatmada +1 (kez açıldı)
