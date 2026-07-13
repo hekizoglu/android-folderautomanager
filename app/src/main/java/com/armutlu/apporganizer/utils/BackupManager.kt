@@ -80,6 +80,7 @@ object BackupManager {
                     put("allAppsSortMode", AppPrefs.getAllAppsSortMode(context))
                     put("folderSortMode", AppPrefs.getFolderSortMode(context))
                     put("folderCarouselEnabled", AppPrefs.isFolderCarouselEnabled(context))
+                    put("folderCarouselPosition", AppPrefs.getFolderCarouselPosition(context))
                     put("iconPack", AppPrefs.getIconPack(context))
                     put("labelColor", AppPrefs.getLabelColor(context))
                     put("folderShape", AppPrefs.getFolderShape(context))
@@ -290,6 +291,8 @@ object BackupManager {
                     s.optString("folderSortMode").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setFolderSortMode(context, it) }
                     if (s.has("folderCarouselEnabled")) AppPrefs.setFolderCarouselEnabled(context, s.getBoolean("folderCarouselEnabled"))
+                    s.optString("folderCarouselPosition").takeIf { it.isNotEmpty() }
+                        ?.let { AppPrefs.setFolderCarouselPosition(context, it) }
                     s.optString("iconPack").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setIconPack(context, it) }
                     s.optString("labelColor").takeIf { it.isNotEmpty() }

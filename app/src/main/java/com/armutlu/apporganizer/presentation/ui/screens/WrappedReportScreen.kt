@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +33,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
+import com.armutlu.apporganizer.presentation.viewmodel.CategoryShare
+import com.armutlu.apporganizer.presentation.viewmodel.WrappedChartData
 import com.armutlu.apporganizer.presentation.viewmodel.WrappedViewModel
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 private val defaultCategoriesById: Map<String, Category> by lazy {
@@ -84,6 +90,7 @@ fun WrappedReportScreen(
             else -> WrappedContent(
                 padding = padding,
                 report = state.report!!,
+                charts = state.charts,
                 hasUsagePermission = state.hasUsagePermission,
                 previousScore = state.previousScore,
                 aiCoachLoading = state.aiCoachLoading,
@@ -126,6 +133,7 @@ private fun EmptyWrappedState(padding: PaddingValues) {
 private fun WrappedContent(
     padding: PaddingValues,
     report: WrappedEngine.WrappedReport,
+    charts: WrappedChartData,
     hasUsagePermission: Boolean,
     previousScore: Int?,
     aiCoachLoading: Boolean,
@@ -150,6 +158,10 @@ private fun WrappedContent(
         item { ScoreCard(report.score, previousScore) }
 
         item { PulseSubScoresCard(report.pulse) }
+
+        if (charts.hasAnyData()) {
+            item { WeeklyChartsCard(charts) }
+        }
 
         if (aiCoachLoading || !aiCoachComment.isNullOrBlank()) {
             item { AiCoachCard(aiCoachLoading, aiCoachComment) }
@@ -420,6 +432,225 @@ private fun PulseSubScoresCard(pulse: com.armutlu.apporganizer.domain.usecase.pu
 }
 
 // ── b) Kişilik kartı ──────────────────────────────────────────────────────
+
+private fun WrappedChartData.hasAnyData(): Boolean =
+    dailyUsageMinutes.any { it > 0 } ||
+        dailyNotificationCounts.any { it > 0 } ||
+        categoryShares.isNotEmpty()
+
+@Composable
+private fun WeeklyChartsCard(charts: WrappedChartData) {
+    Surface(
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Haftalik Grafikler", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Kullanim, bildirim ve kategori dagilimi cihazda cizilir.",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(14.dp))
+
+            ChartSectionTitle("Kullanim trendi", formatUsageTotal(charts.dailyUsageMinutes))
+            WeeklyUsageBars(charts.dailyUsageMinutes)
+
+            Spacer(Modifier.height(16.dp))
+            ChartSectionTitle("Bildirim trendi", "${charts.dailyNotificationCounts.sum()} bildirim")
+            NotificationSparkline(
+                counts = charts.dailyNotificationCounts,
+                nightCounts = charts.dailyNightNotificationCounts,
+            )
+
+            if (charts.categoryShares.isNotEmpty()) {
+                Spacer(Modifier.height(16.dp))
+                ChartSectionTitle("Kategori dagilimi", "ilk ${charts.categoryShares.size}")
+                CategoryDistributionChart(charts.categoryShares)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChartSectionTitle(title: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+        Text(value, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    Spacer(Modifier.height(8.dp))
+}
+
+@Composable
+private fun WeeklyUsageBars(values: List<Int>) {
+    val normalized = values.takeLast(7).let { data -> List(7 - data.size) { 0 } + data }
+    val maxValue = max(1, normalized.maxOrNull() ?: 0)
+    val barColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.22f)
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Column {
+        Canvas(modifier = Modifier.fillMaxWidth().height(86.dp)) {
+            val gap = 8.dp.toPx()
+            val barWidth = (size.width - gap * 6) / 7f
+            val corner = CornerRadius(7.dp.toPx(), 7.dp.toPx())
+            normalized.forEachIndexed { index, value ->
+                val left = index * (barWidth + gap)
+                drawRoundRect(
+                    color = trackColor,
+                    topLeft = Offset(left, 0f),
+                    size = Size(barWidth, size.height),
+                    cornerRadius = corner,
+                )
+                val height = (size.height * (value.toFloat() / maxValue)).coerceAtLeast(if (value > 0) 6.dp.toPx() else 0f)
+                drawRoundRect(
+                    color = barColor,
+                    topLeft = Offset(left, size.height - height),
+                    size = Size(barWidth, height),
+                    cornerRadius = corner,
+                )
+            }
+        }
+        Spacer(Modifier.height(5.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            listOf("Pzt", "Sal", "Car", "Per", "Cum", "Cmt", "Paz").forEach {
+                Text(it, fontSize = 9.sp, color = labelColor)
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotificationSparkline(counts: List<Int>, nightCounts: List<Int>) {
+    val values = counts.takeLast(7).let { data -> List(7 - data.size) { 0 } + data }
+    val nights = nightCounts.takeLast(7).let { data -> List(7 - data.size) { 0 } + data }
+    val maxValue = max(1, values.maxOrNull() ?: 0)
+    val lineColor = MaterialTheme.colorScheme.secondary
+    val pointColor = MaterialTheme.colorScheme.primary
+    val nightColor = Color(0xFFFFB74D)
+    val trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.32f)
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    Column {
+        Canvas(modifier = Modifier.fillMaxWidth().height(74.dp)) {
+            val step = size.width / 6f
+            val topPadding = 8.dp.toPx()
+            val bottomPadding = 12.dp.toPx()
+            val chartHeight = size.height - topPadding - bottomPadding
+            drawLine(
+                color = trackColor,
+                start = Offset(0f, size.height - bottomPadding),
+                end = Offset(size.width, size.height - bottomPadding),
+                strokeWidth = 1.dp.toPx(),
+            )
+            val points = values.mapIndexed { index, value ->
+                Offset(
+                    x = index * step,
+                    y = topPadding + chartHeight * (1f - value.toFloat() / maxValue),
+                )
+            }
+            points.zipWithNext().forEach { (start, end) ->
+                drawLine(
+                    color = lineColor,
+                    start = start,
+                    end = end,
+                    strokeWidth = 3.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+            }
+            points.forEachIndexed { index, point ->
+                drawCircle(color = pointColor, radius = 3.5.dp.toPx(), center = point)
+                if (nights.getOrElse(index) { 0 } > 0) {
+                    drawCircle(
+                        color = nightColor,
+                        radius = 3.dp.toPx(),
+                        center = Offset(point.x, size.height - 4.dp.toPx()),
+                    )
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(nightColor),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text("Gece bildirimi olan gunler isaretli", fontSize = 10.sp, color = labelColor)
+        }
+    }
+}
+
+@Composable
+private fun CategoryDistributionChart(shares: List<CategoryShare>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        shares.take(5).forEachIndexed { index, share ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    "${categoryEmoji(share.categoryId)} ${categoryLabel(share.categoryId)}",
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.42f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                CategoryShareBar(
+                    percent = share.percent,
+                    index = index,
+                    modifier = Modifier.weight(0.58f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryShareBar(percent: Int, index: Int, modifier: Modifier = Modifier) {
+    val trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.24f)
+    val colors = listOf(
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.tertiary,
+        Color(0xFF26C6DA),
+        Color(0xFFFFB74D),
+    )
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        Canvas(modifier = Modifier.weight(1f).height(12.dp)) {
+            val radius = CornerRadius(6.dp.toPx(), 6.dp.toPx())
+            drawRoundRect(
+                color = trackColor,
+                size = Size(size.width, size.height),
+                cornerRadius = radius,
+            )
+            drawRoundRect(
+                color = colors[index % colors.size],
+                size = Size(size.width * (percent / 100f).coerceIn(0f, 1f), size.height),
+                cornerRadius = radius,
+            )
+        }
+        Text("%$percent", fontSize = 11.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+private fun formatUsageTotal(values: List<Int>): String {
+    val total = values.sum()
+    val hours = total / 60
+    val minutes = total % 60
+    return if (hours > 0) "${hours}sa ${minutes}dk" else "${minutes}dk"
+}
 
 @Composable
 private fun PersonalityCard(personality: WrappedEngine.PersonalityResult) {

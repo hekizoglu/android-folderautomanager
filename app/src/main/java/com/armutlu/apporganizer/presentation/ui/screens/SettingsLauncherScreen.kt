@@ -196,6 +196,7 @@ fun SettingsLauncherScreen(
         item { SettingsSectionTitle("Klasor Gecisleri") }
         item {
             var folderCarousel by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
+            var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.Folder,
@@ -207,6 +208,49 @@ fun SettingsLauncherScreen(
                         AppPrefs.setFolderCarouselEnabled(context, it)
                     }
                 )
+                HorizontalDivider(
+                    Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                )
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Text("Fihrist konumu", fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FolderCarouselPositionChip(
+                            label = "Ust",
+                            selected = folderCarouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_TOP,
+                            enabled = folderCarousel,
+                            onClick = {
+                                folderCarouselPosition = AppPrefs.FOLDER_CAROUSEL_POS_TOP
+                                AppPrefs.setFolderCarouselPosition(context, folderCarouselPosition)
+                            },
+                        )
+                        FolderCarouselPositionChip(
+                            label = "Orta",
+                            selected = folderCarouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE,
+                            enabled = folderCarousel,
+                            onClick = {
+                                folderCarouselPosition = AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE
+                                AppPrefs.setFolderCarouselPosition(context, folderCarouselPosition)
+                            },
+                        )
+                        FolderCarouselPositionChip(
+                            label = "Alt",
+                            selected = folderCarouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM,
+                            enabled = folderCarousel,
+                            onClick = {
+                                folderCarouselPosition = AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM
+                                AppPrefs.setFolderCarouselPosition(context, folderCarouselPosition)
+                            },
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Varsayilan: Alt. Ust baslikta, orta ekran kenarlarinda, alt altyazi gibi gosterir.",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
 
@@ -241,4 +285,23 @@ fun SettingsLauncherScreen(
             }
         }
     }
+}
+
+@Composable
+private fun FolderCarouselPositionChip(
+    label: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        enabled = enabled,
+        label = { Text(label) },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+    )
 }

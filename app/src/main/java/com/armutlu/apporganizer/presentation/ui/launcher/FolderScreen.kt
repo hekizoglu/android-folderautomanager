@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
@@ -63,12 +64,16 @@ fun FolderScreen(
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
     var folderCarouselEnabled by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
+    var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == AppPrefs.KEY_FOLDER_CAROUSEL_ENABLED) {
                 folderCarouselEnabled = AppPrefs.isFolderCarouselEnabled(context)
+            }
+            if (key == AppPrefs.KEY_FOLDER_CAROUSEL_POSITION) {
+                folderCarouselPosition = AppPrefs.getFolderCarouselPosition(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -162,6 +167,13 @@ fun FolderScreen(
                 null
             }
         }
+        val carouselPosition = when (folderCarouselPosition) {
+            AppPrefs.FOLDER_CAROUSEL_POS_TOP,
+            AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE,
+            AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM -> folderCarouselPosition
+            else -> AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM
+        }
+        val showFolderNavigator = previousFolder != null && nextFolder != null
 
         val catColor = remember(f.category.colorHex, customColor) {
             val hex = customColor.ifBlank { null } ?: f.category.colorHex
@@ -223,6 +235,19 @@ fun FolderScreen(
                 )
                 .background(surface.copy(alpha = 0.95f))
         ) {
+            if (showFolderNavigator) {
+                FolderPageTurnPeek(
+                    previousFolder = previousFolder!!,
+                    nextFolder = nextFolder!!,
+                    transitionDirection = transitionDirection,
+                    offsetValue = if (folderCarouselEnabled) contentOffset.value else 0f,
+                    offsetMax = folderTransitionOffsetPx,
+                    context = context,
+                    onSurface = onSurface,
+                    accent = catColor,
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -275,12 +300,32 @@ fun FolderScreen(
                             color = onSurface,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                         Text(
                             text = "${f.apps.size} uygulama",
                             color = textSecondary,
                             fontSize = 13.sp,
                         )
+                        if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_TOP) {
+                            Spacer(modifier = Modifier.height(7.dp))
+                            FolderIndexNavigator(
+                                previousFolder = previousFolder!!,
+                                nextFolder = nextFolder!!,
+                                context = context,
+                                onSurface = onSurface,
+                                accent = catColor,
+                                onPrevious = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    navigateAdjacentFolder(next = false)
+                                },
+                                onNext = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    navigateAdjacentFolder(next = true)
+                                },
+                            )
+                        }
                     }
 
                     Box(
@@ -484,39 +529,50 @@ fun FolderScreen(
                 }
             }
 
-            previousFolder?.let { previewFolder ->
-                FolderCarouselPeek(
-                    folder = previewFolder,
-                    label = "Onceki",
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 8.dp),
+            // Klasör düzenleme dialog'u
+            if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE) {
+                FolderIndexNavigator(
+                    previousFolder = previousFolder!!,
+                    nextFolder = nextFolder!!,
                     context = context,
                     onSurface = onSurface,
-                    onClick = {
+                    accent = catColor,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 18.dp),
+                    onPrevious = {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         navigateAdjacentFolder(next = false)
                     },
-                )
-            }
-
-            nextFolder?.let { previewFolder ->
-                FolderCarouselPeek(
-                    folder = previewFolder,
-                    label = "Sonraki",
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 8.dp),
-                    context = context,
-                    onSurface = onSurface,
-                    onClick = {
+                    onNext = {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         navigateAdjacentFolder(next = true)
                     },
                 )
             }
 
-            // Klasör düzenleme dialog'u
+            if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM) {
+                FolderIndexNavigator(
+                    previousFolder = previousFolder!!,
+                    nextFolder = nextFolder!!,
+                    context = context,
+                    onSurface = onSurface,
+                    accent = catColor,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                        .padding(horizontal = 18.dp, vertical = 12.dp),
+                    onPrevious = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        navigateAdjacentFolder(next = false)
+                    },
+                    onNext = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        navigateAdjacentFolder(next = true)
+                    },
+                )
+            }
+
             if (showEditDialog) {
                 FolderRenameDialog(
                     currentName = customName.ifBlank { f.category.categoryName },
@@ -595,12 +651,129 @@ fun FolderScreen(
 }
 
 @Composable
-private fun FolderCarouselPeek(
+private fun FolderPageTurnPeek(
+    previousFolder: AppFolder,
+    nextFolder: AppFolder,
+    transitionDirection: Int,
+    offsetValue: Float,
+    offsetMax: Float,
+    context: android.content.Context,
+    onSurface: Color,
+    accent: Color,
+) {
+    val progress = (abs(offsetValue) / offsetMax.coerceAtLeast(1f)).coerceIn(0f, 1f)
+    if (progress <= 0.01f) return
+
+    val showStart = transitionDirection > 0
+    val previewFolder = if (showStart) previousFolder else nextFolder
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { alpha = progress * 0.9f },
+    ) {
+        FolderPageEdgeStrip(
+            folder = previewFolder,
+            startEdge = showStart,
+            context = context,
+            onSurface = onSurface,
+            accent = accent,
+            modifier = Modifier
+                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd),
+        )
+    }
+}
+
+@Composable
+private fun FolderPageEdgeStrip(
+    folder: AppFolder,
+    startEdge: Boolean,
+    context: android.content.Context,
+    onSurface: Color,
+    accent: Color,
+    modifier: Modifier = Modifier,
+) {
+    val catId = folder.category.categoryId
+    val customName = AppPrefs.getFolderCustomNames(context)[catId].orEmpty()
+    val customEmoji = AppPrefs.getFolderCustomEmojis(context)[catId].orEmpty()
+    val title = customName.ifBlank { folder.category.categoryName }
+    Column(
+        modifier = modifier
+            .width(64.dp)
+            .height(154.dp)
+            .clip(
+                if (startEdge) {
+                    RoundedCornerShape(topStart = 0.dp, topEnd = 22.dp, bottomEnd = 22.dp, bottomStart = 0.dp)
+                } else {
+                    RoundedCornerShape(topStart = 22.dp, topEnd = 0.dp, bottomEnd = 0.dp, bottomStart = 22.dp)
+                },
+            )
+            .background(accent.copy(alpha = 0.18f))
+            .padding(horizontal = 7.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 20.sp)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            title,
+            color = onSurface.copy(alpha = 0.72f),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun FolderIndexNavigator(
+    previousFolder: AppFolder,
+    nextFolder: AppFolder,
+    context: android.content.Context,
+    onSurface: Color,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FolderTopNavChip(
+            folder = previousFolder,
+            label = "Onceki",
+            direction = "<",
+            modifier = Modifier.weight(1f),
+            context = context,
+            onSurface = onSurface,
+            accent = accent,
+            onClick = onPrevious,
+        )
+        FolderTopNavChip(
+            folder = nextFolder,
+            label = "Sonraki",
+            direction = ">",
+            modifier = Modifier.weight(1f),
+            context = context,
+            onSurface = onSurface,
+            accent = accent,
+            onClick = onNext,
+        )
+    }
+}
+
+@Composable
+private fun FolderTopNavChip(
     folder: AppFolder,
     label: String,
+    direction: String,
     modifier: Modifier = Modifier,
     context: android.content.Context,
     onSurface: Color,
+    accent: Color,
     onClick: () -> Unit,
 ) {
     val catId = folder.category.categoryId
@@ -614,37 +787,59 @@ private fun FolderCarouselPeek(
     }
     val title = customName.ifBlank { folder.category.categoryName }
 
-    Box(
+    Row(
         modifier = modifier
-            .width(76.dp)
-            .clip(RoundedCornerShape(22.dp))
-            .background(onSurface.copy(alpha = 0.10f))
+            .height(34.dp)
+            .clip(RoundedCornerShape(17.dp))
+            .background(accent.copy(alpha = 0.12f))
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center,
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+        Text(
+            text = if (direction == "<") direction else label,
+            color = onSurface.copy(alpha = 0.54f),
+            fontSize = if (direction == "<") 14.sp else 9.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.32f)),
+            contentAlignment = Alignment.Center,
         ) {
-            Text(label, color = onSurface.copy(alpha = 0.52f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(color.copy(alpha = 0.28f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 20.sp)
-            }
+            Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 11.sp)
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+        ) {
             Text(
-                title,
-                color = onSurface.copy(alpha = 0.82f),
+                text = label,
+                color = onSurface.copy(alpha = 0.48f),
+                fontSize = 8.sp,
+                lineHeight = 9.sp,
+                maxLines = 1,
+            )
+            Text(
+                text = title,
+                color = onSurface.copy(alpha = 0.84f),
                 fontSize = 10.sp,
-                maxLines = 2,
+                lineHeight = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.SemiBold,
             )
-            Text("${folder.apps.size}", color = onSurface.copy(alpha = 0.48f), fontSize = 10.sp)
         }
+        Text(
+            text = if (direction == ">") direction else "${folder.apps.size}",
+            color = onSurface.copy(alpha = 0.54f),
+            fontSize = if (direction == ">") 14.sp else 9.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
     }
 }

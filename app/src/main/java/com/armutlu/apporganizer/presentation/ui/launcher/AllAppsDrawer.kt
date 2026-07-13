@@ -10,6 +10,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -47,6 +48,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -130,10 +132,30 @@ private fun DrawerSearchBar(
 
     // Arama + kapat — elmas parlaması dikkat çeker
     val shineEnabled = androidx.compose.runtime.remember { AppPrefs.isSearchShineEnabled(context) }
+    var searchFocused by remember { mutableStateOf(false) }
+    val focusGlowAlpha by animateFloatAsState(
+        targetValue = if (searchFocused) 1f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "all_apps_search_focus_glow",
+    )
+    val focusColor = Color(0xFFB6FF4D)
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.weight(1f).height(44.dp)
-                .clip(RoundedCornerShape(22.dp)).background(searchBg)
+                .border(
+                    width = 3.dp,
+                    color = focusColor.copy(alpha = 0.18f * focusGlowAlpha),
+                    shape = RoundedCornerShape(24.dp),
+                )
+                .padding(2.dp)
+                .border(
+                    width = 1.5.dp,
+                    color = focusColor.copy(alpha = 0.82f * focusGlowAlpha),
+                    shape = RoundedCornerShape(22.dp),
+                )
+                .clip(RoundedCornerShape(22.dp)).background(
+                    if (searchFocused) searchBg.copy(alpha = 0.18f) else searchBg
+                )
                 .diamondShine(shineEnabled, RoundedCornerShape(22.dp))
                 .padding(horizontal = 14.dp),
             contentAlignment = Alignment.CenterStart
@@ -147,7 +169,9 @@ private fun DrawerSearchBar(
                         value = searchQuery, onValueChange = onSearchQueryChange,
                         singleLine = true, cursorBrush = SolidColor(primary),
                         textStyle = TextStyle(color = onSurface, fontSize = 14.sp),
-                        modifier = Modifier.focusRequester(searchFocusRequester)
+                        modifier = Modifier
+                            .focusRequester(searchFocusRequester)
+                            .onFocusChanged { searchFocused = it.isFocused }
                     )
                 }
                 if (searchQuery.isNotEmpty()) {

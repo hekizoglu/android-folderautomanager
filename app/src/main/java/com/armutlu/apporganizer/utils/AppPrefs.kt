@@ -194,6 +194,15 @@ object AppPrefs {
         prefs(context).getBoolean(KEY_FOLDER_CAROUSEL_ENABLED, true)
     fun setFolderCarouselEnabled(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_FOLDER_CAROUSEL_ENABLED, enabled).apply()
+    const val KEY_FOLDER_CAROUSEL_POSITION = "folder_carousel_position"
+    const val FOLDER_CAROUSEL_POS_TOP = "TOP"
+    const val FOLDER_CAROUSEL_POS_MIDDLE = "MIDDLE"
+    const val FOLDER_CAROUSEL_POS_BOTTOM = "BOTTOM"
+    fun getFolderCarouselPosition(context: Context): String =
+        prefs(context).getString(KEY_FOLDER_CAROUSEL_POSITION, FOLDER_CAROUSEL_POS_BOTTOM)
+            ?: FOLDER_CAROUSEL_POS_BOTTOM
+    fun setFolderCarouselPosition(context: Context, position: String) =
+        prefs(context).edit().putString(KEY_FOLDER_CAROUSEL_POSITION, position).apply()
 
     // Widget alanı — ana ekranda widget göster
     const val KEY_WIDGET_AREA_ENABLED = "widget_area_enabled"

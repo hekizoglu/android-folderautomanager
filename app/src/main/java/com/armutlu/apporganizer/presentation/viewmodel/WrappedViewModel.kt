@@ -27,11 +27,24 @@ data class WrappedUiState(
     val loading: Boolean = true,
     val hasUsagePermission: Boolean = false,
     val report: WrappedEngine.WrappedReport? = null,
+    val charts: WrappedChartData = WrappedChartData(),
     val previousScore: Int? = null,
     val aiCoachLoading: Boolean = false,
     val aiCoachComment: String? = null,
     val unlockCount: Int? = null,
     val previousUnlockCount: Int? = null,
+)
+
+data class WrappedChartData(
+    val dailyUsageMinutes: List<Int> = emptyList(),
+    val dailyNotificationCounts: List<Int> = emptyList(),
+    val dailyNightNotificationCounts: List<Int> = emptyList(),
+    val categoryShares: List<CategoryShare> = emptyList(),
+)
+
+data class CategoryShare(
+    val categoryId: String,
+    val percent: Int,
 )
 
 /**
@@ -71,19 +84,20 @@ class WrappedViewModel @Inject constructor(
             // state üzerinden akar (WrappedSnapshotPrefs → previousScore → WrappedContent →
             // ScoreCard). İlk hafta null döner — sahte +0 karşılaştırması gösterilmez.
             val previousScore = result?.let {
-                WrappedSnapshotPrefs.updateWeeklyPulseScore(context, it.pulse.total)
+                WrappedSnapshotPrefs.updateWeeklyPulseScore(context, it.report.pulse.total)
             }
-            result?.let { WrappedSnapshotPrefs.setLatestPulseScore(context, it.pulse.total) }
+            result?.report?.let { WrappedSnapshotPrefs.setLatestPulseScore(context, it.pulse.total) }
             _uiState.value = WrappedUiState(
                 loading = false,
                 hasUsagePermission = UsageStatsHelper.hasPermission(context),
-                report = result,
+                report = result?.report,
+                charts = result?.charts ?: WrappedChartData(),
                 previousScore = previousScore,
-                aiCoachLoading = shouldLoadAiCoach(result),
+                aiCoachLoading = shouldLoadAiCoach(result?.report),
                 unlockCount = unlockCount,
                 previousUnlockCount = previousUnlockCount,
             )
-            loadAiCoachIfNeeded(result)
+            loadAiCoachIfNeeded(result?.report)
         }
     }
 
@@ -109,7 +123,7 @@ class WrappedViewModel @Inject constructor(
     private suspend fun buildReport(
         unlockCount: Int?,
         previousUnlockCount: Int?,
-    ): WrappedEngine.WrappedReport {
+    ): BuildResult {
         val apps = appRepository.getAllApps()
         val dailySessionResult = UsageStatsHelper.getDailySessionUsage(context, days = 7)
         val dailySessions = (dailySessionResult as? UsageStatsHelper.DailySessionResult.Available)
@@ -133,15 +147,18 @@ class WrappedViewModel @Inject constructor(
             )
         }
 
+        val since = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
+        val notificationEvents = runCatching {
+            notificationEventDao.eventsSince(since)
+        }.onFailure { e -> Timber.e(e, "Bildirim olaylari alinamadi") }.getOrDefault(emptyList())
+
         val notifSummary = runCatching {
-            val since = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
-            val events = notificationEventDao.eventsSince(since)
-            if (events.isEmpty()) return@runCatching null
+            if (notificationEvents.isEmpty()) return@runCatching null
             val appNames = apps.associate { it.packageName to it.appName }
             val usageMs = dailySessions?.groupBy { it.packageName }
                 ?.mapValues { (_, days) -> days.sumOf { it.foregroundDurationMs } }
                 ?: emptyMap()
-            val report = NotificationAnalyzer.analyze(events, appNames, usageMs)
+            val report = NotificationAnalyzer.analyze(notificationEvents, appNames, usageMs)
             WrappedEngine.NotificationSummary(
                 totalNotifications = report.totalNotifications,
                 disturbingCount = report.disturbing.size,
@@ -173,7 +190,21 @@ class WrappedViewModel @Inject constructor(
             hasUsageAccess = UsageStatsHelper.hasPermission(context),
         )
 
-        return WrappedEngine.compute(input)
+        val report = WrappedEngine.compute(input)
+        return BuildResult(
+            report = report,
+            charts = WrappedChartData(
+                dailyUsageMinutes = buildDailyUsageTrend(dailySessions),
+                dailyNotificationCounts = buildDailyNotificationTrend(notificationEvents, nightOnly = false),
+                dailyNightNotificationCounts = buildDailyNotificationTrend(notificationEvents, nightOnly = true),
+                categoryShares = report.personality.categoryPercentages
+                    .filterValues { it > 0 }
+                    .entries
+                    .sortedByDescending { it.value }
+                    .take(5)
+                    .map { CategoryShare(categoryId = it.key, percent = it.value) },
+            ),
+        )
     }
 
     fun enableUsagePermission() {
@@ -183,4 +214,38 @@ class WrappedViewModel @Inject constructor(
     companion object {
         fun isFeatureEnabled(context: Context): Boolean = AppPrefs.isWrappedEnabled(context)
     }
+}
+
+private data class BuildResult(
+    val report: WrappedEngine.WrappedReport,
+    val charts: WrappedChartData,
+)
+
+private fun buildDailyUsageTrend(dailySessions: List<com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage>?): List<Int> {
+    val today = java.time.LocalDate.now().toEpochDay()
+    val byDay = dailySessions.orEmpty()
+        .groupBy { it.epochDay }
+        .mapValues { (_, rows) -> rows.maxOfOrNull { it.globalForegroundMs } ?: 0L }
+    return (6 downTo 0).map { offset ->
+        ((byDay[today - offset] ?: 0L) / 60_000L).toInt()
+    }
+}
+
+private fun buildDailyNotificationTrend(
+    events: List<com.armutlu.apporganizer.domain.models.NotificationEvent>,
+    nightOnly: Boolean,
+): List<Int> {
+    val now = System.currentTimeMillis()
+    val dayMs = TimeUnit.DAYS.toMillis(1)
+    val counts = IntArray(7)
+    val calendar = java.util.Calendar.getInstance()
+    events.forEach { event ->
+        val index = 6 - ((now - event.postedAt) / dayMs).toInt().coerceIn(0, 6)
+        if (index !in 0..6) return@forEach
+        calendar.timeInMillis = event.postedAt
+        val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+        val isNight = hour >= 23 || hour < 7
+        if (!nightOnly || isNight) counts[index]++
+    }
+    return counts.toList()
 }

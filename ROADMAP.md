@@ -17,7 +17,7 @@ edildi. Aşağıdakiler kapsam nedeniyle BEKLİYOR — sessizce atlanmadı, HIST
 | 16 | `ReportsCenterScreen` üst özet kartı: toplam skor + confidence + en güçlü/zayıf alt skor + tek öneri, altında 5 alt skor progress + detay giriş kartları | Bekliyor |
 | 14 | `WrappedReportScreen` madde sırası tam speke göre revize (skor→alt skor→en önemli içgörü→profil→istatistik→bildirim özeti→rozet→değişim→detay) | Bekliyor |
 | 12 | Rozet kriterlerini "anlamlı hale getirme" — Bildirim Terbiyecisi, Sessiz Gece, Hedef Takipçisi gibi yeni/iyileştirilmiş rozetler; izin yoksa "erişimle ölçülür" açıklaması | Bekliyor |
-| 10 | Canvas grafikleri: haftalık kullanım trendi (7 bar), bildirim trendi (7 sparkline, gece işaretli), kategori dağılımı (ilk 5 yatay bar) — harici kütüphane yok | Bekliyor |
+| 10 | Canvas grafikleri: haftalık kullanım trendi (7 bar), bildirim trendi (7 sparkline, gece işaretli), kategori dağılımı (ilk 5 yatay bar) — harici kütüphane yok | Tamamlandı - yerel: `WrappedViewModel` grafik verisi + `WrappedReportScreen` Canvas kartı; `compileDebugKotlin` geçti |
 | 8 | Glass saat stili görsel ayrımı (Pulse'tan daha belirgin cam/gradient) güçlendirme | Bekliyor |
 | — | Emülatörde manuel doğrulama: Pulse Clock 3 stil, skor/içgörü toggle'ları, uzun basma → yönetim ekranı, kompakt ekranda grid kaybolmuyor | Bekliyor - cihaz/emülatör |
 | 9 | Skor halkasının altına (mini açıklama "Denge" etiketinin yanına/altına) ekran kullanım süresi de yazılsın — örn. "Denge · 3sa 12dk" gibi günlük/haftalık toplam ekran süresi. `UsageStatsHelper` zaten süre verisini üretiyor, `PulseClockViewModel.PulseClockUiState`'e alan eklenip `PulseScoreRing`'in altına küçük bir satır olarak basılabilir. Kullanıcı talebi — kod yazılmadı, sadece backlog. | Bekliyor |
@@ -26,18 +26,7 @@ edildi. Aşağıdakiler kapsam nedeniyle BEKLİYOR — sessizce atlanmadı, HIST
 
 ## Yüksek Puanlı - Klasör Zekâsı ve Akıllı Düzenleme
 
-Amaç: AppOrganizer'ın ana vaadini güçlendirmek; uygulamaları açıklanabilir ve güven puanlı kararlarla doğru klasörlere yerleştirmek, emin olunmayanları kullanıcıya kontrol ettirmek ve kullanıcı düzeltmelerini kalıcı öğrenmek.
-
-| Alt iş | Durum |
-|---|---|
-| Classification Decision V2 | Tamamlandı - yerel çekirdek: `ClassificationDecision`, source/confidence/reason/review metadata, kullanıcı kararı önceliği, remote catalog bağlantısı, legacy string API uyumu |
-| Kalıcı Kullanıcı Kararları | Tamamlandı - Room `apps` metadata alanları ve v15->v16 migration eklendi; manuel repository güncellemeleri `USER_CORRECTED` + lock yazıyor; eski `KEY_MANUAL_CAT_OVERRIDES` ilk açılışta Room metadata'ya taşınıyor |
-| Kontrol Bekleyenler | Tamamlandı - `classification_review` route'u, ViewModel queue, confirm/correct/7 gün skip akışı ve Ayarlar > Uygulamalar girişi eklendi |
-| Onboarding Düzen Önizlemesi | Tamamlandı - kurulumda uygulama/klasör/kategorili/kontrol bekleyen sayaçları gösteriliyor |
-| Klasör İçi Akıllı Sıralama | Tamamlandı - `SMART` sıralama modu `KEY_FOLDER_SORT_MODE` ile folder render'a bağlandı; kullanım süresi, launch count ve son kullanım sinyali birlikte kullanılıyor |
-| Bölme/Birleştirme/Temizlik Önerileri | Tamamlandı - `FolderSuggestionEngine`, öneri ekranı, accept/dismiss/7 gün snooze persistence ve v4 backup/restore desteği eklendi |
-
-Doğrulama: `compileDebugKotlin` geçti; `AppClassifierTest` ve `AppRepositoryTest` geçti. Tam debug build bu turun sonunda çalıştırılacak.
+Bu blok tamamlandı ve arşive taşındı. Ayrıntılar için [HISTORY.md](./HISTORY.md) içindeki Dönem 246 kaydına bak.
 
 ---
 

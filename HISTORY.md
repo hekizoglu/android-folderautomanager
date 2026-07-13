@@ -1,6 +1,28 @@
-# HISTORY.md - AppOrganizer Döngü Arşivi
+﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
+
+## Döngü 247 - 2026-07-13 [Wrapped Canvas grafikleri]
+
+**Yapılanlar:** ROADMAP Pulse/Dijital Nabız 10 puanlık Canvas grafik maddesi tamamlandı. `WrappedViewModel` haftalık kullanım dakikaları, günlük bildirim sayıları, gece bildirimi işaretleri ve ilk 5 kategori payını `WrappedChartData` olarak üretir. `WrappedReportScreen` içinde harici kütüphane olmadan Canvas tabanlı 7 bar kullanım trendi, 7 noktalı bildirim sparkline'ı ve kategori yatay barları eklendi.
+
+**Doğrulama:** `compileDebugKotlin` geçti. Debug APK bu döngü başında `scripts/send_debug_build.ps1` ile üretilip Telegram'a gönderildi; Canvas değişikliği sonrası final debug build ayrıca çalıştırılacak.
+
+---
+
+## DÃ¶ngÃ¼ 246 - 2026-07-13 [KlasÃ¶r ZekÃ¢sÄ± ve AkÄ±llÄ± DÃ¼zenleme tamamlandÄ±]
+
+**YapÄ±lanlar (kapanan roadmap bloÄŸu):**
+1. `ClassificationDecision` Ã§ekirdeÄŸi eklendi: source/confidence/reason/review metadata, kullanÄ±cÄ± kararÄ± Ã¶nceliÄŸi ve remote catalog baÄŸlantÄ±sÄ±.
+2. Room `apps` tablosuna sÄ±nÄ±flandÄ±rma metadata alanlarÄ± eklendi, v15->v16 migration tamamlandÄ± ve eski manuel override'lar ilk aÃ§Ä±lÄ±ÅŸta metadata'ya taÅŸÄ±ndÄ±.
+3. `classification_review` route'u, inceleme kuyruÄŸu, onay/dÃ¼zeltme/7 gÃ¼n ertele akÄ±ÅŸÄ± ve Ayarlar > Uygulamalar giriÅŸi eklendi.
+4. Onboarding'e dÃ¼zen Ã¶nizlemesi kondu; uygulama, klasÃ¶r, kategorili ve kontrol bekleyen sayÄ±larÄ± gÃ¶steriliyor.
+5. `SMART` klasÃ¶r sÄ±ralama modu gerÃ§ek folder render'a baÄŸlandÄ±.
+6. `FolderSuggestionEngine`, Ã¶neri ekranÄ±, kabul/gizle/7 gÃ¼n ertele kalÄ±cÄ±lÄ±ÄŸÄ± ve v4 backup/restore desteÄŸi eklendi.
+
+**DoÄŸrulama:** `compileDebugKotlin` geÃ§ti; ilgili classifier/repository testleri geÃ§ti; debug build ve Telegram teslimi Ã¶nceki akÄ±ÅŸta doÄŸrulandÄ±.
+
+---
 
 ---
 
