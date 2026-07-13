@@ -295,6 +295,11 @@ object AppPrefs {
     fun isHomeInsightVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_INSIGHT_VISIBLE, true)
     fun setHomeInsightVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_INSIGHT_VISIBLE, v).apply()
 
+    // Skor halkası ("Denge") altında 24 saatlik mini kullanım grafiği görünürlüğü
+    const val KEY_HOME_USAGE_CHART_VISIBLE = "home_usage_chart_visible"
+    fun isHomeUsageChartVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_USAGE_CHART_VISIBLE, true)
+    fun setHomeUsageChartVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_USAGE_CHART_VISIBLE, v).apply()
+
     // Son gösterilen içgörü id'si — aynı mesaj her açılışta tekrarlanmasın (dönüşümlü gösterim)
     const val KEY_PULSE_LAST_INSIGHT_ID = "pulse_last_insight_id"
     fun getPulseLastInsightId(context: Context): String? = prefs(context).getString(KEY_PULSE_LAST_INSIGHT_ID, null)

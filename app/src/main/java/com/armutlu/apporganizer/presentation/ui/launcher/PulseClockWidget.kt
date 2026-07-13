@@ -91,6 +91,7 @@ internal fun PulseClockWidget(
     var clockStyle by remember { mutableStateOf(AppPrefs.getClockStyle(context)) }
     var scoreVisible by remember { mutableStateOf(AppPrefs.isHomeScoreVisible(context)) }
     var insightVisible by remember { mutableStateOf(AppPrefs.isHomeInsightVisible(context)) }
+    var usageChartVisible by remember { mutableStateOf(AppPrefs.isHomeUsageChartVisible(context)) }
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -98,6 +99,7 @@ internal fun PulseClockWidget(
                 AppPrefs.KEY_CLOCK_STYLE -> clockStyle = AppPrefs.getClockStyle(context)
                 AppPrefs.KEY_HOME_SCORE_VISIBLE -> scoreVisible = AppPrefs.isHomeScoreVisible(context)
                 AppPrefs.KEY_HOME_INSIGHT_VISIBLE -> insightVisible = AppPrefs.isHomeInsightVisible(context)
+                AppPrefs.KEY_HOME_USAGE_CHART_VISIBLE -> usageChartVisible = AppPrefs.isHomeUsageChartVisible(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -126,6 +128,7 @@ internal fun PulseClockWidget(
             glass = clockStyle == AppPrefs.CLOCK_STYLE_GLASS,
             scoreVisible = scoreVisible,
             insightVisible = insightVisible,
+            usageChartVisible = usageChartVisible,
             uiState = uiState,
             onOpenWeeklyReport = onOpenWeeklyReport,
             onOpenScoreDetails = onOpenScoreDetails,
@@ -178,6 +181,7 @@ private fun PulseCard(
     glass: Boolean,
     scoreVisible: Boolean,
     insightVisible: Boolean,
+    usageChartVisible: Boolean,
     uiState: PulseClockViewModel.PulseClockUiState,
     onOpenWeeklyReport: () -> Unit,
     onOpenScoreDetails: () -> Unit,
@@ -301,6 +305,7 @@ private fun PulseCard(
                     score = uiState.score,
                     delta = uiState.scoreDelta,
                     weeklyScreenTimeMinutes = uiState.weeklyScreenTimeMinutes,
+                    hourlyUsageMinutes = if (usageChartVisible) uiState.hourlyUsageMinutes else null,
                     compact = compact,
                     onClick = onOpenScoreDetails,
                 )
@@ -314,6 +319,7 @@ private fun PulseScoreRing(
     score: Int,
     delta: Int?,
     weeklyScreenTimeMinutes: Int?,
+    hourlyUsageMinutes: List<Int>?,
     compact: Boolean,
     onClick: () -> Unit,
 ) {
@@ -401,6 +407,51 @@ private fun PulseScoreRing(
                 text = listOfNotNull(stringResource(R.string.pulse_score_ring_caption), screenTimeText).joinToString(" · "),
                 color = Color.White.copy(alpha = 0.45f),
                 fontSize = 9.sp,
+            )
+            // 24 saatlik mini kullanım grafiği — Ayarlar'dan kapatılabilir (KEY_HOME_USAGE_CHART_VISIBLE)
+            if (hourlyUsageMinutes != null && hourlyUsageMinutes.any { it > 0 }) {
+                Spacer(Modifier.height(3.dp))
+                HourlyUsageSparkline(
+                    minutes = hourlyUsageMinutes,
+                    barColor = pulseScoreColor(score),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 24 kovalı mini çubuk grafik — son 24 saatin ekran süresi, sağdaki çubuk şu anki saat.
+ * Skor halkasının genişliğine sığacak kadar küçük; dokunma hedefi yok, salt görsel.
+ */
+@Composable
+private fun HourlyUsageSparkline(
+    minutes: List<Int>,
+    barColor: Color,
+    width: androidx.compose.ui.unit.Dp = 52.dp,
+    height: androidx.compose.ui.unit.Dp = 12.dp,
+) {
+    val context = LocalContext.current
+    val maxMinutes = (minutes.maxOrNull() ?: 0).coerceAtLeast(1)
+    val chartDesc = context.getString(R.string.pulse_usage_chart_content_desc)
+    Canvas(
+        modifier = Modifier
+            .width(width)
+            .height(height)
+            .semantics { contentDescription = chartDesc },
+    ) {
+        val gap = 1.dp.toPx()
+        val barWidth = (size.width - gap * (minutes.size - 1)) / minutes.size
+        minutes.forEachIndexed { index, value ->
+            val barHeight = (size.height * value / maxMinutes).coerceAtLeast(1.5.dp.toPx())
+            drawRoundRect(
+                color = if (value > 0) barColor.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.20f),
+                topLeft = androidx.compose.ui.geometry.Offset(
+                    x = index * (barWidth + gap),
+                    y = size.height - barHeight,
+                ),
+                size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(barWidth / 2f),
             )
         }
     }

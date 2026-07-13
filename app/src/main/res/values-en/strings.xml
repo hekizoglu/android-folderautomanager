@@ -372,6 +372,9 @@
     <string name="settings_home_score_visible_desc">Shows the digital life score ring in the clock card</string>
     <string name="settings_home_insight_visible_title">Show Insight on Home Screen</string>
     <string name="settings_home_insight_visible_desc">Shows a one-line personal insight in the clock card</string>
+    <string name="settings_home_usage_chart_visible_title">24-Hour Chart Under Balance</string>
+    <string name="settings_home_usage_chart_visible_desc">Shows the last 24 hours of usage as a mini chart under the score ring</string>
+    <string name="pulse_usage_chart_content_desc">Usage chart for the last 24 hours</string>
 
     <!-- HomeTickerRow — mute menu -->
     <string name="ticker_mute_8h">Mute for 8 hours</string>

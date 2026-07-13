@@ -128,6 +128,7 @@ object BackupManager {
                     put("clockStyle", AppPrefs.getClockStyle(context))
                     put("homeScoreVisible", AppPrefs.isHomeScoreVisible(context))
                     put("homeInsightVisible", AppPrefs.isHomeInsightVisible(context))
+                    put("homeUsageChartVisible", AppPrefs.isHomeUsageChartVisible(context))
                     put("searchWebFallbackEnabled", AppPrefs.isSearchWebFallbackEnabled(context))
                     put("searchStatsEnabled", AppPrefs.isSearchStatsEnabled(context))
                     put("searchSourceAppsEnabled", AppPrefs.isSearchSourceAppsEnabled(context))
@@ -362,6 +363,7 @@ object BackupManager {
                         ?.let { AppPrefs.setClockStyle(context, it) }
                     if (s.has("homeScoreVisible")) AppPrefs.setHomeScoreVisible(context, s.getBoolean("homeScoreVisible"))
                     if (s.has("homeInsightVisible")) AppPrefs.setHomeInsightVisible(context, s.getBoolean("homeInsightVisible"))
+                    if (s.has("homeUsageChartVisible")) AppPrefs.setHomeUsageChartVisible(context, s.getBoolean("homeUsageChartVisible"))
                     if (s.has("searchWebFallbackEnabled")) AppPrefs.setSearchWebFallbackEnabled(context, s.getBoolean("searchWebFallbackEnabled"))
                     if (s.has("searchStatsEnabled")) AppPrefs.setSearchStatsEnabled(context, s.getBoolean("searchStatsEnabled"))
                     if (s.has("searchSourceAppsEnabled")) AppPrefs.setSearchSourceAppsEnabled(context, s.getBoolean("searchSourceAppsEnabled"))

@@ -312,6 +312,7 @@ fun SettingsHomeScreenSection(
     var clockStyle by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getClockStyle(context)) }
     var homeScoreVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeScoreVisible(context)) }
     var homeInsightVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeInsightVisible(context)) }
+    var homeUsageChartVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeUsageChartVisible(context)) }
     SettingsCard {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
@@ -370,6 +371,17 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 homeInsightVisible = it
                 com.armutlu.apporganizer.utils.AppPrefs.setHomeInsightVisible(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Info,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_usage_chart_visible_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_usage_chart_visible_desc),
+            checked = homeUsageChartVisible,
+            onCheckedChange = {
+                homeUsageChartVisible = it
+                com.armutlu.apporganizer.utils.AppPrefs.setHomeUsageChartVisible(context, it)
             }
         )
     }

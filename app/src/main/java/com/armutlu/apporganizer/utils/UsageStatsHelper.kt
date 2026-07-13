@@ -284,6 +284,74 @@ object UsageStatsHelper {
         }
     }
 
+    /**
+     * Son 24 saatin saatlik toplam ekran kullanımı (dakika) — 24 eleman, index 0 = 24 saat önce,
+     * index 23 = içinde bulunulan saat. Ekran süresi RESUMED→PAUSED/STOPPED oturumlarından
+     * hesaplanır; saat sınırını aşan oturumlar ilgili kovalara bölünür.
+     * İzin yoksa veya event verisi alınamazsa null döner.
+     */
+    fun getHourlyUsageLast24h(
+        context: Context,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): List<Int>? {
+        if (!hasPermission(context)) return null
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val hourMs = 60L * 60 * 1000
+            val windowStart = nowMillis - 24 * hourMs
+            val events = manager.queryEvents(windowStart, nowMillis) ?: return null
+            val bucketsMs = LongArray(24)
+
+            fun addSession(startMs: Long, endMs: Long) {
+                var cursor = startMs.coerceAtLeast(windowStart)
+                val sessionEnd = endMs.coerceAtMost(nowMillis)
+                while (cursor < sessionEnd) {
+                    val bucket = (((cursor - windowStart) / hourMs).toInt()).coerceIn(0, 23)
+                    val bucketEnd = windowStart + (bucket + 1) * hourMs
+                    val chunkEnd = minOf(sessionEnd, bucketEnd)
+                    bucketsMs[bucket] += chunkEnd - cursor
+                    cursor = chunkEnd
+                }
+            }
+
+            val event = UsageEvents.Event()
+            var foregroundPkg: String? = null
+            var foregroundSince = 0L
+            var sawEvent = false
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                when (event.eventType) {
+                    UsageEvents.Event.ACTIVITY_RESUMED -> {
+                        sawEvent = true
+                        // Aynı anda tek ön plan uygulaması olur — öncekini kapat
+                        if (foregroundPkg != null) addSession(foregroundSince, event.timeStamp)
+                        foregroundPkg = event.packageName
+                        foregroundSince = event.timeStamp
+                    }
+                    UsageEvents.Event.ACTIVITY_PAUSED,
+                    UsageEvents.Event.ACTIVITY_STOPPED,
+                    UsageEvents.Event.SCREEN_NON_INTERACTIVE,
+                    UsageEvents.Event.DEVICE_SHUTDOWN -> {
+                        if (foregroundPkg != null &&
+                            (event.packageName == foregroundPkg || event.packageName.isNullOrEmpty())
+                        ) {
+                            addSession(foregroundSince, event.timeStamp)
+                            foregroundPkg = null
+                        }
+                    }
+                }
+            }
+            // Hâlâ açık oturum varsa "şimdi"ye kadar say
+            if (foregroundPkg != null) addSession(foregroundSince, nowMillis)
+            if (!sawEvent) return null
+            bucketsMs.map { (it / 60_000L).toInt().coerceAtMost(60) }
+        } catch (_: SecurityException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     // 0=sabah(06-11), 1=öğle(11-14), 2=öğleden sonra(14-18), 3=akşam/gece(18-06)
     private fun timeSlot(hour: Int): Int = when (hour) {
         in 6..10  -> 0

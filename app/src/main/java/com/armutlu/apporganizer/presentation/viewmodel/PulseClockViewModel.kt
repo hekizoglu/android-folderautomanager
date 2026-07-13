@@ -57,6 +57,7 @@ class PulseClockViewModel @Inject constructor(
         val subScores: DigitalPulseScore? = null,
         val confidence: DataConfidence = DataConfidence.LOW,
         val weeklyScreenTimeMinutes: Int? = null,
+        val hourlyUsageMinutes: List<Int>? = null, // 24 kova — index 23 = şu anki saat
         val loading: Boolean = true,
     )
 
@@ -164,6 +165,7 @@ class PulseClockViewModel @Inject constructor(
             subScores = pulse,
             confidence = pulse.confidence,
             weeklyScreenTimeMinutes = weeklyScreenTimeMinutes,
+            hourlyUsageMinutes = UsageStatsHelper.getHourlyUsageLast24h(context),
             loading = false,
         )
     }

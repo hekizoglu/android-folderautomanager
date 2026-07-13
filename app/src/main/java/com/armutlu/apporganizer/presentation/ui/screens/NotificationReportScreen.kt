@@ -217,13 +217,15 @@ private fun ReportContent(
         item { SummaryCard(r) }
 
         item { SectionTitle(stringResource(R.string.notif_report_section_talkative)) }
-        items(r.mostTalkative, key = { it.packageName }) { stat -> TalkativeRow(stat) }
+        // Aynı paket birden fazla bölümde olabilir — LazyColumn key'leri tüm liste
+        // genelinde benzersiz olmalı, bölüm öneki olmadan duplicate key crash'i oluşur.
+        items(r.mostTalkative, key = { "talkative_${it.packageName}" }) { stat -> TalkativeRow(stat) }
 
         item { SectionTitle(stringResource(R.string.notif_report_section_disturbing)) }
         if (r.disturbing.isEmpty()) {
             item { EmptyStateText(stringResource(R.string.notif_report_no_disturbing)) }
         } else {
-            items(r.disturbing, key = { it.packageName }) { stat -> DisturbingRow(stat) }
+            items(r.disturbing, key = { "disturbing_${it.packageName}" }) { stat -> DisturbingRow(stat) }
         }
 
         item {
@@ -240,7 +242,7 @@ private fun ReportContent(
         if (r.distracting.isEmpty()) {
             item { EmptyStateText(stringResource(R.string.notif_report_no_distracting)) }
         } else {
-            items(r.distracting, key = { it.packageName }) { stat -> DistractingRow(stat) }
+            items(r.distracting, key = { "distracting_${it.packageName}" }) { stat -> DistractingRow(stat) }
         }
 
         item { Spacer(Modifier.height(16.dp)) }

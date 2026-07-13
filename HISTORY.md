@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 255 - 2026-07-13 [Bildirim raporu scroll crash fix + Denge altına 24s mini kullanım grafiği]
+
+**Yapılanlar:** (1) Kullanıcı bildirimi: İstatistikler → Bildirim Raporu'nda aşağı kaydırınca çökme. Kök neden: `NotificationReportScreen.kt` LazyColumn'unda üç bölüm de (`mostTalkative`/`disturbing`/`distracting`) `key = { it.packageName }` kullanıyordu — aynı uygulama birden fazla bölümde olunca duplicate key `IllegalArgumentException` fırlatıyordu; alt bölümler ancak scroll ile compose edildiği için çökme kaydırma anında oluyordu. Fix: bölüm önekli key'ler (`talkative_`/`disturbing_`/`distracting_`). (2) Yeni özellik: Pulse Clock skor halkasının ("Denge") altına son 24 saatin saatlik kullanım mini çubuk grafiği — `UsageStatsHelper.getHourlyUsageLast24h()` (RESUMED→PAUSED oturumları 24 saatlik kovaya bölünür), `PulseClockUiState.hourlyUsageMinutes`, `HourlyUsageSparkline` composable (52×12dp Canvas, skor rengiyle). Ayarlar kuralı gereği `KEY_HOME_USAGE_CHART_VISIBLE` toggle'ı (SettingsHomeScreenSection + AppPrefs + BackupManager export/import) eklendi.
+
+**Bug:** Build 1. denemede `AccessDeniedException app\build\generated` (Windows build kilidi) — SOP uygulandı (java kill + app\build sil), 2. deneme başarılı. APK 25,5 MB, v1.3.14 (versionCode 37).
+
+**Sonraki:** Emülatörde bildirim raporu scroll + Denge grafiği görsel doğrulaması.
+
+---
+
 ## Döngü 254 - 2026-07-13 [Mantık hatası taraması ve yüksek etkili düzeltmeler]
 
 **Yapılanlar:** Online Android kaynakları ve MemPalace kontrolü sonrası 50 hedefli mantık hatası taraması yapıldı; doğrulanmayan bulgular sayı doldurmak için eklenmedi. Gerçek ve yüksek etkili hatalar düzeltildi: backup import artık eşleşmeyen mevcut uygulamaları topluca sıfırlamıyor; backup restore sıfır kullanım/launch/lastUsed değerlerini de geri yazıyor; backup kapsamına SmartInsight, search kaynakları, Pulse Clock, otomatik backup zamanı ve Drive URI ayarları eklendi; restore sonrası Backup/WeeklyDigest/SmartInsight worker state'i yeniden schedule ediliyor. Backup/WeeklyDigest worker schedule yarışları `UPDATE` politikasıyla kapatıldı. SmartInsight alt seçenekler kapalıyken kaçak yeni uygulama/haftalık ipucu bildirimi üretmiyor. Launcher reconcile/usage sync timestamp'leri artık başarıdan önce basılmıyor. Pulse Clock ve FolderScreen arama ayarı canlı SharedPreferences listener ile güncelleniyor. Wrapped rozetleri boş veriyle kazanılmıyor.
