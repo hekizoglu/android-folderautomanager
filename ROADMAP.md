@@ -65,6 +65,31 @@ Kalan ana kapilar:
 
 | Gorev | Minimum cozum | Durum |
 |---|---|---|
+| Dock: gercek Android varsayilanlari + klasor destegi + ilk kurulumda Sosyal Medya (14p, arastirma tamamlandi Dongu 243) | Detay asagida. | Bekliyor - onay/uygulama |
+
+### Dock — Gercek Varsayilanlar + Klasor Destegi — Arastirma (Dongu 243)
+
+**Mevcut durum:** `DockPrefs.kt` dock'u `List<String>` (paket adi) olarak tutuyor, ilk kurulumda `DEFAULT_SLOTS` adinda 4 sabit aday listesinden (Dialer/Mesajlasma/Kamera/Tarayici) cihazda YUKLU OLANI seciyor — bu "Android'in gercek varsayilani" DEGIL, sadece bir tahmin listesi. Klasor dock'a hic eklenemiyor (sadece tek uygulama paketleri).
+
+**"Android'de varsayilan ne geliyorsa o olsun" nasil yapilir:**
+- Telefon/SMS icin: `RoleManager.getRoleHolders(RoleManager.ROLE_DIALER)` / `ROLE_SMS` (API 29+) — kullanicinin GERCEKTEN sectigi varsayilan uygulamayi dondurur. Proje zaten `LauncherSetupScreen.kt`'de RoleManager + ROLE_HOME pattern'ini kullaniyor, ayni pattern tekrarlanir.
+- Tarayici icin: `PackageManager.resolveActivity(Intent(ACTION_VIEW, Uri.parse("http://")), MATCH_DEFAULT_ONLY)` — sistemin varsayilan tarayicisini dondurur (RoleManager'da browser rolu yok).
+- Kamera icin: Android'de resmi bir "varsayilan kamera" rolu/API'si YOK — mevcut `DEFAULT_SLOTS` tahmin listesi (GoogleCamera/camera2/camera) korunmali, fallback olarak kalir.
+- API 29 altinda (minSdk 26!) RoleManager rolleri yok — mevcut tahmin-listesi fallback zorunlu kaliyor, cihaz API seviyesine gore iki yollu (RoleManager varsa kullan, yoksa DEFAULT_SLOTS) mantik gerekir.
+
+**Dock'a klasor eklenebilmesi icin:**
+- `DockPrefs` veri modeli `List<String>` (sadece paket) yerine etiketli bir yapiya gecmeli, or: `"app:com.foo.bar"` / `"folder:social"` string prefix'i (basit, migration kolay) VEYA sealed class `DockItem` (App/Folder) + JSON serialization.
+- Basit string-prefix yaklasimi mevcut virgullu format ile geriye donuk uyumlu kalir (eski kayitlarda prefix yoksa "app:" varsayilir) — `BackupManager.kt`'nin dock export/import'u da bu formata gore guncellenmeli.
+- `DockEditSheet.kt`'ye "Klasor Ekle" sekmesi/secenegi eklenmeli (mevcut sadece uygulama listesi gosteriyor).
+- Dock render tarafinda (`HomeScreenComponents.kt` icindeki `PixelDock`/`DockIcon`) klasor tipi icin `FolderTile`'daki gibi mini-ikon grid + tikla-ac (FolderScreen) davranisi eklenmeli.
+
+**Ilk kurulumda Sosyal Medya klasorunu dock'a getirme:**
+- Onboarding tamamlandiktan / ilk `classifyApps` taramasindan sonra (`LauncherViewModel` veya `OnboardingScreen.kt` bitis noktasi), `folders` icinde `categoryId == Category.CAT_SOCIAL` olan klasor bulunur; apps.isNotEmpty() ise ve dock'ta bos slot varsa `DockPrefs`'e `"folder:social"` olarak eklenir (yukaridaki veri modeli degisikligine bagli).
+- Kullanici sonradan dock'tan cikarabilir (mevcut `removeFromDock` zaten calisir, sadece veri tipini anlamasi gerekir).
+
+**Etkilenen dosyalar:** `DockPrefs.kt`, `DockEditSheet.kt`, `HomeScreenComponents.kt` (PixelDock/DockIcon), `BackupManager.kt` (dock export/import formati), `OnboardingScreen.kt` veya `LauncherViewModel.kt` (ilk kurulum hook'u), `LauncherSetupScreen.kt` (RoleManager pattern referansi).
+
+**Puan:** KV:4 · U:3 · BR:3 · EA:4 = **14p** — veri modeli degisikligi mevcut kullanicilarin kayitli dock'unu bozmamali (migration + BackupManager guncellemesi sart), CLAUDE.md kurali geregi zorluk 6-7/10 sayilir, uygulamadan once kullanici onayi onerilir.
 
 ---
 
