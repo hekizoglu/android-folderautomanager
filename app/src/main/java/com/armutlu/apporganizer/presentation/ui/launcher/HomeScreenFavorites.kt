@@ -21,6 +21,7 @@ internal fun HomeFavoritesSection(
     favoriteApps: List<AppInfo>,
     suggestionsEnabled: Boolean,
     suggestedApps: List<AppInfo>,
+    suggestionsIconSizeDp: Int = 40,
     recentAppsEnabled: Boolean,
     recentApps: List<AppInfo>,
     dockPackages: List<String> = emptyList(),
@@ -67,6 +68,7 @@ internal fun HomeFavoritesSection(
         AppSuggestionsRow(
             apps = visibleSuggestions,
             iconPackPkg = iconPackPkg,
+            iconSizeDp = suggestionsIconSizeDp,
             onAppClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onLaunchApp(app.packageName)

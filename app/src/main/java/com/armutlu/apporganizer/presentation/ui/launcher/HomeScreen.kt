@@ -151,6 +151,7 @@ fun HomeScreen(
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedInfoEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)) }
+    var suggestionsIconSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)) }
     var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
@@ -217,6 +218,8 @@ fun HomeScreen(
                     notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_INFO_ENABLED ->
                     unusedInfoEnabled = com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ICON_SIZE ->
+                    suggestionsIconSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BADGE_ENABLED ->
                     folderBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
@@ -566,6 +569,7 @@ fun HomeScreen(
                 favoriteApps = favoriteApps,
                 suggestionsEnabled = suggestionsEnabled,
                 suggestedApps = suggestedApps,
+                suggestionsIconSizeDp = suggestionsIconSizeDp,
                 recentAppsEnabled = recentAppsEnabled,
                 recentApps = recentApps,
                 dockPackages = dockPackages,

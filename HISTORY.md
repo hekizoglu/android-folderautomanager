@@ -4,6 +4,18 @@
 
 ---
 
+## Döngü 243 - 2026-07-13 [Klasör kullanım bilgisi mini çerçeve + Öneriler bölümü küçültme]
+
+**Yapılanlar (kullanıcı talebi, 2 madde):**
+1. **Klasör altı "X gündür açılmadı" mini çerçeve:** `FolderTile.kt` — düz metin arka planla karışıp okunmuyordu. Saat ikonlu (⏱), hafif kontrast arka planlı (RoundedCornerShape 8dp, siyah alpha 0.22) chip'e çevrildi, metin alfa 0.55→0.80 + FontWeight.Medium ile okunabilirlik artırıldı.
+2. **Öneriler bölümü küçültme + ayarlanabilir boyut:** `AppSuggestionsRow`/`SuggestionAppItem` (`HomeScreenComponents.kt`) sabit 48dp ikon yerine parametrik `iconSizeDp` (varsayılan 40dp) aldı. Yeni `AppPrefs.KEY_SUGGESTIONS_ICON_SIZE` (32-52dp, varsayılan 40dp). `SettingsHomeScreenSection.kt`'ye "Öneriler Bölümü Boyutu" slider'ı eklendi (mevcut AllApps arka plan opaklığı slider pattern'i takip edildi). Ayrıca dış/iç padding sıkılaştırıldı: GlassCard dış margin 4dp→2dp, iç padding 8dp→5dp, etiket alt boşluğu 6dp→3dp, ikon-metin arası 4dp→2dp, metin fontu 11sp→10sp — bölümün toplam dikey alanı belirgin şekilde azaldı.
+
+**Build/Test:** `assembleDebug -PskipGoogleServices` ve `testDebugUnitTest` başarılı. Versiyon: versionCode 33→34, versionName 1.3.10→1.3.11.
+
+**Sonraki:** Pulse Clock + Dijital Nabız raporlama revizyonu (büyük mimari değişiklik) Fable 5 agent'ına worktree izolasyonunda devredildi, ayrı Döngü girdisiyle raporlanacak.
+
+---
+
 ## Döngü 242 - 2026-07-13 [Settings hiyerarşi + Search/launcher regression smoke testleri — PASS]
 
 **Yapılanlar (smoke test yürütme):**

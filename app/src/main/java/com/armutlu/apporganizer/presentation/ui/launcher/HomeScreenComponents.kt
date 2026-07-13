@@ -446,6 +446,7 @@ internal fun DockIcon(
 internal fun AppSuggestionsRow(
     apps: List<AppInfo>,
     iconPackPkg: String = "",
+    iconSizeDp: Int = 40,
     onAppClick: (AppInfo) -> Unit,
     onAppLongClick: (AppInfo) -> Unit,
     modifier: Modifier = Modifier
@@ -460,26 +461,28 @@ internal fun AppSuggestionsRow(
             else            -> R.string.suggestions_label_evening  // 18-05 arası
         }
     }
+    // D244: bölüm çok yer kaplıyordu — dış/iç padding sıkılaştırıldı, ikon boyutu
+    // artık Ayarlar'dan gelen iconSizeDp parametresi (varsayılan 40dp, önceki 48dp).
     GlassCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        cornerRadius = 20.dp,
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        cornerRadius = 18.dp,
         backgroundAlpha = 0.13f,
         borderAlpha = 0.22f
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = stringResource(labelRes),
                 color = Color.White.copy(alpha = 0.55f),
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, bottom = 6.dp)
+                    .padding(start = 8.dp, bottom = 3.dp)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -493,6 +496,7 @@ internal fun AppSuggestionsRow(
                         SuggestionAppItem(
                             app = app,
                             iconPackPkg = iconPackPkg,
+                            iconSize = iconSizeDp.dp,
                             onClick = { onAppClick(app) },
                             onLongClick = { onAppLongClick(app) }
                         )
@@ -508,11 +512,11 @@ internal fun AppSuggestionsRow(
 private fun SuggestionAppItem(
     app: AppInfo,
     iconPackPkg: String,
+    iconSize: Dp = 40.dp,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val iconSize = 48.dp
     val px = with(LocalDensity.current) { iconSize.roundToPx() }
     // lastUpdatedTime key'de: uygulama güncellenince eski logo cache'i geçersizleşir (isim/logo uyumsuzluğu fix)
     val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_${app.lastUpdatedTime}_$px"
@@ -539,7 +543,7 @@ private fun SuggestionAppItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(horizontal = 6.dp, vertical = 4.dp)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         bitmap?.let { bmp ->
             Image(
@@ -553,11 +557,11 @@ private fun SuggestionAppItem(
                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
                 .semantics { contentDescription = app.appName }
         )
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(2.dp))
         Text(
             text = app.appName,
             color = Color.White.copy(alpha = 0.85f),
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             maxLines = 1,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,

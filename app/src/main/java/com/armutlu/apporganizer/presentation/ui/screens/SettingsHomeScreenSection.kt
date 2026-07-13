@@ -133,6 +133,19 @@ fun SettingsHomeScreenSection(
             }
         )
         if (suggestionsEnabled) {
+            var suggestionsIconSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)) }
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text("Öneriler Bölümü Boyutu: ${suggestionsIconSizeDp}dp", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Slider(
+                    value = suggestionsIconSizeDp.toFloat(),
+                    onValueChange = {
+                        suggestionsIconSizeDp = it.toInt()
+                        com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsIconSizeDp(context, it.toInt())
+                    },
+                    valueRange = 32f..52f,
+                    steps = 4
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

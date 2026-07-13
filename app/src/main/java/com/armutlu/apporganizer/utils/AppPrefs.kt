@@ -155,6 +155,12 @@ object AppPrefs {
     fun getFolderSizeDp(context: Context): Int = prefs(context).getInt(KEY_FOLDER_SIZE, 72)
     fun setFolderSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_FOLDER_SIZE, dp).apply()
 
+    // Öneriler satırı ikon boyutu — 32-52dp arası (varsayılan 40dp, önceki hardcoded 48dp'den
+    // küçültüldü — bölüm çok yer kaplıyordu). Ayarlardan değiştirilebilir.
+    const val KEY_SUGGESTIONS_ICON_SIZE = "suggestions_icon_size_dp"
+    fun getSuggestionsIconSizeDp(context: Context): Int = prefs(context).getInt(KEY_SUGGESTIONS_ICON_SIZE, 40)
+    fun setSuggestionsIconSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_SUGGESTIONS_ICON_SIZE, dp).apply()
+
     // İkon boyutu ölçeği — 0.7f (küçük) .. 1.3f (büyük), varsayılan 1.0f
     const val KEY_ICON_SCALE = "icon_scale"
     fun getIconScale(context: Context): Float = prefs(context).getFloat(KEY_ICON_SCALE, 1.0f)
