@@ -295,29 +295,11 @@ fun AppListScreen(
             .firstOrNull { it.categoryId == suggestedSimilarCategoryId }
             ?.categoryName
             ?: "seçilen kategori"
-        AlertDialog(
-            onDismissRequest = { viewModel.clearSimilarCategorySuggestions() },
-            title = { Text("Benzer uygulamalar bulundu") },
-            text = {
-                Text(
-                    suggestedSimilarApps
-                        .take(4)
-                        .joinToString(
-                            separator = "\n",
-                            prefix = "$categoryName için bunları da taşıyalım mı?\n\n",
-                        ) { "• ${it.appName}" }
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { viewModel.acceptSimilarCategorySuggestions() }) {
-                    Text("Taşı")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.clearSimilarCategorySuggestions() }) {
-                    Text("Atla")
-                }
-            }
+        SimilarAppsSuggestionDialog(
+            apps = suggestedSimilarApps,
+            categoryName = categoryName,
+            onConfirm = { selectedPackageNames -> viewModel.acceptSimilarCategorySuggestions(selectedPackageNames) },
+            onDismiss = { viewModel.clearSimilarCategorySuggestions() }
         )
     }
 

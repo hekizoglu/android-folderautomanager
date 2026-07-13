@@ -354,13 +354,20 @@ internal fun LazyListScope.settingsBackupAboutSection(
         }
         // Eksik uygulama dialogu — restore sonrası yedekte olup cihazda yüklü olmayanlar
         if (showMissingDialog && missingPackages.isNotEmpty()) {
+            var selectedMissing by remember(missingPackages) {
+                mutableStateOf(missingPackages.toSet())
+            }
+            // Bir sonraki açılacak paketin missingPackages içindeki index'i
+            var nextOpenIndex by remember(missingPackages) { mutableStateOf(0) }
+            var openedSoFar by remember(missingPackages) { mutableStateOf(0) }
+
             AlertDialog(
                 onDismissRequest = { showMissingDialog = false },
-                title = { Text("${missingPackages.size} Eksik Uygulama") },
+                title = { Text("Restore sonrası eksik uygulamalar (${missingPackages.size})") },
                 text = {
                     Column {
                         Text(
-                            "Yedekte bulunan ancak bu cihazda yüklü olmayan uygulamalar:",
+                            "Yedekte bulunan ancak bu cihazda yüklü olmayan uygulamalar. Play Store'da açmak istediklerini işaretle:",
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -369,19 +376,19 @@ internal fun LazyListScope.settingsBackupAboutSection(
                             modifier = Modifier.heightIn(max = 240.dp)
                         ) {
                             items(missingPackages) { pkg ->
+                                val isChecked = pkg in selectedMissing
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            val intent = android.content.Intent(
-                                                android.content.Intent.ACTION_VIEW,
-                                                android.net.Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
-                                            )
-                                            context.startActivity(intent)
+                                            selectedMissing = if (isChecked) selectedMissing - pkg else selectedMissing + pkg
                                         }
-                                        .padding(vertical = 6.dp),
+                                        .padding(vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Checkbox(checked = isChecked, onCheckedChange = { checked ->
+                                        selectedMissing = if (checked) selectedMissing + pkg else selectedMissing - pkg
+                                    })
                                     Icon(
                                         Icons.Default.ShoppingBag, null,
                                         tint = MaterialTheme.colorScheme.primary,
@@ -392,28 +399,54 @@ internal fun LazyListScope.settingsBackupAboutSection(
                                 }
                             }
                         }
+                        if (openedSoFar > 0) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "$openedSoFar/${selectedMissing.size} açıldı",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = {
-                        // Hepsini sırayla Play Store'da aç
-                        missingPackages.firstOrNull()?.let { pkg ->
-                            val intent = android.content.Intent(
-                                android.content.Intent.ACTION_VIEW,
-                                android.net.Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
-                            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(intent)
+                    val hasNext = com.armutlu.apporganizer.utils.PlayStoreQueueHelper.nextSelectedIndex(
+                        missingPackages, selectedMissing, nextOpenIndex
+                    ) != null
+                    TextButton(
+                        enabled = hasNext,
+                        onClick = {
+                            val idx = com.armutlu.apporganizer.utils.PlayStoreQueueHelper.nextSelectedIndex(
+                                missingPackages, selectedMissing, nextOpenIndex
+                            )
+                            if (idx != null) {
+                                val pkg = missingPackages[idx]
+                                val intent = android.content.Intent(
+                                    android.content.Intent.ACTION_VIEW,
+                                    android.net.Uri.parse(com.armutlu.apporganizer.utils.PlayStoreQueueHelper.playStoreUrl(pkg))
+                                ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(intent)
+                                nextOpenIndex = idx + 1
+                                openedSoFar += 1
+                            }
                         }
-                        showMissingDialog = false
-                    }) { Text("Play Store'da Aç") }
+                    ) {
+                        Text(
+                            if (openedSoFar == 0) "Seçilenleri Play Store'da Aç"
+                            else "Sonraki Uygulamayı Aç ($openedSoFar/${selectedMissing.size})"
+                        )
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = {
-                        // Listeyi panoya kopyala
-                        val text = missingPackages.joinToString("\n")
-                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(text))
-                        android.widget.Toast.makeText(context, "Kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
-                    }) { Text("Kopyala") }
+                    Row {
+                        TextButton(onClick = {
+                            // Sadece seçilenleri panoya kopyala
+                            val text = selectedMissing.joinToString("\n")
+                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(text))
+                            android.widget.Toast.makeText(context, "Kopyalandı", android.widget.Toast.LENGTH_SHORT).show()
+                        }) { Text("Kopyala") }
+                        TextButton(onClick = { showMissingDialog = false }) { Text("Kapat") }
+                    }
                 }
             )
         }

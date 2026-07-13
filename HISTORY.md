@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 248 - 2026-07-13 [Coklu Play Store acma + K2 tek tek secilebilir kategori onerisi]
+
+**Yapilanlar:** (1) `SettingsBackupAboutSection.kt` restore-sonrasi eksik uygulama dialogu checkbox'li coklu secime cevrildi; `PlayStoreQueueHelper.kt` (yeni) index-tabanli "sirayla ac" mantigini sarmaliyor, buton "Sonraki Uygulamayi Ac (X/Y)" seklinde ilerliyor, Kopyala sadece secilenleri kopyaliyor. (2) `AppClassifier.kt`'ye `findSimilarUnclassifiedApps()` eklendi (uretici prefix/keyword sinyaliyle eski kategoride kalan, override'i olmayan adaylari bulur, limit 10). `AppListViewModel.updateAppCategory` eski kategoriyi de tasiyip bu fonksiyonu cagiriyor; eski toplu-oneri AlertDialog'u `SimilarAppsSuggestionDialog.kt` (yeni) ile degistirildi — her satir kendi checkbox'iyla bagimsiz secilebiliyor, "Hepsini Sec / Hicbirini Secme" kisayollari var ama zorunlu degil.
+
+**Test:** `PlayStoreQueueHelperTest.kt` (yeni, sirali index mantigi) + `AppClassifierTest.kt`'ye 6 yeni test (`findSimilarUnclassifiedApps`: uretici prefix eslesmesi, override'li uygulama haric, hedef kategoriyle ayni olan haric, limit 10, aday yoksa bos liste, keyword eslesmesi). `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` basarili. versionCode 35→36, versionName 1.3.12→1.3.13.
+
+**Kapsam disi:** K2'nin tam speki (pattern'lerin yerel olarak "ogrenilmesi" — kabul edilen oneri turlerinin agirliklandirilmasi) uygulanmadi, sadece "tek tek secilebilir oneri" alt kismi tamamlandi.
+
 ## Döngü 247 - 2026-07-13 [Wrapped Canvas grafikleri]
 
 **Yapılanlar:** ROADMAP Pulse/Dijital Nabız 10 puanlık Canvas grafik maddesi tamamlandı. `WrappedViewModel` haftalık kullanım dakikaları, günlük bildirim sayıları, gece bildirimi işaretleri ve ilk 5 kategori payını `WrappedChartData` olarak üretir. `WrappedReportScreen` içinde harici kütüphane olmadan Canvas tabanlı 7 bar kullanım trendi, 7 noktalı bildirim sparkline'ı ve kategori yatay barları eklendi.

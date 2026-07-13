@@ -100,5 +100,12 @@
 
 ---
 
-*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-07-09 (Fable akıllı kategorileme danışmanlığı K1-K4)*
+## K2 — Override'lardan öğrenen öneri katmanı (Döngü 248 güncellemesi)
+
+**KISMEN TAMAMLANDI (Döngü 248):** "Tek tek seçilebilir öneri" alt kısmı yapıldı — `AppClassifier.findSimilarUnclassifiedApps()` üretici prefix/keyword sinyaliyle adayları bulur, `SimilarAppsSuggestionDialog.kt` her satırı bağımsız checkbox ile gösterir (toplu kabul/red yok, sadece isteğe bağlı "Hepsini Seç/Hiçbirini Seçme" kısayolu var). `AppListViewModel.acceptSimilarCategorySuggestions(selectedPackageNames)` sadece seçilenleri taşır.
+**Bekliyor:** Kabul edilen/reddedilen önerilerin paternlerinin yerel olarak "öğrenilmesi" (ağırlıklandırma, tekrar aynı öneri türü çıkarsa güven skoru artırma) — tam K2 speki bu değil, sonraki bir döngüye bırakıldı.
+
+---
+
+*Oluşturulma: 2026-06-20 | Güncelleyen: Claude her döngü sonunda | Son güncelleme: 2026-07-13 (Döngü 248 — K2 kısmi: tek tek seçilebilir öneri)*
 *Not: 2026-06-29 rekabet analizi [TAMAMLANDI] maddeleri HISTORY.md Tamamlananlar Arşivi'ne taşındı (v1.2.0 döngüsü). S1/S2/K1 (Döngü 207-208) tamamlandı, HISTORY.md'ye taşındı. Ayarlar audit'inden 10 madde Döngü 213'te, Play Store privacy uyumu (Accessibility Service beyanı dahil) Döngü 214-215'te tamamlandı, HISTORY.md'ye taşındı. R1-R7 (DOCS_SCORE_HIGH) artık `scripts/score_docs_backlog.ps1` içinde gerçek kaynaklarla (FİKİRLER.md/HISTORY.md/ROADMAP.md) tanımlı — önceki phantom rapor dosyası referansları (Döngü 215'te) düzeltildi.*
