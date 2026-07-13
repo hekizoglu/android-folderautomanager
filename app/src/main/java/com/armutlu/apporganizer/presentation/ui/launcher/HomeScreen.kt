@@ -522,7 +522,7 @@ fun HomeScreen(
             // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,
             // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
             // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
-            // BOTTOM = below the Google search affordance.
+            // BOTTOM = dock'un hemen üstü (tek elle kullanım — D246).
             val searchBarSection: @Composable () -> Unit = {
                 if (homeAppSearchEnabled) {
                     HomeAppSearchBar(
@@ -569,11 +569,6 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             )
-
-            // BOTTOM (varsayılan) konumu: Google aramasının altında
-            if (searchBarPosition != com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
-                searchBarSection()
-            }
 
             // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
             HomeFavoritesSection(
@@ -873,6 +868,11 @@ fun HomeScreen(
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
             } // end inner Column
             } // end BoxWithConstraints
+
+            // BOTTOM konumu: arama çubuğu dock'un hemen üstünde — tek elle kullanım (D246)
+            if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
+                searchBarSection()
+            }
             } // end else !focusModeEnabled
 
             // Drag pill handle — above dock, pure Pixel style

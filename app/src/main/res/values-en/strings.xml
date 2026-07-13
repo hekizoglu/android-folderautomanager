@@ -368,6 +368,10 @@
     <string name="settings_clock_style_minimal">Minimal</string>
     <string name="settings_clock_style_pulse">Pulse</string>
     <string name="settings_clock_style_glass">Glass</string>
+    <string name="settings_search_bar_position_title">Search Bar Position</string>
+    <string name="settings_search_bar_position_top">Top</string>
+    <string name="settings_search_bar_position_bottom">Bottom</string>
+    <string name="settings_search_bar_position_desc">Move the search bar to the bottom for one-handed use</string>
     <string name="settings_home_score_visible_title">Show Score on Home Screen</string>
     <string name="settings_home_score_visible_desc">Shows the digital life score ring in the clock card</string>
     <string name="settings_home_insight_visible_title">Show Insight on Home Screen</string>

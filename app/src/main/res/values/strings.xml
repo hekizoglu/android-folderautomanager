@@ -370,6 +370,10 @@
     <string name="settings_clock_style_minimal">Minimal</string>
     <string name="settings_clock_style_pulse">Pulse</string>
     <string name="settings_clock_style_glass">Glass</string>
+    <string name="settings_search_bar_position_title">Arama Çubuğu Konumu</string>
+    <string name="settings_search_bar_position_top">Üstte</string>
+    <string name="settings_search_bar_position_bottom">Altta</string>
+    <string name="settings_search_bar_position_desc">Tek elle kullanım için arama çubuğunu alta al</string>
     <string name="settings_home_score_visible_title">Ana Ekranda Skor Göster</string>
     <string name="settings_home_score_visible_desc">Saat kartında dijital yaşam skoru halkası görünür</string>
     <string name="settings_home_insight_visible_title">Ana Ekranda İçgörü Göster</string>
