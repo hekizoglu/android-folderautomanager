@@ -58,6 +58,7 @@ class PulseClockViewModel @Inject constructor(
         val confidence: DataConfidence = DataConfidence.LOW,
         val weeklyScreenTimeMinutes: Int? = null,
         val hourlyUsageMinutes: List<Int>? = null, // 24 kova — index 23 = şu anki saat
+        val personalityLabel: String? = null, // "🎯 Uretici" — D257 dijital kişilik etiketi
         val loading: Boolean = true,
     )
 
@@ -144,6 +145,21 @@ class PulseClockViewModel @Inject constructor(
         )
         val pulse = DigitalPulseEngine.compute(input)
 
+        // D257: dijital kişilik — gece kullanım oranı saatlik kovalardan türetilir (23:00-06:00).
+        val nightUsageRatio = dailySessions?.takeIf { it.isNotEmpty() }?.let { days ->
+            var night = 0L
+            var total = 0L
+            days.forEach { day ->
+                day.hourlyForegroundMs.forEachIndexed { hour, ms ->
+                    total += ms
+                    if (hour >= 23 || hour <= 5) night += ms
+                }
+            }
+            if (total > 0L) night.toDouble() / total else null
+        }
+        val personality = WrappedEngine.computePersonality(input.apps, nightUsageRatio)
+        val personalityLabel = "${personality.type.emoji} ${personality.type.label}"
+
         // Haftalık karşılaştırma baseline'i — ilk hafta null (sahte +0 yasak).
         val previousScore = WrappedSnapshotPrefs.updateWeeklyPulseScore(context, pulse.total)
         WrappedSnapshotPrefs.setLatestPulseScore(context, pulse.total)
@@ -166,6 +182,7 @@ class PulseClockViewModel @Inject constructor(
             confidence = pulse.confidence,
             weeklyScreenTimeMinutes = weeklyScreenTimeMinutes,
             hourlyUsageMinutes = UsageStatsHelper.getHourlyUsageLast24h(context),
+            personalityLabel = personalityLabel,
             loading = false,
         )
     }

@@ -35,6 +35,7 @@ fun SettingsStatsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToReportsCenter: () -> Unit = {},
     onNavigateToNotificationReport: () -> Unit = {},
+    onNavigateToMissions: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val state by viewModel.screenState.collectAsState()
@@ -155,6 +156,33 @@ fun SettingsStatsScreen(
                     subtitle = "Çok konuşan, rahatsız eden ve dikkat dağıtan uygulamaları aç",
                     onClick = onNavigateToNotificationReport,
                 )
+            }
+        }
+
+        // ── Görevler & Yıldızlar (D257 gamification) ─────────────────────────
+        item { SettingsSectionTitle(stringResource(R.string.missions_settings_section)) }
+        item {
+            var missionsEnabled by remember { mutableStateOf(AppPrefs.isMissionsEnabled(context)) }
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.Star,
+                    title = stringResource(R.string.missions_settings_toggle_title),
+                    subtitle = stringResource(R.string.missions_settings_toggle_subtitle),
+                    checked = missionsEnabled,
+                    onCheckedChange = {
+                        missionsEnabled = it
+                        AppPrefs.setMissionsEnabled(context, it)
+                    },
+                )
+                if (missionsEnabled) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.EmojiEvents,
+                        title = stringResource(R.string.missions_settings_open_title),
+                        subtitle = stringResource(R.string.missions_settings_open_subtitle),
+                        onClick = onNavigateToMissions,
+                    )
+                }
             }
         }
 

@@ -413,4 +413,26 @@
     <string name="search_settings_web_fallback_desc">Sonuç bulunamayınca web/Play Store araması öner</string>
     <string name="search_settings_stats_title">Arama İstatistikleri</string>
     <string name="search_settings_stats_desc">İstatistikler yalnızca cihazında tutulur; aranan metin kaydedilmez.</string>
+
+    <!-- D257: Gorevler ve yildiz sistemi (gamification) -->
+    <string name="missions_screen_title">Görevler</string>
+    <string name="missions_total_stars">Toplam yıldız</string>
+    <string name="missions_daily_section">Bugünün Görevleri</string>
+    <string name="missions_weekly_section">Haftalık Görevler</string>
+    <string name="missions_mark_done">Tamamladım</string>
+    <string name="missions_congrats">Tebrikler! +%1$d ⭐</string>
+    <string name="missions_empty">Görevler hazırlanıyor…</string>
+    <string name="mission_daily_screen_under_3h">Bugün ekran süreni 3 saatin altında tut</string>
+    <string name="mission_daily_no_late_night">Gece 23:00 sonrası telefonu açma</string>
+    <string name="mission_daily_unlock_under_30">Bugün telefonu 30\'dan az kez aç</string>
+    <string name="mission_daily_customize_folder">Bir klasörü özelleştir</string>
+    <string name="mission_daily_view_notif_report">Bildirim raporunu incele</string>
+    <string name="mission_weekly_screen_less">Haftalık ekran süresini geçen haftadan düşük tut</string>
+    <string name="mission_weekly_remove_unused">Kullanmadığın 1 uygulamayı kaldır veya gizle</string>
+    <string name="mission_unknown">Görev</string>
+    <string name="missions_settings_section">Görevler ve Yıldızlar</string>
+    <string name="missions_settings_toggle_title">Görev Sistemi</string>
+    <string name="missions_settings_toggle_subtitle">Günlük/haftalık görevler, yıldız ödülleri ve ana ekrandaki kişilik etiketi</string>
+    <string name="missions_settings_open_title">Görevler</string>
+    <string name="missions_settings_open_subtitle">Bugünün görevlerini ve yıldızlarını gör</string>
 </resources>

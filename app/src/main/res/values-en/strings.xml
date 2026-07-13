@@ -411,4 +411,26 @@
     <string name="search_settings_web_fallback_desc">Suggest a web/Play Store search when no results are found</string>
     <string name="search_settings_stats_title">Search Statistics</string>
     <string name="search_settings_stats_desc">Statistics stay on your device only; searched text is never recorded.</string>
+
+    <!-- D257: Missions and star system (gamification) -->
+    <string name="missions_screen_title">Missions</string>
+    <string name="missions_total_stars">Total stars</string>
+    <string name="missions_daily_section">Today\'s Missions</string>
+    <string name="missions_weekly_section">Weekly Missions</string>
+    <string name="missions_mark_done">Mark as done</string>
+    <string name="missions_congrats">Congrats! +%1$d ⭐</string>
+    <string name="missions_empty">Preparing missions…</string>
+    <string name="mission_daily_screen_under_3h">Keep your screen time under 3 hours today</string>
+    <string name="mission_daily_no_late_night">Do not use your phone after 11 PM</string>
+    <string name="mission_daily_unlock_under_30">Unlock your phone fewer than 30 times today</string>
+    <string name="mission_daily_customize_folder">Customize a folder</string>
+    <string name="mission_daily_view_notif_report">Review the notification report</string>
+    <string name="mission_weekly_screen_less">Keep weekly screen time below last week</string>
+    <string name="mission_weekly_remove_unused">Remove or hide 1 unused app</string>
+    <string name="mission_unknown">Mission</string>
+    <string name="missions_settings_section">Missions and Stars</string>
+    <string name="missions_settings_toggle_title">Mission System</string>
+    <string name="missions_settings_toggle_subtitle">Daily/weekly missions, star rewards and the home screen personality label</string>
+    <string name="missions_settings_open_title">Missions</string>
+    <string name="missions_settings_open_subtitle">See today\'s missions and your stars</string>
 </resources>

@@ -310,6 +310,11 @@ object AppPrefs {
     fun isTickerEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_ENABLED, true)
     fun setTickerEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_ENABLED, v).apply()
 
+    // Gorev/yildiz sistemi (gamification) — kapaliyken kisilik etiketi ve gorev UI'lari gizlenir (D257)
+    const val KEY_MISSIONS_ENABLED = "missions_enabled"
+    fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)
+    fun setMissionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSIONS_ENABLED, v).apply()
+
     // Ticker sessize alma — basili tut menusunden secilen zamana kadar serit gizlenir (D233)
     const val KEY_TICKER_MUTED_UNTIL = "home_ticker_muted_until"
     fun getTickerMutedUntil(context: Context) = prefs(context).getLong(KEY_TICKER_MUTED_UNTIL, 0L)
