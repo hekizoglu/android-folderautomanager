@@ -322,7 +322,7 @@ object TickerComposer {
                 TickerSpec(
                     text = "$lowConfidenceCount uygulamanın kategorisi belirsiz — gözden geçirmek ister misin?",
                     emoji = "🤔",
-                    routeKey = "APP_LIST",
+                    routeKey = "APP_LIST_UNCERTAIN",
                     priority = 35,
                 )
             )

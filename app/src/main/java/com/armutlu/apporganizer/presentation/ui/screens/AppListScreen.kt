@@ -23,6 +23,7 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 @Composable
 fun AppListScreen(
     viewModel: AppListViewModel,
+    initialUncertainFilter: Boolean = false,
     onNavigateToCategories: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
@@ -33,6 +34,7 @@ fun AppListScreen(
     val classifyLoading by viewModel.classifyLoading.collectAsState()
     val classifyResult  by viewModel.classifyResult.collectAsState()
     val selectedApps    by viewModel.selectedApps.collectAsState()
+    val showUncertainOnly by viewModel.showUncertainOnly.collectAsState()
     val suggestedSimilarApps by viewModel.suggestedSimilarApps.collectAsState()
     val suggestedSimilarCategoryId by viewModel.suggestedSimilarCategoryId.collectAsState()
     val selectionCount  = selectedApps.size
@@ -44,6 +46,10 @@ fun AppListScreen(
     var showSortMenu   by remember { mutableStateOf(false) }
     var appForCategory by remember { mutableStateOf<AppInfo?>(null) }
     var showResetCategoriesDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialUncertainFilter) {
+        viewModel.setUncertainFilterEnabled(initialUncertainFilter)
+    }
 
     LaunchedEffect(classifyResult) {
         if (classifyResult.isNotBlank()) {
@@ -221,6 +227,16 @@ fun AppListScreen(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
+            AnimatedVisibility(visible = showUncertainOnly) {
+                AssistChip(
+                    onClick = { viewModel.setUncertainFilterEnabled(false) },
+                    label = { Text("Belirsiz kategoriler (${screenState.filteredAppsCount})") },
+                    leadingIcon = { Icon(Icons.Default.ReportProblem, null, modifier = Modifier.size(18.dp)) },
+                    trailingIcon = { Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp)) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+
             // İçerik
             when {
                 screenState.isProcessing -> LoadingSkeleton()
@@ -233,6 +249,11 @@ fun AppListScreen(
                     icon = Icons.Default.SearchOff,
                     title = "Sonuç bulunamadı",
                     subtitle = "\"$searchQuery\" için eşleşen uygulama yok"
+                )
+                screenState.filteredApps.isEmpty() && showUncertainOnly -> AppEmptyState(
+                    icon = Icons.Default.CheckCircle,
+                    title = "Belirsiz kategori yok",
+                    subtitle = "Gözden geçirilecek düşük güvenli uygulama bulunamadı"
                 )
                 screenState.filteredApps.isEmpty() -> AppEmptyState(
                     icon = Icons.Default.Apps,

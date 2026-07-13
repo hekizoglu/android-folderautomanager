@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +26,10 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 object Routes {
     const val APP_LIST = "app_list"
+    const val APP_LIST_FILTER_ARG = "filter"
+    const val APP_LIST_FILTER_UNCERTAIN_VALUE = "uncertain"
+    const val APP_LIST_FILTER_ROUTE = "app_list?filter={filter}"
+    const val APP_LIST_UNCERTAIN = "app_list?filter=uncertain"
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
     const val PRIVACY_POLICY = "privacy_policy"
@@ -49,7 +54,7 @@ object Routes {
     // Güvenlik: MainActivity EXTRA_OPEN_ROUTE dışarıdan (üçüncü parti intent) gelebilir —
     // yalnızca burada tanımlı bilinen route'lara navigate edilmeli (whitelist doğrulaması).
     val ALL: Set<String> = setOf(
-        APP_LIST, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
+        APP_LIST, APP_LIST_UNCERTAIN, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE
@@ -89,6 +94,20 @@ fun AppNavigation(
         composable(Routes.APP_LIST) {
             AppListScreen(
                 viewModel = viewModel,
+                initialUncertainFilter = false,
+                onNavigateToCategories = { navController.navigate(Routes.CATEGORIES) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
+            )
+        }
+        composable(
+            route = Routes.APP_LIST_FILTER_ROUTE,
+            arguments = listOf(navArgument(Routes.APP_LIST_FILTER_ARG) { defaultValue = "" })
+        ) { backStackEntry ->
+            AppListScreen(
+                viewModel = viewModel,
+                initialUncertainFilter =
+                    backStackEntry.arguments?.getString(Routes.APP_LIST_FILTER_ARG) ==
+                        Routes.APP_LIST_FILTER_UNCERTAIN_VALUE,
                 onNavigateToCategories = { navController.navigate(Routes.CATEGORIES) },
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
             )

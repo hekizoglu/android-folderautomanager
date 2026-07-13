@@ -682,6 +682,7 @@ class LauncherViewModel @Inject constructor(
         "DASHBOARD" -> com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
         "NOTIFICATION_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
         "APP_LIST" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
+        "APP_LIST_UNCERTAIN" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
         "SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
         "SETTINGS_STATS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
         "WRAPPED_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
@@ -762,16 +763,19 @@ class LauncherViewModel @Inject constructor(
                 categoryId = card.categoryId,
             )
         }
+        val ctx = getApplication<Application>()
+        val showSystemApps = AppPrefs.isShowSystemApps(ctx)
         // Dusuk guvenli otomatik kategorileme uyarisi (K3, Dongu 227, Fable danismanligi) —
         // getConfidence() mevcuttu ama hicbir UX'e baglanmamisti. Esik: 60 altinda "belirsiz" sayilir.
         val lowConfidenceCount = folderList.sumOf { f ->
-            f.apps.count { classifier.getConfidence(it, f.category.categoryId) < 60 }
+            f.apps.count { app ->
+                (showSystemApps || !app.isSystemApp) && classifier.isLowConfidence(app, f.category.categoryId)
+            }
         }
         val totalNotif = badges.values.sum()
 
         // Dijital yasam skoru (ticker) — GERCEK sinyallerden turetilir, Wrapped toggle'ina baglidir.
         // updateDailyScore ile gunluk rotasyon: trend oku (↑/↓/→) icin dunku skor baseline olarak alinir.
-        val ctx = getApplication<Application>()
         var digitalLifeScore: Int? = null
         var digitalLifeScorePrevious: Int? = null
         if (AppPrefs.isWrappedEnabled(ctx)) {

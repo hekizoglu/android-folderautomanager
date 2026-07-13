@@ -350,7 +350,7 @@ class TickerComposerTest {
             epochDay = 20000L,
             zone = zone,
         )
-        assertTrue(result.any { it.routeKey == "APP_LIST" && it.text.contains("3 uygulamanın") })
+        assertTrue(result.any { it.routeKey == "APP_LIST_UNCERTAIN" && it.text.contains("3 uygulamanın") })
     }
 
     @Test

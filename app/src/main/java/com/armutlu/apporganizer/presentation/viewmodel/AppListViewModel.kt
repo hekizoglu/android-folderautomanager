@@ -62,6 +62,7 @@ class AppListViewModel @Inject constructor(
     private val _showSystemApps = MutableStateFlow(
         com.armutlu.apporganizer.utils.AppPrefs.isShowSystemApps(application)
     )
+    private val _showUncertainOnly = MutableStateFlow(false)
     private val _selectedApps = MutableStateFlow<Set<String>>(emptySet())
     
     // Public state flows
@@ -70,6 +71,7 @@ class AppListViewModel @Inject constructor(
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
+    val showUncertainOnly: StateFlow<Boolean> = _showUncertainOnly.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
     val weeklyGoals: StateFlow<List<WeeklyGoal>> =
         weeklyGoalDao.observeGoals(WeekUtils.currentWeekStartEpochDay())
@@ -136,6 +138,7 @@ class AppListViewModel @Inject constructor(
                     _searchQuery,
                     _sortOption,
                     _showSystemApps,
+                    _showUncertainOnly,
                     _selectedApps
                 ) { values ->
                     @Suppress("UNCHECKED_CAST")
@@ -146,7 +149,8 @@ class AppListViewModel @Inject constructor(
                         query = values[3] as String,
                         sort = values[4] as SortOption,
                         showSystem = values[5] as Boolean,
-                        selectedApps = values[6] as Set<String>
+                        showUncertainOnly = values[6] as Boolean,
+                        selectedApps = values[7] as Set<String>
                     )
                 }
                     .collect { state ->
@@ -171,17 +175,26 @@ class AppListViewModel @Inject constructor(
         query: String = _searchQuery.value,
         sort: SortOption = _sortOption.value,
         showSystem: Boolean = _showSystemApps.value,
+        showUncertainOnly: Boolean = _showUncertainOnly.value,
         selectedApps: Set<String> = _selectedApps.value
     ): AppListScreenState {
         val visibleApps = if (showSystem) apps else apps.filter { !it.isSystemApp }
         val categoryStats = computeCategoryStats(visibleApps, categories)
         val filteredApps = computeFilteredApps(apps, category, query, showSystem, sort)
+            .let { list ->
+                if (showUncertainOnly) {
+                    list.filter { app -> classifier.isLowConfidence(app, app.categoryId) }
+                } else {
+                    list
+                }
+            }
         return AppListScreenState(
             apps = apps,
             categories = categories,
             selectedCategory = category,
             searchQuery = query,
             showSystemApps = showSystem,
+            showUncertainOnly = showUncertainOnly,
             sortBy = sort,
             selectedApps = selectedApps,
             filteredApps = filteredApps,
@@ -381,6 +394,16 @@ class AppListViewModel @Inject constructor(
      */
     fun setSelectedCategory(categoryId: String) {
         _selectedCategory.value = categoryId
+        clearSelection()
+    }
+
+    fun setUncertainFilterEnabled(enabled: Boolean) {
+        if (_showUncertainOnly.value == enabled) return
+        _showUncertainOnly.value = enabled
+        if (enabled) {
+            _selectedCategory.value = "all"
+            _searchQuery.value = ""
+        }
         clearSelection()
     }
     

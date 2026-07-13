@@ -113,34 +113,6 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 
 ---
 
-### B1 - "44 uygulamanin kategorisi belirsiz" sayi tutarsizligi
-
-**Kok neden (kod kaniti):** `LauncherViewModel.kt` satir 767-768'de `tickerItems` icinde `lowConfidenceCount`, TUM klasorlerdeki TUM uygulamalarin `classifier.getConfidence(it, f.category.categoryId) < 60` kosuluyla sayiliyor:
-```kotlin
-val lowConfidenceCount = folderList.sumOf { f ->
-    f.apps.count { classifier.getConfidence(it, f.category.categoryId) < 60 }
-}
-```
-`AppClassifier.kt` satir 110-116'da `getConfidence` skor 50 donduren durum "hicbir exact/keyword/package-keyword eslesme yok" (else -> 50) â€” yani "belirsiz" aslinda cok gevsek bir tanim, cogu normal kategorize uygulamayi da kapsayabilir.
-
-Bu sayi `TickerComposer.kt` satir 320-325'te "$lowConfidenceCount uygulamanin kategorisi belirsiz" mesajina donusuyor ve `routeKey = "APP_LIST"` ile Routes.APP_LIST'e yonlendiriyor (LauncherViewModel.kt satir 684: `"APP_LIST" -> Routes.APP_LIST`).
-
-Ama `Routes.APP_LIST` parametresiz genel listeye gidiyor (`AppNavigation.kt` satir 88-89) ve `AppListScreen.kt`/`AppListViewModel.kt` hicbir "confidence" veya "belirsiz" filtresi bilmiyor â€” sadece `selectedCategory`/`searchQuery`/`showSystemApps`/`sortBy` filtreleri var (`AppListScreenState.kt` satir 59-87, `computeFilteredApps`). Sonuc: tiklaninca ayni "belirsiz" hesabini kullanan bir liste ACILMIYOR, genel "Tumu" listesi aciliyor â€” kullanici 44 sayisini goremiyor.
-
-**Cozum tarifi:**
-1. `presentation/navigation/AppNavigation.kt` â€” `Routes.APP_LIST` rotasina opsiyonel bir NavArgument ekle: `const val APP_LIST = "app_list"` yaninda `const val APP_LIST_FILTER_UNCERTAIN = "app_list?filter=uncertain"` gibi bir varyant VEYA `composable("app_list?filter={filter}", arguments = listOf(navArgument("filter") { defaultValue = ""; nullable = true }))` seklinde route'u parametrik yap.
-2. `LauncherViewModel.kt` satir 681-689 `resolveTickerRoute` fonksiyonuna yeni bir routeKey ekle: `"APP_LIST_UNCERTAIN" -> "${Routes.APP_LIST}?filter=uncertain"`.
-3. `TickerComposer.kt` satir 325 civarinda `routeKey = "APP_LIST"` yerine `routeKey = "APP_LIST_UNCERTAIN"` kullan.
-4. `AppListViewModel.kt`'ye yeni bir `_confidenceFilter: MutableStateFlow<Boolean>` (veya nav arg'dan set edilen bir `setUncertainFilterEnabled(true)` fonksiyonu) ekle; `createScreenState`/`computeFilteredApps` (AppListScreenState.kt satir 59-87) icine `classifier.getConfidence(...)` kontrolu ekleyen bir ek filtre parametresi koy â€” AYNI esik (<60) ve AYNI classifier cagrisi kullanilmali (LauncherViewModel'deki ile birebir ayni fonksiyon/esik).
-5. `AppListScreen.kt`'de nav'dan gelen filter parametresini oku (composable arguments), ViewModel'e ilet, ekranda "Belirsiz Kategoriler" basligi/filtre chip'i olarak goster.
-6. Sayim ve liste ayni fonksiyondan beslenmeli: ideal olarak `AppClassifier.kt`'ye tek bir `fun isLowConfidence(app: AppInfo, categoryId: String): Boolean = getConfidence(app, categoryId) < 60` ekle, hem `LauncherViewModel.tickerItems` hem `AppListViewModel`/`computeFilteredApps` bu fonksiyonu cagirsin â€” esik degisirse tek yerden degisir.
-
-**Kabul kriteri:**
-- Ticker'da "N uygulamanin kategorisi belirsiz" yaziyorsa, tiklaninca acilan listede TAM OLARAK N uygulama gorunuyor.
-- Esik degeri (`<60`) `AppClassifier.kt` icinde tek bir yerde tanimli, hem sayim hem liste ayni fonksiyonu cagiriyor.
-
----
-
 ### B3 - Ticker tiklamasi sonrasi ana ekrana hizli donuste bildirimler kilitleniyor
 
 **Kok neden (kod kaniti):** `HomeScreen.kt` satir 660-672'de ticker `onItemClick` cagrildiginda `Intent(context, MainActivity::class.java)` ile MainActivity aciliyor (LauncherActivity arka plana geciyor, `onPause`/`onStop` tetiklenmiyor cunku activity yigin ustunde kaliyor â€” sadece durduruluyor).

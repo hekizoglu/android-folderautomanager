@@ -17,6 +17,7 @@ data class AppListScreenState(
     val selectedCategory: String = "all",
     val searchQuery: String = "",
     val showSystemApps: Boolean = false,
+    val showUncertainOnly: Boolean = false,
     val isRefreshing: Boolean = false,
     val selectedApps: Set<String> = emptySet(),
     val sortBy: SortOption = SortOption.NAME_ASC,
