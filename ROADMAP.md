@@ -7,14 +7,6 @@
 
 ---
 
-## ⭐ Yüksek Puanlı - Tek Elle Kullanım: Arama Çubuğu Alta (17p, 2026-07-14 Hüseyin onaylı)
-
-| Puan | Görev | Durum |
-|---|---|---|
-| 17p | Ana ekran arama çubuğunu en alta (dock bölgesi) taşıma seçeneği + Ayarlar > Ana Ekran'da "Arama çubuğu konumu: Üstte/Altta" toggle'ı. Çözülmesi gerekenler: dock ile yerleşim kararı, AllAppsDrawer yukarı-swipe jest çakışması, sistem gesture bar `WindowInsets` payı, klavye açıkken sonuç listesinin klavye üstünde büyümesi. Varsayılan konum kararı uygulamada netleşecek (mevcut kullanıcıyı şaşırtmama vs. ergonomi). | Bekliyor — onaylı, sıradaki döngü adayı |
-
----
-
 ## ⭐ Yüksek Puanlı - Pulse Clock / Dijital Nabız (D244 devamı)
 
 Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emülatör doğrulamasıdır:

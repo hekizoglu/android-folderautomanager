@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 257 - 2026-07-14 [Dock fix + klasör 96dp + arama çubuğu alta + gamification v1.3.15]
+
+**Yapılanlar:** (1) Dock bug kök nedeni: `contextualDockPackages` akıllı dock açıkken kullanıcının dock seçiminin sadece ilk 2 slotunu koruyup kalan 2'yi kullanım önerileriyle değiştiriyordu — artık seçilen uygulamaların tamamı korunur, öneri yalnızca boş slotları doldurur (LauncherViewModel + Ayarlar metni). (2) Klasör simgeleri varsayılanı 72→96dp. (3) Arama çubuğu alta taşıma (ROADMAP 17p, Sonnet agent worktree, 721769b): varsayılan Altta, Ayarlar > Ana Ekran Üstte/Altta seçici, dock üstü konum. (4) Gamification (Sonnet agent worktree, 78883ae): dijital kişilik 6→10 tip (Gece Kuşu, Haber Avcısı, Kâşif, Minimalist...), skor halkası altında kişilik etiketi, MissionEngine (günlük 3 + haftalık 2 deterministik görev), MissionPrefs (yıldız/ilerleme, Room yok), MissionsScreen + tebrik kartı + Routes.MISSIONS, KEY_MISSIONS_ENABLED toggle. (5) Onboarding onb_usage_* encoding onarımı. Denge/rapor mantık denetimi: yeni hata yok.
+
+**Bug/Ortam:** Gamification agent'ının worktree'si diskten silinmişti — agent prune+add ile yeniden kurdu. check_duplicates.py "0 entry" sayıyor (script bug, JSON sağlam 3702 paket) — sonraki döngüde düzeltilmeli.
+
+**Sonraki:** Emülatörde D257 doğrulaması (dock, arama çubuğu altta, Görevler ekranı, kişilik etiketi); check_duplicates.py sayaç fix; ROADMAP'tan arama çubuğu maddesini silme (tamamlandı).
+
+---
+
 ## Döngü 255 - 2026-07-13 [Bildirim raporu scroll crash fix + Denge altına 24s mini kullanım grafiği]
 
 **Yapılanlar:** (1) Kullanıcı bildirimi: İstatistikler → Bildirim Raporu'nda aşağı kaydırınca çökme. Kök neden: `NotificationReportScreen.kt` LazyColumn'unda üç bölüm de (`mostTalkative`/`disturbing`/`distracting`) `key = { it.packageName }` kullanıyordu — aynı uygulama birden fazla bölümde olunca duplicate key `IllegalArgumentException` fırlatıyordu; alt bölümler ancak scroll ile compose edildiği için çökme kaydırma anında oluyordu. Fix: bölüm önekli key'ler (`talkative_`/`disturbing_`/`distracting_`). (2) Yeni özellik: Pulse Clock skor halkasının ("Denge") altına son 24 saatin saatlik kullanım mini çubuk grafiği — `UsageStatsHelper.getHourlyUsageLast24h()` (RESUMED→PAUSED oturumları 24 saatlik kovaya bölünür), `PulseClockUiState.hourlyUsageMinutes`, `HourlyUsageSparkline` composable (52×12dp Canvas, skor rengiyle). Ayarlar kuralı gereği `KEY_HOME_USAGE_CHART_VISIBLE` toggle'ı (SettingsHomeScreenSection + AppPrefs + BackupManager export/import) eklendi.
