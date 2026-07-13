@@ -1,13 +1,17 @@
 package com.armutlu.apporganizer.utils
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.core.content.edit
+import com.armutlu.apporganizer.domain.models.Category
 
 object DockPrefs {
 
     private const val PREFS_NAME = "dock_prefs"
     private const val KEY_DOCK_PACKAGES = "dock_packages"
     private const val MAX_SLOTS = 4
+    private const val FOLDER_PREFIX = "folder:"
 
     private val DEFAULT_SLOTS = listOf(
         listOf("com.google.android.dialer", "com.android.dialer"),
@@ -51,12 +55,56 @@ object DockPrefs {
     fun isInDock(context: Context, packageName: String): Boolean =
         getDockPackages(context).contains(packageName)
 
+    fun folderItem(categoryId: String): String = "$FOLDER_PREFIX$categoryId"
+
+    fun isFolderItem(item: String): Boolean = item.startsWith(FOLDER_PREFIX)
+
+    fun folderId(item: String): String? =
+        item.takeIf { isFolderItem(it) }?.removePrefix(FOLDER_PREFIX)?.takeIf { it.isNotBlank() }
+
+    fun addSocialFolderIfRoom(context: Context): Boolean {
+        val item = folderItem(Category.CAT_SOCIAL)
+        val current = getDockPackages(context).toMutableList()
+        if (item in current || current.size >= MAX_SLOTS) return false
+        current.add(item)
+        saveDockPackages(context, current)
+        return true
+    }
+
     private fun resolveDefaults(context: Context): List<String> {
         val pm = context.packageManager
-        return DEFAULT_SLOTS.mapNotNull { candidates ->
-            candidates.firstOrNull { pkg ->
-                pm.getLaunchIntentForPackage(pkg) != null
+        val dialer = resolveDefaultApp(
+            context,
+            Intent(Intent.ACTION_DIAL, Uri.parse("tel:"))
+        )
+        val sms = resolveDefaultApp(
+            context,
+            Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:"))
+        )
+        val camera = DEFAULT_SLOTS[2].firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }
+        val browser = resolveDefaultBrowser(context)
+
+        return listOfNotNull(dialer, sms, camera, browser)
+            .distinct()
+            .take(MAX_SLOTS)
+            .ifEmpty {
+                DEFAULT_SLOTS.mapNotNull { candidates ->
+                    candidates.firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }
+                }
             }
-        }
+    }
+
+    private fun resolveDefaultBrowser(context: Context): String? {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://"))
+            .addCategory(Intent.CATEGORY_BROWSABLE)
+        return resolveDefaultApp(context, intent)
+    }
+
+    private fun resolveDefaultApp(context: Context, intent: Intent): String? {
+        return context.packageManager
+            .resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+            ?.activityInfo
+            ?.packageName
+            ?.takeIf { context.packageManager.getLaunchIntentForPackage(it) != null }
     }
 }

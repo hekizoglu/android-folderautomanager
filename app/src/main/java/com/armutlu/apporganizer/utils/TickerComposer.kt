@@ -34,6 +34,7 @@ data class InsightSnapshot(
     val id: String,
     val message: String,
     val categoryId: String? = null,
+    val packageName: String? = null,
 )
 
 /**
@@ -86,14 +87,14 @@ object TickerComposer {
     )
 
     /** İpucu havuzu — statik, 6+ madde, gunluk rotasyon. routeKey hepsinde null (SETTINGS istenirse ViewModel eslestirebilir). */
-    private val tips: List<String> = listOf(
-        "İpucu: Klasöre uzun basarak yeniden adlandırabilirsin",
-        "Arama çubuğuna 2 harf yaz — kişilerini de bulur",
-        "Dock'a 4 uygulama sabitleyebilirsin",
-        "Bildirim rozetlerini ayarlardan kapatabilirsin",
-        "Klasör rengini ve emojisini özelleştirebilirsin",
-        "Sık kullandığın uygulamalar dock'a otomatik önerilir",
-        "Uygulamayı sürükleyip başka bir klasöre taşıyabilirsin",
+    private val tips: List<TickerSpec> = listOf(
+        TickerSpec("İpucu: Klasöre uzun basarak yeniden adlandırabilirsin", "💡", routeKey = "SETTINGS_APPEARANCE"),
+        TickerSpec("Arama çubuğuna 2 harf yaz — kişilerini de bulur", "🔍", routeKey = "SEARCH_SETTINGS"),
+        TickerSpec("Dock'a 4 uygulama sabitleyebilirsin", "📌", routeKey = "SETTINGS_LAUNCHER"),
+        TickerSpec("Bildirim rozetlerini ayarlardan kapatabilirsin", "🔔", routeKey = "SETTINGS_NOTIFICATIONS"),
+        TickerSpec("Klasör rengini ve emojisini özelleştirebilirsin", "🎨", routeKey = "SETTINGS_APPEARANCE"),
+        TickerSpec("Sık kullandığın uygulamalar dock'a otomatik önerilir", "⚡", routeKey = "SETTINGS_LAUNCHER"),
+        TickerSpec("Uygulamayı sürükleyip başka bir klasöre taşıyabilirsin", "📁", routeKey = "APP_LIST"),
     )
 
     private val morningTemplates: List<String> = listOf(
@@ -249,7 +250,8 @@ object TickerComposer {
             TickerSpec(
                 text = greetingText,
                 emoji = greetingEmoji,
-                routeKey = null,
+                categoryId = hintFolder?.categoryId,
+                routeKey = if (hintFolder == null) "REPORTS_CENTER" else null,
                 priority = 90,
             )
         )
@@ -310,7 +312,8 @@ object TickerComposer {
                     text = insight.message,
                     emoji = "💡",
                     categoryId = insight.categoryId,
-                    routeKey = if (insight.categoryId == null) "DASHBOARD" else null,
+                    packageName = insight.packageName,
+                    routeKey = if (insight.categoryId == null && insight.packageName == null) "DASHBOARD" else null,
                     priority = 30,
                 )
             )
@@ -330,13 +333,7 @@ object TickerComposer {
 
         // 8) Ozellik kesif ipucu — statik havuzdan gunluk rotasyon
         val tipIdx = pickIndex(daySeed, "tip_of_day", tips.size)
-        specs.add(
-            TickerSpec(
-                text = tips[tipIdx],
-                emoji = "💡",
-                priority = 5,
-            )
-        )
+        specs.add(tips[tipIdx].copy(priority = 5))
 
         // 9) Haftalik ozet — sadece pazartesi (dayOfWeek == 1)
         if (zdt.dayOfWeek.value == 1 && folders.isNotEmpty()) {
@@ -349,6 +346,7 @@ object TickerComposer {
                     TickerSpec(
                         text = pool[idx](totalApps, biggest.categoryName, biggest.appCount),
                         emoji = "📊",
+                        routeKey = "REPORTS_CENTER",
                         priority = 60,
                     )
                 )

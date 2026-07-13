@@ -1,62 +1,62 @@
-# AppOrganizer — Play Store Listing
+# AppOrganizer - Play Store Listing
 
-## Kısa Açıklama (TR, max 80 karakter)
-Uygulamalarını otomatik kategorilere ayıran akıllı launcher
+## Kisa Aciklama (TR, max 80 karakter)
+Uygulamalarini otomatik klasorleyen akilli Android launcher
 
-## Kısa Açıklama (EN, max 80 karakter)
-Smart launcher that auto-organizes your apps into categories
+## Short Description (EN, max 80 characters)
+Smart Android launcher that organizes your apps into folders
 
-## Uzun Açıklama (TR, max 4000 karakter)
-AppOrganizer, telefonundaki uygulamaları otomatik olarak kategorilere ayıran akıllı bir Android başlatıcısıdır.
+## Uzun Aciklama (TR, max 4000 karakter)
+AppOrganizer, telefonundaki uygulamalari otomatik olarak kategorilere ayiran, hizli arama ve akilli klasorlerle calisan bir Android launcher uygulamasidir.
 
-**Özellikler:**
-🗂️ Otomatik Kategorizasyon — 3500+ uygulama tanınır, bilinmeyenler AI ile sınıflandırılır
-📁 Akıllı Klasörler — Oyunlar, Sosyal Medya, Finans, Sağlık ve daha fazlası
-⭐ Favoriler — En çok kullandığın uygulamalara tek dokunuşla eriş
-🔍 Hızlı Arama — Tüm uygulamalarda anlık arama
-🎨 Özelleştirme — Klasör adı, emoji ve renk seçimi
-🔔 Bildirim Sayacı — Klasör ikonlarında okunmamış bildirim sayısı
-📦 İkon Paketi Desteği — Favori ikon paketinle kullan
-🌙 Karanlık Mod — Göz yormayan gece modu
-🔒 Gizlilik — Uygulamaları gizle, kişisel alanını koru
-☁️ Yedekleme — Haftalık otomatik yedekleme
+Ozellikler:
+- Otomatik kategorilendirme: Oyunlar, Sosyal Medya, Finans, Saglik, Alisveris ve daha fazla klasor.
+- Hizli arama: Cihazdaki uygulamalari tek yerden bul ve baslat.
+- Akilli Dock: Varsayilan telefon, mesaj, kamera ve tarayici uygulamalarina hizli erisim.
+- Klasor Dock destegi: En cok kullandigin klasorleri ana ekranda tut.
+- Favoriler ve son kullanilanlar: Onemli uygulamalara daha hizli ulas.
+- Gizlilik kontrolleri: Uygulama gizleme, yerel ayarlar ve acik izin yonetimi.
+- Bildirim ozeti: Izin verirsen klasorlerde okunmamis bildirim sayilarini gorebilirsin.
+- Yedekleme ve geri yukleme: Ayarlarini disa aktarip daha sonra geri yukleyebilirsin.
+- Ozellestirme: Klasor adi, emoji, renk, ikon paketi ve ana ekran gorunumunu duzenle.
 
-**Nasıl Çalışır?**
-1. AppOrganizer'ı varsayılan başlatıcı olarak ayarla
-2. Uygulamaların otomatik olarak kategorilere ayrılır
-3. İstersen herhangi bir uygulamanın kategorisini değiştir
-4. Favori, gizle, yeniden adlandır — tam kontrol sende
+Nasil calisir?
+1. AppOrganizer'i varsayilan launcher olarak ayarla.
+2. Cihazdaki baslatilabilir uygulamalar otomatik olarak klasorlere ayrilir.
+3. Istersen uygulama kategorilerini, klasor adlarini ve ana ekran gorunumunu degistir.
+4. Arama, Dock, favoriler ve yedekleme araclariyla uygulamalarini tek merkezden yonet.
 
-Pixel Launcher tasarım anlayışıyla geliştirilmiş, sade ve hızlı.
+Gizlilik:
+AppOrganizer'in temel amaci cihazdaki uygulamalari yerel olarak organize etmek ve baslatmaktir. Uygulama envanteri, klasor tercihleri ve launcher ayarlari cihazda islenir. Kisi, dosya, bildirim ve yedekleme gibi ek ozellikler yalniz ilgili izni verdiginde calisir.
 
-## Uzun Açıklama (EN, max 4000 karakter)
-AppOrganizer is a smart Android launcher that automatically organizes your apps into categories.
+## Full Description (EN, max 4000 characters)
+AppOrganizer is an Android launcher that automatically organizes your installed apps into folders and gives you fast search, smart Dock shortcuts, and practical privacy controls.
 
-**Features:**
-🗂️ Auto Categorization — Recognizes 3500+ apps, unknown apps classified by AI
-📁 Smart Folders — Games, Social Media, Finance, Health and more
-⭐ Favorites — One-tap access to your most-used apps
-🔍 Quick Search — Instant search across all apps
-🎨 Customization — Folder name, emoji and color picker
-🔔 Notification Badge — Unread notification count on folder icons
-📦 Icon Pack Support — Use with your favorite icon pack
-🌙 Dark Mode — Eye-friendly night mode
-🔒 Privacy — Hide apps, protect your personal space
-☁️ Backup — Weekly automatic backup
+Features:
+- Automatic categorization: Games, Social Media, Finance, Health, Shopping, and more.
+- Fast app search: Find and launch apps from one place.
+- Smart Dock: Quick access to your default phone, messaging, camera, and browser apps.
+- Folder Dock support: Keep important folders on your home screen.
+- Favorites and recent apps: Reach important apps faster.
+- Privacy controls: Hide apps, manage local settings, and keep permissions explicit.
+- Notification summary: If you grant permission, unread notification counts can appear on folders.
+- Backup and restore: Export your launcher settings and restore them later.
+- Customization: Edit folder names, emoji, colors, icon packs, and home screen behavior.
 
-**How It Works:**
-1. Set AppOrganizer as your default launcher
-2. Your apps are automatically sorted into categories
-3. Change any app's category if you prefer
-4. Favorite, hide, rename — full control is yours
+How it works:
+1. Set AppOrganizer as your default launcher.
+2. Launchable apps on your device are automatically grouped into folders.
+3. Adjust categories, folder names, and home screen preferences if needed.
+4. Manage apps from one place with search, Dock, favorites, and backup tools.
 
-Built with Pixel Launcher design philosophy — clean and fast.
+Privacy:
+AppOrganizer's core purpose is to organize and launch apps locally on your device. App inventory, folder preferences, and launcher settings are processed on-device. Optional features such as contacts, files, notifications, and backup only work when you grant the related permission.
 
-## Kategori
-Araçlar / Tools
+## Category
+Tools
 
-## İçerik Derecelendirmesi
-Herkes / Everyone
+## Content Rating
+Everyone
 
-## Gizlilik Politikası URL
+## Privacy Policy URL
 https://hekizoglu.github.io/android-folderautomanager/privacy_policy.html

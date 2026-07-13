@@ -387,4 +387,38 @@ class TickerComposerTest {
         assertNotEquals("DASHBOARD", spec.routeKey)
         assertEquals("social", spec.categoryId)
     }
+
+    @Test
+    fun `insight with packageName opens app instead of dashboard`() {
+        val insight = InsightSnapshot(id = "i3", message = "App icgorusu", packageName = "com.example.app")
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = listOf(insight),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(20000L, 12),
+            epochDay = 20000L,
+            zone = zone,
+        )
+        val spec = result.first { it.text == "App icgorusu" }
+        assertEquals("com.example.app", spec.packageName)
+        assertNotEquals("DASHBOARD", spec.routeKey)
+    }
+
+    @Test
+    fun `daily tip carries a route target`() {
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(20000L, 12),
+            epochDay = 20000L,
+            zone = zone,
+        )
+        val spec = result.first { it.priority == 5 }
+        assertTrue(spec.routeKey != null || spec.packageName != null || spec.categoryId != null)
+    }
 }

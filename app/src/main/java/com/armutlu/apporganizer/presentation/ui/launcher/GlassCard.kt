@@ -22,6 +22,7 @@ internal fun GlassCard(
     cornerRadius: Dp = 20.dp,
     backgroundAlpha: Float = 0.15f,
     borderAlpha: Float = 0.30f,
+    borderColor: Color = Color.White,
     content: @Composable BoxScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(cornerRadius)
@@ -29,7 +30,7 @@ internal fun GlassCard(
         modifier = modifier
             .clip(shape)
             .background(Color.White.copy(alpha = backgroundAlpha))
-            .border(1.dp, Color.White.copy(alpha = borderAlpha), shape),
+            .border(1.dp, borderColor.copy(alpha = borderAlpha), shape),
         content = content
     )
 }

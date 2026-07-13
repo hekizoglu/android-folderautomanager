@@ -20,8 +20,9 @@
 - Gradle daemon timeout ve temizleme workaroundlari denendi.
 - `scripts/add_defender_exclusion.ps1` olusturuldu; artik `$PSScriptRoot` uzerinden bu repoya gore hesapliyor ve `-CheckOnly` ile admin gerektirmeden path dogruluyor.
 - `scripts/clear_build_lock.ps1` acil workaround olarak daraltildi; tum `java.exe` sureclerini oldurmek yerine `gradlew --stop` kullanip sadece bu projenin `app\build` klasorunu temizliyor.
+- 2026-07-13: `processDebugResources` R.jar dosya kilidi `gradlew --stop` sonrasi acildi. `scripts/benchmark_build.ps1` basariyla kosuldu: profile assembleDebug rerun 211.1s, configuration-cache compileDebugKotlin 5.5s, exit 0. Rapor: `docs/internal/build_benchmark_latest.md`.
 
-**Neden yerelde kapanmiyor:** Defender exclusion kalici admin/UAC onayi gerektiriyor.
+**Neden yerelde tamamen kapanmiyor:** Build/profil kaniti yerelde tamamlandi; fakat Defender exclusion kalici admin/UAC onayi gerektiriyor.
 
 **Kullanicidan beklenen:**
 ```powershell
@@ -92,4 +93,4 @@ Build kilitlenirse gecici workaround:
 
 ---
 
-*Son guncelleme: 2026-07-09. Aktif liste ROADMAP.md'de, tamamlananlar HISTORY.md'de tutulur.*
+*Son guncelleme: 2026-07-13. Aktif liste ROADMAP.md'de, tamamlananlar HISTORY.md'de tutulur.*

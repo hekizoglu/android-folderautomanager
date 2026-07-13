@@ -83,6 +83,7 @@ import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppAnalytics
+import com.armutlu.apporganizer.utils.DockPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -879,10 +880,15 @@ fun HomeScreen(
             // Bottom dock — frosted pill (uzun bas → düzenle)
             PixelDock(
                 packages = contextualDockPackages,
+                folders = folders,
                 iconPackPkg = suggestionIconPack,
                 onLaunchApp = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
+                },
+                onOpenFolder = { folder ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onNavigateToFolder(folder)
                 },
                 onLongPress = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -891,6 +897,10 @@ fun HomeScreen(
                 onAppLongPress = { pkg ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     contextMenuPkg = pkg
+                },
+                onFolderLongPress = { folder ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    folderContextMenu = folder
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -999,7 +1009,11 @@ fun HomeScreen(
         onCategoryPickerDismiss = { categoryPickerApp = null },
         onHomeLongPressDismiss = { homeLongPressOpen = false },
         onFolderContextMenuDismiss = { folderContextMenu = null },
-        onDockAdd = { viewModel.addToDock(context, it) },
+        onDockAdd = { item ->
+            val folderId = DockPrefs.folderId(item)
+            if (folderId != null) viewModel.addFolderToDock(context, folderId)
+            else viewModel.addToDock(context, item)
+        },
         onDockRemove = { viewModel.removeFromDock(context, it) },
         onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
         onAddToDock = { pkg -> viewModel.addToDock(context, pkg) },

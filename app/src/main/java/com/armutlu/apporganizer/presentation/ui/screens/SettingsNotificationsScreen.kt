@@ -30,7 +30,6 @@ import com.armutlu.apporganizer.utils.AppPrefs
 @Composable
 fun SettingsNotificationsScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToNotificationReport: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -194,40 +193,6 @@ fun SettingsNotificationsScreen(
             }
         }
 
-        // ── Bildirim Analizi (Döngü 224 — Ana Ekran Ayarları'ndan taşındı) ──
-        item { SettingsSectionTitle(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_notif_analytics_section)) }
-        item {
-            var notifAnalytics by remember { mutableStateOf(AppPrefs.isNotifAnalyticsEnabled(context)) }
-            DisposableEffect(context) {
-                val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-                val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                    if (key == AppPrefs.KEY_NOTIF_ANALYTICS_ENABLED) {
-                        notifAnalytics = AppPrefs.isNotifAnalyticsEnabled(context)
-                    }
-                }
-                prefs.registerOnSharedPreferenceChangeListener(listener)
-                onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-            }
-            SettingsCard {
-                SettingsSwitchRow(
-                    icon = Icons.Default.Insights,
-                    title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_notif_analytics_title),
-                    subtitle = "Bildirim sayıları kaydedilir; içerik saklanmaz",
-                    checked = notifAnalytics,
-                    onCheckedChange = {
-                        notifAnalytics = it
-                        AppPrefs.setNotifAnalyticsEnabled(context, it)
-                    }
-                )
-                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
-                SettingsButtonRow(
-                    icon = Icons.Default.Assessment,
-                    title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_notif_report_title),
-                    subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_notif_report_desc),
-                    onClick = onNavigateToNotificationReport
-                )
-            }
-        }
 
         // ── Akıllı Bildirimler ────────────────────────────────────────────
         item { SettingsSectionTitle("Akıllı Bildirimler") }

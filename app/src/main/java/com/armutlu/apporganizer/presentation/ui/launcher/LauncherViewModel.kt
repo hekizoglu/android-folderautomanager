@@ -101,6 +101,7 @@ class LauncherViewModel @Inject constructor(
     // Klasör sırası ilk yüklemede okunur. Dock ise Settings/restore gibi ViewModel dışı
     // yazımları da yakalamak için her onResume'da DockPrefs ile uzlaştırılır.
     @Volatile private var dockLoaded = false
+    @Volatile private var socialFolderDockChecked = false
 
     // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
     private val isLoadingApps = AtomicBoolean(false)
@@ -425,6 +426,7 @@ class LauncherViewModel @Inject constructor(
                 }
             }
         }
+        ensureSocialFolderInDock(context)
     }
 
     fun reorderFolders(context: Context, newOrder: List<AppFolder>) {
@@ -454,6 +456,21 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    fun addFolderToDock(context: Context, categoryId: String) {
+        val item = DockPrefs.folderItem(categoryId)
+        val current = _dockPackages.value
+        when {
+            current.contains(item) -> _toastMessage.tryEmit("Klasor zaten Dock'ta")
+            current.size >= DOCK_MAX_SIZE -> _toastMessage.tryEmit("Dock dolu (max $DOCK_MAX_SIZE) - once bir oge cikar")
+            else -> {
+                val updated = current + item
+                DockPrefs.saveDockPackages(context, updated)
+                _dockPackages.value = updated
+                _toastMessage.tryEmit("Klasor Dock'a eklendi")
+            }
+        }
+    }
+
     fun removeFromDock(context: Context, packageName: String) {
         val removed = DockPrefs.removeFromDock(context, packageName)
         if (removed) {
@@ -461,6 +478,19 @@ class LauncherViewModel @Inject constructor(
             _toastMessage.tryEmit("Dock'tan kaldirildi")
         } else {
             _toastMessage.tryEmit("Dock'ta bu uygulama bulunamadi")
+        }
+    }
+
+    private fun ensureSocialFolderInDock(context: Context) {
+        if (socialFolderDockChecked) return
+        val hasSocialFolder = folders.value.any { folder ->
+            folder.category.categoryId == Category.CAT_SOCIAL && folder.apps.isNotEmpty()
+        }
+        if (!hasSocialFolder) return
+
+        socialFolderDockChecked = true
+        if (DockPrefs.addSocialFolderIfRoom(context)) {
+            _dockPackages.value = DockPrefs.getDockPackages(context)
         }
     }
 
@@ -602,7 +632,7 @@ class LauncherViewModel @Inject constructor(
         val ctx = getApplication<Application>()
         val visible = apps.filter { !it.isHidden }
         // UsageScore v2 boost faktörleri (anlık snapshot)
-        val dockPkgs = _dockPackages.value
+        val dockPkgs = _dockPackages.value.filterNot { DockPrefs.isFolderItem(it) }
         val favPkgs = _favoritePkgs.value
         if (UsageStatsHelper.hasPermission(ctx)) {
             // "Bu saatte en çok kullandıkların" — birincil kaynak: şu anki saat dilimindeki
@@ -680,7 +710,13 @@ class LauncherViewModel @Inject constructor(
         "APP_LIST" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
         "APP_LIST_UNCERTAIN" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
         "SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
+        "SETTINGS_LAUNCHER" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_LAUNCHER
+        "SETTINGS_NOTIFICATIONS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_NOTIFICATIONS
+        "SETTINGS_APPEARANCE" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_APPEARANCE
         "SETTINGS_STATS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
+        "SEARCH_SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SEARCH_SETTINGS
+        "REPORTS_CENTER" -> com.armutlu.apporganizer.presentation.navigation.Routes.REPORTS_CENTER
+        "USAGE_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT
         "WRAPPED_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
         else -> null
     }
@@ -757,6 +793,7 @@ class LauncherViewModel @Inject constructor(
                 id = card.id,
                 message = card.message,
                 categoryId = card.categoryId,
+                packageName = card.packageName,
             )
         }
         val ctx = getApplication<Application>()

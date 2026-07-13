@@ -1,6 +1,6 @@
 # Build, Surec ve Token Maliyeti
 
-> Son guncelleme: 2026-07-12
+> Son guncelleme: 2026-07-13
 
 Bu not, `ROADMAP.md` altindaki "Build, Surec ve Token Maliyeti" maddesini tek yerde operasyonel hale getirir.
 
@@ -15,6 +15,7 @@ Notlar:
 - `build.ps1` ve `benchmark_build.ps1` ayni global mutex'i kullanir: `Global\AppOrganizerGradleBuild`.
 - Configuration cache kalici olarak acik degil; sadece CLI benchmark akisi icin denenir.
 - `benchmark_build.ps1` sonucu `docs/internal/build_benchmark_latest.md` altina yazilir.
+- 2026-07-13 son benchmark: profile assembleDebug rerun 211.1s, configuration-cache compileDebugKotlin 5.5s, ikisi de exit 0.
 
 ## 2. Surec rutini
 

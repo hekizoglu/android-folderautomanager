@@ -129,7 +129,19 @@ fun SettingsStatsScreen(
 
         // ── Rapor kısayolları ─────────────────────────────────────────────
         item {
+            var notifAnalytics by remember { mutableStateOf(AppPrefs.isNotifAnalyticsEnabled(context)) }
             SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.Insights,
+                    title = stringResource(R.string.settings_notif_analytics_title),
+                    subtitle = "Bildirim sayilari kaydedilir; icerik saklanmaz",
+                    checked = notifAnalytics,
+                    onCheckedChange = {
+                        notifAnalytics = it
+                        AppPrefs.setNotifAnalyticsEnabled(context, it)
+                    },
+                )
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SettingsButtonRow(
                     icon = Icons.Default.Dashboard,
                     title = "Raporlar Merkezi",

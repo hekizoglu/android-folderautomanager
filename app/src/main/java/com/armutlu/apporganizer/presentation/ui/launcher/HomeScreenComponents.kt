@@ -103,6 +103,7 @@ import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.SearchCache
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.SystemSettingsCatalog
@@ -249,16 +250,30 @@ internal fun GoogleSearchBar(modifier: Modifier = Modifier) {
 @Composable
 internal fun PixelDock(
     packages: List<String>,
+    folders: List<AppFolder> = emptyList(),
     iconPackPkg: String = "",
     onLaunchApp: (String) -> Unit,
+    onOpenFolder: (AppFolder) -> Unit = {},
     onLongPress: () -> Unit = {},
     onAppLongPress: (String) -> Unit = {},
+    onFolderLongPress: (AppFolder) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val pm = context.packageManager
-    val visiblePkgs = remember(packages) {
-        packages.filter { pm.getLaunchIntentForPackage(it) != null }
+    val visibleItems = remember(packages, folders) {
+        packages.mapNotNull { item ->
+            val folderId = DockPrefs.folderId(item)
+            if (folderId != null) {
+                folders
+                    .firstOrNull { it.category.categoryId == folderId && it.apps.isNotEmpty() }
+                    ?.let { DockDisplayItem.Folder(item, it) }
+            } else if (pm.getLaunchIntentForPackage(item) != null) {
+                DockDisplayItem.App(item)
+            } else {
+                null
+            }
+        }
     }
 
     Box(
@@ -279,19 +294,83 @@ internal fun PixelDock(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            visiblePkgs.forEach { pkg ->
-                val label = remember(pkg) {
-                    runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+            visibleItems.forEach { item ->
+                when (item) {
+                    is DockDisplayItem.App -> {
+                        val pkg = item.packageName
+                        val label = remember(pkg) {
+                            runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                        }
+                        DockIcon(
+                            packageName = pkg,
+                            label = label,
+                            iconPackPkg = iconPackPkg,
+                            iconSize = 48.dp,
+                            onClick = { onLaunchApp(pkg) },
+                            onLongClick = { onAppLongPress(pkg) }
+                        )
+                    }
+                    is DockDisplayItem.Folder -> {
+                        DockFolderIcon(
+                            folder = item.folder,
+                            iconSize = 48.dp,
+                            onClick = { onOpenFolder(item.folder) },
+                            onLongClick = { onFolderLongPress(item.folder) }
+                        )
+                    }
                 }
-                DockIcon(
-                    packageName = pkg,
-                    label = label,
-                    iconPackPkg = iconPackPkg,
-                    iconSize = 48.dp,
-                    onClick = { onLaunchApp(pkg) },
-                    onLongClick = { onAppLongPress(pkg) }
-                )
             }
+        }
+    }
+}
+
+private sealed class DockDisplayItem {
+    data class App(val packageName: String) : DockDisplayItem()
+    data class Folder(val item: String, val folder: AppFolder) : DockDisplayItem()
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DockFolderIcon(
+    folder: AppFolder,
+    iconSize: Dp,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {}
+) {
+    val label = folder.category.categoryName
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .semantics {
+                role = Role.Button
+                contentDescription = label
+            }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .padding(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(iconSize)
+                .background(Color.White.copy(alpha = 0.20f), RoundedCornerShape(14.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(14.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Folder,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(28.dp)
+            )
+            Text(
+                text = folder.category.iconEmoji,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 3.dp, bottom = 1.dp)
+            )
         }
     }
 }
@@ -912,7 +991,8 @@ internal fun HomeAppSearchBar(
             cornerRadius = 28.dp,
             // Focus'ta da belirginleş — seçili olduğu net görünsün (E9)
             backgroundAlpha = if (isDragging || isFocused) 0.22f else 0.12f,
-            borderAlpha = if (isDragging) 0.45f else if (isFocused) 0.40f else 0.25f
+            borderAlpha = if (isDragging) 0.45f else if (isFocused) 0.70f else 0.25f,
+            borderColor = if (isFocused) Color(0xFF26C6DA) else Color.White
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 // "Uygulama / Klasör" sekmesi kaldırıldı (S1) — klasörler artık sonuç grubu
