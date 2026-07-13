@@ -4,6 +4,34 @@
 
 ---
 
+## Döngü 244 - 2026-07-13 [Pulse Clock + Dijital Nabız raporlama revizyonu v1.3.11]
+
+**Yapılanlar (kapsamlı ürün revizyonu, tek motor mimarisi):**
+- **KRİTİK BUG FİX:** `WrappedEngine.computeWeeklyComparison()` `previousScore` alanını hep `null` döndürüyordu, `WrappedReportScreen.ScoreCard` da yanlış kaynağı (`report.weeklyComparison?.previousScore`) okuyordu — "geçen haftaya göre +N" hiç görünmüyordu. Fix: `WeeklyComparison.previousScore` alanı tamamen kaldırıldı; karşılaştırma artık `WrappedSnapshotPrefs.updateWeeklyPulseScore()` (7 günlük rotasyon, ilk hafta null) → `WrappedViewModel.previousScore` → `WrappedContent`/`ScoreCard` state akışıyla doğru çalışıyor.
+- **Tek skor motoru (yeni):** `domain/usecase/pulse/DigitalPulseModels.kt`, `DigitalPulseEngine.kt`, `PulseInsightEngine.kt` eklendi. `WrappedEngine.computeScore()` (V1, sosyal/oyun kullanımına otomatik -15 ceza veren toplamsal model) KALDIRILDI; `WrappedEngine.compute()` artık `DigitalPulseEngine.compute()` çağırıyor — Ana ekran, Rapor Merkezi ve Haftalık Rapor AYNI motoru kullanıyor.
+- **Skor V2 ağırlıkları:** Düzen %25 (kategorilenme oranı, az klasör cezalandırılmaz), Dikkat %25 (bildirim izni yoksa nötr+confidence düşer, ceza yok), Denge %20 (kendi geçmişine göre kategori payı kayması — tek kategori yüksekliği başlı başına ceza değil), Temizlik %15 (60+ gün açılmayan, sistem/yeni uygulama hariç), İstikrar %15 (kilit açma trendi — yüksek sayı değil, sert değişkenlik cezalandırılır).
+- **Pulse Clock widget:** `presentation/ui/launcher/PulseClockWidget.kt` (yeni) — Minimal/Pulse/Glass 3 stil, saat+tarih+skor halkası+delta+tek içgörü+hava linki. Saat dakika sınırında güncellenir (eski `PixelClockWidget` her saniye güncelleniyordu — düzeltildi). `PulseClockViewModel.kt` (yeni) skor/içgörüyü 15dk cache ile üretir, saat tik'i asla skor hesabı tetiklemez.
+- **Gesture fix:** Eski kod `PixelClockWidget`'ı HomeScreen'de ayrı `pointerInput(onLongPress)` ile sarıyordu; yeni widget tek `combinedClickable(onClick=weekly report, onLongClick=manager)` kullanıyor — iç içe gesture çakışması yok, uzun basma davranışı korundu.
+- **İçgörü motoru:** `PulseInsightEngine` — 7 öncelik seviyesi (bildirim sorunu > olumlu gelişme > kullanılmayan uygulama > kategori değişimi > kilit açma trendi > düzen başarısı > genel), tek içgörü gösterimi, son gösterilen id `AppPrefs.KEY_PULSE_LAST_INSIGHT_ID` ile dönüşümlü. Metinler `strings.xml`/`values-en/strings.xml`'de (hardcoded TR literal yok).
+- **Ayarlar:** `SettingsHomeScreenSection.kt`'ye "Saat ve Dijital Nabız" bölümü — Saat Stili (Minimal/Pulse/Glass, varsayılan Pulse), "Ana Ekranda Skor Göster", "Ana Ekranda İçgörü Göster" toggle'ları (`AppPrefs.KEY_CLOCK_STYLE`/`KEY_HOME_SCORE_VISIBLE`/`KEY_HOME_INSIGHT_VISIBLE`).
+- **Rapor Merkezi/Haftalık Rapor:** `WrappedReportScreen`'e `PulseSubScoresCard` (5 alt skor progress bar) eklendi, `report.pulse` alanı üzerinden. `ReportsCenterScreen` özet kartı BEKLİYOR (kapsam nedeniyle bu döngüde tamamlanamadı — aşağıya not düşüldü).
+- **Testler:** `DigitalPulseEngineTest.kt` (12 senaryo: boş liste, izin eksikliği ceza yok, sosyal/oyun tek başına düşürmez, 0..100 clamp, ilk hafta nötr, confidence LOW/HIGH, sistem/yeni uygulama muaf, istikrar stabil/volatil, kategorisiz düzeni düşürür, bildirim yükü), `PulseInsightEngineTest.kt` (5 senaryo: öncelik, uydurma yok, tekrar önleme, tek aday, pozitif/negatif). `WrappedEngineTest`'teki eski V1 toplamsal-model testi V2 tek-motor tutarlılık testiyle değiştirildi. **289 test yeşil.**
+
+**Bekliyor (kapsam nedeniyle bu döngüde tamamlanamayanlar — yarım bırakılmadı, açıkça işaretlendi):**
+- `ReportsCenterScreen` üst özet kartı (toplam skor + confidence + en güçlü/zayıf alt skor + tek öneri) — şu an sadece menü, revize edilmedi.
+- `WrappedReportScreen` madde sıralaması speke göre tam yeniden düzenlenmedi (skor→alt skor eklendi ama kullanıcı profili/istatistik/rozet sırası eski haliyle kaldı).
+- Rozet kriterleri "anlamlı hale getirme" (Bildirim Terbiyecisi, Sessiz Gece, Hedef Takipçisi gibi yeni rozetler) yapılmadı — mevcut 7 rozet aynı kaldı.
+- Glass stili sadeleştirilmiş halde (belirgin cam yüzey var ama ekstra gradient/glow eklenmedi) — Pulse ile görsel farkı minimal.
+- Kategori dağılımı/bildirim trendi/skor alt bileşenleri Canvas grafik bileşenleri (7 bar/sparkline) — PulseSubScoresCard'da basit progress bar kullanıldı, tam Canvas grafik seti yapılmadı.
+- Emülatörde manuel doğrulama (Pulse Clock görünümü, ayar toggle'ları, uzun basma) yapılmadı — yalnızca unit test + assembleDebug ile doğrulandı.
+
+**Değiştirilen ana dosyalar:** `domain/usecase/pulse/{DigitalPulseModels,DigitalPulseEngine,PulseInsightEngine}.kt` (yeni), `domain/usecase/wrapped/WrappedEngine.kt`, `presentation/viewmodel/{WrappedViewModel,PulseClockViewModel}.kt` (ikincisi yeni), `presentation/ui/launcher/{PulseClockWidget.kt (yeni),HomeScreen.kt}`, `presentation/ui/screens/{WrappedReportScreen,SettingsHomeScreenSection}.kt`, `utils/{AppPrefs,WrappedSnapshotPrefs}.kt`, `values/strings.xml` + `values-en/strings.xml`, `app/build.gradle.kts` (v1.3.10→1.3.11, versionCode 33→34).
+
+**Test sonucu:** `testDebugUnitTest -PskipGoogleServices` → 289 test yeşil. `assembleDebug -PskipGoogleServices` → BUILD SUCCESSFUL.
+**Sonraki:** Yukarıdaki "Bekliyor" listesi — öncelik: ReportsCenterScreen özet kartı, ardından WrappedReportScreen sıralama revizyonu, sonra Canvas grafikleri.
+
+---
+
 ## Döngü 242 - 2026-07-13 [Settings hiyerarşi + Search/launcher regression smoke testleri — PASS]
 
 **Yapılanlar (smoke test yürütme):**

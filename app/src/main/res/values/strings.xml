@@ -342,6 +342,32 @@
     <string name="wrapped_notif_link_desc">Detaylı bildirim raporunu incele</string>
     <string name="wrapped_notif_link_open">Aç</string>
 
+    <!-- Pulse Clock (D244) -->
+    <string name="pulse_insight_notif_issue">%1$d uygulama bildirimle rahatsız ediyor</string>
+    <string name="pulse_insight_notif_calm">Bildirim yükün bu hafta sakin</string>
+    <string name="pulse_insight_unused">%1$d uygulama uzun süredir açılmadı</string>
+    <string name="pulse_insight_category_shift">%1$s kullanımın %%%2$d değişti</string>
+    <string name="pulse_insight_unlock_up">Kilit açman geçen haftaya göre %%%1$d arttı</string>
+    <string name="pulse_insight_unlock_down">Kilit açman geçen haftaya göre %%%1$d azaldı</string>
+    <string name="pulse_insight_organized">Uygulamaların düzenli kategorilenmiş</string>
+    <string name="pulse_insight_general">Haftalık raporun hazır</string>
+    <string name="pulse_score_content_desc">Dijital yaşam skoru %1$d, geçen haftaya göre %2$d puan %3$s</string>
+    <string name="pulse_score_content_desc_flat">Dijital yaşam skoru %1$d, geçen haftayla aynı</string>
+    <string name="pulse_score_content_desc_no_baseline">Dijital yaşam skoru %1$d, karşılaştırma için veri birikiyor</string>
+    <string name="pulse_score_delta_up">arttı</string>
+    <string name="pulse_score_delta_down">azaldı</string>
+    <string name="pulse_clock_open_weekly_report">Haftalık Dijital Nabız raporunu aç</string>
+    <string name="pulse_clock_score_ring_desc">Skor ayrıntıları için dokun</string>
+    <string name="settings_clock_pulse_title">Saat ve Dijital Nabız</string>
+    <string name="settings_clock_style_title">Saat Stili</string>
+    <string name="settings_clock_style_minimal">Minimal</string>
+    <string name="settings_clock_style_pulse">Pulse</string>
+    <string name="settings_clock_style_glass">Glass</string>
+    <string name="settings_home_score_visible_title">Ana Ekranda Skor Göster</string>
+    <string name="settings_home_score_visible_desc">Saat kartında dijital yaşam skoru halkası görünür</string>
+    <string name="settings_home_insight_visible_title">Ana Ekranda İçgörü Göster</string>
+    <string name="settings_home_insight_visible_desc">Saat kartında tek satırlık kişisel içgörü görünür</string>
+
     <!-- HomeTickerRow — sessize alma menüsü -->
     <string name="ticker_mute_8h">8 saat sessize al</string>
     <string name="ticker_mute_1d">1 gün sessize al</string>

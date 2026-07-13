@@ -294,6 +294,73 @@ fun SettingsHomeScreenSection(
         }
     }
 
+    // ── Saat ve Dijital Nabız (Pulse Clock, D244) ────────────────────────
+    SettingsSectionTitle(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_clock_pulse_title))
+    var clockStyle by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getClockStyle(context)) }
+    var homeScoreVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeScoreVisible(context)) }
+    var homeInsightVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeInsightVisible(context)) }
+    SettingsCard {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_clock_style_title),
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val styles = listOf(
+                    com.armutlu.apporganizer.utils.AppPrefs.CLOCK_STYLE_MINIMAL to com.armutlu.apporganizer.R.string.settings_clock_style_minimal,
+                    com.armutlu.apporganizer.utils.AppPrefs.CLOCK_STYLE_PULSE to com.armutlu.apporganizer.R.string.settings_clock_style_pulse,
+                    com.armutlu.apporganizer.utils.AppPrefs.CLOCK_STYLE_GLASS to com.armutlu.apporganizer.R.string.settings_clock_style_glass,
+                )
+                styles.forEach { (styleKey, labelRes) ->
+                    val selected = clockStyle == styleKey
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            )
+                            .clickable {
+                                clockStyle = styleKey
+                                com.armutlu.apporganizer.utils.AppPrefs.setClockStyle(context, styleKey)
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    ) {
+                        Text(
+                            androidx.compose.ui.res.stringResource(labelRes),
+                            fontSize = 13.sp,
+                            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Star,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_score_visible_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_score_visible_desc),
+            checked = homeScoreVisible,
+            onCheckedChange = {
+                homeScoreVisible = it
+                com.armutlu.apporganizer.utils.AppPrefs.setHomeScoreVisible(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Info,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_insight_visible_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_insight_visible_desc),
+            checked = homeInsightVisible,
+            onCheckedChange = {
+                homeInsightVisible = it
+                com.armutlu.apporganizer.utils.AppPrefs.setHomeInsightVisible(context, it)
+            }
+        )
+    }
+
     // ── Tüm Uygulamalar Ekranı ────────────────────────────────────────────
     SettingsSectionTitle("Tüm Uygulamalar")
     SettingsCard {

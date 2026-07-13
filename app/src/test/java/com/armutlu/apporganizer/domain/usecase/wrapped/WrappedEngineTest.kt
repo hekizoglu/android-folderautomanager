@@ -105,10 +105,15 @@ class WrappedEngineTest {
         assertTrue(report.score.score > 50)
     }
 
-    // ── Sebep toplamı tutarlılığı ────────────────────────────────────────────
+    // ── Tek motor tutarlılığı (V2: DigitalPulseEngine) ───────────────────────
+    // V1'deki "50 + reasons.sum() = score" toplamsal modeli KALDIRILDI (D244) —
+    // V2 skoru 5 alt skorun ağırlıklı ortalamasıdır (DigitalPulseEngine.compute).
+    // Bu test artık report.score.score'un report.pulse.total ile AYNI tek motor
+    // kaynağından geldiğini doğrular (Ana ekran / Rapor Merkezi / Haftalık Rapor
+    // farklı skor hesaplamaz kuralı).
 
     @Test
-    fun `score reasons sum matches the delta from neutral baseline within clamp`() {
+    fun `score matches the single Digital Pulse engine total (no duplicate score calc)`() {
         val apps = (1..5).map {
             app(
                 "com.mixed.app$it",
@@ -122,9 +127,8 @@ class WrappedEngineTest {
         val input = WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now)
         val report = WrappedEngine.compute(input)
 
-        val expectedUnclamped = 50 + report.score.reasons.sumOf { it.delta }
-        val expectedClamped = expectedUnclamped.coerceIn(0, 100)
-        assertEquals(expectedClamped, report.score.score)
+        assertEquals(report.pulse.total, report.score.score)
+        assertTrue(report.score.score in 0..100)
     }
 
     // ── Kişilik tipi ─────────────────────────────────────────────────────────

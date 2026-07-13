@@ -25,6 +25,16 @@ object WrappedSnapshotPrefs {
 
     private const val KEY_LAST_SCORE = "last_score"
 
+    // Haftalık skor rotasyonu (D244, Pulse Clock) — "geçen haftaya göre ±N" karşılaştırması
+    // için 7 günde bir dönen baseline. İlk hafta baseline yok → delta null (sahte +0 gösterilmez).
+    private const val KEY_PULSE_WEEK_SCORE = "pulse_week_score"
+    private const val KEY_PULSE_WEEK_DAY = "pulse_week_day"
+    private const val KEY_PULSE_WEEK_PREV = "pulse_week_prev"
+
+    // Motorun en son hesapladığı toplam skor — ticker gibi hafif tüketiciler için cache
+    // (tek skor motoru kuralı: ticker kendi skorunu HESAPLAMAZ, bunu okur).
+    private const val KEY_PULSE_LATEST_TOTAL = "pulse_latest_total"
+
     // Ticker "Dijital Yasam Skoru" trendi icin gunluk rotasyonlu skor (haftalik last_score'dan ayri).
     private const val KEY_SCORE_CURRENT = "ticker_score_current"
     private const val KEY_SCORE_CURRENT_DAY = "ticker_score_current_day"
@@ -89,6 +99,54 @@ object WrappedSnapshotPrefs {
     fun setLastScore(context: Context, score: Int) {
         runCatching { prefs(context).edit().putInt(KEY_LAST_SCORE, score).apply() }
             .onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.setLastScore basarisiz") }
+    }
+
+    /**
+     * Haftalık skor rotasyonu (D244) — "geçen haftaya göre" karşılaştırma baseline'i.
+     * İlk kayıtta null döner (UI "veri birikiyor" davranışı — sahte +0 yok). 7+ gün geçince
+     * mevcut skor "geçen hafta" konumuna kayar ve yeni skor kaydedilir.
+     *
+     * @return geçen haftanın skoru (0-100) veya henüz tam bir haftalık baseline yoksa null.
+     */
+    fun updateWeeklyPulseScore(context: Context, score: Int, epochDay: Long = nowEpochDay()): Int? {
+        return runCatching {
+            val p = prefs(context)
+            val savedDay = p.getLong(KEY_PULSE_WEEK_DAY, -1L)
+            val savedScore = p.getInt(KEY_PULSE_WEEK_SCORE, -1)
+
+            if (savedDay < 0L || savedScore !in 0..100) {
+                // İlk kayıt — baseline başlat, karşılaştırma yok.
+                p.edit()
+                    .putInt(KEY_PULSE_WEEK_SCORE, score)
+                    .putLong(KEY_PULSE_WEEK_DAY, epochDay)
+                    .apply()
+                return@runCatching null
+            }
+
+            if (epochDay - savedDay >= 7L) {
+                // Hafta doldu: mevcut hafta skoru "geçen hafta" olur, yeni skor yazılır.
+                p.edit()
+                    .putInt(KEY_PULSE_WEEK_PREV, savedScore)
+                    .putInt(KEY_PULSE_WEEK_SCORE, score)
+                    .putLong(KEY_PULSE_WEEK_DAY, epochDay)
+                    .apply()
+                return@runCatching savedScore
+            }
+
+            // Hafta içindeyiz — baseline değişmez, önceki hafta skoru (varsa) döner.
+            p.getInt(KEY_PULSE_WEEK_PREV, -1).takeIf { it in 0..100 }
+        }.onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.updateWeeklyPulseScore basarisiz") }.getOrNull()
+    }
+
+    /** Motorun en son hesapladığı toplam skoru cache'ler — ticker bunu okur, kendi hesaplamaz. */
+    fun setLatestPulseScore(context: Context, score: Int) {
+        runCatching { prefs(context).edit().putInt(KEY_PULSE_LATEST_TOTAL, score.coerceIn(0, 100)).apply() }
+            .onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.setLatestPulseScore basarisiz") }
+    }
+
+    fun getLatestPulseScore(context: Context): Int? {
+        val v = prefs(context).getInt(KEY_PULSE_LATEST_TOTAL, -1)
+        return if (v in 0..100) v else null
     }
 
     /**
