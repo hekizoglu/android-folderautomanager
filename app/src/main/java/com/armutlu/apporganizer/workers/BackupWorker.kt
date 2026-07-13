@@ -89,10 +89,9 @@ class BackupWorker(
                 .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
                 .build()
             val wm = WorkManager.getInstance(context)
-            wm.cancelUniqueWork(WORK_NAME)
             wm.enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request
             )
         }

@@ -66,6 +66,7 @@ fun FolderScreen(
     val density = LocalDensity.current
     var folderCarouselEnabled by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
+    var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -75,6 +76,9 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_FOLDER_CAROUSEL_POSITION) {
                 folderCarouselPosition = AppPrefs.getFolderCarouselPosition(context)
+            }
+            if (key == AppPrefs.KEY_FOLDER_SEARCH_ENABLED) {
+                folderSearchEnabled = AppPrefs.isFolderSearchEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -359,7 +363,6 @@ fun FolderScreen(
                 }
 
                 // Arama çubuğu — varsayılan KAPALI, Ayarlar > Klasör İçi Arama ile açılır
-                val folderSearchEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isFolderSearchEnabled(context) }
                 if (folderSearchEnabled) Row(
                     modifier = Modifier
                         .fillMaxWidth()

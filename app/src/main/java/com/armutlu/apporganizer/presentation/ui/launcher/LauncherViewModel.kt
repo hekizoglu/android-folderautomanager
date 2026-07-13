@@ -251,7 +251,7 @@ class LauncherViewModel @Inject constructor(
      * onResume'da çağrılır: yüklü paket sayısı DB ile uyuşmuyorsa tam reconcile tetikler.
      * Paket sayısı eşitse sıfır IO — launcher hızı korunur.
      */
-    fun reconcileIfNeeded(context: Context) {
+    fun reconcileIfNeeded(context: Context, onSuccess: () -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 val installed = packageManagerHelper
@@ -273,6 +273,8 @@ class LauncherViewModel @Inject constructor(
                 if (needsRefresh) {
                     Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
                     loadAppsIfEmpty()
+                } else {
+                    onSuccess()
                 }
             }.onFailure { Timber.e(it, "reconcileIfNeeded hatası") }
         }
@@ -885,7 +887,7 @@ class LauncherViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
-    fun syncUsageStats(context: Context) {
+    fun syncUsageStats(context: Context, onSuccess: () -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
             if (!UsageStatsHelper.hasPermission(context)) return@launch
             runCatching {
@@ -895,6 +897,7 @@ class LauncherViewModel @Inject constructor(
                 // IfNewer: launchApp'ın anlık timestamp'ini daha eski UsageStats verisiyle ezme
                 lastUsed.forEach { (pkg, ts) -> repository.updateLastUsedTimestampIfNewer(pkg, ts) }
                 Timber.d("UsageStats synced: ${counts.size} apps, ${lastUsed.size} lastUsed")
+                onSuccess()
             }.onFailure { Timber.e(it, "syncUsageStats hatası") }
         }
     }

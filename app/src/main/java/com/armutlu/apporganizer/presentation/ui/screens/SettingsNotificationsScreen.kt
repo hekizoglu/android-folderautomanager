@@ -260,7 +260,11 @@ fun SettingsNotificationsScreen(
                         title = "Günlük Kullanım",
                         subtitle = "En çok kullandığın uygulamayı ve kullanım özetini gösterir",
                         checked = dailyUsage,
-                        onCheckedChange = { dailyUsage = it; AppPrefs.setSmartNotifDailyUsage(workerCtx, it) }
+                        onCheckedChange = {
+                            dailyUsage = it
+                            AppPrefs.setSmartNotifDailyUsage(workerCtx, it)
+                            com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
+                        }
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     SettingsSwitchRow(
@@ -268,7 +272,11 @@ fun SettingsNotificationsScreen(
                         title = "Kullanılmayan Uygulamalar",
                         subtitle = "Uzun süredir açmadığın uygulamalar için hatırlatma verir",
                         checked = unusedApps,
-                        onCheckedChange = { unusedApps = it; AppPrefs.setSmartNotifUnusedApps(workerCtx, it) }
+                        onCheckedChange = {
+                            unusedApps = it
+                            AppPrefs.setSmartNotifUnusedApps(workerCtx, it)
+                            com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
+                        }
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     SettingsSwitchRow(
@@ -276,7 +284,11 @@ fun SettingsNotificationsScreen(
                         title = "Klasör İstatistikleri",
                         subtitle = "Kalabalık klasörler için düzen önerileri sunar",
                         checked = catStats,
-                        onCheckedChange = { catStats = it; AppPrefs.setSmartNotifCatStats(workerCtx, it) }
+                        onCheckedChange = {
+                            catStats = it
+                            AppPrefs.setSmartNotifCatStats(workerCtx, it)
+                            com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
+                        }
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     Box(Modifier.fillMaxWidth()) {

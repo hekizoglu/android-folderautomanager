@@ -117,21 +117,28 @@ class SmartInsightWorker(
                     }
                 }
 
-                val newApps = apps.filter { (now - it.installTime) <= 3 * dayMs && it.installTime > 0L }
-                if (newApps.isNotEmpty()) {
-                    val app = requireNotNull(newApps.maxByOrNull { maxOf(it.firstInstalledTime, it.installTime) })
-                    add("Yeni Uygulama" to "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?")
+                if (AppPrefs.isSmartNotifCatStats(ctx)) {
+                    val newApps = apps.filter { (now - it.installTime) <= 3 * dayMs && it.installTime > 0L }
+                    if (newApps.isNotEmpty()) {
+                        val app = requireNotNull(newApps.maxByOrNull { maxOf(it.firstInstalledTime, it.installTime) })
+                        add("Yeni Uygulama" to "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?")
+                    }
                 }
 
-                val weeklyMessages = listOf(
-                    "Uygulamalarini duzenlemek hafizayi ozgurlestirir. Bu hafta bir klasor olustursan?",
-                    "Organize bir telefon, gunde ortalama 20 dakika kazandirabilir.",
-                    "Bu haftaki hedefin: kullanmadigin 3 uygulamayi gizle veya sil.",
-                    "En cok kullandigin 5 uygulamayi ust klasore almayi dene.",
-                    "Arka planda calisan uygulamalari kontrol et, pilini kurtarabilirsin.",
-                )
-                if (Random.nextInt(3) == 0) {
-                    add("Haftalik Ipucu" to weeklyMessages.random())
+                val anySubtypeEnabled = AppPrefs.isSmartNotifDailyUsage(ctx) ||
+                    AppPrefs.isSmartNotifUnusedApps(ctx) ||
+                    AppPrefs.isSmartNotifCatStats(ctx)
+                if (anySubtypeEnabled) {
+                    val weeklyMessages = listOf(
+                        "Uygulamalarini duzenlemek hafizayi ozgurlestirir. Bu hafta bir klasor olustursan?",
+                        "Organize bir telefon, gunde ortalama 20 dakika kazandirabilir.",
+                        "Bu haftaki hedefin: kullanmadigin 3 uygulamayi gizle veya sil.",
+                        "En cok kullandigin 5 uygulamayi ust klasore almayi dene.",
+                        "Arka planda calisan uygulamalari kontrol et, pilini kurtarabilirsin.",
+                    )
+                    if (Random.nextInt(3) == 0) {
+                        add("Haftalik Ipucu" to weeklyMessages.random())
+                    }
                 }
             }
 

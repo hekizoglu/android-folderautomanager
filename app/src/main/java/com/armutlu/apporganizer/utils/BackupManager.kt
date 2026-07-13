@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.armutlu.apporganizer.data.repository.AppRepository
-import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.workers.BackupWorker
+import com.armutlu.apporganizer.workers.SmartInsightWorker
+import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -81,6 +83,11 @@ object BackupManager {
                     put("folderSortMode", AppPrefs.getFolderSortMode(context))
                     put("folderCarouselEnabled", AppPrefs.isFolderCarouselEnabled(context))
                     put("folderCarouselPosition", AppPrefs.getFolderCarouselPosition(context))
+                    put("autoBackupEnabled", AppPrefs.isAutoBackupEnabled(context))
+                    put("backupDayOfWeek", AppPrefs.getBackupDayOfWeek(context))
+                    put("backupHour", AppPrefs.getBackupHour(context))
+                    put("backupMinute", AppPrefs.getBackupMinute(context))
+                    put("driveFolderUri", AppPrefs.getDriveFolderUri(context) ?: "")
                     put("iconPack", AppPrefs.getIconPack(context))
                     put("labelColor", AppPrefs.getLabelColor(context))
                     put("folderShape", AppPrefs.getFolderShape(context))
@@ -118,6 +125,21 @@ object BackupManager {
                     put("privacyReportEnabled", AppPrefs.isPrivacyReportEnabled(context))
                     put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
                     put("assistantCardsEnabled", AppPrefs.isAssistantCardsEnabled(context))
+                    put("clockStyle", AppPrefs.getClockStyle(context))
+                    put("homeScoreVisible", AppPrefs.isHomeScoreVisible(context))
+                    put("homeInsightVisible", AppPrefs.isHomeInsightVisible(context))
+                    put("searchWebFallbackEnabled", AppPrefs.isSearchWebFallbackEnabled(context))
+                    put("searchStatsEnabled", AppPrefs.isSearchStatsEnabled(context))
+                    put("searchSourceAppsEnabled", AppPrefs.isSearchSourceAppsEnabled(context))
+                    put("searchSourceCategoriesEnabled", AppPrefs.isSearchSourceCategoriesEnabled(context))
+                    put("searchSourceSettingsEnabled", AppPrefs.isSearchSourceSettingsEnabled(context))
+                    put("searchSourceContactsEnabled", AppPrefs.isSearchSourceContactsEnabled(context))
+                    put("searchSourceFilesEnabled", AppPrefs.isSearchSourceFilesEnabled(context))
+                    put("smartNotifEnabled", AppPrefs.isSmartNotifEnabled(context))
+                    put("smartNotifDailyUsage", AppPrefs.isSmartNotifDailyUsage(context))
+                    put("smartNotifUnusedApps", AppPrefs.isSmartNotifUnusedApps(context))
+                    put("smartNotifCatStats", AppPrefs.isSmartNotifCatStats(context))
+                    put("smartNotifHour", AppPrefs.getSmartNotifHour(context))
                 })
             }
             root.toString(2)
@@ -187,19 +209,13 @@ object BackupManager {
             // ── Uygulama listesi ──────────────────────────────────────────────
             if (appsArray != null) {
                 val currentApps = repository.getAllApps()
-                currentApps.map { it.packageName }.takeIf { it.isNotEmpty() }?.let { packages ->
-                    repository.updateAppsCategoryAutomatically(packages, Category.CAT_UNCATEGORIZED)
-                }
-                currentApps.forEach { app ->
-                    repository.updateAppHidden(app.packageName, false)
-                    repository.updateNotificationCount(app.packageName, 0)
-                }
+                val currentByPackage = currentApps.associateBy { it.packageName }
                 for (i in 0 until appsArray.length()) {
                     val obj = appsArray.getJSONObject(i)
                     val pkg = obj.getString("packageName")
                     val cat = obj.optString("categoryId", "uncategorized")
                     val hidden = obj.optBoolean("isHidden", false)
-                    val current = repository.getAppByPackageName(pkg)
+                    val current = currentByPackage[pkg] ?: repository.getAppByPackageName(pkg)
                     if (current != null) {
                         if (version >= 4 || obj.has("classificationSource")) {
                             repository.restoreClassificationFromBackup(
@@ -225,9 +241,9 @@ object BackupManager {
                         val launchCount = obj.optLong("launchCount", 0L)
                         val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
                         val notificationCount = obj.optInt("notificationCount", 0)
-                        if (usageCount > 0) repository.updateUsageTimeMs(pkg, usageCount)
-                        if (launchCount > 0) repository.updateLaunchCount(pkg, launchCount)
-                        if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
+                        if (obj.has("usageCount")) repository.updateUsageTimeMs(pkg, usageCount)
+                        if (obj.has("launchCount")) repository.updateLaunchCount(pkg, launchCount)
+                        if (obj.has("lastUsedTimestamp")) repository.updateLastUsedTimestamp(pkg, lastUsed)
                         repository.updateNotificationCount(pkg, notificationCount)
                         updated++
                     } else {
@@ -293,6 +309,13 @@ object BackupManager {
                     if (s.has("folderCarouselEnabled")) AppPrefs.setFolderCarouselEnabled(context, s.getBoolean("folderCarouselEnabled"))
                     s.optString("folderCarouselPosition").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setFolderCarouselPosition(context, it) }
+                    if (s.has("autoBackupEnabled")) AppPrefs.setAutoBackupEnabled(context, s.getBoolean("autoBackupEnabled"))
+                    if (s.has("backupDayOfWeek")) AppPrefs.setBackupDayOfWeek(context, s.getInt("backupDayOfWeek"))
+                    if (s.has("backupHour")) AppPrefs.setBackupHour(context, s.getInt("backupHour"))
+                    if (s.has("backupMinute")) AppPrefs.setBackupMinute(context, s.getInt("backupMinute"))
+                    if (s.has("driveFolderUri")) {
+                        AppPrefs.setDriveFolderUri(context, s.optString("driveFolderUri").takeIf { it.isNotBlank() })
+                    }
                     s.optString("iconPack").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setIconPack(context, it) }
                     s.optString("labelColor").takeIf { it.isNotEmpty() }
@@ -335,7 +358,26 @@ object BackupManager {
                     if (s.has("privacyReportEnabled")) AppPrefs.setPrivacyReportEnabled(context, s.getBoolean("privacyReportEnabled"))
                     if (s.has("contextualDockEnabled")) AppPrefs.setContextualDockEnabled(context, s.getBoolean("contextualDockEnabled"))
                     if (s.has("assistantCardsEnabled")) AppPrefs.setAssistantCardsEnabled(context, s.getBoolean("assistantCardsEnabled"))
+                    s.optString("clockStyle").takeIf { it.isNotEmpty() }
+                        ?.let { AppPrefs.setClockStyle(context, it) }
+                    if (s.has("homeScoreVisible")) AppPrefs.setHomeScoreVisible(context, s.getBoolean("homeScoreVisible"))
+                    if (s.has("homeInsightVisible")) AppPrefs.setHomeInsightVisible(context, s.getBoolean("homeInsightVisible"))
+                    if (s.has("searchWebFallbackEnabled")) AppPrefs.setSearchWebFallbackEnabled(context, s.getBoolean("searchWebFallbackEnabled"))
+                    if (s.has("searchStatsEnabled")) AppPrefs.setSearchStatsEnabled(context, s.getBoolean("searchStatsEnabled"))
+                    if (s.has("searchSourceAppsEnabled")) AppPrefs.setSearchSourceAppsEnabled(context, s.getBoolean("searchSourceAppsEnabled"))
+                    if (s.has("searchSourceCategoriesEnabled")) AppPrefs.setSearchSourceCategoriesEnabled(context, s.getBoolean("searchSourceCategoriesEnabled"))
+                    if (s.has("searchSourceSettingsEnabled")) AppPrefs.setSearchSourceSettingsEnabled(context, s.getBoolean("searchSourceSettingsEnabled"))
+                    if (s.has("searchSourceContactsEnabled")) AppPrefs.setSearchSourceContactsEnabled(context, s.getBoolean("searchSourceContactsEnabled"))
+                    if (s.has("searchSourceFilesEnabled")) AppPrefs.setSearchSourceFilesEnabled(context, s.getBoolean("searchSourceFilesEnabled"))
+                    if (s.has("smartNotifEnabled")) AppPrefs.setSmartNotifEnabled(context, s.getBoolean("smartNotifEnabled"))
+                    if (s.has("smartNotifDailyUsage")) AppPrefs.setSmartNotifDailyUsage(context, s.getBoolean("smartNotifDailyUsage"))
+                    if (s.has("smartNotifUnusedApps")) AppPrefs.setSmartNotifUnusedApps(context, s.getBoolean("smartNotifUnusedApps"))
+                    if (s.has("smartNotifCatStats")) AppPrefs.setSmartNotifCatStats(context, s.getBoolean("smartNotifCatStats"))
+                    if (s.has("smartNotifHour")) AppPrefs.setSmartNotifHour(context, s.getInt("smartNotifHour"))
                 }
+                BackupWorker.schedule(context)
+                WeeklyDigestWorker.schedule(context)
+                SmartInsightWorker.schedule(context)
             }
 
             ImportResult(success = true, updatedCount = updated, missingPackages = missing, restoredVersion = version)
@@ -364,9 +406,9 @@ object BackupManager {
                         val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
                         val launchCount = obj.optLong("launchCount", 0L)
                         val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
-                        if (usageCount > 0) repository.updateUsageTimeMs(pkg, usageCount)
-                        if (launchCount > 0) repository.updateLaunchCount(pkg, launchCount)
-                        if (lastUsed > 0)   repository.updateLastUsedTimestamp(pkg, lastUsed)
+                        if (obj.has("usageCount")) repository.updateUsageTimeMs(pkg, usageCount)
+                        if (obj.has("launchCount")) repository.updateLaunchCount(pkg, launchCount)
+                        if (obj.has("lastUsedTimestamp")) repository.updateLastUsedTimestamp(pkg, lastUsed)
                         updated++
                     } else {
                         missing.add(pkg)

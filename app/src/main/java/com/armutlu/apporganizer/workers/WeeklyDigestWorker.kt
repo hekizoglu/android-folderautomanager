@@ -181,10 +181,9 @@ class WeeklyDigestWorker(
                 .setInitialDelay(1, TimeUnit.DAYS)
                 .build()
             val wm = WorkManager.getInstance(context)
-            wm.cancelUniqueWork(WORK_NAME)
             wm.enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request
             )
         }

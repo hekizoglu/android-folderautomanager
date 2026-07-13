@@ -259,6 +259,8 @@ object WrappedEngine {
             val installed = if (app.firstInstalledTime > 0L) app.firstInstalledTime else app.installTime
             installed > 0L && (now - installed) <= 7 * DAY_MS
         }
+        val totalUsage = apps.sumOf { it.usageCount }
+        val hasUsageData = totalUsage > 0L
         val socialRatio = personality.categoryPercentages["social"] ?: 0
         val notification = input.notificationSummary
         val notificationAccessCriteria = if (notification == null) {
@@ -291,7 +293,7 @@ object WrappedEngine {
                 emoji = "🧘",
                 title = "Dijital Minimalist",
                 criteriaDescription = "60+ gundur acilmamis uygulama sayisi 3'ten az",
-                earned = unusedLongCount < 3,
+                earned = apps.isNotEmpty() && unusedLongCount < 3,
             ),
             Badge(
                 id = "explorer",
@@ -305,7 +307,7 @@ object WrappedEngine {
                 emoji = "🌿",
                 title = "Sosyal Detoks",
                 criteriaDescription = "Sosyal kategori kullanim payi %15'in altinda",
-                earned = socialRatio < 15,
+                earned = hasUsageData && socialRatio < 15,
             ),
             Badge(
                 id = "loyal_user",

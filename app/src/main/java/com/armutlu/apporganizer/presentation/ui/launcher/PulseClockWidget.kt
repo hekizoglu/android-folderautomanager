@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,9 +88,21 @@ internal fun PulseClockWidget(
 
     LaunchedEffect(Unit) { viewModel.refreshIfStale() }
 
-    val clockStyle = remember { AppPrefs.getClockStyle(context) }
-    val scoreVisible = remember { AppPrefs.isHomeScoreVisible(context) }
-    val insightVisible = remember { AppPrefs.isHomeInsightVisible(context) }
+    var clockStyle by remember { mutableStateOf(AppPrefs.getClockStyle(context)) }
+    var scoreVisible by remember { mutableStateOf(AppPrefs.isHomeScoreVisible(context)) }
+    var insightVisible by remember { mutableStateOf(AppPrefs.isHomeInsightVisible(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                AppPrefs.KEY_CLOCK_STYLE -> clockStyle = AppPrefs.getClockStyle(context)
+                AppPrefs.KEY_HOME_SCORE_VISIBLE -> scoreVisible = AppPrefs.isHomeScoreVisible(context)
+                AppPrefs.KEY_HOME_INSIGHT_VISIBLE -> insightVisible = AppPrefs.isHomeInsightVisible(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     // Saat/tarih — dakika sınırında güncellenir (skor hesabını TETİKLEMEZ)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
