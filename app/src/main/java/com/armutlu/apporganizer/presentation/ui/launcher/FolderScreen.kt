@@ -258,12 +258,21 @@ fun FolderScreen(
                     .statusBarsPadding()
                     .navigationBarsPadding()
                     .graphicsLayer {
-                        translationX = if (folderCarouselEnabled) contentOffset.value else 0f
-                        alpha = if (folderCarouselEnabled) {
-                            1f - (abs(contentOffset.value) / folderTransitionOffsetPx).coerceIn(0f, 0.22f)
-                        } else {
-                            1f
-                        }
+                        val offset = if (folderCarouselEnabled) contentOffset.value else 0f
+                        val progress = (offset / folderTransitionOffsetPx).coerceIn(-1f, 1f)
+                        translationX = offset
+                        alpha = 1f - abs(progress) * 0.18f
+                        cameraDistance = 10f * density.density
+                        // Sayfa çevirme hissi: içerik kaydırma yönünün TERSİNE hafifçe döner
+                        // (sanki kağıdın kenarı sabit menteşeden açılıyormuş gibi)
+                        rotationY = -progress * 14f
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
+                            pivotFractionX = if (progress > 0f) 0f else 1f,
+                            pivotFractionY = 0.5f,
+                        )
+                        val scale = 1f - abs(progress) * 0.04f
+                        scaleX = scale
+                        scaleY = scale
                     }
             ) {
                 // Üst bar — geri + klasör başlık + düzenle
@@ -556,6 +565,15 @@ fun FolderScreen(
 
             // Klasör düzenleme dialog'u
             if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE) {
+                // Aktif sürükleme/geçiş animasyonu sırasında (offset sıfırdan uzaklaşınca)
+                // bu navigatör solmalı — FolderPageTurnPeek 3D efektiyle çakışmasın (kullanıcı
+                // geri bildirimi: ortada beliren istenmeyen "sonraki klasör" butonu).
+                val navOffset = if (folderCarouselEnabled) contentOffset.value else 0f
+                val navAlphaTarget = 1f - (abs(navOffset) / folderTransitionOffsetPx).coerceIn(0f, 1f)
+                val navAlpha by androidx.compose.animation.core.animateFloatAsState(
+                    targetValue = navAlphaTarget,
+                    label = "folderIndexNavigatorAlpha",
+                )
                 FolderIndexNavigator(
                     previousFolder = previousFolder!!,
                     nextFolder = nextFolder!!,
@@ -564,7 +582,8 @@ fun FolderScreen(
                     accent = catColor,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .padding(horizontal = 18.dp),
+                        .padding(horizontal = 18.dp)
+                        .graphicsLayer { alpha = navAlpha },
                     onPrevious = {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         navigateAdjacentFolder(next = false)
@@ -653,6 +672,10 @@ fun FolderScreen(
     }
 }
 
+// "Defter yaprağı çevirme" efekti: gelen komşu klasör 3D eksende (rotationY + cameraDistance)
+// döndürülerek, hafifçe ölçeklenerek ve kayan kenarında koyulaşan bir gölge gradyanıyla
+// beliriyor — Compose'da tam fiziksel bir page-curl simülasyonu yerine performanslı,
+// GPU hızlandırmalı (graphicsLayer, Canvas değil) inandırıcı bir 3D flip illüzyonu.
 @Composable
 private fun FolderPageTurnPeek(
     previousFolder: AppFolder,
@@ -669,11 +692,8 @@ private fun FolderPageTurnPeek(
 
     val showStart = transitionDirection > 0
     val previewFolder = if (showStart) previousFolder else nextFolder
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer { alpha = progress * 0.9f },
-    ) {
+    val density = LocalDensity.current
+    Box(modifier = Modifier.fillMaxSize()) {
         FolderPageEdgeStrip(
             folder = previewFolder,
             startEdge = showStart,
@@ -681,7 +701,21 @@ private fun FolderPageTurnPeek(
             onSurface = onSurface,
             accent = accent,
             modifier = Modifier
-                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd),
+                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd)
+                .graphicsLayer {
+                    cameraDistance = 10f * density.density
+                    // Yeni sayfa, menteşesi ekranın dışında kalan taraftan hafifçe döner —
+                    // ilerleme arttıkça düzleşerek tam görünüme gelir (0° = tam düz).
+                    rotationY = if (showStart) (1f - progress) * -22f else (1f - progress) * 22f
+                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
+                        pivotFractionX = if (showStart) 0f else 1f,
+                        pivotFractionY = 0.5f,
+                    )
+                    val scale = 0.92f + progress * 0.08f
+                    scaleX = scale
+                    scaleY = scale
+                    alpha = (0.35f + progress * 0.65f).coerceIn(0f, 1f)
+                },
         )
     }
 }
@@ -699,10 +733,23 @@ private fun FolderPageEdgeStrip(
     val customName = AppPrefs.getFolderCustomNames(context)[catId].orEmpty()
     val customEmoji = AppPrefs.getFolderCustomEmojis(context)[catId].orEmpty()
     val title = customName.ifBlank { folder.category.categoryName }
-    Column(
+    val shadowColor = androidx.compose.ui.graphics.Color.Black
+    // Kağıt kenarı hissi: sayfanın kaydığı tarafta hafif koyulaşan gradyan gölge.
+    val edgeShadowBrush = remember(startEdge) {
+        if (startEdge) {
+            androidx.compose.ui.graphics.Brush.horizontalGradient(
+                listOf(shadowColor.copy(alpha = 0.28f), androidx.compose.ui.graphics.Color.Transparent),
+            )
+        } else {
+            androidx.compose.ui.graphics.Brush.horizontalGradient(
+                listOf(androidx.compose.ui.graphics.Color.Transparent, shadowColor.copy(alpha = 0.28f)),
+            )
+        }
+    }
+    Box(
         modifier = modifier
-            .width(64.dp)
-            .height(154.dp)
+            .width(96.dp)
+            .height(184.dp)
             .clip(
                 if (startEdge) {
                     RoundedCornerShape(topStart = 0.dp, topEnd = 22.dp, bottomEnd = 22.dp, bottomStart = 0.dp)
@@ -710,21 +757,34 @@ private fun FolderPageEdgeStrip(
                     RoundedCornerShape(topStart = 22.dp, topEnd = 0.dp, bottomEnd = 0.dp, bottomStart = 22.dp)
                 },
             )
-            .background(accent.copy(alpha = 0.18f))
-            .padding(horizontal = 7.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .background(accent.copy(alpha = 0.20f)),
     ) {
-        Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 20.sp)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            title,
-            color = onSurface.copy(alpha = 0.72f),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 9.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 22.sp)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                title,
+                color = onSurface.copy(alpha = 0.75f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+        }
+        // "Ciltli kağıt kenarı" — sayfanın döndüğü tarafa koyulaşan ince gölge şeridi.
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(18.dp)
+                .align(if (startEdge) Alignment.CenterStart else Alignment.CenterEnd)
+                .background(edgeShadowBrush),
         )
     }
 }

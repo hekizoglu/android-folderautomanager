@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 252 - 2026-07-13 [Klasör geçişi 3D sayfa çevirme efekti + orta navigatör overlay fix]
+
+**Yapılanlar:** `FolderScreen.kt` — kullanıcı geri bildirimi: klasör içindeyken sağa/sola kaydırma "defter yaprağı çeviriyormuş gibi" hissetmiyordu ve ortada istenmeyen bir "sonraki klasör" butonu beliriyordu. (1) `FOLDER_CAROUSEL_POS_MIDDLE` durumundaki `FolderIndexNavigator` artık `contentOffset.value`'a bağlı `animateFloatAsState` ile alpha kontrollü — aktif sürükleme/geçiş sırasında (offset sıfırdan uzaklaşınca) sönükleşip kayboluyor, sadece klasör dinlenme halindeyken (offset≈0) görünüyor. (2) Ana içerik `Column`'un `graphicsLayer`'ına `rotationY` (sürüklenme yönüne göre ±14°), `cameraDistance` (10×density, aşırı kavis önlemi), `transformOrigin` (menteşe sabit kenarda) ve hafif `scaleX/scaleY` (progress'e bağlı %4'e kadar küçülme) eklendi — kağıt gibi 3D dönme hissi. (3) `FolderPageTurnPeek`/`FolderPageEdgeStrip` yeniden yazıldı: gelen komşu klasör önizlemesi artık düz kayan renkli şerit değil, `rotationY` (±22°'den 0°'ye düzleşerek) + ölçekleme (0.92→1.0) + `Brush.horizontalGradient` ile kenar tarafında koyulaşan "ciltli kağıt kenarı" gölgesi içeren 3D flip illüzyonu. Canvas kullanılmadı, tamamen `graphicsLayer` (GPU hızlandırmalı, ucuz) ile yapıldı — her drag frame'inde performans sorunu yok. `folderCarouselEnabled=false` iken efekt hiç render edilmiyor (mevcut davranış korundu).
+
+**Doğrulama:** `.\gradlew compileDebugKotlin -PskipGoogleServices` ve `.\gradlew assembleDebug -PskipGoogleServices` ikisi de BUILD SUCCESSFUL. Emülatör açık değildi (`adb devices` boş) — görsel doğrulama atlandı, build yeterli kabul edildi. `versionCode` 35→36, `versionName` 1.3.12→1.3.13.
+
+**Sonraki:** Emülatör açıldığında bu değişiklik için görsel smoke test (klasöre gir → sağa/sola kaydır → orta navigatör kaybolduğunu ve 3D geçişi gözle doğrula) yapılmalı.
+
+---
+
 ## Döngü 251 - 2026-07-13 [Emülatör smoke testleri - AllApps, arama, launcher]
 
 **Yapılanlar:** ROADMAP'te emülatörde yapılabilecek açık smoke maddeleri koşturuldu. `Pixel6_API33` Android 13/API 33 AVD başlatıldı, `assembleDebug connectedDebugAndroidTest -PskipGoogleServices --no-daemon` çalıştırıldı ve APK emülatöre kuruldu. Onboarding sadece emülatör private prefs içinde `onboarding_done=true` yapılarak bypass edildi; kaynak kod değişmedi. AllApps ekranı açıldı, arama alanı odaklandı ve `app` sorgusu yazıldı; hızlı çift dokunma senaryosu koşturuldu. Telefon boyutunda `LauncherActivity` açıldı. Geniş ekran/tablet benzeri `wm size 1280x800` + `wm density 160` simülasyonunda AllApps ve arama odağı tekrarlandı. Kanıt görselleri `artifacts/emulator-smoke/` altına alındı.
