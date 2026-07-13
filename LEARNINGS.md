@@ -5,6 +5,16 @@
 
 ---
 
+## 🧭 VİZYON KARARI — Pixel klonu değiliz (2026-07-14, Hüseyin — ÖNCELİK:YÜKSEK)
+
+AppOrganizer artık "invisible launcher / Pixel Launcher klonu" DEĞİL. Hedef: kendi kimliği olan, kendi başına harika bir uygulama. Sonuçları:
+- Tasarım/UX kararlarında ölçüt "Pixel ne yapıyor?" değil, "kullanıcımız için en iyisi ne?"
+- Pixel'den ayrışmak artık hata değil, tercih olabilir — "Pixel'de böyle" tek başına gerekçe sayılmaz
+- Mevcut görsel öğeler (frosted dock, transparent bg, Pulse Clock) Pixel taklidi olarak değil, kendi kimliğimizin parçası olarak evrilir
+- CLAUDE.md §7 ve README bu vizyonla güncellendi (D255 sonrası)
+
+---
+
 ## 🔒 Build Kilidi Kök Nedenleri (D235 — 6 kilit vakasının otopsisi)
 
 ### VSCode redhat.java dil sunucusu R.jar'ı kilitler

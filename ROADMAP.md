@@ -1,8 +1,17 @@
 ﻿# ROADMAP.md - AppOrganizer Aktif Yol Haritasi
 
-> Son guncelleme: 2026-07-13.
+> Son guncelleme: 2026-07-14.
 > Bu dosya aktif yapilacaklar icin tek kaynak olarak kullanilir.
 > Tamamlanan isler HISTORY.md'ye, yerelde cozulmeyen/dis aksiyon gerektirenler COZULEMEYEN_SORUNLAR.md'ye tasinir.
+> **Vizyon (2026-07-14, Hüseyin):** Pixel Launcher klonu değiliz — kendi kimliği olan harika bir uygulama. Karar ölçütü: kullanıcı için en iyisi.
+
+---
+
+## ⭐ Yüksek Puanlı - Tek Elle Kullanım: Arama Çubuğu Alta (17p, 2026-07-14 Hüseyin onaylı)
+
+| Puan | Görev | Durum |
+|---|---|---|
+| 17p | Ana ekran arama çubuğunu en alta (dock bölgesi) taşıma seçeneği + Ayarlar > Ana Ekran'da "Arama çubuğu konumu: Üstte/Altta" toggle'ı. Çözülmesi gerekenler: dock ile yerleşim kararı, AllAppsDrawer yukarı-swipe jest çakışması, sistem gesture bar `WindowInsets` payı, klavye açıkken sonuç listesinin klavye üstünde büyümesi. Varsayılan konum kararı uygulamada netleşecek (mevcut kullanıcıyı şaşırtmama vs. ergonomi). | Bekliyor — onaylı, sıradaki döngü adayı |
 
 ---
 

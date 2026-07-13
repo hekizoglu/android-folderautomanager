@@ -1,6 +1,6 @@
 # AppOrganizer — Android Launcher
 
-Uygulamalarını otomatik klasörlere bölen, Pixel Launcher hissini koruyan akıllı Android launcher'ı.
+Uygulamalarını otomatik klasörlere bölen, kendi kimliğiyle öne çıkan akıllı Android launcher'ı.
 
 ---
 

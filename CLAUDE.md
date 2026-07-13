@@ -318,11 +318,11 @@ Uygulama: Zorluk 1-3 → Haiku/lokal · 4-6 → Sonnet agent'a spec'le devret ·
 ## 7. Proje
 
 ### Ne?
-Android launcher — uygulamaları otomatik kategorilere göre klasörlere böler. "Invisible launcher" prensibi: kullanıcı Pixel Launcher'dan fark etmeden geçiş yapabilmeli.
+Android launcher — uygulamaları otomatik kategorilere göre klasörlere böler. **Vizyon (2026-07-14, Hüseyin kararı):** Artık Pixel Launcher klonu DEĞİLİZ — kendi kimliği olan, kendi başına harika bir uygulama olmak istiyoruz. Tasarım kararlarında ölçüt "Pixel ne yapıyor?" değil, "kullanıcımız için en iyisi ne?" sorusudur.
 
 ### Temel Prensipler
 - Turkuaz tema: primary `#00897B` (Teal 600), secondary `#26C6DA` (Cyan)
-- Pixel Launcher klonu: transparent bg, frosted dock, Google clock widget
+- Kendi görsel kimliğimiz: transparent bg, frosted dock, Pulse Clock — Pixel taklidi değil, özgün deneyim (2026-07-14 vizyon kararı)
 - İlk açılışta launcher dialog (RoleManager)
 - Büyük dosyaları böl, tek sorumluluk
 
