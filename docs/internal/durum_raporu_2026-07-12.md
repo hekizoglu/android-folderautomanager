@@ -4,7 +4,7 @@ Tarih: 2026-07-12
 
 ## Bu turda tamamlananlar
 
-- Kullanım raporlarında `süre / adet` ayrımı netleştirildi.
+- Kullanım raporlarında `sure / adet` ayrimi netleştirildi.
 - Dashboard ve rapor yönlendirmelerinde yanlış hedefe gitme sorunları kapatıldı.
 - Haftalık özet bildirimi artık ilgili rapora açılıyor.
 - Bildirim raporu hata/izin durumları daha net ayrıştırıldı.
@@ -20,11 +20,11 @@ Tarih: 2026-07-12
 
 ## MemPalace durumu
 
-- `mempalace status`: çalışıyor
-- `mempalace search`: çalışıyor
+- `memory-palace list`: çalışıyor
+- `memory-palace mcp`: çalışıyor
 - Embedder kimliği `minilm (384)` olarak kaydedildi
 - `~/.mempalace/identity.txt` oluşturuldu
-- `wake-up` artık kimlik eksikliği yerine tanımlı kimlikle çalışacak
+- Eski `mempalace status/search` notları bu kurulumda geçerli değil
 
 ## Notlar
 

@@ -17,11 +17,10 @@ Tarih: 2026-07-13
 - Usage report ve dashboard tarafinda `sure / adet` ayrimi duzeltildi
 - Weekly digest bildirimi ilgili rapora acilir hale getirildi
 - Ticker yonlendirme ve tekrar sikligi iyilestirildi
-- MemPalace icin `identity.txt`, `mempalace.yaml` ve embedder ayari yapildi
+- Memory Palace icin `identity.txt`, `mempalace.yaml` ve embedder ayari yapildi
 
 ## Dikkat Edilecekler
 
-- Genis `mempalace mine .` pahali; hedefli mine tercih edilmeli
-- `wake-up` sadece oturum basi kullanilmali
-- Arama her zaman once `--wing apporganizer`, gerekirse daraltarak room ile yapilmali
+- Genis ve gereksiz kayitlar pahali; hedefli kayit tercih edilmeli
+- Eski `search/mine/wake-up` notlari bu kurulumda gecerli degil
 - Repo icinde buyuk arsiv dosyalari yerine kisa ozet dosyalari kaynak kabul edilmeli

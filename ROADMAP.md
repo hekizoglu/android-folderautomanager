@@ -17,6 +17,21 @@ Kalan ana kapilar:
 - Gercek cihaz QA
 - Notification analytics ve build sureci icin kalan dar testler
 
+## Guncel Kalan Is Listesi ve Uygulama Plani (2026-07-13)
+
+| Sira | Is | Plan | Durum |
+|---|---|---|---|
+| 1 | Yerel Play/gizlilik sertlestirme | Route whitelist, release log guard, notificationText backup dislama mevcut. 2026-07-13'te telefon/SMS intent URI encode edildi ve privacy policy'deki artik olmayan Accessibility izni kaldirildi. | Tamamlandi - yerel |
+| 2 | Play Console beyanlari | QUERY_ALL_PACKAGES, Data Safety, Content Rating ve Privacy Policy URL alanlari kod gercegine gore doldurulacak. | Bekliyor - kullanici/Play Console |
+| 3 | Release imza | `scripts/create_release_keystore.ps1` ile kalici key uretilecek, `keystore.properties` git disinda saklanacak, final AAB temiz committen alinacak. | Bekliyor - kullanici aksiyonu |
+| 4 | Magaza screenshot seti | Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore ekranlari kisisel veri olmadan cekilecek. | Bekliyor - cihaz/emulator |
+| 5 | Gercek cihaz QA paketi | NotificationListener, backup/restore, SmartInsightWorker, BackupWorker, blur/API26, AllApps double-tap ve OEM kategori smoke tek pakette kosulacak. | Bekliyor - gercek cihaz |
+| 6 | Notification analytics runtime kaniti | POST_NOTIFICATIONS revoke, NotificationListener ac/kapa, reboot ve 30+ gun temizlik senaryolari cihazda kanitlanacak. | Bekliyor - gercek cihaz |
+| 7 | Build sureci benchmark | CS-3 build kilidi cozulunce configuration cache guard ve Gradle profile rutini tekrar olculecek. | Bekliyor - build kilidi |
+| 8 | `cycle.ps1` gercek tur | Temiz dal ve push hazirliginda bir kez uctan uca kosulup Telegram/commit/push kaniti alinacak. | Bekliyor - gercek tur |
+| 9 | Wrapped Phase 2 dis dogrulama | UsageEvents oturum altyapisi API 28/29+, split-screen, kilit/ac, reboot ve grant/revoke olaylariyla cihazda kanitlanacak. | Bekliyor - dis dogrulama |
+| 10 | Uzun vade backlog | Kendi sunucu API'si, Wear OS companion app ve widget ekran genisletme ayri sprintte ele alinacak. | Bekliyor |
+
 ---
 
 ## Kritik - Play Store ve Release Kapisi
@@ -27,7 +42,7 @@ Kalan ana kapilar:
 | Data Safety formu | Privacy policy, Firebase/Crashlytics/Analytics, optional contacts/files, NotificationListener, Accessibility Service, backup ve optional AI davranisi Play Console formuna kod gercegiyle uyumlu girilecek. | Bekliyor - dis aksiyon |
 | Content rating | Play Console content rating anketi doldurulacak. | Bekliyor - dis aksiyon |
 | Privacy Policy URL | GitHub Pages URL'i Play Console'a girilecek; policy dosyasi ve manifest URL'i ayni hikayeyi anlatmali. | Bekliyor - dis aksiyon |
-| Accessibility Service declaration | Drag/drop icin tanimli servisin ne yaptigi/yapmadigi Play Console ve uygulama ici prominent disclosure ile uyumlu anlatilacak. | Bekliyor - dis aksiyon |
+| Accessibility Service declaration | 2026-07-13 kontrolunde manifestte Accessibility servisi bulunmuyor; privacy policy'deki eski izin metni kaldirildi. Servis geri eklenmedikce Play Console'da Accessibility beyani verilmemeli. | Tamamlandi - yerel uyum |
 | Release keystore | `scripts/create_release_keystore.ps1` hazir. Kullanici scripti calistirip kalici release key'i guvenli saklayacak; final AAB temiz committen imzalanacak. | Bekliyor - kullanici aksiyonu |
 | Screenshot seti | Light/dark phone screenshot seti alinacak: Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore. Kisisel veri gorunmeyecek. | Bekliyor - cihaz/emulator |
 

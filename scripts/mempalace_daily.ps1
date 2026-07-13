@@ -1,7 +1,8 @@
 param(
-    [ValidateSet("status", "search", "wake", "mine-app", "mine-docs", "mine-scripts", "sync")]
-    [string]$Mode = "status",
-    [string]$Query = ""
+    [ValidateSet("list", "recover", "save", "mcp")]
+    [string]$Mode = "list",
+    [string]$ShortId = "",
+    [string]$JsonFile = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,40 +14,22 @@ function Run-Step([string]$Title, [scriptblock]$Block) {
 }
 
 switch ($Mode) {
-    "status" {
-        Run-Step "MemPalace Status" { mempalace status }
+    "list" {
+        Run-Step "Memory Palace List" { memory-palace list }
     }
-    "search" {
-        if ([string]::IsNullOrWhiteSpace($Query)) {
-            throw "search modunda -Query zorunlu."
+    "recover" {
+        if ([string]::IsNullOrWhiteSpace($ShortId)) {
+            throw "recover modunda -ShortId zorunlu."
         }
-        Run-Step "AppOrganizer Search" {
-            mempalace search $Query --wing apporganizer
-        }
+        Run-Step "Memory Palace Recover" { memory-palace recover $ShortId }
     }
-    "wake" {
-        Run-Step "AppOrganizer Wake-Up" {
-            mempalace wake-up --wing apporganizer
+    "save" {
+        if ([string]::IsNullOrWhiteSpace($JsonFile)) {
+            throw "save modunda -JsonFile zorunlu."
         }
+        Run-Step "Memory Palace Save" { memory-palace save $JsonFile }
     }
-    "mine-app" {
-        Run-Step "Mine app/" {
-            mempalace mine app --wing apporganizer --mode projects --max-chunks-per-file 2000
-        }
-    }
-    "mine-docs" {
-        Run-Step "Mine docs/" {
-            mempalace mine docs --wing apporganizer --mode projects --max-chunks-per-file 1000
-        }
-    }
-    "mine-scripts" {
-        Run-Step "Mine scripts/" {
-            mempalace mine scripts --wing apporganizer --mode projects --max-chunks-per-file 1000
-        }
-    }
-    "sync" {
-        Run-Step "Dry Run Sync" {
-            mempalace sync --wing apporganizer --dry-run
-        }
+    "mcp" {
+        Run-Step "Memory Palace MCP" { memory-palace mcp }
     }
 }

@@ -302,11 +302,12 @@ private fun SearchDocumentRow(
 @Composable
 private fun ContactQuickActions(context: Context, phone: String) {
     val onSurface = MaterialTheme.colorScheme.onSurface
+    val encodedPhone = Uri.encode(phone)
     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         IconButton(
             onClick = {
                 SearchStatsPrefs.logAction(context, "CALL")
-                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$encodedPhone"))
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 runCatching { context.startActivity(intent) }
                     .onFailure { Timber.w(it, "ACTION_DIAL baslatilamadi") }
@@ -334,7 +335,7 @@ private fun ContactQuickActions(context: Context, phone: String) {
         IconButton(
             onClick = {
                 SearchStatsPrefs.logAction(context, "SMS")
-                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phone"))
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$encodedPhone"))
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 runCatching { context.startActivity(intent) }
                     .onFailure { Timber.w(it, "SMS baslatilamadi") }

@@ -1206,7 +1206,7 @@ internal fun HomeAppSearchBar(
                                         // Kişi tıklaması: arama ekranına veya telefon dialer'a
                                         val dialIntent = android.content.Intent(
                                             android.content.Intent.ACTION_DIAL,
-                                            android.net.Uri.parse("tel:${contact.phone}")
+                                            android.net.Uri.parse("tel:${android.net.Uri.encode(contact.phone)}")
                                         ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
                                         runCatching { context.startActivity(dialIntent) }
                                     }
@@ -1261,7 +1261,7 @@ internal fun HomeAppSearchBar(
                                             SearchStatsPrefs.logAction(context, "CALL")
                                             val intent = android.content.Intent(
                                                 android.content.Intent.ACTION_DIAL,
-                                                android.net.Uri.parse("tel:${contact.phone}")
+                                                android.net.Uri.parse("tel:${android.net.Uri.encode(contact.phone)}")
                                             ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
                                             runCatching { context.startActivity(intent) }
                                         },
@@ -1292,7 +1292,7 @@ internal fun HomeAppSearchBar(
                                             SearchStatsPrefs.logAction(context, "SMS")
                                             val intent = android.content.Intent(
                                                 android.content.Intent.ACTION_SENDTO,
-                                                android.net.Uri.parse("smsto:${contact.phone}")
+                                                android.net.Uri.parse("smsto:${android.net.Uri.encode(contact.phone)}")
                                             ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
                                             runCatching { context.startActivity(intent) }
                                         },

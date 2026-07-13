@@ -49,7 +49,6 @@ Build kilitlenirse gecici workaround:
 - QUERY_ALL_PACKAGES declaration
 - Content rating anketi
 - Privacy Policy URL girisi
-- Accessibility Service declaration / prominent disclosure sureci
 - Release keystore olusturma ve guvenli saklama (`scripts/create_release_keystore.ps1` hazir)
 - Final AAB'nin temiz committen imzalanmasi ve yuklenmesi
 
@@ -75,7 +74,6 @@ Build kilitlenirse gecici workaround:
 **Sorun:** Asagidaki maddeler kod okuma ile kismen dogrulandi, fakat Play oncesi "tamamlandi" sayilmasi icin cihaz uzerinde kanit gerekiyor:
 - Android 14 NotificationListener ac/kapa, event yazma, rapor gorunumu
 - NotificationListener permission lifecycle / reboot testi
-- Accessibility Service davranisi
 - Backup/restore uctan uca
 - SmartInsightWorker ve BackupWorker schedule
 - Android 13+ POST_NOTIFICATIONS yokken sessiz davranis
