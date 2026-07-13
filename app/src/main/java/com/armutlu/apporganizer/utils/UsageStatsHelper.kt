@@ -107,6 +107,30 @@ object UsageStatsHelper {
     }
 
     // Her uygulamanın son kullanım zamanı (epoch ms) — packageName → lastTimeUsed
+    fun getUnlockCount(
+        context: Context,
+        days: Int = 7,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Int? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || !hasPermission(context)) return null
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val windowStart = nowMillis - days.toLong() * 24 * 60 * 60 * 1000
+            val events = manager.queryEvents(windowStart, nowMillis) ?: return null
+            val event = UsageEvents.Event()
+            var count = 0
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (event.eventType == UsageEvents.Event.KEYGUARD_HIDDEN) count++
+            }
+            count
+        } catch (_: SecurityException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun getLastUsedTimes(context: Context, days: Int = 90): Map<String, Long> {
         return try {
             val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager

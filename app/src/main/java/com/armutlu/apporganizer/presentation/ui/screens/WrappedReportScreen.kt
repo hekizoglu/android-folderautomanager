@@ -87,6 +87,8 @@ fun WrappedReportScreen(
                 hasUsagePermission = state.hasUsagePermission,
                 aiCoachLoading = state.aiCoachLoading,
                 aiCoachComment = state.aiCoachComment,
+                unlockCount = state.unlockCount,
+                previousUnlockCount = state.previousUnlockCount,
                 onRequestPermission = { viewModel.enableUsagePermission() },
                 onNavigateToNotificationReport = onNavigateToNotificationReport,
             )
@@ -126,6 +128,8 @@ private fun WrappedContent(
     hasUsagePermission: Boolean,
     aiCoachLoading: Boolean,
     aiCoachComment: String?,
+    unlockCount: Int?,
+    previousUnlockCount: Int?,
     onRequestPermission: () -> Unit,
     onNavigateToNotificationReport: () -> Unit,
 ) {
@@ -142,6 +146,10 @@ private fun WrappedContent(
 
         if (aiCoachLoading || !aiCoachComment.isNullOrBlank()) {
             item { AiCoachCard(aiCoachLoading, aiCoachComment) }
+        }
+
+        unlockCount?.let { count ->
+            item { UnlockCountCard(count, previousUnlockCount) }
         }
 
         item { PersonalityCard(report.personality) }
@@ -213,6 +221,54 @@ private fun AiCoachCard(loading: Boolean, comment: String?) {
                 Spacer(Modifier.height(4.dp))
                 Text(
                     comment ?: "Haftalık yorum hazırlanıyor...",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnlockCountCard(unlockCount: Int, previousUnlockCount: Int?) {
+    val comparisonText = when {
+        previousUnlockCount == null -> "Karsilastirma icin bir hafta daha veri birikiyor."
+        previousUnlockCount == 0 && unlockCount == 0 -> "Gecen haftayla ayni: hic kilit acma kaydi yok."
+        previousUnlockCount == 0 -> "Gecen hafta kayit yoktu; bu hafta ilk net veri geldi."
+        else -> {
+            val delta = unlockCount - previousUnlockCount
+            val percent = (delta * 100f / previousUnlockCount).roundToInt()
+            val direction = when {
+                delta > 0 -> "artti"
+                delta < 0 -> "azaldi"
+                else -> "degismedi"
+            }
+            "Gecen haftaya gore ${kotlin.math.abs(percent)}% $direction (${if (delta >= 0) "+" else ""}$delta)."
+        }
+    }
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(26.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Telefon Kilidi", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Bu hafta telefonunu $unlockCount kez actin.",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    comparisonText,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

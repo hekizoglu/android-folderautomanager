@@ -30,6 +30,8 @@ data class WrappedUiState(
     val previousScore: Int? = null,
     val aiCoachLoading: Boolean = false,
     val aiCoachComment: String? = null,
+    val unlockCount: Int? = null,
+    val previousUnlockCount: Int? = null,
 )
 
 /**
@@ -61,12 +63,17 @@ class WrappedViewModel @Inject constructor(
                     .onFailure { e -> Timber.e(e, "WrappedReport üretilemedi") }
                     .getOrNull()
             }
+            val unlockCount = withContext(Dispatchers.IO) {
+                UsageStatsHelper.getUnlockCount(context, days = 7)
+            }
             _uiState.value = WrappedUiState(
                 loading = false,
                 hasUsagePermission = UsageStatsHelper.hasPermission(context),
                 report = result,
                 previousScore = WrappedSnapshotPrefs.getLastScore(context),
                 aiCoachLoading = shouldLoadAiCoach(result),
+                unlockCount = unlockCount,
+                previousUnlockCount = WrappedSnapshotPrefs.getPreviousUnlockCount(context),
             )
             // Bir sonraki karşılaştırma için mevcut skoru kaydet.
             result?.let { WrappedSnapshotPrefs.setLastScore(context, it.score.score) }

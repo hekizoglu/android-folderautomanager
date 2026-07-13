@@ -113,24 +113,6 @@ Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazir
 
 ---
 
-
-### Kilit acma sayaci (12p)
-
-**Sorun/istek:** UsageEvents `KEYGUARD_HIDDEN` ile gunluk telefon acma sayisi + haftalik trend Wrapped'a eklenmemis.
-
-**Cozum tarifi:**
-1. Dongu 232'deki UsageEvents agregator dosyasini bul, `UsageEvents.Event.KEYGUARD_HIDDEN` (API 28+) event turunu okuyup gunluk sayaca ekleyen bir fonksiyon ekle (mevcut oturum sayma pattern'iyle ayni yapida).
-2. API 28 altinda bu event yok â€” `Build.VERSION.SDK_INT >= 28` guard'i sart, altinda ozellik sessizce gizlenir (Wrapped karti gorunmez).
-3. Gunluk sayim `WrappedSnapshotPrefs` (mevcut `updateDailyScore` pattern'i) benzeri bir yapida haftalik trend icin saklanabilir.
-4. Wrapped rapor ekranina yeni bir kart: "Bu hafta telefonunu X kez actin, gecen haftaya gore %Y" .
-5. `AppPrefs.kt`'ye ayri toggle gerekmez â€” mevcut `KEY_WRAPPED_ENABLED` semsiyesine dahil edilebilir (Wrapped zaten opt-in ise).
-
-**Kabul kriteri:**
-- API 28+ cihazda Wrapped raporunda kilit acma sayisi karti goruluyor, API 28 altinda kart hic render edilmiyor (crash yok).
-- Sayim UsageEvents'ten geliyor, tahmini/uydurma deger yok (CLAUDE.md "sahte veri gosterilmez" kuralina uygun).
-
----
-
 ### B1 - "44 uygulamanin kategorisi belirsiz" sayi tutarsizligi
 
 **Kok neden (kod kaniti):** `LauncherViewModel.kt` satir 767-768'de `tickerItems` icinde `lowConfidenceCount`, TUM klasorlerdeki TUM uygulamalarin `classifier.getConfidence(it, f.category.categoryId) < 60` kosuluyla sayiliyor:

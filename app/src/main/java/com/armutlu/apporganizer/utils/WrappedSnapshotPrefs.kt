@@ -16,10 +16,12 @@ object WrappedSnapshotPrefs {
     private const val KEY_CURRENT_CATEGORY_USAGE = "current_category_usage"
     private const val KEY_CURRENT_TOTAL_APPS = "current_total_apps"
     private const val KEY_CURRENT_SAVED_DAY = "current_saved_epoch_day"
+    private const val KEY_CURRENT_UNLOCK_COUNT = "current_unlock_count"
 
     private const val KEY_PREVIOUS_CATEGORY_USAGE = "previous_category_usage"
     private const val KEY_PREVIOUS_TOTAL_APPS = "previous_total_apps"
     private const val KEY_PREVIOUS_SAVED_DAY = "previous_saved_epoch_day"
+    private const val KEY_PREVIOUS_UNLOCK_COUNT = "previous_unlock_count"
 
     private const val KEY_LAST_SCORE = "last_score"
 
@@ -36,7 +38,7 @@ object WrappedSnapshotPrefs {
      * Mevcut haftanın snapshot'ını kaydeder. Önceki "current" varsa "previous" konumuna kaydırılır
      * — böylece bir sonraki çağrıda getPrevious() bu haftanın verisini görebilir.
      */
-    fun saveCurrent(context: Context, categoryUsage: Map<String, Long>, totalApps: Int) {
+    fun saveCurrent(context: Context, categoryUsage: Map<String, Long>, totalApps: Int, unlockCount: Int? = null) {
         runCatching {
             val p = prefs(context)
             val editor = p.edit()
@@ -47,11 +49,15 @@ object WrappedSnapshotPrefs {
                 editor.putString(KEY_PREVIOUS_CATEGORY_USAGE, existingCurrentJson)
                 editor.putInt(KEY_PREVIOUS_TOTAL_APPS, p.getInt(KEY_CURRENT_TOTAL_APPS, 0))
                 editor.putLong(KEY_PREVIOUS_SAVED_DAY, p.getLong(KEY_CURRENT_SAVED_DAY, 0L))
+                if (p.contains(KEY_CURRENT_UNLOCK_COUNT)) {
+                    editor.putInt(KEY_PREVIOUS_UNLOCK_COUNT, p.getInt(KEY_CURRENT_UNLOCK_COUNT, 0))
+                }
             }
 
             editor.putString(KEY_CURRENT_CATEGORY_USAGE, mapToJson(categoryUsage))
             editor.putInt(KEY_CURRENT_TOTAL_APPS, totalApps)
             editor.putLong(KEY_CURRENT_SAVED_DAY, nowEpochDay())
+            unlockCount?.let { editor.putInt(KEY_CURRENT_UNLOCK_COUNT, it) }
             editor.apply()
         }.onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.saveCurrent basarisiz") }
     }
@@ -72,6 +78,12 @@ object WrappedSnapshotPrefs {
     fun getLastScore(context: Context): Int? {
         val v = prefs(context).getInt(KEY_LAST_SCORE, -1)
         return if (v in 0..100) v else null
+    }
+
+    fun getPreviousUnlockCount(context: Context): Int? {
+        val p = prefs(context)
+        if (!p.contains(KEY_PREVIOUS_UNLOCK_COUNT)) return null
+        return p.getInt(KEY_PREVIOUS_UNLOCK_COUNT, 0).coerceAtLeast(0)
     }
 
     fun setLastScore(context: Context, score: Int) {

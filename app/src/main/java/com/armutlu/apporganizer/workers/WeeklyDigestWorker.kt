@@ -18,6 +18,7 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WeekUtils
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.android.EntryPointAccessors
@@ -71,7 +72,12 @@ class WeeklyDigestWorker(
             runCatching {
                 val categoryUsage = apps.groupBy { it.categoryId }
                     .mapValues { (_, list) -> list.sumOf { it.usageCount } }
-                WrappedSnapshotPrefs.saveCurrent(applicationContext, categoryUsage, apps.size)
+                WrappedSnapshotPrefs.saveCurrent(
+                    applicationContext,
+                    categoryUsage,
+                    apps.size,
+                    UsageStatsHelper.getUnlockCount(applicationContext, days = 7, nowMillis = now),
+                )
                 checkWeeklyGoals(weeklyGoalDao, categoryUsage.mapValues { it.value / 60_000 }, now)
             }.onFailure { e -> Timber.e(e, "Wrapped snapshot kaydı başarısız") }
 
