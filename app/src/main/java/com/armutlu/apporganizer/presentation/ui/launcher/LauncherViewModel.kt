@@ -337,6 +337,18 @@ class LauncherViewModel @Inject constructor(
         _openFolderId.value = folder.category.categoryId
     }
 
+    fun openAdjacentFolder(next: Boolean): Boolean {
+        val currentId = _openFolderId.value ?: return false
+        val folderList = folders.value
+        if (folderList.size < 2) return false
+        val currentIndex = folderList.indexOfFirst { it.category.categoryId == currentId }
+        if (currentIndex == -1) return false
+        val targetIndex = if (next) currentIndex + 1 else currentIndex - 1
+        val target = folderList.getOrNull(targetIndex) ?: return false
+        _openFolderId.value = target.category.categoryId
+        return true
+    }
+
     fun closeFolder() {
         _openFolderId.value = null
     }

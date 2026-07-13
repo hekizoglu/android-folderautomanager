@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,11 +31,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,6 +47,7 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
+import kotlin.math.abs
 
 @Composable
 fun FolderScreen(
@@ -53,6 +57,7 @@ fun FolderScreen(
     val folder by viewModel.openFolder.collectAsState()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
 
     BackHandler { onBack() }
 
@@ -104,6 +109,7 @@ fun FolderScreen(
         }
         var showEditDialog by remember { mutableStateOf(false) }
         var contextMenuApp by remember { mutableStateOf<AppInfo?>(null) }
+        val folderSwipeThresholdPx = with(density) { 96.dp.toPx() }
 
         val catColor = remember(f.category.colorHex, customColor) {
             val hex = customColor.ifBlank { null } ?: f.category.colorHex
@@ -129,6 +135,28 @@ fun FolderScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .pointerInput(catId, folderSwipeThresholdPx) {
+                    var accumulatedX = 0f
+                    var switched = false
+                    detectHorizontalDragGestures(
+                        onDragStart = {
+                            accumulatedX = 0f
+                            switched = false
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            if (switched) return@detectHorizontalDragGestures
+                            accumulatedX += dragAmount
+                            if (abs(accumulatedX) >= folderSwipeThresholdPx) {
+                                val moved = viewModel.openAdjacentFolder(next = accumulatedX > 0f)
+                                if (moved) {
+                                    switched = true
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    change.consume()
+                                }
+                            }
+                        },
+                    )
+                }
                 .background(surface.copy(alpha = 0.95f))
         ) {
             Column(
