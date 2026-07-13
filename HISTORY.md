@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 252 - 2026-07-13 [Coklu Play Store acma + K2 tek tek secilebilir kategori onerisi]
+
+**Yapilanlar:** (1) `SettingsBackupAboutSection.kt` restore-sonrasi eksik uygulama dialogu checkbox'li coklu secime cevrildi; `PlayStoreQueueHelper.kt` (yeni) index-tabanli "sirayla ac" mantigini sarmaliyor, buton "Sonraki Uygulamayi Ac (X/Y)" seklinde ilerliyor, Kopyala sadece secilenleri kopyaliyor. (2) `AppClassifier.kt`'ye `findSimilarUnclassifiedApps()` eklendi (uretici prefix/keyword sinyaliyle eski kategoride kalan, override'i olmayan adaylari bulur, limit 10). `AppListViewModel.updateAppCategory` eski kategoriyi de tasiyip bu fonksiyonu cagiriyor; eski toplu-oneri AlertDialog'u `SimilarAppsSuggestionDialog.kt` (yeni) ile degistirildi — her satir kendi checkbox'iyla bagimsiz secilebiliyor, "Hepsini Sec / Hicbirini Secme" kisayollari var ama zorunlu degil.
+
+**Test:** `PlayStoreQueueHelperTest.kt` (yeni, sirali index mantigi) + `AppClassifierTest.kt`'ye 6 yeni test (`findSimilarUnclassifiedApps`: uretici prefix eslesmesi, override'li uygulama haric, hedef kategoriyle ayni olan haric, limit 10, aday yoksa bos liste, keyword eslesmesi). `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` basarili. versionCode 35→36, versionName 1.3.12→1.3.13.
+
+**Kapsam disi:** K2'nin tam speki (pattern'lerin yerel olarak "ogrenilmesi" — kabul edilen oneri turlerinin agirliklandirilmasi) uygulanmadi, sadece "tek tek secilebilir oneri" alt kismi tamamlandi.
+
+---
+
 ## Döngü 251 - 2026-07-13 [Emülatör smoke testleri - AllApps, arama, launcher]
 
 **Yapılanlar:** ROADMAP'te emülatörde yapılabilecek açık smoke maddeleri koşturuldu. `Pixel6_API33` Android 13/API 33 AVD başlatıldı, `assembleDebug connectedDebugAndroidTest -PskipGoogleServices --no-daemon` çalıştırıldı ve APK emülatöre kuruldu. Onboarding sadece emülatör private prefs içinde `onboarding_done=true` yapılarak bypass edildi; kaynak kod değişmedi. AllApps ekranı açıldı, arama alanı odaklandı ve `app` sorgusu yazıldı; hızlı çift dokunma senaryosu koşturuldu. Telefon boyutunda `LauncherActivity` açıldı. Geniş ekran/tablet benzeri `wm size 1280x800` + `wm density 160` simülasyonunda AllApps ve arama odağı tekrarlandı. Kanıt görselleri `artifacts/emulator-smoke/` altına alındı.

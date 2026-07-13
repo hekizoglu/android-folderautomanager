@@ -332,6 +332,46 @@ class AppClassifier @Inject constructor(
             .toList()
     }
 
+    /**
+     * K2 — Override'lardan öğrenen öneri katmanı (kısmi): kullanıcı bir uygulamayı elle
+     * yeni bir kategoriye taşıdığında, aynı "benzerlik sinyaline" sahip (üretici paket
+     * prefix'i aynı VEYA aynı kategoriye düşen keyword eşleşmesi) ve HÂLÂ eski kategoride
+     * duran, henüz manuel override'ı olmayan uygulamaları bulur.
+     *
+     * Saf/test edilebilir fonksiyon — Context/AppPrefs bağımlılığı yok, tüm girdiler parametre.
+     * UI katmanı bu adayları tek tek (checkbox ile) seçilebilir bir öneri listesinde gösterir.
+     *
+     * @param changedApp kategorisi az önce değiştirilen uygulama
+     * @param oldCategoryId uygulamanın önceki kategorisi
+     * @param newCategoryId uygulamanın yeni (hedef) kategorisi
+     * @param allApps cihazdaki tüm uygulamalar
+     * @param manualOverrides paket adı → kategori id (zaten elle override edilmiş uygulamalar)
+     * @param limit döndürülecek maksimum aday sayısı (varsayılan 10)
+     */
+    fun findSimilarUnclassifiedApps(
+        changedApp: AppInfo,
+        oldCategoryId: String,
+        newCategoryId: String,
+        allApps: List<AppInfo>,
+        manualOverrides: Map<String, String>,
+        limit: Int = 10
+    ): List<AppInfo> {
+        if (oldCategoryId == newCategoryId) return emptyList()
+        return allApps
+            .asSequence()
+            .filter { it.packageName != changedApp.packageName }
+            .filter { it.packageName !in manualOverrides }
+            .filter { it.categoryId == oldCategoryId }
+            .filter { candidate ->
+                hasSameManufacturerSignal(changedApp, candidate) ||
+                    hasKeywordMatch(candidate.appName, newCategoryId) ||
+                    hasPackageKeywordMatch(candidate.packageName, newCategoryId)
+            }
+            .sortedWith(compareBy<AppInfo> { it.appName.lowercase(java.util.Locale("tr")) })
+            .take(limit)
+            .toList()
+    }
+
     // Üretici paket prefix'i veya uygulama adı → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
     // Nokta/tire normalize edilir; büyük/küçük harf toleransı sağlanır.
     private fun classifyByManufacturerPrefix(packageName: String, appName: String = ""): String? {

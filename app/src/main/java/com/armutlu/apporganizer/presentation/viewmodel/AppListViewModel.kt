@@ -275,10 +275,13 @@ class AppListViewModel @Inject constructor(
     fun updateAppCategory(packageName: String, categoryId: String) {
         viewModelScope.launch {
             try {
+                val oldCategoryId = repository.getAppByPackageName(packageName)?.categoryId
                 repository.updateAppCategory(packageName, categoryId)
                 AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
-                prepareSimilarCategorySuggestions(packageName, categoryId)
+                if (oldCategoryId != null) {
+                    prepareSimilarCategorySuggestions(packageName, oldCategoryId, categoryId)
+                }
                 Timber.d("Updated $packageName to $categoryId")
             } catch (e: Exception) {
                 Timber.e(e, "Error updating app category")
@@ -403,8 +406,12 @@ class AppListViewModel @Inject constructor(
         }
     }
 
-    fun acceptSimilarCategorySuggestions() {
-        val apps = _suggestedSimilarApps.value
+    /**
+     * Seçilen benzer uygulamaları öneri kategorisine taşır. Kullanıcı satır bazlı
+     * checkbox ile seçim yapar — [selectedPackageNames] boşsa hiçbir şey yapılmaz.
+     */
+    fun acceptSimilarCategorySuggestions(selectedPackageNames: Set<String> = _suggestedSimilarApps.value.map { it.packageName }.toSet()) {
+        val apps = _suggestedSimilarApps.value.filter { it.packageName in selectedPackageNames }
         val categoryId = _suggestedSimilarCategoryId.value
         if (apps.isEmpty() || categoryId == null) {
             clearSimilarCategorySuggestions()
@@ -580,15 +587,28 @@ class AppListViewModel @Inject constructor(
         return _screenState.value.categoryStats
     }
 
-    private suspend fun prepareSimilarCategorySuggestions(packageName: String, categoryId: String) {
+    private suspend fun prepareSimilarCategorySuggestions(packageName: String, oldCategoryId: String, newCategoryId: String) {
         val context = getApplication<Application>()
         if (!AppPrefs.isOverrideSuggestionsEnabled(context)) {
             clearSimilarCategorySuggestions()
             return
         }
-        val suggestions = classifier.findSimilarApps(packageName, categoryId, repository.getAllApps())
+        val allApps = repository.getAllApps()
+        val changedApp = allApps.firstOrNull { it.packageName == packageName }
+        if (changedApp == null) {
+            clearSimilarCategorySuggestions()
+            return
+        }
+        val manualOverrides = AppPrefs.getManualCategoryOverrides(context)
+        val suggestions = classifier.findSimilarUnclassifiedApps(
+            changedApp = changedApp,
+            oldCategoryId = oldCategoryId,
+            newCategoryId = newCategoryId,
+            allApps = allApps,
+            manualOverrides = manualOverrides
+        )
         _suggestedSimilarApps.value = suggestions
-        _suggestedSimilarCategoryId.value = categoryId.takeIf { suggestions.isNotEmpty() }
+        _suggestedSimilarCategoryId.value = newCategoryId.takeIf { suggestions.isNotEmpty() }
     }
     
     /**

@@ -319,4 +319,104 @@ class AppClassifierTest {
         packageName = packageName,
         appName = appName
     )
+
+    private fun appInfo(packageName: String, appName: String, categoryId: String) = AppInfo(
+        packageName = packageName,
+        appName = appName,
+        categoryId = categoryId
+    )
+
+    // --- findSimilarUnclassifiedApps (K2 kismi — tek tek secilebilir oneri) ---
+
+    @Test
+    fun `ayni uretici prefix'ine sahip uygulama onerilir`() {
+        val changed = appInfo("com.samsung.health", "Samsung Health", Category.CAT_SAMSUNG)
+        val candidate = appInfo("com.samsung.gallery", "Samsung Gallery", Category.CAT_OTHER)
+        val allApps = listOf(changed, candidate)
+        val result = classifier.findSimilarUnclassifiedApps(
+            changedApp = changed,
+            oldCategoryId = Category.CAT_OTHER,
+            newCategoryId = Category.CAT_SAMSUNG,
+            allApps = allApps,
+            manualOverrides = emptyMap()
+        )
+        assertTrue(result.any { it.packageName == "com.samsung.gallery" })
+    }
+
+    @Test
+    fun `zaten manuel override'i olan uygulama onerilmez`() {
+        val changed = appInfo("com.samsung.health", "Samsung Health", Category.CAT_SAMSUNG)
+        val candidate = appInfo("com.samsung.gallery", "Samsung Gallery", Category.CAT_OTHER)
+        val allApps = listOf(changed, candidate)
+        val result = classifier.findSimilarUnclassifiedApps(
+            changedApp = changed,
+            oldCategoryId = Category.CAT_OTHER,
+            newCategoryId = Category.CAT_SAMSUNG,
+            allApps = allApps,
+            manualOverrides = mapOf("com.samsung.gallery" to Category.CAT_OTHER)
+        )
+        assertTrue(result.none { it.packageName == "com.samsung.gallery" })
+    }
+
+    @Test
+    fun `hedef kategoriyle zaten ayni kategoride olan uygulama onerilmez`() {
+        val changed = appInfo("com.samsung.health", "Samsung Health", Category.CAT_SAMSUNG)
+        // candidate zaten yeni (hedef) kategoride -> eski kategoriyle eslesmiyor, onerilmemeli
+        val candidate = appInfo("com.samsung.gallery", "Samsung Gallery", Category.CAT_SAMSUNG)
+        val allApps = listOf(changed, candidate)
+        val result = classifier.findSimilarUnclassifiedApps(
+            changedApp = changed,
+            oldCategoryId = Category.CAT_OTHER,
+            newCategoryId = Category.CAT_SAMSUNG,
+            allApps = allApps,
+            manualOverrides = emptyMap()
+        )
+        assertTrue(result.none { it.packageName == "com.samsung.gallery" })
+    }
+
+    @Test
+    fun `maksimum limit asilmiyor`() {
+        val changed = appInfo("com.samsung.health", "Samsung Health", Category.CAT_SAMSUNG)
+        val candidates = (1..20).map {
+            appInfo("com.samsung.app$it", "Samsung App $it", Category.CAT_OTHER)
+        }
+        val allApps = listOf(changed) + candidates
+        val result = classifier.findSimilarUnclassifiedApps(
+            changedApp = changed,
+            oldCategoryId = Category.CAT_OTHER,
+            newCategoryId = Category.CAT_SAMSUNG,
+            allApps = allApps,
+            manualOverrides = emptyMap()
+        )
+        assertTrue(result.size <= 10)
+    }
+
+    @Test
+    fun `hic aday yoksa bos liste doner ve crash olmaz`() {
+        val changed = appInfo("com.bilinmeyen.uygulama", "Bilinmeyen", Category.CAT_OTHER)
+        val allApps = listOf(changed)
+        val result = classifier.findSimilarUnclassifiedApps(
+            changedApp = changed,
+            oldCategoryId = Category.CAT_OTHER,
+            newCategoryId = Category.CAT_SAMSUNG,
+            allApps = allApps,
+            manualOverrides = emptyMap()
+        )
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `eski ve yeni kategori ayniysa bos liste doner`() {
+        val changed = appInfo("com.samsung.health", "Samsung Health", Category.CAT_SAMSUNG)
+        val candidate = appInfo("com.samsung.gallery", "Samsung Gallery", Category.CAT_SAMSUNG)
+        val allApps = listOf(changed, candidate)
+        val result = classifier.findSimilarUnclassifiedApps(
+            changedApp = changed,
+            oldCategoryId = Category.CAT_SAMSUNG,
+            newCategoryId = Category.CAT_SAMSUNG,
+            allApps = allApps,
+            manualOverrides = emptyMap()
+        )
+        assertTrue(result.isEmpty())
+    }
 }
