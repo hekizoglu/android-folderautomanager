@@ -247,7 +247,7 @@ class AppRepositoryTest {
 
     @Test
     fun `syncInstalledApps inserts only new apps`() = runTest {
-        coEvery { mockAppDao.getAllPackageNames() } returns listOf("com.existing")
+        coEvery { mockAppDao.getAllApps() } returns listOf(app("com.existing", "Existing"))
         every { mockClassifier.classifyApp(any()) } returns "social"
 
         val installed = listOf(
@@ -267,7 +267,10 @@ class AppRepositoryTest {
 
     @Test
     fun `syncInstalledApps removes uninstalled apps`() = runTest {
-        coEvery { mockAppDao.getAllPackageNames() } returns listOf("com.installed", "com.uninstalled")
+        coEvery { mockAppDao.getAllApps() } returns listOf(
+            app("com.installed", "Still Here"),
+            app("com.uninstalled", "Removed")
+        )
         every { mockClassifier.classifyApp(any()) } returns "social"
 
         val installed = listOf(app("com.installed", "Still Here"))
@@ -280,7 +283,7 @@ class AppRepositoryTest {
 
     @Test
     fun `syncInstalledApps with all new apps inserts all`() = runTest {
-        coEvery { mockAppDao.getAllPackageNames() } returns emptyList()
+        coEvery { mockAppDao.getAllApps() } returns emptyList()
         every { mockClassifier.classifyApp(any()) } returns "social"
 
         val apps = listOf(app("com.a", "App A"), app("com.b", "App B"))
@@ -295,7 +298,7 @@ class AppRepositoryTest {
 
     @Test
     fun `syncInstalledApps silently handles exception`() = runTest {
-        coEvery { mockAppDao.getAllPackageNames() } throws RuntimeException("dao error")
+        coEvery { mockAppDao.getAllApps() } throws RuntimeException("dao error")
 
         repository.syncInstalledApps(listOf(app("com.a", "App A")))
         advanceUntilIdle()
