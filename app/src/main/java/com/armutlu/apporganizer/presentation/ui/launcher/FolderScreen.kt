@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -131,7 +132,7 @@ fun FolderScreen(
         var showEditDialog by remember { mutableStateOf(false) }
         var contextMenuApp by remember { mutableStateOf<AppInfo?>(null) }
         val folderSwipeThresholdPx = with(density) { 96.dp.toPx() }
-        val folderTransitionOffsetPx = with(density) { 54.dp.toPx() }
+        val folderTransitionOffsetPx = with(density) { 86.dp.toPx() }
         var transitionDirection by remember { mutableIntStateOf(1) }
         var hasRenderedFolder by remember { mutableStateOf(false) }
         val contentOffset = remember { Animatable(0f) }
@@ -144,7 +145,10 @@ fun FolderScreen(
             }
             if (hasRenderedFolder) {
                 contentOffset.snapTo(transitionDirection * folderTransitionOffsetPx)
-                contentOffset.animateTo(0f, tween(durationMillis = 220))
+                contentOffset.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
+                )
             } else {
                 hasRenderedFolder = true
             }
@@ -503,7 +507,7 @@ fun FolderScreen(
                     }
                 } else {
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(4),
+                        columns = GridCells.Adaptive(minSize = 76.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -527,6 +531,27 @@ fun FolderScreen(
                         }
                     }
                 }
+
+                if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM) {
+                    FolderIndexNavigator(
+                        previousFolder = previousFolder!!,
+                        nextFolder = nextFolder!!,
+                        context = context,
+                        onSurface = onSurface,
+                        accent = catColor,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp, vertical = 10.dp),
+                        onPrevious = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            navigateAdjacentFolder(next = false)
+                        },
+                        onNext = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            navigateAdjacentFolder(next = true)
+                        },
+                    )
+                }
             }
 
             // Klasör düzenleme dialog'u
@@ -540,28 +565,6 @@ fun FolderScreen(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(horizontal = 18.dp),
-                    onPrevious = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        navigateAdjacentFolder(next = false)
-                    },
-                    onNext = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        navigateAdjacentFolder(next = true)
-                    },
-                )
-            }
-
-            if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM) {
-                FolderIndexNavigator(
-                    previousFolder = previousFolder!!,
-                    nextFolder = nextFolder!!,
-                    context = context,
-                    onSurface = onSurface,
-                    accent = catColor,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .navigationBarsPadding()
-                        .padding(horizontal = 18.dp, vertical = 12.dp),
                     onPrevious = {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         navigateAdjacentFolder(next = false)
@@ -744,7 +747,6 @@ private fun FolderIndexNavigator(
     ) {
         FolderTopNavChip(
             folder = previousFolder,
-            label = "Onceki",
             direction = "<",
             modifier = Modifier.weight(1f),
             context = context,
@@ -754,7 +756,6 @@ private fun FolderIndexNavigator(
         )
         FolderTopNavChip(
             folder = nextFolder,
-            label = "Sonraki",
             direction = ">",
             modifier = Modifier.weight(1f),
             context = context,
@@ -768,7 +769,6 @@ private fun FolderIndexNavigator(
 @Composable
 private fun FolderTopNavChip(
     folder: AppFolder,
-    label: String,
     direction: String,
     modifier: Modifier = Modifier,
     context: android.content.Context,
@@ -797,49 +797,42 @@ private fun FolderTopNavChip(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        Text(
-            text = if (direction == "<") direction else label,
-            color = onSurface.copy(alpha = 0.54f),
-            fontSize = if (direction == "<") 14.sp else 9.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-        )
+        if (direction == "<") {
+            Text(
+                text = direction,
+                color = onSurface.copy(alpha = 0.62f),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+            )
+        }
         Box(
             modifier = Modifier
-                .size(20.dp)
+                .size(22.dp)
                 .clip(CircleShape)
                 .background(color.copy(alpha = 0.32f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 11.sp)
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = label,
-                color = onSurface.copy(alpha = 0.48f),
-                fontSize = 8.sp,
-                lineHeight = 9.sp,
-                maxLines = 1,
-            )
-            Text(
-                text = title,
-                color = onSurface.copy(alpha = 0.84f),
-                fontSize = 10.sp,
-                lineHeight = 11.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text(customEmoji.ifBlank { folder.category.iconEmoji }, fontSize = 12.sp)
         }
         Text(
-            text = if (direction == ">") direction else "${folder.apps.size}",
-            color = onSurface.copy(alpha = 0.54f),
-            fontSize = if (direction == ">") 14.sp else 9.sp,
-            fontWeight = FontWeight.Bold,
+            text = title,
+            color = onSurface.copy(alpha = 0.86f),
+            fontSize = 11.sp,
+            lineHeight = 12.sp,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f),
         )
+        if (direction == ">") {
+            Text(
+                text = direction,
+                color = onSurface.copy(alpha = 0.62f),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+            )
+        }
     }
 }

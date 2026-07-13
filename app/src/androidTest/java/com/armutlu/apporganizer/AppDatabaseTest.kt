@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.models.NotificationEvent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -85,11 +86,11 @@ class AppDatabaseTest {
     }
 
     @Test
-    fun insertOrReplace_updatesExisting() = runTest {
+    fun updateApp_updatesExisting() = runTest {
         val app = AppInfo(packageName = "com.test.app", appName = "Old Name")
         appDao.insertApp(app)
         val updated = app.copy(appName = "New Name")
-        appDao.insertApp(updated)
+        appDao.updateApp(updated)
         val result = appDao.getAppByPackageName("com.test.app")
         assertEquals("New Name", result?.appName)
     }
@@ -133,12 +134,12 @@ class AppDatabaseTest {
     fun getAllCategories_returnsAllInserted() = runTest {
         Category.getDefaultCategories().forEach { categoryDao.insertCategory(it) }
         val all = categoryDao.getAllCategories()
-        assertEquals(11, all.size)
+        assertEquals(Category.getDefaultCategories().size, all.size)
     }
 
     @Test
     fun deleteCategory_removesFromDb() = runTest {
-        val cat = Category(categoryId = "to_delete", categoryName = "Delete Me")
+        val cat = Category(categoryId = "to_delete", categoryName = "Delete Me", isSystemCategory = false)
         categoryDao.insertCategory(cat)
         categoryDao.deleteCategoryById("to_delete")
         assertNull(categoryDao.getCategoryById("to_delete"))
@@ -148,5 +149,22 @@ class AppDatabaseTest {
     fun categoryExists_returnsTrueAfterInsert() = runTest {
         categoryDao.insertCategory(Category(categoryId = "exists_cat", categoryName = "Exists"))
         assertTrue(categoryDao.categoryExists("exists_cat"))
+    }
+
+    @Test
+    fun notificationEvent_deleteOlderThan_removesOnlyExpiredRows() = runTest {
+        val notificationDao = db.notificationEventDao()
+        val dayMs = 24L * 60L * 60L * 1000L
+        val now = 1_800_000_000_000L
+        val cutoff = now - (30L * dayMs)
+
+        notificationDao.insert(NotificationEvent(packageName = "com.old.app", postedAt = cutoff - 1L))
+        notificationDao.insert(NotificationEvent(packageName = "com.boundary.app", postedAt = cutoff))
+        notificationDao.insert(NotificationEvent(packageName = "com.new.app", postedAt = now - dayMs))
+
+        notificationDao.deleteOlderThan(cutoff)
+
+        val remaining = notificationDao.eventsSince(0L).sortedBy { it.postedAt }
+        assertEquals(listOf("com.boundary.app", "com.new.app"), remaining.map { it.packageName })
     }
 }

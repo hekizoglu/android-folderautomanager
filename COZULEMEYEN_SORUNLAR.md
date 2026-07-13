@@ -79,15 +79,15 @@ Build kilitlenirse gecici workaround:
 - SmartInsightWorker ve BackupWorker schedule
 - Android 13+ POST_NOTIFICATIONS yokken sessiz davranis
 - BLUR-4/API26 performans/fallback
-- AllApps double-tap
 - Uretici/OEM kategori setleri
-- Screenshot smoke seti
+- Screenshot smoke seti ve gercek tablet/stabil tablet AVD LauncherActivity gorsel smoke
 
 **Denenen:**
 - Kod tarafinda duplicate worker riski, notification event veri modeli, search/settings davranislari ve backup/restore akislari incelendi.
 - 20 gorevlik gecici rapor tamamlandi ve ROADMAP.md'ye konsolide edildi.
+- 2026-07-13: Pixel6_API33 emulatorde `connectedDebugAndroidTest` 15 test / 0 failure gecti; AllApps arama odak + hizli cift dokunma smoke `FATAL EXCEPTION=0` ile kapandi; telefon `LauncherActivity` smoke `FATAL EXCEPTION=0` ile gecti. Simule tablet AllApps/search smoke gecti, fakat simule tablet `LauncherActivity` screenshot denemesi ADB baglantisini dusurdugu icin gorsel tablet Launcher smoke acik kaldi.
 
-**Neden yerelde kapanmiyor:** Bu oturumda fiziksel cihaz/Play Store screenshot ortami yok.
+**Neden yerelde kapanmiyor:** Bu oturumda fiziksel cihaz/Play Store screenshot ortami yok; tablet Launcher smoke icin stabil tablet AVD veya gercek tablet gerekiyor.
 
 **Kullanicidan beklenen:** ROADMAP.md "Kritik - Gercek Cihaz QA" bolumundeki senaryolari cihazda kosup kanitlari kaydetmek.
 

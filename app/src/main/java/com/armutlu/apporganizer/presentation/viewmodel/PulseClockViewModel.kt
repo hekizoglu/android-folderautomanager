@@ -56,6 +56,7 @@ class PulseClockViewModel @Inject constructor(
         val insightRouteKey: String? = null,
         val subScores: DigitalPulseScore? = null,
         val confidence: DataConfidence = DataConfidence.LOW,
+        val weeklyScreenTimeMinutes: Int? = null,
         val loading: Boolean = true,
     )
 
@@ -94,6 +95,11 @@ class PulseClockViewModel @Inject constructor(
             as? UsageStatsHelper.DailySessionResult.Available)?.days
         val weeklyLaunches = dailySessions?.groupBy { it.packageName }
             ?.mapValues { (_, days) -> days.sumOf { it.launchCount }.toLong() }
+        val weeklyScreenTimeMinutes = dailySessions
+            ?.groupBy { it.epochDay }
+            ?.values
+            ?.sumOf { days -> days.maxOfOrNull { it.globalForegroundMs } ?: 0L }
+            ?.let { (it / TimeUnit.MINUTES.toMillis(1)).toInt() }
 
         val snapshots = apps.map { app ->
             WrappedEngine.AppSnapshot(
@@ -157,6 +163,7 @@ class PulseClockViewModel @Inject constructor(
             insightRouteKey = insight?.routeKey,
             subScores = pulse,
             confidence = pulse.confidence,
+            weeklyScreenTimeMinutes = weeklyScreenTimeMinutes,
             loading = false,
         )
     }

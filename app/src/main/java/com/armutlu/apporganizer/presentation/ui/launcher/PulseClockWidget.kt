@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -182,7 +183,25 @@ private fun PulseCard(
             .height(cardHeight)
             .animateContentSize()
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White.copy(alpha = bgAlpha), RoundedCornerShape(24.dp))
+            .background(
+                brush = if (glass) {
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.22f),
+                            Color.White.copy(alpha = 0.08f),
+                            Color(0xFF80DEEA).copy(alpha = 0.10f),
+                        )
+                    )
+                } else {
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = bgAlpha),
+                            Color.White.copy(alpha = bgAlpha),
+                        )
+                    )
+                },
+                shape = RoundedCornerShape(24.dp),
+            )
             .border(0.5.dp, Color.White.copy(alpha = borderAlpha), RoundedCornerShape(24.dp))
             .combinedClickable(onClick = onOpenWeeklyReport, onLongClick = onLongPress)
             .semantics { contentDescription = context.getString(R.string.pulse_clock_open_weekly_report) }
@@ -268,6 +287,7 @@ private fun PulseCard(
                 PulseScoreRing(
                     score = uiState.score,
                     delta = uiState.scoreDelta,
+                    weeklyScreenTimeMinutes = uiState.weeklyScreenTimeMinutes,
                     compact = compact,
                     onClick = onOpenScoreDetails,
                 )
@@ -280,6 +300,7 @@ private fun PulseCard(
 private fun PulseScoreRing(
     score: Int,
     delta: Int?,
+    weeklyScreenTimeMinutes: Int?,
     compact: Boolean,
     onClick: () -> Unit,
 ) {
@@ -354,8 +375,17 @@ private fun PulseScoreRing(
         // Mini açıklama — skorun ne anlama geldiği ilk bakışta belli olsun (D245)
         if (!compact) {
             Spacer(Modifier.height(1.dp))
+            val screenTimeText = weeklyScreenTimeMinutes
+                ?.takeIf { it > 0 }
+                ?.let { minutes ->
+                    if (minutes >= 60) {
+                        stringResource(R.string.pulse_score_screen_time_hours, minutes / 60, minutes % 60)
+                    } else {
+                        stringResource(R.string.pulse_score_screen_time_minutes, minutes)
+                    }
+                }
             Text(
-                text = stringResource(R.string.pulse_score_ring_caption),
+                text = listOfNotNull(stringResource(R.string.pulse_score_ring_caption), screenTimeText).joinToString(" · "),
                 color = Color.White.copy(alpha = 0.45f),
                 fontSize = 9.sp,
             )

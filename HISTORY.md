@@ -2,6 +2,24 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 251 - 2026-07-13 [Emülatör smoke testleri - AllApps, arama, launcher]
+
+**Yapılanlar:** ROADMAP'te emülatörde yapılabilecek açık smoke maddeleri koşturuldu. `Pixel6_API33` Android 13/API 33 AVD başlatıldı, `assembleDebug connectedDebugAndroidTest -PskipGoogleServices --no-daemon` çalıştırıldı ve APK emülatöre kuruldu. Onboarding sadece emülatör private prefs içinde `onboarding_done=true` yapılarak bypass edildi; kaynak kod değişmedi. AllApps ekranı açıldı, arama alanı odaklandı ve `app` sorgusu yazıldı; hızlı çift dokunma senaryosu koşturuldu. Telefon boyutunda `LauncherActivity` açıldı. Geniş ekran/tablet benzeri `wm size 1280x800` + `wm density 160` simülasyonunda AllApps ve arama odağı tekrarlandı. Kanıt görselleri `artifacts/emulator-smoke/` altına alındı.
+
+**Doğrulama:** `connectedDebugAndroidTest` Pixel6_API33 üzerinde 15 test / 0 failure geçti. AllApps telefon, search focus, double-tap ve simüle tablet AllApps/search smoke adımlarında app focus korundu ve temiz logcat sonrası `FATAL EXCEPTION=0`. Telefon `LauncherActivity` smoke adımında focus `com.armutlu.apporganizer/.presentation.ui.launcher.LauncherActivity`, `FATAL EXCEPTION=0`.
+
+**Kalan risk:** Simüle tablet `LauncherActivity` screenshot/pull denemesi iki kez ADB bağlantısını düşürdü; bu nedenle Pulse/klasör fihristi için gerçek tablet veya stabil tablet AVD ile görsel smoke hâlâ ayrı risk olarak tutulmalı. Bu app crash kanıtı değil; ADB cihaz listesi boşaldığı için test tamamlanamadı.
+
+---
+
+## Döngü 250 - 2026-07-13 [Akıllı Bildirim Analiz Sistemi yerel/emülatör kapanışı]
+
+**Yapılanlar:** ROADMAP'teki "Orta Öncelik - Akıllı Bildirim Analiz Sistemi" açık maddeleri kapatıldı. `AppDatabaseTest.kt` içine gerçek Room `notification_events` 30 gün temizlik testi eklendi: cutoff'tan eski kayıt siliniyor, cutoff anı ve yeni kayıt korunuyor. Android 13/API 33 emülatörde `POST_NOTIFICATIONS` revoke/grant akışı ADB ile doğrulandı; revoke sonrası appops `POST_NOTIFICATION: ignore`, grant sonrası default `allow`. NotificationListener erişimi `cmd notification allow_listener ... 0` ile açıldı ve `enabled_notification_listeners` içinde `com.armutlu.apporganizer/com.armutlu.apporganizer.service.AppNotificationListenerService` görüldü. Shell bildirimi post edildi, launcher focus korundu ve temiz logcat sonrası `FATAL EXCEPTION=0`. Emülatör reboot sonrası listener ayarı listede kaldı, bildirim izni `Default mode: allow` döndü ve launcher tekrar `FATAL EXCEPTION=0` ile açıldı.
+
+**Doğrulama:** Bildirim odaklı unit paket geçti: `NotificationAnalyzerTest`, `AppNotificationListenerServiceTest`, `SmartInsightWorkerTest`, `NotificationAccessUtilsTest`, `NotificationReportUiStateTest`. `connectedDebugAndroidTest -PskipGoogleServices --no-daemon` Pixel6_API33 emülatörde 15 test / 0 failure / 0 error / 0 skipped geçti.
+
+---
+
 ## Döngü 249 - 2026-07-13 [Çoklu cihaz sync fizibilite analizi (Fable) — görev metninde "Dongu 247" olarak anıldı]
 
 **Yapılanlar:** Hüseyin'in 9 fazlı çoklu cihaz senkronizasyon önerisi (Firebase Auth+Firestore+Cloud Functions+E2EE+QR eşleştirme) gerçek kod tabanına karşı doğrulandı — KOD YAZILMADI, sadece analiz/dokümantasyon. Okunan dosyalar: `AppInfo.kt`, `Category.kt`, `BackupManager.kt`, `AppDatabase.kt` (v16), `AppOrganizerApp.kt`, `DockPrefs.kt`, `WrappedSnapshotPrefs.kt`, `app/build.gradle.kts`, `google-services.json` (varlık), ROADMAP.md, FİKİRLER.md.

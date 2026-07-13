@@ -1,11 +1,17 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
@@ -28,10 +34,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
+import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.presentation.viewmodel.PulseClockViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +57,8 @@ fun ReportsCenterScreen(
     onNavigateToPrivacyReport: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val pulseViewModel: PulseClockViewModel = hiltViewModel()
+    val pulseState by pulseViewModel.uiState.collectAsState()
     val wrappedEnabled = AppPrefs.isWrappedEnabled(context)
     val privacyReportEnabled = AppPrefs.isPrivacyReportEnabled(context)
     val screenState by viewModel.screenState.collectAsState()
@@ -85,22 +98,11 @@ fun ReportsCenterScreen(
             item { SettingsSectionTitle("Rapor Merkezi") }
             item {
                 SettingsCard {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                    ) {
-                        Text(
-                            text = summaryTitle,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text = summarySubtitle,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    ReportsPulseSummaryCard(
+                        summaryTitle = summaryTitle,
+                        summarySubtitle = summarySubtitle,
+                        pulseState = pulseState,
+                    )
                 }
             }
             item {
@@ -178,6 +180,132 @@ fun ReportsCenterScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ReportsPulseSummaryCard(
+    summaryTitle: String,
+    summarySubtitle: String,
+    pulseState: PulseClockViewModel.PulseClockUiState,
+) {
+    val pulse = pulseState.subScores
+    val scoreText = pulseState.score?.toString() ?: "--"
+    val confidenceText = when (pulseState.confidence) {
+        DataConfidence.HIGH -> "Yuksek guven"
+        DataConfidence.MEDIUM -> "Orta guven"
+        DataConfidence.LOW -> "Dusuk guven"
+    }
+    val scorePairs = pulse?.pulseScorePairs().orEmpty()
+    val strongest = scorePairs.maxByOrNull { it.second }
+    val weakest = scorePairs.minByOrNull { it.second }
+    val recommendation = pulseState.insightText ?: "Veri birikiyor; raporlar kullanimla netlesir."
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = summaryTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = summarySubtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                Text(
+                    text = scoreText,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = confidenceText,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = recommendation,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        if (scorePairs.isNotEmpty()) {
+            Spacer(Modifier.height(12.dp))
+            strongest?.let {
+                ReportsMiniSignal(label = "Guclu alan", value = "${it.first} ${it.second}/100")
+            }
+            weakest?.let {
+                ReportsMiniSignal(label = "Zayif alan", value = "${it.first} ${it.second}/100")
+            }
+            Spacer(Modifier.height(8.dp))
+            scorePairs.forEach { (label, value) ->
+                ReportsScoreProgress(label = label, value = value)
+            }
+        }
+    }
+}
+
+private fun DigitalPulseScore.pulseScorePairs(): List<Pair<String, Int>> = listOf(
+    "Duzen" to organization,
+    "Dikkat" to attention,
+    "Denge" to balance,
+    "Temizlik" to cleanup,
+    "Istikrar" to consistency,
+)
+
+@Composable
+private fun ReportsMiniSignal(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+@Composable
+private fun ReportsScoreProgress(label: String, value: Int) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+            Text("$value", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth((value / 100f).coerceIn(0f, 1f))
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+            )
         }
     }
 }

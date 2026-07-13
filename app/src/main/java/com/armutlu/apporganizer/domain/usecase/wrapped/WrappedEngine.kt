@@ -260,6 +260,20 @@ object WrappedEngine {
             installed > 0L && (now - installed) <= 7 * DAY_MS
         }
         val socialRatio = personality.categoryPercentages["social"] ?: 0
+        val notification = input.notificationSummary
+        val notificationAccessCriteria = if (notification == null) {
+            "Bildirim erisimiyle olculur"
+        } else {
+            "Rahatsiz eden ve dikkat dagitan bildirim sayisi 0"
+        }
+        val quietHoursCriteria = if (notification == null) {
+            "Bildirim erisimiyle olculur"
+        } else {
+            "Gece bildirimi 0"
+        }
+        val goalTrackerEarned = input.unlockCount != null &&
+            input.previousUnlockCount != null &&
+            input.unlockCount <= input.previousUnlockCount
         val avgSizeMb = if (apps.isNotEmpty()) {
             (apps.sumOf { it.appSizeBytes }.toDouble() / apps.size) / (1024.0 * 1024.0)
         } else 0.0
@@ -313,6 +327,27 @@ object WrappedEngine {
                 title = "Hafiza Dostu",
                 criteriaDescription = "Ortalama uygulama boyutu 50MB'in altinda",
                 earned = apps.any { it.appSizeBytes > 0 } && avgSizeMb < 50.0,
+            ),
+            Badge(
+                id = "notification_tamer",
+                emoji = "🔕",
+                title = "Bildirim Terbiyecisi",
+                criteriaDescription = notificationAccessCriteria,
+                earned = notification != null && notification.disturbingCount == 0 && notification.distractingCount == 0,
+            ),
+            Badge(
+                id = "quiet_hours",
+                emoji = "🌙",
+                title = "Sessiz Gece",
+                criteriaDescription = quietHoursCriteria,
+                earned = notification != null && notification.nightCount == 0,
+            ),
+            Badge(
+                id = "goal_tracker",
+                emoji = "🎯",
+                title = "Hedef Takipcisi",
+                criteriaDescription = "Kilit acma sayisi gecen haftaya esit veya daha dusuk",
+                earned = goalTrackerEarned,
             ),
         )
         // Not: "Gece Kuşu / Erken Kalkan" rozeti getWeightedScores timeSlot verisinden

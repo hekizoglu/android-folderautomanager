@@ -361,6 +361,8 @@
     <string name="pulse_clock_open_weekly_report">Open weekly Digital Pulse report</string>
     <string name="pulse_clock_score_ring_desc">Tap for score details</string>
     <string name="pulse_score_ring_caption">Balance</string>
+    <string name="pulse_score_screen_time_hours">%1$dh %2$dm</string>
+    <string name="pulse_score_screen_time_minutes">%1$dm</string>
     <string name="settings_clock_pulse_title">Clock &amp; Digital Pulse</string>
     <string name="settings_clock_style_title">Clock Style</string>
     <string name="settings_clock_style_minimal">Minimal</string>

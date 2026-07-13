@@ -159,21 +159,15 @@ private fun WrappedContent(
 
         item { PulseSubScoresCard(report.pulse) }
 
-        if (charts.hasAnyData()) {
-            item { WeeklyChartsCard(charts) }
-        }
-
         if (aiCoachLoading || !aiCoachComment.isNullOrBlank()) {
             item { AiCoachCard(aiCoachLoading, aiCoachComment) }
-        }
-
-        unlockCount?.let { count ->
-            item { UnlockCountCard(count, previousUnlockCount) }
         }
 
         item { PersonalityCard(report.personality) }
 
         item { InterestingStatsGrid(report.stats) }
+
+        item { NotificationLinkCard(onNavigateToNotificationReport) }
 
         item { BadgesGrid(report.badges) }
 
@@ -183,7 +177,13 @@ private fun WrappedContent(
             }
         } ?: item { ComparisonPendingCard() }
 
-        item { NotificationLinkCard(onNavigateToNotificationReport) }
+        if (charts.hasAnyData()) {
+            item { WeeklyChartsCard(charts) }
+        }
+
+        unlockCount?.let { count ->
+            item { UnlockCountCard(count, previousUnlockCount) }
+        }
 
         item { Spacer(Modifier.height(8.dp)) }
     }
