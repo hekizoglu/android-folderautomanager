@@ -2,6 +2,26 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 249 - 2026-07-13 [Çoklu cihaz sync fizibilite analizi (Fable) — görev metninde "Dongu 247" olarak anıldı]
+
+**Yapılanlar:** Hüseyin'in 9 fazlı çoklu cihaz senkronizasyon önerisi (Firebase Auth+Firestore+Cloud Functions+E2EE+QR eşleştirme) gerçek kod tabanına karşı doğrulandı — KOD YAZILMADI, sadece analiz/dokümantasyon. Okunan dosyalar: `AppInfo.kt`, `Category.kt`, `BackupManager.kt`, `AppDatabase.kt` (v16), `AppOrganizerApp.kt`, `DockPrefs.kt`, `WrappedSnapshotPrefs.kt`, `app/build.gradle.kts`, `google-services.json` (varlık), ROADMAP.md, FİKİRLER.md.
+
+**Bulgular:** Önerinin varsayımları büyük ölçüde doğru (packageName PK, sabit kategori ID'leri, backup'ın DEVICE-kapsam verisi sızdırması, Firebase temeli hazır). Yanlış/eksik çıkanlar: (1) dock/klasör özelleştirme/tema SharedPreferences'ta — Room-transaction-outbox varsayımı bu veriler için çalışmaz, F0 ön koşulu gerekir; (2) Keystore ECDH `PURPOSE_AGREE_KEY` API 31+ — minSdk 26'da fallback şart; (3) Cloud Functions = Blaze plan zorunlu; (4) CLAUDE.md'deki "Room v12" bilgisi bayat, gerçek v16.
+
+**Sonuç:** Genel puan 11p (KV:4·U:2·BR:1·EA:4) → ERTELE + KÜÇÜLT. v1.0 Play Store sonrasına; ara MVP olarak Drive/SAF otomatik JSON yedek + yedekten kurulum önerildi. Faz puanları ve uyarlanmış plan → ROADMAP.md, fikir kaydı → FİKİRLER.md ⏸ Beklet (11p).
+
+---
+
+## Döngü 248 - 2026-07-13 [Klasör geçişleri + Pulse/Rapor yerel kapanışları]
+
+**Yapılanlar:** Klasörler arası geçiş animasyonu yumuşatıldı; alt fihrist overlay olmaktan çıkarılıp içerik akışına alındı, çok uygulamalı klasörlerde grid üstüne binme riski azaltıldı. Fihrist chip'lerinden "Önceki/Sonraki" metni ve uygulama sayısı kaldırıldı. Klasör içi grid sabit 4 kolon yerine adaptif kolon kullanıyor; tablet genişliğinde daha iyi yayılır. Launcher manifestindeki `resizeableActivity=false` kaldırıldı (`true`) ve tablet/multi-window uyumu için statik engel azaltıldı.
+
+**Pulse/Rapor:** Pulse Clock Glass stili gradient cam yüzeyle ayrıştırıldı, skor halkasının altına haftalık ekran süresi eklendi. Rapor Merkezi üst özet kartı toplam skor, confidence, güçlü/zayıf alt skor, öneri ve 5 alt skor progress ile güncellendi. Wrapped sırası skor→alt skor→içgörü→profil→istatistik→bildirim→rozet→değişim→detay akışına yaklaştırıldı. Rozetlere `notification_tamer`, `quiet_hours`, `goal_tracker` eklendi.
+
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon`, hedef `testDebugUnitTest` smoke seti ve `assembleDebug -PskipGoogleServices --no-daemon` geçti. Cihaz/emülatör ve tablet görsel smoke ayrı runtime kapısı olarak açık bırakıldı.
+
+---
+
 ## Döngü 247 - 2026-07-13 [Wrapped Canvas grafikleri]
 
 **Yapılanlar:** ROADMAP Pulse/Dijital Nabız 10 puanlık Canvas grafik maddesi tamamlandı. `WrappedViewModel` haftalık kullanım dakikaları, günlük bildirim sayıları, gece bildirimi işaretleri ve ilk 5 kategori payını `WrappedChartData` olarak üretir. `WrappedReportScreen` içinde harici kütüphane olmadan Canvas tabanlı 7 bar kullanım trendi, 7 noktalı bildirim sparkline'ı ve kategori yatay barları eklendi.

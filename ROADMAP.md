@@ -14,13 +14,13 @@ edildi. Aşağıdakiler kapsam nedeniyle BEKLİYOR — sessizce atlanmadı, HIST
 
 | Puan | Görev | Durum |
 |---|---|---|
-| 16 | `ReportsCenterScreen` üst özet kartı: toplam skor + confidence + en güçlü/zayıf alt skor + tek öneri, altında 5 alt skor progress + detay giriş kartları | Bekliyor |
-| 14 | `WrappedReportScreen` madde sırası tam speke göre revize (skor→alt skor→en önemli içgörü→profil→istatistik→bildirim özeti→rozet→değişim→detay) | Bekliyor |
-| 12 | Rozet kriterlerini "anlamlı hale getirme" — Bildirim Terbiyecisi, Sessiz Gece, Hedef Takipçisi gibi yeni/iyileştirilmiş rozetler; izin yoksa "erişimle ölçülür" açıklaması | Bekliyor |
+| 16 | `ReportsCenterScreen` üst özet kartı: toplam skor + confidence + en güçlü/zayıf alt skor + tek öneri, altında 5 alt skor progress + detay giriş kartları | Tamamlandı - yerel: PulseClockViewModel aynı skor motoruyla bağlandı; `compileDebugKotlin` geçti |
+| 14 | `WrappedReportScreen` madde sırası tam speke göre revize (skor→alt skor→en önemli içgörü→profil→istatistik→bildirim özeti→rozet→değişim→detay) | Tamamlandı - yerel: içerik sırası speke yaklaştırıldı; grafik/kilit açma detayları sona alındı |
+| 12 | Rozet kriterlerini "anlamlı hale getirme" — Bildirim Terbiyecisi, Sessiz Gece, Hedef Takipçisi gibi yeni/iyileştirilmiş rozetler; izin yoksa "erişimle ölçülür" açıklaması | Tamamlandı - yerel: `notification_tamer`, `quiet_hours`, `goal_tracker` eklendi; bildirim izni yoksa ölçüm açıklaması gösterilir |
 | 10 | Canvas grafikleri: haftalık kullanım trendi (7 bar), bildirim trendi (7 sparkline, gece işaretli), kategori dağılımı (ilk 5 yatay bar) — harici kütüphane yok | Tamamlandı - yerel: `WrappedViewModel` grafik verisi + `WrappedReportScreen` Canvas kartı; `compileDebugKotlin` geçti |
-| 8 | Glass saat stili görsel ayrımı (Pulse'tan daha belirgin cam/gradient) güçlendirme | Bekliyor |
+| 8 | Glass saat stili görsel ayrımı (Pulse'tan daha belirgin cam/gradient) güçlendirme | Tamamlandı - yerel: Glass kart gradient/cam katmanı ile Pulse'tan ayrıldı |
 | — | Emülatörde manuel doğrulama: Pulse Clock 3 stil, skor/içgörü toggle'ları, uzun basma → yönetim ekranı, kompakt ekranda grid kaybolmuyor | Bekliyor - cihaz/emülatör |
-| 9 | Skor halkasının altına (mini açıklama "Denge" etiketinin yanına/altına) ekran kullanım süresi de yazılsın — örn. "Denge · 3sa 12dk" gibi günlük/haftalık toplam ekran süresi. `UsageStatsHelper` zaten süre verisini üretiyor, `PulseClockViewModel.PulseClockUiState`'e alan eklenip `PulseScoreRing`'in altına küçük bir satır olarak basılabilir. Kullanıcı talebi — kod yazılmadı, sadece backlog. | Bekliyor |
+| 9 | Skor halkasının altına (mini açıklama "Denge" etiketinin yanına/altına) ekran kullanım süresi de yazılsın — örn. "Denge · 3sa 12dk" gibi günlük/haftalık toplam ekran süresi. `UsageStatsHelper` zaten süre verisini üretiyor, `PulseClockViewModel.PulseClockUiState`'e alan eklenip `PulseScoreRing`'in altına küçük bir satır olarak basılabilir. | Tamamlandı - yerel: haftalık ekran süresi `PulseClockUiState` üzerinden `Denge · süre` formatında gösteriliyor |
 
 ---
 
@@ -161,6 +161,67 @@ Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da; Usag
 | Kendi sunucu API'si | `packageName -> category` endpoint; DeepSeek fallback alternatifi | Bekliyor |
 | Wear OS companion app | Uzun vade companion deneyimi | Bekliyor |
 | Widget ekran genisletme | Launcher disi hizli gorunum | Bekliyor |
+
+---
+
+## Analiz — Çoklu Cihaz Senkronizasyonu (Fable fizibilite analizi, Dongu 247)
+
+> Hüseyin'in 9 fazlı "AppOrganizer Sync Cloud" önerisi (Firebase Auth + Firestore + Cloud Functions + E2EE + QR eşleştirme) gerçek kod tabanına karşı doğrulandı. KOD YAZILMADI — sadece analiz.
+
+### Kısa Özet
+
+Öneri mimari olarak sağlam (yıldız topolojisi, outbox pattern, tombstone, HMAC belge ID, field-level merge — hepsi endüstri standardı doğru kararlar). Kod tabanı varsayımlarının çoğu DOĞRU çıktı. Ancak: (a) toplam efor tek geliştirici için 3-6 ay, (b) Cloud Functions için Firebase Blaze (ücretli) plana geçiş ZORUNLU, (c) minSdk 26 ile Keystore ECDH imkânsız (API 31+ gerekir — Android 8-11'de yazılımsal anahtar fallback'i şart, "private key Keystore'dan hiç çıkmaz" garantisi kısmen bozulur), (d) mevcut Play Store konumlandırması ("paket/ad/kategori tercihleri cihazda kalır" — bu metin QUERY_ALL_PACKAGES beyan taslağında bile var) kökten değişir: Data Safety formu, privacy policy ve beyan hikayesi yeniden yazılmalı. E2EE olsa bile Play politikasına göre cihazdan çıkan veri "collected" olarak beyan edilir.
+
+### Doğrulanan / Yanlışlanan Varsayımlar
+
+| Varsayım | Sonuç |
+|---|---|
+| `AppInfo.packageName` primary key | ✅ Doğru (`AppInfo.kt:21-22`) |
+| Kategoriler sabit string ID (`CAT_SOCIAL="social"` vb.) | ✅ Doğru — 32 kategori + 9 üretici kategorisi, sync için stabil anahtar (`Category.kt`) |
+| Backup kullanım/bildirim verisi de taşıyor | ✅ Doğru — BackupManager v4 `usageCount`(ms)/`launchCount`/`lastUsedTimestamp`/`notificationCount` export ediyor; önerinin DEVICE-kapsamı ihlali tespiti isabetli (`BackupManager.kt:41-44`) |
+| Firebase zaten entegre | ✅ Kısmen — `google-services.json` mevcut, BOM 33.7.0, Analytics+Crashlytics+FCM aktif ve null-guard'lı. Ama Auth/Firestore/Functions bağımlılığı YOK; eklemek kolay, işletmek değil |
+| Dock/klasör özelleştirme PROFILE kapsamıyla örtüşür | ✅ Örtüşür AMA kritik uyumsuzluk: bu veriler Room'da değil SharedPreferences'ta (`DockPrefs`, `AppPrefs` map'leri). "Her aksiyon Room transaction içinde outbox'a yazılır" varsayımı bu veriler için ÇALIŞMAZ — ya prefs→Room taşıma ya da atomiklikten feragat gerekir |
+| Room migration kolay | ✅ Şu an v16 (CLAUDE.md'deki v12 bayat), `schemaLocation` + şablon mevcut; 7 yeni sync tablosu additive v16→v17 ile eklenebilir |
+| Kullanım/bildirim verisi zaten bulutta değil | ✅ Doğru — `WrappedSnapshotPrefs` sadece cihaz-yerel agregat; hiçbir kullanım verisi cihaz dışına çıkmıyor (JSON backup hariç) |
+| Keystore ECDH P-256 | ❌ EKSİK — `PURPOSE_AGREE_KEY` API 31+; minSdk 26'da Android 8-11 için yazılımsal ECDH + Keystore AES-wrap fallback tasarlanmalı |
+
+### Faz Puanlama (KV: Kullanıcı Değeri · U: Uygulanabilirlik · BR: Bağımlılık Riski, 5=düşük risk · EA: Etki Alanı)
+
+| Faz | İçerik | KV | U | BR | EA | Toplam | Durum |
+|---|---|---|---|---|---|---|---|
+| F1 | Veri sözleşmesi + sync entity modelleri (Room v17: SyncOutbox/Conflict/Device/Profile/Tombstone/State/EntityMeta) | 1 | 4 | 4 | 2 | **11** | Beklet |
+| F2 | Firebase Auth + Credential Manager + cihaz UUID kaydı (Blaze plan kapısı burada açılır) | 2 | 3 | 2 | 2 | **9** | Beklet |
+| F3 | E2EE (workspace key + key envelope) + QR eşleştirme (Keystore ECDH API 31+ sorunu burada) | 2 | 2 | 2 | 3 | **9** | Beklet |
+| F4 | Tek yönlü ilk sync (upload + read-only preview) | 3 | 3 | 2 | 3 | **11** | Beklet |
+| F5 | Çift yönlü sync (outbox + SyncWorker + mutation + listener) — asıl kullanıcı değeri burada | 4 | 2 | 2 | 4 | **12** | Beklet |
+| F6 | Conflict engine (öncelik zinciri + fieldVersions merge + kullanıcıya sorma UI) | 3 | 2 | 2 | 3 | **10** | Beklet |
+| F7 | Profil sistemi (Ortak/Telefon/Tablet) | 3 | 3 | 3 | 3 | **12** | Beklet |
+| F8 | Güvenlik sertleştirme (App Check, Play Integrity, Security Rules, rate limit) | 2 | 2 | 1 | 2 | **7** | Beklet |
+| F9 | Üretim QA (fiziksel çoklu cihaz + OEM matrisi) — tek geliştiricide cihaz parkı yok | 3 | 1 | 1 | 2 | **7** | Beklet |
+| **Genel** | **Tüm proje** | **4** | **2** | **1** | **4** | **11** | **ERTELE — v1.0 sonrası** |
+
+### Fizibilite Notları
+
+- **Süre:** 9 faz, tek geliştirici + Claude döngüleriyle gerçekçi tahmin 3-6 takvim ayı (Cloud Functions TS toolchain'i, Rules testleri ve çoklu cihaz QA dahil). Play Store v1.0 kapısındaki işlerin (beyanlar, keystore, QA) tamamı bundan kısa.
+- **Maliyet:** Cloud Functions deploy = Blaze plan ZORUNLU (Spark'ta Functions deploy edilemez). Firestore free kotası (50k okuma/20k yazma/gün) erken dönem için yeter; entity-başına-belge + realtime listener modeli kullanıcı başına ilk sync ~500-700 okuma üretir, 5-10k aktif kullanıcıya kadar maliyet önemsiz, sonrası lineer büyür. Asıl maliyet para değil bakım karmaşıklığı.
+- **Kurtarma kodu UX riski:** XXXX-XXXX-XXXX-XXXX kodunu kullanıcıların büyük kısmı kaybeder; "tüm cihazlar kaybedilirse veri gider" destek yükü yaratır. Sync edilen verinin çoğu (kategori kararları, özelleştirme) yeniden üretilebilir olduğundan tam E2EE yerine "Google hesabına bağlı, sunucu tarafı şifreli, kurtarma kodu opsiyonel" modeli düşünülmeli — ya da E2EE kalacaksa veri kaybı kabul edilebilir çünkü felaket senaryosunda kullanıcı sadece özelleştirmelerini kaybeder.
+- **Konumlandırma gerilimi:** YÜKSEK. Mevcut Play beyan taslağı ve privacy policy "cihazda kalır" hikayesi anlatıyor; sync bunu "opsiyonel bulut, E2EE" hikayesine çevirir. Bu değişiklik Play Store İLK yayından önce yapılırsa beyan süreci sıfırdan karmaşıklaşır — yayın SONRASI ayrı release olarak eklenmesi süreç açısından da doğru.
+
+### Tavsiye
+
+**ERTELE + KÜÇÜLT.** v1.0 Play Store yayını tamamlanana kadar başlanmasın. Ara adım olarak çok daha küçük MVP: mevcut BackupManager v4 JSON'unu kullanıcının seçtiği Drive/SAF klasörüne otomatik yükleyen + ikinci cihazda "yedekten kur" akışı sunan "fakir adamın sync'i" (~1-2 döngü, sıfır sunucu, sıfır plan değişikliği, değerin ~%60-70'i). Bu MVP yapılmadan önce backup'taki DEVICE-kapsam sızıntısı (usage/notification alanları) opsiyonel hale getirilmeli — FİKİRLER.md'de zaten 11p kayıtlı ("Yedekte usage verisini dahil etme secenegi"). Tam sync'e ilerideki bir sprintte dönülürse fazlar F1→F4→F5 çekirdeği önce, F3 E2EE en sona alınmalı (ilk sürüm sunucu tarafı şifreleme ile çıkabilir).
+
+### Uyarlanmış Faz Planı (ileride başlanırsa — gerçek dosya haritası)
+
+1. **F0 (ÖN KOŞUL — öneride yok):** SharedPreferences→Room taşıma kararı: `DockPrefs`, `AppPrefs` klasör özelleştirme/gesture/tema map'leri için ya `sync_prefs_mirror` tablosu ya da prefs-listener tabanlı outbox köprüsü. Bu çözülmeden F5 outbox atomikliği kurulamaz.
+2. **F1:** `domain/models/sync/` altına SyncOutboxEntity, SyncTombstoneEntity, SyncEntityMeta, SyncStateEntity, SyncDeviceEntity, SyncProfileEntity, SyncConflictEntity; `AppDatabase` v16→v17 (şablon: MIGRATION_15_16); DAO'lar + `schemas/17.json`.
+3. **F2:** `firebase-auth` + `firebase-firestore` bağımlılıkları (BOM zaten var), Credential Manager sign-in, `SyncIdentityManager` (cihaz UUID, `AppPrefs` değil ayrı `sync_identity_prefs`); SettingsScreen'e "Cihazlar Arası Eşitleme (Deneysel)" toggle (CLAUDE.md Yeni Özellik=Ayarlar kuralı).
+4. **F3:** `SyncCryptoManager` — API 31+ Keystore ECDH, API 26-30 yazılımsal ECDH + Keystore AES-GCM wrap fallback; QR üretim/okuma (`zxing` veya ML Kit — yeni bağımlılık, WebSearch şart); pairing UI.
+5. **F4:** `SyncUploader` — Room→Firestore ilk yükleme (HMAC belge ID), ikinci cihazda read-only önizleme ekranı.
+6. **F5:** `SyncWorker` (WorkManager, mevcut `BackupWorker` pattern'i), outbox draining, Firestore listener→Room applier; Cloud Functions repo'su (`functions/` TS): applySyncMutations, finalizePairing vb.
+7. **F6:** `ConflictResolver` (öncelik zinciri; `classificationSource`/`isCategoryLocked` alanları D246'da eklendi — manuel karar tespiti için hazır altyapı MEVCUT, önerinin lehine) + çakışma soru UI'ı.
+8. **F7:** Profil sistemi — `SyncProfileEntity` + Settings profil seçici; PROFILE kapsam alanları BackupManager v4 settings bloğuyla birebir örtüşüyor (hazır envanter).
+9. **F8-F9:** App Check + Play Integrity + Security Rules emulator testleri; fiziksel cihaz matrisi (dış aksiyon — COZULEMEYEN_SORUNLAR adayı).
 
 ---
 
