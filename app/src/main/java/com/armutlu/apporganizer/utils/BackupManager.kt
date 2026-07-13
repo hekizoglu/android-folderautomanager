@@ -104,7 +104,6 @@ object BackupManager {
                     put("goalsEnabled", AppPrefs.isGoalsEnabled(context))
                     put("privacyReportEnabled", AppPrefs.isPrivacyReportEnabled(context))
                     put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
-                    put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
                     put("assistantCardsEnabled", AppPrefs.isAssistantCardsEnabled(context))
                 })
             }

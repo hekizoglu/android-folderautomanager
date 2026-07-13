@@ -109,6 +109,21 @@ fun SettingsLauncherScreen(
         // ── Dock Yönetimi ─────────────────────────────────────────────────
         item { SettingsSectionTitle("Dock Uygulamaları") }
         item {
+            var contextualDock by remember { mutableStateOf(AppPrefs.isContextualDockEnabled(context)) }
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.AutoAwesome,
+                    title = "Akilli Dock",
+                    subtitle = "Ilk 2 sabit uygulamayi korur, son 2 slotu saate ve kullanim aliskanligina gore onerir",
+                    checked = contextualDock,
+                    onCheckedChange = {
+                        contextualDock = it
+                        AppPrefs.setContextualDockEnabled(context, it)
+                    }
+                )
+            }
+        }
+        item {
             var dockPkgs by remember { mutableStateOf(DockPrefs.getDockPackages(context)) }
             val pm = context.packageManager
             SettingsCard {

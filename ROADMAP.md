@@ -89,30 +89,6 @@ Wrapped MVP (skor, kisilik, rozetler, haftalik karsilastirma) Dongu 230'da; Usag
 
 ---
 
-## Codex Is Listesi - Cozum Tarifli (D241, Fable hazirladi)
-
-Asagidaki maddeler Codex 5.5 (baska bir AI) tarafindan uygulanacak sekilde hazirlandi. Her madde: sorun, dokunulacak dosyalar, adim adim cozum tarifi, kabul kriteri iceriyor. Kod degisikligi bu dokumanda yapilmadi. NOT: Gizlilik analizi (14p) LISTEDEN CIKARILDI - PrivacyReportScreen/PrivacyAnalyzer olarak D238'de zaten uygulandi ve baglandi; Codex yeniden yapmasin.
-
-### Akilli Kategorileme K4 - Kullanim paternine gore baglamsal akilli klasor (13p)
-
-**Sorun/istek:** Room `usageCount`/`lastUsedTimestamp` + `UsageStatsHelper` saat-dilimi verisi var ama "Sabah Rutini / Is Saatleri / Aksam" gibi dinamik/sanal klasor veya klasor ici otomatik yeniden siralama yok. 13p "kullanim sikligina gore dock siralama" fikriyle sinerjik, birlikte tek epik olarak ele alinabilir.
-
-**Not:** CLAUDE.md kurali geregi bu madde zorluk 7/10 â€” uygulamadan once mimari karar gerekiyor. Codex once 2 kaynaktan (WebSearch + kod analizi) arastirma yapip 2+ secenek sunmali, sonra Huseyin onayi beklemeli. Direkt kod yazma.
-
-**Cozum tarifi (arastirma + tasarim adimlari):**
-1. `UsageStatsHelper.kt`'yi oku â€” saat-dilimi histogram cikarma yetenegi var mi dogrula (yoksa once bu eklenmeli).
-2. `InsightEngine.kt` icindeki mevcut zaman-bazli insight uretme pattern'ini incele, ayni yaklasimla "su an hangi zaman dilimindeyiz" -> "bu dilimde en cok kullanilan N uygulama" hesaplamasi tasarla.
-3. Secenek A: `HomeScreen.kt`'de mevcut klasorlerin ustune gecici bir "Simdi" seridi/karti ekle (kalici klasor degil, sadece siralama onerisi).
-   Secenek B: `LauncherViewModel.kt`'deki dock/quick-access sec-4-uygulama mantigina (zaten `boosted` skor sistemi var, satir ~634-654) zaman-dilimi boost'u ekle.
-4. Hangi secenek uygulanacaksa `AppPrefs.kt`'ye `KEY_CONTEXTUAL_FOLDER_ENABLED` + toggle ekle.
-5. Karar ve arastirma sonucu once rapor edilmeli, kod degisikligi onay sonrasi yapilmali.
-
-**Kabul kriteri:**
-- Arastirma raporu + 2 secenek sunuldu, Huseyin onayi alindi (bu adim tamamlanmadan kod yazilmaz).
-- Onay sonrasi: farkli saatlerde dock/oneri siralamasi degisiyor, tamamen cihaz ici, veri disari cikmiyor.
-
----
-
 ## Dusuk Oncelik ve Uzun Vade
 
 | Gorev | Alan | Durum |
