@@ -171,7 +171,11 @@ private data class DashboardStats(
     val unusedCount: Int,
     val neverUsedCount: Int,
     val totalUsageMinutesThisWeek: Long,
-    val organizedPercent: Int
+    val organizedPercent: Int,
+    // P0.2: ClassificationAttentionPolicy ile tek kaynaktan hesaplanan dikkat
+    // gerektiren uygulama sayisi — ClassificationReviewScreen ve SettingsAppsSection
+    // ile ayni deger (sayac/liste tutarliligi).
+    val attentionCount: Int
 ) {
     companion object {
         fun compute(
@@ -229,7 +233,9 @@ private data class DashboardStats(
                 unusedCount = unusedCount,
                 neverUsedCount = neverUsedCount,
                 totalUsageMinutesThisWeek = totalMinutes,
-                organizedPercent = organizedPercent
+                organizedPercent = organizedPercent,
+                attentionCount = com.armutlu.apporganizer.domain.usecase.classify.ClassificationAttentionPolicy
+                    .attentionCount(apps, now)
             )
         }
     }
@@ -602,6 +608,12 @@ private fun EfficiencyCard(stats: DashboardStats, onClick: () -> Unit) {
                     "%.1f".format(stats.totalApps.toFloat() / stats.totalCategories)
                 else "-",
                 color = MaterialTheme.colorScheme.primary
+            )
+            EfficiencyRow(
+                icon = Icons.Default.PhoneAndroid,
+                label = "Kontrol Bekleyenler",
+                value = stats.attentionCount.toString(),
+                color = if (stats.attentionCount > 0) Color(0xFFEF6C00) else MaterialTheme.colorScheme.primary
             )
         }
     }

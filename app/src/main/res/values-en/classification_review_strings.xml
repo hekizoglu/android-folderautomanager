@@ -12,4 +12,12 @@
     <string name="classification_review_selection_required">Choose a category before confirming.</string>
     <string name="classification_review_rule_title">Rule</string>
     <string name="classification_review_rule_subtitle">Approval is disabled until a category is selected. Approvals and corrections are treated as user decisions and will not be overwritten automatically.</string>
+
+    <!-- P0.2: ClassificationAttentionPolicy reason -> "Why is this here?" text -->
+    <string name="attention_reason_uncategorized">No category assigned</string>
+    <string name="attention_reason_other_without_confidence">In the Other folder, no clear category found</string>
+    <string name="attention_reason_low_confidence">Low-confidence classification</string>
+    <string name="attention_reason_review_pending">Your review was requested</string>
+    <string name="attention_reason_missing_category">Category data is missing</string>
+    <string name="attention_reason_classifier_conflict">Classifier found conflicting signals</string>
 </resources>

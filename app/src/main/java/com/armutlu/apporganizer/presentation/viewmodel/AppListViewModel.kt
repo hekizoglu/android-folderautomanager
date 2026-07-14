@@ -119,8 +119,12 @@ class AppListViewModel @Inject constructor(
     val suggestedSimilarCategoryId: StateFlow<String?> = _suggestedSimilarCategoryId.asStateFlow()
     private val _folderSuggestionRefresh = MutableStateFlow(0)
 
-    val pendingClassificationApps: StateFlow<List<AppInfo>> =
-        repository.getPendingClassificationApps()
+    // Tek dogruluk kaynagi: ClassificationAttentionPolicy. Sayac (SettingsAppsSection,
+    // Dashboard) ve liste (ClassificationReviewScreen) ayni flow'dan besleniyor —
+    // artik sayac dolu iken liste bos kalamaz (P0.2).
+    val classificationAttentionApps: StateFlow<List<AppInfo>> =
+        repository.getAllAppsFlow()
+            .map { apps -> com.armutlu.apporganizer.domain.usecase.classify.ClassificationAttentionPolicy.attentionList(apps) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     val folderSuggestions: StateFlow<List<FolderSuggestion>> =
@@ -883,8 +887,19 @@ class AppListViewModel @Inject constructor(
         repository.getHiddenApps()
             .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())
 
+    // P0.2: "Diger Klasoru" sayaci artik ClassificationAttentionPolicy'den besleniyor.
+    // Onceden sadece categoryId == CAT_OTHER bakiyordu (review state/confidence/isSystemApp
+    // yok sayiliyordu) — sayac (SettingsAppsSection basligi) ile liste (kartlar) farkli
+    // kumeler dondurebiliyordu. Simdi ikisi de ayni attentionList() cikisindan
+    // OTHER_WITHOUT_CONFIDENCE nedenine filtrelenerek turetiliyor.
     val otherApps: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.models.AppInfo>> =
-        repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER)
+        classificationAttentionApps
+            .map { apps ->
+                apps.filter {
+                    com.armutlu.apporganizer.domain.usecase.classify.ClassificationAttentionPolicy.evaluate(it) ==
+                        com.armutlu.apporganizer.domain.usecase.classify.AttentionReason.OTHER_WITHOUT_CONFIDENCE
+                }
+            }
             .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     fun unhideApp(packageName: String) {
