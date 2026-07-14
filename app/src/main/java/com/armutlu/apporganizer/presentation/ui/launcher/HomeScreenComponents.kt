@@ -123,6 +123,20 @@ import java.util.Date
 import java.util.Locale
 
 /**
+ * P1.3: contactId bossa (numara yoksa/parse hatasi) sessizce atlar.
+ * Ayar kapaliysa (KEY_CONTACT_SUGGESTIONS_ENABLED=false) hicbir kayit yazilmaz.
+ */
+private fun homeLogContactAction(
+    context: Context,
+    contactId: String,
+    action: com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType
+) {
+    if (contactId.isBlank()) return
+    if (!AppPrefs.isContactSuggestionsEnabled(context)) return
+    com.armutlu.apporganizer.utils.ContactActionPrefs.logAction(context, contactId, action)
+}
+
+/**
  * @param compact Dar ekran / kalabalık ana ekranda saat küçülür (84sp→56sp) ve tarih pili gizlenir
  *                — klasörler kaybolmasın diye alan saate değil klasörlere verilir.
  */
@@ -1334,6 +1348,8 @@ internal fun HomeAppSearchBar(
                                     IconButton(
                                         onClick = {
                                             SearchStatsPrefs.logAction(context, "CALL")
+                                            homeLogContactAction(context, contact.id.toString(),
+                                                com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType.CALL)
                                             val intent = android.content.Intent(
                                                 android.content.Intent.ACTION_DIAL,
                                                 android.net.Uri.parse("tel:${android.net.Uri.encode(contact.phone)}")
@@ -1355,6 +1371,8 @@ internal fun HomeAppSearchBar(
                                                 ).apply { flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
                                                 context.startActivity(intent)
                                                 SearchStatsPrefs.logAction(context, "WHATSAPP")
+                                                homeLogContactAction(context, contact.id.toString(),
+                                                    com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType.WHATSAPP)
                                             }
                                         },
                                         modifier = Modifier.size(30.dp)
@@ -1365,6 +1383,8 @@ internal fun HomeAppSearchBar(
                                     IconButton(
                                         onClick = {
                                             SearchStatsPrefs.logAction(context, "SMS")
+                                            homeLogContactAction(context, contact.id.toString(),
+                                                com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType.SMS)
                                             val intent = android.content.Intent(
                                                 android.content.Intent.ACTION_SENDTO,
                                                 android.net.Uri.parse("smsto:${android.net.Uri.encode(contact.phone)}")

@@ -321,7 +321,9 @@ private fun SearchDocumentRow(
             Text(subtitle, color = textSecondary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         if (showActions) {
-            ContactQuickActions(context = context, phone = phone)
+            // P1.3: contactId (numara DEGIL) ContactActionPrefs'e - saat bazli oneri altyapisi
+            val contactId = document.sourceId.removePrefix("contact:")
+            ContactQuickActions(context = context, phone = phone, contactId = contactId)
         }
     }
 }
@@ -329,16 +331,19 @@ private fun SearchDocumentRow(
 /**
  * Kisi hizli aksiyonlari - Ara / WhatsApp / SMS. CALL_PHONE izni GEREKMEZ
  * (ACTION_DIAL kullanilir, cagriyi kullanici dialer'da baslatir).
- * Her aksiyon SearchStatsPrefs.logAction ile anonim sayaca isaretlenir.
+ * Her aksiyon SearchStatsPrefs.logAction ile anonim sayaca isaretlenir ve
+ * P1.3: AppPrefs.isContactSuggestionsEnabled ise ContactActionPrefs'e (contactId, aksiyon,
+ * zaman) olarak loglanir - saat bazli kisi onerisi altyapisi icin. Numara ASLA saklanmaz.
  */
 @Composable
-private fun ContactQuickActions(context: Context, phone: String) {
+private fun ContactQuickActions(context: Context, phone: String, contactId: String = "") {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val encodedPhone = Uri.encode(phone)
     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         IconButton(
             onClick = {
                 SearchStatsPrefs.logAction(context, "CALL")
+                logContactAction(context, contactId, com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType.CALL)
                 val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$encodedPhone"))
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 runCatching { context.startActivity(intent) }
@@ -357,6 +362,7 @@ private fun ContactQuickActions(context: Context, phone: String) {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                     SearchStatsPrefs.logAction(context, "WHATSAPP")
+                    logContactAction(context, contactId, com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType.WHATSAPP)
                 }.onFailure { Timber.w(it, "WhatsApp acilamadi, yuklu olmayabilir") }
             },
             modifier = Modifier.size(32.dp)
@@ -367,6 +373,7 @@ private fun ContactQuickActions(context: Context, phone: String) {
         IconButton(
             onClick = {
                 SearchStatsPrefs.logAction(context, "SMS")
+                logContactAction(context, contactId, com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType.SMS)
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$encodedPhone"))
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 runCatching { context.startActivity(intent) }
@@ -378,6 +385,20 @@ private fun ContactQuickActions(context: Context, phone: String) {
                 tint = onSurface.copy(alpha = 0.70f), modifier = Modifier.size(16.dp))
         }
     }
+}
+
+/**
+ * P1.3: contactId bossa (izin sinirlamasi/parse hatasi) sessizce atlar.
+ * Ayar kapaliysa (KEY_CONTACT_SUGGESTIONS_ENABLED=false) hicbir kayit yazilmaz.
+ */
+private fun logContactAction(
+    context: Context,
+    contactId: String,
+    action: com.armutlu.apporganizer.utils.ContactActionPrefs.ActionType
+) {
+    if (contactId.isBlank()) return
+    if (!AppPrefs.isContactSuggestionsEnabled(context)) return
+    com.armutlu.apporganizer.utils.ContactActionPrefs.logAction(context, contactId, action)
 }
 
 /**

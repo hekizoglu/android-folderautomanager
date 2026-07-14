@@ -97,6 +97,7 @@ fun SearchSettingsScreen(
     var categoriesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CATEGORIES) { AppPrefs.isSearchSourceCategoriesEnabled(context) }
     var settingsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_SETTINGS) { AppPrefs.isSearchSourceSettingsEnabled(context) }
     var contactsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) { AppPrefs.isSearchSourceContactsEnabled(context) }
+    var contactSuggestionsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_CONTACT_SUGGESTIONS_ENABLED) { AppPrefs.isContactSuggestionsEnabled(context) }
     var filesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_FILES) { AppPrefs.isSearchSourceFilesEnabled(context) }
     var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
     var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
@@ -281,6 +282,29 @@ fun SearchSettingsScreen(
                             }
                         },
                         enabled = !sourceOpInFlight,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    // P1.3: Saat bazli kisi onerileri - launcher icinden baslatilan Ara/SMS/WhatsApp
+                    // aksiyonlarindan ogrenir. READ_CALL_LOG ISTENMEZ.
+                    SettingsSwitchRow(
+                        icon = Icons.Default.Person,
+                        title = stringResource(R.string.search_settings_contact_suggestions_title),
+                        subtitle = stringResource(R.string.search_settings_contact_suggestions_subtitle),
+                        checked = contactSuggestionsEnabled,
+                        onCheckedChange = {
+                            contactSuggestionsEnabled = it
+                            AppPrefs.setContactSuggestionsEnabled(context, it)
+                        },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.Refresh,
+                        title = stringResource(R.string.search_settings_contact_suggestions_clear_title),
+                        subtitle = stringResource(R.string.search_settings_contact_suggestions_clear_subtitle),
+                        showChevron = false,
+                        onClick = {
+                            com.armutlu.apporganizer.utils.ContactActionPrefs.clearAll(context)
+                        },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(

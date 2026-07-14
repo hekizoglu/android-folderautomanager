@@ -197,6 +197,28 @@ class LauncherViewModel @Inject constructor(
             .take(4)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    // P1.3: Saat bazli kisi onerileri altyapisi. Sadece ViewModel + engine + logging burada -
+    // gorunur UI EKLENMEZ (P1.2 bu akisi tuketecek, cakismayi onlemek icin).
+    // İzin yoksa veya ayar kapaliysa veya SearchCache'te kisi verisi yoksa BOS liste doner.
+    private val _suggestedContactsRefresh = MutableStateFlow(0)
+    val suggestedContacts: StateFlow<List<com.armutlu.apporganizer.utils.SearchCache.ContactEntry>> =
+        _suggestedContactsRefresh.map {
+            val context = getApplication<Application>()
+            if (!AppPrefs.isContactSuggestionsEnabled(context)) return@map emptyList()
+            val events = com.armutlu.apporganizer.utils.ContactActionPrefs.getAll(context)
+            val suggestedIds = com.armutlu.apporganizer.domain.usecase.contacts.ContactSuggestionEngine
+                .suggest(events)
+            if (suggestedIds.isEmpty()) return@map emptyList()
+            val contactsById = com.armutlu.apporganizer.utils.SearchCache.getContactList()
+                .associateBy { it.id.toString() }
+            suggestedIds.mapNotNull { contactsById[it] }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Ayarlar/arama akisindan sonra oneri listesini yeniden hesaplatmak icin cagirilabilir. */
+    fun refreshSuggestedContacts() {
+        _suggestedContactsRefresh.update { it + 1 }
+    }
+
     @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,

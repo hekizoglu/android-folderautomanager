@@ -462,6 +462,12 @@
     <string name="search_settings_web_fallback_desc">Suggest a web/Play Store search when no results are found</string>
     <string name="search_settings_stats_title">Search Statistics</string>
 
+    <!-- SearchSettingsScreen - P1.3: Time-based contact suggestions -->
+    <string name="search_settings_contact_suggestions_title">Contact Suggestions</string>
+    <string name="search_settings_contact_suggestions_subtitle">Suggests frequently contacted people based on the time of day. No call log access - only actions started from the launcher are learned</string>
+    <string name="search_settings_contact_suggestions_clear_title">Clear Contact Suggestion History</string>
+    <string name="search_settings_contact_suggestions_clear_subtitle">Deletes the saved contact action history and resets suggestions</string>
+
     <!-- SearchSettingsScreen — P0.3: File search permission/index state -->
     <string name="search_settings_files_title">File Names</string>
     <string name="search_settings_files_subtitle_disabled">Off by default. Asks for Android file permission for media/download names; content is not read</string>

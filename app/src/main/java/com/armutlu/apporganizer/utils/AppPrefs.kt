@@ -937,5 +937,12 @@ object AppPrefs {
     fun isSearchStatsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_STATS_ENABLED, true)
     fun setSearchStatsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_STATS_ENABLED, v).apply()
 
+    // P1.3: Saat bazli kisi onerileri - launcher icinden baslatilan kisi aksiyonlarindan (Ara/SMS/
+    // WhatsApp) ogrenir. READ_CALL_LOG ISTENMEZ - sadece kendi olay logumuz (ContactActionPrefs).
+    // Varsayilan ACIK (Yeni Ozellik = Ayarlar Kurali).
+    const val KEY_CONTACT_SUGGESTIONS_ENABLED = "contact_suggestions_enabled"
+    fun isContactSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, true)
+    fun setContactSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, v).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

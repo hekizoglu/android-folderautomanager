@@ -464,6 +464,12 @@
     <string name="search_settings_web_fallback_desc">Sonuç bulunamayınca web/Play Store araması öner</string>
     <string name="search_settings_stats_title">Arama İstatistikleri</string>
 
+    <!-- SearchSettingsScreen - P1.3: Saat bazlı kişi önerileri -->
+    <string name="search_settings_contact_suggestions_title">Kişi Önerileri</string>
+    <string name="search_settings_contact_suggestions_subtitle">Sık aradığın kişileri saatine göre önerir. Arama geçmişine erişilmez, sadece launcher içinden başlattığın aksiyonlar öğrenilir</string>
+    <string name="search_settings_contact_suggestions_clear_title">Kişi Önerisi Geçmişini Temizle</string>
+    <string name="search_settings_contact_suggestions_clear_subtitle">Kaydedilen kişi aksiyonu geçmişi silinir, öneriler sıfırlanır</string>
+
     <!-- SearchSettingsScreen — P0.3: Dosya arama izin/indeks durumu -->
     <string name="search_settings_files_title">Dosya Adları</string>
     <string name="search_settings_files_subtitle_disabled">Varsayılan kapalı. Medya/indirme adları için Android dosya izni ister; içerik okunmaz</string>
