@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 265 - 2026-07-14 [Arama çubuğu klavye overlap düzeltmesi]
+
+**Yapılanlar:** `HomeScreen.kt` kök `Column`'una `Modifier.imePadding()` eklendi (import + `.statusBarsPadding().navigationBarsPadding().imePadding()`), böylece klavye açıldığında arama çubuğu `WindowInsetsAnimation` ile senkron kayıyor, manuel/gecikmeli offset kalmıyor.
+
+**Bug:** Arama çubuğuna dokununca klavye açılıyor, bar yukarı kayıyor ama klavyenin biraz üstüne biniyordu (ROADMAP #4, KV=3 U=4 BR=4 EA=2 → 13 puan).
+
+**Sonraki:** `assembleDebug -PskipGoogleServices` başarılı; emülatörde klavye açık ekran görüntüsüyle görsel doğrulama önerilir.
+
+---
+
 ## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]
 
 **Yapılanlar:** Tablet emulator (`1280x800`, density `160`) üzerinde yakalanan “App Organizer isn't responding” ANR ekranı incelendi. İlk kanıt `artifacts/tablet-debug/tablet-current-20260714-132819.png`: Play Store sign-in ekranı arkasında AppOrganizer ANR dialog'u. Logcat, AppOrganizer activity pause/top-resumed timeout ve ana thread frame skip işaretleri verdi. İki hedefli düzeltme yapıldı: `AppListViewModel.syncInstalledApps()` artık cihaz/DB sync ve search bootstrap işini `Dispatchers.IO` üzerinde başlatıyor; `LauncherActivity` onboarding tamamlanmamışken `MainActivity`'ye yönlendirdikten sonra `finish()` çağırıyor, böylece tablet geçişinde yarım kalan launcher activity pause timeout üretmiyor.

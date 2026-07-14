@@ -43,12 +43,6 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
 **Durum:** Bekliyor
 
-### [4] Arama çubuğu klavye ile hafif çakışıyor
-**Sorun/İstek:** Arama çubuğuna dokununca klavye açılıyor, bar yukarı kayıyor ama klavyenin biraz üstüne biniyor (küçük overlap).
-**Nasıl yapılmalı:** `HomeScreenComponents.kt` içinde arama barının `WindowInsets.ime` ile hizalanan offset/padding hesaplaması bulunmalı; mevcut offset değeri birkaç dp artırılmalı. `imePadding()` veya manuel `WindowInsets.ime.getBottom(density)` kullanımı varsa animasyon gecikmesi (`WindowInsetsAnimation`) nedeniyle ara karede overlap oluşabilir — `imeNestedScroll()` veya `Modifier.imePadding()` ile senkron animasyon tercih edilmeli. Küçük görsel bug, test emülatörde klavye açık ekran görüntüsüyle doğrulanmalı.
-**Puan:** KV=3 U=4 BR=4 EA=2 → Toplam=13
-**Durum:** Bekliyor 🐛
-
 ### [5] 🐛 Ticker açık item'a tekrar tıklayınca donuyor
 **Sorun/İstek:** HomeTickerRow'da bir öğe açıldıktan sonra tekrar üstüne tıklanınca ekran kilitleniyor/donuyor.
 **Nasıl yapılmalı:** `HomeTickerRow.kt:166` civarındaki `onClick = { ... }` bloğu incelenmeli — muhtemelen navigation çağrısı (`navController.navigate(...)`) aynı destinasyona art arda tetiklenince state çakışması veya composition sırasında recursive recomposition oluşuyor. `LauncherViewModel.kt`'deki `tickerItems` state'i click sonrası güncellenirken aynı frame'de ikinci tıklama gelirse race condition olası. Çözüm: click handler'a debounce (`remember { mutableStateOf(false) }` + son tıklama zaman damgası) veya `navController.currentBackStackEntry` kontrolü ile aynı route'a çift push engellenmeli.
