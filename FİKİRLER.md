@@ -36,8 +36,8 @@
 | 2026-07-14 | 16p | **🐛 İzin ver butonu izin sonrası takılı kalıyor** — callback state güncellenmiyor. Detay → ROADMAP.md "Hüseyin Geri Bildirim Listesi" [1]. (KV:5·U:4·BR:4·EA:3) | Bekliyor 🐛 |
 | 2026-07-14 | 15p | **🐛 Silip tekrar kurunca onboarding başlamıyor** — Auto Backup şüphesi (`AppPrefs` restore). Detay → ROADMAP.md [2]. (KV:5·U:3·BR:4·EA:3) | Bekliyor 🐛 |
 | 2026-07-14 | 15p | **🐛 Ticker açık item'a tekrar tıklayınca donuyor** — navigation race condition. Detay → ROADMAP.md [5]. (KV:4·U:4·BR:4·EA:3) | Bekliyor 🐛 |
-| 2026-07-14 | 15p | **🐛 "Sınıflandırılmamış: N" satırı tıklanınca açılmıyor** — navigation eksik. Detay → ROADMAP.md [11]. (KV:4·U:5·BR:4·EA:2) | Bekliyor 🐛 |
-| 2026-07-14 | 15p | **🐛 "Tüm istatistikleri sıfırla" 2 kez onay istemeli** — İstatistik sıfırlama sihirbazı fikriyle (13p, aşağıda) birleştirilmeli. Detay → ROADMAP.md [12]. (KV:4·U:4·BR:4·EA:3) | Bekliyor 🐛 |
+| 2026-07-14 | 15p | **🐛 "Sınıflandırılmamış: N" satırı tıklanınca açılmıyor** — Tamamlandı: `SettingsStatsScreen.kt` satırı `SettingsButtonRow` ile tıklanabilir yapıldı, `onNavigateToClassificationReview` ile `Routes.CLASSIFICATION_REVIEW`'a bağlandı (D265). | ✅ Tamamlandı |
+| 2026-07-14 | 15p | **🐛 "Tüm istatistikleri sıfırla" 2 kez onay istemeli** — Tamamlandı: `SettingsAppsSection.kt`'deki "Tüm Kategorileri Sıfırla" minimal iki aşamalı onay akışına geçirildi (D265). Tam sihirbaz (veri seçimi ekranı) kapsam dışı bırakıldı, aşağıdaki "İstatistik sıfırlama sihirbazı" fikri ayrı kalır. | ✅ Tamamlandı |
 | 2026-07-08 | 15p | **Akıllı Bildirim Analiz Sistemi** — `AppNotificationListenerService` + `notification_events` + `NotificationAnalyzer` + `SmartInsightWorker` hattı mevcut ama privacy-first rapor/öneri/günlük akıllı bildirim sistemine tamamlanmamış (worker duplicate-schedule riski, saat değişince yeniden planlama, POST_NOTIFICATIONS yoksa sessiz devam, Privacy Policy/Data Safety metniyle birebir uyum). Tam kabul kriterleri ve modül listesi → ROADMAP.md "🧠 Akıllı Bildirim Analiz Sistemi — Detay". (KV:4 · U:3 · BR:4 · EA:4 = **15p**) | Bekliyor — ROADMAP R7 ile eşleşiyor |
 ---
 
@@ -64,7 +64,7 @@
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 13) | **Ana ekranda "Görevler" giriş noktası** — gamification sistemi. Detay → ROADMAP.md [13]. (KV:4·U:2·BR:2·EA:3) | 11p — Bekliyor |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 14) | **"Direkt Onayla" butonuna açıklama eklensin** — Detay → ROADMAP.md [14]. (KV:3·U:5·BR:1·EA:2) | 11p — Bekliyor |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 15) | **Görev puanlama motoru (gamification puan sistemi)** — Detay → ROADMAP.md [15]. (KV:3·U:2·BR:2·EA:3) | 10p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 16) | **🐛 "Sınıflandırılmamışları sınıflandır" Türkçe karakter hatası (encoding)** — Detay → ROADMAP.md [16]. (KV:3·U:5·BR:4·EA:2) | 14p — Bekliyor 🐛 |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 16) | **🐛 "Sınıflandırılmamışları sınıflandır" Türkçe karakter hatası (encoding)** — Tamamlandı: `AppListViewModel.kt` çift/bozuk UTF-8 (mojibake) `scripts/fix_encoding.py` + elle düzeltildi; `SettingsAppsSection.kt`, `SettingsStatsScreen.kt`, `AppNavigation.kt`, `SettingsComponents.kt` em-dash/BOM sorunları da giderildi (D265). | ✅ Tamamlandı |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 17) | **🐛 Birleşik arama kapsamı eksik (kategori/klasör/dosya)** — SearchDocument şeması tür alanı eksik. Detay → ROADMAP.md [17]. (KV:5·U:2·BR:3·EA:4) | 14p — Bekliyor 🐛 |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 18) | **AllAppsDrawer'da uygulama altına bildirim özeti** — Detay → ROADMAP.md [18]. (KV:3·U:3·BR:2·EA:3) | 11p — Bekliyor |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 19) | **Arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)** — Detay → ROADMAP.md [19]. (KV:4·U:2·BR:3·EA:3) | 12p — Bekliyor |

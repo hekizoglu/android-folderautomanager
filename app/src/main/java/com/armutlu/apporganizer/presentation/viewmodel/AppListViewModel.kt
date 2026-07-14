@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.viewmodel
+package com.armutlu.apporganizer.presentation.viewmodel
 
 import android.app.Application
 import android.content.Intent
@@ -53,7 +53,7 @@ class AppListViewModel @Inject constructor(
     private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
 ) : AndroidViewModel(application) {
 
-    // â”€â”€ Log sistemi â€” MUTLAKA ilk sÄ±rada olmalÄ± (init'ten Ã¶nce hazÄ±r) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ Log sistemi - MUTLAKA ilk sırada olmalı (init'ten önce hazır) â"€â"€â"€â"€â"€â"€â"€â"€â"€
     private val _liveDebugLogs = MutableStateFlow<List<String>>(emptyList())
     val liveDebugLogs: StateFlow<List<String>> = _liveDebugLogs.asStateFlow()
 
@@ -85,18 +85,18 @@ class AppListViewModel @Inject constructor(
         weeklyGoalDao.observeGoals(WeekUtils.currentWeekStartEpochDay())
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    // Widget Ã¶neri listesi â€” en Ã§ok kullanÄ±lan ve widget'Ä± olan uygulamalar
+    // Widget öneri listesi - en çok kullanılan ve widget'ı olan uygulamalar
     val widgetSuggestions: StateFlow<List<WidgetSuggestion>> = repository.getAllAppsFlow()
         .map { apps -> WidgetSuggestionEngine.getSuggestions(getApplication(), apps) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // LLM kategorize durumu â€” DeepSeek fallback
+    // LLM kategorize durumu - DeepSeek fallback
     private val _llmCategorizing = MutableStateFlow(false)
     val llmCategorizing: StateFlow<Boolean> = _llmCategorizing.asStateFlow()
     private val _llmProgress = MutableStateFlow("")
     val llmProgress: StateFlow<String> = _llmProgress.asStateFlow()
 
-    // SÄ±nÄ±flandÄ±rÄ±lmamÄ±ÅŸlarÄ± sÄ±nÄ±flandÄ±r yÃ¼kleme durumu (layout jump â†’ mail bug Ã¶nlemi)
+    // Sınıflandırılmamışları sınıflandır yükleme durumu (layout jump â†' mail bug önlemi)
     private val _classifyLoading = MutableStateFlow(false)
     val classifyLoading: StateFlow<Boolean> = _classifyLoading.asStateFlow()
     private val _classifyResult = MutableStateFlow("")
@@ -139,19 +139,19 @@ class AppListViewModel @Inject constructor(
      */
     private fun initializeScreen() {
         viewModelScope.launch {
-            // Uygulama veritabanÄ±nÄ± arka planda indir
+            // Uygulama veritabanını arka planda indir
             launch {
-                appendDebugLog("AppDatabase indirme baÅŸlÄ±yor...")
+                appendDebugLog("AppDatabase indirme başlıyor...")
                 val result = appDatabaseService.fetchAndCache()
                 when (result) {
                     is com.armutlu.apporganizer.data.remote.FetchResult.Success ->
                         appendDebugLog("âœ… AppDatabase: ${result.count} uygulama indirildi (v${result.version})")
                     is com.armutlu.apporganizer.data.remote.FetchResult.FromCache ->
-                        appendDebugLog("AppDatabase: cache'den ${result.count} uygulama yÃ¼klendi")
+                        appendDebugLog("AppDatabase: cache'den ${result.count} uygulama yüklendi")
                     is com.armutlu.apporganizer.data.remote.FetchResult.Error ->
-                        appendDebugLog("âš ï¸ AppDatabase indirilemedi: ${result.message}")
+                        appendDebugLog("âš ï¸ AppDatabase indirilemedi: ${result.message}")
                     com.armutlu.apporganizer.data.remote.FetchResult.NoCache ->
-                        appendDebugLog("âš ï¸ AppDatabase: cache yok, internet baÄŸlantÄ±sÄ±nÄ± kontrol edin")
+                        appendDebugLog("âš ï¸ AppDatabase: cache yok, internet bağlantısını kontrol edin")
                 }
             }
         }
@@ -161,7 +161,7 @@ class AppListViewModel @Inject constructor(
                 repository.ensureDefaultCategories()
                 migrateManualOverridesIfNeeded()
                 
-                // Get apps from repository â€” tÃ¼m filtre flow'larÄ±nÄ± combine et
+                // Get apps from repository - tüm filtre flow'larını combine et
                 combine(
                     repository.getAllAppsFlow(),
                     repository.getAllCategoriesFlow(),
@@ -250,7 +250,7 @@ class AppListViewModel @Inject constructor(
      * Sync installed apps from device
      */
     fun syncInstalledApps(installedApps: List<AppInfo>) {
-        appendDebugLog("syncInstalledApps: ${installedApps.size} uygulama tarandÄ±")
+        appendDebugLog("syncInstalledApps: ${installedApps.size} uygulama tarandı")
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
@@ -314,7 +314,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             val trimmedName = name.trim()
             if (trimmedName.isEmpty()) {
-                _screenState.value = _screenState.value.copy(error = "Kategori adÄ± boÅŸ olamaz")
+                _screenState.value = _screenState.value.copy(error = "Kategori adı boş olamaz")
                 return@launch
             }
             if (repository.findCategoryByName(trimmedName) != null) {
@@ -345,7 +345,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             val trimmedName = category.categoryName.trim()
             if (trimmedName.isEmpty()) {
-                _screenState.value = _screenState.value.copy(error = "Kategori adÄ± boÅŸ olamaz")
+                _screenState.value = _screenState.value.copy(error = "Kategori adı boş olamaz")
                 return@launch
             }
             val duplicate = repository.findCategoryByName(trimmedName)
@@ -360,7 +360,7 @@ class AppListViewModel @Inject constructor(
                 searchRepository.reindexCategory(oldCategory, updatedCategory)
             }.onFailure {
                 Timber.e(it, "Error updating category")
-                _screenState.value = _screenState.value.copy(error = "Kategori gÃ¼ncellenemedi")
+                _screenState.value = _screenState.value.copy(error = "Kategori güncellenemedi")
             }
         }
     }
@@ -409,7 +409,7 @@ class AppListViewModel @Inject constructor(
 
     /**
      * Seçilen benzer uygulamaları öneri kategorisine taşır. Kullanıcı satır bazlı
-     * checkbox ile seçim yapar — [selectedPackageNames] boşsa hiçbir şey yapılmaz.
+     * checkbox ile seçim yapar - [selectedPackageNames] boşsa hiçbir şey yapılmaz.
      */
     fun acceptSimilarCategorySuggestions(selectedPackageNames: Set<String> = _suggestedSimilarApps.value.map { it.packageName }.toSet()) {
         val apps = _suggestedSimilarApps.value.filter { it.packageName in selectedPackageNames }
@@ -644,8 +644,8 @@ class AppListViewModel @Inject constructor(
                 }
 
                 if (unclassifiedApps.isEmpty()) {
-                    _classifyResult.value = "TÃ¼m uygulamalar zaten sÄ±nÄ±flandÄ±rÄ±lmÄ±ÅŸ."
-                    appendDebugLog("â„¹ï¸ TÃ¼m uygulamalar zaten sÄ±nÄ±flandÄ±rÄ±lmÄ±ÅŸ.")
+                    _classifyResult.value = "Tüm uygulamalar zaten sınıflandırılmış."
+                    appendDebugLog("Tum uygulamalar zaten siniflandirilmis.")
                     _screenState.value = _screenState.value.copy(isRefreshing = false)
                     _classifyLoading.value = false
                     return@launch
@@ -662,7 +662,7 @@ class AppListViewModel @Inject constructor(
 
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
                 _classifyResult.value = "$classified / ${unclassifiedApps.size} uygulama kategorilendi."
-                appendDebugLog("âœ… AI sÄ±nÄ±flandÄ±rma: $classified/${unclassifiedApps.size} uygulama kategorilendi")
+                appendDebugLog("âœ… AI sınıflandırma: $classified/${unclassifiedApps.size} uygulama kategorilendi")
             } catch (e: Exception) {
                 Timber.e(e, "Error classifying apps")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
@@ -683,14 +683,14 @@ class AppListViewModel @Inject constructor(
             try {
                 val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).firstOrNull() ?: emptyList()
                 if (otherAppsList.isEmpty()) {
-                    _llmProgress.value = "Diger klasoru bos â€” kategorize edilecek uygulama yok."
+                    _llmProgress.value = "Diger klasoru bos - kategorize edilecek uygulama yok."
                     appendDebugLog("LLM: Diger klasoru bos.")
                     return@launch
                 }
                 _llmProgress.value = "Hazirlaniyor (${otherAppsList.size} uygulama)..."
                 appendDebugLog("LLM kategorize basliyor: ${otherAppsList.size} uygulama")
                 val packageNames = otherAppsList.map { it.packageName }
-                // Batch'lere bÃ¶lerek ilerleme raporla
+                // Batch'lere bölerek ilerleme raporla
                 val results = mutableMapOf<String, String>()
                 packageNames.chunked(15).forEachIndexed { idx, batch ->
                     _llmProgress.value = "Kategorize ediliyor: ${(idx * 15).coerceAtMost(packageNames.size)}/${packageNames.size}"
@@ -775,9 +775,9 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
-                appendDebugLog("TÃ¼m kategoriler sÄ±fÄ±rlanÄ±yor...")
+                appendDebugLog("Tüm kategoriler sıfırlanıyor...")
                 repository.resetAllCategories()
-                appendDebugLog("Kategoriler sÄ±fÄ±rlandÄ± â€” yeniden sÄ±nÄ±flandÄ±rÄ±lÄ±yor...")
+                appendDebugLog("Kategoriler sıfırlandı - yeniden sınıflandırılıyor...")
                 val apps = _screenState.value.apps
                 val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs
                     .isManufacturerClassifyEnabled(getApplication())
@@ -787,7 +787,7 @@ class AppListViewModel @Inject constructor(
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
                     }
                 }
-                appendDebugLog("âœ… ${apps.size} uygulama yeniden sÄ±nÄ±flandÄ±rÄ±ldÄ±")
+                appendDebugLog("âœ… ${apps.size} uygulama yeniden sınıflandırıldı")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
             } catch (e: Exception) {
                 Timber.e(e, "Error resetting and reclassifying")
@@ -836,8 +836,8 @@ class AppListViewModel @Inject constructor(
                 repository.clearAllNotificationEvents()
                 context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                     .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
-                Timber.d("Privacy reset: tÃ¼m kullanÄ±m verisi temizlendi")
-            }.onFailure { Timber.e(it, "resetAllPrivacyData hatasÄ±") }
+                Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
+            }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
         }
     }
 
