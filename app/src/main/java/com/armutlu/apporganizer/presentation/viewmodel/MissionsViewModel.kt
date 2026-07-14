@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.utils.MissionPrefs
+import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,6 +42,9 @@ class MissionsViewModel @Inject constructor(
         val totalStars: Int = 0,
         val daily: List<MissionUi> = emptyList(),
         val weekly: List<MissionUi> = emptyList(),
+        val taskScore: Int = 0,
+        val taskScoreDelta: Int = 0,
+        val taskScoreLastEvent: String = "",
         val celebrateStars: Int? = null, // yeni kazanilan yildiz — tebrik karti tetikler
         val loading: Boolean = true,
     )
@@ -104,10 +108,14 @@ class MissionsViewModel @Inject constructor(
             mission.toUi(completed)
         }
 
+        val taskScore = TaskScoreManager.getSnapshot(context)
         return MissionsUiState(
             totalStars = MissionPrefs.getTotalStars(context),
             daily = daily,
             weekly = weekly,
+            taskScore = taskScore.totalScore,
+            taskScoreDelta = taskScore.lastDelta,
+            taskScoreLastEvent = taskScore.lastEventLabel,
             celebrateStars = newStars.takeIf { it > 0 },
             loading = false,
         )

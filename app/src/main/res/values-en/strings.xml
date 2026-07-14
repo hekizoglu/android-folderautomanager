@@ -114,9 +114,14 @@
     <string name="onb_welcome_desc">Your apps get sorted into smart folders in seconds, powered by a 3,700+ app category database. Weekly digital life reports, smart suggestions and one search box that finds everything. All your data stays on your device.</string>
     <string name="onb_welcome_btn">Get Started</string>
 
-    <string name="onb_restore_title">Have a Previous Backup?</string>
-    <string name="onb_restore_desc">If you\'ve used AppOrganizer before, you can restore your category settings.</string>
-    <string name="onb_restore_btn">Restore from Backup</string>
+    <string name="onb_restore_title">Restore from Backup?</string>
+    <string name="onb_restore_desc">Default launcher is selected. If you have a JSON backup from your previous phone, you can restore it now.</string>
+    <string name="onb_restore_btn">Choose Backup File</string>
+    <string name="onb_restore_why">Restoring a backup brings category assignments, hidden state and supported settings to this device.</string>
+    <string name="onb_restore_card_title">Fresh setup or your old layout?</string>
+    <string name="onb_restore_card_desc">If you do not have a backup, skip this step. You can restore later from Settings &gt; About and Backup.</string>
+    <string name="onb_restore_loading">Restoring backup...</string>
+    <string name="onb_restore_empty_file">Backup file is empty or unreadable</string>
 
     <string name="onb_query_title">App List Permission</string>
     <string name="onb_query_desc">This permission is required to view and organize your apps.</string>
@@ -204,7 +209,6 @@
     <string name="onb_setlauncher_desc">Set AppOrganizer as your default launcher.</string>
     <string name="onb_setlauncher_why">The home screen won\'t show without setting it as launcher.</string>
     <string name="onb_setlauncher_btn">Set as Default</string>
-
     <string name="onb_classify_title">How Should We Classify?</string>
     <string name="onb_classify_desc">We can group your apps by category or by manufacturer.</string>
     <string name="onb_classify_btn">Continue</string>
@@ -420,6 +424,8 @@
     <!-- D257: Missions and star system (gamification) -->
     <string name="missions_screen_title">Missions</string>
     <string name="missions_total_stars">Total stars</string>
+    <string name="missions_task_score_value">Task score: %1$d</string>
+    <string name="missions_task_score_delta">Last action: %1$s (%2$s)</string>
     <string name="missions_daily_section">Today\'s Missions</string>
     <string name="missions_weekly_section">Weekly Missions</string>
     <string name="missions_mark_done">Mark as done</string>

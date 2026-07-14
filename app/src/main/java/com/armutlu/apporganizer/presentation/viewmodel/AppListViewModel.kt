@@ -10,6 +10,7 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.WidgetSuggestion
 import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.utils.WeekUtils
@@ -273,13 +274,18 @@ class AppListViewModel @Inject constructor(
     /**
      * Update app category
      */
-    fun updateAppCategory(packageName: String, categoryId: String) {
+    fun updateAppCategory(
+        packageName: String,
+        categoryId: String,
+        scoreEvent: TaskScoreManager.EventType? = null,
+    ) {
         viewModelScope.launch {
             try {
                 val oldCategoryId = repository.getAppByPackageName(packageName)?.categoryId
                 repository.updateAppCategory(packageName, categoryId)
                 AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                scoreEvent?.let { TaskScoreManager.record(getApplication(), it) }
                 if (oldCategoryId != null) {
                     prepareSimilarCategorySuggestions(packageName, oldCategoryId, categoryId)
                 }
@@ -297,16 +303,22 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.confirmClassification(packageName)
             repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
         }
     }
 
     fun correctPendingClassification(packageName: String, categoryId: String) {
-        updateAppCategory(packageName, categoryId)
+        updateAppCategory(
+            packageName = packageName,
+            categoryId = categoryId,
+            scoreEvent = TaskScoreManager.EventType.ClassificationCorrected,
+        )
     }
 
     fun skipPendingClassification(packageName: String) {
         viewModelScope.launch {
             repository.skipClassificationReview(packageName, days = 7)
+            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationSnoozed)
         }
     }
 
@@ -426,6 +438,11 @@ class AppListViewModel @Inject constructor(
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
             }
             AppPrefs.addAcceptedOverridePattern(getApplication(), categoryId, packageNames)
+            TaskScoreManager.record(
+                context = getApplication(),
+                eventType = TaskScoreManager.EventType.SimilarAppsAccepted,
+                weight = packageNames.size,
+            )
             clearSimilarCategorySuggestions()
         }
     }
@@ -444,18 +461,25 @@ class AppListViewModel @Inject constructor(
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
             }
             AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
+            TaskScoreManager.record(
+                context = getApplication(),
+                eventType = TaskScoreManager.EventType.FolderSuggestionAccepted,
+                weight = suggestion.packageNames.size.coerceAtLeast(1),
+            )
             _folderSuggestionRefresh.value += 1
         }
     }
 
     fun dismissFolderSuggestion(suggestionId: String) {
         AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
+        TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionDismissed)
         _folderSuggestionRefresh.value += 1
     }
 
     fun snoozeFolderSuggestion(suggestionId: String) {
         val until = System.currentTimeMillis() + 7L * 24L * 60L * 60L * 1000L
         AppPrefs.snoozeFolderSuggestion(getApplication(), suggestionId, until)
+        TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionSnoozed)
         _folderSuggestionRefresh.value += 1
     }
 

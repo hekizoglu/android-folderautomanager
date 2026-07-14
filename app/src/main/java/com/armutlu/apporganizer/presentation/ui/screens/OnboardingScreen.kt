@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.screens
 import android.app.role.RoleManager
 import android.content.Intent
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,7 +48,10 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import java.io.BufferedReader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun OnboardingScreen(
@@ -58,7 +62,7 @@ fun OnboardingScreen(
     // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix).
     // D240: varsayilan launcher secimi sistemin gorevi YENIDEN baslatmasina yol acabiliyor;
     // yeni activity kaydinda saveable state korunmaz — adim SharedPrefs'ten geri yuklenir.
-    var stepIndex by rememberSaveable { mutableStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 5)) }
+    var stepIndex by rememberSaveable { mutableStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 6)) }
     LaunchedEffect(stepIndex) { AppPrefs.setOnboardingStep(context, stepIndex) }
     // Varsayilan launcher sorusu EN SONDA sorulur (kullanici talebi, D233) —
     // tum ayarlar bitmeden kullaniciya kalici karar dayatilmaz.
@@ -68,6 +72,7 @@ fun OnboardingScreen(
         OnboardingStep.QUICK_SETTINGS,
         OnboardingStep.ORGANIZATION_PREVIEW,
         OnboardingStep.SET_LAUNCHER,
+        OnboardingStep.RESTORE_BACKUP,
         OnboardingStep.DONE,
     )
     val currentStep by rememberUpdatedState(steps[stepIndex])
@@ -76,6 +81,7 @@ fun OnboardingScreen(
     var launcherSet by remember { mutableStateOf(isDefaultLauncherApp(context)) }
     var selectedTheme by rememberSaveable { mutableStateOf(AppTheme.TEAL) }
     var selectedFont by rememberSaveable { mutableStateOf(AppFont.DEFAULT) }
+    var restoreLoading by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferences(context) }
 
@@ -89,6 +95,41 @@ fun OnboardingScreen(
         if (launcherSet && !launcherStepAdvanced) {
             launcherStepAdvanced = true
             stepIndex++
+        }
+    }
+    val backupFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            restoreLoading = true
+            runCatching {
+                val json = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)
+                        ?.bufferedReader()
+                        ?.use(BufferedReader::readText)
+                } ?: error(context.getString(R.string.onb_restore_empty_file))
+                val result = viewModel.importBackup(context, json)
+                if (result.success) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.onb_restore_success, result.updatedCount),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    stepIndex++
+                } else {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.onb_restore_fail, result.error ?: "unknown"),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }.onFailure { error ->
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.onb_restore_read_fail, error.message ?: "unknown"),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            restoreLoading = false
         }
     }
 
@@ -211,6 +252,10 @@ fun OnboardingScreen(
                 Spacer(Modifier.height(8.dp))
                 OnboardingOrganizationPreview(viewModel)
             }
+            if (currentStep == OnboardingStep.RESTORE_BACKUP) {
+                Spacer(Modifier.height(8.dp))
+                OnboardingRestoreBackupCard(restoreLoading = restoreLoading)
+            }
 
             Spacer(Modifier.height(16.dp))
 
@@ -247,6 +292,11 @@ fun OnboardingScreen(
 
                             OnboardingStep.QUICK_SETTINGS -> stepIndex++
                             OnboardingStep.ORGANIZATION_PREVIEW -> stepIndex++
+                            OnboardingStep.RESTORE_BACKUP -> {
+                                if (!restoreLoading) {
+                                    backupFileLauncher.launch(arrayOf("application/json", "text/*", "application/octet-stream"))
+                                }
+                            }
 
                             OnboardingStep.DONE -> {
                                 AppPrefs.markOnboardingDone(context)
@@ -260,6 +310,7 @@ fun OnboardingScreen(
                 Text(
                     text = when {
                         currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
+                        currentStep == OnboardingStep.RESTORE_BACKUP && restoreLoading -> stringResource(R.string.onb_restore_loading)
                         else -> stringResource(currentStep.buttonLabelRes)
                     },
                     fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
@@ -357,6 +408,40 @@ private fun OnboardingOrganizationPreview(viewModel: AppListViewModel) {
                 color = Color.White.copy(0.72f),
                 fontSize = 13.sp
             )
+        }
+    }
+}
+
+@Composable
+private fun OnboardingRestoreBackupCard(restoreLoading: Boolean) {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White.copy(0.08f))
+            .border(1.dp, Color.White.copy(0.14f), RoundedCornerShape(18.dp))
+            .padding(16.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = stringResource(R.string.onb_restore_card_title),
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.onb_restore_card_desc),
+                color = Color.White.copy(0.72f),
+                fontSize = 13.sp,
+                lineHeight = 18.sp
+            )
+            if (restoreLoading) {
+                Text(
+                    text = stringResource(R.string.onb_restore_loading),
+                    color = Color(0xFF26C6DA),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }

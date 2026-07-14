@@ -114,9 +114,14 @@
     <string name="onb_welcome_desc">Uygulamaların saniyeler içinde otomatik klasörlenir: 3700+ uygulamalık akıllı kategori veritabanı seni tanır. Haftalık dijital yaşam raporu, akıllı öneriler ve her şeyi bulan tek arama kutusu seni bekliyor. Tüm verilerin cihazında kalır.</string>
     <string name="onb_welcome_btn">Başla</string>
 
-    <string name="onb_restore_title">Önceki Yedeğiniz Var Mı?</string>
-    <string name="onb_restore_desc">Daha önce AppOrganizer kullandıysanız, kategori ayarlarınızı geri yükleyebilirsiniz.</string>
-    <string name="onb_restore_btn">Yedekten Geri Yükle</string>
+    <string name="onb_restore_title">Yedekten Dönülsün mü?</string>
+    <string name="onb_restore_desc">Varsayılan launcher seçildi. Eski telefonundan aldığın JSON yedek varsa şimdi geri yükleyebilirsin.</string>
+    <string name="onb_restore_btn">Yedek Dosyası Seç</string>
+    <string name="onb_restore_why">Yedek geri yüklenirse kategori atamaları, gizleme durumu ve desteklenen ayarlar bu cihaza taşınır.</string>
+    <string name="onb_restore_card_title">Yeni kurulum mu, eski düzen mi?</string>
+    <string name="onb_restore_card_desc">Yedeğin yoksa bu adımı atlayabilirsin. Sonradan Ayarlar &gt; Hakkında ve Yedekleme ekranından da geri yükleme yapabilirsin.</string>
+    <string name="onb_restore_loading">Yedek yükleniyor...</string>
+    <string name="onb_restore_empty_file">Yedek dosyası boş veya okunamadı</string>
 
     <string name="onb_query_title">Uygulama Listesi İzni</string>
     <string name="onb_query_desc">Uygulamalarınızı görmek ve düzenlemek için bu izin gereklidir.</string>
@@ -184,7 +189,6 @@
     <string name="onb_setlauncher_desc">AppOrganizer\'ı varsayılan launcher olarak ayarlayın.</string>
     <string name="onb_setlauncher_why">Launcher olarak ayarlanmadan ana ekran gösterilmez.</string>
     <string name="onb_setlauncher_btn">Varsayılan Yap</string>
-
     <string name="onb_classify_title">Nasıl Sınıflandıralım?</string>
     <string name="onb_classify_desc">Uygulamalarını kategoriye veya üreticiye göre gruplayabiliriz.</string>
     <string name="onb_classify_btn">Devam Et</string>
@@ -422,6 +426,8 @@
     <!-- D257: Gorevler ve yildiz sistemi (gamification) -->
     <string name="missions_screen_title">Görevler</string>
     <string name="missions_total_stars">Toplam yıldız</string>
+    <string name="missions_task_score_value">Görev puanı: %1$d</string>
+    <string name="missions_task_score_delta">Son işlem: %1$s (%2$s)</string>
     <string name="missions_daily_section">Bugünün Görevleri</string>
     <string name="missions_weekly_section">Haftalık Görevler</string>
     <string name="missions_mark_done">Tamamladım</string>

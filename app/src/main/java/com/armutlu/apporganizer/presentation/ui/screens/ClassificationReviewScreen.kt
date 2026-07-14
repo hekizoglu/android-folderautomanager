@@ -90,12 +90,18 @@ fun ClassificationReviewScreen(
                                 Spacer(Modifier.height(12.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Button(onClick = { viewModel.confirmPendingClassification(app.packageName) }) {
-                                        Text("Onayla")
+                                        Text("Direkt Onayla")
                                     }
                                     OutlinedButton(onClick = { viewModel.skipPendingClassification(app.packageName) }) {
                                         Text("7 gun ertele")
                                     }
                                 }
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    "Direkt Onayla: uygulama onerilen kategoriye tasinir; istersen daha sonra klasorden tekrar degistirebilirsin.",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                                 Spacer(Modifier.height(10.dp))
                                 Text("Duzelt:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

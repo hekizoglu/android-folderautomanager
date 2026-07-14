@@ -58,6 +58,14 @@ internal enum class OnboardingStep(
         buttonLabelRes = R.string.onb_setlauncher_btn,
         whyRes = R.string.onb_setlauncher_why
     ),
+    RESTORE_BACKUP(
+        titleRes = R.string.onb_restore_title,
+        descriptionRes = R.string.onb_restore_desc,
+        icon = Icons.Default.Restore,
+        buttonLabelRes = R.string.onb_restore_btn,
+        whyRes = R.string.onb_restore_why,
+        isSkippable = true
+    ),
     THEME_SELECT(
         titleRes = R.string.onb_theme_title,
         descriptionRes = R.string.onb_theme_desc,

@@ -2,6 +2,21 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 270 - 2026-07-14 [ROADMAP #14 Direkt Onayla açıklaması]
+**Yapılanlar:** ROADMAP'ten yüksek puanlı/kolay madde seçildi: #14 `"Direkt Onayla" butonuna açıklama eklensin` (11p, düşük risk). `ClassificationReviewScreen.kt` içinde "Onayla" butonu "Direkt Onayla" olarak netleştirildi ve buton grubunun altına sade açıklama eklendi: uygulamanın önerilen kategoriye taşınacağı ve sonradan klasörden tekrar değiştirilebileceği açıklandı.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. ROADMAP #14 Döngü 270 olarak tamamlandı işaretlendi.
+**Sonraki:** Bekleyen kolay adaylar: #7 Pulse Clock insight/saat düzeni veya #18 AllApps bildirim özeti.
+
+## Döngü 271 - 2026-07-14 [İlk kurulumda launcher sonrası yedek sorusu]
+**Yapılanlar:** Onboarding akışında varsayılan launcher adımından hemen sonra `RESTORE_BACKUP` adımı eklendi. Kullanıcı JSON yedek dosyası seçerse mevcut `importBackup` akışıyla geri yükleme çalışıyor; yedeği yoksa adım atlanabiliyor. Türkçe/İngilizce metinler ve yükleme/başarı/hata durumları eklendi.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı.
+**Sonraki:** Emülatörde ilk kurulum sıfırlanarak launcher seçimi sonrası dosya seçici ve atlama akışı görsel olarak doğrulanabilir.
+
+## Döngü 272 - 2026-07-14 [ROADMAP #15 görev puanlama motoru]
+**Yapılanlar:** `TaskScoreManager` eklendi; toplam görev puanı, son delta, son olay ve olay sayaçları SharedPreferences ile tutuluyor. Sınıflandırma onayı/düzeltmesi/ertelemesi, klasör önerisi kabul/ertele/gizle ve benzer uygulama önerisi kabul aksiyonları durum bazlı artan/azalan puan yazıyor. Görevler ekranı yıldız toplamına ek olarak görev puanı ve son işlem deltasını gösteriyor.
+**Doğrulama:** Kullanıcı talebiyle build çalıştırılmadı. Statik kapsam kontrolü ve `git diff --check` yapılacak; compile doğrulaması sonraki build turuna bırakıldı.
+**Sonraki:** Build turunda `compileDebugKotlin -PskipGoogleServices` ile Compose/string/import doğrulaması yapılmalı.
+
 ## Döngü 265 - 2026-07-14 [HomeTickerRow: donma + swipe bug fix (Roadmap #5, #6)]
 **Yapılanlar:** `HomeTickerRow.kt` — art arda tıklamada donma (700ms debounce, `lastClickAt`) ve swipe çalışmama (tap+swipe tek `awaitEachGesture` döngüsünde birleştirildi, `down.consume()` ile üst `HorizontalPager`'ın jesti çalması engellendi) düzeltildi.
 **Bug:** Kök neden — ayrı `pointerInput` blokları (`detectTapGestures` + `detectHorizontalDragGestures`) ana ekran `HorizontalPager`'ıyla nested-scroll çakışması yaşıyordu, swipe hiç tetiklenmiyordu; tıklamada debounce yoktu.

@@ -62,7 +62,14 @@ fun MissionsScreen(
         title = stringResource(R.string.missions_screen_title),
         onNavigateBack = onNavigateBack,
     ) {
-        item { StarsHeader(totalStars = uiState.totalStars) }
+        item {
+            StarsHeader(
+                totalStars = uiState.totalStars,
+                taskScore = uiState.taskScore,
+                taskScoreDelta = uiState.taskScoreDelta,
+                taskScoreLastEvent = uiState.taskScoreLastEvent,
+            )
+        }
 
         item {
             AnimatedVisibility(
@@ -104,7 +111,12 @@ fun MissionsScreen(
 }
 
 @Composable
-private fun StarsHeader(totalStars: Int) {
+private fun StarsHeader(
+    totalStars: Int,
+    taskScore: Int,
+    taskScoreDelta: Int,
+    taskScoreLastEvent: String,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -130,6 +142,24 @@ private fun StarsHeader(totalStars: Int) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
             )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = stringResource(R.string.missions_task_score_value, taskScore),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            if (taskScoreDelta != 0 && taskScoreLastEvent.isNotBlank()) {
+                Text(
+                    text = stringResource(
+                        R.string.missions_task_score_delta,
+                        taskScoreLastEvent,
+                        if (taskScoreDelta > 0) "+$taskScoreDelta" else taskScoreDelta.toString(),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                )
+            }
         }
     }
 }
