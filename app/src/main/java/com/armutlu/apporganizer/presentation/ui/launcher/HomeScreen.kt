@@ -115,6 +115,7 @@ fun HomeScreen(
     val allApps by viewModel.allApps.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
+    val filesIndexState by viewModel.filesIndexState.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
     var widgetAreaEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
     var widgetAutoResize by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)) }
@@ -645,6 +646,8 @@ fun HomeScreen(
                         searchResults = searchResults,
                         onQueryChange = viewModel::setSearchQuery,
                         onEnableContactsSource = viewModel::enableContactsSearchSource,
+                        onEnableFilesSource = viewModel::enableFilesSearchSource,
+                        filesIndexState = filesIndexState,
                         homeResumeTrigger = homeResumeTrigger,
                         // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
                         resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
@@ -1109,7 +1112,9 @@ fun HomeScreen(
                 onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
                 categories = categories,
                 searchResults = searchResults,
-                recentNotificationCounts = recentNotificationCounts
+                recentNotificationCounts = recentNotificationCounts,
+                filesIndexState = filesIndexState,
+                onEnableFilesSource = viewModel::enableFilesSearchSource
             )
         }
 

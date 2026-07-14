@@ -567,6 +567,32 @@ object AppPrefs {
     fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, false)
     fun setSearchSourceFilesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_FILES, v).apply()
 
+    // P0.3: Dosya indeksi kalıcı durumu — FileIndexState.Ready/Failed için Settings ekranı arasında hayatta kalır
+    const val KEY_FILE_INDEX_ITEM_COUNT = "file_index_item_count"
+    const val KEY_FILE_INDEX_LAST_INDEXED_AT = "file_index_last_indexed_at"
+    const val KEY_FILE_INDEX_FAILURE_REASON = "file_index_failure_reason"
+
+    fun getFileIndexItemCount(context: Context) = prefs(context).getInt(KEY_FILE_INDEX_ITEM_COUNT, 0)
+    fun getFileIndexLastIndexedAt(context: Context) = prefs(context).getLong(KEY_FILE_INDEX_LAST_INDEXED_AT, 0L)
+    fun getFileIndexFailureReason(context: Context): String? = prefs(context).getString(KEY_FILE_INDEX_FAILURE_REASON, null)
+
+    fun setFileIndexSuccess(context: Context, itemCount: Int, lastIndexedAt: Long) =
+        prefs(context).edit()
+            .putInt(KEY_FILE_INDEX_ITEM_COUNT, itemCount)
+            .putLong(KEY_FILE_INDEX_LAST_INDEXED_AT, lastIndexedAt)
+            .putString(KEY_FILE_INDEX_FAILURE_REASON, null)
+            .apply()
+
+    fun setFileIndexFailure(context: Context, reason: String) =
+        prefs(context).edit().putString(KEY_FILE_INDEX_FAILURE_REASON, reason).apply()
+
+    fun clearFileIndexState(context: Context) =
+        prefs(context).edit()
+            .remove(KEY_FILE_INDEX_ITEM_COUNT)
+            .remove(KEY_FILE_INDEX_LAST_INDEXED_AT)
+            .remove(KEY_FILE_INDEX_FAILURE_REASON)
+            .apply()
+
     fun getSearchRankingProfile(context: Context): SearchRankingProfile =
         runCatching { SearchRankingProfile.valueOf(prefs(context).getString(KEY_SEARCH_RANKING_PROFILE, null) ?: "") }
             .getOrDefault(SearchRankingProfile.APPS_FIRST)

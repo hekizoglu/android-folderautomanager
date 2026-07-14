@@ -4,6 +4,7 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
@@ -879,6 +880,11 @@ internal fun HomeAppSearchBar(
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     onQueryChange: (String) -> Unit = {},
     onEnableContactsSource: () -> Unit = {},
+    onEnableFilesSource: () -> Unit = {},
+    // P0.3: dosya kaynağı izin/indeks durumu — PermissionRequired iken "izin gerekli" satırı gösterilir,
+    // sahte "0 sonuç" izlenimi verilmez.
+    filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
+        com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
     homeResumeTrigger: Int = 0,
     // Çubuk alttayken sonuçlar ÜSTTE (yukarı doğru) açılır — sayfa kaymaz (D258)
     resultsAbove: Boolean = false
@@ -960,6 +966,20 @@ internal fun HomeAppSearchBar(
         }
     }
 
+    // P0.3: dosya izinleri (READ_MEDIA_* / READ_EXTERNAL_STORAGE) + istek launcher'ı —
+    // "Dosya araması için izin gerekli" satırına dokununca doğrudan sistem izin diyaloğu açılır.
+    var filesPermDeniedSession by remember { mutableStateOf(false) }
+    val filesPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.any { it }) {
+            AppPrefs.setSearchSourceFilesEnabled(context, true)
+            onEnableFilesSource() // FilesIndexer.indexAll() arka planda başlar (SearchRepository.enableFilesSource)
+        } else {
+            filesPermDeniedSession = true
+        }
+    }
+
     // Cache'i allApps değişince güncelle
     LaunchedEffect(allApps) {
         withContext(Dispatchers.IO) { SearchCache.warmApps(allApps) }
@@ -1014,6 +1034,11 @@ internal fun HomeAppSearchBar(
     // İzin yoksa "Kişiler" grubunda izin kısayolu göster (kullanıcı kaynağı kapatmadıysa)
     val showContactsPermissionHint = query.isNotBlank() && !contactsPermGranted &&
         !contactsOptedOut && !contactsPermDeniedSession
+    // P0.3: dosya kaynağı açık ama izin yoksa "izin gerekli" göster — Ready değilken
+    // sahte "0 sonuç" izlenimi verilmez (spec madde 4). Aksiyon Ayarlar > Arama'ya yönlendirir
+    // (izin isteği zaten SearchSettingsScreen'deki ContextualPermissionDialog akışında var).
+    val showFilesPermissionHint = query.isNotBlank() && filesOn && !filesPermDeniedSession &&
+        filesIndexState is com.armutlu.apporganizer.domain.models.FileIndexState.PermissionRequired
 
     // Web/Play Store fallback — sorgu >= 2 karakter, tüm kaynaklar sıfır sonuç verince gösterilir (Ayarlar > Arama'dan kapatılabilir)
     var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
@@ -1029,7 +1054,8 @@ internal fun HomeAppSearchBar(
     }
     val showWebFallback = webFallbackEnabled && query.trim().length >= 2 &&
         appResults.isEmpty() && folderResults.isEmpty() && contactResults.isEmpty() &&
-        settingResults.isEmpty() && fileResults.isEmpty() && !showContactsPermissionHint
+        settingResults.isEmpty() && fileResults.isEmpty() &&
+        !showContactsPermissionHint && !showFilesPermissionHint
 
     // Sorguyu ViewModel'e ilet — FTS5 çok-kaynak araması (dosyalar) debounce ile orada çalışır
     LaunchedEffect(query) { onQueryChange(query) }
@@ -1083,7 +1109,8 @@ internal fun HomeAppSearchBar(
     val searchResultsSection: @Composable () -> Unit = {
         // Sonuç listesi — kaynak grupları: Uygulamalar / Klasörler / Kişiler / Dosyalar (S1)
         val hasAnyResult = appResults.isNotEmpty() || folderResults.isNotEmpty() ||
-            settingResults.isNotEmpty() || contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint ||
+            settingResults.isNotEmpty() || contactResults.isNotEmpty() || fileResults.isNotEmpty() ||
+            showContactsPermissionHint || showFilesPermissionHint ||
             showWebFallback
         if (hasAnyResult && !isDragging) {
             // Tek grup varsa başlık gereksiz kalabalık — yalnızca çoklu grupta göster
@@ -1092,7 +1119,7 @@ internal fun HomeAppSearchBar(
                 folderResults.isNotEmpty(),
                 settingResults.isNotEmpty(),
                 contactResults.isNotEmpty() || showContactsPermissionHint,
-                fileResults.isNotEmpty()
+                fileResults.isNotEmpty() || showFilesPermissionHint
             ).count { it } > 1
             Spacer(Modifier.height(4.dp))
             GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.18f) {
@@ -1390,10 +1417,58 @@ internal fun HomeAppSearchBar(
                         }
                     }
 
+                    // P0.3: dosya kaynağı açık ama Android izni yok — "0 sonuç" yerine izin kısayolu
+                    if (showFilesPermissionHint) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty() ||
+                            settingResults.isNotEmpty() || contactResults.isNotEmpty() || showContactsPermissionHint
+                        ) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        HomeSearchGroupHeader(label = "Dosyalar", icon = Icons.Default.Description)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        arrayOf(
+                                            android.Manifest.permission.READ_MEDIA_IMAGES,
+                                            android.Manifest.permission.READ_MEDIA_VIDEO,
+                                            android.Manifest.permission.READ_MEDIA_AUDIO,
+                                        )
+                                    } else {
+                                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    }
+                                    filesPermLauncher.launch(permissions)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Description, contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.70f), modifier = Modifier.size(18.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.home_search_files_permission_required), color = Color.White.copy(alpha = 0.90f),
+                                    fontSize = 14.sp)
+                                Text(stringResource(R.string.home_search_files_permission_required_desc),
+                                    color = Color.White.copy(alpha = 0.45f), fontSize = 11.sp)
+                            }
+                        }
+                    }
+
                     // Dosya sonuçları — FTS5 indeksinden (kaynak Ayarlar > Arama'dan kapatılabilir)
                     if (fileResults.isNotEmpty()) {
                         if (appResults.isNotEmpty() || folderResults.isNotEmpty() ||
-                            settingResults.isNotEmpty() || contactResults.isNotEmpty() || showContactsPermissionHint
+                            settingResults.isNotEmpty() || contactResults.isNotEmpty() ||
+                            showContactsPermissionHint || showFilesPermissionHint
                         ) {
                             HorizontalDivider(
                                 Modifier.padding(horizontal = 16.dp),

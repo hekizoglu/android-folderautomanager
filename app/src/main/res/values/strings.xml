@@ -439,6 +439,21 @@
     <string name="search_settings_web_fallback_title">Web ve Play Store Fallback</string>
     <string name="search_settings_web_fallback_desc">Sonuç bulunamayınca web/Play Store araması öner</string>
     <string name="search_settings_stats_title">Arama İstatistikleri</string>
+
+    <!-- SearchSettingsScreen — P0.3: Dosya arama izin/indeks durumu -->
+    <string name="search_settings_files_title">Dosya Adları</string>
+    <string name="search_settings_files_subtitle_disabled">Varsayılan kapalı. Medya/indirme adları için Android dosya izni ister; içerik okunmaz</string>
+    <string name="search_settings_files_subtitle_permission_required">İzin gerekli — dosya adları henüz indekslenmedi</string>
+    <string name="search_settings_files_subtitle_indexing">İndeksleniyor…</string>
+    <string name="search_settings_files_subtitle_ready">%1$d öğe indekslendi · Son indeks: %2$s</string>
+    <string name="search_settings_files_subtitle_failed">İndeksleme başarısız oldu</string>
+    <string name="search_settings_files_permission_required_hint">Dosya araması için Android izni gerekiyor. Vermezsen dosya sonuçları gösterilmez.</string>
+    <string name="search_settings_files_grant_permission_action">İzin Ver</string>
+    <string name="search_settings_files_indexing_hint">Dosya adları arka planda taranıyor, uygulamayı kullanmaya devam edebilirsin.</string>
+    <string name="search_settings_files_failed_hint">Dosya indeksleme tamamlanamadı. Tekrar deneyebilirsin.</string>
+    <string name="search_settings_files_reindex_action">Yeniden indeksle</string>
+    <string name="home_search_files_permission_required">Dosya araması için izin gerekli</string>
+    <string name="home_search_files_permission_required_desc">Dokunup Android dosya izni ver</string>
     <string name="search_settings_stats_desc">İstatistikler yalnızca cihazında tutulur; aranan metin kaydedilmez.</string>
 
     <!-- D257: Gorevler ve yildiz sistemi (gamification) -->

@@ -417,6 +417,22 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /**
+     * P0.3: Ana ekran aramasında dosya izni verilince (HomeAppSearchBar "izin ver" kısayolu)
+     * dosya kaynağının FTS indeksini arka planda başlatır.
+     * AppPrefs.setSearchSourceFilesEnabled(true) çağrı yerinde (HomeAppSearchBar) yapılır.
+     */
+    fun enableFilesSearchSource() {
+        viewModelScope.launch {
+            runCatching { searchRepository.enableFilesSource() }
+                .onFailure { Timber.w(it, "Dosya arama kaynağı etkinleştirilemedi") }
+        }
+    }
+
+    /** P0.3: Dosya kaynağının izin/indeks durumu — HomeAppSearchBar/AllAppsDrawer bu duruma göre render eder. */
+    val filesIndexState: StateFlow<com.armutlu.apporganizer.domain.models.FileIndexState> =
+        searchRepository.filesIndexState
+
     /** Paketi launcher üzerinden başlatır ve kullanım sayacını artırır. */
     fun launchApp(context: Context, packageName: String) {
         try {

@@ -437,6 +437,21 @@
     <string name="search_settings_web_fallback_title">Web and Play Store Fallback</string>
     <string name="search_settings_web_fallback_desc">Suggest a web/Play Store search when no results are found</string>
     <string name="search_settings_stats_title">Search Statistics</string>
+
+    <!-- SearchSettingsScreen — P0.3: File search permission/index state -->
+    <string name="search_settings_files_title">File Names</string>
+    <string name="search_settings_files_subtitle_disabled">Off by default. Asks for Android file permission for media/download names; content is not read</string>
+    <string name="search_settings_files_subtitle_permission_required">Permission required — file names are not indexed yet</string>
+    <string name="search_settings_files_subtitle_indexing">Indexing…</string>
+    <string name="search_settings_files_subtitle_ready">%1$d items indexed · Last indexed: %2$s</string>
+    <string name="search_settings_files_subtitle_failed">Indexing failed</string>
+    <string name="search_settings_files_permission_required_hint">File search needs an Android permission. Without it, file results are not shown.</string>
+    <string name="search_settings_files_grant_permission_action">Grant Permission</string>
+    <string name="search_settings_files_indexing_hint">File names are being scanned in the background, you can keep using the app.</string>
+    <string name="search_settings_files_failed_hint">File indexing could not finish. You can try again.</string>
+    <string name="search_settings_files_reindex_action">Reindex</string>
+    <string name="home_search_files_permission_required">Permission required for file search</string>
+    <string name="home_search_files_permission_required_desc">Tap to grant Android file permission</string>
     <string name="search_settings_stats_desc">Statistics stay on your device only; searched text is never recorded.</string>
 
     <!-- D257: Missions and star system (gamification) -->
