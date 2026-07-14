@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="classification_review_title">Kontrol Bekleyenler</string>
+    <string name="classification_review_pending_count">%1$d uygulama inceleme bekliyor</string>
+    <string name="classification_review_pending_subtitle">Düşük güvenli veya çelişkili sınıflandırmalar için önce kategori seç, sonra onayla ya da 7 gün ertele.</string>
+    <string name="classification_review_empty_title">Bekleyen iş yok</string>
+    <string name="classification_review_empty_subtitle">Yeni düşük güvenli sınıflandırma geldiğinde burada görünecek.</string>
+    <string name="classification_review_suggestion">Öneri: %1$s | Güven: %2$d%% | Kaynak: %3$s</string>
+    <string name="classification_review_choose_category">Kategori seç:</string>
+    <string name="classification_review_confirm_selection">Seçimi onayla</string>
+    <string name="classification_review_snooze">7 gün ertele</string>
+    <string name="classification_review_selection_required">Onaylamak için bir kategori seçmelisiniz.</string>
+    <string name="classification_review_rule_title">Kural</string>
+    <string name="classification_review_rule_subtitle">Kategori seçilmeden onay verilemez. Onay ve düzeltme kullanıcı kararı sayılır; otomatik sınıflandırma artık bu uygulamayı ezmez.</string>
+</resources>
