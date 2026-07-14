@@ -465,5 +465,7 @@
     <string name="missions_settings_open_title">Görevler</string>
     <string name="missions_settings_open_subtitle">Bugünün görevlerini ve yıldızlarını gör</string>
     <string name="missions_home_chip_title">Görevler</string>
-    <string name="missions_home_chip_subtitle">Bugünün görevleri ve puanın</string>
+    <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
+    <string name="digital_score_home_card_title">Skor %1$d</string>
+    <string name="digital_score_home_card_subtitle">Dijital yaşam</string>
 </resources>

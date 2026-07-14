@@ -138,17 +138,15 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 ### [26] Klasör birleştirme/sınıflandırma önerileri sistem bildirimi olarak da gelsin
 **Durum:** Tamamlandı ✅ (D282) — `SuggestionNotificationWorker.kt` eklendi
 
-### [28] Görevler kartı, Dijital Yaşam Skoru rozetiyle aynı görsel dil + boyutta, skorun soluna yerleştirilsin
-**Sorun/İstek:** Ana ekrandaki Görevler giriş noktası (madde 13, D274'te chip olarak eklenmişti), Dijital Yaşam Skoru rozetiyle (madde 10, D276'da ticker içinde "Skor NN" olarak eklenmişti) AYNI boyutta, AYNI yıldızlı görsel stilde olacak şekilde yeniden tasarlanmalı ve skor rozetinin SOLUNA yerleştirilmeli — böylece ikisi yan yana simetrik bir çift oluşturur.
-**Nasıl yapılmalı:** Şu an iki öğe farklı yerlerde/formatlarda yaşıyor: Görevler bir `chip` (`HomeScreen.kt`, saat kartının altında), Dijital Yaşam Skoru ise `HomeTickerRow.kt` içinde ticker metnine gömülü bir rozet. Bu maddeyi uygulamak için önce bir mimari karar gerekir: (a) Dijital Yaşam Skoru rozeti ticker'dan çıkarılıp Görevler chip'iyle aynı seviyede, aynı boyutta bağımsız bir kart haline getirilmeli (muhtemelen saat/Pulse Clock kartının altına, yan yana iki `Card`/`Box` — `Row(horizontalArrangement = Arrangement.spacedBy(...))`), (b) `MissionsScreen.kt`'deki yıldız görsel dili (`Icons.Filled.Star` kullanımı, grep: `grep -n "Star" app/src/main/java/.../MissionsScreen.kt`) referans alınıp Görevler kartına uygulanmalı, aynı yıldız/renk paleti skor kartına da (skor değerine göre renk değişse de yıldız çerçevesi/boyutu ortak) uygulanmalı, (c) iki kartın `Modifier.size`/`weight(1f)` ile birebir eşit boyutta olması sağlanmalı. UX/görsel karar gerektirdiği için mockup/örnek onayı faydalı olur — CLAUDE.md Görev Zorluk Puanı kuralına göre orta-yüksek zorluk (5-6), doğrudan uygulanabilir ama dikkatli yapılmalı.
+### [28] ✅ Görevler kartı, Dijital Yaşam Skoru rozetiyle aynı görsel dil + boyutta, skorun soluna yerleştirilsin — Tamamlandı D284
+**Çözüm:** `LauncherViewModel.kt`'ye `digitalLifeScore: StateFlow<Int?>` eklendi; `HomeTickerRow.kt`'de yeni `DigitalScoreCard` composable'ı Görevler chip'iyle birebir aynı `GlassCard` boyutu/stilinde (yıldız ikonu, başlık, alt başlık, ok); `HomeScreen.kt`'de `Row(weight(1f)+weight(1f))` içinde Görevler solda, Skor sağda yan yana.
 **Puan:** KV=3 U=3 BR=2 EA=3 → Toplam=11
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (D284)
 
-### [29] "Öğleden sonra en çok kullandıkların" önerisi 5 uygulamaya çıkarılsın + başlığın yanına teknik detay
-**Sorun/İstek:** Madde 9'da (D278'de tamamlanmıştı) önceki iyileştirme 4→3 uygulamaya küçültme yönündeydi; şimdi TERSİNE, "Öğleden sonra en çok kullandıkların" bölümü 5 öneriye çıkarılsın, ayrıca başlığın hemen yanına teknik detay (öneri sayısı/sinyal kaynağı zaten D278'de eklenmişti, bu bilgi başlığın yanında daha görünür/net olacak şekilde konumlandırılmalı) yazılsın.
-**Nasıl yapılmalı:** `HomeScreenComponents.kt`'deki `AppSuggestionsRow`/`SuggestionAppItem` composable'ı (D278'de dokunulan yer) — mevcut `take(3)` gibi bir sınırlama varsa `take(5)`'e çıkarılmalı, `LazyRow`/`Row` genişliğinin 5 öğeyi sığdırdığından emin olunmalı (gerekirse `iconSizeDp` küçültme veya yatay scroll). Başlık satırındaki teknik detay metni (D278'de eklenen "Son 28 gün + bu saat" gibi) `Text` bileşeninin `Row` içinde başlığın hemen sağına/yanına, aynı satırda küçük font ile taşınmalı (şu an alt satırda veya ayrı konumda olabilir, D278 kod incelemesiyle netleştirilmeli).
+### [29] ✅ "Öğleden sonra en çok kullandıkların" önerisi 5 uygulamaya çıkarılsın + başlığın yanına teknik detay — Tamamlandı D284
+**Çözüm:** `HomeScreenComponents.kt`'de `AppSuggestionsRow`'daki `apps.take(3)` → `apps.take(5)`; başlık satırı `Row`'a çevrilip "Son 28 gün + bu saat" teknik detay metni başlığın hemen yanına taşındı.
 **Puan:** KV=3 U=3 BR=1 EA=2 → Toplam=9
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (D284)
 
 ### [30] Arama çubuğu ayrı bir ekranda tam sayfa: üstte arama çubuğu, altta sonuçlar
 **Sorun/İstek:** Mevcut arama, ana ekran içinde inline bir çekmece/dropdown olarak açılıyor. Bunun yerine ayrı bir tam-sayfa ekranda (üstte arama çubuğu, altta sonuç listesi) sunulması değerlendirildi.

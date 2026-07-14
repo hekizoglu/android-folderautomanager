@@ -123,6 +123,7 @@ fun HomeScreen(
     var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
     var missionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)) }
     val tickerItems by viewModel.tickerItems.collectAsState()
+    val digitalLifeScore by viewModel.digitalLifeScore.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val recentNotificationCounts by viewModel.recentNotificationCounts.collectAsState()
@@ -548,45 +549,69 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(top = if (compactClock) 16.dp else 32.dp, bottom = 8.dp)
             )
-            if (missionsEnabled) {
-                GlassCard(
+            // Görevler + Dijital Yaşam Skoru — aynı boyut/stilde iki bağımsız kart, yan yana
+            // (Görevler solda, Skor sağda). Eskiden Görevler ayrı bir chip, Skor ticker metnine
+            // gömülü bir rozetti (ROADMAP #28) — artık simetrik bir çift oluşturuyorlar.
+            if (missionsEnabled || digitalLifeScore != null) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp)
-                        .clickable {
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (missionsEnabled) {
+                        GlassCard(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    val intent = Intent(context, MainActivity::class.java).apply {
+                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    runCatching { context.startActivity(intent) }
+                                },
+                            cornerRadius = 18.dp,
+                            backgroundAlpha = 0.10f,
+                            borderAlpha = 0.18f,
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Text("★", color = Color(0xFFFFD54F), fontSize = 15.sp)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.missions_home_chip_title),
+                                        color = Color.White.copy(alpha = 0.90f),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.missions_home_chip_subtitle),
+                                        color = Color.White.copy(alpha = 0.52f),
+                                        fontSize = 11.sp,
+                                        maxLines = 1,
+                                    )
+                                }
+                                Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
+                            }
+                        }
+                    }
+                    DigitalScoreCard(
+                        score = digitalLifeScore,
+                        onClick = {
                             val intent = Intent(context, MainActivity::class.java).apply {
-                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
                                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                             }
                             runCatching { context.startActivity(intent) }
                         },
-                    cornerRadius = 18.dp,
-                    backgroundAlpha = 0.10f,
-                    borderAlpha = 0.18f,
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 9.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Text("★", color = Color(0xFFFFD54F), fontSize = 15.sp)
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.missions_home_chip_title),
-                                color = Color.White.copy(alpha = 0.90f),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = stringResource(R.string.missions_home_chip_subtitle),
-                                color = Color.White.copy(alpha = 0.52f),
-                                fontSize = 11.sp,
-                            )
-                        }
-                        Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
-                    }
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
 
