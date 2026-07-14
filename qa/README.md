@@ -46,6 +46,7 @@ Eğer Compose kullanılıyorsa ekle:
 
 - Hızlı tarama: `./gradlew logicAuditFast`
 - Semantik tarama: `./gradlew logicAuditSemantic`
+- Derin bölüm bazlı tarama: `./gradlew logicAuditDeep`
 - Kural seti: `qa/logic-rules.md`
 - Rapor şeması: `qa/report-schema.md`
 

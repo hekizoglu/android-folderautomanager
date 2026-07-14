@@ -37,6 +37,13 @@ tasks.register<Exec>("logicAuditSemantic") {
     commandLine(execShell("${rootDir}/scripts/logic_audit_semantic.ps1"))
 }
 
+tasks.register<Exec>("logicAuditDeep") {
+    group = "verification"
+    description = "Runs the full section-by-section logic/code audit and stores detailed reports."
+    workingDir = rootDir
+    commandLine(execShell("${rootDir}/scripts/logic_audit_deep.ps1"))
+}
+
 tasks.register("qualityGate") {
     group = "verification"
     description = "Runs lint, unit tests, detekt, ktlint and the fast logic audit."

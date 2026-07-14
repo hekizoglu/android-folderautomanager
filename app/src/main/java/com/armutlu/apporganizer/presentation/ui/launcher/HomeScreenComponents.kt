@@ -26,6 +26,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -748,7 +751,9 @@ internal fun HomeAppSearchBar(
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     onQueryChange: (String) -> Unit = {},
     onEnableContactsSource: () -> Unit = {},
-    homeResumeTrigger: Int = 0
+    homeResumeTrigger: Int = 0,
+    // Çubuk alttayken sonuçlar ÜSTTE (yukarı doğru) açılır — sayfa kaymaz (D258)
+    resultsAbove: Boolean = false
 ) {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
@@ -928,205 +933,9 @@ internal fun HomeAppSearchBar(
         label = "search_bar_scale"
     )
 
-    Column(modifier = modifier) {
-        // Ghost zones — TOP / BOTTOM snap hedefleri
-        if (showGhostZones) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (dragOffsetY < 0) Color.White.copy(alpha = 0.18f)
-                        else Color.White.copy(alpha = 0.07f)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "↑ Üst",
-                    color = Color.White.copy(alpha = if (dragOffsetY < 0) 0.80f else 0.30f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-            Spacer(Modifier.height(4.dp))
-        }
-
-        // Arama alanı — glass kart stilinde + drag handle + elmas parlaması
-        GlassCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(barScale)
-                .diamondShine(shineEnabled, RoundedCornerShape(28.dp), trigger = homeResumeTrigger)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            isDragging = true
-                            showGhostZones = true
-                        }
-                    )
-                }
-                .then(
-                    if (isDragging) Modifier.pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragEnd = {
-                                val snapPos = if (dragOffsetY < 0)
-                                    AppPrefs.SEARCH_BAR_POS_TOP
-                                else
-                                    AppPrefs.SEARCH_BAR_POS_BOTTOM
-                                AppPrefs.setSearchBarPosition(context, snapPos)
-                                onPositionSnap?.invoke(snapPos)
-                                isDragging = false
-                                showGhostZones = false
-                                dragOffsetY = 0f
-                            },
-                            onDragCancel = {
-                                isDragging = false
-                                showGhostZones = false
-                                dragOffsetY = 0f
-                            },
-                            onDrag = { change, dragAmount ->
-                                change.consume()
-                                dragOffsetY += dragAmount.y
-                            }
-                        )
-                    } else Modifier
-                ),
-            cornerRadius = 28.dp,
-            // Focus'ta da belirginleş — seçili olduğu net görünsün (E9)
-            backgroundAlpha = if (isDragging || isFocused) 0.22f else 0.12f,
-            borderAlpha = if (isDragging) 0.45f else if (isFocused) 0.70f else 0.25f,
-            borderColor = if (isFocused) Color(0xFF26C6DA) else Color.White
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                // "Uygulama / Klasör" sekmesi kaldırıldı (S1) — klasörler artık sonuç grubu
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Icon(Icons.Default.Search, contentDescription = "Ara",
-                        tint = if (isFocused) Color.White else Color.White.copy(alpha = 0.65f),
-                        modifier = Modifier.size(18.dp))
-                    BasicTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        singleLine = true,
-                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .onFocusChanged { isFocused = it.isFocused },
-                        decorationBox = { inner ->
-                            Box(Modifier.weight(1f)) {
-                                // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez
-                                if (query.isEmpty()) Text(
-                                    "Uygulama, kategori ara…",
-                                    color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp
-                                )
-                                inner()
-                            }
-                        }
-                    )
-                    if (query.isNotEmpty()) {
-                        Icon(Icons.Default.Close, contentDescription = "Aramayı temizle",
-                            tint = Color.White.copy(alpha = 0.60f),
-                            modifier = Modifier.size(18.dp).clickable { query = "" })
-                    }
-                }
-            }
-        }
-
-        // İzin ipucu satırı (E10) — arama çubuğunun hemen altında; sürükleme sırasında gizli
-        if (showPermHint && !isDragging) {
-            Spacer(Modifier.height(4.dp))
-            val permHintText = when {
-                permHintPassiveMode -> "İzinler ayarlardan yönetilebilir →"
-                !usageGranted -> "🔍 Daha iyi arama ve öneriler için kullanım erişimi gerekli — Ver"
-                else -> "🔔 Bildirim rozetleri için erişim gerekli — Ver"
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White.copy(alpha = 0.10f))
-                    .clickable {
-                        if (permHintPassiveMode) {
-                            // Rahatsız etmeden İzinler rehberine yönlendir (MainActivity → PERMISSIONS_GUIDE)
-                            val intent = Intent(context, MainActivity::class.java).apply {
-                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.PERMISSIONS_GUIDE)
-                                addFlags(
-                                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                                        Intent.FLAG_ACTIVITY_NEW_TASK
-                                )
-                            }
-                            runCatching { context.startActivity(intent) }
-                        } else {
-                            // Eksik olan izni doğrudan sistem ayarında aç
-                            if (!usageGranted) {
-                                UsageStatsHelper.openPermissionSettings(context)
-                            } else {
-                                runCatching {
-                                    context.startActivity(
-                                        Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    permHintText,
-                    color = Color.White.copy(alpha = 0.85f),
-                    fontSize = 12.sp,
-                    modifier = Modifier.weight(1f)
-                )
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "İpucunu kapat",
-                    tint = Color.White.copy(alpha = 0.55f),
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable {
-                            permHintSessionDismissed = true
-                            if (permHintPassiveMode) {
-                                // Pasif link kapatıldıysa kalıcı gizle — bir daha rahatsız etme
-                                AppPrefs.setSearchPermHintDismissed(context, true)
-                            } else {
-                                // Aktif ipucu kapatıldıysa sayacı ilerlet (pasif moda daha çabuk geçsin)
-                                AppPrefs.incrementSearchPermHintCount(context)
-                            }
-                        }
-                )
-            }
-        }
-
-        // Ghost zone — BOTTOM
-        if (showGhostZones) {
-            Spacer(Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (dragOffsetY > 0) Color.White.copy(alpha = 0.18f)
-                        else Color.White.copy(alpha = 0.07f)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "↓ Alt",
-                    color = Color.White.copy(alpha = if (dragOffsetY > 0) 0.80f else 0.30f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-
+    // Sonuc bolumu tek yerde tanimlanir; resultsAbove=true iken cubugun USTUNDE render
+    // edilir (alttan yukari acilir, sayfa kaymaz — D258), aksi halde eski gibi altta.
+    val searchResultsSection: @Composable () -> Unit = {
         // Sonuç listesi — kaynak grupları: Uygulamalar / Klasörler / Kişiler / Dosyalar (S1)
         val hasAnyResult = appResults.isNotEmpty() || folderResults.isNotEmpty() ||
             settingResults.isNotEmpty() || contactResults.isNotEmpty() || fileResults.isNotEmpty() || showContactsPermissionHint ||
@@ -1142,7 +951,17 @@ internal fun HomeAppSearchBar(
             ).count { it } > 1
             Spacer(Modifier.height(4.dp))
             GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.18f) {
-                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .then(
+                            // Yukari acilirken ekrani kaplamasin — sinirli yukseklik + ic scroll
+                            if (resultsAbove) Modifier
+                                .heightIn(max = 320.dp)
+                                .verticalScroll(rememberScrollState())
+                            else Modifier
+                        )
+                ) {
 
                     // App sonuçları
                     if (appResults.isNotEmpty() && multiGroup) {
@@ -1480,6 +1299,210 @@ internal fun HomeAppSearchBar(
                 }
             }
         }
+    }
+
+    Column(modifier = modifier) {
+        if (resultsAbove) searchResultsSection()
+
+        // Ghost zones — TOP / BOTTOM snap hedefleri
+        if (showGhostZones) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (dragOffsetY < 0) Color.White.copy(alpha = 0.18f)
+                        else Color.White.copy(alpha = 0.07f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "↑ Üst",
+                    color = Color.White.copy(alpha = if (dragOffsetY < 0) 0.80f else 0.30f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+
+        // Arama alanı — glass kart stilinde + drag handle + elmas parlaması
+        GlassCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .scale(barScale)
+                .diamondShine(shineEnabled, RoundedCornerShape(28.dp), trigger = homeResumeTrigger)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            isDragging = true
+                            showGhostZones = true
+                        }
+                    )
+                }
+                .then(
+                    if (isDragging) Modifier.pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                val snapPos = if (dragOffsetY < 0)
+                                    AppPrefs.SEARCH_BAR_POS_TOP
+                                else
+                                    AppPrefs.SEARCH_BAR_POS_BOTTOM
+                                AppPrefs.setSearchBarPosition(context, snapPos)
+                                onPositionSnap?.invoke(snapPos)
+                                isDragging = false
+                                showGhostZones = false
+                                dragOffsetY = 0f
+                            },
+                            onDragCancel = {
+                                isDragging = false
+                                showGhostZones = false
+                                dragOffsetY = 0f
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                dragOffsetY += dragAmount.y
+                            }
+                        )
+                    } else Modifier
+                ),
+            cornerRadius = 28.dp,
+            // Focus'ta da belirginleş — seçili olduğu net görünsün (E9)
+            backgroundAlpha = if (isDragging || isFocused) 0.22f else 0.12f,
+            borderAlpha = if (isDragging) 0.45f else if (isFocused) 0.70f else 0.25f,
+            borderColor = if (isFocused) Color(0xFF26C6DA) else Color.White
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                // "Uygulama / Klasör" sekmesi kaldırıldı (S1) — klasörler artık sonuç grubu
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Ara",
+                        tint = if (isFocused) Color.White else Color.White.copy(alpha = 0.65f),
+                        modifier = Modifier.size(18.dp))
+                    BasicTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        singleLine = true,
+                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .onFocusChanged { isFocused = it.isFocused },
+                        decorationBox = { inner ->
+                            Box(Modifier.weight(1f)) {
+                                // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez
+                                if (query.isEmpty()) Text(
+                                    "Uygulama, kategori ara…",
+                                    color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp
+                                )
+                                inner()
+                            }
+                        }
+                    )
+                    if (query.isNotEmpty()) {
+                        Icon(Icons.Default.Close, contentDescription = "Aramayı temizle",
+                            tint = Color.White.copy(alpha = 0.60f),
+                            modifier = Modifier.size(18.dp).clickable { query = "" })
+                    }
+                }
+            }
+        }
+
+        // İzin ipucu satırı (E10) — arama çubuğunun hemen altında; sürükleme sırasında gizli
+        if (showPermHint && !isDragging) {
+            Spacer(Modifier.height(4.dp))
+            val permHintText = when {
+                permHintPassiveMode -> "İzinler ayarlardan yönetilebilir →"
+                !usageGranted -> "🔍 Daha iyi arama ve öneriler için kullanım erişimi gerekli — Ver"
+                else -> "🔔 Bildirim rozetleri için erişim gerekli — Ver"
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White.copy(alpha = 0.10f))
+                    .clickable {
+                        if (permHintPassiveMode) {
+                            // Rahatsız etmeden İzinler rehberine yönlendir (MainActivity → PERMISSIONS_GUIDE)
+                            val intent = Intent(context, MainActivity::class.java).apply {
+                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.PERMISSIONS_GUIDE)
+                                addFlags(
+                                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                )
+                            }
+                            runCatching { context.startActivity(intent) }
+                        } else {
+                            // Eksik olan izni doğrudan sistem ayarında aç
+                            if (!usageGranted) {
+                                UsageStatsHelper.openPermissionSettings(context)
+                            } else {
+                                runCatching {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    permHintText,
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "İpucunu kapat",
+                    tint = Color.White.copy(alpha = 0.55f),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable {
+                            permHintSessionDismissed = true
+                            if (permHintPassiveMode) {
+                                // Pasif link kapatıldıysa kalıcı gizle — bir daha rahatsız etme
+                                AppPrefs.setSearchPermHintDismissed(context, true)
+                            } else {
+                                // Aktif ipucu kapatıldıysa sayacı ilerlet (pasif moda daha çabuk geçsin)
+                                AppPrefs.incrementSearchPermHintCount(context)
+                            }
+                        }
+                )
+            }
+        }
+
+        // Ghost zone — BOTTOM
+        if (showGhostZones) {
+            Spacer(Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (dragOffsetY > 0) Color.White.copy(alpha = 0.18f)
+                        else Color.White.copy(alpha = 0.07f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "↓ Alt",
+                    color = Color.White.copy(alpha = if (dragOffsetY > 0) 0.80f else 0.30f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        if (!resultsAbove) searchResultsSection()
     }
 }
 

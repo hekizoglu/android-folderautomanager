@@ -540,6 +540,8 @@ fun HomeScreen(
                         onQueryChange = viewModel::setSearchQuery,
                         onEnableContactsSource = viewModel::enableContactsSearchSource,
                         homeResumeTrigger = homeResumeTrigger,
+                        // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
+                        resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp)
