@@ -883,6 +883,28 @@ class AppListViewModel @Inject constructor(
         }
     }
 
+    // P0.4: İstatistik sıfırlama sihirbazı — kapsam seçimli. Sonuç [_statsResetResult] üzerinden
+    // UI'a bildirilir (snackbar/dialog); sessiz bitirme yok.
+    private val _statsResetResult =
+        kotlinx.coroutines.flow.MutableStateFlow<List<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.ScopeResult>?>(null)
+    val statsResetResult: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.ScopeResult>?> =
+        _statsResetResult
+
+    fun resetStatsScoped(
+        context: android.content.Context,
+        scopes: Set<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope>
+    ) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val results = com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.reset(context, repository, scopes)
+            Timber.d("StatsResetService: ${results.count { it.success }}/${results.size} kapsam sıfırlandı")
+            _statsResetResult.value = results
+        }
+    }
+
+    fun consumeStatsResetResult() {
+        _statsResetResult.value = null
+    }
+
     val hiddenApps: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.models.AppInfo>> =
         repository.getHiddenApps()
             .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000L), emptyList())

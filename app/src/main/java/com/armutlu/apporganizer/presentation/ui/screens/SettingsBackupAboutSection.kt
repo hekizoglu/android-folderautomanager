@@ -18,11 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
@@ -65,25 +67,147 @@ internal fun LazyListScope.settingsBackupAboutSection(
     item { SettingsSectionTitle("Gizlilik") }
     item {
         val context = LocalContext.current
-        var showResetDialog by remember { mutableStateOf(false) }
+        var wizardStep by remember { mutableStateOf(0) } // 0 = kapalı, 1 = kapsam seçimi, 2 = onay
+        var selectedScopes by remember {
+            mutableStateOf(setOf<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope>())
+        }
+        val snackbarHostState = remember { SnackbarHostState() }
 
-        if (showResetDialog) {
+        val resetResult by viewModel.statsResetResult.collectAsState()
+        LaunchedEffect(resetResult) {
+            val results = resetResult ?: return@LaunchedEffect
+            val successCount = results.count { it.success }
+            val failCount = results.size - successCount
+            val message = when {
+                failCount == 0 && successCount > 0 ->
+                    context.getString(R.string.stats_reset_result_success, successCount)
+                successCount > 0 ->
+                    context.getString(R.string.stats_reset_result_partial, successCount, results.size, failCount)
+                else -> context.getString(R.string.stats_reset_result_failure)
+            }
+            snackbarHostState.showSnackbar(message)
+            viewModel.consumeStatsResetResult()
+        }
+
+        SnackbarHost(hostState = snackbarHostState)
+
+        val scopeOptions = listOf(
+            com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope.USAGE_COUNTERS to
+                (stringResource(R.string.stats_reset_scope_usage_counters) to stringResource(R.string.stats_reset_scope_usage_counters_desc)),
+            com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope.LAST_USED_TIMESTAMPS to
+                (stringResource(R.string.stats_reset_scope_last_used) to stringResource(R.string.stats_reset_scope_last_used_desc)),
+            com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope.NOTIFICATION_HISTORY to
+                (stringResource(R.string.stats_reset_scope_notifications) to stringResource(R.string.stats_reset_scope_notifications_desc)),
+            com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope.WRAPPED_SNAPSHOTS to
+                (stringResource(R.string.stats_reset_scope_wrapped) to stringResource(R.string.stats_reset_scope_wrapped_desc)),
+            com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope.MISSION_PROGRESS to
+                (stringResource(R.string.stats_reset_scope_missions) to stringResource(R.string.stats_reset_scope_missions_desc))
+        )
+        val allScopes = scopeOptions.map { it.first }.toSet()
+
+        // ── Adım 1: kapsam seçimi (çoklu seçim) ──
+        if (wizardStep == 1) {
             AlertDialog(
-                onDismissRequest = { showResetDialog = false },
+                onDismissRequest = { wizardStep = 0 },
                 icon = { Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error) },
-                title = { Text("Tüm Kullanım Verisini Sıfırla") },
-                text = { Text("Kullanım sayıları, son açılma zamanları, bildirim analiz geçmişi, kayıtlı bildirim metinleri, favoriler ve notlar silinir. Bu işlem geri alınamaz.") },
+                title = { Text(stringResource(R.string.stats_reset_wizard_title)) },
+                text = {
+                    Column {
+                        Text(
+                            stringResource(R.string.stats_reset_wizard_step1_desc),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
+                            item {
+                                val allChecked = selectedScopes.containsAll(allScopes) && allScopes.isNotEmpty()
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .clickable {
+                                            selectedScopes = if (allChecked) emptySet() else allScopes
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(checked = allChecked, onCheckedChange = {
+                                        selectedScopes = if (it) allScopes else emptySet()
+                                    })
+                                    Text(
+                                        stringResource(R.string.stats_reset_scope_all),
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                HorizontalDivider(Modifier.padding(vertical = 4.dp))
+                            }
+                            items(scopeOptions) { (scope, labels) ->
+                                val (title, desc) = labels
+                                val isChecked = scope in selectedScopes
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .clickable {
+                                            selectedScopes = if (isChecked) selectedScopes - scope else selectedScopes + scope
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(checked = isChecked, onCheckedChange = { checked ->
+                                        selectedScopes = if (checked) selectedScopes + scope else selectedScopes - scope
+                                    })
+                                    Column {
+                                        Text(title, fontSize = 14.sp)
+                                        Text(desc, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        enabled = selectedScopes.isNotEmpty(),
+                        onClick = { wizardStep = 2 },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) { Text(stringResource(R.string.stats_reset_next)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { wizardStep = 0 }) { Text(stringResource(R.string.stats_reset_cancel)) }
+                }
+            )
+        }
+
+        // ── Adım 2: seçilen kapsamlarla geri alınamaz onay ──
+        if (wizardStep == 2) {
+            AlertDialog(
+                onDismissRequest = { wizardStep = 0 },
+                icon = { Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error) },
+                title = { Text(stringResource(R.string.stats_reset_confirm_title)) },
+                text = {
+                    Column {
+                        Text(
+                            stringResource(R.string.stats_reset_confirm_desc),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        scopeOptions.filter { it.first in selectedScopes }.forEach { (_, labels) ->
+                            Text("• ${labels.first}", fontSize = 13.sp, modifier = Modifier.padding(vertical = 2.dp))
+                        }
+                    }
+                },
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            showResetDialog = false
-                            viewModel.resetAllPrivacyData(context)
+                            wizardStep = 0
+                            viewModel.resetStatsScoped(context, selectedScopes)
+                            selectedScopes = emptySet()
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                    ) { Text("Sıfırla") }
+                    ) { Text(stringResource(R.string.stats_reset_confirm_button)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showResetDialog = false }) { Text("İptal") }
+                    TextButton(onClick = { wizardStep = 1 }) { Text(stringResource(R.string.stats_reset_back)) }
                 }
             )
         }
@@ -112,15 +236,15 @@ internal fun LazyListScope.settingsBackupAboutSection(
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             // Sıfırlama butonu
             Row(
-                modifier = Modifier.fillMaxWidth().clickable { showResetDialog = true }
+                modifier = Modifier.fillMaxWidth().clickable { selectedScopes = emptySet(); wizardStep = 1 }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(Icons.Default.DeleteSweep, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Tüm Kullanım Verisini Sıfırla", fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.error)
-                    Text("Kullanım, not, favori ve bildirim analiz/metin kayıtları silinir", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Kullanım Verisini Sıfırla", fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.error)
+                    Text("Sıfırlamak istediğin verileri seç", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

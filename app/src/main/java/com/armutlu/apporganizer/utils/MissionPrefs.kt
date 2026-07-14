@@ -71,6 +71,11 @@ object MissionPrefs {
             .apply()
     }
 
+    // P0.4: İstatistik sıfırlama sihirbazı — görev puanı/geçmişi kapsamı tek seferde temizlenir.
+    fun clearAll(context: Context) {
+        prefs(context).edit().clear().apply()
+    }
+
     // ── JSON yardimcilari ───────────────────────────────────────────────────
 
     private fun readPeriodIds(json: String?, periodKey: String, period: Long, arrayKey: String): Set<String> {

@@ -433,6 +433,30 @@
     <string name="settings_stats_weekly_report_title">Weekly Report</string>
     <string name="settings_stats_weekly_report_desc">Digital life score, personality type and badges — shown in the Reports Center</string>
 
+    <!-- P0.4: Scoped stats reset wizard -->
+    <string name="stats_reset_wizard_title">Reset Usage Data</string>
+    <string name="stats_reset_wizard_step1_desc">Choose what to reset:</string>
+    <string name="stats_reset_scope_usage_counters">Usage counters</string>
+    <string name="stats_reset_scope_usage_counters_desc">App launch count and duration</string>
+    <string name="stats_reset_scope_last_used">Last used timestamps</string>
+    <string name="stats_reset_scope_last_used_desc">When each app was last opened</string>
+    <string name="stats_reset_scope_notifications">Notification history</string>
+    <string name="stats_reset_scope_notifications_desc">Notification analysis records and text</string>
+    <string name="stats_reset_scope_wrapped">Wrapped / weekly comparisons</string>
+    <string name="stats_reset_scope_wrapped_desc">Weekly report and digital life score trend</string>
+    <string name="stats_reset_scope_missions">Mission score and history</string>
+    <string name="stats_reset_scope_missions_desc">Total stars and completed missions</string>
+    <string name="stats_reset_scope_all">All</string>
+    <string name="stats_reset_next">Next</string>
+    <string name="stats_reset_cancel">Cancel</string>
+    <string name="stats_reset_back">Back</string>
+    <string name="stats_reset_confirm_title">Reset Selected</string>
+    <string name="stats_reset_confirm_desc">The following data will be permanently deleted. This cannot be undone:</string>
+    <string name="stats_reset_confirm_button">Reset</string>
+    <string name="stats_reset_result_success">%1$d scope(s) reset successfully</string>
+    <string name="stats_reset_result_partial">%1$d/%2$d scope(s) reset, %3$d failed</string>
+    <string name="stats_reset_result_failure">Reset failed</string>
+
     <!-- SearchSettingsScreen -->
     <string name="search_settings_web_fallback_title">Web and Play Store Fallback</string>
     <string name="search_settings_web_fallback_desc">Suggest a web/Play Store search when no results are found</string>

@@ -559,6 +559,15 @@ class AppRepository @Inject constructor(
         try { notificationEventDao.clearAll() } catch (e: Exception) { Timber.e(e) }
     }
 
+    // P0.4: İstatistik sıfırlama sihirbazı — kapsam bazlı toplu sıfırlama
+    suspend fun resetAllUsageCounters() {
+        appDao.resetAllUsageCounters()
+    }
+
+    suspend fun resetAllLastUsedTimestamps() {
+        appDao.resetAllLastUsedTimestamps()
+    }
+
     fun getHiddenApps(): Flow<List<AppInfo>> =
         appDao.getHiddenApps().distinctUntilChanged().flowOn(Dispatchers.IO)
 

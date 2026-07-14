@@ -180,6 +180,11 @@ object WrappedSnapshotPrefs {
         }.onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.updateDailyScore basarisiz") }.getOrNull()
     }
 
+    // P0.4: İstatistik sıfırlama sihirbazı — Wrapped/haftalık karşılaştırma kapsamı tek seferde temizlenir.
+    fun clearAll(context: Context) {
+        prefs(context).edit().clear().apply()
+    }
+
     private fun mapToJson(map: Map<String, Long>): String {
         val json = JSONObject()
         map.forEach { (k, v) -> json.put(k, v) }

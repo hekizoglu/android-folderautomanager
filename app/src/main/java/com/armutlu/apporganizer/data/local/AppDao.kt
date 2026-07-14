@@ -338,6 +338,13 @@ interface AppDao {
     @Query("UPDATE apps SET notificationText = ''")
     suspend fun clearAllNotificationTexts()
 
+    // P0.4: İstatistik sıfırlama sihirbazı — kapsam bazlı toplu sıfırlama (tek UPDATE, per-app döngü yok)
+    @Query("UPDATE apps SET usageCount = 0, launchCount = 0")
+    suspend fun resetAllUsageCounters()
+
+    @Query("UPDATE apps SET lastUsedTimestamp = 0")
+    suspend fun resetAllLastUsedTimestamps()
+
     @Query("SELECT * FROM apps WHERE isHidden = 1 ORDER BY appName ASC")
     fun getHiddenApps(): Flow<List<AppInfo>>
 
