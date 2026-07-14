@@ -361,6 +361,16 @@ object AppPrefs {
     fun isTickerEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_ENABLED, true)
     fun setTickerEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_ENABLED, v).apply()
 
+    // Ana ekran arka plan stili — 3 hazir gradient secenegi (D260)
+    const val KEY_HOME_BACKGROUND_STYLE = "home_background_style"
+    const val HOME_BG_TURKUAZ = "turkuaz"
+    const val HOME_BG_GECE_MAVISI = "gece_mavisi"
+    const val HOME_BG_MINIMAL_GRI = "minimal_gri"
+    fun getHomeBackgroundStyle(context: Context): String =
+        prefs(context).getString(KEY_HOME_BACKGROUND_STYLE, HOME_BG_TURKUAZ) ?: HOME_BG_TURKUAZ
+    fun setHomeBackgroundStyle(context: Context, style: String) =
+        prefs(context).edit().putString(KEY_HOME_BACKGROUND_STYLE, style).apply()
+
     // Gorev/yildiz sistemi (gamification) — kapaliyken kisilik etiketi ve gorev UI'lari gizlenir (D257)
     const val KEY_MISSIONS_ENABLED = "missions_enabled"
     fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)

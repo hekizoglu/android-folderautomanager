@@ -108,7 +108,7 @@ fun SettingsAppearanceSection(
             Text(stringResource(R.string.appearance_wallpaper), fontWeight = FontWeight.Medium, fontSize = 15.sp)
             var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("wallpaper" to "Duvar Kağıdı", "solid" to "Düz Renk").forEach { (type, label) ->
+                listOf("wallpaper" to "Duvar Kağıdı", "solid" to "Düz Renk", "gradient" to "Gradyan").forEach { (type, label) ->
                     FilterChip(
                         selected = bgType == type,
                         onClick = {
@@ -117,6 +117,60 @@ fun SettingsAppearanceSection(
                         },
                         label = { Text(label, fontSize = 12.sp) }
                     )
+                }
+            }
+            if (bgType == "gradient") {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                Text("Gradyan Stili", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                var selectedStyle by remember {
+                    mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getHomeBackgroundStyle(context))
+                }
+                val gradientStyles = listOf(
+                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_TURKUAZ to ("Turkuaz" to Brush.verticalGradient(
+                        listOf(Color(0xFF00897B), Color(0xFF26C6DA))
+                    )),
+                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_GECE_MAVISI to ("Gece Mavisi" to Brush.verticalGradient(
+                        listOf(Color(0xFF0A1128), Color(0xFF1B2A4A))
+                    )),
+                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_MINIMAL_GRI to ("Minimal Koyu Gri" to Brush.verticalGradient(
+                        listOf(Color(0xFF1C1C1C), Color(0xFF2E2E2E))
+                    )),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    gradientStyles.forEach { (key, pair) ->
+                        val (label, brush) = pair
+                        val isSelected = selectedStyle == key
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clickable {
+                                    selectedStyle = key
+                                    com.armutlu.apporganizer.utils.AppPrefs.setHomeBackgroundStyle(context, key)
+                                }
+                                .padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(brush)
+                                    .border(
+                                        width = if (isSelected) 3.dp else 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        shape = CircleShape
+                                    )
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                label,
+                                fontSize = 9.sp,
+                                textAlign = TextAlign.Center,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.width(56.dp)
+                            )
+                        }
+                    }
                 }
             }
             if (bgType == "solid") {
