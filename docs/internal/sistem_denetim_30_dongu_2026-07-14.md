@@ -112,7 +112,7 @@ Not: Bu rapor guncellemesi dokuman odakli oldugu icin kod degisikligi yapilmadi.
 | 22 | Ayarlar mimarisi | Bulgu var | 48 |
 | 23 | Onboarding/izin rehberi | Yeni dogrulanmis bulgu yok | 0 |
 | 24 | Navigation/deep link | Yeni dogrulanmis bulgu yok | 0 |
-| 25 | Widget sistemi | Bu turda kapsanmadi | 0 |
+| 25 | Widget sistemi | Bulgu var (F21 stale widget ID restore, F22 configure sonuc extra eksigi) | 58 |
 | 26 | Package receiver | Bu turda yeni bulgu yok | 0 |
 | 27 | Compose reactivity | Bulgu var | 48 |
 | 28 | Tablet/adaptive | Bulgu var | 62 |
@@ -647,6 +647,87 @@ Risk:
 
 Durum: Kismi runtime risk (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
 
+### F21
+
+Dongu: 25
+
+Baslik: widget_prefs.xml cloud backup/device-transfer disinda tutulmuyor -> restore sonrasi gecersiz widget ID hayalet slot birakiyor
+
+Kategori: Widget sistemi / Backup-Restore
+
+Oncelik puani: 58
+
+Siddet: P2
+
+Kanit:
+- `app/src/main/res/xml/data_extraction_rules.xml` — `<include domain="sharedpref" path="." />` tum sharedpref dosyalarini (widget_prefs dahil) hem `cloud-backup` hem `device-transfer` bloklarina dahil ediyor; sadece `deepseek_prefs.xml` ve Room DB dosyalari `exclude` edilmis, `widget_prefs.xml` icin exclude yok.
+- `app/src/main/res/xml/backup_rules.xml` (eski `fullBackupContent`) ayni sekilde `sharedpref path="."` dahil, widget_prefs icin exclude yok.
+- `WidgetPrefs.kt:5-19` widget ID listesini `"widget_prefs"` adli SharedPreferences'e duz CSV string olarak yaziyor (`KEY_WIDGET_IDS`) — bu dosya Android Auto Backup/Cihazlar Arasi Aktarim ile tasiniyor.
+- `LauncherViewModel.kt:569-571` `loadWidgetIds()` prefs'ten okunan ID'leri dogrudan `_widgetIds` state'ine yaziyor; `AppWidgetManager.getAppWidgetInfo(id)` ile gecerlilik kontrolu YOK.
+- `WidgetArea.kt:133-145` (`WidgetCard`) `WidgetHostManager.createView` null donerse (`WidgetHostManager.kt:39-43`, info null oldugunda) `hostView` null kalir ve `hostView?.let { ... }` (satir 147) hicbir sey render etmez — kaldirma butonu da bu blogun icinde oldugu icin gosterilmez.
+
+Neden gercek sorun:
+- Widget ID'leri host+cihaza ozeldir; sistem tarafindan atanir ve baska bir cihaza (ya da ayni cihazda `AppWidgetHost` yeniden olusturuldugunda, ornegin veri temizleme/yeniden kurulum sonrasi) tasindiginda geçersizdir — bu proje genelinde zaten biliniyor (Room DB gizlilik nedeniyle backup'tan haric tutulmus), ama widget_prefs.xml icin ayni ihtiyat uygulanmamis.
+- Restore sonrasi `WidgetPrefs` gecersiz ID'lerle dolu gelir, `loadWidgetIds()` bunlari dogrulamadan state'e yukler, `WidgetArea` bu ID'ler icin bos/gorunmez bir kart uretir (crash yok ama kalici "hayalet" bosluk).
+- Kullanici bu hayalet slotu KUI'dan silemez cunku kaldirma butonu sadece `hostView` non-null oldugunda gorunur (satir 183-215) — kullanici manuel olarak uygulama verisini temizlemek zorunda kalir.
+
+Kullaniciya etkisi:
+- Telefon degistirme / yedekten geri yukleme / uygulama verisini temizleyip yeniden kurma sonrasi widget alaninda bos, tiklanamaz, silinemez bosluklar kalir; kullanici bunu bug sanip destek talebi acabilir veya App Organizer'i "bozuk" olarak degerlendirebilir.
+
+Onerilen cozum:
+- `data_extraction_rules.xml` ve `backup_rules.xml`'e `<exclude domain="sharedpref" path="widget_prefs.xml" />` ekle (Room DB icin uygulanan gizlilik/tasima haric tutma paterni ile ayni).
+- `LauncherViewModel.loadWidgetIds()` icine gecerlilik filtresi ekle: `AppWidgetManager.getAppWidgetInfo(id) == null` olan ID'leri otomatik `WidgetPrefs.removeWidgetId` ile temizle (defensive cleanup, restore haric tutma eklenmemis eski kurulumlar icin de fayda saglar).
+
+Nereye uygulanacak:
+- `app/src/main/res/xml/data_extraction_rules.xml`
+- `app/src/main/res/xml/backup_rules.xml`
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherViewModel.kt:569-571`
+
+Test plani:
+- `adb shell bmgr backupnow com.armutlu.apporganizer` + veri temizleme + restore, widget alaninin bos/hayalet slot icermedigini dogrula.
+- Birim test: sahte gecersiz ID icin `loadWidgetIds()` sonrasi `WidgetPrefs.getWidgetIds()` bos donmeli.
+
+Risk:
+- Dusuk (sadece manifest/xml + defensive filtre; davranissal regresyon riski yok).
+
+Durum: Acik
+
+### F22
+
+Dongu: 25
+
+Baslik: widgetConfigureLauncher sonucunda EXTRA_APPWIDGET_ID eksikse widget ne eklenir ne de host ID serbest birakilir
+
+Kategori: Widget sistemi / Kaynak sizintisi
+
+Oncelik puani: 38
+
+Siddet: P3
+
+Kanit:
+- `LauncherActivity.kt:79-90` (`widgetConfigureLauncher` callback) `widgetId`'yi sadece `result.data?.getIntExtra(EXTRA_APPWIDGET_ID, INVALID)` ile okuyor. `result.resultCode == RESULT_OK && widgetId != INVALID` dogruysa `addWidgetId`, `widgetId != INVALID` (RESULT_CANCELED durumunda) dogruysa `deleteId` cagriliyor.
+- Configure aktivitesi `RESULT_OK` ile donup sonuc Intent'ine `EXTRA_APPWIDGET_ID` eklemezse (bu extra'yi geri kopyalamak widget yazarinin sorumlulugu, zorunlu degil), `widgetId` `INVALID_APPWIDGET_ID` kalir; hem `if` hem `else if` kosulu false olur — ne `addWidgetId` ne `deleteId` cagrilir.
+
+Neden gercek sorun:
+- Bu durumda: widget sistemde bind edilmis (`AppWidgetManager`de gecerli) ama `WidgetPrefs`e hic eklenmemis olur — kullaniciya gorunmez, host ID de asla `deleteAppWidgetId` ile serbest birakilmaz (sessiz kaynak sizintisi). Kullanicinin "widget ekledim ama gorunmuyor" sikayeti aciklanamaz kalir.
+
+Kullaniciya etkisi:
+- Nadir (bazi 3. parti widget'larin configure ekrani standart disi davranirsa) ama olustugunda kullanici widget'i tekrar tekrar eklemeyi dener, her denemede bir host ID daha sizar; kullaniciya gorunen tek belirti "widget eklenmiyor" hissi.
+
+Onerilen cozum:
+- `pendingWidgetId`'yi `widgetConfigureLauncher` cagrilmadan once class-level bir degiskene de ata (ör. `pendingConfigureWidgetId`), callback icinde `result.data` extra'sini bulamazsa bu fallback ID'yi kullan.
+
+Nereye uygulanacak:
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherActivity.kt:78-90`
+
+Test plani:
+- Sahte configure Activity ile RESULT_OK donup extra eklemeyen senaryoyu instrumentation testinde simule et, widget ID'nin ya eklendigini ya da serbest birakildigini dogrula.
+
+Risk:
+- Dusuk (kucuk callback degisikligi, mevcut mutlu yolu etkilemiyor).
+
+Durum: Acik (belirsizlik yuksek — cogu widget configure aktivitesi bu extra'yi standart olarak geri dondurur, bu yuzden P3)
+
 ## 6. P0/P1 Acil Is Listesi
 
 P0: Yok.
@@ -662,9 +743,9 @@ Kapanan P0/P1:
 
 ## 7. P2/P3 Planli Is Listesi
 
-P2: Yok.
+P2: F21 widget_prefs.xml backup/device-transfer haric tutulmuyor -> restore sonrasi hayalet widget slotu.
 
-P3: Yok.
+P3: F22 widgetConfigureLauncher sonucunda EXTRA_APPWIDGET_ID eksikse host ID sizintisi.
 
 Kismi runtime risk:
 - F20 tablet/adaptive smoke: launch + fatal-log + screenshot kanitlandi; detayli klasor swipe gorsel QA acik risk.
@@ -690,6 +771,8 @@ Kismi runtime risk:
 | Tablet landscape folder transition smoke | F20 | Kismi: tablet launch + screenshot + fatal log temiz; detayli swipe gorsel QA eksik |
 | VersionName About UI smoke | F04 | Compile tamamlandi; manuel UI smoke ek QA adayi |
 | Preference restore stale state smoke | F15 | Kod/compile tamamlandi; restore instrumentation ek QA adayi |
+| Widget restore sonrasi hayalet slot smoke | F21 | Eksik — `bmgr backupnow` + veri temizleme + restore senaryosu manuel dogrulanmali |
+| Widget configure sonucu eksik extra simulasyonu | F22 | Eksik — sahte configure Activity instrumentation testi yok |
 
 ## 10. Onerilen Duzeltme Sirasi
 
