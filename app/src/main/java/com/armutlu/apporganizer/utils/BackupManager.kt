@@ -126,6 +126,7 @@ object BackupManager {
                     put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
                     put("assistantCardsEnabled", AppPrefs.isAssistantCardsEnabled(context))
                     put("clockStyle", AppPrefs.getClockStyle(context))
+                    put("folderTransitionEffect", AppPrefs.getFolderTransitionEffect(context))
                     put("homeScoreVisible", AppPrefs.isHomeScoreVisible(context))
                     put("homeInsightVisible", AppPrefs.isHomeInsightVisible(context))
                     put("homeUsageChartVisible", AppPrefs.isHomeUsageChartVisible(context))
@@ -361,6 +362,8 @@ object BackupManager {
                     if (s.has("assistantCardsEnabled")) AppPrefs.setAssistantCardsEnabled(context, s.getBoolean("assistantCardsEnabled"))
                     s.optString("clockStyle").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setClockStyle(context, it) }
+                    s.optString("folderTransitionEffect").takeIf { it.isNotEmpty() }
+                        ?.let { AppPrefs.setFolderTransitionEffect(context, it) }
                     if (s.has("homeScoreVisible")) AppPrefs.setHomeScoreVisible(context, s.getBoolean("homeScoreVisible"))
                     if (s.has("homeInsightVisible")) AppPrefs.setHomeInsightVisible(context, s.getBoolean("homeInsightVisible"))
                     if (s.has("homeUsageChartVisible")) AppPrefs.setHomeUsageChartVisible(context, s.getBoolean("homeUsageChartVisible"))
