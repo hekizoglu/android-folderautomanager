@@ -14,8 +14,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -82,6 +83,9 @@ internal fun HomeTickerRow(
     var direction by remember { mutableStateOf(1) } // 1 = ileri, -1 = geri
     // Basili tut -> sessize alma menusu (8 saat / 1 gun / 7 gun) (D233)
     var muteMenuOpen by remember { mutableStateOf(false) }
+    // Ayni ogeye art arda tiklama sonrasi navigation cakismasi/donma tespit edildi (D247 Roadmap #5).
+    // Son basarili tiklamadan 700ms gecmeden yeni tiklama yok sayilir.
+    var lastClickAt by remember { mutableStateOf(0L) }
     val current = items[index.coerceIn(0, items.lastIndex)]
 
     // Otomatik ilerleme — index veya liste değişince sayaç sıfırlanır
@@ -107,7 +111,13 @@ internal fun HomeTickerRow(
             .background(Color.White.copy(alpha = 0.10f))
             .border(0.5.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
             .pointerInputTicker(
-                onTap = { onItemClick(current) },
+                onTap = {
+                    val now = System.currentTimeMillis()
+                    if (now - lastClickAt > 700L) {
+                        lastClickAt = now
+                        onItemClick(current)
+                    }
+                },
                 onLongPress = { if (onMute != null) muteMenuOpen = true },
                 onSwipe = { forward ->
                     direction = if (forward) 1 else -1
@@ -174,29 +184,49 @@ internal fun HomeTickerRow(
     }
 }
 
-/** Tap + basili tutma + yatay swipe'ı tek modifier'da birleştirir — grid gesture'larıyla çakışmaz. */
+/**
+ * Tap + basili tutma + yatay swipe'ı tek gesture döngüsünde birleştirir (D247 Roadmap #6).
+ *
+ * Kök neden: eskiden tap ve swipe ayrı `pointerInput` bloklarındaydı; HomeScreen'deki ana
+ * `HorizontalPager` (klasör sayfalama) aynı yatay drag'i nested-scroll/ata gesture olarak
+ * yakalayıp tüketebiliyordu, ticker'a hiç ulaşmıyordu. Çözüm: tek `awaitEachGesture` döngüsünde
+ * `down` olayını hemen `consume()` ederek jesti en baştan bu bileşene kilitliyoruz; böylece üst
+ * `HorizontalPager` aynı dokunuşu çalamaz.
+ */
 private fun Modifier.pointerInputTicker(
     onTap: () -> Unit,
     onLongPress: () -> Unit,
     onSwipe: (forward: Boolean) -> Unit,
-): Modifier = this
-    .pointerInput("ticker_tap") {
-        detectTapGestures(onTap = { onTap() }, onLongPress = { onLongPress() })
-    }
-    .pointerInput("ticker_swipe") {
+): Modifier = this.pointerInput(Unit) {
+    awaitEachGesture {
+        val down = awaitFirstDown(requireUnconsumed = false)
+        // Jesti hemen tüketerek üst HorizontalPager'ın (klasör sayfalama) bu dokunuşu
+        // çalmasını engelle — nested scroll çakışmasının kök nedeni buydu.
+        down.consume()
+        val downTimeMillis = System.currentTimeMillis()
+        var isDragging = false
         var accumulated = 0f
-        detectHorizontalDragGestures(
-            onDragStart = { accumulated = 0f },
-            onDragEnd = {
-                // Sola kaydırma = sonraki haber (haber şeridi alışkanlığı), sağa = önceki
-                if (accumulated < -48f) onSwipe(true)
-                else if (accumulated > 48f) onSwipe(false)
-                accumulated = 0f
-            },
-            onDragCancel = { accumulated = 0f },
-            onHorizontalDrag = { change, dragAmount ->
+        while (true) {
+            val event = awaitPointerEvent()
+            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+            if (!change.pressed) {
                 change.consume()
-                accumulated += dragAmount
+                if (!isDragging) {
+                    val elapsed = System.currentTimeMillis() - downTimeMillis
+                    if (elapsed >= viewConfiguration.longPressTimeoutMillis) onLongPress() else onTap()
+                }
+                break
             }
-        )
+            accumulated += change.positionChange().x
+            if (!isDragging && kotlin.math.abs(accumulated) > viewConfiguration.touchSlop) {
+                isDragging = true
+            }
+            change.consume()
+        }
+        if (isDragging) {
+            // Sola kaydırma = sonraki haber (haber şeridi alışkanlığı), sağa = önceki
+            if (accumulated < -48f) onSwipe(true)
+            else if (accumulated > 48f) onSwipe(false)
+        }
     }
+}

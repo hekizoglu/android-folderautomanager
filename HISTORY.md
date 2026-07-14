@@ -2,6 +2,11 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 265 - 2026-07-14 [HomeTickerRow: donma + swipe bug fix (Roadmap #5, #6)]
+**Yapılanlar:** `HomeTickerRow.kt` — art arda tıklamada donma (700ms debounce, `lastClickAt`) ve swipe çalışmama (tap+swipe tek `awaitEachGesture` döngüsünde birleştirildi, `down.consume()` ile üst `HorizontalPager`'ın jesti çalması engellendi) düzeltildi.
+**Bug:** Kök neden — ayrı `pointerInput` blokları (`detectTapGestures` + `detectHorizontalDragGestures`) ana ekran `HorizontalPager`'ıyla nested-scroll çakışması yaşıyordu, swipe hiç tetiklenmiyordu; tıklamada debounce yoktu.
+**Sonraki:** ROADMAP Hüseyin Geri Bildirim Listesi madde 1 (izin butonu stuck state).
+
 ## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]
 
 **Yapılanlar:** Tablet emulator (`1280x800`, density `160`) üzerinde yakalanan “App Organizer isn't responding” ANR ekranı incelendi. İlk kanıt `artifacts/tablet-debug/tablet-current-20260714-132819.png`: Play Store sign-in ekranı arkasında AppOrganizer ANR dialog'u. Logcat, AppOrganizer activity pause/top-resumed timeout ve ana thread frame skip işaretleri verdi. İki hedefli düzeltme yapıldı: `AppListViewModel.syncInstalledApps()` artık cihaz/DB sync ve search bootstrap işini `Dispatchers.IO` üzerinde başlatıyor; `LauncherActivity` onboarding tamamlanmamışken `MainActivity`'ye yönlendirdikten sonra `finish()` çağırıyor, böylece tablet geçişinde yarım kalan launcher activity pause timeout üretmiyor.

@@ -49,17 +49,11 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Puan:** KV=3 U=4 BR=4 EA=2 → Toplam=13
 **Durum:** Bekliyor 🐛
 
-### [5] 🐛 Ticker açık item'a tekrar tıklayınca donuyor
-**Sorun/İstek:** HomeTickerRow'da bir öğe açıldıktan sonra tekrar üstüne tıklanınca ekran kilitleniyor/donuyor.
-**Nasıl yapılmalı:** `HomeTickerRow.kt:166` civarındaki `onClick = { ... }` bloğu incelenmeli — muhtemelen navigation çağrısı (`navController.navigate(...)`) aynı destinasyona art arda tetiklenince state çakışması veya composition sırasında recursive recomposition oluşuyor. `LauncherViewModel.kt`'deki `tickerItems` state'i click sonrası güncellenirken aynı frame'de ikinci tıklama gelirse race condition olası. Çözüm: click handler'a debounce (`remember { mutableStateOf(false) }` + son tıklama zaman damgası) veya `navController.currentBackStackEntry` kontrolü ile aynı route'a çift push engellenmeli.
-**Puan:** KV=4 U=4 BR=4 EA=3 → Toplam=15
-**Durum:** Bekliyor 🐛
+### [5] 🐛 Ticker açık item'a tekrar tıklayınca donuyor — ✅ Tamamlandı (D265)
+Çözüm: `HomeTickerRow.kt` tıklamaya 700ms debounce (`lastClickAt`) eklendi. Detay → HISTORY.md Döngü 265.
 
-### [6] 🐛 Ticker'da swipe (kaydırma) çalışmıyor
-**Sorun/İstek:** Ana ekran ticker'ında sağa-sola kaydırma jesti tepki vermiyor.
-**Nasıl yapılmalı:** `HomeTickerRow.kt` içinde swipe/pager mantığı aranmalı (`HorizontalPager`, `draggable`, veya manuel `pointerInput` + `detectHorizontalDragGestures`). Eğer bileşen `LazyRow` gibi normal scroll container ise, üstteki `HomeScreen.kt` sayfa `HorizontalPager`'ı (klasör sayfalama) gesture'ı yutuyor olabilir (nested scroll çakışması) — `Modifier.nestedScroll()` konfigürasyonu ve pointer input öncelik sırası kontrol edilmeli. Madde 5 ile aynı dosyada olduğu için birlikte ele alınmalı.
-**Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
-**Durum:** Bekliyor 🐛
+### [6] 🐛 Ticker'da swipe (kaydırma) çalışmıyor — ✅ Tamamlandı (D265)
+Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scroll çakışıyordu. Çözüm: tap+swipe tek `awaitEachGesture` döngüsünde birleştirilip `down.consume()` ile jest bu bileşene kilitlendi. Detay → HISTORY.md Döngü 265.
 
 ### [7] Pulse Clock altındaki insight metni kaldırılsın, saat küçültülsün
 **Sorun/İstek:** Saatin altındaki bilgilendirme metni donuk/işlevsiz görünüyor; kaldırılıp saat biraz küçültülebilir.
