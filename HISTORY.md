@@ -2,6 +2,12 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 282 - 2026-07-14 [ROADMAP #27 Ayarlar biyometrik kilit lockout - KRİTİK]
+**Yapılanlar:** `SettingsScreen.kt` — kök neden: Biyometrik Ayarlar Kilidi açıkken `biometricUnlocked` `remember{}` ile tutuluyordu; NavHost her geri dönüşte (ör. Haftalık Rapor→Rapor Merkezi→İstatistikler→Ayarlar) composable'ı sıfırdan compose ettiği için state kayboluyor, `LaunchedEffect(Unit)` her seferinde biyometrik istiyordu. Tek bir eşleşmeme/iptal `onFailure={onNavigateBack()}` tetikleyip kullanıcıyı Ayarlar'dan tamamen dışlıyordu (tekrar denedikçe tekrar başarısız). Fix: composable-dışı `SettingsLockSession` singleton eklendi — process ömrü boyunca tek seferlik unlock, aynı oturumda tekrar biyometrik istenmiyor.
+**Agent:** yok, doğrudan kod okuma + fix.
+**CLAUDE.md/LEARNINGS.md:** güncellenmedi (tek seferlik bug fix, kalıcı kural değil).
+**Sonraki:** ROADMAP'taki bir sonraki öncelikli madde.
+
 ## Döngü 281 - 2026-07-14 [ROADMAP #20 klasör geçiş animasyonu]
 **Puanlama:** Mevcut altyapı 3/5, kullanıcı değeri 3/5, risk 3/5, doğrulama 3/5 → 12/20. Kalan son kod maddesi olduğu için düşük riskli pager transform olarak uygulandı; gerçek iPhone hissi görsel/tablet smoke ile ayrıca değerlendirilmelidir.
 **Yapılanlar:** `HomeScreenFolderPager` içindeki `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı. Sayfa offset'ine bağlı `graphicsLayer` alpha, scale ve hafif `rotationY` efekti eklendi. `HomeScreenPageIndicator` aktif/inaktif nokta boyutunu `animateDpAsState` ile animasyonlu hale getirdi.

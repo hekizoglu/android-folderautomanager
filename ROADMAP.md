@@ -160,11 +160,10 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
 **Durum:** Bekliyor
 
-### [27] 🐛 Ayarlar sayfası kilitleniyor — Haftalık Rapor'dan geri dönünce ana Ayarlar açılmıyor (KRİTİK)
-**Sorun/İstek:** Ayarlar > Haftalık Rapor ekranına girilip geri tuşuyla/geri okuyla çıkılınca ana Ayarlar sayfası açılmıyor, kullanıcı Ayarlar'a erişemez hale geliyor (kilitlenme).
-**Nasıl yapılmalı:** EN YÜKSEK ÖNCELİK — kullanıcıyı Ayarlar'dan tamamen dışlıyor. `AppNavigation.kt`'deki Ayarlar↔Haftalık Rapor (`WrappedReportScreen.kt`/`Routes.WEEKLY_REPORT` veya benzeri) route tanımı incelenmeli: (a) `popBackStack()` çağrısı yanlış hedefe gidiyor olabilir (örn. `navigateUp()` yerine güncel olmayan bir route string'i hedeflemiş), (b) Haftalık Rapor ekranı `navController.navigate(Routes.SETTINGS) { launchSingleTop = true }` gibi bir çağrıyla kendi üstüne yeniden navigate edip sonsuz döngü/yanlış state yaratıyor olabilir, (c) Ayarlar ana ekranının ViewModel'i (varsa) Haftalık Rapor'a geçişte `DisposableEffect`/lifecycle ile yanlış temizleniyor, geri dönüşte state boş kalıyor olabilir. Reprodüksiyon adımları net değilse önce emülatörde adım adım doğrulanmalı (Ayarlar aç → Haftalık Rapor'a gir → geri tuşuna bas → sonucu gözlemle).
-**Puan:** KV=5 U=4 BR=4 EA=3 → Toplam=16
-**Durum:** Bekliyor 🐛
+### [27] ✅ Ayarlar sayfası kilitleniyor — biyometrik kilit lockout (KRİTİK) — Tamamlandı D282
+**Kök neden:** `AppNavigation.kt`'deki route zinciri (SETTINGS→SETTINGS_STATS→REPORTS_CENTER→WRAPPED_REPORT, popBackStack() hepsi doğru) sorunlu değildi. Gerçek kök neden `SettingsScreen.kt` içindeki Biyometrik Ayarlar Kilidi'ydi: `biometricUnlocked` `remember{}` ile tutuluyordu, NavHost her geri dönüşte composable'ı sıfırdan compose ettiğinden state kayboluyor, `LaunchedEffect(Unit)` her seferinde yeniden biyometrik istiyordu. Tek bir eşleşmeme/iptalde `onFailure={onNavigateBack()}` kullanıcıyı Ayarlar'dan tamamen dışlıyor, her yeniden deneme aynı döngüye giriyordu.
+**Çözüm:** `SettingsScreen.kt`'ye composable-dışı `SettingsLockSession` singleton eklendi — process ömrü boyunca tek seferlik unlock; aynı oturumda Ayarlar'a her dönüşte tekrar biyometrik istenmiyor.
+**Durum:** ✅ Tamamlandı (D282), build doğrulandı (`assembleDebug -PskipGoogleServices` başarılı).
 
 ### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
 **Durum:** ✅ Tamamlandı (D265, doğrulama) — `HomeAppSearchBar` sonuç listesi zaten türe göre gruplanmış ayrı bölümler halinde: "Uygulamalar" (Search ikon), "Klasörler" (Folder ikon), "Ayarlar" (Search ikon), "Kişiler" (Person ikon), "Dosyalar" (Description ikon) — her grup `HomeSearchGroupHeader(label, icon)` ile başlık+ikon alıyor (satır 969, 1019, 1062, 1102, 1259), çoklu grup olduğunda gösteriliyor. Satır bazlı ikon değil grup başlığı bazlı etiketleme — kullanıcı değerini karşılıyor, ek kod değişikliği gerekmedi.

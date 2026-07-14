@@ -50,6 +50,22 @@ import com.armutlu.apporganizer.utils.BiometricHelper
  * SettingsNotificationsScreen, SearchSettingsScreen, SettingsAppsScreen,
  * SettingsStatsScreen, SettingsSecurityScreen, SettingsAboutScreen.
  */
+/**
+ * ROADMAP [27] fix (KRİTİK): Biyometrik Ayarlar Kilidi açıkken SettingsScreen
+ * her navigasyonda (ör. Haftalık Rapor'dan geri dönüşte) NavHost tarafından
+ * yeniden compose ediliyor; `remember{}` state kaybolduğu için biometricUnlocked
+ * her seferinde false'a dönüyor ve LaunchedEffect(Unit) yeniden biyometrik
+ * doğrulama istiyordu. Doğrulama tek bir yanlış eşleşme/iptal ile
+ * `onFailure = { onNavigateBack() }` çağırıp kullanıcıyı Ayarlar'dan tamamen
+ * dışlıyordu (geri gitmeye çalıştıkça tekrar tekrar başarısız oluyordu).
+ * Çözüm: kilidi process ömrü boyunca tek seferlik composable-dışı bir
+ * singleton'da tut — aynı oturumda Ayarlar'a her dönüşte tekrar biyometrik
+ * istenmez.
+ */
+private object SettingsLockSession {
+    var unlocked: Boolean = false
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -68,11 +84,18 @@ fun SettingsScreen(
 
     // Biometric Settings Lock — açılışta kilidi doğrula (alt ekranlara
     // yalnızca bu hub üzerinden girildiği için kilit burada yeterli)
-    var biometricUnlocked by remember { mutableStateOf(false) }
+    var biometricUnlocked by remember { mutableStateOf(SettingsLockSession.unlocked) }
     LaunchedEffect(Unit) {
+        // D27 fix: bu oturumda daha once basariyla acildiysa (ör. Haftalik Rapor'a
+        // gidip geri donulduyse) tekrar biyometrik istenmez — asagidaki dal atlanir.
+        if (SettingsLockSession.unlocked) {
+            biometricUnlocked = true
+            return@LaunchedEffect
+        }
         val lockEnabled = AppPrefs.isBiometricSettingsLockEnabled(context)
         if (!lockEnabled) {
             biometricUnlocked = true
+            SettingsLockSession.unlocked = true
             return@LaunchedEffect
         }
         val activity = context as? FragmentActivity
@@ -82,7 +105,10 @@ fun SettingsScreen(
         }
         BiometricHelper.authenticate(
             activity = activity,
-            onSuccess = { biometricUnlocked = true },
+            onSuccess = {
+                biometricUnlocked = true
+                SettingsLockSession.unlocked = true
+            },
             onFailure = { onNavigateBack() }
         )
     }
