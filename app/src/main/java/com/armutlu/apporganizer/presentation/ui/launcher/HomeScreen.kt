@@ -21,11 +21,13 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -111,6 +113,7 @@ fun HomeScreen(
     var bgGradientStyle by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getHomeBackgroundStyle(context)) }
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    var recentNotificationAppsRowEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentNotificationAppsRowEnabled(context)) }
     var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
     var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
@@ -118,9 +121,12 @@ fun HomeScreen(
     var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
     var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
+    var missionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)) }
     val tickerItems by viewModel.tickerItems.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
+    val recentNotificationCounts by viewModel.recentNotificationCounts.collectAsState()
+    val recentNotificationApps by viewModel.recentNotificationApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
     val categories by viewModel.categories.collectAsState()
@@ -187,6 +193,8 @@ fun HomeScreen(
                     widgetAreaEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ENABLED ->
                     suggestionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_NOTIFICATION_APPS_ROW ->
+                    recentNotificationAppsRowEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentNotificationAppsRowEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_APPS_ENABLED ->
                     recentAppsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_ENABLED ->
@@ -249,6 +257,8 @@ fun HomeScreen(
                     assistantCardsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_ENABLED ->
                     tickerEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_MISSIONS_ENABLED ->
+                    missionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
                     gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_LONG_PRESS ->
@@ -538,6 +548,47 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(top = if (compactClock) 16.dp else 32.dp, bottom = 8.dp)
             )
+            if (missionsEnabled) {
+                GlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp)
+                        .clickable {
+                            val intent = Intent(context, MainActivity::class.java).apply {
+                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            runCatching { context.startActivity(intent) }
+                        },
+                    cornerRadius = 18.dp,
+                    backgroundAlpha = 0.10f,
+                    borderAlpha = 0.18f,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text("★", color = Color(0xFFFFD54F), fontSize = 15.sp)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.missions_home_chip_title),
+                                color = Color.White.copy(alpha = 0.90f),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = stringResource(R.string.missions_home_chip_subtitle),
+                                color = Color.White.copy(alpha = 0.52f),
+                                fontSize = 11.sp,
+                            )
+                        }
+                        Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
+                    }
+                }
+            }
 
             // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,
             // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
@@ -599,6 +650,9 @@ fun HomeScreen(
                 suggestionsEnabled = suggestionsEnabled,
                 suggestedApps = suggestedApps,
                 suggestionsIconSizeDp = suggestionsIconSizeDp,
+                recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                recentNotificationApps = recentNotificationApps,
+                recentNotificationCounts = recentNotificationCounts,
                 recentAppsEnabled = recentAppsEnabled,
                 recentApps = recentApps,
                 dockPackages = dockPackages,
@@ -750,7 +804,12 @@ fun HomeScreen(
             // Folder grid — sayfa başına klasör sayısı: kullanıcı tercihi veya ekran yüksekliğine göre adaptif
             val screenHeightDp = LocalConfiguration.current.screenHeightDp
             // Aktif özellik sayısı — fazla içerik varsa daha az klasör göster
-            val activeFeatureCount = listOf(favoritesEnabled, suggestionsEnabled, recentAppsEnabled).count { it }
+            val activeFeatureCount = listOf(
+                favoritesEnabled,
+                suggestionsEnabled,
+                recentNotificationAppsRowEnabled,
+                recentAppsEnabled
+            ).count { it }
             val requestedPageSize = if (pageFolderCount == 8) {
                 // Varsayılan değerdeyse otomatik adaptif hesapla
                 when {
@@ -1001,10 +1060,13 @@ fun HomeScreen(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.launchApp(context, pkg)
                 },
+                recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                recentNotificationApps = recentNotificationApps,
                 focusSearchOnOpen = focusSearchOnOpen,
                 onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
                 categories = categories,
-                searchResults = searchResults
+                searchResults = searchResults,
+                recentNotificationCounts = recentNotificationCounts
             )
         }
 

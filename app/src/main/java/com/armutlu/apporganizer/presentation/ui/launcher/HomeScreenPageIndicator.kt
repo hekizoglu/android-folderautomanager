@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,10 +42,15 @@ internal fun HomePageIndicator(
         verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(pageCount) { idx ->
+            val dotSize = animateDpAsState(
+                targetValue = if (pagerState.currentPage == idx) 9.dp else 5.dp,
+                animationSpec = tween(180),
+                label = "home_page_dot_$idx"
+            )
             Box(
                 modifier = Modifier
                     .padding(horizontal = 3.dp)
-                    .size(if (pagerState.currentPage == idx) 8.dp else 5.dp)
+                    .size(dotSize.value)
                     .background(
                         if (pagerState.currentPage == idx) Color.White.copy(alpha = 0.9f)
                         else Color.White.copy(alpha = 0.3f),

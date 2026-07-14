@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.viewmodel
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
@@ -20,6 +21,7 @@ import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
@@ -56,6 +58,7 @@ class LauncherViewModelTest {
     private lateinit var mockApplication: Application
     private lateinit var mockRepository: AppRepository
     private lateinit var mockSearchRepository: SearchRepository
+    private lateinit var mockNotificationEventDao: NotificationEventDao
     private lateinit var mockPmHelper: PackageManagerHelper
     private lateinit var mockContext: Context
     private lateinit var mockClassifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
@@ -72,11 +75,13 @@ class LauncherViewModelTest {
         mockApplication = mockk(relaxed = true)
         mockRepository = mockk(relaxed = true)
         mockSearchRepository = mockk(relaxed = true)
+        mockNotificationEventDao = mockk(relaxed = true)
         mockPmHelper = mockk(relaxed = true)
         mockContext = mockk(relaxed = true)
         mockClassifier = mockk(relaxed = true)
 
         every { mockRepository.getAllAppsFlow() } returns appsFlow
+        every { mockNotificationEventDao.observeCountsSince(any()) } returns flowOf(emptyList())
 
         mockkObject(AppPrefs)
         every { AppPrefs.getFavorites(any()) } returns emptySet()
@@ -88,6 +93,7 @@ class LauncherViewModelTest {
             application = mockApplication,
             repository = mockRepository,
             searchRepository = mockSearchRepository,
+            notificationEventDao = mockNotificationEventDao,
             packageManagerHelper = mockPmHelper,
             classifier = mockClassifier
         )

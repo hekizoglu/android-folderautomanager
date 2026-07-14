@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.armutlu.apporganizer.domain.models.NotificationEvent
+import kotlinx.coroutines.flow.Flow
 
 /** Paket başına bildirim sayısı — rapor sorgu sonucu. */
 data class PackageNotifCount(
@@ -22,6 +23,12 @@ interface NotificationEventDao {
         WHERE postedAt >= :since GROUP BY packageName ORDER BY count DESC
     """)
     suspend fun countsSince(since: Long): List<PackageNotifCount>
+
+    @Query("""
+        SELECT packageName, COUNT(*) AS count FROM notification_events
+        WHERE postedAt >= :since GROUP BY packageName ORDER BY count DESC
+    """)
+    fun observeCountsSince(since: Long): Flow<List<PackageNotifCount>>
 
     @Query("SELECT * FROM notification_events WHERE postedAt >= :since")
     suspend fun eventsSince(since: Long): List<NotificationEvent>

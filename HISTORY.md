@@ -2,6 +2,41 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 281 - 2026-07-14 [ROADMAP #20 klasör geçiş animasyonu]
+**Puanlama:** Mevcut altyapı 3/5, kullanıcı değeri 3/5, risk 3/5, doğrulama 3/5 → 12/20. Kalan son kod maddesi olduğu için düşük riskli pager transform olarak uygulandı; gerçek iPhone hissi görsel/tablet smoke ile ayrıca değerlendirilmelidir.
+**Yapılanlar:** `HomeScreenFolderPager` içindeki `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı. Sayfa offset'ine bağlı `graphicsLayer` alpha, scale ve hafif `rotationY` efekti eklendi. `HomeScreenPageIndicator` aktif/inaktif nokta boyutunu `animateDpAsState` ile animasyonlu hale getirdi.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. `compileDebugUnitTestKotlin -PskipGoogleServices --no-daemon` başarılı. `git diff --check` hata vermedi; yalnızca mevcut CRLF uyarıları görüldü. Görsel doğrulama/emülatör smoke bu turda çalıştırılmadı; release QA kapısındaki tablet görsel smoke açık risk olarak kalır.
+**Sonraki:** Kodla çözülebilir ROADMAP maddeleri kapandı; kalanlar Play/cihaz/test/release kapılarıdır.
+
+## Döngü 280 - 2026-07-14 [ROADMAP #3 düşük güven sınıflandırma ayarı]
+**Puanlama:** Mevcut altyapı 3/5, kullanıcı değeri 4/5, risk 3/5, doğrulama 4/5 → 14/20. Kontrol Bekleyenler altyapısı hazır olduğu için yeni tablo/migration gerekmeden çözüldü.
+**Yapılanlar:** `AppPrefs.KEY_LOW_CONFIDENCE_REVIEW` eklendi; varsayılan açık. Ayarlar > Uygulamalar > Uygulama Yönetimi altına "Düşük Güvenli Kararları Sor" toggle'ı eklendi. AppListViewModel otomatik sınıflandırma, LLM kategorize ve reset+reclassify akışlarında bu ayarı uyguluyor: açıkken düşük güvenli kararlar `PENDING`, kapalıyken otomatik kabul edilip `NOT_REQUIRED` yazılıyor.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. İlk `compileDebugUnitTestKotlin` denemesi geçici KSP cache `unexpected EOF` hatasıyla durdu; `gradlew --stop` sonrası tekrar başarılı. Son tekrar `compileDebugUnitTestKotlin -PskipGoogleServices --no-daemon` başarılı. `git diff --check` hata vermedi; yalnızca mevcut CRLF uyarıları görüldü.
+**Sonraki:** Kalan tek kod maddesi #20 klasör geçiş animasyonu.
+
+## Döngü 279 - 2026-07-14 [ROADMAP #18/#21 son bildirim uygulamaları]
+**Puanlama:** #18 mevcut altyapı 4/5, kullanıcı değeri 3/5, risk 3/5, doğrulama 4/5 → 14/20. #21 aynı veri kaynağını kullandığı için birlikte ele alındığında uygulanabilirlik 3→4 oldu; ortak döngüde toplam kullanıcı değeri daha yüksek.
+**Yapılanlar:** `NotificationEventDao` için reaktif son 24 saat paket bazlı sayım eklendi. `LauncherViewModel` son bildirim sayım map'i ve son bildirim alan uygulamalar listesini üretiyor. All Apps satırları bildirim metni kapalıyken uygulama altında "Son 24 saatte N bildirim" gösteriyor. Ayarlar > Ana Ekran > Öneriler ve bildirimler altına varsayılan kapalı "Son Bildirim Alanlar" toggle'ı eklendi; açıkken ana ekranda ve All Apps çekmecesi üst bölümünde son 24 saatte bildirim alan uygulamalar görünüyor. Bildirim içeriği gösterilmiyor, yalnız sayı/paket zamanı kullanılıyor.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. `compileDebugUnitTestKotlin -PskipGoogleServices --no-daemon` başarılı. `git diff --check` hata vermedi; yalnızca mevcut CRLF uyarıları görüldü.
+**Sonraki:** Kalan kod maddeleri: #3 güven skoruna göre otomatik kategorize toggle'ı ve #20 klasör geçiş animasyonu.
+
+## Döngü 278 - 2026-07-14 [ROADMAP #9 En Çok Kullandıklarım kompakt bilgi]
+**Puanlama:** Mevcut altyapı 4/5, kullanıcı değeri 3/5, risk 4/5, doğrulama 4/5 → 15/20. #7 sonrasında en hızlı kapanan görsel/UX iyileştirme olarak seçildi.
+**Yapılanlar:** Ana ekrandaki öneri/en çok kullanılanlar satırı 4 yerine 3 uygulama gösterecek şekilde kompaktlaştırıldı. Aynı satıra teknik bilgi pili eklendi: kaç öneri gösterildiği ve önerinin "Son 28 gün + bu saat" sinyaliyle üretildiği açıkça gösteriliyor. TR/EN string resource'ları eklendi.
+**Doğrulama:** İlk derleme `widthIn` import eksikliğiyle durdu; import eklendikten sonra `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. `git diff --check` hata vermedi; yalnızca mevcut CRLF uyarıları görüldü.
+**Sonraki:** Ortak altyapı nedeniyle #18 All Apps bildirim özeti ve #21 son bildirim alan uygulamalar birlikte ele alınabilir.
+
+## Döngü 277 - 2026-07-14 [ROADMAP #7 Pulse Clock sadeleştirme]
+**Puanlama:** Mevcut altyapı 5/5, kullanıcı değeri 3/5, risk 5/5, doğrulama 5/5 → 18/20. Diğer adaylara göre en hızlı kapanan ve en düşük riskli madde olduğu için önce seçildi.
+**Yapılanlar:** Pulse Clock insight metni yeni/varsayılan kurulumda kapalı hale getirildi (`KEY_HOME_INSIGHT_VISIBLE` varsayılanı `false`). Ayar kaldırılmadı; kullanıcı isterse Ayarlar > Ana Ekran bölümünden tekrar açabilir. Pulse kart yüksekliği 168→148dp, compact yükseklik 124→112dp, saat fontu 76→66sp ve compact font 54→48sp yapıldı.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. `git diff --check` hata vermedi; yalnızca mevcut CRLF uyarıları görüldü.
+**Sonraki:** Puan sırasına göre #9 veya ortak altyapı nedeniyle #18+#21 birlikte ele alınabilir.
+
+## Döngü 276 - 2026-07-14 [ROADMAP #10 Dijital Yaşam Skoru rozeti]
+**Yapılanlar:** ROADMAP #10 tamamlandı. `TickerComposer` ve `LauncherViewModel` içinde zaten gerçek sinyallerden üretilen Dijital Yaşam Skoru ticker'ı korunarak `HomeTickerRow` görseli iyileştirildi: dijital/skor/denge bağlamındaki `NN/100` metni algılanıyor ve ticker içinde "Skor NN" renk kodlu rozet olarak gösteriliyor. Eşikler: 80+ koyu yeşil, 60+ yeşil, 40+ sarı, altı kırmızı.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. `git diff --check` hata vermedi; yalnızca mevcut CRLF uyarıları görüldü.
+**Sonraki:** Bekleyen kolay adaylar: #9 En Çok Kullandıklarım alanı küçültme veya #18 AllApps bildirim özeti.
+
 ## Döngü 270 - 2026-07-14 [ROADMAP #14 Direkt Onayla açıklaması]
 **Yapılanlar:** ROADMAP'ten yüksek puanlı/kolay madde seçildi: #14 `"Direkt Onayla" butonuna açıklama eklensin` (11p, düşük risk). `ClassificationReviewScreen.kt` içinde "Onayla" butonu "Direkt Onayla" olarak netleştirildi ve buton grubunun altına sade açıklama eklendi: uygulamanın önerilen kategoriye taşınacağı ve sonradan klasörden tekrar değiştirilebileceği açıklandı.
 **Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. ROADMAP #14 Döngü 270 olarak tamamlandı işaretlendi.
@@ -22,6 +57,16 @@
 **Yapılanlar (Özellik):** Ayarlar > Görünüm > Arka Plan'a 3. seçenek "Gradyan" eklendi (mevcut Duvar Kağıdı/Düz Renk yanına). `AppPrefs.kt` → `KEY_HOME_BACKGROUND_STYLE` + `HOME_BG_TURKUAZ`/`HOME_BG_GECE_MAVISI`/`HOME_BG_MINIMAL_GRI` sabitleri + getter/setter (varsayılan Turkuaz). `SettingsAppearanceSection.kt` → bgType listesine "gradient" eklendi, seçiliyken 3 gradyan swatch (Turkuaz #00897B→#26C6DA, Gece Mavisi #0A1128→#1B2A4A, Minimal Koyu Gri #1C1C1C→#2E2E2E) gösteriliyor. `HomeScreen.kt` → kök `Box` arka planı `bgType` "gradient" olduğunda `homeBackgroundBrush()` (dosya sonu) ile `Brush.verticalGradient` render ediyor; mevcut `OnSharedPreferenceChangeListener` reaktif pattern'e (LEARNINGS) uyularak `KEY_HOME_BACKGROUND_STYLE` değişimi anında yansıyor.
 **Build:** `.\gradlew assembleDebug -PskipGoogleServices` BAŞARILI (3m44s), yalnızca önceden var olan uyarılar (deprecated LocalLifecycleOwner vb.) — yeni hata/uyarı yok. `versionCode` 44→45, `versionName` 1.3.21→1.3.22.
 **Sonraki:** Emülatörde back-tuşu senaryosu ve 3 gradyan seçeneği görsel doğrulama.
+
+## Döngü 274 - 2026-07-14 [Ana ekran Görevler girişi + arama mantığı]
+**Yapılanlar:** ROADMAP #13 tamamlandı: ana ekranda saat kartının altına `Routes.MISSIONS` açan Görevler chip'i eklendi; `KEY_MISSIONS_ENABLED` kapalıysa görünmüyor. Ana ekran birleşik aramasında placeholder kapsamı kaynak durumuna göre düzeltildi; kişi izin satırı resource'a taşındı. FTS debounce nedeniyle eski ayar/dosya sonuçlarının yeni sorgu yazılırken görünmesi engellendi; `setting/file` sonuçları mevcut sorguyla tekrar eşleşmeden gösterilmiyor.
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı; `git diff --check` hata vermedi.
+**Sonraki:** Emülatörde "lokasyon/konum" araması yazarken ve 250ms bekleme sonrası sonuçların tutarlı kaldığı görsel olarak kontrol edilebilir.
+
+## Döngü 275 - 2026-07-14 [ROADMAP #8 onboarding değer anlatımı]
+**Yapılanlar:** Onboarding welcome ekranındaki güçlü yanlar kartı hardcoded metinden çıkarılıp TR/EN string resource'lara taşındı. Kart artık 3700+ uygulama tanıma, tek arama kutusu, Dijital Nabız raporları ve gizlilik vaadini kısa/somut anlatıyor. Hızlı ayarlardaki ana ekran araması açıklaması da gerçek kapsamla uyumlu hale getirildi.
+**Doğrulama:** İlk deneme 120 sn komut zaman aşımına uğradı; Gradle daemon durdurulup tekrar çalıştırıldı. `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı.
+**Sonraki:** Onboarding görsel smoke'ta welcome kartının taşma yapmadığı kontrol edilebilir.
 
 ## Döngü 265 - 2026-07-14 [HomeTickerRow: donma + swipe bug fix (Roadmap #5, #6)]
 **Yapılanlar:** `HomeTickerRow.kt` — art arda tıklamada donma (700ms debounce, `lastClickAt`) ve swipe çalışmama (tap+swipe tek `awaitEachGesture` döngüsünde birleştirildi, `down.consume()` ile üst `HorizontalPager`'ın jesti çalması engellendi) düzeltildi.

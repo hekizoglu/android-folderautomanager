@@ -63,6 +63,48 @@ data class TickerItem(
     val key: String get() = "${packageName ?: ""}|${categoryId ?: ""}|${route ?: ""}|$text"
 }
 
+@Composable
+private fun DigitalLifeScoreBadge(score: Int) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(digitalLifeScoreColor(score).copy(alpha = 0.92f))
+            .border(0.6.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Skor $score",
+            color = Color.White,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
+    }
+}
+
+private fun extractDigitalLifeScore(text: String): Int? {
+    val normalized = text.lowercase()
+    val hasDigitalScoreContext =
+        normalized.contains("dijital") || normalized.contains("skor") || normalized.contains("denge")
+    if (!hasDigitalScoreContext) return null
+
+    return DIGITAL_LIFE_SCORE_REGEX.find(text)
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.toIntOrNull()
+        ?.coerceIn(0, 100)
+}
+
+private fun digitalLifeScoreColor(score: Int): Color = when {
+    score >= 80 -> Color(0xFF2E7D32)
+    score >= 60 -> Color(0xFF43A047)
+    score >= 40 -> Color(0xFFF9A825)
+    else -> Color(0xFFE53935)
+}
+
+private val DIGITAL_LIFE_SCORE_REGEX = Regex("""\b(\d{1,3})/100\b""")
+
 /**
  * Etkileşimli haber şeridi — haber bülteni tarzı:
  * - Her seferinde 1 haber; ~6 sn'de bir otomatik sonrakine geçer (slide animasyonu)
@@ -145,15 +187,21 @@ internal fun HomeTickerRow(
             modifier = Modifier.weight(1f)
         ) { i ->
             val item = items[i.coerceIn(0, items.lastIndex)]
+            val digitalScore = remember(item.text) { extractDigitalLifeScore(item.text) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(item.emoji, fontSize = 12.sp)
+                if (digitalScore != null) {
+                    DigitalLifeScoreBadge(score = digitalScore)
+                }
                 Text(
                     text = item.text,
                     color = Color.White.copy(alpha = 0.88f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE, velocity = 36.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .basicMarquee(iterations = Int.MAX_VALUE, velocity = 36.dp)
                 )
             }
         }

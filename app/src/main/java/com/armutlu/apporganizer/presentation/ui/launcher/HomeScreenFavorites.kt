@@ -22,6 +22,9 @@ internal fun HomeFavoritesSection(
     suggestionsEnabled: Boolean,
     suggestedApps: List<AppInfo>,
     suggestionsIconSizeDp: Int = 40,
+    recentNotificationAppsEnabled: Boolean = false,
+    recentNotificationApps: List<AppInfo> = emptyList(),
+    recentNotificationCounts: Map<String, Int> = emptyMap(),
     recentAppsEnabled: Boolean,
     recentApps: List<AppInfo>,
     dockPackages: List<String> = emptyList(),
@@ -38,7 +41,7 @@ internal fun HomeFavoritesSection(
     val favoritePkgs = favoriteApps.mapTo(mutableSetOf()) { it.packageName }
     val visibleSuggestions = suggestedApps
         .filter { it.packageName !in dockPkgs && it.packageName !in favoritePkgs }
-        .take(4)
+        .take(3)
     val suggestionPkgs = visibleSuggestions.mapTo(mutableSetOf()) { it.packageName }
     val visibleRecent = recentApps
         .filter {
@@ -69,6 +72,22 @@ internal fun HomeFavoritesSection(
             apps = visibleSuggestions,
             iconPackPkg = iconPackPkg,
             iconSizeDp = suggestionsIconSizeDp,
+            onAppClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onLaunchApp(app.packageName)
+            },
+            onAppLongClick = { app ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onAppLongClick(app.packageName)
+            }
+        )
+    }
+
+    if (!compactMode && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
+        RecentNotificationAppsRow(
+            apps = recentNotificationApps,
+            notificationCounts = recentNotificationCounts,
+            iconPackPkg = iconPackPkg,
             onAppClick = { app ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onLaunchApp(app.packageName)

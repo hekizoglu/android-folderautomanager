@@ -97,6 +97,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.draw.clip
@@ -455,6 +456,7 @@ internal fun AppSuggestionsRow(
     modifier: Modifier = Modifier
 ) {
     if (apps.isEmpty()) return
+    val visibleApps = remember(apps) { apps.take(3) }
     val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
     val labelRes = remember(hour) {
         when {
@@ -469,8 +471,8 @@ internal fun AppSuggestionsRow(
     GlassCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 2.dp),
-        cornerRadius = 18.dp,
+            .padding(horizontal = 16.dp, vertical = 1.dp),
+        cornerRadius = 16.dp,
         backgroundAlpha = 0.13f,
         borderAlpha = 0.22f
     ) {
@@ -494,7 +496,7 @@ internal fun AppSuggestionsRow(
             ) {
                 // key(packageName): forEach'te kararlı kimlik — liste değişince produceState'in
                 // önceki ikonu tutup yeni etiketle eşleşmesini (Instagram logo + Akbank yazı) önler.
-                apps.forEach { app ->
+                visibleApps.forEach { app ->
                     key(app.packageName) {
                         SuggestionAppItem(
                             app = app,
@@ -505,6 +507,122 @@ internal fun AppSuggestionsRow(
                         )
                     }
                 }
+                SuggestionSignalPill(count = visibleApps.size)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestionSignalPill(count: Int) {
+    Column(
+        modifier = Modifier
+            .widthIn(min = 88.dp, max = 112.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.08f))
+            .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
+            .padding(horizontal = 8.dp, vertical = 7.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text(
+            text = stringResource(R.string.suggestions_meta_count, count),
+            color = Color.White.copy(alpha = 0.82f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            text = stringResource(R.string.suggestions_meta_signal),
+            color = Color.White.copy(alpha = 0.52f),
+            fontSize = 9.sp,
+            lineHeight = 11.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+internal fun RecentNotificationAppsRow(
+    apps: List<AppInfo>,
+    notificationCounts: Map<String, Int>,
+    iconPackPkg: String = "",
+    iconSizeDp: Int = 38,
+    onAppClick: (AppInfo) -> Unit,
+    onAppLongClick: (AppInfo) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (apps.isEmpty()) return
+    GlassCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 1.dp),
+        cornerRadius = 16.dp,
+        backgroundAlpha = 0.12f,
+        borderAlpha = 0.20f
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.recent_notifications_row_title),
+                    color = Color.White.copy(alpha = 0.58f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    apps.take(4).forEach { app ->
+                        key(app.packageName) {
+                            SuggestionAppItem(
+                                app = app,
+                                iconPackPkg = iconPackPkg,
+                                iconSize = iconSizeDp.dp,
+                                onClick = { onAppClick(app) },
+                                onLongClick = { onAppLongClick(app) }
+                            )
+                        }
+                    }
+                }
+            }
+            val total = apps.sumOf { notificationCounts[it.packageName] ?: 0 }
+            Column(
+                modifier = Modifier
+                    .widthIn(min = 88.dp, max = 112.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White.copy(alpha = 0.08f))
+                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 8.dp, vertical = 7.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = stringResource(R.string.recent_notifications_row_count, total),
+                    color = Color.White.copy(alpha = 0.82f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.recent_notifications_row_signal),
+                    color = Color.White.copy(alpha = 0.52f),
+                    fontSize = 9.sp,
+                    lineHeight = 11.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
@@ -785,6 +903,7 @@ internal fun HomeAppSearchBar(
 
     // Kişi kaynağı — Settings'ten dönünce güncellensin (Reaktif AppPrefs pattern'i, LEARNINGS)
     var contactsOn by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
+    var filesOn by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
     // Kullanıcı Ayarlar'dan kişi kaynağını BİLİNÇLİ kapattıysa "izin ver" kısayolu da gizlenir
     var contactsOptedOut by remember {
         mutableStateOf(
@@ -795,9 +914,12 @@ internal fun HomeAppSearchBar(
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) {
-                contactsOn = AppPrefs.isSearchSourceContactsEnabled(context)
-                contactsOptedOut = AppPrefs.hasSearchSourceContactsPreference(context) && !contactsOn
+            when (key) {
+                AppPrefs.KEY_SEARCH_SOURCE_CONTACTS -> {
+                    contactsOn = AppPrefs.isSearchSourceContactsEnabled(context)
+                    contactsOptedOut = AppPrefs.hasSearchSourceContactsPreference(context) && !contactsOn
+                }
+                AppPrefs.KEY_SEARCH_SOURCE_FILES -> filesOn = AppPrefs.isSearchSourceFilesEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -858,15 +980,27 @@ internal fun HomeAppSearchBar(
             }.take(4)
         }
     }
+    fun SearchDocument.matchesCurrentQuery(): Boolean {
+        val q = query.trim().lowercase(Locale("tr"))
+        if (q.isBlank()) return false
+        return title.lowercase(Locale("tr")).contains(q) ||
+            subtitle.lowercase(Locale("tr")).contains(q) ||
+            sourceId.lowercase(Locale("tr")).contains(q)
+    }
     val contactResults = remember(query, contactsOn, contactsPermGranted) {
         if (!contactsOn || !contactsPermGranted || query.isBlank()) emptyList()
         else SearchCache.searchContacts(query, 3, phonetic = true, fuzzy = true)
     }
     // Dosya adları — SearchRepository FTS5 indeksinden (LauncherViewModel.searchResults akışı)
     val fileResults = if (query.isBlank()) emptyList()
-        else searchResults[SourceType.FILE].orEmpty().take(4)
+        else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }.take(4)
     val settingResults = if (query.isBlank()) emptyList()
-        else searchResults[SourceType.SETTING].orEmpty().take(4)
+        else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }.take(4)
+    val searchHintRes = if ((contactsOn && contactsPermGranted) || filesOn) {
+        R.string.home_search_hint_full
+    } else {
+        R.string.home_search_hint_basic
+    }
     // İzin yoksa "Kişiler" grubunda izin kısayolu göster (kullanıcı kaynağı kapatmadıysa)
     val showContactsPermissionHint = query.isNotBlank() && !contactsPermGranted &&
         !contactsOptedOut && !contactsPermDeniedSession
@@ -1238,9 +1372,9 @@ internal fun HomeAppSearchBar(
                                     tint = Color.White.copy(alpha = 0.70f), modifier = Modifier.size(18.dp))
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Kişilerde de ara", color = Color.White.copy(alpha = 0.90f),
+                                Text(stringResource(R.string.home_search_contacts_enable_title), color = Color.White.copy(alpha = 0.90f),
                                     fontSize = 14.sp)
-                                Text("Rehber sonuçları için dokunup izin ver",
+                                Text(stringResource(R.string.home_search_contacts_enable_desc),
                                     color = Color.White.copy(alpha = 0.45f), fontSize = 11.sp)
                             }
                         }
@@ -1395,7 +1529,7 @@ internal fun HomeAppSearchBar(
                             Box(Modifier.weight(1f)) {
                                 // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez
                                 if (query.isEmpty()) Text(
-                                    "Uygulama, kategori ara…",
+                                    stringResource(searchHintRes),
                                     color = Color.White.copy(alpha = 0.40f), fontSize = 14.sp
                                 )
                                 inner()

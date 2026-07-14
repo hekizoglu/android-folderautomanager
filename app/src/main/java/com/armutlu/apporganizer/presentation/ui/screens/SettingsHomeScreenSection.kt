@@ -38,6 +38,7 @@ fun SettingsHomeScreenSection(
     var hideNavButtons     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
     var allAppsBgAlpha     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var suggestionsEnabled       by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    var recentNotificationAppsRowEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentNotificationAppsRowEnabled(context)) }
     var recentAppsEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
     var favoritesEnabled         by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
@@ -173,6 +174,17 @@ fun SettingsHomeScreenSection(
                 }
             }
         }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.NotificationsActive,
+            title = "Son Bildirim Alanlar",
+            subtitle = "Son 24 saatte bildirim gelen uygulamaları ana ekranda göster",
+            checked = recentNotificationAppsRowEnabled,
+            onCheckedChange = {
+                recentNotificationAppsRowEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setRecentNotificationAppsRowEnabled(context, it)
+            }
+        )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.History,

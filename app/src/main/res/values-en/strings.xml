@@ -45,6 +45,10 @@
 
     <!-- Search -->
     <string name="search_hint">Search apps…</string>
+    <string name="home_search_hint_basic">Search apps, folders or settings</string>
+    <string name="home_search_hint_full">Search apps, folders, settings, contacts or files</string>
+    <string name="home_search_contacts_enable_title">Search contacts too</string>
+    <string name="home_search_contacts_enable_desc">Tap to grant permission for contact results</string>
 
     <!-- Folder -->
     <string name="folder_rename_hint">Folder name</string>
@@ -113,6 +117,15 @@
     <string name="onb_welcome_title">Welcome to AppOrganizer</string>
     <string name="onb_welcome_desc">Your apps get sorted into smart folders in seconds, powered by a 3,700+ app category database. Weekly digital life reports, smart suggestions and one search box that finds everything. All your data stays on your device.</string>
     <string name="onb_welcome_btn">Get Started</string>
+    <string name="onb_strengths_title">What do you gain in the first minute?</string>
+    <string name="onb_strength_auto_title">3,700+ app recognition</string>
+    <string name="onb_strength_auto_desc">Popular apps are organized through the category database; low-confidence decisions wait for review.</string>
+    <string name="onb_strength_search_title">One search box</string>
+    <string name="onb_strength_search_desc">Find apps, folders, settings, contacts and files from one place; sources can be disabled in Settings.</string>
+    <string name="onb_strength_reports_title">Digital Pulse reports</string>
+    <string name="onb_strength_reports_desc">Screen time, notification load and usage rhythm are analyzed on your device.</string>
+    <string name="onb_strength_privacy_title">Privacy comes first</string>
+    <string name="onb_strength_privacy_desc">Notification content is not read by default; search statistics never store query text.</string>
 
     <string name="onb_restore_title">Restore from Backup?</string>
     <string name="onb_restore_desc">Default launcher is selected. If you have a JSON backup from your previous phone, you can restore it now.</string>
@@ -193,7 +206,7 @@
     <string name="onb_quick_suggestions_title">App Suggestions</string>
     <string name="onb_quick_suggestions_desc">Show your most-used apps on the home screen</string>
     <string name="onb_quick_home_search_title">Home Screen Search</string>
-    <string name="onb_quick_home_search_desc">Search bar between folders</string>
+    <string name="onb_quick_home_search_desc">Search apps, folders and settings on the home screen</string>
     <string name="onb_quick_folder_blur_title">Folder Blur Effect</string>
     <string name="onb_quick_folder_blur_desc">Frosted glass effect (requires performance headroom)</string>
     <string name="onb_org_preview_title">Preview Organization</string>
@@ -324,6 +337,11 @@
     <string name="suggestions_label_afternoon">Your afternoon most-used</string>
     <string name="suggestions_label_evening">Your evening most-used</string>
     <string name="suggestions_label_default">Frequent Apps</string>
+    <string name="suggestions_meta_count">%1$d picks</string>
+    <string name="suggestions_meta_signal">Last 28 days + this hour</string>
+    <string name="recent_notifications_row_title">Recent notification apps</string>
+    <string name="recent_notifications_row_count">%1$d alerts</string>
+    <string name="recent_notifications_row_signal">Last 24h, no content</string>
 
     <!-- Wrapped Report -->
     <string name="wrapped_title">🎁 Weekly Report</string>
@@ -444,4 +462,6 @@
     <string name="missions_settings_toggle_subtitle">Daily/weekly missions, star rewards and the home screen personality label</string>
     <string name="missions_settings_open_title">Missions</string>
     <string name="missions_settings_open_subtitle">See today\'s missions and your stars</string>
+    <string name="missions_home_chip_title">Missions</string>
+    <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
 </resources>

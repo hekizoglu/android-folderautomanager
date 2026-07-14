@@ -45,6 +45,10 @@
 
     <!-- Search -->
     <string name="search_hint">Uygulama ara...</string>
+    <string name="home_search_hint_basic">Uygulama, klasör veya ayar ara</string>
+    <string name="home_search_hint_full">Uygulama, klasör, ayar, kişi veya dosya ara</string>
+    <string name="home_search_contacts_enable_title">Kişilerde de ara</string>
+    <string name="home_search_contacts_enable_desc">Rehber sonuçları için dokunup izin ver</string>
 
     <!-- Folder -->
     <string name="folder_rename_hint">Klasör adı</string>
@@ -113,6 +117,15 @@
     <string name="onb_welcome_title">AppOrganizer\'a Hoş Geldiniz</string>
     <string name="onb_welcome_desc">Uygulamaların saniyeler içinde otomatik klasörlenir: 3700+ uygulamalık akıllı kategori veritabanı seni tanır. Haftalık dijital yaşam raporu, akıllı öneriler ve her şeyi bulan tek arama kutusu seni bekliyor. Tüm verilerin cihazında kalır.</string>
     <string name="onb_welcome_btn">Başla</string>
+    <string name="onb_strengths_title">İlk dakikada ne kazanırsın?</string>
+    <string name="onb_strength_auto_title">3700+ uygulama tanıma</string>
+    <string name="onb_strength_auto_desc">Popüler uygulamalar kategori veritabanıyla otomatik klasörlenir; düşük güvenli kararlar onaya düşer.</string>
+    <string name="onb_strength_search_title">Tek arama kutusu</string>
+    <string name="onb_strength_search_desc">Uygulama, klasör, ayar, kişi ve dosyaları aynı yerden bulursun; kaynaklar ayarlardan kapatılabilir.</string>
+    <string name="onb_strength_reports_title">Dijital Nabız raporları</string>
+    <string name="onb_strength_reports_desc">Ekran süresi, bildirim yoğunluğu ve kullanım ritmi cihazında analiz edilir.</string>
+    <string name="onb_strength_privacy_title">Gizlilik önce gelir</string>
+    <string name="onb_strength_privacy_desc">Bildirim içeriği varsayılan olarak okunmaz; arama istatistiklerinde sorgu metni saklanmaz.</string>
 
     <string name="onb_restore_title">Yedekten Dönülsün mü?</string>
     <string name="onb_restore_desc">Varsayılan launcher seçildi. Eski telefonundan aldığın JSON yedek varsa şimdi geri yükleyebilirsin.</string>
@@ -206,7 +219,7 @@
     <string name="onb_quick_suggestions_title">Uygulama Önerileri</string>
     <string name="onb_quick_suggestions_desc">En çok kullandıklarını ana ekranda göster</string>
     <string name="onb_quick_home_search_title">Ana Ekran Araması</string>
-    <string name="onb_quick_home_search_desc">Klasörler arasında arama çubuğu</string>
+    <string name="onb_quick_home_search_desc">Ana ekranda uygulama, klasör ve ayar araması</string>
     <string name="onb_quick_folder_blur_title">Klasör Blur Efekti</string>
     <string name="onb_quick_folder_blur_desc">Frosted glass efekti (performans gerektirir)</string>
     <string name="onb_org_preview_title">Düzeni Önizle</string>
@@ -326,6 +339,11 @@
     <string name="suggestions_label_afternoon">Öğleden sonra en çok kullandıkların</string>
     <string name="suggestions_label_evening">Akşamları en çok kullandıkların</string>
     <string name="suggestions_label_default">Sık Kullanılanlar</string>
+    <string name="suggestions_meta_count">%1$d öneri</string>
+    <string name="suggestions_meta_signal">Son 28 gün + bu saat</string>
+    <string name="recent_notifications_row_title">Son bildirim alanlar</string>
+    <string name="recent_notifications_row_count">%1$d bildirim</string>
+    <string name="recent_notifications_row_signal">Son 24 saat, içerik yok</string>
 
     <!-- Wrapped Report (Haftalık Rapor) -->
     <string name="wrapped_title">🎁 Haftalık Rapor</string>
@@ -446,4 +464,6 @@
     <string name="missions_settings_toggle_subtitle">Günlük/haftalık görevler, yıldız ödülleri ve ana ekrandaki kişilik etiketi</string>
     <string name="missions_settings_open_title">Görevler</string>
     <string name="missions_settings_open_subtitle">Bugünün görevlerini ve yıldızlarını gör</string>
+    <string name="missions_home_chip_title">Görevler</string>
+    <string name="missions_home_chip_subtitle">Bugünün görevleri ve puanın</string>
 </resources>

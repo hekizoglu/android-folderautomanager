@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -21,12 +23,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalConfiguration
 import com.armutlu.apporganizer.utils.AppAnalytics
+import kotlin.math.absoluteValue
 
 @Composable
 internal fun FolderPager(
@@ -70,16 +74,32 @@ internal fun FolderPager(
         configuration.screenWidthDp >= 600 -> 5
         else -> 4
     }
+    val flingBehavior = PagerDefaults.flingBehavior(
+        state = pagerState,
+        pagerSnapDistance = PagerSnapDistance.atMost(1)
+    )
     HorizontalPager(
         state = pagerState,
+        pageSpacing = 8.dp,
+        flingBehavior = flingBehavior,
         modifier = modifier
     ) { page ->
+        val signedOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val pageOffset = signedOffset.absoluteValue.coerceIn(0f, 1f)
         val pageStart = page * pageSize
         val pageFolders = displayFolders.drop(pageStart).take(pageSize)
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    alpha = 1f - (pageOffset * 0.18f)
+                    scaleX = 1f - (pageOffset * 0.055f)
+                    scaleY = 1f - (pageOffset * 0.055f)
+                    rotationY = signedOffset.coerceIn(-1f, 1f) * -4f
+                    cameraDistance = 18f * density
+                },
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
             userScrollEnabled = false

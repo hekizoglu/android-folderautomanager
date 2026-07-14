@@ -49,6 +49,7 @@ fun NiagaraAppRow(
     isActive: Boolean = false,
     sortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
     notifTextEnabled: Boolean = false,
+    recentNotificationCount: Int = 0,
     unusedGreyDays: Int = 0,
     iconPackPkg: String = "",
     onClick: () -> Unit,
@@ -151,6 +152,14 @@ fun NiagaraAppRow(
                 Text(
                     app.notificationText,
                     fontSize = 11.sp, color = textSecondary.copy(alpha = 0.8f), maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            } else if (recentNotificationCount > 0) {
+                Text(
+                    text = if (recentNotificationCount == 1) "Son 24 saatte 1 bildirim" else "Son 24 saatte $recentNotificationCount bildirim",
+                    fontSize = 11.sp,
+                    color = secondary.copy(alpha = 0.82f),
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             } else {

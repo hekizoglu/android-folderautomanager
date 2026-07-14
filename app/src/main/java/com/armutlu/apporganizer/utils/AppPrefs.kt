@@ -343,7 +343,7 @@ object AppPrefs {
 
     // Ana ekranda tek satırlık içgörü görünürlüğü
     const val KEY_HOME_INSIGHT_VISIBLE = "home_insight_visible"
-    fun isHomeInsightVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_INSIGHT_VISIBLE, true)
+    fun isHomeInsightVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_INSIGHT_VISIBLE, false)
     fun setHomeInsightVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_INSIGHT_VISIBLE, v).apply()
 
     // Skor halkası ("Denge") altında 24 saatlik mini kullanım grafiği görünürlüğü
@@ -670,6 +670,16 @@ object AppPrefs {
     const val KEY_CONTEXTUAL_DOCK = "contextual_dock_enabled"
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)
     fun setContextualDockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTEXTUAL_DOCK, v).apply()
+
+    const val KEY_RECENT_NOTIFICATION_APPS_ROW = "recent_notification_apps_row_enabled"
+    fun isRecentNotificationAppsRowEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_NOTIFICATION_APPS_ROW, false)
+    fun setRecentNotificationAppsRowEnabled(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_RECENT_NOTIFICATION_APPS_ROW, v).apply()
+
+    const val KEY_LOW_CONFIDENCE_REVIEW = "low_confidence_classification_review_enabled"
+    fun isLowConfidenceReviewEnabled(context: Context) = prefs(context).getBoolean(KEY_LOW_CONFIDENCE_REVIEW, true)
+    fun setLowConfidenceReviewEnabled(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_LOW_CONFIDENCE_REVIEW, v).apply()
 
     // Gesture Aksiyon Engine — her jest için özelleştirilebilir aksiyon
     enum class GestureAction(val label: String) {

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.AppInfo
@@ -52,6 +53,7 @@ private const val PREFS_NAME = "launcher_prefs"
 private const val KEY_DOCK_PACKAGES = "dock_packages"
 private const val KEY_FOLDER_ORDER = "folder_order"
 private const val DOCK_MAX_SIZE = 4
+private const val RECENT_NOTIFICATIONS_WINDOW_MS = 24L * 60L * 60L * 1000L
 
 data class AppFolder(
     val category: Category,
@@ -85,6 +87,7 @@ class LauncherViewModel @Inject constructor(
     application: Application,
     private val repository: AppRepository,
     private val searchRepository: SearchRepository,
+    private val notificationEventDao: NotificationEventDao,
     private val packageManagerHelper: PackageManagerHelper,
     private val classifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 ) : AndroidViewModel(application) {
@@ -177,6 +180,22 @@ class LauncherViewModel @Inject constructor(
     val initialLoadDone: StateFlow<Boolean> = allAppsSource
         .map { true }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val recentNotificationCounts: StateFlow<Map<String, Int>> = notificationEventDao
+        .observeCountsSince(System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS)
+        .map { counts -> counts.associate { it.packageName to it.count } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    val recentNotificationApps: StateFlow<List<AppInfo>> = combine(
+        allAppsSource,
+        recentNotificationCounts
+    ) { apps, counts ->
+        if (counts.isEmpty()) emptyList()
+        else apps
+            .filter { !it.isHidden && (counts[it.packageName] ?: 0) > 0 }
+            .sortedByDescending { counts[it.packageName] ?: 0 }
+            .take(4)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(

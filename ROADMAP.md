@@ -41,7 +41,7 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Sorun/İstek:** Uzun-bas kategori değiştirme bilgisinin yanına, AppClassifier güven skoruna göre otomatik kategorize ayarı taşınsın; güven skoru düşükse kullanıcıya sorulsun.
 **Nasıl yapılmalı:** `AppClassifier.kt` içindeki confidence/skor hesaplama mantığı (`classificationSource`, `isCategoryLocked` alanları D246'da zaten eklenmiş — `AppInfo.kt`) temel alınabilir. `SettingsAppsSection.kt`'e yeni toggle (`KEY_AUTO_CLASSIFY_LOW_CONFIDENCE`, AppPrefs.kt'ye yeni key), düşük güvenli sınıflandırmalar `ClassificationReviewScreen.kt` akışına (mevcut "Kontrol Bekleyenler" ekranı) yönlendirilebilir — madde 14 ile aynı ekranı paylaşabilir.
 **Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 280) — Ayarlar > Uygulamalar > Uygulama Yönetimi altına "Düşük Güvenli Kararları Sor" toggle'ı eklendi. Varsayılan açık: düşük güvenli otomatik kararlar Kontrol Bekleyenler'e düşer. Kapalıyken otomatik sınıflandırma/LLM/reset-reclassify kararları review state'i `NOT_REQUIRED` yazar.
 
 ### [4] Arama çubuğu klavye ile hafif çakışıyor — ✅ Tamamlandı (D267)
 Çözüm: `HomeScreen.kt` kök `Column`'a `Modifier.imePadding()` eklendi. Detay → HISTORY.md Döngü 267.
@@ -56,31 +56,31 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Sorun/İstek:** Saatin altındaki bilgilendirme metni donuk/işlevsiz görünüyor; kaldırılıp saat biraz küçültülebilir.
 **Nasıl yapılmalı:** Pulse Clock bileşeni ve insight text muhtemelen `HomeScreenComponents.kt` içinde; `KEY_TICKER_ENABLED`/skor-insight toggle'larıyla ilişkili görünürlük mantığı var (D244 Pulse Clock işi, ROADMAP başındaki "Pulse Clock / Dijital Nabız" bölümüyle çakışıyor — aynı bölüme not düşülmeli). Tasarım kararı: insight text kaldır ya da madde 10'daki "Dijital Yaşam Skoru" rozetiyle birleştir, saat boyutu (`fontSize`/`Modifier.size`) düşürülsün. UX kararı olduğu için Fable/kullanıcı onayı önerilir.
 **Puan:** KV=3 U=4 BR=2 EA=3 → Toplam=12
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 277) — Pulse Clock insight metni yeni/varsayılan kurulumda kapalı hale getirildi; mevcut ayar korunuyor, kullanıcı Ayarlar > Ana Ekran bölümünden tekrar açabilir. Pulse kart yüksekliği ve saat fontu küçültülerek ana ekranda klasör/grid alanı açıldı.
 
 ### [8] Onboarding'de güçlü özellikler öne çıkarılsın
 **Sorun/İstek:** Onboarding ekranları güzel ama AppClassifier 3702 paket, gizlilik-öncelikli bildirim analizi gibi güçlü yanlar yeterince öne çıkmıyor.
 **Nasıl yapılmalı:** `OnboardingScreen.kt`'deki WELCOME/QUICK_SETTINGS adımlarına (onboarding sırası CLAUDE.md kuralı gereği bozulmayacak) somut sayı ve gizlilik vurgusu içeren metin/kart eklenmeli: "3700+ uygulama otomatik tanınır", "Bildirim içerikleri asla okunmaz, sadece sayılır" gibi. Metin İngilizce/Türkçe locale ile tutarlı olmalı (FİKİRLER.md'deki EN string sorunu ile çakışabilir, birlikte ele alınabilir).
 **Puan:** KV=3 U=4 BR=2 EA=2 → Toplam=11
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 275) — Welcome ekranındaki güçlü yanlar kartı resource tabanlı TR/EN metinlere taşındı; 3700+ uygulama tanıma, tek arama kutusu, Dijital Nabız raporları ve gizlilik vaadi somut anlatıldı. Hızlı ayarlardaki ana ekran araması açıklaması gerçek kapsamla uyumlu hale getirildi.
 
 ### [9] "En Çok Kullandıklarım" alanı küçültülüp yanına teknik bilgi eklensin
 **Sorun/İstek:** Bu alan büyük yer kaplıyor; küçültülüp yanına ilginç/teknik bilgi eklenebilir.
 **Nasıl yapılmalı:** `HomeScreenComponents.kt` içindeki ilgili composable boyutu (kart yüksekliği/ikon sayısı) küçültülmeli; yanına `LauncherViewModel.kt`'de zaten hesaplanan istatistiklerden biri (örn. günlük ortalama ekran açma sayısı, en yoğun saat aralığı) eklenebilir — `DashboardStats.compute()` (AppOrganizer Dashboard) ile aynı veri kaynağı kullanılabilir, CLAUDE.md §3 "AppOrganizer Dashboard Kuralı" ile uyumlu.
 **Puan:** KV=3 U=3 BR=2 EA=2 → Toplam=10
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 278) — Öneri satırı 4 yerine 3 uygulama gösterecek şekilde kompaktlaştırıldı; satırın yanına öneri sayısı ve sinyal kaynağı ("Son 28 gün + bu saat") teknik bilgi pili eklendi. TR/EN metinler resource'a taşındı.
 
 ### [10] "Dijital Yaşam Skoru" renk kodlu rozet ticker'a eklensin
 **Sorun/İstek:** Ticker'a "Dijital Yaşam Skoru: 70" gibi bir skor eklensin, kötüyse kırmızı iyiyse yeşil.
 **Nasıl yapılmalı:** `LauncherViewModel.kt`'deki `tickerItems` üretim mantığına yeni bir ticker item tipi eklenmeli; skor hesaplama muhtemelen mevcut `InsightEngine`/`UsageStatsHelper` verilerinden (ekran açma sıklığı, bildirim yoğunluğu, uzun kullanım süresi) türetilebilir. Renk: `Color.Red`↔`Color.Green` arası `lerp()` ile skor değerine göre interpolasyon (madde 7'deki insight text kaldırma kararıyla birlikte tasarlanmalı — belki onun yerini alır).
 **Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 276) — Skor üretimi zaten `TickerComposer.computeDigitalLifeScore()` ile gerçek sinyallerden geliyordu; `HomeTickerRow` artık dijital/skor/denge ticker metnindeki `NN/100` değerini algılayıp "Skor NN" rozetini renk kodlu gösteriyor (80+ koyu yeşil, 60+ yeşil, 40+ sarı, altı kırmızı).
 
 ### [13] Ana ekranda "Görevler" (gamification) giriş noktası
 **Sorun/İstek:** Saatin altına Görevler'e giden bir giriş noktası konsun; mevcut görev sistemi varsa profesyonelleştirilsin.
 **Nasıl yapılmalı:** Önce mevcut bir "Görevler"/task sistemi olup olmadığı doğrulanmalı (bu taramada bulunamadı — muhtemelen yok, sıfırdan tasarım gerekir). Yeni bir `TasksScreen.kt` + `Routes.TASKS` + `HomeScreenComponents.kt`'ye saat altına küçük bir "Görevler (N)" chip/buton eklenmeli. Madde 15'teki puanlama motoruyla birlikte tasarlanmalı (aynı özelliğin iki yüzü) — mimari karar gerektirir, zorluk 7-8 sayılmalı (CLAUDE.md Görev Zorluk Puanı kuralı gereği önce 2+ kaynak araştırma).
 **Puan:** KV=4 U=2 BR=2 EA=3 → Toplam=11
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 274) — Mevcut `MissionsScreen`/`Routes.MISSIONS` altyapısı kullanıldı; ana ekranda saat kartının altına Görevler chip'i eklendi. Görev sistemi ayardan kapalıysa chip gizleniyor.
 
 ### [14] "Direkt Onayla" butonuna açıklama eklensin
 **Sorun/İstek:** Kontrol Bekleyenler bölümünde "Direkt Onayla" butonu ne yaptığını açıklamıyor.
@@ -101,13 +101,13 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Sorun/İstek:** Tüm Uygulamalar listesinde her uygulamanın altına, o uygulamadan bildirim geldiyse bunu yazalım.
 **Nasıl yapılmalı:** `AllAppsDrawer.kt` (grep'te doğrudan bulunamadı, `AppIconView.kt`/`FolderTile.kt` bildirim badge mantığını zaten kullanıyor — CLAUDE.md §8 madde 10) her satıra `notification_events` tablosundan (paket bazlı) son N saatteki bildirim sayısı/özeti çekip küçük bir alt metin ("3 bildirim") eklenmeli. `AppNotificationListenerService.kt` + `NotificationAnalyzer` mevcut altyapı kullanılabilir, yeni sorgu (`AppDao`/`NotificationEventDao` paket bazlı count) gerekir.
 **Puan:** KV=3 U=3 BR=2 EA=3 → Toplam=11
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 279) — `notification_events` için reaktif paket bazlı son 24 saat sayımı eklendi. All Apps satırları bildirim metni kapalıyken ve veri varsa uygulama altında "Son 24 saatte N bildirim" gösteriyor; bildirim içeriği okunmuyor/gösterilmiyor.
 
 ### [21] Son bildirim gelen uygulamalar — "Günlük Öneriler" tarzı isteğe bağlı bölüm + Favoriler gibi çekmece/ana ekran eklenebilirliği
 **Sorun/İstek:** Ana ekranda mevcut "Günlük Öneriler" (AppSuggestionsRow) bölümüne benzer, ama son bildirim alan uygulamaları gösteren, kullanıcının isteğe bağlı açıp kapatabildiği ayrı bir bölüm istendi. Bu bölüm — favoriler mekanizmasına benzer şekilde — hem AllAppsDrawer (çekmece) içinde hem de ana ekranda gösterilebilmeli.
 **Nasıl yapılmalı:** Veri kaynağı madde 18 ile aynı (`notification_events` tablosu, `NotificationEventDao`/`AppDao` paket bazlı son-bildirim sorgusu) — bu iki madde ORTAK ALTYAPI paylaşır, aynı döngüde ele alınmaları maliyeti düşürür. Yeni bir `RecentNotificationAppsRow` composable'ı `HomeScreenComponents.kt`'deki mevcut `AppSuggestionsRow`/`SuggestionAppItem` pattern'i taklit ederek yazılabilir (aynı `iconSizeDp`, `GlassCard` görsel dili). Görünürlük: `AppPrefs.kt`'ye `KEY_RECENT_NOTIFICATIONS_ROW_ENABLED` (varsayılan kapalı — CLAUDE.md "Yeni Özellik = Ayarlar Kuralı" gereği) + `SettingsHomeScreenSection.kt`'e toggle. Favoriler mevcut altyapısı (`AppPrefs`/Room favori flag'i, favori chip/dock ekleme akışı — `DockEditSheet.kt` veya benzeri) incelenip aynı "çekmeceye ekle / ana ekrana ekle" UX pattern'i (muhtemelen uzun-bas context menüsünde "Ana ekrana ekle" seçeneği) bu yeni bölüm için de uygulanmalı — kod tekrarından kaçınmak için favori-ekleme mantığı ortak bir fonksiyona çıkarılabilir. Gizlilik notu: bildirim içeriği hiçbir zaman gösterilmez (CLAUDE.md/Privacy Policy ile tutarlı), sadece "son bildirim alan uygulama" paket+zaman bilgisi kullanılır.
 **Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 279) — Ayarlar > Ana Ekran > Öneriler ve bildirimler altına varsayılan kapalı "Son Bildirim Alanlar" toggle'ı eklendi. Açıkken ana ekranda son 24 saatte bildirim alan uygulamalar satırı, All Apps çekmecesinde de aynı uygulamalar bölümü görünür. Yalnız sayı/paket zamanı kullanılır; içerik gösterilmez.
 
 ### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
 **Durum:** ✅ Tamamlandı (D265, doğrulama) — `HomeAppSearchBar` sonuç listesi zaten türe göre gruplanmış ayrı bölümler halinde: "Uygulamalar" (Search ikon), "Klasörler" (Folder ikon), "Ayarlar" (Search ikon), "Kişiler" (Person ikon), "Dosyalar" (Description ikon) — her grup `HomeSearchGroupHeader(label, icon)` ile başlık+ikon alıyor (satır 969, 1019, 1062, 1102, 1259), çoklu grup olduğunda gösteriliyor. Satır bazlı ikon değil grup başlığı bazlı etiketleme — kullanıcı değerini karşılıyor, ek kod değişikliği gerekmedi.
@@ -116,7 +116,7 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Sorun/İstek:** Mevcut page-turn efekti yetersiz, iPhone'daki gibi akıcı bir geçiş isteniyor.
 **Nasıl yapılmalı:** `HomeScreenFolderPager.kt` + `HomeScreenPageIndicator.kt` içindeki `HorizontalPager` transform mantığı incelenmeli — muhtemelen `graphicsLayer` ile basit alpha/scale efekti var. iOS-tarzı akıcı geçiş için `pagerSnapDistance`, `flingBehavior` ve `graphicsLayer { translationX, scaleX/Y, cameraDistance }` kombinasyonu (Compose "carousel" pattern'i) araştırılmalı — CLAUDE.md Araştırma Önceliği kuralı gereği yeni animasyon pattern'i için WebSearch zorunlu (daha önce yapılmamış işlem). UX/görsel karar olduğundan Fable model ile tasarım onayı önerilir.
 **Puan:** KV=3 U=3 BR=3 EA=3 → Toplam=12
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 281) — `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı; sayfa offset'ine bağlı alpha/scale/rotationY `graphicsLayer` efekti eklendi. Sayfa göstergesi noktaları da animasyonlu boyuta geçirildi. Görsel tablet smoke hâlâ release QA kapısında ayrıca doğrulanmalı.
 
 ---
 

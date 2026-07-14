@@ -349,19 +349,18 @@ private fun OnboardingStrengthsCard() {
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "İşte güçlü taraflarımız",
+                text = stringResource(R.string.onb_strengths_title),
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(12.dp))
             listOf(
-                Triple(Icons.Default.AutoAwesome, "Otomatik düzen", "Uygulamaları kendi kendine sınıflandırır ve klasörlere dizer."),
-                Triple(Icons.Default.Folder, "Akıllı klasörler", "Kalabalığı toparlar, düzeni tek bakışta görünür yapar."),
-                Triple(Icons.Default.Search, "Hızlı arama", "Uygulama, kişi, klasör ve dosya adlarına tek yerden ulaşır."),
-                Triple(Icons.Default.SmartDisplay, "Ana ekran gücü", "Dock, widget ve ana ekran davranışını birlikte kontrol eder."),
-                Triple(Icons.Default.Shield, "Gizlilik odaklı", "Çok şey yapar ama veriyi mümkün olduğunca cihazda tutar."),
-            ).forEach { (icon, title, desc) ->
+                Triple(Icons.Default.AutoAwesome, R.string.onb_strength_auto_title, R.string.onb_strength_auto_desc),
+                Triple(Icons.Default.Search, R.string.onb_strength_search_title, R.string.onb_strength_search_desc),
+                Triple(Icons.Default.SmartDisplay, R.string.onb_strength_reports_title, R.string.onb_strength_reports_desc),
+                Triple(Icons.Default.Shield, R.string.onb_strength_privacy_title, R.string.onb_strength_privacy_desc),
+            ).forEach { (icon, titleRes, descRes) ->
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                     verticalAlignment = Alignment.Top,
@@ -369,8 +368,8 @@ private fun OnboardingStrengthsCard() {
                     Icon(icon, contentDescription = null, tint = Color(0xFF26C6DA), modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                        Text(text = desc, color = Color.White.copy(alpha = 0.70f), fontSize = 12.sp, lineHeight = 16.sp)
+                        Text(text = stringResource(titleRes), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Text(text = stringResource(descRes), color = Color.White.copy(alpha = 0.70f), fontSize = 12.sp, lineHeight = 16.sp)
                     }
                 }
             }

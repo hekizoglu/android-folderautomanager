@@ -81,6 +81,7 @@ internal fun LazyListScope.settingsAppsSection(
         SettingsCard {
             var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
             var overrideSuggestions by remember { mutableStateOf(AppPrefs.isOverrideSuggestionsEnabled(context)) }
+            var lowConfidenceReview by remember { mutableStateOf(AppPrefs.isLowConfidenceReviewEnabled(context)) }
             SettingsSwitchRow(
                 icon = Icons.Default.PhoneAndroid,
                 title = "Üretici Sınıflandırması",
@@ -97,6 +98,17 @@ internal fun LazyListScope.settingsAppsSection(
                 onCheckedChange = {
                     overrideSuggestions = it
                     AppPrefs.setOverrideSuggestionsEnabled(context, it)
+                }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(
+                icon = Icons.Default.Rule,
+                title = "Düşük Güvenli Kararları Sor",
+                subtitle = "Güven skoru düşükse otomatik taşımak yerine Kontrol Bekleyenler'e gönderir",
+                checked = lowConfidenceReview,
+                onCheckedChange = {
+                    lowConfidenceReview = it
+                    AppPrefs.setLowConfidenceReviewEnabled(context, it)
                 }
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))

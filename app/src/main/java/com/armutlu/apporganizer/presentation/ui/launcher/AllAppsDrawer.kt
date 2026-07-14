@@ -480,11 +480,14 @@ private fun DrawerAppList(
     recentAppsEnabled: Boolean,
     recentApps: List<AppInfo>,
     onRecentAppClick: (String) -> Unit,
+    recentNotificationAppsEnabled: Boolean = false,
+    recentNotificationApps: List<AppInfo> = emptyList(),
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     categories: List<Category> = emptyList(),
-    searchResults: Map<SourceType, List<SearchDocument>> = emptyMap()
+    searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
+    recentNotificationCounts: Map<String, Int> = emptyMap()
 ) {
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
@@ -531,6 +534,15 @@ private fun DrawerAppList(
                     )
                 }
             }
+            if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
+                item(key = "recent_notification_apps_section") {
+                    DrawerRecentNotificationSection(
+                        apps = recentNotificationApps.take(4),
+                        iconPackPkg = state.iconPackPkg,
+                        onAppClick = onAppClick
+                    )
+                }
+            }
             state.grouped.forEach { (letter, letterApps) ->
                 item(key = "header_$letter") {
                     Box(Modifier.semantics { heading() }) {
@@ -542,6 +554,7 @@ private fun DrawerAppList(
                         app = app, iconSize = iconSize, isActive = false,
                         sortMode = state.sortMode,
                         notifTextEnabled = state.notifTextEnabled,
+                        recentNotificationCount = recentNotificationCounts[app.packageName] ?: 0,
                         unusedGreyDays = state.unusedGreyDays,
                         iconPackPkg = state.iconPackPkg,
                         onClick = {
@@ -581,6 +594,7 @@ private fun DrawerAppList(
                         app = app, iconSize = iconSize, isActive = false,
                         sortMode = state.sortMode,
                         notifTextEnabled = state.notifTextEnabled,
+                        recentNotificationCount = recentNotificationCounts[app.packageName] ?: 0,
                         unusedGreyDays = state.unusedGreyDays,
                         iconPackPkg = state.iconPackPkg,
                         onClick = {
@@ -765,6 +779,65 @@ private fun DrawerRecentFavSection(
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 @Composable
+private fun DrawerRecentNotificationSection(
+    apps: List<AppInfo>,
+    iconPackPkg: String,
+    onAppClick: (String) -> Unit
+) {
+    if (apps.isEmpty()) return
+    val context = LocalContext.current
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    Column(modifier = Modifier.fillMaxWidth()) {
+        NiagaraLetterHeader(letter = '!', label = stringResource(R.string.recent_notifications_row_title))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            apps.forEach { app ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f).clickable { onAppClick(app.packageName) }
+                ) {
+                    val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                        if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                        else "${app.packageName}_48_${app.lastUpdatedTime}"
+                    }
+                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
+                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val cached = iconCacheInternal[cacheKey]
+                            if (cached != null) cached
+                            else {
+                                val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                                if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                bmp
+                            }
+                        }
+                    }
+                    bitmap?.let {
+                        androidx.compose.foundation.Image(
+                            bitmap = it,
+                            contentDescription = app.appName,
+                            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
+                        )
+                    } ?: Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        app.appName,
+                        color = onSurface,
+                        fontSize = 10.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            repeat(4 - apps.size) { Spacer(Modifier.weight(1f)) }
+        }
+    }
+}
+
+@Composable
 private fun DrawerSidebar(
     sidebarEntries: List<SidebarEntry>,
     activeSidebarIdx: Int,
@@ -866,10 +939,13 @@ fun AllAppsDrawer(
     recentApps: List<AppInfo> = emptyList(),
     recentAppsEnabled: Boolean = false,
     onRecentAppClick: (String) -> Unit = {},
+    recentNotificationAppsEnabled: Boolean = false,
+    recentNotificationApps: List<AppInfo> = emptyList(),
     focusSearchOnOpen: Boolean = false,
     onFocusSearchConsumed: () -> Unit = {},
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
+    recentNotificationCounts: Map<String, Int> = emptyMap(),
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -983,11 +1059,14 @@ fun AllAppsDrawer(
                         recentAppsEnabled = recentAppsEnabled,
                         recentApps = recentApps,
                         onRecentAppClick = onRecentAppClick,
+                        recentNotificationAppsEnabled = recentNotificationAppsEnabled,
+                        recentNotificationApps = recentNotificationApps,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
                         haptic = haptic,
                         categories = categories,
-                        searchResults = searchResults
+                        searchResults = searchResults,
+                        recentNotificationCounts = recentNotificationCounts
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {

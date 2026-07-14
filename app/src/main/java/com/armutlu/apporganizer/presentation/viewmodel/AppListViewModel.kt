@@ -23,6 +23,7 @@ import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VE
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewPolicy
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewState
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
 import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestion
 import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestionEngine
@@ -57,6 +58,15 @@ class AppListViewModel @Inject constructor(
     // â"€â"€ Log sistemi - MUTLAKA ilk sırada olmalı (init'ten önce hazır) â"€â"€â"€â"€â"€â"€â"€â"€â"€
     private val _liveDebugLogs = MutableStateFlow<List<String>>(emptyList())
     val liveDebugLogs: StateFlow<List<String>> = _liveDebugLogs.asStateFlow()
+
+    private fun applyLowConfidenceReviewPreference(decision: ClassificationDecision): ClassificationDecision {
+        val reviewEnabled = AppPrefs.isLowConfidenceReviewEnabled(getApplication())
+        if (reviewEnabled || !decision.requiresReview) return decision
+        return decision.copy(
+            requiresReview = false,
+            reviewState = ClassificationReviewState.NOT_REQUIRED,
+        )
+    }
 
     // Launcher organize state
     private val _organizeState = MutableStateFlow<OrganizeState>(OrganizeState.Idle)
@@ -677,7 +687,9 @@ class AppListViewModel @Inject constructor(
 
                 var classified = 0
                 unclassifiedApps.forEach { app ->
-                    val decision = classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                    val decision = applyLowConfidenceReviewPreference(
+                        classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                    )
                     if (decision.categoryId != "uncategorized") {
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
                         classified++
@@ -729,8 +741,7 @@ class AppListViewModel @Inject constructor(
                             confidence = 65,
                             source = ClassificationSource.LLM_LEGACY,
                         )
-                        repository.updateAppCategoryAutomatically(
-                            pkg,
+                        val decision = applyLowConfidenceReviewPreference(
                             ClassificationDecision(
                                 categoryId = catId,
                                 confidence = 65,
@@ -741,6 +752,7 @@ class AppListViewModel @Inject constructor(
                                 engineVersion = CLASSIFICATION_ENGINE_VERSION,
                             )
                         )
+                        repository.updateAppCategoryAutomatically(pkg, decision)
                         updated++
                     }
                 }
@@ -806,7 +818,9 @@ class AppListViewModel @Inject constructor(
                 val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs
                     .isManufacturerClassifyEnabled(getApplication())
                 apps.forEach { app ->
-                    val decision = classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                    val decision = applyLowConfidenceReviewPreference(
+                        classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                    )
                     if (decision.categoryId != "uncategorized") {
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
                     }

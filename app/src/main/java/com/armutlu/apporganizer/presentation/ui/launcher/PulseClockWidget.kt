@@ -193,7 +193,7 @@ private fun PulseCard(
     modifier: Modifier,
 ) {
     val context = LocalContext.current
-    val cardHeight = if (compact) 124.dp else 168.dp
+    val cardHeight = if (compact) 112.dp else 148.dp
     val bgAlpha = if (glass) 0.16f else 0.10f
     val borderAlpha = if (glass) 0.28f else 0.16f
 
@@ -240,7 +240,7 @@ private fun PulseCard(
                 Text(
                     text = timeFormat.format(now),
                     color = Color.White,
-                    fontSize = if (compact) 54.sp else 76.sp,
+                    fontSize = if (compact) 48.sp else 66.sp,
                     fontWeight = FontWeight.Thin,
                     letterSpacing = (-2).sp,
                 )
