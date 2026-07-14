@@ -9,6 +9,9 @@
         <exclude domain="file" path="temp" />
         <exclude domain="file" path="crash_log.txt" />
         <exclude domain="sharedpref" path="deepseek_prefs.xml" />
+        <!-- Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — baska
+             cihazda veya yeniden kurulumda gecersizdir (F21, D261 denetimi). -->
+        <exclude domain="sharedpref" path="widget_prefs.xml" />
         <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si bulut yedeğine dahil edilmez -->
         <exclude domain="database" path="app_organizer_db" />
         <exclude domain="database" path="app_organizer_db-wal" />
@@ -19,6 +22,7 @@
         <include domain="database" path="." />
         <include domain="sharedpref" path="." />
         <exclude domain="sharedpref" path="deepseek_prefs.xml" />
+        <exclude domain="sharedpref" path="widget_prefs.xml" />
         <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si cihazlar arasi aktarima dahil edilmez -->
         <exclude domain="database" path="app_organizer_db" />
         <exclude domain="database" path="app_organizer_db-wal" />

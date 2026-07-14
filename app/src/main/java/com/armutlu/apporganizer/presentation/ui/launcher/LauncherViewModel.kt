@@ -566,8 +566,18 @@ class LauncherViewModel @Inject constructor(
     private val _widgetIds = MutableStateFlow<List<Int>>(emptyList())
     val widgetIds: StateFlow<List<Int>> = _widgetIds.asStateFlow()
 
+    // Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — restore/cihaz
+    // degisikligi sonrasi eski ID'ler artik gecerli olmayabilir. Yuklerken AppWidgetManager'a
+    // karsi dogrulanir, gecersiz olanlar sessizce SharedPrefs'ten temizlenir (F21, D261 denetimi).
     fun loadWidgetIds(context: Context) {
-        _widgetIds.value = WidgetPrefs.getWidgetIds(context)
+        val stored = WidgetPrefs.getWidgetIds(context)
+        val manager = android.appwidget.AppWidgetManager.getInstance(context)
+        val valid = stored.filter { id -> runCatching { manager.getAppWidgetInfo(id) }.getOrNull() != null }
+        if (valid.size != stored.size) {
+            WidgetPrefs.saveWidgetIds(context, valid)
+            Timber.w("loadWidgetIds: ${stored.size - valid.size} gecersiz widget ID temizlendi")
+        }
+        _widgetIds.value = valid
     }
 
     fun addWidgetId(context: Context, id: Int) {

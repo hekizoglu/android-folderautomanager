@@ -8,6 +8,9 @@
     <exclude domain="file" path="logs" />
     <exclude domain="file" path="temp" />
     <exclude domain="file" path="no_backup" />
+    <!-- Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — baska
+         cihazda veya yeniden kurulumda gecersizdir (F21, D261 denetimi). -->
+    <exclude domain="sharedpref" path="widget_prefs.xml" />
     <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si yedeğe dahil edilmez -->
     <exclude domain="database" path="app_organizer_db" />
     <exclude domain="database" path="app_organizer_db-wal" />

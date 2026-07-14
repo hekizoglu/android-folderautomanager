@@ -112,7 +112,7 @@ Not: Bu rapor guncellemesi dokuman odakli oldugu icin kod degisikligi yapilmadi.
 | 22 | Ayarlar mimarisi | Bulgu var | 48 |
 | 23 | Onboarding/izin rehberi | Yeni dogrulanmis bulgu yok | 0 |
 | 24 | Navigation/deep link | Yeni dogrulanmis bulgu yok | 0 |
-| 25 | Widget sistemi | Bulgu var (F21 stale widget ID restore, F22 configure sonuc extra eksigi) | 58 |
+| 25 | Widget sistemi | F21 kapandi (backup exclude + validation eklendi); F22 acik (dusuk oncelik, belirsizlik yuksek) | 38 |
 | 26 | Package receiver | Bu turda yeni bulgu yok | 0 |
 | 27 | Compose reactivity | Bulgu var | 48 |
 | 28 | Tablet/adaptive | Bulgu var | 62 |
@@ -690,7 +690,7 @@ Test plani:
 Risk:
 - Dusuk (sadece manifest/xml + defensive filtre; davranissal regresyon riski yok).
 
-Durum: Acik
+Durum: Kapandi (2026-07-14) — `data_extraction_rules.xml` ve `backup_rules.xml`'e `widget_prefs.xml` exclude eklendi; `LauncherViewModel.loadWidgetIds()` artik `AppWidgetManager.getAppWidgetInfo()` ile gecerlilik kontrolu yapip gecersiz ID'leri `WidgetPrefs`'ten otomatik temizliyor. `compileDebugKotlin`, `testDebugUnitTest` ve `assembleDebug -PskipGoogleServices` basarili. versionCode 40->41, versionName 1.3.17->1.3.18.
 
 ### F22
 
@@ -743,9 +743,9 @@ Kapanan P0/P1:
 
 ## 7. P2/P3 Planli Is Listesi
 
-P2: F21 widget_prefs.xml backup/device-transfer haric tutulmuyor -> restore sonrasi hayalet widget slotu.
+P2: F21 — Kapandi (2026-07-14).
 
-P3: F22 widgetConfigureLauncher sonucunda EXTRA_APPWIDGET_ID eksikse host ID sizintisi.
+P3: F22 widgetConfigureLauncher sonucunda EXTRA_APPWIDGET_ID eksikse host ID sizintisi. Acik, dusuk oncelik.
 
 Kismi runtime risk:
 - F20 tablet/adaptive smoke: launch + fatal-log + screenshot kanitlandi; detayli klasor swipe gorsel QA acik risk.

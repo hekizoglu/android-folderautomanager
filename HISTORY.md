@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 263 - 2026-07-14 [Döngü 25 (Widget sistemi) denetimi + F21 kapanışı]
+
+**Yapılanlar:** 30 döngülük denetim raporunda "bu turda kapsanmadi" işaretli tek boşluk olan Döngü 25 (Widget sistemi) denetlendi (`WidgetArea.kt`, `WidgetHostManager.kt`, `WidgetPrefs.kt`, `WidgetSuggestionEngine.kt`, `LauncherActivity.kt` widget picker/configure launcher'ları, `BackupManager.kt`, backup XML kuralları). İki bulgu: **F21 (P2, 58p)** — `widget_prefs.xml` cloud-backup/device-transfer exclude listesinde değildi, restore sonrası geçersiz widget ID'leri doğrulanmadan state'e yazılıp `WidgetArea`'da silinemeyen hayalet boşluklar bırakıyordu; **F22 (P3, 38p, belirsizlik yüksek)** — widget configure sonucu `EXTRA_APPWIDGET_ID` döndürmezse nadir sessiz host ID sızıntısı ihtimali (açık bırakıldı, düşük öncelik). F21 aynı oturumda kapatıldı: `data_extraction_rules.xml` ve `backup_rules.xml`'e `widget_prefs.xml` exclude eklendi; `LauncherViewModel.loadWidgetIds()` artık `AppWidgetManager.getAppWidgetInfo()` ile geçerlilik kontrolü yapıp geçersiz ID'leri `WidgetPrefs`'ten otomatik temizliyor.
+
+**Doğrulama:** `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug -PskipGoogleServices` üçü de başarılı. Versiyon: versionCode 40→41, versionName 1.3.17→1.3.18.
+
+**Sonuç:** 30 döngülük denetimin tamamı artık kapsanmış durumda; tek kalan açık madde F20 (tablet klasör swipe görsel QA, kısmi runtime risk) ve F22 (widget configure edge case, düşük öncelik) — ikisi de bilinçli olarak açık bırakıldı, sahte kapanış yapılmadı.
+
+---
+
 ## Döngü 262 - 2026-07-14 [30 döngü denetimi P2/P3 kod kapanışı + tablet smoke]
 
 **Yapılanlar:** `docs/internal/sistem_denetim_30_dongu_2026-07-14.md` raporundaki kalan F04/F08/F09/F10/F11/F12/F13/F14/F15/F16/F17/F18 maddeleri tek tek ele alındı. About ekranı artık `BuildConfig.VERSION_NAME` gösteriyor. Dock ayarları `folder:` item'larını paket adı gibi değil, klasör adı/emoji ve folder ikonu ile render ediyor. Arama ve ayarlar ekranları için ortak SharedPreferences listener helper'i eklendi; All Apps search shine ve ayar toggle'ları restore/dis kaynak değişimlerinde stale kalmıyor. Search fallback SQL'i `ESCAPE '\'` kullanıyor ve `%`, `_`, `\` karakterleri literal aranacak şekilde escape ediliyor. Eski unbounded `searchAppsByName` deprecated edildi, repository yolu limitli sorguya taşındı. Android 13+ medya izinleri manifest/runtime akışına eklendi; FilesIndexer izinsiz MediaStore taramasını erken kesiyor. FilesIndexWorker `KEEP` yerine `UPDATE` kullanıyor. Home permission hint count/dismiss state'i setter sonrası güncelleniyor. LauncherViewModel tek shared `allAppsSource` üzerinden türetilmiş state üretiyor. Release task'ları keystore yokken fail ediyor; debug imzalı release yalnız açık `-PallowDebugReleaseSigning=true` ile mümkün. Eski security audit dokümanına stale/çözüldü notu eklendi.
