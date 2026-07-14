@@ -33,6 +33,11 @@ class SearchRepository(
     private val db: AppDatabase
 ) {
 
+    internal companion object {
+        fun buildLikePattern(rawQuery: String): String =
+            "%${rawQuery.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")}%"
+    }
+
     // FTS5 runtime check — bazı AOSP build'lerinde fts5 modülü yoktur
     private var settingsSeeded = false
 
@@ -125,13 +130,13 @@ class SearchRepository(
     }
 
     private fun buildLikeQuery(rawQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {
-        val pattern = "%${rawQuery.replace("%", "\\%").replace("_", "\\_")}%"
+        val pattern = buildLikePattern(rawQuery)
         val placeholders = allowedSources.joinToString(",") { "?" }
         val args = (listOf<Any>(pattern, pattern) + allowedSources + limit).toTypedArray()
         return SimpleSQLiteQuery(
             """
                 SELECT * FROM search_documents
-                WHERE (title LIKE ? OR subtitle LIKE ?)
+                WHERE (title LIKE ? ESCAPE '\' OR subtitle LIKE ? ESCAPE '\')
                     AND source_type IN ($placeholders)
                 ORDER BY
                     CASE source_group

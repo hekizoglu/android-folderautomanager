@@ -19,6 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
+import com.armutlu.apporganizer.presentation.ui.common.rememberStringPreferenceState
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
@@ -109,7 +112,11 @@ fun SettingsLauncherScreen(
         // ── Dock Yönetimi ─────────────────────────────────────────────────
         item { SettingsSectionTitle("Dock Uygulamaları") }
         item {
-            var contextualDock by remember { mutableStateOf(AppPrefs.isContextualDockEnabled(context)) }
+            var contextualDock by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_CONTEXTUAL_DOCK,
+                read = { AppPrefs.isContextualDockEnabled(context) }
+            )
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.AutoAwesome,
@@ -133,17 +140,32 @@ fun SettingsLauncherScreen(
                     }
                 } else {
                     dockPkgs.forEachIndexed { index, pkg ->
-                        val appName = remember(pkg) {
-                            runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                        val folderId = DockPrefs.folderId(pkg)
+                        val label = remember(pkg) {
+                            if (folderId != null) {
+                                val category = Category.getDefaultCategories().firstOrNull { it.categoryId == folderId }
+                                val defaultName = category?.categoryName ?: folderId
+                                val customName = AppPrefs.getFolderCustomNames(context)[folderId]
+                                val customEmoji = AppPrefs.getFolderCustomEmojis(context)[folderId]
+                                listOfNotNull(customEmoji?.takeIf { it.isNotBlank() }, customName ?: defaultName)
+                                    .joinToString(" ")
+                            } else {
+                                runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                            }
                         }
                         if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                         Row(
                             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.Apps, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                            Icon(
+                                if (folderId != null) Icons.Default.Folder else Icons.Default.Apps,
+                                null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
                             Spacer(Modifier.width(12.dp))
-                            Text(appName, Modifier.weight(1f), fontSize = 14.sp)
+                            Text(label, Modifier.weight(1f), fontSize = 14.sp)
                             IconButton(onClick = {
                                 val removed = DockPrefs.removeFromDock(context, pkg)
                                 dockPkgs = DockPrefs.getDockPackages(context)
@@ -195,8 +217,16 @@ fun SettingsLauncherScreen(
 
         item { SettingsSectionTitle("Klasor Gecisleri") }
         item {
-            var folderCarousel by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
-            var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
+            var folderCarousel by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOLDER_CAROUSEL_ENABLED,
+                read = { AppPrefs.isFolderCarouselEnabled(context) }
+            )
+            var folderCarouselPosition by rememberStringPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOLDER_CAROUSEL_POSITION,
+                read = { AppPrefs.getFolderCarouselPosition(context) }
+            )
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.Folder,
@@ -255,7 +285,11 @@ fun SettingsLauncherScreen(
                     Modifier.padding(horizontal = 16.dp),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
                 )
-                var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
+                var folderTransitionEffect by rememberStringPreferenceState(
+                    context = context,
+                    key = AppPrefs.KEY_FOLDER_TRANSITION_EFFECT,
+                    read = { AppPrefs.getFolderTransitionEffect(context) }
+                )
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(
                         stringResource(R.string.settings_folder_transition_effect_title),
@@ -306,8 +340,16 @@ fun SettingsLauncherScreen(
         // Ana ekran davranış ayarları — mantıksal gruplama (D199)
         item { SettingsSectionTitle("Hızlı Erişim") }
         item {
-            var quickWheel by remember { mutableStateOf(AppPrefs.isQuickWheelEnabled(context)) }
-            var focusMode by remember { mutableStateOf(AppPrefs.isFocusModeEnabled(context)) }
+            var quickWheel by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_QUICK_WHEEL,
+                read = { AppPrefs.isQuickWheelEnabled(context) }
+            )
+            var focusMode by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOCUS_MODE,
+                read = { AppPrefs.isFocusModeEnabled(context) }
+            )
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.Widgets,

@@ -183,6 +183,7 @@ interface AppDao {
     /**
      * Search apps by name
      */
+    @Deprecated("Use searchAppsByNameLimited to avoid unbounded UI reads.")
     @Query("SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' ORDER BY appName ASC")
     fun searchAppsByName(query: String): Flow<List<AppInfo>>
 

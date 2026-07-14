@@ -16,7 +16,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -26,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
+import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.BiometricHelper
 
@@ -39,7 +39,11 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
 
     SettingsSubScreenScaffold(title = "Güvenlik", onNavigateBack = onNavigateBack) {
         item {
-            var biometricLock by remember { mutableStateOf(AppPrefs.isBiometricSettingsLockEnabled(context)) }
+            var biometricLock by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_BIOMETRIC_SETTINGS_LOCK,
+                read = { AppPrefs.isBiometricSettingsLockEnabled(context) }
+            )
             val activity = context as? FragmentActivity
             val biometricAvailable = remember(context) {
                 activity != null && BiometricHelper.isAvailable(activity)
@@ -71,7 +75,11 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
             }
         }
         item {
-            var privacyReportEnabled by remember { mutableStateOf(AppPrefs.isPrivacyReportEnabled(context)) }
+            var privacyReportEnabled by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_PRIVACY_REPORT_ENABLED,
+                read = { AppPrefs.isPrivacyReportEnabled(context) }
+            )
             SettingsCard {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),

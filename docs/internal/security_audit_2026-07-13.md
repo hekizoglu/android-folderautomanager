@@ -149,6 +149,8 @@ navController.navigate(route) { ... }                            // AppNavigatio
 
 ## 8. ProGuard/R8 — Log Stripping
 
+> 2026-07-14 notu: Bu bolumdeki `Timber.DebugTree()` kosulsuz calisiyor iddiasi artik **stale/cozuldu**. Guncel `AppOrganizerApp.kt` kodunda `Timber.plant(Timber.DebugTree())` yalnizca `BuildConfig.DEBUG` icinde calisiyor. Bu bolum tarihsel audit kaydi olarak tutuldu; aktif bulgu sayilmaz.
+
 **Dosya:** `app/proguard-rules.pro` (177 satır, tam okundu)
 
 - **Log/Timber stripping kuralı YOK.** Dosyada `-assumenosideeffects` direktifi hiç kullanılmamış; aksine `-keep class timber.log.** { *; }` (satır 109) ile Timber sınıfları **korunuyor** (obfuscate/strip edilmiyor, sadece isim koruması — ama zaten çağrılar kaldırılmıyor).

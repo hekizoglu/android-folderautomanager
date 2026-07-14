@@ -74,6 +74,7 @@ import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
+import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.AppAnalytics
@@ -131,7 +132,11 @@ private fun DrawerSearchBar(
     }
 
     // Arama + kapat — elmas parlaması dikkat çeker
-    val shineEnabled = androidx.compose.runtime.remember { AppPrefs.isSearchShineEnabled(context) }
+    val shineEnabled by rememberBooleanPreferenceState(
+        context = context,
+        key = AppPrefs.KEY_SEARCH_SHINE_ENABLED,
+        read = { AppPrefs.isSearchShineEnabled(context) }
+    )
     var searchFocused by remember { mutableStateOf(false) }
     val focusGlowAlpha by animateFloatAsState(
         targetValue = if (searchFocused) 1f else 0f,

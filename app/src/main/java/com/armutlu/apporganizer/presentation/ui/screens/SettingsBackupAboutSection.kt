@@ -33,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import com.armutlu.apporganizer.BuildConfig
 
 /**
  * Hakkında (bilgi) + Yedek/Geri Yükle + Hakkında (gizlilik/versiyon) + Debug bölümleri
@@ -50,7 +51,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
     item { SettingsSectionTitle("Hakkında") }
     item {
         SettingsCard {
-            SettingsInfoRow(Icons.Default.Apps, "App Organizer", "v1.0 beta")
+            SettingsInfoRow(Icons.Default.Apps, "App Organizer", "v${BuildConfig.VERSION_NAME}")
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsInfoRow(Icons.Default.Person, "Geliştirici", "Hüseyin Ekizoğlu")
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))

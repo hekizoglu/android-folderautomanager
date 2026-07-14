@@ -2,9 +2,11 @@ package com.armutlu.apporganizer.data.local
 
 import android.content.ContentUris
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.core.content.ContextCompat
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.utils.AppPrefs
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +38,10 @@ class FilesIndexer(
     /** MediaStore'dan dosya adlarını indeksler. */
     suspend fun indexAll() = withContext(Dispatchers.IO) {
         if (!AppPrefs.isSearchSourceFilesEnabled(context)) return@withContext
+        if (!hasMediaStoreReadAccess()) {
+            Timber.w("FilesIndexer: dosya arama izni yok, indeksleme atlandi")
+            return@withContext
+        }
 
         val docs = loadFiles()
         searchDao.deleteBySource(SOURCE_FILE)
@@ -123,4 +129,20 @@ class FilesIndexer(
         } else {
             MediaStore.Files.getContentUri("external")
         }
+
+    private fun hasMediaStoreReadAccess(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(
+                android.Manifest.permission.READ_MEDIA_IMAGES,
+                android.Manifest.permission.READ_MEDIA_VIDEO,
+                android.Manifest.permission.READ_MEDIA_AUDIO,
+            )
+        } else {
+            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        return permissions.any { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
 }

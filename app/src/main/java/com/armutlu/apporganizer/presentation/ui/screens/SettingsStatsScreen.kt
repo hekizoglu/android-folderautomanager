@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
@@ -130,7 +131,11 @@ fun SettingsStatsScreen(
 
         // ── Rapor kısayolları ─────────────────────────────────────────────
         item {
-            var notifAnalytics by remember { mutableStateOf(AppPrefs.isNotifAnalyticsEnabled(context)) }
+            var notifAnalytics by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_NOTIF_ANALYTICS_ENABLED,
+                read = { AppPrefs.isNotifAnalyticsEnabled(context) }
+            )
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.Insights,
@@ -162,7 +167,11 @@ fun SettingsStatsScreen(
         // ── Görevler & Yıldızlar (D257 gamification) ─────────────────────────
         item { SettingsSectionTitle(stringResource(R.string.missions_settings_section)) }
         item {
-            var missionsEnabled by remember { mutableStateOf(AppPrefs.isMissionsEnabled(context)) }
+            var missionsEnabled by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_MISSIONS_ENABLED,
+                read = { AppPrefs.isMissionsEnabled(context) }
+            )
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.Star,
@@ -189,9 +198,21 @@ fun SettingsStatsScreen(
         // ── Haftalık Rapor (Wrapped) ayarı ──────────────────────────────────
         item { SettingsSectionTitle(stringResource(R.string.settings_stats_weekly_report_section)) }
         item {
-            var wrappedEnabled by remember { mutableStateOf(AppPrefs.isWrappedEnabled(context)) }
-            var wrappedAiCoachEnabled by remember { mutableStateOf(AppPrefs.isWrappedAiCoachEnabled(context)) }
-            var goalsEnabled by remember { mutableStateOf(AppPrefs.isGoalsEnabled(context)) }
+            var wrappedEnabled by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_WRAPPED_ENABLED,
+                read = { AppPrefs.isWrappedEnabled(context) }
+            )
+            var wrappedAiCoachEnabled by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_WRAPPED_AI_COACH_ENABLED,
+                read = { AppPrefs.isWrappedAiCoachEnabled(context) }
+            )
+            var goalsEnabled by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_GOALS_ENABLED,
+                read = { AppPrefs.isGoalsEnabled(context) }
+            )
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.EmojiEvents,

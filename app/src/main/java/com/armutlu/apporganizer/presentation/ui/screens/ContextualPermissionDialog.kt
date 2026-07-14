@@ -91,6 +91,11 @@ fun ContextualPermissionDialog(
     ) { granted ->
         if (granted) onGranted() else onDismiss()
     }
+    val multiplePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.any { it }) onGranted() else onDismiss()
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -213,7 +218,26 @@ fun ContextualPermissionDialog(
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                                 onDismiss()
                             }
-                            ContextualPermission.FILES -> onGranted()
+                            ContextualPermission.FILES -> {
+                                val permissions = fileSearchPermissions()
+                                if (permissions.isEmpty()) {
+                                    onGranted()
+                                    return@Button
+                                }
+                                val alreadyGranted = permissions.any { permissionName ->
+                                    ContextCompat.checkSelfPermission(context, permissionName) ==
+                                        PermissionChecker.PERMISSION_GRANTED
+                                }
+                                if (alreadyGranted) {
+                                    onGranted()
+                                    return@Button
+                                }
+                                if (permissions.size == 1) {
+                                    permissionLauncher.launch(permissions.first())
+                                } else {
+                                    multiplePermissionLauncher.launch(permissions)
+                                }
+                            }
                         }
                     }) {
                         Text(permission.actionLabel)
@@ -222,4 +246,16 @@ fun ContextualPermissionDialog(
             }
         }
     }
+}
+
+private fun fileSearchPermissions(): Array<String> = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> arrayOf(
+        android.Manifest.permission.READ_MEDIA_IMAGES,
+        android.Manifest.permission.READ_MEDIA_VIDEO,
+        android.Manifest.permission.READ_MEDIA_AUDIO,
+    )
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> arrayOf(
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+    )
+    else -> emptyArray()
 }

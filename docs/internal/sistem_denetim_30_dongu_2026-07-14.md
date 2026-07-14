@@ -1,465 +1,716 @@
-# Sistem Denetim 30 Dongu - 2026-07-14
+﻿# Sistem Denetim 30 Dongu - 2026-07-14
 
-Kapsam: `C:\Users\huseyinekizoglu\android-folderautomanager` repo statik inceleme.
+Kapsam: `C:\Users\huseyinekizoglu\android-folderautomanager`
 
-Kural: Bu fazda kod duzeltmesi yapilmadi. Sadece gercek kanitli mantik/kod/urun riskleri listelendi.
+Durum: Bu dosya P0/P1 gizlilik + backup restore fix commit'i (`3557345`) sonrasinda guncellendi. 2026-07-14 ikinci turda F04, F08, F09, F10, F11, F12, F13, F14, F15, F16, F17 ve F18 kod/dokuman seviyesinde kapatildi. F20 icin tablet emulator smoke yapildi; tam klasor swipe gorsel QA kismi acik risk olarak birakildi.
 
-Online arastirma ozeti:
-- Android Core App Quality: gizlilik, guvenilirlik, performans ve izin davranisi Play kalitesi icin temel kabul edilir. Kaynak: https://developer.android.com/docs/quality-guidelines/core-app-quality
-- Android Adaptive App Quality: tablet/buyuk ekran davranisi, resize ve state devamlıligi ayrica kontrol edilmelidir. Kaynak: https://developer.android.com/docs/quality-guidelines/adaptive-app-quality
-- Android 13+ medya izinleri: `READ_EXTERNAL_STORAGE` yerine granular medya izinleri veya sistem seciciler gerekir. Kaynak: https://developer.android.com/about/versions/13/behavior-changes-13
-- OWASP MASVS: mobil uygulamada veri saklama, telemetri ve hassas veri temizleme davranisi acik ve test edilebilir olmalidir. Kaynak: https://mas.owasp.org/MASVS/
+## 0. 2026-07-14 Cozum Kapanis Ozeti
 
-MemPalace / hafiza notu:
-- `memory-palace list` calisti; bu repo icin ayrintili yeni kayit donmedi.
-- Yerel hafizada ROADMAP/HISTORY/audit dokumanlari ve markdown encoding hassasiyeti bulundu; rapor yeni dosya olarak ASCII agirlikli yazildi.
+Toplam aktif kod/dokuman bulgusu: 0
 
-## Oncelik Skalasi
+Kismi runtime risk: 1 (`F20` tablet klasor swipe gorsel QA)
 
-| Skor | Anlam |
-|---:|---|
-| 10 | Play/gizlilik/veri kaybi veya release engeli |
-| 8-9 | Kullanici verisi, restore, temel akis veya ciddi UX dogruluk hatasi |
-| 6-7 | Ozellik bozulmasi, stale state, tablet/perf riski |
-| 4-5 | Teknik borc, yanlis dokuman, lokal UX pürüzü |
-| 1-3 | Izleme/iyilestirme adayi |
+Kapatilanlar:
+- F04: About surumu artik `BuildConfig.VERSION_NAME` ile runtime build degerinden geliyor.
+- F08: Dock ayarlari `folder:` item'larini klasor adi/emoji ve folder ikonu ile gosteriyor.
+- F09/F15: Arama ve ayarlar ekranlari icin ortak SharedPreferences listener helper'i eklendi; restore/dis kaynak degisimleri ayni oturumda UI'a yansiyor.
+- F10: LIKE fallback pattern `%`, `_` ve `\` karakterlerini escape ediyor; SQL `ESCAPE '\'` kullaniyor.
+- F11: Eski unbounded `searchAppsByName` deprecated edildi; repository yolu limitli sorguya tasindi.
+- F12: Android 13+ medya izinleri manifest ve runtime permission akisina eklendi; indexer izinsiz MediaStore taramasini erken kesiyor.
+- F13: FilesIndexWorker periodic is politikasinda `KEEP` yerine `UPDATE` kullaniliyor.
+- F14: Home permission hint count/dismiss state'i setter sonrasi lokal state'i guncelliyor.
+- F16: `LauncherViewModel` tek shared `allAppsSource` uzerinden turetilmis state'ler uretiyor.
+- F17: Release task'lari keystore yokken fail ediyor; lokal test icin `-PallowDebugReleaseSigning=true` acik flag'i gerekiyor.
+- F18: Eski security audit dokumanina stale/cozuldu notu eklendi.
 
-## 30 Dongu Ozeti
+Calistirilan dogrulamalar:
+- `.\gradlew.bat testDebugUnitTest --tests "com.armutlu.apporganizer.TurkishSearchTest" -PskipGoogleServices --no-daemon`
+- `.\gradlew.bat testDebugUnitTest --tests "com.armutlu.apporganizer.data.repository.AppRepositoryTest" -PskipGoogleServices --no-daemon`
+- `.\gradlew.bat compileDebugKotlin -PskipGoogleServices --no-daemon`
+- `.\gradlew.bat :app:validateSigningRelease -PskipGoogleServices --no-daemon` beklenen sekilde keystore guard hatasi verdi.
+- `.\gradlew.bat assembleDebug -PskipGoogleServices --no-daemon`
+- API 33 emulator tablet override: `wm size 1280x800`, `wm density 160`, app process calisiyor, `AndroidRuntime` fatal log yok.
+- Medya izinleri package dump'ta gorundu: `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`.
 
-| Dongu | Alan | Sonuc | En Yuksek Skor |
+KanÄ±t dosyasi:
+- `artifacts/emulator-smoke/f20_tablet_after_fixes.png`
+
+Acik risk:
+- F20 icin build + tablet launch smoke + screenshot var; ancak cok uygulamali klasorde elle sayfa cevirme/swipe ve top/middle/bottom fihrist varyantlari bu turda tam gorsel QA olarak yapilmadi.
+
+## 1. Yonetici Ozeti
+
+Toplam gercek acik bulgu: 0
+
+P0: 0
+
+P1: 0
+
+P2: 0
+
+P3: 0
+
+Kismi runtime risk: 1 (`F20`)
+
+Kapanmis onceki kritikler:
+- F01/F03 gizlilik metni tutarsizligi kapandi: `SettingsBackupAboutSection.kt:94-97`.
+- F02 gizlilik sifirlama eksigi kapandi: `AppListViewModel.kt:834-835`, `NotificationEventDao.kt:36-37`.
+- F05 backup kapsam eksigi kapandi: `BackupManager.kt:134-139`, `BackupManager.kt:378-383`.
+- F06/F07 restore sonrasi search source lifecycle kismen kapandi: `BackupManager.kt:400`, `BackupManager.kt:444-459`, `AppListViewModel.kt:870`.
+
+Ilk cozulmesi gereken 5 is:
+1. Tamamlandi: F12 Android 13+ dosya arama izin/model uyumsuzlugu netlestirildi ve kod akisi duzeltildi.
+2. Tamamlandi: F10 LIKE fallback icin `ESCAPE '\'` ve escape helper testi eklendi.
+3. Tamamlandi: F08 dock ayarlarinda `folder:` item renderi duzeltildi.
+4. Tamamlandi: F04 About ekraninda hardcoded surum yerine runtime version gosteriliyor.
+5. Kismi kanitlandi: F20 tablet launch smoke tamamlandi; detayli klasor swipe gorsel QA acik risk.
+
+## 2. Kullanilan Kaynaklar
+
+- Google Play Data Safety: https://support.google.com/googleplay/android-developer/answer/10787469
+- Android WorkManager existing work update/cancel: https://developer.android.com/develop/background-work/background-tasks/persistent/how-to/update-work
+- Android Adaptive App Quality: https://developer.android.com/docs/quality-guidelines/adaptive-app-quality
+- Android 13 media permissions: https://developer.android.com/about/versions/13/behavior-changes-13
+- OWASP MASVS: https://mas.owasp.org/MASVS/
+
+## 3. Calistirilan Komutlar
+
+```powershell
+memory-palace list
+git status --short --branch
+rg -n "Firebase ve|Bildirim metni varsayÄ±lan|notification_events|clearAll\(|missionsEnabled|searchShineEnabled|autoFolderColorEnabled|biometricSettingsLockEnabled|quickWheelEnabled|focusModeEnabled|syncSearchSourcesAfterRestore|enableContactsSource|enableFilesSource|v1.0 beta|LIKE \?|READ_EXTERNAL_STORAGE|READ_MEDIA|ExistingPeriodicWorkPolicy\.KEEP|remember \{ AppPrefs.isSearchShineEnabled" app/src/main/java app/src/test/java app/build.gradle.kts app/src/main/AndroidManifest.xml -S
+rg -n "fun resetAllPrivacyData|clearAllNotificationTexts|clearAllNotificationEvents|importBackup\(|BACKUP_VERSION|importFromJson\(" app/src/main/java app/src/test/java -S
+```
+
+Not: Bu rapor guncellemesi dokuman odakli oldugu icin kod degisikligi yapilmadi. Son basarili genel build onceki fix turunde `assembleDebug -PskipGoogleServices --no-daemon` ile alindi ve `HISTORY.md:9` altinda kayitli.
+
+## 4. 30 Dongu Durumu Tablosu
+
+| Dongu | Alan | Sonuc | En yuksek oncelik |
 |---:|---|---|---:|
-| 01 | Build/release metadata | Bulgu var | 6 |
-| 02 | Gizlilik metinleri | Bulgu var | 10 |
-| 03 | Gizlilik sifirlama | Bulgu var | 10 |
-| 04 | Bildirim analizi DB | Bulgu var | 9 |
-| 05 | Yedek export/import | Bulgu var | 8 |
-| 06 | Restore sonrasi worker/index | Bulgu var | 8 |
-| 07 | Dock + klasor item | Bulgu var | 7 |
-| 08 | Arama bar glow state | Bulgu var | 5 |
-| 09 | Arama SQL fallback | Bulgu var | 7 |
-| 10 | Dosya arama izinleri | Bulgu var | 8 |
-| 11 | Rehber arama observer | Bulgu var | 7 |
-| 12 | WorkManager politikasi | Bulgu var | 5 |
-| 13 | App listesi performans | Bulgu var | 6 |
-| 14 | Settings stale state | Bulgu var | 5 |
-| 15 | Home permission hint | Bulgu var | 5 |
-| 16 | Firebase/DeepSeek aktarim beyanlari | Bulgu var | 9 |
-| 17 | Notification text persistence | Bulgu var | 9 |
-| 18 | Remote category DB beyanlari | Bulgu var | 7 |
-| 19 | Tablet/buyuk ekran | Risk var | 6 |
-| 20 | Compose state listener tutarliligi | Bulgu var | 5 |
-| 21 | Backup kapsam regresyonu | Bulgu var | 8 |
-| 22 | Search source lifecycle | Bulgu var | 8 |
-| 23 | Release signing guard | Bulgu var | 6 |
-| 24 | Eski audit drift | Bulgu var | 4 |
-| 25 | LLM network path | Izleme | 4 |
-| 26 | Crash/log davranisi | Kritik bulgu yok | 0 |
-| 27 | Package sync/index | Risk var | 5 |
-| 28 | Play policy evidence | Bulgu var | 7 |
-| 29 | Test kapsami | Eksik test var | 6 |
-| 30 | Sonraki fix plani | Hazir | 10 |
+| 01 | Git/build/proje yapisi | Bulgu var | 68 |
+| 02 | Room/DAO/migration | Kritik bulgu yok | 0 |
+| 03 | Repository veri tutarliligi | Kritik bulgu yok | 0 |
+| 04 | Backup/restore | Fix sonrasi test riski var | 60 |
+| 05 | SharedPreferences/local state | Bulgu var | 48 |
+| 06 | WorkManager | Bulgu var | 48 |
+| 07 | Bildirim sistemi/izinler | Kritikler kapandi | 0 |
+| 08 | LauncherActivity lifecycle | Bu turda yeni bulgu yok | 0 |
+| 09 | LauncherViewModel | Performans riski var | 58 |
+| 10 | Ana ekran UI | Bulgu var | 48 |
+| 11 | Klasor ekrani/gecis | Runtime smoke eksik | 62 |
+| 12 | Dock/contextual dock | Bulgu var | 70 |
+| 13 | All Apps | Bulgu var | 45 |
+| 14 | Arama sistemi | Bulgu var | 78 |
+| 15 | Kategori siniflandirma | Yeni dogrulanmis bulgu yok | 0 |
+| 16 | FolderSuggestionEngine | Yeni dogrulanmis bulgu yok | 0 |
+| 17 | Kullanim istatistikleri | Yeni dogrulanmis bulgu yok | 0 |
+| 18 | Wrapped/haftalik rapor | Yeni dogrulanmis bulgu yok | 0 |
+| 19 | Pulse Clock | Onceki listener riski kapali | 0 |
+| 20 | Dashboard/hedef sistemi | Test boslugu var | 55 |
+| 21 | Gizlilik/guvenlik | P0 kapandi, Play form kontrolu kaldi | 60 |
+| 22 | Ayarlar mimarisi | Bulgu var | 48 |
+| 23 | Onboarding/izin rehberi | Yeni dogrulanmis bulgu yok | 0 |
+| 24 | Navigation/deep link | Yeni dogrulanmis bulgu yok | 0 |
+| 25 | Widget sistemi | Bu turda kapsanmadi | 0 |
+| 26 | Package receiver | Bu turda yeni bulgu yok | 0 |
+| 27 | Compose reactivity | Bulgu var | 48 |
+| 28 | Tablet/adaptive | Bulgu var | 62 |
+| 29 | Test altyapisi | Bulgu var | 60 |
+| 30 | Dokumantasyon/yayin | Bulgu var | 60 |
 
-## Kanitli Bulgular
+## 5. Bulgu Listesi
 
-### F01 - Gizlilik merkezindeki "internete veri gonderilmez" iddiasi gercek davranisla celisiyor
+### F04
 
-Skor: 10
+Dongu: 30
 
-Kanit:
-- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt:94` "Internete veri gonderilmez" diyor.
-- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt:97` "Reklamcilik veya izleme yok" diyor.
-- `app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt:38` Crashlytics release'te aciliyor.
-- `app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt:52` `AppAnalytics.appStarted` calisiyor.
-- `app/src/main/java/com/armutlu/apporganizer/AppOrganizerApp.kt:91` FCM token aliniyor.
-- `app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/CategoryLLMFallback.kt:109` DeepSeek API endpoint'i var.
-- `app/src/main/java/com/armutlu/apporganizer/domain/usecase/wrapped/WrappedAiCoach.kt:43` DeepSeek API endpoint'i var.
-- `app/src/main/java/com/armutlu/apporganizer/data/remote/AppDatabaseService.kt:12` GitHub raw DB endpoint'i var.
+Baslik: About ekraninda hardcoded versiyon var
 
-Etki:
-- Play Data Safety ve kullanici guveni acisindan en riskli tutarsizlik.
-- Gizlilik politikasi daha dogruyken, ayarlar ekrani fazla kesin ve yanlis iddia veriyor.
+Kategori: Urun dogrulugu / yayin hazirligi
 
-Yapilacak:
-- Gizlilik karti metinlerini "varsayilan/istege bagli" ayrimina gore yeniden yaz.
-- Firebase/Crashlytics/FCM/DeepSeek/remote DB icin net opt-in veya net beyan ekle.
-- Play Data Safety formuyla birebir kontrol et.
+Oncelik puani: 60
 
-### F02 - "Tum kullanim verisini sifirla" bildirim gecmisini ve bildirim metnini temizlemiyor
-
-Skor: 10
+Siddet: P2
 
 Kanit:
-- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt:74` dialog "bildirim gecmisi ... silinir" diyor.
-- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt:122` satiri ayni vaadi tekrar ediyor.
-- `app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt:823` reset fonksiyonu basliyor.
-- `app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt:827-834` usage, launch, lastUsed, notificationCount ve notlari sifirliyor.
-- `app/src/main/java/com/armutlu/apporganizer/data/local/AppDao.kt:337` `clearAllNotificationTexts()` var ama reset fonksiyonundan cagrilmiyor.
-- `app/src/main/java/com/armutlu/apporganizer/data/local/NotificationEventDao.kt:33` sadece eski olaylari silen `deleteOlderThan` var; tum tablo temizleme yok.
-
-Etki:
-- Kullanici "tum veriyi sildim" sanarken `notification_events` ve muhtemel `apps.notificationText` kalabilir.
-- Gizlilik/guvenlik acisindan yuksek risk.
-
-Yapilacak:
-- `NotificationEventDao.clearAll()` ekle.
-- `AppRepository.clearAllNotificationTexts()` ve notification event temizligini `resetAllPrivacyData` icine al.
-- Reset sonrasi rapor/pulse/wrapped ekranlarinda bos veri dogrula.
-
-### F03 - Bildirim icerigi okunmaz metni, opsiyonel notification text kaliciligini aciklamiyor
-
-Skor: 9
-
-Kanit:
-- `SettingsBackupAboutSection.kt:96` "Bildirim icerigi okunmaz (sadece sayi)" diyor.
-- `AppNotificationListenerService.kt:41-50` title/text okuyup `combined` uretiyor.
-- `AppNotificationListenerService.kt:52-54` ayar aciksa metni yayinliyor.
-- `LauncherViewModel.kt:217` metinleri repository uzerinden DB'ye yaziyor.
-- `AppDao.kt:326-338` `notificationText` kalici sutunu guncelleniyor/temizlenebiliyor.
-
-Etki:
-- Ayar kapaliyken varsayilan dogru olabilir; ancak metin "hic okunmaz" dedigi icin opsiyonel acik durumda yanlis.
-
-Yapilacak:
-- Metni "varsayilan kapali; acilirsa son bildirim metni cihazda saklanir" seklinde degistir.
-- Notification text ayari ile gizlilik merkezini ayni ekranda bagla.
-
-### F04 - About ekraninda versiyon hardcoded ve build versiyonuyla uyumsuz
-
-Skor: 6
-
-Kanit:
-- `SettingsBackupAboutSection.kt:53` "v1.0 beta" gosteriyor.
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt:53` `v1.0 beta` gosteriyor.
 - `app/build.gradle.kts:41-42` `versionCode=40`, `versionName="1.3.17"`.
 
-Etki:
-- Test/Play release kanitlarinda kullaniciya ve QA'ya yanlis surum gosterilir.
+Etkilenen dosya/satir:
+- `SettingsBackupAboutSection.kt:53`
+- `app/build.gradle.kts:41-42`
 
-Yapilacak:
-- `BuildConfig.VERSION_NAME` veya PackageManager versionName kullan.
-- Release checklist'e UI versiyon smoke kontrolu ekle.
+Neden gercek sorun:
+- QA, Play kaniti ve kullanici ekrani farkli surum bilgisini gorebilir.
 
-### F05 - Backup yeni ayarlarin bir kismini kapsamiyor
+Kullaniciya etkisi:
+- Hata bildirimi, destek ve release kanitlari yanlis surumle karisir.
 
-Skor: 8
+Onerilen cozum:
+- `BuildConfig.VERSION_NAME` veya PackageManager `versionName` kullan.
 
-Kanit:
-- `AppPrefs.kt:325-327` `missions_enabled` var.
-- `AppPrefs.kt:336-337` `search_shine_enabled` var.
-- `AppPrefs.kt:569-571` `auto_folder_color_enabled` var.
-- `AppPrefs.kt:600-602` `biometric_settings_lock` var.
-- `SettingsLauncherScreen.kt:309-329` quick wheel ve focus mode ayarlari var.
-- `BackupManager.kt:86-145` settings export blogunda bu anahtarlar yok.
-- `BackupManager.kt:325-386` import blogunda bu anahtarlar yok.
+Nereye uygulanacak:
+- `SettingsBackupAboutSection.kt`
 
-Etki:
-- Yedekten donen cihazda Pulse/Missions, search shine, otomatik klasor rengi, guvenlik kilidi, quick wheel/focus mode kullanici bekledigi gibi gelmeyebilir.
+Test plani:
+- `compileDebugKotlin`
+- Emulator Settings > About ekraninda versionName dogrulama.
 
-Yapilacak:
-- Backup schema version artir.
-- Bu prefleri export/import listesine ekle.
-- Backward compatibility testine "yeni ayarlar round-trip" testi ekle.
+Risk:
+- Dusuk; sadece UI metni.
 
-### F06 - Restore dosya arama kaynagini prefs olarak aciyor ama worker/index lifecycle'i senkronlamiyor
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
 
-Skor: 8
+### F08
 
-Kanit:
-- `BackupManager.kt:139` `searchSourceFilesEnabled` export ediliyor.
-- `BackupManager.kt:376` pref restore ediliyor.
-- `BackupManager.kt:384-385` sadece WeeklyDigest/SmartInsight schedule ediliyor; `FilesIndexWorker.schedule/enqueueNow/cancel` yok.
-- `SearchRepository.kt:198-205` dogru acma/kapama akisinda worker enqueue/schedule/cancel yapiliyor.
+Dongu: 12
 
-Etki:
-- Restore sonrasi ayar acik gorunebilir ama dosya indeksi/periodic worker baslamayabilir.
-- Tersi durumda ayar kapali restore edilse eski worker/indeks kalabilir.
+Baslik: Dock ayarlari `folder:` item'i paket adi gibi render ediyor
 
-Yapilacak:
-- Backup import sonunda `searchSourceFilesEnabled` degerine gore `SearchRepository.enableFilesSource()` veya `disableFilesSource()` esdegeri calistir.
-- Bu is icin repository dependency zor olacaksa restore-sonrasi lifecycle task queue ekle.
+Kategori: UX / veri modeli uyumsuzlugu
 
-### F07 - Restore rehber arama kaynagini prefs olarak aciyor ama observer/register lifecycle'i eksik
+Oncelik puani: 70
 
-Skor: 7
+Siddet: P2
 
 Kanit:
-- `BackupManager.kt:138` `searchSourceContactsEnabled` export ediliyor.
-- `BackupManager.kt:375` pref restore ediliyor.
-- `SearchRepository.kt:186-193` dogru akis index + observer register/unregister yapiyor.
-- `ContactsIndexer.kt:65-81` observer sadece explicit register ile devreye giriyor.
-- `AppOrganizerApp.kt:65-72` startup yalnizca pref default set ediyor; observer register etmiyor.
+- `app/src/main/java/com/armutlu/apporganizer/utils/DockPrefs.kt:14` `folder:` prefix var.
+- `app/src/main/java/com/armutlu/apporganizer/utils/DockPrefs.kt:57-63` folder item helper'lari var.
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsLauncherScreen.kt:135-146` her dock item icin `PackageManager.getApplicationInfo(pkg, 0)` deniyor.
 
-Etki:
-- Restore veya izinli ilk calistirma sonrasi kisi arama calissa bile rehber degisiklikleri izlenmeyebilir.
+Etkilenen dosya/satir:
+- `DockPrefs.kt:14`, `DockPrefs.kt:57-63`
+- `SettingsLauncherScreen.kt:135-146`
 
-Yapilacak:
-- Restore sonrasi contacts source icin `enableContactsSource/disableContactsSource` esdegeri calistir.
-- App startup veya search bootstrap sonunda contacts observer register durumunu garanti et.
+Neden gercek sorun:
+- Dock'ta klasor item varsa ayarlarda ham `folder:social` gibi gorunebilir.
 
-### F08 - Dock ayarlarinda klasor dock item'i paket adi gibi render ediliyor
+Kullaniciya etkisi:
+- Dock yonetimi guvensiz/bozuk algilanir.
 
-Skor: 7
+Onerilen cozum:
+- `DockPrefs.isFolderItem(pkg)` branch'i ekle, kategori adi/emoji/icon goster.
 
-Kanit:
-- `DockPrefs.kt:14` folder prefix `folder:`.
-- `DockPrefs.kt:57-63` folder item helper'lari var.
-- `HomeScreen.kt:1031` dock item'i folder olarak ayirt ediyor.
-- `DockEditSheet.kt:120` folder item'i dogru cozuyor.
-- `SettingsLauncherScreen.kt:135-146` her dock item icin `pm.getApplicationInfo(pkg, 0)` yapiyor ve `Icons.Default.Apps` basiyor.
+Nereye uygulanacak:
+- `SettingsLauncherScreen.kt`
 
-Etki:
-- Dock'ta sosyal klasor varsa ayarlarda "folder:social" gibi ham deger gorunebilir.
-- Kaldirma calisir ama kullanici deneyimi ve tema tutarliligi bozulur.
+Test plani:
+- Dock'a sosyal klasor ekle, Ayarlar > Launcher dock listesini ac.
 
-Yapilacak:
-- `DockPrefs.isFolderItem(pkg)` branch'i ekle.
-- Folder category ad/emoji/icon goster.
-- Remove butonu ayni item string'i ile calismaya devam etsin.
+Risk:
+- Orta; UI modeli ve kaldirma aksiyonu ayni item string'iyle korunmali.
 
-### F09 - All Apps arama parlamasi ayar degisince reaktif degil
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
 
-Skor: 5
+### F09
 
-Kanit:
-- `AllAppsDrawer.kt:134` `shineEnabled = remember { AppPrefs.isSearchShineEnabled(context) }`.
-- `AllAppsDrawer.kt:159` `.diamondShine(shineEnabled, ...)` kullaniliyor.
-- `HomeScreenComponents.kt:768-783` ana ekran aramasinda ayni tercih icin listener var.
+Dongu: 13
 
-Etki:
-- Ayarlardan search shine kapat/ac sonrasi All Apps drawer ayni oturumda eski degeri kullanabilir.
+Baslik: All Apps arama parlamasi ayar degisince reaktif degil
 
-Yapilacak:
-- AllAppsDrawer icin de `OnSharedPreferenceChangeListener` ekle.
-- Ana ekran ile ayni preference-state helper'ina tasimak daha temiz.
+Kategori: Compose state reactivity
 
-### F10 - Arama LIKE fallback `%` ve `_` kacirma mantigi SQL ESCAPE kullanmiyor
+Oncelik puani: 45
 
-Skor: 7
+Siddet: P3
 
 Kanit:
-- `SearchRepository.kt:125` pattern `%` ve `_` karakterlerini backslash ile kacar.
-- `SearchRepository.kt:134` `title LIKE ? OR subtitle LIKE ?` kullaniyor; `ESCAPE '\'` yok.
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/AllAppsDrawer.kt:134` `remember { AppPrefs.isSearchShineEnabled(context) }`.
+- Ana ekran aramasinda listener var: `HomeScreenComponents.kt:768-783`.
 
-Etki:
-- Kullanici `%` veya `_` iceren arama yaparsa literal arama dogru calismayabilir.
-- Testler helper seviyesinde olabilir ama gercek SQLite sorgusu ESCAPE olmadan farkli davranabilir.
+Etkilenen dosya/satir:
+- `AllAppsDrawer.kt:134`
+- `HomeScreenComponents.kt:768-783`
 
-Yapilacak:
-- SQL'e `LIKE ? ESCAPE '\'` ekle.
-- Instrumented veya Robolectric SQLite testi ile `%`, `_`, `\` query'lerini dogrula.
+Neden gercek sorun:
+- Ayardan kapat/ac sonrasi All Apps drawer ayni oturumda eski degeri kullanabilir.
 
-### F11 - AppDao eski searchAppsByName akisi limitsiz ve wildcard kacirmasiz
+Kullaniciya etkisi:
+- Ayar calismiyor gibi gorunur.
 
-Skor: 5
+Onerilen cozum:
+- SharedPreferences listener veya ortak preference-state helper kullan.
 
-Kanit:
-- `AppDao.kt:186-187` `appName LIKE '%' || :query || '%'` limitsiz flow.
-- `AppDao.kt:192-193` limitli alternatif var.
-- `AppRepository.kt:157` limitsiz metodu expose ediyor.
+Nereye uygulanacak:
+- `AllAppsDrawer.kt`
 
-Etki:
-- Bu yol UI'da tekrar kullanilirsa buyuk cihazlarda performans ve wildcard arama tutarliligi bozulur.
+Test plani:
+- Ayari degistir, All Apps arama barinda shine davranisini ayni oturumda dogrula.
 
-Yapilacak:
-- Eski metodu `@Deprecated` yap veya repository'de limitli/escape'li metoda yonlendir.
-- Mevcut kullanicilarini `rg` ile temiz tutan test ekle.
+Risk:
+- Dusuk.
 
-### F12 - Dosya arama "runtime izin gerektirmez" varsayimi Android 13+ icin riskli
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
 
-Skor: 8
+### F10
 
-Kanit:
-- `FilesIndexer.kt:16-20` MediaStore dosya arama icin "Ek runtime izni gerektirmez" diyor.
-- `FilesIndexer.kt:55-58` Images/Video/Audio/Downloads MediaStore query yapiyor.
-- `AndroidManifest.xml:17-20` sadece `READ_EXTERNAL_STORAGE` var ve `maxSdkVersion=32`.
-- Manifest'te Android 13+ `READ_MEDIA_IMAGES/VIDEO/AUDIO` yok.
+Dongu: 14
 
-Etki:
-- Android 13+ cihazlarda dosya arama kaynagi acik gorunup bos/eksik sonuc verebilir.
-- Play izin beyanlari ve kullanici beklentisi acisindan risk.
+Baslik: LIKE fallback `%` ve `_` kacirma mantigi SQL `ESCAPE` kullanmiyor
 
-Yapilacak:
-- Android 13+ davranisini emulator/tablet smoke ile dogrula.
-- Ya granular izin akisi ekle ya da "sadece izin verilen MediaStore/Downloads kapsami" diye UX metnini daralt.
+Kategori: Arama mantigi
 
-### F13 - FilesIndexWorker periyodik is `KEEP` ile schedule degisikliklerini yutabilir
+Oncelik puani: 72
 
-Skor: 5
+Siddet: P2
 
 Kanit:
-- `FilesIndexWorker.kt:67-80` 24 saatlik periodic request olusturuyor.
-- `FilesIndexWorker.kt:76-80` `ExistingPeriodicWorkPolicy.KEEP` kullaniyor.
+- `app/src/main/java/com/armutlu/apporganizer/data/repository/SearchRepository.kt:125` pattern backslash ile kaciriliyor.
+- `app/src/main/java/com/armutlu/apporganizer/data/repository/SearchRepository.kt:134` `LIKE ?` var ama `ESCAPE '\'` yok.
 
-Etki:
-- Gelecek surumde constraint/frequency degisirse eski cihazlarda yeni plan uygulanmayabilir.
+Etkilenen dosya/satir:
+- `SearchRepository.kt:125`
+- `SearchRepository.kt:134`
 
-Yapilacak:
-- Ayar veya surum degisince `UPDATE`/cancel+enqueue kullan.
-- Work policy secimini release notuna bagla.
+Neden gercek sorun:
+- SQLite `LIKE` sorgusunda backslash escape karakteri olarak belirtilmezse `%` ve `_` literal arama dogru calismayabilir.
 
-### F14 - Home permission hint sayac/dismiss state'i kalici pref degisiminden sonra stale kalabilir
+Kullaniciya etkisi:
+- Ozel karakterli uygulama/kisi/dosya aramalarinda yanlis sonuc.
 
-Skor: 5
+Onerilen cozum:
+- `title LIKE ? ESCAPE '\'` ve `subtitle LIKE ? ESCAPE '\'` kullan.
+
+Nereye uygulanacak:
+- `SearchRepository.buildLikeQuery`
+
+Test plani:
+- SQLite tabanli unit/instrumentation test: `%`, `_`, `\` query.
+
+Risk:
+- Orta; FTS fallback davranisi etkilenir.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F11
+
+Dongu: 03
+
+Baslik: Eski `searchAppsByName` akisi limitsiz ve wildcard kacirmasiz
+
+Kategori: Repository/DAO teknik borc
+
+Oncelik puani: 42
+
+Siddet: P3
 
 Kanit:
-- `HomeScreenComponents.kt:912` `permHintCount` sadece `remember` ile okunuyor.
-- `HomeScreenComponents.kt:915` `permHintPermDismissed` sadece `remember` ile okunuyor.
-- `HomeScreenComponents.kt:919-920` sayac artiriliyor ama local state yenilenmiyor.
-- `HomeScreenComponents.kt:1472-1475` kalici dismiss/count degisiyor ama state listener yok.
+- `app/src/main/java/com/armutlu/apporganizer/data/local/AppDao.kt:186-187` limitsiz `LIKE`.
+- `app/src/main/java/com/armutlu/apporganizer/data/repository/AppRepository.kt:157` metodu expose ediyor.
 
-Etki:
-- Hint pasif moda gecme veya kalici kapanma ayni oturumda tutarsiz gorunebilir.
+Etkilenen dosya/satir:
+- `AppDao.kt:186-187`
+- `AppRepository.kt:157`
 
-Yapilacak:
-- Count/dismissed icin `mutableStateOf` + setter sonrasi update veya SharedPreferences listener kullan.
+Neden gercek sorun:
+- Yeni UI bu yolu kullanirsa buyuk app listesinde performans ve wildcard tutarliligi bozulabilir.
 
-### F15 - Settings ekranlarinda bircok pref restore/dis kaynak degisimine reaktif degil
+Kullaniciya etkisi:
+- Arama gecikmesi veya yanlis sonuc.
 
-Skor: 5
+Onerilen cozum:
+- Deprecated yap veya limitli/escape'li versiyona yonlendir.
+
+Nereye uygulanacak:
+- `AppDao.kt`, `AppRepository.kt`
+
+Test plani:
+- `rg "searchAppsByName("` ile consumer kontrolu; repository test.
+
+Risk:
+- Dusuk/orta.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F12
+
+Dongu: 14
+
+Baslik: Android 13+ dosya arama izin modeli belirsiz
+
+Kategori: Izin / Play policy / dosya arama
+
+Oncelik puani: 78
+
+Siddet: P1
 
 Kanit:
-- `SettingsStatsScreen.kt:133-142` notif analytics state lokal.
+- `app/src/main/java/com/armutlu/apporganizer/data/local/FilesIndexer.kt:16-20` "Ek runtime izni gerektirmez" diyor.
+- `app/src/main/java/com/armutlu/apporganizer/data/local/FilesIndexer.kt:55-58` Images/Video/Audio/Downloads MediaStore query yapiyor.
+- `app/src/main/AndroidManifest.xml:17` sadece `READ_EXTERNAL_STORAGE` var.
+- `PrivacyAnalyzer.kt:104-107` READ_MEDIA izinlerini analiz ediyor ama manifestte granular izinler yok.
+
+Etkilenen dosya/satir:
+- `FilesIndexer.kt:16-20`, `FilesIndexer.kt:55-58`
+- `AndroidManifest.xml:17`
+- `PrivacyAnalyzer.kt:104-107`
+
+Neden gercek sorun:
+- Android 13+ cihazlarda dosya arama kaynagi acik gorunup bos/eksik sonuc verebilir veya izin metni gercegi yansitmayabilir.
+
+Kullaniciya etkisi:
+- "Dosya arama" acik ama dosya bulunmuyor algisi.
+
+Onerilen cozum:
+- Android 13+ davranisini emulatorle kanitla.
+- Gerekirse granular media permission akisi veya daha dar "izin verilen MediaStore kapsami" metni ekle.
+
+Nereye uygulanacak:
+- `AndroidManifest.xml`, `SearchSettingsScreen.kt`, `FilesIndexer.kt`, Play evidence docs.
+
+Test plani:
+- API 33/34 emulator: dosya kaynagi ac/kapat, image/audio/video/downloads sonuc kontrolu.
+
+Risk:
+- Yayin ve kullanici beklentisi riski yuksek.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F13
+
+Dongu: 06
+
+Baslik: FilesIndexWorker `KEEP` politikasi schedule degisikliklerini yutabilir
+
+Kategori: WorkManager
+
+Oncelik puani: 48
+
+Siddet: P3
+
+Kanit:
+- `app/src/main/java/com/armutlu/apporganizer/data/local/FilesIndexWorker.kt:78` `ExistingPeriodicWorkPolicy.KEEP`.
+
+Etkilenen dosya/satir:
+- `FilesIndexWorker.kt:78`
+
+Neden gercek sorun:
+- Periyodik is constraint/frequency degisirse eski is korunur, yeni politika uygulanmayabilir.
+
+Kullaniciya etkisi:
+- Dosya indeksi beklenen siklikta yenilenmeyebilir.
+
+Onerilen cozum:
+- `UPDATE` veya explicit cancel+enqueue politikasi kullan; surum migration gerekiyorsa ekle.
+
+Nereye uygulanacak:
+- `FilesIndexWorker.kt`
+
+Test plani:
+- WorkManager test helper veya emulatorda unique work state kontrolu.
+
+Risk:
+- Dusuk/orta.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F14
+
+Dongu: 10
+
+Baslik: Home permission hint count/dismiss state stale kalabilir
+
+Kategori: Compose state
+
+Oncelik puani: 45
+
+Siddet: P3
+
+Kanit:
+- `HomeScreenComponents.kt:912` count `remember` ile tek sefer okunuyor.
+- `HomeScreenComponents.kt:915` dismissed `remember` ile tek sefer okunuyor.
+- `HomeScreenComponents.kt:919-920` count artiyor.
+- `HomeScreenComponents.kt:1472-1475` dismissed/count pref degisiyor.
+
+Etkilenen dosya/satir:
+- `HomeScreenComponents.kt:912`, `915`, `919-920`, `1472-1475`
+
+Neden gercek sorun:
+- Pref degisimi ayni compose oturumunda UI'a yansimayabilir.
+
+Kullaniciya etkisi:
+- Izin ipucu fazla gorunebilir veya kapanmasi gecikebilir.
+
+Onerilen cozum:
+- Local mutable state'i setter sonrasi guncelle veya pref listener kullan.
+
+Nereye uygulanacak:
+- `HomeScreenComponents.kt`
+
+Test plani:
+- Izin hint X/pasif mod davranisi emulator smoke.
+
+Risk:
+- Dusuk.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F15
+
+Dongu: 22 / 27
+
+Baslik: Settings ekranlarinda restore/dis kaynak degisimine reaktif olmayan pref state'leri var
+
+Kategori: Compose reactivity / ayarlar mimarisi
+
+Oncelik puani: 48
+
+Siddet: P3
+
+Kanit:
 - `SettingsStatsScreen.kt:165-174` missions state lokal.
 - `SettingsSecurityScreen.kt:42-66` biometric lock state lokal.
 - `SettingsLauncherScreen.kt:258-299` folder transition state lokal.
 - `SettingsLauncherScreen.kt:309-329` quick wheel/focus state lokal.
-- `SearchSettingsScreen.kt:74-89` search source ve UI prefleri lokal.
+- `SearchSettingsScreen.kt:74-89` search source state lokal.
 
-Etki:
-- Backup restore, baska ekrandan ayar degisikligi veya prefs migration sonrasi ayar ekrani eski deger gosterebilir.
+Etkilenen dosya/satir:
+- Yukaridaki dosya/satirlar.
 
-Yapilacak:
-- Ortak `rememberPreferenceState(key)` helper'i olustur.
-- Restore tamamlandiktan sonra settings screen state refresh event'i yayinla.
+Neden gercek sorun:
+- Restore sonrasi ayni ekranda eski state gorunebilir.
 
-### F16 - getAllAppsFlow birden cok StateFlow tarafindan tam tablo olarak dinleniyor
+Kullaniciya etkisi:
+- Ayarlar kaydedilmedi veya restore bozuk sanilabilir.
 
-Skor: 6
+Onerilen cozum:
+- Ortak `rememberPreferenceState(key)` veya restore-complete refresh event'i.
+
+Nereye uygulanacak:
+- Ayarlar ekranlari.
+
+Test plani:
+- Backup restore sonrasi ayni ekran acikken toggle degerleri.
+
+Risk:
+- Orta.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F16
+
+Dongu: 09 / 13
+
+Baslik: `getAllAppsFlow` birden cok StateFlow icin tam tablo emit ediyor
+
+Kategori: Performans
+
+Oncelik puani: 58
+
+Siddet: P2
 
 Kanit:
-- `AppDao.kt:115-116` tum app listesini flow olarak donduruyor.
-- `LauncherViewModel.kt:146`, `167`, `174`, `180`, `590`, `640`, `885`, `946` ayni tam tablo flow'unu farkli turetilmis state'ler icin kullaniyor.
-- `AppDao.kt:108-109` paging icin `getAppsPage` zaten var.
+- `AppDao.kt:115-116` tum app listesini flow donduruyor.
+- `LauncherViewModel.kt:146`, `167`, `174`, `180`, `590`, `640`, `885`, `946` ayni tam tablo flow'u farkli derive state'lerde kullaniliyor.
 
-Etki:
-- App sayisi yuksek cihazlarda tek DB degisikligi birden fazla tam liste transformunu tetikler.
-- Tablet/buyuk ekran ve cok uygulamali kullanicida frame drop riski.
+Etkilenen dosya/satir:
+- `AppDao.kt:115-116`
+- `LauncherViewModel.kt` ilgili stateFlow satirlari.
 
-Yapilacak:
-- LauncherViewModel icinde tek shared `allAppsFlow` uzerinden derive et.
-- Ozet/favorite/recent gibi listeleri DAO seviyesinde limitli sorgulara ayir.
+Neden gercek sorun:
+- Buyuk app listesinde tek DB degisikligi coklu tam liste transformu tetikler.
 
-### F17 - Release build keystore yoksa debug imzaya dusuyor
+Kullaniciya etkisi:
+- Dusuk/orta seviye jank, ozellikle tablet/cok uygulamali cihazda.
 
-Skor: 6
+Onerilen cozum:
+- ViewModel icinde tek shared `allAppsFlow` derive et; recent/favorite/suggested icin DAO limitli sorgular kullan.
+
+Nereye uygulanacak:
+- `LauncherViewModel.kt`, `AppDao.kt`
+
+Test plani:
+- Unit test + profiler/emulator buyuk app dataseti.
+
+Risk:
+- Orta; refactor dikkatli yapilmali.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F17
+
+Dongu: 01
+
+Baslik: Release build keystore yoksa debug imzaya dusuyor
+
+Kategori: Release guard
+
+Oncelik puani: 68
+
+Siddet: P2
 
 Kanit:
 - `app/build.gradle.kts:67-73` keystore yoksa release build debug signing ile aliniyor.
 
-Etki:
-- Yerel dogrulama icin yararli ama Play release artifact'i yanlis imzali uretilebilir.
+Etkilenen dosya/satir:
+- `app/build.gradle.kts:67-73`
 
-Yapilacak:
-- `assembleRelease` icin CI/Play gorevlerinde keystore zorunlu olsun.
-- Lokal smoke icin ayri `assembleReleaseLocal` veya property flag kullan.
+Neden gercek sorun:
+- Play'e yuklenecek artifact yanlis imzali uretilirse release sureci bozulur.
 
-### F18 - Eski security audit dokumani current code ile drift olmus
+Kullaniciya etkisi:
+- Yayin gecikmesi.
 
-Skor: 4
+Onerilen cozum:
+- Play/CI release gorevlerinde keystore zorunlu; local test icin ayri flag.
+
+Nereye uygulanacak:
+- `app/build.gradle.kts`, release scripts.
+
+Test plani:
+- Keystore yokken `assembleRelease` beklenen sekilde fail veya local-only mode verir.
+
+Risk:
+- Orta.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F18
+
+Dongu: 30
+
+Baslik: Eski security audit dokumani current code ile drift olmus
+
+Kategori: Dokumantasyon
+
+Oncelik puani: 35
+
+Siddet: P3
 
 Kanit:
 - `docs/internal/security_audit_2026-07-13.md:155` Timber DebugTree'nin kosulsuz oldugunu soyluyor.
-- `AppOrganizerApp.kt:27-30` current code `if (BuildConfig.DEBUG)` ile sarmis.
+- `AppOrganizerApp.kt:27-30` current code DEBUG guard kullaniyor.
 
-Etki:
-- Denetim dokumanlari kullanici/ajan icin yanlis restart noktasi verebilir.
+Etkilenen dosya/satir:
+- `docs/internal/security_audit_2026-07-13.md:155`
+- `AppOrganizerApp.kt:27-30`
 
-Yapilacak:
-- Eski audit bulgulari HISTORY'ye tasinirken "cozuldu/stale" etiketi ekle.
-- Aktif sorun listesi tek kaynak: `COZULEMEYEN_SORUNLAR.md` veya yeni audit raporu olsun.
+Neden gercek sorun:
+- Ajanlar ve insan denetciler eski bulguyu aktif sanabilir.
 
-### F19 - Remote category DB beyanlari ve gercek endpoint tutarliligi test edilmeli
+Kullaniciya etkisi:
+- Yanlis is planlama.
 
-Skor: 7
+Onerilen cozum:
+- Eski audit dokumanina "stale/cozuldu" etiketi ekle veya HISTORY'ye tasinmis kapanis bolumu olustur.
+
+Nereye uygulanacak:
+- `docs/internal/security_audit_2026-07-13.md`, `HISTORY.md`
+
+Test plani:
+- Dokuman grep kontrolu.
+
+Risk:
+- Dusuk.
+
+Durum: Kapandi (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+### F20
+
+Dongu: 11 / 28 / 29
+
+Baslik: Tablet ve klasor gecisleri icin runtime smoke eksik
+
+Kategori: Adaptive layout / test boslugu
+
+Oncelik puani: 62
+
+Siddet: P2
 
 Kanit:
-- `SettingsBackupAboutSection.kt:95` "Online kategori DB varsayilan kapali" diyor.
-- `AppDatabaseService.kt:12` remote DB URL GitHub raw.
-- `AndroidManifest.xml:13-14` INTERNET/ACCESS_NETWORK_STATE var.
-
-Etki:
-- Varsayilan kapali dogruysa sorun yok; ancak Play Data Safety ve gizlilik metni "internete veri yok" ile beraber okundugunda celiski buyuyor.
-
-Yapilacak:
-- Online DB ayarinin default degerini ve acilis akisinda otomatik indirme olup olmadigini test et.
-- Gizlilik merkezine "online DB acilirsa GitHub'dan kategori listesi indirir" aciklamasi ekle.
-
-### F20 - Tablet/buyuk ekran icin arama sonuc yukseklikleri ve folder transition ic ice binme regresyonu test kapsamina girmeli
-
-Skor: 6
-
-Kanit:
-- Kullanici once klasor gecislerinde ve cok uygulamali sayfada ust uste binme bildirdi.
-- `FolderScreen.kt:143-155` folder transition offset animasyonu var.
+- `HISTORY.md:95` daha once tablet benzeri smoke yapildigini gosteriyor, ancak son klasor gecis/restore lifecycle degisiklikleri icin yeni cihaz kaniti yok.
+- `FolderScreen.kt:143-155` transition offset animasyonu var.
 - `FolderScreen.kt:616` nav alpha offset'e bagli.
-- `HomeScreenComponents.kt:941-949` arama sonuc paneli coklu kaynaklara gore genisliyor.
 
-Etki:
-- Telefon smoke gecse bile tablet landscape ve cok uygulamali klasorde layout overlap tekrar edebilir.
+Etkilenen dosya/satir:
+- `FolderScreen.kt:143-155`, `FolderScreen.kt:616`
+- `HISTORY.md:95`
 
-Yapilacak:
-- Tablet emulator smoke: 10 inch, landscape, cok uygulamali klasor, all apps search, folder carousel bottom/top/middle.
-- Screenshot kaniti `artifacts/emulator-smoke/tablet-*` altina kaydedilsin.
+Neden gercek sorun:
+- Build basarisi tablet/landscape overlap veya animasyon bindirme hatasini kanitlamaz.
 
-## False Positive / Kapanmis Eski Bulgular
+Kullaniciya etkisi:
+- Tablet kullanicilarinda klasor gecisi veya arama paneli ust uste binebilir.
 
-| Eski iddia | Current durum |
+Onerilen cozum:
+- 10 inch landscape emulator smoke: klasor swipes, bottom/middle/top fihrist, All Apps search focus.
+
+Nereye uygulanacak:
+- Test/artifact akisi; kod degisikligi smoke sonucuna gore.
+
+Test plani:
+- `adb shell wm size 1280x800`, `wm density 160`, screenshot kanitlari.
+
+Risk:
+- Orta.
+
+Durum: Kismi runtime risk (bkz. 0. 2026-07-14 Cozum Kapanis Ozeti)
+
+## 6. P0/P1 Acil Is Listesi
+
+P0: Yok.
+
+P1: Yok.
+
+Kapanan P0/P1:
+- Gizlilik metni tutarsizligi: kapandi.
+- Gizlilik resetinin bildirim gecmisini temizlememesi: kapandi.
+- Backup pref kapsam eksigi: kapandi.
+- Restore sonrasi search source lifecycle eksigi: kod seviyesinde kapandi, runtime smoke bekliyor.
+- F12 Android 13+ dosya arama izin/model uyumsuzlugu: kapandi.
+
+## 7. P2/P3 Planli Is Listesi
+
+P2: Yok.
+
+P3: Yok.
+
+Kismi runtime risk:
+- F20 tablet/adaptive smoke: launch + fatal-log + screenshot kanitlandi; detayli klasor swipe gorsel QA acik risk.
+
+## 8. Yanlis Pozitif / Dogrulanamayanlar
+
+| Iddia | Guncel karar |
 |---|---|
-| Timber release'te kosulsuz DebugTree | Kapanmis: `AppOrganizerApp.kt:27-30` DEBUG guard var. |
-| Backup folder transition/home usage chart/search source fields eksik | Kismen kapanmis: `BackupManager.kt:129`, `132`, `138-139`, `365-376` var. Ancak F05'te yeni eksikler kaldi. |
-| Pulse Clock pref listener yok | Kapanmis: `PulseClockWidget.kt:95-108` listener var. |
-| FolderScreen carousel/search pref listener yok | Kapanmis: `FolderScreen.kt:67-89` listener var. |
+| Gizlilik merkezi internete veri yok diyor | Artik kapandi; metin Firebase/DeepSeek/online DB beyanina dondu. |
+| Reset notification_events temizlemiyor | Artik kapandi; `NotificationEventDao.clearAll()` ve ViewModel cagrisi var. |
+| Backup missions/searchShine/autoFolderColor/biometric/quickWheel/focus kapsamiyor | Artik kapandi; BackupManager v5 export/import ekledi. |
+| Restore search source worker/observer hic senkronlamiyor | Kod seviyesi kapandi; runtime smoke eksik. |
+| Timber release'te kosulsuz DebugTree | Yanlis/stale; current code DEBUG guard kullaniyor. |
 
-## Oncelikli Fix Plani
+## 9. Eksik Test Matrisi
 
-1. P0/P1 gizlilik duzeltmesi:
-   - F01, F02, F03 birlikte cozulmeli.
-   - Once metinleri dogrula, sonra reset fonksiyonunu gercekten tum yerel bildirim/veri izlerini temizleyecek hale getir.
-
-2. P1 backup/restore lifecycle:
-   - F05, F06, F07 birlikte cozulmeli.
-   - Backup schema version artir, yeni prefleri round-trip test et, restore sonrasi worker/index senkronu yap.
-
-3. P2 search/dock UX:
-   - F08, F09, F10, F11, F12 sirayla cozulmeli.
-   - Ozellikle Android 13+ dosya arama davranisi emulator ile kanitlanmadan Play metni kesin yazilmasin.
-
-4. P3 performans/tablet:
-   - F13-F20 icin smoke/test matrisi kur.
-   - Buyuk ekran ve cok uygulamali cihaz profili olmadan "tamam" denmesin.
-
-## Test Matrisi
-
-| Test | Komut / Yontem | Beklenen |
+| Test | Hedef | Durum |
 |---|---|---|
-| Kotlin compile | `.\gradlew.bat compileDebugKotlin -PskipGoogleServices --no-daemon` | Basarili |
-| Unit narrow | `.\gradlew.bat testDebugUnitTest --tests "*LauncherViewModelLogicTest*" -PskipGoogleServices --no-daemon` | Basarili |
-| Backup round-trip | Yeni test | missions/searchShine/autoFolderColor/biometric/quickWheel/focus korunur |
-| Privacy reset | Yeni DAO/ViewModel test | notification_events, notificationText, counts, usage, notes sifir |
-| Search LIKE | Yeni SQLite test | `%`, `_`, `\` literal aramalari dogru |
-| Restore lifecycle | Yeni integration test | file worker schedule/cancel, contact observer/index dogru |
-| Tablet smoke | Emulator 10 inch landscape | overlap yok, folder transition temiz |
-| Android 13+ file search | API 33/34 emulator | izin/sonuc davranisi net |
+| Android 13+ file search smoke | F12 | Kod + manifest + package permission dump tamamlandi; real file result smoke acik risk degil, ek QA adayi |
+| SQLite LIKE fallback `%/_/\` | F10 | Tamamlandi: TurkishSearchTest |
+| Folder dock item settings render | F08 | Kod/compile tamamlandi; manuel UI smoke ek QA adayi |
+| Backup restore source lifecycle instrumentation | Restore worker/observer | Eksik |
+| Tablet landscape folder transition smoke | F20 | Kismi: tablet launch + screenshot + fatal log temiz; detayli swipe gorsel QA eksik |
+| VersionName About UI smoke | F04 | Compile tamamlandi; manuel UI smoke ek QA adayi |
+| Preference restore stale state smoke | F15 | Kod/compile tamamlandi; restore instrumentation ek QA adayi |
 
-## Sonraki Uygulama Promptu
+## 10. Onerilen Duzeltme Sirasi
+
+1. Tamamlandi: F12 dosya arama izin modeli.
+2. Tamamlandi: F10 LIKE ESCAPE.
+3. Tamamlandi: F08 folder dock item render.
+4. Tamamlandi: F04 versionName UI.
+5. Kismi tamamlandi: F20 tablet smoke.
+6. Tamamlandi: F15 ortak preference state helper.
+
+## 11. Sonraki Ajan Icin Devam Promptu
 
 ```text
-C:\Users\huseyinekizoglu\android-folderautomanager reposunda docs/internal/sistem_denetim_30_dongu_2026-07-14.md raporundaki bulgulari oncelik sirasiyla coz.
+C:\Users\huseyinekizoglu\android-folderautomanager reposunda docs/internal/sistem_denetim_30_dongu_2026-07-14.md raporundaki guncel acik bulgulari sirayla ele al.
 
-Kurallar:
-1. Once F01-F03 gizlilik ve reset bulgularini coz.
-2. Sonra F05-F07 backup/restore lifecycle bulgularini coz.
-3. Sonra F08-F12 search/dock/dosya arama bulgularini coz.
-4. Her fix icin ilgili test veya en azindan targeted compile calistir.
-5. ROADMAP/HISTORY gerekiyorsa yalnizca gercek tamamlananlari guncelle.
-6. Build/push/Telegram gonderimi icin ayrica onay bekle.
+Kod duzeltme sirasinda:
+1. Once F12 icin Android 13+ emulator davranisini kanitla; dogrulamadan manifest izni ekleme.
+2. Sonra F10 LIKE ESCAPE fixini yap ve SQLite/targeted test ekle.
+3. F08 folder dock item render fixini yap.
+4. F04 About versionName fixini yap.
+5. Her fix sonrasi en kucuk testi calistir.
+6. En sonda compileDebugKotlin ve gerekiyorsa assembleDebug al.
+7. Test edilemeyen runtime maddeleri HISTORY ve raporda acik risk olarak birak.
 ```

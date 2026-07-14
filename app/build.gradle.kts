@@ -67,11 +67,29 @@ android {
             // Keystore yoksa debug imzaya dus — R8/minify release build'i keystore beklemeden
             // test edilebilsin (D236). Gercek yayin AAB'si icin keystore.properties SART;
             // debug imzali release APK Play'e YUKLENEMEZ, sadece yerel dogrulama icindir.
-            signingConfig = if (rootProject.file("keystore.properties").exists())
-                signingConfigs.getByName("release")
-            else {
-                println("[uyari] keystore.properties yok - release build DEBUG imzayla aliniyor (yalnizca test)")
-                signingConfigs.getByName("debug")
+            val hasReleaseKeystore = rootProject.file("keystore.properties").exists()
+            val allowDebugReleaseSigning = providers.gradleProperty("allowDebugReleaseSigning").orNull == "true"
+            if (!hasReleaseKeystore && !allowDebugReleaseSigning) {
+                gradle.taskGraph.whenReady {
+                    val releaseRequested = allTasks.any { task ->
+                        task.path.contains("Release", ignoreCase = true)
+                    }
+                    if (releaseRequested) {
+                        throw GradleException(
+                            "Release build icin keystore.properties gerekli. " +
+                                "Sadece lokal R8 testi icin -PallowDebugReleaseSigning=true kullan."
+                        )
+                    }
+                }
+            }
+            signingConfig = when {
+                hasReleaseKeystore -> signingConfigs.getByName("release")
+                else -> {
+                    if (allowDebugReleaseSigning) {
+                        println("[uyari] allowDebugReleaseSigning=true - release build DEBUG imzayla aliniyor (yalnizca test)")
+                    }
+                    signingConfigs.getByName("debug")
+                }
             }
         }
         debug {

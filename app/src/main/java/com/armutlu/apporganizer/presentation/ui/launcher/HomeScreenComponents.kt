@@ -909,15 +909,16 @@ internal fun HomeAppSearchBar(
     // Bu oturumda X ile kapatıldı mı (aktif ipucu için geçici gizleme)
     var permHintSessionDismissed by remember { mutableStateOf(false) }
     // Kaç açılışta gösterildi — MAX'a ulaşınca rahatsız etmeyen pasif linke döner
-    val permHintCount = remember { AppPrefs.getSearchPermHintCount(context) }
+    var permHintCount by remember { mutableStateOf(AppPrefs.getSearchPermHintCount(context)) }
     val permHintPassiveMode = permHintCount >= AppPrefs.SEARCH_PERM_HINT_MAX
     // Pasif link kalıcı kapatıldıysa bir daha hiç gösterme
-    val permHintPermDismissed = remember { AppPrefs.isSearchPermHintDismissed(context) }
+    var permHintPermDismissed by remember { mutableStateOf(AppPrefs.isSearchPermHintDismissed(context)) }
     val showPermHint = permMissing && !permHintSessionDismissed && !permHintPermDismissed
     // Aktif modda ilk gösterimde sayaç artır — birkaç açılış sonra pasif moda geçsin
     LaunchedEffect(showPermHint, permHintPassiveMode) {
         if (showPermHint && !permHintPassiveMode) {
             AppPrefs.incrementSearchPermHintCount(context)
+            permHintCount = AppPrefs.getSearchPermHintCount(context)
         }
     }
 
@@ -1470,9 +1471,11 @@ internal fun HomeAppSearchBar(
                             if (permHintPassiveMode) {
                                 // Pasif link kapatıldıysa kalıcı gizle — bir daha rahatsız etme
                                 AppPrefs.setSearchPermHintDismissed(context, true)
+                                permHintPermDismissed = true
                             } else {
                                 // Aktif ipucu kapatıldıysa sayacı ilerlet (pasif moda daha çabuk geçsin)
                                 AppPrefs.incrementSearchPermHintCount(context)
+                                permHintCount = AppPrefs.getSearchPermHintCount(context)
                             }
                         }
                 )

@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.presentation.viewmodel.SearchSettingsViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 
@@ -65,28 +66,28 @@ fun SearchSettingsScreen(
 ) {
     val context = LocalContext.current
     val sourceOpInFlight by viewModel.sourceOpInFlight.collectAsState()
-    var homeAppSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeAppSearchEnabled(context)) }
-    var homeSearchEnabled by remember { mutableStateOf(AppPrefs.isHomeSearchEnabled(context)) }
-    var doubleTapSearchEnabled by remember { mutableStateOf(AppPrefs.isDoubleTapSearchEnabled(context)) }
+    var homeAppSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_APP_SEARCH_ENABLED) { AppPrefs.isHomeAppSearchEnabled(context) }
+    var homeSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_SEARCH_ENABLED) { AppPrefs.isHomeSearchEnabled(context) }
+    var doubleTapSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_DOUBLE_TAP_SEARCH) { AppPrefs.isDoubleTapSearchEnabled(context) }
     val appsSourceEnabled = true
-    var categoriesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceCategoriesEnabled(context)) }
-    var settingsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceSettingsEnabled(context)) }
-    var contactsSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
-    var filesSourceEnabled by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
+    var categoriesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CATEGORIES) { AppPrefs.isSearchSourceCategoriesEnabled(context) }
+    var settingsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_SETTINGS) { AppPrefs.isSearchSourceSettingsEnabled(context) }
+    var contactsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) { AppPrefs.isSearchSourceContactsEnabled(context) }
+    var filesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_FILES) { AppPrefs.isSearchSourceFilesEnabled(context) }
     var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
     var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
     var pendingPermission by remember { mutableStateOf<ContextualPermission?>(null) }
 
     // Gelişmiş arama ayarları
-    var fuzzyEnabled      by remember { mutableStateOf(AppPrefs.isSearchFuzzyEnabled(context)) }
-    var phoneticEnabled   by remember { mutableStateOf(AppPrefs.isSearchPhoneticEnabled(context)) }
-    var instantEnabled    by remember { mutableStateOf(AppPrefs.isSearchInstantEnabled(context)) }
-    var sortByUsage       by remember { mutableStateOf(AppPrefs.isSearchSortByUsage(context)) }
+    var fuzzyEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_FUZZY) { AppPrefs.isSearchFuzzyEnabled(context) }
+    var phoneticEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_PHONETIC) { AppPrefs.isSearchPhoneticEnabled(context) }
+    var instantEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_INSTANT) { AppPrefs.isSearchInstantEnabled(context) }
+    var sortByUsage by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SORT_BY_USAGE) { AppPrefs.isSearchSortByUsage(context) }
     var maxResults        by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
-    var showIcons         by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
-    var showContactAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
-    var searchStatsEnabled by remember { mutableStateOf(AppPrefs.isSearchStatsEnabled(context)) }
-    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
+    var showIcons by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SHOW_ICONS) { AppPrefs.isSearchShowIcons(context) }
+    var showContactAvatar by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SHOW_CONTACT_AVATAR) { AppPrefs.isSearchShowContactAvatar(context) }
+    var searchStatsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_STATS_ENABLED) { AppPrefs.isSearchStatsEnabled(context) }
+    var webFallbackEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) { AppPrefs.isSearchWebFallbackEnabled(context) }
 
     pendingPermission?.let { permission ->
         ContextualPermissionDialog(
@@ -261,7 +262,7 @@ fun SearchSettingsScreen(
                     SettingsSwitchRow(
                         icon = Icons.Default.Description,
                         title = "Dosya Adları",
-                        subtitle = "Varsayılan kapalı. Açılırsa yalnızca adlar yerel indekse eklenir",
+                        subtitle = "Varsayilan kapali. Medya/indirme adlari icin Android dosya izni ister; icerik okunmaz",
                         checked = filesSourceEnabled,
                         onCheckedChange = {
                             if (it) {
@@ -449,7 +450,7 @@ fun SearchSettingsScreen(
             item {
                 androidx.compose.foundation.layout.Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 14.dp)) {
                     Text(
-                        text = "Not: Kişiler ilk kullanımda izin ister. Dosya araması kapalı başlar ve açıldığında yalnızca ad bilgisi yerel indekse eklenir.",
+                        text = "Not: Kisiler ilk kullanimda izin ister. Dosya aramasi kapali baslar; acildiginda Android'in izin verdigi medya/indirme adlari yerel indekse eklenir, dosya icerigi okunmaz.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )

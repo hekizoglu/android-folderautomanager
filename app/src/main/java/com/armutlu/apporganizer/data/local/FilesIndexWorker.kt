@@ -75,7 +75,7 @@ class FilesIndexWorker(
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 request
             )
             Timber.d("FilesIndexWorker: periyodik görev planlandı (24h, şarjda)")

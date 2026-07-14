@@ -156,7 +156,7 @@ class AppRepository @Inject constructor(
      * Search apps by name
      */
     fun searchApps(query: String): Flow<List<AppInfo>> {
-        return appDao.searchAppsByName(query)
+        return appDao.searchAppsByNameLimited(query.trim(), limit = 50)
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }

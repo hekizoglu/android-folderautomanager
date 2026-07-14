@@ -122,6 +122,9 @@ class LauncherViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val allAppsSource: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     @OptIn(FlowPreview::class)
     val searchResults: StateFlow<Map<SourceType, List<SearchDocument>>> = _searchQuery
         .debounce(250)
@@ -143,7 +146,7 @@ class LauncherViewModel @Inject constructor(
     // Eagerly: launcher her zaman arka planda çalışır — akış hiç durmamalı.
     // WhileSubscribed(5s) ile 5+ saniye sonra dönüşte kısa "yükleniyor" flaşı oluyordu.
     val folders: StateFlow<List<AppFolder>> = combine(
-        repository.getAllAppsFlow(),
+        allAppsSource,
         categories,
         _folderOrder
     ) { apps, categoryList, order ->
@@ -164,20 +167,20 @@ class LauncherViewModel @Inject constructor(
         if (id == null) null else folderList.firstOrNull { it.category.categoryId == id }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val allApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+    val allApps: StateFlow<List<AppInfo>> = allAppsSource
         .map { buildAllApps(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Room'dan ilk emisyon geldi mi — cold resume'da yanlis "yukleniyor" flasini onler (Fix 3):
     // process yeniden yaratildiginda folders/allApps baslangicta emptyList() ile basliyor,
     // ilk Room emit'ine kadar HomeScreen "Uygulamalar yukleniyor..." flasi gosteriyordu.
-    val initialLoadDone: StateFlow<Boolean> = repository.getAllAppsFlow()
+    val initialLoadDone: StateFlow<Boolean> = allAppsSource
         .map { true }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
-        repository.getAllAppsFlow(),
+        allAppsSource,
         _searchQuery.debounce(300)
     ) { apps, q ->
         val query = q.trim().lowercase(java.util.Locale("tr"))
@@ -587,7 +590,7 @@ class LauncherViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // Favori uygulamalar — _favoritePkgs + allApps combine ile reaktif StateFlow
-    val favoriteApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+    val favoriteApps: StateFlow<List<AppInfo>> = allAppsSource
         .combine(_favoritePkgs) { apps, favPkgs ->
             apps.filter { it.packageName in favPkgs && !it.isHidden }
                 .sortedBy { it.appName.lowercase(java.util.Locale("tr")) }
@@ -637,7 +640,7 @@ class LauncherViewModel @Inject constructor(
     // getAllAppsFlow() yeniden emit oluyordu, bu da suggestedApps'i (ve dolayısıyla
     // contextualDockPackages'ı) her seferinde yeniden sıralayıp dock'u kararsız yapıyordu.
     val suggestedApps: StateFlow<List<AppInfo>> = combine(
-        repository.getAllAppsFlow()
+        allAppsSource
             .distinctUntilChanged { old, new ->
                 old.size == new.size && old.zip(new).all { (a, b) ->
                     a.packageName == b.packageName && a.usageCount == b.usageCount &&
@@ -882,7 +885,7 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
-    val recentApps: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+    val recentApps: StateFlow<List<AppInfo>> = allAppsSource
         .map { apps ->
             apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
                 .sortedByDescending { it.lastUsedTimestamp }
@@ -943,7 +946,7 @@ class LauncherViewModel @Inject constructor(
 
     // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar.
     // WhileSubscribed: sadece widget seçici açıkken hesaplanır — cold start yükü azaltıldı (D234).
-    val widgetSuggestions = repository.getAllAppsFlow()
+    val widgetSuggestions = allAppsSource
         .map { apps ->
             WidgetSuggestionEngine.getSuggestions(getApplication(), apps.filter { !it.isHidden })
         }

@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer
 
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -76,6 +77,11 @@ class TurkishSearchTest {
         val escaped = raw.replace("%", "\\%").replace("_", "\\_")
         val pattern = "%$escaped%"
         assertTrue(pattern == "%a\\_b%")
+    }
+
+    @Test fun `like fallback pattern escapes sqlite wildcards and backslash`() {
+        val pattern = SearchRepository.buildLikePattern("a_b%\\")
+        assertTrue(pattern == "%a\\_b\\%\\\\%")
     }
 
     // ── LIKE sorgu mantığı (SearchRepository.buildLikeQuery pattern) ─────────
