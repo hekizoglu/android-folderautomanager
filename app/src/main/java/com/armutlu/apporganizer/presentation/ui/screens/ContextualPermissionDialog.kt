@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.armutlu.apporganizer.utils.AppPrefs
 
 // İzin türü tanımı
@@ -89,12 +92,32 @@ fun ContextualPermissionDialog(
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) onGranted() else onDismiss()
+        // Callback'ten donen boolean bazi OEM'lerde/multi-window'da guvenilmez olabilir —
+        // sistemden checkSelfPermission ile yeniden dogrula (madde 1 fix, buton takili kalma).
+        val actuallyGranted = granted || (permission.permission != null &&
+            ContextCompat.checkSelfPermission(context, permission.permission) == PermissionChecker.PERMISSION_GRANTED)
+        if (actuallyGranted) onGranted() else onDismiss()
     }
     val multiplePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grants ->
         if (grants.values.any { it }) onGranted() else onDismiss()
+    }
+
+    // Kullanici sistem Ayarlar'a yonlendirilip (USAGE_ACCESS/NOTIFICATION_LISTENER/manuel izin)
+    // geri donebilir — dialog acikken ON_RESUME'da izni yeniden kontrol et, butonun
+    // loading/stuck gorunmesini engelle (madde 1 fix).
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, permission) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && permission.permission != null) {
+                val granted = ContextCompat.checkSelfPermission(context, permission.permission) ==
+                    PermissionChecker.PERMISSION_GRANTED
+                if (granted) onGranted()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     Dialog(onDismissRequest = onDismiss) {

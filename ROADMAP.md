@@ -27,13 +27,13 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Sorun/İstek:** Kullanıcı sistem izin dialogunda "izin ver" dedikten sonra ekrandaki "İzin Ver" butonu loading/stuck state'te kalıyor, UI güncellenmiyor.
 **Nasıl yapılmalı:** `ContextualPermissionDialog.kt` ve `SettingsPermissionsSection.kt` içindeki `ActivityResultContracts.RequestPermission()` launcher callback'i kontrol edilmeli — callback içinde izin durumunu tutan state (muhtemelen `remember { mutableStateOf(...) }`) `ContextCompat.checkSelfPermission` ile yeniden okunmuyor olabilir. `PermissionsGuideScreen.kt`'de de aynı pattern var mı taranmalı. Çözüm: launcher callback içinde state'i `checkSelfPermission` sonucuna göre zorla güncelle, ayrıca `ON_RESUME` lifecycle event'inde de yeniden kontrol et (kullanıcı ayarlardan izin verip geri dönebilir).
 **Puan:** KV=5 U=4 BR=4 EA=3 → Toplam=16
-**Durum:** Bekliyor 🐛
+**Durum:** Tamamlandı (Döngü 265)
 
 ### [2] 🐛 Silip tekrar kurunca onboarding başlamıyor
 **Sorun/İstek:** APK silinip yeniden kurulduğunda onboarding akışı tekrar başlamıyor, sanki eski kurulumun devamıymış gibi davranıyor.
 **Nasıl yapılmalı:** `AppPrefs.kt`'deki `KEY_ONBOARDING_DONE` okuması `LauncherActivity.kt`/`MainActivity.kt` içinde kontrol edilmeli. Olası kök neden: Android'in otomatik yedekleme (Auto Backup for Apps) SharedPreferences dosyasını (`AppPrefs`) uygulama silinse bile Google hesabına yedekleyip yeni kurulumda geri yüklemesi — `AndroidManifest.xml`'de `android:allowBackup` ve `android:fullBackupContent` ayarı kontrol edilmeli. Çözüm adayı: `AppPrefs` dosyasını backup kapsamı dışına al (`fullBackupContent` XML'inde `<exclude domain="sharedpref" path="..."/>`) ya da onboarding flag'i cihaz-bağımlı bir değerle (ilk kurulum zaman damgası) doğrula.
 **Puan:** KV=5 U=3 BR=4 EA=3 → Toplam=15
-**Durum:** Bekliyor 🐛
+**Durum:** Tamamlandı (Döngü 265)
 
 ### 🟡 Orta Puanlı (10-14) — özet FİKİRLER.md'de de kayıtlı
 

@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -52,8 +51,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         CrashReporter.install(this)
 
-        val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
-        val onboardingDone = prefs.getBoolean(AppPrefs.KEY_ONBOARDING_DONE, false)
+        val onboardingDone = AppPrefs.isOnboardingDone(this)
 
         setContent {
             AppOrganizerTheme {
@@ -61,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
                 if (showOnboarding) {
                     OnboardingScreen(onFinish = {
-                        prefs.edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
+                        AppPrefs.markOnboardingDone(this@MainActivity)
                         showOnboarding = false
                         scanApps()
                     })

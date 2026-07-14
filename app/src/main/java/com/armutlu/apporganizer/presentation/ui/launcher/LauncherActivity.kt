@@ -103,8 +103,7 @@ class LauncherActivity : ComponentActivity() {
         lastHomePressMs = savedInstanceState?.getLong(KEY_LAST_HOME_PRESS_MS) ?: 0L
 
         // Onboarding bitmemişse MainActivity'ye yönlendir
-        val prefs = getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        if (!prefs.getBoolean(AppPrefs.KEY_ONBOARDING_DONE, false)) {
+        if (!AppPrefs.isOnboardingDone(this)) {
             startActivity(
                 android.content.Intent(this, com.armutlu.apporganizer.presentation.ui.MainActivity::class.java)
                     .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)

@@ -21,6 +21,16 @@
 
 **Sonraki:** `assembleDebug -PskipGoogleServices` başarılı; emülatörde klavye açık ekran görüntüsüyle görsel doğrulama önerilir.
 
+## Döngü 268 - 2026-07-14 [İzin butonu takılma + silip-tekrar-kurma onboarding fix]
+
+**Yapılanlar:** Madde 1: `ContextualPermissionDialog.kt` — `permissionLauncher` callback'i artık `ContextCompat.checkSelfPermission` ile çapraz doğruluyor, ayrıca `ON_RESUME` lifecycle observer eklendi (kullanıcı sistem Ayarlar'dan izin verip geri dönünce buton takılı kalmıyor). Madde 2: `AppPrefs.kt`'ye cihaza-özel `install_marker` dosyası (`context.filesDir`) tabanlı `isOnboardingDone()`/`markOnboardingDone()`/`resetOnboarding()` eklendi; `MainActivity.kt`, `LauncherActivity.kt`, `OnboardingScreen.kt`, `SettingsBackupAboutSection.kt` bu API'lere geçirildi. `backup_rules.xml` + `data_extraction_rules.xml`'e `exclude domain="file" path="install_marker"` eklendi — Android Auto Backup tüm `AppPrefs` dosyasını (tema dahil) hariç tutmadan, sadece kurulum-tespit dosyasını yedekten/cihaz-transferinden dışlıyor.
+
+**Kök neden:** Madde 2'de Android Auto Backup `app_organizer_prefs` SharedPreferences dosyasını (KEY_ONBOARDING_DONE dahil) Google hesabına yedekleyip silme sonrası yeniden kurulumda geri yüklüyordu → onboarding "eski kurulumun devamı" sanılıyordu. Tüm dosyayı hariç tutmak tema/ayarları da sıfırlardı; bunun yerine sadece cihaza özel marker dosyası backup dışına alındı.
+
+**Agent:** worktree izolasyonunda tek agent (Sonnet) — iki bağımsız bug analiz + fix + build doğrulama.
+
+**Doğrulama:** `assembleDebug -PskipGoogleServices` BUILD SUCCESSFUL (sadece önceden var olan deprecation uyarıları, hata yok).
+
 ---
 
 ## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]

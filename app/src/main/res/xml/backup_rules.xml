@@ -8,6 +8,9 @@
     <exclude domain="file" path="logs" />
     <exclude domain="file" path="temp" />
     <exclude domain="file" path="no_backup" />
+    <!-- Silinip yeniden kurulumda onboarding'in tekrar baslamasi icin cihaza-ozel isaretci
+         (F2/D-madde2). Yedeklenirse yeni kurulumda "eski kurulumun devami" gibi davranir. -->
+    <exclude domain="file" path="install_marker" />
     <!-- Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — baska
          cihazda veya yeniden kurulumda gecersizdir (F21, D261 denetimi). -->
     <exclude domain="sharedpref" path="widget_prefs.xml" />
