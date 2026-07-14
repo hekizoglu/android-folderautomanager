@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -73,23 +76,56 @@ internal fun LazyListScope.settingsAppsSection(
         }
     }
 
+    // ── Sınıflandırma Modu (P0.6) — paralel toggle'lar yerine tek seçici ────────
+    item { SettingsSectionTitle(stringResource(R.string.classification_mode_title)) }
+    item {
+        val context = LocalContext.current
+        var mode by remember { mutableStateOf(AppPrefs.getClassificationMode(context)) }
+        SettingsCard {
+            Text(
+                stringResource(R.string.classification_mode_subtitle),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+            ClassificationModeOption(
+                titleRes = R.string.classification_mode_local_only_title,
+                descRes = R.string.classification_mode_local_only_desc,
+                selected = mode == AppPrefs.ClassificationMode.LOCAL_ONLY,
+                onSelect = { mode = AppPrefs.ClassificationMode.LOCAL_ONLY; AppPrefs.setClassificationMode(context, mode) }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            ClassificationModeOption(
+                titleRes = R.string.classification_mode_local_with_manufacturer_title,
+                descRes = R.string.classification_mode_local_with_manufacturer_desc,
+                selected = mode == AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER,
+                onSelect = { mode = AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER; AppPrefs.setClassificationMode(context, mode) }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            ClassificationModeOption(
+                titleRes = R.string.classification_mode_local_with_llm_fallback_title,
+                descRes = R.string.classification_mode_local_with_llm_fallback_desc,
+                selected = mode == AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK,
+                onSelect = { mode = AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK; AppPrefs.setClassificationMode(context, mode) }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            ClassificationModeOption(
+                titleRes = R.string.classification_mode_manual_review_only_title,
+                descRes = R.string.classification_mode_manual_review_only_desc,
+                selected = mode == AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY,
+                onSelect = { mode = AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY; AppPrefs.setClassificationMode(context, mode) }
+            )
+        }
+    }
+
     // Uygulama Yönetimi
     item { SettingsSectionTitle("Uygulama Yönetimi") }
     item {
         val context = LocalContext.current
         var resetConfirmStep by remember { mutableStateOf(0) } // 0=kapalı, 1=ilk onay, 2=son onay
         SettingsCard {
-            var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
             var overrideSuggestions by remember { mutableStateOf(AppPrefs.isOverrideSuggestionsEnabled(context)) }
             var lowConfidenceReview by remember { mutableStateOf(AppPrefs.isLowConfidenceReviewEnabled(context)) }
-            SettingsSwitchRow(
-                icon = Icons.Default.PhoneAndroid,
-                title = "Üretici Sınıflandırması",
-                subtitle = "Samsung/Huawei/Xiaomi uygulamalarını otomatik kategorilendir",
-                checked = manufacturerClassify,
-                onCheckedChange = { manufacturerClassify = it; AppPrefs.setManufacturerClassifyEnabled(context, it) }
-            )
-            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(
                 icon = Icons.Default.Lightbulb,
                 title = "Benzer Uygulama Önerileri",
@@ -255,6 +291,43 @@ internal fun LazyListScope.settingsAppsSection(
                     }
                 }
             }
+        }
+    }
+}
+
+// ── Sınıflandırma Modu — tek seçim (radio) satırı (P0.6) ────────────────────
+@Composable
+private fun ClassificationModeOption(
+    titleRes: Int,
+    descRes: Int,
+    selected: Boolean,
+    onSelect: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, onClick = onSelect)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onSelect,
+            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
+        )
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(titleRes),
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                stringResource(descRes),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

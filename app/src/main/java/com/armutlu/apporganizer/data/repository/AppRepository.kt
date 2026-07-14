@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.data.repository
 
+import android.content.Context
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
@@ -11,6 +12,8 @@ import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewState
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
+import com.armutlu.apporganizer.utils.AppPrefs
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -27,6 +30,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class AppRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
     private val notificationEventDao: NotificationEventDao,
@@ -166,16 +170,19 @@ class AppRepository @Inject constructor(
      */
     suspend fun insertApps(apps: List<AppInfo>) {
         try {
+            // P0.6: tek karar noktasi — mod bir kez okunur, tum yeni kurulum/reconcile
+            // akislari (PackageChangeReceiver, LauncherViewModel) buradan gecer.
+            val mode = AppPrefs.getClassificationMode(context)
             // classifyApp CPU-bound — Dispatchers.Default kullan, IO thread'ini bloke etme
             val classifiedApps = withContext(Dispatchers.Default) {
                 apps.map { app ->
-                    val decision = classifier.classifyAppDecision(app)
+                    val decision = classifier.classifyAppDecision(app, mode)
                     app.withClassification(decision)
                 }
             }
 
             appDao.insertApps(classifiedApps)
-            Timber.d("Inserted ${classifiedApps.size} apps")
+            Timber.d("Inserted ${classifiedApps.size} apps (mode=$mode)")
         } catch (e: Exception) {
             Timber.e(e, "Error inserting apps")
         }

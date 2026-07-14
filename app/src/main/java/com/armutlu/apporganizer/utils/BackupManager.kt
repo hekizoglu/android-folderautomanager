@@ -149,6 +149,8 @@ object BackupManager {
                     put("smartNotifUnusedApps", AppPrefs.isSmartNotifUnusedApps(context))
                     put("smartNotifCatStats", AppPrefs.isSmartNotifCatStats(context))
                     put("smartNotifHour", AppPrefs.getSmartNotifHour(context))
+                    // P0.6: tek siniflandirma modu — eski manufacturerClassifyEnabled alaninin yerine gecti
+                    put("classificationMode", AppPrefs.getClassificationMode(context).name)
                 })
             }
             root.toString(2)
@@ -393,6 +395,28 @@ object BackupManager {
                     if (s.has("smartNotifUnusedApps")) AppPrefs.setSmartNotifUnusedApps(context, s.getBoolean("smartNotifUnusedApps"))
                     if (s.has("smartNotifCatStats")) AppPrefs.setSmartNotifCatStats(context, s.getBoolean("smartNotifCatStats"))
                     if (s.has("smartNotifHour")) AppPrefs.setSmartNotifHour(context, s.getInt("smartNotifHour"))
+
+                    // P0.6: siniflandirma modu — yeni alan varsa dogrudan uygula, yoksa eski
+                    // toggle alanlarindan (manufacturerClassifyEnabled / DeepSeek key varligi)
+                    // migration kurali ile turet. Boylece eski yedekler geri yuklendiginde
+                    // kullanici davranisi degismez.
+                    val restoredMode = s.optString("classificationMode", "").takeIf { it.isNotBlank() }
+                        ?.let { modeName -> runCatching { AppPrefs.ClassificationMode.valueOf(modeName) }.getOrNull() }
+                    if (restoredMode != null) {
+                        AppPrefs.setClassificationMode(context, restoredMode)
+                    } else {
+                        val manufacturerEnabled = if (s.has("manufacturerClassifyEnabled")) {
+                            s.getBoolean("manufacturerClassifyEnabled")
+                        } else {
+                            AppPrefs.isManufacturerClassifyEnabled(context)
+                        }
+                        val llmEverUsed = AppPrefs.getDeepSeekApiKey(context).isNotBlank() ||
+                            AppPrefs.getLlmCategoryCache(context).isNotEmpty()
+                        AppPrefs.setClassificationMode(
+                            context,
+                            AppPrefs.deriveClassificationMode(manufacturerEnabled, llmEverUsed)
+                        )
+                    }
                 }
                 BackupWorker.schedule(context)
                 WeeklyDigestWorker.schedule(context)

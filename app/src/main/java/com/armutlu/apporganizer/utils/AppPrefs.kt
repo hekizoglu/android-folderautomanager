@@ -177,9 +177,68 @@ object AppPrefs {
     fun setLabelColor(context: Context, hex: String) = prefs(context).edit().putString(KEY_LABEL_COLOR, hex).apply()
 
     // Üretici bazlı sınıflandırma — Samsung/Huawei/Xiaomi uygulamaları otomatik kategorilensin mi?
+    // P0.6 (ROADMAP_AI_AUDIT): Bu toggle KEY_CLASSIFICATION_MODE ile birlikte artik dogrudan
+    // motor secimi icin kullanilmiyor — sadece migration kaynagi olarak okunuyor. Eski cagri
+    // noktalari (varsa) hala calisir ama yeni kod getClassificationMode() kullanmali.
     const val KEY_MANUFACTURER_CLASSIFY = "manufacturer_classify"
     fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
     fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
+
+    // ── Siniflandirma Modu (P0.6, ROADMAP_AI_AUDIT) ─────────────────────────
+    // Onceden paralel toggle'lar (manufacturer_classify + DeepSeek API key varligi) birbirini
+    // ezebiliyordu; Ayarlar'da "kapali" gorunen motor arka planda hala calisabiliyordu.
+    // Tek karar noktasi: KEY_CLASSIFICATION_MODE. Kayit yoksa eski toggle kombinasyonundan
+    // MIGRATE edilir (mevcut kullanici davranisi degismesin) ve sonuc kalici yazilir.
+    enum class ClassificationMode {
+        /** Sadece yerel kurallar (bundled katalog + Android kategori + keyword). Uretici/LLM atlanir. */
+        LOCAL_ONLY,
+        /** Yerel kurallar + uretici prefix/ad kurali. LLM atlanir. */
+        LOCAL_WITH_MANUFACTURER,
+        /** Yerel kurallar + uretici kurali + bilinmeyenler icin DeepSeek LLM fallback. */
+        LOCAL_WITH_LLM_FALLBACK,
+        /** Otomatik siniflandirma yapilmaz — yeni uygulamalar REVIEW_PENDING olarak isaretlenir. */
+        MANUAL_REVIEW_ONLY,
+    }
+
+    const val KEY_CLASSIFICATION_MODE = "classification_mode"
+
+    /**
+     * Mevcut siniflandirma modunu dondurur. Kayit yoksa eski toggle'lardan (manufacturer_classify
+     * + LLM daha once hic kullanilmis mi -> legacy cache/API key varligi) hesaplanir ve YAZILIR,
+     * boylece migration bir kez calisir ve davranis kararli kalir.
+     */
+    fun getClassificationMode(context: Context): ClassificationMode {
+        val stored = prefs(context).getString(KEY_CLASSIFICATION_MODE, null)
+        val parsed = stored?.let { s -> runCatching { ClassificationMode.valueOf(s) }.getOrNull() }
+        if (parsed != null) return parsed
+
+        val migrated = migrateClassificationModeFromLegacyToggles(context)
+        setClassificationMode(context, migrated)
+        return migrated
+    }
+
+    fun setClassificationMode(context: Context, mode: ClassificationMode) =
+        prefs(context).edit().putString(KEY_CLASSIFICATION_MODE, mode.name).apply()
+
+    /**
+     * Eski davranistan mod turetir (migration kurali, P0.6):
+     * - LLM daha once kullanilmissa (API key kayitli VEYA LLM cache doluysa) -> LOCAL_WITH_LLM_FALLBACK
+     * - Aksi halde uretici siniflandirmasi aciksa -> LOCAL_WITH_MANUFACTURER
+     * - Ikisi de kapaliysa -> LOCAL_ONLY
+     * Saf/test edilebilir cekirdek mantik parametreli overload'da (bkz. deriveClassificationMode).
+     */
+    private fun migrateClassificationModeFromLegacyToggles(context: Context): ClassificationMode {
+        val manufacturerEnabled = isManufacturerClassifyEnabled(context)
+        val llmEverUsed = getDeepSeekApiKey(context).isNotBlank() || getLlmCategoryCache(context).isNotEmpty()
+        return deriveClassificationMode(manufacturerEnabled = manufacturerEnabled, llmEverUsed = llmEverUsed)
+    }
+
+    /** Saf fonksiyon — Context bagimliligi yok, unit test edilebilir. */
+    fun deriveClassificationMode(manufacturerEnabled: Boolean, llmEverUsed: Boolean): ClassificationMode = when {
+        llmEverUsed -> ClassificationMode.LOCAL_WITH_LLM_FALLBACK
+        manufacturerEnabled -> ClassificationMode.LOCAL_WITH_MANUFACTURER
+        else -> ClassificationMode.LOCAL_ONLY
+    }
 
     const val KEY_OVERRIDE_SUGGESTIONS_ENABLED = "override_suggestions_enabled"
     fun isOverrideSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_OVERRIDE_SUGGESTIONS_ENABLED, true)

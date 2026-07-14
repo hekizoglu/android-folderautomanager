@@ -674,7 +674,7 @@ class AppListViewModel @Inject constructor(
                 _classifyLoading.value = true
                 _classifyResult.value = ""
                 val ctx = getApplication<Application>()
-                val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs.isManufacturerClassifyEnabled(ctx)
+                val mode = com.armutlu.apporganizer.utils.AppPrefs.getClassificationMode(ctx)
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
 
                 val unclassifiedApps = _screenState.value.apps.filter {
@@ -689,10 +689,18 @@ class AppListViewModel @Inject constructor(
                     return@launch
                 }
 
+                if (mode == com.armutlu.apporganizer.utils.AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY) {
+                    _classifyResult.value = "Manuel inceleme modu aktif — otomatik sınıflandırma yapılmadı."
+                    appendDebugLog("Manuel inceleme modu: otomatik siniflandirma atlandi.")
+                    _screenState.value = _screenState.value.copy(isRefreshing = false)
+                    _classifyLoading.value = false
+                    return@launch
+                }
+
                 var classified = 0
                 unclassifiedApps.forEach { app ->
                     val decision = applyLowConfidenceReviewPreference(
-                        classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                        classifier.classifyAppDecision(app, mode)
                     )
                     if (decision.categoryId != "uncategorized") {
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
@@ -719,6 +727,13 @@ class AppListViewModel @Inject constructor(
     fun categorizeDigerWithLLM(apiKey: String) {
         viewModelScope.launch {
             if (_llmCategorizing.value) return@launch
+            val ctx = getApplication<Application>()
+            val mode = com.armutlu.apporganizer.utils.AppPrefs.getClassificationMode(ctx)
+            if (mode != com.armutlu.apporganizer.utils.AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK) {
+                _llmProgress.value = "LLM fallback yalnizca \"Yerel + LLM\" modunda calisir — Ayarlar'dan modu degistirin."
+                appendDebugLog("LLM kategorize atlandi: mod=$mode")
+                return@launch
+            }
             _llmCategorizing.value = true
             try {
                 val otherAppsList = repository.getAppsByCategory(com.armutlu.apporganizer.domain.models.Category.CAT_OTHER).firstOrNull() ?: emptyList()
@@ -819,11 +834,11 @@ class AppListViewModel @Inject constructor(
                 repository.resetAllCategories()
                 appendDebugLog("Kategoriler sıfırlandı - yeniden sınıflandırılıyor...")
                 val apps = _screenState.value.apps
-                val manufacturerClassifyEnabled = com.armutlu.apporganizer.utils.AppPrefs
-                    .isManufacturerClassifyEnabled(getApplication())
+                val mode = com.armutlu.apporganizer.utils.AppPrefs
+                    .getClassificationMode(getApplication())
                 apps.forEach { app ->
                     val decision = applyLowConfidenceReviewPreference(
-                        classifier.classifyAppDecision(app, manufacturerClassifyEnabled)
+                        classifier.classifyAppDecision(app, mode)
                     )
                     if (decision.categoryId != "uncategorized") {
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
