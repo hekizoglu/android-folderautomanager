@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 258 - 2026-07-14 [Arama sonuçları çubuk alttayken yukarı açılır v1.3.16]
+
+**Yapılanlar:** Hüseyin talebi: arama çubuğu alttayken sonuç menüsü yukarı doğru açılsın, sayfa kaymasın. `HomeAppSearchBar`'a `resultsAbove` parametresi eklendi; ~350 satırlık sonuç bloğu `searchResultsSection` lambda'sına taşındı ve Column'da koşullu sıralanıyor (üstte/altta). Yukarı açılımda sonuç listesi `heightIn(max=320dp)` + `verticalScroll` ile sınırlı — grid `weight(1f)` olduğu için büyüme yukarı, dock sabit. HomeScreen çağrısı `resultsAbove = (searchBarPosition == BOTTOM)`.
+
+**Bug/Ortam:** Build kilidi (AccessDeniedException app\build\generated) oturumda 2. kez — SOP (java kill + app\build sil; ilk silme yetmedi, cmd rmdir gerekti). Kalıcı çözüm önerisi: Defender exclusion'ları YENİ proje yolu için doğrulanmalı (D235 exclusion'ları eski yol içindi). Not: git add -A önceki oturumdan kalan qa/ + logic_audit_deep.ps1 dosyalarını da commit'e aldı (33cd6ad).
+
+**Sonraki:** Emülatörde yukarı açılım + D257 paket doğrulaması; Defender exclusion güncelleme (Hüseyin, admin).
+
+---
+
 ## Döngü 257 - 2026-07-14 [Dock fix + klasör 96dp + arama çubuğu alta + gamification v1.3.15]
 
 **Yapılanlar:** (1) Dock bug kök nedeni: `contextualDockPackages` akıllı dock açıkken kullanıcının dock seçiminin sadece ilk 2 slotunu koruyup kalan 2'yi kullanım önerileriyle değiştiriyordu — artık seçilen uygulamaların tamamı korunur, öneri yalnızca boş slotları doldurur (LauncherViewModel + Ayarlar metni). (2) Klasör simgeleri varsayılanı 72→96dp. (3) Arama çubuğu alta taşıma (ROADMAP 17p, Sonnet agent worktree, 721769b): varsayılan Altta, Ayarlar > Ana Ekran Üstte/Altta seçici, dock üstü konum. (4) Gamification (Sonnet agent worktree, 78883ae): dijital kişilik 6→10 tip (Gece Kuşu, Haber Avcısı, Kâşif, Minimalist...), skor halkası altında kişilik etiketi, MissionEngine (günlük 3 + haftalık 2 deterministik görev), MissionPrefs (yıldız/ilerleme, Room yok), MissionsScreen + tebrik kartı + Routes.MISSIONS, KEY_MISSIONS_ENABLED toggle. (5) Onboarding onb_usage_* encoding onarımı. Denge/rapor mantık denetimi: yeni hata yok.

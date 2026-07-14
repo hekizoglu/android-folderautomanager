@@ -7,6 +7,14 @@
 
 ---
 
+## ⭐ Yüksek Puanlı - Klasörler Arası Geçiş Efektleri (2026-07-14 Hüseyin talebi)
+
+| Puan | Görev | Durum |
+|---|---|---|
+| 16p | Klasörler arası geçiş için 3 farklı seçilebilir efekt — ZORUNLU: önce online araştırma (Compose graphicsLayer/Pager transition pattern'leri), sonra uygulama. Mevcut D253 3D sayfa çevirme korunur ve seçeneklerden biri olur; +2 yeni efekt (örn. slide+parallax, fade+scale/zoom). Ayarlar'dan seçilebilir (`KEY_FOLDER_TRANSITION_EFFECT`), varsayılan mevcut davranış. `FolderScreen.kt` graphicsLayer hattı, `folderCarouselEnabled=false` iken efekt render edilmez kuralı korunur. | Devam ediyor — D258 agent başlatıldı |
+
+---
+
 ## ⭐ Yüksek Puanlı - Pulse Clock / Dijital Nabız (D244 devamı)
 
 Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emülatör doğrulamasıdır:
