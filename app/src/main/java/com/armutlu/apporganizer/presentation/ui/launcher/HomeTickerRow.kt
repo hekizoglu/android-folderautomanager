@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -129,6 +130,14 @@ internal fun HomeTickerRow(
     // Son basarili tiklamadan 700ms gecmeden yeni tiklama yok sayilir.
     var lastClickAt by remember { mutableStateOf(0L) }
     val current = items[index.coerceIn(0, items.lastIndex)]
+    // D247/Roadmap #25 kok neden: pointerInputTicker Modifier.pointerInput(Unit) ile TEK SEFER
+    // baslatiliyor (asagida bkz.), yani ilk kompozisyonda yakalanan onTap/onItemClick
+    // closure'lari SABIT kaliyor — index degisip `current` yeni bir haberi gosterse bile
+    // dokunma her zaman ilk baslatmadaki eski `current` degerini kullaniyordu. Gesture'i
+    // yeniden baslatmadan (swipe animasyonunu kesmeden) en guncel degeri okumak icin
+    // rememberUpdatedState ile "canli" referanslar tutuluyor.
+    val latestCurrent by rememberUpdatedState(current)
+    val latestOnItemClick by rememberUpdatedState(onItemClick)
 
     // Otomatik ilerleme — index veya liste değişince sayaç sıfırlanır
     LaunchedEffect(index, items.size) {
@@ -157,7 +166,7 @@ internal fun HomeTickerRow(
                     val now = System.currentTimeMillis()
                     if (now - lastClickAt > 700L) {
                         lastClickAt = now
-                        onItemClick(current)
+                        latestOnItemClick(latestCurrent)
                     }
                 },
                 onLongPress = { if (onMute != null) muteMenuOpen = true },

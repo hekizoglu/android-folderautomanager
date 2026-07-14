@@ -33,7 +33,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -89,7 +92,7 @@ import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.DockPrefs
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     viewModel: LauncherViewModel,
@@ -97,6 +100,13 @@ fun HomeScreen(
     onNavigateToFolder: (AppFolder) -> Unit = {},
 ) {
     val context = LocalContext.current
+    // ROADMAP #24 kok neden: kok Column fillMaxSize+imePadding() ile sinirli, kaydirilmiyor.
+    // Klavye acildiginda favoriler/oneriler/widget alani gibi ikincil satirlar yer kaplamaya
+    // devam edince arama sonuclari (ozellikle BOTTOM konumunda, agirlikli klasor gridinden
+    // SONRA render edilen) ekran/klavye sinirinin disina tasip gorunmez oluyordu. Klavye
+    // acikken bu ikincil satirlari gecici gizleyerek arama + sonuc alani her zaman gorunur
+    // kalir.
+    val imeVisible = WindowInsets.isImeVisible
     var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
     val initialLoadDone by viewModel.initialLoadDone.collectAsState()
@@ -636,36 +646,44 @@ fun HomeScreen(
                 searchBarSection()
             }
 
+            // Klavye acikken (arama yapiliyorken) ikincil satirlar gecici gizlenir — sonuc
+            // alaninin ekran/klavye sinirinin disina tasmasini engeller (ROADMAP #24).
+            val hideSecondaryRowsForIme = homeAppSearchEnabled && imeVisible
+
             // Google arama çubuğu — Pixel Launcher stili
-            GoogleSearchBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
-            )
+            if (!hideSecondaryRowsForIme) {
+                GoogleSearchBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
 
             // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
-            HomeFavoritesSection(
-                favoritesEnabled = favoritesEnabled,
-                favoriteApps = favoriteApps,
-                suggestionsEnabled = suggestionsEnabled,
-                suggestedApps = suggestedApps,
-                suggestionsIconSizeDp = suggestionsIconSizeDp,
-                recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
-                recentNotificationApps = recentNotificationApps,
-                recentNotificationCounts = recentNotificationCounts,
-                recentAppsEnabled = recentAppsEnabled,
-                recentApps = recentApps,
-                dockPackages = dockPackages,
-                iconPackPkg = suggestionIconPack,
-                haptic = haptic,
-                onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
-                onAppLongClick = { pkg -> contextMenuPkg = pkg },
-                screenHeightDp = LocalConfiguration.current.screenHeightDp,
-                showSecondaryRowsInCompactMode = focusModeEnabled,
-            )
+            if (!hideSecondaryRowsForIme) {
+                HomeFavoritesSection(
+                    favoritesEnabled = favoritesEnabled,
+                    favoriteApps = favoriteApps,
+                    suggestionsEnabled = suggestionsEnabled,
+                    suggestedApps = suggestedApps,
+                    suggestionsIconSizeDp = suggestionsIconSizeDp,
+                    recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                    recentNotificationApps = recentNotificationApps,
+                    recentNotificationCounts = recentNotificationCounts,
+                    recentAppsEnabled = recentAppsEnabled,
+                    recentApps = recentApps,
+                    dockPackages = dockPackages,
+                    iconPackPkg = suggestionIconPack,
+                    haptic = haptic,
+                    onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                    onAppLongClick = { pkg -> contextMenuPkg = pkg },
+                    screenHeightDp = LocalConfiguration.current.screenHeightDp,
+                    showSecondaryRowsInCompactMode = focusModeEnabled,
+                )
+            }
 
             // Widget alanı — arama çubuğu ile klasör gridi arasında
-            if (widgetAreaEnabled && widgetIds.isNotEmpty()) {
+            if (!hideSecondaryRowsForIme && widgetAreaEnabled && widgetIds.isNotEmpty()) {
                 WidgetArea(
                     widgetIds = widgetIds,
                     onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },

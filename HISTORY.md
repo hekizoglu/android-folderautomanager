@@ -2,6 +2,13 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 282 - 2026-07-14 [ROADMAP #24/#25 arama sonucu kayboluyor + ticker yanlış hedef]
+**Puanlama:** Kullanıcı değeri 4/5, uygulanabilirlik 3/5, bağımlılık riski 3/5, etki alanı 3/5 → 13/20 (her iki madde de bu puanla eşleniyordu).
+**Yapılanlar (#25 ticker):** Kök neden `HomeTickerRow.kt`'deki `pointerInputTicker` — `Modifier.pointerInput(Unit)` KEY SABİT olduğundan gesture coroutine sadece ilk kompozisyonda başlatılıyor; `onTap` closure'ı o anki `current`/`onItemClick` referanslarını KALICI olarak yakalıyordu, index sonradan değişse de tıklama hep aynı (stale) hedefi açıyordu. Fix: `rememberUpdatedState(current)` ve `rememberUpdatedState(onItemClick)` eklendi, `onTap` artık `latestOnItemClick(latestCurrent)` çağırıyor — gesture coroutine'i yeniden başlatmadan (swipe animasyonunu bozmadan) her zaman güncel hedefi okuyor.
+**Yapılanlar (#24 arama sonucu):** Kök neden `HomeScreen.kt`'deki kök `Column` — `fillMaxSize()+imePadding()` ile sınırlı, kaydırılmıyor. Klavye açılınca favoriler/öneriler/widget alanı gibi ikincil satırlar yer kaplamaya devam edince, arama sonuç kutusu (özellikle BOTTOM konumunda, ağırlıklı klasör gridinden SONRA render edilen `HomeAppSearchBar`) klavye ile daralan görünür alanın dışına taşıp görünmez oluyordu. Fix: `WindowInsets.isImeVisible` (`ExperimentalLayoutApi`) ile klavye açıkken ve birleşik arama çubuğu etkinken (`homeAppSearchEnabled`) `GoogleSearchBar`/`HomeFavoritesSection`/`WidgetArea` geçici gizleniyor — arama + sonuç alanı her zaman görünür alanda kalıyor.
+**Doğrulama:** `assembleDebug -PskipGoogleServices` başarılı (sadece önceden var olan uyarılar). Emülatör görsel smoke bu turda çalıştırılmadı.
+**Sonraki:** #22 (uzun-bas Kategori Değiştir), #27 (Ayarlar kilitlenmesi, KRİTİK) kalan bekleyen bug'lar.
+
 ## Döngü 281 - 2026-07-14 [ROADMAP #20 klasör geçiş animasyonu]
 **Puanlama:** Mevcut altyapı 3/5, kullanıcı değeri 3/5, risk 3/5, doğrulama 3/5 → 12/20. Kalan son kod maddesi olduğu için düşük riskli pager transform olarak uygulandı; gerçek iPhone hissi görsel/tablet smoke ile ayrıca değerlendirilmelidir.
 **Yapılanlar:** `HomeScreenFolderPager` içindeki `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı. Sayfa offset'ine bağlı `graphicsLayer` alpha, scale ve hafif `rotationY` efekti eklendi. `HomeScreenPageIndicator` aktif/inaktif nokta boyutunu `animateDpAsState` ile animasyonlu hale getirdi.
