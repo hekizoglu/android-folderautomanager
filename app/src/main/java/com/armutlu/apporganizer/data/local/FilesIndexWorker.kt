@@ -11,6 +11,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.utils.AppPrefs
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -20,19 +24,32 @@ import java.util.concurrent.TimeUnit
  *
  * Not: Hilt @AssistedInject/kapt uyumsuzluğunu önlemek için
  * WorkerFactory yerine entryPoint pattern kullanılır.
+ *
+ * P0.3: FilesIndexer artık @Singleton — EntryPoint ile uygulama genelindeki AYNI
+ * instance'a erişilir, böylece worker'ın yazdığı FileIndexState (Indexing/Ready/Failed)
+ * SearchSettingsScreen ve arama UI'larında da anında görünür (önceden worker kendi
+ * ayrı FilesIndexer instance'ını yaratıyordu, state güncellemeleri UI'ya ulaşmıyordu).
  */
 class FilesIndexWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface FilesIndexWorkerEntryPoint {
+        fun filesIndexer(): FilesIndexer
+    }
+
     override suspend fun doWork(): Result {
         return try {
             if (!AppPrefs.isSearchSourceFilesEnabled(applicationContext)) {
                 return Result.success()
             }
-            val db = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(applicationContext)
-            val indexer = FilesIndexer(applicationContext, db.searchDao())
+            val indexer = EntryPointAccessors.fromApplication(
+                applicationContext,
+                FilesIndexWorkerEntryPoint::class.java
+            ).filesIndexer()
             indexer.indexAll()
             Timber.d("FilesIndexWorker: tamamlandı")
             Result.success()

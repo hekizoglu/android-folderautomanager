@@ -30,6 +30,9 @@ import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -38,9 +41,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,14 +54,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.models.FileIndexState
 import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.presentation.viewmodel.SearchSettingsViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import java.text.DateFormat
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +77,19 @@ fun SearchSettingsScreen(
 ) {
     val context = LocalContext.current
     val sourceOpInFlight by viewModel.sourceOpInFlight.collectAsState()
+    val filesIndexState by viewModel.filesIndexState.collectAsState()
+
+    // P0.3: Ayarlar ekranı açılırken ve sistem izin diyalogundan dönüşte (ON_RESUME)
+    // durumu yeniden hesapla — izin verilip verilmediğini anında yansıt.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        viewModel.refreshFilesIndexState()
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshFilesIndexState()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     var homeAppSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_APP_SEARCH_ENABLED) { AppPrefs.isHomeAppSearchEnabled(context) }
     var homeSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_SEARCH_ENABLED) { AppPrefs.isHomeSearchEnabled(context) }
     var doubleTapSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_DOUBLE_TAP_SEARCH) { AppPrefs.isDoubleTapSearchEnabled(context) }
@@ -261,8 +285,8 @@ fun SearchSettingsScreen(
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
                         icon = Icons.Default.Description,
-                        title = "Dosya Adları",
-                        subtitle = "Varsayilan kapali. Medya/indirme adlari icin Android dosya izni ister; icerik okunmaz",
+                        title = stringResource(R.string.search_settings_files_title),
+                        subtitle = fileIndexSubtitle(filesIndexState),
                         checked = filesSourceEnabled,
                         onCheckedChange = {
                             if (it) {
@@ -276,8 +300,14 @@ fun SearchSettingsScreen(
                         },
                         enabled = !sourceOpInFlight,
                     )
+                    // P0.3: dosya kaynağı durumuna göre satır — izin gerekli / indeksleniyor / hazır / hata
+                    FileIndexStateRow(
+                        state = filesIndexState,
+                        onGrantPermission = { pendingPermission = ContextualPermission.FILES },
+                        onReindex = { viewModel.reindexFiles() },
+                    )
                     // İndeksleme devam ederken kullanıcıya durum göster (spec Risk 4/8)
-                    if (sourceOpInFlight) {
+                    if (sourceOpInFlight && filesIndexState !is FileIndexState.Indexing) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -455,6 +485,102 @@ fun SearchSettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
+            }
+        }
+    }
+}
+
+/** P0.3: Ayarlar satırının alt başlığı — durum saf metne çevrilir. */
+@Composable
+private fun fileIndexSubtitle(state: FileIndexState): String = when (state) {
+    is FileIndexState.Disabled -> stringResource(R.string.search_settings_files_subtitle_disabled)
+    is FileIndexState.PermissionRequired -> stringResource(R.string.search_settings_files_subtitle_permission_required)
+    is FileIndexState.Indexing -> stringResource(R.string.search_settings_files_subtitle_indexing)
+    is FileIndexState.Ready -> stringResource(
+        R.string.search_settings_files_subtitle_ready,
+        state.itemCount,
+        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(state.lastIndexedAt)),
+    )
+    is FileIndexState.Failed -> stringResource(R.string.search_settings_files_subtitle_failed)
+}
+
+/**
+ * P0.3: Dosya kaynağının izin/indeks durumunu satır altında gösterir.
+ * Disabled durumunda hiçbir şey göstermez (switch zaten kapalı, ekstra gürültü gerekmez).
+ */
+@Composable
+private fun FileIndexStateRow(
+    state: FileIndexState,
+    onGrantPermission: () -> Unit,
+    onReindex: () -> Unit,
+) {
+    when (state) {
+        is FileIndexState.Disabled -> Unit
+        is FileIndexState.PermissionRequired -> Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.Lock,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                stringResource(R.string.search_settings_files_permission_required_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onGrantPermission) {
+                Text(stringResource(R.string.search_settings_files_grant_permission_action))
+            }
+        }
+        is FileIndexState.Indexing -> Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(14.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                stringResource(R.string.search_settings_files_indexing_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        is FileIndexState.Ready -> Unit
+        is FileIndexState.Failed -> Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.ErrorOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                stringResource(R.string.search_settings_files_failed_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onReindex) {
+                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.search_settings_files_reindex_action))
             }
         }
     }

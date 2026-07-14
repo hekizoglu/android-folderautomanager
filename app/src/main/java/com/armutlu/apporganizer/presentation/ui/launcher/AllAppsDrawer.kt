@@ -4,8 +4,11 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -487,12 +490,26 @@ private fun DrawerAppList(
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
-    recentNotificationCounts: Map<String, Int> = emptyMap()
+    recentNotificationCounts: Map<String, Int> = emptyMap(),
+    filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
+        com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
+    onEnableFilesSource: () -> Unit = {}
 ) {
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
     val trLocale      = java.util.Locale("tr")
     val context       = LocalContext.current
+    // P0.3: dosya kaynağı açık ama izin yoksa "0 sonuç" yerine izin kısayolu göster
+    val showFilesPermissionHint = searchQuery.isNotBlank() &&
+        filesIndexState is com.armutlu.apporganizer.domain.models.FileIndexState.PermissionRequired
+    val filesPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.any { it }) {
+            AppPrefs.setSearchSourceFilesEnabled(context, true)
+            onEnableFilesSource()
+        }
+    }
 
     // Arama modundayken kategori eşleşmelerini grupla
     val categoryMatches = remember(searchQuery, categories) {
@@ -506,7 +523,8 @@ private fun DrawerAppList(
     val settingMatches = searchResults[SourceType.SETTING].orEmpty()
     val fileMatches = searchResults[SourceType.FILE].orEmpty()
     val hasSearchGroups = searchQuery.isNotBlank() &&
-        (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty() || settingMatches.isNotEmpty() || contactMatches.isNotEmpty() || fileMatches.isNotEmpty())
+        (state.sortedApps.isNotEmpty() || categoryMatches.isNotEmpty() || settingMatches.isNotEmpty() ||
+            contactMatches.isNotEmpty() || fileMatches.isNotEmpty() || showFilesPermissionHint)
     // Web/Play Store fallback — filtrelenmiş liste + SearchDocument sonuçları boşsa gösterilir (Ayarlar > Arama)
     var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
     DisposableEffect(context) {
@@ -569,7 +587,9 @@ private fun DrawerAppList(
         }
     } else {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() && contactMatches.isEmpty() && fileMatches.isEmpty()) {
+            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() &&
+                contactMatches.isEmpty() && fileMatches.isEmpty() && !showFilesPermissionHint
+            ) {
                 item {
                     Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
                         Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
@@ -664,6 +684,34 @@ private fun DrawerAppList(
                             },
                             showContactActions = true
                         )
+                    }
+                }
+                // P0.3: dosya kaynağı açık ama izin yoksa "0 sonuç" yerine izin kısayolu
+                if (hasSearchGroups && showFilesPermissionHint) {
+                    item(key = "source_files_permission_hint") {
+                        SourceGroupHeader(label = "Dosyalar", count = 0)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        arrayOf(
+                                            android.Manifest.permission.READ_MEDIA_IMAGES,
+                                            android.Manifest.permission.READ_MEDIA_VIDEO,
+                                            android.Manifest.permission.READ_MEDIA_AUDIO,
+                                        )
+                                    } else {
+                                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    }
+                                    filesPermLauncher.launch(permissions)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(stringResource(R.string.home_search_files_permission_required),
+                                color = onSurface, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                        }
                     }
                 }
                 if (hasSearchGroups && fileMatches.isNotEmpty()) {
@@ -946,6 +994,10 @@ fun AllAppsDrawer(
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     recentNotificationCounts: Map<String, Int> = emptyMap(),
+    // P0.3: dosya kaynağı izin/indeks durumu — DrawerAppList "izin gerekli" satırı için kullanır
+    filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
+        com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
+    onEnableFilesSource: () -> Unit = {},
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -1066,7 +1118,9 @@ fun AllAppsDrawer(
                         haptic = haptic,
                         categories = categories,
                         searchResults = searchResults,
-                        recentNotificationCounts = recentNotificationCounts
+                        recentNotificationCounts = recentNotificationCounts,
+                        filesIndexState = filesIndexState,
+                        onEnableFilesSource = onEnableFilesSource
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {

@@ -11,11 +11,13 @@ import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.FilesIndexWorker
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
+import com.armutlu.apporganizer.domain.models.FileIndexState
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import kotlin.system.measureTimeMillis
 import timber.log.Timber
@@ -40,6 +42,12 @@ class SearchRepository(
 
     // FTS5 runtime check — bazı AOSP build'lerinde fts5 modülü yoktur
     private var settingsSeeded = false
+
+    /** P0.3: Dosya kaynağının izin/indeks durumu — SearchSettingsScreen ve arama UI'ları için. */
+    val filesIndexState: StateFlow<FileIndexState> = filesIndexer.indexState
+
+    /** Ayarlar ekranı açılırken veya izin dönüşünde güncel durumu yeniden hesaplar. */
+    fun refreshFilesIndexState() = filesIndexer.refreshState()
 
     private val fts5Available: Boolean by lazy {
         try {
