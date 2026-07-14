@@ -20,4 +20,16 @@
     <string name="attention_reason_review_pending">Your review was requested</string>
     <string name="attention_reason_missing_category">Category data is missing</string>
     <string name="attention_reason_classifier_conflict">Classifier found conflicting signals</string>
+
+    <!-- P0.6: Single classification mode picker (replaces parallel toggles) -->
+    <string name="classification_mode_title">Classification Mode</string>
+    <string name="classification_mode_subtitle">Choose which engine auto-categorizes your apps. Only one mode is active at a time.</string>
+    <string name="classification_mode_local_only_title">Local Rules Only</string>
+    <string name="classification_mode_local_only_desc">Only on-device catalog and keyword matches are used — manufacturer rule and AI are disabled.</string>
+    <string name="classification_mode_local_with_manufacturer_title">Local + Manufacturer Rule</string>
+    <string name="classification_mode_local_with_manufacturer_desc">In addition to local rules, manufacturer apps like Samsung/Huawei/Xiaomi are auto-grouped.</string>
+    <string name="classification_mode_local_with_llm_fallback_title">Local + AI (DeepSeek)</string>
+    <string name="classification_mode_local_with_llm_fallback_desc">If local rules and the manufacturer rule are not enough, unknown apps are categorized with DeepSeek AI.</string>
+    <string name="classification_mode_manual_review_only_title">Manual Review Only</string>
+    <string name="classification_mode_manual_review_only_desc">No automatic classification happens — new apps are added to Pending Review and you choose the category.</string>
 </resources>

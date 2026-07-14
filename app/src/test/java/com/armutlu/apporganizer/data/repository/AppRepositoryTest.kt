@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.data.repository
 
+import android.content.Context
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
@@ -10,10 +11,13 @@ import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewState
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
+import com.armutlu.apporganizer.utils.AppPrefs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +40,7 @@ class AppRepositoryTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
+    private lateinit var mockContext: Context
     private lateinit var mockAppDao: AppDao
     private lateinit var mockCategoryDao: CategoryDao
     private lateinit var mockNotificationEventDao: NotificationEventDao
@@ -48,6 +53,7 @@ class AppRepositoryTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
+        mockContext = mockk(relaxed = true)
         mockAppDao = mockk(relaxed = true)
         mockCategoryDao = mockk(relaxed = true)
         mockNotificationEventDao = mockk(relaxed = true)
@@ -60,12 +66,18 @@ class AppRepositoryTest {
         every { mockAppDao.getHiddenApps() } returns appsFlow
         every { mockAppDao.getUncategorizedApps() } returns appsFlow
 
-        repository = AppRepository(mockAppDao, mockCategoryDao, mockNotificationEventDao, mockClassifier)
+        // P0.6: insertApps artik AppPrefs.getClassificationMode(context) okuyor —
+        // gercek SharedPreferences yerine object mock ile sabit mod donduruyoruz.
+        mockkObject(AppPrefs)
+        every { AppPrefs.getClassificationMode(any()) } returns AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+
+        repository = AppRepository(mockContext, mockAppDao, mockCategoryDao, mockNotificationEventDao, mockClassifier)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        unmockkObject(AppPrefs)
     }
 
     private fun app(pkg: String, name: String, cat: String = "social") =
@@ -131,8 +143,12 @@ class AppRepositoryTest {
             app("com.instagram.android", "Instagram", "other"),
             app("com.pubg.mobile", "PUBG", "other")
         )
-        every { mockClassifier.classifyAppDecision(match { it.packageName == "com.instagram.android" }) } returns decision("social")
-        every { mockClassifier.classifyAppDecision(match { it.packageName == "com.pubg.mobile" }) } returns decision("games")
+        every {
+            mockClassifier.classifyAppDecision(match { it.packageName == "com.instagram.android" }, any<AppPrefs.ClassificationMode>())
+        } returns decision("social")
+        every {
+            mockClassifier.classifyAppDecision(match { it.packageName == "com.pubg.mobile" }, any<AppPrefs.ClassificationMode>())
+        } returns decision("games")
 
         repository.insertApps(apps)
         advanceUntilIdle()
@@ -148,7 +164,7 @@ class AppRepositoryTest {
     @Test
     fun `insertApps silently handles exception`() = runTest {
         coEvery { mockAppDao.insertApps(any()) } throws RuntimeException("insert failed")
-        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
+        every { mockClassifier.classifyAppDecision(any(), any<AppPrefs.ClassificationMode>()) } returns decision("social")
 
         // Should not throw
         repository.insertApps(listOf(app("com.a", "App A")))
@@ -311,7 +327,7 @@ class AppRepositoryTest {
     @Test
     fun `syncInstalledApps inserts only new apps`() = runTest {
         coEvery { mockAppDao.getAllApps() } returns listOf(app("com.existing", "Existing"))
-        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
+        every { mockClassifier.classifyAppDecision(any(), any<AppPrefs.ClassificationMode>()) } returns decision("social")
 
         val installed = listOf(
             app("com.existing", "Existing"),
@@ -334,7 +350,7 @@ class AppRepositoryTest {
             app("com.installed", "Still Here"),
             app("com.uninstalled", "Removed")
         )
-        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
+        every { mockClassifier.classifyAppDecision(any(), any<AppPrefs.ClassificationMode>()) } returns decision("social")
 
         val installed = listOf(app("com.installed", "Still Here"))
 
@@ -347,7 +363,7 @@ class AppRepositoryTest {
     @Test
     fun `syncInstalledApps with all new apps inserts all`() = runTest {
         coEvery { mockAppDao.getAllApps() } returns emptyList()
-        every { mockClassifier.classifyAppDecision(any()) } returns decision("social")
+        every { mockClassifier.classifyAppDecision(any(), any<AppPrefs.ClassificationMode>()) } returns decision("social")
 
         val apps = listOf(app("com.a", "App A"), app("com.b", "App B"))
 

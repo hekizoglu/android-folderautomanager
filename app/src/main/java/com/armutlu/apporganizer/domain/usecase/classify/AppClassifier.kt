@@ -68,14 +68,48 @@ class AppClassifier @Inject constructor(
     fun classifyApp(appInfo: AppInfo, manufacturerClassifyEnabled: Boolean = true): String =
         classifyAppDecision(appInfo, manufacturerClassifyEnabled).categoryId
 
+    /**
+     * Eski imza — geriye donuk uyumluluk icin korunur, tek Boolean parametresini
+     * LOCAL_WITH_MANUFACTURER/LOCAL_ONLY moduna cevirir (LLM legacy cache adimi HALA
+     * calisir cunku bu asil "yeni kurulum" akisidir; P0.6 sonrasi cagiran taraflar
+     * AppPrefs.getClassificationMode() ile classifyAppDecision(appInfo, mode) kullanmali).
+     */
     fun classifyAppDecision(
         appInfo: AppInfo,
         manufacturerClassifyEnabled: Boolean = true
     ): ClassificationDecision {
+        val mode = if (manufacturerClassifyEnabled) {
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+        } else {
+            AppPrefs.ClassificationMode.LOCAL_ONLY
+        }
+        return classifyAppDecision(appInfo, mode)
+    }
+
+    /**
+     * Tek karar noktasi (P0.6): siniflandirma modu, hangi motorlarin calisacagini belirler.
+     * - MANUAL_REVIEW_ONLY: otomatik siniflandirma YAPILMAZ, REVIEW_PENDING doner (isCategoryLocked
+     *   olanlar zaten userDecision() ile daha once yakalanir).
+     * - LOCAL_ONLY: uretici kurali VE LLM legacy cache atlanir.
+     * - LOCAL_WITH_MANUFACTURER: uretici kurali calisir, LLM legacy cache atlanir.
+     * - LOCAL_WITH_LLM_FALLBACK: uretici kurali + LLM legacy cache (asil DeepSeek cagrisi
+     *   CategoryLLMFallback uzerinden ayrica sadece bu modda tetiklenmeli — cagiran taraf sorumlu).
+     */
+    fun classifyAppDecision(
+        appInfo: AppInfo,
+        mode: AppPrefs.ClassificationMode
+    ): ClassificationDecision {
         userDecision(appInfo)?.let { return it }
+
+        if (mode == AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY) {
+            return manualReviewPendingDecision()
+        }
+
         remoteCatalogDecision(appInfo.packageName)?.let { return it }
         bundledCatalogDecision(appInfo.packageName)?.let { return it }
         val androidDecision = androidCategoryDecision(appInfo.packageName)
+        val manufacturerClassifyEnabled = mode == AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER ||
+            mode == AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK
         val manufacturerDecision = if (manufacturerClassifyEnabled) {
             manufacturerDecision(appInfo.packageName, appInfo.appName)
         } else {
@@ -96,9 +130,21 @@ class AppClassifier @Inject constructor(
         androidDecision?.let { return it }
         manufacturerDecision?.let { return it }
         keywordDecision?.let { return it }
-        legacyLlmDecision(appInfo.packageName)?.let { return it }
+        if (mode == AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK) {
+            legacyLlmDecision(appInfo.packageName)?.let { return it }
+        }
         return fallbackDecision()
     }
+
+    private fun manualReviewPendingDecision(): ClassificationDecision =
+        ClassificationDecision(
+            categoryId = Category.CAT_UNCATEGORIZED,
+            confidence = 0,
+            source = ClassificationSource.UNKNOWN,
+            reasonCode = ClassificationReason.NO_RELIABLE_MATCH,
+            requiresReview = true,
+            reviewState = ClassificationReviewState.PENDING,
+        )
 
     private fun userDecision(appInfo: AppInfo): ClassificationDecision? {
         if (appInfo.isCategoryLocked) {

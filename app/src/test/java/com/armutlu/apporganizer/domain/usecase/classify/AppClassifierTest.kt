@@ -4,6 +4,7 @@ import android.content.Context
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.utils.AppPrefs
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -418,5 +419,89 @@ class AppClassifierTest {
             manualOverrides = emptyMap()
         )
         assertTrue(result.isEmpty())
+    }
+
+    // --- P0.6: Siniflandirma Modu — tek karar noktasi ────────────────────────
+
+    @Test
+    fun `MANUAL_REVIEW_ONLY modunda otomatik siniflandirma yapilmaz, REVIEW_PENDING doner`() {
+        val decision = classifier.classifyAppDecision(
+            appInfo("com.instagram.android", "Instagram"),
+            AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY
+        )
+
+        assertEquals(Category.CAT_UNCATEGORIZED, decision.categoryId)
+        assertEquals(ClassificationReviewState.PENDING, decision.reviewState)
+        assertTrue(decision.requiresReview)
+        assertEquals(ClassificationSource.UNKNOWN, decision.source)
+    }
+
+    @Test
+    fun `MANUAL_REVIEW_ONLY modunda bilinen paket dahi otomatik atanmaz`() {
+        // exactMatchMap'te com.whatsapp -> CAT_COMMUNICATION var ama manuel modda hicbir
+        // otomatik motor calismamali.
+        val decision = classifier.classifyAppDecision(
+            appInfo("com.whatsapp", "WhatsApp"),
+            AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY
+        )
+        assertEquals(Category.CAT_UNCATEGORIZED, decision.categoryId)
+    }
+
+    @Test
+    fun `isCategoryLocked kullanicilar MANUAL_REVIEW_ONLY modunda dahi ezilmez`() {
+        val app = appInfo("com.whatsapp", "WhatsApp").copy(
+            categoryId = Category.CAT_FINANCE,
+            classificationSource = ClassificationSource.USER_CORRECTED.name,
+            isCategoryLocked = true,
+        )
+        val decision = classifier.classifyAppDecision(app, AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY)
+
+        assertEquals(Category.CAT_FINANCE, decision.categoryId)
+        assertEquals(ClassificationSource.USER_CORRECTED, decision.source)
+        assertFalse(decision.requiresReview)
+    }
+
+    @Test
+    fun `LOCAL_ONLY modunda uretici kurali atlanir`() {
+        val decision = classifier.classifyAppDecision(
+            appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
+            AppPrefs.ClassificationMode.LOCAL_ONLY
+        )
+        assertNotEquals(Category.CAT_SAMSUNG, decision.categoryId)
+    }
+
+    @Test
+    fun `LOCAL_WITH_MANUFACTURER modunda uretici kurali calisir`() {
+        val decision = classifier.classifyAppDecision(
+            appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+        )
+        assertEquals(Category.CAT_SAMSUNG, decision.categoryId)
+    }
+
+    @Test
+    fun `LOCAL_WITH_MANUFACTURER modunda LLM legacy cache atlanir`() {
+        // Legacy LLM cache normalde bundled/keyword eslesmesi olmayan paketler icin devreye
+        // girer; LOCAL_WITH_MANUFACTURER modunda bu adim atlanmali ve sonuc CAT_OTHER olmali.
+        val decision = classifier.classifyAppDecision(
+            appInfo("com.bilinmeyen.uygulama.xyz123", "Bilinmeyen"),
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+        )
+        assertEquals(Category.CAT_OTHER, decision.categoryId)
+        assertEquals(ClassificationSource.FALLBACK_OTHER, decision.source)
+    }
+
+    @Test
+    fun `eski Boolean imza LOCAL_WITH_MANUFACTURER moduna esdegerdir`() {
+        val viaBoolean = classifier.classifyAppDecision(
+            appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
+            manufacturerClassifyEnabled = true
+        )
+        val viaMode = classifier.classifyAppDecision(
+            appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+        )
+        assertEquals(viaMode.categoryId, viaBoolean.categoryId)
+        assertEquals(viaMode.source, viaBoolean.source)
     }
 }
