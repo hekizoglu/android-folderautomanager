@@ -43,11 +43,8 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
 **Durum:** Bekliyor
 
-### [4] Arama çubuğu klavye ile hafif çakışıyor
-**Sorun/İstek:** Arama çubuğuna dokununca klavye açılıyor, bar yukarı kayıyor ama klavyenin biraz üstüne biniyor (küçük overlap).
-**Nasıl yapılmalı:** `HomeScreenComponents.kt` içinde arama barının `WindowInsets.ime` ile hizalanan offset/padding hesaplaması bulunmalı; mevcut offset değeri birkaç dp artırılmalı. `imePadding()` veya manuel `WindowInsets.ime.getBottom(density)` kullanımı varsa animasyon gecikmesi (`WindowInsetsAnimation`) nedeniyle ara karede overlap oluşabilir — `imeNestedScroll()` veya `Modifier.imePadding()` ile senkron animasyon tercih edilmeli. Küçük görsel bug, test emülatörde klavye açık ekran görüntüsüyle doğrulanmalı.
-**Puan:** KV=3 U=4 BR=4 EA=2 → Toplam=13
-**Durum:** Bekliyor 🐛
+### [4] Arama çubuğu klavye ile hafif çakışıyor — ✅ Tamamlandı (D267)
+Çözüm: `HomeScreen.kt` kök `Column`'a `Modifier.imePadding()` eklendi. Detay → HISTORY.md Döngü 267.
 
 ### [5] 🐛 Ticker açık item'a tekrar tıklayınca donuyor — ✅ Tamamlandı (D265)
 Çözüm: `HomeTickerRow.kt` tıklamaya 700ms debounce (`lastClickAt`) eklendi. Detay → HISTORY.md Döngü 265.
