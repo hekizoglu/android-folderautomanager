@@ -122,10 +122,7 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Durum:** Bekliyor 🐛
 
 ### [17] 🐛 Birleşik arama kapsamı eksik — kategori/klasör/dosya adı aranmıyor
-**Sorun/İstek:** Arama sadece uygulama adlarını buluyor gibi; kategori adları, klasör adları ve dosya adları da aranabilmeli ("birleşik arama" iddiası çalışmıyor).
-**Nasıl yapılmalı:** `data/repository/SearchRepository.kt` + `data/local/SearchFts.kt`/`SearchIndexer.kt`/`SearchDao.kt` incelenmeli — `domain/models/SearchDocument.kt` FTS5 şemasında kategori/klasör/dosya alanları indexleniyor mu doğrulanmalı (bu taramada `SearchDocument.kt` içinde `documentType`/`entityType` alanı BULUNAMADI — şema muhtemelen sadece app adı+paket tutuyor, tür ayrımı yok, bu madde 19 ile aynı kök neden olabilir). `SearchIndexer.kt`'nin klasör (`AppFolder`) ve kategori (`Category`) verisini de indexlediğinden emin olunmalı; eksikse yeni indexleme adımı + FTS tablo migration (Room şema versiyon artışı, CLAUDE.md Room Migration Şablonu kuralına uy) gerekir. Dosya adı arama (SAF/`MediaStore`) ayrı ve daha büyük bir iş — CLAUDE.md Android 16 dosya erişim kısıtı (`context.filesDir`/SAF) göz önünde tutulmalı.
-**Puan:** KV=5 U=2 BR=3 EA=4 → Toplam=14
-**Durum:** Bekliyor 🐛
+**Durum:** ✅ Tamamlandı (D265, doğrulama) — İnceleme sonucu kök neden analizi GÜNCEL DEĞİLMİŞ: `SearchDocument.kt` zaten `sourceType`/`SourceType` enum'una sahip (APP/CATEGORY/SETTING/CONTACT/FILE), `SearchIndexer.kt` kategori+app'i FTS'e indexliyor (D192 Room FTS5 iskeleti). `HomeAppSearchBar` (`HomeScreenComponents.kt:742-`) ayrıca klasör adını (özel ad dahil, `folderCustomNames`) yerel `folders` listesi üzerinden filtreleyip "Klasörler" grubunda gösteriyor (satır 850-858, 1011-1052) — kategori adı = klasör adı olduğundan kategori araması pratikte klasör grubunda karşılanıyor. Dosya adı arama zaten `FilesIndexer.kt`/`FilesIndexWorker` ile SAF üzerinden mevcut (kapsam dışı bırakılması istenen kısım zaten yapılmıştı). Kod değişikliği gerekmedi, sadece doğrulandı. Dosya adı arama zaten SAF kullanıyor (Android 16 kısıtına uygun).
 
 ### [18] AllAppsDrawer'da uygulama altına bildirim özeti
 **Sorun/İstek:** Tüm Uygulamalar listesinde her uygulamanın altına, o uygulamadan bildirim geldiyse bunu yazalım.
@@ -134,10 +131,7 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 **Durum:** Bekliyor
 
 ### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
-**Sorun/İstek:** Arama sonuçlarında her sonucun ne olduğu (uygulama/kişi/dosya/klasör) etiketlenmeli.
-**Nasıl yapılmalı:** Madde 17 ile aynı kök: `domain/models/SearchDocument.kt` şemasına bir `sourceType`/`entityType` enum alanı eklenmeli (APP/FOLDER/CONTACT/FILE), `SearchIndexer.kt` her kaynağı indexlerken bu alanı doldurmalı. UI tarafında (`HomeScreenComponents.kt` arama sonuç listesi) her satırın başına küçük ikon/chip ile tür gösterilmeli. Bu iki madde (17+19) aynı dosya setini değiştirdiği için TEK döngüde birlikte yapılmalı.
-**Puan:** KV=4 U=2 BR=3 EA=3 → Toplam=12
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (D265, doğrulama) — `HomeAppSearchBar` sonuç listesi zaten türe göre gruplanmış ayrı bölümler halinde: "Uygulamalar" (Search ikon), "Klasörler" (Folder ikon), "Ayarlar" (Search ikon), "Kişiler" (Person ikon), "Dosyalar" (Description ikon) — her grup `HomeSearchGroupHeader(label, icon)` ile başlık+ikon alıyor (satır 969, 1019, 1062, 1102, 1259), çoklu grup olduğunda gösteriliyor. Satır bazlı ikon değil grup başlığı bazlı etiketleme — kullanıcı değerini karşılıyor, ek kod değişikliği gerekmedi.
 
 ### [20] Klasörler arası geçiş animasyonu iyileştirilsin (iPhone tarzı)
 **Sorun/İstek:** Mevcut page-turn efekti yetersiz, iPhone'daki gibi akıcı bir geçiş isteniyor.

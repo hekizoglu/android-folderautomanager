@@ -2,6 +2,12 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 265 - 2026-07-14 [ROADMAP 17+19 arama tür/klasör doğrulaması]
+**Yapılanlar:** ROADMAP.md #17 (kategori/klasör adı aranmıyor) ve #19 (sonuç tür etiketi yok) incelendi. `SearchDocument.kt` (`SourceType` enum: APP/CATEGORY/SETTING/CONTACT/FILE), `SearchIndexer.kt`, `SearchDao.kt`, `SearchRepository.kt`, `HomeScreenComponents.kt:742-1300` (`HomeAppSearchBar`) baştan sona okundu — önceki döngülerde (D192 FTS5 iskelet, D258) her iki sorun da zaten çözülmüş: klasör adı (özel ad dahil) yerel filtreyle aranıyor (satır 850-858), sonuçlar "Uygulamalar/Klasörler/Ayarlar/Kişiler/Dosyalar" başlıklı gruplara ikonlu şekilde ayrılıyor (satır 969-1259). Kod değişikliği gerekmedi; `app/build.gradle.kts` versionCode 41→42, versionName 1.3.18→1.3.19 (doğrulama döngüsü olarak bump).
+**Agent:** Yok — doğrudan ana oturumda inceleme + build/test doğrulaması yapıldı.
+**Build/Test:** `./gradlew assembleDebug -PskipGoogleServices --no-daemon` başarılı; `testDebugUnitTest --tests "*TurkishSearchTest*"` hatasız geçti.
+**Sonraki:** ROADMAP #17/#19 kapatıldı; FİKİRLER.md ve ROADMAP.md senkron. Bir sonraki öncelik: madde 15/16/18/20.
+
 ## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]
 
 **Yapılanlar:** Tablet emulator (`1280x800`, density `160`) üzerinde yakalanan “App Organizer isn't responding” ANR ekranı incelendi. İlk kanıt `artifacts/tablet-debug/tablet-current-20260714-132819.png`: Play Store sign-in ekranı arkasında AppOrganizer ANR dialog'u. Logcat, AppOrganizer activity pause/top-resumed timeout ve ana thread frame skip işaretleri verdi. İki hedefli düzeltme yapıldı: `AppListViewModel.syncInstalledApps()` artık cihaz/DB sync ve search bootstrap işini `Dispatchers.IO` üzerinde başlatıyor; `LauncherActivity` onboarding tamamlanmamışken `MainActivity`'ye yönlendirdikten sonra `finish()` çağırıyor, böylece tablet geçişinde yarım kalan launcher activity pause timeout üretmiyor.
