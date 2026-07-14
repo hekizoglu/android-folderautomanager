@@ -93,7 +93,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.4 — İstatistik sıfırlama sihirbazını tamamla
 
-**Durum:** Bekliyor — mevcut iki aşamalı genel onay yeterli değil  
+**Durum:** ✅ Tamamlandı (Sprint 2, commit a7ad7de) — kapsam seçimli 2 adımlı sihirbaz, StatsResetService (kapsam başına bağımsız runCatching), snackbar sonuç raporu, 8/8 test  
 **Yapılacaklar:**
 
 - Kullanıcının hangi veriyi sileceğini seçmesini sağla:
@@ -113,7 +113,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.5 — Bildirimlerde gerçek “okunmamış” yerel modelini kur
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (Sprint 2, commit ffbb7cb) — NotificationReadPrefs (paket→lastReadAt) + UnreadNotificationModel; launchApp yalnız yerel okundu işareti; cancelNotification kodda zaten yoktu; 8/8 test  
 **Sorun:** Aktif Android bildirimi, son 24 saat bildirimi ve uygulama içinde okunmuş durum aynı kavram gibi ele alınıyor.
 
 **Yapılacaklar:**
@@ -130,7 +130,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.6 — Sınıflandırma modlarını tek seçime indir
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (Sprint 2, commit d4705c8) — ClassificationMode enum (4 mod) + eski toggle'lardan migration; insertApps'in toggle'ı hiç okumadığı kök neden bulundu ve düzeltildi; isCategoryLocked her modda öncelikli; 91 test  
 **Sorun:** Üretici sınıflandırması, yerel kural ve LLM seçenekleri paralel toggle'lar olarak birbirini ezebilir.
 
 **Önerilen enum:**
@@ -153,7 +153,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.7 — “Diğer/Bilinmeyen” uygulamaları öneri akışına dahil et
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (Sprint 2, commit cec03d6) — CategorySuggestionEngine (keyword→vendor→benzer paket, sinyal yoksa null); Kontrol Bekleyenler kartlarında öneri + Uygula; 8/8 test  
 **Yapılacaklar:**
 
 - `categoryId=other` olup güveni 0/düşük olan uygulamaları “inceleme gerekiyor” listesine dahil et.

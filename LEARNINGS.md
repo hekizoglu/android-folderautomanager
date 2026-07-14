@@ -15,6 +15,12 @@ AppOrganizer artık "invisible launcher / Pixel Launcher klonu" DEĞİL. Hedef: 
 
 ---
 
+## 🔎 KeywordDatabase Agresif Substring Eşleşmesi (D-Sprint2 P0.7 bulgusu)
+
+`KeywordDatabase` keyword listeleri substring `contains` ile eşleşiyor — "tool", "su", "edit" gibi kısa keyword'ler alakasız uygulama/paket adlarına false-positive verir (örn. "samsung" içindeki "su"). CategorySuggestionEngine testlerinde fixture adları bu yüzden çakışmasız seçilmek zorunda kaldı. Gelecek classifier işlerinde: kelime sınırı (word-boundary) eşleşmesi veya min. keyword uzunluğu değerlendirilmeli.
+
+---
+
 ## 🔒 Build Kilidi Kök Nedenleri (D235 — 6 kilit vakasının otopsisi)
 
 ### D259 ÇÖZÜLDÜ: Defender exclusion'ları ESKİ proje yolundaydı

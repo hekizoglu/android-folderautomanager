@@ -2,6 +2,18 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 2 - 2026-07-14 [P0.4-P0.7, v1.3.26]
+
+**Yapılanlar:** (P0.4, a7ad7de) Kapsam seçimli sıfırlama sihirbazı — StatsResetService, kapsam başına bağımsız hata toleransı, toplu SQL UPDATE, snackbar raporu. (P0.5, ffbb7cb) Okunmamış bildirim modeli — NotificationReadPrefs + UnreadNotificationModel (saf), launchApp yalnız yerel okundu işaretler; kodda cancelNotification zaten yokmuş (denetim varsayımı yanlıştı, model yine de doğru kuruldu). (P0.6, d4705c8) ClassificationMode enum (LOCAL_ONLY/…/MANUAL_REVIEW_ONLY) + eski toggle migration; GERÇEK KÖK NEDEN: AppRepository.insertApps üretici toggle'ını hiç okumuyordu — ayar kapalıyken bile vendor kuralı çalışıyordu, düzeltildi; Ayarlar'da 4 seçenekli tek seçici; BackupManager mode export/import. (P0.7, cec03d6) CategorySuggestionEngine — keyword→vendor→benzer paket sinyal önceliği, sinyal yoksa "yeterli sinyal yok"; Kontrol Bekleyenler kartlarında öneri + tek dokunuş uygula (kullanıcı onaylı).
+
+**Kalite kapısı:** merge conflict (classification_review_strings TR+EN, P0.6×P0.7) her iki blok korunarak çözüldü; tam testDebugUnitTest + assembleDebug geçti. v1.3.26 (versionCode 49).
+
+**Ortam:** pre-commit hook'u check_duplicates.py'nin cp1254 emoji çökmesi yüzünden yanlış engelledi — PYTHONIOENCODING=utf-8 ile geçti (script fix backlog'da). Not (P0.7 agent bulgusu): KeywordDatabase substring eşleşmesi agresif — "tool"/"su" gibi kısa keyword'ler alakasız adlara false-positive verebiliyor; classifier işlerinde dikkate alınmalı.
+
+**Sonraki:** Sprint 3 (P1.1 tam ekran arama, P1.2 bağlamsal sıfır durum, P1.3 saat bazlı kişi önerileri).
+
+---
+
 ## AI Denetim Sprint 1 - 2026-07-14 [P0.1 + P0.2 + P0.3, v1.3.25]
 
 **Yapılanlar:** ROADMAP_AI_AUDIT Sprint 1 üç paralel Sonnet agent'la tamamlandı. (P0.1, bb46943) FolderScreen'de `categoryPickerApp` state'i context-menu bloğu içindeydi — menü kapanınca picker unmount oluyordu; ekran köküne taşındı, kategori değişim unit testi eklendi. (P0.2, 43b54bb) 4 farklı "dikkat gerekiyor" filtresi `ClassificationAttentionPolicy`'de (6 nedenli enum) tekleşti; Kontrol Bekleyenler + Ayarlar sayacı + Dashboard aynı kaynaktan, satırlarda "neden burada?" (TR+EN), 11 test. (P0.3, 684879d) `FileIndexState` sealed modeli; FilesIndexer StateFlow + AppPrefs kalıcılık, FilesIndexWorker Hilt EntryPoint'e geçti (ayrı instance bug'ı), SearchSettings durum satırı + ana arama/AllApps'te "dosya izni gerekli" ipucu, bayat URI izinleri temizleniyor, 8 test.
