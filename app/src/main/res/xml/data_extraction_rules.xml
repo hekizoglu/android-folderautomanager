@@ -12,6 +12,9 @@
         <!-- Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — baska
              cihazda veya yeniden kurulumda gecersizdir (F21, D261 denetimi). -->
         <exclude domain="sharedpref" path="widget_prefs.xml" />
+        <!-- Silinip yeniden kurulumda onboarding'in tekrar baslamasi icin cihaza-ozel isaretci
+             (F2/D-madde2). Yedeklenirse yeni kurulumda "eski kurulumun devami" gibi davranir. -->
+        <exclude domain="file" path="install_marker" />
         <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si bulut yedeğine dahil edilmez -->
         <exclude domain="database" path="app_organizer_db" />
         <exclude domain="database" path="app_organizer_db-wal" />
@@ -23,6 +26,7 @@
         <include domain="sharedpref" path="." />
         <exclude domain="sharedpref" path="deepseek_prefs.xml" />
         <exclude domain="sharedpref" path="widget_prefs.xml" />
+        <exclude domain="file" path="install_marker" />
         <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si cihazlar arasi aktarima dahil edilmez -->
         <exclude domain="database" path="app_organizer_db" />
         <exclude domain="database" path="app_organizer_db-wal" />

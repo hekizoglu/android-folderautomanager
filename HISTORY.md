@@ -2,6 +2,18 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 265 - 2026-07-14 [İzin butonu takılma + silip-tekrar-kurma onboarding fix]
+
+**Yapılanlar:** Madde 1: `ContextualPermissionDialog.kt` — `permissionLauncher` callback'i artık `ContextCompat.checkSelfPermission` ile çapraz doğruluyor, ayrıca `ON_RESUME` lifecycle observer eklendi (kullanıcı sistem Ayarlar'dan izin verip geri dönünce buton takılı kalmıyor). Madde 2: `AppPrefs.kt`'ye cihaza-özel `install_marker` dosyası (`context.filesDir`) tabanlı `isOnboardingDone()`/`markOnboardingDone()`/`resetOnboarding()` eklendi; `MainActivity.kt`, `LauncherActivity.kt`, `OnboardingScreen.kt`, `SettingsBackupAboutSection.kt` bu API'lere geçirildi. `backup_rules.xml` + `data_extraction_rules.xml`'e `exclude domain="file" path="install_marker"` eklendi — Android Auto Backup tüm `AppPrefs` dosyasını (tema dahil) hariç tutmadan, sadece kurulum-tespit dosyasını yedekten/cihaz-transferinden dışlıyor.
+
+**Kök neden:** Madde 2'de Android Auto Backup `app_organizer_prefs` SharedPreferences dosyasını (KEY_ONBOARDING_DONE dahil) Google hesabına yedekleyip silme sonrası yeniden kurulumda geri yüklüyordu → onboarding "eski kurulumun devamı" sanılıyordu. Tüm dosyayı hariç tutmak tema/ayarları da sıfırlardı; bunun yerine sadece cihaza özel marker dosyası backup dışına alındı.
+
+**Agent:** worktree izolasyonunda tek agent (Sonnet) — iki bağımsız bug analiz + fix + build doğrulama.
+
+**Doğrulama:** `assembleDebug -PskipGoogleServices` BUILD SUCCESSFUL (sadece önceden var olan deprecation uyarıları, hata yok).
+
+---
+
 ## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]
 
 **Yapılanlar:** Tablet emulator (`1280x800`, density `160`) üzerinde yakalanan “App Organizer isn't responding” ANR ekranı incelendi. İlk kanıt `artifacts/tablet-debug/tablet-current-20260714-132819.png`: Play Store sign-in ekranı arkasında AppOrganizer ANR dialog'u. Logcat, AppOrganizer activity pause/top-resumed timeout ve ana thread frame skip işaretleri verdi. İki hedefli düzeltme yapıldı: `AppListViewModel.syncInstalledApps()` artık cihaz/DB sync ve search bootstrap işini `Dispatchers.IO` üzerinde başlatıyor; `LauncherActivity` onboarding tamamlanmamışken `MainActivity`'ye yönlendirdikten sonra `finish()` çağırıyor, böylece tablet geçişinde yarım kalan launcher activity pause timeout üretmiyor.

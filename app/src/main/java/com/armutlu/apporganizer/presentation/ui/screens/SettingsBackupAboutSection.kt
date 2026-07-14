@@ -611,8 +611,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 text = { Text("Onboarding adımları sıfırlanacak. Uygulama yeniden başlatılacak.") },
                 confirmButton = {
                     TextButton(onClick = {
-                        context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-                            .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, false).apply()
+                        AppPrefs.resetOnboarding(context)
                         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                             ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
                         if (intent != null) context.startActivity(intent)

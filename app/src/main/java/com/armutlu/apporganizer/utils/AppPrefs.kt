@@ -7,6 +7,46 @@ object AppPrefs {
     const val KEY_ONBOARDING_DONE = "onboarding_done"
     const val KEY_LAUNCHER_SETUP_SHOWN = "launcher_setup_shown"
 
+    // Silinip yeniden kurulunca onboarding'in tekrar baslamasi icin cihaza-ozel isaretci
+    // (F2 / Hüseyin geribildirimi madde 2). Android Auto Backup butun AppPrefs SharedPreferences
+    // dosyasini (tema, ayarlar dahil) yedekleyip yeni kurulumda geri yukluyor; bu yuzden
+    // KEY_ONBOARDING_DONE tek basina guvenilir degil — restore edilen prefs'te true gelebilir.
+    // Cozum: tum AppPrefs dosyasini yedekten haric tutmak yerine (tema/ayarlar sifirlanir),
+    // sadece bu marker dosyasini backup/device-transfer kurallarindan haric tutuyoruz
+    // (backup_rules.xml + data_extraction_rules.xml, domain="file" path="install_marker").
+    // Marker dosyasi yoksa kurulum "taze" kabul edilir ve onboarding_done flag'i restore
+    // olmus olsa bile onboarding tekrar gosterilir.
+    private const val INSTALL_MARKER_FILE = "install_marker"
+
+    /** Onboarding daha once TAMAMLANDI mi (hem prefs flag hem cihaza-ozel marker gecerli olmali). */
+    fun isOnboardingDone(context: Context): Boolean {
+        val flagDone = prefs(context).getBoolean(KEY_ONBOARDING_DONE, false)
+        return flagDone && hasInstallMarker(context)
+    }
+
+    /** Onboarding tamamlaninca hem flag'i hem cihaza-ozel marker'i yazar. */
+    fun markOnboardingDone(context: Context) {
+        prefs(context).edit().putBoolean(KEY_ONBOARDING_DONE, true).apply()
+        writeInstallMarker(context)
+    }
+
+    private fun hasInstallMarker(context: Context): Boolean =
+        java.io.File(context.filesDir, INSTALL_MARKER_FILE).exists()
+
+    private fun writeInstallMarker(context: Context) {
+        runCatching {
+            java.io.File(context.filesDir, INSTALL_MARKER_FILE).writeText(
+                System.currentTimeMillis().toString()
+            )
+        }
+    }
+
+    /** Ayarlar > "Kurulum Sihirbazı"nı sıfırla — hem flag hem marker temizlenir. */
+    fun resetOnboarding(context: Context) {
+        prefs(context).edit().putBoolean(KEY_ONBOARDING_DONE, false).apply()
+        runCatching { java.io.File(context.filesDir, INSTALL_MARKER_FILE).delete() }
+    }
+
     // Onboarding adim kaliciligi (D240): varsayilan launcher secimi sistemin gorevi yeniden
     // baslatmasina yol acabiliyor — rememberSaveable yeni activity kaydinda korunmadigi icin
     // kurulum basa sariyordu. Adim her degisimde buraya yazilir, acilista geri yuklenir.

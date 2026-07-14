@@ -249,8 +249,7 @@ fun OnboardingScreen(
                             OnboardingStep.ORGANIZATION_PREVIEW -> stepIndex++
 
                             OnboardingStep.DONE -> {
-                                context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-                                    .edit().putBoolean(AppPrefs.KEY_ONBOARDING_DONE, true).apply()
+                                AppPrefs.markOnboardingDone(context)
                                 AppPrefs.setOnboardingStep(context, 0) // kalici adim sifirlanir (D240)
                                 onFinish()
                             }
