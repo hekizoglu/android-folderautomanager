@@ -20,4 +20,12 @@
     <string name="attention_reason_review_pending">İncelemen istendi</string>
     <string name="attention_reason_missing_category">Kategori bilgisi eksik</string>
     <string name="attention_reason_classifier_conflict">Sınıflandırıcı çelişkili sinyaller buldu</string>
+
+    <!-- P0.7: CategorySuggestionEngine -->
+    <string name="classification_suggestion_label">Önerilen: %1$s (%2$s)</string>
+    <string name="classification_suggestion_apply">Uygula</string>
+    <string name="classification_suggestion_none">Yeterli sinyal yok</string>
+    <string name="classification_suggestion_signal_vendor">üretici eşleşmesi</string>
+    <string name="classification_suggestion_signal_keyword">anahtar kelime</string>
+    <string name="classification_suggestion_signal_similar_package">benzer paket</string>
 </resources>

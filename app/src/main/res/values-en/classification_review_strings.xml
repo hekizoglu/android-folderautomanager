@@ -20,4 +20,12 @@
     <string name="attention_reason_review_pending">Your review was requested</string>
     <string name="attention_reason_missing_category">Category data is missing</string>
     <string name="attention_reason_classifier_conflict">Classifier found conflicting signals</string>
+
+    <!-- P0.7: CategorySuggestionEngine -->
+    <string name="classification_suggestion_label">Suggested: %1$s (%2$s)</string>
+    <string name="classification_suggestion_apply">Apply</string>
+    <string name="classification_suggestion_none">Not enough signal</string>
+    <string name="classification_suggestion_signal_vendor">vendor match</string>
+    <string name="classification_suggestion_signal_keyword">keyword</string>
+    <string name="classification_suggestion_signal_similar_package">similar package</string>
 </resources>

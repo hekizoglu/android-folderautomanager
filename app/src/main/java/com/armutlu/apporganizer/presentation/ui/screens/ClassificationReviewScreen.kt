@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.usecase.classify.CategorySuggestionEngine
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationAttentionPolicy
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
@@ -41,6 +42,7 @@ fun ClassificationReviewScreen(
 ) {
     val pendingApps by viewModel.classificationAttentionApps.collectAsState()
     val screenState by viewModel.screenState.collectAsState()
+    val allApps = screenState.apps
     val categories = screenState.categories
         .filter { it.categoryId != Category.CAT_UNCATEGORIZED }
         .sortedBy { it.displayOrder }
@@ -124,6 +126,56 @@ fun ClassificationReviewScreen(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+
+                                // P0.7: CAT_OTHER/dusuk guvenli uygulamalar icin kategori onerisi.
+                                val suggestion = remember(app.packageName, allApps.size) {
+                                    CategorySuggestionEngine.suggestFor(app, allApps)
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                if (suggestion != null) {
+                                    val suggestedCategoryName = categoryNames[suggestion.categoryId] ?: suggestion.categoryId
+                                    val signalLabel = stringResource(
+                                        when (suggestion.signal) {
+                                            CategorySuggestionEngine.SignalType.VENDOR ->
+                                                R.string.classification_suggestion_signal_vendor
+                                            CategorySuggestionEngine.SignalType.KEYWORD ->
+                                                R.string.classification_suggestion_signal_keyword
+                                            CategorySuggestionEngine.SignalType.SIMILAR_PACKAGE ->
+                                                R.string.classification_suggestion_signal_similar_package
+                                        }
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Text(
+                                            text = stringResource(
+                                                R.string.classification_suggestion_label,
+                                                suggestedCategoryName,
+                                                signalLabel,
+                                            ),
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        OutlinedButton(
+                                            onClick = {
+                                                selectedCategoryByPackage[app.packageName] = suggestion.categoryId
+                                            },
+                                        ) {
+                                            Text(
+                                                stringResource(R.string.classification_suggestion_apply),
+                                                fontSize = 12.sp,
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Text(
+                                        text = stringResource(R.string.classification_suggestion_none),
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
                                 Spacer(Modifier.height(12.dp))
