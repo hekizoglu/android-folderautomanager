@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.data.repository
 
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
@@ -37,6 +38,7 @@ class AppRepositoryTest {
 
     private lateinit var mockAppDao: AppDao
     private lateinit var mockCategoryDao: CategoryDao
+    private lateinit var mockNotificationEventDao: NotificationEventDao
     private lateinit var mockClassifier: AppClassifier
     private lateinit var repository: AppRepository
 
@@ -48,6 +50,7 @@ class AppRepositoryTest {
 
         mockAppDao = mockk(relaxed = true)
         mockCategoryDao = mockk(relaxed = true)
+        mockNotificationEventDao = mockk(relaxed = true)
         mockClassifier = mockk(relaxed = true)
 
         every { mockAppDao.getAllAppsFlow() } returns appsFlow
@@ -57,7 +60,7 @@ class AppRepositoryTest {
         every { mockAppDao.getHiddenApps() } returns appsFlow
         every { mockAppDao.getUncategorizedApps() } returns appsFlow
 
-        repository = AppRepository(mockAppDao, mockCategoryDao, mockClassifier)
+        repository = AppRepository(mockAppDao, mockCategoryDao, mockNotificationEventDao, mockClassifier)
     }
 
     @After

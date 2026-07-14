@@ -114,6 +114,18 @@ class AppListViewModelTest {
     }
 
     @Test
+    fun `resetAllPrivacyData clears notification texts and events`() = runTest {
+        val apps = listOf(appInfo("com.example.app", "Example"))
+        coEvery { mockRepository.getAllApps() } returns apps
+
+        viewModel.resetAllPrivacyData(mockApplication)
+        advanceUntilIdle()
+
+        coVerify { mockRepository.clearAllNotificationTexts() }
+        coVerify { mockRepository.clearAllNotificationEvents() }
+    }
+
+    @Test
     fun `setSearchQuery updates screenState searchQuery`() = runTest {
         advanceUntilIdle() // let init complete
 

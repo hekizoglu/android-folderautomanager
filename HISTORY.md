@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 261 - 2026-07-14 [30 döngü denetimi P0/P1 kapanışı]
+
+**Yapılanlar:** `docs/internal/sistem_denetim_30_dongu_2026-07-14.md` raporundaki P0/P1 işler sırayla ele alındı. Gizlilik merkezi metinleri gerçek ağ/telemetri davranışıyla uyumlu hale getirildi: Firebase/Crashlytics/FCM, isteğe bağlı DeepSeek/online DB ve bildirim metni saklama davranışı artık kesin "internete veri gönderilmez" iddiası yerine açık beyan olarak gösteriliyor. "Tüm Kullanım Verisini Sıfırla" akışı artık kullanım sayaçları, notlar ve favorilere ek olarak kalıcı bildirim metinlerini ve `notification_events` analiz geçmişini de temizliyor. Backup schema `v5` oldu; missions, search shine, otomatik klasör rengi, biyometrik ayar kilidi, quick wheel ve focus mode ayarları export/import kapsamına alındı. Restore sonrası dosya/rehber arama kaynakları yalnız pref olarak kalmasın diye `BackupManager.importFromJson` opsiyonel `SearchRepository` alıyor ve `enable/disableContactsSource` ile `enable/disableFilesSource` lifecycle senkronu yapıyor; ViewModel restore çağrısı bu repository'yi geçiriyor.
+
+**Doğrulama:** `testDebugUnitTest --tests "com.armutlu.apporganizer.AppListViewModelTest.resetAllPrivacyData clears notification texts and events"` geçti. `testDebugUnitTest --tests "com.armutlu.apporganizer.data.repository.AppRepositoryTest"` geçti. `compileDebugKotlin -PskipGoogleServices --no-daemon` ilk paralel denemede geçici KSP cache EOF hatası verdi, tek başına tekrarlandığında geçti.
+
+**Açık risk:** Backup import restore lifecycle için saf unit test yazılmadı; Android `Context`/SharedPreferences ve WorkManager/observer yan etkileri gerektiği için emülatör veya instrumentation smoke ile ayrıca doğrulanmalı. Sahte kapanış yapılmadı; bu risk bir sonraki cihaz testinde kontrol edilmeli.
+
+---
+
 ## Döngü 260 - 2026-07-14 [Emülatör doğrulaması + mağaza screenshot seti (kısmi)]
 
 **Yapılanlar:** emulator-tester agent Pixel6_API33'te v1.3.17'yi kurup D257-259 doğrulama listesini koştu: onboarding 5/5 adım, arama çubuğu altta + sonuçlar yukarı açılıyor (dock sabit), dock görünümü doğru, bildirim raporu scroll crash'siz (D255 fix kanıtlandı), Ayarlar/Görevler ekranları açılıyor, klasör navigasyonu çalışıyor — **AppOrganizer'da hiç FATAL EXCEPTION yok**. Play Store screenshot setinin 5 ekranı çekildi (`docs/store_screenshots/`): home, arama sonuçları, settings, bildirim raporu, onboarding. Defender exclusion kalıcı çözümü bu döngüde uygulandı ve doğrulandı (LEARNINGS D259 notu).

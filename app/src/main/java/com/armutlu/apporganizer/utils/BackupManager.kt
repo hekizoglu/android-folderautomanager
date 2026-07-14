@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.workers.BackupWorker
 import com.armutlu.apporganizer.workers.SmartInsightWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
@@ -20,7 +21,7 @@ import java.util.Locale
 object BackupManager {
 
     private val dateFmt = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-    private const val BACKUP_VERSION = 4
+    private const val BACKUP_VERSION = 5
 
     /**
      * Uygulama kategori atamaları, ayarlar ve özelleştirmeleri JSON olarak dışa aktarır.
@@ -130,6 +131,12 @@ object BackupManager {
                     put("homeScoreVisible", AppPrefs.isHomeScoreVisible(context))
                     put("homeInsightVisible", AppPrefs.isHomeInsightVisible(context))
                     put("homeUsageChartVisible", AppPrefs.isHomeUsageChartVisible(context))
+                    put("missionsEnabled", AppPrefs.isMissionsEnabled(context))
+                    put("searchShineEnabled", AppPrefs.isSearchShineEnabled(context))
+                    put("autoFolderColorEnabled", AppPrefs.isAutoFolderColorEnabled(context))
+                    put("biometricSettingsLockEnabled", AppPrefs.isBiometricSettingsLockEnabled(context))
+                    put("quickWheelEnabled", AppPrefs.isQuickWheelEnabled(context))
+                    put("focusModeEnabled", AppPrefs.isFocusModeEnabled(context))
                     put("searchWebFallbackEnabled", AppPrefs.isSearchWebFallbackEnabled(context))
                     put("searchStatsEnabled", AppPrefs.isSearchStatsEnabled(context))
                     put("searchSourceAppsEnabled", AppPrefs.isSearchSourceAppsEnabled(context))
@@ -199,7 +206,8 @@ object BackupManager {
     suspend fun importFromJson(
         context: Context,
         json: String,
-        repository: AppRepository
+        repository: AppRepository,
+        searchRepository: SearchRepository? = null
     ): ImportResult = withContext(Dispatchers.IO) {
         runCatching {
             val root = JSONObject(json)
@@ -367,6 +375,12 @@ object BackupManager {
                     if (s.has("homeScoreVisible")) AppPrefs.setHomeScoreVisible(context, s.getBoolean("homeScoreVisible"))
                     if (s.has("homeInsightVisible")) AppPrefs.setHomeInsightVisible(context, s.getBoolean("homeInsightVisible"))
                     if (s.has("homeUsageChartVisible")) AppPrefs.setHomeUsageChartVisible(context, s.getBoolean("homeUsageChartVisible"))
+                    if (s.has("missionsEnabled")) AppPrefs.setMissionsEnabled(context, s.getBoolean("missionsEnabled"))
+                    if (s.has("searchShineEnabled")) AppPrefs.setSearchShineEnabled(context, s.getBoolean("searchShineEnabled"))
+                    if (s.has("autoFolderColorEnabled")) AppPrefs.setAutoFolderColorEnabled(context, s.getBoolean("autoFolderColorEnabled"))
+                    if (s.has("biometricSettingsLockEnabled")) AppPrefs.setBiometricSettingsLockEnabled(context, s.getBoolean("biometricSettingsLockEnabled"))
+                    if (s.has("quickWheelEnabled")) AppPrefs.setQuickWheelEnabled(context, s.getBoolean("quickWheelEnabled"))
+                    if (s.has("focusModeEnabled")) AppPrefs.setFocusModeEnabled(context, s.getBoolean("focusModeEnabled"))
                     if (s.has("searchWebFallbackEnabled")) AppPrefs.setSearchWebFallbackEnabled(context, s.getBoolean("searchWebFallbackEnabled"))
                     if (s.has("searchStatsEnabled")) AppPrefs.setSearchStatsEnabled(context, s.getBoolean("searchStatsEnabled"))
                     if (s.has("searchSourceAppsEnabled")) AppPrefs.setSearchSourceAppsEnabled(context, s.getBoolean("searchSourceAppsEnabled"))
@@ -383,6 +397,7 @@ object BackupManager {
                 BackupWorker.schedule(context)
                 WeeklyDigestWorker.schedule(context)
                 SmartInsightWorker.schedule(context)
+                syncSearchSourcesAfterRestore(context, searchRepository)
             }
 
             ImportResult(success = true, updatedCount = updated, missingPackages = missing, restoredVersion = version)
@@ -425,6 +440,26 @@ object BackupManager {
                 ImportResult(success = false, error = e.message)
             }
         }
+
+    private suspend fun syncSearchSourcesAfterRestore(
+        context: Context,
+        searchRepository: SearchRepository?
+    ) {
+        if (searchRepository == null) {
+            Timber.w("Backup restore: SearchRepository yok, arama kaynak lifecycle senkronu atlandi")
+            return
+        }
+        if (AppPrefs.isSearchSourceContactsEnabled(context)) {
+            searchRepository.enableContactsSource()
+        } else {
+            searchRepository.disableContactsSource()
+        }
+        if (AppPrefs.isSearchSourceFilesEnabled(context)) {
+            searchRepository.enableFilesSource()
+        } else {
+            searchRepository.disableFilesSource()
+        }
+    }
 
     data class ImportResult(
         val success: Boolean,

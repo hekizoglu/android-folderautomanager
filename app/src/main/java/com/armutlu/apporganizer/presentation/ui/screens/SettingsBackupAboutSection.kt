@@ -71,7 +71,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 onDismissRequest = { showResetDialog = false },
                 icon = { Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error) },
                 title = { Text("Tüm Kullanım Verisini Sıfırla") },
-                text = { Text("Kullanım sayıları, son açılma zamanları, bildirim geçmişi ve notlar silinir. Bu işlem geri alınamaz.") },
+                text = { Text("Kullanım sayıları, son açılma zamanları, bildirim analiz geçmişi, kayıtlı bildirim metinleri, favoriler ve notlar silinir. Bu işlem geri alınamaz.") },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -91,10 +91,10 @@ internal fun LazyListScope.settingsBackupAboutSection(
             // Gizlilik maddeleri
             val privacyItems = listOf(
                 Icons.Default.PhoneAndroid to "Uygulama listesi cihazda kalır",
-                Icons.Default.CloudOff to "İnternete veri gönderilmez",
-                Icons.Default.ToggleOff to "Online kategori DB varsayılan kapalı",
-                Icons.Default.Visibility to "Bildirim içeriği okunmaz (sadece sayı)",
-                Icons.Default.Security to "Reklamcılık veya izleme yok"
+                Icons.Default.CloudOff to "Firebase ve isteğe bağlı DeepSeek/online DB aktarımları gizlilik politikasında açıklanır",
+                Icons.Default.ToggleOff to "Online kategori DB ve AI özellikleri kullanıcı seçimine bağlıdır",
+                Icons.Default.Visibility to "Bildirim metni varsayılan kapalıdır; açılırsa cihazda saklanır",
+                Icons.Default.Security to "Reklam yok; teknik analiz/çökme raporu Play Data Safety kapsamındadır"
             )
             privacyItems.forEachIndexed { i, (icon, text) ->
                 Row(
@@ -119,7 +119,7 @@ internal fun LazyListScope.settingsBackupAboutSection(
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Tüm Kullanım Verisini Sıfırla", fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.error)
-                    Text("Kullanım sayıları, notlar ve bildirim geçmişi silinir", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Kullanım, not, favori ve bildirim analiz/metin kayıtları silinir", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

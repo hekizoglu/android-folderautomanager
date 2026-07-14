@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.data.repository
 
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
@@ -28,6 +29,7 @@ import javax.inject.Singleton
 class AppRepository @Inject constructor(
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
+    private val notificationEventDao: NotificationEventDao,
     private val classifier: AppClassifier
 ) {
     fun getAllCategoriesFlow(): Flow<List<Category>> {
@@ -551,6 +553,10 @@ class AppRepository @Inject constructor(
 
     suspend fun clearAllNotificationTexts() {
         try { appDao.clearAllNotificationTexts() } catch (e: Exception) { Timber.e(e) }
+    }
+
+    suspend fun clearAllNotificationEvents() {
+        try { notificationEventDao.clearAll() } catch (e: Exception) { Timber.e(e) }
     }
 
     fun getHiddenApps(): Flow<List<AppInfo>> =

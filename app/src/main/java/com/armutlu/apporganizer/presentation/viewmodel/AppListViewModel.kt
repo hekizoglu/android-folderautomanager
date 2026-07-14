@@ -831,6 +831,8 @@ class AppListViewModel @Inject constructor(
                     repository.updateNotificationCount(app.packageName, 0)
                     repository.updateCustomNotes(app.packageName, "")
                 }
+                repository.clearAllNotificationTexts()
+                repository.clearAllNotificationEvents()
                 context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                     .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
                 Timber.d("Privacy reset: tÃ¼m kullanÄ±m verisi temizlendi")
@@ -865,7 +867,7 @@ class AppListViewModel @Inject constructor(
         context: android.content.Context,
         json: String
     ): com.armutlu.apporganizer.utils.BackupManager.ImportResult =
-        com.armutlu.apporganizer.utils.BackupManager.importFromJson(context, json, repository)
+        com.armutlu.apporganizer.utils.BackupManager.importFromJson(context, json, repository, searchRepository)
 
     fun getDebugLogs(): String {
         val state = _screenState.value

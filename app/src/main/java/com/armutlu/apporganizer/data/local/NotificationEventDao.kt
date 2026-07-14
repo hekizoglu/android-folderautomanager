@@ -32,4 +32,7 @@ interface NotificationEventDao {
     /** 30 günden eski kayıtları temizler — tablo sınırsız büyümez. */
     @Query("DELETE FROM notification_events WHERE postedAt < :before")
     suspend fun deleteOlderThan(before: Long)
+
+    @Query("DELETE FROM notification_events")
+    suspend fun clearAll()
 }
