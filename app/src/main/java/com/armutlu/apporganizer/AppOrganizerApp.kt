@@ -11,6 +11,7 @@ import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.workers.BackupWorker
 import com.armutlu.apporganizer.workers.SmartInsightWorker
+import com.armutlu.apporganizer.workers.SuggestionNotificationWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -56,6 +57,9 @@ class AppOrganizerApp : Application() {
                 enableGrantedContactSearchByDefault()
                 WeeklyDigestWorker.schedule(this)
                 SmartInsightWorker.schedule(this)
+                if (AppPrefs.isSuggestionNotificationsEnabled(this)) {
+                    SuggestionNotificationWorker.schedule(this)
+                }
                 createNotificationChannels()
                 if (firebaseApp != null) fetchFcmToken()
             }.onFailure { Timber.e(it, "Arka plan init hatasi") }

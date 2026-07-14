@@ -328,5 +328,35 @@ fun SettingsNotificationsScreen(
                 }
             }
         }
+
+        // ── Oneri Bildirimleri (Kontrol Bekleyenler ozeti) — ROADMAP #26 ────
+        item { SettingsSectionTitle("Oneri Bildirimleri") }
+        item {
+            var suggestionNotifEnabled by remember { mutableStateOf(AppPrefs.isSuggestionNotificationsEnabled(context)) }
+            val suggestionWorkerCtx = context
+            DisposableEffect(context) {
+                val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                    if (key == AppPrefs.KEY_SUGGESTION_NOTIFICATIONS_ENABLED) {
+                        suggestionNotifEnabled = AppPrefs.isSuggestionNotificationsEnabled(context)
+                    }
+                }
+                prefs.registerOnSharedPreferenceChangeListener(listener)
+                onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+            }
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.FolderOpen,
+                    title = "Klasor/Siniflandirma Onerileri",
+                    subtitle = "Kontrol Bekleyenler'de yeni oneri biriktiginde gunde en fazla 1 ozet bildirim gonderir",
+                    checked = suggestionNotifEnabled,
+                    onCheckedChange = { v ->
+                        suggestionNotifEnabled = v
+                        AppPrefs.setSuggestionNotificationsEnabled(suggestionWorkerCtx, v)
+                        com.armutlu.apporganizer.workers.SuggestionNotificationWorker.schedule(suggestionWorkerCtx)
+                    }
+                )
+            }
+        }
     }
 }
