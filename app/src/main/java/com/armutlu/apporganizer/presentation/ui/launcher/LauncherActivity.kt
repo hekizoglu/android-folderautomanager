@@ -109,6 +109,7 @@ class LauncherActivity : ComponentActivity() {
                 android.content.Intent(this, com.armutlu.apporganizer.presentation.ui.MainActivity::class.java)
                     .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
             )
+            finish()
             return
         }
 

@@ -31,6 +31,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.computeCategoryStats
 import com.armutlu.apporganizer.presentation.ui.screens.computeFilteredApps
 import com.armutlu.apporganizer.presentation.ui.screens.computeVisibleCategories
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -250,7 +251,7 @@ class AppListViewModel @Inject constructor(
      */
     fun syncInstalledApps(installedApps: List<AppInfo>) {
         appendDebugLog("syncInstalledApps: ${installedApps.size} uygulama tarandÄ±")
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
                 

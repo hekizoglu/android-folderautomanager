@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]
+
+**Yapılanlar:** Tablet emulator (`1280x800`, density `160`) üzerinde yakalanan “App Organizer isn't responding” ANR ekranı incelendi. İlk kanıt `artifacts/tablet-debug/tablet-current-20260714-132819.png`: Play Store sign-in ekranı arkasında AppOrganizer ANR dialog'u. Logcat, AppOrganizer activity pause/top-resumed timeout ve ana thread frame skip işaretleri verdi. İki hedefli düzeltme yapıldı: `AppListViewModel.syncInstalledApps()` artık cihaz/DB sync ve search bootstrap işini `Dispatchers.IO` üzerinde başlatıyor; `LauncherActivity` onboarding tamamlanmamışken `MainActivity`'ye yönlendirdikten sonra `finish()` çağırıyor, böylece tablet geçişinde yarım kalan launcher activity pause timeout üretmiyor.
+
+**Doğrulama:** `compileDebugKotlin -PskipGoogleServices --no-daemon` başarılı. `assembleDebug -PskipGoogleServices --no-daemon` başarılı. Güncel APK tablet emulator'a kuruldu. `tablet-fixed-20260714-133402.png` temiz onboarding ekranı verdi; logcat'te `Application Not Responding`, `ANR`, `FATAL EXCEPTION`, `Activity pause timeout`, `top resumed state loss` yok. Play Store dış uygulama geçişi ayrıca test edildi (`tablet-play-transition-20260714-133436.png`); Play Store sign-in ekranı ANR dialog'suz açıldı ve logcat aynı hata kalıplarını üretmedi.
+
+**Açık risk:** İlk soğuk açılışta hâlâ kısa frame skip var; ANR/pause timeout tekrarlanmadığı için kritik hata kapandı. Cold-start jank ayrı performans iyileştirme maddesi olarak ele alınabilir.
+
+---
+
 ## Döngü 263 - 2026-07-14 [Döngü 25 (Widget sistemi) denetimi + F21 kapanışı]
 
 **Yapılanlar:** 30 döngülük denetim raporunda "bu turda kapsanmadi" işaretli tek boşluk olan Döngü 25 (Widget sistemi) denetlendi (`WidgetArea.kt`, `WidgetHostManager.kt`, `WidgetPrefs.kt`, `WidgetSuggestionEngine.kt`, `LauncherActivity.kt` widget picker/configure launcher'ları, `BackupManager.kt`, backup XML kuralları). İki bulgu: **F21 (P2, 58p)** — `widget_prefs.xml` cloud-backup/device-transfer exclude listesinde değildi, restore sonrası geçersiz widget ID'leri doğrulanmadan state'e yazılıp `WidgetArea`'da silinemeyen hayalet boşluklar bırakıyordu; **F22 (P3, 38p, belirsizlik yüksek)** — widget configure sonucu `EXTRA_APPWIDGET_ID` döndürmezse nadir sessiz host ID sızıntısı ihtimali (açık bırakıldı, düşük öncelik). F21 aynı oturumda kapatıldı: `data_extraction_rules.xml` ve `backup_rules.xml`'e `widget_prefs.xml` exclude eklendi; `LauncherViewModel.loadWidgetIds()` artık `AppWidgetManager.getAppWidgetInfo()` ile geçerlilik kontrolü yapıp geçersiz ID'leri `WidgetPrefs`'ten otomatik temizliyor.
