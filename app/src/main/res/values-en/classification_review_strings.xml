@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="classification_review_title">Pending Review</string>
+    <string name="classification_review_pending_count">%1$d apps are waiting for review</string>
+    <string name="classification_review_pending_subtitle">Choose a category before approving a low-confidence or conflicting classification, or snooze it for 7 days.</string>
+    <string name="classification_review_empty_title">Nothing to review</string>
+    <string name="classification_review_empty_subtitle">New low-confidence classifications will appear here.</string>
+    <string name="classification_review_suggestion">Suggestion: %1$s | Confidence: %2$d%% | Source: %3$s</string>
+    <string name="classification_review_choose_category">Choose a category:</string>
+    <string name="classification_review_confirm_selection">Confirm selection</string>
+    <string name="classification_review_snooze">Snooze 7 days</string>
+    <string name="classification_review_selection_required">Choose a category before confirming.</string>
+    <string name="classification_review_rule_title">Rule</string>
+    <string name="classification_review_rule_subtitle">Approval is disabled until a category is selected. Approvals and corrections are treated as user decisions and will not be overwritten automatically.</string>
+</resources>

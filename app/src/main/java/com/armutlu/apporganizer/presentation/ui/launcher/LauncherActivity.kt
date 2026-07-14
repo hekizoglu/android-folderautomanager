@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
@@ -8,7 +9,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.annotation.SuppressLint
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -37,18 +37,24 @@ class LauncherActivity : ComponentActivity() {
         resId > 0 && resources.getInteger(resId) == 2
     }
 
-    // Widget picker result handler — allocate edilen tentative ID'yi takip eder
+    // Widget picker/configuration iki ayrı activity sonucu döndürür. Bu ID, yapılandırma
+    // tamamlanana veya kullanıcı iptal edene kadar korunmalıdır; erken sıfırlanırsa bazı OEM
+    // widget'ları result Intent içinde ID döndürmediği için ana ekrana hiç eklenmez.
     private var pendingWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
 
     val widgetPickerLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult(),
     ) { result ->
-        val widgetId = result.data?.getIntExtra(
-            AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID
+        val returnedWidgetId = result.data?.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID,
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
+        val widgetId = returnedWidgetId.takeIf { it != AppWidgetManager.INVALID_APPWIDGET_ID }
+            ?: pendingWidgetId
 
         if (result.resultCode == Activity.RESULT_OK && widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            // Widget bind başarılı: konfigürasyon aktivitesi varsa başlat
+            // Widget bind başarılı: konfigürasyon aktivitesi varsa başlat.
+            pendingWidgetId = widgetId
             val manager = AppWidgetManager.getInstance(this)
             val info = manager.getAppWidgetInfo(widgetId)
             if (info?.configure != null) {
@@ -56,57 +62,77 @@ class LauncherActivity : ComponentActivity() {
                     component = info.configure
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
                 }
-                // Bazi widget'larin configure aktivitesi disariya export edilmemis olabilir
-                // (ör. Google arama araclari) — SecurityException tum launcher'i cokertmesin.
+                // Bazı widget'ların configure aktivitesi dışarıya export edilmemiş olabilir
+                // (ör. Google arama araçları) — SecurityException tüm launcher'ı çökertmesin.
                 val launched = runCatching { widgetConfigureLauncher.launch(configIntent) }.isSuccess
                 if (!launched) {
                     viewModel.addWidgetId(this, widgetId)
+                    pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
                 }
+                // Başarıyla açıldıysa pendingWidgetId yapılandırma sonucu gelene kadar korunur.
             } else {
                 viewModel.addWidgetId(this, widgetId)
-            }
-            pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-        } else {
-            // İptal — tahsis edilen ID'yi serbest bırak
-            if (pendingWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                WidgetHostManager.deleteId(this, pendingWidgetId)
                 pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
             }
+        } else {
+            // İptal — picker'ın döndürdüğü veya daha önce tahsis edilen ID'yi serbest bırak.
+            if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                WidgetHostManager.deleteId(this, widgetId)
+            }
+            pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
         }
     }
 
-    // Widget konfigürasyon aktivitesi sonucu
+    // Widget konfigürasyon aktivitesi sonucu. Bazı sağlayıcılar result Intent'e ID koymaz;
+    // bu durumda picker aşamasından saklanan pendingWidgetId kullanılmalıdır.
     private val widgetConfigureLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult(),
     ) { result ->
-        val widgetId = result.data?.getIntExtra(
-            AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID
+        val returnedWidgetId = result.data?.getIntExtra(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID,
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
+        val widgetId = returnedWidgetId.takeIf { it != AppWidgetManager.INVALID_APPWIDGET_ID }
+            ?: pendingWidgetId
+
         if (result.resultCode == Activity.RESULT_OK && widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             viewModel.addWidgetId(this, widgetId)
         } else if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             WidgetHostManager.deleteId(this, widgetId)
         }
+        pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     }
 
     /** HomeScreen'den çağrılır — kullanıcıya widget seçtirme akışını başlatır. */
     fun launchWidgetPicker() {
+        // Önceki yarım kalmış seçimden kalan host ID varsa sızıntı bırakma.
+        if (pendingWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            WidgetHostManager.deleteId(this, pendingWidgetId)
+        }
         pendingWidgetId = WidgetHostManager.allocateId(this)
         val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, pendingWidgetId)
         }
-        widgetPickerLauncher.launch(intent)
+        val launched = runCatching { widgetPickerLauncher.launch(intent) }.isSuccess
+        if (!launched) {
+            WidgetHostManager.deleteId(this, pendingWidgetId)
+            pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lastHomePressMs = savedInstanceState?.getLong(KEY_LAST_HOME_PRESS_MS) ?: 0L
+        pendingWidgetId = savedInstanceState?.getInt(
+            KEY_PENDING_WIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID,
+        ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
         // Onboarding bitmemişse MainActivity'ye yönlendir
         if (!AppPrefs.isOnboardingDone(this)) {
             startActivity(
                 android.content.Intent(this, com.armutlu.apporganizer.presentation.ui.MainActivity::class.java)
-                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK),
             )
             finish()
             return
@@ -114,7 +140,7 @@ class LauncherActivity : ComponentActivity() {
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -123,7 +149,7 @@ class LauncherActivity : ComponentActivity() {
             android.widget.Toast.makeText(
                 this,
                 "Güvenli mod: Ayarlar varsayılana alındı. Ayarlar menüsünden çıkabilirsiniz.",
-                android.widget.Toast.LENGTH_LONG
+                android.widget.Toast.LENGTH_LONG,
             ).show()
             com.armutlu.apporganizer.utils.CrashReporter.exitSafeMode(this)
         }
@@ -152,6 +178,7 @@ class LauncherActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putLong(KEY_LAST_HOME_PRESS_MS, lastHomePressMs)
+        outState.putInt(KEY_PENDING_WIDGET_ID, pendingWidgetId)
     }
 
     // Home tuşuna iki kez hızlıca basılınca (≤500ms) AllApps açılır.
@@ -177,7 +204,8 @@ class LauncherActivity : ComponentActivity() {
             when (intent.action) {
                 Intent.ACTION_PACKAGE_REMOVED -> viewModel.onPackageRemoved(pkg)
                 Intent.ACTION_PACKAGE_ADDED,
-                Intent.ACTION_PACKAGE_REPLACED -> viewModel.onPackageAdded(context, pkg)
+                Intent.ACTION_PACKAGE_REPLACED,
+                -> viewModel.onPackageAdded(context, pkg)
             }
         }
     }
@@ -198,8 +226,8 @@ class LauncherActivity : ComponentActivity() {
                 @Suppress("DEPRECATION")
                 window.decorView.systemUiVisibility = (
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                )
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    )
             }
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -247,7 +275,10 @@ class LauncherActivity : ComponentActivity() {
     }
 
     // Launcher split-screen'e alınırsa tam ekrana geri döner (resizeableActivity=false yeterli değil tüm OEM'lerde)
-    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: android.content.res.Configuration) {
+    override fun onMultiWindowModeChanged(
+        isInMultiWindowMode: Boolean,
+        newConfig: android.content.res.Configuration,
+    ) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
         if (isInMultiWindowMode) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -265,6 +296,7 @@ class LauncherActivity : ComponentActivity() {
 
     companion object {
         private const val KEY_LAST_HOME_PRESS_MS = "last_home_press_ms"
+        private const val KEY_PENDING_WIDGET_ID = "pending_widget_id"
         private val PACKAGE_FILTER = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_ADDED)
