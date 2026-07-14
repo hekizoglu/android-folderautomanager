@@ -139,6 +139,12 @@ fun FolderScreen(
         }
         var showEditDialog by remember { mutableStateOf(false) }
         var contextMenuApp by remember { mutableStateOf<AppInfo?>(null) }
+        // Ekran köküne alındı (P0.1 fix) — eskiden contextMenuApp?.let{} bloğunun İÇİNDE
+        // tanımlıydı: "Kategori Değiştir"e basınca contextMenuApp = null olduğu an bu blok
+        // yok oluyor, categoryPickerApp state'i de sıfırlanıyor, picker hiç açılmıyordu.
+        // HomeScreen.kt (satır 293) ile aynı pattern: state ekran seviyesinde, iki sheet
+        // birbirinden bağımsız kardeş composable olarak render edilir.
+        var categoryPickerApp by remember { mutableStateOf<AppInfo?>(null) }
         val folderSwipeThresholdPx = with(density) { 96.dp.toPx() }
         val folderTransitionOffsetPx = with(density) { 86.dp.toPx() }
         var transitionDirection by remember { mutableIntStateOf(1) }
@@ -662,8 +668,6 @@ fun FolderScreen(
             // Uygulama context menüsü (uzun bas)
             contextMenuApp?.let { app ->
                 val dockPackages by viewModel.dockPackages.collectAsState()
-                val categories by viewModel.categories.collectAsState()
-                var categoryPickerApp by remember { mutableStateOf<AppInfo?>(null) }
 
                 AppContextMenu(
                     app = app,
@@ -683,6 +687,11 @@ fun FolderScreen(
                         contextMenuApp = null
                     },
                     onChangeCategory = {
+                        // Önce picker state'ine yaz, SONRA menüyü kapat (D268 sıralama —
+                        // AppContextMenu.kt'de onClick = { onChangeCategory(); onDismiss() }
+                        // olduğu için burası zaten app'i categoryPickerApp'e atayıp
+                        // contextMenuApp'i null'lıyor; ancak categoryPickerApp artık ekran
+                        // kökünde olduğu için contextMenuApp null olsa da picker render kalır).
                         categoryPickerApp = app
                         contextMenuApp = null
                     },
@@ -699,18 +708,22 @@ fun FolderScreen(
                         contextMenuApp = null
                     },
                 )
+            }
 
-                categoryPickerApp?.let { pickerApp ->
-                    CategoryPickerSheet(
-                        app = pickerApp,
-                        categories = categories,
-                        onDismiss = { categoryPickerApp = null },
-                        onCategorySelected = { catIdSelected ->
-                            viewModel.updateAppCategory(pickerApp.packageName, catIdSelected)
-                            categoryPickerApp = null
-                        },
-                    )
-                }
+            // Kategori seçici — contextMenuApp?.let{} bloğunun DIŞINDA, kardeş composable
+            // olarak render edilir (P0.1 fix). Böylece contextMenuApp null olduktan sonra da
+            // categoryPickerApp dolu olduğu sürece sheet ekranda kalır.
+            categoryPickerApp?.let { pickerApp ->
+                val categories by viewModel.categories.collectAsState()
+                CategoryPickerSheet(
+                    app = pickerApp,
+                    categories = categories,
+                    onDismiss = { categoryPickerApp = null },
+                    onCategorySelected = { catIdSelected ->
+                        viewModel.updateAppCategory(pickerApp.packageName, catIdSelected)
+                        categoryPickerApp = null
+                    },
+                )
             }
         }
     }

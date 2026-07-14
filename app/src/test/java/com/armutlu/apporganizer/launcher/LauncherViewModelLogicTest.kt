@@ -110,6 +110,38 @@ class LauncherViewModelLogicTest {
         assertEquals("👥", folder.category.iconEmoji)
     }
 
+    // P0.1: Klasör içinden kategori değiştirme sonrası açık klasör içeriğinin ve klasör
+    // listesinin Room Flow üzerinden anında güncellendiğini doğrular — updateAppCategory
+    // repository'e yazınca allAppsSource yeniden emit eder, folders StateFlow buildFolders'i
+    // yeni categoryId ile tekrar çalıştırır. Burada categoryId elle değiştirilerek
+    // buildFolders'in girdi listesindeki değişikliği doğru yansıttığı test edilir.
+    @Test
+    fun `buildFolders_kategori_degisince_uygulama_eski_klasorden_cikar_yeni_klasore_girer`() {
+        val beforeApps = listOf(
+            app("com.moved", "MovedApp", "social"),
+            app("com.stays", "StaysApp", "social"),
+        )
+        val before = buildFolders(beforeApps, categories)
+        val socialBefore = before.first { it.category.categoryId == "social" }
+        assertEquals(2, socialBefore.apps.size)
+        assertFalse(before.any { it.category.categoryId == "games" })
+
+        // Kullanıcı FolderScreen içinde "MovedApp"i games kategorisine taşıdı —
+        // updateAppCategory Room'a yazar, allAppsSource yeni categoryId ile emit eder.
+        val afterApps = listOf(
+            app("com.moved", "MovedApp", "games"),
+            app("com.stays", "StaysApp", "social"),
+        )
+        val after = buildFolders(afterApps, categories)
+        val socialAfter = after.first { it.category.categoryId == "social" }
+        val gamesAfter = after.first { it.category.categoryId == "games" }
+
+        assertEquals("Taşınan uygulama eski klasörden çıkmalı", 1, socialAfter.apps.size)
+        assertEquals("StaysApp", socialAfter.apps[0].appName)
+        assertEquals("Taşınan uygulama yeni klasörde görünmeli", 1, gamesAfter.apps.size)
+        assertEquals("MovedApp", gamesAfter.apps[0].appName)
+    }
+
     // ── buildAllApps ──────────────────────────────────────────────────────────
 
     @Test
