@@ -2,6 +2,12 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 282 - 2026-07-14 [ROADMAP #28+#29 Görevler/Skor kartları + öneri sayısı]
+**Yapılanlar:** ROADMAP #28: `LauncherViewModel.kt`'ye `digitalLifeScore: StateFlow<Int?>` eklendi (tickerItems combine bloğu içinde güncellenir). `HomeTickerRow.kt`'ye yeni `DigitalScoreCard` composable'ı eklendi (Görevler chip'iyle birebir aynı `GlassCard` boyutu/stili — yıldız ikonu, başlık, alt başlık, ok). `HomeScreen.kt`'de eski tek-satır Görevler chip'i `Row(weight(1f) + weight(1f))` içine alınıp Görevler solda, `DigitalScoreCard` sağda yan yana yerleştirildi. ROADMAP #29: `HomeScreenComponents.kt`'de `AppSuggestionsRow`'daki `apps.take(3)` → `apps.take(5)`; başlık satırı `Row`'a çevrilip "Son 28 gün + bu saat" teknik detay metni başlığın hemen yanına taşındı, sağdaki `SuggestionSignalPill` yalnızca öneri sayısını gösterecek şekilde sadeleştirildi (tekrar önlendi).
+**Agent:** Sonnet worktree agent — 4 dosya (LauncherViewModel, HomeTickerRow, HomeScreen, HomeScreenComponents) + strings.xml, `assembleDebug -PskipGoogleServices` başarılı.
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi — mevcut mimari desenler (GlassCard, StateFlow combine) yeterliydi.
+**Sonraki:** ROADMAP #27 (Ayarlar kilitlenme, KRİTİK) en yüksek öncelikli kalan madde.
+
 ## Döngü 281 - 2026-07-14 [ROADMAP #20 klasör geçiş animasyonu]
 **Puanlama:** Mevcut altyapı 3/5, kullanıcı değeri 3/5, risk 3/5, doğrulama 3/5 → 12/20. Kalan son kod maddesi olduğu için düşük riskli pager transform olarak uygulandı; gerçek iPhone hissi görsel/tablet smoke ile ayrıca değerlendirilmelidir.
 **Yapılanlar:** `HomeScreenFolderPager` içindeki `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı. Sayfa offset'ine bağlı `graphicsLayer` alpha, scale ve hafif `rotationY` efekti eklendi. `HomeScreenPageIndicator` aktif/inaktif nokta boyutunu `animateDpAsState` ile animasyonlu hale getirdi.

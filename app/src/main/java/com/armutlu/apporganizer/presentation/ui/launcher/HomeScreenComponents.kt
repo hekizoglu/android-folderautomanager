@@ -456,7 +456,8 @@ internal fun AppSuggestionsRow(
     modifier: Modifier = Modifier
 ) {
     if (apps.isEmpty()) return
-    val visibleApps = remember(apps) { apps.take(3) }
+    // ROADMAP #29: 4→3'ten sonra tersine 5 öneriye çıkarıldı (kullanıcı isteği).
+    val visibleApps = remember(apps) { apps.take(5) }
     val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
     val labelRes = remember(hour) {
         when {
@@ -480,15 +481,31 @@ internal fun AppSuggestionsRow(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = stringResource(labelRes),
-                color = Color.White.copy(alpha = 0.55f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
+            // ROADMAP #29: teknik detay ("Son 28 gün + bu saat") artık başlığın hemen yanında,
+            // aynı satırda küçük fontla — eskiden sağdaki ayrı rozette gizliydi.
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, bottom = 3.dp)
-            )
+                    .padding(start = 8.dp, bottom = 3.dp),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(labelRes),
+                    color = Color.White.copy(alpha = 0.55f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                )
+                Text(
+                    text = stringResource(R.string.suggestions_meta_signal),
+                    color = Color.White.copy(alpha = 0.38f),
+                    fontSize = 9.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -513,16 +530,18 @@ internal fun AppSuggestionsRow(
     }
 }
 
+// D278'de burada ayrıca "Son 28 gün + bu saat" sinyal metni de vardı — ROADMAP #29 ile
+// başlığın yanına taşındı, burada tekrar etmesin diye kaldırıldı (sadece öneri sayısı kalır).
 @Composable
 private fun SuggestionSignalPill(count: Int) {
-    Column(
+    Box(
         modifier = Modifier
-            .widthIn(min = 88.dp, max = 112.dp)
+            .widthIn(min = 56.dp, max = 80.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(Color.White.copy(alpha = 0.08f))
             .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
             .padding(horizontal = 8.dp, vertical = 7.dp),
-        horizontalAlignment = Alignment.Start
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = stringResource(R.string.suggestions_meta_count, count),
@@ -530,15 +549,6 @@ private fun SuggestionSignalPill(count: Int) {
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
-        )
-        Spacer(Modifier.height(2.dp))
-        Text(
-            text = stringResource(R.string.suggestions_meta_signal),
-            color = Color.White.copy(alpha = 0.52f),
-            fontSize = 9.sp,
-            lineHeight = 11.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
         )
     }
 }

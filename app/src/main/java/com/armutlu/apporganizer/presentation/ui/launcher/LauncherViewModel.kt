@@ -731,6 +731,11 @@ class LauncherViewModel @Inject constructor(
 
     // Assistant Kartları — her refresh'te rastgele seçim, tekrar önleme
     private val _insightCards = MutableStateFlow<List<InsightCard>>(emptyList())
+
+    // Dijital Yaşam Skoru — bağımsız kart (ROADMAP #28) için ticker'dan ayrık olarak tutulur.
+    // tickerItems combine bloğu içinde güncellenir (aynı hesaplama tekrarlanmasın diye).
+    private val _digitalLifeScore = MutableStateFlow<Int?>(null)
+    val digitalLifeScore: StateFlow<Int?> = _digitalLifeScore.asStateFlow()
     val insightCards: StateFlow<List<InsightCard>> = _insightCards.asStateFlow()
 
     fun refreshInsights(context: Context) {
@@ -874,6 +879,7 @@ class LauncherViewModel @Inject constructor(
                     com.armutlu.apporganizer.utils.WrappedSnapshotPrefs.updateDailyScore(ctx, s, epochDay)
             }
         }
+        _digitalLifeScore.value = digitalLifeScore
 
         val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,
