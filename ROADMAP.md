@@ -86,7 +86,7 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Sorun/İstek:** Kontrol Bekleyenler bölümünde "Direkt Onayla" butonu ne yaptığını açıklamıyor.
 **Nasıl yapılmalı:** `ClassificationReviewScreen.kt:93` civarındaki "Onayla" butonunun yanına küçük bir açıklama metni veya `IconButton` + tooltip/`Text` eklenmeli: "Bu uygulama önerilen kategoriye taşınır, istersen sonra değiştirebilirsin." CLAUDE.md §6 "Ayarlar Metin ve Kod İnceleme Kuralı" — bilgi satırı ayar gibi davranmamalı, sade ve anlaşılır olmalı.
 **Puan:** KV=3 U=5 BR=1 EA=2 → Toplam=11
-**Durum:** Bekliyor
+**Durum:** ✅ Tamamlandı (Döngü 268)
 
 ### [15] Görev puanlama motoru — durum bazlı artan/azalan puan sistemi
 **Sorun/İstek:** Klasör önerileri/birleştirme önerileri/kontrol bekleyenler işlem gördüğünde Görevler puanı artmalı; puan sistemi durum bazlı artıp azalabilmeli.
@@ -101,6 +101,12 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Sorun/İstek:** Tüm Uygulamalar listesinde her uygulamanın altına, o uygulamadan bildirim geldiyse bunu yazalım.
 **Nasıl yapılmalı:** `AllAppsDrawer.kt` (grep'te doğrudan bulunamadı, `AppIconView.kt`/`FolderTile.kt` bildirim badge mantığını zaten kullanıyor — CLAUDE.md §8 madde 10) her satıra `notification_events` tablosundan (paket bazlı) son N saatteki bildirim sayısı/özeti çekip küçük bir alt metin ("3 bildirim") eklenmeli. `AppNotificationListenerService.kt` + `NotificationAnalyzer` mevcut altyapı kullanılabilir, yeni sorgu (`AppDao`/`NotificationEventDao` paket bazlı count) gerekir.
 **Puan:** KV=3 U=3 BR=2 EA=3 → Toplam=11
+**Durum:** Bekliyor
+
+### [21] Son bildirim gelen uygulamalar — "Günlük Öneriler" tarzı isteğe bağlı bölüm + Favoriler gibi çekmece/ana ekran eklenebilirliği
+**Sorun/İstek:** Ana ekranda mevcut "Günlük Öneriler" (AppSuggestionsRow) bölümüne benzer, ama son bildirim alan uygulamaları gösteren, kullanıcının isteğe bağlı açıp kapatabildiği ayrı bir bölüm istendi. Bu bölüm — favoriler mekanizmasına benzer şekilde — hem AllAppsDrawer (çekmece) içinde hem de ana ekranda gösterilebilmeli.
+**Nasıl yapılmalı:** Veri kaynağı madde 18 ile aynı (`notification_events` tablosu, `NotificationEventDao`/`AppDao` paket bazlı son-bildirim sorgusu) — bu iki madde ORTAK ALTYAPI paylaşır, aynı döngüde ele alınmaları maliyeti düşürür. Yeni bir `RecentNotificationAppsRow` composable'ı `HomeScreenComponents.kt`'deki mevcut `AppSuggestionsRow`/`SuggestionAppItem` pattern'i taklit ederek yazılabilir (aynı `iconSizeDp`, `GlassCard` görsel dili). Görünürlük: `AppPrefs.kt`'ye `KEY_RECENT_NOTIFICATIONS_ROW_ENABLED` (varsayılan kapalı — CLAUDE.md "Yeni Özellik = Ayarlar Kuralı" gereği) + `SettingsHomeScreenSection.kt`'e toggle. Favoriler mevcut altyapısı (`AppPrefs`/Room favori flag'i, favori chip/dock ekleme akışı — `DockEditSheet.kt` veya benzeri) incelenip aynı "çekmeceye ekle / ana ekrana ekle" UX pattern'i (muhtemelen uzun-bas context menüsünde "Ana ekrana ekle" seçeneği) bu yeni bölüm için de uygulanmalı — kod tekrarından kaçınmak için favori-ekleme mantığı ortak bir fonksiyona çıkarılabilir. Gizlilik notu: bildirim içeriği hiçbir zaman gösterilmez (CLAUDE.md/Privacy Policy ile tutarlı), sadece "son bildirim alan uygulama" paket+zaman bilgisi kullanılır.
+**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
 **Durum:** Bekliyor
 
 ### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
