@@ -67,6 +67,7 @@ fun FolderScreen(
     var folderCarouselEnabled by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
     var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
+    var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -79,6 +80,9 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_FOLDER_SEARCH_ENABLED) {
                 folderSearchEnabled = AppPrefs.isFolderSearchEnabled(context)
+            }
+            if (key == AppPrefs.KEY_FOLDER_TRANSITION_EFFECT) {
+                folderTransitionEffect = AppPrefs.getFolderTransitionEffect(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -243,17 +247,30 @@ fun FolderScreen(
                 )
                 .background(surface.copy(alpha = 0.95f))
         ) {
-            if (showFolderNavigator) {
-                FolderPageTurnPeek(
-                    previousFolder = previousFolder!!,
-                    nextFolder = nextFolder!!,
-                    transitionDirection = transitionDirection,
-                    offsetValue = if (folderCarouselEnabled) contentOffset.value else 0f,
-                    offsetMax = folderTransitionOffsetPx,
-                    context = context,
-                    onSurface = onSurface,
-                    accent = catColor,
-                )
+            if (showFolderNavigator && folderCarouselEnabled) {
+                when (folderTransitionEffect) {
+                    AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX -> FolderSlideParallaxPeek(
+                        previousFolder = previousFolder!!,
+                        nextFolder = nextFolder!!,
+                        transitionDirection = transitionDirection,
+                        offsetValue = contentOffset.value,
+                        offsetMax = folderTransitionOffsetPx,
+                        context = context,
+                        onSurface = onSurface,
+                        accent = catColor,
+                    )
+                    AppPrefs.FOLDER_TRANSITION_ZOOM_FADE -> { /* Yakınlaş-Sol: komşu önizleme yok, sadece mevcut/gelen içerik zoom+fade */ }
+                    else -> FolderPageTurnPeek(
+                        previousFolder = previousFolder!!,
+                        nextFolder = nextFolder!!,
+                        transitionDirection = transitionDirection,
+                        offsetValue = contentOffset.value,
+                        offsetMax = folderTransitionOffsetPx,
+                        context = context,
+                        onSurface = onSurface,
+                        accent = catColor,
+                    )
+                }
             }
 
             Column(
@@ -264,19 +281,43 @@ fun FolderScreen(
                     .graphicsLayer {
                         val offset = if (folderCarouselEnabled) contentOffset.value else 0f
                         val progress = (offset / folderTransitionOffsetPx).coerceIn(-1f, 1f)
-                        translationX = offset
-                        alpha = 1f - abs(progress) * 0.18f
-                        cameraDistance = 10f * density.density
-                        // Sayfa çevirme hissi: içerik kaydırma yönünün TERSİNE hafifçe döner
-                        // (sanki kağıdın kenarı sabit menteşeden açılıyormuş gibi)
-                        rotationY = -progress * 14f
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
-                            pivotFractionX = if (progress > 0f) 0f else 1f,
-                            pivotFractionY = 0.5f,
-                        )
-                        val scale = 1f - abs(progress) * 0.04f
-                        scaleX = scale
-                        scaleY = scale
+                        when (folderTransitionEffect) {
+                            AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX -> {
+                                // Kaydırma: içerik yatay kayar, giden içerik %30 daha yavaş kayar
+                                // (parallax hissi), hafif alpha düşüşü (1.0 -> 0.85)
+                                translationX = offset * 0.7f
+                                alpha = 1f - abs(progress) * 0.15f
+                                rotationY = 0f
+                                scaleX = 1f
+                                scaleY = 1f
+                            }
+                            AppPrefs.FOLDER_TRANSITION_ZOOM_FADE -> {
+                                // Yakınlaş-Sol: sürükleme ilerledikçe mevcut içerik küçülür ve solar
+                                translationX = offset
+                                val p = abs(progress)
+                                val scale = 1f - p * 0.12f // 1.0 -> 0.88
+                                scaleX = scale
+                                scaleY = scale
+                                alpha = 1f - p * 0.45f // 1.0 -> 0.55
+                                rotationY = 0f
+                            }
+                            else -> {
+                                // page_turn (varsayılan, D253) — mevcut davranış AYNEN korunur
+                                translationX = offset
+                                alpha = 1f - abs(progress) * 0.18f
+                                cameraDistance = 10f * density.density
+                                // Sayfa çevirme hissi: içerik kaydırma yönünün TERSİNE hafifçe döner
+                                // (sanki kağıdın kenarı sabit menteşeden açılıyormuş gibi)
+                                rotationY = -progress * 14f
+                                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
+                                    pivotFractionX = if (progress > 0f) 0f else 1f,
+                                    pivotFractionY = 0.5f,
+                                )
+                                val scale = 1f - abs(progress) * 0.04f
+                                scaleX = scale
+                                scaleY = scale
+                            }
+                        }
                     }
             ) {
                 // Üst bar — geri + klasör başlık + düzenle
@@ -672,6 +713,43 @@ fun FolderScreen(
                 }
             }
         }
+    }
+}
+
+// "Kaydırma / Parallax" efekti: gelen komşu klasör düz bir kenar şeridi olarak, sürükleme
+// ilerledikçe ekrana doğru kayarak (translationX) ve hafifçe belirginleşerek (alpha) görünür —
+// 3D döndürme yok, sade bir yatay kaydırma hissi (page_turn'e alternatif, D262).
+@Composable
+private fun FolderSlideParallaxPeek(
+    previousFolder: AppFolder,
+    nextFolder: AppFolder,
+    transitionDirection: Int,
+    offsetValue: Float,
+    offsetMax: Float,
+    context: android.content.Context,
+    onSurface: Color,
+    accent: Color,
+) {
+    val progress = (abs(offsetValue) / offsetMax.coerceAtLeast(1f)).coerceIn(0f, 1f)
+    if (progress <= 0.01f) return
+
+    val showStart = transitionDirection > 0
+    val previewFolder = if (showStart) previousFolder else nextFolder
+    Box(modifier = Modifier.fillMaxSize()) {
+        FolderPageEdgeStrip(
+            folder = previewFolder,
+            startEdge = showStart,
+            context = context,
+            onSurface = onSurface,
+            accent = accent,
+            modifier = Modifier
+                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd)
+                .graphicsLayer {
+                    // Düz kayma: komşu önizleme sabit konumdan sürükleme yönünde hafifçe içeri girer
+                    translationX = if (showStart) (1f - progress) * -24f else (1f - progress) * 24f
+                    alpha = (0.35f + progress * 0.65f).coerceIn(0f, 1f)
+                },
+        )
     }
 }
 

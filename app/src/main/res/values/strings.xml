@@ -80,6 +80,11 @@
     <string name="folder_edit">Klasörü Düzenle</string>
     <string name="folder_emoji_pick">Emoji seç</string>
     <string name="folder_color_pick">Renk seç</string>
+    <string name="settings_folder_transition_effect_title">Klasör Geçiş Efekti</string>
+    <string name="settings_folder_transition_effect_desc">Klasörler arası kaydırma animasyonunun görünümünü seç</string>
+    <string name="settings_folder_transition_page_turn">Sayfa Çevirme</string>
+    <string name="settings_folder_transition_slide_parallax">Kaydırma</string>
+    <string name="settings_folder_transition_zoom_fade">Yakınlaş-Sol</string>
 
     <!-- Settings -->
     <string name="settings_default_launcher">Varsayılan Launcher</string>

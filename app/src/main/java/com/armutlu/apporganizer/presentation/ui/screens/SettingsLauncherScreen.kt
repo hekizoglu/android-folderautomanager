@@ -251,6 +251,54 @@ fun SettingsLauncherScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                HorizontalDivider(
+                    Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                )
+                var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Text(
+                        stringResource(R.string.settings_folder_transition_effect_title),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.settings_folder_transition_effect_desc),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FolderCarouselPositionChip(
+                            label = stringResource(R.string.settings_folder_transition_page_turn),
+                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_PAGE_TURN,
+                            enabled = folderCarousel,
+                            onClick = {
+                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_PAGE_TURN
+                                AppPrefs.setFolderTransitionEffect(context, folderTransitionEffect)
+                            },
+                        )
+                        FolderCarouselPositionChip(
+                            label = stringResource(R.string.settings_folder_transition_slide_parallax),
+                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX,
+                            enabled = folderCarousel,
+                            onClick = {
+                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX
+                                AppPrefs.setFolderTransitionEffect(context, folderTransitionEffect)
+                            },
+                        )
+                        FolderCarouselPositionChip(
+                            label = stringResource(R.string.settings_folder_transition_zoom_fade),
+                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_ZOOM_FADE,
+                            enabled = folderCarousel,
+                            onClick = {
+                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_ZOOM_FADE
+                                AppPrefs.setFolderTransitionEffect(context, folderTransitionEffect)
+                            },
+                        )
+                    }
+                }
             }
         }
 

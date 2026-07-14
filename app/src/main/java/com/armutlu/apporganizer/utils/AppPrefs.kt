@@ -204,6 +204,17 @@ object AppPrefs {
     fun setFolderCarouselPosition(context: Context, position: String) =
         prefs(context).edit().putString(KEY_FOLDER_CAROUSEL_POSITION, position).apply()
 
+    // Klasör geçiş efekti — sayfa çevirme (varsayılan, D253) / kaydırma-parallax / yakınlaş-sol
+    const val KEY_FOLDER_TRANSITION_EFFECT = "folder_transition_effect"
+    const val FOLDER_TRANSITION_PAGE_TURN = "page_turn"
+    const val FOLDER_TRANSITION_SLIDE_PARALLAX = "slide_parallax"
+    const val FOLDER_TRANSITION_ZOOM_FADE = "zoom_fade"
+    fun getFolderTransitionEffect(context: Context): String =
+        prefs(context).getString(KEY_FOLDER_TRANSITION_EFFECT, FOLDER_TRANSITION_PAGE_TURN)
+            ?: FOLDER_TRANSITION_PAGE_TURN
+    fun setFolderTransitionEffect(context: Context, effect: String) =
+        prefs(context).edit().putString(KEY_FOLDER_TRANSITION_EFFECT, effect).apply()
+
     // Widget alanı — ana ekranda widget göster
     const val KEY_WIDGET_AREA_ENABLED = "widget_area_enabled"
     fun isWidgetAreaEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AREA_ENABLED, true)
