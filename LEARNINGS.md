@@ -17,6 +17,9 @@ AppOrganizer artık "invisible launcher / Pixel Launcher klonu" DEĞİL. Hedef: 
 
 ## 🔒 Build Kilidi Kök Nedenleri (D235 — 6 kilit vakasının otopsisi)
 
+### D259 ÇÖZÜLDÜ: Defender exclusion'ları ESKİ proje yolundaydı
+D255-258 kilitlerinin kök nedeni: D235 exclusion'ları `Github Klasörleri\android-folderautomanager` yoluna ekliydi; repo `Documents\AppOrganizer`'a taşınınca kapsam dışı kaldı. 2026-07-14'te UAC onaylı script ile eklendi ve `Get-MpPreference` çıktısıyla doğrulandı: `AppOrganizer\app\build`, `AppOrganizer\.gradle`, `AppOrganizer\.claude\worktrees`, `~\.gradle`, `~\.android`, `java.exe` (process). **Ders: proje taşınırsa Defender exclusion'ları da taşınmalı.** Kilit yine görülürse önce `Get-MpPreference | Select ExclusionPath` (admin) ile yol kapsamını doğrula.
+
 ### VSCode redhat.java dil sunucusu R.jar'ı kilitler
 `Get-Process java` çıktısında `redhat.java-*/jre/*/bin/java.exe` görünüyorsa VSCode Java LS, Gradle çıktılarını (özellikle R.jar) açık tutuyor olabilir — Gradle daemon'ları durdurmak YETMEZ. Çözüm sırası:
 1. `Get-Process java | Stop-Process -Force` (VSCode LS dahil hepsi — LS kendini yeniden başlatır, zararsız)
