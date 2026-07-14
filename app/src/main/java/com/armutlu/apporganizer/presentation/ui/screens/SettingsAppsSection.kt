@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.ui.screens
+package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,7 +56,7 @@ internal fun LazyListScope.settingsAppsSection(
     }
 
     // ── Kullanılmayan gri seçeneği ───────────────────────────────────────
-    // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) — burada yalnızca yönlendirme bilgisi gösterilir.
+    // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) - burada yalnızca yönlendirme bilgisi gösterilir.
     item {
         SettingsCard {
             Row(
@@ -77,7 +77,7 @@ internal fun LazyListScope.settingsAppsSection(
     item { SettingsSectionTitle("Uygulama Yönetimi") }
     item {
         val context = LocalContext.current
-        var showResetDialog by remember { mutableStateOf(false) }
+        var resetConfirmStep by remember { mutableStateOf(0) } // 0=kapalı, 1=ilk onay, 2=son onay
         SettingsCard {
             var manufacturerClassify by remember { mutableStateOf(AppPrefs.isManufacturerClassifyEnabled(context)) }
             var overrideSuggestions by remember { mutableStateOf(AppPrefs.isOverrideSuggestionsEnabled(context)) }
@@ -121,20 +121,34 @@ internal fun LazyListScope.settingsAppsSection(
                 subtitle = "Tüm atamaları sil ve yeniden sınıflandır",
                 iconTint = MaterialTheme.colorScheme.error,
                 showChevron = false,
-                onClick = { showResetDialog = true })
-            if (showResetDialog) {
+                onClick = { resetConfirmStep = 1 })
+            if (resetConfirmStep == 1) {
                 AlertDialog(
-                    onDismissRequest = { showResetDialog = false },
+                    onDismissRequest = { resetConfirmStep = 0 },
                     title = { Text("Tüm kategorileri sıfırla") },
-                    text = { Text("Tüm uygulama kategorileri silinecek ve yeniden sınıflandırma başlayacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?") },
+                    text = { Text("Tüm uygulama kategorileri silinecek ve yeniden sınıflandırma başlayacak. Emin misiniz?") },
                     confirmButton = {
-                        TextButton(onClick = {
-                            showResetDialog = false
-                            viewModel.resetAndReclassifyAllApps()
-                        }) { Text("Sıfırla", color = MaterialTheme.colorScheme.error) }
+                        TextButton(onClick = { resetConfirmStep = 2 }) {
+                            Text("Devam Et", color = MaterialTheme.colorScheme.error)
+                        }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showResetDialog = false }) { Text("İptal") }
+                        TextButton(onClick = { resetConfirmStep = 0 }) { Text("İptal") }
+                    }
+                )
+            } else if (resetConfirmStep == 2) {
+                AlertDialog(
+                    onDismissRequest = { resetConfirmStep = 0 },
+                    title = { Text("Son onay") },
+                    text = { Text("Bu işlem geri alınamaz — tüm kategori atamaları silinip yeniden sınıflandırılacak. Gerçekten sıfırlamak istiyor musunuz?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            resetConfirmStep = 0
+                            viewModel.resetAndReclassifyAllApps()
+                        }) { Text("Evet, Sıfırla", color = MaterialTheme.colorScheme.error) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { resetConfirmStep = 0 }) { Text("İptal") }
                     }
                 )
             }
@@ -164,7 +178,7 @@ internal fun LazyListScope.settingsAppsSection(
 
     // ── Diğer Klasörü ───────────────────────────────────────────────────
     if (otherApps.isNotEmpty()) {
-        item { SettingsSectionTitle("Diğer Klasörü — Bilinmeyenler (${otherApps.size})") }
+        item { SettingsSectionTitle("Diğer Klasörü - Bilinmeyenler (${otherApps.size})") }
         item {
             val context = LocalContext.current
             SettingsCard {

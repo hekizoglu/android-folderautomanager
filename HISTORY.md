@@ -31,6 +31,12 @@
 
 **Doğrulama:** `assembleDebug -PskipGoogleServices` BUILD SUCCESSFUL (sadece önceden var olan deprecation uyarıları, hata yok).
 
+## Döngü 269 - 2026-07-14 [ROADMAP 11/12/16: sınıflandırma navigasyonu, çift onaylı reset, encoding fix]
+
+**Yapılanlar:** ROADMAP madde 11 - "Sınıflandırılmamış: N uygulama" satırı `SettingsStatsScreen.kt`'de artık `SettingsButtonRow` ile tıklanabilir, `onNavigateToClassificationReview` parametresi eklendi ve `AppNavigation.kt`'de `Routes.CLASSIFICATION_REVIEW`'a bağlandı. Madde 12 - `SettingsAppsSection.kt`'deki "Tüm Kategorileri Sıfırla" artık tek `AlertDialog` yerine iki aşamalı onay akışı (`resetConfirmStep` 0→1→2) kullanıyor; `resetAndReclassifyAllApps()` sadece ikinci onaydan sonra tetikleniyor. Madde 16 - `AppListViewModel.kt` çift/bozuk UTF-8 (mojibake: Ã¼, Ä±, â€”, mangled emoji) içeriyordu; `scripts/fix_encoding.py` ile ve elle temizlendi, ayrıca `SettingsAppsSection.kt`, `SettingsStatsScreen.kt`, `AppNavigation.kt`, `SettingsComponents.kt` içindeki em-dash/BOM sorunları da düzeltildi.
+**Bug:** Kök neden - `AppListViewModel.kt` önceden yanlış encoding ile kaydedilmiş, "Sınıflandırılmamışları Sınıflandır" butonu bu dosyadaki bozuk string'i tetikliyordu.
+**Sonraki:** ROADMAP madde 13/15 (Görevler gamification motoru) - mimari karar gerektirir, zorluk 7-8.
+
 ---
 
 ## Döngü 264 - 2026-07-14 [Tablet ANR / Play Store geçiş düzeltmesi]

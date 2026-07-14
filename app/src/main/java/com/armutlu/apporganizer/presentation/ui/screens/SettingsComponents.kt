@@ -182,7 +182,7 @@ internal fun SettingsInfoRow(icon: ImageVector, title: String, subtitle: String)
 
 // ── Alt ekran iskeleti (U1: Ayarlar alt-ekran hiyerarşisi) ────────────────
 // Her ayar kategorisi kendi route'unda aynı TopAppBar + LazyColumn düzenini
-// paylaşır — SearchSettingsScreen pattern'inin genelleştirilmiş hali.
+// paylaşır - SearchSettingsScreen pattern'inin genelleştirilmiş hali.
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

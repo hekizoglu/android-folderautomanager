@@ -76,18 +76,6 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
 **Durum:** Bekliyor
 
-### [11] 🐛 "Sınıflandırılmamış: N uygulama" tıklanınca açılmıyor
-**Sorun/İstek:** İstatistikler/Raporlar ekranında bu satır tıklanabilir görünüyor ama navigation eksik/kırık.
-**Nasıl yapılmalı:** `SettingsStatsScreen.kt` içinde "Sınıflandırılmamış" metnini içeren satır bulunmalı; `Modifier.clickable { navController.navigate(...) }` eksik ya da yanlış route'a gidiyor olabilir. Hedef muhtemelen `ClassificationReviewScreen.kt` (Kontrol Bekleyenler / Sınıflandırılmamışlar listesi) olmalı — `Routes.kt`'de ilgili route tanımlı mı kontrol edilmeli, navigation graph'a bağlanmalı.
-**Puan:** KV=4 U=5 BR=4 EA=2 → Toplam=15
-**Durum:** Bekliyor 🐛
-
-### [12] "Tüm istatistikleri sıfırla" en az 2 kez onay sorulmalı
-**Sorun/İstek:** Bu özellik doğru çalışmıyor gibi görünüyor; ayrıca yanlışlıkla tetiklenmeyi önlemek için 2 kez onay istenmeli.
-**Nasıl yapılmalı:** `SettingsStatsScreen.kt` içindeki reset fonksiyonu bulunup hangi tabloları/prefs'i temizlediği doğrulanmalı (Room `apps` tablosu usageCount/launchCount, `notification_events`, `WrappedSnapshotPrefs`). FİKİRLER.md'de zaten kayıtlı olan "İstatistik sıfırlama sihirbazı" (13p, 2026-07-13) fikriyle BİRLEŞTİRİLMELİ — tek dialog yerine "hangi verileri sıfırlamak istiyorsun" seçim ekranı + ikinci "emin misin" onay dialogu iki katmanlı akış olarak tasarlanmalı.
-**Puan:** KV=4 U=4 BR=4 EA=3 → Toplam=15
-**Durum:** Bekliyor 🐛
-
 ### [13] Ana ekranda "Görevler" (gamification) giriş noktası
 **Sorun/İstek:** Saatin altına Görevler'e giden bir giriş noktası konsun; mevcut görev sistemi varsa profesyonelleştirilsin.
 **Nasıl yapılmalı:** Önce mevcut bir "Görevler"/task sistemi olup olmadığı doğrulanmalı (bu taramada bulunamadı — muhtemelen yok, sıfırdan tasarım gerekir). Yeni bir `TasksScreen.kt` + `Routes.TASKS` + `HomeScreenComponents.kt`'ye saat altına küçük bir "Görevler (N)" chip/buton eklenmeli. Madde 15'teki puanlama motoruyla birlikte tasarlanmalı (aynı özelliğin iki yüzü) — mimari karar gerektirir, zorluk 7-8 sayılmalı (CLAUDE.md Görev Zorluk Puanı kuralı gereği önce 2+ kaynak araştırma).
@@ -105,12 +93,6 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Nasıl yapılmalı:** Yeni bir `GamificationEngine`/`TaskScoreManager` gerekir — Room'a yeni tablo (`task_events` veya `user_score`) veya `AppPrefs`'e basit sayaç ile başlanabilir. Puan artışı tetikleyicileri: `ClassificationReviewScreen.kt` onay aksiyonu, klasör birleştirme önerisi kabul (`AppClassifier.findSimilarUnclassifiedApps()` / `SimilarAppsSuggestionDialog.kt` — FİKİRLER.md K2 maddesiyle aynı altyapı). Madde 13 ile birlikte tasarlanmalı; mimari karar gerektirir (Görev Zorluk Puanı 7-8).
 **Puan:** KV=3 U=2 BR=2 EA=3 → Toplam=10
 **Durum:** Bekliyor
-
-### [16] 🐛 "Sınıflandırılmamışları sınıflandır" butonunda Türkçe karakter hatası
-**Sorun/İstek:** Bu butona basınca Türkçe karakter encoding hatası içeren bir mesaj gösteriliyor.
-**Nasıl yapılmalı:** CLAUDE.md §5 "Encoding (Curly Quote + Bozuk UTF-8)" bilinen tuzağı — muhtemelen `ClassificationReviewScreen.kt` veya `AppListViewModel.kt` içindeki toast/snackbar string'i düz Kotlin literal olarak yazılmış ve dosya bozuk UTF-8 ile kaydedilmiş. Çözüm: `python scripts/fix_encoding.py <dosya>` çalıştır, `xxd dosya | grep e280` ile curly quote/em dash kontrolü yap, 3 denemede çözülmezse `COZULEMEYEN_SORUNLAR.md`'ye ekle. İlgili string kaynağı grep ile bulunmalı: `grep -rn "Sınıflandırılmamışları"`.
-**Puan:** KV=3 U=5 BR=4 EA=2 → Toplam=14
-**Durum:** Bekliyor 🐛
 
 ### [17] 🐛 Birleşik arama kapsamı eksik — kategori/klasör/dosya adı aranmıyor
 **Durum:** ✅ Tamamlandı (D265, doğrulama) — İnceleme sonucu kök neden analizi GÜNCEL DEĞİLMİŞ: `SearchDocument.kt` zaten `sourceType`/`SourceType` enum'una sahip (APP/CATEGORY/SETTING/CONTACT/FILE), `SearchIndexer.kt` kategori+app'i FTS'e indexliyor (D192 Room FTS5 iskeleti). `HomeAppSearchBar` (`HomeScreenComponents.kt:742-`) ayrıca klasör adını (özel ad dahil, `folderCustomNames`) yerel `folders` listesi üzerinden filtreleyip "Klasörler" grubunda gösteriyor (satır 850-858, 1011-1052) — kategori adı = klasör adı olduğundan kategori araması pratikte klasör grubunda karşılanıyor. Dosya adı arama zaten `FilesIndexer.kt`/`FilesIndexWorker` ile SAF üzerinden mevcut (kapsam dışı bırakılması istenen kısım zaten yapılmıştı). Kod değişikliği gerekmedi, sadece doğrulandı. Dosya adı arama zaten SAF kullanıyor (Android 16 kısıtına uygun).

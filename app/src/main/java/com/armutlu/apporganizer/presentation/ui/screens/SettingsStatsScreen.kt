@@ -26,7 +26,7 @@ import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import kotlin.math.roundToInt
 
 /**
- * U1: İstatistikler & Raporlar alt ekranı — özet sayılar, Raporlar Merkezi
+ * U1: İstatistikler & Raporlar alt ekranı - özet sayılar, Raporlar Merkezi
  * ve Bildirim Raporu kısayolları.
  * İçerik eski SettingsScreen'den birebir taşındı, fonksiyonellik değişmedi.
  */
@@ -37,6 +37,7 @@ fun SettingsStatsScreen(
     onNavigateToReportsCenter: () -> Unit = {},
     onNavigateToNotificationReport: () -> Unit = {},
     onNavigateToMissions: () -> Unit = {},
+    onNavigateToClassificationReview: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val state by viewModel.screenState.collectAsState()
@@ -59,7 +60,7 @@ fun SettingsStatsScreen(
                     state.categoryStats
                         .maxByOrNull { it.value }
                         ?.let { (id, count) -> state.categories.find { it.categoryId == id }?.categoryName?.let { "$it ($count)" } }
-                        ?: "—"
+                        ?: "-"
                 }
             }
             SettingsCard {
@@ -67,7 +68,7 @@ fun SettingsStatsScreen(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SettingsInfoRow(icon = Icons.Default.Folder, title = "Kategori Sayısı", subtitle = "${state.categories.size}")
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                SettingsInfoRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = "Sınıflandırılmamış", subtitle = "${otherApps.size} uygulama")
+                SettingsButtonRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = "Sınıflandırılmamış", subtitle = "${otherApps.size} uygulama", onClick = onNavigateToClassificationReview)
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SettingsInfoRow(icon = Icons.Default.VisibilityOff, title = "Gizli Uygulama", subtitle = "${hiddenApps.size}")
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -97,9 +98,9 @@ fun SettingsStatsScreen(
                     .joinToString(", ") { (type, count) ->
                         val pct = if (summary.totalClicks > 0) (count * 100.0 / summary.totalClicks).roundToInt() else 0
                         "${sourceTypeLabel(type)} %$pct"
-                    }.ifBlank { "—" }
+                    }.ifBlank { "-" }
                 val topAction = summary.actionCounts.entries.maxByOrNull { it.value }
-                    ?.let { (type, count) -> "${actionTypeLabel(type)} ($count)" } ?: "—"
+                    ?.let { (type, count) -> "${actionTypeLabel(type)} ($count)" } ?: "-"
 
                 SettingsCard {
                     SettingsInfoRow(icon = Icons.Default.Search, title = stringResource(R.string.settings_stats_search_total), subtitle = "${summary.totalSearches}")

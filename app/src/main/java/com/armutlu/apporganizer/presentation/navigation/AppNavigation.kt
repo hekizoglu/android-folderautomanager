@@ -44,7 +44,7 @@ object Routes {
     const val PRIVACY_REPORT = "privacy_report"
     const val MISSIONS = "missions"
 
-    // U1: Ayarlar alt-ekran hiyerarşisi — her ana kategori kendi route'unda
+    // U1: Ayarlar alt-ekran hiyerarşisi - her ana kategori kendi route'unda
     const val SETTINGS_APPEARANCE = "settings_appearance"
     const val SETTINGS_LAUNCHER = "settings_launcher"
     const val SETTINGS_NOTIFICATIONS = "settings_notifications"
@@ -56,7 +56,7 @@ object Routes {
     const val CLASSIFICATION_REVIEW = "classification_review"
     const val FOLDER_SUGGESTIONS = "folder_suggestions"
 
-    // Güvenlik: MainActivity EXTRA_OPEN_ROUTE dışarıdan (üçüncü parti intent) gelebilir —
+    // Güvenlik: MainActivity EXTRA_OPEN_ROUTE dışarıdan (üçüncü parti intent) gelebilir -
     // yalnızca burada tanımlı bilinen route'lara navigate edilmeli (whitelist doğrulaması).
     val ALL: Set<String> = setOf(
         APP_LIST, APP_LIST_UNCERTAIN, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
@@ -125,7 +125,7 @@ fun AppNavigation(
             )
         }
         composable(Routes.SETTINGS) {
-            // U1: Ayarlar hub'ı — her kategori satırı kendi alt route'una gider
+            // U1: Ayarlar hub'ı - her kategori satırı kendi alt route'una gider
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
@@ -181,7 +181,8 @@ fun AppNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
                 onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
-                onNavigateToMissions = { navController.navigate(Routes.MISSIONS) }
+                onNavigateToMissions = { navController.navigate(Routes.MISSIONS) },
+                onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) }
             )
         }
         composable(Routes.SETTINGS_SECURITY) {
