@@ -42,6 +42,9 @@ Bildirim badge'i `apps` tablosuna yazılınca (`updateNotificationCount`) `getAl
 ### Eagerly + initialValue=emptyList() = cold resume'da sahte "yükleniyor"
 Process LMK ile öldükten sonra dönüşte StateFlow'lar ilk Room emit'ine kadar boş — `isEmpty()` tabanlı loading koşulu sahte loading ekranı gösterir. Kural: loading UI koşulu `!initialLoadDone && list.isEmpty()` olmalı; `initialLoadDone` Room'un ilk emisyonuyla true'ya döner.
 
+### Home kökünde koşullu BackHandler = OEM'de Activity finish riski (D272)
+`HomeScreen.kt`'de `BackHandler(enabled = allAppsOpen)` yalnızca AllApps açıkken aktifti; ana ekran kökünde (`allAppsOpen=false`) sistemin `OnBackPressedDispatcher`'ında hiçbir enabled callback kalmıyordu. Android 13+ predictive-back ve bazı OEM'lerde (MIUI/HyperOS) bu durumda sistem varsayılan davranışı devreye giriyor ve `LauncherActivity`'yi (HOME activity) finish edebiliyor — Activity `singleTask` olsa bile bir sonraki HOME basışında sıfırdan `onCreate` tetiklenip "her seferinde yeniden yükleniyor" hissi yaratıyor. Kural: HOME/launcher rolündeki bir Activity'nin kök ekranında **her zaman aktif** (`enabled = true`) bir `BackHandler` bulunmalı ve en azından no-op tüketmeli — geri tuşu launcher'ı asla finish etmemeli.
+
 ### Cold start borç listesi (D231, henüz yapılmadı)
 `AppOrganizerApp.onCreate` main thread'de senkron: Firebase init + 3 worker schedule + FCM token. Baseline profile YOK (macrobenchmark modülü yok) — cold start iyileştirmesinin en yüksek getirili adımı. 7+ `Eagerly` StateFlow ViewModel init'te aynı anda ayağa kalkıyor; kritik olmayanlar (`widgetSuggestions`, `tickerItems`) `WhileSubscribed`'e adaydır (folders/allApps DEĞİL — bkz. Flow Sıcaklığı kuralı).
 

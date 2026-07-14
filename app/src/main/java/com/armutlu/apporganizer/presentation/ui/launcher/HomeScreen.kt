@@ -57,6 +57,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import android.os.Build
@@ -107,6 +108,7 @@ fun HomeScreen(
     var widgetAutoResize by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)) }
     var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
     var bgColorInt by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
+    var bgGradientStyle by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getHomeBackgroundStyle(context)) }
     var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
     var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
     var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
@@ -177,6 +179,8 @@ fun HomeScreen(
                     bgType = com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_COLOR ->
                     bgColorInt = com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_BACKGROUND_STYLE ->
+                    bgGradientStyle = com.armutlu.apporganizer.utils.AppPrefs.getHomeBackgroundStyle(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_TEXT_ALPHA ->
                     textAlpha = com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AREA_ENABLED ->
@@ -409,8 +413,18 @@ fun HomeScreen(
 
     val scope = rememberCoroutineScope()
 
-    BackHandler(enabled = allAppsOpen) {
-        viewModel.closeAllApps()
+    // D260 reload-bug fix: eskiden yalnizca allAppsOpen==true iken aktifti; ana ekran kokunde
+    // (allAppsOpen==false) hicbir BackHandler devrede olmadigindan bazi OEM'lerde (Android 13+
+    // predictive back / MIUI-HyperOS) sistem geri tusu LauncherActivity'yi sonlandirabiliyor —
+    // bu da sonraki HOME basisinda sifirdan onCreate/reload olarak hissediliyordu. Artik daima
+    // aktif: allAppsOpen'da cekmeceyi kapatir, kokte ise hicbir sey yapmadan geri tusunu yutar
+    // (launcher'in kendisi "en kok" ekran — geri basinca hicbir yere gidilmez, Activity asla
+    // finish edilmez).
+    BackHandler(enabled = true) {
+        if (allAppsOpen) {
+            viewModel.closeAllApps()
+        }
+        // else: no-op — ana ekranda geri tusu Activity'yi kapatmamali (bkz. yukaridaki not)
     }
 
     // Ana ekrana her gelişte (ON_RESUME) 1 kez elmas parlaması tetiklensin — sürekli
@@ -431,9 +445,11 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .then(
-                if (bgType == "solid")
-                    Modifier.background(Color(bgColorInt))
-                else Modifier
+                when (bgType) {
+                    "solid" -> Modifier.background(Color(bgColorInt))
+                    "gradient" -> Modifier.background(homeBackgroundBrush(bgGradientStyle))
+                    else -> Modifier
+                }
             )
             .nestedScroll(nestedScrollConnection)
             .pointerInput("tap") {
@@ -1100,3 +1116,16 @@ fun HomeScreen(
 // FolderStatsRow, HomeScreenOverlays → HomeScreenOverlays.kt dosyasına taşındı.
 // PixelClockWidget, GoogleSearchBar, PixelDock, DockIcon, SwipeHint → HomeScreenComponents.kt
 
+
+/**
+ * Ana ekran "Gradyan" arka plan stiline karşılık gelen Brush'ı döner.
+ * Ayarlar > Görünüm > Arka Plan > Gradyan bölümünden seçilir (D260).
+ */
+private fun homeBackgroundBrush(style: String): Brush = when (style) {
+    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_GECE_MAVISI ->
+        Brush.verticalGradient(listOf(Color(0xFF0A1128), Color(0xFF1B2A4A)))
+    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_MINIMAL_GRI ->
+        Brush.verticalGradient(listOf(Color(0xFF1C1C1C), Color(0xFF2E2E2E)))
+    else -> // HOME_BG_TURKUAZ + bilinmeyen deger fallback
+        Brush.verticalGradient(listOf(Color(0xFF00897B), Color(0xFF26C6DA)))
+}
