@@ -22,10 +22,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
@@ -41,16 +45,20 @@ fun ClassificationReviewScreen(
         .sortedBy { it.displayOrder }
     val categoryNames = categories.associate { it.categoryId to it.categoryName }
 
+    // Seçim durumu, kartın içindeki koşullu bloktan bağımsız yaşar. Böylece kullanıcı
+    // kategori seçmeden öneriyi onaylayamaz ve liste yeniden çizildiğinde seçim kaybolmaz.
+    val selectedCategoryByPackage = remember { mutableStateMapOf<String, String>() }
+
     SettingsSubScreenScaffold(
-        title = "Kontrol Bekleyenler",
+        title = stringResource(R.string.classification_review_title),
         onNavigateBack = onNavigateBack,
     ) {
         item {
             SettingsCard {
                 SettingsInfoRow(
                     icon = Icons.Default.ErrorOutline,
-                    title = "${pendingApps.size} uygulama inceleme bekliyor",
-                    subtitle = "Dusuk guvenli veya celiskili siniflandirmalari onayla, duzelt ya da 7 gun ertele."
+                    title = stringResource(R.string.classification_review_pending_count, pendingApps.size),
+                    subtitle = stringResource(R.string.classification_review_pending_subtitle),
                 )
             }
         }
@@ -58,62 +66,117 @@ fun ClassificationReviewScreen(
         if (pendingApps.isEmpty()) {
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(Modifier.padding(18.dp)) {
-                        Text("Bekleyen is yok", fontWeight = FontWeight.SemiBold)
-                        Text("Yeni dusuk guvenli siniflandirma geldiginde burada gorunecek.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = stringResource(R.string.classification_review_empty_title),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = stringResource(R.string.classification_review_empty_subtitle),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
         } else {
             item {
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth().height(560.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(560.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(pendingApps, key = { it.packageName }) { app ->
+                        val selectedCategoryId = selectedCategoryByPackage[app.packageName]
+
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         ) {
                             Column(Modifier.padding(16.dp)) {
                                 Text(app.appName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text(app.packageName, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    text = app.packageName,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                                 Spacer(Modifier.height(8.dp))
                                 Text(
-                                    "Oneri: ${categoryNames[app.categoryId] ?: app.categoryId} | Guven: ${app.classificationConfidence}% | Kaynak: ${app.classificationSource}",
+                                    text = stringResource(
+                                        R.string.classification_review_suggestion,
+                                        categoryNames[app.categoryId] ?: app.categoryId,
+                                        app.classificationConfidence,
+                                        app.classificationSource,
+                                    ),
                                     fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 Spacer(Modifier.height(12.dp))
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Button(onClick = { viewModel.confirmPendingClassification(app.packageName) }) {
-                                        Text("Direkt Onayla")
-                                    }
-                                    OutlinedButton(onClick = { viewModel.skipPendingClassification(app.packageName) }) {
-                                        Text("7 gun ertele")
-                                    }
-                                }
-                                Spacer(Modifier.height(6.dp))
                                 Text(
-                                    "Direkt Onayla: uygulama onerilen kategoriye tasinir; istersen daha sonra klasorden tekrar degistirebilirsin.",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    text = stringResource(R.string.classification_review_choose_category),
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp,
                                 )
-                                Spacer(Modifier.height(10.dp))
-                                Text("Duzelt:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                Spacer(Modifier.height(6.dp))
                                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     items(categories, key = { it.categoryId }) { category ->
-                                        OutlinedButton(
-                                            onClick = {
-                                                viewModel.correctPendingClassification(app.packageName, category.categoryId)
+                                        val selected = selectedCategoryId == category.categoryId
+                                        if (selected) {
+                                            Button(
+                                                onClick = {
+                                                    selectedCategoryByPackage[app.packageName] = category.categoryId
+                                                },
+                                            ) {
+                                                Text(category.categoryName, fontSize = 12.sp)
                                             }
-                                        ) {
-                                            Text(category.categoryName, fontSize = 12.sp)
+                                        } else {
+                                            OutlinedButton(
+                                                onClick = {
+                                                    selectedCategoryByPackage[app.packageName] = category.categoryId
+                                                },
+                                            ) {
+                                                Text(category.categoryName, fontSize = 12.sp)
+                                            }
                                         }
                                     }
+                                }
+                                Spacer(Modifier.height(10.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Button(
+                                        enabled = selectedCategoryId != null,
+                                        onClick = {
+                                            val categoryId = selectedCategoryId ?: return@Button
+                                            if (categoryId == app.categoryId) {
+                                                viewModel.confirmPendingClassification(app.packageName)
+                                            } else {
+                                                viewModel.correctPendingClassification(app.packageName, categoryId)
+                                            }
+                                            selectedCategoryByPackage.remove(app.packageName)
+                                        },
+                                    ) {
+                                        Text(stringResource(R.string.classification_review_confirm_selection))
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            selectedCategoryByPackage.remove(app.packageName)
+                                            viewModel.skipPendingClassification(app.packageName)
+                                        },
+                                    ) {
+                                        Text(stringResource(R.string.classification_review_snooze))
+                                    }
+                                }
+                                if (selectedCategoryId == null) {
+                                    Spacer(Modifier.height(6.dp))
+                                    Text(
+                                        text = stringResource(R.string.classification_review_selection_required),
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                             }
                         }
@@ -126,8 +189,8 @@ fun ClassificationReviewScreen(
             SettingsCard {
                 SettingsInfoRow(
                     icon = Icons.Default.CheckCircle,
-                    title = "Kural",
-                    subtitle = "Onay ve duzeltme kullanici karari sayilir; otomatik siniflandirma artik bu uygulamayi ezmez."
+                    title = stringResource(R.string.classification_review_rule_title),
+                    subtitle = stringResource(R.string.classification_review_rule_subtitle),
                 )
             }
         }
