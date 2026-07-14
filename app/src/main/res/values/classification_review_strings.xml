@@ -12,4 +12,12 @@
     <string name="classification_review_selection_required">Onaylamak için bir kategori seçmelisiniz.</string>
     <string name="classification_review_rule_title">Kural</string>
     <string name="classification_review_rule_subtitle">Kategori seçilmeden onay verilemez. Onay ve düzeltme kullanıcı kararı sayılır; otomatik sınıflandırma artık bu uygulamayı ezmez.</string>
+
+    <!-- P0.2: ClassificationAttentionPolicy reason -> "Neden burada?" metinleri -->
+    <string name="attention_reason_uncategorized">Kategori atanamadı</string>
+    <string name="attention_reason_other_without_confidence">Diğer klasöründe, kesin kategori bulunamadı</string>
+    <string name="attention_reason_low_confidence">Düşük güvenli sınıflandırma</string>
+    <string name="attention_reason_review_pending">İncelemen istendi</string>
+    <string name="attention_reason_missing_category">Kategori bilgisi eksik</string>
+    <string name="attention_reason_classifier_conflict">Sınıflandırıcı çelişkili sinyaller buldu</string>
 </resources>

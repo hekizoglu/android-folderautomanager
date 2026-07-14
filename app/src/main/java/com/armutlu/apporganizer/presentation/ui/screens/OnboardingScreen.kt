@@ -380,7 +380,7 @@ private fun OnboardingStrengthsCard() {
 @Composable
 private fun OnboardingOrganizationPreview(viewModel: AppListViewModel) {
     val state by viewModel.screenState.collectAsState()
-    val pending by viewModel.pendingClassificationApps.collectAsState()
+    val pending by viewModel.classificationAttentionApps.collectAsState()
     val categorized = state.apps.count { it.categoryId != com.armutlu.apporganizer.domain.models.Category.CAT_UNCATEGORIZED }
     val activeFolders = state.categories.count { category ->
         state.apps.any { it.categoryId == category.categoryId }

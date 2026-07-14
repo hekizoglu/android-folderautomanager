@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationAttentionPolicy
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 @Composable
@@ -38,7 +39,7 @@ fun ClassificationReviewScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit,
 ) {
-    val pendingApps by viewModel.pendingClassificationApps.collectAsState()
+    val pendingApps by viewModel.classificationAttentionApps.collectAsState()
     val screenState by viewModel.screenState.collectAsState()
     val categories = screenState.categories
         .filter { it.categoryId != Category.CAT_UNCATEGORIZED }
@@ -116,6 +117,15 @@ fun ClassificationReviewScreen(
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
+                                val attentionReason = remember(app) { ClassificationAttentionPolicy.evaluate(app) }
+                                if (attentionReason != null) {
+                                    Text(
+                                        text = stringResource(ClassificationAttentionPolicy.reasonStringRes(attentionReason)),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
                                 Spacer(Modifier.height(12.dp))
                                 Text(
                                     text = stringResource(R.string.classification_review_choose_category),
