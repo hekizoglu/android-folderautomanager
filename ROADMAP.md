@@ -17,6 +17,136 @@ Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emül
 
 ---
 
+## Hüseyin Geri Bildirim Listesi (2026-07-14, 20 madde)
+
+> Kaynak: Hüseyin'in ham geri bildirim listesi. KOD YAZILMADI — sadece analiz + roadmap kaydı. 🐛 etiketli maddeler gerçek kırık davranış; diğerleri yeni özellik/iyileştirme istekleri. Puanlama: KV=Kullanıcı Değeri, U=Uygulanabilirlik, BR=Bağımlılık Riski, EA=Etki Alanı (her biri 1-5).
+
+### ⭐ Yüksek Puanlı (15+)
+
+### [1] 🐛 İzin iste butonu izin sonrası takılı kalıyor
+**Sorun/İstek:** Kullanıcı sistem izin dialogunda "izin ver" dedikten sonra ekrandaki "İzin Ver" butonu loading/stuck state'te kalıyor, UI güncellenmiyor.
+**Nasıl yapılmalı:** `ContextualPermissionDialog.kt` ve `SettingsPermissionsSection.kt` içindeki `ActivityResultContracts.RequestPermission()` launcher callback'i kontrol edilmeli — callback içinde izin durumunu tutan state (muhtemelen `remember { mutableStateOf(...) }`) `ContextCompat.checkSelfPermission` ile yeniden okunmuyor olabilir. `PermissionsGuideScreen.kt`'de de aynı pattern var mı taranmalı. Çözüm: launcher callback içinde state'i `checkSelfPermission` sonucuna göre zorla güncelle, ayrıca `ON_RESUME` lifecycle event'inde de yeniden kontrol et (kullanıcı ayarlardan izin verip geri dönebilir).
+**Puan:** KV=5 U=4 BR=4 EA=3 → Toplam=16
+**Durum:** Bekliyor 🐛
+
+### [2] 🐛 Silip tekrar kurunca onboarding başlamıyor
+**Sorun/İstek:** APK silinip yeniden kurulduğunda onboarding akışı tekrar başlamıyor, sanki eski kurulumun devamıymış gibi davranıyor.
+**Nasıl yapılmalı:** `AppPrefs.kt`'deki `KEY_ONBOARDING_DONE` okuması `LauncherActivity.kt`/`MainActivity.kt` içinde kontrol edilmeli. Olası kök neden: Android'in otomatik yedekleme (Auto Backup for Apps) SharedPreferences dosyasını (`AppPrefs`) uygulama silinse bile Google hesabına yedekleyip yeni kurulumda geri yüklemesi — `AndroidManifest.xml`'de `android:allowBackup` ve `android:fullBackupContent` ayarı kontrol edilmeli. Çözüm adayı: `AppPrefs` dosyasını backup kapsamı dışına al (`fullBackupContent` XML'inde `<exclude domain="sharedpref" path="..."/>`) ya da onboarding flag'i cihaz-bağımlı bir değerle (ilk kurulum zaman damgası) doğrula.
+**Puan:** KV=5 U=3 BR=4 EA=3 → Toplam=15
+**Durum:** Bekliyor 🐛
+
+### 🟡 Orta Puanlı (10-14) — özet FİKİRLER.md'de de kayıtlı
+
+### [3] Ayarlar > Uygulamalar: güven skoruna göre otomatik kategorize toggle'ı
+**Sorun/İstek:** Uzun-bas kategori değiştirme bilgisinin yanına, AppClassifier güven skoruna göre otomatik kategorize ayarı taşınsın; güven skoru düşükse kullanıcıya sorulsun.
+**Nasıl yapılmalı:** `AppClassifier.kt` içindeki confidence/skor hesaplama mantığı (`classificationSource`, `isCategoryLocked` alanları D246'da zaten eklenmiş — `AppInfo.kt`) temel alınabilir. `SettingsAppsSection.kt`'e yeni toggle (`KEY_AUTO_CLASSIFY_LOW_CONFIDENCE`, AppPrefs.kt'ye yeni key), düşük güvenli sınıflandırmalar `ClassificationReviewScreen.kt` akışına (mevcut "Kontrol Bekleyenler" ekranı) yönlendirilebilir — madde 14 ile aynı ekranı paylaşabilir.
+**Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
+**Durum:** Bekliyor
+
+### [4] Arama çubuğu klavye ile hafif çakışıyor
+**Sorun/İstek:** Arama çubuğuna dokununca klavye açılıyor, bar yukarı kayıyor ama klavyenin biraz üstüne biniyor (küçük overlap).
+**Nasıl yapılmalı:** `HomeScreenComponents.kt` içinde arama barının `WindowInsets.ime` ile hizalanan offset/padding hesaplaması bulunmalı; mevcut offset değeri birkaç dp artırılmalı. `imePadding()` veya manuel `WindowInsets.ime.getBottom(density)` kullanımı varsa animasyon gecikmesi (`WindowInsetsAnimation`) nedeniyle ara karede overlap oluşabilir — `imeNestedScroll()` veya `Modifier.imePadding()` ile senkron animasyon tercih edilmeli. Küçük görsel bug, test emülatörde klavye açık ekran görüntüsüyle doğrulanmalı.
+**Puan:** KV=3 U=4 BR=4 EA=2 → Toplam=13
+**Durum:** Bekliyor 🐛
+
+### [5] 🐛 Ticker açık item'a tekrar tıklayınca donuyor
+**Sorun/İstek:** HomeTickerRow'da bir öğe açıldıktan sonra tekrar üstüne tıklanınca ekran kilitleniyor/donuyor.
+**Nasıl yapılmalı:** `HomeTickerRow.kt:166` civarındaki `onClick = { ... }` bloğu incelenmeli — muhtemelen navigation çağrısı (`navController.navigate(...)`) aynı destinasyona art arda tetiklenince state çakışması veya composition sırasında recursive recomposition oluşuyor. `LauncherViewModel.kt`'deki `tickerItems` state'i click sonrası güncellenirken aynı frame'de ikinci tıklama gelirse race condition olası. Çözüm: click handler'a debounce (`remember { mutableStateOf(false) }` + son tıklama zaman damgası) veya `navController.currentBackStackEntry` kontrolü ile aynı route'a çift push engellenmeli.
+**Puan:** KV=4 U=4 BR=4 EA=3 → Toplam=15
+**Durum:** Bekliyor 🐛
+
+### [6] 🐛 Ticker'da swipe (kaydırma) çalışmıyor
+**Sorun/İstek:** Ana ekran ticker'ında sağa-sola kaydırma jesti tepki vermiyor.
+**Nasıl yapılmalı:** `HomeTickerRow.kt` içinde swipe/pager mantığı aranmalı (`HorizontalPager`, `draggable`, veya manuel `pointerInput` + `detectHorizontalDragGestures`). Eğer bileşen `LazyRow` gibi normal scroll container ise, üstteki `HomeScreen.kt` sayfa `HorizontalPager`'ı (klasör sayfalama) gesture'ı yutuyor olabilir (nested scroll çakışması) — `Modifier.nestedScroll()` konfigürasyonu ve pointer input öncelik sırası kontrol edilmeli. Madde 5 ile aynı dosyada olduğu için birlikte ele alınmalı.
+**Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
+**Durum:** Bekliyor 🐛
+
+### [7] Pulse Clock altındaki insight metni kaldırılsın, saat küçültülsün
+**Sorun/İstek:** Saatin altındaki bilgilendirme metni donuk/işlevsiz görünüyor; kaldırılıp saat biraz küçültülebilir.
+**Nasıl yapılmalı:** Pulse Clock bileşeni ve insight text muhtemelen `HomeScreenComponents.kt` içinde; `KEY_TICKER_ENABLED`/skor-insight toggle'larıyla ilişkili görünürlük mantığı var (D244 Pulse Clock işi, ROADMAP başındaki "Pulse Clock / Dijital Nabız" bölümüyle çakışıyor — aynı bölüme not düşülmeli). Tasarım kararı: insight text kaldır ya da madde 10'daki "Dijital Yaşam Skoru" rozetiyle birleştir, saat boyutu (`fontSize`/`Modifier.size`) düşürülsün. UX kararı olduğu için Fable/kullanıcı onayı önerilir.
+**Puan:** KV=3 U=4 BR=2 EA=3 → Toplam=12
+**Durum:** Bekliyor
+
+### [8] Onboarding'de güçlü özellikler öne çıkarılsın
+**Sorun/İstek:** Onboarding ekranları güzel ama AppClassifier 3702 paket, gizlilik-öncelikli bildirim analizi gibi güçlü yanlar yeterince öne çıkmıyor.
+**Nasıl yapılmalı:** `OnboardingScreen.kt`'deki WELCOME/QUICK_SETTINGS adımlarına (onboarding sırası CLAUDE.md kuralı gereği bozulmayacak) somut sayı ve gizlilik vurgusu içeren metin/kart eklenmeli: "3700+ uygulama otomatik tanınır", "Bildirim içerikleri asla okunmaz, sadece sayılır" gibi. Metin İngilizce/Türkçe locale ile tutarlı olmalı (FİKİRLER.md'deki EN string sorunu ile çakışabilir, birlikte ele alınabilir).
+**Puan:** KV=3 U=4 BR=2 EA=2 → Toplam=11
+**Durum:** Bekliyor
+
+### [9] "En Çok Kullandıklarım" alanı küçültülüp yanına teknik bilgi eklensin
+**Sorun/İstek:** Bu alan büyük yer kaplıyor; küçültülüp yanına ilginç/teknik bilgi eklenebilir.
+**Nasıl yapılmalı:** `HomeScreenComponents.kt` içindeki ilgili composable boyutu (kart yüksekliği/ikon sayısı) küçültülmeli; yanına `LauncherViewModel.kt`'de zaten hesaplanan istatistiklerden biri (örn. günlük ortalama ekran açma sayısı, en yoğun saat aralığı) eklenebilir — `DashboardStats.compute()` (AppOrganizer Dashboard) ile aynı veri kaynağı kullanılabilir, CLAUDE.md §3 "AppOrganizer Dashboard Kuralı" ile uyumlu.
+**Puan:** KV=3 U=3 BR=2 EA=2 → Toplam=10
+**Durum:** Bekliyor
+
+### [10] "Dijital Yaşam Skoru" renk kodlu rozet ticker'a eklensin
+**Sorun/İstek:** Ticker'a "Dijital Yaşam Skoru: 70" gibi bir skor eklensin, kötüyse kırmızı iyiyse yeşil.
+**Nasıl yapılmalı:** `LauncherViewModel.kt`'deki `tickerItems` üretim mantığına yeni bir ticker item tipi eklenmeli; skor hesaplama muhtemelen mevcut `InsightEngine`/`UsageStatsHelper` verilerinden (ekran açma sıklığı, bildirim yoğunluğu, uzun kullanım süresi) türetilebilir. Renk: `Color.Red`↔`Color.Green` arası `lerp()` ile skor değerine göre interpolasyon (madde 7'deki insight text kaldırma kararıyla birlikte tasarlanmalı — belki onun yerini alır).
+**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
+**Durum:** Bekliyor
+
+### [11] 🐛 "Sınıflandırılmamış: N uygulama" tıklanınca açılmıyor
+**Sorun/İstek:** İstatistikler/Raporlar ekranında bu satır tıklanabilir görünüyor ama navigation eksik/kırık.
+**Nasıl yapılmalı:** `SettingsStatsScreen.kt` içinde "Sınıflandırılmamış" metnini içeren satır bulunmalı; `Modifier.clickable { navController.navigate(...) }` eksik ya da yanlış route'a gidiyor olabilir. Hedef muhtemelen `ClassificationReviewScreen.kt` (Kontrol Bekleyenler / Sınıflandırılmamışlar listesi) olmalı — `Routes.kt`'de ilgili route tanımlı mı kontrol edilmeli, navigation graph'a bağlanmalı.
+**Puan:** KV=4 U=5 BR=4 EA=2 → Toplam=15
+**Durum:** Bekliyor 🐛
+
+### [12] "Tüm istatistikleri sıfırla" en az 2 kez onay sorulmalı
+**Sorun/İstek:** Bu özellik doğru çalışmıyor gibi görünüyor; ayrıca yanlışlıkla tetiklenmeyi önlemek için 2 kez onay istenmeli.
+**Nasıl yapılmalı:** `SettingsStatsScreen.kt` içindeki reset fonksiyonu bulunup hangi tabloları/prefs'i temizlediği doğrulanmalı (Room `apps` tablosu usageCount/launchCount, `notification_events`, `WrappedSnapshotPrefs`). FİKİRLER.md'de zaten kayıtlı olan "İstatistik sıfırlama sihirbazı" (13p, 2026-07-13) fikriyle BİRLEŞTİRİLMELİ — tek dialog yerine "hangi verileri sıfırlamak istiyorsun" seçim ekranı + ikinci "emin misin" onay dialogu iki katmanlı akış olarak tasarlanmalı.
+**Puan:** KV=4 U=4 BR=4 EA=3 → Toplam=15
+**Durum:** Bekliyor 🐛
+
+### [13] Ana ekranda "Görevler" (gamification) giriş noktası
+**Sorun/İstek:** Saatin altına Görevler'e giden bir giriş noktası konsun; mevcut görev sistemi varsa profesyonelleştirilsin.
+**Nasıl yapılmalı:** Önce mevcut bir "Görevler"/task sistemi olup olmadığı doğrulanmalı (bu taramada bulunamadı — muhtemelen yok, sıfırdan tasarım gerekir). Yeni bir `TasksScreen.kt` + `Routes.TASKS` + `HomeScreenComponents.kt`'ye saat altına küçük bir "Görevler (N)" chip/buton eklenmeli. Madde 15'teki puanlama motoruyla birlikte tasarlanmalı (aynı özelliğin iki yüzü) — mimari karar gerektirir, zorluk 7-8 sayılmalı (CLAUDE.md Görev Zorluk Puanı kuralı gereği önce 2+ kaynak araştırma).
+**Puan:** KV=4 U=2 BR=2 EA=3 → Toplam=11
+**Durum:** Bekliyor
+
+### [14] "Direkt Onayla" butonuna açıklama eklensin
+**Sorun/İstek:** Kontrol Bekleyenler bölümünde "Direkt Onayla" butonu ne yaptığını açıklamıyor.
+**Nasıl yapılmalı:** `ClassificationReviewScreen.kt:93` civarındaki "Onayla" butonunun yanına küçük bir açıklama metni veya `IconButton` + tooltip/`Text` eklenmeli: "Bu uygulama önerilen kategoriye taşınır, istersen sonra değiştirebilirsin." CLAUDE.md §6 "Ayarlar Metin ve Kod İnceleme Kuralı" — bilgi satırı ayar gibi davranmamalı, sade ve anlaşılır olmalı.
+**Puan:** KV=3 U=5 BR=1 EA=2 → Toplam=11
+**Durum:** Bekliyor
+
+### [15] Görev puanlama motoru — durum bazlı artan/azalan puan sistemi
+**Sorun/İstek:** Klasör önerileri/birleştirme önerileri/kontrol bekleyenler işlem gördüğünde Görevler puanı artmalı; puan sistemi durum bazlı artıp azalabilmeli.
+**Nasıl yapılmalı:** Yeni bir `GamificationEngine`/`TaskScoreManager` gerekir — Room'a yeni tablo (`task_events` veya `user_score`) veya `AppPrefs`'e basit sayaç ile başlanabilir. Puan artışı tetikleyicileri: `ClassificationReviewScreen.kt` onay aksiyonu, klasör birleştirme önerisi kabul (`AppClassifier.findSimilarUnclassifiedApps()` / `SimilarAppsSuggestionDialog.kt` — FİKİRLER.md K2 maddesiyle aynı altyapı). Madde 13 ile birlikte tasarlanmalı; mimari karar gerektirir (Görev Zorluk Puanı 7-8).
+**Puan:** KV=3 U=2 BR=2 EA=3 → Toplam=10
+**Durum:** Bekliyor
+
+### [16] 🐛 "Sınıflandırılmamışları sınıflandır" butonunda Türkçe karakter hatası
+**Sorun/İstek:** Bu butona basınca Türkçe karakter encoding hatası içeren bir mesaj gösteriliyor.
+**Nasıl yapılmalı:** CLAUDE.md §5 "Encoding (Curly Quote + Bozuk UTF-8)" bilinen tuzağı — muhtemelen `ClassificationReviewScreen.kt` veya `AppListViewModel.kt` içindeki toast/snackbar string'i düz Kotlin literal olarak yazılmış ve dosya bozuk UTF-8 ile kaydedilmiş. Çözüm: `python scripts/fix_encoding.py <dosya>` çalıştır, `xxd dosya | grep e280` ile curly quote/em dash kontrolü yap, 3 denemede çözülmezse `COZULEMEYEN_SORUNLAR.md`'ye ekle. İlgili string kaynağı grep ile bulunmalı: `grep -rn "Sınıflandırılmamışları"`.
+**Puan:** KV=3 U=5 BR=4 EA=2 → Toplam=14
+**Durum:** Bekliyor 🐛
+
+### [17] 🐛 Birleşik arama kapsamı eksik — kategori/klasör/dosya adı aranmıyor
+**Sorun/İstek:** Arama sadece uygulama adlarını buluyor gibi; kategori adları, klasör adları ve dosya adları da aranabilmeli ("birleşik arama" iddiası çalışmıyor).
+**Nasıl yapılmalı:** `data/repository/SearchRepository.kt` + `data/local/SearchFts.kt`/`SearchIndexer.kt`/`SearchDao.kt` incelenmeli — `domain/models/SearchDocument.kt` FTS5 şemasında kategori/klasör/dosya alanları indexleniyor mu doğrulanmalı (bu taramada `SearchDocument.kt` içinde `documentType`/`entityType` alanı BULUNAMADI — şema muhtemelen sadece app adı+paket tutuyor, tür ayrımı yok, bu madde 19 ile aynı kök neden olabilir). `SearchIndexer.kt`'nin klasör (`AppFolder`) ve kategori (`Category`) verisini de indexlediğinden emin olunmalı; eksikse yeni indexleme adımı + FTS tablo migration (Room şema versiyon artışı, CLAUDE.md Room Migration Şablonu kuralına uy) gerekir. Dosya adı arama (SAF/`MediaStore`) ayrı ve daha büyük bir iş — CLAUDE.md Android 16 dosya erişim kısıtı (`context.filesDir`/SAF) göz önünde tutulmalı.
+**Puan:** KV=5 U=2 BR=3 EA=4 → Toplam=14
+**Durum:** Bekliyor 🐛
+
+### [18] AllAppsDrawer'da uygulama altına bildirim özeti
+**Sorun/İstek:** Tüm Uygulamalar listesinde her uygulamanın altına, o uygulamadan bildirim geldiyse bunu yazalım.
+**Nasıl yapılmalı:** `AllAppsDrawer.kt` (grep'te doğrudan bulunamadı, `AppIconView.kt`/`FolderTile.kt` bildirim badge mantığını zaten kullanıyor — CLAUDE.md §8 madde 10) her satıra `notification_events` tablosundan (paket bazlı) son N saatteki bildirim sayısı/özeti çekip küçük bir alt metin ("3 bildirim") eklenmeli. `AppNotificationListenerService.kt` + `NotificationAnalyzer` mevcut altyapı kullanılabilir, yeni sorgu (`AppDao`/`NotificationEventDao` paket bazlı count) gerekir.
+**Puan:** KV=3 U=3 BR=2 EA=3 → Toplam=11
+**Durum:** Bekliyor
+
+### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
+**Sorun/İstek:** Arama sonuçlarında her sonucun ne olduğu (uygulama/kişi/dosya/klasör) etiketlenmeli.
+**Nasıl yapılmalı:** Madde 17 ile aynı kök: `domain/models/SearchDocument.kt` şemasına bir `sourceType`/`entityType` enum alanı eklenmeli (APP/FOLDER/CONTACT/FILE), `SearchIndexer.kt` her kaynağı indexlerken bu alanı doldurmalı. UI tarafında (`HomeScreenComponents.kt` arama sonuç listesi) her satırın başına küçük ikon/chip ile tür gösterilmeli. Bu iki madde (17+19) aynı dosya setini değiştirdiği için TEK döngüde birlikte yapılmalı.
+**Puan:** KV=4 U=2 BR=3 EA=3 → Toplam=12
+**Durum:** Bekliyor
+
+### [20] Klasörler arası geçiş animasyonu iyileştirilsin (iPhone tarzı)
+**Sorun/İstek:** Mevcut page-turn efekti yetersiz, iPhone'daki gibi akıcı bir geçiş isteniyor.
+**Nasıl yapılmalı:** `HomeScreenFolderPager.kt` + `HomeScreenPageIndicator.kt` içindeki `HorizontalPager` transform mantığı incelenmeli — muhtemelen `graphicsLayer` ile basit alpha/scale efekti var. iOS-tarzı akıcı geçiş için `pagerSnapDistance`, `flingBehavior` ve `graphicsLayer { translationX, scaleX/Y, cameraDistance }` kombinasyonu (Compose "carousel" pattern'i) araştırılmalı — CLAUDE.md Araştırma Önceliği kuralı gereği yeni animasyon pattern'i için WebSearch zorunlu (daha önce yapılmamış işlem). UX/görsel karar olduğundan Fable model ile tasarım onayı önerilir.
+**Puan:** KV=3 U=3 BR=3 EA=3 → Toplam=12
+**Durum:** Bekliyor
+
+---
+
 ## Hedef
 
 Play Store yayini icin Production AAB v1.0.0 hazir.
