@@ -49,6 +49,9 @@ class AppNotificationListenerService : NotificationListenerService() {
                 // atomic update — race condition'u önler
                 knownNotificationKeys += sbn.key
                 rebuildCounts()
+                // P0.5: paket bazli "okunmamis" modeli icin son bildirim zamanini kaydet —
+                // UnreadNotificationModel bunu NotificationReadPrefs.lastReadAt ile karsilastirir.
+                _lastPostedAt.update { current -> current + (sbn.packageName to System.currentTimeMillis()) }
                 // Gizlilik: bildirim metni yalnızca ayar açıkken yayınlanır/DB'ye yazılır (varsayılan kapalı)
                 if (combined.isNotBlank() && AppPrefs.isNotificationTextEnabled(this)) {
                     _latestTexts.update { current -> current + (sbn.packageName to combined) }
@@ -98,6 +101,8 @@ class AppNotificationListenerService : NotificationListenerService() {
         knownNotificationKeys.clear()
         _badgeCounts.value = emptyMap()
         _latestTexts.value = emptyMap()
+        // lastPostedAt KASITLI OLARAK temizlenmiyor — servis yeniden baglaninca (kisa kesinti)
+        // "okunmamis" bilgisi kaybolmasin; NotificationReadPrefs zaten kalici sakliyor.
     }
 
     override fun onDestroy() {
@@ -125,5 +130,10 @@ class AppNotificationListenerService : NotificationListenerService() {
 
         private val _latestTexts = MutableStateFlow<Map<String, String>>(emptyMap())
         val latestTexts: StateFlow<Map<String, String>> = _latestTexts.asStateFlow()
+
+        // P0.5: paket -> en son bildirim POST edilme zamani (epoch ms). "Aktif bildirim sayisi"
+        // ile "okunmamis" kavramini ayirmak icin — bkz. UnreadNotificationModel.
+        private val _lastPostedAt = MutableStateFlow<Map<String, Long>>(emptyMap())
+        val lastPostedAt: StateFlow<Map<String, Long>> = _lastPostedAt.asStateFlow()
     }
 }

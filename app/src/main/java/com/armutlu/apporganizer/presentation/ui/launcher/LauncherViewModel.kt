@@ -214,16 +214,30 @@ class LauncherViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             repository.ensureDefaultCategories()
         }
-        // NotificationListenerService'ten gelen badge sayilarini DB'ye yaz.
+        // P0.5: NotificationListenerService'ten gelen AKTIF bildirim sayilarini ham haliyle
+        // DB'ye yazmak yerine "okunmamis" modelinden gecir. "Aktif sistem bildirimi" ile
+        // "kullanici henuz gormedi" ayni sey degil: kullanici uygulamayi actiktan sonra bile
+        // sistem bildirimi launcher tarafindan iptal EDILMIYOR (bilincli — kullanicinin
+        // sistem bildirimleri silinmemeli), bu yuzden badge'in "okundu" bilgisini ayrica
+        // NotificationReadPrefs.lastReadAt (launchApp'ta yazilir) ile hesapliyoruz.
         // Tum bildirimler silindiginde counts bos map gelir — guard olmadan her durumda temizle.
-        AppNotificationListenerService.badgeCounts
-            .onEach { counts ->
+        combine(
+            AppNotificationListenerService.badgeCounts,
+            AppNotificationListenerService.lastPostedAt,
+        ) { active, posted -> active to posted }
+            .onEach { (active, posted) ->
                 viewModelScope.launch(Dispatchers.IO) {
                     runCatching {
-                        repository.updateNotificationCounts(counts)
-                        val knownPkgs = counts.keys
+                        val ctx = getApplication<Application>()
+                        val lastReadAt = com.armutlu.apporganizer.utils.NotificationReadPrefs.getAll(ctx)
+                        val unread = com.armutlu.apporganizer.domain.usecase.notification.UnreadNotificationModel
+                            .computeUnreadCounts(active, posted, lastReadAt)
+                        repository.updateNotificationCounts(unread)
+                        // active haritasindaki ama unread'de kalmayan (okunmus) paketler + tum
+                        // bildirimleri silinen paketler icin DB'deki sayaci sifirla.
+                        val knownUnreadPkgs = unread.keys
                         val toReset = repository.getAllApps()
-                            .filter { it.notificationCount > 0 && it.packageName !in knownPkgs }
+                            .filter { it.notificationCount > 0 && it.packageName !in knownUnreadPkgs }
                         if (toReset.isNotEmpty()) {
                             repository.updateNotificationCounts(toReset.associate { it.packageName to 0 })
                         }
@@ -449,6 +463,12 @@ class LauncherViewModel @Inject constructor(
                 repository.incrementLaunchCount(packageName)
                 repository.updateLastUsedTimestamp(packageName, ts)
             }
+            // P0.5: yalnizca yerel "okundu" zaman damgasini guncelle — badge bir sonraki
+            // badgeCounts akisinda bu zamana gore sifirlanir. SISTEM BILDIRIMINI ILETMIYORUZ
+            // (cancelNotification cagrisi YOK, bilincli) — kullanicinin bildirim panelindeki
+            // gercek bildirimleri launcher tarafindan silinmemeli, yalnizca "gorulmedi" isareti
+            // kalkiyor. (Kod tarandi: bu projede daha once de cancelNotification cagrisi yoktu.)
+            com.armutlu.apporganizer.utils.NotificationReadPrefs.markRead(context, packageName, ts)
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
         }
