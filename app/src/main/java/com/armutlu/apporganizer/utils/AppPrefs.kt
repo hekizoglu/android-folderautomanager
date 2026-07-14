@@ -833,6 +833,20 @@ object AppPrefs {
     fun getSmartNotifHour(context: Context): Int  = prefs(context).getInt(KEY_SMART_NOTIF_HOUR, 20)
     fun setSmartNotifHour(context: Context, h: Int) = prefs(context).edit().putInt(KEY_SMART_NOTIF_HOUR, h).apply()
 
+    // Siniflandirma/klasor onerileri sistem bildirimi (ROADMAP #26) — varsayilan KAPALI (yeni ozellik kurali)
+    const val KEY_SUGGESTION_NOTIFICATIONS_ENABLED = "suggestion_notifications_enabled"
+    const val KEY_SUGGESTION_NOTIF_LAST_COUNT = "suggestion_notif_last_count"
+
+    fun isSuggestionNotificationsEnabled(context: Context) =
+        prefs(context).getBoolean(KEY_SUGGESTION_NOTIFICATIONS_ENABLED, false)
+    fun setSuggestionNotificationsEnabled(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_SUGGESTION_NOTIFICATIONS_ENABLED, v).apply()
+
+    fun getSuggestionNotifLastCount(context: Context): Int =
+        prefs(context).getInt(KEY_SUGGESTION_NOTIF_LAST_COUNT, 0)
+    fun setSuggestionNotifLastCount(context: Context, count: Int) =
+        prefs(context).edit().putInt(KEY_SUGGESTION_NOTIF_LAST_COUNT, count).apply()
+
     // Arama istatistikleri - anonim sayaclar (SearchStatsPrefs). Kapatilinca loglama durur.
     const val KEY_SEARCH_STATS_ENABLED = "search_stats_enabled"
     fun isSearchStatsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_STATS_ENABLED, true)

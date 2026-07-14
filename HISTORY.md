@@ -8,6 +8,12 @@
 **CLAUDE.md/LEARNINGS.md:** güncellenmedi (tek seferlik bug fix, kalıcı kural değil).
 **Sonraki:** ROADMAP'taki bir sonraki öncelikli madde.
 
+## Döngü 283 - 2026-07-14 [ROADMAP #26 öneri bildirimleri]
+**Yapılanlar:** `SuggestionNotificationWorker.kt` eklendi — `Kontrol Bekleyenler` (`AppRepository.getPendingClassificationApps()`) sayısı önceki kayıtlı sayıdan (AppPrefs) arttığında günde en fazla 1 özet bildirim gönderir, dokununca `Routes.CLASSIFICATION_REVIEW`'a deep-link (`MainActivity.EXTRA_OPEN_ROUTE`). `AppPrefs.kt` → `KEY_SUGGESTION_NOTIFICATIONS_ENABLED` (varsayılan **false**) + `KEY_SUGGESTION_NOTIF_LAST_COUNT`. `AppOrganizerApp.kt` açılışta ayar açıksa worker'ı zamanlıyor. `SettingsNotificationsScreen.kt`'ye "Öneri Bildirimleri" bölümü + toggle eklendi (worker'ı anında yeniden zamanlar). POST_NOTIFICATIONS/bildirim izni yoksa `NotificationManagerCompat.areNotificationsEnabled()` kontrolüyle sessizce atlanır.
+**Agent:** yok — doğrudan uygulandı.
+**Doğrulama:** `assembleDebug -PskipGoogleServices` başarılı (hatasız).
+**Sonraki:** ROADMAP #25 ticker tıklama bug'ı.
+
 ## Döngü 281 - 2026-07-14 [ROADMAP #20 klasör geçiş animasyonu]
 **Puanlama:** Mevcut altyapı 3/5, kullanıcı değeri 3/5, risk 3/5, doğrulama 3/5 → 12/20. Kalan son kod maddesi olduğu için düşük riskli pager transform olarak uygulandı; gerçek iPhone hissi görsel/tablet smoke ile ayrıca değerlendirilmelidir.
 **Yapılanlar:** `HomeScreenFolderPager` içindeki `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı. Sayfa offset'ine bağlı `graphicsLayer` alpha, scale ve hafif `rotationY` efekti eklendi. `HomeScreenPageIndicator` aktif/inaktif nokta boyutunu `animateDpAsState` ile animasyonlu hale getirdi.

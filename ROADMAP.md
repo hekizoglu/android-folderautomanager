@@ -136,10 +136,7 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Durum:** Bekliyor 🐛
 
 ### [26] Klasör birleştirme/sınıflandırma önerileri sistem bildirimi olarak da gelsin
-**Sorun/İstek:** Klasör birleştirme önerileri gibi öneriler (Kontrol Bekleyenler ekranındaki türden) sadece uygulama içinde değil, sistem bildirimi olarak da kullanıcıya ulaşabilsin.
-**Nasıl yapılmalı:** Bu istek daha önce de dile getirilmişti (Hüseyin notu). `ClassificationReviewScreen.kt`'ye yeni öneri eklendiğinde (klasör birleştirme, benzer uygulama önerisi vb.) bir `NotificationCompat` bildirimi tetiklenmeli — mevcut `AppNotificationListenerService`/bildirim gösterme altyapısı (varsa `SmartInsightWorker`'ın günlük özet bildirimi gönderme mantığı) örnek alınabilir. Kullanıcı bildirime dokununca doğrudan `Routes.CLASSIFICATION_REVIEW`'a gitmeli (deep-link). Spam olmaması için: günde en fazla 1 özet bildirim ("N yeni öneri var") şeklinde toplu gönderim tercih edilmeli, her öneri için ayrı bildirim ATILMAMALI. `AppPrefs`'e `KEY_SUGGESTION_NOTIFICATIONS_ENABLED` (varsayılan kapalı, CLAUDE.md "Yeni Özellik = Ayarlar Kuralı") eklenmeli.
-**Puan:** KV=3 U=3 BR=3 EA=3 → Toplam=12
-**Durum:** Bekliyor
+**Durum:** Tamamlandı ✅ (D282) — `SuggestionNotificationWorker.kt` eklendi
 
 ### [28] Görevler kartı, Dijital Yaşam Skoru rozetiyle aynı görsel dil + boyutta, skorun soluna yerleştirilsin
 **Sorun/İstek:** Ana ekrandaki Görevler giriş noktası (madde 13, D274'te chip olarak eklenmişti), Dijital Yaşam Skoru rozetiyle (madde 10, D276'da ticker içinde "Skor NN" olarak eklenmişti) AYNI boyutta, AYNI yıldızlı görsel stilde olacak şekilde yeniden tasarlanmalı ve skor rozetinin SOLUNA yerleştirilmeli — böylece ikisi yan yana simetrik bir çift oluşturur.
