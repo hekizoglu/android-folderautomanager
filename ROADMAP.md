@@ -33,7 +33,7 @@ Kalan ana kapilar:
 |---|---|---|---|
 | 1 | Play Console beyanlari | QUERY_ALL_PACKAGES, Data Safety, Content Rating ve Privacy Policy URL alanlari kod gercegine gore doldurulacak. | Bekliyor - kullanici/Play Console |
 | 2 | Release imza | `scripts/create_release_keystore.ps1` ile kalici key uretilecek, `keystore.properties` git disinda saklanacak, final AAB temiz committen alinacak. | Bekliyor - kullanici aksiyonu |
-| 3 | Magaza screenshot seti | Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore ekranlari kisisel veri olmadan cekilecek. | Bekliyor - cihaz/emulator |
+| 3 | Magaza screenshot seti | Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore ekranlari kisisel veri olmadan cekilecek. D260: 5/9 cekildi (`docs/store_screenshots/` - home, arama, settings, bildirim raporu, onboarding); kalan: klasor detay, arama ayarlari, izinler, dashboard, ozellestirme, yedekleme, gorevler + light/dark varyantlar. | Kismen tamam - 5/9 |
 | 4 | Gercek cihaz QA paketi | NotificationListener, backup/restore, SmartInsightWorker, BackupWorker, blur/API26 ve OEM kategori smoke tek pakette kosulacak. AllApps double-tap Pixel6_API33 emülatörde 2026-07-13 crashsiz geçti; fiziksel cihazda genel QA parçası olarak tekrar edilebilir. | Bekliyor - gercek cihaz |
 | 5 | `cycle.ps1` gercek tur | Temiz dal ve push hazirliginda bir kez uctan uca kosulup Telegram/commit/push kaniti alinacak. | Bekliyor - gercek tur |
 | 6 | Wrapped Phase 2 dis dogrulama | UsageEvents oturum altyapisi API 28/29+, split-screen, kilit/ac, reboot ve grant/revoke olaylariyla cihazda kanitlanacak. | Bekliyor - dis dogrulama |

@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 260 - 2026-07-14 [Emülatör doğrulaması + mağaza screenshot seti (kısmi)]
+
+**Yapılanlar:** emulator-tester agent Pixel6_API33'te v1.3.17'yi kurup D257-259 doğrulama listesini koştu: onboarding 5/5 adım, arama çubuğu altta + sonuçlar yukarı açılıyor (dock sabit), dock görünümü doğru, bildirim raporu scroll crash'siz (D255 fix kanıtlandı), Ayarlar/Görevler ekranları açılıyor, klasör navigasyonu çalışıyor — **AppOrganizer'da hiç FATAL EXCEPTION yok**. Play Store screenshot setinin 5 ekranı çekildi (`docs/store_screenshots/`): home, arama sonuçları, settings, bildirim raporu, onboarding. Defender exclusion kalıcı çözümü bu döngüde uygulandı ve doğrulandı (LEARNINGS D259 notu).
+
+**Eksik:** Screenshot seti 5/9 — kalan: klasör detay, arama ayarları, izinler, dashboard/rapor merkezi, özelleştirme, yedekleme, görevler ekranı. Ayrıca skor halkası 24s grafik + kişilik etiketi görsel olarak net doğrulanamadı (kullanım izni yeni verildiğinde veri birikmemiş olabilir) — gerçek cihazda bakılmalı.
+
+**Sonraki:** Kalan 4-6 mağaza screenshot'ı + light/dark varyantlar; gerçek cihaz QA paketi (dış aksiyon).
+
+---
+
 ## Döngü 259 - 2026-07-14 [Klasör geçiş efektleri: 3 seçilebilir mod v1.3.17]
 
 **Yapılanlar:** Hüseyin talebi (araştırma zorunlu): Sonnet agent önce WebSearch ile Compose geçiş pattern'lerini araştırdı (proandroiddev pager transition, sinasamaki pager-animations + page-flip-3d, juliensalvi parallax — lambda tabanlı `graphicsLayer` render fazında çalışır, recomposition tetiklemez), sonra `FolderScreen.kt`'de geçiş hattını `when(folderTransitionEffect)` ile 3 stratejiye ayırdı: `page_turn` (D253 mevcut kod aynen, varsayılan), `slide_parallax` (translationX ×0.7 + alpha 1→0.85, `FolderSlideParallaxPeek`), `zoom_fade` (scale 1→0.88 + alpha 1→0.55, komşu peek yok). Ayarlar > Launcher "Klasör Geçişleri" 3-chip seçici; `KEY_FOLDER_TRANSITION_EFFECT` + BackupManager export/import; TR+EN 5'er string. ROADMAP maddesi kapatıldı.
