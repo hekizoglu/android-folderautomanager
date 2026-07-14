@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 3 (kısmi) + Codex devri - 2026-07-15
+
+**Yapılanlar:** (P1.3, b755690) Saat bazlı kişi önerileri altyapısı — `ContactActionPrefs` (contactId+aksiyon+zaman, telefon numarası saklanmaz, max 500 FIFO), `ContactSuggestionEngine` (saat penceresi ±1s + gün eşleşmesi + 14 gün yarı ömürlü recency; <5 olayda boş liste), Ara/SMS/WhatsApp aksiyon noktalarına log, `LauncherViewModel.suggestedContacts`, Ayarlar toggle + geçmiş temizleme, 7/7 test. UI tüketimi bilinçli olarak P1.2'ye bırakıldı.
+
+**Kesinti:** P1.1 (tam ekran arama) agent'ı API content-filter hatasıyla yarıda kaldı — yarım iş atıldı, madde açık. Claude kotası dolmak üzere olduğundan kalan 18 madde Codex'e devredildi: durum + kurallar + ortam tuzakları `CODEX_DEVIR_2026-07-15.md`'de.
+
+**Toplam ilerleme:** 8/26 (tüm P0 + P1.3). main=b755690, v1.3.26.
+
+---
+
 ## AI Denetim Sprint 2 - 2026-07-14 [P0.4-P0.7, v1.3.26]
 
 **Yapılanlar:** (P0.4, a7ad7de) Kapsam seçimli sıfırlama sihirbazı — StatsResetService, kapsam başına bağımsız hata toleransı, toplu SQL UPDATE, snackbar raporu. (P0.5, ffbb7cb) Okunmamış bildirim modeli — NotificationReadPrefs + UnreadNotificationModel (saf), launchApp yalnız yerel okundu işaretler; kodda cancelNotification zaten yokmuş (denetim varsayımı yanlıştı, model yine de doğru kuruldu). (P0.6, d4705c8) ClassificationMode enum (LOCAL_ONLY/…/MANUAL_REVIEW_ONLY) + eski toggle migration; GERÇEK KÖK NEDEN: AppRepository.insertApps üretici toggle'ını hiç okumuyordu — ayar kapalıyken bile vendor kuralı çalışıyordu, düzeltildi; Ayarlar'da 4 seçenekli tek seçici; BackupManager mode export/import. (P0.7, cec03d6) CategorySuggestionEngine — keyword→vendor→benzer paket sinyal önceliği, sinyal yoksa "yeterli sinyal yok"; Kontrol Bekleyenler kartlarında öneri + tek dokunuş uygula (kullanıcı onaylı).

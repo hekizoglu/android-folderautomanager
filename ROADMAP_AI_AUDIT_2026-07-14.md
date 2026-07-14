@@ -168,7 +168,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.1 — Tam ekran “Her Şeyi Ara” deneyimi
 
-**Durum:** Bekliyor  
+**Durum:** Bekliyor — ilk agent denemesi content-filter kesintisiyle yarıda kaldı, yarım iş atıldı; temiz başlanmalı (bkz. CODEX_DEVIR_2026-07-15.md)  
 **Yapılacaklar:**
 
 - Arama alanına dokununca tam ekran overlay veya ayrı route aç.
@@ -203,7 +203,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.3 — Saat bazlı kişi önerileri
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (Sprint 3, commit b755690) — ContactActionPrefs (contactId+aksiyon+zaman, max 500 FIFO) + ContactSuggestionEngine (saat penceresi + gün + recency yarı ömrü, <5 olayda boş) + LauncherViewModel.suggestedContacts; UI tüketimi P1.2'ye bırakıldı; 7/7 test  
 **Gizlilik kararı:** İlk sürümde `READ_CALL_LOG` isteme.
 
 **Yapılacaklar:**

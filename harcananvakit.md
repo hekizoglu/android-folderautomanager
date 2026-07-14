@@ -123,3 +123,4 @@
 | 2026-07-14 | ~03:30 | ~03:55 | TEST+DÖKÜMAN | Döngü 260: emülatör smoke (crash yok) + 5 mağaza screenshot + Defender exclusion uygulandı |
 | 2026-07-14 | ~ | ~ | KOD+BUILD+TEST | AI Denetim Sprint 1: P0.1-P0.3 (3 paralel agent), tam test + APK kapısı, v1.3.25 |
 | 2026-07-14 | ~ | ~ | KOD+BUILD+TEST | AI Denetim Sprint 2: P0.4-P0.7 (4 agent), tam test + APK, v1.3.26 |
+| 2026-07-15 | ~ | ~ | KOD+DÖKÜMAN | AI Denetim Sprint 3 kısmi: P1.3 tamam, P1.1 kesinti, Codex devir notu yazıldı |
