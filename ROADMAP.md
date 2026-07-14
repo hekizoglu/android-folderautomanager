@@ -109,6 +109,12 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
 **Durum:** ✅ Tamamlandı (Döngü 279) — Ayarlar > Ana Ekran > Öneriler ve bildirimler altına varsayılan kapalı "Son Bildirim Alanlar" toggle'ı eklendi. Açıkken ana ekranda son 24 saatte bildirim alan uygulamalar satırı, All Apps çekmecesinde de aynı uygulamalar bölümü görünür. Yalnız sayı/paket zamanı kullanılır; içerik gösterilmez.
 
+### [22] 🐛 Uygulama üzerinde basılı tutup "Kategori Değiştir" hiçbir şey yapmıyor
+**Sorun/İstek:** Kullanıcı bir uygulama ikonuna uzun basıp context menüden "Kategori Değiştir" seçtiğinde hiçbir tepki alınmıyor (dialog/ekran açılmıyor, hata da yok).
+**Nasıl yapılmalı:** Uzun-bas context menüsünün tanımlı olduğu yer bulunmalı — `HomeScreen.kt`/`FolderScreen.kt`/`AllAppsDrawer.kt` içindeki uygulama ikonu `onLongClick`/context menü composable'ı (DropdownMenu veya bottom sheet) grep ile aranmalı: `grep -rn "Kategori Değiştir\|kategori.*degistir\|ChangeCategory" app/src/main/java`. Muhtemel kök nedenler: (a) menü öğesinin `onClick` lambda'sı boş/TODO bırakılmış, (b) tıklama bir dialog/ekranı tetikliyor ama navigation route'u yanlış/eksik, (c) `AppClassifier`/`AppRepository`'de kategori güncelleme fonksiyonu çağrılıyor ama sonuç UI'a yansımıyor (state güncellenmiyor), (d) madde 3'teki (Ayarlar > Uygulamalar güven skoru toggle'ı) ile aynı "kategori değiştir" akışının parçası olabilir — ilişkili olup olmadığı doğrulanmalı. Kategori değiştirme özelliğinin projede zaten var olduğu CLAUDE.md §3 ("Yeni Özellik = Ayarlar Kuralı" örnekleri) ve `ClassificationReviewScreen.kt` bağlamından biliniyor, muhtemelen sadece uzun-bas giriş noktası kırık.
+**Puan:** KV=4 U=4 BR=3 EA=2 → Toplam=13
+**Durum:** Bekliyor 🐛
+
 ### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
 **Durum:** ✅ Tamamlandı (D265, doğrulama) — `HomeAppSearchBar` sonuç listesi zaten türe göre gruplanmış ayrı bölümler halinde: "Uygulamalar" (Search ikon), "Klasörler" (Folder ikon), "Ayarlar" (Search ikon), "Kişiler" (Person ikon), "Dosyalar" (Description ikon) — her grup `HomeSearchGroupHeader(label, icon)` ile başlık+ikon alıyor (satır 969, 1019, 1062, 1102, 1259), çoklu grup olduğunda gösteriliyor. Satır bazlı ikon değil grup başlığı bazlı etiketleme — kullanıcı değerini karşılıyor, ek kod değişikliği gerekmedi.
 
