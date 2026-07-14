@@ -2,6 +2,18 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 1 - 2026-07-14 [P0.1 + P0.2 + P0.3, v1.3.25]
+
+**Yapılanlar:** ROADMAP_AI_AUDIT Sprint 1 üç paralel Sonnet agent'la tamamlandı. (P0.1, bb46943) FolderScreen'de `categoryPickerApp` state'i context-menu bloğu içindeydi — menü kapanınca picker unmount oluyordu; ekran köküne taşındı, kategori değişim unit testi eklendi. (P0.2, 43b54bb) 4 farklı "dikkat gerekiyor" filtresi `ClassificationAttentionPolicy`'de (6 nedenli enum) tekleşti; Kontrol Bekleyenler + Ayarlar sayacı + Dashboard aynı kaynaktan, satırlarda "neden burada?" (TR+EN), 11 test. (P0.3, 684879d) `FileIndexState` sealed modeli; FilesIndexer StateFlow + AppPrefs kalıcılık, FilesIndexWorker Hilt EntryPoint'e geçti (ayrı instance bug'ı), SearchSettings durum satırı + ana arama/AllApps'te "dosya izni gerekli" ipucu, bayat URI izinleri temizleniyor, 8 test.
+
+**Ortam:** Kalite kapısı ilk denemede `generateDebugBuildConfig` cache silme hatasıyla düştü — fail 3 adet VSCode redhat.java LS süreciydi (Defender exclusion'ları artık doğru; LEARNINGS'teki LS kilidi ayrı kök neden). Java kill + app\build temizliğiyle 2. deneme geçti. Agent worktree otomasyonu EEXIST verdi — P0.2/P0.3 manuel worktree ile çalıştı.
+
+**Kalite kapısı:** testDebugUnitTest (tümü) + compileDebugKotlin + assembleDebug → geçti. versionCode 48 / 1.3.25.
+
+**Sonraki:** Sprint 2 (P0.4 reset sihirbazı, P0.5 okunmamış modeli, P0.6 sınıflandırma modu, P0.7 öneri akışı).
+
+---
+
 ## Döngü 282 - 2026-07-14 [ROADMAP #27 Ayarlar biyometrik kilit lockout - KRİTİK]
 **Yapılanlar:** `SettingsScreen.kt` — kök neden: Biyometrik Ayarlar Kilidi açıkken `biometricUnlocked` `remember{}` ile tutuluyordu; NavHost her geri dönüşte (ör. Haftalık Rapor→Rapor Merkezi→İstatistikler→Ayarlar) composable'ı sıfırdan compose ettiği için state kayboluyor, `LaunchedEffect(Unit)` her seferinde biyometrik istiyordu. Tek bir eşleşmeme/iptal `onFailure={onNavigateBack()}` tetikleyip kullanıcıyı Ayarlar'dan tamamen dışlıyordu (tekrar denedikçe tekrar başarısız). Fix: composable-dışı `SettingsLockSession` singleton eklendi — process ömrü boyunca tek seferlik unlock, aynı oturumda tekrar biyometrik istenmiyor.
 **Agent:** yok, doğrudan kod okuma + fix.

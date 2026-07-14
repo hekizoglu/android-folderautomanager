@@ -25,7 +25,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.1 — Klasör içinden kategori değiştirme akışını düzelt
 
-**Durum:** Bekliyor — gerçek hata  
+**Durum:** ✅ Tamamlandı (Sprint 1, commit bb46943) — categoryPickerApp state'i ekran köküne taşındı, LauncherViewModelLogicTest'e kategori değişim testi eklendi  
 **Kök neden:** `FolderScreen.kt` içinde `categoryPickerApp` state'i `contextMenuApp?.let` bloğunda tanımlı. Menü kapatılınca state'i render eden blok da kayboluyor.
 
 **Yapılacaklar:**
@@ -47,7 +47,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.2 — Sınıflandırılmamış / Diğer / Kontrol Bekleyenler sayaçlarını tek politikada birleştir
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (Sprint 1, commit 43b54bb) — ClassificationAttentionPolicy tek kaynak; sayaç/liste/dashboard aynı politikadan, "neden burada?" metinleri TR+EN, 11/11 test  
 **Sorun:** `uncategorized`, `other`, düşük güven, eksik kategori ve review-pending durumları farklı filtrelerle hesaplanabildiği için sayaç dolu iken liste boş kalabilir.
 
 **Yapılacaklar:**
@@ -69,7 +69,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P0.3 — Dosya aramasına açık izin ve indeks durumu ekle
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (Sprint 1, commit 684879d) — FileIndexState sealed modeli (Disabled/PermissionRequired/Indexing/Ready/Failed), ayarlar + arama sonuçlarında izin ipucu, bayat URI izni temizliği, 8/8 test  
 **Sorun:** İzin yokken indeksleme sessizce atlanabiliyor ve kullanıcı “sonuç yok” ile “izin yok” durumunu ayırt edemiyor.
 
 **Yeni durum modeli:**
