@@ -435,6 +435,30 @@
     <string name="settings_stats_weekly_report_title">Haftalık Rapor</string>
     <string name="settings_stats_weekly_report_desc">Dijital yaşam skoru, kişilik tipi ve rozetler — Raporlar Merkezi\'nde gösterilir</string>
 
+    <!-- P0.4: İstatistik sıfırlama sihirbazı -->
+    <string name="stats_reset_wizard_title">Kullanım Verisini Sıfırla</string>
+    <string name="stats_reset_wizard_step1_desc">Neyi sıfırlamak istediğini seç:</string>
+    <string name="stats_reset_scope_usage_counters">Kullanım sayaçları</string>
+    <string name="stats_reset_scope_usage_counters_desc">Uygulama açılma sayısı ve süresi</string>
+    <string name="stats_reset_scope_last_used">Son kullanım zamanları</string>
+    <string name="stats_reset_scope_last_used_desc">En son ne zaman açıldığı bilgisi</string>
+    <string name="stats_reset_scope_notifications">Bildirim geçmişi</string>
+    <string name="stats_reset_scope_notifications_desc">Bildirim analiz kayıtları ve metinleri</string>
+    <string name="stats_reset_scope_wrapped">Wrapped / haftalık karşılaştırmalar</string>
+    <string name="stats_reset_scope_wrapped_desc">Haftalık rapor ve dijital yaşam skoru trendi</string>
+    <string name="stats_reset_scope_missions">Görev puanı ve geçmişi</string>
+    <string name="stats_reset_scope_missions_desc">Toplam yıldız ve tamamlanan görevler</string>
+    <string name="stats_reset_scope_all">Tümü</string>
+    <string name="stats_reset_next">İleri</string>
+    <string name="stats_reset_cancel">İptal</string>
+    <string name="stats_reset_back">Geri</string>
+    <string name="stats_reset_confirm_title">Seçilenleri Sıfırla</string>
+    <string name="stats_reset_confirm_desc">Aşağıdaki veriler kalıcı olarak silinecek. Bu işlem geri alınamaz:</string>
+    <string name="stats_reset_confirm_button">Sıfırla</string>
+    <string name="stats_reset_result_success">%1$d kapsam başarıyla sıfırlandı</string>
+    <string name="stats_reset_result_partial">%1$d/%2$d kapsam sıfırlandı, %3$d başarısız</string>
+    <string name="stats_reset_result_failure">Sıfırlama başarısız oldu</string>
+
     <!-- SearchSettingsScreen -->
     <string name="search_settings_web_fallback_title">Web ve Play Store Fallback</string>
     <string name="search_settings_web_fallback_desc">Sonuç bulunamayınca web/Play Store araması öner</string>
