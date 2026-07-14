@@ -115,6 +115,36 @@ Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scr
 **Puan:** KV=4 U=4 BR=3 EA=2 → Toplam=13
 **Durum:** Bekliyor 🐛
 
+### [23] Görevler'e "gece saatinde telefon açma" tarzı zaman-kısıtlı görev tipi
+**Sorun/İstek:** Örn. "23:00'dan sonra telefonu açma" gibi bir görev tanımlanabilsin; kural ihlal edilirse (o saat aralığında ekran açılırsa) görev otomatik "çarpı"/başarısız işaretlensin — bir oyun/challenge gibi.
+**Nasıl yapılmalı:** Mevcut `TaskScoreManager` (Döngü 272) sadece olay-tetiklemeli (sınıflandırma onayı, klasör önerisi kabul vb.) puan işliyor — bu YENİ bir görev TİPİ: zaman-pencereli, kullanıcı tanımlı kısıtlama. Gerekli parçalar: (1) `MissionsScreen.kt`'ye yeni görev oluşturma UI'ı (başlangıç saati, bitiş saati seçici), (2) Room'a yeni tablo (`time_restriction_missions`: başlangıç/bitiş saat, oluşturulma tarihi, günlük durum), (3) ekran açılma olayını yakalayan bir mekanizma — `UsageStatsHelper`/`AppNotificationListenerService` zaten ekran/uygulama açılışını izliyor olabilir, ya da yeni bir `ScreenOnReceiver` (`Intent.ACTION_SCREEN_ON` broadcast receiver) gerekebilir, (4) her gün gece yarısı (veya kısıtlama penceresi bitiminde) `WorkManager` ile o günün görev sonucunu değerlendirip `TaskScoreManager`'a çarpı/tik yazan bir worker. Zorluk: arka planda `ACTION_SCREEN_ON` dinlemek Android 8+'ta manifest-registered receiver ile çalışmaz (implicit broadcast kısıtı), `Service`/`WorkManager` periyodik kontrol ya da mevcut NotificationListener altyapısına eklenti gerekebilir — mimari karar gerektirir (Görev Zorluk Puanı 7-8, CLAUDE.md kuralı gereği önce 2+ kaynak araştırma).
+**Puan:** KV=4 U=2 BR=3 EA=3 → Toplam=12
+**Durum:** Bekliyor
+
+### [24] 🐛 Arama sonuçları arama sırasında kayboluyor
+**Sorun/İstek:** Arama çubuğunda arama yapılırken bulunan sonuç(lar) kayboluyor (tam netleşmedi: yazarken mi, bir tıklamadan sonra mı — agent reprodüksiyon adımıyla netleştirmeli).
+**Nasıl yapılmalı:** `HomeScreenComponents.kt`'deki `HomeAppSearchBar` composable'ı (D266/D269 döngülerinde arama kapsamı üzerinde çalışılmıştı) incelenmeli — arama sorgu state'i (`searchQuery`/sonuç `LazyColumn`) bir `remember`/`derivedStateOf` içinde tutuluyorsa, focus kaybı veya klavye animasyonu (madde 4/D267 `imePadding()` fix'iyle ilişkili olabilir) sırasında recomposition'da state sıfırlanıyor olabilir. `SearchRepository`'nin Flow tabanlı sorgu sonucu debounce/timeout ile boş sonuca düşüyor olması da ihtimal dahilinde.
+**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
+**Durum:** Bekliyor 🐛
+
+### [25] 🐛 Haber şeridi (ticker) her zaman en son açılan öğeyi açıyor, tıklanan öğeyi değil
+**Sorun/İstek:** Ana ekrandaki kayan yazı (ticker) hangi habere/bilgiye tıklanırsa tıklansın, hep en son açılmış olan öğe açılıyor — tıklanan öğenin kendi hedefine gitmiyor.
+**Nasıl yapılmalı:** Bu, D265'te düzeltilen ticker donma/swipe bug'ından FARKLI bir sorun — muhtemelen `HomeTickerRow.kt`'deki tıklama handler'ı, o an ekranda görünen/aktif olan `tickerItems[currentIndex]`'i değil, kapanış closure'ında yanlışlıkla sabit/son güncellenen bir referansı (örn. `var currentItem` gibi paylaşılan bir mutable state, veya `LaunchedEffect` içinde yanlış key ile yakalanmış bir closure) kullanıyor. `onClick` lambda'sının hangi `item`'ı yakaladığını (closure capture) ve `LazyRow`/`HorizontalPager` kullanılıyorsa `pagerState.currentPage`'in tıklama anında doğru index'i verip vermediğini incelemek gerekir.
+**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
+**Durum:** Bekliyor 🐛
+
+### [26] Klasör birleştirme/sınıflandırma önerileri sistem bildirimi olarak da gelsin
+**Sorun/İstek:** Klasör birleştirme önerileri gibi öneriler (Kontrol Bekleyenler ekranındaki türden) sadece uygulama içinde değil, sistem bildirimi olarak da kullanıcıya ulaşabilsin.
+**Nasıl yapılmalı:** Bu istek daha önce de dile getirilmişti (Hüseyin notu). `ClassificationReviewScreen.kt`'ye yeni öneri eklendiğinde (klasör birleştirme, benzer uygulama önerisi vb.) bir `NotificationCompat` bildirimi tetiklenmeli — mevcut `AppNotificationListenerService`/bildirim gösterme altyapısı (varsa `SmartInsightWorker`'ın günlük özet bildirimi gönderme mantığı) örnek alınabilir. Kullanıcı bildirime dokununca doğrudan `Routes.CLASSIFICATION_REVIEW`'a gitmeli (deep-link). Spam olmaması için: günde en fazla 1 özet bildirim ("N yeni öneri var") şeklinde toplu gönderim tercih edilmeli, her öneri için ayrı bildirim ATILMAMALI. `AppPrefs`'e `KEY_SUGGESTION_NOTIFICATIONS_ENABLED` (varsayılan kapalı, CLAUDE.md "Yeni Özellik = Ayarlar Kuralı") eklenmeli.
+**Puan:** KV=3 U=3 BR=3 EA=3 → Toplam=12
+**Durum:** Bekliyor
+
+### [27] 🐛 Ayarlar sayfası kilitleniyor — Haftalık Rapor'dan geri dönünce ana Ayarlar açılmıyor (KRİTİK)
+**Sorun/İstek:** Ayarlar > Haftalık Rapor ekranına girilip geri tuşuyla/geri okuyla çıkılınca ana Ayarlar sayfası açılmıyor, kullanıcı Ayarlar'a erişemez hale geliyor (kilitlenme).
+**Nasıl yapılmalı:** EN YÜKSEK ÖNCELİK — kullanıcıyı Ayarlar'dan tamamen dışlıyor. `AppNavigation.kt`'deki Ayarlar↔Haftalık Rapor (`WrappedReportScreen.kt`/`Routes.WEEKLY_REPORT` veya benzeri) route tanımı incelenmeli: (a) `popBackStack()` çağrısı yanlış hedefe gidiyor olabilir (örn. `navigateUp()` yerine güncel olmayan bir route string'i hedeflemiş), (b) Haftalık Rapor ekranı `navController.navigate(Routes.SETTINGS) { launchSingleTop = true }` gibi bir çağrıyla kendi üstüne yeniden navigate edip sonsuz döngü/yanlış state yaratıyor olabilir, (c) Ayarlar ana ekranının ViewModel'i (varsa) Haftalık Rapor'a geçişte `DisposableEffect`/lifecycle ile yanlış temizleniyor, geri dönüşte state boş kalıyor olabilir. Reprodüksiyon adımları net değilse önce emülatörde adım adım doğrulanmalı (Ayarlar aç → Haftalık Rapor'a gir → geri tuşuna bas → sonucu gözlemle).
+**Puan:** KV=5 U=4 BR=4 EA=3 → Toplam=16
+**Durum:** Bekliyor 🐛
+
 ### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
 **Durum:** ✅ Tamamlandı (D265, doğrulama) — `HomeAppSearchBar` sonuç listesi zaten türe göre gruplanmış ayrı bölümler halinde: "Uygulamalar" (Search ikon), "Klasörler" (Folder ikon), "Ayarlar" (Search ikon), "Kişiler" (Person ikon), "Dosyalar" (Description ikon) — her grup `HomeSearchGroupHeader(label, icon)` ile başlık+ikon alıyor (satır 969, 1019, 1062, 1102, 1259), çoklu grup olduğunda gösteriliyor. Satır bazlı ikon değil grup başlığı bazlı etiketleme — kullanıcı değerini karşılıyor, ek kod değişikliği gerekmedi.
 
