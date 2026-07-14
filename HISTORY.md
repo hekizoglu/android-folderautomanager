@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Döngü 259 - 2026-07-14 [Klasör geçiş efektleri: 3 seçilebilir mod v1.3.17]
+
+**Yapılanlar:** Hüseyin talebi (araştırma zorunlu): Sonnet agent önce WebSearch ile Compose geçiş pattern'lerini araştırdı (proandroiddev pager transition, sinasamaki pager-animations + page-flip-3d, juliensalvi parallax — lambda tabanlı `graphicsLayer` render fazında çalışır, recomposition tetiklemez), sonra `FolderScreen.kt`'de geçiş hattını `when(folderTransitionEffect)` ile 3 stratejiye ayırdı: `page_turn` (D253 mevcut kod aynen, varsayılan), `slide_parallax` (translationX ×0.7 + alpha 1→0.85, `FolderSlideParallaxPeek`), `zoom_fade` (scale 1→0.88 + alpha 1→0.55, komşu peek yok). Ayarlar > Launcher "Klasör Geçişleri" 3-chip seçici; `KEY_FOLDER_TRANSITION_EFFECT` + BackupManager export/import; TR+EN 5'er string. ROADMAP maddesi kapatıldı.
+
+**Bug:** Yok — compile ilk denemede geçti; agent worktree'de eksik local.properties'i kendisi oluşturdu (gitignore'lu).
+
+**Sonraki:** Emülatörde 3 efekt görsel doğrulaması; Defender exclusion güncellemesi (Hüseyin, admin — D258 notu).
+
+---
+
 ## Döngü 258 - 2026-07-14 [Arama sonuçları çubuk alttayken yukarı açılır v1.3.16]
 
 **Yapılanlar:** Hüseyin talebi: arama çubuğu alttayken sonuç menüsü yukarı doğru açılsın, sayfa kaymasın. `HomeAppSearchBar`'a `resultsAbove` parametresi eklendi; ~350 satırlık sonuç bloğu `searchResultsSection` lambda'sına taşındı ve Column'da koşullu sıralanıyor (üstte/altta). Yukarı açılımda sonuç listesi `heightIn(max=320dp)` + `verticalScroll` ile sınırlı — grid `weight(1f)` olduğu için büyüme yukarı, dock sabit. HomeScreen çağrısı `resultsAbove = (searchBarPosition == BOTTOM)`.

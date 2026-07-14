@@ -119,3 +119,4 @@
 | 2026-07-13 | ~20:30 | ~20:55 | KOD+BUILD | Döngü 255: bildirim raporu scroll crash fix (LazyColumn duplicate key) + Denge altı 24s mini grafik, v1.3.14 BUILD 25,5 MB |
 | 2026-07-14 | ~00:30 | ~01:40 | KOD+BUILD+TEST | Döngü 257: dock fix + klasör 96dp + arama çubuğu alta + gamification, 2 paralel agent, v1.3.15 BUILD 25,5 MB |
 | 2026-07-14 | ~02:00 | ~02:35 | KOD+BUILD+ORTAM | Döngü 258: arama sonuçları yukarı açılım, build kilidi SOP x1, v1.3.16 BUILD 25,5 MB |
+| 2026-07-14 | ~02:40 | ~03:10 | KOD+BUILD | Döngü 259: klasör geçiş efektleri 3 mod (araştırmalı agent), v1.3.17 BUILD 25,5 MB |
