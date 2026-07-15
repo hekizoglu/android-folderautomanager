@@ -122,7 +122,7 @@ function Get-FirstPendingItem {
     for ($i = 0; $i -lt $lines.Count; $i++) {
         if ($lines[$i] -match '^\*\*Durum:\*\*\s*(?:⏳\s*)?Bekliyor\b') {
             for ($j = $i; $j -ge 0; $j--) {
-                if ($lines[$j] -match '^##\s+(.+)$') {
+                if ($lines[$j] -match '^#{1,6}\s+(.+)$') {
                     return [pscustomobject]@{
                         Title = $Matches[1].Trim()
                         Line = $i + 1
