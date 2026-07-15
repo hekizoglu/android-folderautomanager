@@ -15,6 +15,7 @@ $lockFile = Join-Path $automationDir "roadmap_tick.lock"
 $finalMessageFile = Join-Path $automationDir "last_codex_message.txt"
 $promptPath = Join-Path $projectRoot $PromptFile
 $telegramScript = Join-Path $scriptDir "telegram_notify.ps1"
+$previousState = $null
 
 New-Item -ItemType Directory -Force -Path $automationDir | Out-Null
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
@@ -40,6 +41,29 @@ function Send-Telegram {
         Write-Log "Telegram sent"
     } catch {
         Write-Log "Telegram failed: $($_.Exception.Message)"
+    }
+}
+
+function Get-PreviousState {
+    if (-not (Test-Path $stateFile)) { return $null }
+    try {
+        return Get-Content $stateFile -Raw | ConvertFrom-Json
+    } catch {
+        return $null
+    }
+}
+
+function Should-SendTelegram {
+    param([string]$Status, [string]$Message)
+    if (-not $previousState) { return $true }
+    if ($Status -notin @("error", "blocked", "failed")) { return $true }
+    if ($previousState.status -ne $Status) { return $true }
+    if ($previousState.message -ne $Message) { return $true }
+    try {
+        $last = [datetime]$previousState.updated_at
+        return ((Get-Date) - $last) -ge (New-TimeSpan -Hours 12)
+    } catch {
+        return $true
     }
 }
 
@@ -114,6 +138,30 @@ function Test-GitDangerState {
     return $false
 }
 
+function Resolve-CodexPath {
+    $cmd = Get-Command codex -ErrorAction SilentlyContinue
+    if ($cmd) {
+        return $cmd.Source
+    }
+
+    $candidateRoots = @(
+        (Join-Path $env:USERPROFILE ".vscode\extensions"),
+        (Join-Path $env:LOCALAPPDATA "Programs"),
+        (Join-Path $env:USERPROFILE ".codex")
+    ) | Where-Object { $_ -and (Test-Path $_) }
+
+    foreach ($root in $candidateRoots) {
+        $match = Get-ChildItem -Path $root -Filter "codex.exe" -Recurse -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($match) {
+            return $match.FullName
+        }
+    }
+
+    return $null
+}
+
 function Get-DirtySummary {
     $status = & git status --short 2>$null
     if (-not $status) { return "clean" }
@@ -121,12 +169,15 @@ function Get-DirtySummary {
 }
 
 try {
+    $previousState = Get-PreviousState
     Acquire-Lock
     Write-Log "Lock acquired"
 
-    if (-not (Get-Command codex -ErrorAction SilentlyContinue)) {
+    $codexPath = Resolve-CodexPath
+    if (-not $codexPath) {
         throw "codex command not found"
     }
+    Write-Log "Using codex: $codexPath"
     if (-not (Test-Path $promptPath)) {
         throw "Prompt file not found: $promptPath"
     }
@@ -163,18 +214,17 @@ Automation context:
     }
 
     $codexArgs = @(
+        "-c", "shell_environment_policy.inherit=none",
         "exec",
         "--cd", $projectRoot,
-        "--search",
         "--sandbox", "danger-full-access",
-        "--ask-for-approval", "never",
         "--dangerously-bypass-approvals-and-sandbox",
         "--output-last-message", $finalMessageFile,
         "-"
     )
 
     Write-Log "Starting codex exec"
-    $dynamicPrompt | & codex @codexArgs 2>&1 | Tee-Object -FilePath $logFile -Append
+    $dynamicPrompt | & $codexPath @codexArgs 2>&1 | Tee-Object -FilePath $logFile -Append
     $exitCode = $LASTEXITCODE
 
     $finalMessage = ""
@@ -192,14 +242,18 @@ Automation context:
     } else {
         Write-Log "Codex exited with code $exitCode"
         Save-State -Status "failed" -Message $finalMessage -ExitCode $exitCode
-        Send-Telegram ("AppOrganizer otomasyon turu hata ile bitti ($runId, exit=$exitCode). " + $finalMessage)
+        if (Should-SendTelegram -Status "failed" -Message $finalMessage) {
+            Send-Telegram ("AppOrganizer otomasyon turu hata ile bitti ($runId, exit=$exitCode). " + $finalMessage)
+        }
         exit $exitCode
     }
 } catch {
     $message = $_.Exception.Message
     Write-Log "Fatal error: $message"
     Save-State -Status "error" -Message $message -ExitCode 1
-    Send-Telegram "AppOrganizer otomasyon fatal hata: $message"
+    if (Should-SendTelegram -Status "error" -Message $message) {
+        Send-Telegram "AppOrganizer otomasyon fatal hata: $message"
+    }
     exit 1
 } finally {
     Release-Lock
