@@ -135,6 +135,7 @@ class AppListViewModel @Inject constructor(
             _folderSuggestionRefresh,
         ) { apps, categories, _ ->
             val context = getApplication<Application>()
+            if (!AppPrefs.isFolderSuggestionsEnabled(context)) return@combine emptyList()
             val snoozed = AppPrefs.getSnoozedFolderSuggestions(context)
                 .mapValues { (_, value) -> value.toLongOrNull() ?: 0L }
             FolderSuggestionEngine.generate(
@@ -144,6 +145,10 @@ class AppListViewModel @Inject constructor(
                 snoozedUntilById = snoozed,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    private val _folderSuggestionsInfoDismissed = MutableStateFlow(
+        AppPrefs.isFolderSuggestionsInfoDismissed(application)
+    )
+    val folderSuggestionsInfoDismissed: StateFlow<Boolean> = _folderSuggestionsInfoDismissed.asStateFlow()
     
     // Initialization
     init {
@@ -500,6 +505,11 @@ class AppListViewModel @Inject constructor(
             TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionSnoozed)
             _folderSuggestionRefresh.value += 1
         }
+    }
+
+    fun dismissFolderSuggestionsInfo() {
+        AppPrefs.setFolderSuggestionsInfoDismissed(getApplication(), true)
+        _folderSuggestionsInfoDismissed.value = true
     }
 
     fun setWeeklyGoal(categoryId: String, targetMinutes: Int) {

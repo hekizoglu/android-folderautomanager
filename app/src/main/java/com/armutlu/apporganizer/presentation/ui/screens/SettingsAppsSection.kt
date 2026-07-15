@@ -125,6 +125,7 @@ internal fun LazyListScope.settingsAppsSection(
         var resetConfirmStep by remember { mutableStateOf(0) } // 0=kapalı, 1=ilk onay, 2=son onay
         SettingsCard {
             var overrideSuggestions by remember { mutableStateOf(AppPrefs.isOverrideSuggestionsEnabled(context)) }
+            var folderSuggestionsEnabled by remember { mutableStateOf(AppPrefs.isFolderSuggestionsEnabled(context)) }
             var lowConfidenceReview by remember { mutableStateOf(AppPrefs.isLowConfidenceReviewEnabled(context)) }
             SettingsSwitchRow(
                 icon = Icons.Default.Lightbulb,
@@ -134,6 +135,18 @@ internal fun LazyListScope.settingsAppsSection(
                 onCheckedChange = {
                     overrideSuggestions = it
                     AppPrefs.setOverrideSuggestionsEnabled(context, it)
+                }
+            )
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
+            SettingsSwitchRow(
+                icon = Icons.Default.Folder,
+                title = "Klasor Onerileri",
+                subtitle = "Yeni kurulumda acik gelir; buyuk, kucuk veya atil klasorler icin review onerileri uretir",
+                checked = folderSuggestionsEnabled,
+                onCheckedChange = {
+                    folderSuggestionsEnabled = it
+                    AppPrefs.setFolderSuggestionsEnabled(context, it)
+                    viewModel.dismissFolderSuggestionsInfo()
                 }
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))

@@ -2,6 +2,22 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 3.9 - 2026-07-15
+
+**Yapılanlar:** (P2.7, tamamlandi) Klasor onerileri icin ayri tercih eklendi ve varsayilan yeni kurulumda acik olacak sekilde `AppPrefs.resolveFolderSuggestionsEnabled()` uzerinden cozuldu; kayitli tercih varsa aynen korunuyor. `SettingsAppsSection` altina bu davranisi yoneten toggle eklendi. `FolderSuggestionsScreen` ilk gorunurde kapatilabilir kisa aciklama karti gosteriyor; kart dusuk guvenli siniflandirmalarin otomatik uygulanmadigini ve review akisina gittigini acikca belirtiyor. `AppListViewModel` artik klasor onerilerini bu tercihe gore uretiyor. `AppPrefsFolderSuggestionsTest` ile yeni kurulum varsayilani ve mevcut tercih korumasi kapsandi. Surum `1.3.45` / `versionCode 68`.
+
+**Arastirma:** Android Developers `SharedPreferences` ve Preference default-value dokumantasyonu dogrulandi; kalici deger yoksa varsayilan uygulanmasi, varsa mevcut kullanici tercihinin korunmasi bu madde icin temel davranis olarak esas alindi.
+
+**Kalite kapisi:** Ilk `compileDebugKotlin -PskipGoogleServices` denemesi bilinen Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1`, Java/Gradle sureclerini sonlandirma ve `app/build` temizligi sonrasi `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` basariyla gecti.
+
+## AI Denetim Sprint 3.8 - 2026-07-15
+
+**Yapılanlar:** (P2.6, tamamlandi) `SuggestionCoordinator` ve `SharedPrefsSuggestionHistoryStore` eklendi; görev kartı (`InsightEngine`), ticker (`LauncherViewModel` + `TickerComposer`) ve sistem bildirimleri (`SmartInsightWorker`, `SuggestionNotificationWorker`) artık ortak dedupe key, kanal önceliği, cooldown ve kullanıcı reddi geçmişiyle karar veriyor. Uygulama içi kart gösterildiğinde aynı öneri ticker'a düşmüyor; ticker kapatılırsa bu reddetme geçmişi kısa süre sistem bildirimini de blokluyor. Sistem bildirimi yalnız yüksek değerli ve zaman duyarlı adaylar için açık bırakıldı. `SuggestionCoordinatorTest` ile kanal önceliği, reddetme cooldown'u ve notification gating; `TickerComposerTest` ile insight suggestion key taşınması kapsandı. Sürüm `1.3.44` / `versionCode 67`.
+
+**Arastirma:** Android Developers notification channels/importance ve notification permission resmi dokümantasyonu doğrulandı; sistem bildiriminin kesinti seviyesi ve izin maliyeti nedeniyle yalnız yüksek değerli/zaman duyarlı önerilere ayrılması gerektiği esas alındı.
+
+**Kalite kapisi:** `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices`, `assembleDebug -PskipGoogleServices` başarıyla geçti.
+
 ## AI Denetim Sprint 3.7 - 2026-07-15
 
 **Yapılanlar:** (P2.5, tamamlandi) `ReportsCenterScreen` tekrar eden "Hizli Erisim" bloklarini kaldirip tek `LazyColumn` icinde veri odakli rapor satirlarina indirildi. Dashboard, Kullanim, Bildirim, Saglik, Haftalik ve Gizlilik raporlari artik tek listede anlamli sirayla render ediliyor; her satir kisa aciklama, veri donemi ve son guncelleme/bos durum metni tasiyor. Wrapped ve privacy raporlari kapaliysa gizlenmek yerine neden bos olduklari acik bir gerekceyle pasif satir olarak gorunuyor. `ReportsCenterScreenLogicTest` ile duplicate route olmamasi, kapali raporlarin gerekceyle gorunmesi, bildirim bos durum metni ve goreli zaman etiketleri kapsandi. Surum `1.3.43` / `versionCode 66`.

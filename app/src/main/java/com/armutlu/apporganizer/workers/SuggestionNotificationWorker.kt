@@ -17,6 +17,10 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
+import com.armutlu.apporganizer.utils.SuggestionCandidate
+import com.armutlu.apporganizer.utils.SuggestionChannel
+import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
@@ -55,8 +59,25 @@ class SuggestionNotificationWorker(
             val pendingCount = repo.getPendingClassificationApps().first().size
 
             val lastCount = AppPrefs.getSuggestionNotifLastCount(ctx)
-            if (pendingCount > 0 && pendingCount > lastCount) {
-                sendNotification(pendingCount)
+            val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
+            val candidate = SuggestionCandidate(
+                dedupeKey = "low_confidence_review",
+                highValue = true,
+                timeSensitive = true,
+            )
+            if (
+                pendingCount > 0 &&
+                pendingCount > lastCount &&
+                SuggestionCoordinator.canShow(candidate, SuggestionChannel.SYSTEM_NOTIFICATION, historyStore, System.currentTimeMillis())
+            ) {
+                if (sendNotification(pendingCount)) {
+                    SuggestionCoordinator.recordShown(
+                        candidate = candidate,
+                        channel = SuggestionChannel.SYSTEM_NOTIFICATION,
+                        store = historyStore,
+                        nowMillis = System.currentTimeMillis(),
+                    )
+                }
             }
             AppPrefs.setSuggestionNotifLastCount(ctx, pendingCount)
 
@@ -67,9 +88,9 @@ class SuggestionNotificationWorker(
         }
     }
 
-    private fun sendNotification(count: Int) {
+    private fun sendNotification(count: Int): Boolean {
         val ctx = applicationContext
-        val manager = ctx.getSystemService(NotificationManager::class.java) ?: return
+        val manager = ctx.getSystemService(NotificationManager::class.java) ?: return false
         ensureChannel(manager)
 
         val body = if (count == 1) {
@@ -98,8 +119,13 @@ class SuggestionNotificationWorker(
             .setAutoCancel(true)
             .build()
 
-        runCatching { manager.notify(NOTIF_ID, notification) }
-            .onFailure { Timber.w(it, "SuggestionNotification could not be posted") }
+        return runCatching {
+            manager.notify(NOTIF_ID, notification)
+            true
+        }.getOrElse {
+            Timber.w(it, "SuggestionNotification could not be posted")
+            false
+        }
     }
 
     private fun ensureChannel(manager: NotificationManager) {

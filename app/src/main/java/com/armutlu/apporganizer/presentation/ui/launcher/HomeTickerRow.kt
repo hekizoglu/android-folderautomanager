@@ -61,9 +61,10 @@ data class TickerItem(
     val categoryId: String? = null,
     val route: String? = null,
     val packageName: String? = null,
+    val suggestionKey: String? = null,
 ) {
     /** Dismiss/rotasyon takibi için kararlı kimlik — aynı haber tekrar tekrar dönmesin (D226). */
-    val key: String get() = "${packageName ?: ""}|${categoryId ?: ""}|${route ?: ""}|$text"
+    val key: String get() = suggestionKey ?: "${packageName ?: ""}|${categoryId ?: ""}|${route ?: ""}|$text"
 }
 
 @Composable

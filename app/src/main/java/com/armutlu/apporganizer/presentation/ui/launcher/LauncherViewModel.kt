@@ -20,6 +20,10 @@ import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.PackageManagerHelper
+import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
+import com.armutlu.apporganizer.utils.SuggestionCandidate
+import com.armutlu.apporganizer.utils.SuggestionChannel
+import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import com.armutlu.apporganizer.utils.WidgetPrefs
@@ -835,6 +839,11 @@ class LauncherViewModel @Inject constructor(
 
     fun dismissTickerItem(key: String) {
         _dismissedTickerKeys.value = _dismissedTickerKeys.value + key
+        SuggestionCoordinator.recordRejected(
+            dedupeKey = key,
+            store = SharedPrefsSuggestionHistoryStore(getApplication()),
+            nowMillis = System.currentTimeMillis(),
+        )
     }
 
     /** TickerSpec.routeKey -> Routes sabiti eslemesi (TickerComposer Routes'a bagimli degil). */
@@ -895,6 +904,7 @@ class LauncherViewModel @Inject constructor(
         categoryId = categoryId,
         route = resolveTickerRoute(routeKey),
         packageName = packageName,
+        suggestionKey = suggestionKey,
     )
 
     // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + saat bazlı
@@ -960,6 +970,7 @@ class LauncherViewModel @Inject constructor(
         }
         _digitalLifeScore.value = digitalLifeScore
 
+        val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
         val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,
             apps = appSnapshots,
@@ -969,7 +980,34 @@ class LauncherViewModel @Inject constructor(
             nowMillis = System.currentTimeMillis(),
             digitalLifeScore = digitalLifeScore,
             digitalLifeScorePrevious = digitalLifeScorePrevious,
-        ).map { it.toTickerItem() } + buildSearchStatsTicker() + buildWrappedTicker()
+        ).filter { spec ->
+            val key = spec.suggestionKey ?: return@filter true
+            SuggestionCoordinator.canShow(
+                candidate = SuggestionCandidate(
+                    dedupeKey = key,
+                    highValue = key == "notification_summary",
+                    timeSensitive = key == "notification_summary" || key == "low_confidence_review",
+                ),
+                channel = SuggestionChannel.TICKER,
+                store = historyStore,
+                nowMillis = System.currentTimeMillis(),
+            )
+        }.map { spec ->
+            val key = spec.suggestionKey
+            if (key != null) {
+                SuggestionCoordinator.recordShown(
+                    candidate = SuggestionCandidate(
+                        dedupeKey = key,
+                        highValue = key == "notification_summary",
+                        timeSensitive = key == "notification_summary" || key == "low_confidence_review",
+                    ),
+                    channel = SuggestionChannel.TICKER,
+                    store = historyStore,
+                    nowMillis = System.currentTimeMillis(),
+                )
+            }
+            spec.toTickerItem()
+        } + buildSearchStatsTicker() + buildWrappedTicker()
 
         val visible = composed.filterNot { it.key in dismissed }
         // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki

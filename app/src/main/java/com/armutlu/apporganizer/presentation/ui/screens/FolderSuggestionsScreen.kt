@@ -18,6 +18,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ fun FolderSuggestionsScreen(
     onNavigateBack: () -> Unit,
 ) {
     val suggestions by viewModel.folderSuggestions.collectAsState()
+    val infoDismissed by viewModel.folderSuggestionsInfoDismissed.collectAsState()
     val screenState by viewModel.screenState.collectAsState()
     val categoryNames = screenState.categories.associate { it.categoryId to it.categoryName }
 
@@ -48,6 +50,29 @@ fun FolderSuggestionsScreen(
                     title = "${suggestions.size} uygulanabilir oneri",
                     subtitle = "Oneriler yalnizca sen Kabul Et dediginde kategori tasir; silme veya gizleme yapmaz."
                 )
+            }
+        }
+
+        if (!infoDismissed) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("Bu ozellik ne yapiyor?", fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "Buyuk, cok kucuk veya uzun suredir atil kalan klasorleri bulur. Dusuk guvenli siniflandirmalar otomatik uygulanmaz; Kontrol Bekleyenler akisina gider.",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontSize = 13.sp
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        TextButton(onClick = viewModel::dismissFolderSuggestionsInfo) {
+                            Text("Anladim")
+                        }
+                    }
+                }
             }
         }
 

@@ -407,7 +407,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.6 — Tek öneri kanalı politikası
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı - `SuggestionCoordinator` ile task card > ticker > sistem bildirimi önceliği bağlandı; ortak dedupe key/cooldown/reddetme geçmişi `InsightEngine`, `LauncherViewModel`, `SmartInsightWorker` ve `SuggestionNotificationWorker` akışlarına uygulandı, `SuggestionCoordinatorTest` + kalite kapısı geçti.  
 **Yapılacaklar:**
 
 - `SuggestionCoordinator` veya eşdeğer tek koordinatör oluştur.
@@ -424,7 +424,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.7 — Klasör sınıflandırma önerilerini yeni kurulumda varsayılan açık yap
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı - `folder_suggestions_enabled` yeni kurulumda varsayilan acik; ilk ekran aciklama karti kapatilabilir; kalite kapisi 2026-07-15'te gecti.  
 **Kurallar:**
 
 - Yeni kurulumda öneriler açık olsun.

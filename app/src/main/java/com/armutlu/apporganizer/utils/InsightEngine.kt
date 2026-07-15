@@ -197,13 +197,44 @@ object InsightEngine {
         }
 
         // Geçmiş kontrolü → yeni kartları önce göster
+        val historyStore = context?.let { SharedPrefsSuggestionHistoryStore(it) }
+        val eligiblePool = if (historyStore == null) {
+            pool
+        } else {
+            pool.filter { card ->
+                SuggestionCoordinator.canShow(
+                    candidate = SuggestionCandidate(
+                        dedupeKey = card.id,
+                        highValue = card.type == InsightType.UNREAD_NOTIFICATIONS,
+                        timeSensitive = card.type == InsightType.UNREAD_NOTIFICATIONS || card.type == InsightType.NEW_INSTALL,
+                    ),
+                    channel = SuggestionChannel.TASK_CARD,
+                    store = historyStore,
+                    nowMillis = now,
+                )
+            }
+        }
         val history = context?.let { InsightPrefs.getHistory(it) } ?: emptySet()
-        val fresh = pool.filter { it.id !in history }.shuffled()
-        val stale = pool.filter { it.id in history }.shuffled()
+        val fresh = eligiblePool.filter { it.id !in history }.shuffled()
+        val stale = eligiblePool.filter { it.id in history }.shuffled()
         val selected = (fresh + stale).take(2)
 
         if (context != null && selected.isNotEmpty()) {
             InsightPrefs.addToHistory(context, selected.map { it.id })
+            if (historyStore != null) {
+                selected.forEach { card ->
+                    SuggestionCoordinator.recordShown(
+                        candidate = SuggestionCandidate(
+                            dedupeKey = card.id,
+                            highValue = card.type == InsightType.UNREAD_NOTIFICATIONS,
+                            timeSensitive = card.type == InsightType.UNREAD_NOTIFICATIONS || card.type == InsightType.NEW_INSTALL,
+                        ),
+                        channel = SuggestionChannel.TASK_CARD,
+                        store = historyStore,
+                        nowMillis = now,
+                    )
+                }
+            }
         }
 
         return selected

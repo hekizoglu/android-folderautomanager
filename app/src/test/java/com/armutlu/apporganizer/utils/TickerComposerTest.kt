@@ -368,6 +368,7 @@ class TickerComposerTest {
         )
         val spec = result.first { it.text == "Test icgoru" }
         assertEquals("DASHBOARD", spec.routeKey)
+        assertEquals("i1", spec.suggestionKey)
     }
 
     @Test

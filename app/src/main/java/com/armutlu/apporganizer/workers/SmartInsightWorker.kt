@@ -19,6 +19,10 @@ import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
+import com.armutlu.apporganizer.utils.SuggestionCandidate
+import com.armutlu.apporganizer.utils.SuggestionChannel
+import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
@@ -61,28 +65,34 @@ class SmartInsightWorker(
             val todayLaunchCountByPackage = todayUsage.associate { it.packageName to it.launchCount.toLong() }
             val todayForegroundMsByPackage = todayUsage.associate { it.packageName to it.foregroundDurationMs }
 
-            val candidates = buildList<Pair<String, String>> {
+            val candidates = buildList<Triple<String, String, String>> {
                 if (AppPrefs.isSmartNotifDailyUsage(ctx)) {
                     val topLaunchApp = apps.maxByOrNull { todayLaunchCountByPackage[it.packageName] ?: 0L }
                     val topLaunchCount = topLaunchApp?.let { todayLaunchCountByPackage[it.packageName] ?: 0L } ?: 0L
                     if (topLaunchApp != null && topLaunchCount > 0L) {
                         add(
-                            "Gunluk Kullanim" to
+                            Triple(
+                                "top_used_${topLaunchApp.packageName}",
+                                "Gunluk Kullanim",
                                 "${topLaunchApp.appName} bugun en cok actigin uygulama. Ekran suren nasil gidiyor?",
+                            ),
                         )
                     } else {
                         val topForegroundApp = apps.maxByOrNull { todayForegroundMsByPackage[it.packageName] ?: 0L }
                         val topForegroundMs = topForegroundApp?.let { todayForegroundMsByPackage[it.packageName] ?: 0L } ?: 0L
                         if (topForegroundApp != null && topForegroundMs > 0L) {
                             add(
-                                "Gunluk Kullanim" to
+                                Triple(
+                                    "top_used_${topForegroundApp.packageName}",
+                                    "Gunluk Kullanim",
                                     "${topForegroundApp.appName} bugun en cok vakit gecirdigin uygulama gibi gorunuyor.",
+                                ),
                             )
                         }
                     }
                     val sessionCount = todayLaunchCountByPackage.values.sum().coerceAtMost(99L)
                     if (sessionCount > 10L) {
-                        add("Gunluk Kullanim" to "Bugun toplam $sessionCount uygulama acilisi yaptin. Verimliligini takip et!")
+                        add(Triple("high_session_count", "Gunluk Kullanim", "Bugun toplam $sessionCount uygulama acilisi yaptin. Verimliligini takip et!"))
                     }
                 }
 
@@ -92,11 +102,11 @@ class SmartInsightWorker(
                     }
                     if (unused3weeks.isNotEmpty()) {
                         val app = unused3weeks.random()
-                        add("Temizlik Onerisi" to "${app.appName} uygulamasini 3 haftadir acmadin. Silmeyi dusunur musun?")
+                        add(Triple("long_unused_${app.packageName}", "Temizlik Onerisi", "${app.appName} uygulamasini 3 haftadir acmadin. Silmeyi dusunur musun?"))
                     }
                     val neverOpened = apps.filter { it.lastUsedTimestamp == 0L && (now - it.installTime) >= 14 * dayMs }
                     if (neverOpened.size >= 3) {
-                        add("Temizlik Onerisi" to "${neverOpened.size} uygulama kuruldugundan beri hic acilmamis. Bir goz at!")
+                        add(Triple("never_opened_batch", "Temizlik Onerisi", "${neverOpened.size} uygulama kuruldugundan beri hic acilmamis. Bir goz at!"))
                     }
                 }
 
@@ -108,12 +118,12 @@ class SmartInsightWorker(
                     if (fullestCat != null) {
                         val count = apps.count { it.categoryId == fullestCat.categoryId }
                         if (count >= 5) {
-                            add("Klasor Istatistikleri" to "'${fullestCat.categoryName}' klasorun en kalabalik. $count uygulama var.")
+                            add(Triple("cat_summary_${fullestCat.categoryId}", "Klasor Istatistikleri", "'${fullestCat.categoryName}' klasorun en kalabalik. $count uygulama var."))
                         }
                     }
                     val uncategorized = apps.count { it.categoryId == "uncategorized" || it.categoryId.isBlank() }
                     if (uncategorized >= 5) {
-                        add("Klasor Istatistikleri" to "$uncategorized uygulamanin henuz bir klasoru yok. Organize etmeye ne dersin?")
+                        add(Triple("low_confidence_review", "Klasor Istatistikleri", "$uncategorized uygulamanin henuz bir klasoru yok. Organize etmeye ne dersin?"))
                     }
                 }
 
@@ -121,7 +131,7 @@ class SmartInsightWorker(
                     val newApps = apps.filter { (now - it.installTime) <= 3 * dayMs && it.installTime > 0L }
                     if (newApps.isNotEmpty()) {
                         val app = requireNotNull(newApps.maxByOrNull { maxOf(it.firstInstalledTime, it.installTime) })
-                        add("Yeni Uygulama" to "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?")
+                        add(Triple("new_install_${app.packageName}", "Yeni Uygulama", "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?"))
                     }
                 }
 
@@ -137,14 +147,38 @@ class SmartInsightWorker(
                         "Arka planda calisan uygulamalari kontrol et, pilini kurtarabilirsin.",
                     )
                     if (Random.nextInt(3) == 0) {
-                        add("Haftalik Ipucu" to weeklyMessages.random())
+                        add(Triple("weekly_tip", "Haftalik Ipucu", weeklyMessages.random()))
                     }
                 }
             }
 
             if (candidates.isNotEmpty()) {
-                val (title, body) = candidates.random()
-                sendNotification(title, body)
+                val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
+                candidates.shuffled().firstOrNull { (key, _, _) ->
+                    SuggestionCoordinator.canShow(
+                        candidate = SuggestionCandidate(
+                            dedupeKey = key,
+                            highValue = key == "low_confidence_review" || key.startsWith("new_install_"),
+                            timeSensitive = key == "low_confidence_review" || key.startsWith("new_install_"),
+                        ),
+                        channel = SuggestionChannel.SYSTEM_NOTIFICATION,
+                        store = historyStore,
+                        nowMillis = now,
+                    )
+                }?.let { (key, title, body) ->
+                    if (sendNotification(title, body)) {
+                        SuggestionCoordinator.recordShown(
+                            candidate = SuggestionCandidate(
+                                dedupeKey = key,
+                                highValue = key == "low_confidence_review" || key.startsWith("new_install_"),
+                                timeSensitive = key == "low_confidence_review" || key.startsWith("new_install_"),
+                            ),
+                            channel = SuggestionChannel.SYSTEM_NOTIFICATION,
+                            store = historyStore,
+                            nowMillis = now,
+                        )
+                    }
+                }
             }
 
             Timber.d("SmartInsight: ${candidates.size} oneri olusturuldu")

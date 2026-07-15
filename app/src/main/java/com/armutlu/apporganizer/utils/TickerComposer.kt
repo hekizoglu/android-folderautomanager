@@ -48,6 +48,7 @@ data class TickerSpec(
     val categoryId: String? = null,
     val routeKey: String? = null,
     val packageName: String? = null,
+    val suggestionKey: String? = null,
     /** Karistirma sirasinda ilk sirada tutulmasi gereken "taze" sinyaller icin (bildirim, selamlama). */
     val priority: Int = 0,
 )
@@ -220,6 +221,7 @@ object TickerComposer {
                     text = "$badgeTotal aktif bildirim — analiz raporu için dokun",
                     emoji = "🔔",
                     routeKey = "NOTIFICATION_REPORT",
+                    suggestionKey = "notification_summary",
                     priority = 100,
                 )
             )
@@ -314,6 +316,7 @@ object TickerComposer {
                     categoryId = insight.categoryId,
                     packageName = insight.packageName,
                     routeKey = if (insight.categoryId == null && insight.packageName == null) "DASHBOARD" else null,
+                    suggestionKey = insight.id,
                     priority = 30,
                 )
             )
@@ -326,6 +329,7 @@ object TickerComposer {
                     text = "$lowConfidenceCount uygulamanın kategorisi belirsiz — gözden geçirmek ister misin?",
                     emoji = "🤔",
                     routeKey = "APP_LIST_UNCERTAIN",
+                    suggestionKey = "low_confidence_review",
                     priority = 35,
                 )
             )

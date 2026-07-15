@@ -257,6 +257,24 @@ object AppPrefs {
         prefs(context).edit().putBoolean(KEY_OVERRIDE_SUGGESTIONS_ENABLED, v).apply()
 
     // Klasör şekli — "circle", "rounded", "square", "triangle"
+    const val KEY_FOLDER_SUGGESTIONS_ENABLED = "folder_suggestions_enabled"
+    const val KEY_FOLDER_SUGGESTIONS_INFO_DISMISSED = "folder_suggestions_info_dismissed"
+    internal fun resolveFolderSuggestionsEnabled(hasStoredValue: Boolean, storedValue: Boolean): Boolean =
+        if (hasStoredValue) storedValue else true
+    fun isFolderSuggestionsEnabled(context: Context): Boolean {
+        val sharedPrefs = prefs(context)
+        return resolveFolderSuggestionsEnabled(
+            hasStoredValue = sharedPrefs.contains(KEY_FOLDER_SUGGESTIONS_ENABLED),
+            storedValue = sharedPrefs.getBoolean(KEY_FOLDER_SUGGESTIONS_ENABLED, true)
+        )
+    }
+    fun setFolderSuggestionsEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_SUGGESTIONS_ENABLED, enabled).apply()
+    fun isFolderSuggestionsInfoDismissed(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FOLDER_SUGGESTIONS_INFO_DISMISSED, false)
+    fun setFolderSuggestionsInfoDismissed(context: Context, dismissed: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_SUGGESTIONS_INFO_DISMISSED, dismissed).apply()
+
     const val DEFAULT_FOLDER_SHAPE = "rounded"
     const val KEY_FOLDER_SHAPE = "folder_shape"
     internal fun resolveFolderShapePreference(hasStoredValue: Boolean, storedShape: String?): String =
