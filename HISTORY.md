@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Saglik Raporu Duzeltme Sprint 1 - 2026-07-16
+
+**Yapılanlar:** (P0.1-P0.2, tamamlandi) Saglik raporunda WorkManager tek seferlik isler icin sentinel/292 milyon yil tarihinin gorunmesi engellendi. `WorkerKind` ve `workerNextRunText()` helper'i eklendi; terminal state'ler `next=` yazmiyor, `files_index_once` basariliysa `tamamlandi, sonraki calisma yok` metni uretiyor, 10 yildan uzak tarihler sentinel kabul ediliyor. Siniflandirma raporu `ClassificationDiagnosticsCalculator` ile tek kullanici uygulamasi evrenine baglandi; `ClassificationAttentionPolicy` attention kirilimi, snooze/confirmed/corrected/skipped/uncategorized/invalid/automatic accepted kovalarini birbirini dislayan sekilde hesapliyor. Rapor artik `Sayac toplami`, `Tutarlilik: OK/MISMATCH` ve kisisel veri icermeyen mismatch uyarisi yaziyor. Surum `1.3.49` / `versionCode 72`.
+
+**Arastirma:** Android Developers komut satiri build dokumantasyonu dogrulandi; kalite kapisi `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` akisi uzerinden kapatilacak.
+
+**Kalite kapisi:** `DiagnosticsReportManagerTest`, `ClassificationDiagnosticsCalculatorTest`, tam `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` basariyla gecti.
+
 ## AI Denetim Sprint 3.11 - 2026-07-15
 
 **Yapılanlar:** (P2.9, tamamlandi) Ana ekran hiyerarsisi sadeleştirildi: favori, öneri, bildirimden son açılanlar ve son kullanılanlar artık üst üste birikmek yerine tek contextual row policy'sinden geçiyor. Satır klasör gridinden sonra ve dock'tan önce render ediliyor; contextual dock'taki uygulamalar, favoriler ve daha yüksek öncelikli kaynaklar aynı satırda tekrar edilmiyor. `HomeLayoutMath.MIN_VISIBLE_FOLDERS` ile küçük ekranlarda en az bir klasör satırı korunuyor. `LauncherViewModelLogicTest` contextual row önceliği, dock/favori dedupe ve küçük ekran klasör görünürlüğünü kapsıyor. Sürüm `1.3.47` / `versionCode 70`.

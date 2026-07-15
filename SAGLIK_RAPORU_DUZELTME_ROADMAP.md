@@ -50,6 +50,8 @@ Kaynak raporda görülen temel değerler:
 
 ## P0.1 — Tek seferlik WorkManager işinde 292 milyon yılı gösterme
 
+**Durum:** ✅ Tamamlandı (2026-07-16, Codex) — Worker türü modele eklendi, terminal/one-shot işler için `next=` tarihi yazımı durduruldu, 10 yıldan uzak sentinel tarihler filtrelendi ve `DiagnosticsReportManagerTest` P0.1 senaryolarıyla genişletildi.
+
 ### Kök neden
 
 Dosya:
@@ -162,6 +164,8 @@ Eklenecek testler:
 ---
 
 ## P0.2 — Sınıflandırma sayaçlarını 84 kullanıcı uygulamasıyla uzlaştır
+
+**Durum:** ✅ Tamamlandı (2026-07-16, Codex) — `ClassificationDiagnosticsCalculator` eklendi; sağlık raporu artık `ClassificationAttentionPolicy` üzerinden birbirini dışlayan kovalar, dikkat nedeni kırılımı, toplam uzlaşma ve kişisel veri içermeyen tutarsızlık uyarısı üretiyor.
 
 ### Kök neden
 

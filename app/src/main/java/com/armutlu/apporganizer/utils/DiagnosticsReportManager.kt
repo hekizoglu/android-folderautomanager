@@ -15,6 +15,8 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.local.TaskScoreEventDao
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnostics
+import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnosticsCalculator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.text.SimpleDateFormat
@@ -23,7 +25,48 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.first
+
+internal enum class WorkerKind {
+    PERIODIC,
+    ONE_SHOT,
+}
+
+private const val MAX_REASONABLE_SCHEDULE_HORIZON_DAYS = 3650L
+
+internal fun workerNextRunText(
+    state: WorkInfo.State,
+    kind: WorkerKind,
+    nextScheduleTimeMillis: Long?,
+    now: Long,
+): String? = when (state) {
+    WorkInfo.State.RUNNING -> "su anda calisiyor"
+    WorkInfo.State.SUCCEEDED ->
+        if (kind == WorkerKind.ONE_SHOT) "tamamlandi, sonraki calisma yok" else "tamamlandi"
+    WorkInfo.State.FAILED -> "basarisiz"
+    WorkInfo.State.CANCELLED -> "iptal edildi"
+    WorkInfo.State.BLOCKED -> "bagimlilik bekliyor"
+    WorkInfo.State.ENQUEUED -> when {
+        nextScheduleTimeMillis == null -> null
+        nextScheduleTimeMillis < now -> "gecmis/yeniden planlama bekliyor"
+        nextScheduleTimeMillis.isReasonableScheduleTime(now) ->
+            "next=${DiagnosticsReportDateFormat.format(nextScheduleTimeMillis)}"
+        else -> "sonraki calisma yok"
+    }
+}
+
+private fun Long.isReasonableScheduleTime(now: Long): Boolean {
+    if (this == Long.MAX_VALUE) return false
+    val max = now + TimeUnit.DAYS.toMillis(MAX_REASONABLE_SCHEDULE_HORIZON_DAYS)
+    return this in 1..max
+}
+
+private object DiagnosticsReportDateFormat {
+    private val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+    fun format(value: Long): String = synchronized(dateTime) {
+        dateTime.format(Date(value))
+    }
+}
 
 @Singleton
 class DiagnosticsReportManager @Inject constructor(
@@ -64,7 +107,6 @@ class DiagnosticsReportManager @Inject constructor(
         val packageInfo = context.packageManager.getPackageInfoCompat(context.packageName)
         val apps = appDao.getAllApps()
         val categories = categoryDao.getAllCategories()
-        val pendingCount = appDao.getPendingClassificationApps(now).first().size
         val notificationTotal = notificationEventDao.totalSince(0L)
         val notificationLast7d = notificationEventDao.totalSince(now - TimeUnit.DAYS.toMillis(7))
         val latestTaskScore = runCatching { taskScoreEventDao.getLatestEvent() }.getOrNull()
@@ -72,12 +114,10 @@ class DiagnosticsReportManager @Inject constructor(
         val workerSummary = workerSummary()
         val crashSummary = crashSummary()
         val searchStats = SearchStatsPrefs.getSummary(context)
+        val classificationDiagnostics = ClassificationDiagnosticsCalculator.calculate(apps, now)
 
         val userAppCount = apps.count { !it.isSystemApp }
         val hiddenCount = apps.count { it.isHidden }
-        val uncategorizedCount = apps.count { it.categoryId.isBlank() || it.categoryId == "uncategorized" }
-        val confirmedCount = apps.count { it.classificationReviewState == "CONFIRMED" }
-        val skippedCount = apps.count { it.classificationReviewState == "SKIPPED" }
 
         return renderReport(
             DiagnosticsReportSnapshot(
@@ -101,10 +141,7 @@ class DiagnosticsReportManager @Inject constructor(
                 lastReconcileAt = formatDateTime(AppPrefs.getLastReconcileTime(context)),
                 lastUsageSyncAt = formatDateTime(AppPrefs.getLastUsageSyncTime(context)),
                 classificationMode = AppPrefs.getClassificationMode(context).name,
-                uncategorizedCount = uncategorizedCount,
-                pendingReviewCount = pendingCount,
-                confirmedCount = confirmedCount,
-                skippedCount = skippedCount,
+                classificationDiagnostics = classificationDiagnostics,
                 searchSourcesLine = "apps=${yesNo(AppPrefs.isSearchSourceAppsEnabled(context))}, categories=${yesNo(AppPrefs.isSearchSourceCategoriesEnabled(context))}, settings=${yesNo(AppPrefs.isSearchSourceSettingsEnabled(context))}, contacts=${yesNo(AppPrefs.isSearchSourceContactsEnabled(context))}, files=${yesNo(AppPrefs.isSearchSourceFilesEnabled(context))}",
                 fileIndexItemCount = AppPrefs.getFileIndexItemCount(context),
                 fileIndexLastIndexedAt = formatDateTime(AppPrefs.getFileIndexLastIndexedAt(context)),
@@ -143,7 +180,12 @@ class DiagnosticsReportManager @Inject constructor(
                 buildString {
                     append(info.state.name)
                     append(", attempts=${info.runAttemptCount}")
-                    info.nextScheduleTimeMillisCompat()?.let { append(", next=${formatDateTime(it)}") }
+                    workerNextRunText(
+                        state = info.state,
+                        kind = spec.kind,
+                        nextScheduleTimeMillis = info.nextScheduleTimeMillisCompat(),
+                        now = System.currentTimeMillis(),
+                    )?.let { append(", $it") }
                 }
             }
         }
@@ -199,16 +241,17 @@ class DiagnosticsReportManager @Inject constructor(
     private data class WorkerSpec(
         val label: String,
         val uniqueName: String,
+        val kind: WorkerKind,
         val enabled: () -> Boolean,
     )
 
     private val WORK_SPECS = listOf(
-        WorkerSpec("Auto backup", "auto_backup_weekly") { AppPrefs.isAutoBackupEnabled(context) },
-        WorkerSpec("Smart insight", "smart_insight_daily") { AppPrefs.isSmartNotifEnabled(context) },
-        WorkerSpec("Suggestion notification", "suggestion_notification_daily") { AppPrefs.isSuggestionNotificationsEnabled(context) },
-        WorkerSpec("Weekly digest", "weekly_digest") { AppPrefs.isWeeklyDigestEnabled(context) },
-        WorkerSpec("Files index periodic", "files_index_periodic") { AppPrefs.isSearchSourceFilesEnabled(context) },
-        WorkerSpec("Files index one-shot", "files_index_once") { AppPrefs.isSearchSourceFilesEnabled(context) },
+        WorkerSpec("Auto backup", "auto_backup_weekly", WorkerKind.PERIODIC) { AppPrefs.isAutoBackupEnabled(context) },
+        WorkerSpec("Smart insight", "smart_insight_daily", WorkerKind.PERIODIC) { AppPrefs.isSmartNotifEnabled(context) },
+        WorkerSpec("Suggestion notification", "suggestion_notification_daily", WorkerKind.PERIODIC) { AppPrefs.isSuggestionNotificationsEnabled(context) },
+        WorkerSpec("Weekly digest", "weekly_digest", WorkerKind.PERIODIC) { AppPrefs.isWeeklyDigestEnabled(context) },
+        WorkerSpec("Files index periodic", "files_index_periodic", WorkerKind.PERIODIC) { AppPrefs.isSearchSourceFilesEnabled(context) },
+        WorkerSpec("Files index one-shot", "files_index_once", WorkerKind.ONE_SHOT) { AppPrefs.isSearchSourceFilesEnabled(context) },
     )
 
     private companion object {
@@ -238,10 +281,7 @@ internal data class DiagnosticsReportSnapshot(
     val lastReconcileAt: String,
     val lastUsageSyncAt: String,
     val classificationMode: String,
-    val uncategorizedCount: Int,
-    val pendingReviewCount: Int,
-    val confirmedCount: Int,
-    val skippedCount: Int,
+    val classificationDiagnostics: ClassificationDiagnostics,
     val searchSourcesLine: String,
     val fileIndexItemCount: Int,
     val fileIndexLastIndexedAt: String,
@@ -289,10 +329,20 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine()
     appendLine("[Siniflandirma]")
     appendLine("Mod: ${snapshot.classificationMode}")
-    appendLine("Onaysiz / uncategorized: ${snapshot.uncategorizedCount}")
-    appendLine("Bekleyen inceleme: ${snapshot.pendingReviewCount}")
-    appendLine("Onayli: ${snapshot.confirmedCount}")
-    appendLine("Atlanmis: ${snapshot.skippedCount}")
+    val classification = snapshot.classificationDiagnostics
+    appendLine("Kullanici uygulamasi toplam: ${classification.totalUserApps}")
+    appendLine("Gizli kullanici uygulamasi: ${classification.hiddenUserApps}")
+    appendLine("Otomatik kabul edilen: ${classification.automaticAccepted}")
+    appendLine("Dikkat gereken: ${classification.needsAttention}")
+    appendLine("Ertelemede: ${classification.snoozed}")
+    appendLine("Kullanici onayli: ${classification.confirmed}")
+    appendLine("Kullanici duzeltmis: ${classification.corrected}")
+    appendLine("Atlanmis: ${classification.skipped}")
+    appendLine("Kategorisiz/bos: ${classification.uncategorized}")
+    appendLine("Gecersiz/bilinmeyen durum: ${classification.invalidOrUnknown}")
+    appendLine("Sayac toplami: ${classification.reconciledTotal}")
+    appendLine("Tutarlilik: ${if (classification.isConsistent) "OK" else "MISMATCH"}")
+    appendLine("Dikkat nedenleri: ${classification.attentionByReason.entries.joinToString { "${it.key.name}=${it.value}" }}")
     appendLine()
     appendLine("[Arama ve Indeks]")
     appendLine("Kaynaklar: ${snapshot.searchSourcesLine}")
@@ -323,8 +373,11 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     snapshot.workerSummary.forEach { appendLine(it) }
     appendLine()
     appendLine("[Kritik Hatalar]")
+    if (!classification.isConsistent) {
+        appendLine("Siniflandirma sayac uyusmazligi: userApps=${classification.totalUserApps}, bucketTotal=${classification.reconciledTotal}")
+    }
     if (snapshot.crashSummary.isEmpty()) {
-        appendLine("Crash kaydi yok.")
+        if (classification.isConsistent) appendLine("Crash kaydi yok.")
     } else {
         snapshot.crashSummary.forEach { appendLine(it) }
     }
