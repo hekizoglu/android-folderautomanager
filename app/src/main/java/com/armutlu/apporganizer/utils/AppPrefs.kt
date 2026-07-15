@@ -353,14 +353,25 @@ object AppPrefs {
 
     // Klasör geçiş efekti — sayfa çevirme (varsayılan, D253) / kaydırma-parallax / yakınlaş-sol
     const val KEY_FOLDER_TRANSITION_EFFECT = "folder_transition_effect"
-    const val FOLDER_TRANSITION_PAGE_TURN = "page_turn"
-    const val FOLDER_TRANSITION_SLIDE_PARALLAX = "slide_parallax"
-    const val FOLDER_TRANSITION_ZOOM_FADE = "zoom_fade"
+    const val FOLDER_TRANSITION_ANDROID_SMOOTH = "android_smooth"
+    const val FOLDER_TRANSITION_IOS_ZOOM_FADE = "ios_zoom_fade"
+    const val FOLDER_TRANSITION_PAGE_TURN = FOLDER_TRANSITION_ANDROID_SMOOTH
+    const val FOLDER_TRANSITION_SLIDE_PARALLAX = FOLDER_TRANSITION_ANDROID_SMOOTH
+    const val FOLDER_TRANSITION_ZOOM_FADE = FOLDER_TRANSITION_IOS_ZOOM_FADE
+    internal fun resolveFolderTransitionEffectPreference(storedEffect: String?): String =
+        when (storedEffect) {
+            FOLDER_TRANSITION_IOS_ZOOM_FADE, "zoom_fade" -> FOLDER_TRANSITION_IOS_ZOOM_FADE
+            else -> FOLDER_TRANSITION_ANDROID_SMOOTH
+        }
     fun getFolderTransitionEffect(context: Context): String =
-        prefs(context).getString(KEY_FOLDER_TRANSITION_EFFECT, FOLDER_TRANSITION_PAGE_TURN)
-            ?: FOLDER_TRANSITION_PAGE_TURN
+        resolveFolderTransitionEffectPreference(
+            prefs(context).getString(KEY_FOLDER_TRANSITION_EFFECT, FOLDER_TRANSITION_ANDROID_SMOOTH)
+        )
     fun setFolderTransitionEffect(context: Context, effect: String) =
-        prefs(context).edit().putString(KEY_FOLDER_TRANSITION_EFFECT, effect).apply()
+        prefs(context).edit().putString(
+            KEY_FOLDER_TRANSITION_EFFECT,
+            resolveFolderTransitionEffectPreference(effect)
+        ).apply()
 
     // Widget alanı — ana ekranda widget göster
     const val KEY_WIDGET_AREA_ENABLED = "widget_area_enabled"

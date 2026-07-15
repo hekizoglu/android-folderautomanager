@@ -86,9 +86,8 @@
     <string name="folder_color_pick">Pick color</string>
     <string name="settings_folder_transition_effect_title">Folder Transition Effect</string>
     <string name="settings_folder_transition_effect_desc">Choose how the folder swipe animation looks</string>
-    <string name="settings_folder_transition_page_turn">Page Turn</string>
-    <string name="settings_folder_transition_slide_parallax">Slide</string>
-    <string name="settings_folder_transition_zoom_fade">Zoom-Fade</string>
+    <string name="settings_folder_transition_android_smooth">Android Smooth</string>
+    <string name="settings_folder_transition_ios_zoom_fade">iOS Zoom-Fade</string>
 
     <!-- Settings -->
     <string name="settings_default_launcher">Default Launcher</string>

@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.animation.ValueAnimator
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -9,7 +10,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -41,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +55,7 @@ import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import kotlin.math.abs
+import kotlinx.coroutines.launch
 
 @Composable
 fun FolderScreen(
@@ -145,26 +148,72 @@ fun FolderScreen(
         // HomeScreen.kt (satır 293) ile aynı pattern: state ekran seviyesinde, iki sheet
         // birbirinden bağımsız kardeş composable olarak render edilir.
         var categoryPickerApp by remember { mutableStateOf<AppInfo?>(null) }
+        val scope = rememberCoroutineScope()
         val folderSwipeThresholdPx = with(density) { 96.dp.toPx() }
         val folderTransitionOffsetPx = with(density) { 86.dp.toPx() }
-        var transitionDirection by remember { mutableIntStateOf(1) }
-        var hasRenderedFolder by remember { mutableStateOf(false) }
+        val folderVelocityThresholdPxPerSecond = with(density) { 700.dp.toPx() }
+        val transitionMode = remember(folderTransitionEffect) {
+            resolveFolderTransitionMode(folderTransitionEffect)
+        }
+        val reduceMotionEnabled = remember { !ValueAnimator.areAnimatorsEnabled() }
         val contentOffset = remember { Animatable(0f) }
+        var transitionDirection by remember { mutableIntStateOf(1) }
+        var isSettlingTransition by remember { mutableStateOf(false) }
 
-        LaunchedEffect(catId, folderCarouselEnabled) {
-            if (!folderCarouselEnabled) {
+        fun settleSpec() = tween<Float>(
+            durationMillis = when {
+                reduceMotionEnabled -> 120
+                transitionMode == FolderTransitionMode.IOS_ZOOM_FADE -> 260
+                else -> 240
+            },
+            easing = FastOutSlowInEasing,
+        )
+
+        suspend fun animateToCenter() {
+            contentOffset.animateTo(targetValue = 0f, animationSpec = settleSpec())
+        }
+
+        suspend fun performCommittedFolderTransition(direction: Int) {
+            transitionDirection = direction
+            contentOffset.animateTo(
+                targetValue = direction * folderTransitionOffsetPx,
+                animationSpec = settleSpec(),
+            )
+            val moved = viewModel.openAdjacentFolder(
+                next = mapFolderTransitionDirectionToNextFlag(direction)
+            )
+            if (!moved) {
                 contentOffset.snapTo(0f)
-                hasRenderedFolder = true
-                return@LaunchedEffect
+                return
             }
-            if (hasRenderedFolder) {
-                contentOffset.snapTo(transitionDirection * folderTransitionOffsetPx)
-                contentOffset.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
-                )
-            } else {
-                hasRenderedFolder = true
+            searchQuery = ""
+            contentOffset.snapTo(-direction * folderTransitionOffsetPx)
+            animateToCenter()
+        }
+
+        fun settleFolderTransition(
+            dragOffsetPx: Float,
+            velocityPxPerSecond: Float,
+            forcedDirection: Int? = null,
+        ) {
+            if (isSettlingTransition) return
+            scope.launch {
+                isSettlingTransition = true
+                try {
+                    val commitDirection = forcedDirection ?: computeFolderSettleTarget(
+                        dragOffsetPx = dragOffsetPx,
+                        velocityPxPerSecond = velocityPxPerSecond,
+                        settleDistancePx = folderSwipeThresholdPx,
+                        velocityThresholdPxPerSecond = folderVelocityThresholdPxPerSecond,
+                    ).commitDirection
+                    if (commitDirection == 0) {
+                        animateToCenter()
+                    } else {
+                        performCommittedFolderTransition(commitDirection)
+                    }
+                } finally {
+                    isSettlingTransition = false
+                }
             }
         }
 
@@ -214,12 +263,39 @@ fun FolderScreen(
             f.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
         }
 
-        fun navigateAdjacentFolder(next: Boolean) {
-            if (!folderCarouselEnabled) return
-            transitionDirection = if (next) 1 else -1
-            if (viewModel.openAdjacentFolder(next)) {
-                searchQuery = ""
+        val transitionFrame = remember(
+            transitionMode,
+            contentOffset.value,
+            folderTransitionOffsetPx,
+            reduceMotionEnabled,
+            folderCarouselEnabled,
+        ) {
+            buildFolderTransitionFrame(
+                mode = transitionMode,
+                rawOffsetPx = if (folderCarouselEnabled) contentOffset.value else 0f,
+                settleDistancePx = folderTransitionOffsetPx,
+                reduceMotionEnabled = reduceMotionEnabled,
+            )
+        }
+        val draggableState = rememberDraggableState { dragDelta ->
+            if (isSettlingTransition) return@rememberDraggableState
+            scope.launch {
+                contentOffset.stop()
+                contentOffset.snapTo(
+                    (contentOffset.value + dragDelta).coerceIn(
+                        -folderTransitionOffsetPx,
+                        folderTransitionOffsetPx,
+                    )
+                )
             }
+        }
+        fun navigateAdjacentFolder(next: Boolean) {
+            if (!folderCarouselEnabled || isSettlingTransition) return
+            settleFolderTransition(
+                dragOffsetPx = contentOffset.value,
+                velocityPxPerSecond = 0f,
+                forcedDirection = if (next) -1 else 1,
+            )
         }
 
         Box(
@@ -227,56 +303,41 @@ fun FolderScreen(
                 .fillMaxSize()
                 .then(
                     if (folderCarouselEnabled && folders.size > 1) {
-                        Modifier.pointerInput(catId, folderSwipeThresholdPx) {
-                            var accumulatedX = 0f
-                            var switched = false
-                            detectHorizontalDragGestures(
-                                onDragStart = {
-                                    accumulatedX = 0f
-                                    switched = false
-                                },
-                                onHorizontalDrag = { change, dragAmount ->
-                                    if (switched) return@detectHorizontalDragGestures
-                                    accumulatedX += dragAmount
-                                    if (abs(accumulatedX) >= folderSwipeThresholdPx) {
-                                        navigateAdjacentFolder(next = accumulatedX > 0f)
-                                        switched = true
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        change.consume()
-                                    }
-                                },
-                            )
-                        }
+                        Modifier.draggable(
+                            orientation = Orientation.Horizontal,
+                            state = draggableState,
+                            enabled = !isSettlingTransition,
+                            onDragStopped = { velocity ->
+                                val commitDirection = shouldCommitFolderTransition(
+                                    dragOffsetPx = contentOffset.value,
+                                    velocityPxPerSecond = velocity,
+                                    settleDistancePx = folderSwipeThresholdPx,
+                                    velocityThresholdPxPerSecond = folderVelocityThresholdPxPerSecond,
+                                )
+                                if (commitDirection != 0) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                }
+                                settleFolderTransition(
+                                    dragOffsetPx = contentOffset.value,
+                                    velocityPxPerSecond = velocity,
+                                )
+                            },
+                        )
                     } else {
                         Modifier
                     }
                 )
                 .background(surface.copy(alpha = 0.95f))
         ) {
-            if (showFolderNavigator && folderCarouselEnabled) {
-                when (folderTransitionEffect) {
-                    AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX -> FolderSlideParallaxPeek(
-                        previousFolder = previousFolder!!,
-                        nextFolder = nextFolder!!,
-                        transitionDirection = transitionDirection,
-                        offsetValue = contentOffset.value,
-                        offsetMax = folderTransitionOffsetPx,
-                        context = context,
-                        onSurface = onSurface,
-                        accent = catColor,
-                    )
-                    AppPrefs.FOLDER_TRANSITION_ZOOM_FADE -> { /* Yakınlaş-Sol: komşu önizleme yok, sadece mevcut/gelen içerik zoom+fade */ }
-                    else -> FolderPageTurnPeek(
-                        previousFolder = previousFolder!!,
-                        nextFolder = nextFolder!!,
-                        transitionDirection = transitionDirection,
-                        offsetValue = contentOffset.value,
-                        offsetMax = folderTransitionOffsetPx,
-                        context = context,
-                        onSurface = onSurface,
-                        accent = catColor,
-                    )
-                }
+            if (showFolderNavigator && folderCarouselEnabled && transitionFrame.direction != 0) {
+                FolderTransitionPreview(
+                    previousFolder = previousFolder!!,
+                    nextFolder = nextFolder!!,
+                    frame = transitionFrame,
+                    context = context,
+                    onSurface = onSurface,
+                    accent = catColor,
+                )
             }
 
             Column(
@@ -285,45 +346,11 @@ fun FolderScreen(
                     .statusBarsPadding()
                     .navigationBarsPadding()
                     .graphicsLayer {
-                        val offset = if (folderCarouselEnabled) contentOffset.value else 0f
-                        val progress = (offset / folderTransitionOffsetPx).coerceIn(-1f, 1f)
-                        when (folderTransitionEffect) {
-                            AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX -> {
-                                // Kaydırma: içerik yatay kayar, giden içerik %30 daha yavaş kayar
-                                // (parallax hissi), hafif alpha düşüşü (1.0 -> 0.85)
-                                translationX = offset * 0.7f
-                                alpha = 1f - abs(progress) * 0.15f
-                                rotationY = 0f
-                                scaleX = 1f
-                                scaleY = 1f
-                            }
-                            AppPrefs.FOLDER_TRANSITION_ZOOM_FADE -> {
-                                // Yakınlaş-Sol: sürükleme ilerledikçe mevcut içerik küçülür ve solar
-                                translationX = offset
-                                val p = abs(progress)
-                                val scale = 1f - p * 0.12f // 1.0 -> 0.88
-                                scaleX = scale
-                                scaleY = scale
-                                alpha = 1f - p * 0.45f // 1.0 -> 0.55
-                                rotationY = 0f
-                            }
-                            else -> {
-                                // page_turn (varsayılan, D253) — mevcut davranış AYNEN korunur
-                                translationX = offset
-                                alpha = 1f - abs(progress) * 0.18f
-                                cameraDistance = 10f * density.density
-                                // Sayfa çevirme hissi: içerik kaydırma yönünün TERSİNE hafifçe döner
-                                // (sanki kağıdın kenarı sabit menteşeden açılıyormuş gibi)
-                                rotationY = -progress * 14f
-                                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
-                                    pivotFractionX = if (progress > 0f) 0f else 1f,
-                                    pivotFractionY = 0.5f,
-                                )
-                                val scale = 1f - abs(progress) * 0.04f
-                                scaleX = scale
-                                scaleY = scale
-                            }
-                        }
+                        translationX = transitionFrame.translationX
+                        alpha = transitionFrame.currentAlpha
+                        scaleX = transitionFrame.currentScale
+                        scaleY = transitionFrame.currentScale
+                        rotationY = transitionFrame.currentRotationY
                     }
             ) {
                 // Üst bar — geri + klasör başlık + düzenle
@@ -618,8 +645,7 @@ fun FolderScreen(
                 // Aktif sürükleme/geçiş animasyonu sırasında (offset sıfırdan uzaklaşınca)
                 // bu navigatör solmalı — FolderPageTurnPeek 3D efektiyle çakışmasın (kullanıcı
                 // geri bildirimi: ortada beliren istenmeyen "sonraki klasör" butonu).
-                val navOffset = if (folderCarouselEnabled) contentOffset.value else 0f
-                val navAlphaTarget = 1f - (abs(navOffset) / folderTransitionOffsetPx).coerceIn(0f, 1f)
+                val navAlphaTarget = 1f - transitionFrame.progress
                 val navAlpha by androidx.compose.animation.core.animateFloatAsState(
                     targetValue = navAlphaTarget,
                     label = "folderIndexNavigatorAlpha",
@@ -809,6 +835,36 @@ private fun FolderPageTurnPeek(
                     scaleX = scale
                     scaleY = scale
                     alpha = (0.35f + progress * 0.65f).coerceIn(0f, 1f)
+                },
+        )
+    }
+}
+
+@Composable
+private fun FolderTransitionPreview(
+    previousFolder: AppFolder,
+    nextFolder: AppFolder,
+    frame: FolderTransitionFrame,
+    context: android.content.Context,
+    onSurface: Color,
+    accent: Color,
+) {
+    val showStart = frame.direction > 0
+    val previewFolder = if (showStart) previousFolder else nextFolder
+    Box(modifier = Modifier.fillMaxSize()) {
+        FolderPageEdgeStrip(
+            folder = previewFolder,
+            startEdge = showStart,
+            context = context,
+            onSurface = onSurface,
+            accent = accent,
+            modifier = Modifier
+                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd)
+                .graphicsLayer {
+                    translationX = frame.previewTranslationX
+                    alpha = frame.previewAlpha
+                    scaleX = frame.previewScale
+                    scaleY = frame.previewScale
                 },
         )
     }

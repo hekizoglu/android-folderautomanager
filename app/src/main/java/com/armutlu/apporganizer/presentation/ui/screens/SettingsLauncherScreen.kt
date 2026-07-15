@@ -305,29 +305,20 @@ fun SettingsLauncherScreen(
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FolderCarouselPositionChip(
-                            label = stringResource(R.string.settings_folder_transition_page_turn),
-                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_PAGE_TURN,
+                            label = stringResource(R.string.settings_folder_transition_android_smooth),
+                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_ANDROID_SMOOTH,
                             enabled = folderCarousel,
                             onClick = {
-                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_PAGE_TURN
+                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_ANDROID_SMOOTH
                                 AppPrefs.setFolderTransitionEffect(context, folderTransitionEffect)
                             },
                         )
                         FolderCarouselPositionChip(
-                            label = stringResource(R.string.settings_folder_transition_slide_parallax),
-                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX,
+                            label = stringResource(R.string.settings_folder_transition_ios_zoom_fade),
+                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_IOS_ZOOM_FADE,
                             enabled = folderCarousel,
                             onClick = {
-                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_SLIDE_PARALLAX
-                                AppPrefs.setFolderTransitionEffect(context, folderTransitionEffect)
-                            },
-                        )
-                        FolderCarouselPositionChip(
-                            label = stringResource(R.string.settings_folder_transition_zoom_fade),
-                            selected = folderTransitionEffect == AppPrefs.FOLDER_TRANSITION_ZOOM_FADE,
-                            enabled = folderCarousel,
-                            onClick = {
-                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_ZOOM_FADE
+                                folderTransitionEffect = AppPrefs.FOLDER_TRANSITION_IOS_ZOOM_FADE
                                 AppPrefs.setFolderTransitionEffect(context, folderTransitionEffect)
                             },
                         )
