@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her · T2:3dongu · T3:10dongu)
-> Son denetim: 2026-07-15 13:39
-> Dongu: **#194** | Tier: **1**
-> Ana tur odak: **Kategori ekleme/duzenleme/silme** (Category_CRUD)
-> Ekstra denetim: **AppRepository, DAO, data mapping, sorgu dogrulama** (Repository_DataLayer)
+> Son denetim: 2026-07-15 13:54
+> Dongu: **#195** | Tier: **2**
+> Ana tur odak: **Dock, widget, yedekleme akislari** (Dock_Widget_Backup)
+> Ekstra denetim: **StateFlow kullanimi, hot-path, race condition** (ViewModel_StateFlow)
 
 ---
 
@@ -25,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-07-15 13:39 | Dongu: #194 | Tier: 1 | Ana: Kategori ekleme/duzenleme/silme | Ekstra: AppRepository, DAO, data mapping, sorgu dogrulama*
+*Denetim tarihi: 2026-07-15 13:54 | Dongu: #195 | Tier: 2 | Ana: Dock, widget, yedekleme akislari | Ekstra: StateFlow kullanimi, hot-path, race condition*
