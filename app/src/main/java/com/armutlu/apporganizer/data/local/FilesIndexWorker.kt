@@ -3,14 +3,16 @@ package com.armutlu.apporganizer.data.local
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
-import androidx.work.ExistingWorkPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.WorkerTelemetryPrefs
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -19,20 +21,14 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 /**
- * C2: Periyodik dosya indeksleme WorkManager worker'ı.
- * 24 saatte bir veya şarjda çalışır.
+ * Periodic file indexing worker.
  *
- * Not: Hilt @AssistedInject/kapt uyumsuzluğunu önlemek için
- * WorkerFactory yerine entryPoint pattern kullanılır.
- *
- * P0.3: FilesIndexer artık @Singleton — EntryPoint ile uygulama genelindeki AYNI
- * instance'a erişilir, böylece worker'ın yazdığı FileIndexState (Indexing/Ready/Failed)
- * SearchSettingsScreen ve arama UI'larında da anında görünür (önceden worker kendi
- * ayrı FilesIndexer instance'ını yaratıyordu, state güncellemeleri UI'ya ulaşmıyordu).
+ * Uses EntryPoint instead of WorkerFactory so the worker reaches the app-wide
+ * singleton FilesIndexer instance and UI observers see indexing state updates.
  */
 class FilesIndexWorker(
     context: Context,
-    params: WorkerParameters
+    params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
 
     @EntryPoint
@@ -42,24 +38,35 @@ class FilesIndexWorker(
     }
 
     override suspend fun doWork(): Result {
+        val workName = inputData.getString(KEY_WORK_NAME) ?: WORK_NAME
+        val startedAt = WorkerTelemetryPrefs.markStarted(applicationContext, workName)
         return try {
             if (!AppPrefs.isSearchSourceFilesEnabled(applicationContext)) {
+                WorkerTelemetryPrefs.markSucceeded(applicationContext, workName, startedAt)
                 return Result.success()
             }
             val indexer = EntryPointAccessors.fromApplication(
                 applicationContext,
-                FilesIndexWorkerEntryPoint::class.java
+                FilesIndexWorkerEntryPoint::class.java,
             ).filesIndexer()
             indexer.indexAll()
-            Timber.d("FilesIndexWorker: tamamlandı")
+            WorkerTelemetryPrefs.markSucceeded(applicationContext, workName, startedAt)
+            Timber.d("FilesIndexWorker: completed")
             Result.success()
         } catch (e: Exception) {
-            Timber.e(e, "FilesIndexWorker hatası")
+            WorkerTelemetryPrefs.markFailed(
+                applicationContext,
+                workName,
+                startedAt,
+                WorkerTelemetryPrefs.FAILURE_IO_ERROR,
+            )
+            Timber.e(e, "FilesIndexWorker error")
             Result.retry()
         }
     }
 
     companion object {
+        private const val KEY_WORK_NAME = "work_name"
         private const val WORK_NAME = "files_index_periodic"
         private const val ONE_TIME_WORK_NAME = "files_index_once"
 
@@ -68,16 +75,17 @@ class FilesIndexWorker(
                 .setConstraints(
                     Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
-                        .build()
+                        .build(),
                 )
+                .setInputData(workDataOf(KEY_WORK_NAME to ONE_TIME_WORK_NAME))
                 .build()
 
             WorkManager.getInstance(context).enqueueUniqueWork(
                 ONE_TIME_WORK_NAME,
                 ExistingWorkPolicy.REPLACE,
-                request
+                request,
             )
-            Timber.d("FilesIndexWorker: tek seferlik gorev planlandi")
+            Timber.d("FilesIndexWorker: one-time work scheduled")
         }
 
         fun schedule(context: Context) {
@@ -86,16 +94,17 @@ class FilesIndexWorker(
                     Constraints.Builder()
                         .setRequiresCharging(true)
                         .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
-                        .build()
+                        .build(),
                 )
+                .setInputData(workDataOf(KEY_WORK_NAME to WORK_NAME))
                 .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.UPDATE,
-                request
+                request,
             )
-            Timber.d("FilesIndexWorker: periyodik görev planlandı (24h, şarjda)")
+            Timber.d("FilesIndexWorker: periodic work scheduled")
         }
 
         fun cancel(context: Context) {

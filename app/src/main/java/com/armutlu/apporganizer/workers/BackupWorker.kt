@@ -12,6 +12,7 @@ import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.BackupManager
+import com.armutlu.apporganizer.utils.WorkerTelemetryPrefs
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.EntryPoint
@@ -31,6 +32,7 @@ class BackupWorker(
     }
 
     override suspend fun doWork(): Result {
+        val startedAt = WorkerTelemetryPrefs.markStarted(applicationContext, WORK_NAME)
         return runCatching {
             val repo = EntryPointAccessors.fromApplication(
                 applicationContext,
@@ -49,9 +51,16 @@ class BackupWorker(
             }
 
             com.armutlu.apporganizer.utils.AppPrefs.setLastBackupTime(applicationContext, System.currentTimeMillis())
+            WorkerTelemetryPrefs.markSucceeded(applicationContext, WORK_NAME, startedAt)
             Result.success()
         }.getOrElse { e ->
             Timber.e(e, "Otomatik yedekleme hatasi")
+            WorkerTelemetryPrefs.markFailed(
+                applicationContext,
+                WORK_NAME,
+                startedAt,
+                WorkerTelemetryPrefs.FAILURE_IO_ERROR,
+            )
             Result.retry()
         }
     }

@@ -31,6 +31,7 @@ object SearchStatsPrefs {
         val totalSearches: Int,
         val zeroResultCount: Int,
         val avgLatencyMs: Long,
+        val avgQueryLength: Double,
         val clickCountsByType: Map<String, Int>,
         val totalClicks: Int,
         val firstResultClicks: Int,
@@ -65,6 +66,7 @@ object SearchStatsPrefs {
             totalSearches = p.getInt(KEY_TOTAL_SEARCHES, 0),
             zeroResultCount = p.getInt(KEY_ZERO_RESULT_COUNT, 0),
             avgLatencyMs = p.getFloat(KEY_AVG_LATENCY_MS, 0f).toLong(),
+            avgQueryLength = p.getFloat(KEY_AVG_QUERY_LEN, 0f).toDouble(),
             clickCountsByType = clickCountsByType,
             totalClicks = p.getInt(KEY_TOTAL_CLICKS, 0),
             firstResultClicks = p.getInt(KEY_FIRST_RESULT_CLICKS, 0),
@@ -137,4 +139,38 @@ object SearchStatsPrefs {
     fun reset(context: Context) {
         prefs(context).edit().clear().apply()
     }
+}
+
+internal object SearchDiagnosticsFormatter {
+
+    fun counterLine(summary: SearchStatsPrefs.Summary): String =
+        "total=${summary.totalSearches}, zero=${summary.zeroResultCount}, zeroRate=${percent(summary.zeroResultCount, summary.totalSearches)}, avgLatencyMs=${summary.avgLatencyMs}"
+
+    fun interactionLine(summary: SearchStatsPrefs.Summary): String =
+        "totalClicks=${summary.totalClicks}, clickThroughRate=${percent(summary.totalClicks, summary.totalSearches)}, firstResultClicks=${summary.firstResultClicks}, firstResultRate=${percent(summary.firstResultClicks, summary.totalClicks)}"
+
+    fun sourceLine(summary: SearchStatsPrefs.Summary): String =
+        sortedCounts(summary.clickCountsByType)
+
+    fun actionLine(summary: SearchStatsPrefs.Summary): String =
+        sortedCounts(summary.actionCounts)
+
+    fun avgQueryLengthLine(summary: SearchStatsPrefs.Summary): String =
+        "${oneDecimal(summary.avgQueryLength)} karakter"
+
+    private fun percent(numerator: Int, denominator: Int): String {
+        if (denominator <= 0) return "0.0%"
+        return "${oneDecimal(numerator * 100.0 / denominator)}%"
+    }
+
+    private fun oneDecimal(value: Double): String =
+        String.format(java.util.Locale.US, "%.1f", value)
+
+    private fun sortedCounts(counts: Map<String, Int>): String =
+        counts
+            .filterValues { it > 0 }
+            .toSortedMap()
+            .entries
+            .joinToString { "${it.key}=${it.value}" }
+            .ifBlank { "-" }
 }

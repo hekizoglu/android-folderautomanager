@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Saglik Raporu Duzeltme Sprint 2 - 2026-07-16
+
+**Yapılanlar:** (P1.1-P1.4, tamamlandi) Saglik raporu arama metrikleri genisletildi: `SearchStatsPrefs.Summary` ortalama sorgu uzunlugunu disari veriyor; `SearchDiagnosticsFormatter` sifir sonuc orani, tiklama orani, ilk sonuc orani, deterministik kaynak/aksiyon kirilimi ve ortalama sorgu uzunlugu satirlarini uretiyor. Worker ozeti icin `WorkerPlanHealth` karar tablosu eklendi; kapali+work yok normal, acik+work yok hata, kapali+work var uyari olarak raporlanacak. `WorkerTelemetryPrefs` ile worker baslangic/basari/hata zamani, son sure, basari/hata sayaci ve guvenli hata kodu kalici kaydediliyor; Backup, SmartInsight, SuggestionNotification, WeeklyDigest ve FilesIndex worker'lari telemetry yaziyor. Auto backup raporu kullanici tercihi, plan sagligi, son yedek zamani ve anonim hata kodunu ayri satirda gosteriyor. Surum `1.3.53` / `versionCode 76`.
+
+**Arastirma:** Android Developers WorkManager observe/progress dokumantasyonu kontrol edildi; worker plan durumu ile kalici telemetry'nin ayri raporlanmasi esas alindi.
+
+**Kalite kapisi:** Ilk `compileDebugKotlin -PskipGoogleServices` denemesi Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1` sonrasi `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` basariyla gecti. APK: `app/build/outputs/apk/debug/app-debug.apk`.
+
 ## Saglik Raporu Duzeltme Sprint 1 - 2026-07-16
 
 **Yapılanlar:** (P0.1-P0.2, tamamlandi) Saglik raporunda WorkManager tek seferlik isler icin sentinel/292 milyon yil tarihinin gorunmesi engellendi. `WorkerKind` ve `workerNextRunText()` helper'i eklendi; terminal state'ler `next=` yazmiyor, `files_index_once` basariliysa `tamamlandi, sonraki calisma yok` metni uretiyor, 10 yildan uzak tarihler sentinel kabul ediliyor. Siniflandirma raporu `ClassificationDiagnosticsCalculator` ile tek kullanici uygulamasi evrenine baglandi; `ClassificationAttentionPolicy` attention kirilimi, snooze/confirmed/corrected/skipped/uncategorized/invalid/automatic accepted kovalarini birbirini dislayan sekilde hesapliyor. Rapor artik `Sayac toplami`, `Tutarlilik: OK/MISMATCH` ve kisisel veri icermeyen mismatch uyarisi yaziyor. Surum `1.3.49` / `versionCode 72`.

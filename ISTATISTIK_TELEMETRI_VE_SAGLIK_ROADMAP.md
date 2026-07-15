@@ -293,7 +293,7 @@ Kaynaklar: app=6, contact=2, file=1, settings=1
 Aksiyonlar: OPEN_APP=6, CALL=1, WHATSAPP=1
 ```
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. `SearchStatsPrefs.Summary` ortalama sorgu uzunluğunu dışa veriyor; sağlık raporu sıfır sonuç oranı, tıklama oranı, ilk sonuç oranı, kaynak/aksiyon kırılımı ve ortalama sorgu uzunluğu satırlarını anonim sayaçlardan üretiyor. `SearchStatsPrefsTest` ve `DiagnosticsReportManagerTest` ile doğrulandı.
 
 **Değişecek dosyalar:**
 
@@ -323,7 +323,7 @@ Aksiyonlar: OPEN_APP=6, CALL=1, WHATSAPP=1
 | Açık | Yok | `HATA_ETKIN_AMA_WORK_YOK` |
 | Açık | Var | WorkInfo durumuna göre |
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. `WorkerPlanHealth` karar tablosu eklendi; kapalı+work yok normal, açık+work yok hata, kapalı+work var uyarı, açık+work var normal olarak raporlanıyor. Karar tablosu unit test ile doğrulandı.
 
 **Kabul kriterleri:**
 
@@ -350,7 +350,7 @@ Alanlar:
 - `successCount`
 - `failureCount`
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. `WorkerTelemetryPrefs` eklendi; Backup, SmartInsight, SuggestionNotification, WeeklyDigest ve FilesIndex worker'ları başlangıç/başarı/hata zamanını, süreyi, sayaçları ve güvenli hata kodunu kalıcı olarak kaydediyor. Negatif süre ve hata kodu sanitizasyonu test edildi.
 
 **Kabul kriterleri:**
 
@@ -371,7 +371,7 @@ Auto backup: tercih=kapali, work=yok, saglik=NORMAL
 Auto backup: tercih=acik, work=yok, saglik=HATA_PLANLANMAMIS
 ```
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Auto backup raporu kullanıcı tercihi, worker plan sağlığı, son yedek zamanı ve anonim son hata kodunu ayrı satırda gösteriyor. Kapalı yedekleme `NORMAL`, açık fakat plansız yedekleme `HATA_PLANLANMAMIS` olarak ayrıştırılıyor.
 
 **Kabul kriterleri:**
 
@@ -1085,11 +1085,11 @@ Başlangıçta yalnızca şu paneller takip edilmelidir:
 | B4 | Kullanım Verileri ekranı | P0 | B1-B3 | ⏳ Bekliyor |
 | B5 | Firebase bağlantı testi | P0 | B3-B4 | ⏳ Bekliyor |
 | B6 | Temel Analytics event'leri | P1 | B3 | ⏳ Bekliyor |
-| A3 | Gelişmiş yerel arama istatistikleri | P1 | SearchStatsPrefs | ⏳ Bekliyor |
+| A3 | Gelişmiş yerel arama istatistikleri | P1 | SearchStatsPrefs | ✅ Tamamlandı |
 | B7 | HealthSnapshot | P1 | A bölümü | ⏳ Bekliyor |
 | B8 | Crashlytics bağlamı | P1 | B1-B3-B7 | ⏳ Bekliyor |
 | B9 | Performance | P1 | B1-B3 | ⏳ Bekliyor |
-| A4-A6 | Worker/yedek sağlık genişletmeleri | P1 | Worker altyapısı | ⏳ Bekliyor |
+| A4-A6 | Worker/yedek sağlık genişletmeleri | P1 | Worker altyapısı | ✅ Tamamlandı |
 | B10 | Günlük anonim özet | P1 | B6-B7 | ⏳ Bekliyor |
 | B11 | Dört cihaz doğrulaması | P1 | B4-B10 | ⏳ Bekliyor |
 | B12 | Firebase konsol panelleri | P2 | Gerçek veri | ⏳ Bekliyor |

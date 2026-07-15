@@ -31,7 +31,63 @@ internal enum class WorkerKind {
     ONE_SHOT,
 }
 
+internal enum class WorkerPlanHealth {
+    NORMAL,
+    NORMAL_KAPALI,
+    WARNING_DISABLED_BUT_SCHEDULED,
+    ERROR_ENABLED_BUT_MISSING,
+}
+
 private const val MAX_REASONABLE_SCHEDULE_HORIZON_DAYS = 3650L
+
+internal fun workerPlanHealth(enabled: Boolean, hasWork: Boolean): WorkerPlanHealth = when {
+    !enabled && !hasWork -> WorkerPlanHealth.NORMAL_KAPALI
+    !enabled && hasWork -> WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED
+    enabled && !hasWork -> WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING
+    else -> WorkerPlanHealth.NORMAL
+}
+
+internal fun workerPlanHealthText(health: WorkerPlanHealth): String = when (health) {
+    WorkerPlanHealth.NORMAL -> "NORMAL"
+    WorkerPlanHealth.NORMAL_KAPALI -> "NORMAL_KAPALI"
+    WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED -> "UYARI: kapali ozellik icin work mevcut"
+    WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING -> "HATA: etkin fakat work bulunamadi"
+}
+
+internal fun workerTelemetryText(snapshot: WorkerTelemetryPrefs.Snapshot, formatDate: (Long) -> String): String {
+    if (snapshot.lastStartedAt <= 0L &&
+        snapshot.successCount == 0 &&
+        snapshot.failureCount == 0
+    ) {
+        return "telemetry=yok"
+    }
+    return buildString {
+        append("lastStart=${formatDate(snapshot.lastStartedAt)}")
+        append(", lastSuccess=${formatDate(snapshot.lastSucceededAt)}")
+        append(", lastFailure=${formatDate(snapshot.lastFailedAt)}")
+        append(", durationMs=${snapshot.lastDurationMs}")
+        append(", success=${snapshot.successCount}")
+        append(", failure=${snapshot.failureCount}")
+        append(", failureCode=${snapshot.lastFailureCode}")
+    }
+}
+
+internal fun backupHealthLine(
+    enabled: Boolean,
+    planHealth: WorkerPlanHealth,
+    lastBackupAt: Long,
+    telemetry: WorkerTelemetryPrefs.Snapshot,
+    formatDate: (Long) -> String,
+): String {
+    val preference = if (enabled) "acik" else "kapali"
+    val health = when (planHealth) {
+        WorkerPlanHealth.NORMAL -> "NORMAL"
+        WorkerPlanHealth.NORMAL_KAPALI -> "NORMAL"
+        WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED -> "UYARI_KAPALI_WORK_VAR"
+        WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING -> "HATA_PLANLANMAMIS"
+    }
+    return "Auto backup: tercih=$preference, saglik=$health, sonYedek=${formatDate(lastBackupAt)}, sonHata=${telemetry.lastFailureCode}"
+}
 
 internal fun workerNextRunText(
     state: WorkInfo.State,
@@ -146,7 +202,11 @@ class DiagnosticsReportManager @Inject constructor(
                 fileIndexItemCount = AppPrefs.getFileIndexItemCount(context),
                 fileIndexLastIndexedAt = formatDateTime(AppPrefs.getFileIndexLastIndexedAt(context)),
                 fileIndexFailureReason = AppPrefs.getFileIndexFailureReason(context) ?: "-",
-                searchCounterLine = "total=${searchStats.totalSearches}, zero=${searchStats.zeroResultCount}, avgLatencyMs=${searchStats.avgLatencyMs}, totalClicks=${searchStats.totalClicks}, firstResultClicks=${searchStats.firstResultClicks}",
+                searchCounterLine = SearchDiagnosticsFormatter.counterLine(searchStats),
+                searchInteractionLine = SearchDiagnosticsFormatter.interactionLine(searchStats),
+                searchClickSourcesLine = SearchDiagnosticsFormatter.sourceLine(searchStats),
+                searchActionLine = SearchDiagnosticsFormatter.actionLine(searchStats),
+                searchAvgQueryLengthLine = SearchDiagnosticsFormatter.avgQueryLengthLine(searchStats),
                 notificationAnalyticsEnabled = yesNo(AppPrefs.isNotifAnalyticsEnabled(context)),
                 notificationTotal = notificationTotal,
                 notificationLast7d = notificationLast7d,
@@ -173,6 +233,8 @@ class DiagnosticsReportManager @Inject constructor(
         val infos = runCatching {
             WorkManager.getInstance(context).getWorkInfosForUniqueWork(spec.uniqueName).get()
         }.getOrDefault(emptyList())
+        val enabled = spec.enabled()
+        val health = workerPlanHealth(enabled = enabled, hasWork = infos.isNotEmpty())
         val stateText = if (infos.isEmpty()) {
             "yok"
         } else {
@@ -189,7 +251,23 @@ class DiagnosticsReportManager @Inject constructor(
                 }
             }
         }
-        "${spec.label}: enabled=${yesNo(spec.enabled())}, work=$stateText"
+        val telemetry = WorkerTelemetryPrefs.getSnapshot(context, spec.uniqueName)
+        buildString {
+            append("${spec.label}: enabled=${yesNo(enabled)}, work=$stateText, durum=${workerPlanHealthText(health)}")
+            append(", ${workerTelemetryText(telemetry, ::formatDateTime)}")
+            if (spec.uniqueName == "auto_backup_weekly") {
+                appendLine()
+                append(
+                    backupHealthLine(
+                        enabled = enabled,
+                        planHealth = health,
+                        lastBackupAt = AppPrefs.getLastBackupTime(context),
+                        telemetry = telemetry,
+                        formatDate = ::formatDateTime,
+                    )
+                )
+            }
+        }
     }
 
     private fun crashSummary(): List<String> {
@@ -287,6 +365,10 @@ internal data class DiagnosticsReportSnapshot(
     val fileIndexLastIndexedAt: String,
     val fileIndexFailureReason: String,
     val searchCounterLine: String,
+    val searchInteractionLine: String,
+    val searchClickSourcesLine: String,
+    val searchActionLine: String,
+    val searchAvgQueryLengthLine: String,
     val notificationAnalyticsEnabled: String,
     val notificationTotal: Int,
     val notificationLast7d: Int,
@@ -351,6 +433,10 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("Dosya indeks hatasi: ${snapshot.fileIndexFailureReason}")
     appendLine("Diger kaynaklar: apps/categories/settings indeksleri Room icinde tutuluyor; ayri son indeks zaman damgasi kalici degil.")
     appendLine("Arama sayaci: ${snapshot.searchCounterLine}")
+    appendLine("Sonuc etkilesimi: ${snapshot.searchInteractionLine}")
+    appendLine("Tiklama kaynaklari: ${snapshot.searchClickSourcesLine}")
+    appendLine("Hizli aksiyonlar: ${snapshot.searchActionLine}")
+    appendLine("Ortalama sorgu uzunlugu: ${snapshot.searchAvgQueryLengthLine}")
     appendLine()
     appendLine("[Bildirimler]")
     appendLine("Analiz acik: ${snapshot.notificationAnalyticsEnabled}")

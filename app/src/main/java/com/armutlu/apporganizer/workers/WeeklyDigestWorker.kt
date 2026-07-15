@@ -2,8 +2,8 @@ package com.armutlu.apporganizer.workers
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -20,16 +20,17 @@ import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WeekUtils
+import com.armutlu.apporganizer.utils.WorkerTelemetryPrefs
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
+import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.EntryPoint
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 class WeeklyDigestWorker(
     appContext: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
 
     @EntryPoint
@@ -40,12 +41,17 @@ class WeeklyDigestWorker(
     }
 
     override suspend fun doWork(): Result {
+        val ctx = applicationContext
+        val startedAt = WorkerTelemetryPrefs.markStarted(ctx, WORK_NAME)
         return runCatching {
-            if (!AppPrefs.isWeeklyDigestEnabled(applicationContext)) return@runCatching Result.success()
+            if (!AppPrefs.isWeeklyDigestEnabled(ctx)) {
+                WorkerTelemetryPrefs.markSucceeded(ctx, WORK_NAME, startedAt)
+                return@runCatching Result.success()
+            }
 
             val entryPoint = EntryPointAccessors.fromApplication(
-                applicationContext,
-                DigestEntryPoint::class.java
+                ctx,
+                DigestEntryPoint::class.java,
             )
             val repo = entryPoint.appRepository()
             val weeklyGoalDao = entryPoint.weeklyGoalDao()
@@ -65,25 +71,31 @@ class WeeklyDigestWorker(
             if (totalUnused > 0) {
                 sendDigestNotification(totalUnused, unusedApps.take(3).map { it.appName })
             }
-            Timber.d("WeeklyDigest: $totalUnused kullanılmayan uygulama tespit edildi")
+            Timber.d("WeeklyDigest: $totalUnused unused apps detected")
 
-            // Haftalık Rapor (Wrapped) için kategori bazlı kullanım snapshot'ı kaydet.
-            // Mevcut davranışı etkilemesin diye ayrı runCatching ile izole edildi.
+            // Keep Wrapped snapshot failures isolated from the digest worker result.
             runCatching {
                 val categoryUsage = apps.groupBy { it.categoryId }
                     .mapValues { (_, list) -> list.sumOf { it.usageCount } }
                 WrappedSnapshotPrefs.saveCurrent(
-                    applicationContext,
+                    ctx,
                     categoryUsage,
                     apps.size,
-                    UsageStatsHelper.getUnlockCount(applicationContext, days = 7, nowMillis = now),
+                    UsageStatsHelper.getUnlockCount(ctx, days = 7, nowMillis = now),
                 )
                 checkWeeklyGoals(weeklyGoalDao, categoryUsage.mapValues { it.value / 60_000 }, now)
-            }.onFailure { e -> Timber.e(e, "Wrapped snapshot kaydı başarısız") }
+            }.onFailure { e -> Timber.e(e, "Wrapped snapshot save failed") }
 
+            WorkerTelemetryPrefs.markSucceeded(ctx, WORK_NAME, startedAt)
             Result.success()
         }.getOrElse { e ->
-            Timber.e(e, "WeeklyDigest hatası")
+            WorkerTelemetryPrefs.markFailed(
+                ctx,
+                WORK_NAME,
+                startedAt,
+                WorkerTelemetryPrefs.FAILURE_UNKNOWN,
+            )
+            Timber.e(e, "WeeklyDigest error")
             Result.retry()
         }
     }
@@ -118,7 +130,7 @@ class WeeklyDigestWorker(
                 putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             },
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -136,8 +148,8 @@ class WeeklyDigestWorker(
         if (!NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) return
         val mgr = applicationContext.getSystemService(NotificationManager::class.java) ?: return
         ensureChannel(mgr)
-        val sample = if (sampleApps.isNotEmpty()) " (${sampleApps.joinToString(", ")}…)" else ""
-        val body = "$count uygulama 7+ gündür açılmadı$sample. Gizleyebilir veya kaldırabilirsin."
+        val sample = if (sampleApps.isNotEmpty()) " (${sampleApps.joinToString(", ")})" else ""
+        val body = "$count uygulama 7+ gundur acilmadi$sample. Gizleyebilir veya kaldirabilirsin."
         val contentIntent = PendingIntent.getActivity(
             applicationContext,
             NOTIF_ID,
@@ -145,11 +157,11 @@ class WeeklyDigestWorker(
                 putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.USAGE_REPORT)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             },
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Haftalık Uygulama Raporu")
+            .setContentTitle("Haftalik Uygulama Raporu")
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -161,8 +173,8 @@ class WeeklyDigestWorker(
 
     private fun ensureChannel(mgr: NotificationManager) {
         if (mgr.getNotificationChannel(CHANNEL_ID) != null) return
-        val ch = NotificationChannel(CHANNEL_ID, "Haftalık Özet", NotificationManager.IMPORTANCE_DEFAULT).apply {
-            description = "Kullanılmayan uygulama bildirimleri"
+        val ch = NotificationChannel(CHANNEL_ID, "Haftalik Ozet", NotificationManager.IMPORTANCE_DEFAULT).apply {
+            description = "Kullanilmayan uygulama bildirimleri"
         }
         mgr.createNotificationChannel(ch)
     }
@@ -184,7 +196,7 @@ class WeeklyDigestWorker(
             wm.enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.UPDATE,
-                request
+                request,
             )
         }
 

@@ -24,6 +24,7 @@ import com.armutlu.apporganizer.utils.SuggestionCandidate
 import com.armutlu.apporganizer.utils.SuggestionChannel
 import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import com.armutlu.apporganizer.utils.WorkerTelemetryPrefs
 import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
@@ -47,11 +48,16 @@ class SmartInsightWorker(
 
     @Suppress("CyclomaticComplexMethod", "LongMethod")
     override suspend fun doWork(): Result {
+        val ctx = applicationContext
+        val startedAt = WorkerTelemetryPrefs.markStarted(ctx, WORK_NAME)
         return runCatching {
-            val ctx = applicationContext
-            if (!AppPrefs.isSmartNotifEnabled(ctx)) return@runCatching Result.success()
+            if (!AppPrefs.isSmartNotifEnabled(ctx)) {
+                WorkerTelemetryPrefs.markSucceeded(ctx, WORK_NAME, startedAt)
+                return@runCatching Result.success()
+            }
             if (!canPostNotifications()) {
                 Timber.i("SmartInsight skipped: app notifications are disabled")
+                WorkerTelemetryPrefs.markSucceeded(ctx, WORK_NAME, startedAt)
                 return@runCatching Result.success()
             }
 
@@ -182,8 +188,15 @@ class SmartInsightWorker(
             }
 
             Timber.d("SmartInsight: ${candidates.size} oneri olusturuldu")
+            WorkerTelemetryPrefs.markSucceeded(ctx, WORK_NAME, startedAt)
             Result.success()
         }.getOrElse { error ->
+            WorkerTelemetryPrefs.markFailed(
+                ctx,
+                WORK_NAME,
+                startedAt,
+                WorkerTelemetryPrefs.FAILURE_UNKNOWN,
+            )
             Timber.e(error, "SmartInsight hatasi")
             Result.retry()
         }
