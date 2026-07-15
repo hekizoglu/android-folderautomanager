@@ -18,7 +18,9 @@ import com.armutlu.apporganizer.domain.usecase.pulse.PulseNotificationSignals
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
+import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import com.armutlu.apporganizer.utils.WeatherRepository
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,6 +61,8 @@ class PulseClockViewModel @Inject constructor(
         val weeklyScreenTimeMinutes: Int? = null,
         val hourlyUsageMinutes: List<Int>? = null, // 24 kova — index 23 = şu anki saat
         val personalityLabel: String? = null, // "🎯 Uretici" — D257 dijital kişilik etiketi
+        val weather: WeatherRepository.Snapshot? = null,
+        val weatherError: String? = null,
         val loading: Boolean = true,
     )
 
@@ -141,6 +145,7 @@ class PulseClockViewModel @Inject constructor(
             previousCategoryUsage = WrappedSnapshotPrefs.getPrevious(context)?.categoryUsage,
             unlockCount = UsageStatsHelper.getUnlockCount(context, days = 7),
             previousUnlockCount = WrappedSnapshotPrefs.getPreviousUnlockCount(context),
+            taskScoreContribution = TaskScoreManager.getPulseContribution(context),
             hasUsageAccess = hasUsageAccess,
         )
         val pulse = DigitalPulseEngine.compute(input)
@@ -170,6 +175,7 @@ class PulseClockViewModel @Inject constructor(
             AppPrefs.getPulseLastInsightId(context),
         )
         insight?.let { AppPrefs.setPulseLastInsightId(context, it.id) }
+        val weatherResult = WeatherRepository.getWeather(context)
 
         return PulseClockUiState(
             score = pulse.total,
@@ -183,6 +189,8 @@ class PulseClockViewModel @Inject constructor(
             weeklyScreenTimeMinutes = weeklyScreenTimeMinutes,
             hourlyUsageMinutes = UsageStatsHelper.getHourlyUsageLast24h(context),
             personalityLabel = personalityLabel,
+            weather = (weatherResult as? WeatherRepository.Result.Success)?.snapshot,
+            weatherError = (weatherResult as? WeatherRepository.Result.Error)?.message,
             loading = false,
         )
     }

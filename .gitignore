@@ -64,3 +64,4 @@ gradle_test_run*.txt
 __pycache__/
 *.pyc
 *.pyo
+.codex-automation/

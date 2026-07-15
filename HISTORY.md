@@ -1638,6 +1638,26 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 **Yapılanlar:** BUILD OK 24.66MB + APK Telegram gonderildi (#844). E8 Guard audit: LauncherViewModel:170 isNotEmpty() mevcut kullanim dogru, false-positive yok.
 **Agent:** --
 **CLAUDE.md/LEARNINGS.md:** --
+## Dongu D273 -- 2026-07-15 [P1.4 Gorev Sistemi V2 Room'a tasindi]
+**Yapilanlar:** Gorev sistemi SharedPreferences agirligindan Room tabanli V2 modele alindi. `mission_history` ve `task_score_events` tablolari (DB v17) eklendi; `MissionsRepository` mevcut `MissionPrefs`/legacy task-score verilerini ilk acilista Room'a import ediyor. `TaskScoreManager` artik skor olaylarini Room'a yaziyor; `MissionsViewModel` toplam yildiz, gunluk/haftalik tamamlanma ve skor snapshot'ini Room gecmisinden okuyor. Manuel "Tamamladim" akisi kaldirildi; gorev havuzu yalnizca gercek sinyalle dogrulanabilen maddelerden olusuyor: ekran suresi, gece kullanim, kilit acma sayisi, siniflandirma aksiyonu, bildirim raporu ziyareti ve haftalik pozitif duzenleme sayisi. `NotificationReportScreen` ekran acilisini task-score olayi olarak kaydediyor. `StatsResetService` gorev gecmisi + task-score event tablolarini da temizliyor. `MissionEngineTest` yeni gorev mantigina guncellendi; Room schema `17.json` uretildi.
+**Build/Test:** Bekliyor - kalite kapisi bu dongunun sonunda calistirilacak.
+**Sonraki:** Kalite kapisi, smoke notu ve Telegram raporu.
+
+## Dongu D274 -- 2026-07-15 [P1.5 Gorev puani skora kontrollu baglandi]
+**Yapilanlar:** Dijital Nabiz/Wrapped tek skor motoruna gorev etkisi eklendi. `TaskScoreEventDao` son donem net gorev bakiyesini okuyabiliyor; `TaskScoreManager.getPulseContribution()` son 14 gunu baz alip etkiyi hesapliyor ve katkiyi `+-10` ile sert sekilde sinirliyor. `DigitalPulseEngine` bu katkıyı agirlikli temel skora ekliyor ama tek basina skoru belirlemesine izin vermiyor; gorev etkisi sebep listesinde gorunur halde tutuluyor. `PulseClockViewModel` ve `WrappedViewModel` ayni girdiyi verdigi icin ana ekran ve haftalik rapor tek motor kuralini koruyor. `DigitalPulseEngineTest` ve `WrappedEngineTest` katki limiti ve reason gorunurlugu icin genisletildi.
+**Build/Test:** `./gradlew compileDebugKotlin -PskipGoogleServices`, `./gradlew testDebugUnitTest -PskipGoogleServices`, `./gradlew assembleDebug -PskipGoogleServices` OK. Windows build kilidi nedeniyle komutlar temiz `app/build` ile sirali calistirildi.
+**Sonraki:** P1.6 ayrismasini cihaz smoke ile teyit et; sonra Sprint 5 (P1.7-P1.10).
+
+## Dongu D275 -- 2026-07-15 [P1.7 Gercek hava durumu ve saatlik sicaklik seridi]
+**Yapilanlar:** Saat kartindaki Google arama kisayolu yerine gercek hava akisi eklendi. `WeatherRepository` Open-Meteo forecast + geocoding uzerinden canli veri cekiyor; son basarili sonucun cache'i tutuluyor, 45 dk icinde taze veri tekrar kullaniliyor ve ag hatasinda stale veri zaman damgasi ile gosteriliyor. Saat karti artik konum/sehir etiketi, anlik sicaklik, gunluk min-max ve yakin saatler icin kisa sicaklik seridi gosteriyor. Ayarlara hava satirini kapatma, manuel sehir girme ve yaklasik konumu kullanma secenekleri eklendi; yeni tercih alanlari `AppPrefs` ve `BackupManager` export/import kapsamina alindi. Android bildirimiyle uyumlu olarak yaklasik konum icin `ACCESS_COARSE_LOCATION` kullanildi.
+**Build/Test:** `./gradlew compileDebugKotlin -PskipGoogleServices`, `./gradlew testDebugUnitTest -PskipGoogleServices`, `./gradlew assembleDebug -PskipGoogleServices` OK. Sürüm `1.3.29` / `52`.
+**Sonraki:** Cihaz smoke: izinli/izinsiz hava akisi, manuel sehir fallback'i ve stale veri etiketi; sonra P1.8 katalog cache.
+
+## Dongu D272 -- 2026-07-15 [P1.1 Tam ekran arama + P1.2 baglamsal sifir durum]
+**Yapilanlar:** Ana ekran arama cubugu icin tam ekran overlay akisi eklendi: cubuga dokununca `FullScreenSearchOverlay` aciliyor, geri tusu once overlay'i kapatiyor ve kok `BackHandler` kurali korunuyor. Bos sorguda "bu saatte en sik actiklarin", `LauncherViewModel.suggestedContacts` tabanli kisi onerileri ve cihaz-ici son 3 arama gosteriliyor. Bunun icin `SearchHistoryPrefs` eklendi; ayarlara tam ekran arama toggle'i ve arama gecmisini temizleme aksiyonu kondu; `AppPrefs` + `BackupManager` entegrasyonu ile preference export/import kapsamina alindi. TR/EN stringler guncellendi, `SearchHistoryPrefsTest` eklendi.
+**Build/Test:** Bekliyor - kalite kapisi bu dongunun sonunda calistirilacak.
+**Sonraki:** Gradle kalite kapisi, smoke notu ve Telegram raporu.
+
 **Sonraki:** FİKİRLER listesi tukendi, yeni fikirler uretilecek
 
 ## Dongü 190 -- 00:58
@@ -1648,6 +1668,25 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 
 ## Dongu D191 -- 01:26 [AUDIT OPTIMIZASYON]
 **Yapilanlar:** Denetim sistemi tiered frequency'e gecirildi. audit.ps1: T1 (her dongu, 10 temel regex), T2 (3 dongude bir, 8 CE kurali), T3 (10 dongude bir, Compose metrics + Dependency matrix + APK trend + Skill integrity + Dead code). `gradlew lintDebug` T3'ten kaldirildi (2+ dk suruyor) - yerine build artifact tabanli hizli kontroller eklendi. run_local_denetim_cycle.ps1 CycleNumber parametresi eklendi. COZULEMEYEN_SORUNLAR.md temizlendi.
+## D277 - Guardli 15 dakikalik Codex otomasyonu
+- Tarih: 2026-07-15
+- Kapsam: Windows Task Scheduler uzerinden 15 dakikada bir tetiklenen, lock/log/Telegram guard'li bir Codex roadmap devam gorevi eklendi.
+- Teknik:
+  - `scripts/run_codex_roadmap_tick.ps1` eklendi; merge/rebase guard'i, lock dosyasi, durum JSON'u, log klasoru ve Telegram baslangic/bitis bildirimleri ile `codex exec` cagiriyor.
+  - `scripts/codex_roadmap_tick_prompt.md` eklendi; AGENTS/devir/roadmap kurallarini yukleyip siradaki acik maddeye guvenli devam etmesini istiyor.
+  - `scripts/register_codex_15min_task.ps1` eklendi; gorevi 15 dakikalik tekrar, `IgnoreNew` coklu instance politikasi ve 12 saat execution limiti ile kaydediyor.
+  - `.codex-automation/` artifact klasoru `.gitignore`'a eklendi.
+
+## D276 - Launcher katalog cache / olay bazli sync (P1.8)
+- Tarih: 2026-07-15
+- Kapsam: Launcher acilisinda Room katalogu aninda kaynak olarak korunup tam uygulama taramasi sadece DB bos, katalog surumu eski veya 12 saatlik fallback durumuna indirildi.
+- Teknik:
+  - `LauncherViewModel.reconcileIfNeeded()` tam paket sayimi yerine yalnizca bootstrap/schema kontrolu yapacak sekilde sadelelestirildi.
+  - Tam katalog senkronu sonunda `AppPrefs` uzerinden katalog schema ve reconcile zaman damgasi isaretleniyor.
+  - `LauncherActivity` icindeki 5 dakikalik agresif reconcile akisi kaldirildi; dusuk frekansli fallback 12 saate cikarildi.
+  - Manifest receiver'a `ACTION_PACKAGE_REPLACED` eklendi; paket degisiklikleri olay bazli guncellenmeye devam ediyor.
+  - Launcher acilis hedefi: uygulama listesi Room cache'ten aninda gelsin, package install/update/remove olaylari tek paket bazinda yansisin.
+
 **Agent:** --
 **CLAUDE.md/LEARNINGS.md:** --
 **Sonraki:** CE kurallari 3 dongude 1 calisacak, derin denetim 10 dongude 1

@@ -1,7 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -56,6 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.PulseClockViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.WeatherRepository
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -269,37 +268,10 @@ private fun PulseCard(
                 }
                 if (!compact) {
                     Spacer(Modifier.height(6.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White.copy(alpha = 0.08f))
-                            .clickable {
-                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                    setClassName(
-                                        "com.google.android.googlequicksearchbox",
-                                        "com.google.android.googlequicksearchbox.SearchActivity",
-                                    )
-                                    putExtra("query", "hava durumu")
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }.onFailure {
-                                    val fallback = Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse("https://www.google.com/search?q=hava+durumu"),
-                                    ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-                                    runCatching { context.startActivity(fallback) }
-                                }
-                            }
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                    ) {
-                        Text("🌤 ", fontSize = 12.sp)
-                        Text(
-                            text = "Hava durumunu aç",
-                            color = Color.White.copy(alpha = 0.65f),
-                            fontSize = 11.sp,
-                        )
-                    }
+                    WeatherSummary(
+                        weather = uiState.weather,
+                        weatherError = uiState.weatherError,
+                    )
                 }
             }
 
@@ -315,6 +287,97 @@ private fun PulseCard(
                     onClick = onOpenScoreDetails,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun WeatherSummary(
+    weather: WeatherRepository.Snapshot?,
+    weatherError: String?,
+) {
+    val context = LocalContext.current
+    if (weather == null && weatherError.isNullOrBlank()) {
+        val manualCity = AppPrefs.getHomeWeatherManualCity(context)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White.copy(alpha = 0.08f))
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            Text("🌤", fontSize = 12.sp)
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = if (manualCity.isBlank()) stringResource(R.string.weather_setup_needed)
+                else stringResource(R.string.weather_loading),
+                color = Color.White.copy(alpha = 0.70f),
+                fontSize = 11.sp,
+            )
+        }
+        return
+    }
+
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White.copy(alpha = 0.08f))
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        if (weather != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "${weather.conditionEmoji} ${weather.locationLabel}",
+                        color = Color.White.copy(alpha = 0.90f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.weather_current_line,
+                            weather.currentTempC,
+                            weather.minTempC,
+                            weather.maxTempC,
+                        ),
+                        color = Color.White.copy(alpha = 0.76f),
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.weather_updated_at, weather.fetchedAtLabel),
+                    color = if (weather.isStale) Color(0xFFFFE082) else Color.White.copy(alpha = 0.56f),
+                    fontSize = 10.sp,
+                )
+            }
+            if (weather.hourly.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    weather.hourly.forEach { item ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(item.hourLabel, color = Color.White.copy(alpha = 0.55f), fontSize = 9.sp)
+                            Text("${item.tempC}°", color = Color.White.copy(alpha = 0.82f), fontSize = 10.sp)
+                        }
+                    }
+                }
+            }
+        } else if (!weatherError.isNullOrBlank()) {
+            Text(
+                text = stringResource(R.string.weather_fetch_failed),
+                color = Color.White.copy(alpha = 0.70f),
+                fontSize = 11.sp,
+            )
         }
     }
 }

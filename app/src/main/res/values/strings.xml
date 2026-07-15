@@ -393,6 +393,18 @@
     <string name="pulse_score_screen_time_hours">%1$d sa %2$d dk</string>
     <string name="pulse_score_screen_time_minutes">%1$d dk</string>
     <string name="settings_clock_pulse_title">Saat ve Dijital Nabız</string>
+    <string name="settings_home_weather_visible_title">Hava Durumu Satırı</string>
+    <string name="settings_home_weather_visible_desc">Saat kartında canlı hava ve saatlik sıcaklıkları göster</string>
+    <string name="settings_home_weather_use_location_title">Yaklaşık Konumu Kullan</string>
+    <string name="settings_home_weather_use_location_desc">Manuel şehir yerine yaklaşık konuma göre hava getirir</string>
+    <string name="settings_home_weather_city_title">Manuel Şehir</string>
+    <string name="settings_home_weather_city_empty">Henüz şehir seçilmedi</string>
+    <string name="settings_home_weather_city_hint">Örn. Istanbul</string>
+    <string name="weather_setup_needed">Şehir seçerek hava durumunu aç</string>
+    <string name="weather_loading">Hava verisi hazırlanıyor</string>
+    <string name="weather_current_line">%1$d° şimdi  •  En düşük %2$d°  •  En yüksek %3$d°</string>
+    <string name="weather_updated_at">Güncelleme %1$s</string>
+    <string name="weather_fetch_failed">Hava verisi alınamadı</string>
     <string name="settings_clock_style_title">Saat Stili</string>
     <string name="settings_clock_style_minimal">Minimal</string>
     <string name="settings_clock_style_pulse">Pulse</string>
@@ -463,6 +475,16 @@
     <string name="search_settings_web_fallback_title">Web ve Play Store Fallback</string>
     <string name="search_settings_web_fallback_desc">Sonuç bulunamayınca web/Play Store araması öner</string>
     <string name="search_settings_stats_title">Arama İstatistikleri</string>
+    <string name="search_settings_fullscreen_title">Tam Ekran Arama</string>
+    <string name="search_settings_fullscreen_desc">Arama çubuğuna dokununca tüm sonuçlar tam ekran overlay içinde açılsın</string>
+    <string name="search_settings_history_clear_title">Arama Geçmişini Temizle</string>
+    <string name="search_settings_history_clear_subtitle">Boş sorguda gösterilen son 3 arama kaldırılır</string>
+    <string name="search_overlay_title">Her Şeyi Ara</string>
+    <string name="search_zero_state_apps_title">Bu Saatte Sık Açtıkların</string>
+    <string name="search_zero_state_contacts_title">Bu Saatte İletişim Kurdukların</string>
+    <string name="search_zero_state_history_title">Son Aramalar</string>
+    <string name="search_zero_state_empty">Yazmaya başla; uygulama, klasör, kişi, dosya ve ayarlar tek yerde gelir.</string>
+    <string name="search_history_query_prefix">Arama: %1$s</string>
 
     <!-- SearchSettingsScreen - P1.3: Saat bazlı kişi önerileri -->
     <string name="search_settings_contact_suggestions_title">Kişi Önerileri</string>
@@ -499,10 +521,10 @@
     <string name="mission_daily_screen_under_3h">Bugün ekran süreni 3 saatin altında tut</string>
     <string name="mission_daily_no_late_night">Gece 23:00 sonrası telefonu açma</string>
     <string name="mission_daily_unlock_under_30">Bugün telefonu 30\'dan az kez aç</string>
-    <string name="mission_daily_customize_folder">Bir klasörü özelleştir</string>
+    <string name="mission_daily_classification_cleanup">Bugün en az 1 sınıflandırma kararını netleştir</string>
     <string name="mission_daily_view_notif_report">Bildirim raporunu incele</string>
     <string name="mission_weekly_screen_less">Haftalık ekran süresini geçen haftadan düşük tut</string>
-    <string name="mission_weekly_remove_unused">Kullanmadığın 1 uygulamayı kaldır veya gizle</string>
+    <string name="mission_weekly_positive_actions">Bu hafta en az 3 faydalı düzenleme aksiyonu yap</string>
     <string name="mission_unknown">Görev</string>
     <string name="missions_settings_section">Görevler ve Yıldızlar</string>
     <string name="missions_settings_toggle_title">Görev Sistemi</string>

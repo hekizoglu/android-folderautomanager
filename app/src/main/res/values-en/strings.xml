@@ -391,6 +391,18 @@
     <string name="pulse_score_screen_time_hours">%1$dh %2$dm</string>
     <string name="pulse_score_screen_time_minutes">%1$dm</string>
     <string name="settings_clock_pulse_title">Clock &amp; Digital Pulse</string>
+    <string name="settings_home_weather_visible_title">Weather Row</string>
+    <string name="settings_home_weather_visible_desc">Show live weather and hourly temperatures on the clock card</string>
+    <string name="settings_home_weather_use_location_title">Use Approximate Location</string>
+    <string name="settings_home_weather_use_location_desc">Use approximate location instead of a manual city</string>
+    <string name="settings_home_weather_city_title">Manual City</string>
+    <string name="settings_home_weather_city_empty">No city selected yet</string>
+    <string name="settings_home_weather_city_hint">Example: Istanbul</string>
+    <string name="weather_setup_needed">Select a city to enable weather</string>
+    <string name="weather_loading">Preparing weather data</string>
+    <string name="weather_current_line">%1$d° now  •  Low %2$d°  •  High %3$d°</string>
+    <string name="weather_updated_at">Updated %1$s</string>
+    <string name="weather_fetch_failed">Weather data could not be loaded</string>
     <string name="settings_clock_style_title">Clock Style</string>
     <string name="settings_clock_style_minimal">Minimal</string>
     <string name="settings_clock_style_pulse">Pulse</string>
@@ -461,6 +473,16 @@
     <string name="search_settings_web_fallback_title">Web and Play Store Fallback</string>
     <string name="search_settings_web_fallback_desc">Suggest a web/Play Store search when no results are found</string>
     <string name="search_settings_stats_title">Search Statistics</string>
+    <string name="search_settings_fullscreen_title">Full-screen Search</string>
+    <string name="search_settings_fullscreen_desc">Open all results in a full-screen overlay when the search bar is tapped</string>
+    <string name="search_settings_history_clear_title">Clear Search History</string>
+    <string name="search_settings_history_clear_subtitle">Removes the last 3 searches shown on the empty query screen</string>
+    <string name="search_overlay_title">Search Everything</string>
+    <string name="search_zero_state_apps_title">Often Opened At This Time</string>
+    <string name="search_zero_state_contacts_title">People You Contact At This Time</string>
+    <string name="search_zero_state_history_title">Recent Searches</string>
+    <string name="search_zero_state_empty">Start typing to search apps, folders, contacts, files, and settings in one place.</string>
+    <string name="search_history_query_prefix">Search: %1$s</string>
 
     <!-- SearchSettingsScreen - P1.3: Time-based contact suggestions -->
     <string name="search_settings_contact_suggestions_title">Contact Suggestions</string>
@@ -497,10 +519,10 @@
     <string name="mission_daily_screen_under_3h">Keep your screen time under 3 hours today</string>
     <string name="mission_daily_no_late_night">Do not use your phone after 11 PM</string>
     <string name="mission_daily_unlock_under_30">Unlock your phone fewer than 30 times today</string>
-    <string name="mission_daily_customize_folder">Customize a folder</string>
+    <string name="mission_daily_classification_cleanup">Resolve at least 1 classification decision today</string>
     <string name="mission_daily_view_notif_report">Review the notification report</string>
     <string name="mission_weekly_screen_less">Keep weekly screen time below last week</string>
-    <string name="mission_weekly_remove_unused">Remove or hide 1 unused app</string>
+    <string name="mission_weekly_positive_actions">Do at least 3 useful cleanup actions this week</string>
     <string name="mission_unknown">Mission</string>
     <string name="missions_settings_section">Missions and Stars</string>
     <string name="missions_settings_toggle_title">Mission System</string>

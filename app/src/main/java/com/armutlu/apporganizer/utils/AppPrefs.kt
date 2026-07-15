@@ -339,9 +339,11 @@ object AppPrefs {
     fun getTextAlpha(context: Context): Float = prefs(context).getFloat(KEY_TEXT_ALPHA, 1.0f)
     fun setTextAlpha(context: Context, v: Float) = prefs(context).edit().putFloat(KEY_TEXT_ALPHA, v).apply()
 
-    // Reconcile throttle — her 5 dakikada bir paket listesini kontrol et
+    // Katalog reconcile throttle — olay bazli sync'e ek dusuk frekansli guvenlik agi
     private const val KEY_LAST_RECONCILE = "last_reconcile_ms"
-    private const val RECONCILE_INTERVAL_MS = 5L * 60 * 1000 // 5 dakika
+    private const val KEY_APP_CATALOG_SCHEMA_VERSION = "app_catalog_schema_version"
+    private const val APP_CATALOG_SCHEMA_VERSION = 1
+    private const val RECONCILE_INTERVAL_MS = 12L * 60L * 60L * 1000L // 12 saat
 
     fun shouldReconcile(context: Context): Boolean {
         val last = prefs(context).getLong(KEY_LAST_RECONCILE, 0L)
@@ -350,6 +352,13 @@ object AppPrefs {
 
     fun markReconciled(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_RECONCILE, System.currentTimeMillis()).apply()
+    }
+
+    fun isAppCatalogSchemaCurrent(context: Context): Boolean =
+        prefs(context).getInt(KEY_APP_CATALOG_SCHEMA_VERSION, 0) == APP_CATALOG_SCHEMA_VERSION
+
+    fun markAppCatalogSchemaCurrent(context: Context) {
+        prefs(context).edit().putInt(KEY_APP_CATALOG_SCHEMA_VERSION, APP_CATALOG_SCHEMA_VERSION).apply()
     }
 
     // Usage stats sync throttle — her 30 dakikada bir senkronize et
@@ -379,6 +388,11 @@ object AppPrefs {
     const val KEY_HOME_APP_SEARCH_ENABLED = "home_app_search_enabled"
     fun isHomeAppSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_HOME_APP_SEARCH_ENABLED, true)
     fun setHomeAppSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_APP_SEARCH_ENABLED, v).apply()
+
+    // P1.1 - Ana ekrandaki arama cubugu dokununca tam ekran arama overlay'i acilsin.
+    const val KEY_FULLSCREEN_SEARCH_ENABLED = "fullscreen_search_enabled"
+    fun isFullscreenSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_FULLSCREEN_SEARCH_ENABLED, true)
+    fun setFullscreenSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FULLSCREEN_SEARCH_ENABLED, v).apply()
 
     // Klasör içi arama çubuğu — varsayılan KAPALI (ekranı sadeleştirme)
     const val KEY_FOLDER_SEARCH_ENABLED = "folder_search_enabled"
@@ -434,6 +448,17 @@ object AppPrefs {
     const val KEY_MISSIONS_ENABLED = "missions_enabled"
     fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)
     fun setMissionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSIONS_ENABLED, v).apply()
+
+    // Ana ekran hava durumu (P1.7)
+    const val KEY_HOME_WEATHER_ENABLED = "home_weather_enabled"
+    const val KEY_HOME_WEATHER_USE_LOCATION = "home_weather_use_location"
+    const val KEY_HOME_WEATHER_MANUAL_CITY = "home_weather_manual_city"
+    fun isHomeWeatherEnabled(context: Context) = prefs(context).getBoolean(KEY_HOME_WEATHER_ENABLED, true)
+    fun setHomeWeatherEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_WEATHER_ENABLED, v).apply()
+    fun isHomeWeatherUseLocation(context: Context) = prefs(context).getBoolean(KEY_HOME_WEATHER_USE_LOCATION, false)
+    fun setHomeWeatherUseLocation(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_WEATHER_USE_LOCATION, v).apply()
+    fun getHomeWeatherManualCity(context: Context) = prefs(context).getString(KEY_HOME_WEATHER_MANUAL_CITY, "") ?: ""
+    fun setHomeWeatherManualCity(context: Context, city: String) = prefs(context).edit().putString(KEY_HOME_WEATHER_MANUAL_CITY, city.trim()).apply()
 
     // Ticker sessize alma — basili tut menusunden secilen zamana kadar serit gizlenir (D233)
     const val KEY_TICKER_MUTED_UNTIL = "home_ticker_muted_until"

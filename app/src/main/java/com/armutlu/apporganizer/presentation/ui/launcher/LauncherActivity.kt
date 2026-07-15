@@ -154,13 +154,9 @@ class LauncherActivity : ComponentActivity() {
             com.armutlu.apporganizer.utils.CrashReporter.exitSafeMode(this)
         }
 
-        // Cold start optimizasyonu (madde 7/D): her açılışta ağır getInstalledApps() tam
-        // taraması yerine ucuz sayı kontrolü — DB ↔ cihaz paket sayısı eşitse hiçbir tarama
-        // yapılmaz (çökme/yavaşlık kaynağı buydu). İlk açılışta (DB boş) sayı farkı olur ve
-        // reconcileIfNeeded zaten loadAppsIfEmpty'i tetikler.
-        if (AppPrefs.shouldReconcile(this)) {
-            viewModel.reconcileIfNeeded(this) { AppPrefs.markReconciled(this) }
-        }
+        // Launcher her zaman Room katalogundan aninda acilir. Tam katalog taramasi sadece
+        // bootstrap/surum gecisi durumlarinda veya dusuk frekansli fallback'te calisir.
+        viewModel.reconcileIfNeeded(this)
         viewModel.initFavorites(this)
         viewModel.syncUsageStats(this) { AppPrefs.markUsageStatsSynced(this) }
         viewModel.syncAppSizes(this)
@@ -251,10 +247,9 @@ class LauncherActivity : ComponentActivity() {
         applyNavBarVisibility()
         // Son başlatılan uygulamanın timestamp'ini garantile (startActivity süreci durdurduğunda coroutine tamamlanamayabilir)
         viewModel.refreshLastLaunched()
-        // Reconcile 5 dakikada bir — geri tuşunda her seferinde PM sorgusu yapmasın
+        // Olay bazli package sync ana akistir; tam reconcile sadece 12 saatlik fallback'te calisir.
         if (AppPrefs.shouldReconcile(this)) {
             viewModel.reconcileIfNeeded(this)
-            AppPrefs.markReconciled(this)
         }
         // Usage stats pahalı bir sorgu — 30 dakikada bir senkronize et
         if (AppPrefs.shouldSyncUsageStats(this)) {

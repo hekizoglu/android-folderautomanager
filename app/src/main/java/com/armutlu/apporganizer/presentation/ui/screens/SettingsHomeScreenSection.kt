@@ -1,6 +1,11 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.background
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -325,6 +330,18 @@ fun SettingsHomeScreenSection(
     var homeScoreVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeScoreVisible(context)) }
     var homeInsightVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeInsightVisible(context)) }
     var homeUsageChartVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeUsageChartVisible(context)) }
+    var homeWeatherEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeWeatherEnabled(context)) }
+    var homeWeatherUseLocation by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeWeatherUseLocation(context)) }
+    var weatherCity by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getHomeWeatherManualCity(context)) }
+    var weatherCityDialogOpen by remember { mutableStateOf(false) }
+    val coarseLocationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            homeWeatherUseLocation = true
+            com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherUseLocation(context, true)
+        }
+    }
     SettingsCard {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
@@ -438,6 +455,82 @@ fun SettingsHomeScreenSection(
                 homeUsageChartVisible = it
                 com.armutlu.apporganizer.utils.AppPrefs.setHomeUsageChartVisible(context, it)
             }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Cloud,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_visible_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_visible_desc),
+            checked = homeWeatherEnabled,
+            onCheckedChange = {
+                homeWeatherEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherEnabled(context, it)
+            }
+        )
+        if (homeWeatherEnabled) {
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            SettingsSwitchRow(
+                icon = Icons.Default.MyLocation,
+                title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_use_location_title),
+                subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_use_location_desc),
+                checked = homeWeatherUseLocation,
+                onCheckedChange = { enabled ->
+                    if (enabled) {
+                        val granted = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                        ) == PackageManager.PERMISSION_GRANTED
+                        if (granted) {
+                            homeWeatherUseLocation = true
+                            com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherUseLocation(context, true)
+                        } else {
+                            coarseLocationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        }
+                    } else {
+                        homeWeatherUseLocation = false
+                        com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherUseLocation(context, false)
+                    }
+                }
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            SettingsButtonRow(
+                icon = Icons.Default.LocationCity,
+                title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_title),
+                subtitle = weatherCity.ifBlank {
+                    androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_empty)
+                },
+                onClick = { weatherCityDialogOpen = true },
+            )
+        }
+    }
+
+    if (weatherCityDialogOpen) {
+        var draftCity by remember(weatherCity) { mutableStateOf(weatherCity) }
+        AlertDialog(
+            onDismissRequest = { weatherCityDialogOpen = false },
+            title = { Text(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_title)) },
+            text = {
+                OutlinedTextField(
+                    value = draftCity,
+                    onValueChange = { draftCity = it },
+                    singleLine = true,
+                    label = { Text(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_hint)) },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    weatherCity = draftCity.trim()
+                    com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherManualCity(context, weatherCity)
+                    weatherCityDialogOpen = false
+                }) {
+                    Text(androidx.compose.ui.res.stringResource(android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { weatherCityDialogOpen = false }) {
+                    Text(androidx.compose.ui.res.stringResource(android.R.string.cancel))
+                }
+            },
         )
     }
 

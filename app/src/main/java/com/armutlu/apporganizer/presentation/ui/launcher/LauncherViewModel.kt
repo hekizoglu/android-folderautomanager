@@ -306,30 +306,19 @@ class LauncherViewModel @Inject constructor(
     }
 
     /**
-     * onResume'da çağrılır: yüklü paket sayısı DB ile uyuşmuyorsa tam reconcile tetikler.
-     * Paket sayısı eşitse sıfır IO — launcher hızı korunur.
+     * Launcher acilisinda Room katalogunu birincil kaynak olarak kullanir.
+     * Tam tarama sadece DB bos, katalog surumu eski veya dusuk frekansli fallback gerektiginde calisir.
      */
     fun reconcileIfNeeded(context: Context, onSuccess: () -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
-                val installed = packageManagerHelper
-                    .getInstalledApps(includeSystem = true, onlyLaunchable = true)
-                    .associateBy { it.packageName }
                 val existing = repository.getAllApps()
-                val installedCount = installed.size
-                val dbCount = existing.size
-                val needsRefresh =
-                    installedCount != dbCount ||
-                        existing.any { dbApp ->
-                            val installedApp = installed[dbApp.packageName] ?: return@any true
-                            dbApp.appName != installedApp.appName ||
-                                dbApp.isSystemApp != installedApp.isSystemApp ||
-                                dbApp.lastUpdatedTime != installedApp.lastUpdatedTime ||
-                                dbApp.versionName != installedApp.versionName ||
-                                dbApp.targetSdkVersion != installedApp.targetSdkVersion
-                        }
+                val needsRefresh = existing.isEmpty() || !AppPrefs.isAppCatalogSchemaCurrent(context)
                 if (needsRefresh) {
-                    Timber.d("reconcileIfNeeded: cihaz=$installedCount DB=$dbCount — tam reconcile başlatılıyor")
+                    Timber.d(
+                        "reconcileIfNeeded: full catalog sync baslatiliyor " +
+                            "(empty=${existing.isEmpty()}, schemaCurrent=${AppPrefs.isAppCatalogSchemaCurrent(context)})"
+                    )
                     loadAppsIfEmpty()
                 } else {
                     onSuccess()
@@ -338,7 +327,7 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    /** İlk açılışta DB boşsa tarar; her açılışta DB ↔ cihaz farkını temizler. */
+    /** Tam katalog taramasi — sadece bootstrap, surum gecisi ve dusuk frekansli fallback icin. */
     fun loadAppsIfEmpty() {
         if (!isLoadingApps.compareAndSet(false, true)) return  // atomik: zaten çalışıyorsa dön
         viewModelScope.launch(Dispatchers.IO) {
@@ -387,6 +376,8 @@ class LauncherViewModel @Inject constructor(
                         }
                     }
                 }
+                AppPrefs.markAppCatalogSchemaCurrent(getApplication())
+                AppPrefs.markReconciled(getApplication())
             } finally {
                 isLoadingApps.set(false)
             }
