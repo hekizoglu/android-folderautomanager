@@ -1,19 +1,77 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.AppAnalytics
 
+internal enum class HomeContextualRowKind {
+    SUGGESTIONS,
+    RECENT_NOTIFICATIONS,
+    RECENT_APPS,
+    FAVORITES,
+}
+
+internal data class HomeContextualRow(
+    val kind: HomeContextualRowKind,
+    val apps: List<AppInfo>,
+)
+
+internal fun selectHomeContextualRow(
+    favoritesEnabled: Boolean,
+    favoriteApps: List<AppInfo>,
+    suggestionsEnabled: Boolean,
+    suggestedApps: List<AppInfo>,
+    recentNotificationAppsEnabled: Boolean,
+    recentNotificationApps: List<AppInfo>,
+    recentAppsEnabled: Boolean,
+    recentApps: List<AppInfo>,
+    dockPackages: List<String>,
+    maxApps: Int = 4,
+): HomeContextualRow? {
+    val dockPkgs = dockPackages.toSet()
+    val favorites = favoriteApps.filterNot { it.packageName in dockPkgs }.take(maxApps)
+    val favoritePkgs = favorites.mapTo(mutableSetOf()) { it.packageName }
+    val suggestions = suggestedApps
+        .filter { it.packageName !in dockPkgs && it.packageName !in favoritePkgs }
+        .take(maxApps.coerceAtMost(3))
+    val suggestionPkgs = suggestions.mapTo(mutableSetOf()) { it.packageName }
+    val notifications = recentNotificationApps
+        .filter {
+            it.packageName !in dockPkgs &&
+                it.packageName !in favoritePkgs &&
+                it.packageName !in suggestionPkgs
+        }
+        .take(maxApps)
+    val notificationPkgs = notifications.mapTo(mutableSetOf()) { it.packageName }
+    val recent = recentApps
+        .filter {
+            it.packageName !in dockPkgs &&
+                it.packageName !in favoritePkgs &&
+                it.packageName !in suggestionPkgs &&
+                it.packageName !in notificationPkgs
+        }
+        .take(maxApps)
+
+    return when {
+        suggestionsEnabled && suggestions.isNotEmpty() ->
+            HomeContextualRow(HomeContextualRowKind.SUGGESTIONS, suggestions)
+        recentNotificationAppsEnabled && notifications.isNotEmpty() ->
+            HomeContextualRow(HomeContextualRowKind.RECENT_NOTIFICATIONS, notifications)
+        recentAppsEnabled && recent.isNotEmpty() ->
+            HomeContextualRow(HomeContextualRowKind.RECENT_APPS, recent)
+        favoritesEnabled && favorites.isNotEmpty() ->
+            HomeContextualRow(HomeContextualRowKind.FAVORITES, favorites)
+        else -> null
+    }
+}
+
 /**
- * HomeScreen'deki favori, öneri ve son kullanılan uygulama satırlarını
- * tek bir composable altında toplayan section.
+ * Renders one contextual access row for the home hierarchy.
  *
- * Cache destekli öneriler: suggestedApps 30 dakikada bir yenilenir, günde aynı saatte açılan uygulamayı önerir.
- *
- * Parametre sayısını azaltmak için lambdalar HomeScreen'den geçirilir.
+ * P2.9 keeps the first glance calm: app suggestions, notification recents,
+ * recent apps and favorites compete for a single row instead of stacking.
  */
 @Composable
 internal fun HomeFavoritesSection(
@@ -35,78 +93,74 @@ internal fun HomeFavoritesSection(
     screenHeightDp: Int = 800,
     showSecondaryRowsInCompactMode: Boolean = false,
 ) {
-    // Küçük ekranlarda (< 640dp) sadece favorileri göster — öneri+son kullanılanlar grid'i iter
     val compactMode = screenHeightDp < 640 && !showSecondaryRowsInCompactMode
-    val dockPkgs = dockPackages.toSet()
-    val favoritePkgs = favoriteApps.mapTo(mutableSetOf()) { it.packageName }
-    val visibleSuggestions = suggestedApps
-        .filter { it.packageName !in dockPkgs && it.packageName !in favoritePkgs }
-        .take(3)
-    val suggestionPkgs = visibleSuggestions.mapTo(mutableSetOf()) { it.packageName }
-    val visibleRecent = recentApps
-        .filter {
-            it.packageName !in dockPkgs &&
-                it.packageName !in favoritePkgs &&
-                it.packageName !in suggestionPkgs
+    val row = selectHomeContextualRow(
+        favoritesEnabled = favoritesEnabled,
+        favoriteApps = favoriteApps,
+        suggestionsEnabled = suggestionsEnabled && !compactMode,
+        suggestedApps = suggestedApps,
+        recentNotificationAppsEnabled = recentNotificationAppsEnabled && !compactMode,
+        recentNotificationApps = recentNotificationApps,
+        recentAppsEnabled = recentAppsEnabled && !compactMode,
+        recentApps = recentApps,
+        dockPackages = dockPackages,
+    ) ?: return
+
+    when (row.kind) {
+        HomeContextualRowKind.FAVORITES -> {
+            FavoritesRow(
+                apps = row.apps,
+                iconPackPkg = iconPackPkg,
+                onAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    AppAnalytics.appLaunched("favorites")
+                    onLaunchApp(pkg)
+                },
+                onAppLongClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onAppLongClick(pkg)
+                }
+            )
         }
-        .take(4)
-
-    if (favoritesEnabled && favoriteApps.isNotEmpty()) {
-        FavoritesRow(
-            apps = favoriteApps,
-            iconPackPkg = iconPackPkg,
-            onAppClick = { pkg ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                AppAnalytics.appLaunched("favorites")
-                onLaunchApp(pkg)
-            },
-            onAppLongClick = { pkg ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onAppLongClick(pkg)
-            }
-        )
-    }
-
-    if (!compactMode && suggestionsEnabled && visibleSuggestions.isNotEmpty()) {
-        AppSuggestionsRow(
-            apps = visibleSuggestions,
-            iconPackPkg = iconPackPkg,
-            iconSizeDp = suggestionsIconSizeDp,
-            onAppClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onLaunchApp(app.packageName)
-            },
-            onAppLongClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onAppLongClick(app.packageName)
-            }
-        )
-    }
-
-    if (!compactMode && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
-        RecentNotificationAppsRow(
-            apps = recentNotificationApps,
-            notificationCounts = recentNotificationCounts,
-            iconPackPkg = iconPackPkg,
-            onAppClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onLaunchApp(app.packageName)
-            },
-            onAppLongClick = { app ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onAppLongClick(app.packageName)
-            }
-        )
-    }
-
-    if (!compactMode && recentAppsEnabled && visibleRecent.isNotEmpty()) {
-        RecentAppsRow(
-            apps = visibleRecent,
-            iconPackPkg = iconPackPkg,
-            onAppClick = { pkg ->
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onLaunchApp(pkg)
-            }
-        )
+        HomeContextualRowKind.SUGGESTIONS -> {
+            AppSuggestionsRow(
+                apps = row.apps,
+                iconPackPkg = iconPackPkg,
+                iconSizeDp = suggestionsIconSizeDp,
+                onAppClick = { app ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLaunchApp(app.packageName)
+                },
+                onAppLongClick = { app ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onAppLongClick(app.packageName)
+                }
+            )
+        }
+        HomeContextualRowKind.RECENT_NOTIFICATIONS -> {
+            RecentNotificationAppsRow(
+                apps = row.apps,
+                notificationCounts = recentNotificationCounts,
+                iconPackPkg = iconPackPkg,
+                onAppClick = { app ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLaunchApp(app.packageName)
+                },
+                onAppLongClick = { app ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onAppLongClick(app.packageName)
+                }
+            )
+        }
+        HomeContextualRowKind.RECENT_APPS -> {
+            RecentAppsRow(
+                apps = row.apps,
+                iconPackPkg = iconPackPkg,
+                onAppClick = { pkg ->
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLaunchApp(pkg)
+                }
+            )
+        }
     }
 }

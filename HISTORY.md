@@ -2,6 +2,22 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 3.11 - 2026-07-15
+
+**Yapılanlar:** (P2.9, tamamlandi) Ana ekran hiyerarsisi sadeleştirildi: favori, öneri, bildirimden son açılanlar ve son kullanılanlar artık üst üste birikmek yerine tek contextual row policy'sinden geçiyor. Satır klasör gridinden sonra ve dock'tan önce render ediliyor; contextual dock'taki uygulamalar, favoriler ve daha yüksek öncelikli kaynaklar aynı satırda tekrar edilmiyor. `HomeLayoutMath.MIN_VISIBLE_FOLDERS` ile küçük ekranlarda en az bir klasör satırı korunuyor. `LauncherViewModelLogicTest` contextual row önceliği, dock/favori dedupe ve küçük ekran klasör görünürlüğünü kapsıyor. Sürüm `1.3.47` / `versionCode 70`.
+
+**Arastirma:** Android Developers komut satiri build dokumantasyonu ve Git resmi push dokumantasyonu doğrulandı; değişiklikler finalde `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` ve Git push akışıyla kapatılacak.
+
+**Kalite kapisi:** İlk birleşik final denemesi Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1` sonrası `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` sıralı çalıştırılıp başarıyla geçti.
+
+## AI Denetim Sprint 3.10 - 2026-07-15
+
+**Yapılanlar:** (P2.8, tamamlandi) Klasör geçiş animasyonları iki moda indirildi: varsayılan `ANDROID_SMOOTH` ve opsiyonel `IOS_ZOOM_FADE`. Eski page-turn/slide-parallax tercihleri yeni smooth moda migrate ediliyor; klasör ID değişimi settle akışına bırakıldı, tek `Animatable` offset/progress kaynağı kullanıldı ve reduce-motion yolunda sade frame üretiliyor. `FolderTransitionStateTest` hızlı swipe, ters yön/yarım bırakma threshold kararı, direction mapping ve zoom/fade frame değerlerini kapsıyor; `AppPrefsFolderTransitionEffectTest` preference migration sözleşmesini koruyor. Sürüm `1.3.46` / `versionCode 69`.
+
+**Arastirma:** Android Developers animation/build dokumantasyonu ve Microsoft Scheduled Tasks dokumantasyonu kontrol edildi; eski cron turu build kilidi bırakmasın diye durdurulup görev manuel devralındı.
+
+**Kalite kapisi:** İlk birleşik final denemesi Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1` sonrası `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` sıralı çalıştırılıp başarıyla geçti.
+
 ## AI Denetim Sprint 3.9 - 2026-07-15
 
 **Yapılanlar:** (P2.7, tamamlandi) Klasor onerileri icin ayri tercih eklendi ve varsayilan yeni kurulumda acik olacak sekilde `AppPrefs.resolveFolderSuggestionsEnabled()` uzerinden cozuldu; kayitli tercih varsa aynen korunuyor. `SettingsAppsSection` altina bu davranisi yoneten toggle eklendi. `FolderSuggestionsScreen` ilk gorunurde kapatilabilir kisa aciklama karti gosteriyor; kart dusuk guvenli siniflandirmalarin otomatik uygulanmadigini ve review akisina gittigini acikca belirtiyor. `AppListViewModel` artik klasor onerilerini bu tercihe gore uretiyor. `AppPrefsFolderSuggestionsTest` ile yeni kurulum varsayilani ve mevcut tercih korumasi kapsandi. Surum `1.3.45` / `versionCode 68`.

@@ -10,6 +10,7 @@ import kotlin.math.max
  * Amaç: klasörler ASLA kırpılmasın — sığmayan klasör sonraki sayfaya taşınır.
  */
 object HomeLayoutMath {
+    const val MIN_VISIBLE_FOLDERS = 4
     const val ROW_SPACING_DP = 16
     const val GRID_VERTICAL_PADDING_DP = 8
     /** Klasör etiketi + sayı satırı yaklaşık yüksekliği (FolderTile içi metinler). */
@@ -24,9 +25,12 @@ object HomeLayoutMath {
     fun folderCapacity(availableHeightDp: Int, folderSizeDp: Int, columns: Int): Int {
         val rowHeight = folderSizeDp + LABEL_HEIGHT_DP
         val usable = availableHeightDp - GRID_VERTICAL_PADDING_DP - INDICATOR_RESERVE_DP
-        if (usable <= rowHeight) return columns
+        if (usable <= rowHeight) return max(MIN_VISIBLE_FOLDERS, columns)
         // n satır koşulu: n*rowHeight + (n-1)*spacing <= usable
         val rows = max(1, (usable + ROW_SPACING_DP) / (rowHeight + ROW_SPACING_DP))
-        return rows * columns
+        return max(MIN_VISIBLE_FOLDERS, rows * columns)
     }
+
+    fun pageSize(requestedPageSize: Int, folderCapacity: Int): Int =
+        minOf(requestedPageSize, max(MIN_VISIBLE_FOLDERS, folderCapacity))
 }

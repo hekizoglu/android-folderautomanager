@@ -436,7 +436,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.8 — Klasör geçiş animasyonlarını yeniden yaz
 
-**Durum:** Bekliyor — mevcut D281 iyileştirmesi tam çözüm değil  
+**Durum:** ✅ Tamamlandı - `ANDROID_SMOOTH` varsayılan, `IOS_ZOOM_FADE` opsiyonel; legacy page-turn/parallax değerleri migrate edildi, klasör ID değişimi settle sonuna alındı, tek progress kaynağı ve reduce-motion frame yolu testlendi. Kalite kapısı 2026-07-15'te geçti.  
 **Yeni iki mod:**
 
 1. `ANDROID_SMOOTH` — varsayılan; parmakla birebir takip, velocity/threshold settle, 220–280 ms.
@@ -455,7 +455,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.9 — Ana ekran yoğunluğunu azalt ve ürün hiyerarşisini netleştir
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı - ana ekran hiyerarşisi sadeleştirildi; bağlamsal uygulama satırı klasör gridinden sonra tek satıra indirildi, dock/favori/öneri tekrarları filtrelendi ve küçük ekranda minimum klasör görünürlüğü `HomeLayoutMath` testleriyle korundu. Kalite kapısı 2026-07-15'te geçti.  
 **Varsayılan hiyerarşi:**
 
 1. Saat + tarih + isteğe bağlı hava

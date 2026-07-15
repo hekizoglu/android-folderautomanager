@@ -698,29 +698,6 @@ fun HomeScreen(
                 )
             }
 
-            // Favori, öneri ve son kullanılan satırları — HomeScreenFavorites.kt
-            if (!hideSecondaryRowsForIme) {
-                HomeFavoritesSection(
-                    favoritesEnabled = favoritesEnabled,
-                    favoriteApps = favoriteApps,
-                    suggestionsEnabled = suggestionsEnabled,
-                    suggestedApps = suggestedApps,
-                    suggestionsIconSizeDp = suggestionsIconSizeDp,
-                    recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
-                    recentNotificationApps = recentNotificationApps,
-                    recentNotificationCounts = recentNotificationCounts,
-                    recentAppsEnabled = recentAppsEnabled,
-                    recentApps = recentApps,
-                    dockPackages = dockPackages,
-                    iconPackPkg = suggestionIconPack,
-                    haptic = haptic,
-                    onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
-                    onAppLongClick = { pkg -> contextMenuPkg = pkg },
-                    screenHeightDp = LocalConfiguration.current.screenHeightDp,
-                    showSecondaryRowsInCompactMode = focusModeEnabled,
-                )
-            }
-
             // Widget alanı — arama çubuğu ile klasör gridi arasında
             if (!hideSecondaryRowsForIme && widgetAreaEnabled && widgetIds.isNotEmpty()) {
                 WidgetArea(
@@ -893,7 +870,7 @@ fun HomeScreen(
             val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns) {
                 HomeLayoutMath.folderCapacity(availableHeightDp, effectiveFolderSizeDp, screenColumns)
             }
-            val pageSize = minOf(requestedPageSize, folderCapacity)
+            val pageSize = HomeLayoutMath.pageSize(requestedPageSize, folderCapacity)
             // Kullanıcının manuel seçtiği sayfa boyutu ekrana sığmıyorsa görüntüyü bozmadan uyar
             LaunchedEffect(pageFolderCount, folderCapacity) {
                 if (pageFolderCount != 8 && pageFolderCount > folderCapacity &&
@@ -1005,6 +982,28 @@ fun HomeScreen(
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
             } // end inner Column
             } // end BoxWithConstraints
+
+            if (!hideSecondaryRowsForIme) {
+                HomeFavoritesSection(
+                    favoritesEnabled = favoritesEnabled,
+                    favoriteApps = favoriteApps,
+                    suggestionsEnabled = suggestionsEnabled,
+                    suggestedApps = suggestedApps,
+                    suggestionsIconSizeDp = suggestionsIconSizeDp,
+                    recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                    recentNotificationApps = recentNotificationApps,
+                    recentNotificationCounts = recentNotificationCounts,
+                    recentAppsEnabled = recentAppsEnabled,
+                    recentApps = recentApps,
+                    dockPackages = contextualDockPackages,
+                    iconPackPkg = suggestionIconPack,
+                    haptic = haptic,
+                    onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                    onAppLongClick = { pkg -> contextMenuPkg = pkg },
+                    screenHeightDp = screenHeightDp,
+                    showSecondaryRowsInCompactMode = focusModeEnabled,
+                )
+            }
 
             // BOTTOM konumu: arama çubuğu dock'un hemen üstünde — tek elle kullanım (D246)
             if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
