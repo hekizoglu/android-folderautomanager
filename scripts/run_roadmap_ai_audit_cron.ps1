@@ -120,7 +120,7 @@ function Get-FirstPendingItem {
     if (-not (Test-Path $roadmapPath)) { throw "Roadmap not found: $roadmapPath" }
     $lines = Get-Content $roadmapPath
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        if ($lines[$i] -match '^\*\*Durum:\*\*\s*Bekliyor\b') {
+        if ($lines[$i] -match '^\*\*Durum:\*\*\s*(?:⏳\s*)?Bekliyor\b') {
             for ($j = $i; $j -ge 0; $j--) {
                 if ($lines[$j] -match '^##\s+(.+)$') {
                     return [pscustomobject]@{

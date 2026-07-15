@@ -1,6 +1,9 @@
 param(
     [string]$TaskName = "AppOrganizer_RoadmapAIAudit_15Min",
     [int]$EveryMinutes = 15,
+    [string]$RoadmapFile = "ROADMAP_AI_AUDIT_2026-07-14.md",
+    [string]$PromptFile = "scripts/roadmap_ai_audit_cron_prompt.md",
+    [string]$Description = "Completes roadmap pending items one by one with Codex.",
     [switch]$StartNow
 )
 
@@ -13,9 +16,17 @@ if ($EveryMinutes -lt 1 -or $EveryMinutes -gt 1439) {
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 $runnerScript = Join-Path $scriptDir "run_roadmap_ai_audit_cron.ps1"
+$roadmapPath = Join-Path $projectRoot $RoadmapFile
+$promptPath = Join-Path $projectRoot $PromptFile
 
 if (-not (Test-Path $runnerScript)) {
     throw "Runner script not found: $runnerScript"
+}
+if (-not (Test-Path $roadmapPath)) {
+    throw "Roadmap file not found: $roadmapPath"
+}
+if (-not (Test-Path $promptPath)) {
+    throw "Prompt file not found: $promptPath"
 }
 
 Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
@@ -29,7 +40,7 @@ $trigger = New-ScheduledTaskTrigger `
 
 $action = New-ScheduledTaskAction `
     -Execute "powershell.exe" `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runnerScript`" -TaskName `"$TaskName`"" `
+    -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$runnerScript`" -TaskName `"$TaskName`" -RoadmapFile `"$RoadmapFile`" -PromptFile `"$PromptFile`"" `
     -WorkingDirectory $projectRoot
 
 $settings = New-ScheduledTaskSettingsSet `
@@ -45,11 +56,11 @@ try {
         -Action $action `
         -Trigger $trigger `
         -Settings $settings `
-        -Description "Completes ROADMAP_AI_AUDIT_2026-07-14.md pending items one by one with Codex." `
+        -Description $Description `
         -Force | Out-Null
 } catch {
     Write-Host "Register-ScheduledTask failed, using schtasks fallback..." -ForegroundColor Yellow
-    $taskCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$runnerScript`" -TaskName `"$TaskName`""
+    $taskCommand = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$runnerScript`" -TaskName `"$TaskName`" -RoadmapFile `"$RoadmapFile`" -PromptFile `"$PromptFile`""
     $startTime = $startAt.ToString("HH:mm")
     & schtasks.exe /create /f /sc minute /mo $EveryMinutes /tn $TaskName /tr $taskCommand /st $startTime | Out-Null
     if ($LASTEXITCODE -ne 0) {

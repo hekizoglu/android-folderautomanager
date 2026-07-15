@@ -2,6 +2,12 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Saglik Roadmap Cron - 2026-07-16
+
+**Yapılanlar:** `ISTATISTIK_TELEMETRI_VE_SAGLIK_ROADMAP.md` icin 10 dakikalik Codex otomasyon hazirlandi. Mevcut `run_roadmap_ai_audit_cron.ps1` runner'i yeni `**Durum:** ⏳ Bekliyor` formatini da taniyacak sekilde genisletildi. `register_roadmap_ai_audit_cron.ps1` artik `RoadmapFile` ve `PromptFile` parametreleri aliyor, boylece ayni altyapi farkli roadmap dosyalari icin kullanilabiliyor. Yeni `scripts/statistics_health_roadmap_cron_prompt.md` prompt'u her turda yalnizca ilk bekleyen maddeyi ele alma, Telegram bildirme, test/build kaniti olmadan tamamlandi isaretlememe ve kullanici build maliyeti tercihine uyma kurallarini tanimliyor.
+
+**Dogrulama:** Runner dry-run ile `A7 — Misyon motoru kalite metrikleri` maddesini buldu ve Codex calistirmadan basariyla cikti. Windows Scheduled Tasks icin Microsoft `schtasks`/Task Scheduler dokumantasyonu kontrol edildi; 10 dakika aralik icin dakika bazli tekrar destekleniyor.
+
 ## Saglik Raporu Duzeltme Sprint 2 - 2026-07-16
 
 **Yapılanlar:** (P1.1-P1.4, tamamlandi) Saglik raporu arama metrikleri genisletildi: `SearchStatsPrefs.Summary` ortalama sorgu uzunlugunu disari veriyor; `SearchDiagnosticsFormatter` sifir sonuc orani, tiklama orani, ilk sonuc orani, deterministik kaynak/aksiyon kirilimi ve ortalama sorgu uzunlugu satirlarini uretiyor. Worker ozeti icin `WorkerPlanHealth` karar tablosu eklendi; kapali+work yok normal, acik+work yok hata, kapali+work var uyari olarak raporlanacak. `WorkerTelemetryPrefs` ile worker baslangic/basari/hata zamani, son sure, basari/hata sayaci ve guvenli hata kodu kalici kaydediliyor; Backup, SmartInsight, SuggestionNotification, WeeklyDigest ve FilesIndex worker'lari telemetry yaziyor. Auto backup raporu kullanici tercihi, plan sagligi, son yedek zamani ve anonim hata kodunu ayri satirda gosteriyor. Surum `1.3.53` / `versionCode 76`.
