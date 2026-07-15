@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her · T2:3dongu · T3:10dongu)
-> Son denetim: 2026-07-15 13:26
-> Dongu: **#192** | Tier: **2**
-> Ana tur odak: **TalkBack, contentDescription, semantics** (Accessibility_A11y)
-> Ekstra denetim: **Test edilmeyis senaryolari, dead code, unused imports** (Test_Coverage_Gap)
+> Son denetim: 2026-07-15 13:27
+> Dongu: **#193** | Tier: **1**
+> Ana tur odak: **Recomposition, cache, IO, performans** (Performance_Memory)
+> Ekstra denetim: **Hassas veri, log, izin, data export/import guvenligi** (Privacy_Security)
 
 ---
 
@@ -25,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-07-15 13:26 | Dongu: #192 | Tier: 2 | Ana: TalkBack, contentDescription, semantics | Ekstra: Test edilmeyis senaryolari, dead code, unused imports*
+*Denetim tarihi: 2026-07-15 13:27 | Dongu: #193 | Tier: 1 | Ana: Recomposition, cache, IO, performans | Ekstra: Hassas veri, log, izin, data export/import guvenligi*
