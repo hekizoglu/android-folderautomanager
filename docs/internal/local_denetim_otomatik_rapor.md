@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her · T2:3dongu · T3:10dongu)
-> Son denetim: 2026-07-15 13:54
-> Dongu: **#195** | Tier: **2**
-> Ana tur odak: **Dock, widget, yedekleme akislari** (Dock_Widget_Backup)
-> Ekstra denetim: **StateFlow kullanimi, hot-path, race condition** (ViewModel_StateFlow)
+> Son denetim: 2026-07-15 14:09
+> Dongu: **#196** | Tier: **1**
+> Ana tur odak: **Settings etiket-davranis tutarliligi** (UI_Settings_Labels)
+> Ekstra denetim: **Ekran gecisleri, route, intent, back press** (Navigation_Routing)
 
 ---
 
@@ -25,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-07-15 13:54 | Dongu: #195 | Tier: 2 | Ana: Dock, widget, yedekleme akislari | Ekstra: StateFlow kullanimi, hot-path, race condition*
+*Denetim tarihi: 2026-07-15 14:09 | Dongu: #196 | Tier: 1 | Ana: Settings etiket-davranis tutarliligi | Ekstra: Ekran gecisleri, route, intent, back press*
