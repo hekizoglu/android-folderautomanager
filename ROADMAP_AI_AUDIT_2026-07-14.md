@@ -341,7 +341,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.1 — Yeni kurulumda varsayılan ikon ölçeği %130
 
-**Durum:** ??? Tamamland?? - `AppPrefs.DEFAULT_ICON_SCALE = 1.3f`, kayitli deger korunuyor, `AppPrefsIconScaleTest` eklendi, `compileDebugKotlin`/`testDebugUnitTest`/`assembleDebug` gecti.  
+**Durum:** ✅ Tamamlandı - `AppPrefs.DEFAULT_ICON_SCALE = 1.3f`, kayitli deger korunuyor, `AppPrefsIconScaleTest` eklendi, `compileDebugKotlin`/`testDebugUnitTest`/`assembleDebug` gecti.  
 **Kurallar:**
 
 - Yeni kurulum ve “varsayılana dön” değeri `1.3f` olsun.
@@ -365,7 +365,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.3 — Varsayılan klasör şeklini yumuşak köşeli yap
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — `AppPrefs.DEFAULT_FOLDER_SHAPE = "rounded"` doğrulandı, kayıtlı tercih korunuyor, `FolderTile` preview fallback'i aynı sabiti kullanıyor, `AppPrefsFolderShapeTest` mevcut ve kalite kapısı (`compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug`) geçti  
 **Kurallar:**
 
 - Yeni varsayılan `rounded` olsun.
@@ -376,7 +376,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.4 — Adaptif 5 öğeli dock
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — dock kapasitesi `DockPrefs.MAX_SLOTS = 5` ile tek kaynağa bağlandı, `PixelDock` dar ekranda adaptif küçülüyor, `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` geçti  
 **Yapılacaklar:**
 
 - `DOCK_MAX_SIZE` ve tüm hardcoded `.take(4)` kullanımlarını tek config kaynağına bağla.
@@ -391,7 +391,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.5 — Raporlar merkezini tek düz listeye indir
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı - `ReportsCenterScreen` tek `LazyColumn` listesine indirildi, duplicate hizli erisim route'lari kaldirildi, satirlara veri donemi + son guncelleme/bos neden metni eklendi; `ReportsCenterScreenLogicTest` + `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` gecti.  
 **Sorun:** Ana rapor grupları ile “Hızlı Erişim” aynı route'ları tekrar ediyor.
 
 **Yapılacaklar:**

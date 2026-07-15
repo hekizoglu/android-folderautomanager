@@ -2,8 +2,11 @@ package com.armutlu.apporganizer.launcher
 
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.presentation.ui.launcher.DOCK_MAX_SIZE
+import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPackages
 import com.armutlu.apporganizer.presentation.ui.launcher.buildAllApps
 import com.armutlu.apporganizer.presentation.ui.launcher.buildFolders
+import com.armutlu.apporganizer.presentation.ui.launcher.fillDockSuggestions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -181,6 +184,53 @@ class LauncherViewModelLogicTest {
         // "Apple" < "zoom" alfabetik sırayla
         assertEquals("Apple", sorted[0].appName)
         assertEquals("zoom", sorted[1].appName)
+    }
+
+    @Test
+    fun `fillDockSuggestions_dock_kapasitesini_bese_tamamlar`() {
+        val slotApps = listOf(
+            app("pkg.1", "App 1", "social"),
+            app("pkg.2", "App 2", "social"),
+            app("pkg.3", "App 3", "social"),
+        )
+        val fallbackApps = listOf(
+            app("pkg.4", "App 4", "social"),
+            app("pkg.5", "App 5", "social"),
+            app("pkg.6", "App 6", "social"),
+        )
+
+        val result = fillDockSuggestions(slotApps, fallbackApps)
+
+        assertEquals(DOCK_MAX_SIZE, result.size)
+        assertEquals(listOf("pkg.1", "pkg.2", "pkg.3", "pkg.4", "pkg.5"), result.map { it.packageName })
+    }
+
+    @Test
+    fun `buildContextualDockPackages_sabit_ogeleri_korur_ve_bos_slotlari_doldurur`() {
+        val fixed = listOf("fixed.1", "fixed.2", "fixed.3")
+        val suggested = listOf("fixed.2", "smart.1", "smart.2", "smart.3")
+
+        val result = buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested,
+            contextualEnabled = true
+        )
+
+        assertEquals(listOf("fixed.1", "fixed.2", "fixed.3", "smart.1", "smart.2"), result)
+    }
+
+    @Test
+    fun `buildContextualDockPackages_kapaliysa_sadece_sabit_slotlari_dondurur`() {
+        val fixed = listOf("fixed.1", "fixed.2", "fixed.3", "fixed.4", "fixed.5", "fixed.6")
+        val suggested = listOf("smart.1", "smart.2")
+
+        val result = buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested,
+            contextualEnabled = false
+        )
+
+        assertEquals(listOf("fixed.1", "fixed.2", "fixed.3", "fixed.4", "fixed.5"), result)
     }
 
     // ── Yardımcı ──────────────────────────────────────────────────────────────

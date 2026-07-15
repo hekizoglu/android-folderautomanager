@@ -52,8 +52,10 @@ import javax.inject.Inject
 private const val PREFS_NAME = "launcher_prefs"
 private const val KEY_DOCK_PACKAGES = "dock_packages"
 private const val KEY_FOLDER_ORDER = "folder_order"
-private const val DOCK_MAX_SIZE = 4
 private const val RECENT_NOTIFICATIONS_WINDOW_MS = 24L * 60L * 60L * 1000L
+
+internal val DOCK_MAX_SIZE: Int
+    get() = DockPrefs.MAX_SLOTS
 
 data class AppFolder(
     val category: Category,
@@ -81,6 +83,31 @@ internal fun buildFolders(apps: List<AppInfo>, categories: List<Category>): List
 /** Tüm uygulamaları ada göre sıralı döndürür. Gizli uygulamalar hariç. */
 internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
     apps.filter { !it.isHidden }.sortedBy { it.appName }
+
+internal fun fillDockSuggestions(
+    slotApps: List<AppInfo>,
+    fallbackApps: List<AppInfo>,
+    maxSize: Int = DOCK_MAX_SIZE
+): List<AppInfo> {
+    val slotPicks = slotApps.take(maxSize)
+    if (slotPicks.size >= maxSize) return slotPicks
+    val pickedPackages = slotPicks.map { it.packageName }.toSet()
+    return (slotPicks + fallbackApps.filter { it.packageName !in pickedPackages }).take(maxSize)
+}
+
+internal fun buildContextualDockPackages(
+    fixed: List<String>,
+    suggested: List<String>,
+    contextualEnabled: Boolean,
+    maxSize: Int = DOCK_MAX_SIZE
+): List<String> {
+    val fixedSlots = fixed.take(maxSize)
+    if (!contextualEnabled || fixedSlots.size >= maxSize) return fixedSlots
+    val smartSlots = suggested
+        .filter { it !in fixedSlots }
+        .take(maxSize - fixedSlots.size)
+    return fixedSlots + smartSlots
+}
 
 @HiltViewModel
 class LauncherViewModel @Inject constructor(
@@ -745,7 +772,7 @@ class LauncherViewModel @Inject constructor(
                 cachedSlotHour = currentHour
             }
             val visibleByPkg = visible.associateBy { it.packageName }
-            val slotPicks = slotApps.mapNotNull { visibleByPkg[it] }.take(4)
+            val slotPicks = slotApps.mapNotNull { visibleByPkg[it] }
 
             // 4'ü doldurmak için ağırlıklı skorla tamamla (saat verisi yetersizse)
             val baseScores = cachedScores.takeIf { it != null && now - cacheTimestamp <= CACHE_DURATION_MS }
@@ -765,16 +792,19 @@ class LauncherViewModel @Inject constructor(
             val fill = visible
                 .filter { boosted.containsKey(it.packageName) && it.packageName !in slotPkgs }
                 .sortedByDescending { boosted[it.packageName] ?: 0f }
-            (slotPicks + fill).take(4)
+            fillDockSuggestions(
+                slotApps = slotPicks,
+                fallbackApps = fill,
+            )
                 .ifEmpty {
                     visible.filter { it.usageCount > 0 }
                         .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                        .take(4)
+                        .take(DOCK_MAX_SIZE)
                 }
         } else {
             visible.filter { it.usageCount > 0 }
                 .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                .take(4)
+                .take(DOCK_MAX_SIZE)
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -950,7 +980,7 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // Contextual Dock — kullanicinin sectigi TUM slotlar korunur; akilli oneriler
-    // (saat/gun/kullanim) SADECE bos kalan slotlari doldurur (max 4).
+    // (saat/gun/kullanim) SADECE bos kalan slotlari doldurur (dock kapasitesi kadar).
     // Eski davranis (ilk 2 sabit + son 2 akilli) kullanicinin sectigi dock'u sessizce
     // eziyordu — "sectigim dock'ta kamera var ama ekranda WhatsApp cikiyor" bug'i (D257).
     val contextualDockPackages: StateFlow<List<String>> = combine(
@@ -958,14 +988,11 @@ class LauncherViewModel @Inject constructor(
         suggestedApps
     ) { fixed, suggested ->
         val ctx = getApplication<Application>()
-        if (!AppPrefs.isContextualDockEnabled(ctx)) return@combine fixed
-        val fixedSlots = fixed.take(4)
-        if (fixedSlots.size >= 4) return@combine fixedSlots
-        val smartSlots = suggested
-            .map { it.packageName }
-            .filter { it !in fixedSlots }
-            .take(4 - fixedSlots.size)
-        fixedSlots + smartSlots
+        buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested.map { it.packageName },
+            contextualEnabled = AppPrefs.isContextualDockEnabled(ctx),
+        )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda

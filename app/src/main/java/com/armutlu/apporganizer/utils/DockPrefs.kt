@@ -7,10 +7,10 @@ import androidx.core.content.edit
 import com.armutlu.apporganizer.domain.models.Category
 
 object DockPrefs {
+    const val MAX_SLOTS = 5
 
     private const val PREFS_NAME = "dock_prefs"
     private const val KEY_DOCK_PACKAGES = "dock_packages"
-    private const val MAX_SLOTS = 4
     private const val FOLDER_PREFIX = "folder:"
 
     private val DEFAULT_SLOTS = listOf(

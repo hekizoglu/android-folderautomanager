@@ -18,12 +18,12 @@ object DominantColorExtractor {
         packageNames: List<String>,
         iconSizePx: Int = 64
     ): String? = withContext(Dispatchers.IO) {
-        val bitmaps = packageNames.take(4).mapNotNull { pkg ->
+        val bitmaps = packageNames.take(DockPrefs.MAX_SLOTS).mapNotNull { pkg ->
             runCatching { loadAppIcon(context, pkg, iconSizePx) }.getOrNull()
         }
         if (bitmaps.isEmpty()) return@withContext null
 
-        // İlk 4 ikondan Palette oluştur, vibrant/dominant renk al
+        // Dock kapasitesi kadar ikondan Palette oluştur, vibrant/dominant renk al
         val combinedBitmap = combineBitmaps(bitmaps, iconSizePx)
         val palette = Palette.Builder(combinedBitmap)
             .maximumColorCount(8)

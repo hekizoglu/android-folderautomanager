@@ -2,13 +2,29 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 3.7 - 2026-07-15
+
+**Yapılanlar:** (P2.5, tamamlandi) `ReportsCenterScreen` tekrar eden "Hizli Erisim" bloklarini kaldirip tek `LazyColumn` icinde veri odakli rapor satirlarina indirildi. Dashboard, Kullanim, Bildirim, Saglik, Haftalik ve Gizlilik raporlari artik tek listede anlamli sirayla render ediliyor; her satir kisa aciklama, veri donemi ve son guncelleme/bos durum metni tasiyor. Wrapped ve privacy raporlari kapaliysa gizlenmek yerine neden bos olduklari acik bir gerekceyle pasif satir olarak gorunuyor. `ReportsCenterScreenLogicTest` ile duplicate route olmamasi, kapali raporlarin gerekceyle gorunmesi, bildirim bos durum metni ve goreli zaman etiketleri kapsandi. Surum `1.3.43` / `versionCode 66`.
+
+**Arastirma:** Material 3 resmi lists kilavuzunda listelerin dikey eylem/icerik indeksi olarak, supporting text ve trailing metadata ile kullanilmasi; Android resmi Compose accessibility semantics dokumantasyonunda da liste ogelerinin anlamsal bilgiyle zenginlestirilmesi dogrulandi. Bu nedenle rapor merkezi tek duz liste ve acik bos durum gerekceleriyle sadelestirildi.
+
+**Kalite kapisi:** Ilk `compileDebugKotlin` denemesi bilinen Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1` sonrasi `compileDebugKotlin`, `testDebugUnitTest` ve `assembleDebug` basariyla gecti.
+
+## AI Denetim Sprint 3.6 - 2026-07-15
+
+**Yapılanlar:** (P2.4, tamamlandi) Dock kapasitesi `DockPrefs.MAX_SLOTS = 5` ile tek kaynağa bağlandı; `LauncherViewModel` içindeki dock öneri ve bağlamsal doldurma akışları artık aynı sınırı kullanıyor. `fillDockSuggestions` ve `buildContextualDockPackages` yardımcıları, kullanıcı sabit slotlarını koruyup yalnız boş kalan alanları dolduruyor. `PixelDock` dar genişlikte ikon boyutu ve yatay boşluğu küçülterek 5 slotu taşmadan dengeliyor; uygulama ve klasör slotları aynı ağırlıklı satır modelinden render ediliyor. `DominantColorExtractor` da aynı dock kapasitesini baz alıyor. `LauncherViewModelLogicTest` içine 5 slot tamamlama ve sabit slot korunumu testleri eklendi. Sürüm `1.3.42` / `versionCode 65`.
+
+**Arastirma:** Android resmi Jetpack Compose dokümantasyonuyla `RowScope.weight` tabanlı esnek genişlik kullanımının ve modifier/constraint zincirinin dar ekranlarda taşmayı önlemek için doğru yaklaşım olduğu doğrulandı.
+
+**Kalite kapısı:** `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices`, `assembleDebug -PskipGoogleServices` başarıyla geçti.
+
 ## AI Denetim Sprint 3.5 - 2026-07-15
 
-**Yapılanlar:** (P2.3, hazirlaniyor) Varsayılan klasör şekli yeni kurulumlar için `rounded` olacak şekilde `AppPrefs` üstünden güncellendi; kayıtlı `folder_shape` tercihi olan kullanıcıların seçimi korunuyor. `FolderTile` varsayılan parametresi de aynı sabite bağlandı; böylece pref henüz enjekte edilmemiş preview/onboarding yolları ile ana davranış aynı varsayılanı kullanıyor. `AppPrefsFolderShapeTest` eklendi. Sürüm `1.3.41` / `versionCode 64`.
+**Yapılanlar:** (P2.3, tamamlandi) Varsayılan klasör şekli yeni kurulumlar için `rounded` olacak şekilde `AppPrefs` üstünden çalışıyor; kayıtlı `folder_shape` tercihi olan kullanıcıların seçimi korunuyor. `FolderTile` varsayılan parametresi aynı sabiti kullandığı için pref enjekte edilmemiş preview/onboarding yolları ile ana davranış aynı varsayılanda birleşiyor. `AppPrefsFolderShapeTest` bu sözleşmeyi kapsıyor. Sürüm bu maddede ek kod değişikliği gerekmediği için `1.3.41` / `versionCode 64` olarak kaldı.
 
-**Arastirma:** Android resmi `SharedPreferences` davranışı ve Jetpack Compose `RoundedCornerShape`/`Modifier.clip(...)` dokümantasyonu doğrulandı; bu madde için doğru değişiklik noktası varsayılan preference çözümleyicisi ve shape preview bileşeni oldu.
+**Arastirma:** Android resmi `SharedPreferences` davranışı ve Jetpack Compose `RoundedCornerShape`/`Modifier.clip(...)` dokümantasyonu doğrulandı; bu madde için doğru kontrol noktaları varsayılan preference çözümleyicisi, shape preview bileşeni ve preview/onboarding fallback yolu oldu.
 
-**Kalite kapısı:** Bekleniyor.
+**Kalite kapısı:** `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices`, `assembleDebug -PskipGoogleServices` başarıyla geçti.
 
 ## AI Denetim Sprint 3.4 - 2026-07-15
 

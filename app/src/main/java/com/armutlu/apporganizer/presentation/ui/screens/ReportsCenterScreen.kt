@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,18 +36,137 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
 import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.DiagnosticsReportViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.PulseClockViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+private const val REPORT_ROUTE_DASHBOARD = "dashboard"
+private const val REPORT_ROUTE_USAGE = "usage_report"
+private const val REPORT_ROUTE_NOTIFICATION = "notification_report"
+private const val REPORT_ROUTE_DIAGNOSTICS = "diagnostics_report"
+private const val REPORT_ROUTE_WRAPPED = "wrapped_report"
+private const val REPORT_ROUTE_PRIVACY = "privacy_report"
+
+internal data class ReportsCenterEntry(
+    val route: String,
+    val title: String,
+    val description: String,
+    val dataPeriod: String,
+    val lastUpdated: String,
+    val unavailableReason: String? = null,
+) {
+    val isAvailable: Boolean
+        get() = unavailableReason == null
+}
+
+internal fun buildReportsCenterEntries(
+    apps: List<AppInfo>,
+    categories: List<Category>,
+    wrappedEnabled: Boolean,
+    privacyReportEnabled: Boolean,
+    diagnosticsGenerating: Boolean,
+    nowMs: Long,
+): List<ReportsCenterEntry> {
+    val appCount = apps.size
+    val categoryCount = categories.size
+    val hiddenCount = apps.count { it.isHidden }
+    val latestCatalogUpdate = apps.maxOfOrNull { maxOf(it.lastUpdatedTime, it.lastUpdated) }
+    val latestUsage = apps.maxOfOrNull { it.lastUsedTimestamp }
+    val notificationTrackedApps = apps.count { it.notificationCount > 0 }
+
+    return listOf(
+        ReportsCenterEntry(
+            route = REPORT_ROUTE_DASHBOARD,
+            title = "Genel Bakis",
+            description = "$appCount uygulama, $categoryCount kategori ve $hiddenCount gizli uygulama ozetlenir.",
+            dataPeriod = "Veri donemi: tum katalog",
+            lastUpdated = "Son guncelleme: ${formatReportTimestamp(latestCatalogUpdate, nowMs)}",
+        ),
+        ReportsCenterEntry(
+            route = REPORT_ROUTE_USAGE,
+            title = "Kullanim Raporu",
+            description = "En cok kullanilanlar, hic acilmayanlar ve gizleme onerileri tek ekranda.",
+            dataPeriod = "Veri donemi: son 30 gun",
+            lastUpdated = "Son kullanim: ${formatReportTimestamp(latestUsage, nowMs)}",
+        ),
+        ReportsCenterEntry(
+            route = REPORT_ROUTE_NOTIFICATION,
+            title = "Bildirim Raporu",
+            description = "Bildirim yogunlugu ve dikkat dagitan uygulamalar gorunur.",
+            dataPeriod = "Veri donemi: son 24 saat ve son 7 gun sinyalleri",
+            lastUpdated = if (notificationTrackedApps > 0) {
+                "Son guncelleme: $notificationTrackedApps uygulama icin bildirim verisi var"
+            } else {
+                "Bos durum: henuz bildirim verisi toplanmadi"
+            },
+        ),
+        ReportsCenterEntry(
+            route = REPORT_ROUTE_DIAGNOSTICS,
+            title = if (diagnosticsGenerating) "Saglik Raporu hazirlaniyor" else "Saglik Raporu",
+            description = "Paylasilabilir, kisisel veriden arindirilmis TXT tanilama raporu uretir.",
+            dataPeriod = "Veri donemi: o anki cihaz ve uygulama durumu",
+            lastUpdated = if (diagnosticsGenerating) {
+                "Son guncelleme: rapor simdi uretiliyor"
+            } else {
+                "Son guncelleme: istege bagli uretilir"
+            },
+        ),
+        ReportsCenterEntry(
+            route = REPORT_ROUTE_WRAPPED,
+            title = "Haftalik Rapor",
+            description = "Dijital yasam skoru, kisilik tipi ve rozetlerin haftalik ozeti.",
+            dataPeriod = "Veri donemi: son 7 gun",
+            lastUpdated = if (wrappedEnabled) {
+                "Son guncelleme: haftalik veri hazir oldugunda acilir"
+            } else {
+                "Bos durum: haftalik rapor ayarlardan kapali"
+            },
+            unavailableReason = if (wrappedEnabled) null else "Haftalik rapor ayarlardan acilmadan gosterilemez."
+        ),
+        ReportsCenterEntry(
+            route = REPORT_ROUTE_PRIVACY,
+            title = "Gizlilik Analizi",
+            description = "Kamera, mikrofon ve konum gibi hassas izinler cihaz ustunde analiz edilir.",
+            dataPeriod = "Veri donemi: mevcut kurulu uygulamalar ve izinleri",
+            lastUpdated = if (privacyReportEnabled) {
+                "Son guncelleme: ekran acildiginda anlik tarama"
+            } else {
+                "Bos durum: gizlilik analizi ayarlardan kapali"
+            },
+            unavailableReason = if (privacyReportEnabled) null else "Gizlilik analizi ayarlardan etkinlestirilmeden acilmaz."
+        ),
+    )
+}
+
+internal fun formatReportTimestamp(timestampMs: Long?, nowMs: Long): String {
+    if (timestampMs == null || timestampMs <= 0L) return "veri yok"
+    val diffMs = (nowMs - timestampMs).coerceAtLeast(0L)
+    val hourMs = 60L * 60L * 1000L
+    val dayMs = 24L * hourMs
+    return when {
+        diffMs < hourMs -> "son 1 saat icinde"
+        diffMs < dayMs -> "bugun"
+        diffMs < 2 * dayMs -> "dun"
+        diffMs < 7 * dayMs -> "${diffMs / dayMs} gun once"
+        else -> SimpleDateFormat("d MMM", Locale("tr")).format(Date(timestampMs))
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,12 +191,21 @@ fun ReportsCenterScreen(
     val categoryCount = screenState.categories.size
     val hiddenCount = screenState.apps.count { it.isHidden }
     val userAppCount = screenState.apps.count { !it.isSystemApp }
+    val nowMs = System.currentTimeMillis()
     val summaryTitle = if (appCount == 0 && categoryCount == 0) {
         "Veriler yukleniyor"
     } else {
         "$appCount uygulama / $categoryCount kategori"
     }
     val summarySubtitle = "$userAppCount kullanici uygulamasi / $hiddenCount gizli uygulama"
+    val reportEntries = buildReportsCenterEntries(
+        apps = screenState.apps,
+        categories = screenState.categories,
+        wrappedEnabled = wrappedEnabled,
+        privacyReportEnabled = privacyReportEnabled,
+        diagnosticsGenerating = diagnosticsState.isGenerating,
+        nowMs = nowMs,
+    )
 
     LaunchedEffect(diagnosticsState.shareIntent) {
         val intent = diagnosticsState.shareIntent ?: return@LaunchedEffect
@@ -126,91 +253,76 @@ fun ReportsCenterScreen(
             }
             item {
                 SettingsCard {
-                    SettingsButtonRow(
-                        icon = Icons.Default.Dashboard,
-                        title = "Genel Bakis",
-                        subtitle = "Klasor, kategori, gizli uygulama ve verimlilik ozetleri",
-                        onClick = onNavigateToDashboard,
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                    )
-                    SettingsButtonRow(
-                        icon = Icons.Default.BarChart,
-                        title = "Kullanim Raporu",
-                        subtitle = "En cok kullanilanlar, hic acilmayanlar ve gizleme onerileri",
-                        onClick = onNavigateToUsageReport,
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                    )
-                    SettingsButtonRow(
-                        icon = Icons.Default.NotificationsActive,
-                        title = "Bildirim Raporu",
-                        subtitle = "Hangi uygulama ne kadar bildirim gonderiyor gorebilirsin",
-                        onClick = onNavigateToNotificationReport,
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                    )
-                    SettingsButtonRow(
-                        icon = Icons.Default.Description,
-                        title = if (diagnosticsState.isGenerating) "Saglik raporu hazirlaniyor" else "Saglik Raporu",
-                        subtitle = "Paylasilabilir, kisisel veriden arindirilmis TXT tanilama raporu",
-                        onClick = { diagnosticsViewModel.generateReport() },
-                    )
-                }
-            }
-            if (wrappedEnabled) {
-                item {
-                    SettingsCard {
-                        SettingsButtonRow(
-                            icon = Icons.Default.EmojiEvents,
-                            title = "🎁 Haftalik Rapor",
-                            subtitle = "Dijital yasam skorun, kisilik tipin ve rozetlerin",
-                            onClick = onNavigateToWrappedReport,
+                    reportEntries.forEachIndexed { index, entry ->
+                        ReportsCenterEntryRow(
+                            entry = entry,
+                            icon = entry.icon(),
+                            onClick = {
+                                when (entry.route) {
+                                    REPORT_ROUTE_DASHBOARD -> onNavigateToDashboard()
+                                    REPORT_ROUTE_USAGE -> onNavigateToUsageReport()
+                                    REPORT_ROUTE_NOTIFICATION -> onNavigateToNotificationReport()
+                                    REPORT_ROUTE_DIAGNOSTICS -> diagnosticsViewModel.generateReport()
+                                    REPORT_ROUTE_WRAPPED -> onNavigateToWrappedReport()
+                                    REPORT_ROUTE_PRIVACY -> onNavigateToPrivacyReport()
+                                }
+                            },
                         )
+                        if (index != reportEntries.lastIndex) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            )
+                        }
                     }
-                }
-            }
-            if (privacyReportEnabled) {
-                item {
-                    SettingsCard {
-                        SettingsButtonRow(
-                            icon = Icons.Default.Security,
-                            title = "🔐 Gizlilik Analizi",
-                            subtitle = "Hangi uygulama kamera, mikrofon, konuma erisebiliyor",
-                            onClick = onNavigateToPrivacyReport,
-                        )
-                    }
-                }
-            }
-            item { SettingsSectionTitle("Hizli Erisim") }
-            item {
-                SettingsCard {
-                    SettingsButtonRow(
-                        icon = Icons.Default.FolderOpen,
-                        title = "Klasor ve Kategori Yogunlugu",
-                        subtitle = "Kategori dagilimi ve aktif klasor odagi",
-                        onClick = onNavigateToDashboard,
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                    )
-                    SettingsButtonRow(
-                        icon = Icons.Default.VisibilityOff,
-                        title = "Gizli ve Kullanilmayanlar",
-                        subtitle = "Gizli uygulamalar ve uzun sure acilmayanlar",
-                        onClick = onNavigateToUsageReport,
-                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ReportsCenterEntryRow(
+    entry: ReportsCenterEntry,
+    icon: ImageVector,
+    onClick: () -> Unit,
+) {
+    val subtitle = buildString {
+        append(entry.description)
+        append("\n")
+        append(entry.dataPeriod)
+        append("\n")
+        append(entry.lastUpdated)
+        entry.unavailableReason?.let {
+            append("\n")
+            append("Neden bos: ")
+            append(it)
+        }
+    }
+    if (entry.isAvailable) {
+        SettingsButtonRow(
+            icon = icon,
+            title = entry.title,
+            subtitle = subtitle,
+            onClick = onClick,
+        )
+    } else {
+        SettingsInfoRow(
+            icon = icon,
+            title = entry.title,
+            subtitle = subtitle,
+        )
+    }
+}
+
+private fun ReportsCenterEntry.icon(): ImageVector = when (route) {
+    REPORT_ROUTE_DASHBOARD -> Icons.Default.Dashboard
+    REPORT_ROUTE_USAGE -> Icons.Default.BarChart
+    REPORT_ROUTE_NOTIFICATION -> Icons.Default.NotificationsActive
+    REPORT_ROUTE_DIAGNOSTICS -> Icons.Default.Description
+    REPORT_ROUTE_WRAPPED -> Icons.Default.EmojiEvents
+    REPORT_ROUTE_PRIVACY -> Icons.Default.Security
+    else -> Icons.Default.FolderOpen
 }
 
 @Composable
@@ -250,7 +362,7 @@ private fun ReportsPulseSummaryCard(
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+            Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = scoreText,
                     style = MaterialTheme.typography.headlineSmall,

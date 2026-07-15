@@ -23,6 +23,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -313,47 +314,60 @@ internal fun PixelDock(
         }
     }
 
-    Box(
-        modifier = modifier
-            .height(72.dp)
-            .background(
-                color = Color.White.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(50)
-            )
-            .pointerInput(Unit) {
-                detectTapGestures(onLongPress = { onLongPress() })
-            }
-            .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val compactDock = maxWidth < 360.dp
+        val dockHeight = if (compactDock) 64.dp else 72.dp
+        val iconSize = if (compactDock) 42.dp else 48.dp
+        val horizontalPadding = if (compactDock) 8.dp else 12.dp
+        val slotSpacing = if (compactDock) 2.dp else 6.dp
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(dockHeight)
+                .background(
+                    color = Color.White.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(50)
+                )
+                .pointerInput(Unit) {
+                    detectTapGestures(onLongPress = { onLongPress() })
+                }
+                .padding(horizontal = horizontalPadding),
+            contentAlignment = Alignment.Center
         ) {
-            visibleItems.forEach { item ->
-                when (item) {
-                    is DockDisplayItem.App -> {
-                        val pkg = item.packageName
-                        val label = remember(pkg) {
-                            runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(slotSpacing),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                visibleItems.forEach { item ->
+                    when (item) {
+                        is DockDisplayItem.App -> {
+                            val pkg = item.packageName
+                            val label = remember(pkg) {
+                                runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+                            }
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                DockIcon(
+                                    packageName = pkg,
+                                    label = label,
+                                    iconPackPkg = iconPackPkg,
+                                    iconSize = iconSize,
+                                    onClick = { onLaunchApp(pkg) },
+                                    onLongClick = { onAppLongPress(pkg) }
+                                )
+                            }
                         }
-                        DockIcon(
-                            packageName = pkg,
-                            label = label,
-                            iconPackPkg = iconPackPkg,
-                            iconSize = 48.dp,
-                            onClick = { onLaunchApp(pkg) },
-                            onLongClick = { onAppLongPress(pkg) }
-                        )
-                    }
-                    is DockDisplayItem.Folder -> {
-                        DockFolderIcon(
-                            folder = item.folder,
-                            iconSize = 48.dp,
-                            onClick = { onOpenFolder(item.folder) },
-                            onLongClick = { onFolderLongPress(item.folder) }
-                        )
+                        is DockDisplayItem.Folder -> {
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                DockFolderIcon(
+                                    folder = item.folder,
+                                    iconSize = iconSize,
+                                    onClick = { onOpenFolder(item.folder) },
+                                    onLongClick = { onFolderLongPress(item.folder) }
+                                )
+                            }
+                        }
                     }
                 }
             }
