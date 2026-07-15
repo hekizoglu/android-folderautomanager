@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -104,5 +105,10 @@ class AppOrganizerApp : Application() {
 
     companion object {
         const val FCM_CHANNEL_ID = "app_updates"
+        val processStartedAtElapsed: Long = SystemClock.elapsedRealtime()
+        private var firstActivity = true
+
+        @Synchronized
+        fun consumeColdStart(): Boolean = firstActivity.also { firstActivity = false }
     }
 }

@@ -387,7 +387,7 @@ Auto backup: tercih=acik, work=yok, saglik=HATA_PLANLANMAMIS
 
 **Nasıl yapılmalı:** Günlük/haftalık görev tamamlanma, davranış değişikliği görevi, görüntüleme görevi, pozitif/negatif skor ve tekrar ödül engeli raporlanmalı.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Günlük/haftalık ve davranış/görüntüleme görev tamamlanmaları ile pozitif/negatif/net görev skoru sağlık raporuna eklendi; rapor görüntüleme ödülü gün başına tekilleştirildi, dönemsel misyon benzersizliği ve yaşam skoru-yıldız ayrımı test/rapor kanıtıyla doğrulandı.
 
 **Kabul kriterleri:**
 
@@ -410,7 +410,7 @@ Auto backup: tercih=acik, work=yok, saglik=HATA_PLANLANMAMIS
 
 rapora eklenmeli.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Sağlık raporuna Room/WAL/SHM/cache boyutları, özellik gereksinimiyle yorumlanan izinler, son bildirim zamanı ve 24 saat sayacı, trace içermeyen `ApplicationExitInfo` ANR/low-memory/native-crash toplamları ile cold/warm/ana ekran hazır süreleri eklendi; listener açık fakat olaysız durum yalnız kontrol önerisi olarak sınıflandırıldı ve odak test/compile kapıları geçti.
 
 **Kabul kriterleri:**
 

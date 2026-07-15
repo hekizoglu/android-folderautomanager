@@ -36,6 +36,12 @@ interface MissionHistoryDao {
     @Query("SELECT COALESCE(SUM(starReward), 0) FROM mission_history")
     suspend fun getTotalStars(): Int
 
+    @Query("SELECT COUNT(*) FROM mission_history WHERE periodType = :periodType")
+    suspend fun getCompletionCount(periodType: String): Int
+
+    @Query("SELECT COUNT(*) FROM mission_history WHERE missionId IN (:missionIds)")
+    suspend fun getCompletionCountByMissionIds(missionIds: List<String>): Int
+
     @Query("DELETE FROM mission_history")
     suspend fun clearAll()
 }

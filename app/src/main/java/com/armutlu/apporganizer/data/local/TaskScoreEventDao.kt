@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.armutlu.apporganizer.domain.models.TaskScoreEventEntry
 
 @Dao
@@ -60,6 +61,22 @@ interface TaskScoreEventDao {
         toInclusive: Long,
         eventKeys: List<String>,
     ): Int
+
+    @Transaction
+    suspend fun insertOnceBetween(
+        entry: TaskScoreEventEntry,
+        fromInclusive: Long,
+        toInclusive: Long,
+    ): Boolean {
+        if (countEventsBetweenByKeys(fromInclusive, toInclusive, listOf(entry.eventKey)) > 0) return false
+        return insert(entry) != -1L
+    }
+
+    @Query("SELECT COALESCE(SUM(CASE WHEN delta > 0 THEN delta ELSE 0 END), 0) FROM task_score_events")
+    suspend fun getPositiveScore(): Int
+
+    @Query("SELECT COALESCE(SUM(CASE WHEN delta < 0 THEN delta ELSE 0 END), 0) FROM task_score_events")
+    suspend fun getNegativeScore(): Int
 
     @Query("DELETE FROM task_score_events")
     suspend fun clearAll()

@@ -21,6 +21,11 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("Android: 16 (API 36)"))
         assertTrue(report.contains("[Izinler]"))
         assertTrue(report.contains("POST_NOTIFICATIONS: granted"))
+        assertTrue(report.contains("Konum: gerekli=hayir, izin=denied, saglik=NORMAL_KULLANILMIYOR"))
+        assertTrue(report.contains("[Depolama]"))
+        assertTrue(report.contains("toplam=665 B"))
+        assertTrue(report.contains("[Baslangic ve Cikis Sagligi]"))
+        assertTrue(report.contains("ANR=2, lowMemory=1, nativeCrash=0; trace=rapora_dahil_degil"))
         assertTrue(report.contains("[Uygulama Katalogu]"))
         assertTrue(report.contains("Son reconcile: 2026-07-15 16:59:40"))
         assertTrue(report.contains("[Siniflandirma]"))
@@ -38,8 +43,18 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("Ortalama sorgu uzunlugu: 5.4 karakter"))
         assertTrue(report.contains("[Bildirimler]"))
         assertTrue(report.contains("Event sayisi son 7 gun: 11"))
+        assertTrue(report.contains("Event sayisi son 24 saat: 3"))
+        assertTrue(report.contains("Son event zamani: 2026-07-15 15:50:00"))
+        assertTrue(report.contains("Tazelik: KONTROL_ONERISI: listener acik fakat olay yok"))
         assertTrue(report.contains("[Misyon Motoru]"))
         assertTrue(report.contains("Son gorev olayi: Focus Sprint (delta=3, at=2026-07-15 15:00:00)"))
+        assertTrue(report.contains("Tamamlanan gunluk gorev: 8"))
+        assertTrue(report.contains("Tamamlanan haftalik gorev: 3"))
+        assertTrue(report.contains("Davranis degisikligi gorevi: 9"))
+        assertTrue(report.contains("Goruntuleme gorevi: 2"))
+        assertTrue(report.contains("Gorev skoru: pozitif=31, negatif=-4, net=27"))
+        assertTrue(report.contains("Dijital yasam skoru toplam yildizdan bagimsizdir."))
+        assertTrue(report.contains("Tekrar odul engeli: aktif"))
         assertTrue(report.contains("[Widgetler]"))
         assertTrue(report.contains("[Worker Ozeti]"))
         assertTrue(report.contains("Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL"))
@@ -57,6 +72,16 @@ class DiagnosticsReportManagerTest {
         assertFalse(report.contains("Ayse Yilmaz"))
         assertFalse(report.contains("top secret search"))
         assertTrue(report.contains("paket listesi, bildirim metni, kisi adi/numarasi ve arama sorgulari icermez"))
+    }
+
+    @Test
+    fun unusedDeniedPermission_isNormal() {
+        assertTrue(permissionHealthLine("Konum", granted = false, needed = false).contains("NORMAL_KULLANILMIYOR"))
+    }
+
+    @Test
+    fun enabledListenerWithoutEvents_isOnlyCheckRecommendation() {
+        assertEquals("KONTROL_ONERISI: listener acik fakat olay yok", notificationFreshnessState(true, null))
     }
 
     @Test
@@ -261,6 +286,11 @@ class DiagnosticsReportManagerTest {
         postNotificationsState = "granted",
         readContactsState = "denied",
         coarseLocationState = "granted",
+        permissionHealthSummary = listOf(
+            "Konum: gerekli=hayir, izin=denied, saglik=NORMAL_KULLANILMIYOR",
+            "Kisiler: gerekli=evet, izin=granted, saglik=NORMAL",
+        ),
+        storageSummary = "Room=100 B, WAL=200 B, SHM=300 B, cache=65 B, toplam=665 B",
         totalApps = 120,
         userApps = 87,
         systemApps = 33,
@@ -298,11 +328,22 @@ class DiagnosticsReportManagerTest {
         notificationAnalyticsEnabled = "evet",
         notificationTotal = 340,
         notificationLast7d = 11,
+        notificationLast24h = 3,
+        notificationLatestAt = "2026-07-15 15:50:00",
+        notificationFreshness = "KONTROL_ONERISI: listener acik fakat olay yok",
+        exitSummary = "kayit=3, ANR=2, lowMemory=1, nativeCrash=0; trace=rapora_dahil_degil",
+        startupSummary = "Son cold=420ms, warm=130ms, ana ekran hazir=350ms",
         missionsEnabled = "evet",
         wrappedEnabled = "evet",
         missionPrefsMigrated = "evet",
         totalStars = 42,
         latestMissionEvent = "Focus Sprint (delta=3, at=2026-07-15 15:00:00)",
+        dailyMissionCompletions = 8,
+        weeklyMissionCompletions = 3,
+        behaviorMissionCompletions = 9,
+        viewingMissionCompletions = 2,
+        positiveTaskScore = 31,
+        negativeTaskScore = -4,
         widgetSummary = "Kayitli widget id: 3, provider bulunan: 2",
         workerSummary = listOf(
             "Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL",

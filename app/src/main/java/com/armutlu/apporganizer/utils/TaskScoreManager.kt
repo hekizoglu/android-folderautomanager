@@ -2,6 +2,8 @@ package com.armutlu.apporganizer.utils
 
 import android.content.Context
 import kotlin.math.roundToInt
+import java.time.Instant
+import java.time.ZoneId
 
 /**
  * Durum bazli gorev puani (ROADMAP #15).
@@ -107,13 +109,20 @@ object TaskScoreManager {
         if (weight <= 0) return getSnapshotV2(context)
         val delta = eventType.delta * weight
         val dao = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context).taskScoreEventDao()
-        dao.insert(
-            com.armutlu.apporganizer.domain.models.TaskScoreEventEntry(
+        val entry = com.armutlu.apporganizer.domain.models.TaskScoreEventEntry(
                 eventKey = eventType.eventKey,
                 label = eventType.defaultLabel,
                 delta = delta,
             )
-        )
+        if (eventType == EventType.NotificationReportViewed) {
+            val zone = ZoneId.systemDefault()
+            val day = Instant.ofEpochMilli(entry.createdAt).atZone(zone).toLocalDate()
+            val from = day.atStartOfDay(zone).toInstant().toEpochMilli()
+            val to = day.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1L
+            dao.insertOnceBetween(entry, from, to)
+        } else {
+            dao.insert(entry)
+        }
         return getSnapshotV2(context)
     }
 

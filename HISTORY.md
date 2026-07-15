@@ -1840,3 +1840,18 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 | D190 | Kullanim Raporu Ekrani (15p) | 15p |
 | D191 | Audit Tiered Frequency Sistemi (optimizasyon) | -- |
 | D192 | Room FTS5 Backend Iskeleti (SearchDocument+Dao+Indexer+Repo+v9) + FiKiRLER/ROADMAP cakisma temizligi | -- |
+## 2026-07-16 - A7 Misyon motoru kalite metrikleri (v1.3.54)
+
+- Saglik raporuna gunluk/haftalik tamamlanma, davranis degisikligi/goruntuleme gorevi ve pozitif/negatif/net gorev skoru eklendi.
+- Bildirim raporunu tekrar acarak sinirsiz puan alma engellendi: goruntuleme olayi Room transaction icinde gun basina yalniz bir kez kaydediliyor; donemsel misyonlarin mevcut benzersiz Room indeksi korunuyor.
+- Dijital yasam skorunun toplam yildizdan bagimsiz oldugu ve tekrar odul korumasinin aktifligi raporda aciklandi. Davranis olaylarinin goruntuleme olayindan daha yuksek puanlandigi odak testle guvenceye alindi.
+- Kalite kapilari: `compileDebugKotlin -PskipGoogleServices` basarili; odak `MissionEngineTest` ve `DiagnosticsReportManagerTest` basarili. Ilk denemede bilinen Windows build kilidi goruldu; Kotlin daemon durdurulup `scripts/clear_build_lock.ps1` sonrasi tekrar dogrulandi.
+
+## 2026-07-16 - A8 Depolama, izin, bildirim tazeligi ve ANR (v1.3.55)
+
+- Saglik raporuna Room ana DB, WAL, SHM, cache ve toplam byte boyutlari eklendi.
+- Konum ve kisi izinleri ilgili ozellik etkinligiyle birlikte yorumlaniyor; kullanilmayan ozelligin reddedilmis izni normal, gereken reddedilmis izin kontrol onerisi sayiliyor.
+- Son bildirim olayi, son 24 saat sayisi ve listener tazelik durumu eklendi; listener acik ama olay yoksa kritik hata uretilmiyor.
+- API 30+ `ApplicationExitInfo` kayitlarindan yalniz ANR, low-memory ve native crash sayilari raporlaniyor; trace stream okunmuyor ve TXT'ye ham stack trace eklenmiyor.
+- Cold/warm activity baslangici ve launcher ana ekran ilk kullanilabilir cizim suresi yerel olarak olculup `reportFullyDrawn()` ile sisteme bildiriliyor.
+- Kalite kapilari: `compileDebugKotlin -PskipGoogleServices` basarili; odak `DiagnosticsReportManagerTest` basarili. Ilk compile denemesi yanlis scope'a yerlestirilen launcher olcumunu yakaladi ve duzeltme sonrasi iki kapi da temiz gecti; birlesik ara deneme komut zaman asimina ugramisti.

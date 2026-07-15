@@ -1,6 +1,8 @@
 package com.armutlu.apporganizer.utils
 
 import android.Manifest
+import android.app.ActivityManager
+import android.app.ApplicationExitInfo
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
@@ -14,7 +16,10 @@ import com.armutlu.apporganizer.BuildConfig
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.local.MissionHistoryDao
 import com.armutlu.apporganizer.data.local.TaskScoreEventDao
+import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
+import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnostics
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnosticsCalculator
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -89,6 +94,18 @@ internal fun backupHealthLine(
     return "Auto backup: tercih=$preference, saglik=$health, sonYedek=${formatDate(lastBackupAt)}, sonHata=${telemetry.lastFailureCode}"
 }
 
+internal fun permissionHealthLine(label: String, granted: Boolean, needed: Boolean): String = when {
+    !needed -> "$label: gerekli=hayir, izin=${if (granted) "granted" else "denied"}, saglik=NORMAL_KULLANILMIYOR"
+    granted -> "$label: gerekli=evet, izin=granted, saglik=NORMAL"
+    else -> "$label: gerekli=evet, izin=denied, saglik=KONTROL_ONERISI"
+}
+
+internal fun notificationFreshnessState(listenerEnabled: Boolean, latestAt: Long?): String = when {
+    !listenerEnabled -> "listener_kapali"
+    latestAt == null || latestAt <= 0L -> "KONTROL_ONERISI: listener acik fakat olay yok"
+    else -> "NORMAL"
+}
+
 internal fun workerNextRunText(
     state: WorkInfo.State,
     kind: WorkerKind,
@@ -130,6 +147,7 @@ class DiagnosticsReportManager @Inject constructor(
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
     private val notificationEventDao: NotificationEventDao,
+    private val missionHistoryDao: MissionHistoryDao,
     private val taskScoreEventDao: TaskScoreEventDao,
 ) {
 
@@ -165,10 +183,35 @@ class DiagnosticsReportManager @Inject constructor(
         val categories = categoryDao.getAllCategories()
         val notificationTotal = notificationEventDao.totalSince(0L)
         val notificationLast7d = notificationEventDao.totalSince(now - TimeUnit.DAYS.toMillis(7))
+        val notificationLast24h = notificationEventDao.totalSince(now - TimeUnit.DAYS.toMillis(1))
+        val notificationLatestAt = notificationEventDao.latestPostedAt()
         val latestTaskScore = runCatching { taskScoreEventDao.getLatestEvent() }.getOrNull()
+        val dailyMissionCompletions = runCatching { missionHistoryDao.getCompletionCount(MissionHistoryEntry.PERIOD_DAILY) }.getOrDefault(0)
+        val weeklyMissionCompletions = runCatching { missionHistoryDao.getCompletionCount(MissionHistoryEntry.PERIOD_WEEKLY) }.getOrDefault(0)
+        val viewingMissionCompletions = runCatching {
+            missionHistoryDao.getCompletionCountByMissionIds(listOf(MissionEngine.DAILY_VIEW_NOTIF_REPORT))
+        }.getOrDefault(0)
+        val behaviorMissionCompletions = runCatching {
+            missionHistoryDao.getCompletionCountByMissionIds(
+                listOf(
+                    MissionEngine.DAILY_SCREEN_UNDER_3H,
+                    MissionEngine.DAILY_NO_LATE_NIGHT,
+                    MissionEngine.DAILY_UNLOCK_UNDER_30,
+                    MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
+                    MissionEngine.WEEKLY_SCREEN_LESS,
+                    MissionEngine.WEEKLY_POSITIVE_ACTIONS,
+                )
+            )
+        }.getOrDefault(0)
+        val positiveTaskScore = runCatching { taskScoreEventDao.getPositiveScore() }.getOrDefault(0)
+        val negativeTaskScore = runCatching { taskScoreEventDao.getNegativeScore() }.getOrDefault(0)
         val widgetSummary = widgetSummary()
         val workerSummary = workerSummary()
         val crashSummary = crashSummary()
+        val listenerEnabled = NotificationAccessUtils.isNotificationListenerEnabled(context)
+        val storageSummary = storageSummary()
+        val exitSummary = exitSummary()
+        val startup = StartupHealthPrefs.snapshot(context)
         val searchStats = SearchStatsPrefs.getSummary(context)
         val classificationDiagnostics = ClassificationDiagnosticsCalculator.calculate(apps, now)
 
@@ -184,11 +227,16 @@ class DiagnosticsReportManager @Inject constructor(
                 packageLongVersionCode = packageInfo.longVersionCode,
                 deviceName = "${Build.MANUFACTURER} ${Build.MODEL}",
                 androidVersion = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
-                notificationListenerEnabled = yesNo(NotificationAccessUtils.isNotificationListenerEnabled(context)),
+                notificationListenerEnabled = yesNo(listenerEnabled),
                 usageAccessEnabled = yesNo(UsageStatsHelper.hasPermission(context)),
                 postNotificationsState = permissionState(postNotificationsGranted()),
                 readContactsState = permissionState(isPermissionGranted(Manifest.permission.READ_CONTACTS)),
                 coarseLocationState = permissionState(isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)),
+                permissionHealthSummary = listOf(
+                    permissionHealthLine("Konum", isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION), AppPrefs.isHomeWeatherEnabled(context)),
+                    permissionHealthLine("Kisiler", isPermissionGranted(Manifest.permission.READ_CONTACTS), AppPrefs.isSearchSourceContactsEnabled(context)),
+                ),
+                storageSummary = storageSummary,
                 totalApps = apps.size,
                 userApps = userAppCount,
                 systemApps = apps.size - userAppCount,
@@ -210,11 +258,22 @@ class DiagnosticsReportManager @Inject constructor(
                 notificationAnalyticsEnabled = yesNo(AppPrefs.isNotifAnalyticsEnabled(context)),
                 notificationTotal = notificationTotal,
                 notificationLast7d = notificationLast7d,
+                notificationLast24h = notificationLast24h,
+                notificationLatestAt = formatDateTime(notificationLatestAt ?: 0L),
+                notificationFreshness = notificationFreshnessState(listenerEnabled, notificationLatestAt),
+                exitSummary = exitSummary,
+                startupSummary = "Son cold=${startup.coldMs.asMetric()}, warm=${startup.warmMs.asMetric()}, ana ekran hazir=${startup.homeReadyMs.asMetric()}",
                 missionsEnabled = yesNo(AppPrefs.isMissionsEnabled(context)),
                 wrappedEnabled = yesNo(AppPrefs.isWrappedEnabled(context)),
                 missionPrefsMigrated = yesNo(MissionPrefs.isV2Migrated(context)),
                 totalStars = MissionPrefs.getTotalStars(context),
                 latestMissionEvent = latestTaskScore?.let { "${it.label} (delta=${it.delta}, at=${formatDateTime(it.createdAt)})" } ?: "-",
+                dailyMissionCompletions = dailyMissionCompletions,
+                weeklyMissionCompletions = weeklyMissionCompletions,
+                behaviorMissionCompletions = behaviorMissionCompletions,
+                viewingMissionCompletions = viewingMissionCompletions,
+                positiveTaskScore = positiveTaskScore,
+                negativeTaskScore = negativeTaskScore,
                 widgetSummary = widgetSummary,
                 workerSummary = workerSummary,
                 crashSummary = crashSummary,
@@ -280,6 +339,29 @@ class DiagnosticsReportManager @Inject constructor(
             "${index + 1}. safeMode=${yesNo(CrashReporter.isSafeModeActive(context))}, summary=$summaryLine"
         }
     }
+
+    private fun storageSummary(): String {
+        val db = context.getDatabasePath("app_organizer_db")
+        val room = db.length().coerceAtLeast(0L)
+        val wal = File(db.path + "-wal").length().coerceAtLeast(0L)
+        val shm = File(db.path + "-shm").length().coerceAtLeast(0L)
+        val cache = context.cacheDir.safeTreeSize()
+        return "Room=$room B, WAL=$wal B, SHM=$shm B, cache=$cache B, toplam=${room + wal + shm + cache} B"
+    }
+
+    private fun exitSummary(): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return "desteklenmiyor (API < 30)"
+        val manager = context.getSystemService(ActivityManager::class.java) ?: return "okunamadi"
+        val exits = runCatching { manager.getHistoricalProcessExitReasons(context.packageName, 0, 0) }.getOrDefault(emptyList())
+        fun count(reason: Int) = exits.count { it.reason == reason }
+        return "kayit=${exits.size}, ANR=${count(ApplicationExitInfo.REASON_ANR)}, lowMemory=${count(ApplicationExitInfo.REASON_LOW_MEMORY)}, nativeCrash=${count(ApplicationExitInfo.REASON_CRASH_NATIVE)}; trace=rapora_dahil_degil"
+    }
+
+    private fun File.safeTreeSize(): Long = runCatching {
+        if (isFile) length() else listFiles().orEmpty().sumOf { it.safeTreeSize() }
+    }.getOrDefault(0L)
+
+    private fun Long.asMetric(): String = if (this < 0L) "olculmedi" else "${this}ms"
 
     private fun postNotificationsGranted(): Boolean? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
@@ -351,6 +433,8 @@ internal data class DiagnosticsReportSnapshot(
     val postNotificationsState: String,
     val readContactsState: String,
     val coarseLocationState: String,
+    val permissionHealthSummary: List<String>,
+    val storageSummary: String,
     val totalApps: Int,
     val userApps: Int,
     val systemApps: Int,
@@ -372,11 +456,22 @@ internal data class DiagnosticsReportSnapshot(
     val notificationAnalyticsEnabled: String,
     val notificationTotal: Int,
     val notificationLast7d: Int,
+    val notificationLast24h: Int,
+    val notificationLatestAt: String,
+    val notificationFreshness: String,
+    val exitSummary: String,
+    val startupSummary: String,
     val missionsEnabled: String,
     val wrappedEnabled: String,
     val missionPrefsMigrated: String,
     val totalStars: Int,
     val latestMissionEvent: String,
+    val dailyMissionCompletions: Int,
+    val weeklyMissionCompletions: Int,
+    val behaviorMissionCompletions: Int,
+    val viewingMissionCompletions: Int,
+    val positiveTaskScore: Int,
+    val negativeTaskScore: Int,
     val widgetSummary: String,
     val workerSummary: List<String>,
     val crashSummary: List<String>,
@@ -399,6 +494,14 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("POST_NOTIFICATIONS: ${snapshot.postNotificationsState}")
     appendLine("READ_CONTACTS: ${snapshot.readContactsState}")
     appendLine("ACCESS_COARSE_LOCATION: ${snapshot.coarseLocationState}")
+    snapshot.permissionHealthSummary.forEach { appendLine(it) }
+    appendLine()
+    appendLine("[Depolama]")
+    appendLine(snapshot.storageSummary)
+    appendLine()
+    appendLine("[Baslangic ve Cikis Sagligi]")
+    appendLine(snapshot.startupSummary)
+    appendLine("ApplicationExitInfo: ${snapshot.exitSummary}")
     appendLine()
     appendLine("[Uygulama Katalogu]")
     appendLine("Toplam app: ${snapshot.totalApps}")
@@ -443,6 +546,9 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("Listener acik: ${snapshot.notificationListenerEnabled}")
     appendLine("Event sayisi toplam: ${snapshot.notificationTotal}")
     appendLine("Event sayisi son 7 gun: ${snapshot.notificationLast7d}")
+    appendLine("Event sayisi son 24 saat: ${snapshot.notificationLast24h}")
+    appendLine("Son event zamani: ${snapshot.notificationLatestAt}")
+    appendLine("Tazelik: ${snapshot.notificationFreshness}")
     appendLine("Notif metni rapora dahil edilmez.")
     appendLine()
     appendLine("[Misyon Motoru]")
@@ -451,6 +557,13 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("MissionPrefs v2 migrate: ${snapshot.missionPrefsMigrated}")
     appendLine("Toplam yildiz: ${snapshot.totalStars}")
     appendLine("Son gorev olayi: ${snapshot.latestMissionEvent}")
+    appendLine("Tamamlanan gunluk gorev: ${snapshot.dailyMissionCompletions}")
+    appendLine("Tamamlanan haftalik gorev: ${snapshot.weeklyMissionCompletions}")
+    appendLine("Davranis degisikligi gorevi: ${snapshot.behaviorMissionCompletions}")
+    appendLine("Goruntuleme gorevi: ${snapshot.viewingMissionCompletions}")
+    appendLine("Gorev skoru: pozitif=${snapshot.positiveTaskScore}, negatif=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}")
+    appendLine("Dijital yasam skoru toplam yildizdan bagimsizdir.")
+    appendLine("Tekrar odul engeli: aktif (ayni rapor goruntulemesi gunde bir kez puanlanir; misyonlar donem basina tekildir)")
     appendLine()
     appendLine("[Widgetler]")
     appendLine(snapshot.widgetSummary)

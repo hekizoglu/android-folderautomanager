@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.domain.usecase.missions
 
+import com.armutlu.apporganizer.utils.TaskScoreManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -7,6 +8,11 @@ import org.junit.Test
 
 /** MissionEngine — deterministik uretim + checkProgress senaryolari (D257). */
 class MissionEngineTest {
+    @Test
+    fun behaviorChangeRewardsAreGreaterThanViewingReward() {
+        assertTrue(TaskScoreManager.EventType.ClassificationApproved.delta > TaskScoreManager.EventType.NotificationReportViewed.delta)
+        assertTrue(TaskScoreManager.EventType.FolderSuggestionAccepted.delta > TaskScoreManager.EventType.NotificationReportViewed.delta)
+    }
 
     @Test
     fun `same epochDay generates identical daily missions`() {

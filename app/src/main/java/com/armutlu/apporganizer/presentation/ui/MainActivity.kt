@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -16,9 +17,12 @@ import com.armutlu.apporganizer.presentation.ui.screens.OnboardingScreen
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import androidx.core.view.WindowCompat
+import androidx.core.view.doOnPreDraw
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
+import com.armutlu.apporganizer.AppOrganizerApp
+import com.armutlu.apporganizer.utils.StartupHealthPrefs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
@@ -39,6 +43,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val activityStartedAt = SystemClock.elapsedRealtime()
+        val coldStart = AppOrganizerApp.consumeColdStart()
         // installSplashScreen super.onCreate'ten ONCE cagrilmali (AndroidX resmi kilavuz) —
         // gec cagrilinca postSplashScreenTheme uygulanmiyor ve DeviceDefault gri baslik
         // cubugu ("App Organizer") tum MainActivity ekranlarinda kaliyordu (D234 fix).
@@ -71,6 +77,10 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+        window.decorView.doOnPreDraw {
+            StartupHealthPrefs.markReady(this, if (coldStart) AppOrganizerApp.processStartedAtElapsed else activityStartedAt, coldStart, home = false)
+            reportFullyDrawn()
         }
 
         if (onboardingDone) scanApps()
