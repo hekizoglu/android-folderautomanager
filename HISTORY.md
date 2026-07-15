@@ -8,6 +8,8 @@
 
 **Dogrulama:** Runner dry-run ile `A7 — Misyon motoru kalite metrikleri` maddesini buldu ve Codex calistirmadan basariyla cikti. Windows Scheduled Tasks icin Microsoft `schtasks`/Task Scheduler dokumantasyonu kontrol edildi; 10 dakika aralik icin dakika bazli tekrar destekleniyor.
 
+**Dayaniklilik guncellemesi:** Cron birikmesini ve yarim kalan is riskini azaltmak icin runner her yeni turdan once temiz git agaci zorunlu kilar, basarili Codex turundan sonra degisiklikleri otomatik checkpoint commit + fetch/rebase + push yapar. Bekleyen madde kalmadiginda final `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` kapisini calistirir, debug APK'yi Telegram'a gonderir, roadmap dosyasini siler, final commit/push yapar ve scheduled task'i kapatir.
+
 ## Saglik Raporu Duzeltme Sprint 2 - 2026-07-16
 
 **Yapılanlar:** (P1.1-P1.4, tamamlandi) Saglik raporu arama metrikleri genisletildi: `SearchStatsPrefs.Summary` ortalama sorgu uzunlugunu disari veriyor; `SearchDiagnosticsFormatter` sifir sonuc orani, tiklama orani, ilk sonuc orani, deterministik kaynak/aksiyon kirilimi ve ortalama sorgu uzunlugu satirlarini uretiyor. Worker ozeti icin `WorkerPlanHealth` karar tablosu eklendi; kapali+work yok normal, acik+work yok hata, kapali+work var uyari olarak raporlanacak. `WorkerTelemetryPrefs` ile worker baslangic/basari/hata zamani, son sure, basari/hata sayaci ve guvenli hata kodu kalici kaydediliyor; Backup, SmartInsight, SuggestionNotification, WeeklyDigest ve FilesIndex worker'lari telemetry yaziyor. Auto backup raporu kullanici tercihi, plan sagligi, son yedek zamani ve anonim hata kodunu ayri satirda gosteriyor. Surum `1.3.53` / `versionCode 76`.

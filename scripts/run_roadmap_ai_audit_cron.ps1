@@ -32,13 +32,26 @@ function Write-Log {
 }
 
 function Send-Telegram {
-    param([string]$Message)
+    param(
+        [string]$Message,
+        [string]$File = ""
+    )
     if (-not (Test-Path $telegramScript)) {
         Write-Log "Telegram script missing, skipped"
         return
     }
     try {
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $telegramScript -Message $Message -EnvPath (Join-Path $projectRoot ".env") | Out-Null
+        $args = @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $telegramScript,
+            "-Message", $Message,
+            "-EnvPath", (Join-Path $projectRoot ".env")
+        )
+        if (-not [string]::IsNullOrWhiteSpace($File)) {
+            $args += @("-File", $File)
+        }
+        & powershell.exe @args | Out-Null
         Write-Log "Telegram sent"
     } catch {
         Write-Log "Telegram failed: $($_.Exception.Message)"
@@ -97,6 +110,27 @@ function Test-GitDangerState {
     return $false
 }
 
+function Get-GitStatusText {
+    $lines = & git -C $projectRoot status --short 2>$null
+    if (-not $lines) { return "" }
+    return ($lines -join "`n").Trim()
+}
+
+function Assert-CleanWorktree {
+    $status = Get-GitStatusText
+    if (-not [string]::IsNullOrWhiteSpace($status)) {
+        throw "Worktree is dirty before starting a new item. Previous work must be committed or resolved first.`n$status"
+    }
+}
+
+function Convert-ToCommitSlug {
+    param([string]$Text)
+    $slug = ($Text -replace '[^\p{L}\p{Nd}\s._-]+', ' ' -replace '\s+', ' ').Trim()
+    if ($slug.Length -gt 80) { $slug = $slug.Substring(0, 80).Trim() }
+    if ([string]::IsNullOrWhiteSpace($slug)) { return "roadmap item" }
+    return $slug
+}
+
 function Resolve-CodexPath {
     $cmd = Get-Command codex -ErrorAction SilentlyContinue
     if ($cmd) { return $cmd.Source }
@@ -120,7 +154,7 @@ function Get-FirstPendingItem {
     if (-not (Test-Path $roadmapPath)) { throw "Roadmap not found: $roadmapPath" }
     $lines = Get-Content $roadmapPath
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        if ($lines[$i] -match '^\*\*Durum:\*\*\s*(?:⏳\s*)?Bekliyor\b') {
+        if ($lines[$i] -match '^\*\*Durum:\*\*\s*(?:\S+\s*)?Bekliyor\b') {
             for ($j = $i; $j -ge 0; $j--) {
                 if ($lines[$j] -match '^#{1,6}\s+(.+)$') {
                     return [pscustomobject]@{
@@ -145,6 +179,98 @@ function Stop-ThisTask {
     }
 }
 
+function Invoke-GitCheckpoint {
+    param([string]$ItemTitle)
+
+    $status = Get-GitStatusText
+    if ([string]::IsNullOrWhiteSpace($status)) {
+        Write-Log "No worktree changes to checkpoint."
+        return "no_changes"
+    }
+
+    Write-Log "Checkpointing worktree changes for $ItemTitle"
+    & git -C $projectRoot add -A -- . ":(exclude).roadmap-ai-audit-cron" ":(exclude)app/build"
+    if ($LASTEXITCODE -ne 0) { throw "git add failed (exit=$LASTEXITCODE)" }
+
+    & git -C $projectRoot diff --cached --quiet
+    if ($LASTEXITCODE -eq 0) {
+        Write-Log "No staged changes after exclusions."
+        return "no_staged_changes"
+    }
+
+    $commitTitle = Convert-ToCommitSlug $ItemTitle
+    & git -C $projectRoot commit -m "Complete roadmap item: $commitTitle"
+    if ($LASTEXITCODE -ne 0) { throw "git commit failed (exit=$LASTEXITCODE)" }
+
+    & git -C $projectRoot fetch origin
+    if ($LASTEXITCODE -ne 0) { throw "git fetch failed (exit=$LASTEXITCODE)" }
+
+    & git -C $projectRoot rebase origin/main
+    if ($LASTEXITCODE -ne 0) {
+        throw "git rebase origin/main failed (exit=$LASTEXITCODE). Manual resolution required."
+    }
+
+    & git -C $projectRoot push
+    if ($LASTEXITCODE -ne 0) { throw "git push failed (exit=$LASTEXITCODE)" }
+
+    $hash = (& git -C $projectRoot rev-parse --short HEAD).Trim()
+    Write-Log "Checkpoint pushed: $hash"
+    return $hash
+}
+
+function Invoke-GradleWithLockRetry {
+    param([string[]]$GradleArgs)
+
+    $gradle = Join-Path $projectRoot "gradlew.bat"
+    & $gradle @GradleArgs
+    if ($LASTEXITCODE -eq 0) { return }
+
+    Write-Log "Gradle failed (exit=$LASTEXITCODE), running build lock cleanup and retrying: $($GradleArgs -join ' ')"
+    $clearScript = Join-Path $scriptDir "clear_build_lock.ps1"
+    if (Test-Path $clearScript) {
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $clearScript | Out-Null
+    }
+    & $gradle @GradleArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "Gradle command failed after retry (exit=$LASTEXITCODE): $($GradleArgs -join ' ')"
+    }
+}
+
+function Complete-AllPendingWork {
+    $msg = "No pending items remain in $RoadmapFile. Running final build, sending APK, deleting roadmap file."
+    Save-State -Status "finalizing" -Message $msg
+    Send-Telegram "AppOrganizer roadmap cron final basladi: bekleyen madde kalmadi. Final build + APK + roadmap silme yapiliyor."
+
+    Assert-CleanWorktree
+    Invoke-GradleWithLockRetry @("compileDebugKotlin", "-PskipGoogleServices", "--console=plain")
+    Invoke-GradleWithLockRetry @("testDebugUnitTest", "-PskipGoogleServices", "--console=plain")
+    Invoke-GradleWithLockRetry @("assembleDebug", "-PskipGoogleServices", "--console=plain")
+
+    $apkPath = Join-Path $projectRoot "app\build\outputs\apk\debug\app-debug.apk"
+    if (-not (Test-Path $apkPath)) { throw "Final APK not found: $apkPath" }
+    Send-Telegram "AppOrganizer roadmap tum bekleyenleri bitirdi. Final debug APK gonderiliyor." -File $apkPath
+
+    if (Test-Path $roadmapPath) {
+        Remove-Item -LiteralPath $roadmapPath -Force
+        Write-Log "Roadmap file deleted after completion: $roadmapPath"
+    }
+
+    $historyPath = Join-Path $projectRoot "HISTORY.md"
+    Add-Content -Path $historyPath -Encoding UTF8 -Value @"
+
+## Roadmap Cron Finalizasyonu - $(Get-Date -Format "yyyy-MM-dd HH:mm")
+
+**Yapilanlar:** `$RoadmapFile` icinde bekleyen madde kalmadigi icin final kalite kapisi calistirildi, debug APK Telegram'a gonderildi ve roadmap dosyasi silindi.
+
+**Kalite kapisi:** `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices`, `assembleDebug -PskipGoogleServices` basarili.
+"@
+
+    $hash = Invoke-GitCheckpoint "finalize completed roadmap and delete $RoadmapFile"
+    Save-State -Status "finished" -Message "Final APK sent, roadmap deleted, checkpoint=$hash"
+    Send-Telegram "AppOrganizer roadmap cron tamamlandi: APK gonderildi, roadmap dosyasi silindi, commit/push=$hash. Gorev kapatiliyor."
+    Stop-ThisTask
+}
+
 try {
     Acquire-Lock
     Write-Log "Lock acquired"
@@ -156,12 +282,11 @@ try {
         exit 2
     }
 
+    Assert-CleanWorktree
+
     $pending = Get-FirstPendingItem
     if (-not $pending) {
-        $msg = "No '**Durum:** Bekliyor' items remain in $RoadmapFile."
-        Save-State -Status "finished" -Message $msg
-        Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron tamamlandi: bekleyen madde kalmadi. Gorev kapatiliyor."
-        Stop-ThisTask
+        Complete-AllPendingWork
         exit 0
     }
 
@@ -169,14 +294,11 @@ try {
     if (-not $codexPath) { throw "codex command not found" }
     if (-not (Test-Path $promptPath)) { throw "Prompt not found: $promptPath" }
 
-    $dirty = (& git -C $projectRoot status --short 2>$null) -join "; "
-    if ([string]::IsNullOrWhiteSpace($dirty)) { $dirty = "clean" }
-
     $dynamicPrompt = @"
 Automation run id: $runId
 Current pending roadmap item: $($pending.Title)
 Status line: ${RoadmapFile}:$($pending.Line)
-Worktree summary: $dirty
+Worktree summary: clean
 Log file: $logFile
 
 "@ + (Get-Content $promptPath -Raw)
@@ -219,8 +341,10 @@ Log file: $logFile
     }
 
     if ($exitCode -eq 0) {
-        Save-State -Status "completed" -Message $finalMessage -CurrentItem $pending.Title
-        Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron turu bitti ($runId): $($pending.Title). $finalMessage"
+        $checkpoint = Invoke-GitCheckpoint $pending.Title
+        $messageWithCheckpoint = "$finalMessage`nCheckpoint: $checkpoint"
+        Save-State -Status "completed" -Message $messageWithCheckpoint -CurrentItem $pending.Title
+        Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron turu bitti ($runId): $($pending.Title). Checkpoint=$checkpoint. $finalMessage"
     } else {
         Save-State -Status "failed" -Message $finalMessage -ExitCode $exitCode -CurrentItem $pending.Title
         Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron hata verdi ($runId, exit=$exitCode): $($pending.Title). $finalMessage"
