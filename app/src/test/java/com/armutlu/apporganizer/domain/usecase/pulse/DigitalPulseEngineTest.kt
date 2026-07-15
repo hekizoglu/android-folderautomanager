@@ -204,4 +204,32 @@ class DigitalPulseEngineTest {
         assertTrue(result.attention >= 0)
         assertTrue(result.total in 0..100)
     }
+
+    @Test
+    fun `task score contribution is capped to plus minus ten`() {
+        val apps = listOf(app("com.a", "productivity"))
+
+        val boosted = DigitalPulseEngine.compute(
+            PulseInput(
+                apps = apps,
+                notification = null,
+                previousCategoryUsage = null,
+                taskScoreContribution = 99,
+                nowMillis = now,
+            )
+        )
+        val penalized = DigitalPulseEngine.compute(
+            PulseInput(
+                apps = apps,
+                notification = null,
+                previousCategoryUsage = null,
+                taskScoreContribution = -99,
+                nowMillis = now,
+            )
+        )
+
+        assertEquals(10, boosted.reasons.first { it.id == PulseReasonId.TASK_MISSIONS }.delta)
+        assertEquals(-10, penalized.reasons.first { it.id == PulseReasonId.TASK_MISSIONS }.delta)
+        assertTrue(boosted.total - penalized.total <= 20)
+    }
 }

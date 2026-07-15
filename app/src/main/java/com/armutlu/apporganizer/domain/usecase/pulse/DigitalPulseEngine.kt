@@ -41,14 +41,16 @@ object DigitalPulseEngine {
         val balance = computeBalance(apps, input.previousCategoryUsage, reasons)
         val cleanup = computeCleanup(apps, input.nowMillis, reasons)
         val consistency = computeConsistency(input.unlockCount, input.previousUnlockCount, reasons)
+        val taskContribution = computeTaskContribution(input.taskScoreContribution, reasons)
 
-        val total = (
+        val weightedTotal = (
             organization * WEIGHT_ORGANIZATION +
                 attention * WEIGHT_ATTENTION +
                 balance * WEIGHT_BALANCE +
                 cleanup * WEIGHT_CLEANUP +
                 consistency * WEIGHT_CONSISTENCY
-            ).roundToInt().coerceIn(0, 100)
+            ).roundToInt()
+        val total = (weightedTotal + taskContribution).coerceIn(0, 100)
 
         return DigitalPulseScore(
             total = total,
@@ -216,6 +218,19 @@ object DigitalPulseEngine {
             reasons += PulseScoreReason(PulseReasonId.CONSISTENCY_STEADY, delta = 0)
         }
         return score
+    }
+
+    // Gorev sistemi skora yalnizca sinirli bir katsayi olarak etki eder.
+    // Spam'lenebilir bir toplam puan, Dijital Nabiz'i tek basina belirleyemez.
+    private fun computeTaskContribution(
+        taskScoreContribution: Int,
+        reasons: MutableList<PulseScoreReason>,
+    ): Int {
+        val contribution = taskScoreContribution.coerceIn(-10, 10)
+        if (contribution != 0) {
+            reasons += PulseScoreReason(PulseReasonId.TASK_MISSIONS, delta = contribution)
+        }
+        return contribution
     }
 
     // ── Veri güveni ──────────────────────────────────────────────────────────

@@ -1,8 +1,10 @@
 package com.armutlu.apporganizer.domain.usecase.stats
 
 import android.content.Context
+import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.utils.MissionPrefs
+import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import timber.log.Timber
 
@@ -87,5 +89,15 @@ object StatsResetService {
 
     private fun resetMissionProgress(context: Context) {
         MissionPrefs.clearAll(context)
+        TaskScoreManager.clearLegacyPrefs(context)
+        runCatching {
+            val db = AppDatabase.getInstance(context)
+            kotlinx.coroutines.runBlocking {
+                db.missionHistoryDao().clearAll()
+                db.taskScoreEventDao().clearAll()
+            }
+        }.onFailure {
+            Timber.w(it, "StatsResetService: mission Room tabloları temizlenemedi, legacy prefs yine de sıfırlandı")
+        }
     }
 }

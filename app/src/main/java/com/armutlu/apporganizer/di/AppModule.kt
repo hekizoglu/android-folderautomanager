@@ -45,6 +45,14 @@ object AppModule {
         db.weeklyGoalDao()
 
     @Provides
+    fun provideMissionHistoryDao(db: AppDatabase): com.armutlu.apporganizer.data.local.MissionHistoryDao =
+        db.missionHistoryDao()
+
+    @Provides
+    fun provideTaskScoreEventDao(db: AppDatabase): com.armutlu.apporganizer.data.local.TaskScoreEventDao =
+        db.taskScoreEventDao()
+
+    @Provides
     @Singleton
     fun provideFilesIndexer(
         @ApplicationContext context: Context,

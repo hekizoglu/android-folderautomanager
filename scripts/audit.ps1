@@ -215,7 +215,7 @@ $tier3Notes = @()
 
 if ($isTier3) {
     # --- Compose Compiler Metrics (build artifact, hizli) ---
-    $composeActive = ($activeRules + $extraRules | Where-Object { $_.Code -eq "COMPOSE" }).Count -gt 0
+    $composeActive = ((@($activeRules) + @($extraRules)) | Where-Object { $_.Code -eq "COMPOSE" }).Count -gt 0
     if ($composeActive) {
         Write-Host "[audit:T3] Compose compiler metrics okunuyor..." -ForegroundColor Magenta
         $composeDir = "app\build\compose_compiler"
@@ -245,7 +245,7 @@ if ($isTier3) {
     }
 
     # --- Dependency Uyumluluk Matrisi ---
-    $depActive = ($activeRules + $extraRules | Where-Object { $_.Code -eq "DEP" }).Count -gt 0
+    $depActive = ((@($activeRules) + @($extraRules)) | Where-Object { $_.Code -eq "DEP" }).Count -gt 0
     if ($depActive -and (Test-Path "app\build.gradle.kts")) {
         Write-Host "[audit:T3] Bagimlilik uyumluluk matrisi kontrol ediliyor..." -ForegroundColor Magenta
         $buildGradle = Get-Content "app\build.gradle.kts" -Raw
@@ -294,7 +294,7 @@ if ($isTier3) {
     }
 
     # --- APK Boyut Trend ---
-    $apkActive = ($activeRules + $extraRules | Where-Object { $_.Code -eq "APK" }).Count -gt 0
+    $apkActive = ((@($activeRules) + @($extraRules)) | Where-Object { $_.Code -eq "APK" }).Count -gt 0
     if ($apkActive) {
         Write-Host "[audit:T3] APK boyut trendi kontrol ediliyor..." -ForegroundColor Magenta
         $apkPath = "app\build\outputs\apk\debug\app-debug.apk"
@@ -316,7 +316,7 @@ if ($isTier3) {
     }
 
     # --- Skill Integrity Check ---
-    $skillActive = ($activeRules + $extraRules | Where-Object { $_.Code -eq "SKILL" }).Count -gt 0
+    $skillActive = ((@($activeRules) + @($extraRules)) | Where-Object { $_.Code -eq "SKILL" }).Count -gt 0
     if ($skillActive) {
         Write-Host "[audit:T3] Skill butunlugu kontrol ediliyor..." -ForegroundColor Magenta
         $skillDir = ".claude\skills"
@@ -339,7 +339,7 @@ if ($isTier3) {
     }
 
     # --- Dead Code / Eskimis TODO Taramasi ---
-    $deadActive = ($activeRules + $extraRules | Where-Object { $_.Code -eq "DEAD" }).Count -gt 0
+    $deadActive = ((@($activeRules) + @($extraRules)) | Where-Object { $_.Code -eq "DEAD" }).Count -gt 0
     if ($deadActive) {
         Write-Host "[audit:T3] Olu kod/Eskimiş TODO taranıyor..." -ForegroundColor Magenta
         $srcDir = "app\src\main\java"

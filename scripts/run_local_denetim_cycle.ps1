@@ -13,6 +13,7 @@ $projectRoot = Split-Path -Parent $scriptDir
 $counterPath = Join-Path $scriptDir "loop_count.txt"
 $auditScript = Join-Path $scriptDir "audit.ps1"
 $docsScoreScript = Join-Path $scriptDir "score_docs_backlog.ps1"
+$clearBuildLockScript = Join-Path $scriptDir "clear_build_lock.ps1"
 $manualChecklistPath = Join-Path $projectRoot "docs\internal\local_denetim_manuel_checklist.md"
 $reportPath = Join-Path $projectRoot "docs\internal\local_denetim_raporu.md"
 $unresolvedPath = Join-Path $projectRoot "COZULEMEYEN_SORUNLAR.md"
@@ -151,6 +152,24 @@ if (-not (Test-Path $counterPath)) {
     Set-Content -Path $counterPath -Value "0" -Encoding UTF8
 }
 
+function Set-FileContentWithRetry {
+    param(
+        [string]$Path,
+        [string]$Value,
+        [int]$Attempts = 20
+    )
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            Set-Content -Path $Path -Value $Value -Encoding UTF8
+            return
+        } catch {
+            if ($attempt -eq $Attempts) { throw }
+            Start-Sleep -Milliseconds 500
+        }
+    }
+}
+
 $current = 0
 $parsed = Get-Content $counterPath -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($parsed -match '^\d+$') {
@@ -158,7 +177,7 @@ if ($parsed -match '^\d+$') {
 }
 
 $cycleNumber = $current + 1
-Set-Content -Path $counterPath -Value $cycleNumber -Encoding UTF8
+Set-FileContentWithRetry -Path $counterPath -Value $cycleNumber
 
 & $auditScript -SendTelegram:$($SendTelegram.IsPresent) -CycleNumber $cycleNumber
 if (-not $?) {
@@ -198,7 +217,10 @@ Update-DocsBacklogScore
 
 $shouldBuild = ($cycleNumber % 3 -eq 0)
 if ($Mode -eq "Resolve" -or $shouldBuild) {
-    & .\gradlew.bat assembleDebug
+    if (Test-Path $clearBuildLockScript) {
+        & $clearBuildLockScript | Out-Null
+    }
+    & .\gradlew.bat assembleDebug -PskipGoogleServices --console=plain
     if ($LASTEXITCODE -ne 0) {
         throw "assembleDebug basarisiz oldu."
     }

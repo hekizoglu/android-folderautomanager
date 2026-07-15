@@ -56,6 +56,7 @@ object WrappedEngine {
         val nowMillis: Long = System.currentTimeMillis(),
         val unlockCount: Int? = null,
         val previousUnlockCount: Int? = null,
+        val taskScoreContribution: Int = 0,
         val hasUsageAccess: Boolean = true,
         /** Gece (23:00-06:00) kullanim orani 0.0-1.0 — null = saatlik veri yok (Gece Kusu atlanir). */
         val nightUsageRatio: Double? = null,
@@ -162,6 +163,7 @@ object WrappedEngine {
                 folderCount = input.folderCount,
                 unlockCount = input.unlockCount,
                 previousUnlockCount = input.previousUnlockCount,
+                taskScoreContribution = input.taskScoreContribution,
                 hasUsageAccess = input.hasUsageAccess,
                 nowMillis = input.nowMillis,
             )

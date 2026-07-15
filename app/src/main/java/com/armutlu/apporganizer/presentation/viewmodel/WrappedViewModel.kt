@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedAiCoach
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
+import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -187,6 +188,7 @@ class WrappedViewModel @Inject constructor(
             launcherInstalledDays = launcherInstalledDays,
             unlockCount = unlockCount,
             previousUnlockCount = previousUnlockCount,
+            taskScoreContribution = TaskScoreManager.getPulseContribution(context),
             hasUsageAccess = UsageStatsHelper.hasPermission(context),
         )
 

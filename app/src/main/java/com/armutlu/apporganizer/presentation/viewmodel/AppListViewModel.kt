@@ -36,6 +36,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import java.util.Locale
@@ -485,16 +486,20 @@ class AppListViewModel @Inject constructor(
     }
 
     fun dismissFolderSuggestion(suggestionId: String) {
-        AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
-        TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionDismissed)
-        _folderSuggestionRefresh.value += 1
+        viewModelScope.launch {
+            AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
+            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionDismissed)
+            _folderSuggestionRefresh.value += 1
+        }
     }
 
     fun snoozeFolderSuggestion(suggestionId: String) {
         val until = System.currentTimeMillis() + 7L * 24L * 60L * 60L * 1000L
-        AppPrefs.snoozeFolderSuggestion(getApplication(), suggestionId, until)
-        TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionSnoozed)
-        _folderSuggestionRefresh.value += 1
+        viewModelScope.launch {
+            AppPrefs.snoozeFolderSuggestion(getApplication(), suggestionId, until)
+            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.FolderSuggestionSnoozed)
+            _folderSuggestionRefresh.value += 1
+        }
     }
 
     fun setWeeklyGoal(categoryId: String, targetMinutes: Int) {
@@ -879,22 +884,24 @@ class AppListViewModel @Inject constructor(
     }
 
     fun resetAllPrivacyData(context: android.content.Context) {
-        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            runCatching {
-                repository.resetAllCategories()
-                repository.getAllApps().forEach { app ->
-                    repository.updateUsageTimeMs(app.packageName, 0)
-                    repository.updateLaunchCount(app.packageName, 0)
-                    repository.updateLastUsedTimestamp(app.packageName, 0L)
-                    repository.updateNotificationCount(app.packageName, 0)
-                    repository.updateCustomNotes(app.packageName, "")
-                }
-                repository.clearAllNotificationTexts()
-                repository.clearAllNotificationEvents()
-                context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-                    .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
-                Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
-            }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
+        viewModelScope.launch {
+            withContext(kotlinx.coroutines.Dispatchers.IO) {
+                runCatching {
+                    repository.resetAllCategories()
+                    repository.getAllApps().forEach { app ->
+                        repository.updateUsageTimeMs(app.packageName, 0)
+                        repository.updateLaunchCount(app.packageName, 0)
+                        repository.updateLastUsedTimestamp(app.packageName, 0L)
+                        repository.updateNotificationCount(app.packageName, 0)
+                        repository.updateCustomNotes(app.packageName, "")
+                    }
+                    repository.clearAllNotificationTexts()
+                    repository.clearAllNotificationEvents()
+                    context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                        .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
+                    Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
+                }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
+            }
         }
     }
 

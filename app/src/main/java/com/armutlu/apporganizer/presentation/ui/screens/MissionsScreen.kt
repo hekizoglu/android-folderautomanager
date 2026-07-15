@@ -86,7 +86,7 @@ fun MissionsScreen(
             SettingsCard {
                 uiState.daily.forEachIndexed { index, mission ->
                     if (index > 0) MissionDivider()
-                    MissionRow(mission = mission, onCompleteManually = { viewModel.completeManually(mission.id) })
+                    MissionRow(mission = mission)
                 }
                 if (uiState.daily.isEmpty() && !uiState.loading) {
                     Text(
@@ -103,7 +103,7 @@ fun MissionsScreen(
             SettingsCard {
                 uiState.weekly.forEachIndexed { index, mission ->
                     if (index > 0) MissionDivider()
-                    MissionRow(mission = mission, onCompleteManually = { viewModel.completeManually(mission.id) })
+                    MissionRow(mission = mission)
                 }
             }
         }
@@ -185,7 +185,6 @@ private fun CelebrationCard(stars: Int) {
 @Composable
 private fun MissionRow(
     mission: MissionsViewModel.MissionUi,
-    onCompleteManually: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -212,11 +211,6 @@ private fun MissionRow(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-        if (!mission.completed && !mission.autoCheckable) {
-            TextButton(onClick = onCompleteManually) {
-                Text(stringResource(R.string.missions_mark_done))
-            }
         }
     }
 }

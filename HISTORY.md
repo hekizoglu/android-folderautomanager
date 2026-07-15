@@ -1668,6 +1668,16 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 
 ## Dongu D191 -- 01:26 [AUDIT OPTIMIZASYON]
 **Yapilanlar:** Denetim sistemi tiered frequency'e gecirildi. audit.ps1: T1 (her dongu, 10 temel regex), T2 (3 dongude bir, 8 CE kurali), T3 (10 dongude bir, Compose metrics + Dependency matrix + APK trend + Skill integrity + Dead code). `gradlew lintDebug` T3'ten kaldirildi (2+ dk suruyor) - yerine build artifact tabanli hizli kontroller eklendi. run_local_denetim_cycle.ps1 CycleNumber parametresi eklendi. COZULEMEYEN_SORUNLAR.md temizlendi.
+## D278 - Yerel 15 dakikalik roadmap bakim otomasyonu
+- Tarih: 2026-07-15
+- Kapsam: Codex CLI yerine deterministik PowerShell bakim akisi kuruldu; her 15 dakikada bir roadmap durumu raporlanip local denetim/build/commit akisi guvenli sekilde tetikleniyor.
+- Teknik:
+  - `scripts/run_local_roadmap_maintenance_tick.ps1` eklendi; lock, state JSON, log klasoru, Telegram baslangic/bitis raporu ve roadmap'teki siradaki acik madde ozetini yonetiyor.
+  - Her turda `run_local_denetim_cycle.ps1` cagriliyor; 4 turda bir `Full`, digerlerinde `Resolve` modu seciliyor.
+  - Commit/push isleri mevcut denetim scriptinin deterministik akisina birakildi; runner sadece tur sonucu ve HEAD degisimini raporluyor.
+  - `scripts/register_local_roadmap_15min_task.ps1` eklendi; eski `AppOrganizer_CodexRoadmap_15Min` gorevini kaldirip yeni yerel gorevi kaydediyor.
+  - `.local-roadmap-automation/` artifact klasoru `.gitignore`'a eklendi.
+
 ## D277 - Guardli 15 dakikalik Codex otomasyonu
 - Tarih: 2026-07-15
 - Kapsam: Windows Task Scheduler uzerinden 15 dakikada bir tetiklenen, lock/log/Telegram guard'li bir Codex roadmap devam gorevi eklendi.

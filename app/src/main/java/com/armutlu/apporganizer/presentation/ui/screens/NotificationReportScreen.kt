@@ -52,10 +52,9 @@ fun NotificationReportScreen(
 
     // D257: "Bildirim raporunu incele" gorevi — ekran ziyareti gorev tamamlama sayilir.
     LaunchedEffect(Unit) {
-        com.armutlu.apporganizer.utils.MissionPrefs.markManuallyCompleted(
+        com.armutlu.apporganizer.utils.TaskScoreManager.record(
             context,
-            java.time.LocalDate.now().toEpochDay(),
-            com.armutlu.apporganizer.domain.usecase.missions.MissionEngine.DAILY_VIEW_NOTIF_REPORT,
+            com.armutlu.apporganizer.utils.TaskScoreManager.EventType.NotificationReportViewed,
         )
     }
 

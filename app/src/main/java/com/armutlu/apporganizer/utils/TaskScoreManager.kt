@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.utils
 
 import android.content.Context
+import kotlin.math.roundToInt
 
 /**
  * Durum bazli gorev puani (ROADMAP #15).
@@ -9,6 +10,9 @@ import android.content.Context
  * ve olay sayaclari kalici tutulur. Puan 0'in altina dusmez.
  */
 object TaskScoreManager {
+    private const val PULSE_WINDOW_DAYS = 14L
+    private const val PULSE_MAX_CONTRIBUTION = 10
+    private const val PULSE_DIVISOR = 3f
 
     enum class EventType(
         val delta: Int,
@@ -50,6 +54,11 @@ object TaskScoreManager {
             eventKey = "similar_apps_accepted",
             defaultLabel = "Benzer uygulama onerisi kabul edildi",
         ),
+        NotificationReportViewed(
+            delta = 1,
+            eventKey = "notification_report_viewed",
+            defaultLabel = "Bildirim raporu acildi",
+        ),
     }
 
     data class Snapshot(
@@ -70,6 +79,10 @@ object TaskScoreManager {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun getSnapshot(context: Context): Snapshot {
+        error("Use suspend getSnapshotV2 for Room-backed task score state")
+    }
+
+    fun getLegacySnapshot(context: Context): Snapshot {
         val prefs = prefs(context)
         return Snapshot(
             totalScore = prefs.getInt(KEY_TOTAL_SCORE, 0),
@@ -79,19 +92,44 @@ object TaskScoreManager {
         )
     }
 
-    fun record(context: Context, eventType: EventType, weight: Int = 1): Snapshot {
-        if (weight <= 0) return getSnapshot(context)
-        val prefs = prefs(context)
+    suspend fun getSnapshotV2(context: Context): Snapshot {
+        val dao = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context).taskScoreEventDao()
+        val latest = dao.getLatestEvent()
+        return Snapshot(
+            totalScore = dao.getTotalScore().coerceAtLeast(0),
+            lastDelta = latest?.delta ?: 0,
+            lastEventLabel = latest?.label.orEmpty(),
+            lastEventAt = latest?.createdAt ?: 0L,
+        )
+    }
+
+    suspend fun record(context: Context, eventType: EventType, weight: Int = 1): Snapshot {
+        if (weight <= 0) return getSnapshotV2(context)
         val delta = eventType.delta * weight
-        val total = (prefs.getInt(KEY_TOTAL_SCORE, 0) + delta).coerceAtLeast(0)
-        val eventCountKey = KEY_EVENT_PREFIX + eventType.eventKey
-        prefs.edit()
-            .putInt(KEY_TOTAL_SCORE, total)
-            .putInt(KEY_LAST_DELTA, delta)
-            .putString(KEY_LAST_EVENT_LABEL, eventType.defaultLabel)
-            .putLong(KEY_LAST_EVENT_AT, System.currentTimeMillis())
-            .putInt(eventCountKey, prefs.getInt(eventCountKey, 0) + weight)
-            .apply()
-        return getSnapshot(context)
+        val dao = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context).taskScoreEventDao()
+        dao.insert(
+            com.armutlu.apporganizer.domain.models.TaskScoreEventEntry(
+                eventKey = eventType.eventKey,
+                label = eventType.defaultLabel,
+                delta = delta,
+            )
+        )
+        return getSnapshotV2(context)
+    }
+
+    suspend fun getPulseContribution(
+        context: Context,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Int {
+        val dao = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context).taskScoreEventDao()
+        val fromInclusive = nowMillis - (PULSE_WINDOW_DAYS * 24L * 60L * 60L * 1000L)
+        val recentNet = dao.getScoreBetween(fromInclusive, nowMillis)
+        return (recentNet / PULSE_DIVISOR)
+            .roundToInt()
+            .coerceIn(-PULSE_MAX_CONTRIBUTION, PULSE_MAX_CONTRIBUTION)
+    }
+
+    fun clearLegacyPrefs(context: Context) {
+        prefs(context).edit().clear().apply()
     }
 }

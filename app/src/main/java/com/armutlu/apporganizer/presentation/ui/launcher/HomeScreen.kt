@@ -142,6 +142,7 @@ fun HomeScreen(
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
     val categories by viewModel.categories.collectAsState()
+    val suggestedContacts by viewModel.suggestedContacts.collectAsState()
     var suggestionIconPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
@@ -177,6 +178,7 @@ fun HomeScreen(
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
+    var fullscreenSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFullscreenSearchEnabled(context)) }
     var searchBarPosition    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)) }
     var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
     var focusModeEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)) }
@@ -255,6 +257,8 @@ fun HomeScreen(
                     homeSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_APP_SEARCH_ENABLED ->
                     homeAppSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FULLSCREEN_SEARCH_ENABLED ->
+                    fullscreenSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFullscreenSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SEARCH_BAR_POSITION ->
                     searchBarPosition = com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_AUTO_RESIZE ->
@@ -294,6 +298,7 @@ fun HomeScreen(
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
     var folderContextMenu by remember { mutableStateOf<AppFolder?>(null) }
     var homeLongPressOpen by remember { mutableStateOf(false) }
+    var fullScreenSearchOpen by rememberSaveable { mutableStateOf(false) }
     var quickWheelVisible by remember { mutableStateOf(false) }
     var quickWheelX by remember { mutableStateOf(0f) }
     var quickWheelY by remember { mutableStateOf(0f) }
@@ -443,8 +448,10 @@ fun HomeScreen(
     // (launcher'in kendisi "en kok" ekran — geri basinca hicbir yere gidilmez, Activity asla
     // finish edilmez).
     BackHandler(enabled = true) {
-        if (allAppsOpen) {
-            viewModel.closeAllApps()
+        when {
+            fullScreenSearchOpen -> fullScreenSearchOpen = false
+            allAppsOpen -> viewModel.closeAllApps()
+            else -> Unit
         }
         // else: no-op — ana ekranda geri tusu Activity'yi kapatmamali (bkz. yukaridaki not)
     }
@@ -648,6 +655,8 @@ fun HomeScreen(
                         onEnableContactsSource = viewModel::enableContactsSearchSource,
                         onEnableFilesSource = viewModel::enableFilesSearchSource,
                         filesIndexState = filesIndexState,
+                        fullScreenEnabled = fullscreenSearchEnabled,
+                        onOpenFullScreen = { fullScreenSearchOpen = true },
                         homeResumeTrigger = homeResumeTrigger,
                         // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
                         resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
@@ -1063,6 +1072,30 @@ fun HomeScreen(
                             }
                         }
                     }
+            )
+        }
+
+        if (fullScreenSearchOpen && homeAppSearchEnabled && fullscreenSearchEnabled) {
+            FullScreenSearchOverlay(
+                allApps = allApps,
+                folders = if (homeSearchEnabled) folders else emptyList(),
+                folderCustomNames = customFolderNames,
+                searchResults = searchResults,
+                filesIndexState = filesIndexState,
+                suggestedContacts = suggestedContacts,
+                onClose = { fullScreenSearchOpen = false },
+                onAppClick = { pkg ->
+                    fullScreenSearchOpen = false
+                    viewModel.launchApp(context, pkg)
+                },
+                onFolderClick = { folder ->
+                    fullScreenSearchOpen = false
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onNavigateToFolder(folder)
+                },
+                onEnableContactsSource = viewModel::enableContactsSearchSource,
+                onEnableFilesSource = viewModel::enableFilesSearchSource,
+                onQueryChange = viewModel::setSearchQuery,
             )
         }
 

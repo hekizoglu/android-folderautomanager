@@ -26,6 +26,7 @@ enum class PulseReasonId(val logLabel: String) {
     CONSISTENCY_STEADY("Kullanim duzeni istikrarli"),
     CONSISTENCY_VOLATILE("Kullanim haftalar arasi cok degisken"),
     CONSISTENCY_NO_DATA("Kilit acma verisi yok, notr degerlendirildi"),
+    TASK_MISSIONS("Gorev etkisi sinirli katki olarak uygulandi"),
 }
 
 /**
@@ -65,6 +66,7 @@ data class PulseInput(
     val folderCount: Int = 0,
     val unlockCount: Int? = null,
     val previousUnlockCount: Int? = null,
+    val taskScoreContribution: Int = 0,
     val hasUsageAccess: Boolean = true,
     val nowMillis: Long = System.currentTimeMillis(),
 )

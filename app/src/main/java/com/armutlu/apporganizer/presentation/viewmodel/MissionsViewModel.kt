@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
-import com.armutlu.apporganizer.utils.MissionPrefs
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +28,7 @@ import timber.log.Timber
 @HiltViewModel
 class MissionsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val missionsRepository: MissionsRepository,
 ) : ViewModel() {
 
     data class MissionUi(
@@ -65,52 +66,44 @@ class MissionsViewModel @Inject constructor(
         }
     }
 
-    /** Otomatik dogrulanamayan gorev icin "Tamamladim" butonu. */
-    fun completeManually(missionId: String) {
-        val epochDay = LocalDate.now().toEpochDay()
-        MissionPrefs.markManuallyCompleted(context, epochDay, missionId)
-        refresh()
-    }
-
     fun dismissCelebration() {
         _uiState.value = _uiState.value.copy(celebrateStars = null)
     }
 
-    private fun computeAndAward(): MissionsUiState {
+    private suspend fun computeAndAward(): MissionsUiState {
+        missionsRepository.syncLegacyPrefsIfNeeded()
         val epochDay = LocalDate.now().toEpochDay()
         val epochWeek = epochDay / 7
         val input = buildCheckInput(epochDay, epochWeek)
 
         var newStars = 0
-        val dailyDone = MissionPrefs.getCompletedDailyIds(context, epochDay).toMutableSet()
+        val dailyDone = missionsRepository.getCompletedDailyIds(epochDay).toMutableSet()
         val daily = MissionEngine.generateDaily(epochDay).map { mission ->
             val already = mission.id in dailyDone
             val completed = already || MissionEngine.checkProgress(mission, input)
             if (completed && !already) {
-                MissionPrefs.markDailyCompleted(context, epochDay, mission.id)
-                MissionPrefs.addStars(context, mission.starReward)
+                missionsRepository.markDailyCompleted(epochDay, mission.id)
                 dailyDone += mission.id
                 newStars += mission.starReward
             }
             mission.toUi(completed)
         }
 
-        val weeklyDone = MissionPrefs.getCompletedWeeklyIds(context, epochWeek).toMutableSet()
+        val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
         val weekly = MissionEngine.generateWeekly(epochWeek).map { mission ->
             val already = mission.id in weeklyDone
             val completed = already || MissionEngine.checkProgress(mission, input)
             if (completed && !already) {
-                MissionPrefs.markWeeklyCompleted(context, epochWeek, mission.id)
-                MissionPrefs.addStars(context, mission.starReward)
+                missionsRepository.markWeeklyCompleted(epochWeek, mission.id)
                 weeklyDone += mission.id
                 newStars += mission.starReward
             }
             mission.toUi(completed)
         }
 
-        val taskScore = TaskScoreManager.getSnapshot(context)
+        val taskScore = TaskScoreManager.getSnapshotV2(context)
         return MissionsUiState(
-            totalStars = MissionPrefs.getTotalStars(context),
+            totalStars = missionsRepository.getTotalStars(),
             daily = daily,
             weekly = weekly,
             taskScore = taskScore.totalScore,
@@ -121,7 +114,7 @@ class MissionsViewModel @Inject constructor(
         )
     }
 
-    private fun buildCheckInput(epochDay: Long, epochWeek: Long): MissionEngine.MissionCheckInput {
+    private suspend fun buildCheckInput(epochDay: Long, epochWeek: Long): MissionEngine.MissionCheckInput {
         val sessions = (UsageStatsHelper.getDailySessionUsage(context, days = 14)
             as? UsageStatsHelper.DailySessionResult.Available)?.days
 
@@ -146,7 +139,7 @@ class MissionsViewModel @Inject constructor(
             unlockCountToday = UsageStatsHelper.getUnlockCount(context, days = 1),
             weeklyScreenTimeMinutes = weekMinutes(epochWeek),
             previousWeeklyScreenTimeMinutes = weekMinutes(epochWeek - 1),
-            manuallyCompletedIds = MissionPrefs.getManuallyCompletedIds(context, epochDay),
+            taskEvents = missionsRepository.buildTaskEventInput(epochDay, epochWeek),
         )
     }
 
@@ -162,10 +155,10 @@ class MissionsViewModel @Inject constructor(
         MissionEngine.DAILY_SCREEN_UNDER_3H -> R.string.mission_daily_screen_under_3h
         MissionEngine.DAILY_NO_LATE_NIGHT -> R.string.mission_daily_no_late_night
         MissionEngine.DAILY_UNLOCK_UNDER_30 -> R.string.mission_daily_unlock_under_30
-        MissionEngine.DAILY_CUSTOMIZE_FOLDER -> R.string.mission_daily_customize_folder
+        MissionEngine.DAILY_CLASSIFICATION_CLEANUP -> R.string.mission_daily_classification_cleanup
         MissionEngine.DAILY_VIEW_NOTIF_REPORT -> R.string.mission_daily_view_notif_report
         MissionEngine.WEEKLY_SCREEN_LESS -> R.string.mission_weekly_screen_less
-        MissionEngine.WEEKLY_REMOVE_UNUSED -> R.string.mission_weekly_remove_unused
+        MissionEngine.WEEKLY_POSITIVE_ACTIONS -> R.string.mission_weekly_positive_actions
         else -> R.string.mission_unknown
     }
 }

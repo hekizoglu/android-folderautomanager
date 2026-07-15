@@ -66,6 +66,7 @@ import com.armutlu.apporganizer.domain.models.FileIndexState
 import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.presentation.viewmodel.SearchSettingsViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import java.text.DateFormat
 import java.util.Date
 
@@ -92,6 +93,7 @@ fun SearchSettingsScreen(
     }
     var homeAppSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_APP_SEARCH_ENABLED) { AppPrefs.isHomeAppSearchEnabled(context) }
     var homeSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_SEARCH_ENABLED) { AppPrefs.isHomeSearchEnabled(context) }
+    var fullscreenSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_FULLSCREEN_SEARCH_ENABLED) { AppPrefs.isFullscreenSearchEnabled(context) }
     var doubleTapSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_DOUBLE_TAP_SEARCH) { AppPrefs.isDoubleTapSearchEnabled(context) }
     val appsSourceEnabled = true
     var categoriesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CATEGORIES) { AppPrefs.isSearchSourceCategoriesEnabled(context) }
@@ -188,6 +190,17 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             homeSearchEnabled = it
                             AppPrefs.setHomeSearchEnabled(context, it)
+                        },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.TouchApp,
+                        title = stringResource(R.string.search_settings_fullscreen_title),
+                        subtitle = stringResource(R.string.search_settings_fullscreen_desc),
+                        checked = fullscreenSearchEnabled,
+                        onCheckedChange = {
+                            fullscreenSearchEnabled = it
+                            AppPrefs.setFullscreenSearchEnabled(context, it)
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -295,6 +308,14 @@ fun SearchSettingsScreen(
                             contactSuggestionsEnabled = it
                             AppPrefs.setContactSuggestionsEnabled(context, it)
                         },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.Refresh,
+                        title = stringResource(R.string.search_settings_history_clear_title),
+                        subtitle = stringResource(R.string.search_settings_history_clear_subtitle),
+                        showChevron = false,
+                        onClick = { SearchHistoryPrefs.clearAll(context) },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(

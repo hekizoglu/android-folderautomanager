@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
@@ -25,14 +26,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,7 +70,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -108,8 +116,10 @@ import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.presentation.ui.common.diamondShine
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.ContactActionPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.SearchCache
+import com.armutlu.apporganizer.utils.SearchHistoryPrefs
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import kotlinx.coroutines.Dispatchers
@@ -899,11 +909,122 @@ internal fun HomeAppSearchBar(
     // sahte "0 sonuç" izlenimi verilmez.
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
+    fullScreenEnabled: Boolean = false,
+    onOpenFullScreen: () -> Unit = {},
     homeResumeTrigger: Int = 0,
     // Çubuk alttayken sonuçlar ÜSTTE (yukarı doğru) açılır — sayfa kaymaz (D258)
     resultsAbove: Boolean = false
 ) {
     val context = LocalContext.current
+
+    if (fullScreenEnabled) {
+        var isDragging by remember { mutableStateOf(false) }
+        var dragOffsetY by remember { mutableStateOf(0f) }
+        var showGhostZones by remember { mutableStateOf(false) }
+        val shineEnabled = AppPrefs.isSearchShineEnabled(context)
+        val barScale by animateFloatAsState(
+            targetValue = if (isDragging) 1.04f else 1f,
+            animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+            label = "fullscreen_search_bar_scale"
+        )
+
+        Column(modifier = modifier) {
+            if (showGhostZones) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (dragOffsetY < 0) Color.White.copy(alpha = 0.18f)
+                            else Color.White.copy(alpha = 0.07f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("↑ Üst", color = Color.White.copy(alpha = if (dragOffsetY < 0) 0.80f else 0.30f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(4.dp))
+            }
+
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .scale(barScale)
+                    .diamondShine(shineEnabled, RoundedCornerShape(28.dp), trigger = homeResumeTrigger)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = { if (!isDragging) onOpenFullScreen() },
+                            onLongPress = {
+                                isDragging = true
+                                showGhostZones = true
+                            }
+                        )
+                    }
+                    .then(
+                        if (isDragging) Modifier.pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragEnd = {
+                                    val snapPos = if (dragOffsetY < 0) AppPrefs.SEARCH_BAR_POS_TOP else AppPrefs.SEARCH_BAR_POS_BOTTOM
+                                    AppPrefs.setSearchBarPosition(context, snapPos)
+                                    onPositionSnap?.invoke(snapPos)
+                                    isDragging = false
+                                    showGhostZones = false
+                                    dragOffsetY = 0f
+                                },
+                                onDragCancel = {
+                                    isDragging = false
+                                    showGhostZones = false
+                                    dragOffsetY = 0f
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    dragOffsetY += dragAmount.y
+                                }
+                            )
+                        } else Modifier
+                    ),
+                cornerRadius = 28.dp,
+                backgroundAlpha = if (isDragging) 0.22f else 0.12f,
+                borderAlpha = if (isDragging) 0.45f else 0.25f,
+                borderColor = Color.White
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.75f), modifier = Modifier.size(18.dp))
+                    Text(
+                        text = stringResource(R.string.search_overlay_title),
+                        color = Color.White.copy(alpha = 0.68f),
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            if (showGhostZones) {
+                Spacer(Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (dragOffsetY > 0) Color.White.copy(alpha = 0.18f)
+                            else Color.White.copy(alpha = 0.07f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("↓ Alt", color = Color.White.copy(alpha = if (dragOffsetY > 0) 0.80f else 0.30f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+        return
+    }
+
     var query by rememberSaveable { mutableStateOf("") }
 
     // Arama ayarları — Ayarlar ekranından dönünce canlı güncellensin (Reaktif AppPrefs pattern'i, LEARNINGS)
@@ -1746,6 +1867,488 @@ internal fun HomeAppSearchBar(
 
         if (!resultsAbove) searchResultsSection()
     }
+}
+
+/**
+ * P1.1 + P1.2 - Tam ekran "Her seyi ara" overlay'i.
+ * Bos sorguda baglamsal top apps + kisi onerileri + son aramalar gosterir.
+ */
+@Composable
+internal fun FullScreenSearchOverlay(
+    allApps: List<AppInfo>,
+    folders: List<AppFolder>,
+    folderCustomNames: Map<String, String>,
+    searchResults: Map<SourceType, List<SearchDocument>>,
+    filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState,
+    suggestedContacts: List<SearchCache.ContactEntry>,
+    onClose: () -> Unit,
+    onAppClick: (String) -> Unit,
+    onFolderClick: (AppFolder) -> Unit,
+    onEnableContactsSource: () -> Unit,
+    onEnableFilesSource: () -> Unit,
+    onQueryChange: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    BackHandler(enabled = true, onBack = onClose)
+
+    var query by rememberSaveable { mutableStateOf("") }
+    var fuzzy by remember { mutableStateOf(AppPrefs.isSearchFuzzyEnabled(context)) }
+    var phonetic by remember { mutableStateOf(AppPrefs.isSearchPhoneticEnabled(context)) }
+    var sortByUsage by remember { mutableStateOf(AppPrefs.isSearchSortByUsage(context)) }
+    var maxResults by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
+    var showIcons by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
+    var showAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
+    var contactsOn by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
+    var filesOn by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
+    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
+    val focusRequester = remember { FocusRequester() }
+
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                AppPrefs.KEY_SEARCH_FUZZY -> fuzzy = AppPrefs.isSearchFuzzyEnabled(context)
+                AppPrefs.KEY_SEARCH_PHONETIC -> phonetic = AppPrefs.isSearchPhoneticEnabled(context)
+                AppPrefs.KEY_SEARCH_SORT_BY_USAGE -> sortByUsage = AppPrefs.isSearchSortByUsage(context)
+                AppPrefs.KEY_SEARCH_MAX_RESULTS -> maxResults = AppPrefs.getSearchMaxResults(context)
+                AppPrefs.KEY_SEARCH_SHOW_ICONS -> showIcons = AppPrefs.isSearchShowIcons(context)
+                AppPrefs.KEY_SEARCH_SHOW_CONTACT_AVATAR -> showAvatar = AppPrefs.isSearchShowContactAvatar(context)
+                AppPrefs.KEY_SEARCH_SOURCE_CONTACTS -> contactsOn = AppPrefs.isSearchSourceContactsEnabled(context)
+                AppPrefs.KEY_SEARCH_SOURCE_FILES -> filesOn = AppPrefs.isSearchSourceFilesEnabled(context)
+                AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED -> webFallbackEnabled = AppPrefs.isSearchWebFallbackEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
+    var contactsPermGranted by remember {
+        mutableStateOf(
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.READ_CONTACTS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val contactsPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            contactsPermGranted = true
+            AppPrefs.setSearchSourceContactsEnabled(context, true)
+            SearchCache.loadContacts(context)
+            SearchCache.observeContacts(context)
+            onEnableContactsSource()
+        }
+    }
+    val filesPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.any { it }) {
+            AppPrefs.setSearchSourceFilesEnabled(context, true)
+            onEnableFilesSource()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        onQueryChange("")
+    }
+    LaunchedEffect(allApps) {
+        withContext(Dispatchers.IO) { SearchCache.warmApps(allApps) }
+    }
+    LaunchedEffect(contactsOn, contactsPermGranted) {
+        if (contactsOn && contactsPermGranted) {
+            SearchCache.loadContacts(context)
+            SearchCache.observeContacts(context)
+        }
+    }
+    LaunchedEffect(query) { onQueryChange(query) }
+
+    val appResults = remember(query, allApps, fuzzy, phonetic, sortByUsage, maxResults) {
+        if (query.isBlank()) emptyList()
+        else SearchCache.searchApps(query, maxResults.coerceAtLeast(8), phonetic, fuzzy, sortByUsage)
+    }
+    val folderResults = remember(query, folders, folderCustomNames) {
+        if (query.isBlank()) emptyList()
+        else {
+            val q = query.trim().lowercase(Locale("tr"))
+            folders.filter { folder ->
+                val displayName = folderCustomNames[folder.category.categoryId] ?: folder.category.categoryName
+                displayName.lowercase(Locale("tr")).contains(q)
+            }.take(8)
+        }
+    }
+    fun SearchDocument.matchesCurrentQuery(): Boolean {
+        val q = query.trim().lowercase(Locale("tr"))
+        if (q.isBlank()) return false
+        return title.lowercase(Locale("tr")).contains(q) ||
+            subtitle.lowercase(Locale("tr")).contains(q) ||
+            sourceId.lowercase(Locale("tr")).contains(q)
+    }
+    val contactResults = remember(query, contactsOn, contactsPermGranted) {
+        if (!contactsOn || !contactsPermGranted || query.isBlank()) emptyList()
+        else SearchCache.searchContacts(query, 5, phonetic = true, fuzzy = true)
+    }
+    val fileResults = if (query.isBlank()) emptyList()
+        else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
+    val settingResults = if (query.isBlank()) emptyList()
+        else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
+    val showFilesPermissionHint = query.isNotBlank() && filesOn &&
+        filesIndexState is com.armutlu.apporganizer.domain.models.FileIndexState.PermissionRequired
+    val showWebFallback = webFallbackEnabled && query.trim().length >= 2 &&
+        appResults.isEmpty() && folderResults.isEmpty() && contactResults.isEmpty() &&
+        settingResults.isEmpty() && fileResults.isEmpty() && !showFilesPermissionHint
+
+    val zeroStateApps = remember(allApps) {
+        val visibleByPkg = allApps.filterNot { it.isHidden }.associateBy { it.packageName }
+        UsageStatsHelper.getCurrentSlotTopApps(context, days = 28)
+            .mapNotNull { visibleByPkg[it] }
+            .take(5)
+    }
+    val historyItems = remember(query) {
+        if (query.isBlank()) SearchHistoryPrefs.getAll(context) else emptyList()
+    }
+
+    fun recordSearch(queryText: String, title: String, sourceType: SourceType, sourceId: String) {
+        SearchHistoryPrefs.record(
+            context = context,
+            query = queryText,
+            title = title,
+            sourceType = sourceType,
+            sourceId = sourceId,
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.98f))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item {
+                GlassCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    cornerRadius = 24.dp,
+                    backgroundAlpha = 0.16f
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        IconButton(onClick = onClose) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.stats_reset_back), tint = Color.White)
+                        }
+                        BasicTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            singleLine = true,
+                            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(focusRequester),
+                            decorationBox = { inner ->
+                                Box {
+                                    if (query.isBlank()) {
+                                        Text(stringResource(R.string.search_overlay_title), color = Color.White.copy(alpha = 0.48f), fontSize = 16.sp)
+                                    }
+                                    inner()
+                                }
+                            }
+                        )
+                        if (query.isNotBlank()) {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = null, tint = Color.White.copy(alpha = 0.72f))
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (query.isBlank()) {
+                if (zeroStateApps.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_zero_state_apps_title), Icons.Default.Search) }
+                    items(zeroStateApps) { app ->
+                        SearchAppRow(app = app, showIcons = showIcons) {
+                            recordSearch(app.appName, app.appName, SourceType.APP, app.packageName)
+                            onAppClick(app.packageName)
+                        }
+                    }
+                }
+                if (suggestedContacts.take(3).isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_zero_state_contacts_title), Icons.Default.Person) }
+                    items(suggestedContacts.take(3)) { contact ->
+                        SearchContactRow(context = context, contact = contact, showAvatar = showAvatar, query = contact.displayName)
+                    }
+                }
+                if (historyItems.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_zero_state_history_title), Icons.Default.Search) }
+                    items(historyItems) { item ->
+                        SearchHistoryRow(item = item) {
+                            when (item.sourceType) {
+                                SourceType.APP.key -> onAppClick(item.sourceId)
+                                SourceType.CATEGORY.key -> folders.firstOrNull { it.category.categoryId == item.sourceId }?.let(onFolderClick)
+                                SourceType.FILE.key -> openSearchDocument(context, item.sourceId)
+                                SourceType.SETTING.key -> searchResults[SourceType.SETTING].orEmpty()
+                                    .firstOrNull { it.sourceId == item.sourceId }
+                                    ?.let { SystemSettingsCatalog.open(context, it) }
+                                SourceType.CONTACT.key -> SearchCache.getContactList()
+                                    .firstOrNull { it.id.toString() == item.sourceId }
+                                    ?.let { launchDial(context, it.phone) }
+                            }
+                        }
+                    }
+                }
+                if (zeroStateApps.isEmpty() && suggestedContacts.isEmpty() && historyItems.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.search_zero_state_empty),
+                            color = Color.White.copy(alpha = 0.70f),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
+                }
+            } else {
+                if (appResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader("Uygulamalar", Icons.Default.Search) }
+                    items(appResults) { app ->
+                        SearchAppRow(app = app, showIcons = showIcons) {
+                            recordSearch(query, app.appName, SourceType.APP, app.packageName)
+                            SearchStatsPrefs.logClick(context, SourceType.APP.key, 0)
+                            onAppClick(app.packageName)
+                        }
+                    }
+                }
+                if (folderResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader("Klasörler", Icons.Default.Folder) }
+                    items(folderResults) { folder ->
+                        SearchSimpleRow(
+                            leading = { Text("📁", fontSize = 18.sp) },
+                            title = folderCustomNames[folder.category.categoryId] ?: folder.category.categoryName,
+                            subtitle = folder.apps.size.toString() + " uygulama"
+                        ) {
+                            recordSearch(query, folder.category.categoryName, SourceType.CATEGORY, folder.category.categoryId)
+                            onFolderClick(folder)
+                        }
+                    }
+                }
+                if (settingResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader("Ayarlar", Icons.Default.Search) }
+                    items(settingResults) { document ->
+                        SearchDocumentRow(document = document, icon = Icons.Default.Search) {
+                            recordSearch(query, document.title, SourceType.SETTING, document.sourceId)
+                            SystemSettingsCatalog.open(context, document)
+                        }
+                    }
+                }
+                if (contactResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader("Kişiler", Icons.Default.Person) }
+                    items(contactResults) { contact ->
+                        SearchContactRow(context = context, contact = contact, showAvatar = showAvatar, query = query)
+                    }
+                }
+                if (showFilesPermissionHint) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Description, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.home_search_files_permission_required),
+                            subtitle = stringResource(R.string.home_search_files_permission_required_desc)
+                        ) {
+                            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                arrayOf(
+                                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                                    android.Manifest.permission.READ_MEDIA_VIDEO,
+                                    android.Manifest.permission.READ_MEDIA_AUDIO,
+                                )
+                            } else arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                            filesPermLauncher.launch(permissions)
+                        }
+                    }
+                }
+                if (fileResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader("Dosyalar", Icons.Default.Description) }
+                    items(fileResults) { document ->
+                        SearchDocumentRow(document = document, icon = Icons.Default.Description) {
+                            recordSearch(query, document.title, SourceType.FILE, document.sourceId)
+                            openSearchDocument(context, document.sourceId)
+                        }
+                    }
+                }
+                if (!contactsPermGranted && contactsOn) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = "Kişi izni gerekli",
+                            subtitle = "Dokunup Android kişi izni ver"
+                        ) {
+                            contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
+                        }
+                    }
+                }
+                if (showWebFallback) {
+                    item {
+                        GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.14f) {
+                            Column { SearchFallbackRows(context = context, query = query.trim()) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchAppRow(
+    app: AppInfo,
+    showIcons: Boolean,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    SearchSimpleRow(
+        leading = {
+            if (showIcons) {
+                val cacheKey = "${app.packageName}_32_${app.lastUpdatedTime}"
+                val icon by produceState<ImageBitmap?>(null, cacheKey) {
+                    value = withContext(Dispatchers.IO) {
+                        iconCacheInternal[cacheKey] ?: run {
+                            val bmp = runCatching {
+                                com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 64)?.asImageBitmap()
+                            }.getOrNull()
+                            if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                            bmp
+                        }
+                    }
+                }
+                if (icon != null) {
+                    Image(bitmap = icon!!, contentDescription = null, modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
+                } else {
+                    Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(Color.White.copy(alpha = 0.16f)))
+                }
+            } else {
+                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.72f))
+            }
+        },
+        title = app.appName,
+        subtitle = app.packageName,
+        onClick = onClick
+    )
+}
+
+@Composable
+private fun SearchDocumentRow(
+    document: SearchDocument,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+) {
+    SearchSimpleRow(
+        leading = { Icon(icon, contentDescription = null, tint = Color.White.copy(alpha = 0.72f)) },
+        title = document.title,
+        subtitle = document.subtitle.ifBlank { document.sourceId }.substringBefore(" | "),
+        onClick = onClick
+    )
+}
+
+@Composable
+private fun SearchContactRow(
+    context: Context,
+    contact: SearchCache.ContactEntry,
+    showAvatar: Boolean,
+    query: String,
+) {
+    SearchSimpleRow(
+        leading = {
+            if (showAvatar && contact.photoUri != null) {
+                val avatarBitmap by produceState<ImageBitmap?>(null, contact.photoUri) {
+                    value = withContext(Dispatchers.IO) {
+                        runCatching {
+                            context.contentResolver.openInputStream(Uri.parse(contact.photoUri))?.use {
+                                android.graphics.BitmapFactory.decodeStream(it)?.asImageBitmap()
+                            }
+                        }.getOrNull()
+                    }
+                }
+                if (avatarBitmap != null) {
+                    Image(bitmap = avatarBitmap!!, contentDescription = null, modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp)), contentScale = ContentScale.Crop)
+                } else {
+                    Box(Modifier.size(32.dp).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f))
+                    }
+                }
+            } else {
+                Box(Modifier.size(32.dp).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f))
+                }
+            }
+        },
+        title = contact.displayName,
+        subtitle = contact.phone,
+    ) {
+        SearchHistoryPrefs.record(context, query, contact.displayName, SourceType.CONTACT, contact.id.toString())
+        SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, 0)
+        ContactActionPrefs.logAction(context, contact.id.toString(), ContactActionPrefs.ActionType.CALL)
+        launchDial(context, contact.phone)
+    }
+}
+
+@Composable
+private fun SearchHistoryRow(
+    item: SearchHistoryPrefs.SearchHistoryItem,
+    onClick: () -> Unit,
+) {
+    SearchSimpleRow(
+        leading = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.72f)) },
+        title = item.title,
+        subtitle = stringResource(R.string.search_history_query_prefix, item.query),
+        onClick = onClick
+    )
+}
+
+@Composable
+private fun SearchSimpleRow(
+    leading: @Composable () -> Unit,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
+    GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.12f) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) { leading() }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, color = Color.White.copy(alpha = 0.92f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(subtitle, color = Color.White.copy(alpha = 0.52f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+private fun launchDial(context: Context, phone: String) {
+    val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${Uri.encode(phone)}"))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(dialIntent) }
+}
+
+private fun openSearchDocument(context: Context, sourceId: String) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(sourceId))
+        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(intent) }
 }
 
 /**

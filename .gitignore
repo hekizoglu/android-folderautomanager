@@ -65,3 +65,4 @@ __pycache__/
 *.pyc
 *.pyo
 .codex-automation/
+.local-roadmap-automation/

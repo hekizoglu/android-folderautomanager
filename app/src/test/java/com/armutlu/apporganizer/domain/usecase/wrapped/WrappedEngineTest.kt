@@ -131,6 +131,23 @@ class WrappedEngineTest {
         assertTrue(report.score.score in 0..100)
     }
 
+    @Test
+    fun `wrapped score carries capped mission contribution reason`() {
+        val apps = listOf(app("com.a", categoryId = "productivity", usageCount = 10L))
+        val report = WrappedEngine.compute(
+            WrappedEngine.WrappedInput(
+                apps = apps,
+                notificationSummary = null,
+                previousSnapshot = null,
+                taskScoreContribution = 7,
+                nowMillis = now,
+            )
+        )
+
+        assertEquals(report.pulse.total, report.score.score)
+        assertTrue(report.score.reasons.any { it.label.contains("Gorev etkisi") && it.delta == 7 })
+    }
+
     // ── Kişilik tipi ─────────────────────────────────────────────────────────
 
     @Test

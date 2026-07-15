@@ -1,10 +1,10 @@
 ﻿# Local Denetim Raporu
 
 > Dongu: tiered frequency (T1:her · T2:3dongu · T3:10dongu)
-> Son denetim: 2026-07-06 14:11
-> Dongu: **#189** | Tier: **2**
-> Ana tur odak: **Gesture, swipe, drawer akislari** (Gesture_Swipe_Drawer)
-> Ekstra denetim: **Timber log quality, user-facing error messages, fallback** (Error_Handling_Logging)
+> Son denetim: 2026-07-15 13:26
+> Dongu: **#192** | Tier: **2**
+> Ana tur odak: **TalkBack, contentDescription, semantics** (Accessibility_A11y)
+> Ekstra denetim: **Test edilmeyis senaryolari, dead code, unused imports** (Test_Coverage_Gap)
 
 ---
 
@@ -25,4 +25,4 @@
 - Acik bulgu tespit edilmedi.
 ---
 
-*Denetim tarihi: 2026-07-06 14:11 | Dongu: #189 | Tier: 2 | Ana: Gesture, swipe, drawer akislari | Ekstra: Timber log quality, user-facing error messages, fallback*
+*Denetim tarihi: 2026-07-15 13:26 | Dongu: #192 | Tier: 2 | Ana: TalkBack, contentDescription, semantics | Ekstra: Test edilmeyis senaryolari, dead code, unused imports*

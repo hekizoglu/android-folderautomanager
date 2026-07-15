@@ -19,6 +19,7 @@ object MissionPrefs {
     private const val KEY_WEEKLY_STATE = "weekly_state"  // {"epochWeek":N,"completed":["id"]}
     private const val KEY_MANUAL_STATE = "manual_state"  // {"epochDay":N,"ids":["id"]}
     private const val KEY_LAST_REWARD_AT = "last_reward_at"
+    private const val KEY_V2_MIGRATED = "missions_v2_room_migrated"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -74,6 +75,12 @@ object MissionPrefs {
     // P0.4: İstatistik sıfırlama sihirbazı — görev puanı/geçmişi kapsamı tek seferde temizlenir.
     fun clearAll(context: Context) {
         prefs(context).edit().clear().apply()
+    }
+
+    fun isV2Migrated(context: Context): Boolean = prefs(context).getBoolean(KEY_V2_MIGRATED, false)
+
+    fun markV2Migrated(context: Context) {
+        prefs(context).edit().putBoolean(KEY_V2_MIGRATED, true).apply()
     }
 
     // ── JSON yardimcilari ───────────────────────────────────────────────────

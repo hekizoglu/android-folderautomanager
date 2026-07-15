@@ -71,16 +71,18 @@ class MissionEngineTest {
     }
 
     @Test
-    fun `manual missions complete only via manuallyCompletedIds`() {
+    fun `classification cleanup mission needs a real classification action`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_CUSTOMIZE_FOLDER, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = false,
+            MissionEngine.DAILY_CLASSIFICATION_CLEANUP, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
         )
         assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput()))
         assertTrue(
             MissionEngine.checkProgress(
                 mission,
-                MissionEngine.MissionCheckInput(manuallyCompletedIds = setOf(MissionEngine.DAILY_CUSTOMIZE_FOLDER)),
+                MissionEngine.MissionCheckInput(
+                    taskEvents = MissionEngine.TaskEventInput(classificationActionsToday = 1)
+                ),
             )
         )
     }
@@ -94,5 +96,25 @@ class MissionEngineTest {
         assertTrue(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = false)))
         assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = true)))
         assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = null)))
+    }
+
+    @Test
+    fun `weekly positive actions needs three real positive events`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.WEEKLY_POSITIVE_ACTIONS, MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+        )
+        assertFalse(
+            MissionEngine.checkProgress(
+                mission,
+                MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(positiveEventsThisWeek = 2)),
+            )
+        )
+        assertTrue(
+            MissionEngine.checkProgress(
+                mission,
+                MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(positiveEventsThisWeek = 3)),
+            )
+        )
     }
 }
