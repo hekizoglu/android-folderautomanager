@@ -1,5 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -31,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -42,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
 import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.presentation.viewmodel.DiagnosticsReportViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.PulseClockViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 
@@ -58,7 +63,9 @@ fun ReportsCenterScreen(
 ) {
     val context = LocalContext.current
     val pulseViewModel: PulseClockViewModel = hiltViewModel()
+    val diagnosticsViewModel: DiagnosticsReportViewModel = hiltViewModel()
     val pulseState by pulseViewModel.uiState.collectAsState()
+    val diagnosticsState by diagnosticsViewModel.uiState.collectAsState()
     val wrappedEnabled = AppPrefs.isWrappedEnabled(context)
     val privacyReportEnabled = AppPrefs.isPrivacyReportEnabled(context)
     val screenState by viewModel.screenState.collectAsState()
@@ -72,6 +79,18 @@ fun ReportsCenterScreen(
         "$appCount uygulama / $categoryCount kategori"
     }
     val summarySubtitle = "$userAppCount kullanici uygulamasi / $hiddenCount gizli uygulama"
+
+    LaunchedEffect(diagnosticsState.shareIntent) {
+        val intent = diagnosticsState.shareIntent ?: return@LaunchedEffect
+        context.startActivity(Intent.createChooser(intent, "Saglik raporunu paylas"))
+        diagnosticsViewModel.consumeShareIntent()
+    }
+
+    LaunchedEffect(diagnosticsState.errorMessage) {
+        val message = diagnosticsState.errorMessage ?: return@LaunchedEffect
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        diagnosticsViewModel.consumeError()
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -132,6 +151,16 @@ fun ReportsCenterScreen(
                         title = "Bildirim Raporu",
                         subtitle = "Hangi uygulama ne kadar bildirim gonderiyor gorebilirsin",
                         onClick = onNavigateToNotificationReport,
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsButtonRow(
+                        icon = Icons.Default.Description,
+                        title = if (diagnosticsState.isGenerating) "Saglik raporu hazirlaniyor" else "Saglik Raporu",
+                        subtitle = "Paylasilabilir, kisisel veriden arindirilmis TXT tanilama raporu",
+                        onClick = { diagnosticsViewModel.generateReport() },
                     )
                 }
             }

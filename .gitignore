@@ -51,6 +51,7 @@ app/google-services.json
 
 # QA otomatik raporlar (geÃ§ici build artifact)
 qa/reports/
+.roadmap-ai-audit-cron/
 
 *.bak
 build_out*.txt
@@ -64,5 +65,3 @@ gradle_test_run*.txt
 __pycache__/
 *.pyc
 *.pyo
-.codex-automation/
-.local-roadmap-automation/

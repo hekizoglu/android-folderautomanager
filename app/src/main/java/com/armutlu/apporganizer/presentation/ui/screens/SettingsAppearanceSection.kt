@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BlurOn
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Extension
@@ -421,21 +420,6 @@ fun SettingsAppearanceSection(
                 }
             }
         }
-    }
-
-    // ── Klasör Blur Efekti ─────────────────────────────────────────────────
-    var folderBlur by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
-    SettingsCard {
-        SettingsSwitchRow(
-            icon = Icons.Default.BlurOn,
-            title = stringResource(R.string.appearance_blur_effect),
-            subtitle = stringResource(R.string.appearance_blur_effect_desc),
-            checked = folderBlur,
-            onCheckedChange = {
-                folderBlur = it
-                com.armutlu.apporganizer.utils.AppPrefs.setFolderBlurEnabled(context, it)
-            }
-        )
     }
 
     // ── Klasör Şekli ──────────────────────────────────────────────────────

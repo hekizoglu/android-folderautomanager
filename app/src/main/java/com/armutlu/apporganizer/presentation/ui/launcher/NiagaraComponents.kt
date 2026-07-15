@@ -151,7 +151,7 @@ fun NiagaraAppRow(
             if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
                     app.notificationText,
-                    fontSize = 11.sp, color = textSecondary.copy(alpha = 0.8f), maxLines = 1,
+                    fontSize = 11.sp, color = textSecondary.copy(alpha = 0.8f), maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             } else if (recentNotificationCount > 0) {

@@ -26,12 +26,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.usecase.pulse.PulseReasonId
+import com.armutlu.apporganizer.domain.usecase.pulse.PulseScoreReason
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.presentation.viewmodel.CategoryShare
 import com.armutlu.apporganizer.presentation.viewmodel.WrappedChartData
@@ -418,17 +420,123 @@ private fun PulseSubScoresCard(pulse: com.armutlu.apporganizer.domain.usecase.pu
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Alt Skorlar", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Text(stringResource(R.string.pulse_score_detail_title), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            Spacer(Modifier.height(12.dp))
+            ScoreContributionSummaryRow(
+                label = stringResource(R.string.pulse_score_detail_base_score),
+                value = pulse.baseScore.toString(),
+            )
+            ScoreContributionSummaryRow(
+                label = stringResource(R.string.pulse_score_detail_task_effect),
+                value = signedDeltaText(pulse.taskContribution),
+                emphasize = pulse.taskContribution != 0,
+            )
+            ScoreContributionSummaryRow(
+                label = stringResource(R.string.pulse_score_detail_total_score),
+                value = pulse.total.toString(),
+                emphasize = true,
+            )
             Spacer(Modifier.height(12.dp))
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PersonalityBar("Düzen", pulse.organization)
-                PersonalityBar("Dikkat Yönetimi", pulse.attention)
-                PersonalityBar("Kullanım Dengesi", pulse.balance)
-                PersonalityBar("Dijital Temizlik", pulse.cleanup)
-                PersonalityBar("İstikrar", pulse.consistency)
+                PersonalityBar(stringResource(R.string.pulse_label_organization), pulse.organization)
+                PersonalityBar(stringResource(R.string.pulse_label_attention), pulse.attention)
+                PersonalityBar(stringResource(R.string.pulse_label_balance), pulse.balance)
+                PersonalityBar(stringResource(R.string.pulse_label_cleanup), pulse.cleanup)
+                PersonalityBar(stringResource(R.string.pulse_label_consistency), pulse.consistency)
+            }
+            if (pulse.reasons.isNotEmpty()) {
+                Spacer(Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.pulse_score_detail_signals_title),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                )
+                Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    pulse.reasons.forEach { reason ->
+                        PulseReasonRow(reason)
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun ScoreContributionSummaryRow(label: String, value: String, emphasize: Boolean = false) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            fontSize = 13.sp,
+            fontWeight = if (emphasize) FontWeight.SemiBold else FontWeight.Medium,
+            color = if (emphasize) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun PulseReasonRow(reason: PulseScoreReason) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(reasonTitleRes(reason.id), reason.value),
+            modifier = Modifier.weight(1f),
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = signedDeltaText(reason.delta),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = deltaColor(reason.delta),
+        )
+    }
+}
+
+@Composable
+private fun deltaColor(delta: Int): Color = when {
+    delta > 0 -> MaterialTheme.colorScheme.primary
+    delta < 0 -> MaterialTheme.colorScheme.error
+    else -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+private fun signedDeltaText(delta: Int): String = when {
+    delta > 0 -> "+$delta"
+    delta < 0 -> delta.toString()
+    else -> "0"
+}
+
+private fun reasonTitleRes(reasonId: PulseReasonId): Int = when (reasonId) {
+    PulseReasonId.ORGANIZATION_HIGH -> R.string.pulse_reason_organization_high
+    PulseReasonId.ORGANIZATION_UNCATEGORIZED -> R.string.pulse_reason_organization_uncategorized
+    PulseReasonId.ATTENTION_CALM -> R.string.pulse_reason_attention_calm
+    PulseReasonId.ATTENTION_NOISY -> R.string.pulse_reason_attention_noisy
+    PulseReasonId.ATTENTION_NIGHT -> R.string.pulse_reason_attention_night
+    PulseReasonId.ATTENTION_NO_PERMISSION -> R.string.pulse_reason_attention_no_permission
+    PulseReasonId.BALANCE_STEADY -> R.string.pulse_reason_balance_steady
+    PulseReasonId.BALANCE_SHIFT -> R.string.pulse_reason_balance_shift
+    PulseReasonId.BALANCE_NO_BASELINE -> R.string.pulse_reason_balance_no_baseline
+    PulseReasonId.CLEANUP_TIDY -> R.string.pulse_reason_cleanup_tidy
+    PulseReasonId.CLEANUP_UNUSED -> R.string.pulse_reason_cleanup_unused
+    PulseReasonId.CONSISTENCY_STEADY -> R.string.pulse_reason_consistency_steady
+    PulseReasonId.CONSISTENCY_VOLATILE -> R.string.pulse_reason_consistency_volatile
+    PulseReasonId.CONSISTENCY_NO_DATA -> R.string.pulse_reason_consistency_no_data
+    PulseReasonId.TASK_MISSIONS -> R.string.pulse_reason_task_missions
 }
 
 // ── b) Kişilik kartı ──────────────────────────────────────────────────────

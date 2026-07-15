@@ -209,8 +209,6 @@ fun OnboardingScreen(
                         AppPrefs.isSuggestionsEnabled(context)) to { v: Boolean -> AppPrefs.setSuggestionsEnabled(context, v) },
                     Triple(R.string.onb_quick_home_search_title, R.string.onb_quick_home_search_desc,
                         AppPrefs.isHomeSearchEnabled(context)) to { v: Boolean -> AppPrefs.setHomeSearchEnabled(context, v) },
-                    Triple(R.string.onb_quick_folder_blur_title, R.string.onb_quick_folder_blur_desc,
-                        AppPrefs.isFolderBlurEnabled(context)) to { v: Boolean -> AppPrefs.setFolderBlurEnabled(context, v) }
                 )
                 var quickStates by remember {
                     mutableStateOf(quickItems.map { (triple, _) -> triple.third })

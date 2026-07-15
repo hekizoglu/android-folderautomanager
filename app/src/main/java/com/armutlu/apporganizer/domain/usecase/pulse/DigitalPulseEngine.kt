@@ -54,6 +54,8 @@ object DigitalPulseEngine {
 
         return DigitalPulseScore(
             total = total,
+            baseScore = weightedTotal,
+            taskContribution = taskContribution,
             organization = organization,
             attention = attention,
             balance = balance,

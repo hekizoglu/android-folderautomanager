@@ -34,6 +34,7 @@ class AppNotificationListenerServiceTest {
         // D239 gizlilik guard'i: stub'lanmazsa MockK exception firlatir, runCatching yutar
         // ve analiz insert'ine hic ulasilamaz — tum testler icin varsayilan kapali.
         every { AppPrefs.isNotificationTextEnabled(any()) } returns false
+        every { AppPrefs.getNotificationPreviewBlockedPackages(any()) } returns emptySet()
     }
 
     @After

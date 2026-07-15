@@ -230,6 +230,35 @@ class DigitalPulseEngineTest {
 
         assertEquals(10, boosted.reasons.first { it.id == PulseReasonId.TASK_MISSIONS }.delta)
         assertEquals(-10, penalized.reasons.first { it.id == PulseReasonId.TASK_MISSIONS }.delta)
+        assertEquals(10, boosted.taskContribution)
+        assertEquals(-10, penalized.taskContribution)
+        assertEquals(boosted.baseScore + boosted.taskContribution, boosted.total)
+        assertEquals(penalized.baseScore + penalized.taskContribution, penalized.total)
         assertTrue(boosted.total - penalized.total <= 20)
+    }
+
+    @Test
+    fun `base score stays behavior driven when mission effect is absent`() {
+        val apps = listOf(
+            app("com.a", "productivity"),
+            app("com.b", "productivity"),
+            app("com.c", "social"),
+        )
+
+        val result = DigitalPulseEngine.compute(
+            PulseInput(
+                apps = apps,
+                notification = PulseNotificationSignals(8, 1, 0),
+                previousCategoryUsage = mapOf("productivity" to 20L, "social" to 10L),
+                unlockCount = 80,
+                previousUnlockCount = 75,
+                taskScoreContribution = 0,
+                nowMillis = now,
+            )
+        )
+
+        assertEquals(0, result.taskContribution)
+        assertEquals(result.baseScore, result.total)
+        assertNull(result.reasons.firstOrNull { it.id == PulseReasonId.TASK_MISSIONS })
     }
 }

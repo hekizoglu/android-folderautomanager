@@ -2,11 +2,11 @@ package com.armutlu.apporganizer.service
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import androidx.core.app.NotificationCompat
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.domain.models.NotificationEvent
 import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,16 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-/**
- * Aktif bildirimleri sayar (badge) ve — yalnızca Ayarlar'dan "bildirim metni göster"
- * açıkken — son bildirim metnini (package -> text) yayınlar; bu metin LauncherViewModel
- * tarafından `apps.notificationText` sütununa kalıcı yazılır (varsayılan: KAPALI).
- *
- * Ayrıca her bildirim `notification_events` tablosuna loglanır (Bildirim Analiz Raporu):
- * yalnızca paket adı + zaman damgası — bu tabloya içerik saklanmaz, veri cihazda kalır.
- */
 @AndroidEntryPoint
 class AppNotificationListenerService : NotificationListenerService() {
 
@@ -38,30 +29,18 @@ class AppNotificationListenerService : NotificationListenerService() {
         sbn ?: return
         runCatching {
             if (!sbn.isOngoing) {
-                val extras = sbn.notification?.extras
-                val title = extras?.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString() ?: ""
-                val text = extras?.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString() ?: ""
-                val combined = when {
-                    title.isNotBlank() && text.isNotBlank() -> "$title: $text"
-                    title.isNotBlank() -> title
-                    else -> text
-                }
-                // atomic update — race condition'u önler
                 knownNotificationKeys += sbn.key
                 rebuildCounts()
-                // P0.5: paket bazli "okunmamis" modeli icin son bildirim zamanini kaydet —
-                // UnreadNotificationModel bunu NotificationReadPrefs.lastReadAt ile karsilastirir.
                 _lastPostedAt.update { current -> current + (sbn.packageName to System.currentTimeMillis()) }
-                // Gizlilik: bildirim metni yalnızca ayar açıkken yayınlanır/DB'ye yazılır (varsayılan kapalı)
-                if (combined.isNotBlank() && AppPrefs.isNotificationTextEnabled(this)) {
-                    _latestTexts.update { current -> current + (sbn.packageName to combined) }
-                }
-                // Bildirim analizi — yalnızca paket + zaman kaydı (Ayarlar'dan kapatılabilir)
+                updatePreviewState()
                 if (AppPrefs.isNotifAnalyticsEnabled(this)) {
                     serviceScope.launch {
                         runCatching {
                             notificationEventDao.insert(
-                                NotificationEvent(packageName = sbn.packageName, postedAt = System.currentTimeMillis())
+                                NotificationEvent(
+                                    packageName = sbn.packageName,
+                                    postedAt = System.currentTimeMillis(),
+                                )
                             )
                         }
                     }
@@ -75,19 +54,15 @@ class AppNotificationListenerService : NotificationListenerService() {
             sbn?.packageName?.let { pkg ->
                 sbn.key?.let { knownNotificationKeys.remove(it) }
                 rebuildCounts()
-                val hasActive = activeNotifications?.any { it.packageName == pkg && !it.isOngoing } == true
-                if (!hasActive) {
-                    _latestTexts.update { current ->
-                        if (current.containsKey(pkg)) current - pkg else current
-                    }
-                }
+                _previewItems.update { current -> NotificationPreviewStore.removePreview(current, pkg, sbn.key) }
+                updatePreviewState()
             }
         }
     }
 
     override fun onListenerConnected() {
         rebuildCounts()
-        // 30 günden eski analiz kayıtlarını temizle — bağlantı başına bir kez yeterli
+        updatePreviewState()
         serviceScope.launch {
             runCatching {
                 notificationEventDao.deleteOlderThan(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000)
@@ -95,14 +70,11 @@ class AppNotificationListenerService : NotificationListenerService() {
         }
     }
 
-    // Servis bağlantısı kesilince (sistem yeniden başlatma, izin iptali vs.)
-    // stale badge ve metin verilerini temizle.
     override fun onListenerDisconnected() {
         knownNotificationKeys.clear()
         _badgeCounts.value = emptyMap()
         _latestTexts.value = emptyMap()
-        // lastPostedAt KASITLI OLARAK temizlenmiyor — servis yeniden baglaninca (kisa kesinti)
-        // "okunmamis" bilgisi kaybolmasin; NotificationReadPrefs zaten kalici sakliyor.
+        _previewItems.value = emptyMap()
     }
 
     override fun onDestroy() {
@@ -124,6 +96,42 @@ class AppNotificationListenerService : NotificationListenerService() {
         _badgeCounts.value = counts
     }
 
+    private fun updatePreviewState() {
+        val counts = _badgeCounts.value
+        val showContent = AppPrefs.isNotificationTextEnabled(this)
+        val blockedPackages = AppPrefs.getNotificationPreviewBlockedPackages(this)
+        val rebuilt = linkedMapOf<String, List<NotificationPreview>>()
+        runCatching {
+            activeNotifications?.forEach { sbn ->
+                if (!sbn.isOngoing) {
+                    val packageName = sbn.packageName
+                    if ((counts[packageName] ?: 0) <= 0) return@forEach
+                    val preview = if (showContent && packageName !in blockedPackages) {
+                        NotificationPreviewStore.extractPreview(sbn)
+                    } else {
+                        null
+                    }
+                    if (preview != null) {
+                        val current = rebuilt[packageName].orEmpty()
+                        rebuilt[packageName] = (current + preview)
+                            .sortedByDescending { it.postedAt }
+                            .take(2)
+                    } else if (!rebuilt.containsKey(packageName)) {
+                        rebuilt[packageName] = emptyList()
+                    }
+                }
+            }
+        }
+        _previewItems.value = rebuilt
+        _latestTexts.value = counts.mapValues { (pkg, count) ->
+            NotificationPreviewStore.summarize(
+                previews = rebuilt[pkg].orEmpty(),
+                count = count,
+                showContent = showContent && pkg !in blockedPackages,
+            )
+        }.filterValues { it.isNotBlank() }
+    }
+
     companion object {
         private val _badgeCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
         val badgeCounts: StateFlow<Map<String, Int>> = _badgeCounts.asStateFlow()
@@ -131,8 +139,9 @@ class AppNotificationListenerService : NotificationListenerService() {
         private val _latestTexts = MutableStateFlow<Map<String, String>>(emptyMap())
         val latestTexts: StateFlow<Map<String, String>> = _latestTexts.asStateFlow()
 
-        // P0.5: paket -> en son bildirim POST edilme zamani (epoch ms). "Aktif bildirim sayisi"
-        // ile "okunmamis" kavramini ayirmak icin — bkz. UnreadNotificationModel.
+        private val _previewItems = MutableStateFlow<Map<String, List<NotificationPreview>>>(emptyMap())
+        val previewItems: StateFlow<Map<String, List<NotificationPreview>>> = _previewItems.asStateFlow()
+
         private val _lastPostedAt = MutableStateFlow<Map<String, Long>>(emptyMap())
         val lastPostedAt: StateFlow<Map<String, Long>> = _lastPostedAt.asStateFlow()
     }

@@ -168,7 +168,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.1 — Tam ekran “Her Şeyi Ara” deneyimi
 
-**Durum:** Bekliyor — ilk agent denemesi content-filter kesintisiyle yarıda kaldı, yarım iş atıldı; temiz başlanmalı (bkz. CODEX_DEVIR_2026-07-15.md)  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — `FullScreenSearchOverlayV2` ile tam ekran `LazyColumn` akışı, geri tuşu + IME/system bar handling, sorgu temizleme garantisi, TalkBack traversal semantics, TR/EN stringler; `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` geçti (ilk deneme build lock, `clear_build_lock.ps1` ile temizlenip tekrarlandı)  
 **Yapılacaklar:**
 
 - Arama alanına dokununca tam ekran overlay veya ayrı route aç.
@@ -183,7 +183,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.2 — Arama sıfır durumunu bağlamsal hale getir
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — `FullScreenSearchOverlayV2` boş sorguda saat dilimine göre 5 uygulama + en fazla 3 kişi önerisi + cihaz içi sınırlı arama geçmişi gösteriyor; `SearchHistoryPrefs` son açılan sonucu da tutuyor ve geçmiş Ayarlar'dan temizlenebiliyor; `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` geçti (ilk compile denemesi Windows build lock/AccessDenied sonrası `clear_build_lock.ps1` ile temizlenip tekrarlandı)  
 **Varsayılan içerik:**
 
 1. Bu saatlerde kullanılan 5 uygulama
@@ -220,7 +220,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.4 — Görev Sistemi V2: kalıcı, ölçülebilir ve yaşam kalitesi odaklı
 
-**Durum:** Bekliyor — mevcut görev sistemi temel seviyede  
+**Durum:** ✅ Tamamlandı — Room tabanlı `mission_history` + `task_score_events`, otomatik doğrulama, cooldown/uygunluk seçimi ve kalite kapısı (`compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug`) geçti (2026-07-15)  
 **Yapılacaklar:**
 
 - SharedPreferences tabanlı toplam puanı Room tabanlı görev/olay geçmişine taşı.
@@ -240,7 +240,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.5 — Görev puanını Dijital Yaşam Skoru ile kontrollü ilişkilendir
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — görev etkisi ±10 ile sınırlandı; skor detayı artık taban skor, görev etkisi ve sinyal bazlı delta kırılımını gösteriyor; `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` geçti  
 **Yapılacaklar:**
 
 - Dijital Yaşam Skoru temel davranış sinyallerinden hesaplanmaya devam etsin.
@@ -268,7 +268,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.7 — Gerçek hava durumu ve saatlik sıcaklık şeridi
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — mevcut `WeatherRepository` + `PulseClockWidget` hava akışı doğrulandı, `WeatherRepositoryTest` ile saatlik şerit/45 dk cache TTL sözleşmesi eklendi, `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` geçti  
 **Yapılacaklar:**
 
 - `WeatherRepository` ve provider abstraction oluştur.
@@ -302,7 +302,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.9 — Genel tanılama ve TXT sağlık raporu
 
-**Durum:** Bekliyor  
+**Durum:** Tamamlandi - paylasilabilir gizlilik-safe TXT raporu Reports Merkezi'nde tek aksiyonla uretiliyor; `DiagnosticsReportManagerTest` + `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` gecti.  
 **Raporda bulunacaklar:**
 
 - uygulama sürümü, cihaz/API,
@@ -324,7 +324,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P1.10 — Bildirim önizlemesini son 1–2 olayla profesyonelleştir
 
-**Durum:** Bekliyor  
+**Durum:** Tamamlandi - `AppNotificationListenerService` aktif bildirimlerden paket basina en fazla 2 kisa onizleme uretip stale metinleri temizliyor; hassas paket blok listesi + `NotificationPreviewStoreTest`; `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` gecti.  
 **Yapılacaklar:**
 
 - `package -> latestText` tek değer modelini, paket başına en fazla 2 aktif önizlemeye dönüştür.
@@ -341,7 +341,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.1 — Yeni kurulumda varsayılan ikon ölçeği %130
 
-**Durum:** Bekliyor  
+**Durum:** ??? Tamamland?? - `AppPrefs.DEFAULT_ICON_SCALE = 1.3f`, kayitli deger korunuyor, `AppPrefsIconScaleTest` eklendi, `compileDebugKotlin`/`testDebugUnitTest`/`assembleDebug` gecti.  
 **Kurallar:**
 
 - Yeni kurulum ve “varsayılana dön” değeri `1.3f` olsun.
@@ -352,7 +352,7 @@ Aşağıdaki iki iş PR #5 ile `main` dalına taşındı ve bu backlog'a tekrar 
 
 ## P2.2 — Klasör blur özelliğini tamamen kaldır
 
-**Durum:** Bekliyor  
+**Durum:** ✅ Tamamlandı (2026-07-15, Codex) — `HomeScreen`/`FolderTile` blur-glass render yolu, Ayarlar + onboarding toggle'ları ve backup export/import alanı kaldırıldı; legacy `folder_blur` anahtarı temizleniyor; `compileDebugKotlin` + `testDebugUnitTest` + `assembleDebug` geçti  
 **Yapılacaklar:**
 
 - Ayarlar toggle'ını, pref key kullanımını ve render kodunu kaldır.

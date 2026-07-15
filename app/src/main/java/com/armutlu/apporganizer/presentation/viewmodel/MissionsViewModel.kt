@@ -75,10 +75,24 @@ class MissionsViewModel @Inject constructor(
         val epochDay = LocalDate.now().toEpochDay()
         val epochWeek = epochDay / 7
         val input = buildCheckInput(epochDay, epochWeek)
+        val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
+            currentEpochDay = epochDay,
+            cooldownDays = MissionEngine.dailyCooldownDays(),
+        )
+        val weeklyCooldownIds = missionsRepository.getRecentlyCompletedWeeklyIds(
+            currentEpochWeek = epochWeek,
+            cooldownWeeks = MissionEngine.weeklyCooldownWeeks(),
+        )
 
         var newStars = 0
         val dailyDone = missionsRepository.getCompletedDailyIds(epochDay).toMutableSet()
-        val daily = MissionEngine.generateDaily(epochDay).map { mission ->
+        val daily = MissionEngine.generateDaily(
+            epochDay = epochDay,
+            selection = MissionEngine.MissionSelectionInput(
+                checkInput = input,
+                recentlyCompletedMissionIds = dailyCooldownIds,
+            )
+        ).map { mission ->
             val already = mission.id in dailyDone
             val completed = already || MissionEngine.checkProgress(mission, input)
             if (completed && !already) {
@@ -90,7 +104,13 @@ class MissionsViewModel @Inject constructor(
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
-        val weekly = MissionEngine.generateWeekly(epochWeek).map { mission ->
+        val weekly = MissionEngine.generateWeekly(
+            epochWeek = epochWeek,
+            selection = MissionEngine.MissionSelectionInput(
+                checkInput = input,
+                recentlyCompletedMissionIds = weeklyCooldownIds,
+            )
+        ).map { mission ->
             val already = mission.id in weeklyDone
             val completed = already || MissionEngine.checkProgress(mission, input)
             if (completed && !already) {

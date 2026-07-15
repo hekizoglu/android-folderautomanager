@@ -2,7 +2,69 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## AI Denetim Sprint 3.5 - 2026-07-15
+
+**Yapılanlar:** (P2.3, hazirlaniyor) Varsayılan klasör şekli yeni kurulumlar için `rounded` olacak şekilde `AppPrefs` üstünden güncellendi; kayıtlı `folder_shape` tercihi olan kullanıcıların seçimi korunuyor. `FolderTile` varsayılan parametresi de aynı sabite bağlandı; böylece pref henüz enjekte edilmemiş preview/onboarding yolları ile ana davranış aynı varsayılanı kullanıyor. `AppPrefsFolderShapeTest` eklendi. Sürüm `1.3.41` / `versionCode 64`.
+
+**Arastirma:** Android resmi `SharedPreferences` davranışı ve Jetpack Compose `RoundedCornerShape`/`Modifier.clip(...)` dokümantasyonu doğrulandı; bu madde için doğru değişiklik noktası varsayılan preference çözümleyicisi ve shape preview bileşeni oldu.
+
+**Kalite kapısı:** Bekleniyor.
+
+## AI Denetim Sprint 3.4 - 2026-07-15
+
+**Yapılanlar:** (P2.2, tamamlandi) Klasör blur özelliği kod tabanından tamamen çıkarıldı. `HomeScreen`, `HomeScreenFolderPager` ve `FolderTile` üzerindeki blur/glass dalı kaldırıldı; klasör yüzeyi düz tonal arka planla bırakıldı. `SettingsAppearanceSection` ve `OnboardingScreen` içindeki blur toggle akışları silindi. `AppPrefs` artık bu tercih için yalnız legacy cleanup yapıyor; `BackupManager` eski `folderBlurEnabled` alanını export/import etmiyor ve restore sırasında kalmış preference anahtarını temizliyor. `AppPrefsLegacyCleanupTest` eklendi. Sürüm `1.3.40` / `versionCode 63`.
+
+**Arastirma:** Android resmi kaynaklarıyla Jetpack Compose `Modifier.blur()` ve Android 12+ `RenderEffect.createBlurEffect(...)` blur yolunun platform/render-effect tabanlı olduğu doğrulandı; bu madde kapsamında ilgili blur tercih ve render yolunun tamamen kaldırılması yeterli görüldü.
+
+**Kalite kapısı:** `compileDebugKotlin -PskipGoogleServices`, `testDebugUnitTest -PskipGoogleServices`, `assembleDebug -PskipGoogleServices` başarıyla geçti.
+
+## AI Denetim Sprint 3.3 - 2026-07-15
+
+**Yapılanlar:** (P2.1, tamamlandi) Yeni kurulum ve "varsayılana dön" için ikon ölçeği varsayılanı `AppPrefs.DEFAULT_ICON_SCALE = 1.3f` olarak yükseltildi. `getIconScale()` artık `icon_scale` kaydı yoksa `%130` döndürüyor; kayıtlı kullanıcı değeri varsa `contains(KEY_ICON_SCALE)` üzerinden korunuyor ve ezilmiyor. `AppPrefsIconScaleTest` ile hem yeni kurulum/varsayılan yolu hem de kayıtlı değer koruma kuralı kapsandı. Sürüm `1.3.39` / `versionCode 62`.
+
+**Arastirma:** Android resmi `SharedPreferences` dokümantasyonuyla `getFloat(key, defValue)` çağrısının anahtar yoksa verilen varsayılanı döndürdüğü doğrulandı; bu yüzden yeni kurulum ve reset davranışı için doğru müdahale noktası varsayılan tercih değeri oldu.
+
+**Kalite kapısı:** İlk `compileDebugKotlin` denemesi bilinen Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1` sonrası `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` başarıyla geçti.
+
+---
+
+## AI Denetim Sprint 3.2 - 2026-07-15
+
+**Yapılanlar:** (P1.10, tamamlandi) Bildirim önizleme modeli paket başına tek `latestText` değerinden, aktif NotificationListener verisiyle uzlaştırılan en fazla 2 kısa önizleme özetine yükseltildi. Yeni `NotificationPreviewStore` bildirim key + paket + zaman + sanitize edilmiş kısa metin üretiyor; listener artık `activeNotifications` üzerinden stale metinleri anında temizleyip içerik kapalıysa veya paket kullanıcı blok listesinde ise yalnız `N bildirim` özeti yazıyor. Ana ekran ayarlarına "Hassas Uygulama Engeli" dialogu eklendi; kullanıcı paket adlarını listeleyerek belirli uygulamalarda içerik önizlemesini kapatabiliyor. All Apps satırında bildirim özeti 2 satıra kadar gösteriliyor; böylece en fazla iki güncel kısa önizleme görülebiliyor. Sürüm `1.3.38` / `versionCode 61`.
+
+**Arastirma:** Android resmi kaynaklarıyla `NotificationListenerService` aktif bildirim erişimi, `onNotificationRemoved(...)` ile stale kayıt temizleme ve `Notification` extras (`EXTRA_TITLE`, `EXTRA_TEXT`, `EXTRA_BIG_TEXT`) üzerinden güvenli önizleme türetme yaklaşımı doğrulandı.
+
+**Kalite kapısı:** `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` başarıyla geçti.
+
+---
+
+## AI Denetim Sprint 3.1 - 2026-07-15
+
+**Yapılanlar:** (P1.9, tamamlandi) Genel tanılama / sağlık raporu kabul kriterine karşı doğrulandı ve sertleştirildi. `DiagnosticsReportManager` içindeki `.txt` rapor üretimi saf `DiagnosticsReportSnapshot` + `renderReport()` katmanına ayrıldı; böylece sürüm/cihaz, izin, katalog, sınıflandırma, arama indeksleri, bildirim, görev, widget, worker ve crash özet bölümleri tek yerde deterministik üretiliyor. `DiagnosticsReportManagerTest` ile gerekli bölümlerin raporda bulunduğu ve varsayılan raporun paket adı listesi, telefon numarası, kişi adı veya arama sorgusu sızdırmadığı doğrulandı. Raporlar Merkezi'ndeki tek dokunuş paylaşım akışı korundu; `FileProvider` üzerinden paylaşılabilir `text/plain` dosya olarak çıkıyor. Sürüm `1.3.37` / `versionCode 60`.
+
+**Arastirma:** Android resmi kaynaklarıyla `ACTION_SEND` / `text/plain` paylaşım, `PackageManager.getPackageInfo(...)` ile sürüm alma ve WorkManager iş introspection yaklaşımı doğrulandı.
+
+**Kalite kapısı:** İlk `compileDebugKotlin` denemesi bilinen Windows build lock (`generateDebugBuildConfig` AccessDeniedException) ile durdu; `scripts/clear_build_lock.ps1` sonrası `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` başarıyla geçti.
+
+---
+
 ## AI Denetim Sprint 3 (kısmi) + Codex devri - 2026-07-15
+
+**Yapılanlar:** (P1.7, doğrulama + kalite kapısı) Saat kartındaki gerçek hava durumu akışı kodda zaten mevcuttu ve bu turda tamamlanma standardına karşı doğrulandı. `WeatherRepository` için saatlik sıcaklık şeridi sınırı (6 öğe) ve 45 dakikalık cache TTL kararını doğrulayan `WeatherRepositoryTest` eklendi; repository içinde test edilebilir saf yardımcılar ayrıldı. Saat kartı halen `WeatherSummary` ile güncel sıcaklık, günlük min/max, saatlik şerit ve stale zaman damgasını gösteriyor; ayarlardaki görünürlük / yaklaşık konum / manuel şehir akışı korundu. Sürüm `1.3.36` / `versionCode 59`.
+
+**Kalite kapısı:** `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` başarıyla geçti. İlk hedefli test denemesi bilinen Windows build lock (`generateDebugBuildConfig` AccessDeniedException) nedeniyle durdu; `scripts/clear_build_lock.ps1` sonrası kapı temiz geçti.
+
+**Yapılanlar:** (P1.5, beklemede commit) Görev puanının Dijital Yaşam Skoru'na etkisi görünür ve kontrollü hale getirildi. `DigitalPulseEngine` artık davranış sinyallerinden üretilen taban skoru (`baseScore`) görev etkisinden (`taskContribution`) ayrı taşıyor; görev katkısı ±10 ile sınırlı kalıyor ve toplam skor buna göre hesaplanıyor. `WrappedReportScreen` skor detayında artık taban skor, görev etkisi, toplam skor ve sinyal bazlı delta kırılımını gösteriyor; kullanıcı hangi sinyalin kaç puan etkilediğini ve görev puanının yalnız kontrollü bir düzeltme olduğunu doğrudan görebiliyor. `DigitalPulseEngineTest` bu sözleşmeyi doğrulayan yeni beklentilerle genişletildi.
+
+**Kalite kapısı:** `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` başarıyla geçti. İlk iki denemede bilinen Windows build lock/paralel Gradle kaynak çakışması nedeniyle `mergeDebugResources` erişim hatası görüldü; `scripts/clear_build_lock.ps1` sonrası kalite kapısı sıralı çalıştırılarak başarıyla tamamlandı. Sürüm `1.3.35` / `versionCode 58`.
+
+**Yapılanlar:** (P1.2, beklemede commit) Tam ekran arama sıfır durumu bağlamsal hale getirildi. `FullScreenSearchOverlayV2` boş sorguda ana ekranı kopyalamak yerine bu saat diliminde en sık açılan 5 uygulamayı, saat bazlı kişi önerilerinden en fazla 3 kişiyi ve cihaz içi sınırlı arama geçmişini gösteriyor. Sorgu yazılınca sıfır durum tamamen kayboluyor; dock/All Apps araması kendi akışında kaldığı için tekrar gösterilmiyor. `SearchHistoryPrefs` artık boş sorgudan açılan son sonucu da saklıyor, kayıtlar cihazda `SharedPreferences` içinde en fazla 3 öğe olarak tutuluyor, aynı sorgu tekrarlandığında çoğalmıyor; Ayarlar'dan temizleme aksiyonu korunuyor. `SearchHistoryPrefsTest` yeni boş-sorgu/dedupe senaryolarıyla genişletildi.
+
+**Yapılanlar:** (P1.1, beklemede commit) Ana ekrandaki arama çubuğu için tamamlanmış tam ekran overlay akışı devreye alındı. `FullScreenSearchOverlayV2` ile sonuçlar tek `LazyColumn` akışında uygulama/klasör/ayar/kişi/dosya grupları halinde tam ekran gösteriliyor; küçük kart limiti kalktı. Kapatma ve sonuç açma akışlarında sorgu temizliği garanti altına alındı, geri tuşu overlay’i kapatıyor, IME search action ve sistem bar/IME padding aynı ekranda yönetiliyor. TalkBack sırası için traversal semantics eklendi, kapat/temizle erişilebilir açıklamaları ve overlay grup başlıkları TR+EN string resource’a taşındı. `SearchOverlayDecisions` + testleriyle dosya izin ipucu ve fallback görünürlük kuralları saf mantık testine alındı.
+
+**Kalite kapısı:** `compileDebugKotlin`, `testDebugUnitTest`, `assembleDebug` başarıyla geçti. İlk `compileDebugKotlin` denemesi bilinen Windows build lock (`mergeDebugResources`) ile düştü; `scripts/clear_build_lock.ps1` sonrası tekrar başarılı. Sürüm `1.3.32` / `versionCode 55`.
+
+**Yapılanlar:** (P1.9, beklemede commit) Genel tanılama / sağlık raporu eklendi. `DiagnosticsReportManager` paylaşılabilir `.txt` rapor üretiyor; sürüm-cihaz bilgisi, izin durumları, katalog ve sınıflandırma sayaçları, arama kaynakları ve dosya indeks durumu, bildirim olay özetleri, görev/yıldız durumu, widget/worker özeti ve son crash başlıklarını paket listesi, bildirim metni, kişi verisi ve arama sorgusu sızdırmadan topluyor. `ReportsCenterScreen` içine tek dokunuşla paylaşım butonu, `DiagnosticsReportViewModel` ile üretim-akış kontrolü eklendi. `AppPrefs` son reconcile / usage sync zamanlarını okunabilir hale getirdi.
 
 **Yapılanlar:** (P1.3, b755690) Saat bazlı kişi önerileri altyapısı — `ContactActionPrefs` (contactId+aksiyon+zaman, telefon numarası saklanmaz, max 500 FIFO), `ContactSuggestionEngine` (saat penceresi ±1s + gün eşleşmesi + 14 gün yarı ömürlü recency; <5 olayda boş liste), Ara/SMS/WhatsApp aksiyon noktalarına log, `LauncherViewModel.suggestedContacts`, Ayarlar toggle + geçmiş temizleme, 7/7 test. UI tüketimi bilinçli olarak P1.2'ye bırakıldı.
 
@@ -1639,9 +1701,9 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 **Agent:** --
 **CLAUDE.md/LEARNINGS.md:** --
 ## Dongu D273 -- 2026-07-15 [P1.4 Gorev Sistemi V2 Room'a tasindi]
-**Yapilanlar:** Gorev sistemi SharedPreferences agirligindan Room tabanli V2 modele alindi. `mission_history` ve `task_score_events` tablolari (DB v17) eklendi; `MissionsRepository` mevcut `MissionPrefs`/legacy task-score verilerini ilk acilista Room'a import ediyor. `TaskScoreManager` artik skor olaylarini Room'a yaziyor; `MissionsViewModel` toplam yildiz, gunluk/haftalik tamamlanma ve skor snapshot'ini Room gecmisinden okuyor. Manuel "Tamamladim" akisi kaldirildi; gorev havuzu yalnizca gercek sinyalle dogrulanabilen maddelerden olusuyor: ekran suresi, gece kullanim, kilit acma sayisi, siniflandirma aksiyonu, bildirim raporu ziyareti ve haftalik pozitif duzenleme sayisi. `NotificationReportScreen` ekran acilisini task-score olayi olarak kaydediyor. `StatsResetService` gorev gecmisi + task-score event tablolarini da temizliyor. `MissionEngineTest` yeni gorev mantigina guncellendi; Room schema `17.json` uretildi.
-**Build/Test:** Bekliyor - kalite kapisi bu dongunun sonunda calistirilacak.
-**Sonraki:** Kalite kapisi, smoke notu ve Telegram raporu.
+**Yapilanlar:** Gorev sistemi SharedPreferences agirligindan Room tabanli V2 modele alindi. `mission_history` ve `task_score_events` tablolari (DB v17) eklendi; `MissionsRepository` mevcut `MissionPrefs`/legacy task-score verilerini ilk acilista Room'a import ediyor. `TaskScoreManager` artik skor olaylarini Room'a yaziyor; `MissionsViewModel` toplam yildiz, gunluk/haftalik tamamlanma ve skor snapshot'ini Room gecmisinden okuyor. Manuel "Tamamladim" akisi kaldirildi; gorev havuzu yalnizca gercek sinyalle dogrulanabilen maddelerden olusuyor: ekran suresi, gece kullanim, kilit acma sayisi, siniflandirma aksiyonu, bildirim raporu ziyareti ve haftalik pozitif duzenleme sayisi. Bu dongude ayrica gorev secimi kullanici uygunlugu ve tekrar kontroluyle sertlestirildi: `MissionEngine` sinyal yoksa ilgili gorevi secmiyor, `MissionHistoryDao`/`MissionsRepository` son tamamlanan gorevleri okuyup gunlukte 2 gun, haftalikta 1 hafta cooldown uyguluyor. `MissionEngineTest` secim uygunlugu + cooldown senaryolariyla genisletildi; surum `1.3.34` / `57`.
+**Build/Test:** `./gradlew.bat compileDebugKotlin -PskipGoogleServices --console=plain`, `./gradlew.bat testDebugUnitTest -PskipGoogleServices --console=plain`, `./gradlew.bat assembleDebug -PskipGoogleServices --console=plain` basarili. Ilk compile denemesi Windows build lock (`AccessDeniedException` on `generateDebugBuildConfig`) verdi; `scripts/clear_build_lock.ps1` ile temizlenip tekrarlandiginda gate gecti.
+**Sonraki:** P1.5/P1.6 baglantilarini ilerlet veya gorev gecmisi UI'sini zenginlestir.
 
 ## Dongu D274 -- 2026-07-15 [P1.5 Gorev puani skora kontrollu baglandi]
 **Yapilanlar:** Dijital Nabiz/Wrapped tek skor motoruna gorev etkisi eklendi. `TaskScoreEventDao` son donem net gorev bakiyesini okuyabiliyor; `TaskScoreManager.getPulseContribution()` son 14 gunu baz alip etkiyi hesapliyor ve katkiyi `+-10` ile sert sekilde sinirliyor. `DigitalPulseEngine` bu katkıyı agirlikli temel skora ekliyor ama tek basina skoru belirlemesine izin vermiyor; gorev etkisi sebep listesinde gorunur halde tutuluyor. `PulseClockViewModel` ve `WrappedViewModel` ayni girdiyi verdigi icin ana ekran ve haftalik rapor tek motor kuralini koruyor. `DigitalPulseEngineTest` ve `WrappedEngineTest` katki limiti ve reason gorunurlugu icin genisletildi.
@@ -1668,25 +1730,6 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 
 ## Dongu D191 -- 01:26 [AUDIT OPTIMIZASYON]
 **Yapilanlar:** Denetim sistemi tiered frequency'e gecirildi. audit.ps1: T1 (her dongu, 10 temel regex), T2 (3 dongude bir, 8 CE kurali), T3 (10 dongude bir, Compose metrics + Dependency matrix + APK trend + Skill integrity + Dead code). `gradlew lintDebug` T3'ten kaldirildi (2+ dk suruyor) - yerine build artifact tabanli hizli kontroller eklendi. run_local_denetim_cycle.ps1 CycleNumber parametresi eklendi. COZULEMEYEN_SORUNLAR.md temizlendi.
-## D278 - Yerel 15 dakikalik roadmap bakim otomasyonu
-- Tarih: 2026-07-15
-- Kapsam: Codex CLI yerine deterministik PowerShell bakim akisi kuruldu; her 15 dakikada bir roadmap durumu raporlanip local denetim/build/commit akisi guvenli sekilde tetikleniyor.
-- Teknik:
-  - `scripts/run_local_roadmap_maintenance_tick.ps1` eklendi; lock, state JSON, log klasoru, Telegram baslangic/bitis raporu ve roadmap'teki siradaki acik madde ozetini yonetiyor.
-  - Her turda `run_local_denetim_cycle.ps1` cagriliyor; 4 turda bir `Full`, digerlerinde `Resolve` modu seciliyor.
-  - Commit/push isleri mevcut denetim scriptinin deterministik akisina birakildi; runner sadece tur sonucu ve HEAD degisimini raporluyor.
-  - `scripts/register_local_roadmap_15min_task.ps1` eklendi; eski `AppOrganizer_CodexRoadmap_15Min` gorevini kaldirip yeni yerel gorevi kaydediyor.
-  - `.local-roadmap-automation/` artifact klasoru `.gitignore`'a eklendi.
-
-## D277 - Guardli 15 dakikalik Codex otomasyonu
-- Tarih: 2026-07-15
-- Kapsam: Windows Task Scheduler uzerinden 15 dakikada bir tetiklenen, lock/log/Telegram guard'li bir Codex roadmap devam gorevi eklendi.
-- Teknik:
-  - `scripts/run_codex_roadmap_tick.ps1` eklendi; merge/rebase guard'i, lock dosyasi, durum JSON'u, log klasoru ve Telegram baslangic/bitis bildirimleri ile `codex exec` cagiriyor.
-  - `scripts/codex_roadmap_tick_prompt.md` eklendi; AGENTS/devir/roadmap kurallarini yukleyip siradaki acik maddeye guvenli devam etmesini istiyor.
-  - `scripts/register_codex_15min_task.ps1` eklendi; gorevi 15 dakikalik tekrar, `IgnoreNew` coklu instance politikasi ve 12 saat execution limiti ile kaydediyor.
-  - `.codex-automation/` artifact klasoru `.gitignore`'a eklendi.
-
 ## D276 - Launcher katalog cache / olay bazli sync (P1.8)
 - Tarih: 2026-07-15
 - Kapsam: Launcher acilisinda Room katalogu aninda kaynak olarak korunup tam uygulama taramasi sadece DB bos, katalog surumu eski veya 12 saatlik fallback durumuna indirildi.

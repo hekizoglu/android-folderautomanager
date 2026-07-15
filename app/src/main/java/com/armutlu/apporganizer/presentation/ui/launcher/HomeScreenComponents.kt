@@ -86,6 +86,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import android.provider.Settings
@@ -96,9 +97,11 @@ import com.armutlu.apporganizer.utils.UsageStatsHelper
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -109,7 +112,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.SearchDocument
@@ -120,6 +127,7 @@ import com.armutlu.apporganizer.utils.ContactActionPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.SearchCache
 import com.armutlu.apporganizer.utils.SearchHistoryPrefs
+import com.armutlu.apporganizer.utils.SearchOverlayDecisions
 import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import kotlinx.coroutines.Dispatchers
@@ -1889,7 +1897,17 @@ internal fun FullScreenSearchOverlay(
     onQueryChange: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    BackHandler(enabled = true, onBack = onClose)
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    fun closeOverlay(clearQuery: Boolean = true) {
+        if (clearQuery) {
+            onQueryChange("")
+            keyboardController?.hide()
+        }
+        onClose()
+    }
+
+    BackHandler(enabled = true) { closeOverlay() }
 
     var query by rememberSaveable { mutableStateOf("") }
     var fuzzy by remember { mutableStateOf(AppPrefs.isSearchFuzzyEnabled(context)) }
@@ -1993,11 +2011,21 @@ internal fun FullScreenSearchOverlay(
         else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
     val settingResults = if (query.isBlank()) emptyList()
         else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
-    val showFilesPermissionHint = query.isNotBlank() && filesOn &&
-        filesIndexState is com.armutlu.apporganizer.domain.models.FileIndexState.PermissionRequired
-    val showWebFallback = webFallbackEnabled && query.trim().length >= 2 &&
-        appResults.isEmpty() && folderResults.isEmpty() && contactResults.isEmpty() &&
-        settingResults.isEmpty() && fileResults.isEmpty() && !showFilesPermissionHint
+    val showFilesPermissionHint = SearchOverlayDecisions.shouldShowFilesPermissionHint(
+        query = query,
+        filesOn = filesOn,
+        filesIndexState = filesIndexState,
+    )
+    val showWebFallback = SearchOverlayDecisions.shouldShowWebFallback(
+        query = query,
+        webFallbackEnabled = webFallbackEnabled,
+        appCount = appResults.size,
+        folderCount = folderResults.size,
+        contactCount = contactResults.size,
+        settingCount = settingResults.size,
+        fileCount = fileResults.size,
+        showFilesPermissionHint = showFilesPermissionHint,
+    )
 
     val zeroStateApps = remember(allApps) {
         val visibleByPkg = allApps.filterNot { it.isHidden }.associateBy { it.packageName }
@@ -2026,6 +2054,7 @@ internal fun FullScreenSearchOverlay(
             .statusBarsPadding()
             .navigationBarsPadding()
             .imePadding()
+            .semantics { isTraversalGroup = true }
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -2034,7 +2063,9 @@ internal fun FullScreenSearchOverlay(
         ) {
             item {
                 GlassCard(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { traversalIndex = 0f },
                     cornerRadius = 24.dp,
                     backgroundAlpha = 0.16f
                 ) {
@@ -2045,8 +2076,12 @@ internal fun FullScreenSearchOverlay(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        IconButton(onClick = onClose) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.stats_reset_back), tint = Color.White)
+                        IconButton(onClick = { closeOverlay() }) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = stringResource(R.string.search_overlay_close),
+                                tint = Color.White
+                            )
                         }
                         BasicTextField(
                             value = query,
@@ -2055,7 +2090,18 @@ internal fun FullScreenSearchOverlay(
                             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
                             modifier = Modifier
                                 .weight(1f)
-                                .focusRequester(focusRequester),
+                                .focusRequester(focusRequester)
+                                .semantics {
+                                    traversalIndex = 1f
+                                    contentDescription = context.getString(R.string.search_overlay_field_content_desc)
+                                },
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                imeAction = ImeAction.Search,
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = { keyboardController?.hide() }
+                            ),
                             decorationBox = { inner ->
                                 Box {
                                     if (query.isBlank()) {
@@ -2067,7 +2113,11 @@ internal fun FullScreenSearchOverlay(
                         )
                         if (query.isNotBlank()) {
                             IconButton(onClick = { query = "" }) {
-                                Icon(Icons.Default.Close, contentDescription = null, tint = Color.White.copy(alpha = 0.72f))
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.search_overlay_clear_query),
+                                    tint = Color.White.copy(alpha = 0.72f)
+                                )
                             }
                         }
                     }
@@ -2080,6 +2130,7 @@ internal fun FullScreenSearchOverlay(
                     items(zeroStateApps) { app ->
                         SearchAppRow(app = app, showIcons = showIcons) {
                             recordSearch(app.appName, app.appName, SourceType.APP, app.packageName)
+                            closeOverlay(clearQuery = false)
                             onAppClick(app.packageName)
                         }
                     }
@@ -2095,15 +2146,30 @@ internal fun FullScreenSearchOverlay(
                     items(historyItems) { item ->
                         SearchHistoryRow(item = item) {
                             when (item.sourceType) {
-                                SourceType.APP.key -> onAppClick(item.sourceId)
-                                SourceType.CATEGORY.key -> folders.firstOrNull { it.category.categoryId == item.sourceId }?.let(onFolderClick)
-                                SourceType.FILE.key -> openSearchDocument(context, item.sourceId)
+                                SourceType.APP.key -> {
+                                    closeOverlay(clearQuery = false)
+                                    onAppClick(item.sourceId)
+                                }
+                                SourceType.CATEGORY.key -> folders.firstOrNull { it.category.categoryId == item.sourceId }?.let {
+                                    closeOverlay(clearQuery = false)
+                                    onFolderClick(it)
+                                }
+                                SourceType.FILE.key -> {
+                                    closeOverlay(clearQuery = false)
+                                    openSearchDocument(context, item.sourceId)
+                                }
                                 SourceType.SETTING.key -> searchResults[SourceType.SETTING].orEmpty()
                                     .firstOrNull { it.sourceId == item.sourceId }
-                                    ?.let { SystemSettingsCatalog.open(context, it) }
+                                    ?.let {
+                                        closeOverlay(clearQuery = false)
+                                        SystemSettingsCatalog.open(context, it)
+                                    }
                                 SourceType.CONTACT.key -> SearchCache.getContactList()
                                     .firstOrNull { it.id.toString() == item.sourceId }
-                                    ?.let { launchDial(context, it.phone) }
+                                    ?.let {
+                                        closeOverlay(clearQuery = false)
+                                        launchDial(context, it.phone)
+                                    }
                             }
                         }
                     }
@@ -2120,11 +2186,12 @@ internal fun FullScreenSearchOverlay(
                 }
             } else {
                 if (appResults.isNotEmpty()) {
-                    item { HomeSearchGroupHeader("Uygulamalar", Icons.Default.Search) }
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_group_apps), Icons.Default.Search) }
                     items(appResults) { app ->
                         SearchAppRow(app = app, showIcons = showIcons) {
                             recordSearch(query, app.appName, SourceType.APP, app.packageName)
                             SearchStatsPrefs.logClick(context, SourceType.APP.key, 0)
+                            closeOverlay(clearQuery = false)
                             onAppClick(app.packageName)
                         }
                     }
@@ -2190,6 +2257,414 @@ internal fun FullScreenSearchOverlay(
                             leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
                             title = "Kişi izni gerekli",
                             subtitle = "Dokunup Android kişi izni ver"
+                        ) {
+                            contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
+                        }
+                    }
+                }
+                if (showWebFallback) {
+                    item {
+                        GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp, backgroundAlpha = 0.14f) {
+                            Column { SearchFallbackRows(context = context, query = query.trim()) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun FullScreenSearchOverlayV2(
+    allApps: List<AppInfo>,
+    folders: List<AppFolder>,
+    folderCustomNames: Map<String, String>,
+    searchResults: Map<SourceType, List<SearchDocument>>,
+    filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState,
+    suggestedContacts: List<SearchCache.ContactEntry>,
+    onClose: () -> Unit,
+    onAppClick: (String) -> Unit,
+    onFolderClick: (AppFolder) -> Unit,
+    onEnableContactsSource: () -> Unit,
+    onEnableFilesSource: () -> Unit,
+    onQueryChange: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+
+    var query by rememberSaveable { mutableStateOf("") }
+    var fuzzy by remember { mutableStateOf(AppPrefs.isSearchFuzzyEnabled(context)) }
+    var phonetic by remember { mutableStateOf(AppPrefs.isSearchPhoneticEnabled(context)) }
+    var sortByUsage by remember { mutableStateOf(AppPrefs.isSearchSortByUsage(context)) }
+    var maxResults by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
+    var showIcons by remember { mutableStateOf(AppPrefs.isSearchShowIcons(context)) }
+    var showAvatar by remember { mutableStateOf(AppPrefs.isSearchShowContactAvatar(context)) }
+    var contactsOn by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
+    var filesOn by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
+    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
+
+    fun closeOverlay(clearQuery: Boolean = true) {
+        if (clearQuery) {
+            query = ""
+            onQueryChange("")
+            keyboardController?.hide()
+        }
+        onClose()
+    }
+
+    BackHandler(enabled = true) { closeOverlay() }
+
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                AppPrefs.KEY_SEARCH_FUZZY -> fuzzy = AppPrefs.isSearchFuzzyEnabled(context)
+                AppPrefs.KEY_SEARCH_PHONETIC -> phonetic = AppPrefs.isSearchPhoneticEnabled(context)
+                AppPrefs.KEY_SEARCH_SORT_BY_USAGE -> sortByUsage = AppPrefs.isSearchSortByUsage(context)
+                AppPrefs.KEY_SEARCH_MAX_RESULTS -> maxResults = AppPrefs.getSearchMaxResults(context)
+                AppPrefs.KEY_SEARCH_SHOW_ICONS -> showIcons = AppPrefs.isSearchShowIcons(context)
+                AppPrefs.KEY_SEARCH_SHOW_CONTACT_AVATAR -> showAvatar = AppPrefs.isSearchShowContactAvatar(context)
+                AppPrefs.KEY_SEARCH_SOURCE_CONTACTS -> contactsOn = AppPrefs.isSearchSourceContactsEnabled(context)
+                AppPrefs.KEY_SEARCH_SOURCE_FILES -> filesOn = AppPrefs.isSearchSourceFilesEnabled(context)
+                AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED -> webFallbackEnabled = AppPrefs.isSearchWebFallbackEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
+    var contactsPermGranted by remember {
+        mutableStateOf(
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.READ_CONTACTS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val contactsPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            contactsPermGranted = true
+            AppPrefs.setSearchSourceContactsEnabled(context, true)
+            SearchCache.loadContacts(context)
+            SearchCache.observeContacts(context)
+            onEnableContactsSource()
+        }
+    }
+    val filesPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants.values.any { it }) {
+            AppPrefs.setSearchSourceFilesEnabled(context, true)
+            onEnableFilesSource()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        onQueryChange("")
+    }
+    LaunchedEffect(allApps) {
+        withContext(Dispatchers.IO) { SearchCache.warmApps(allApps) }
+    }
+    LaunchedEffect(contactsOn, contactsPermGranted) {
+        if (contactsOn && contactsPermGranted) {
+            SearchCache.loadContacts(context)
+            SearchCache.observeContacts(context)
+        }
+    }
+    LaunchedEffect(query) { onQueryChange(query) }
+
+    fun SearchDocument.matchesCurrentQuery(): Boolean {
+        val q = query.trim().lowercase(Locale("tr"))
+        if (q.isBlank()) return false
+        return title.lowercase(Locale("tr")).contains(q) ||
+            subtitle.lowercase(Locale("tr")).contains(q) ||
+            sourceId.lowercase(Locale("tr")).contains(q)
+    }
+
+    val appResults = remember(query, allApps, fuzzy, phonetic, sortByUsage, maxResults) {
+        if (query.isBlank()) emptyList()
+        else SearchCache.searchApps(query, maxResults.coerceAtLeast(8), phonetic, fuzzy, sortByUsage)
+    }
+    val folderResults = remember(query, folders, folderCustomNames) {
+        if (query.isBlank()) emptyList()
+        else {
+            val q = query.trim().lowercase(Locale("tr"))
+            folders.filter { folder ->
+                val displayName = folderCustomNames[folder.category.categoryId] ?: folder.category.categoryName
+                displayName.lowercase(Locale("tr")).contains(q)
+            }.take(8)
+        }
+    }
+    val contactResults = remember(query, contactsOn, contactsPermGranted) {
+        if (!contactsOn || !contactsPermGranted || query.isBlank()) emptyList()
+        else SearchCache.searchContacts(query, 5, phonetic = true, fuzzy = true)
+    }
+    val fileResults = if (query.isBlank()) emptyList()
+    else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
+    val settingResults = if (query.isBlank()) emptyList()
+    else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
+
+    val showFilesPermissionHint = SearchOverlayDecisions.shouldShowFilesPermissionHint(
+        query = query,
+        filesOn = filesOn,
+        filesIndexState = filesIndexState,
+    )
+    val showWebFallback = SearchOverlayDecisions.shouldShowWebFallback(
+        query = query,
+        webFallbackEnabled = webFallbackEnabled,
+        appCount = appResults.size,
+        folderCount = folderResults.size,
+        contactCount = contactResults.size,
+        settingCount = settingResults.size,
+        fileCount = fileResults.size,
+        showFilesPermissionHint = showFilesPermissionHint,
+    )
+
+    val zeroStateApps = remember(allApps) {
+        val visibleByPkg = allApps.filterNot { it.isHidden }.associateBy { it.packageName }
+        UsageStatsHelper.getCurrentSlotTopApps(context, days = 28)
+            .mapNotNull { visibleByPkg[it] }
+            .take(5)
+    }
+    val historyItems = remember(query) {
+        if (query.isBlank()) SearchHistoryPrefs.getAll(context) else emptyList()
+    }
+
+    fun recordSearch(queryText: String, title: String, sourceType: SourceType, sourceId: String) {
+        SearchHistoryPrefs.record(context, queryText, title, sourceType, sourceId)
+    }
+
+    fun openHistoryItem(item: SearchHistoryPrefs.SearchHistoryItem) {
+        when (item.sourceType) {
+            SourceType.APP.key -> {
+                closeOverlay(clearQuery = false)
+                onAppClick(item.sourceId)
+            }
+            SourceType.CATEGORY.key -> folders.firstOrNull { it.category.categoryId == item.sourceId }?.let {
+                closeOverlay(clearQuery = false)
+                onFolderClick(it)
+            }
+            SourceType.FILE.key -> {
+                closeOverlay(clearQuery = false)
+                openSearchDocument(context, item.sourceId)
+            }
+            SourceType.SETTING.key -> searchResults[SourceType.SETTING].orEmpty()
+                .firstOrNull { it.sourceId == item.sourceId }
+                ?.let {
+                    closeOverlay(clearQuery = false)
+                    SystemSettingsCatalog.open(context, it)
+                }
+            SourceType.CONTACT.key -> SearchCache.getContactList()
+                .firstOrNull { it.id.toString() == item.sourceId }
+                ?.let {
+                    closeOverlay(clearQuery = false)
+                    launchDial(context, it.phone)
+                }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.98f))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
+            .semantics { isTraversalGroup = true }
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item {
+                GlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { traversalIndex = 0f },
+                    cornerRadius = 24.dp,
+                    backgroundAlpha = 0.16f
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        IconButton(onClick = { closeOverlay() }) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = stringResource(R.string.search_overlay_close),
+                                tint = Color.White
+                            )
+                        }
+                        BasicTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            singleLine = true,
+                            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(focusRequester)
+                                .semantics {
+                                    traversalIndex = 1f
+                                    contentDescription = context.getString(R.string.search_overlay_field_content_desc)
+                                },
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                imeAction = ImeAction.Search,
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = { keyboardController?.hide() }
+                            ),
+                            decorationBox = { inner ->
+                                Box {
+                                    if (query.isBlank()) {
+                                        Text(
+                                            text = stringResource(R.string.search_overlay_title),
+                                            color = Color.White.copy(alpha = 0.48f),
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                    inner()
+                                }
+                            }
+                        )
+                        if (query.isNotBlank()) {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.search_overlay_clear_query),
+                                    tint = Color.White.copy(alpha = 0.72f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (query.isBlank()) {
+                if (zeroStateApps.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_zero_state_apps_title), Icons.Default.Search) }
+                    items(zeroStateApps) { app ->
+                        SearchAppRow(app = app, showIcons = showIcons) {
+                            recordSearch(app.appName, app.appName, SourceType.APP, app.packageName)
+                            closeOverlay(clearQuery = false)
+                            onAppClick(app.packageName)
+                        }
+                    }
+                }
+                if (suggestedContacts.take(3).isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_zero_state_contacts_title), Icons.Default.Person) }
+                    items(suggestedContacts.take(3)) { contact ->
+                        SearchContactRow(context = context, contact = contact, showAvatar = showAvatar, query = contact.displayName)
+                    }
+                }
+                if (historyItems.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_zero_state_history_title), Icons.Default.Search) }
+                    items(historyItems) { item ->
+                        SearchHistoryRow(item = item) { openHistoryItem(item) }
+                    }
+                }
+                if (zeroStateApps.isEmpty() && suggestedContacts.isEmpty() && historyItems.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.search_zero_state_empty),
+                            color = Color.White.copy(alpha = 0.70f),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
+                }
+            } else {
+                if (appResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_group_apps), Icons.Default.Search) }
+                    items(appResults) { app ->
+                        SearchAppRow(app = app, showIcons = showIcons) {
+                            recordSearch(query, app.appName, SourceType.APP, app.packageName)
+                            SearchStatsPrefs.logClick(context, SourceType.APP.key, 0)
+                            closeOverlay(clearQuery = false)
+                            onAppClick(app.packageName)
+                        }
+                    }
+                }
+                if (folderResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_group_folders), Icons.Default.Folder) }
+                    items(folderResults) { folder ->
+                        SearchSimpleRow(
+                            leading = {
+                                Icon(
+                                    Icons.Default.Folder,
+                                    contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.75f),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            title = folderCustomNames[folder.category.categoryId] ?: folder.category.categoryName,
+                            subtitle = stringResource(R.string.search_folder_result_count, folder.apps.size)
+                        ) {
+                            recordSearch(query, folder.category.categoryName, SourceType.CATEGORY, folder.category.categoryId)
+                            closeOverlay(clearQuery = false)
+                            onFolderClick(folder)
+                        }
+                    }
+                }
+                if (settingResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_group_settings), Icons.Default.Search) }
+                    items(settingResults) { document ->
+                        SearchDocumentRow(document = document, icon = Icons.Default.Search) {
+                            recordSearch(query, document.title, SourceType.SETTING, document.sourceId)
+                            closeOverlay(clearQuery = false)
+                            SystemSettingsCatalog.open(context, document)
+                        }
+                    }
+                }
+                if (contactResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_group_contacts), Icons.Default.Person) }
+                    items(contactResults) { contact ->
+                        SearchContactRow(context = context, contact = contact, showAvatar = showAvatar, query = query)
+                    }
+                }
+                if (showFilesPermissionHint) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Description, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.home_search_files_permission_required),
+                            subtitle = stringResource(R.string.home_search_files_permission_required_desc)
+                        ) {
+                            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                arrayOf(
+                                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                                    android.Manifest.permission.READ_MEDIA_VIDEO,
+                                    android.Manifest.permission.READ_MEDIA_AUDIO,
+                                )
+                            } else {
+                                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                            }
+                            filesPermLauncher.launch(permissions)
+                        }
+                    }
+                }
+                if (fileResults.isNotEmpty()) {
+                    item { HomeSearchGroupHeader(stringResource(R.string.search_group_files), Icons.Default.Description) }
+                    items(fileResults) { document ->
+                        SearchDocumentRow(document = document, icon = Icons.Default.Description) {
+                            recordSearch(query, document.title, SourceType.FILE, document.sourceId)
+                            closeOverlay(clearQuery = false)
+                            openSearchDocument(context, document.sourceId)
+                        }
+                    }
+                }
+                if (!contactsPermGranted && contactsOn) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.search_contacts_permission_required_title),
+                            subtitle = stringResource(R.string.search_contacts_permission_required_desc)
                         ) {
                             contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
                         }
@@ -2305,10 +2780,15 @@ private fun SearchHistoryRow(
     item: SearchHistoryPrefs.SearchHistoryItem,
     onClick: () -> Unit,
 ) {
+    val subtitle = if (item.query.isBlank()) {
+        stringResource(R.string.search_history_recent_result)
+    } else {
+        stringResource(R.string.search_history_query_prefix, item.query)
+    }
     SearchSimpleRow(
         leading = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.72f)) },
         title = item.title,
-        subtitle = stringResource(R.string.search_history_query_prefix, item.query),
+        subtitle = subtitle,
         onClick = onClick
     )
 }

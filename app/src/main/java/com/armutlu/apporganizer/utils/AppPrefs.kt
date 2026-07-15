@@ -148,6 +148,17 @@ object AppPrefs {
     const val KEY_NOTIFICATION_TEXT_ENABLED = "notification_text_enabled"
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
     fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
+    const val KEY_NOTIFICATION_PREVIEW_BLOCKED_PACKAGES = "notification_preview_blocked_packages"
+    fun getNotificationPreviewBlockedPackages(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_NOTIFICATION_PREVIEW_BLOCKED_PACKAGES, emptySet())
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?.toSet()
+            ?: emptySet()
+    fun setNotificationPreviewBlockedPackages(context: Context, packages: Set<String>) =
+        prefs(context).edit()
+            .putStringSet(KEY_NOTIFICATION_PREVIEW_BLOCKED_PACKAGES, packages.map { it.trim() }.filter { it.isNotBlank() }.toSet())
+            .apply()
 
     // Kullanım bilgisi alt yazısı — klasör altında "X gündür açılmadı" / "Hiç açılmadı" göster
     // Bildirim metni varsa o önceliklidir; bu bilgi yalnızca bildirim yokken görünür
@@ -246,8 +257,17 @@ object AppPrefs {
         prefs(context).edit().putBoolean(KEY_OVERRIDE_SUGGESTIONS_ENABLED, v).apply()
 
     // Klasör şekli — "circle", "rounded", "square", "triangle"
+    const val DEFAULT_FOLDER_SHAPE = "rounded"
     const val KEY_FOLDER_SHAPE = "folder_shape"
-    fun getFolderShape(context: Context): String = prefs(context).getString(KEY_FOLDER_SHAPE, "circle") ?: "circle"
+    internal fun resolveFolderShapePreference(hasStoredValue: Boolean, storedShape: String?): String =
+        if (hasStoredValue) storedShape ?: DEFAULT_FOLDER_SHAPE else DEFAULT_FOLDER_SHAPE
+    fun getFolderShape(context: Context): String {
+        val sharedPrefs = prefs(context)
+        return resolveFolderShapePreference(
+            hasStoredValue = sharedPrefs.contains(KEY_FOLDER_SHAPE),
+            storedShape = sharedPrefs.getString(KEY_FOLDER_SHAPE, DEFAULT_FOLDER_SHAPE)
+        )
+    }
     fun setFolderShape(context: Context, shape: String) = prefs(context).edit().putString(KEY_FOLDER_SHAPE, shape).apply()
 
     // Klasör boyutu — tile genişliği 56-96dp arası (varsayılan 96dp = en büyük, Hüseyin kararı D257)
@@ -262,8 +282,18 @@ object AppPrefs {
     fun setSuggestionsIconSizeDp(context: Context, dp: Int) = prefs(context).edit().putInt(KEY_SUGGESTIONS_ICON_SIZE, dp).apply()
 
     // İkon boyutu ölçeği — 0.7f (küçük) .. 1.3f (büyük), varsayılan 1.0f
+    const val DEFAULT_ICON_SCALE = 1.3f
     const val KEY_ICON_SCALE = "icon_scale"
-    fun getIconScale(context: Context): Float = prefs(context).getFloat(KEY_ICON_SCALE, 1.0f)
+    internal fun resolveIconScalePreference(hasStoredValue: Boolean, storedScale: Float): Float =
+        if (hasStoredValue) storedScale else DEFAULT_ICON_SCALE
+    fun getIconScale(context: Context): Float {
+        val sharedPrefs = prefs(context)
+        val storedScale = sharedPrefs.getFloat(KEY_ICON_SCALE, DEFAULT_ICON_SCALE)
+        return resolveIconScalePreference(
+            hasStoredValue = sharedPrefs.contains(KEY_ICON_SCALE),
+            storedScale = storedScale
+        )
+    }
     fun setIconScale(context: Context, scale: Float) = prefs(context).edit().putFloat(KEY_ICON_SCALE, scale).apply()
 
     // Otomatik klasör boyutu — ekran genişliğine göre klasörü otomatik boyutlandır
@@ -354,6 +384,9 @@ object AppPrefs {
         prefs(context).edit().putLong(KEY_LAST_RECONCILE, System.currentTimeMillis()).apply()
     }
 
+    fun getLastReconcileTime(context: Context): Long =
+        prefs(context).getLong(KEY_LAST_RECONCILE, 0L)
+
     fun isAppCatalogSchemaCurrent(context: Context): Boolean =
         prefs(context).getInt(KEY_APP_CATALOG_SCHEMA_VERSION, 0) == APP_CATALOG_SCHEMA_VERSION
 
@@ -373,6 +406,9 @@ object AppPrefs {
     fun markUsageStatsSynced(context: Context) {
         prefs(context).edit().putLong(KEY_LAST_USAGE_SYNC, System.currentTimeMillis()).apply()
     }
+
+    fun getLastUsageSyncTime(context: Context): Long =
+        prefs(context).getLong(KEY_LAST_USAGE_SYNC, 0L)
 
     // Sistem uygulamalarını göster — AppListScreen filtre
     const val KEY_SHOW_SYSTEM_APPS = "show_system_apps"
@@ -591,9 +627,9 @@ object AppPrefs {
     fun setDriveFolderUri(context: Context, uri: String?) = prefs(context).edit().putString(KEY_DRIVE_FOLDER_URI, uri).apply()
 
     // Klasör blur efekti — HyperOS tarzı frosted glass
-    const val KEY_FOLDER_BLUR = "folder_blur"
-    fun isFolderBlurEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_BLUR, true)
-    fun setFolderBlurEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_BLUR, v).apply()
+    private const val LEGACY_KEY_FOLDER_BLUR = "folder_blur"
+    fun clearLegacyFolderBlurPreference(context: Context) =
+        prefs(context).edit().remove(LEGACY_KEY_FOLDER_BLUR).apply()
 
     // DeepSeek API anahtari — LLM fallback kategorize icin
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"

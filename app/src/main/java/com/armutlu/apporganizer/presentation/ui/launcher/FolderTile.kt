@@ -80,8 +80,7 @@ fun FolderTile(
     folderSwipeHintEnabled: Boolean = true,
     notifTextEnabled: Boolean = false,
     unusedInfoEnabled: Boolean = false,
-    folderShape: String = "circle",
-    folderGlassEnabled: Boolean = true,
+    folderShape: String = com.armutlu.apporganizer.utils.AppPrefs.DEFAULT_FOLDER_SHAPE,
     folderBadgeEnabled: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -184,8 +183,7 @@ fun FolderTile(
             modifier = Modifier
                 .size(circleSize)
                 .clip(tileShape)
-                .background(catColor.copy(alpha = 0.30f))
-                .then(if (folderGlassEnabled) Modifier.border(1.dp, Color.White.copy(alpha = 0.25f), tileShape) else Modifier),
+                .background(catColor.copy(alpha = 0.30f)),
             contentAlignment = Alignment.Center
         ) {
             if (folder.apps.isEmpty()) {

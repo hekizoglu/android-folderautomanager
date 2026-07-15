@@ -40,6 +40,14 @@ fun SettingsHomeScreenSection(
     var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
     var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var previewBlocklistOpen by remember { mutableStateOf(false) }
+    var previewBlocklistDraft by remember {
+        mutableStateOf(
+            com.armutlu.apporganizer.utils.AppPrefs.getNotificationPreviewBlockedPackages(context)
+                .sorted()
+                .joinToString("\n")
+        )
+    }
     var hideNavButtons     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
     var allAppsBgAlpha     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var suggestionsEnabled       by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
@@ -273,7 +281,7 @@ fun SettingsHomeScreenSection(
         SettingsSwitchRow(
             icon = Icons.Default.Notifications,
             title = "Bildirim Metni",
-            subtitle = "Son bildirimin kısa özetini göster",
+            subtitle = "Aktif bildirimlerden en fazla 2 kısa önizleme göster",
             checked = notifTextEnabled,
             onCheckedChange = {
                 notifTextEnabled = it
@@ -288,6 +296,19 @@ fun SettingsHomeScreenSection(
                         }
                     }
                 }
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsButtonRow(
+            icon = Icons.Default.Lock,
+            title = "Hassas Uygulama Engeli",
+            subtitle = "İçerik yerine sadece bildirim sayısı gösterilecek paketleri düzenle",
+            onClick = {
+                previewBlocklistDraft = com.armutlu.apporganizer.utils.AppPrefs
+                    .getNotificationPreviewBlockedPackages(context)
+                    .sorted()
+                    .joinToString("\n")
+                previewBlocklistOpen = true
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -341,6 +362,46 @@ fun SettingsHomeScreenSection(
             homeWeatherUseLocation = true
             com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherUseLocation(context, true)
         }
+    }
+
+    if (previewBlocklistOpen) {
+        AlertDialog(
+            onDismissRequest = { previewBlocklistOpen = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    com.armutlu.apporganizer.utils.AppPrefs.setNotificationPreviewBlockedPackages(
+                        context,
+                        previewBlocklistDraft.lines().map { it.trim() }.filter { it.isNotBlank() }.toSet()
+                    )
+                    previewBlocklistOpen = false
+                }) {
+                    Text("Kaydet")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { previewBlocklistOpen = false }) {
+                    Text("İptal")
+                }
+            },
+            title = { Text("Hassas Uygulama Engeli") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "Her satıra bir paket adı yaz. Listedeki uygulamalarda içerik kapatılır ve yalnızca bildirim sayısı görünür.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = previewBlocklistDraft,
+                        onValueChange = { previewBlocklistDraft = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 4,
+                        maxLines = 8,
+                        label = { Text("Örnek: com.whatsapp") }
+                    )
+                }
+            }
+        )
     }
     SettingsCard {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {

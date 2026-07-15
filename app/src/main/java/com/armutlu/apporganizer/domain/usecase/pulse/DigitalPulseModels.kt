@@ -42,6 +42,8 @@ data class PulseScoreReason(
 /** Dijital Nabız toplam + 5 alt skor (hepsi 0..100). */
 data class DigitalPulseScore(
     val total: Int,
+    val baseScore: Int,
+    val taskContribution: Int,
     val organization: Int,
     val attention: Int,
     val balance: Int,

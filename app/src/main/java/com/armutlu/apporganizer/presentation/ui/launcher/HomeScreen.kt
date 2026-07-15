@@ -55,6 +55,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -107,7 +108,6 @@ fun HomeScreen(
     // acikken bu ikincil satirlari gecici gizleyerek arama + sonuc alani her zaman gorunur
     // kalir.
     val imeVisible = WindowInsets.isImeVisible
-    var folderBlurEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)) }
     val folders by viewModel.folders.collectAsState()
     val initialLoadDone by viewModel.initialLoadDone.collectAsState()
     val allAppsOpen by viewModel.allAppsOpen.collectAsState()
@@ -251,8 +251,6 @@ fun HomeScreen(
                     folderBadgeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SHAPE ->
                     folderShape = com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BLUR ->
-                    folderBlurEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderBlurEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_SEARCH_ENABLED ->
                     homeSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_APP_SEARCH_ENABLED ->
@@ -368,6 +366,10 @@ fun HomeScreen(
         viewModel.toastMessage.collect { msg ->
             android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
+    }
+
+    LaunchedEffect(Unit) {
+        com.armutlu.apporganizer.utils.AppPrefs.clearLegacyFolderBlurPreference(context)
     }
 
     // Klasör arama 30s otomatik sıfırlama — yeni sorgu gelince eski sayaç iptal edilir
@@ -936,7 +938,6 @@ fun HomeScreen(
                 unusedInfoEnabled = unusedInfoEnabled,
                 folderBadgeEnabled = folderBadgeEnabled,
                 folderShape = folderShape,
-                folderGlassEnabled = folderBlurEnabled,
                 haptic = haptic,
                 onFolderClick = { onNavigateToFolder(it) },
                 onFolderLongClick = { folderContextMenu = it },
@@ -1076,7 +1077,8 @@ fun HomeScreen(
         }
 
         if (fullScreenSearchOpen && homeAppSearchEnabled && fullscreenSearchEnabled) {
-            FullScreenSearchOverlay(
+            key(fullScreenSearchOpen) {
+                FullScreenSearchOverlayV2(
                 allApps = allApps,
                 folders = if (homeSearchEnabled) folders else emptyList(),
                 folderCustomNames = customFolderNames,
@@ -1096,7 +1098,8 @@ fun HomeScreen(
                 onEnableContactsSource = viewModel::enableContactsSearchSource,
                 onEnableFilesSource = viewModel::enableFilesSearchSource,
                 onQueryChange = viewModel::setSearchQuery,
-            )
+                )
+            }
         }
 
         // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel

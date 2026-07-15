@@ -54,7 +54,6 @@ internal fun FolderPager(
     unusedInfoEnabled: Boolean = false,
     folderBadgeEnabled: Boolean = false,
     folderShape: String,
-    folderGlassEnabled: Boolean = true,
     haptic: HapticFeedback,
     onFolderClick: (AppFolder) -> Unit,
     onFolderLongClick: (AppFolder) -> Unit,
@@ -138,7 +137,6 @@ internal fun FolderPager(
                     unusedInfoEnabled = unusedInfoEnabled,
                     folderBadgeEnabled = folderBadgeEnabled,
                     folderShape = folderShape,
-                    folderGlassEnabled = folderGlassEnabled,
                     modifier = Modifier
                         .pointerInput(index) {
                             detectDragGesturesAfterLongPress(

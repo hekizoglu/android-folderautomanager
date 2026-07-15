@@ -3,20 +3,22 @@ package com.armutlu.apporganizer.domain.usecase.missions
 import java.util.Random
 
 /**
- * Gorev motoru (D257) — saf Kotlin, Android bagimliligi yok, unit test edilebilir.
+ * Gorev motoru (D257) - saf Kotlin, Android bagimliligi yok, unit test edilebilir.
  * Gunluk 3 + haftalik 2 gorev uretir; secim deterministiktir (seed = epochDay/epochWeek),
- * yani ayni gun icinde ekran her acilista AYNI gorevler gorunur.
+ * yani ayni gun icinde ekran her acilista ayni gorevler gorunur.
  *
- * Basliklar UI katmaninda string resource ile cozulur (PulseInsightSpec pattern'i) —
+ * Basliklar UI katmaninda string resource ile cozulur (PulseInsightSpec pattern'i) -
  * engine yalnizca id tasir, kullaniciya gorunen metin icermez.
  */
 object MissionEngine {
+    private const val DAILY_MISSION_COOLDOWN_DAYS = 2L
+    private const val WEEKLY_MISSION_COOLDOWN_WEEKS = 1L
 
     enum class MissionType { DAILY, WEEKLY }
 
     /**
-     * @param autoCheckable false = motor dogrulayamaz; UI "Tamamladim" butonu gosterir ve
-     *        tamamlama manuallyCompletedIds uzerinden gelir.
+     * @param autoCheckable false = motor dogrulayamaz; ancak P1.4 ile aktif havuz
+     * sadece sistemin gercek sinyalle dogrulayabildigi gorevlerden olusur.
      */
     data class Mission(
         val id: String,
@@ -25,10 +27,10 @@ object MissionEngine {
         val autoCheckable: Boolean,
     )
 
-    /** Gorev dogrulama girdisi — alanlar mevcut motorlardan (UsageStatsHelper vb.) beslenir. */
+    /** Gorev dogrulama girdisi - alanlar mevcut motorlardan (UsageStatsHelper vb.) beslenir. */
     data class MissionCheckInput(
-        val screenTimeMinutesToday: Long? = null,      // null = kullanim izni yok
-        val usedAfter23Today: Boolean? = null,         // null = saatlik veri yok
+        val screenTimeMinutesToday: Long? = null,
+        val usedAfter23Today: Boolean? = null,
         val unlockCountToday: Int? = null,
         val weeklyScreenTimeMinutes: Long? = null,
         val previousWeeklyScreenTimeMinutes: Long? = null,
@@ -42,7 +44,12 @@ object MissionEngine {
         val notificationReportViewedToday: Boolean = false,
     )
 
-    // Gorev id sabitleri — MissionPrefs ve strings.xml eslesmeleri bu id'lere baglidir, DEGISTIRME.
+    data class MissionSelectionInput(
+        val checkInput: MissionCheckInput = MissionCheckInput(),
+        val recentlyCompletedMissionIds: Set<String> = emptySet(),
+    )
+
+    // Gorev id sabitleri - strings.xml eslesmeleri bu id'lere baglidir, degistirme.
     const val DAILY_SCREEN_UNDER_3H = "daily_screen_under_3h"
     const val DAILY_NO_LATE_NIGHT = "daily_no_late_night"
     const val DAILY_UNLOCK_UNDER_30 = "daily_unlock_under_30"
@@ -68,20 +75,45 @@ object MissionEngine {
         Mission(WEEKLY_POSITIVE_ACTIONS, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
     )
 
-    /** Gunun 3 gorevi — seed epochDay oldugundan ayni gun hep ayni set doner. */
-    fun generateDaily(epochDay: Long): List<Mission> {
-        val order = DAILY_POOL.indices.toMutableList()
-        val rnd = Random(epochDay)
-        // Fisher-Yates — java.util.Random deterministik, platformlar arasi sabit.
-        for (i in order.size - 1 downTo 1) {
-            val j = rnd.nextInt(i + 1)
-            val tmp = order[i]; order[i] = order[j]; order[j] = tmp
+    /** Gunun 3 gorevi - seed epochDay oldugundan ayni gun hep ayni set doner. */
+    fun generateDaily(epochDay: Long): List<Mission> =
+        generateDaily(epochDay, MissionSelectionInput())
+
+    fun generateDaily(
+        epochDay: Long,
+        selection: MissionSelectionInput,
+    ): List<Mission> {
+        val shuffled = shuffledDailyPool(epochDay)
+        val eligible = shuffled.filter { isEligible(it, selection.checkInput) }
+        val withoutCooldown = eligible.filterNot { it.id in selection.recentlyCompletedMissionIds }
+        val picked = when {
+            withoutCooldown.size >= DAILY_MISSION_COUNT -> withoutCooldown
+            eligible.size >= DAILY_MISSION_COUNT -> eligible
+            withoutCooldown.isNotEmpty() -> withoutCooldown
+            eligible.isNotEmpty() -> eligible
+            else -> shuffled.filterNot { it.id in selection.recentlyCompletedMissionIds }
+                .ifEmpty { shuffled }
         }
-        return order.take(DAILY_MISSION_COUNT).map { DAILY_POOL[it] }.sortedBy { it.id }
+        return picked.take(DAILY_MISSION_COUNT).sortedBy { it.id }
     }
 
-    /** Haftanin 2 gorevi — havuz 2 eleman oldugundan hepsi doner; seed ileride buyuyecek havuz icin. */
-    fun generateWeekly(epochWeek: Long): List<Mission> = WEEKLY_POOL
+    /** Haftanin 2 gorevi - havuz 2 eleman oldugundan hepsi doner; cooldown uygular. */
+    fun generateWeekly(epochWeek: Long): List<Mission> =
+        generateWeekly(epochWeek, MissionSelectionInput())
+
+    fun generateWeekly(
+        epochWeek: Long,
+        selection: MissionSelectionInput,
+    ): List<Mission> {
+        val shuffled = shuffledWeeklyPool(epochWeek)
+        val eligible = shuffled.filter { isEligible(it, selection.checkInput) }
+        val withoutCooldown = eligible.filterNot { it.id in selection.recentlyCompletedMissionIds }
+        return when {
+            withoutCooldown.isNotEmpty() -> withoutCooldown
+            eligible.isNotEmpty() -> eligible
+            else -> shuffled
+        }
+    }
 
     fun starRewardForMission(missionId: String): Int = when (missionId) {
         in DAILY_POOL.map { it.id } -> DAILY_STAR
@@ -89,10 +121,11 @@ object MissionEngine {
         else -> 0
     }
 
-    /**
-     * Gorev tamamlandi mi? Manuel isaretlenenler (manuallyCompletedIds) her zaman true;
-     * otomatik gorevlerde ilgili veri null ise false (uydurma basari yok).
-     */
+    fun dailyCooldownDays(): Long = DAILY_MISSION_COOLDOWN_DAYS
+
+    fun weeklyCooldownWeeks(): Long = WEEKLY_MISSION_COOLDOWN_WEEKS
+
+    /** Otomatik gorevlerde ilgili veri null ise false (uydurma basari yok). */
     fun checkProgress(mission: Mission, input: MissionCheckInput): Boolean {
         return when (mission.id) {
             DAILY_SCREEN_UNDER_3H ->
@@ -114,5 +147,43 @@ object MissionEngine {
                 input.taskEvents.positiveEventsThisWeek >= 3
             else -> false
         }
+    }
+
+    private fun shuffledDailyPool(epochDay: Long): List<Mission> {
+        val order = DAILY_POOL.indices.toMutableList()
+        val rnd = Random(epochDay)
+        for (i in order.size - 1 downTo 1) {
+            val j = rnd.nextInt(i + 1)
+            val tmp = order[i]
+            order[i] = order[j]
+            order[j] = tmp
+        }
+        return order.map { DAILY_POOL[it] }
+    }
+
+    private fun shuffledWeeklyPool(epochWeek: Long): List<Mission> {
+        val order = WEEKLY_POOL.indices.toMutableList()
+        val rnd = Random(epochWeek)
+        for (i in order.size - 1 downTo 1) {
+            val j = rnd.nextInt(i + 1)
+            val tmp = order[i]
+            order[i] = order[j]
+            order[j] = tmp
+        }
+        return order.map { WEEKLY_POOL[it] }
+    }
+
+    private fun isEligible(mission: Mission, input: MissionCheckInput): Boolean = when (mission.id) {
+        DAILY_SCREEN_UNDER_3H -> input.screenTimeMinutesToday != null
+        DAILY_NO_LATE_NIGHT -> input.usedAfter23Today != null
+        DAILY_UNLOCK_UNDER_30 -> input.unlockCountToday != null
+        DAILY_CLASSIFICATION_CLEANUP -> true
+        DAILY_VIEW_NOTIF_REPORT -> true
+        WEEKLY_SCREEN_LESS ->
+            input.weeklyScreenTimeMinutes != null &&
+                input.previousWeeklyScreenTimeMinutes != null &&
+                input.previousWeeklyScreenTimeMinutes > 0L
+        WEEKLY_POSITIVE_ACTIONS -> true
+        else -> false
     }
 }

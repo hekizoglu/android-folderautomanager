@@ -11,8 +11,15 @@ class MissionEngineTest {
     @Test
     fun `same epochDay generates identical daily missions`() {
         val day = 20_650L
-        val first = MissionEngine.generateDaily(day)
-        val second = MissionEngine.generateDaily(day)
+        val selection = MissionEngine.MissionSelectionInput(
+            checkInput = MissionEngine.MissionCheckInput(
+                screenTimeMinutesToday = 120L,
+                usedAfter23Today = false,
+                unlockCountToday = 10,
+            )
+        )
+        val first = MissionEngine.generateDaily(day, selection)
+        val second = MissionEngine.generateDaily(day, selection)
 
         assertEquals(MissionEngine.DAILY_MISSION_COUNT, first.size)
         assertEquals(first.map { it.id }, second.map { it.id })
@@ -24,11 +31,57 @@ class MissionEngineTest {
 
     @Test
     fun `weekly missions carry double star reward`() {
-        val weekly = MissionEngine.generateWeekly(2_950L)
+        val weekly = MissionEngine.generateWeekly(
+            epochWeek = 2_950L,
+            selection = MissionEngine.MissionSelectionInput(
+                checkInput = MissionEngine.MissionCheckInput(
+                    weeklyScreenTimeMinutes = 500L,
+                    previousWeeklyScreenTimeMinutes = 700L,
+                )
+            )
+        )
 
         assertEquals(2, weekly.size)
         assertTrue(weekly.all { it.type == MissionEngine.MissionType.WEEKLY })
         assertTrue(weekly.all { it.starReward == MissionEngine.WEEKLY_STAR })
+    }
+
+    @Test
+    fun `daily selection skips missions whose required signal is unavailable`() {
+        val missions = MissionEngine.generateDaily(
+            epochDay = 20_651L,
+            selection = MissionEngine.MissionSelectionInput(
+                checkInput = MissionEngine.MissionCheckInput(
+                    screenTimeMinutesToday = null,
+                    usedAfter23Today = null,
+                    unlockCountToday = null,
+                )
+            )
+        )
+
+        assertFalse(missions.any { it.id == MissionEngine.DAILY_SCREEN_UNDER_3H })
+        assertFalse(missions.any { it.id == MissionEngine.DAILY_NO_LATE_NIGHT })
+        assertFalse(missions.any { it.id == MissionEngine.DAILY_UNLOCK_UNDER_30 })
+        assertTrue(missions.any { it.id == MissionEngine.DAILY_CLASSIFICATION_CLEANUP })
+        assertTrue(missions.any { it.id == MissionEngine.DAILY_VIEW_NOTIF_REPORT })
+    }
+
+    @Test
+    fun `daily selection honors cooldown when enough alternatives exist`() {
+        val missions = MissionEngine.generateDaily(
+            epochDay = 20_652L,
+            selection = MissionEngine.MissionSelectionInput(
+                checkInput = MissionEngine.MissionCheckInput(
+                    screenTimeMinutesToday = 90L,
+                    usedAfter23Today = false,
+                    unlockCountToday = 8,
+                ),
+                recentlyCompletedMissionIds = setOf(MissionEngine.DAILY_SCREEN_UNDER_3H)
+            )
+        )
+
+        assertEquals(MissionEngine.DAILY_MISSION_COUNT, missions.size)
+        assertFalse(missions.any { it.id == MissionEngine.DAILY_SCREEN_UNDER_3H })
     }
 
     @Test

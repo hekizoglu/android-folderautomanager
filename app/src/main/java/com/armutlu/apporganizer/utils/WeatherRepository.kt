@@ -54,6 +54,7 @@ object WeatherRepository {
     private const val KEY_CACHE_JSON = "weather_cache_json"
     private const val KEY_CACHE_TARGET = "weather_cache_target"
     private const val CACHE_TTL_MS = 45L * 60L * 1000L
+    internal const val CACHE_TTL_FOR_TEST_MS = CACHE_TTL_MS
 
     suspend fun getWeather(context: Context): Result = withContext(Dispatchers.IO) {
         if (!AppPrefs.isHomeWeatherEnabled(context)) return@withContext Result.Disabled
@@ -183,14 +184,11 @@ object WeatherRepository {
     }
 
     private fun buildHourlyList(times: JSONArray, temps: JSONArray, startIndex: Int): List<HourlyTemp> {
-        val endExclusive = minOf(times.length(), startIndex + 6)
-        return (startIndex until endExclusive).map { index ->
-            val timestamp = times.optString(index)
-            HourlyTemp(
-                hourLabel = timestamp.substringAfter("T").take(2),
-                tempC = temps.optDouble(index).toInt(),
-            )
-        }
+        return buildHourlyListFromArrays(
+            times = List(times.length()) { index -> times.optString(index) },
+            temps = List(temps.length()) { index -> temps.optDouble(index).toInt() },
+            startIndex = startIndex,
+        )
     }
 
     private fun findHourlyStartIndex(times: JSONArray, currentTime: String): Int {
@@ -201,29 +199,10 @@ object WeatherRepository {
     }
 
     private fun saveCache(context: Context, cacheKey: String, snapshot: Snapshot) {
-        val hourly = JSONArray().apply {
-            snapshot.hourly.forEach { item ->
-                put(
-                    JSONObject().apply {
-                        put("hour", item.hourLabel)
-                        put("temp", item.tempC)
-                    }
-                )
-            }
-        }
-        val json = JSONObject().apply {
-            put("locationLabel", snapshot.locationLabel)
-            put("currentTempC", snapshot.currentTempC)
-            put("conditionLabel", snapshot.conditionLabel)
-            put("conditionEmoji", snapshot.conditionEmoji)
-            put("minTempC", snapshot.minTempC)
-            put("maxTempC", snapshot.maxTempC)
-            put("fetchedAt", snapshot.fetchedAt)
-            put("hourly", hourly)
-        }
+        val json = encodeSnapshot(snapshot)
         prefs(context).edit()
             .putString(KEY_CACHE_TARGET, cacheKey)
-            .putString(KEY_CACHE_JSON, json.toString())
+            .putString(KEY_CACHE_JSON, json)
             .apply()
     }
 
@@ -231,28 +210,7 @@ object WeatherRepository {
         val prefs = prefs(context)
         if (prefs.getString(KEY_CACHE_TARGET, null) != cacheKey) return null
         val raw = prefs.getString(KEY_CACHE_JSON, null) ?: return null
-        return runCatching {
-            val root = JSONObject(raw)
-            val fetchedAt = root.optLong("fetchedAt", 0L)
-            val hourly = root.optJSONArray("hourly") ?: JSONArray()
-            Snapshot(
-                locationLabel = root.optString("locationLabel"),
-                currentTempC = root.optInt("currentTempC"),
-                conditionLabel = root.optString("conditionLabel"),
-                conditionEmoji = root.optString("conditionEmoji"),
-                minTempC = root.optInt("minTempC"),
-                maxTempC = root.optInt("maxTempC"),
-                hourly = (0 until hourly.length()).map { index ->
-                    val item = hourly.getJSONObject(index)
-                    HourlyTemp(
-                        hourLabel = item.optString("hour"),
-                        tempC = item.optInt("temp"),
-                    )
-                },
-                fetchedAt = fetchedAt,
-                isStale = System.currentTimeMillis() - fetchedAt > CACHE_TTL_MS,
-            )
-        }.getOrNull()
+        return decodeSnapshot(raw, System.currentTimeMillis())
     }
 
     private fun prefs(context: Context) =
@@ -292,4 +250,68 @@ object WeatherRepository {
         95, 96, 99 -> "⛈"
         else -> "🌤"
     }
+    internal fun buildHourlyListFromArrays(
+        times: List<String>,
+        temps: List<Int>,
+        startIndex: Int,
+    ): List<HourlyTemp> {
+        if (times.isEmpty() || temps.isEmpty()) return emptyList()
+        val safeStart = startIndex.coerceAtLeast(0).coerceAtMost(minOf(times.lastIndex, temps.lastIndex))
+        val endExclusive = minOf(times.size, temps.size, safeStart + 6)
+        return (safeStart until endExclusive).map { index ->
+            HourlyTemp(
+                hourLabel = times[index].substringAfter("T").take(2),
+                tempC = temps[index],
+            )
+        }
+    }
+
+    internal fun encodeSnapshot(snapshot: Snapshot): String {
+        val hourly = JSONArray().apply {
+            snapshot.hourly.forEach { item ->
+                put(
+                    JSONObject().apply {
+                        put("hour", item.hourLabel)
+                        put("temp", item.tempC)
+                    }
+                )
+            }
+        }
+        return JSONObject().apply {
+            put("locationLabel", snapshot.locationLabel)
+            put("currentTempC", snapshot.currentTempC)
+            put("conditionLabel", snapshot.conditionLabel)
+            put("conditionEmoji", snapshot.conditionEmoji)
+            put("minTempC", snapshot.minTempC)
+            put("maxTempC", snapshot.maxTempC)
+            put("fetchedAt", snapshot.fetchedAt)
+            put("hourly", hourly)
+        }.toString()
+    }
+
+    internal fun decodeSnapshot(raw: String, nowMillis: Long): Snapshot? = runCatching {
+        val root = JSONObject(raw)
+        val fetchedAt = root.optLong("fetchedAt", 0L)
+        val hourly = root.optJSONArray("hourly") ?: JSONArray()
+        Snapshot(
+            locationLabel = root.optString("locationLabel"),
+            currentTempC = root.optInt("currentTempC"),
+            conditionLabel = root.optString("conditionLabel"),
+            conditionEmoji = root.optString("conditionEmoji"),
+            minTempC = root.optInt("minTempC"),
+            maxTempC = root.optInt("maxTempC"),
+            hourly = (0 until hourly.length()).map { index ->
+                val item = hourly.getJSONObject(index)
+                HourlyTemp(
+                    hourLabel = item.optString("hour"),
+                    tempC = item.optInt("temp"),
+                )
+            },
+            fetchedAt = fetchedAt,
+            isStale = isCacheStale(fetchedAt = fetchedAt, nowMillis = nowMillis),
+        )
+    }.getOrNull()
+
+    internal fun isCacheStale(fetchedAt: Long, nowMillis: Long): Boolean =
+        nowMillis - fetchedAt > CACHE_TTL_MS
 }
