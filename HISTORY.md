@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B4 - 2026-07-16
+
+**Yapilanlar:** Ayarlar > Sistem'e `Kullanim Verileri` satiri ve whitelist'teki `settings_usage_data` rotasi eklendi. Yeni ekran varsayilan kapali anonim veri paylasim tercihini merkezi `TelemetryConsentManager` ile kalici tutuyor; toplanan/toplanmayan veri sinirlarini acikca listeliyor. Baglanti dugmesi B5'in servis round-trip isini ustlenmeden guvenli Firebase yapilandirma on kontrolu yapiyor; test boyunca devre disi kaliyor ve sonucu ViewModel'da ekran donusune karsi koruyor. Switch icin TalkBack durum aciklamalari ve Turkce/Ingilizce metinler eklendi. Surum `1.3.60` / `versionCode 83`.
+
+**Arastirma:** Resmi FirebaseApp/FirebaseOptions, Analytics DebugView ve Android Compose state/accessibility belgeleri incelendi. Analytics event kuyrugunun teslim onayi sayilmamasi, kalici tercihin data katmaninda tutulmasi, TESTING sirasinda dugmenin kapatilmasi ve donus durumunun ViewModel'da saklanmasi esas alindi.
+
+**Kalite kapisi:** Ilk derleme bilinen Windows `generateDebugBuildConfig` kilidine takildi; `scripts/clear_build_lock.ps1` sonrasi `compileDebugKotlin -PskipGoogleServices` basarili oldu. `UsageDataViewModelTest` 2/2, `UsageDataRouteTest` 1/1 ve `AppPrefsTelemetryConsentTest` 2/2 gecti; `git diff --check` temiz gecti.
+
 ## Istatistik/Telemetri Roadmap B3 - 2026-07-16
 
 **Yapilanlar:** `TelemetryManager` Analytics, Crashlytics ve Performance icin tek giris noktasi oldu; Firebase SDK ayrintilari ayri gateway adapter'larina tasindi. Izin kapali veya Firebase hazir degilken no-op, tipli event dogrulamasi, cihazda kalici 500 event/gun siniri, yalniz kapali `TestDeviceTag` enum'u ve SDK hatalarinin UI'a sizmamasini saglayan koruma eklendi. `AppAnalytics` artik yalniz manager'a delege ediyor. Surum `1.3.59` / `versionCode 82`.

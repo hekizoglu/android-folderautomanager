@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -76,6 +77,7 @@ fun SettingsScreen(
     onNavigateToSearchSettings: () -> Unit = {},
     onNavigateToApps: () -> Unit = {},
     onNavigateToStats: () -> Unit = {},
+    onNavigateToUsageData: () -> Unit = {},
     onNavigateToSecurity: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
     onNavigateToPermissionsGuide: () -> Unit = {},
@@ -143,6 +145,13 @@ fun SettingsScreen(
             item { SettingsSectionTitle("Kişiselleştirme") }
             item {
                 SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Analytics,
+                        title = stringResource(R.string.usage_data_title),
+                        subtitle = stringResource(R.string.usage_data_hub_subtitle),
+                        onClick = onNavigateToUsageData,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Palette,
                         title = "Görünüm",

@@ -23,6 +23,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.SettingsNotificationsScr
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsSecurityScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsStatsScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsUsageDataScreen
 import com.armutlu.apporganizer.presentation.ui.screens.UsageReportScreen
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
@@ -50,6 +51,7 @@ object Routes {
     const val SETTINGS_NOTIFICATIONS = "settings_notifications"
     const val SETTINGS_APPS = "settings_apps"
     const val SETTINGS_STATS = "settings_stats"
+    const val SETTINGS_USAGE_DATA = "settings_usage_data"
     const val SETTINGS_SECURITY = "settings_security"
     const val SETTINGS_ABOUT = "settings_about"
     const val PERMISSIONS_GUIDE = "permissions_guide"
@@ -62,7 +64,7 @@ object Routes {
         APP_LIST, APP_LIST_UNCERTAIN, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
-        SETTINGS_STATS, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
+        SETTINGS_STATS, SETTINGS_USAGE_DATA, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
         CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS
     )
 
@@ -134,6 +136,7 @@ fun AppNavigation(
                 onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
                 onNavigateToApps = { navController.navigate(Routes.SETTINGS_APPS) },
                 onNavigateToStats = { navController.navigate(Routes.SETTINGS_STATS) },
+                onNavigateToUsageData = { navController.navigate(Routes.SETTINGS_USAGE_DATA) },
                 onNavigateToSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
                 onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) },
                 onNavigateToPermissionsGuide = { navController.navigate(Routes.PERMISSIONS_GUIDE) }
@@ -184,6 +187,9 @@ fun AppNavigation(
                 onNavigateToMissions = { navController.navigate(Routes.MISSIONS) },
                 onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) }
             )
+        }
+        composable(Routes.SETTINGS_USAGE_DATA) {
+            SettingsUsageDataScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Routes.SETTINGS_SECURITY) {
             SettingsSecurityScreen(onNavigateBack = { navController.popBackStack() })

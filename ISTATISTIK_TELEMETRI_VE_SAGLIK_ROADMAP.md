@@ -664,7 +664,7 @@ PARTIAL_SUCCESS
 FAILED
 ```
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Kullanım Verileri rotası/ekranı, kalıcı opt-in, toplanan-toplanmayan veri kartları, dönüşte korunan beş durumlu bağlantı ön kontrolü ve TalkBack açıklamaları eklendi; sürüm 1.3.60/83. Derleme ve 5/5 odak test geçti.
 
 **Değişecek dosyalar:**
 
