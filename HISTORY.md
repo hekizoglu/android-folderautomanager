@@ -8,7 +8,7 @@
 
 **Arastirma:** Resmi Android mimari rehberindeki single source of truth ve immutable model onerileri ile Kotlin enum/data class/require dokumani esas alindi.
 
-**Kalite kapisi:** Ilk paralel Gradle kosusu Windows ara-build yarisi nedeniyle eksik manifest girdisiyle basarisiz oldu. `scripts/clear_build_lock.ps1` sonrasindaki tek sirali yeniden deneme 184 saniyelik otomasyon zaman asimina ulasti. Compile ve odak test basarisi kanitlanamadigi icin H1.1 tamamlandi olarak isaretlenmedi.
+**Kalite kapisi:** Onceki kosudaki Windows ara-build yarisi ve zaman asimindan sonra dogrulama sirali tekrarlandi. Odak `HomeLayoutTest` 4/4 gecti; zorunlu `compileDebugKotlin -PskipGoogleServices` basarili tamamlandi. H1.1 tamamlandi olarak isaretlendi.
 
 ## Istatistik/Telemetri Roadmap B13 - 2026-07-16 (Play kaniti bekliyor)
 

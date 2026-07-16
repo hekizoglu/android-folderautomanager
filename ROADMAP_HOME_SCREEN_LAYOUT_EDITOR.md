@@ -734,7 +734,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H1.1 — Home layout domain modeli
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** `HomeSectionId`, `HomeLayoutZone`, `HomeLayoutItem` ve `HomeLayoutConfig` modellerini ekle; zorunlu/gizlenebilir/taşınabilir bölüm kurallarını tipli hale getir.
 
