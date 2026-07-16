@@ -774,7 +774,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H2.3 — Header/content/footer zone render
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** `HomeLayoutConfig` sırasını kullanarak header, content ve footer bölge render'ını bağla; `FOLDER_GRID` ve `DOCK` koruma kurallarını uygula.
 

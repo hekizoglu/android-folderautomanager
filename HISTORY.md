@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H2.3 - 2026-07-16
+
+**Yapilanlar:** `HomeLayoutConfig` header/content/footer bolgelerine ayrilan korumali render planina baglandi. Legacy search top/bottom migration sonucu ana ekran arama konumunu belirliyor; `FOLDER_GRID` her zaman content bolgesinde gorunur, `DOCK` her zaman footer'in son elemani tutuluyor. Surum `1.3.73` / `versionCode 96`.
+
+**Arastirma:** Android'in resmi Compose layout, `ColumnScope.weight`, constraint ve Material 3 ekran iskeleti rehberleri esas alindi.
+
+**Kalite kapisi:** `HomeSectionRendererTest` ve `HomeLayoutPrefsTest` odak testleri Windows build kilidi temizlenip yeniden denendikten sonra gecti; zorunlu `compileDebugKotlin -PskipGoogleServices` basariyla tamamlandi.
+
 ## Home Screen Layout Editor H2.2 - 2026-07-16
 
 **Yapilanlar:** Favoriler, oneriler, son bildirim alan uygulamalar ve son kullanilanlar ayri stateless row section composable'larina ayrildi. Mevcut tek contextual row secimi korunurken her row `HomeSectionId` ile bagimsiz renderer hedefi haline getirildi; launch, context menu, haptic ve favorites analytics callback zincirleri degismedi. Surum `1.3.72` / `versionCode 95`.

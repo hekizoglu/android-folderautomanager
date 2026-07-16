@@ -94,6 +94,8 @@ import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeSectionId
+import com.armutlu.apporganizer.domain.models.HomeLayoutZone
+import com.armutlu.apporganizer.utils.HomeLayoutPrefs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -181,7 +183,15 @@ fun HomeScreen(
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var fullscreenSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFullscreenSearchEnabled(context)) }
-    var searchBarPosition    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)) }
+    val homeLayoutConfig = remember(context) { HomeLayoutPrefs.read(context).config }
+    val homeZonePlan = remember(homeLayoutConfig) { homeZoneRenderPlan(homeLayoutConfig) }
+    var searchBarPosition by remember(homeZonePlan) {
+        mutableStateOf(
+            if (homeLayoutConfig.items.first { it.sectionId == HomeSectionId.MAIN_SEARCH }.zone == HomeLayoutZone.FOOTER) {
+                com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM
+            } else com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP
+        )
+    }
     var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
     var focusModeEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)) }
     var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
