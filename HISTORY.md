@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H1.1 - 2026-07-16
+
+**Yapilanlar:** `HomeSectionId`, `HomeLayoutZone`, `HomeSectionMovement`, `HomeLayoutItem` ve `HomeLayoutConfig` domain modelleri eklendi. Zorunlu, gizlenebilir ve tasinabilir bolum kurallari merkezi ve tipli hale getirildi. Tum bolumleri iceren immutable varsayilan config tek kaynak olarak tanimlandi; duplicate ID, eksik zorunlu bolum ve zorunlu bolumu gizleme gecersiz sayildi. Surum `1.3.68` / `versionCode 91`.
+
+**Arastirma:** Resmi Android mimari rehberindeki single source of truth ve immutable model onerileri ile Kotlin enum/data class/require dokumani esas alindi.
+
+**Kalite kapisi:** Odak `HomeLayoutTest` ve zorunlu Kotlin compile kapisi calistirilacak; sonuc bu kayda eklenecek.
+
 ## Istatistik/Telemetri Roadmap B13 - 2026-07-16 (Play kaniti bekliyor)
 
 **Yapilanlar:** Uygulama ici Kullanim Verileri aciklamasi Analytics, Crashlytics ve Performance'in gonderdigi veri ile kapatma davranisini acikca adlandiracak sekilde guncellendi; telemetri anahtarindan bagimsiz FCM veritabani guncelleme tokeni ayrica belirtildi. Gizlilik politikasi Performance, Firebase kurulum kimlikleri, varsayilan kapali opt-in ve Crashlytics'in sonraki acilista tam uygulanan kapatma semantigiyle eslestirildi. Play Veri Guvenligi icin veri turu, amac (`Uygulama islevselligi`, `Analiz`, hata teshisi), zorunluluk ve kontrol matrisi `docs/PLAY_DATA_SAFETY_DECLARATION.md` olarak eklendi. Surum `1.3.67` / `versionCode 90`.
