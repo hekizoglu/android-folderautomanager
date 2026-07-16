@@ -103,6 +103,7 @@ fun HomeScreen(
     viewModel: LauncherViewModel,
     onLaunchWidgetPicker: () -> Unit = {},
     onNavigateToFolder: (AppFolder) -> Unit = {},
+    onEditHomeLayout: () -> Unit = {},
 ) {
     val context = LocalContext.current
     // ROADMAP #24 kok neden: kok Column fillMaxSize+imePadding() ile sinirli, kaydirilmiyor.
@@ -1259,6 +1260,9 @@ fun HomeScreen(
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 })
             }
+        },
+        onEditHomeLayout = {
+            onEditHomeLayout()
         },
         onSettings = {
             homeLongPressOpen = false

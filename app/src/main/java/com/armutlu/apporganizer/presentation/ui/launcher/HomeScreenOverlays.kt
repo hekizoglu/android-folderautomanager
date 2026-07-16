@@ -133,6 +133,7 @@ internal fun HomeScreenOverlays(
     onOpenAllApps: () -> Unit,
     onMoveFolder: (AppFolder, Int) -> Unit,
     onWallpaper: () -> Unit,
+    onEditHomeLayout: () -> Unit,
     onSettings: () -> Unit,
     onDockEdit: () -> Unit,
     onAddWidget: () -> Unit,
@@ -176,6 +177,7 @@ internal fun HomeScreenOverlays(
     if (homeLongPressOpen) {
         HomeLongPressSheet(
             onDismiss = onHomeLongPressDismiss,
+            onEditHomeLayout = onEditHomeLayout,
             onWallpaper = onWallpaper,
             onSettings = onSettings,
             onDockEdit = onDockEdit,

@@ -607,4 +607,6 @@
     <string name="usage_data_ready">Hazır</string>
     <string name="usage_data_unavailable">Kullanılamıyor</string>
     <string name="usage_data_analytics_disclaimer">Analytics SDK teslim onayı vermez. Test olayı Firebase DebugView üzerinden ayrıca doğrulanabilir.</string>
+    <string name="home_layout_edit_action">Ana Ekranı Düzenle</string>
+    <string name="home_layout_edit_action_subtitle">Bölümleri taşı, gizle ve sırala</string>
 </resources>

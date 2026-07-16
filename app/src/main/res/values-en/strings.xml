@@ -603,4 +603,6 @@
     <string name="usage_data_ready">Ready</string>
     <string name="usage_data_unavailable">Unavailable</string>
     <string name="usage_data_analytics_disclaimer">The Analytics SDK does not confirm delivery. Verify the test event separately in Firebase DebugView.</string>
+    <string name="home_layout_edit_action">Edit Home Screen</string>
+    <string name="home_layout_edit_action_subtitle">Move, hide, and reorder sections</string>
 </resources>

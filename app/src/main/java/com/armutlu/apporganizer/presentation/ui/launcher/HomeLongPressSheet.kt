@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.DashboardCustomize
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.filled.Widgets
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun HomeLongPressSheet(
     onDismiss: () -> Unit,
+    onEditHomeLayout: () -> Unit,
     onWallpaper: () -> Unit,
     onSettings: () -> Unit,
     onDockEdit: () -> Unit,
@@ -68,6 +71,14 @@ fun HomeLongPressSheet(
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
             HomeLongPressAction(
+                icon = Icons.Default.DashboardCustomize,
+                label = stringResource(com.armutlu.apporganizer.R.string.home_layout_edit_action),
+                subtitle = stringResource(com.armutlu.apporganizer.R.string.home_layout_edit_action_subtitle),
+                onClick = { openHomeLayoutEditor(onDismiss, onEditHomeLayout) },
+            )
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+
+            HomeLongPressAction(
                 icon = Icons.Default.Image,
                 label = "Duvar Kagidi",
                 subtitle = "Arka plan gorselini degistir",
@@ -99,6 +110,14 @@ fun HomeLongPressSheet(
             )
         }
     }
+}
+
+internal fun openHomeLayoutEditor(
+    onDismiss: () -> Unit,
+    onEditHomeLayout: () -> Unit,
+) {
+    onDismiss()
+    onEditHomeLayout()
 }
 
 @Composable

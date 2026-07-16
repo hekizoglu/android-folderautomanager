@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H3.1 - 2026-07-16
+
+**Yapilanlar:** `HomeLongPressSheet` en ustune TR/EN kaynakli `Ana Ekrani Duzenle` girisi eklendi. Sheet once kapanip ayri editor callback'ini tetikliyor; mevcut duvar kagidi, widget, dock ve ayarlar aksiyonlari korundu. Surum `1.3.74` / `versionCode 97`.
+
+**Arastirma:** Android'in resmi Compose resource, yerellestirme, Material 3 bottom sheet ve Compose UI test rehberleri esas alindi.
+
+**Kalite kapisi:** `HomeLongPressSheetTest` ile dismiss/editor callback sirasi ve zorunlu debug Kotlin compile dogrulanmadan roadmap maddesi tamamlanmis sayilmaz.
+
 ## Home Screen Layout Editor H2.3 - 2026-07-16
 
 **Yapilanlar:** `HomeLayoutConfig` header/content/footer bolgelerine ayrilan korumali render planina baglandi. Legacy search top/bottom migration sonucu ana ekran arama konumunu belirliyor; `FOLDER_GRID` her zaman content bolgesinde gorunur, `DOCK` her zaman footer'in son elemani tutuluyor. Surum `1.3.73` / `versionCode 96`.
