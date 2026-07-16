@@ -31,6 +31,17 @@ function Write-Log {
     Write-Host $line
 }
 
+function Get-PendingCount {
+    if (-not (Test-Path $roadmapPath)) { return 0 }
+    $count = 0
+    foreach ($line in (Get-Content $roadmapPath)) {
+        if ($line -match '^\*\*Durum:\*\*\s*(?:\S+\s*)?Bekliyor\b') {
+            $count++
+        }
+    }
+    return $count
+}
+
 function Send-Telegram {
     param(
         [string]$Message,
@@ -41,11 +52,17 @@ function Send-Telegram {
         return
     }
     try {
+        $pendingSuffix = "Kalan Bekliyor: $(Get-PendingCount)"
+        $messageWithPending = if ($Message -match 'Kalan Bekliyor:') {
+            $Message
+        } else {
+            "$Message`n$pendingSuffix"
+        }
         $args = @(
             "-NoProfile",
             "-ExecutionPolicy", "Bypass",
             "-File", $telegramScript,
-            "-Message", $Message,
+            "-Message", $messageWithPending,
             "-EnvPath", (Join-Path $projectRoot ".env")
         )
         if (-not [string]::IsNullOrWhiteSpace($File)) {
