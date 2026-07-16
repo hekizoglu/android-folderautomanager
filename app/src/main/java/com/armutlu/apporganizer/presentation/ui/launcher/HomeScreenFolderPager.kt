@@ -66,6 +66,7 @@ internal fun FolderPager(
     onDragEnd: () -> Unit,
     onDragCancel: () -> Unit,
     onHomeLongPress: () -> Unit,
+    editMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -147,7 +148,7 @@ internal fun FolderPager(
                     folderBadgeEnabled = folderBadgeEnabled,
                     folderShape = folderShape,
                     modifier = Modifier
-                        .pointerInput(index) {
+                        .then(if (folderGestureMode(editMode) == FolderGestureMode.REORDER) Modifier.pointerInput(index) {
                             detectDragGesturesAfterLongPress(
                                 onDragStart = {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -160,7 +161,7 @@ internal fun FolderPager(
                                 onDragEnd = onDragEnd,
                                 onDragCancel = onDragCancel
                             )
-                        }
+                        } else Modifier)
                         .then(
                             when {
                                 isDragging ->
@@ -199,3 +200,8 @@ internal fun FolderPager(
         }
     }
 }
+
+internal enum class FolderGestureMode { CONTEXT_MENU, REORDER }
+
+internal fun folderGestureMode(editMode: Boolean): FolderGestureMode =
+    if (editMode) FolderGestureMode.REORDER else FolderGestureMode.CONTEXT_MENU

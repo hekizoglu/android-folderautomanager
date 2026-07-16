@@ -22,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.listSaver
@@ -143,13 +145,16 @@ private fun decodeConfig(raw: String): HomeLayoutConfig {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun HomeLayoutEditorScreen(onClose: () -> Unit) {
+fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     val context = LocalContext.current
+    val folders by viewModel.folders.collectAsState()
     var editorState by rememberSaveable(stateSaver = editorStateSaver) {
         mutableStateOf(HomeLayoutEditorState(HomeLayoutPrefs.read(context).config))
     }
     var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
     var showResetDialog by rememberSaveable { mutableStateOf(false) }
+    var originalFolderIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var draftFolderIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
     val haptics = LocalHapticFeedback.current
     val reorderState = remember {
         ReorderState { sectionId, direction ->
@@ -160,9 +165,25 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
             }
         }
     }
+    val folderReorderState = remember {
+        FolderOrderReorderState { folderId, direction ->
+            val moved = moveFolder(draftFolderIds, folderId, direction)
+            if (moved == draftFolderIds) false else {
+                draftFolderIds = moved
+                true
+            }
+        }
+    }
+    val currentFolderIds = folders.map { it.category.categoryId }
+    LaunchedEffect(currentFolderIds) {
+        if (originalFolderIds.isEmpty() && currentFolderIds.isNotEmpty()) {
+            originalFolderIds = currentFolderIds
+            draftFolderIds = currentFolderIds
+        }
+    }
 
     fun requestClose() {
-        if (editorState.hasUnsavedChanges) showDiscardDialog = true else onClose()
+        if (editorState.hasUnsavedChanges || draftFolderIds != originalFolderIds) showDiscardDialog = true else onClose()
     }
 
     BackHandler { requestClose() }
@@ -179,6 +200,12 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
                 actions = {
                     TextButton(onClick = {
                         HomeLayoutPrefs.write(context, HomeLayoutPrefs.State(editorState.draft, customized = true))
+                        val foldersById = folders.associateBy { it.category.categoryId }
+                        viewModel.reorderFolders(
+                            context,
+                            draftFolderIds.mapNotNull(foldersById::get) +
+                                folders.filterNot { it.category.categoryId in draftFolderIds },
+                        )
                         onClose()
                     }) { Text(stringResource(R.string.home_layout_editor_done)) }
                 },
@@ -213,6 +240,19 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
                             )
                         },
                     )
+                }
+                if (orderedItems.any { it.sectionId == HomeSectionId.FOLDER_GRID && it.visible }) {
+                    items(draftFolderIds, key = { "folder_$it" }) { folderId ->
+                        folders.firstOrNull { it.category.categoryId == folderId }?.let { folder ->
+                            FolderOrderCard(
+                                modifier = Modifier.animateItemPlacement(),
+                                folder = folder,
+                                reorderState = folderReorderState,
+                                onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+                                onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
+                            )
+                        }
+                    }
                 }
                 val hiddenItems = orderedItems.filterNot { it.visible }
                 if (hiddenItems.isNotEmpty()) {
@@ -260,6 +300,67 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
                     Text(stringResource(R.string.home_layout_editor_cancel))
                 }
             },
+        )
+    }
+}
+
+internal fun moveFolder(ids: List<String>, folderId: String, direction: Int): List<String> {
+    val from = ids.indexOf(folderId)
+    val to = from + direction.coerceIn(-1, 1)
+    if (from < 0 || direction == 0 || to !in ids.indices) return ids
+    return ids.toMutableList().apply { add(to, removeAt(from)) }
+}
+
+private class FolderOrderReorderState(
+    private val onMove: (String, Int) -> Boolean,
+) {
+    var draggedId by mutableStateOf<String?>(null)
+    var dragOffset by mutableStateOf(0f)
+    fun start(id: String) { draggedId = id; dragOffset = 0f }
+    fun drag(id: String, delta: Float, threshold: Float): Boolean {
+        if (draggedId != id || threshold <= 0f) return false
+        dragOffset += delta
+        if (kotlin.math.abs(dragOffset) < threshold) return false
+        return onMove(id, if (dragOffset > 0f) 1 else -1).also { if (it) dragOffset = 0f }
+    }
+    fun stop() { draggedId = null; dragOffset = 0f }
+}
+
+@Composable
+private fun FolderOrderCard(
+    modifier: Modifier = Modifier,
+    folder: AppFolder,
+    reorderState: FolderOrderReorderState,
+    onDragStarted: () -> Unit,
+    onItemMoved: () -> Unit,
+) {
+    val id = folder.category.categoryId
+    var itemHeight by remember { mutableStateOf(0) }
+    val dragging = reorderState.draggedId == id
+    Card(
+        modifier.fillMaxWidth().padding(start = 32.dp, end = 12.dp, top = 2.dp, bottom = 2.dp)
+            .onSizeChanged { itemHeight = it.height }
+            .graphicsLayer { if (dragging) { translationY = reorderState.dragOffset; alpha = 0.92f } },
+    ) {
+        ListItem(
+            leadingContent = {
+                Icon(
+                    Icons.Default.DragHandle,
+                    contentDescription = stringResource(R.string.home_layout_drag_handle),
+                    modifier = Modifier.pointerInput(id) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { reorderState.start(id); onDragStarted() },
+                            onDragEnd = reorderState::stop,
+                            onDragCancel = reorderState::stop,
+                            onDrag = { change, amount ->
+                                change.consume()
+                                if (reorderState.drag(id, amount.y, itemHeight / 2f)) onItemMoved()
+                            },
+                        )
+                    },
+                )
+            },
+            headlineContent = { Text(folder.category.categoryName) },
         )
     }
 }

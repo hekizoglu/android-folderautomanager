@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H4.1 - 2026-07-16
+
+**Yapilanlar:** Normal ana ekranda klasor drag detector'i kaldirilarak uzun basma context menu davranisi korundu. Klasor siralamasi tam ekran editor icinde stabil klasor kimlikleriyle suruklenebilir taslaga alindi; `Iptal` sirayi degistirmiyor, `Bitti` kalici sirayi kaydediyor. Surum `1.3.78` / `versionCode 101`.
+
+**Arastirma:** Android'in resmi Compose gesture katmanlama, `combinedClickable`, `pointerInput` ve `detectDragGesturesAfterLongPress` rehberleri esas alindi.
+
+**Kalite kapisi:** Ilk compile Windows/KSP build kilidine takildi; `scripts/clear_build_lock.ps1` sonrasindaki tek tekrar basarili oldu. `compileDebugKotlin -PskipGoogleServices` ve odak `FolderEditModeTest` basariyla tamamlandi.
+
 ## Home Screen Layout Editor H3.2 - 2026-07-16
 
 **Yapilanlar:** Tam ekran `HomeLayoutEditorScreen`, ayri ve process recreation'a dayanikli taslak state, `Bitti`/`Iptal`, sistem geri tusu korumasi ve kaydedilmemis degisiklik uyarisi eklendi. Taslak yalniz `Bitti` ile tek preference islemi halinde sanitize edilip kaydediliyor; iptal/discard kalici state'i degistirmiyor. Surum `1.3.75` / `versionCode 98`.

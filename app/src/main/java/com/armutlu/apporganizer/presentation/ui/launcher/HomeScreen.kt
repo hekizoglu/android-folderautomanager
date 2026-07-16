@@ -990,6 +990,7 @@ fun HomeScreen(
                     dragOffsetY = 0f
                 },
                 onHomeLongPress = { homeLongPressOpen = true },
+                editMode = false,
                 modifier = Modifier.fillMaxWidth().weight(1f)
             )
 

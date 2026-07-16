@@ -814,7 +814,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H4.1 — Klasör reorder edit moda bağlama
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Mevcut klasör uzun basma/sürükleme davranışını yalnız edit modda çalışacak şekilde bağla; normal mod context menu davranışını koru.
 

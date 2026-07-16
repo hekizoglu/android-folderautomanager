@@ -44,7 +44,7 @@ fun LauncherNavGraph(
         }
 
         composable(ROUTE_HOME_LAYOUT_EDITOR) {
-            HomeLayoutEditorScreen(onClose = { navController.popBackStack() })
+            HomeLayoutEditorScreen(viewModel = viewModel, onClose = { navController.popBackStack() })
         }
 
         composable(ROUTE_FOLDER) {
