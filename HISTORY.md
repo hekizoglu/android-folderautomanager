@@ -1995,3 +1995,8 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - Final kalite kapıları manuel olarak tamamlandı: `testDebugUnitTest -PskipGoogleServices`, `compileDebugKotlin -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` başarılı.
 - `TelemetryEventValidatorTest` günlük özet event allowlist'i recovery checkpoint ile güncellendi; `AppListViewModelTest` privacy reset async doğrulaması stabilize edildi.
 - Debug APK Telegram'a gönderildi, eski stats/health cron kapatıldı ve tamamlanan roadmap dosyası silindi.
+## 2026-07-16 [Home layout legacy ayar migration - v1.3.70]
+
+- `HomeLayoutPrefs` ilk olusturulurken search TOP/BOTTOM konumu ile mevcut Home gorunurluk toggle'larini tek yonlu layout config'e tasiyor.
+- Layout kaydi olustuktan sonra legacy ayarlar yeniden okunup yeni config'i ezmiyor; yeni section'lar sanitize sirasinda varsayilan konumlarinda ekleniyor.
+- TOP, BOTTOM, gorunurluk, tek-kaynak ve yeni-section senaryolari icin odak unit testleri eklendi.

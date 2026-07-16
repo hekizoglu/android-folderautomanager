@@ -16,6 +16,20 @@ object HomeLayoutPrefs {
 
     data class State(val config: HomeLayoutConfig, val customized: Boolean)
 
+    internal data class LegacySettings(
+        val searchPosition: String,
+        val widgetsVisible: Boolean,
+        val favoritesVisible: Boolean,
+        val suggestionsVisible: Boolean,
+        val recentNotificationsVisible: Boolean,
+        val recentAppsVisible: Boolean,
+        val assistantVisible: Boolean,
+        val tickerVisible: Boolean,
+        val missionsVisible: Boolean,
+        val mainSearchVisible: Boolean,
+        val googleSearchVisible: Boolean = true,
+    )
+
     internal data class StoredLayout(
         val headerOrder: String?, val footerOrder: String?, val hiddenSections: String?,
         val version: Int?, val customized: Boolean?,
@@ -23,6 +37,13 @@ object HomeLayoutPrefs {
 
     fun read(context: Context): State {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val hasLayout = listOf(KEY_HEADER_ORDER, KEY_FOOTER_ORDER, KEY_HIDDEN_SECTIONS,
+            KEY_LAYOUT_VERSION, KEY_CUSTOMIZED).any(prefs::contains)
+        if (!hasLayout) {
+            val migrated = migrateLegacy(readLegacy(context))
+            write(context, migrated)
+            return migrated
+        }
         return sanitize(StoredLayout(
             runCatching { prefs.getString(KEY_HEADER_ORDER, null) }.getOrNull(),
             runCatching { prefs.getString(KEY_FOOTER_ORDER, null) }.getOrNull(),
@@ -47,14 +68,19 @@ object HomeLayoutPrefs {
         val present = stored.headerOrder != null || stored.footerOrder != null || stored.hiddenSections != null ||
             stored.version != null || stored.customized != null
         if (!present) return State(HomeLayoutConfig.DEFAULT, false)
+        val suppliedHeader = parseIds(stored.headerOrder).filter { it.allowedIn(HomeLayoutZone.HEADER) }.distinct()
+        val suppliedFooter = parseIds(stored.footerOrder).filter { it.allowedIn(HomeLayoutZone.FOOTER) }.distinct()
+        val searchZone = if (HomeSectionId.MAIN_SEARCH in suppliedFooter &&
+            HomeSectionId.MAIN_SEARCH !in suppliedHeader) HomeLayoutZone.FOOTER else HomeLayoutZone.HEADER
         val orders = mapOf(
-            HomeLayoutZone.HEADER to sanitizeOrder(stored.headerOrder, HomeLayoutZone.HEADER),
-            HomeLayoutZone.FOOTER to sanitizeOrder(stored.footerOrder, HomeLayoutZone.FOOTER),
+            HomeLayoutZone.HEADER to sanitizeOrder(suppliedHeader, HomeLayoutZone.HEADER, searchZone),
+            HomeLayoutZone.FOOTER to sanitizeOrder(suppliedFooter, HomeLayoutZone.FOOTER, searchZone),
         )
         val hidden = parseIds(stored.hiddenSections).filterTo(mutableSetOf()) { it.hideable }
         val items = HomeLayoutConfig.DEFAULT.items.map { item ->
-            val index = orders[item.zone]?.indexOf(item.sectionId)?.takeIf { it >= 0 }
-            item.copy(order = index ?: item.order, visible = item.sectionId !in hidden)
+            val zone = if (item.sectionId == HomeSectionId.MAIN_SEARCH) searchZone else item.zone
+            val index = orders[zone]?.indexOf(item.sectionId)?.takeIf { it >= 0 }
+            item.copy(zone = zone, order = index ?: item.order, visible = item.sectionId !in hidden)
         }
         return State(HomeLayoutConfig(HomeLayoutConfig.CURRENT_VERSION, items), stored.customized == true)
     }
@@ -64,7 +90,8 @@ object HomeLayoutPrefs {
         val items = HomeLayoutConfig.DEFAULT.items.map { default ->
             val candidate = byId[default.sectionId]
             default.copy(
-                order = candidate?.takeIf { it.zone == default.zone }?.order ?: default.order,
+                zone = candidate?.zone?.takeIf { default.sectionId.allowedIn(it) } ?: default.zone,
+                order = candidate?.takeIf { default.sectionId.allowedIn(it.zone) }?.order ?: default.order,
                 visible = if (default.sectionId.hideable) candidate?.visible ?: default.visible else true,
             )
         }.groupBy { it.zone }.values.flatMap { zoneItems ->
@@ -74,11 +101,61 @@ object HomeLayoutPrefs {
         return State(HomeLayoutConfig(HomeLayoutConfig.CURRENT_VERSION, items), state.customized)
     }
 
-    private fun sanitizeOrder(raw: String?, zone: HomeLayoutZone): List<HomeSectionId> {
-        val supplied = parseIds(raw).filter { it.defaultZone == zone }.distinct()
-        val defaults = HomeLayoutConfig.DEFAULT.idsIn(zone)
+    internal fun initialState(stored: StoredLayout?, legacy: LegacySettings): State =
+        stored?.let(::sanitize) ?: migrateLegacy(legacy)
+
+    internal fun migrateLegacy(legacy: LegacySettings): State {
+        val searchZone = if (legacy.searchPosition == AppPrefs.SEARCH_BAR_POS_TOP) {
+            HomeLayoutZone.HEADER
+        } else {
+            HomeLayoutZone.FOOTER
+        }
+        val visibility = mapOf(
+            HomeSectionId.ANDROID_WIDGETS to legacy.widgetsVisible,
+            HomeSectionId.FAVORITES to legacy.favoritesVisible,
+            HomeSectionId.SUGGESTIONS to legacy.suggestionsVisible,
+            HomeSectionId.RECENT_NOTIFICATIONS to legacy.recentNotificationsVisible,
+            HomeSectionId.RECENT_APPS to legacy.recentAppsVisible,
+            HomeSectionId.ASSISTANT_INSIGHTS to legacy.assistantVisible,
+            HomeSectionId.TICKER_OR_STATS to legacy.tickerVisible,
+            HomeSectionId.MISSIONS_AND_SCORE to legacy.missionsVisible,
+            HomeSectionId.MAIN_SEARCH to legacy.mainSearchVisible,
+            HomeSectionId.GOOGLE_SEARCH to legacy.googleSearchVisible,
+        )
+        val items = HomeLayoutConfig.DEFAULT.items.map { item ->
+            when (item.sectionId) {
+                HomeSectionId.MAIN_SEARCH -> item.copy(zone = searchZone, order = if (searchZone == HomeLayoutZone.FOOTER) 0 else item.order,
+                    visible = visibility.getValue(item.sectionId))
+                HomeSectionId.DOCK -> item.copy(order = if (searchZone == HomeLayoutZone.FOOTER) 1 else 0)
+                else -> item.copy(visible = visibility[item.sectionId] ?: item.visible)
+            }
+        }
+        return sanitize(State(HomeLayoutConfig(HomeLayoutConfig.CURRENT_VERSION, items), customized = false))
+    }
+
+    private fun readLegacy(context: Context) = LegacySettings(
+        searchPosition = AppPrefs.getSearchBarPosition(context),
+        widgetsVisible = AppPrefs.isWidgetAreaEnabled(context),
+        favoritesVisible = AppPrefs.isFavoritesEnabled(context),
+        suggestionsVisible = AppPrefs.isSuggestionsEnabled(context),
+        recentNotificationsVisible = AppPrefs.isRecentNotificationAppsRowEnabled(context),
+        recentAppsVisible = AppPrefs.isRecentAppsEnabled(context),
+        assistantVisible = AppPrefs.isAssistantCardsEnabled(context),
+        tickerVisible = AppPrefs.isTickerEnabled(context),
+        missionsVisible = AppPrefs.isMissionsEnabled(context),
+        mainSearchVisible = AppPrefs.isHomeAppSearchEnabled(context) || AppPrefs.isHomeSearchEnabled(context),
+    )
+
+    private fun sanitizeOrder(supplied: List<HomeSectionId>, zone: HomeLayoutZone,
+        searchZone: HomeLayoutZone): List<HomeSectionId> {
+        val defaults = HomeLayoutConfig.DEFAULT.items.filter {
+            (if (it.sectionId == HomeSectionId.MAIN_SEARCH) searchZone else it.zone) == zone
+        }.map { it.sectionId }
         return supplied + defaults.filterNot { it in supplied }
     }
+
+    private fun HomeSectionId.allowedIn(zone: HomeLayoutZone): Boolean =
+        defaultZone == zone || (this == HomeSectionId.MAIN_SEARCH && zone == HomeLayoutZone.FOOTER)
 
     private fun parseIds(raw: String?): List<HomeSectionId> = raw.orEmpty().split(',').mapNotNull { token ->
         HomeSectionId.entries.firstOrNull { it.name == token.trim() }

@@ -750,7 +750,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H1.3 — Eski ayar migration katmanı
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı
 
 **Kapsam:** Search top/bottom tercihi ve mevcut görünürlük toggle'larını ilk layout config'e taşı; eski ayarlarla yeni config'in birbirini ezmesini engelle.
 
