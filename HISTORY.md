@@ -2040,3 +2040,8 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - `HomeLayoutPrefs` ilk olusturulurken search TOP/BOTTOM konumu ile mevcut Home gorunurluk toggle'larini tek yonlu layout config'e tasiyor.
 - Layout kaydi olustuktan sonra legacy ayarlar yeniden okunup yeni config'i ezmiyor; yeni section'lar sanitize sirasinda varsayilan konumlarinda ekleniyor.
 - TOP, BOTTOM, gorunurluk, tek-kaynak ve yeni-section senaryolari icin odak unit testleri eklendi.
+# 2026-07-16 [H3.3 Home layout bölüm kartları]
+
+- Home layout editörüne lokalize bölüm kartları, drag/kilit göstergeleri, erişilebilir göster/gizle kontrolleri ve gizlenen bölümleri geri ekleme listesi eklendi.
+- Zorunlu bölümlerin gizlenmesi engellendi. İki aşamalı “Varsayılana dön” akışı yalnız layout taslağını sıfırlar; klasör, widget ve dock içerik depolarına dokunmaz.
+- Görünürlük ve reset kuralları için odaklı unit testler eklendi; sürüm 1.3.76 (99) yapıldı.

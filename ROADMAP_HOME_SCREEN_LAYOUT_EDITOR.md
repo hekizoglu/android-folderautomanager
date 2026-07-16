@@ -798,7 +798,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H3.3 — Bölüm kartları, göster/gizle ve varsayılana dön
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** `EditableHomeSection`, drag handle görseli, göz/gizle butonu, kilitli bölüm davranışı, gizlenen bölümler listesi ve varsayılana dön akışını ekle.
 

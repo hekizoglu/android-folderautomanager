@@ -5,11 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,8 +26,16 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
@@ -38,6 +50,14 @@ internal data class HomeLayoutEditorState(
 ) {
     val hasUnsavedChanges: Boolean get() = draft != original
 }
+
+internal fun HomeLayoutConfig.withSectionVisibility(sectionId: HomeSectionId, visible: Boolean): HomeLayoutConfig {
+    val section = items.firstOrNull { it.sectionId == sectionId } ?: return this
+    if (!section.sectionId.hideable && !visible) return this
+    return copy(items = items.map { if (it.sectionId == sectionId) it.copy(visible = visible) else it })
+}
+
+internal fun HomeLayoutEditorState.resetDraft(): HomeLayoutEditorState = copy(draft = HomeLayoutConfig.DEFAULT)
 
 private val editorStateSaver = listSaver<HomeLayoutEditorState, String>(
     save = { state ->
@@ -81,6 +101,7 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
         mutableStateOf(HomeLayoutEditorState(HomeLayoutPrefs.read(context).config))
     }
     var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
+    var showResetDialog by rememberSaveable { mutableStateOf(false) }
 
     fun requestClose() {
         if (editorState.hasUnsavedChanges) showDiscardDialog = true else onClose()
@@ -111,16 +132,36 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
                 text = stringResource(R.string.home_layout_editor_intro),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
+            TextButton(onClick = { showResetDialog = true }) {
+                Text(stringResource(R.string.home_layout_reset))
+            }
             LazyColumn(
                 contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                items(editorState.draft.items.sortedWith(compareBy({ it.zone.ordinal }, { it.order })),
+                val orderedItems = editorState.draft.items.sortedWith(compareBy({ it.zone.ordinal }, { it.order }))
+                items(orderedItems.filter { it.visible },
                     key = { it.sectionId.name }) { item ->
-                    ListItem(
-                        headlineContent = { Text(item.sectionId.name.replace('_', ' ')) },
-                        supportingContent = { Text(item.zone.name) },
+                    EditableHomeSection(
+                        item = item,
+                        position = orderedItems.filter { it.visible }.indexOf(item) + 1,
+                        onVisibilityChange = { visible ->
+                            editorState = editorState.copy(
+                                draft = editorState.draft.withSectionVisibility(item.sectionId, visible),
+                            )
+                        },
                     )
+                }
+                val hiddenItems = orderedItems.filterNot { it.visible }
+                if (hiddenItems.isNotEmpty()) {
+                    item { Text(stringResource(R.string.home_layout_hidden_sections), Modifier.padding(16.dp)) }
+                    items(hiddenItems, key = { "hidden_${it.sectionId.name}" }) { item ->
+                        HiddenHomeSection(item) {
+                            editorState = editorState.copy(
+                                draft = editorState.draft.withSectionVisibility(item.sectionId, true),
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -141,4 +182,91 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
             },
         )
     }
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text(stringResource(R.string.home_layout_reset_title)) },
+            text = { Text(stringResource(R.string.home_layout_reset_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    editorState = editorState.resetDraft()
+                    showResetDialog = false
+                }) { Text(stringResource(R.string.home_layout_reset_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text(stringResource(R.string.home_layout_editor_cancel))
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun EditableHomeSection(
+    item: HomeLayoutItem,
+    position: Int,
+    onVisibilityChange: (Boolean) -> Unit,
+) {
+    val name = stringResource(sectionName(item.sectionId))
+    val description = stringResource(R.string.home_layout_section_position, name, position)
+    Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp).semantics {
+        contentDescription = description
+    }) {
+        ListItem(
+            leadingContent = {
+                Icon(
+                    if (item.locked || !item.sectionId.movable) Icons.Default.Lock else Icons.Default.DragHandle,
+                    contentDescription = stringResource(
+                        if (item.locked || !item.sectionId.movable) R.string.home_layout_locked else R.string.home_layout_drag_handle,
+                    ),
+                )
+            },
+            headlineContent = { Text(name) },
+            trailingContent = {
+                IconButton(
+                    enabled = item.sectionId.hideable,
+                    onClick = { onVisibilityChange(false) },
+                ) {
+                    Icon(
+                        Icons.Default.Visibility,
+                        contentDescription = stringResource(
+                            if (item.sectionId.hideable) R.string.home_layout_hide_section else R.string.home_layout_required_section,
+                            name,
+                        ),
+                    )
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun HiddenHomeSection(item: HomeLayoutItem, onShow: () -> Unit) {
+    val name = stringResource(sectionName(item.sectionId))
+    ListItem(
+        headlineContent = { Text(name) },
+        trailingContent = {
+            IconButton(onClick = onShow) {
+                Icon(Icons.Default.VisibilityOff, contentDescription = stringResource(R.string.home_layout_show_section, name))
+            }
+        },
+    )
+}
+
+@StringRes
+private fun sectionName(id: HomeSectionId): Int = when (id) {
+    HomeSectionId.CLOCK -> R.string.home_section_clock
+    HomeSectionId.MISSIONS_AND_SCORE -> R.string.home_section_missions_score
+    HomeSectionId.MAIN_SEARCH -> R.string.home_section_main_search
+    HomeSectionId.GOOGLE_SEARCH -> R.string.home_section_google_search
+    HomeSectionId.FAVORITES -> R.string.home_section_favorites
+    HomeSectionId.SUGGESTIONS -> R.string.home_section_suggestions
+    HomeSectionId.RECENT_NOTIFICATIONS -> R.string.home_section_recent_notifications
+    HomeSectionId.RECENT_APPS -> R.string.home_section_recent_apps
+    HomeSectionId.ANDROID_WIDGETS -> R.string.home_section_widgets
+    HomeSectionId.ASSISTANT_INSIGHTS -> R.string.home_section_assistant
+    HomeSectionId.TICKER_OR_STATS -> R.string.home_section_ticker
+    HomeSectionId.FOLDER_GRID -> R.string.home_section_folders
+    HomeSectionId.DOCK -> R.string.home_section_dock
 }
