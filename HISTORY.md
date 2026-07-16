@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H5.1 - 2026-07-16
+
+**Yapilanlar:** Home layout surumu, header/footer sirasi, gizli bolumler ve ozellestirme durumu backup v6 kapsamına eklendi. Restore girdisi `HomeLayoutPrefs` sanitize sinirindan geciyor; bilinmeyen/duplicate/yanlis bolge ID'leri temizleniyor, zorunlu ve yeni bolumler geri ekleniyor. Layout alani olmayan eski yedeklerde mevcut legacy migration korunuyor. Diagnostics yalniz tipli bolum ID'leri, arama bolgesi, surum/ozellestirme durumu ve widget/dock sayaclarini raporluyor; ham JSON, paket/provider adi veya serbest metin eklenmiyor. Surum `1.3.81` / `versionCode 104`.
+
+**Arastirma:** Android'in resmi backup/restore, backup guvenligi ve log bilgi sizintisi rehberleri esas alindi; restore uyumlulugunun uygulama tarafinda ele alinmasi ve diagnostics ciktilarinin ongorulebilir guvenli alanlarla sinirlanmasi uygulandi.
+
+**Kalite kapisi:** `HomeLayoutPrefsTest` eski/bozuk backup sanitize ve tipli diagnostics ozetini, `DiagnosticsReportManagerTest` guvenli rapor alanlarini dogruladi. 31 odak test ve `compileDebugKotlin -PskipGoogleServices` basarili.
+
 ## Home Screen Layout Editor H4.3 - 2026-07-16
 
 **Yapilanlar:** Tam ekran layout editorune uygulama ve klasorleri ayni yatay listede siralayan dock reorder eklendi. Yalniz kalici kullanici dock listesi taslaga alindigi icin oneri/baglamsal slotlar drag kapsaminda degil; `Iptal` degisiklik yapmiyor, `Bitti` sirayi `DockPrefs` uzerinden kalici kaydediyor. Surum `1.3.80` / `versionCode 103`.

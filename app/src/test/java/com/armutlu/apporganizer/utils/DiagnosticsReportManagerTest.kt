@@ -56,6 +56,10 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("Dijital yasam skoru toplam yildizdan bagimsizdir."))
         assertTrue(report.contains("Tekrar odul engeli: aktif"))
         assertTrue(report.contains("[Widgetler]"))
+        assertTrue(report.contains("[Ana Ekran Yerlesimi]"))
+        assertTrue(report.contains("Arama bolgesi: HEADER"))
+        assertTrue(report.contains("Widget sayisi: 2"))
+        assertTrue(report.contains("Dock oge sayisi: 5"))
         assertTrue(report.contains("[Worker Ozeti]"))
         assertTrue(report.contains("Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL"))
         assertTrue(report.contains("[Kritik Hatalar]"))
@@ -345,6 +349,18 @@ class DiagnosticsReportManagerTest {
         positiveTaskScore = 31,
         negativeTaskScore = -4,
         widgetSummary = "Kayitli widget id: 3, provider bulunan: 2",
+        homeLayoutSummary = HomeLayoutPrefs.DiagnosticsSummary(
+            version = 1,
+            customized = true,
+            headerOrder = listOf(
+                com.armutlu.apporganizer.domain.models.HomeSectionId.CLOCK,
+                com.armutlu.apporganizer.domain.models.HomeSectionId.MAIN_SEARCH,
+            ),
+            hiddenSections = listOf(com.armutlu.apporganizer.domain.models.HomeSectionId.GOOGLE_SEARCH),
+            searchZone = com.armutlu.apporganizer.domain.models.HomeLayoutZone.HEADER,
+            widgetCount = 2,
+            dockItemCount = 5,
+        ),
         workerSummary = listOf(
             "Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL",
             "Files index periodic: enabled=evet, work=RUNNING, attempts=1",

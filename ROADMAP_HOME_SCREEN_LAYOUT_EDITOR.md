@@ -838,7 +838,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H5.1 — Backup, restore ve diagnostics
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Home layout alanlarını backup/restore kapsamına ve tanılama raporuna ekle; kişisel veri veya serbest metin sızıntısı olmadığını doğrula.
 

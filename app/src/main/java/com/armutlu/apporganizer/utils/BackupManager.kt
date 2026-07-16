@@ -21,7 +21,7 @@ import java.util.Locale
 object BackupManager {
 
     private val dateFmt = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-    private const val BACKUP_VERSION = 5
+    private const val BACKUP_VERSION = 6
 
     /**
      * Uygulama kategori atamaları, ayarlar ve özelleştirmeleri JSON olarak dışa aktarır.
@@ -155,6 +155,7 @@ object BackupManager {
                     // P0.6: tek siniflandirma modu — eski manufacturerClassifyEnabled alaninin yerine gecti
                     put("classificationMode", AppPrefs.getClassificationMode(context).name)
                 })
+                put("homeLayout", homeLayoutToJson(HomeLayoutPrefs.read(context)))
             }
             root.toString(2)
         }
@@ -431,12 +432,38 @@ object BackupManager {
                 syncSearchSourcesAfterRestore(context, searchRepository)
             }
 
+            root.optJSONObject("homeLayout")?.let { layout ->
+                HomeLayoutPrefs.write(context, homeLayoutFromJson(layout))
+            } ?: HomeLayoutPrefs.read(context)
+
             ImportResult(success = true, updatedCount = updated, missingPackages = missing, restoredVersion = version)
         }.getOrElse { e ->
             Timber.e(e, "Import failed")
             ImportResult(success = false, error = e.message)
         }
     }
+
+    internal fun homeLayoutToJson(state: HomeLayoutPrefs.State): JSONObject {
+        val fields = HomeLayoutPrefs.toBackupFields(state)
+        return JSONObject().apply {
+            put("homeLayoutVersion", fields.version)
+            put("homeHeaderOrder", fields.headerOrder)
+            put("homeFooterOrder", fields.footerOrder)
+            put("homeHiddenSections", fields.hiddenSections)
+            put("homeLayoutCustomized", fields.customized)
+        }
+    }
+
+    internal fun homeLayoutFromJson(json: JSONObject): HomeLayoutPrefs.State =
+        HomeLayoutPrefs.fromBackupFields(
+            HomeLayoutPrefs.BackupFields(
+                version = json.optInt("homeLayoutVersion", 0),
+                headerOrder = json.opt("homeHeaderOrder") as? String,
+                footerOrder = json.opt("homeFooterOrder") as? String,
+                hiddenSections = json.opt("homeHiddenSections") as? String,
+                customized = json.opt("homeLayoutCustomized") as? Boolean,
+            )
+        )
 
     // Geriye dönük uyumluluk: context gerektirmeyen eski imza
     suspend fun importFromJson(json: String, repository: AppRepository): ImportResult =

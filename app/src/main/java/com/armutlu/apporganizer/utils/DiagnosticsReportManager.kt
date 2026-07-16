@@ -206,6 +206,11 @@ class DiagnosticsReportManager @Inject constructor(
         val positiveTaskScore = runCatching { taskScoreEventDao.getPositiveScore() }.getOrDefault(0)
         val negativeTaskScore = runCatching { taskScoreEventDao.getNegativeScore() }.getOrDefault(0)
         val widgetSummary = widgetSummary()
+        val layoutSummary = HomeLayoutPrefs.diagnosticsSummary(
+            HomeLayoutPrefs.read(context),
+            WidgetPrefs.getWidgetIds(context).size,
+            DockPrefs.getDockPackages(context).size,
+        )
         val workerSummary = workerSummary()
         val crashSummary = crashSummary()
         val listenerEnabled = NotificationAccessUtils.isNotificationListenerEnabled(context)
@@ -275,6 +280,7 @@ class DiagnosticsReportManager @Inject constructor(
                 positiveTaskScore = positiveTaskScore,
                 negativeTaskScore = negativeTaskScore,
                 widgetSummary = widgetSummary,
+                homeLayoutSummary = layoutSummary,
                 workerSummary = workerSummary,
                 crashSummary = crashSummary,
             ),
@@ -473,6 +479,7 @@ internal data class DiagnosticsReportSnapshot(
     val positiveTaskScore: Int,
     val negativeTaskScore: Int,
     val widgetSummary: String,
+    val homeLayoutSummary: HomeLayoutPrefs.DiagnosticsSummary,
     val workerSummary: List<String>,
     val crashSummary: List<String>,
 )
@@ -567,6 +574,15 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine()
     appendLine("[Widgetler]")
     appendLine(snapshot.widgetSummary)
+    appendLine()
+    appendLine("[Ana Ekran Yerlesimi]")
+    appendLine("Surum: ${snapshot.homeLayoutSummary.version}")
+    appendLine("Ozellestirilmis: ${snapshot.homeLayoutSummary.customized}")
+    appendLine("Header sirasi: ${snapshot.homeLayoutSummary.headerOrder.joinToString { it.name }}")
+    appendLine("Gizli bolumler: ${snapshot.homeLayoutSummary.hiddenSections.joinToString { it.name }}")
+    appendLine("Arama bolgesi: ${snapshot.homeLayoutSummary.searchZone.name}")
+    appendLine("Widget sayisi: ${snapshot.homeLayoutSummary.widgetCount}")
+    appendLine("Dock oge sayisi: ${snapshot.homeLayoutSummary.dockItemCount}")
     appendLine()
     appendLine("[Worker Ozeti]")
     snapshot.workerSummary.forEach { appendLine(it) }

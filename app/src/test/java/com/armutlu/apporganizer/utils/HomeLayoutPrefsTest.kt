@@ -83,4 +83,31 @@ class HomeLayoutPrefsTest {
         assertTrue(HomeSectionId.GOOGLE_SEARCH in state.config.items.map { it.sectionId })
         assertEquals(HomeSectionId.entries.size, state.config.items.size)
     }
+
+    @Test fun `corrupt backup fields are sanitized at restore boundary`() {
+        val restored = HomeLayoutPrefs.fromBackupFields(HomeLayoutPrefs.BackupFields(
+            version = -7,
+            headerOrder = "UNKNOWN,CLOCK,CLOCK,DOCK",
+            footerOrder = "MAIN_SEARCH,BOGUS",
+            hiddenSections = "CLOCK,FOLDER_GRID,UNKNOWN",
+            customized = true,
+        ))
+
+        assertEquals(HomeLayoutConfig.CURRENT_VERSION, restored.config.version)
+        assertEquals(HomeSectionId.entries.toSet(), restored.config.items.map { it.sectionId }.toSet())
+        assertFalse(restored.config.items.single { it.sectionId == HomeSectionId.CLOCK }.visible)
+        assertTrue(restored.config.items.single { it.sectionId == HomeSectionId.FOLDER_GRID }.visible)
+        assertEquals(HomeLayoutZone.FOOTER, restored.config.items.single { it.sectionId == HomeSectionId.MAIN_SEARCH }.zone)
+    }
+
+    @Test fun `diagnostics summary contains only typed safe layout values`() {
+        val summary = HomeLayoutPrefs.diagnosticsSummary(
+            HomeLayoutPrefs.migrateLegacy(legacy()), widgetCount = -3, dockItemCount = 5)
+
+        assertEquals(HomeLayoutConfig.CURRENT_VERSION, summary.version)
+        assertTrue(summary.headerOrder.all { it in HomeSectionId.entries })
+        assertTrue(summary.hiddenSections.all { it in HomeSectionId.entries })
+        assertEquals(0, summary.widgetCount)
+        assertEquals(5, summary.dockItemCount)
+    }
 }

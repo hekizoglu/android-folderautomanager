@@ -16,6 +16,24 @@ object HomeLayoutPrefs {
 
     data class State(val config: HomeLayoutConfig, val customized: Boolean)
 
+    internal data class BackupFields(
+        val version: Int?,
+        val headerOrder: String?,
+        val footerOrder: String?,
+        val hiddenSections: String?,
+        val customized: Boolean?,
+    )
+
+    internal data class DiagnosticsSummary(
+        val version: Int,
+        val customized: Boolean,
+        val headerOrder: List<HomeSectionId>,
+        val hiddenSections: List<HomeSectionId>,
+        val searchZone: HomeLayoutZone,
+        val widgetCount: Int,
+        val dockItemCount: Int,
+    )
+
     internal data class LegacySettings(
         val searchPosition: String,
         val widgetsVisible: Boolean,
@@ -62,6 +80,34 @@ object HomeLayoutPrefs {
             putInt(KEY_LAYOUT_VERSION, HomeLayoutConfig.CURRENT_VERSION)
             putBoolean(KEY_CUSTOMIZED, clean.customized)
         }
+    }
+
+    internal fun toBackupFields(state: State): BackupFields {
+        val clean = sanitize(state)
+        return BackupFields(
+            version = clean.config.version,
+            headerOrder = clean.config.idsIn(HomeLayoutZone.HEADER).joinToString(","),
+            footerOrder = clean.config.idsIn(HomeLayoutZone.FOOTER).joinToString(","),
+            hiddenSections = clean.config.items.filterNot { it.visible }.joinToString(",") { it.sectionId.name },
+            customized = clean.customized,
+        )
+    }
+
+    internal fun fromBackupFields(fields: BackupFields): State = sanitize(
+        StoredLayout(fields.headerOrder, fields.footerOrder, fields.hiddenSections, fields.version, fields.customized)
+    )
+
+    internal fun diagnosticsSummary(state: State, widgetCount: Int, dockItemCount: Int): DiagnosticsSummary {
+        val clean = sanitize(state)
+        return DiagnosticsSummary(
+            version = clean.config.version,
+            customized = clean.customized,
+            headerOrder = clean.config.idsIn(HomeLayoutZone.HEADER),
+            hiddenSections = clean.config.items.filterNot { it.visible }.map { it.sectionId },
+            searchZone = clean.config.items.single { it.sectionId == HomeSectionId.MAIN_SEARCH }.zone,
+            widgetCount = widgetCount.coerceAtLeast(0),
+            dockItemCount = dockItemCount.coerceAtLeast(0),
+        )
     }
 
     internal fun sanitize(stored: StoredLayout): State {
