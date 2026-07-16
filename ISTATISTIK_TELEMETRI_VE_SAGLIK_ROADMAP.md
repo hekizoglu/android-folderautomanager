@@ -870,7 +870,7 @@ Non-fatal gönderilecek durumlar:
 
 Aynı hata cihaz başına sürekli gönderilmemeli; hata kodu için günlük rate limit uygulanmalı.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. 12 alanlı güvenli `CrashContext` allowlist'i, opt-in kapılı non-fatal kayıt ve hata kodu başına cihazda günlük kalıcı rate limit odak test ve `compileDebugKotlin` ile doğrulandı. Sürüm 1.3.64/87.
 
 **Testler:**
 

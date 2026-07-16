@@ -1926,3 +1926,8 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - Non-fatal kayıtlar opt-in kapısında tutuldu ve aynı sağlık hata kodunun cihaz başına günde yalnız bir kez gönderilmesini sağlayan kalıcı limiter eklendi.
 - Allowlist, opt-in ve hata-kodu bazlı limit için odak test eklendi; sürüm `versionCode 87` / `versionName 1.3.64` oldu.
 - Kalite kapısı engeli: odak `CrashContextTest` iki kez 120 saniyede çıktı vermeden zaman aşımına uğradı. İkinci denemeden önce Gradle daemon durduruldu ve `scripts/clear_build_lock.ps1` çalıştırıldı. Zorunlu test/compile doğrulanamadığı için B8 roadmap durumu bekliyor bırakıldı.
+
+## 2026-07-16 — Döngü B8 doğrulaması tamamlandı
+
+- Önceki Gradle zaman aşımı tekrarlanmadı; `CrashContextTest` opt-in kapısını, 12 alanlı gizlilik allowlist'ini ve hata kodu başına günlük rate limit davranışını başarıyla doğruladı.
+- `compileDebugKotlin -PskipGoogleServices` başarıyla tamamlandı; B8 yol haritasında tamamlandı olarak işaretlendi. Sürüm `versionCode 87` / `versionName 1.3.64` olarak korundu.
