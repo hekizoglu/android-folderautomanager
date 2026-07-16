@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H2.2 - 2026-07-16
+
+**Yapilanlar:** Favoriler, oneriler, son bildirim alan uygulamalar ve son kullanilanlar ayri stateless row section composable'larina ayrildi. Mevcut tek contextual row secimi korunurken her row `HomeSectionId` ile bagimsiz renderer hedefi haline getirildi; launch, context menu, haptic ve favorites analytics callback zincirleri degismedi. Surum `1.3.72` / `versionCode 95`.
+
+**Arastirma:** Android'in resmi Compose state hoisting, stabil key, gesture ve haptic rehberleri esas alindi.
+
+**Kalite kapisi:** `HomeSectionRendererTest` contextual row-section eslemesini kapsayacak sekilde genisletildi; zorunlu compile ve odak test basariyla tamamlandi.
+
 ## Home Screen Layout Editor H2.1 - 2026-07-16
 
 **Yapilanlar:** Stateless `HomeSectionRenderer`, sirali/gorunur render plani ve section action/content baglantisi eklendi. Google Search ile Android Widgets mevcut state ve callback'leri korunarak renderer'a tasindi; section kimliginden turetilen stabil Compose key kullanildi. Surum `1.3.71` / `versionCode 94`.

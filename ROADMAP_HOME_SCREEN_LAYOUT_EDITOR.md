@@ -766,7 +766,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H2.2 — Favoriler ve satır bileşenleri ayrıştırması
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** `HomeFavoritesSection` içindeki favoriler, öneriler, son bildirim alanlar ve son kullanılanlar satırlarını ayrı composable'lara ayır.
 

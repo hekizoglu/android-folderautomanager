@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.HomeLayoutItem
+import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.utils.AppAnalytics
 
 internal enum class HomeContextualRowKind {
@@ -17,6 +19,13 @@ internal data class HomeContextualRow(
     val kind: HomeContextualRowKind,
     val apps: List<AppInfo>,
 )
+
+internal fun HomeContextualRowKind.sectionId(): HomeSectionId = when (this) {
+    HomeContextualRowKind.FAVORITES -> HomeSectionId.FAVORITES
+    HomeContextualRowKind.SUGGESTIONS -> HomeSectionId.SUGGESTIONS
+    HomeContextualRowKind.RECENT_NOTIFICATIONS -> HomeSectionId.RECENT_NOTIFICATIONS
+    HomeContextualRowKind.RECENT_APPS -> HomeSectionId.RECENT_APPS
+}
 
 internal fun selectHomeContextualRow(
     favoritesEnabled: Boolean,
@@ -106,61 +115,52 @@ internal fun HomeFavoritesSection(
         dockPackages = dockPackages,
     ) ?: return
 
-    when (row.kind) {
-        HomeContextualRowKind.FAVORITES -> {
-            FavoritesRow(
-                apps = row.apps,
-                iconPackPkg = iconPackPkg,
-                onAppClick = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    AppAnalytics.appLaunched("favorites")
-                    onLaunchApp(pkg)
-                },
-                onAppLongClick = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onAppLongClick(pkg)
-                }
-            )
-        }
-        HomeContextualRowKind.SUGGESTIONS -> {
-            AppSuggestionsRow(
-                apps = row.apps,
-                iconPackPkg = iconPackPkg,
-                iconSizeDp = suggestionsIconSizeDp,
-                onAppClick = { app ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLaunchApp(app.packageName)
-                },
-                onAppLongClick = { app ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onAppLongClick(app.packageName)
-                }
-            )
-        }
-        HomeContextualRowKind.RECENT_NOTIFICATIONS -> {
-            RecentNotificationAppsRow(
-                apps = row.apps,
-                notificationCounts = recentNotificationCounts,
-                iconPackPkg = iconPackPkg,
-                onAppClick = { app ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLaunchApp(app.packageName)
-                },
-                onAppLongClick = { app ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onAppLongClick(app.packageName)
-                }
-            )
-        }
-        HomeContextualRowKind.RECENT_APPS -> {
-            RecentAppsRow(
-                apps = row.apps,
-                iconPackPkg = iconPackPkg,
-                onAppClick = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLaunchApp(pkg)
-                }
-            )
-        }
-    }
+    val sectionId = row.kind.sectionId()
+    HomeSectionRenderer(
+        items = listOf(HomeLayoutItem(sectionId, sectionId.defaultZone, order = 0, visible = true)),
+    ) { renderedSectionId -> when (renderedSectionId) {
+        HomeSectionId.FAVORITES -> HomeFavoritesRowSection(row.apps, iconPackPkg, haptic, onLaunchApp, onAppLongClick)
+        HomeSectionId.SUGGESTIONS -> HomeSuggestionsRowSection(row.apps, iconPackPkg, suggestionsIconSizeDp, haptic, onLaunchApp, onAppLongClick)
+        HomeSectionId.RECENT_NOTIFICATIONS -> HomeRecentNotificationsRowSection(row.apps, recentNotificationCounts, iconPackPkg, haptic, onLaunchApp, onAppLongClick)
+        HomeSectionId.RECENT_APPS -> HomeRecentAppsRowSection(row.apps, iconPackPkg, haptic, onLaunchApp)
+        else -> Unit
+    } }
 }
+
+@Composable
+internal fun HomeFavoritesRowSection(apps: List<AppInfo>, iconPackPkg: String, haptic: HapticFeedback, onLaunchApp: (String) -> Unit, onAppLongClick: (String) -> Unit) =
+    FavoritesRow(apps, iconPackPkg, onAppClick = { pkg ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        AppAnalytics.appLaunched("favorites")
+        onLaunchApp(pkg)
+    }, onAppLongClick = { pkg ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onAppLongClick(pkg)
+    })
+
+@Composable
+internal fun HomeSuggestionsRowSection(apps: List<AppInfo>, iconPackPkg: String, iconSizeDp: Int, haptic: HapticFeedback, onLaunchApp: (String) -> Unit, onAppLongClick: (String) -> Unit) =
+    AppSuggestionsRow(apps, iconPackPkg, iconSizeDp, onAppClick = { app ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onLaunchApp(app.packageName)
+    }, onAppLongClick = { app ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onAppLongClick(app.packageName)
+    })
+
+@Composable
+internal fun HomeRecentNotificationsRowSection(apps: List<AppInfo>, notificationCounts: Map<String, Int>, iconPackPkg: String, haptic: HapticFeedback, onLaunchApp: (String) -> Unit, onAppLongClick: (String) -> Unit) =
+    RecentNotificationAppsRow(apps, notificationCounts, iconPackPkg, onAppClick = { app ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onLaunchApp(app.packageName)
+    }, onAppLongClick = { app ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onAppLongClick(app.packageName)
+    })
+
+@Composable
+internal fun HomeRecentAppsRowSection(apps: List<AppInfo>, iconPackPkg: String, haptic: HapticFeedback, onLaunchApp: (String) -> Unit) =
+    RecentAppsRow(apps, iconPackPkg, onAppClick = { pkg ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onLaunchApp(pkg)
+    })
