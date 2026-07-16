@@ -584,7 +584,7 @@ interface PerformanceGateway {
 - Test cihazı etiketini yalnızca sabit enum olarak ekler.
 - UI'ı asla çökertmez.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Firebase Analytics, Crashlytics ve Performance erişimleri merkezî gateway adapter'larına taşındı; izin, Firebase yokluğunda no-op, event doğrulama, kalıcı günlük limit, sabit test cihazı enum'u ve SDK hata yalıtımı 7/7 odak test, derleme ve kaynak taramasıyla doğrulandı. Sürüm 1.3.59/82.
 
 **Kabul kriterleri:** UI ve domain kodunda doğrudan `FirebaseAnalytics.getInstance`, `FirebaseCrashlytics.getInstance` veya Performance SDK çağrısı kalmaz.
 

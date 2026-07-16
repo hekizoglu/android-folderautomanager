@@ -9,7 +9,7 @@ import org.junit.Test
 class TelemetryManagerTest {
     @Before
     fun resetGateway() {
-        TelemetryManager.applyCollectionState(false, FakeServices())
+        TelemetryManager.configureForTest(enabled = false)
     }
 
     @Test
@@ -38,10 +38,59 @@ class TelemetryManagerTest {
         assertEquals(listOf("analytics:false", "crashlytics:false", "performance:false"), services.calls)
     }
 
+    @Test
+    fun `analytics is no-op without consent`() {
+        val gateway = FakeAnalyticsGateway()
+        TelemetryManager.configureForTest(enabled = false, analyticsGateway = gateway)
+
+        TelemetryManager.log(TelemetryEvent.AppStarted)
+
+        assertTrue(gateway.events.isEmpty())
+    }
+
+    @Test
+    fun `analytics validates and applies daily limiter before gateway`() {
+        val gateway = FakeAnalyticsGateway()
+        var permits = 1
+        TelemetryManager.configureForTest(
+            enabled = true,
+            analyticsGateway = gateway,
+            dailyLimiter = DailyEventLimiter { permits-- > 0 },
+        )
+
+        TelemetryManager.log(TelemetryEvent.AppStarted)
+        TelemetryManager.log(TelemetryEvent.AllAppsOpened)
+
+        assertEquals(listOf(TelemetryEvent.AppStarted), gateway.events)
+    }
+
+    @Test
+    fun `gateway failure never escapes into caller`() {
+        TelemetryManager.configureForTest(
+            enabled = true,
+            analyticsGateway = object : AnalyticsGateway {
+                override fun log(event: TelemetryEvent) = error("sdk unavailable")
+            },
+        )
+
+        TelemetryManager.log(TelemetryEvent.AppStarted)
+    }
+
+    @Test
+    fun `fixed test device tags contain no free text`() {
+        assertEquals(5, TestDeviceTag.entries.size)
+        assertTrue(TestDeviceTag.entries.all { it.wireValue == null || it.wireValue!!.matches(Regex("[a-z_]+")) })
+    }
+
     private class FakeServices : CollectionServices {
         val calls = mutableListOf<String>()
         override fun setAnalyticsEnabled(enabled: Boolean) { calls += "analytics:$enabled" }
         override fun setCrashlyticsEnabled(enabled: Boolean) { calls += "crashlytics:$enabled" }
         override fun setPerformanceEnabled(enabled: Boolean) { calls += "performance:$enabled" }
+    }
+
+    private class FakeAnalyticsGateway : AnalyticsGateway {
+        val events = mutableListOf<TelemetryEvent>()
+        override fun log(event: TelemetryEvent) { events += event }
     }
 }

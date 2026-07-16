@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B3 - 2026-07-16
+
+**Yapilanlar:** `TelemetryManager` Analytics, Crashlytics ve Performance icin tek giris noktasi oldu; Firebase SDK ayrintilari ayri gateway adapter'larina tasindi. Izin kapali veya Firebase hazir degilken no-op, tipli event dogrulamasi, cihazda kalici 500 event/gun siniri, yalniz kapali `TestDeviceTag` enum'u ve SDK hatalarinin UI'a sizmamasini saglayan koruma eklendi. `AppAnalytics` artik yalniz manager'a delege ediyor. Surum `1.3.59` / `versionCode 82`.
+
+**Arastirma:** Resmi Firebase Analytics collection control, Crashlytics opt-in/custom report, Performance custom trace ve Android manuel dependency injection belgeleri incelendi. SDK cagrisini adapter sinirinda tutma, trace stop garantisi ve fake gateway'lerle JVM testi esas alindi.
+
+**Kalite kapisi:** Ilk odak test denemesi bilinen Windows `generateDebugBuildConfig` kilidine takildi; `scripts/clear_build_lock.ps1` sonrasi `compileDebugKotlin -PskipGoogleServices` basarili oldu. `TelemetryManagerTest` 7/7 gecti; UI/domain kaynak taramasinda yasak dogrudan Firebase Analytics/Crashlytics/Performance cagrisi bulunmadi. `git diff --check` temiz gecti.
+
 ## Istatistik/Telemetri Roadmap B2 - 2026-07-16
 
 **Yapilanlar:** `AppAnalytics` gizlilik siniri ham metin kabul etmeyecek sekilde daraltildi. Klasor acma eventi yalniz `folder_type` ve `app_count_bucket`; kategori yeniden siniflandirma yalniz sabit kaynak/sonuc/guven kovalari; arama eventi ise sorgu metni yerine uzunluk, sonuc, gecikme ve kaynak karisimi kovalari tasiyor. `appStarted` istemci timestamp'i gondermiyor. Cagri noktalari guncellendi, surum `1.3.58` / `versionCode 81`.
