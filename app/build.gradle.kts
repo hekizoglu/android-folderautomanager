@@ -41,6 +41,11 @@ android {
         targetSdk = 35
         versionCode = 105
         versionName = "1.3.82"
+        buildConfigField(
+            "boolean",
+            "FIREBASE_BUILD_ENABLED",
+            (!skipGoogleServices).toString(),
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -96,6 +101,9 @@ android {
         debug {
             isMinifyEnabled = false
             isDebuggable = true
+            if (skipGoogleServices) {
+                versionNameSuffix = "-ci-no-firebase"
+            }
         }
     }
 

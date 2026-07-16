@@ -589,6 +589,9 @@
     <string name="usage_data_not_collected_folders">Özel klasör adları</string>
     <string name="usage_data_connection_title">Bağlantı durumu</string>
     <string name="usage_data_test_button">Firebase bağlantısını test et</string>
+    <string name="usage_data_ci_build_warning_title">Bu APK Firebase\'siz üretildi</string>
+    <string name="usage_data_ci_build_warning_description">Bu sürüm yalnızca kod ve CI doğrulaması içindir. Analytics, Crashlytics ve Performance bu APK\'da çalışmaz. Telefonda Firebase testi yapmak için Firebase etkin test APK\'sını kurun.</string>
+    <string name="usage_data_ci_build_test_disabled">Bu derlemede Firebase kapalı</string>
     <string name="usage_data_status_idle">Henüz bağlantı testi yapılmadı.</string>
     <string name="usage_data_status_testing">Firebase yapılandırması test ediliyor…</string>
     <string name="usage_data_status_success">Bağlantı testi başarılı.</string>

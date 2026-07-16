@@ -48,6 +48,7 @@ nul
 docs/all_code.txt
 docs/task/
 app/google-services.json
+google-services.json
 
 # QA otomatik raporlar (geÃ§ici build artifact)
 qa/reports/

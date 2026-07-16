@@ -56,12 +56,29 @@ class FirebaseConnectionTesterTest {
         assertFalse(result.analyticsQueued)
         assertEquals(0, dependencies.analyticsCalls)
     }
+
+    @Test
+    fun `telemetry service failure after round trip reports partial success`() = runTest {
+        val dependencies = FakeDependencies(analyticsFailure = true)
+
+        val result = FirebaseConnectionTester(dependencies).test()
+
+        assertEquals(ConnectionTestStatus.PARTIAL_SUCCESS, result.status)
+        assertEquals(FirebaseConnectionTester.ANALYTICS_NOT_AVAILABLE, result.safeErrorCode)
+        assertTrue(result.firebaseRoundTripOk)
+        assertFalse(result.analyticsQueued)
+        assertTrue(result.crashlyticsReady)
+        assertTrue(result.performanceReady)
+    }
 }
 
 private class FakeDependencies(
     private val configured: Boolean = true,
     private val network: Boolean = true,
     private val roundTripFailure: Boolean = false,
+    private val analyticsFailure: Boolean = false,
+    private val crashlyticsFailure: Boolean = false,
+    private val performanceFailure: Boolean = false,
 ) : FirebaseConnectionDependencies {
     var roundTripCalled = false
     var analyticsCalls = 0
@@ -75,9 +92,18 @@ private class FakeDependencies(
         roundTripCalled = true
         if (roundTripFailure) error("safe synthetic failure")
     }
-    override fun queueAnalytics() { analyticsCalls++ }
-    override fun logCrashlytics() { crashlyticsCalls++ }
-    override fun runPerformanceTrace() { performanceCalls++ }
+    override fun queueAnalytics() {
+        analyticsCalls++
+        if (analyticsFailure) error("analytics unavailable")
+    }
+    override fun logCrashlytics() {
+        crashlyticsCalls++
+        if (crashlyticsFailure) error("crashlytics unavailable")
+    }
+    override fun runPerformanceTrace() {
+        performanceCalls++
+        if (performanceFailure) error("performance unavailable")
+    }
     override fun persist(result: FirebaseConnectionTestResult) { persisted = result }
     override fun now() = 123L
 }

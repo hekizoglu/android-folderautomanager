@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armutlu.apporganizer.BuildConfig
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.ConnectionTestStatus
 import com.armutlu.apporganizer.presentation.viewmodel.UsageDataViewModel
@@ -46,6 +47,7 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
         ) as T
     })
     val state by model.uiState.collectAsState()
+    val firebaseBuildEnabled = BuildConfig.FIREBASE_BUILD_ENABLED
 
     SettingsSubScreenScaffold(stringResource(R.string.usage_data_title), onNavigateBack) {
         item { SettingsSectionTitle(stringResource(R.string.usage_data_sharing_section)) }
@@ -77,20 +79,46 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
         item {
             SettingsCard {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (!firebaseBuildEnabled) {
+                        FirebaseDisabledBuildWarning()
+                    }
                     Text(connectionStatusText(state.connectionStatus))
                     state.connectionResult?.let { ConnectionTestDetails(it) }
                     Button(
                         onClick = model::runConnectionTest,
-                        enabled = state.connectionStatus != ConnectionTestStatus.TESTING,
+                        enabled = firebaseBuildEnabled && state.connectionStatus != ConnectionTestStatus.TESTING,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         if (state.connectionStatus == ConnectionTestStatus.TESTING) {
                             CircularProgressIndicator(Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
                         }
-                        Text(stringResource(R.string.usage_data_test_button))
+                        Text(stringResource(
+                            if (firebaseBuildEnabled) {
+                                R.string.usage_data_test_button
+                            } else {
+                                R.string.usage_data_ci_build_test_disabled
+                            },
+                        ))
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FirebaseDisabledBuildWarning() {
+    SettingsCard {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                stringResource(R.string.usage_data_ci_build_warning_title),
+                color = MaterialTheme.colorScheme.error,
+            )
+            Text(
+                stringResource(R.string.usage_data_ci_build_warning_description),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

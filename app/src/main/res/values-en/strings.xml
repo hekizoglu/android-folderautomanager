@@ -585,6 +585,9 @@
     <string name="usage_data_not_collected_folders">Custom folder names</string>
     <string name="usage_data_connection_title">Connection status</string>
     <string name="usage_data_test_button">Test Firebase connection</string>
+    <string name="usage_data_ci_build_warning_title">This APK was built without Firebase</string>
+    <string name="usage_data_ci_build_warning_description">This build is intended only for code and CI verification. Analytics, Crashlytics, and Performance are unavailable. Install the Firebase-enabled test APK for device testing.</string>
+    <string name="usage_data_ci_build_test_disabled">Firebase is disabled in this build</string>
     <string name="usage_data_status_idle">No connection test has been run yet.</string>
     <string name="usage_data_status_testing">Testing Firebase configuration…</string>
     <string name="usage_data_status_success">Connection test succeeded.</string>

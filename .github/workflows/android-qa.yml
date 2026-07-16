@@ -1,4 +1,4 @@
-name: Android QA
+name: Android QA — No Firebase
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -23,24 +23,24 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Build (Debug)
-        run: ./gradlew assembleDebug -PskipGoogleServices=true
+      - name: Build debug - no Firebase
+        run: ./gradlew assembleDebug -PskipGoogleServices=true --console=plain
 
-      - name: Lint
-        run: ./gradlew lintDebug -PskipGoogleServices=true
+      - name: Lint - no Firebase
+        run: ./gradlew lintDebug -PskipGoogleServices=true --console=plain
 
-      - name: Unit Tests
-        run: ./gradlew testDebugUnitTest -PskipGoogleServices=true
+      - name: Unit tests - no Firebase
+        run: ./gradlew testDebugUnitTest -PskipGoogleServices=true --console=plain
 
-      - name: detekt
-        run: ./gradlew detekt -PskipGoogleServices=true
+      - name: detekt - no Firebase
+        run: ./gradlew detekt -PskipGoogleServices=true --console=plain
         continue-on-error: true
 
-      - name: ktlint
-        run: ./gradlew ktlintCheck -PskipGoogleServices=true
+      - name: ktlint - no Firebase
+        run: ./gradlew ktlintCheck -PskipGoogleServices=true --console=plain
         continue-on-error: true
 
-      - name: Upload QA Reports
+      - name: Upload QA reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
