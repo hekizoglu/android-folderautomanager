@@ -34,10 +34,12 @@ internal class FirebaseCrashGateway : CrashGateway {
 
 internal class FirebasePerformanceGateway : PerformanceGateway {
     private val delegate = FirebasePerformance.getInstance()
-    override fun <T> trace(name: String, block: () -> T): T {
-        val trace = delegate.newTrace(name)
-        trace.start()
-        return try { block() } finally { trace.stop() }
+    override fun start(name: String): PerformanceTrace {
+        val firebaseTrace = delegate.newTrace(name).apply { start() }
+        return object : PerformanceTrace {
+            override fun putAttribute(name: String, value: String) = firebaseTrace.putAttribute(name, value)
+            override fun stop() = firebaseTrace.stop()
+        }
     }
 }
 

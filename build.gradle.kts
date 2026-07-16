@@ -7,6 +7,7 @@ plugins {
     id("com.google.dagger.hilt.android") version "2.52" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("com.google.firebase.crashlytics") version "3.0.2" apply false
+    id("com.google.firebase.firebase-perf") version "2.0.2" apply false
     id("io.gitlab.arturbosch.detekt") version "1.23.8" apply false
 }
 

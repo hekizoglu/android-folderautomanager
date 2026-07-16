@@ -23,6 +23,7 @@ if (skipGoogleServices) {
 } else {
     plugins.apply("com.google.gms.google-services")
     plugins.apply("com.google.firebase.crashlytics")
+    plugins.apply("com.google.firebase.firebase-perf")
 }
 
 val keystoreProps = Properties().also { props ->
@@ -38,8 +39,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 87
-        versionName = "1.3.64"
+        versionCode = 88
+        versionName = "1.3.65"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

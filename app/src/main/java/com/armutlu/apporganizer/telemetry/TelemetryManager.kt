@@ -13,8 +13,22 @@ interface CrashGateway {
 }
 
 interface PerformanceGateway {
-    fun <T> trace(name: String, block: () -> T): T
+    fun start(name: String): PerformanceTrace
 }
+
+interface PerformanceTrace {
+    fun putAttribute(name: String, value: String)
+    fun stop()
+}
+
+enum class PerformanceTraceName(val wireValue: String) {
+    APP_COLD_START("app_cold_start"), HOME_SCREEN_READY("home_screen_ready"),
+    GLOBAL_SEARCH("global_search"), APP_CATALOG_RECONCILE("app_catalog_reconcile"),
+    CLASSIFICATION_RUN("classification_run"), USAGE_SYNC("usage_sync"),
+    FILE_INDEX("file_index"), HEALTH_REPORT_GENERATION("health_report_generation")
+}
+
+enum class PerformanceResult(val wireValue: String) { SUCCESS("success"), FAILURE("failure"), PARTIAL("partial") }
 
 enum class TestDeviceTag(val wireValue: String?) {
     NONE(null), QA_PRIMARY_PHONE("qa_primary_phone"), QA_CLEAN_INSTALL_PHONE("qa_clean_install_phone"),
@@ -39,6 +53,7 @@ object TelemetryManager {
     @Volatile private var limiter: DailyEventLimiter = InMemoryDailyEventLimiter(DAILY_EVENT_LIMIT)
     @Volatile private var nonFatalLimiter: DailyNonFatalLimiter = InMemoryDailyNonFatalLimiter()
     @Volatile private var testDeviceTag: TestDeviceTag = TestDeviceTag.NONE
+    private val activeTraces = mutableSetOf<PerformanceTraceName>()
 
     fun isCollectionEnabled(): Boolean = collectionEnabled
 
@@ -76,8 +91,31 @@ object TelemetryManager {
         }
     }
 
-    fun <T> trace(name: String, block: () -> T): T =
-        if (!collectionEnabled) block() else runCatching { performance.trace(name, block) }.getOrElse { block() }
+    fun <T> trace(name: PerformanceTraceName, block: () -> T): T = runTrace(name, block)
+
+    suspend fun <T> traceSuspending(name: PerformanceTraceName, block: suspend () -> T): T {
+        val trace = beginTrace(name) ?: return block()
+        return try { block() } finally { endTrace(name, trace) }
+    }
+
+    private fun <T> runTrace(name: PerformanceTraceName, block: () -> T): T {
+        val trace = beginTrace(name) ?: return block()
+        return try { block() } finally { endTrace(name, trace) }
+    }
+
+    private fun beginTrace(name: PerformanceTraceName): PerformanceTrace? {
+        if (!collectionEnabled) return null
+        synchronized(activeTraces) { if (!activeTraces.add(name)) return null }
+        return runCatching { performance.start(name.wireValue) }.getOrElse {
+            synchronized(activeTraces) { activeTraces.remove(name) }
+            null
+        }
+    }
+
+    private fun endTrace(name: PerformanceTraceName, trace: PerformanceTrace) {
+        runCatching { trace.stop() }
+        synchronized(activeTraces) { activeTraces.remove(name) }
+    }
 
     fun setTestDeviceTag(tag: TestDeviceTag) { testDeviceTag = tag }
 
@@ -156,7 +194,10 @@ private class SharedPreferencesDailyNonFatalLimiter(context: Context) : DailyNon
     }
 }
 internal object NoOpPerformanceGateway : PerformanceGateway {
-    override fun <T> trace(name: String, block: () -> T): T = block()
+    override fun start(name: String): PerformanceTrace = object : PerformanceTrace {
+        override fun putAttribute(name: String, value: String) = Unit
+        override fun stop() = Unit
+    }
 }
 
 private class InMemoryDailyEventLimiter(private val limit: Int) : DailyEventLimiter {

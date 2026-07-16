@@ -22,6 +22,8 @@ import kotlinx.coroutines.withContext
 import kotlin.system.measureTimeMillis
 import timber.log.Timber
 import javax.inject.Singleton
+import com.armutlu.apporganizer.telemetry.PerformanceTraceName
+import com.armutlu.apporganizer.telemetry.TelemetryManager
 
 @Singleton
 class SearchRepository(
@@ -60,6 +62,13 @@ class SearchRepository(
     suspend fun search(rawQuery: String, limit: Int = 50): Map<SourceType, List<SearchDocument>> {
         val trimmed = rawQuery.trim()
         if (trimmed.isEmpty()) return emptyMap()
+
+        return TelemetryManager.traceSuspending(PerformanceTraceName.GLOBAL_SEARCH) {
+            searchMeasured(trimmed, limit)
+        }
+    }
+
+    private suspend fun searchMeasured(trimmed: String, limit: Int): Map<SourceType, List<SearchDocument>> {
 
         var result: Map<SourceType, List<SearchDocument>> = emptyMap()
         val elapsedMs = measureTimeMillis {

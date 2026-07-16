@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B9 - 2026-07-16 (tamamlanmadi)
+
+**Yapilanlar:** Firebase Performance Gradle eklentisi eklendi; sabit sekiz trace adi, opt-in kapisi ve ayni islem icin nested/cift trace korumasi merkezi telemetry katmanina eklendi. `global_search` gercek arama akisi enstrumante edildi. Surum adayi `1.3.65` / `versionCode 88`.
+
+**Arastirma:** Resmi Firebase Android Performance kurulum ve custom trace belgeleri incelendi. SDK/Gradle eklentisi, kapali-varsayilan collection ve dusuk cardinality sabit trace sozlesmesi esas alindi.
+
+**Kalite kapisi:** Odak `TelemetryManagerTest` kosusu 120 saniye sessiz zaman asimina ugradi. Bilinen Windows build kilidi betigi acik `app/build/generated` dizinini silemedi; ilgili Gradle Java sureci durdurulup temizleme ve tek yeniden deneme yapildi, ancak kosu 180 saniye daha sessiz zaman asimina ugradi. Zorunlu test ve `compileDebugKotlin` dogrulanamadigi icin B9 tamamlandi olarak isaretlenmedi.
+
 ## Istatistik/Telemetri Roadmap B6 - 2026-07-16
 
 **Yapilanlar:** Ilk surum Analytics katalogu roadmap'teki 15 event ile bire bir sinirlandi. Her event yalniz tipli, kapali enum/kova parametreleri kabul ediyor; eski katalog disi event'ler gonderilmiyor. Merkezi validator event/parametre ad kurallarini, exact allowlist'i, dusuk cardinality degerlerini ve paket/uygulama/kategori adi ile serbest metin yasagini fail-closed uyguluyor. Aktif klasor ve arama event'leri yeni sozlesmeye uyarlandi. Surum `1.3.62` / `versionCode 85`.

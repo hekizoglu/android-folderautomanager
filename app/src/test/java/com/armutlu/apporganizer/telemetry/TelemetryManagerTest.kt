@@ -83,6 +83,26 @@ class TelemetryManagerTest {
         assertTrue(TestDeviceTag.entries.all { it.wireValue == null || it.wireValue!!.matches(Regex("[a-z_]+")) })
     }
 
+    @Test
+    fun `performance is no-op without consent and only allows fixed trace names`() {
+        val gateway = FakePerformanceGateway()
+        TelemetryManager.configureForTest(enabled = false, performanceGateway = gateway)
+        assertEquals("ok", TelemetryManager.trace(PerformanceTraceName.GLOBAL_SEARCH) { "ok" })
+        assertTrue(gateway.started.isEmpty())
+        assertEquals(8, PerformanceTraceName.entries.size)
+    }
+
+    @Test
+    fun `same performance trace is not nested or duplicated`() {
+        val gateway = FakePerformanceGateway()
+        TelemetryManager.configureForTest(enabled = true, performanceGateway = gateway)
+        TelemetryManager.trace(PerformanceTraceName.GLOBAL_SEARCH) {
+            TelemetryManager.trace(PerformanceTraceName.GLOBAL_SEARCH) { Unit }
+        }
+        assertEquals(listOf("global_search"), gateway.started)
+        assertEquals(1, gateway.stopped)
+    }
+
     private class FakeServices : CollectionServices {
         val calls = mutableListOf<String>()
         override fun setAnalyticsEnabled(enabled: Boolean) { calls += "analytics:$enabled" }
@@ -93,5 +113,17 @@ class TelemetryManagerTest {
     private class FakeAnalyticsGateway : AnalyticsGateway {
         val events = mutableListOf<TelemetryEvent>()
         override fun log(event: TelemetryEvent) { events += event }
+    }
+
+    private class FakePerformanceGateway : PerformanceGateway {
+        val started = mutableListOf<String>()
+        var stopped = 0
+        override fun start(name: String): PerformanceTrace {
+            started += name
+            return object : PerformanceTrace {
+                override fun putAttribute(name: String, value: String) = Unit
+                override fun stop() { stopped++ }
+            }
+        }
     }
 }
