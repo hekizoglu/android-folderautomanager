@@ -6,6 +6,10 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
+import com.armutlu.apporganizer.telemetry.CountBucket
+import com.armutlu.apporganizer.telemetry.QueryLengthBucket
+import com.armutlu.apporganizer.telemetry.TelemetryEvent
+import com.armutlu.apporganizer.telemetry.TelemetryEventValidator
 
 /**
  * Firebase Analytics sarmalayıcı — Firebase başlatılamadıysa (google-services.json yok)
@@ -24,59 +28,47 @@ object AppAnalytics {
 
     @Volatile private var appContext: Context? = null
 
-    private fun log(event: String, params: Bundle? = null) {
-        runCatching { analytics?.logEvent(event, params) }
+    private fun log(event: TelemetryEvent) {
+        if (!TelemetryEventValidator.isValid(event)) return
+        val params = event.parameters.takeIf { it.isNotEmpty() }?.let { values ->
+            Bundle().apply { values.forEach { (key, value) -> putString(key, value) } }
+        }
+        runCatching { analytics?.logEvent(event.eventName, params) }
     }
 
     fun appStarted(context: Context) {
         appContext = context.applicationContext
-        val versionName = try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "unknown"
-        } catch (e: Exception) { "unknown" }
-        log("app_started", Bundle().apply {
-            putString("version", versionName)
-            putLong("timestamp", System.currentTimeMillis())
-        })
+        log(TelemetryEvent.AppStarted)
     }
 
     fun folderOpened(categoryId: String, categoryName: String) {
-        log("folder_opened", Bundle().apply {
-            putString("category_id", categoryId)
-            putString("category_name", categoryName)
-        })
+        log(TelemetryEvent.FolderOpened)
     }
 
     // Not: package_name kasıtlı olarak GÖNDERİLMEZ — hangi uygulamaları kullandığı
     // Firebase'e (üçüncü taraf) sızdırılmaz; privacy-first vaadiyle çelişir (Data Safety uyumu).
     fun appLaunched(source: String) {
         // source: "home", "folder", "all_apps", "suggestions", "favorites", "recent"
-        log("app_launched", Bundle().apply {
-            putString("source", source)
-        })
+        TelemetryEvent.Source.from(source)?.let { log(TelemetryEvent.AppLaunched(it)) }
     }
 
     fun allAppsOpened() {
-        log("all_apps_opened")
+        log(TelemetryEvent.AllAppsOpened)
     }
 
     fun categoryReclassified(fromCategory: String, toCategory: String) {
         // Kullanıcı bir uygulamanın kategorisini değiştirince — öğrenme sinyali
-        log("category_reclassified", Bundle().apply {
-            putString("from_category", fromCategory)
-            putString("to_category", toCategory)
-        })
+        log(TelemetryEvent.CategoryReclassified)
     }
 
     fun shortcutUsed(shortcutId: String) {
-        log("shortcut_used", Bundle().apply {
-            putString("shortcut_id", shortcutId)
-        })
+        log(TelemetryEvent.ShortcutUsed)
     }
 
     fun searchPerformed(query: String, resultCount: Int) {
-        log("search_performed", Bundle().apply {
-            putString("query_length", query.length.coerceAtMost(5).toString())
-            putInt("result_count", resultCount)
-        })
+        log(TelemetryEvent.SearchPerformed(
+            queryLength = QueryLengthBucket.from(query.length),
+            resultCount = CountBucket.from(resultCount)
+        ))
     }
 }

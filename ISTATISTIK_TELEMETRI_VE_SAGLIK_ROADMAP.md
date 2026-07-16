@@ -435,7 +435,7 @@ rapora eklenmeli.
 5. `query`, `name`, `phone`, `path`, `package`, `notification_text`, `folder_name` gibi anahtarlar kara listeye alınsın.
 6. Event isimleri snake_case ve sabit olsun.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Tipli ve sabit telemetry event kataloğu, event bazlı parametre allowlist'i, yasaklı alan denylist'i, snake_case/uzunluk/enum doğrulaması ve sayı/metin uzunluğu kovaları eklendi; mevcut Analytics çağrılarından kişisel serbest metinler kaldırıldı, odak validator testleri ve `compileDebugKotlin` kapısı geçti.
 
 **Değişecek/yeni dosyalar:**
 

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B0 - 2026-07-16
+
+**Yapılanlar:** Tipli `TelemetryEvent` kataloğu, event bazli parametre allowlist'i, yasakli anahtar listesi ve fail-closed `TelemetryEventValidator` eklendi. Mevcut `AppAnalytics` yalniz tipli event kabul edecek sekilde tasindi; klasor/kategori/shortcut serbest metinleri kaldirildi, arama uzunlugu ve sonuc sayisi sabit kovalara donusturuldu. Surum `1.3.56` / `versionCode 79`.
+
+**Arastirma:** Firebase Android event sinirlari ve Google Analytics PII rehberi dogrulandi. Event/parametre adlarinda sabit snake_case katalog, event basina allowlist ve ham kullanici girdisi yerine enum/kova modeli esas alindi.
+
+**Kalite kapisi:** Ilk deneme bilinen Windows `generateDebugBuildConfig` kilidine takildi. `scripts/clear_build_lock.ps1` sonrasi `TelemetryEventValidatorTest` odak testi ve `compileDebugKotlin -PskipGoogleServices` basariyla gecti.
+
 ## Istatistik/Saglik Roadmap Cron - 2026-07-16
 
 **Yapılanlar:** `ISTATISTIK_TELEMETRI_VE_SAGLIK_ROADMAP.md` icin 10 dakikalik Codex otomasyon hazirlandi. Mevcut `run_roadmap_ai_audit_cron.ps1` runner'i yeni `**Durum:** ⏳ Bekliyor` formatini da taniyacak sekilde genisletildi. `register_roadmap_ai_audit_cron.ps1` artik `RoadmapFile` ve `PromptFile` parametreleri aliyor, boylece ayni altyapi farkli roadmap dosyalari icin kullanilabiliyor. Yeni `scripts/statistics_health_roadmap_cron_prompt.md` prompt'u her turda yalnizca ilk bekleyen maddeyi ele alma, Telegram bildirme, test/build kaniti olmadan tamamlandi isaretlememe ve kullanici build maliyeti tercihine uyma kurallarini tanimliyor.
