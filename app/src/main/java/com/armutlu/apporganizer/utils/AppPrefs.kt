@@ -7,6 +7,32 @@ object AppPrefs {
     const val KEY_ONBOARDING_DONE = "onboarding_done"
     const val KEY_LAUNCHER_SETUP_SHOWN = "launcher_setup_shown"
 
+    const val KEY_TELEMETRY_CONSENT_DECIDED = "telemetry_consent_decided"
+    const val KEY_TELEMETRY_ENABLED = "telemetry_enabled"
+    const val KEY_TELEMETRY_CONSENT_VERSION = "telemetry_consent_version"
+    const val KEY_TELEMETRY_LAST_CHANGED_AT = "telemetry_last_changed_at"
+
+    fun isTelemetryConsentDecided(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_TELEMETRY_CONSENT_DECIDED, false)
+
+    fun isTelemetryEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_TELEMETRY_ENABLED, false)
+
+    fun getTelemetryConsentVersion(context: Context): Int =
+        prefs(context).getInt(KEY_TELEMETRY_CONSENT_VERSION, 0)
+
+    fun getTelemetryLastChangedAt(context: Context): Long =
+        prefs(context).getLong(KEY_TELEMETRY_LAST_CHANGED_AT, 0L)
+
+    fun setTelemetryConsent(context: Context, enabled: Boolean, version: Int, changedAt: Long) {
+        prefs(context).edit()
+            .putBoolean(KEY_TELEMETRY_CONSENT_DECIDED, true)
+            .putBoolean(KEY_TELEMETRY_ENABLED, enabled)
+            .putInt(KEY_TELEMETRY_CONSENT_VERSION, version)
+            .putLong(KEY_TELEMETRY_LAST_CHANGED_AT, changedAt)
+            .apply()
+    }
+
     // Silinip yeniden kurulunca onboarding'in tekrar baslamasi icin cihaza-ozel isaretci
     // (F2 / Hüseyin geribildirimi madde 2). Android Auto Backup butun AppPrefs SharedPreferences
     // dosyasini (tema, ayarlar dahil) yedekleyip yeni kurulumda geri yukluyor; bu yuzden

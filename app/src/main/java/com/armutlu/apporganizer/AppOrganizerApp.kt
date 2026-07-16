@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
@@ -15,8 +14,7 @@ import com.armutlu.apporganizer.workers.SmartInsightWorker
 import com.armutlu.apporganizer.workers.SuggestionNotificationWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
@@ -34,14 +32,9 @@ class AppOrganizerApp : Application() {
         // google-services.json yoksa initializeApp null döner — Firebase çağrıları o durumda atlanır
         // (skipGoogleServices ile alınan build'ler açılışta ÇÖKMEZ; json eklenince otomatik aktifleşir)
         val firebaseApp = runCatching { FirebaseApp.initializeApp(this) }.getOrNull()
-        val isDebug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
         if (firebaseApp != null) {
             runCatching {
-                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!isDebug)
-                // Firebase Analytics debug mode — Console > DebugView'de anlık event görünümü
-                if (isDebug) {
-                    FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(true)
-                }
+                TelemetryConsentManager.initialize(this)
             }.onFailure { Timber.w(it, "Firebase servisleri başlatılamadı") }
         } else {
             Timber.w("Firebase devre dışı — google-services.json bulunamadı")

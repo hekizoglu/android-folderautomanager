@@ -56,6 +56,11 @@
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="33">
 
+        <!-- Privacy-first opt-in: runtime consent may override these defaults. -->
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
+        <meta-data android:name="firebase_performance_collection_enabled" android:value="false" />
+
         <activity
             android:name=".presentation.ui.MainActivity"
             android:exported="true"

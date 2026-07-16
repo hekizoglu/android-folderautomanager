@@ -38,8 +38,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 79
-        versionName = "1.3.56"
+        versionCode = 80
+        versionName = "1.3.57"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -293,6 +293,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-perf-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
 
     // WorkManager — zamanlanmis yedekleme gorevi

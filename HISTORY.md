@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B1 - 2026-07-16
+
+**Yapılanlar:** Analytics, Crashlytics ve Performance otomatik toplama manifestte varsayilan kapali yapildi. `TelemetryConsentManager` kalici kullanici tercihini tek dogruluk kaynagi olarak tutuyor; `TelemetryManager` bu degeri uc Firebase servisine birlikte uyguluyor ve onay geri cekildiginde `AppAnalytics` gateway'ini aninda no-op yapiyor. Debug build'in tercihi ezmesi ve release Crashlytics'in kosulsuz acilmasi kaldirildi. Surum `1.3.57` / `versionCode 80`.
+
+**Arastirma:** Resmi Firebase Android Analytics, Crashlytics ve Performance collection-control belgeleri dogrulandi. Crashlytics kapatma ayarinin SDK tarafinda sonraki calismada tam uygulanmasi nedeniyle anlik durdurma ayrica uygulama gateway'inde garanti edildi; DebugView'in kullanici tercihi yerine ADB `debug.firebase.analytics.app` komutuyla acilmasi esas alindi.
+
+**Kalite kapisi:** Ilk test denemesi bilinen Windows build kilidine, sonraki deneme yarim build ciktisina takildi. `scripts/clear_build_lock.ps1` ile temizlendikten sonra `compileDebugKotlin -PskipGoogleServices` ve `TelemetryManagerTest` + `AppPrefsTelemetryConsentTest` odak testleri basariyla gecti.
+
 ## Istatistik/Telemetri Roadmap B0 - 2026-07-16
 
 **Yapılanlar:** Tipli `TelemetryEvent` kataloğu, event bazli parametre allowlist'i, yasakli anahtar listesi ve fail-closed `TelemetryEventValidator` eklendi. Mevcut `AppAnalytics` yalniz tipli event kabul edecek sekilde tasindi; klasor/kategori/shortcut serbest metinleri kaldirildi, arama uzunlugu ve sonuc sayisi sabit kovalara donusturuldu. Surum `1.3.56` / `versionCode 79`.

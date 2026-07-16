@@ -484,7 +484,7 @@ performance.isPerformanceCollectionEnabled = enabled
 6. `AppOrganizerApp.kt` içindeki release Crashlytics'i koşulsuz açan mevcut kod kaldırılmalı.
 7. Debug build de kullanıcı tercihini ezmemeli. Geliştirici DebugView ayrı ADB komutuyla açılmalı.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. Dört kalıcı consent alanı ve varsayılan kapalı tercih eklendi; Analytics/Crashlytics/Performance manifestte opt-in yapıldı, tek merkezî yönetici üç SDK'yı birlikte kontrol ediyor ve event gateway onay geri çekilince anında no-op oluyor. Sürüm 1.3.57/80; odak testleri ile `compileDebugKotlin` geçti.
 
 **Değişecek dosyalar:**
 
