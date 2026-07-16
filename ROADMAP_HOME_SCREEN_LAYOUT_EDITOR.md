@@ -822,7 +822,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H4.2 — Widget reorder edit moda bağlama
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** `WidgetArea` iç reorder davranışını ortak edit moda bağla; edit modunda widget iç tıklamalarını bloke et.
 

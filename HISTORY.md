@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H4.2 - 2026-07-16
+
+**Yapilanlar:** Widget reorder normal ana ekrandan kaldirilarak tam ekran layout editor taslagina baglandi. Editor icinde widget etkilesimleri seffaf bir katmanla bloke edildi; coklu widget sirasi yalniz `Bitti` ile kaydediliyor, bos ve tek widget guvenli kaliyor. Surum `1.3.79` / `versionCode 102`.
+
+**Arastirma:** Android'in resmi Compose gesture, uzun basma drag, stabil liste oge anahtarlari ve karmasik jestler icin erisilebilirlik aksiyonlari rehberleri esas alindi.
+
+**Kalite kapisi:** Odak `WidgetEditModeTest` ile normal/edit, bos/tek/coklu ve sinir disi tasima senaryolari; `compileDebugKotlin -PskipGoogleServices` ile uygulama derlemesi basariyla dogrulandi.
+
 ## Home Screen Layout Editor H4.1 - 2026-07-16
 
 **Yapilanlar:** Normal ana ekranda klasor drag detector'i kaldirilarak uzun basma context menu davranisi korundu. Klasor siralamasi tam ekran editor icinde stabil klasor kimlikleriyle suruklenebilir taslaga alindi; `Iptal` sirayi degistirmiyor, `Bitti` kalici sirayi kaydediyor. Surum `1.3.78` / `versionCode 101`.

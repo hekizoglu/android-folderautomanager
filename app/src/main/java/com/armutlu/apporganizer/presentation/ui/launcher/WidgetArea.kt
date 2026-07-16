@@ -46,6 +46,7 @@ fun WidgetArea(
     widgetIds: List<Int>,
     onRemoveWidget: (Int) -> Unit,
     onReorderWidgets: ((List<Int>) -> Unit)? = null,
+    editMode: Boolean = false,
     autoResize: Boolean = false,
     screenHeightDp: Int = 800,
     modifier: Modifier = Modifier
@@ -77,7 +78,8 @@ fun WidgetArea(
                 WidgetCard(
                     widgetId = id,
                     onRemove = { onRemoveWidget(id) },
-                    isDraggable = widgetIds.size > 1,
+                    editMode = editMode,
+                    isDraggable = editMode && widgetIds.size > 1,
                     autoResize = autoResize,
                     screenHeightDp = screenHeightDp,
                     onDragStart = {
@@ -118,6 +120,7 @@ fun WidgetArea(
 private fun WidgetCard(
     widgetId: Int,
     onRemove: () -> Unit,
+    editMode: Boolean = false,
     isDraggable: Boolean = false,
     autoResize: Boolean = false,
     screenHeightDp: Int = 800,
@@ -151,25 +154,13 @@ private fun WidgetCard(
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color.White.copy(alpha = 0.08f))
                 .then(
-                    if (isDraggable) {
-                        Modifier.pointerInput(Unit) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = {
-                                    onDragStart()
-                                    showRemoveButton = true
-                                },
-                                onDragEnd = { onDragEnd() },
-                                onDragCancel = { onDragEnd() },
-                                onDrag = { _, dragAmount -> onDrag(dragAmount.y) }
-                            )
-                        }
-                    } else {
+                    if (!editMode) {
                         Modifier.pointerInput(Unit) {
                             detectTapGestures(
                                 onLongPress = { showRemoveButton = !showRemoveButton }
                             )
                         }
-                    }
+                    } else Modifier
                 )
         ) {
             AndroidView(
@@ -179,6 +170,30 @@ private fun WidgetCard(
                     .heightIn(min = minHeightDp.dp)
                     .wrapContentHeight()
             )
+
+            if (editMode) {
+                // AppWidgetHostView consumes its own pointer events. This transparent layer
+                // keeps widget actions inert while the shared layout editor owns gestures.
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .pointerInput(widgetId, isDraggable) {
+                            if (isDraggable) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = { onDragStart() },
+                                    onDragEnd = onDragEnd,
+                                    onDragCancel = onDragEnd,
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        onDrag(dragAmount.y)
+                                    },
+                                )
+                            } else {
+                                detectTapGestures(onTap = {})
+                            }
+                        }
+                )
+            }
 
             if (isDraggable && !showRemoveButton) {
                 Icon(
@@ -215,4 +230,19 @@ private fun WidgetCard(
             }
         }
     }
+}
+
+internal enum class WidgetInteractionMode { LIVE, EDIT_SINGLE, EDIT_REORDER }
+
+internal fun widgetInteractionMode(editMode: Boolean, widgetCount: Int): WidgetInteractionMode = when {
+    !editMode -> WidgetInteractionMode.LIVE
+    widgetCount > 1 -> WidgetInteractionMode.EDIT_REORDER
+    else -> WidgetInteractionMode.EDIT_SINGLE
+}
+
+internal fun moveWidget(ids: List<Int>, widgetId: Int, direction: Int): List<Int> {
+    val from = ids.indexOf(widgetId)
+    val to = from + direction.coerceIn(-1, 1)
+    if (from < 0 || direction == 0 || to !in ids.indices) return ids
+    return ids.toMutableList().apply { add(to, removeAt(from)) }
 }

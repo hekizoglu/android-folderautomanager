@@ -148,6 +148,7 @@ private fun decodeConfig(raw: String): HomeLayoutConfig {
 fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     val context = LocalContext.current
     val folders by viewModel.folders.collectAsState()
+    val widgetIds by viewModel.widgetIds.collectAsState()
     var editorState by rememberSaveable(stateSaver = editorStateSaver) {
         mutableStateOf(HomeLayoutEditorState(HomeLayoutPrefs.read(context).config))
     }
@@ -155,6 +156,8 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     var showResetDialog by rememberSaveable { mutableStateOf(false) }
     var originalFolderIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var draftFolderIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var originalWidgetIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    var draftWidgetIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
     val haptics = LocalHapticFeedback.current
     val reorderState = remember {
         ReorderState { sectionId, direction ->
@@ -181,9 +184,15 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
             draftFolderIds = currentFolderIds
         }
     }
+    LaunchedEffect(widgetIds) {
+        if (originalWidgetIds.isEmpty() && widgetIds.isNotEmpty()) {
+            originalWidgetIds = widgetIds
+            draftWidgetIds = widgetIds
+        }
+    }
 
     fun requestClose() {
-        if (editorState.hasUnsavedChanges || draftFolderIds != originalFolderIds) showDiscardDialog = true else onClose()
+        if (editorState.hasUnsavedChanges || draftFolderIds != originalFolderIds || draftWidgetIds != originalWidgetIds) showDiscardDialog = true else onClose()
     }
 
     BackHandler { requestClose() }
@@ -206,6 +215,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                             draftFolderIds.mapNotNull(foldersById::get) +
                                 folders.filterNot { it.category.categoryId in draftFolderIds },
                         )
+                        if (draftWidgetIds != originalWidgetIds) {
+                            viewModel.reorderWidgets(context, draftWidgetIds)
+                        }
                         onClose()
                     }) { Text(stringResource(R.string.home_layout_editor_done)) }
                 },
@@ -252,6 +264,17 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                                 onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
                             )
                         }
+                    }
+                }
+                if (orderedItems.any { it.sectionId == HomeSectionId.ANDROID_WIDGETS && it.visible } && draftWidgetIds.isNotEmpty()) {
+                    item(key = "widget_editor") {
+                        WidgetArea(
+                            widgetIds = draftWidgetIds,
+                            onRemoveWidget = {},
+                            onReorderWidgets = { draftWidgetIds = it },
+                            editMode = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                 }
                 val hiddenItems = orderedItems.filterNot { it.visible }
