@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B13 - 2026-07-16 (Play kaniti bekliyor)
+
+**Yapilanlar:** Uygulama ici Kullanim Verileri aciklamasi Analytics, Crashlytics ve Performance'in gonderdigi veri ile kapatma davranisini acikca adlandiracak sekilde guncellendi; telemetri anahtarindan bagimsiz FCM veritabani guncelleme tokeni ayrica belirtildi. Gizlilik politikasi Performance, Firebase kurulum kimlikleri, varsayilan kapali opt-in ve Crashlytics'in sonraki acilista tam uygulanan kapatma semantigiyle eslestirildi. Play Veri Guvenligi icin veri turu, amac (`Uygulama islevselligi`, `Analiz`, hata teshisi), zorunluluk ve kontrol matrisi `docs/PLAY_DATA_SAFETY_DECLARATION.md` olarak eklendi. Surum `1.3.67` / `versionCode 90`.
+
+**Arastirma:** Resmi Google Play Data safety ve gizlilik politikasi gereksinimleri ile Firebase Analytics, Crashlytics ve Performance collection-control belgeleri dogrulandi. Cihazda kalan verinin collection sayilmamasi, SDK aktarimlarinin beyana dahil edilmesi ve Play beyaninin tum aktif surumlerin gercek davranisini kapsamasina gore matris hazirlandi.
+
+**Kalite kapisi:** Ilk odak test bilinen Windows build kilidine takildi; `scripts/clear_build_lock.ps1` sonrasi kaynak metindeki Android apostrof kacisi duzeltildi. Ilk uzun yeniden kosu zaman asimina ugradi; derleme onbellegi hazirlandiktan sonra `PrivacyDisclosureContractTest` 2/2 gecti. Zorunlu `compileDebugKotlin -PskipGoogleServices` 24 saniyede basariyla tamamlandi ve mevcut gizlilik URL'si HTTP 200 dondu. Guncel yerel politika henuz yayinlanmadi; Play Console form gonderimi/readback ve Policy Status kaniti bu otomasyon ortaminda bulunmadigi icin B13 tamamlandi olarak isaretlenmedi.
+
 ## Istatistik/Telemetri Roadmap B10 - 2026-07-16
 
 **Yapilanlar:** Yuksek hacimli arama, klasor acma, gorev tamamlama ve rapor goruntuleme olaylari uzaga tek tek gonderilmek yerine `LocalTelemetryStore` icinde sayiliyor. Ag ve pil constraint'li `telemetry_daily_summary` unique periodic worker'i yerel takvim gunu kilidiyle en fazla bir kullanim ve bir saglik ozeti gonderiyor; tum degerler kapali enum veya kova. Opt-in kapatildiginda worker iptal ediliyor. Surum `1.3.66` / `versionCode 89`.

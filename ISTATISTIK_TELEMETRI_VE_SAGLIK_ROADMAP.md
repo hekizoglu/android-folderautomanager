@@ -1066,7 +1066,7 @@ Başlangıçta yalnızca şu paneller takip edilmelidir:
 - Toplama amacı `Uygulama işlevselliği`, `Analiz` ve `Hata teşhisi` kapsamında doğru işaretlenmeli.
 - Kullanıcı kapattığında hangi toplamanın durduğu açıkça belirtilmeli.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Uygulama içi Kullanım Verileri açıklaması, `docs/privacy_policy.html` ve kod/SDK envanterine dayalı `docs/PLAY_DATA_SAFETY_DECLARATION.md` birbiriyle eşleştirildi; Analytics, Crashlytics, Performance kapatma davranışı ve telemetri anahtarından bağımsız FCM açıkça belirtildi. Kontrat testi ve zorunlu Kotlin derlemesi geçti; mevcut yayın URL'si HTTP 200 verse de güncel politika yayını, Play Console form gönderimi/readback'i ve Policy Status kanıtı hesap erişimi gerektirdiğinden bekliyor. Bu kanıtlar olmadan tamamlanmış sayılmaz.
 
 **Kabul kriterleri:** Uygulama içi açıklama, gerçek kod ve Play beyanı birbiriyle çelişmez.
 
@@ -1093,7 +1093,7 @@ Başlangıçta yalnızca şu paneller takip edilmelidir:
 | B10 | Günlük anonim özet | P1 | B6-B7 | ⏳ Bekliyor |
 | B11 | Dört cihaz doğrulaması | P1 | B4-B10 | ⏳ Bekliyor |
 | B12 | Firebase konsol panelleri | P2 | Gerçek veri | ⏳ Bekliyor |
-| B13 | Gizlilik ve Play beyanı | P0 yayın kapısı | B1-B10 | ⏳ Bekliyor |
+| B13 | Gizlilik ve Play beyanı | P0 yayın kapısı | B1-B10 | 🟡 Kısmen tamamlandı — Play Console kanıtı bekliyor |
 | A7-A8 | Gelişmiş görev/ANR/depolama | P2 | Temel sistem | ⏳ Bekliyor |
 
 ---

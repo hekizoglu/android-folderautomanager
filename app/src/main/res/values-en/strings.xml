@@ -567,7 +567,7 @@
     <string name="usage_data_hub_subtitle">Anonymous usage, performance, and error sharing</string>
     <string name="usage_data_sharing_section">Anonymous data sharing</string>
     <string name="usage_data_sharing_title">Share anonymous usage and health data</string>
-    <string name="usage_data_sharing_description">Helps improve the app.</string>
+    <string name="usage_data_sharing_description">When enabled, Firebase Analytics sends feature usage counters, Crashlytics sends error and crash records, and Performance sends operation timings to Google. When disabled, the app sends no new telemetry to these three services; the Crashlytics automatic-collection change takes full effect on the next app start. FCM database-update notifications are independent of this switch.</string>
     <string name="usage_data_enabled">On</string>
     <string name="usage_data_disabled">Off</string>
     <string name="usage_data_collected_title">Collected</string>

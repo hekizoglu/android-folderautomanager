@@ -33,13 +33,14 @@
 <body>
 
 <h1>AppOrganizer</h1>
-<p class="subtitle">Gizlilik Politikası — Son güncelleme: 10 Temmuz 2026</p>
+<p class="subtitle">Gizlilik Politikası — Son güncelleme: 16 Temmuz 2026</p>
 
 <div class="highlight">
     <strong>Özet:</strong> AppOrganizer verilerinizi satmaz ve reklam göstermez. Uygulama kullanımı,
     kategoriler ve ayarlar cihazınızda yerel olarak saklanır. Uygulama iyileştirme amacıyla
-    sınırlı, kişisel olmayan kullanım istatistikleri Firebase (Google) üzerinden toplanır —
-    detaylar aşağıdadır.
+    sınırlı kullanım ve uygulama sağlık verileri yalnız açık onayınızdan sonra Firebase (Google)
+    üzerinden toplanır. Veritabanı güncelleme bildirimleri için kullanılan Firebase Cloud Messaging
+    bu onaydan bağımsızdır — detaylar aşağıdadır.
 </div>
 
 <div class="section">
@@ -62,6 +63,8 @@
         <li><strong>Ana ekran widget'ları:</strong> Kullanıcının eklediği widget'ları görüntülemek için.</li>
         <li><strong>Anonim kullanım istatistikleri (Firebase Analytics):</strong> Hangi ekranların/özelliklerin kullanıldığı (ör. "klasör açıldı", "arama yapıldı") — hangi uygulamaları yüklediğiniz veya hangi uygulamaları açtığınız GÖNDERİLMEZ. Bkz. Bölüm 4.</li>
         <li><strong>Çökme raporları (Firebase Crashlytics):</strong> Uygulama çökerse hatayı düzeltmek için teknik hata kaydı (stack trace, cihaz modeli) gönderilir. Kişisel veri veya kullanım geçmişi içermez.</li>
+        <li><strong>Performans tanılama (Firebase Performance):</strong> Soğuk açılış, arama, indeksleme, sınıflandırma ve sağlık raporu gibi sabit işlemlerin süreleri ve başarı durumu gönderilir. Arama metni, dosya adı, kişi, paket veya özel klasör adı gönderilmez.</li>
+        <li><strong>Uygulama/cihaz kimlikleri:</strong> Firebase hizmetleri, bir kurulumu ayırt etmek ve veritabanı güncelleme bildirimlerini ulaştırmak için Firebase Installation ID ve FCM kayıt tokenı gibi uygulama kurulumuna bağlı kimlikler işleyebilir. IMEI ve MAC adresi toplanmaz.</li>
     </ul>
 </div>
 
@@ -72,7 +75,7 @@
         <li>Mesajlar, fotoğraflar</li>
         <li>Finansal bilgiler</li>
         <li>Şifreler veya kimlik doğrulama verileri</li>
-        <li>Cihaz tanımlayıcıları (IMEI, MAC adresi vb.)</li>
+        <li>Donanım tanımlayıcıları (IMEI, MAC adresi vb.); Firebase'in uygulama kurulumuna bağlı kimlikleri Bölüm 2'deki sınırlı istisnadır</li>
         <li>Hangi uygulamaları yüklediğiniz veya açtığınız (paket adı bazında) — analitik sağlayıcıya gönderilmez</li>
     </ul>
     <p>Veriler reklam ağlarına asla gönderilmez veya satılmaz. Bölüm 2 ve 4'te açıklanan sınırlı istisnalar dışında hiçbir veri üçüncü taraf sunuculara gönderilmez.</p>
@@ -87,10 +90,19 @@
         kişisel veri içermez.
     </p>
     <p>
-        Uygulama, ürünü iyileştirmek için <strong>Firebase Analytics ve Crashlytics</strong> (Google)
-        kullanır. Gönderilen veriler ekran/özellik kullanım sayaçları ve çökme teknik kayıtlarıyla
-        sınırlıdır; hangi uygulamaları kullandığınızı içermez. Firebase'in kendi gizlilik politikası
+        Uygulama, ürünü iyileştirmek için <strong>Firebase Analytics, Crashlytics ve Performance</strong>
+        (Google) kullanır. Bu üç servisin toplanması ilk kurulumda kapalıdır ve yalnız Ayarlar &gt;
+        Kullanım Verileri anahtarı açıldığında etkinleşir. Anahtar kapatıldığında uygulama yeni Analytics
+        olayı, Crashlytics kaydı veya Performance izi göndermez. Crashlytics otomatik toplama ayarı SDK
+        gereği sonraki uygulama açılışında tamamen uygulanır; cihazda bekleyen gönderilmemiş raporlar daha
+        sonra yeniden onay verilirse gönderilebilir. Gönderilen telemetri hangi uygulamaları kullandığınızı
+        içermez. Firebase'in kendi gizlilik politikası
         için: <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.
+    </p>
+    <p>
+        <strong>Firebase Cloud Messaging (FCM)</strong>, uygulama kategori veritabanı güncellemelerini
+        bildirmek için kurulum tokenı işler. Bu uygulama işlevselliği Kullanım Verileri anahtarından
+        bağımsızdır ve reklam ya da davranış analizi amacıyla kullanılmaz.
     </p>
 </div>
 

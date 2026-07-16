@@ -571,7 +571,7 @@
     <string name="usage_data_hub_subtitle">Anonim kullanım, performans ve hata paylaşımı</string>
     <string name="usage_data_sharing_section">Anonim veri paylaşımı</string>
     <string name="usage_data_sharing_title">Anonim kullanım ve sağlık verilerini paylaş</string>
-    <string name="usage_data_sharing_description">Uygulamanın geliştirilmesine yardımcı olur.</string>
+    <string name="usage_data_sharing_description">Açıldığında Firebase Analytics özellik kullanım sayaçlarını, Crashlytics hata ve çökme kayıtlarını, Performance ise işlem sürelerini Google\'a gönderir. Kapatıldığında uygulama bu üç servise yeni telemetri göndermez; Crashlytics otomatik toplama değişikliği sonraki uygulama açılışında tamamen uygulanır. FCM veritabanı güncelleme bildirimleri bu anahtardan bağımsızdır.</string>
     <string name="usage_data_enabled">Açık</string>
     <string name="usage_data_disabled">Kapalı</string>
     <string name="usage_data_collected_title">Toplananlar</string>
