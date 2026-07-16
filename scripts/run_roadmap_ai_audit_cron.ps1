@@ -215,7 +215,7 @@ function Get-FirstPendingItem {
             for ($j = $i; $j -ge 0; $j--) {
                 if ($lines[$j] -match '^#{1,6}\s+(.+)$') {
                     $title = $Matches[1].Trim()
-                    if ($title -match '\b(?:A\d+(?:-A\d+)?|B\d+)\b') {
+                    if ($title -match '\b(?:A\d+(?:-A\d+)?|B\d+|H\d+(?:\.\d+)?)\b') {
                         return [pscustomobject]@{
                             Title = $title
                             Line = $i + 1

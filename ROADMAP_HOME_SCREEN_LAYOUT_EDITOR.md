@@ -728,6 +728,132 @@ values-en/strings.xml veya ayrı home_layout_strings.xml
 
 ## 23. Sprint Planı
 
+## 23.0 Cron Görev Panosu
+
+Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. Her görev tamamlandığında yalnız kendi `**Durum:** ⏳ Bekliyor` satırı güncellenir; tamamlanmayan veya dış doğrulama isteyen işler `⛔ Bloke` ya da `🟡 Kısmen tamamlandı` bırakılır.
+
+### H1.1 — Home layout domain modeli
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** `HomeSectionId`, `HomeLayoutZone`, `HomeLayoutItem` ve `HomeLayoutConfig` modellerini ekle; zorunlu/gizlenebilir/taşınabilir bölüm kurallarını tipli hale getir.
+
+**Kabul kriteri:** Varsayılan bölüm listesi tek kaynak olur, duplicate ID ve eksik zorunlu bölüm senaryoları unit test ile doğrulanır.
+
+### H1.2 — HomeLayoutPrefs saklama ve sanitize
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Ayrı `HomeLayoutPrefs` deposunu ekle; header/footer sırası, gizli bölümler, layout version ve customized flag alanlarını güvenli şekilde oku/yaz.
+
+**Kabul kriteri:** Bozuk, eski, eksik ve bilinmeyen section ID içeren kayıtlar çökmeden sanitize edilir; unit testler eklenir.
+
+### H1.3 — Eski ayar migration katmanı
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Search top/bottom tercihi ve mevcut görünürlük toggle'larını ilk layout config'e taşı; eski ayarlarla yeni config'in birbirini ezmesini engelle.
+
+**Kabul kriteri:** `TOP`, `BOTTOM`, gizli/görünür toggle ve yeni section ekleme senaryoları test edilir; UI görünümü değişmeden kalır.
+
+### H2.1 — HomeScreen section renderer iskeleti
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Sabit bölüm çağrılarını kademeli taşıyacak `HomeSectionRenderer` ve action/state bağlantılarını ekle; mevcut davranışı koruyarak renderer üzerinden en az çekirdek bölümleri çalıştır.
+
+**Kabul kriteri:** Ana ekran eski görünümünü korur, stabil key kullanılır, compile ve odak testleri geçer.
+
+### H2.2 — Favoriler ve satır bileşenleri ayrıştırması
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** `HomeFavoritesSection` içindeki favoriler, öneriler, son bildirim alanlar ve son kullanılanlar satırlarını ayrı composable'lara ayır.
+
+**Kabul kriteri:** Context menu, haptic feedback, app launch ve analytics davranışları gerilemez; renderer bağımsız satırları ayrı section olarak çağırabilir.
+
+### H2.3 — Header/content/footer zone render
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** `HomeLayoutConfig` sırasını kullanarak header, content ve footer bölge render'ını bağla; `FOLDER_GRID` ve `DOCK` koruma kurallarını uygula.
+
+**Kabul kriteri:** Search üst/alt migration'ı yeni layout ile çalışır, dock en altta kalır, klasör gridi gizlenmez.
+
+### H3.1 — Editör giriş noktaları
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** `HomeLongPressSheet` içine `Ana Ekranı Düzenle` aksiyonu ekle; gerekiyorsa Settings > Ana Ekran kısa yolunu ekle.
+
+**Kabul kriteri:** Giriş metinleri TR/EN resource'tan gelir, normal long-press aksiyonları bozulmaz.
+
+### H3.2 — Tam ekran HomeLayoutEditorScreen
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Tam ekran editör, taslak state, üst bar, `Bitti`, `İptal`, geri tuşu koruması ve kaydedilmemiş değişiklik uyarısını ekle.
+
+**Kabul kriteri:** `İptal` kalıcı değişiklik yapmaz, `Bitti` atomik kaydeder, process death sonrası bozuk preference oluşmaz.
+
+### H3.3 — Bölüm kartları, göster/gizle ve varsayılana dön
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** `EditableHomeSection`, drag handle görseli, göz/gizle butonu, kilitli bölüm davranışı, gizlenen bölümler listesi ve varsayılana dön akışını ekle.
+
+**Kabul kriteri:** Zorunlu bölümler gizlenemez, varsayılana dön klasör/widget/dock içeriğini silmez, TalkBack açıklamaları eklenir.
+
+### H3.4 — Bölüm reorder state ve animasyon
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Ortak `ReorderState` veya eşdeğer yardımcı yapı ile bölüm sürükle-bırak sıralamasını uygula; haptic feedback ve placement animasyonlarını ekle.
+
+**Kabul kriteri:** Stabil key korunur, edit modunda uygulama/klasör/widget tıklamaları çalışmaz, reorder kalıcı kayda yansır.
+
+### H4.1 — Klasör reorder edit moda bağlama
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Mevcut klasör uzun basma/sürükleme davranışını yalnız edit modda çalışacak şekilde bağla; normal mod context menu davranışını koru.
+
+**Kabul kriteri:** Klasör sırası edit modda değişir, normal modda yanlışlıkla drag başlamaz.
+
+### H4.2 — Widget reorder edit moda bağlama
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** `WidgetArea` iç reorder davranışını ortak edit moda bağla; edit modunda widget iç tıklamalarını bloke et.
+
+**Kabul kriteri:** Widget sırası kaydedilir, widget yok/birden fazla widget senaryoları çökmez.
+
+### H4.3 — Dock yatay reorder
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Dock uygulama/klasör öğeleri için yatay reorder ekle; sabit kullanıcı slotları ve öneri/bağlamsal slotların karışmasını engelle.
+
+**Kabul kriteri:** Dock sırası kalıcıdır, add/remove akışları bozulmaz, klasör ve uygulama karışık listede çalışır.
+
+### H5.1 — Backup, restore ve diagnostics
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** Home layout alanlarını backup/restore kapsamına ve tanılama raporuna ekle; kişisel veri veya serbest metin sızıntısı olmadığını doğrula.
+
+**Kabul kriteri:** Eski/bozuk backup sanitize edilir, diagnostics yalnız güvenli layout özetini gösterir.
+
+### H5.2 — Erişilebilirlik, responsive smoke ve release kapısı
+
+**Durum:** ⏳ Bekliyor
+
+**Kapsam:** TalkBack taşıma aksiyonları, Reduce Motion, küçük telefon/tablet kuralları, TR/EN kaynaklar ve final kalite kapılarını tamamla.
+
+**Kabul kriteri:** Unit/Compose/compile/assemble kapıları geçer; küçük telefon ve tablet smoke sonuçları HISTORY.md'ye yazılır.
+
+---
+
 ## Sprint H1 — Model, varsayılanlar ve migration
 
 **Zorluk:** 3/10
