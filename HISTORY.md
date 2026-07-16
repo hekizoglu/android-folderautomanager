@@ -1980,3 +1980,10 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - Haftalık inceleme ile iki ardışık 28 günlük dönemde karar üretmeyen metriği kaldırma kuralı; düşük örneklem, opt-in nüfusu ve gizlilik sınırları yazıldı.
 - Resmi Firebase/GA4 dokümantasyonu üzerinden Funnel Exploration, yayımlanmış Reports Library koleksiyonu, DebugView, Crashlytics ve Performance doğrulama adımları belirlendi.
 - Kalite kapısı engeli: ortamda Firebase/GA4 Editor/Admin kimliği, konsol oturumu ve bağlı test cihazı yok. Raporlar konsolda oluşturulup yayımlanamadı ve gerçek veri kanıtı alınamadı; bu nedenle B12 yalnız `Kısmen tamamlandı` olarak işaretlendi. Uygulama kodu değişmedi; sürüm artışı ve Gradle derlemesi gerekmedi.
+
+## 2026-07-16 — İstatistik, telemetri ve sağlık roadmap finalizasyonu
+
+- `ISTATISTIK_TELEMETRI_VE_SAGLIK_ROADMAP.md` içinde `Bekliyor` durumlu madde kalmadığı doğrulandı; dış hesap/cihaz kanıtı isteyen B11, B12 ve B13 tamamlandı sayılmadan bloke/kısmi durumda bırakıldı.
+- Final kalite kapıları manuel olarak tamamlandı: `testDebugUnitTest -PskipGoogleServices`, `compileDebugKotlin -PskipGoogleServices` ve `assembleDebug -PskipGoogleServices` başarılı.
+- `TelemetryEventValidatorTest` günlük özet event allowlist'i recovery checkpoint ile güncellendi; `AppListViewModelTest` privacy reset async doğrulaması stabilize edildi.
+- Debug APK Telegram'a gönderildi, eski stats/health cron kapatıldı ve tamamlanan roadmap dosyası silindi.
