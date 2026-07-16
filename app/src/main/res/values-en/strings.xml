@@ -624,6 +624,9 @@
     <string name="home_layout_show_section">Show %1$s section</string>
     <string name="home_layout_required_section">%1$s is required and cannot be hidden</string>
     <string name="home_layout_section_position">%1$s section, position %2$d</string>
+    <string name="home_layout_move_up">Move up</string>
+    <string name="home_layout_move_down">Move down</string>
+    <string name="home_layout_move_top">Move to top</string>
     <string name="home_section_clock">Clock</string>
     <string name="home_section_missions_score">Missions and score</string>
     <string name="home_section_main_search">Main search</string>

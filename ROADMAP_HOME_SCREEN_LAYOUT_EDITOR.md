@@ -846,7 +846,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H5.2 — Erişilebilirlik, responsive smoke ve release kapısı
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Kod/unit/compile/lint/assemble geçti; bağlı cihaz/emülatör olmadığı için Compose, TalkBack ve küçük telefon/tablet smoke bekliyor
 
 **Kapsam:** TalkBack taşıma aksiyonları, Reduce Motion, küçük telefon/tablet kuralları, TR/EN kaynaklar ve final kalite kapılarını tamamla.
 

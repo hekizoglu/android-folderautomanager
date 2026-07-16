@@ -67,6 +67,16 @@ class HomeLayoutEditorStateTest {
     }
 
     @Test
+    fun accessibilityMoveToTopStopsAtZoneBoundary() {
+        val movedDown = HomeLayoutConfig.DEFAULT.moveSection(HomeSectionId.CLOCK, 1)
+            .moveSection(HomeSectionId.CLOCK, 1)
+        val movedTop = movedDown.moveSectionToZoneStart(HomeSectionId.CLOCK)
+
+        assertEquals(0, movedTop.items.single { it.sectionId == HomeSectionId.CLOCK }.order)
+        assertEquals(HomeLayoutConfig.DEFAULT, HomeLayoutConfig.DEFAULT.moveSectionToZoneStart(HomeSectionId.DOCK))
+    }
+
+    @Test
     fun dockReorderSupportsMixedAppAndFolderItems() {
         val items = listOf("app.one", "folder:social", "app.two")
 

@@ -39,8 +39,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 104
-        versionName = "1.3.81"
+        versionCode = 105
+        versionName = "1.3.82"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

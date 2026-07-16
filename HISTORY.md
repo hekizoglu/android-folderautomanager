@@ -2,6 +2,16 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H5.2 (Kismen) - 2026-07-16
+
+**Yapilanlar:** Bolum kartlarina TalkBack icin `Yukari tasi`, `Asagi tasi` ve `En uste tasi` ozel aksiyonlari eklendi; aksiyonlar bolge sinirlarini gecmiyor. Sistem animator olcegi kapaliysa bolum placement ve drag gorsel hareketi uygulanmiyor. Yeni aksiyonlar TR/EN kaynaklara tasindi. Surum `1.3.82` / `versionCode 105`.
+
+**Arastirma:** Android'in resmi Compose semantics/accessibility testing, 48dp dokunma hedefi, adaptif pencere boyutlari ve lint release rehberleri esas alindi.
+
+**Kalite kapisi:** `compileDebugKotlin`, odakli `HomeLayoutEditorStateTest`, `assembleDebug` ve `lintRelease` basarili. Release lint yerel kontrolde `-PallowDebugReleaseSigning=true` ile debug imza kullanilarak calistirildi. Kucuk telefon ve `>=600dp` tablet smoke ile Compose instrumentation kapisi calistirilamadi: Android SDK `adb` erisilebilir olsa da bagli cihaz/emulator yoktu. Bu nedenle responsive tasma ve gercek TalkBack davranisi dis dogrulama bekliyor; H5.2 tamamlanmadi.
+
+**Degisen dosyalar:** `HomeLayoutEditorScreen.kt`, TR/EN `strings.xml`, `HomeLayoutEditorStateTest.kt`, `app/build.gradle.kts`, `ROADMAP_HOME_SCREEN_LAYOUT_EDITOR.md`, `HISTORY.md`.
+
 ## Home Screen Layout Editor H5.1 - 2026-07-16
 
 **Yapilanlar:** Home layout surumu, header/footer sirasi, gizli bolumler ve ozellestirme durumu backup v6 kapsamına eklendi. Restore girdisi `HomeLayoutPrefs` sanitize sinirindan geciyor; bilinmeyen/duplicate/yanlis bolge ID'leri temizleniyor, zorunlu ve yeni bolumler geri ekleniyor. Layout alani olmayan eski yedeklerde mevcut legacy migration korunuyor. Diagnostics yalniz tipli bolum ID'leri, arama bolgesi, surum/ozellestirme durumu ve widget/dock sayaclarini raporluyor; ham JSON, paket/provider adi veya serbest metin eklenmiyor. Surum `1.3.81` / `versionCode 104`.

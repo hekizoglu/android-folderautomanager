@@ -628,6 +628,9 @@
     <string name="home_layout_show_section">%1$s bölümünü göster</string>
     <string name="home_layout_required_section">%1$s zorunlu bölümdür ve gizlenemez</string>
     <string name="home_layout_section_position">%1$s bölümü, %2$d. sırada</string>
+    <string name="home_layout_move_up">Yukarı taşı</string>
+    <string name="home_layout_move_down">Aşağı taşı</string>
+    <string name="home_layout_move_top">En üste taşı</string>
     <string name="home_section_clock">Saat</string>
     <string name="home_section_missions_score">Görevler ve puan</string>
     <string name="home_section_main_search">Ana arama</string>

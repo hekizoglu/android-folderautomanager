@@ -40,6 +40,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -50,6 +52,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.unit.dp
+import android.provider.Settings
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
 import com.armutlu.apporganizer.domain.models.HomeLayoutItem
@@ -91,6 +94,15 @@ internal fun HomeLayoutConfig.moveSection(sectionId: HomeSectionId, direction: I
     return copy(items = items.map { item ->
         newOrders[item.sectionId]?.let { item.copy(order = it) } ?: item
     })
+}
+
+internal fun HomeLayoutConfig.moveSectionToZoneStart(sectionId: HomeSectionId): HomeLayoutConfig {
+    var result = this
+    while (true) {
+        val moved = result.moveSection(sectionId, -1)
+        if (moved == result) return result
+        result = moved
+    }
 }
 
 private class ReorderState(
@@ -167,6 +179,11 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     var originalDockItems by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var draftDockItems by rememberSaveable { mutableStateOf(emptyList<String>()) }
     val haptics = LocalHapticFeedback.current
+    val reduceMotion = remember(context) {
+        runCatching {
+            Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+        }.getOrDefault(false)
+    }
     val reorderState = remember {
         ReorderState { sectionId, direction ->
             val moved = editorState.draft.moveSection(sectionId, direction)
@@ -269,12 +286,25 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                 items(orderedItems.filter { it.visible },
                     key = { it.sectionId.name }) { item ->
                     EditableHomeSection(
-                        modifier = Modifier.animateItemPlacement(),
+                        modifier = if (reduceMotion) Modifier else Modifier.animateItemPlacement(),
                         item = item,
                         position = orderedItems.filter { it.visible }.indexOf(item) + 1,
                         reorderState = reorderState,
                         onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
                         onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
+                        reduceMotion = reduceMotion,
+                        onAccessibilityMove = { direction ->
+                            val moved = if (direction == Int.MIN_VALUE) {
+                                editorState.draft.moveSectionToZoneStart(item.sectionId)
+                            } else {
+                                editorState.draft.moveSection(item.sectionId, direction)
+                            }
+                            if (moved == editorState.draft) false else {
+                                editorState = editorState.copy(draft = moved)
+                                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                true
+                            }
+                        },
                         onVisibilityChange = { visible ->
                             editorState = editorState.copy(
                                 draft = editorState.draft.withSectionVisibility(item.sectionId, visible),
@@ -511,18 +541,30 @@ private fun EditableHomeSection(
     reorderState: ReorderState,
     onDragStarted: () -> Unit,
     onItemMoved: () -> Unit,
+    reduceMotion: Boolean,
+    onAccessibilityMove: (Int) -> Boolean,
     onVisibilityChange: (Boolean) -> Unit,
 ) {
     val name = stringResource(sectionName(item.sectionId))
     val description = stringResource(R.string.home_layout_section_position, name, position)
+    val moveUpLabel = stringResource(R.string.home_layout_move_up)
+    val moveDownLabel = stringResource(R.string.home_layout_move_down)
+    val moveTopLabel = stringResource(R.string.home_layout_move_top)
     var itemHeight by remember { mutableStateOf(0) }
     val isDragging = reorderState.draggedId == item.sectionId
     Card(modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)
         .onSizeChanged { itemHeight = it.height }
-        .graphicsLayer { if (isDragging) { translationY = reorderState.dragOffset; alpha = 0.92f } }
+        .graphicsLayer { if (isDragging && !reduceMotion) { translationY = reorderState.dragOffset; alpha = 0.92f } }
         .semantics {
-        contentDescription = description
-    }) {
+            contentDescription = description
+            if (item.sectionId.movable && !item.locked) {
+                customActions = listOf(
+                    CustomAccessibilityAction(moveUpLabel) { onAccessibilityMove(-1) },
+                    CustomAccessibilityAction(moveDownLabel) { onAccessibilityMove(1) },
+                    CustomAccessibilityAction(moveTopLabel) { onAccessibilityMove(Int.MIN_VALUE) },
+                )
+            }
+        }) {
         ListItem(
             leadingContent = {
                 Icon(
