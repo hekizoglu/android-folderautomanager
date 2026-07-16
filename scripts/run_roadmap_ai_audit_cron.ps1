@@ -200,8 +200,9 @@ function Invoke-GitCheckpoint {
     }
 
     Write-Log "Checkpointing worktree changes for $ItemTitle"
-    & git -C $projectRoot add -A -- . ":(exclude).roadmap-ai-audit-cron" ":(exclude)app/build"
+    & git -C $projectRoot add -A .
     if ($LASTEXITCODE -ne 0) { throw "git add failed (exit=$LASTEXITCODE)" }
+    & git -C $projectRoot reset --quiet -- .roadmap-ai-audit-cron app/build 2>$null
 
     & git -C $projectRoot diff --cached --quiet
     if ($LASTEXITCODE -eq 0) {
