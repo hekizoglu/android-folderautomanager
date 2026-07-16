@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B5 - 2026-07-16
+
+**Yapilanlar:** `FirebaseConnectionTester` sirasiyla yapilandirma, Android `INTERNET` + `VALIDATED` ag capability ve zorla yenilenen Firebase Installations auth token ile gercek backend round-trip kontrolu yapiyor. Token degeri aninda atiliyor; UI, log veya kalici kayda yazilmiyor. Basarili round-trip sonrasinda parametresiz `telemetry_connection_test` olayi yalniz "siraya alindi" diye raporlaniyor, Crashlytics'e guvenli `connection_test` logu yaziliyor ve `firebase_connection_test` Performance trace'i baslatilip bitiriliyor; zorla crash yok. Guvenli hata kodlu sonuc ayri yerel preferences dosyasina kaydediliyor ve Kullanim Verileri ekraninda ayrintili gosteriliyor. Surum `1.3.61` / `versionCode 84`.
+
+**Arastirma:** Resmi Firebase Installations API, Analytics DebugView/logEvent, Crashlytics custom log, Performance custom trace ve Android NetworkCapabilities belgeleri incelendi. Backend kaniti icin yalniz ag capability yerine `getToken(true)`, Analytics icin teslim basarisi yerine durust yerel queue ifadesi esas alindi.
+
+**Kalite kapisi:** Ilk iki compile denemesi sessiz zaman asimina ugradi; bilinen Windows build kilidi `scripts/clear_build_lock.ps1` ile temizlendi. Temiz ortamda `compileDebugKotlin -PskipGoogleServices` basarili oldu. `FirebaseConnectionTesterTest` ve `UsageDataViewModelTest` odakli kosusu basariyla gecti; `git diff --check` temiz gecti.
+
 ## Istatistik/Telemetri Roadmap B4 - 2026-07-16
 
 **Yapilanlar:** Ayarlar > Sistem'e `Kullanim Verileri` satiri ve whitelist'teki `settings_usage_data` rotasi eklendi. Yeni ekran varsayilan kapali anonim veri paylasim tercihini merkezi `TelemetryConsentManager` ile kalici tutuyor; toplanan/toplanmayan veri sinirlarini acikca listeliyor. Baglanti dugmesi B5'in servis round-trip isini ustlenmeden guvenli Firebase yapilandirma on kontrolu yapiyor; test boyunca devre disi kaliyor ve sonucu ViewModel'da ekran donusune karsi koruyor. Switch icin TalkBack durum aciklamalari ve Turkce/Ingilizce metinler eklendi. Surum `1.3.60` / `versionCode 83`.

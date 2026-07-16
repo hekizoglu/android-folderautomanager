@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.viewmodel
 
+import com.armutlu.apporganizer.telemetry.FirebaseConnectionTestResult
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,7 +25,7 @@ class UsageDataViewModelTest {
     @Test
     fun `sharing change is retained in state and persisted`() {
         var persisted = false
-        val model = UsageDataViewModel(false, { persisted = it }) { ConnectionTestStatus.SUCCESS }
+        val model = UsageDataViewModel(false, { persisted = it }) { result(ConnectionTestStatus.SUCCESS) }
 
         model.setSharingEnabled(true)
 
@@ -34,7 +35,7 @@ class UsageDataViewModelTest {
 
     @Test
     fun `second connection click is ignored while testing`() = runTest(dispatcher) {
-        val result = CompletableDeferred<ConnectionTestStatus>()
+        val result = CompletableDeferred<FirebaseConnectionTestResult>()
         var calls = 0
         val model = UsageDataViewModel(false, {}) {
             calls++
@@ -47,9 +48,21 @@ class UsageDataViewModelTest {
 
         assertEquals(1, calls)
         assertEquals(ConnectionTestStatus.TESTING, model.uiState.value.connectionStatus)
-        result.complete(ConnectionTestStatus.PARTIAL_SUCCESS)
+        result.complete(result(ConnectionTestStatus.PARTIAL_SUCCESS))
         advanceUntilIdle()
         assertEquals(ConnectionTestStatus.PARTIAL_SUCCESS, model.uiState.value.connectionStatus)
         assertFalse(model.uiState.value.sharingEnabled)
     }
+
+    private fun result(status: ConnectionTestStatus) = FirebaseConnectionTestResult(
+        configurationOk = true,
+        networkAvailable = true,
+        firebaseRoundTripOk = true,
+        analyticsQueued = true,
+        crashlyticsReady = true,
+        performanceReady = true,
+        testedAt = 1L,
+        status = status,
+        safeErrorCode = null,
+    )
 }

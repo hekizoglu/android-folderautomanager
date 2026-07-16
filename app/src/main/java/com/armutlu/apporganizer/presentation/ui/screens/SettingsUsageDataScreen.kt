@@ -27,9 +27,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.ConnectionTestStatus
 import com.armutlu.apporganizer.presentation.viewmodel.UsageDataViewModel
+import com.armutlu.apporganizer.telemetry.FirebaseConnectionTestResult
+import com.armutlu.apporganizer.telemetry.FirebaseConnectionTester
 import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.google.firebase.FirebaseApp
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
 fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
@@ -39,13 +42,7 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
         override fun <T : ViewModel> create(modelClass: Class<T>): T = UsageDataViewModel(
             initialSharingEnabled = AppPrefs.isTelemetryEnabled(context),
             persistSharingEnabled = { TelemetryConsentManager.setConsent(context, it) },
-            testConnection = {
-                // B4 only exposes a safe configuration probe. B5 owns the real service round-trip.
-                val configured = FirebaseApp.getApps(context).any { app ->
-                    app.options.applicationId.isNotBlank() && app.options.apiKey.isNotBlank()
-                }
-                if (configured) ConnectionTestStatus.PARTIAL_SUCCESS else ConnectionTestStatus.FAILED
-            },
+            testConnection = FirebaseConnectionTester(context)::test,
         ) as T
     })
     val state by model.uiState.collectAsState()
@@ -81,6 +78,7 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
             SettingsCard {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(connectionStatusText(state.connectionStatus))
+                    state.connectionResult?.let { ConnectionTestDetails(it) }
                     Button(
                         onClick = model::runConnectionTest,
                         enabled = state.connectionStatus != ConnectionTestStatus.TESTING,
@@ -96,6 +94,42 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
         }
     }
 }
+
+@Composable
+private fun ConnectionTestDetails(result: FirebaseConnectionTestResult) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.usage_data_result_configuration, result.configurationOk.asResultText()))
+        Text(stringResource(R.string.usage_data_result_service, result.firebaseRoundTripOk.asResultText()))
+        Text(stringResource(R.string.usage_data_result_analytics, result.analyticsQueued.asQueuedText()))
+        Text(stringResource(R.string.usage_data_result_crashlytics, result.crashlyticsReady.asReadyText()))
+        Text(stringResource(R.string.usage_data_result_performance, result.performanceReady.asReadyText()))
+        Text(stringResource(
+            R.string.usage_data_result_tested_at,
+            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(result.testedAt)),
+        ))
+        result.safeErrorCode?.let { Text(stringResource(R.string.usage_data_result_error, it)) }
+        Text(
+            stringResource(R.string.usage_data_analytics_disclaimer),
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun Boolean.asResultText() = stringResource(
+    if (this) R.string.usage_data_success else R.string.usage_data_failure,
+)
+
+@Composable
+private fun Boolean.asQueuedText() = stringResource(
+    if (this) R.string.usage_data_queued else R.string.usage_data_unavailable,
+)
+
+@Composable
+private fun Boolean.asReadyText() = stringResource(
+    if (this) R.string.usage_data_ready else R.string.usage_data_unavailable,
+)
 
 @Composable
 private fun UsageDataListCard(title: Int, items: List<String>) {

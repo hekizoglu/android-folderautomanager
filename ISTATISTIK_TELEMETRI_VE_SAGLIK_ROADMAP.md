@@ -750,7 +750,7 @@ PERFORMANCE_NOT_AVAILABLE
 UNKNOWN_TEST_FAILURE
 ```
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — FIS auth token refresh ile gerçek round-trip, güvenli SDK probe'ları, yerel sonuç/UI ve odaklı testler doğrulandı (16.07.2026).
 
 **Testler:**
 

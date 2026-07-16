@@ -590,4 +590,17 @@
     <string name="usage_data_status_success">Connection test succeeded.</string>
     <string name="usage_data_status_partial">Firebase configuration found. Service access will be verified by the next connection test.</string>
     <string name="usage_data_status_failed">Firebase configuration was not found.</string>
+    <string name="usage_data_result_configuration">Firebase configuration: %1$s</string>
+    <string name="usage_data_result_service">Firebase service access: %1$s</string>
+    <string name="usage_data_result_analytics">Analytics: %1$s</string>
+    <string name="usage_data_result_crashlytics">Crashlytics: %1$s</string>
+    <string name="usage_data_result_performance">Performance: %1$s</string>
+    <string name="usage_data_result_tested_at">Last test: %1$s</string>
+    <string name="usage_data_result_error">Error code: %1$s</string>
+    <string name="usage_data_success">Successful</string>
+    <string name="usage_data_failure">Failed</string>
+    <string name="usage_data_queued">Test event queued</string>
+    <string name="usage_data_ready">Ready</string>
+    <string name="usage_data_unavailable">Unavailable</string>
+    <string name="usage_data_analytics_disclaimer">The Analytics SDK does not confirm delivery. Verify the test event separately in Firebase DebugView.</string>
 </resources>
