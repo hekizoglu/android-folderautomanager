@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B2 - 2026-07-16
+
+**Yapilanlar:** `AppAnalytics` gizlilik siniri ham metin kabul etmeyecek sekilde daraltildi. Klasor acma eventi yalniz `folder_type` ve `app_count_bucket`; kategori yeniden siniflandirma yalniz sabit kaynak/sonuc/guven kovalari; arama eventi ise sorgu metni yerine uzunluk, sonuc, gecikme ve kaynak karisimi kovalari tasiyor. `appStarted` istemci timestamp'i gondermiyor. Cagri noktalari guncellendi, surum `1.3.58` / `versionCode 81`.
+
+**Arastirma:** Google Analytics PII ve yuksek kardinalite rehberleri, Android veri minimizasyonu rehberi ve Firebase Android event API dogrulandi. Ham kullanici metninin SDK sinirina ulasmamasi ve dusuk kardinaliteli kapali enum/kova degerleri esas alindi.
+
+**Kalite kapisi:** Ilk deneme Windows `generateDebugBuildConfig` kilidine takildi; kilit sahibi VS Code Gradle build server durdurulup `scripts/clear_build_lock.ps1` uygulandi. Sonraki odak `TelemetryEventValidatorTest` kosusu 7/7 gecti ve `compileDebugKotlin -PskipGoogleServices` basarili oldu. Analytics cagri zinciri kaynak taramasinda sorgu, klasor/kategori adi veya paket adi parametresi bulunmadi.
+
 ## Istatistik/Telemetri Roadmap B1 - 2026-07-16
 
 **Yapılanlar:** Analytics, Crashlytics ve Performance otomatik toplama manifestte varsayilan kapali yapildi. `TelemetryConsentManager` kalici kullanici tercihini tek dogruluk kaynagi olarak tutuyor; `TelemetryManager` bu degeri uc Firebase servisine birlikte uyguluyor ve onay geri cekildiginde `AppAnalytics` gateway'ini aninda no-op yapiyor. Debug build'in tercihi ezmesi ve release Crashlytics'in kosulsuz acilmasi kaldirildi. Surum `1.3.57` / `versionCode 80`.

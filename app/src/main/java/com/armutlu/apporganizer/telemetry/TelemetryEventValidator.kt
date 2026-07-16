@@ -10,14 +10,23 @@ object TelemetryEventValidator {
     )
     private val catalog = mapOf(
         "app_started" to emptyMap(),
-        "folder_opened" to emptyMap(),
+        "folder_opened" to mapOf(
+            "folder_type" to TelemetryEvent.FolderType.entries.map { it.wireValue }.toSet(),
+            "app_count_bucket" to FolderAppCountBucket.entries.map { it.wireValue }.toSet()
+        ),
         "app_launched" to mapOf("source" to TelemetryEvent.Source.entries.map { it.wireValue }.toSet()),
         "all_apps_opened" to emptyMap(),
-        "category_reclassified" to emptyMap(),
+        "category_reclassified" to mapOf(
+            "source_type" to TelemetryEvent.CategorySourceType.entries.map { it.wireValue }.toSet(),
+            "result_type" to TelemetryEvent.CategoryResultType.entries.map { it.wireValue }.toSet(),
+            "confidence_bucket" to TelemetryEvent.ConfidenceBucket.entries.map { it.wireValue }.toSet()
+        ),
         "shortcut_used" to emptyMap(),
         "search_performed" to mapOf(
             "query_length_bucket" to QueryLengthBucket.entries.map { it.wireValue }.toSet(),
-            "result_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet()
+            "result_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet(),
+            "latency_bucket" to TelemetryEvent.LatencyBucket.entries.map { it.wireValue }.toSet(),
+            "source_mix" to TelemetryEvent.SearchSourceMix.entries.map { it.wireValue }.toSet()
         )
     )
 

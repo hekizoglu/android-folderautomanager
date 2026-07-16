@@ -1074,7 +1074,12 @@ fun AllAppsDrawer(
     val quickFilterCounts = drawerData.quickFilterCounts
 
     LaunchedEffect(searchQuery, sortedApps.size) {
-        if (searchQuery.trim().length >= 2) AppAnalytics.searchPerformed(searchQuery.trim(), sortedApps.size)
+        if (searchQuery.trim().length >= 2) AppAnalytics.searchPerformed(
+            queryLength = com.armutlu.apporganizer.telemetry.QueryLengthBucket.from(searchQuery.trim().length),
+            resultCount = com.armutlu.apporganizer.telemetry.CountBucket.from(sortedApps.size),
+            latency = com.armutlu.apporganizer.telemetry.TelemetryEvent.LatencyBucket.UNKNOWN,
+            sourceMix = com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.APPS_ONLY
+        )
     }
 
     val drawerState = DrawerState(

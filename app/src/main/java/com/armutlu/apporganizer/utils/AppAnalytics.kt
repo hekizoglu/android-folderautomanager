@@ -7,6 +7,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.armutlu.apporganizer.telemetry.CountBucket
+import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
 import com.armutlu.apporganizer.telemetry.QueryLengthBucket
 import com.armutlu.apporganizer.telemetry.TelemetryEvent
 import com.armutlu.apporganizer.telemetry.TelemetryEventValidator
@@ -43,8 +44,8 @@ object AppAnalytics {
         log(TelemetryEvent.AppStarted)
     }
 
-    fun folderOpened(categoryId: String, categoryName: String) {
-        log(TelemetryEvent.FolderOpened)
+    fun folderOpened(folderType: TelemetryEvent.FolderType, appCount: FolderAppCountBucket) {
+        log(TelemetryEvent.FolderOpened(folderType, appCount))
     }
 
     // Not: package_name kasıtlı olarak GÖNDERİLMEZ — hangi uygulamaları kullandığı
@@ -58,19 +59,29 @@ object AppAnalytics {
         log(TelemetryEvent.AllAppsOpened)
     }
 
-    fun categoryReclassified(fromCategory: String, toCategory: String) {
-        // Kullanıcı bir uygulamanın kategorisini değiştirince — öğrenme sinyali
-        log(TelemetryEvent.CategoryReclassified)
+    fun categoryReclassified(
+        sourceType: TelemetryEvent.CategorySourceType,
+        resultType: TelemetryEvent.CategoryResultType,
+        confidence: TelemetryEvent.ConfidenceBucket
+    ) {
+        log(TelemetryEvent.CategoryReclassified(sourceType, resultType, confidence))
     }
 
     fun shortcutUsed(shortcutId: String) {
         log(TelemetryEvent.ShortcutUsed)
     }
 
-    fun searchPerformed(query: String, resultCount: Int) {
+    fun searchPerformed(
+        queryLength: QueryLengthBucket,
+        resultCount: CountBucket,
+        latency: TelemetryEvent.LatencyBucket,
+        sourceMix: TelemetryEvent.SearchSourceMix
+    ) {
         log(TelemetryEvent.SearchPerformed(
-            queryLength = QueryLengthBucket.from(query.length),
-            resultCount = CountBucket.from(resultCount)
+            queryLength = queryLength,
+            resultCount = resultCount,
+            latency = latency,
+            sourceMix = sourceMix
         ))
     }
 }

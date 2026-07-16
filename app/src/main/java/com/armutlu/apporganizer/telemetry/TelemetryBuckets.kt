@@ -30,3 +30,16 @@ enum class QueryLengthBucket(val wireValue: String) {
         }
     }
 }
+
+enum class FolderAppCountBucket(val wireValue: String) {
+    ONE_TO_FIVE("1_5"), SIX_TO_TEN("6_10"), ELEVEN_TO_TWENTY("11_20"), TWENTY_ONE_PLUS("21_plus");
+
+    companion object {
+        fun from(value: Int): FolderAppCountBucket = when (value.coerceAtLeast(1)) {
+            in 1..5 -> ONE_TO_FIVE
+            in 6..10 -> SIX_TO_TEN
+            in 11..20 -> ELEVEN_TO_TWENTY
+            else -> TWENTY_ONE_PLUS
+        }
+    }
+}

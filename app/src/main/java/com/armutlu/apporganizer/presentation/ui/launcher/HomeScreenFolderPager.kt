@@ -30,6 +30,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalConfiguration
 import com.armutlu.apporganizer.utils.AppAnalytics
+import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
+import com.armutlu.apporganizer.telemetry.TelemetryEvent
 import kotlin.math.absoluteValue
 
 @Composable
@@ -113,7 +115,14 @@ internal fun FolderPager(
                     onClick = {
                         if (dragFromIndex == null) {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            AppAnalytics.folderOpened(folder.category.categoryId, folder.category.categoryName)
+                            AppAnalytics.folderOpened(
+                                folderType = if (folder.category.isSystemCategory) {
+                                    TelemetryEvent.FolderType.SYSTEM
+                                } else {
+                                    TelemetryEvent.FolderType.USER_CREATED
+                                },
+                                appCount = FolderAppCountBucket.from(folder.apps.size)
+                            )
                             onFolderClick(folder)
                         }
                     },

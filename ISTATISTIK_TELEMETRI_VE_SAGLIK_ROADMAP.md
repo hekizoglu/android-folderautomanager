@@ -541,7 +541,7 @@ fun searchPerformed(
 )
 ```
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 2026-07-16. AppAnalytics ve çağrı noktaları ham sorgu/klasör/kategori/paket adı kabul etmeyen tipli enum-kova API'sine taşındı; gizlilik testleri 7/7 ve `compileDebugKotlin` geçti. Sürüm 1.3.58/81.
 
 **Değişecek dosyalar:**
 
