@@ -9,7 +9,7 @@ interface AnalyticsGateway {
 interface CrashGateway {
     fun setKey(key: String, value: String)
     fun log(messageCode: String)
-    fun recordNonFatal(code: HealthIssueCode, throwable: Throwable? = null)
+    fun recordNonFatal(code: HealthIssueCode, context: CrashContext, throwable: Throwable? = null)
 }
 
 interface PerformanceGateway {
@@ -25,6 +25,10 @@ internal fun interface DailyEventLimiter {
     fun tryAcquire(): Boolean
 }
 
+internal fun interface DailyNonFatalLimiter {
+    fun tryAcquire(code: HealthIssueCode): Boolean
+}
+
 /** Single, fail-closed entry point for all remote telemetry. */
 object TelemetryManager {
     private const val DAILY_EVENT_LIMIT = 500
@@ -33,6 +37,7 @@ object TelemetryManager {
     @Volatile private var crash: CrashGateway = NoOpCrashGateway
     @Volatile private var performance: PerformanceGateway = NoOpPerformanceGateway
     @Volatile private var limiter: DailyEventLimiter = InMemoryDailyEventLimiter(DAILY_EVENT_LIMIT)
+    @Volatile private var nonFatalLimiter: DailyNonFatalLimiter = InMemoryDailyNonFatalLimiter()
     @Volatile private var testDeviceTag: TestDeviceTag = TestDeviceTag.NONE
 
     fun isCollectionEnabled(): Boolean = collectionEnabled
@@ -45,6 +50,7 @@ object TelemetryManager {
             limiter = SharedPreferencesDailyEventLimiter(appContext, DAILY_EVENT_LIMIT)
             analytics = FirebaseAnalyticsGateway(appContext) { testDeviceTag }
             crash = FirebaseCrashGateway()
+            nonFatalLimiter = SharedPreferencesDailyNonFatalLimiter(appContext)
             performance = FirebasePerformanceGateway()
         } else {
             resetGateways()
@@ -64,8 +70,10 @@ object TelemetryManager {
         if (collectionEnabled) runCatching { crash.log(messageCode) }
     }
 
-    fun recordNonFatal(code: HealthIssueCode, throwable: Throwable? = null) {
-        if (collectionEnabled && limiter.tryAcquire()) runCatching { crash.recordNonFatal(code, throwable) }
+    fun recordNonFatal(code: HealthIssueCode, context: CrashContext, throwable: Throwable? = null) {
+        if (collectionEnabled && nonFatalLimiter.tryAcquire(code)) {
+            runCatching { crash.recordNonFatal(code, context, throwable) }
+        }
     }
 
     fun <T> trace(name: String, block: () -> T): T =
@@ -89,12 +97,14 @@ object TelemetryManager {
         crashGateway: CrashGateway = NoOpCrashGateway,
         performanceGateway: PerformanceGateway = NoOpPerformanceGateway,
         dailyLimiter: DailyEventLimiter = InMemoryDailyEventLimiter(DAILY_EVENT_LIMIT),
+        dailyNonFatalLimiter: DailyNonFatalLimiter = InMemoryDailyNonFatalLimiter(),
     ) {
         collectionEnabled = enabled
         analytics = analyticsGateway
         crash = crashGateway
         performance = performanceGateway
         limiter = dailyLimiter
+        nonFatalLimiter = dailyNonFatalLimiter
     }
 
     private fun resetGateways() {
@@ -120,7 +130,30 @@ internal object NoOpAnalyticsGateway : AnalyticsGateway { override fun log(event
 internal object NoOpCrashGateway : CrashGateway {
     override fun setKey(key: String, value: String) = Unit
     override fun log(messageCode: String) = Unit
-    override fun recordNonFatal(code: HealthIssueCode, throwable: Throwable?) = Unit
+    override fun recordNonFatal(code: HealthIssueCode, context: CrashContext, throwable: Throwable?) = Unit
+}
+
+
+private class InMemoryDailyNonFatalLimiter : DailyNonFatalLimiter {
+    private var day = currentDay()
+    private val sentCodes = mutableSetOf<HealthIssueCode>()
+    @Synchronized override fun tryAcquire(code: HealthIssueCode): Boolean {
+        val today = currentDay()
+        if (today != day) { day = today; sentCodes.clear() }
+        return sentCodes.add(code)
+    }
+    private fun currentDay(): Long = System.currentTimeMillis() / 86_400_000L
+}
+
+private class SharedPreferencesDailyNonFatalLimiter(context: Context) : DailyNonFatalLimiter {
+    private val preferences = context.getSharedPreferences("crashlytics_non_fatal_rate_limit", Context.MODE_PRIVATE)
+    @Synchronized override fun tryAcquire(code: HealthIssueCode): Boolean {
+        val today = System.currentTimeMillis() / 86_400_000L
+        val key = code.name.lowercase()
+        if (preferences.getLong(key, -1L) == today) return false
+        preferences.edit().putLong(key, today).apply()
+        return true
+    }
 }
 internal object NoOpPerformanceGateway : PerformanceGateway {
     override fun <T> trace(name: String, block: () -> T): T = block()

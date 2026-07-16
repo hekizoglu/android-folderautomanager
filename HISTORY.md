@@ -1919,3 +1919,10 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - 12 üyeli kapalı `HealthIssueCode` kataloğu oluşturuldu; kodlar Analytics'e dizi yerine ayrı sabit değerler olarak aktarılabilecek biçimde modellendi.
 - Snapshot alan allowlist'i, yasaklı içerik alanları ve uyarı kodu kararlılığı için odaklı testler eklendi.
 - Sürüm `versionCode 86` / `versionName 1.3.63` olarak yükseltildi.
+
+# 2026-07-16 — Döngü B8 Crashlytics bağlamı (doğrulama bekliyor)
+
+- Crashlytics için roadmap'teki 12 alanla sınırlı, düşük-cardinality `CrashContext` allowlist'i eklendi.
+- Non-fatal kayıtlar opt-in kapısında tutuldu ve aynı sağlık hata kodunun cihaz başına günde yalnız bir kez gönderilmesini sağlayan kalıcı limiter eklendi.
+- Allowlist, opt-in ve hata-kodu bazlı limit için odak test eklendi; sürüm `versionCode 87` / `versionName 1.3.64` oldu.
+- Kalite kapısı engeli: odak `CrashContextTest` iki kez 120 saniyede çıktı vermeden zaman aşımına uğradı. İkinci denemeden önce Gradle daemon durduruldu ve `scripts/clear_build_lock.ps1` çalıştırıldı. Zorunlu test/compile doğrulanamadığı için B8 roadmap durumu bekliyor bırakıldı.

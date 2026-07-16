@@ -25,7 +25,8 @@ internal class FirebaseCrashGateway : CrashGateway {
     private val delegate = FirebaseCrashlytics.getInstance()
     override fun setKey(key: String, value: String) = delegate.setCustomKey(key, value)
     override fun log(messageCode: String) = delegate.log(messageCode)
-    override fun recordNonFatal(code: HealthIssueCode, throwable: Throwable?) {
+    override fun recordNonFatal(code: HealthIssueCode, context: CrashContext, throwable: Throwable?) {
+        context.asCustomKeys().forEach(delegate::setCustomKey)
         delegate.setCustomKey("health_issue_code", code.name.lowercase())
         delegate.recordException(throwable ?: IllegalStateException(code.name))
     }
