@@ -21,7 +21,23 @@ class TelemetryEventValidatorTest {
         "mission_completed" to setOf("mission_type", "reward_bucket"),
         "report_viewed" to setOf("report_type"),
         "widget_added" to setOf("widget_type"),
-        "health_warning" to setOf("warning_code", "severity", "version")
+        "health_warning" to setOf("warning_code", "severity", "version"),
+        "daily_usage_summary" to setOf(
+            "search_count_bucket",
+            "folder_open_count_bucket",
+            "mission_complete_bucket",
+            "report_view_bucket",
+            "widget_active",
+            "top_feature"
+        ),
+        "daily_health_summary" to setOf(
+            "health_score_bucket",
+            "warning_count_bucket",
+            "classification_consistent",
+            "worker_failure_bucket",
+            "search_latency_bucket",
+            "file_index_age_bucket"
+        )
     )
 
     @Test fun `catalog is exactly the roadmap allowlist`() {
