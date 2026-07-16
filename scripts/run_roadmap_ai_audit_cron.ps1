@@ -123,6 +123,17 @@ function Assert-CleanWorktree {
     }
 }
 
+function Resolve-DirtyWorktreeBeforeNewItem {
+    $status = Get-GitStatusText
+    if ([string]::IsNullOrWhiteSpace($status)) { return }
+
+    Write-Log "Dirty worktree found before new item; attempting recovery checkpoint."
+    Save-State -Status "checkpointing_dirty_worktree" -Message $status -ExitCode 0
+    Send-Telegram "AppOrganizer cron onceki turdan kalan degisiklikleri buldu; yeni maddeye baslamadan recovery commit/push deniyor."
+    $checkpoint = Invoke-GitCheckpoint "recover previous cron worktree"
+    Send-Telegram "AppOrganizer cron recovery checkpoint tamamlandi: $checkpoint. Yeni maddeye devam edilecek."
+}
+
 function Convert-ToCommitSlug {
     param([string]$Text)
     $slug = ($Text -replace '[^\p{L}\p{Nd}\s._-]+', ' ' -replace '\s+', ' ').Trim()
@@ -282,7 +293,7 @@ try {
         exit 2
     }
 
-    Assert-CleanWorktree
+    Resolve-DirtyWorktreeBeforeNewItem
 
     $pending = Get-FirstPendingItem
     if (-not $pending) {
