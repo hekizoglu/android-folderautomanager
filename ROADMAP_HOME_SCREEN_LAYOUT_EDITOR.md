@@ -742,7 +742,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H1.2 — HomeLayoutPrefs saklama ve sanitize
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Ayrı `HomeLayoutPrefs` deposunu ekle; header/footer sırası, gizli bölümler, layout version ve customized flag alanlarını güvenli şekilde oku/yaz.
 

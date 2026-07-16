@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H1.2 - 2026-07-16
+
+**Yapilanlar:** Ayri `HomeLayoutPrefs` deposu eklendi; header/footer sirasi, gizli bolumler, layout version ve customized flag guvenli sinir fonksiyonlariyla okunup yaziliyor. Bozuk tipler tolere ediliyor; bilinmeyen, duplicate ve yanlis zone section ID'leri eleniyor; eksik bolumler kanonik varsayilandan tamamlaniyor ve zorunlu bolumler gorunur tutuluyor. Surum `1.3.69` / `versionCode 92`.
+
+**Arastirma:** Android resmi SharedPreferences saklama semantigi ve Kotlin collection filtreleme/deduplication API'leri esas alindi.
+
+**Kalite kapisi:** `HomeLayoutPrefsTest` ve zorunlu debug Kotlin compile sonucu bu kayit tamamlanmadan once dogrulandi.
+
 ## Home Screen Layout Editor H1.1 - 2026-07-16
 
 **Yapilanlar:** `HomeSectionId`, `HomeLayoutZone`, `HomeSectionMovement`, `HomeLayoutItem` ve `HomeLayoutConfig` domain modelleri eklendi. Zorunlu, gizlenebilir ve tasinabilir bolum kurallari merkezi ve tipli hale getirildi. Tum bolumleri iceren immutable varsayilan config tek kaynak olarak tanimlandi; duplicate ID, eksik zorunlu bolum ve zorunlu bolumu gizleme gecersiz sayildi. Surum `1.3.68` / `versionCode 91`.
