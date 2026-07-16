@@ -830,7 +830,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H4.3 — Dock yatay reorder
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Dock uygulama/klasör öğeleri için yatay reorder ekle; sabit kullanıcı slotları ve öneri/bağlamsal slotların karışmasını engelle.
 

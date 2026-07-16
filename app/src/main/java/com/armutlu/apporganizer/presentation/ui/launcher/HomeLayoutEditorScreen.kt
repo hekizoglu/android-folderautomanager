@@ -3,13 +3,16 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -53,6 +56,7 @@ import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.utils.HomeLayoutPrefs
+import com.armutlu.apporganizer.utils.DockPrefs
 
 internal data class HomeLayoutEditorState(
     val original: HomeLayoutConfig,
@@ -149,6 +153,7 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     val context = LocalContext.current
     val folders by viewModel.folders.collectAsState()
     val widgetIds by viewModel.widgetIds.collectAsState()
+    val dockItems by viewModel.dockPackages.collectAsState()
     var editorState by rememberSaveable(stateSaver = editorStateSaver) {
         mutableStateOf(HomeLayoutEditorState(HomeLayoutPrefs.read(context).config))
     }
@@ -158,6 +163,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     var draftFolderIds by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var originalWidgetIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
     var draftWidgetIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    var dockInitialized by rememberSaveable { mutableStateOf(false) }
+    var originalDockItems by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var draftDockItems by rememberSaveable { mutableStateOf(emptyList<String>()) }
     val haptics = LocalHapticFeedback.current
     val reorderState = remember {
         ReorderState { sectionId, direction ->
@@ -177,6 +185,15 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
             }
         }
     }
+    val dockReorderState = remember {
+        DockOrderReorderState { item, direction ->
+            val moved = moveDockItem(draftDockItems, item, direction)
+            if (moved == draftDockItems) false else {
+                draftDockItems = moved
+                true
+            }
+        }
+    }
     val currentFolderIds = folders.map { it.category.categoryId }
     LaunchedEffect(currentFolderIds) {
         if (originalFolderIds.isEmpty() && currentFolderIds.isNotEmpty()) {
@@ -190,9 +207,18 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
             draftWidgetIds = widgetIds
         }
     }
+    LaunchedEffect(dockItems) {
+        if (!dockInitialized) {
+            originalDockItems = dockItems
+            draftDockItems = dockItems
+            dockInitialized = true
+        }
+    }
 
     fun requestClose() {
-        if (editorState.hasUnsavedChanges || draftFolderIds != originalFolderIds || draftWidgetIds != originalWidgetIds) showDiscardDialog = true else onClose()
+        if (editorState.hasUnsavedChanges || draftFolderIds != originalFolderIds ||
+            draftWidgetIds != originalWidgetIds || draftDockItems != originalDockItems
+        ) showDiscardDialog = true else onClose()
     }
 
     BackHandler { requestClose() }
@@ -217,6 +243,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                         )
                         if (draftWidgetIds != originalWidgetIds) {
                             viewModel.reorderWidgets(context, draftWidgetIds)
+                        }
+                        if (draftDockItems != originalDockItems) {
+                            viewModel.saveDockPackages(context, draftDockItems)
                         }
                         onClose()
                     }) { Text(stringResource(R.string.home_layout_editor_done)) }
@@ -277,6 +306,27 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                         )
                     }
                 }
+                if (orderedItems.any { it.sectionId == HomeSectionId.DOCK && it.visible } && draftDockItems.isNotEmpty()) {
+                    item(key = "dock_editor") {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(draftDockItems, key = { "dock_$it" }) { dockItem ->
+                                DockOrderCard(
+                                    modifier = Modifier.animateItemPlacement(),
+                                    item = dockItem,
+                                    folder = DockPrefs.folderId(dockItem)?.let { id ->
+                                        folders.firstOrNull { it.category.categoryId == id }
+                                    },
+                                    reorderState = dockReorderState,
+                                    onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+                                    onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
+                                )
+                            }
+                        }
+                    }
+                }
                 val hiddenItems = orderedItems.filterNot { it.visible }
                 if (hiddenItems.isNotEmpty()) {
                     item { Text(stringResource(R.string.home_layout_hidden_sections), Modifier.padding(16.dp)) }
@@ -332,6 +382,71 @@ internal fun moveFolder(ids: List<String>, folderId: String, direction: Int): Li
     val to = from + direction.coerceIn(-1, 1)
     if (from < 0 || direction == 0 || to !in ids.indices) return ids
     return ids.toMutableList().apply { add(to, removeAt(from)) }
+}
+
+internal fun moveDockItem(items: List<String>, item: String, direction: Int): List<String> {
+    val from = items.indexOf(item)
+    val to = from + direction.coerceIn(-1, 1)
+    if (from < 0 || direction == 0 || to !in items.indices) return items
+    return items.toMutableList().apply { add(to, removeAt(from)) }
+}
+
+private class DockOrderReorderState(
+    private val onMove: (String, Int) -> Boolean,
+) {
+    var draggedItem by mutableStateOf<String?>(null)
+    var dragOffset by mutableStateOf(0f)
+    fun start(item: String) { draggedItem = item; dragOffset = 0f }
+    fun drag(item: String, delta: Float, threshold: Float): Boolean {
+        if (draggedItem != item || threshold <= 0f) return false
+        dragOffset += delta
+        if (kotlin.math.abs(dragOffset) < threshold) return false
+        return onMove(item, if (dragOffset > 0f) 1 else -1).also { if (it) dragOffset = 0f }
+    }
+    fun stop() { draggedItem = null; dragOffset = 0f }
+}
+
+@Composable
+private fun DockOrderCard(
+    modifier: Modifier = Modifier,
+    item: String,
+    folder: AppFolder?,
+    reorderState: DockOrderReorderState,
+    onDragStarted: () -> Unit,
+    onItemMoved: () -> Unit,
+) {
+    val context = LocalContext.current
+    val label = folder?.category?.categoryName ?: remember(item) {
+        runCatching {
+            val info = context.packageManager.getApplicationInfo(item, 0)
+            context.packageManager.getApplicationLabel(info).toString()
+        }.getOrDefault(item)
+    }
+    var itemWidth by remember { mutableStateOf(0) }
+    val dragging = reorderState.draggedItem == item
+    Card(
+        modifier = modifier.height(72.dp)
+            .onSizeChanged { itemWidth = it.width }
+            .graphicsLayer { if (dragging) { translationX = reorderState.dragOffset; alpha = 0.92f } },
+    ) {
+        Box(
+            Modifier.height(72.dp).padding(horizontal = 16.dp)
+                .pointerInput(item) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { reorderState.start(item); onDragStarted() },
+                        onDragEnd = reorderState::stop,
+                        onDragCancel = reorderState::stop,
+                        onDrag = { change, amount ->
+                            change.consume()
+                            if (reorderState.drag(item, amount.x, itemWidth / 2f)) onItemMoved()
+                        },
+                    )
+                }
+                .semantics { contentDescription = label },
+        ) {
+            Text(if (folder == null) label else "${folder.category.iconEmoji} $label", Modifier.padding(top = 24.dp))
+        }
+    }
 }
 
 private class FolderOrderReorderState(

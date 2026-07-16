@@ -65,4 +65,21 @@ class HomeLayoutEditorStateTest {
         val lastHeader = HomeLayoutConfig.DEFAULT.items.filter { it.zone.name == "HEADER" && it.visible }.maxBy { it.order }
         assertEquals(HomeLayoutConfig.DEFAULT, HomeLayoutConfig.DEFAULT.moveSection(lastHeader.sectionId, 1))
     }
+
+    @Test
+    fun dockReorderSupportsMixedAppAndFolderItems() {
+        val items = listOf("app.one", "folder:social", "app.two")
+
+        assertEquals(listOf("folder:social", "app.one", "app.two"), moveDockItem(items, "folder:social", -1))
+        assertEquals(listOf("app.one", "app.two", "folder:social"), moveDockItem(items, "folder:social", 1))
+    }
+
+    @Test
+    fun dockReorderKeepsListAtBoundariesAndForUnknownItems() {
+        val items = listOf("app.one", "folder:social")
+
+        assertEquals(items, moveDockItem(items, "app.one", -1))
+        assertEquals(items, moveDockItem(items, "folder:social", 1))
+        assertEquals(items, moveDockItem(items, "suggested.app", 1))
+    }
 }

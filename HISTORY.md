@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H4.3 - 2026-07-16
+
+**Yapilanlar:** Tam ekran layout editorune uygulama ve klasorleri ayni yatay listede siralayan dock reorder eklendi. Yalniz kalici kullanici dock listesi taslaga alindigi icin oneri/baglamsal slotlar drag kapsaminda degil; `Iptal` degisiklik yapmiyor, `Bitti` sirayi `DockPrefs` uzerinden kalici kaydediyor. Surum `1.3.80` / `versionCode 103`.
+
+**Arastirma:** Android'in resmi Compose gesture, long-press drag, stabil LazyRow anahtarlari ve placement animasyonu rehberleri esas alindi.
+
+**Kalite kapisi:** `HomeLayoutEditorStateTest` karma uygulama/klasor sirasi, sinirlar ve oneri listesinden olmayan oge korumasini; `compileDebugKotlin -PskipGoogleServices` uygulama derlemesini dogrular.
+
 ## Home Screen Layout Editor H4.2 - 2026-07-16
 
 **Yapilanlar:** Widget reorder normal ana ekrandan kaldirilarak tam ekran layout editor taslagina baglandi. Editor icinde widget etkilesimleri seffaf bir katmanla bloke edildi; coklu widget sirasi yalniz `Bitti` ile kaydediliyor, bos ve tek widget guvenli kaliyor. Surum `1.3.79` / `versionCode 102`.
