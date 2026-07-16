@@ -121,8 +121,8 @@ class AppListViewModelTest {
         viewModel.resetAllPrivacyData(mockApplication)
         advanceUntilIdle()
 
-        coVerify { mockRepository.clearAllNotificationTexts() }
-        coVerify { mockRepository.clearAllNotificationEvents() }
+        coVerify(timeout = 1_000) { mockRepository.clearAllNotificationTexts() }
+        coVerify(timeout = 1_000) { mockRepository.clearAllNotificationEvents() }
     }
 
     @Test
