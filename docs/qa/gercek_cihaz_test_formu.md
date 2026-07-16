@@ -3,6 +3,41 @@
 Bu form AppOrganizer'in release oncesi fiziksel cihaz dogrulamalari icin kullanilir.
 Test sirasinda ilgili alanlari doldurmak yeterlidir.
 
+## B11 Telemetri Mini Test Filosu
+
+Cihaz etiketi serbest metin degildir. Debug/internal build'de yalnizca su sabit
+rollerden biri secilir:
+
+- `QA_PRIMARY_PHONE`: gercek gunluk kullanim
+- `QA_CLEAN_INSTALL_PHONE`: onboarding, izin ve yeniden kurulum
+- `QA_STRESS_PHONE`: izin kapatma, ag kesme ve worker iptali
+- `QA_TABLET`: yatay ekran, buyuk ekran, widget ve split-screen
+
+Her rol icin ayri bir form kopyasi doldurulur. Marka/model sadece yerel test
+kanitinda tutulur; telemetri etiketi veya Firebase parametresi yapilmaz.
+
+### B11 Firebase ve Saglik Kaniti
+
+- [ ] Kullanim Verileri ekrani acildi
+- [ ] Telemetri opt-in acildi
+- [ ] Firebase baglanti testi calistirildi
+- [ ] Test event'i Analytics DebugView'da goruldu
+- [ ] Crashlytics non-fatal testi yalnizca developer build'de calistirildi
+- [ ] Non-fatal rapor Crashlytics konsolunda goruldu
+- [ ] Performance trace konsoldaki Custom traces alaninda goruldu
+- [ ] Saglik raporu yeniden alindi ve kanita eklendi
+- [ ] `QA_TABLET` icin yatay ve split-screen goruntulerinde tasma yok
+
+DebugView on kosulu (paket adini build'den dogrula):
+
+```text
+adb shell setprop debug.firebase.analytics.app PACKAGE_NAME
+```
+
+Kanita Firebase ekran goruntusu veya konsol zaman damgasi eklenir; basarili
+sonuc yalnizca cihaz uzerinde ve ilgili Firebase konsolunda goruldukten sonra
+isaretlenir.
+
 ## Test Bilgisi
 
 - Tarih:

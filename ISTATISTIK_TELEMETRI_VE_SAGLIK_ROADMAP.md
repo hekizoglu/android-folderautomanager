@@ -1000,7 +1000,7 @@ Her cihazda:
 6. Performance trace konsolda doğrulanır.
 7. Sağlık raporu yeniden alınır.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ⛔ Bloke — Dört sabit `TestDeviceTag` enum değeri ve B11 kanıt formu hazır. 2026-07-16 otomasyonunda ADB'ye bağlı cihaz bulunmadı; dört fiziksel cihaz, Firebase konsolu ve tablet taşma doğrulaması için dış test filosu gerekli.
 
 **Kabul kriterleri:** Dört cihazın tamamında test sonuçları kayıt altına alınır; tablet ekranında taşma olmaz.
 

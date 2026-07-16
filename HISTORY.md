@@ -1951,3 +1951,9 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 
 - Önceki Gradle zaman aşımı tekrarlanmadı; `CrashContextTest` opt-in kapısını, 12 alanlı gizlilik allowlist'ini ve hata kodu başına günlük rate limit davranışını başarıyla doğruladı.
 - `compileDebugKotlin -PskipGoogleServices` başarıyla tamamlandı; B8 yol haritasında tamamlandı olarak işaretlendi. Sürüm `versionCode 87` / `versionName 1.3.64` olarak korundu.
+
+## 2026-07-16 — Döngü B11 gerçek cihaz doğrulaması bekliyor
+
+- Mevcut dört sabit `TestDeviceTag` rolü (`QA_PRIMARY_PHONE`, `QA_CLEAN_INSTALL_PHONE`, `QA_STRESS_PHONE`, `QA_TABLET`) doğrulandı; serbest metin cihaz etiketi kullanılmıyor.
+- Gerçek cihaz test formuna rol bazlı görevler ile DebugView, Crashlytics non-fatal, Performance trace, sağlık raporu ve tablet taşma kanıt alanları eklendi.
+- Kalite kapısı engeli: Android SDK içindeki `adb devices -l` hiçbir bağlı cihaz döndürmedi. Dört fiziksel cihaz sonucu ve Firebase konsol kanıtı olmadan kabul kriteri karşılanamayacağı için B11 bloke durumunda bırakıldı. Uygulama kodu değişmedi; sürüm artışı ve Gradle derlemesi gerekmedi.
