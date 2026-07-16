@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B10 - 2026-07-16
+
+**Yapilanlar:** Yuksek hacimli arama, klasor acma, gorev tamamlama ve rapor goruntuleme olaylari uzaga tek tek gonderilmek yerine `LocalTelemetryStore` icinde sayiliyor. Ag ve pil constraint'li `telemetry_daily_summary` unique periodic worker'i yerel takvim gunu kilidiyle en fazla bir kullanim ve bir saglik ozeti gonderiyor; tum degerler kapali enum veya kova. Opt-in kapatildiginda worker iptal ediliyor. Surum `1.3.66` / `versionCode 89`.
+
+**Arastirma:** Resmi Android WorkManager unique periodic work/constraint belgeleri, `LocalDate`/`ZoneId` API belgeleri ve Firebase Analytics event sinirlari incelendi. Periyodik zamanlamanin takvim gunu garantisi vermemesi nedeniyle kalici yerel gun dedupe'u eklendi.
+
+**Kalite kapisi:** `DailySummarySchemaTest` 2/2 gecti. Zorunlu `compileDebugKotlin -PskipGoogleServices` basarili ve `git diff --check` temiz tamamlandi.
+
 ## Istatistik/Telemetri Roadmap B9 dogrulamasi - 2026-07-16
 
 **Kalite kapisi:** Onceki Gradle zaman asimi tekrarlanmadi. Odak `TelemetryManagerTest` ve zorunlu `compileDebugKotlin -PskipGoogleServices` basariyla tamamlandi; B9 roadmap durumu tamamlandi olarak isaretlendi. Surum `1.3.65` / `versionCode 88` olarak korundu.

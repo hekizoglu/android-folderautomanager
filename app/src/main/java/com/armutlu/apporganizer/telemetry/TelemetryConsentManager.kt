@@ -9,6 +9,7 @@ object TelemetryConsentManager {
 
     fun initialize(context: Context) {
         TelemetryManager.setCollectionEnabled(context, AppPrefs.isTelemetryEnabled(context))
+        TelemetryDailySummaryWorker.sync(context, AppPrefs.isTelemetryEnabled(context))
     }
 
     fun setConsent(
@@ -18,5 +19,6 @@ object TelemetryConsentManager {
     ) {
         AppPrefs.setTelemetryConsent(context, enabled, CURRENT_CONSENT_VERSION, changedAt)
         TelemetryManager.setCollectionEnabled(context, enabled)
+        TelemetryDailySummaryWorker.sync(context, enabled)
     }
 }

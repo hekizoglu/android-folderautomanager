@@ -20,6 +20,8 @@ sealed class TelemetryEvent(
     data class ReportViewed(val reportType: ReportType) : TelemetryEvent("report_viewed", p("report_type", reportType))
     data class WidgetAdded(val widgetType: WidgetType) : TelemetryEvent("widget_added", p("widget_type", widgetType))
     data class HealthWarning(val warningCode: WarningCode, val severity: Severity, val version: VersionBucket) : TelemetryEvent("health_warning", p("warning_code", warningCode, "severity", severity, "version", version))
+    internal class DailyUsageSummary(parameters: Map<String, String>) : TelemetryEvent("daily_usage_summary", parameters)
+    internal class DailyHealthSummary(parameters: Map<String, String>) : TelemetryEvent("daily_health_summary", parameters)
 
     interface WireValue { val wireValue: String }
     enum class EntryType(override val wireValue: String) : WireValue { FIRST_LAUNCH("first_launch"), SETTINGS("settings"), RECOVERY("recovery") }

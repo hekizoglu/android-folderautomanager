@@ -964,7 +964,7 @@ Koşullar:
 - Pil düşük değilse tercih edilebilir
 - Aynı yerel gün için tekrar gönderilmez
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı (2026-07-16)
 
 **Kabul kriterleri:** Bir günde yüzlerce bildirim veya uygulama açılışı yüzlerce Firebase event'ine dönüşmez.
 

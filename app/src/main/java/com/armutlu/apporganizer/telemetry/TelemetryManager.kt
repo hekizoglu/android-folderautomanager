@@ -73,6 +73,11 @@ object TelemetryManager {
     }
 
     fun log(event: TelemetryEvent) {
+        if (collectionEnabled && LocalTelemetryStore.recordIfAggregated(event)) return
+        logDirect(event)
+    }
+
+    internal fun logDirect(event: TelemetryEvent) {
         if (!collectionEnabled || !TelemetryEventValidator.isValid(event) || !limiter.tryAcquire()) return
         runCatching { analytics.log(event) }
     }
