@@ -43,7 +43,7 @@ class TelemetryManagerTest {
         val gateway = FakeAnalyticsGateway()
         TelemetryManager.configureForTest(enabled = false, analyticsGateway = gateway)
 
-        TelemetryManager.log(TelemetryEvent.AppStarted)
+        TelemetryManager.log(TelemetryEvent.ReportViewed(TelemetryEvent.ReportType.HEALTH))
 
         assertTrue(gateway.events.isEmpty())
     }
@@ -58,10 +58,11 @@ class TelemetryManagerTest {
             dailyLimiter = DailyEventLimiter { permits-- > 0 },
         )
 
-        TelemetryManager.log(TelemetryEvent.AppStarted)
-        TelemetryManager.log(TelemetryEvent.AllAppsOpened)
+        val accepted = TelemetryEvent.ReportViewed(TelemetryEvent.ReportType.HEALTH)
+        TelemetryManager.log(accepted)
+        TelemetryManager.log(TelemetryEvent.WidgetAdded(TelemetryEvent.WidgetType.SEARCH))
 
-        assertEquals(listOf(TelemetryEvent.AppStarted), gateway.events)
+        assertEquals(listOf(accepted), gateway.events)
     }
 
     @Test
@@ -73,7 +74,7 @@ class TelemetryManagerTest {
             },
         )
 
-        TelemetryManager.log(TelemetryEvent.AppStarted)
+        TelemetryManager.log(TelemetryEvent.ReportViewed(TelemetryEvent.ReportType.HEALTH))
     }
 
     @Test

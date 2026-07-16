@@ -1,9 +1,7 @@
 package com.armutlu.apporganizer.utils
 
 import android.content.Context
-import com.armutlu.apporganizer.telemetry.CountBucket
 import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
-import com.armutlu.apporganizer.telemetry.QueryLengthBucket
 import com.armutlu.apporganizer.telemetry.TelemetryEvent
 import com.armutlu.apporganizer.telemetry.TelemetryManager
 
@@ -20,7 +18,7 @@ object AppAnalytics {
     }
 
     fun appStarted(context: Context) {
-        log(TelemetryEvent.AppStarted)
+        // Intentionally not part of the first-version analytics catalog.
     }
 
     fun folderOpened(folderType: TelemetryEvent.FolderType, appCount: FolderAppCountBucket) {
@@ -30,35 +28,32 @@ object AppAnalytics {
     // Not: package_name kasıtlı olarak GÖNDERİLMEZ — hangi uygulamaları kullandığı
     // Firebase'e (üçüncü taraf) sızdırılmaz; privacy-first vaadiyle çelişir (Data Safety uyumu).
     fun appLaunched(source: String) {
-        // source: "home", "folder", "all_apps", "suggestions", "favorites", "recent"
-        TelemetryEvent.Source.from(source)?.let { log(TelemetryEvent.AppLaunched(it)) }
+        // Intentionally omitted: exact app launches are outside the approved catalog.
     }
 
     fun allAppsOpened() {
-        log(TelemetryEvent.AllAppsOpened)
+        // Intentionally not part of the first-version analytics catalog.
     }
 
     fun categoryReclassified(
-        sourceType: TelemetryEvent.CategorySourceType,
-        resultType: TelemetryEvent.CategoryResultType,
+        sourceType: TelemetryEvent.SourceType,
+        resultType: TelemetryEvent.TargetType,
         confidence: TelemetryEvent.ConfidenceBucket
     ) {
-        log(TelemetryEvent.CategoryReclassified(sourceType, resultType, confidence))
+        log(TelemetryEvent.ClassificationCorrected(sourceType, confidence, resultType))
     }
 
     fun shortcutUsed(shortcutId: String) {
-        log(TelemetryEvent.ShortcutUsed)
+        // Raw shortcut identifiers are deliberately never logged.
     }
 
     fun searchPerformed(
-        queryLength: QueryLengthBucket,
-        resultCount: CountBucket,
+        resultCount: TelemetryEvent.ResultBucket,
         latency: TelemetryEvent.LatencyBucket,
         sourceMix: TelemetryEvent.SearchSourceMix
     ) {
         log(TelemetryEvent.SearchPerformed(
-            queryLength = queryLength,
-            resultCount = resultCount,
+            result = resultCount,
             latency = latency,
             sourceMix = sourceMix
         ))

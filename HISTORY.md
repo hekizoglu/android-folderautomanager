@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B6 - 2026-07-16
+
+**Yapilanlar:** Ilk surum Analytics katalogu roadmap'teki 15 event ile bire bir sinirlandi. Her event yalniz tipli, kapali enum/kova parametreleri kabul ediyor; eski katalog disi event'ler gonderilmiyor. Merkezi validator event/parametre ad kurallarini, exact allowlist'i, dusuk cardinality degerlerini ve paket/uygulama/kategori adi ile serbest metin yasagini fail-closed uyguluyor. Aktif klasor ve arama event'leri yeni sozlesmeye uyarlandi. Surum `1.3.62` / `versionCode 85`.
+
+**Arastirma:** Resmi Firebase Android event logging/DebugView belgeleri ile GA4 event limitleri, yuksek cardinality ve PII politikalari incelendi. Event adlarinin sabit ve 40 karakteri asmamasi, rezerve on eklerin reddedilmesi, exact parametre allowlist'i ve yalniz kapali degerler esas alindi.
+
+**Kalite kapisi:** Ilk daemon derlemeleri sessiz zaman asimina ugradi ve build-lock betigi acik build dizinini tam temizleyemedi. `--no-daemon` ile `compileDebugKotlin -PskipGoogleServices` basarili oldu. `TelemetryEventValidatorTest` 4/4 ve `TelemetryManagerTest` 7/7 gecti; `git diff --check` temiz gecti.
+
 ## Istatistik/Telemetri Roadmap B5 - 2026-07-16
 
 **Yapilanlar:** `FirebaseConnectionTester` sirasiyla yapilandirma, Android `INTERNET` + `VALIDATED` ag capability ve zorla yenilenen Firebase Installations auth token ile gercek backend round-trip kontrolu yapiyor. Token degeri aninda atiliyor; UI, log veya kalici kayda yazilmiyor. Basarili round-trip sonrasinda parametresiz `telemetry_connection_test` olayi yalniz "siraya alindi" diye raporlaniyor, Crashlytics'e guvenli `connection_test` logu yaziliyor ve `firebase_connection_test` Performance trace'i baslatilip bitiriliyor; zorla crash yok. Guvenli hata kodlu sonuc ayri yerel preferences dosyasina kaydediliyor ve Kullanim Verileri ekraninda ayrintili gosteriliyor. Surum `1.3.61` / `versionCode 84`.

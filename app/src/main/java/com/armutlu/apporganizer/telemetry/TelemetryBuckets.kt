@@ -31,7 +31,7 @@ enum class QueryLengthBucket(val wireValue: String) {
     }
 }
 
-enum class FolderAppCountBucket(val wireValue: String) {
+enum class FolderAppCountBucket(override val wireValue: String) : TelemetryEvent.WireValue {
     ONE_TO_FIVE("1_5"), SIX_TO_TEN("6_10"), ELEVEN_TO_TWENTY("11_20"), TWENTY_ONE_PLUS("21_plus");
 
     companion object {

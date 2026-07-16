@@ -788,7 +788,7 @@ UNKNOWN_TEST_FAILURE
 
 **Nasıl yapılmalı:** Her event sadece belirlenen parametreleri kabul etmelidir. Exact package/app/category name gönderilmemelidir.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — 15 event'lik kapalı katalog, exact parametre allowlist'i, düşük cardinality enum/kovaları ve odaklı testler doğrulandı (16.07.2026).
 
 **Kabul kriterleri:** Event sayısı kontrollü, isimler sabit ve parametre cardinality düşük olmalıdır.
 

@@ -1075,8 +1075,12 @@ fun AllAppsDrawer(
 
     LaunchedEffect(searchQuery, sortedApps.size) {
         if (searchQuery.trim().length >= 2) AppAnalytics.searchPerformed(
-            queryLength = com.armutlu.apporganizer.telemetry.QueryLengthBucket.from(searchQuery.trim().length),
-            resultCount = com.armutlu.apporganizer.telemetry.CountBucket.from(sortedApps.size),
+            resultCount = when (sortedApps.size) {
+                0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ZERO
+                in 1..5 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ONE_TO_FIVE
+                in 6..20 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.SIX_TO_TWENTY
+                else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.TWENTY_ONE_PLUS
+            },
             latency = com.armutlu.apporganizer.telemetry.TelemetryEvent.LatencyBucket.UNKNOWN,
             sourceMix = com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.APPS_ONLY
         )

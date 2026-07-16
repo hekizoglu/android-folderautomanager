@@ -1,50 +1,54 @@
 package com.armutlu.apporganizer.telemetry
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TelemetryEventValidatorTest {
-    @Test fun `yasakli anahtar reddedilir`() {
-        assertFalse(TelemetryEventValidator.isValidPayload("search_performed", mapOf("query" to "ali")))
+    private val expectedCatalog = mapOf(
+        "onboarding_started" to setOf("entry_type"),
+        "onboarding_step" to setOf("step", "result"),
+        "onboarding_completed" to setOf("duration_bucket"),
+        "permission_result" to setOf("permission_type", "result"),
+        "search_performed" to setOf("result_bucket", "latency_bucket", "source_mix"),
+        "search_result_opened" to setOf("source_type", "position_bucket"),
+        "quick_action_used" to setOf("action_type", "source_type"),
+        "folder_opened" to setOf("folder_type", "app_count_bucket"),
+        "classification_reviewed" to setOf("decision", "confidence_bucket", "source_type"),
+        "classification_corrected" to setOf("source_type", "confidence_bucket", "target_type"),
+        "mission_viewed" to setOf("mission_type"),
+        "mission_completed" to setOf("mission_type", "reward_bucket"),
+        "report_viewed" to setOf("report_type"),
+        "widget_added" to setOf("widget_type"),
+        "health_warning" to setOf("warning_code", "severity", "version")
+    )
+
+    @Test fun `catalog is exactly the roadmap allowlist`() {
+        assertEquals(expectedCatalog, TelemetryEventValidator.catalog.mapValues { it.value.keys })
     }
 
-    @Test fun `serbest metin ve bilinmeyen event reddedilir`() {
-        assertFalse(TelemetryEventValidator.isValidPayload("app_launched", mapOf("source" to "kullanici metni")))
-        assertFalse(TelemetryEventValidator.isValidPayload("custom_event", emptyMap()))
+    @Test fun `unknown events extra parameters and free text are rejected`() {
+        assertFalse(TelemetryEventValidator.isValidPayload("app_started", emptyMap()))
+        assertFalse(TelemetryEventValidator.isValidPayload("search_performed", mapOf("query" to "private text")))
+        assertFalse(TelemetryEventValidator.isValidPayload("folder_opened", mapOf("folder_type" to "private name", "app_count_bucket" to "1_5")))
     }
 
-    @Test fun `bilinen enum degeri kabul edilir`() {
-        assertTrue(TelemetryEventValidator.isValid(TelemetryEvent.AppLaunched(TelemetryEvent.Source.HOME)))
-    }
-
-    @Test fun `cok uzun deger kirpilmadan reddedilir`() {
-        assertFalse(TelemetryEventValidator.isValidPayload("app_launched", mapOf("source" to "x".repeat(41))))
-    }
-
-    @Test fun `sayilar guvenli kovalara donusur`() {
-        assertTrue(TelemetryEventValidator.isValid(TelemetryEvent.SearchPerformed(
-            QueryLengthBucket.NINE_PLUS, CountBucket.ONE_HUNDRED_ONE_PLUS,
-            TelemetryEvent.LatencyBucket.UNKNOWN, TelemetryEvent.SearchSourceMix.APPS_ONLY
-        )))
-        assertTrue(CountBucket.from(500) == CountBucket.ONE_HUNDRED_ONE_PLUS)
-    }
-
-    @Test fun `folder event contains only bounded privacy fields`() {
-        val event = TelemetryEvent.FolderOpened(
-            TelemetryEvent.FolderType.USER_CREATED, FolderAppCountBucket.TWENTY_ONE_PLUS
+    @Test fun `typed events contain only bounded values`() {
+        val events = listOf(
+            TelemetryEvent.OnboardingStarted(TelemetryEvent.EntryType.FIRST_LAUNCH),
+            TelemetryEvent.SearchPerformed(TelemetryEvent.ResultBucket.ONE_TO_FIVE, TelemetryEvent.LatencyBucket.UNDER_100_MS, TelemetryEvent.SearchSourceMix.APPS_ONLY),
+            TelemetryEvent.FolderOpened(TelemetryEvent.FolderType.USER_CREATED, FolderAppCountBucket.TWENTY_ONE_PLUS),
+            TelemetryEvent.HealthWarning(TelemetryEvent.WarningCode.DATA_STALE, TelemetryEvent.Severity.WARNING, TelemetryEvent.VersionBucket.CURRENT)
         )
-        assertTrue(TelemetryEventValidator.isValid(event))
-        assertTrue(event.parameters.keys == setOf("folder_type", "app_count_bucket"))
+        assertTrue(events.all(TelemetryEventValidator::isValid))
+        assertTrue(TelemetryEventValidator.catalog.values.flatMap { it.values }.flatten().all { it.length <= 40 })
     }
 
-    @Test fun `category event contains no raw category value`() {
-        val event = TelemetryEvent.CategoryReclassified(
-            TelemetryEvent.CategorySourceType.UNCATEGORIZED,
-            TelemetryEvent.CategoryResultType.BUILTIN,
-            TelemetryEvent.ConfidenceBucket.HIGH
-        )
-        assertTrue(TelemetryEventValidator.isValid(event))
-        assertTrue(event.parameters.keys == setOf("source_type", "result_type", "confidence_bucket"))
+    @Test fun `event and parameter names satisfy firebase rules`() {
+        val validName = Regex("^[a-z][a-z0-9_]{0,39}$")
+        assertTrue(TelemetryEventValidator.catalog.keys.all(validName::matches))
+        assertTrue(TelemetryEventValidator.catalog.values.flatMap { it.keys }.all(validName::matches))
+        assertTrue(TelemetryEventValidator.catalog.keys.none { it.startsWith("firebase_") || it.startsWith("google_") || it.startsWith("ga_") })
     }
 }
