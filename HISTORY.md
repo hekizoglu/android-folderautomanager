@@ -2,6 +2,10 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Istatistik/Telemetri Roadmap B9 dogrulamasi - 2026-07-16
+
+**Kalite kapisi:** Onceki Gradle zaman asimi tekrarlanmadi. Odak `TelemetryManagerTest` ve zorunlu `compileDebugKotlin -PskipGoogleServices` basariyla tamamlandi; B9 roadmap durumu tamamlandi olarak isaretlendi. Surum `1.3.65` / `versionCode 88` olarak korundu.
+
 ## Istatistik/Telemetri Roadmap B9 - 2026-07-16 (tamamlanmadi)
 
 **Yapilanlar:** Firebase Performance Gradle eklentisi eklendi; sabit sekiz trace adi, opt-in kapisi ve ayni islem icin nested/cift trace korumasi merkezi telemetry katmanina eklendi. `global_search` gercek arama akisi enstrumante edildi. Surum adayi `1.3.65` / `versionCode 88`.

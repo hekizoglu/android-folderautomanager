@@ -909,7 +909,7 @@ item_bucket=...
 
 Arama sorgusu, dosya adı, kategori adı veya paket adı trace attribute olamaz.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı (2026-07-16)
 
 **Kabul kriterleri:**
 
