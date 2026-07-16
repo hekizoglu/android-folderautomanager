@@ -8,7 +8,7 @@
 
 **Arastirma:** Android'in resmi Compose resource, yerellestirme, Material 3 bottom sheet ve Compose UI test rehberleri esas alindi.
 
-**Kalite kapisi:** `HomeLongPressSheetTest` ile dismiss/editor callback sirasi ve zorunlu debug Kotlin compile dogrulanmadan roadmap maddesi tamamlanmis sayilmaz.
+**Kalite kapisi:** `HomeLongPressSheetTest` dismiss/editor callback sirasini dogruladi; `compileDebugKotlin -PskipGoogleServices` ve odak `testDebugUnitTest` basariyla tamamlandi.
 
 ## Home Screen Layout Editor H2.3 - 2026-07-16
 

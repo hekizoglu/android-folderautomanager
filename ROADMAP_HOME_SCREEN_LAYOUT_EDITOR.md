@@ -782,7 +782,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H3.1 — Editör giriş noktaları
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** `HomeLongPressSheet` içine `Ana Ekranı Düzenle` aksiyonu ekle; gerekiyorsa Settings > Ana Ekran kısa yolunu ekle.
 
