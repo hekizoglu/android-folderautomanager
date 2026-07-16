@@ -806,7 +806,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H3.4 — Bölüm reorder state ve animasyon
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Ortak `ReorderState` veya eşdeğer yardımcı yapı ile bölüm sürükle-bırak sıralamasını uygula; haptic feedback ve placement animasyonlarını ekle.
 

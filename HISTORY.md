@@ -2045,3 +2045,7 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - Home layout editörüne lokalize bölüm kartları, drag/kilit göstergeleri, erişilebilir göster/gizle kontrolleri ve gizlenen bölümleri geri ekleme listesi eklendi.
 - Zorunlu bölümlerin gizlenmesi engellendi. İki aşamalı “Varsayılana dön” akışı yalnız layout taslağını sıfırlar; klasör, widget ve dock içerik depolarına dokunmaz.
 - Görünürlük ve reset kuralları için odaklı unit testler eklendi; sürüm 1.3.76 (99) yapıldı.
+# 2026-07-16 — Home layout editor section reorder (H3.4)
+
+- Added long-press drag reorder state for movable home sections, haptic feedback, stable-key placement animation, and zone/fixed-section guards.
+- Added focused reorder tests; bumped app version to 1.3.77 (100).

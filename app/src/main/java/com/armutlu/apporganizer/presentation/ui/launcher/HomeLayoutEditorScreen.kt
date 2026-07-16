@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -25,7 +27,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +66,46 @@ internal fun HomeLayoutConfig.withSectionVisibility(sectionId: HomeSectionId, vi
 }
 
 internal fun HomeLayoutEditorState.resetDraft(): HomeLayoutEditorState = copy(draft = HomeLayoutConfig.DEFAULT)
+
+internal fun HomeLayoutConfig.moveSection(sectionId: HomeSectionId, direction: Int): HomeLayoutConfig {
+    if (direction == 0) return this
+    val source = items.firstOrNull { it.sectionId == sectionId } ?: return this
+    if (!source.visible || !source.sectionId.movable || source.locked) return this
+    val zoneItems = items.filter { it.zone == source.zone && it.visible }
+        .sortedBy { it.order }
+    val sourceIndex = zoneItems.indexOfFirst { it.sectionId == sectionId }
+    val targetIndex = sourceIndex + direction.coerceIn(-1, 1)
+    if (sourceIndex < 0 || targetIndex !in zoneItems.indices) return this
+    val target = zoneItems[targetIndex]
+    if (!target.sectionId.movable || target.locked) return this
+    val reordered = zoneItems.toMutableList().apply {
+        add(targetIndex, removeAt(sourceIndex))
+    }
+    val newOrders = reordered.mapIndexed { index, item -> item.sectionId to index }.toMap()
+    return copy(items = items.map { item ->
+        newOrders[item.sectionId]?.let { item.copy(order = it) } ?: item
+    })
+}
+
+private class ReorderState(
+    private val onMove: (HomeSectionId, Int) -> Boolean,
+) {
+    var draggedId by mutableStateOf<HomeSectionId?>(null)
+        private set
+    var dragOffset by mutableStateOf(0f)
+        private set
+
+    fun start(id: HomeSectionId) { draggedId = id; dragOffset = 0f }
+    fun drag(id: HomeSectionId, delta: Float, threshold: Float): Boolean {
+        if (draggedId != id || threshold <= 0f) return false
+        dragOffset += delta
+        if (kotlin.math.abs(dragOffset) < threshold) return false
+        val moved = onMove(id, if (dragOffset > 0f) 1 else -1)
+        if (moved) dragOffset = 0f
+        return moved
+    }
+    fun stop() { draggedId = null; dragOffset = 0f }
+}
 
 private val editorStateSaver = listSaver<HomeLayoutEditorState, String>(
     save = { state ->
@@ -93,7 +141,7 @@ private fun decodeConfig(raw: String): HomeLayoutConfig {
     return HomeLayoutConfig(version, items)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeLayoutEditorScreen(onClose: () -> Unit) {
     val context = LocalContext.current
@@ -102,6 +150,16 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
     }
     var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
     var showResetDialog by rememberSaveable { mutableStateOf(false) }
+    val haptics = LocalHapticFeedback.current
+    val reorderState = remember {
+        ReorderState { sectionId, direction ->
+            val moved = editorState.draft.moveSection(sectionId, direction)
+            if (moved == editorState.draft) false else {
+                editorState = editorState.copy(draft = moved)
+                true
+            }
+        }
+    }
 
     fun requestClose() {
         if (editorState.hasUnsavedChanges) showDiscardDialog = true else onClose()
@@ -143,8 +201,12 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
                 items(orderedItems.filter { it.visible },
                     key = { it.sectionId.name }) { item ->
                     EditableHomeSection(
+                        modifier = Modifier.animateItemPlacement(),
                         item = item,
                         position = orderedItems.filter { it.visible }.indexOf(item) + 1,
+                        reorderState = reorderState,
+                        onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+                        onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
                         onVisibilityChange = { visible ->
                             editorState = editorState.copy(
                                 draft = editorState.draft.withSectionVisibility(item.sectionId, visible),
@@ -204,19 +266,39 @@ fun HomeLayoutEditorScreen(onClose: () -> Unit) {
 
 @Composable
 private fun EditableHomeSection(
+    modifier: Modifier = Modifier,
     item: HomeLayoutItem,
     position: Int,
+    reorderState: ReorderState,
+    onDragStarted: () -> Unit,
+    onItemMoved: () -> Unit,
     onVisibilityChange: (Boolean) -> Unit,
 ) {
     val name = stringResource(sectionName(item.sectionId))
     val description = stringResource(R.string.home_layout_section_position, name, position)
-    Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp).semantics {
+    var itemHeight by remember { mutableStateOf(0) }
+    val isDragging = reorderState.draggedId == item.sectionId
+    Card(modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)
+        .onSizeChanged { itemHeight = it.height }
+        .graphicsLayer { if (isDragging) { translationY = reorderState.dragOffset; alpha = 0.92f } }
+        .semantics {
         contentDescription = description
     }) {
         ListItem(
             leadingContent = {
                 Icon(
                     if (item.locked || !item.sectionId.movable) Icons.Default.Lock else Icons.Default.DragHandle,
+                    modifier = Modifier.pointerInput(item.sectionId, item.sectionId.movable, item.locked) {
+                        if (item.sectionId.movable && !item.locked) detectDragGesturesAfterLongPress(
+                            onDragStart = { reorderState.start(item.sectionId); onDragStarted() },
+                            onDragEnd = reorderState::stop,
+                            onDragCancel = reorderState::stop,
+                            onDrag = { change, amount ->
+                                change.consume()
+                                if (reorderState.drag(item.sectionId, amount.y, itemHeight / 2f)) onItemMoved()
+                            },
+                        )
+                    },
                     contentDescription = stringResource(
                         if (item.locked || !item.sectionId.movable) R.string.home_layout_locked else R.string.home_layout_drag_handle,
                     ),

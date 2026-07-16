@@ -44,4 +44,25 @@ class HomeLayoutEditorStateTest {
         assertEquals(HomeLayoutConfig.DEFAULT, state.draft)
         assertFalse(state.hasUnsavedChanges)
     }
+
+    @Test
+    fun movableSectionReordersAndPersistsAsDraftOrder() {
+        val moved = HomeLayoutConfig.DEFAULT.moveSection(HomeSectionId.MAIN_SEARCH, 1)
+
+        assertEquals(2, moved.items.single { it.sectionId == HomeSectionId.MAIN_SEARCH }.order)
+        assertEquals(1, moved.items.single { it.sectionId == HomeSectionId.MISSIONS_AND_SCORE }.order)
+        assertTrue(HomeLayoutEditorState(HomeLayoutConfig.DEFAULT, moved).hasUnsavedChanges)
+    }
+
+    @Test
+    fun fixedAndRestrictedSectionsCannotReorder() {
+        assertEquals(HomeLayoutConfig.DEFAULT, HomeLayoutConfig.DEFAULT.moveSection(HomeSectionId.DOCK, -1))
+        assertEquals(HomeLayoutConfig.DEFAULT, HomeLayoutConfig.DEFAULT.moveSection(HomeSectionId.FOLDER_GRID, -1))
+    }
+
+    @Test
+    fun reorderDoesNotCrossZoneBoundary() {
+        val lastHeader = HomeLayoutConfig.DEFAULT.items.filter { it.zone.name == "HEADER" && it.visible }.maxBy { it.order }
+        assertEquals(HomeLayoutConfig.DEFAULT, HomeLayoutConfig.DEFAULT.moveSection(lastHeader.sectionId, 1))
+    }
 }
