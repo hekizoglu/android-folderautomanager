@@ -1050,7 +1050,7 @@ Başlangıçta yalnızca şu paneller takip edilmelidir:
 - Widget
 - Yedekleme
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Beş rapor ailesinin ölçüm, ürün kararı, inceleme sıklığı ve kaldırma kuralı `FIREBASE_CONSOLE_REPORTS.md` içinde tanımlandı. Bu otomasyon ortamında Firebase/GA4 Editor/Admin kimliği, bağlı test cihazı ve konsol erişimi bulunmadığından raporlar oluşturulup yayımlanamadı; DebugView/Crashlytics/Performance gerçek veri kanıtı bekleniyor.
 
 **Kabul kriterleri:** Her panel doğrudan bir ürün kararına bağlanmalıdır; bakılmayan metrik kaldırılmalıdır.
 

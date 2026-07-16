@@ -1957,3 +1957,10 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - Mevcut dört sabit `TestDeviceTag` rolü (`QA_PRIMARY_PHONE`, `QA_CLEAN_INSTALL_PHONE`, `QA_STRESS_PHONE`, `QA_TABLET`) doğrulandı; serbest metin cihaz etiketi kullanılmıyor.
 - Gerçek cihaz test formuna rol bazlı görevler ile DebugView, Crashlytics non-fatal, Performance trace, sağlık raporu ve tablet taşma kanıt alanları eklendi.
 - Kalite kapısı engeli: Android SDK içindeki `adb devices -l` hiçbir bağlı cihaz döndürmedi. Dört fiziksel cihaz sonucu ve Firebase konsol kanıtı olmadan kabul kriteri karşılanamayacağı için B11 bloke durumunda bırakıldı. Uygulama kodu değişmedi; sürüm artışı ve Gradle derlemesi gerekmedi.
+
+## 2026-07-16 — Döngü B12 Firebase konsol rapor sözleşmesi (konsol doğrulaması bekliyor)
+
+- Kullanıcı/onboarding, arama, sınıflandırma, sağlık ve özellik benimseme raporları için ölçüm yüzeyi, oran tanımı ve doğrudan ürün kararı `FIREBASE_CONSOLE_REPORTS.md` içinde eşlendi.
+- Haftalık inceleme ile iki ardışık 28 günlük dönemde karar üretmeyen metriği kaldırma kuralı; düşük örneklem, opt-in nüfusu ve gizlilik sınırları yazıldı.
+- Resmi Firebase/GA4 dokümantasyonu üzerinden Funnel Exploration, yayımlanmış Reports Library koleksiyonu, DebugView, Crashlytics ve Performance doğrulama adımları belirlendi.
+- Kalite kapısı engeli: ortamda Firebase/GA4 Editor/Admin kimliği, konsol oturumu ve bağlı test cihazı yok. Raporlar konsolda oluşturulup yayımlanamadı ve gerçek veri kanıtı alınamadı; bu nedenle B12 yalnız `Kısmen tamamlandı` olarak işaretlendi. Uygulama kodu değişmedi; sürüm artışı ve Gradle derlemesi gerekmedi.
