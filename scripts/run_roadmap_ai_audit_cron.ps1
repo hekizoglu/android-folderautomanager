@@ -214,13 +214,16 @@ function Get-FirstPendingItem {
         if ($lines[$i] -match '^\*\*Durum:\*\*\s*(?:\S+\s*)?Bekliyor\b') {
             for ($j = $i; $j -ge 0; $j--) {
                 if ($lines[$j] -match '^#{1,6}\s+(.+)$') {
-                    return [pscustomobject]@{
-                        Title = $Matches[1].Trim()
-                        Line = $i + 1
+                    $title = $Matches[1].Trim()
+                    if ($title -match '^(Dongu|Döngü)\s+[A-Z]?\d+\b|^A\d+(?:-A\d+)?\b|^B\d+\b') {
+                        return [pscustomobject]@{
+                            Title = $title
+                            Line = $i + 1
+                        }
                     }
+                    break
                 }
             }
-            return [pscustomobject]@{ Title = "Unknown roadmap item"; Line = $i + 1 }
         }
     }
     return $null
