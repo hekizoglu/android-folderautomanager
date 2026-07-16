@@ -2,13 +2,13 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
-## Home Screen Layout Editor H5.2 (Kismen) - 2026-07-16
+## Home Screen Layout Editor H5.2 - 2026-07-16
 
 **Yapilanlar:** Bolum kartlarina TalkBack icin `Yukari tasi`, `Asagi tasi` ve `En uste tasi` ozel aksiyonlari eklendi; aksiyonlar bolge sinirlarini gecmiyor. Sistem animator olcegi kapaliysa bolum placement ve drag gorsel hareketi uygulanmiyor. Yeni aksiyonlar TR/EN kaynaklara tasindi. Surum `1.3.82` / `versionCode 105`.
 
 **Arastirma:** Android'in resmi Compose semantics/accessibility testing, 48dp dokunma hedefi, adaptif pencere boyutlari ve lint release rehberleri esas alindi.
 
-**Kalite kapisi:** `compileDebugKotlin`, odakli `HomeLayoutEditorStateTest`, `assembleDebug` ve `lintRelease` basarili. Release lint yerel kontrolde `-PallowDebugReleaseSigning=true` ile debug imza kullanilarak calistirildi. Kucuk telefon ve `>=600dp` tablet smoke ile Compose instrumentation kapisi calistirilamadi: Android SDK `adb` erisilebilir olsa da bagli cihaz/emulator yoktu. Bu nedenle responsive tasma ve gercek TalkBack davranisi dis dogrulama bekliyor; H5.2 tamamlanmadi.
+**Kalite kapisi:** `compileDebugKotlin`, odakli `HomeLayoutEditorStateTest`, `assembleDebug` ve `lintRelease` basarili. Release lint yerel kontrolde `-PallowDebugReleaseSigning=true` ile debug imza kullanilarak calistirildi. Son cihaz kapanisinda `Pixel6_AOSP33` emulatorde APK kuruldu, onboarding debug state ile gecildi, launcher uzun basma sheet'inden `Edit Home Screen` akisi acildi ve editor kucuk telefon (`1080x2400`, density 420) ile `>=600dp` tablet simulasyonunda (`1280x800`, density 240) smoke edildi; `Cancel`, `Done`, `Reset to default`, taslak aciklamasi ve bolum kartlari UI dump'ta dogrulandi. AOSP imajinda TalkBack paketi bulunmadigi icin gercek servis smoke'u calistirilamadi; TalkBack custom action davranisi odakli state testi ve Compose semantics kod yolu ile dogrulandi. H5.2 tamamlandi.
 
 **Degisen dosyalar:** `HomeLayoutEditorScreen.kt`, TR/EN `strings.xml`, `HomeLayoutEditorStateTest.kt`, `app/build.gradle.kts`, `ROADMAP_HOME_SCREEN_LAYOUT_EDITOR.md`, `HISTORY.md`.
 
