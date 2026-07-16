@@ -790,7 +790,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H3.2 — Tam ekran HomeLayoutEditorScreen
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Tam ekran editör, taslak state, üst bar, `Bitti`, `İptal`, geri tuşu koruması ve kaydedilmemiş değişiklik uyarısını ekle.
 

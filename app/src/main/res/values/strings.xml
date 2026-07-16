@@ -609,4 +609,12 @@
     <string name="usage_data_analytics_disclaimer">Analytics SDK teslim onayı vermez. Test olayı Firebase DebugView üzerinden ayrıca doğrulanabilir.</string>
     <string name="home_layout_edit_action">Ana Ekranı Düzenle</string>
     <string name="home_layout_edit_action_subtitle">Bölümleri taşı, gizle ve sırala</string>
+    <string name="home_layout_editor_title">Ana Ekranı Düzenle</string>
+    <string name="home_layout_editor_cancel">İptal</string>
+    <string name="home_layout_editor_done">Bitti</string>
+    <string name="home_layout_editor_intro">Ana ekran bölümlerinin taslak düzeni</string>
+    <string name="home_layout_editor_discard_title">Değişiklikler silinsin mi?</string>
+    <string name="home_layout_editor_discard_message">Kaydedilmemiş değişikliklerin silinecek.</string>
+    <string name="home_layout_editor_discard">Sil</string>
+    <string name="home_layout_editor_keep_editing">Düzenlemeye devam et</string>
 </resources>

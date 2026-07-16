@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H3.2 - 2026-07-16
+
+**Yapilanlar:** Tam ekran `HomeLayoutEditorScreen`, ayri ve process recreation'a dayanikli taslak state, `Bitti`/`Iptal`, sistem geri tusu korumasi ve kaydedilmemis degisiklik uyarisi eklendi. Taslak yalniz `Bitti` ile tek preference islemi halinde sanitize edilip kaydediliyor; iptal/discard kalici state'i degistirmiyor. Surum `1.3.75` / `versionCode 98`.
+
+**Arastirma:** Android'in resmi Compose state saving, custom back navigation ve Material 3 app bar rehberleri esas alindi.
+
+**Kalite kapisi:** `HomeLayoutEditorStateTest` ile temiz/degismis taslak ayrimi, `HomeLayoutPrefsTest` ile sanitize ve preference sozlesmesi dogrulandi; `compileDebugKotlin -PskipGoogleServices` ve iki odak test basariyla tamamlandi.
+
 ## Home Screen Layout Editor H3.1 - 2026-07-16
 
 **Yapilanlar:** `HomeLongPressSheet` en ustune TR/EN kaynakli `Ana Ekrani Duzenle` girisi eklendi. Sheet once kapanip ayri editor callback'ini tetikliyor; mevcut duvar kagidi, widget, dock ve ayarlar aksiyonlari korundu. Surum `1.3.74` / `versionCode 97`.

@@ -605,4 +605,12 @@
     <string name="usage_data_analytics_disclaimer">The Analytics SDK does not confirm delivery. Verify the test event separately in Firebase DebugView.</string>
     <string name="home_layout_edit_action">Edit Home Screen</string>
     <string name="home_layout_edit_action_subtitle">Move, hide, and reorder sections</string>
+    <string name="home_layout_editor_title">Edit Home Screen</string>
+    <string name="home_layout_editor_cancel">Cancel</string>
+    <string name="home_layout_editor_done">Done</string>
+    <string name="home_layout_editor_intro">Draft layout of your Home screen sections</string>
+    <string name="home_layout_editor_discard_title">Discard changes?</string>
+    <string name="home_layout_editor_discard_message">Your unsaved changes will be discarded.</string>
+    <string name="home_layout_editor_discard">Discard</string>
+    <string name="home_layout_editor_keep_editing">Keep editing</string>
 </resources>
