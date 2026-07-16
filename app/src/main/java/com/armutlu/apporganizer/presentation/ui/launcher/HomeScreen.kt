@@ -92,6 +92,8 @@ import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.DockPrefs
+import com.armutlu.apporganizer.domain.models.HomeLayoutItem
+import com.armutlu.apporganizer.domain.models.HomeSectionId
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -689,25 +691,30 @@ fun HomeScreen(
             // alaninin ekran/klavye sinirinin disina tasmasini engeller (ROADMAP #24).
             val hideSecondaryRowsForIme = homeAppSearchEnabled && imeVisible
 
-            // Google arama çubuğu — Pixel Launcher stili
-            if (!hideSecondaryRowsForIme) {
-                GoogleSearchBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                )
-            }
-
-            // Widget alanı — arama çubuğu ile klasör gridi arasında
-            if (!hideSecondaryRowsForIme && widgetAreaEnabled && widgetIds.isNotEmpty()) {
-                WidgetArea(
-                    widgetIds = widgetIds,
-                    onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
-                    onReorderWidgets = { newOrder -> viewModel.reorderWidgets(context, newOrder) },
-                    autoResize = widgetAutoResize,
-                    screenHeightDp = LocalConfiguration.current.screenHeightDp,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            // İlk çekirdek bölümler stateless renderer üzerinden çalışır; görünürlük ve
+            // eylemler migration tamamlanana kadar mevcut HomeScreen state'inden gelir.
+            HomeSectionRenderer(
+                items = listOf(
+                    HomeLayoutItem(HomeSectionId.GOOGLE_SEARCH, HomeSectionId.GOOGLE_SEARCH.defaultZone, 0, !hideSecondaryRowsForIme),
+                    HomeLayoutItem(HomeSectionId.ANDROID_WIDGETS, HomeSectionId.ANDROID_WIDGETS.defaultZone, 1, !hideSecondaryRowsForIme && widgetAreaEnabled && widgetIds.isNotEmpty()),
+                ),
+            ) { sectionId ->
+                when (sectionId) {
+                    HomeSectionId.GOOGLE_SEARCH -> GoogleSearchBar(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                    )
+                    HomeSectionId.ANDROID_WIDGETS -> WidgetArea(
+                        widgetIds = widgetIds,
+                        onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
+                        onReorderWidgets = { newOrder -> viewModel.reorderWidgets(context, newOrder) },
+                        autoResize = widgetAutoResize,
+                        screenHeightDp = LocalConfiguration.current.screenHeightDp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    else -> Unit
+                }
             }
 
             // İçgörüler ticker açıkken de gerekli (haber şeridine akar) — her açılışta yenile

@@ -758,7 +758,7 @@ Bu bölüm cron otomasyonu için tek tek işlenebilir atomik görev listesidir. 
 
 ### H2.1 — HomeScreen section renderer iskeleti
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Kapsam:** Sabit bölüm çağrılarını kademeli taşıyacak `HomeSectionRenderer` ve action/state bağlantılarını ekle; mevcut davranışı koruyarak renderer üzerinden en az çekirdek bölümleri çalıştır.
 

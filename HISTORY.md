@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Home Screen Layout Editor H2.1 - 2026-07-16
+
+**Yapilanlar:** Stateless `HomeSectionRenderer`, sirali/gorunur render plani ve section action/content baglantisi eklendi. Google Search ile Android Widgets mevcut state ve callback'leri korunarak renderer'a tasindi; section kimliginden turetilen stabil Compose key kullanildi. Surum `1.3.71` / `versionCode 94`.
+
+**Arastirma:** Resmi Android Compose state hoisting, UDF, list identity ve stabil key rehberleri esas alindi.
+
+**Kalite kapisi:** `HomeSectionRendererTest` ile gorunurluk, sira ve stabil key sozlesmesi gecti. Bilinen Windows build kilidi `scripts/clear_build_lock.ps1` ile temizlenip tek kez yeniden denendi; zorunlu `compileDebugKotlin -PskipGoogleServices` de basariyla tamamlandi.
+
 ## Home Screen Layout Editor H1.2 - 2026-07-16
 
 **Yapilanlar:** Ayri `HomeLayoutPrefs` deposu eklendi; header/footer sirasi, gizli bolumler, layout version ve customized flag guvenli sinir fonksiyonlariyla okunup yaziliyor. Bozuk tipler tolere ediliyor; bilinmeyen, duplicate ve yanlis zone section ID'leri eleniyor; eksik bolumler kanonik varsayilandan tamamlaniyor ve zorunlu bolumler gorunur tutuluyor. Surum `1.3.69` / `versionCode 92`.
