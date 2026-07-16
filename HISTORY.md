@@ -1913,3 +1913,9 @@ Her adımda `.\gradlew compileDebugKotlin` ile hızlı doğrulama yapıldı (7 a
 - API 30+ `ApplicationExitInfo` kayitlarindan yalniz ANR, low-memory ve native crash sayilari raporlaniyor; trace stream okunmuyor ve TXT'ye ham stack trace eklenmiyor.
 - Cold/warm activity baslangici ve launcher ana ekran ilk kullanilabilir cizim suresi yerel olarak olculup `reportFullyDrawn()` ile sisteme bildiriliyor.
 - Kalite kapilari: `compileDebugKotlin -PskipGoogleServices` basarili; odak `DiagnosticsReportManagerTest` basarili. Ilk compile denemesi yanlis scope'a yerlestirilen launcher olcumunu yakaladi ve duzeltme sonrasi iki kapi da temiz gecti; birlesik ara deneme komut zaman asimina ugramisti.
+# 2026-07-16 — Döngü B7 sağlık snapshot ve uyarı kodları
+
+- Buluta uygun `HealthSnapshot`, kullanıcı içeriği taşımayan sabit özet alanlarıyla eklendi.
+- 12 üyeli kapalı `HealthIssueCode` kataloğu oluşturuldu; kodlar Analytics'e dizi yerine ayrı sabit değerler olarak aktarılabilecek biçimde modellendi.
+- Snapshot alan allowlist'i, yasaklı içerik alanları ve uyarı kodu kararlılığı için odaklı testler eklendi.
+- Sürüm `versionCode 86` / `versionName 1.3.63` olarak yükseltildi.

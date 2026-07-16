@@ -16,8 +16,6 @@ interface PerformanceGateway {
     fun <T> trace(name: String, block: () -> T): T
 }
 
-enum class HealthIssueCode { UNKNOWN }
-
 enum class TestDeviceTag(val wireValue: String?) {
     NONE(null), QA_PRIMARY_PHONE("qa_primary_phone"), QA_CLEAN_INSTALL_PHONE("qa_clean_install_phone"),
     QA_STRESS_PHONE("qa_stress_phone"), QA_TABLET("qa_tablet")
