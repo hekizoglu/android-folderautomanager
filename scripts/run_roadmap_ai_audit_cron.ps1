@@ -42,6 +42,34 @@ function Get-PendingCount {
     return $count
 }
 
+function Convert-ToTelegramSafeText {
+    param([string]$Text)
+    if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
+    $normalized = $Text.Normalize([Text.NormalizationForm]::FormD)
+    $builder = [System.Text.StringBuilder]::new()
+    foreach ($ch in $normalized.ToCharArray()) {
+        $category = [Globalization.CharUnicodeInfo]::GetUnicodeCategory($ch)
+        if ($category -eq [Globalization.UnicodeCategory]::NonSpacingMark) { continue }
+        $code = [int][char]$ch
+        if ($code -ge 32 -and $code -le 126) {
+            [void]$builder.Append($ch)
+        } elseif ($ch -eq "`r" -or $ch -eq "`n" -or $ch -eq "`t") {
+            [void]$builder.Append($ch)
+        } else {
+            [void]$builder.Append("?")
+        }
+    }
+    return ($builder.ToString() -replace '\?{2,}', '?').Trim()
+}
+
+function Get-SafeItemTitle {
+    param([string]$Title)
+    $safe = Convert-ToTelegramSafeText $Title
+    if ($safe -match '(B\d+)') { return "Dongu $($Matches[1])" }
+    if ($safe.Length -gt 80) { return $safe.Substring(0, 80).Trim() }
+    return $safe
+}
+
 function Send-Telegram {
     param(
         [string]$Message,
@@ -53,10 +81,11 @@ function Send-Telegram {
     }
     try {
         $pendingSuffix = "Kalan Bekliyor: $(Get-PendingCount)"
-        $messageWithPending = if ($Message -match 'Kalan Bekliyor:') {
-            $Message
+        $safeMessage = Convert-ToTelegramSafeText $Message
+        $messageWithPending = if ($safeMessage -match 'Kalan Bekliyor:') {
+            $safeMessage
         } else {
-            "$Message`n$pendingSuffix"
+            "$safeMessage`n$pendingSuffix"
         }
         $args = @(
             "-NoProfile",
@@ -86,8 +115,8 @@ function Save-State {
         task_name = $TaskName
         run_id = $runId
         status = $Status
-        message = $Message
-        current_item = $CurrentItem
+        message = (Convert-ToTelegramSafeText $Message)
+        current_item = (Convert-ToTelegramSafeText $CurrentItem)
         exit_code = $ExitCode
         updated_at = (Get-Date).ToString("o")
         log_file = $logFile
@@ -146,9 +175,9 @@ function Resolve-DirtyWorktreeBeforeNewItem {
 
     Write-Log "Dirty worktree found before new item; attempting recovery checkpoint."
     Save-State -Status "checkpointing_dirty_worktree" -Message $status -ExitCode 0
-    Send-Telegram "AppOrganizer cron onceki turdan kalan degisiklikleri buldu; yeni maddeye baslamadan recovery commit/push deniyor."
+    Send-Telegram "AppOrganizer cron recovery: onceki tur degisiklikleri bulundu; once commit/push deneniyor."
     $checkpoint = Invoke-GitCheckpoint "recover previous cron worktree"
-    Send-Telegram "AppOrganizer cron recovery checkpoint tamamlandi: $checkpoint. Yeni maddeye devam edilecek."
+    Send-Telegram "AppOrganizer cron recovery tamamlandi. Checkpoint=$checkpoint. Yeni maddeye devam."
 }
 
 function Convert-ToCommitSlug {
@@ -333,12 +362,13 @@ Log file: $logFile
 "@ + (Get-Content $promptPath -Raw)
 
     Set-Content -Path $lastMessageFile -Value "" -Encoding UTF8
-    Save-State -Status "running" -Message "Started Codex for $($pending.Title)" -CurrentItem $pending.Title
-    Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron basladi ($runId): siradaki madde $($pending.Title)"
+    $safePendingTitle = Get-SafeItemTitle $pending.Title
+    Save-State -Status "running" -Message "Started Codex for $safePendingTitle" -CurrentItem $safePendingTitle
+    Send-Telegram "AppOrganizer cron basladi ($runId). Siradaki madde: $safePendingTitle"
 
     if ($DryRun) {
-        Write-Log "DryRun: Codex exec skipped for $($pending.Title)"
-        Save-State -Status "dry_run" -Message "Dry run completed" -CurrentItem $pending.Title
+        Write-Log "DryRun: Codex exec skipped for $safePendingTitle"
+        Save-State -Status "dry_run" -Message "Dry run completed" -CurrentItem $safePendingTitle
         exit 0
     }
 
@@ -351,7 +381,7 @@ Log file: $logFile
         "-"
     )
 
-    Write-Log "Starting Codex for $($pending.Title)"
+    Write-Log "Starting Codex for $safePendingTitle"
     $previousErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
@@ -372,11 +402,11 @@ Log file: $logFile
     if ($exitCode -eq 0) {
         $checkpoint = Invoke-GitCheckpoint $pending.Title
         $messageWithCheckpoint = "$finalMessage`nCheckpoint: $checkpoint"
-        Save-State -Status "completed" -Message $messageWithCheckpoint -CurrentItem $pending.Title
-        Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron turu bitti ($runId): $($pending.Title). Checkpoint=$checkpoint. $finalMessage"
+        Save-State -Status "completed" -Message $messageWithCheckpoint -CurrentItem $safePendingTitle
+        Send-Telegram "AppOrganizer cron turu bitti ($runId). Madde: $safePendingTitle. Checkpoint=$checkpoint."
     } else {
-        Save-State -Status "failed" -Message $finalMessage -ExitCode $exitCode -CurrentItem $pending.Title
-        Send-Telegram "AppOrganizer ROADMAP_AI_AUDIT cron hata verdi ($runId, exit=$exitCode): $($pending.Title). $finalMessage"
+        Save-State -Status "failed" -Message $finalMessage -ExitCode $exitCode -CurrentItem $safePendingTitle
+        Send-Telegram "AppOrganizer cron hata verdi ($runId, exit=$exitCode). Madde: $safePendingTitle. Log: $logFile"
         exit $exitCode
     }
 } catch {
