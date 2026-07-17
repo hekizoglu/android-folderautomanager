@@ -1246,7 +1246,7 @@ fun bulkReward(itemCount: Int): Int = when (itemCount) {
 
 **Bağımlılıklar:** M04.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M08 — commit: c1bc9a4 — tarih: 2026-07-17 — M FAZI KAPANDI: tam test + assembleDebug yeşil, APK v1.3.85 (108) Telegram'a gönderildi. Eski kayıtlar silinmedi; sadece yeni olaylar yeni tabloyla puanlanır.
 
 ---
 
