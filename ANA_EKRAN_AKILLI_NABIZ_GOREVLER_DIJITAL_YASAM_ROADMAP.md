@@ -702,7 +702,7 @@ data class MissionEvaluation(
 
 **Bağımlılıklar:** H01.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M00 — commit: 3f95210 — tarih: 2026-07-17 — Not: Anında yıldız sadece eylem görevlerinde; üst sınır/gece/haftalık görevlerin dönem sonu sonuçlandırması M04'te. checkProgress deprecated köprü olarak duruyor. epochDay/7 hafta anahtarına dokunulmadı (M01).
 
 ---
 
