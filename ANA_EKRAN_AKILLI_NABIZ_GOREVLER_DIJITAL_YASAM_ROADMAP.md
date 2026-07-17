@@ -595,7 +595,7 @@ UI kuralları:
 
 **Bağımlılıklar:** H01.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü H03 — commit: 520ad47 — tarih: 2026-07-17 — Not: Ekran/ViewModel entegrasyonu bilinçli ertelendi (M02/D00); bu döngüde sadece ortak model + resolver + Hilt binding.
 
 ---
 
