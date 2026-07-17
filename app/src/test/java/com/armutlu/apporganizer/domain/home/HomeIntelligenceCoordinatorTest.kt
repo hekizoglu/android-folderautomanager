@@ -46,6 +46,16 @@ class HomeIntelligenceCoordinatorTest {
     private val missionState = MutableStateFlow(MissionSourceState())
     private val tickerState = MutableStateFlow(TickerSourceState())
 
+    /** Testlerde opak dolgu değeri olarak kullanılan minimal [SmartTickerItem]. */
+    private fun fakeTickerItem(id: String): SmartTickerItem = SmartTickerItem(
+        id = id,
+        type = SmartTickerType.FEATURE_DISCOVERY,
+        title = id,
+        icon = "📰",
+        priority = 0,
+        createdAt = 0L,
+    )
+
     private fun fakeSnapshot(total: Int = 70): DigitalPulseSnapshot = DigitalPulseSnapshot(
         score = DigitalPulseScore(
             total = total,
@@ -115,7 +125,7 @@ class HomeIntelligenceCoordinatorTest {
         // Şimdi mission kaynağı hata atsın, pulse/ticker ise yeni değerler yayınlasın.
         coEvery { missionRepo.refresh() } throws RuntimeException("boom")
         val newSnapshot = fakeSnapshot(total = 71)
-        val newTicker = TickerSourceState(items = listOf("ticker-item"))
+        val newTicker = TickerSourceState(items = listOf(fakeTickerItem("ticker-item")))
         pulseState.value = HomeDataResult.Ready(newSnapshot)
         tickerState.value = newTicker
 
@@ -186,7 +196,7 @@ class HomeIntelligenceCoordinatorTest {
     fun `two sources failing simultaneously both yield Failed while the third stays Ready`() = runTest(testDispatcher) {
         coEvery { pulseRepo.refresh() } throws RuntimeException("pulse boom")
         coEvery { missionRepo.refresh() } throws RuntimeException("mission boom")
-        val newTicker = TickerSourceState(items = listOf("ticker-ok"))
+        val newTicker = TickerSourceState(items = listOf(fakeTickerItem("ticker-ok")))
         tickerState.value = newTicker
 
         coordinator.refresh(RefreshReason.APP_START)
@@ -223,7 +233,7 @@ class HomeIntelligenceCoordinatorTest {
         val firstSnapshot = fakeSnapshot(total = 72)
         val firstPulse = PulseSourceState(snapshot = firstSnapshot)
         val firstMission = MissionSourceState(missions = listOf("mission-first"))
-        val firstTicker = TickerSourceState(items = listOf("ticker-first"))
+        val firstTicker = TickerSourceState(items = listOf(fakeTickerItem("ticker-first")))
         pulseState.value = HomeDataResult.Ready(firstSnapshot)
         missionState.value = firstMission
         tickerState.value = firstTicker

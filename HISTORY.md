@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu T01 - 2026-07-18 - SmartTickerItem modeli
+
+**Yapilanlar:** SmartTickerItem (roadmap 3.3 semasi + dedupeKey/isExpired) + SmartTickerType (8 tur) + TickerAction sealed + TickerActionRouter; TickerComposer 6 uretici tipli modele tasindi (bildirim ozeti sensitive=true+6h expiry); RealSmartTickerSource binding'i gercek — koordinatorun UC kaynagi da artik canli. LauncherViewModel toTickerItem koprusuyle eski UI korundu (T04'e kadar). 46 test yesil.
+
+**Bug:** Yok. Ortam: 7. build kilidi SOP ile cozuldu. Stringler kod ici literal kaldi (T04'te resource'a).
+
+**Sonraki:** T02 — TickerRanker siralama/tekrar motoru (zincir devam).
+
 ## Akilli Nabiz Dongu T00 - 2026-07-17 - Ticker dusuk degerli icerik temizligi
 
 **Yapilanlar:** TickerComposer'dan selamlamalar (4 sablon havuzu), gunun sampiyonu ve 5-klasor istatistigi ureticileri SILINDI (net -142 satir kod+test); kalan 6 uretici: bildirim ozeti, unutulan uygulama, icgoru, dusuk guven uyarisi, ozellik ipucu, haftalik ozet. Bos listede serit zaten gizleniyordu (HomeTickerRow return). Testler guncellendi, yesil.

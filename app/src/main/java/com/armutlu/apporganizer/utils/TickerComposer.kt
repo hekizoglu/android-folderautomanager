@@ -1,10 +1,13 @@
 package com.armutlu.apporganizer.utils
 
+import com.armutlu.apporganizer.domain.home.SettingsSection
+import com.armutlu.apporganizer.domain.home.SmartTickerItem
+import com.armutlu.apporganizer.domain.home.SmartTickerType
+import com.armutlu.apporganizer.domain.home.TickerAction
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
 /**
@@ -38,22 +41,6 @@ data class InsightSnapshot(
 )
 
 /**
- * TickerComposer'in urettigi tek haber — LauncherViewModel bunu TickerItem'a map eder.
- * routeKey: "DASHBOARD" | "NOTIFICATION_REPORT" | "APP_LIST" | "SETTINGS" | "WRAPPED_REPORT" | null — Routes sabitlerine
- * ViewModel tarafinda baglanir (bu dosya Routes'a bagimli degil).
- */
-data class TickerSpec(
-    val text: String,
-    val emoji: String,
-    val categoryId: String? = null,
-    val routeKey: String? = null,
-    val packageName: String? = null,
-    val suggestionKey: String? = null,
-    /** Karistirma sirasinda ilk sirada tutulmasi gereken "taze" sinyaller icin (bildirim, selamlama). */
-    val priority: Int = 0,
-)
-
-/**
  * Ana ekran haber seridi icin cesitli, gunluk rotasyonlu haber metinleri uretir.
  *
  * Tasarim ilkeleri:
@@ -63,13 +50,25 @@ data class TickerSpec(
  *
  * Dongu T00 (Akilli Nabiz Seridi P0): dusuk degerli/tekrarli uretici fonksiyonlar kaldirildi —
  * sabah/ogle/aksam/gece selamlamalari, "gunun sampiyonu" ham mesaji, en kalabalik 5 klasorun
- * uygulama sayisi istatistigi. Bu icerikler T01+ dongulerinde SmartTickerItem modeliyle
- * kosullu/degerli formlara donusturulecek (roadmap bolum 8, Dongu T00).
+ * uygulama sayisi istatistigi.
+ *
+ * Dongu T01 (roadmap §3.3): cikti tipi metin+priority'den ibaret TickerSpec yerine davranis
+ * tasiyan [SmartTickerItem] oldu — her ogenin turu ([SmartTickerType]), son gecerlilik zamani
+ * (expiresAt) ve dokunma eylemi ([TickerAction]) acikca modellenir. LauncherViewModel bu ciktiyi
+ * eski UI modeline (`presentation.ui.launcher.TickerItem`) bir kopru fonksiyonuyla esler — T04
+ * dongusu HomeTickerRow'u dogrudan SmartTickerItem tuketecek sekilde yeniden yazacak.
  */
 object TickerComposer {
 
     private const val FORGOTTEN_APP_THRESHOLD_DAYS = 45L
     private const val MS_PER_DAY = 24L * 3600 * 1000
+
+    /** Ozellik ipucu her gosterimde 24 saat sonra "bayatlar" — autoAdvance disinda tazelik siniri. */
+    private const val TIP_EXPIRY_MS = MS_PER_DAY
+    /** Haftalik ozet sadece o gun (pazartesi) icin gecerli. */
+    private const val WEEKLY_SUMMARY_EXPIRY_MS = MS_PER_DAY
+    /** Bildirim ozeti hizla bayatlar — yeni bildirim gelince zaten yeniden uretilir. */
+    private const val NOTIFICATION_EXPIRY_MS = 6L * 3600 * 1000
 
     // ---- Sablon havuzlari ----
 
@@ -79,15 +78,17 @@ object TickerComposer {
         { app, days -> "$days gündür dokunmadığın bir uygulama: $app" },
     )
 
-    /** İpucu havuzu — statik, 6+ madde, gunluk rotasyon. routeKey hepsinde null (SETTINGS istenirse ViewModel eslestirebilir). */
-    private val tips: List<TickerSpec> = listOf(
-        TickerSpec("İpucu: Klasöre uzun basarak yeniden adlandırabilirsin", "💡", routeKey = "SETTINGS_APPEARANCE"),
-        TickerSpec("Arama çubuğuna 2 harf yaz — kişilerini de bulur", "🔍", routeKey = "SEARCH_SETTINGS"),
-        TickerSpec("Dock'a 5 uygulama veya klasor sabitleyebilirsin", "📌", routeKey = "SETTINGS_LAUNCHER"),
-        TickerSpec("Bildirim rozetlerini ayarlardan kapatabilirsin", "🔔", routeKey = "SETTINGS_NOTIFICATIONS"),
-        TickerSpec("Klasör rengini ve emojisini özelleştirebilirsin", "🎨", routeKey = "SETTINGS_APPEARANCE"),
-        TickerSpec("Sık kullandığın uygulamalar dock'a otomatik önerilir", "⚡", routeKey = "SETTINGS_LAUNCHER"),
-        TickerSpec("Uygulamayı sürükleyip başka bir klasöre taşıyabilirsin", "📁", routeKey = "APP_LIST"),
+    private data class TipTemplate(val text: String, val emoji: String, val section: SettingsSection?)
+
+    /** İpucu havuzu — statik, 6+ madde, gunluk rotasyon. section null ise APP_LIST'e yonlendirilir. */
+    private val tips: List<TipTemplate> = listOf(
+        TipTemplate("İpucu: Klasöre uzun basarak yeniden adlandırabilirsin", "💡", SettingsSection.APPEARANCE),
+        TipTemplate("Arama çubuğuna 2 harf yaz — kişilerini de bulur", "🔍", SettingsSection.SEARCH),
+        TipTemplate("Dock'a 5 uygulama veya klasor sabitleyebilirsin", "📌", SettingsSection.LAUNCHER),
+        TipTemplate("Bildirim rozetlerini ayarlardan kapatabilirsin", "🔔", SettingsSection.NOTIFICATIONS),
+        TipTemplate("Klasör rengini ve emojisini özelleştirebilirsin", "🎨", SettingsSection.APPEARANCE),
+        TipTemplate("Sık kullandığın uygulamalar dock'a otomatik önerilir", "⚡", SettingsSection.LAUNCHER),
+        TipTemplate("Uygulamayı sürükleyip başka bir klasöre taşıyabilirsin", "📁", null),
     )
 
     private val weeklyTemplates: List<(Int, String, Int) -> String> = listOf(
@@ -121,19 +122,26 @@ object TickerComposer {
         epochDay: Long = LocalDate.now(ZoneId.systemDefault()).toEpochDay(),
         zone: ZoneId = ZoneId.systemDefault(),
         random: Random = Random(epochDay),
-    ): List<TickerSpec> {
+    ): List<SmartTickerItem> {
         val daySeed = epochDay
-        val specs = mutableListOf<TickerSpec>()
+        val items = mutableListOf<SmartTickerItem>()
 
-        // 1) Bildirim ozeti — en yuksek oncelik (taze sinyal)
+        // 1) Bildirim ozeti — en yuksek oncelik (taze sinyal). sensitive=true: bildirim
+        // sayisi kilit ekrani/gizlilik senaryolarinda gizlenebilecek bir sinyal tasir.
         if (badgeTotal > 0) {
-            specs.add(
-                TickerSpec(
-                    text = "$badgeTotal aktif bildirim — analiz raporu için dokun",
-                    emoji = "🔔",
-                    routeKey = "NOTIFICATION_REPORT",
-                    suggestionKey = "notification_summary",
+            items.add(
+                SmartTickerItem(
+                    id = "notification_summary_$daySeed",
+                    type = SmartTickerType.ACTION_REQUIRED,
+                    title = "$badgeTotal aktif bildirim",
+                    subtitle = "Analiz raporu için dokun",
+                    icon = "🔔",
                     priority = 100,
+                    createdAt = nowMillis,
+                    expiresAt = nowMillis + NOTIFICATION_EXPIRY_MS,
+                    action = TickerAction.OpenNotificationReport,
+                    suggestionKey = "notification_summary",
+                    sensitive = true,
                 )
             )
         }
@@ -149,47 +157,74 @@ object TickerComposer {
                 val daysSince = (nowMillis - app.lastUsedTimestamp) / MS_PER_DAY
                 val pool = forgottenAppTemplates
                 val idx = pickIndex(daySeed, "forgotten_${app.packageName}", pool.size)
-                specs.add(
-                    TickerSpec(
-                        text = pool[idx](app.appName, daysSince),
-                        emoji = "🕰️",
-                        packageName = app.packageName,
+                items.add(
+                    SmartTickerItem(
+                        id = "forgotten_${app.packageName}_$daySeed",
+                        type = SmartTickerType.CONTEXTUAL_SUGGESTION,
+                        title = pool[idx](app.appName, daysSince),
+                        icon = "🕰️",
                         priority = 40,
+                        createdAt = nowMillis,
+                        action = TickerAction.OpenApp(app.packageName),
+                        suggestionKey = "forgotten_${app.packageName}",
                     )
                 )
             }
 
         // 3) Icgoru kartlari (InsightEngine'den gelen)
         insights.forEach { insight ->
-            specs.add(
-                TickerSpec(
-                    text = insight.message,
-                    emoji = "💡",
-                    categoryId = insight.categoryId,
-                    packageName = insight.packageName,
-                    routeKey = if (insight.categoryId == null && insight.packageName == null) "DASHBOARD" else null,
-                    suggestionKey = insight.id,
+            val action = when {
+                insight.packageName != null -> TickerAction.OpenApp(insight.packageName)
+                insight.categoryId != null -> TickerAction.OpenFolder(insight.categoryId)
+                else -> TickerAction.OpenDashboard
+            }
+            items.add(
+                SmartTickerItem(
+                    id = "insight_${insight.id}",
+                    type = SmartTickerType.CONTEXTUAL_SUGGESTION,
+                    title = insight.message,
+                    icon = "💡",
                     priority = 30,
+                    createdAt = nowMillis,
+                    action = action,
+                    suggestionKey = insight.id,
                 )
             )
         }
 
         // 4) Dusuk guvenli otomatik kategorileme uyarisi
         if (lowConfidenceCount > 0) {
-            specs.add(
-                TickerSpec(
-                    text = "$lowConfidenceCount uygulamanın kategorisi belirsiz — gözden geçirmek ister misin?",
-                    emoji = "🤔",
-                    routeKey = "APP_LIST_UNCERTAIN",
-                    suggestionKey = "low_confidence_review",
+            items.add(
+                SmartTickerItem(
+                    id = "low_confidence_review_$daySeed",
+                    type = SmartTickerType.ACTION_REQUIRED,
+                    title = "$lowConfidenceCount uygulamanın kategorisi belirsiz",
+                    subtitle = "Gözden geçirmek ister misin?",
+                    icon = "🤔",
                     priority = 35,
+                    createdAt = nowMillis,
+                    action = TickerAction.OpenClassificationReview,
+                    suggestionKey = "low_confidence_review",
                 )
             )
         }
 
         // 5) Ozellik kesif ipucu — statik havuzdan gunluk rotasyon
         val tipIdx = pickIndex(daySeed, "tip_of_day", tips.size)
-        specs.add(tips[tipIdx].copy(priority = 5))
+        val tip = tips[tipIdx]
+        items.add(
+            SmartTickerItem(
+                id = "tip_of_day_$daySeed",
+                type = SmartTickerType.FEATURE_DISCOVERY,
+                title = tip.text,
+                icon = tip.emoji,
+                priority = 5,
+                createdAt = nowMillis,
+                expiresAt = nowMillis + TIP_EXPIRY_MS,
+                action = if (tip.section != null) TickerAction.OpenSettings(tip.section) else TickerAction.OpenAppList,
+                autoAdvanceAllowed = true,
+            )
+        )
 
         // 6) Haftalik ozet — sadece pazartesi (dayOfWeek == 1)
         if (zdt.dayOfWeek.value == 1 && folders.isNotEmpty()) {
@@ -198,12 +233,16 @@ object TickerComposer {
             if (biggest != null) {
                 val pool = weeklyTemplates
                 val idx = pickIndex(daySeed, "weekly_summary", pool.size)
-                specs.add(
-                    TickerSpec(
-                        text = pool[idx](totalApps, biggest.categoryName, biggest.appCount),
-                        emoji = "📊",
-                        routeKey = "REPORTS_CENTER",
+                items.add(
+                    SmartTickerItem(
+                        id = "weekly_summary_$daySeed",
+                        type = SmartTickerType.WEEKLY_REPORT,
+                        title = pool[idx](totalApps, biggest.categoryName, biggest.appCount),
+                        icon = "📊",
                         priority = 60,
+                        createdAt = nowMillis,
+                        expiresAt = nowMillis + WEEKLY_SUMMARY_EXPIRY_MS,
+                        action = TickerAction.OpenReportsCenter,
                     )
                 )
             }
@@ -216,7 +255,7 @@ object TickerComposer {
 
         // Karistirma: gunluk seed'li Random ile shuffle, sonra oncelige gore stabil sirala
         // (yuksek priority basa gelsin, ayni priority icinde shuffle sirasi korunsun).
-        val shuffled = specs.shuffled(random)
+        val shuffled = items.shuffled(random)
         return shuffled.sortedByDescending { it.priority }
     }
 }

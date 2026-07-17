@@ -1,5 +1,8 @@
 package com.armutlu.apporganizer.utils
 
+import com.armutlu.apporganizer.domain.home.SettingsSection
+import com.armutlu.apporganizer.domain.home.SmartTickerType
+import com.armutlu.apporganizer.domain.home.TickerAction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -21,6 +24,11 @@ import java.time.ZonedDateTime
  * selamlama ve "günün şampiyonu" üreticileri düşük değerli/tekrarlı içerik olarak
  * TickerComposer'dan kaldırıldı — bu üreticilere ait testler de silindi. Boş girdi
  * durumunda listenin boş dönmesini doğrulayan test eklendi.
+ *
+ * NOT (Döngü T01 — roadmap §3.3): çıktı tipi [TickerSpec] (text/routeKey/priority)'den
+ * tipli [com.armutlu.apporganizer.domain.home.SmartTickerItem]'a geçti — title/subtitle,
+ * type, action (TickerAction), expiresAt ve sensitive alanları eklendi. Bu dosya yeni
+ * modele göre güncellendi; senaryo kapsamı korunuyor.
  */
 class TickerComposerTest {
 
@@ -54,7 +62,7 @@ class TickerComposerTest {
                 nowMillis = millisAt(day, 12),
                 epochDay = day,
                 zone = zone,
-            ).first { it.priority == 5 }.text
+            ).first { it.priority == 5 }.title
         }.toSet()
 
         assertTrue("Beklenen coklu ipucu, bulunan: $texts", texts.size >= 2)
@@ -85,7 +93,7 @@ class TickerComposerTest {
             epochDay = day,
             zone = zone,
         )
-        assertEquals(first.map { it.text }, second.map { it.text })
+        assertEquals(first.map { it.title }, second.map { it.title })
     }
 
     @Test
@@ -99,7 +107,7 @@ class TickerComposerTest {
             nowMillis = millisAt(50000L, 12),
             epochDay = 50000L,
             zone = zone,
-        ).map { it.categoryId }
+        ).map { it.id }
 
         val day2Order = TickerComposer.compose(
             folders = sampleFolders,
@@ -110,7 +118,7 @@ class TickerComposerTest {
             nowMillis = millisAt(50001L, 12),
             epochDay = 50001L,
             zone = zone,
-        ).map { it.categoryId }
+        ).map { it.id }
 
         // Farkli seed farkli Random -> genelde farkli shuffle sirasi (ayni priority-grubu icinde).
         // Tum spec setleri ayni oldugu icin tam esitlik beklenmiyor ama en azindan olusabiliyor olmali.
@@ -138,7 +146,7 @@ class TickerComposerTest {
             zone = zone,
         )
 
-        val forgottenTexts = result.filter { it.priority == 40 }.map { it.text }
+        val forgottenTexts = result.filter { it.priority == 40 }.map { it.title }
         assertTrue(forgottenTexts.any { it.contains("Forgotten App") })
         assertTrue(forgottenTexts.none { it.contains("Recent App") })
     }
@@ -159,11 +167,11 @@ class TickerComposerTest {
             zone = zone,
         )
 
-        assertTrue(result.none { it.priority == 40 && it.text.contains("Never Used") })
+        assertTrue(result.none { it.priority == 40 && it.title.contains("Never Used") })
     }
 
     @Test
-    fun `forgotten app ticker carries package name for direct launch`() {
+    fun `forgotten app ticker action carries package name for direct launch`() {
         val now = millisAt(20000L, 12)
         val dayMs = 24L * 3600 * 1000
         val forgottenApp = AppSnapshot("com.forgotten", "Forgotten App", 5, now - 46 * dayMs)
@@ -179,8 +187,9 @@ class TickerComposerTest {
             zone = zone,
         )
 
-        val forgottenSpec = result.first { it.priority == 40 }
-        assertEquals("com.forgotten", forgottenSpec.packageName)
+        val forgottenItem = result.first { it.priority == 40 }
+        assertEquals(TickerAction.OpenApp("com.forgotten"), forgottenItem.action)
+        assertEquals(SmartTickerType.CONTEXTUAL_SUGGESTION, forgottenItem.type)
     }
 
     // ── öncelik: bildirim en tazedir ────────────────────────────────────────
@@ -198,7 +207,45 @@ class TickerComposerTest {
             zone = zone,
         )
         assertEquals(100, result.first().priority)
-        assertTrue(result.first().text.contains("5 aktif bildirim"))
+        assertTrue(result.first().title.contains("5 aktif bildirim"))
+    }
+
+    @Test
+    fun `notification summary item is sensitive and expires`() {
+        val now = millisAt(20000L, 12)
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 3,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = now,
+            epochDay = 20000L,
+            zone = zone,
+        )
+        val notif = result.first { it.priority == 100 }
+        assertTrue("bildirim iceren oge sensitive=true olmali", notif.sensitive)
+        assertEquals(SmartTickerType.ACTION_REQUIRED, notif.type)
+        assertEquals(TickerAction.OpenNotificationReport, notif.action)
+        assertTrue(notif.expiresAt != null && notif.expiresAt!! > now)
+        assertTrue(notif.isExpired(notif.expiresAt!! + 1))
+        assertTrue(!notif.isExpired(now))
+    }
+
+    @Test
+    fun `non-notification items are not sensitive`() {
+        val insight = InsightSnapshot(id = "i1", message = "Test icgoru", categoryId = null)
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = listOf(insight),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(20000L, 12),
+            epochDay = 20000L,
+            zone = zone,
+        )
+        assertTrue(result.none { it.sensitive })
     }
 
     // ── haftalık özet sadece pazartesi ───────────────────────────────────────
@@ -218,6 +265,7 @@ class TickerComposerTest {
             zone = zone,
         )
         assertTrue(mondayResult.any { it.priority == 60 })
+        assertTrue(mondayResult.any { it.type == SmartTickerType.WEEKLY_REPORT })
 
         // 1970-01-06 = Tuesday (epochDay = 5)
         val tuesdayEpochDay = 5L
@@ -248,7 +296,7 @@ class TickerComposerTest {
             epochDay = 20000L,
             zone = zone,
         )
-        assertTrue(result.any { it.routeKey == "APP_LIST_UNCERTAIN" && it.text.contains("3 uygulamanın") })
+        assertTrue(result.any { it.action == TickerAction.OpenClassificationReview && it.title.contains("3 uygulamanın") })
     }
 
     @Test
@@ -264,9 +312,9 @@ class TickerComposerTest {
             epochDay = 20000L,
             zone = zone,
         )
-        val spec = result.first { it.text == "Test icgoru" }
-        assertEquals("DASHBOARD", spec.routeKey)
-        assertEquals("i1", spec.suggestionKey)
+        val item = result.first { it.title == "Test icgoru" }
+        assertEquals(TickerAction.OpenDashboard, item.action)
+        assertEquals("i1", item.suggestionKey)
     }
 
     @Test
@@ -282,9 +330,9 @@ class TickerComposerTest {
             epochDay = 20000L,
             zone = zone,
         )
-        val spec = result.first { it.text == "Klasor icgorusu" }
-        assertNotEquals("DASHBOARD", spec.routeKey)
-        assertEquals("social", spec.categoryId)
+        val item = result.first { it.title == "Klasor icgorusu" }
+        assertNotEquals(TickerAction.OpenDashboard, item.action)
+        assertEquals(TickerAction.OpenFolder("social"), item.action)
     }
 
     @Test
@@ -300,25 +348,47 @@ class TickerComposerTest {
             epochDay = 20000L,
             zone = zone,
         )
-        val spec = result.first { it.text == "App icgorusu" }
-        assertEquals("com.example.app", spec.packageName)
-        assertNotEquals("DASHBOARD", spec.routeKey)
+        val item = result.first { it.title == "App icgorusu" }
+        assertEquals(TickerAction.OpenApp("com.example.app"), item.action)
+        assertNotEquals(TickerAction.OpenDashboard, item.action)
     }
 
     @Test
-    fun `daily tip carries a route target`() {
+    fun `daily tip carries a route target and expiry`() {
+        val now = millisAt(20000L, 12)
         val result = TickerComposer.compose(
             folders = emptyList(),
             apps = emptyList(),
             badgeTotal = 0,
             insights = emptyList(),
             lowConfidenceCount = 0,
-            nowMillis = millisAt(20000L, 12),
+            nowMillis = now,
             epochDay = 20000L,
             zone = zone,
         )
-        val spec = result.first { it.priority == 5 }
-        assertTrue(spec.routeKey != null || spec.packageName != null || spec.categoryId != null)
+        val item = result.first { it.priority == 5 }
+        assertTrue(item.action != TickerAction.None)
+        assertEquals(SmartTickerType.FEATURE_DISCOVERY, item.type)
+        assertTrue(item.expiresAt != null && item.expiresAt!! > now)
+    }
+
+    @Test
+    fun `tip action resolves to expected settings section or app list`() {
+        // suggestionKey yok, ama action ya OpenSettings(section) ya da OpenAppList olmalı —
+        // hicbir ipucu TickerAction.None dondurmemeli.
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(20005L, 12),
+            epochDay = 20005L,
+            zone = zone,
+        )
+        val item = result.first { it.priority == 5 }
+        val isValidAction = item.action is TickerAction.OpenSettings || item.action is TickerAction.OpenAppList
+        assertTrue(isValidAction)
     }
 
     // ── boş girdi: yararlı veri yoksa şerit sadece ipucuyla dolmaz ───────────
@@ -339,5 +409,21 @@ class TickerComposerTest {
         // gunluk ipucu (priority 5) kalir; hafta pazartesi degilse haftalik ozet de yok.
         assertTrue(result.isNotEmpty())
         assertTrue(result.all { it.priority == 5 })
+    }
+
+    @Test
+    fun `truly empty input (no tip pool interaction issue) never returns empty list`() {
+        // TickerComposer her zaman en az gunluk ipucunu uretir — bos liste asla donmez.
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(1L, 0),
+            epochDay = 1L,
+            zone = zone,
+        )
+        assertTrue(result.isNotEmpty())
     }
 }

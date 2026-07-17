@@ -918,21 +918,39 @@ class LauncherViewModel @Inject constructor(
         )
     }
 
-    /** TickerSpec.routeKey -> Routes sabiti eslemesi (TickerComposer Routes'a bagimli degil). */
-    private fun resolveTickerRoute(routeKey: String?): String? = when (routeKey) {
-        "DASHBOARD" -> com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
-        "NOTIFICATION_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
-        "APP_LIST" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
-        "APP_LIST_UNCERTAIN" -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
-        "SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
-        "SETTINGS_LAUNCHER" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_LAUNCHER
-        "SETTINGS_NOTIFICATIONS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_NOTIFICATIONS
-        "SETTINGS_APPEARANCE" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_APPEARANCE
-        "SETTINGS_STATS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
-        "SEARCH_SETTINGS" -> com.armutlu.apporganizer.presentation.navigation.Routes.SEARCH_SETTINGS
-        "REPORTS_CENTER" -> com.armutlu.apporganizer.presentation.navigation.Routes.REPORTS_CENTER
-        "USAGE_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT
-        "WRAPPED_REPORT" -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
+    /**
+     * [com.armutlu.apporganizer.domain.home.TickerActionRouter] route stringi ->
+     * `presentation.navigation.Routes` sabiti eslemesi. Router domain katmaninda kendi
+     * string sabitlerini tutar (navigation modulune bagimli olmamak icin); burada TEK
+     * yerde gercek Routes sabitine cevrilir (D04 PulseActionRouter ile ayni desen).
+     */
+    private fun resolveTickerRoute(routeString: String?): String? = when (routeString) {
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_DASHBOARD ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_NOTIFICATION_REPORT ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_APP_LIST_UNCERTAIN ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_APP_LIST ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_LAUNCHER ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_LAUNCHER
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_NOTIFICATIONS ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_NOTIFICATIONS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_APPEARANCE ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_APPEARANCE
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_STATS ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SEARCH_SETTINGS ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.SEARCH_SETTINGS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_REPORTS_CENTER ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.REPORTS_CENTER
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_USAGE_REPORT ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_WRAPPED_REPORT ->
+            com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
         else -> null
     }
 
@@ -970,14 +988,25 @@ class LauncherViewModel @Inject constructor(
         ))
     }.getOrDefault(emptyList())
 
-    private fun com.armutlu.apporganizer.utils.TickerSpec.toTickerItem() = TickerItem(
-        text = text,
-        emoji = emoji.ifBlank { "📰" },
-        categoryId = categoryId,
-        route = resolveTickerRoute(routeKey),
-        packageName = packageName,
-        suggestionKey = suggestionKey,
-    )
+    /**
+     * [SmartTickerItem] -> eski UI modeli [TickerItem] köprüsü (Döngü T01). HomeTickerRow hâlâ
+     * text/emoji tabanlı eski tipi tükettiği için burada tek satırlı title+subtitle birleştirilir;
+     * T04 döngüsü HomeTickerRow'u doğrudan SmartTickerItem tüketecek şekilde yeniden yazınca bu
+     * fonksiyon kaldırılacak.
+     */
+    private fun com.armutlu.apporganizer.domain.home.SmartTickerItem.toTickerItem(): TickerItem {
+        val target = com.armutlu.apporganizer.domain.home.TickerActionRouter.resolve(action)
+        val screen = target as? com.armutlu.apporganizer.domain.home.TickerActionRouter.RouteTarget.Screen
+        val combinedText = if (!subtitle.isNullOrBlank()) "$title — $subtitle" else title
+        return TickerItem(
+            text = combinedText,
+            emoji = icon.ifBlank { "📰" },
+            categoryId = screen?.categoryId,
+            route = resolveTickerRoute(screen?.route),
+            packageName = screen?.packageName,
+            suggestionKey = suggestionKey,
+        )
+    }
 
     // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + saat bazlı
     // selamlama + unutulan uygulama + günün şampiyonu + ipucu (TickerComposer, D227 çeşitlilik).
@@ -1027,14 +1056,15 @@ class LauncherViewModel @Inject constructor(
         // skor hesaplamiyor. Skor ayri DigitalLifeCard'da homePulseSummary StateFlow'undan
         // (HomeIntelligenceCoordinator -> DigitalPulseRepository) gosteriliyor (Dongu D02).
         val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
+        val nowForCompose = System.currentTimeMillis()
         val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,
             apps = appSnapshots,
             badgeTotal = totalNotif,
             insights = insightSnapshots,
             lowConfidenceCount = lowConfidenceCount,
-            nowMillis = System.currentTimeMillis(),
-        ).filter { spec ->
+            nowMillis = nowForCompose,
+        ).filterNot { it.isExpired(nowForCompose) }.filter { spec ->
             val key = spec.suggestionKey ?: return@filter true
             SuggestionCoordinator.canShow(
                 candidate = SuggestionCandidate(

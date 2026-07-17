@@ -14,9 +14,9 @@ import com.armutlu.apporganizer.domain.common.DataFreshnessResolver
 import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
 import com.armutlu.apporganizer.domain.home.HomeIoDispatcher
 import com.armutlu.apporganizer.domain.home.MissionRuntimeRepository
-import com.armutlu.apporganizer.domain.home.NoOpSmartTickerSource
 import com.armutlu.apporganizer.domain.home.RealDigitalPulseSource
 import com.armutlu.apporganizer.domain.home.RealMissionRuntimeSource
+import com.armutlu.apporganizer.domain.home.RealSmartTickerSource
 import com.armutlu.apporganizer.domain.home.SmartTickerEngine
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.DefaultMissionUsageStatsSource
@@ -150,9 +150,10 @@ object AppModule {
     @Singleton
     fun provideMissionRuntimeRepository(impl: RealMissionRuntimeSource): MissionRuntimeRepository = impl
 
+    // Dongu T01 — gercek implementasyona baglandi (bkz. RealSmartTickerSource).
     @Provides
     @Singleton
-    fun provideSmartTickerEngine(impl: NoOpSmartTickerSource): SmartTickerEngine = impl
+    fun provideSmartTickerEngine(impl: RealSmartTickerSource): SmartTickerEngine = impl
 
     @Provides
     @HomeIoDispatcher
