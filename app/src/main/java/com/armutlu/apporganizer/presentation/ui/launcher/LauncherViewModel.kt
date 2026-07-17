@@ -90,6 +90,19 @@ internal fun buildFolders(apps: List<AppInfo>, categories: List<Category>): List
 internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
     apps.filter { !it.isHidden }.sortedBy { it.appName }
 
+/**
+ * EX01 — "Bugün Yüklenenler" filtresi. Pure function — Android bağımlılığı yok, birim
+ * testlerinden doğrudan çağrılabilir. [dayStartInclusive]/[dayEndExclusive] çağıran taraf
+ * PeriodBoundaryResolver.currentDay() ile üretir (yerel gün sınırı, DST-safe).
+ */
+internal fun filterTodayInstalledApps(
+    apps: List<AppInfo>,
+    dayStartInclusive: Long,
+    dayEndExclusive: Long,
+): List<AppInfo> =
+    apps.filter { !it.isHidden && it.firstInstalledTime in dayStartInclusive until dayEndExclusive }
+        .sortedByDescending { it.firstInstalledTime }
+
 internal fun fillDockSuggestions(
     slotApps: List<AppInfo>,
     fallbackApps: List<AppInfo>,
@@ -675,7 +688,19 @@ class LauncherViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 // Tam tarama yerine tek paket fetch: ~5x daha hızlı
-                val app = packageManagerHelper.getAppInfo(packageName) ?: return@launch
+                // Kök neden (EX01 bug): PACKAGE_ADDED bazen PackageManager paketi tam commit
+                // etmeden tetiklenir — getAppInfo null donebilir. Kisa backoff ile 3 deneme.
+                var app = packageManagerHelper.getAppInfo(packageName)
+                var attempt = 0
+                while (app == null && attempt < 2) {
+                    delay(150L * (attempt + 1))
+                    app = packageManagerHelper.getAppInfo(packageName)
+                    attempt++
+                }
+                if (app == null) {
+                    Timber.w("onPackageAdded: getAppInfo $attempt denemeden sonra hala null, $packageName atlandi")
+                    return@launch
+                }
                 repository.insertApps(listOf(app))
                 Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
@@ -1062,6 +1087,31 @@ class LauncherViewModel @Inject constructor(
                 .take(4)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // EX01 — "Bugun Yuklenenler": bugun (yerel gun siniri, PeriodBoundaryResolver) yuklenen
+    // uygulamalar. Ana ekran kompakt giris + cekmece bolumu bu akistan beslenir.
+    // KEY_RECENT_INSTALLS_ENABLED kapaliyken bos liste doner — UI tamamen gizlenir.
+    private val periodBoundaryResolver = com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver(
+        java.time.Clock.systemDefaultZone(),
+        java.time.ZoneId.systemDefault(),
+    )
+    // Ayar toggle'i degisince akisi yeniden tetiklemek icin — allAppsSource yeni emisyon
+    // yapana kadar UI eski degerde takili kalmasin (refreshTodayInstalled() HomeScreen'den cagrilir).
+    private val _todayInstalledRefresh = MutableStateFlow(0)
+    val todayInstalledApps: StateFlow<List<AppInfo>> = combine(
+        allAppsSource,
+        _todayInstalledRefresh
+    ) { apps, _ ->
+        val ctx = getApplication<Application>()
+        if (!AppPrefs.isRecentInstallsEnabled(ctx)) return@combine emptyList()
+        val today = periodBoundaryResolver.currentDay()
+        filterTodayInstalledApps(apps, today.startInclusive, today.endExclusive)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** KEY_RECENT_INSTALLS_ENABLED degisince HomeScreen'den cagrilir — todayInstalledApps'i yeniden hesaplatir. */
+    fun refreshTodayInstalled() {
+        _todayInstalledRefresh.update { it + 1 }
+    }
 
     /** UsageStatsManager'dan kullanım verilerini Room DB'ye senkronize eder. */
     fun syncUsageStats(context: Context, onSuccess: () -> Unit = {}) {

@@ -506,6 +506,8 @@ private fun DrawerAppList(
     onRecentAppClick: (String) -> Unit,
     recentNotificationAppsEnabled: Boolean = false,
     recentNotificationApps: List<AppInfo> = emptyList(),
+    todayInstalledAppsEnabled: Boolean = false,
+    todayInstalledApps: List<AppInfo> = emptyList(),
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
@@ -582,6 +584,15 @@ private fun DrawerAppList(
                     )
                 }
             }
+            if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
+                item(key = "today_installed_apps_section") {
+                    DrawerTodayInstalledSection(
+                        apps = todayInstalledApps.take(4),
+                        iconPackPkg = state.iconPackPkg,
+                        onAppClick = onAppClick
+                    )
+                }
+            }
             state.grouped.forEach { (letter, letterApps) ->
                 item(key = "header_$letter") {
                     Box(Modifier.semantics { heading() }) {
@@ -608,6 +619,15 @@ private fun DrawerAppList(
         }
     } else {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+            if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
+                item(key = "today_installed_apps_section_flat") {
+                    DrawerTodayInstalledSection(
+                        apps = todayInstalledApps.take(4),
+                        iconPackPkg = state.iconPackPkg,
+                        onAppClick = onAppClick
+                    )
+                }
+            }
             if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() &&
                 contactMatches.isEmpty() && fileMatches.isEmpty() && !showFilesPermissionHint
             ) {
@@ -853,11 +873,49 @@ private fun DrawerRecentNotificationSection(
     iconPackPkg: String,
     onAppClick: (String) -> Unit
 ) {
+    DrawerAppIconRowSection(
+        apps = apps,
+        iconPackPkg = iconPackPkg,
+        onAppClick = onAppClick,
+        letter = '!',
+        label = stringResource(R.string.recent_notifications_row_title),
+    )
+}
+
+/**
+ * EX01 — "Bugün Yüklenenler": bugün firstInstalledTime'a düşen uygulamalar. Aynı ikon-satırı
+ * görünümünü (DrawerRecentNotificationSection ile paylaşılan) kullanır, dokununca sıralama
+ * modu Yükleme'ye geçirilir (HomeScreen/AllAppsDrawer çağrı yerinde onAppClick zaten launch eder;
+ * burada sadece görünüm — sıralama HomeScreen'in giriş kartından zaten INSTALL_DATE'e ayarlanır).
+ */
+@Composable
+private fun DrawerTodayInstalledSection(
+    apps: List<AppInfo>,
+    iconPackPkg: String,
+    onAppClick: (String) -> Unit
+) {
+    DrawerAppIconRowSection(
+        apps = apps,
+        iconPackPkg = iconPackPkg,
+        onAppClick = onAppClick,
+        letter = '+',
+        label = stringResource(R.string.recent_installs_drawer_section_title),
+    )
+}
+
+@Composable
+private fun DrawerAppIconRowSection(
+    apps: List<AppInfo>,
+    iconPackPkg: String,
+    onAppClick: (String) -> Unit,
+    letter: Char,
+    label: String,
+) {
     if (apps.isEmpty()) return
     val context = LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
     Column(modifier = Modifier.fillMaxWidth()) {
-        NiagaraLetterHeader(letter = '!', label = stringResource(R.string.recent_notifications_row_title))
+        NiagaraLetterHeader(letter = letter, label = label)
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -1010,6 +1068,8 @@ fun AllAppsDrawer(
     onRecentAppClick: (String) -> Unit = {},
     recentNotificationAppsEnabled: Boolean = false,
     recentNotificationApps: List<AppInfo> = emptyList(),
+    todayInstalledAppsEnabled: Boolean = false,
+    todayInstalledApps: List<AppInfo> = emptyList(),
     focusSearchOnOpen: Boolean = false,
     onFocusSearchConsumed: () -> Unit = {},
     categories: List<Category> = emptyList(),
@@ -1143,6 +1203,8 @@ fun AllAppsDrawer(
                         onRecentAppClick = onRecentAppClick,
                         recentNotificationAppsEnabled = recentNotificationAppsEnabled,
                         recentNotificationApps = recentNotificationApps,
+                        todayInstalledAppsEnabled = todayInstalledAppsEnabled,
+                        todayInstalledApps = todayInstalledApps,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
                         haptic = haptic,

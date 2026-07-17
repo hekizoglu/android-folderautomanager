@@ -54,7 +54,23 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 val repo = getRepository(context)
                 val searchRepo = getSearchRepository(context)
                 val helper = getPackageManagerHelper(context)
-                val appInfo = helper.getAppInfo(packageName) ?: return@launch
+                // Kök neden (EX01 bug): PACKAGE_ADDED bazi OEM/Android surumlerinde PackageManager
+                // paket bilgisini TAM commit etmeden mikro-saniyeler once tetiklenebilir —
+                // getAppInfo() bu durumda NameNotFoundException yutup null doner ve eskiden
+                // burada sessizce return ediliyordu: uygulama DB'ye hic yazilmiyor, cekmecede
+                // hicbir zaman gorunmuyordu (kalici kayip — bir sonraki reconcile'a kadar).
+                // Kisa, sinirli backoff ile 3 deneme bu yarisi onler.
+                var appInfo = helper.getAppInfo(packageName)
+                var attempt = 0
+                while (appInfo == null && attempt < 2) {
+                    kotlinx.coroutines.delay(150L * (attempt + 1))
+                    appInfo = helper.getAppInfo(packageName)
+                    attempt++
+                }
+                if (appInfo == null) {
+                    Timber.w("onPackageAdded: getAppInfo $attempt denemeden sonra hala null, $packageName atlandi")
+                    return@launch
+                }
                 repo.insertApps(listOf(appInfo))
                 // insertApps kategori atar; taze kaydı DB'den çek (categoryId dolu gelir)
                 val stored = repo.getAppByPackageName(packageName) ?: appInfo

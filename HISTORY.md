@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## EX01 - 2026-07-17 - Bugun Yuklenenler + cekmece refresh bug (kullanici talebi)
+
+**Yapilanlar:** (1) BUG FIX: PACKAGE_ADDED broadcast'i PackageManager commit'inden once gelince getAppInfo null donup sessizce dusuyordu (12 saatlik reconcile'a kadar uygulama DB'ye hic girmiyordu) — PackageChangeReceiver + LauncherViewModel.onPackageAdded'a 3 denemeli backoff retry eklendi. (2) OZELLIK: HomeScreen'e "Bugun Yuklendi" GlassCard (bugun yukleme yoksa gizli), AllAppsDrawer'a Bugun Yuklenenler bolumu + yukleme tarihi sirali acilis, KEY_RECENT_INSTALLS_ENABLED toggle (SettingsStatsScreen), TR/EN 8 string. DB migration gerekmedi (firstInstalledTime v8'den beri var). 53/53 test yesil. v1.3.84 (107).
+
+**Bug:** Yukaridaki kok neden. Receiver retry'i gercek cihaz dogrulamasi gerektirir (emulatore adb install ile manuel test adimlari HISTORY ustu raporda).
+
+**Sonraki:** M03 — gorev ilerleme modeli ve formatlayici (zincir devam).
+
 ## Akilli Nabiz Dongu M02 - 2026-07-17 - MissionMetricSnapshotProvider
 
 **Yapilanlar:** MissionMetricSnapshot + Provider (tek now, tek UsageStats okumasi, izin yoksa null/eylem sayaclari korunur) + MissionUsageStatsSource interface (test edilebilirlik); MissionsViewModel.buildCheckInput silindi, snapshot.toMissionCheckInput() koprusu. 6 yeni test, tum Mission testleri yesil.

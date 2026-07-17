@@ -540,6 +540,11 @@ object AppPrefs {
     fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)
     fun setMissionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSIONS_ENABLED, v).apply()
 
+    // "Bugun Yuklenenler" — ana ekran kompakt girisi + cekmece bolumu (EX01, kullanici talebi)
+    const val KEY_RECENT_INSTALLS_ENABLED = "recent_installs_enabled"
+    fun isRecentInstallsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_INSTALLS_ENABLED, true)
+    fun setRecentInstallsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_INSTALLS_ENABLED, v).apply()
+
     // Ana ekran hava durumu (P1.7)
     const val KEY_HOME_WEATHER_ENABLED = "home_weather_enabled"
     const val KEY_HOME_WEATHER_USE_LOCATION = "home_weather_use_location"

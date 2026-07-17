@@ -322,6 +322,37 @@ class AppRepositoryTest {
         assertFalse(repository.appExists("com.ghost"))
     }
 
+    // ── EX01: yeni yüklenen tek uygulama (PackageChangeReceiver/onPackageAdded akışı) ─────
+
+    @Test
+    fun `insertApps ile eklenen tek yeni uygulama getAllAppsFlow ta gorunur`() = runTest {
+        // PackageChangeReceiver.onPackageAdded ve LauncherViewModel.onPackageAdded, PACKAGE_ADDED
+        // broadcast'inde repository.insertApps(listOf(app)) cagirir — bu Room'un getAllAppsFlow'unu
+        // (appsFlow burada) invalidate eder ve yeni uygulama emisyona dahil olur.
+        val newApp = app("com.newlyinstalled", "Yeni Uygulama", "other")
+        every {
+            mockClassifier.classifyAppDecision(match { it.packageName == "com.newlyinstalled" }, any<AppPrefs.ClassificationMode>())
+        } returns decision("productivity")
+
+        repository.insertApps(listOf(newApp))
+        advanceUntilIdle()
+
+        coVerify {
+            mockAppDao.insertApps(match { list ->
+                list.size == 1 &&
+                    list[0].packageName == "com.newlyinstalled" &&
+                    list[0].categoryId == "productivity"
+            })
+        }
+
+        // Room invalidation simülasyonu — gerçek DB'de insertApps sonrası Flow otomatik yeniden
+        // emit eder; burada appsFlow'u elle güncelleyip drawer/ViewModel tarafının bu emisyonu
+        // aynen aldığını doğruluyoruz.
+        appsFlow.value = listOf(newApp.copy(categoryId = "productivity"))
+        val result = repository.getAllAppsFlow().first()
+        assertTrue("Yeni uygulama akışta görünmeli", result.any { it.packageName == "com.newlyinstalled" })
+    }
+
     // ── syncInstalledApps ─────────────────────────────────────────────────────
 
     @Test

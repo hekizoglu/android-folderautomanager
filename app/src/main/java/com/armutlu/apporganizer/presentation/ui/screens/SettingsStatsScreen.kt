@@ -196,6 +196,28 @@ fun SettingsStatsScreen(
             }
         }
 
+        // ── Bugün Yüklenenler (EX01, kullanıcı talebi) ───────────────────────
+        item { SettingsSectionTitle(stringResource(R.string.recent_installs_settings_section)) }
+        item {
+            var recentInstallsEnabled by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_RECENT_INSTALLS_ENABLED,
+                read = { AppPrefs.isRecentInstallsEnabled(context) }
+            )
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.NewReleases,
+                    title = stringResource(R.string.recent_installs_settings_toggle_title),
+                    subtitle = stringResource(R.string.recent_installs_settings_toggle_subtitle),
+                    checked = recentInstallsEnabled,
+                    onCheckedChange = {
+                        recentInstallsEnabled = it
+                        AppPrefs.setRecentInstallsEnabled(context, it)
+                    },
+                )
+            }
+        }
+
         // ── Haftalık Rapor (Wrapped) ayarı ──────────────────────────────────
         item { SettingsSectionTitle(stringResource(R.string.settings_stats_weekly_report_section)) }
         item {

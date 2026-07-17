@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPack
 import com.armutlu.apporganizer.presentation.ui.launcher.buildAllApps
 import com.armutlu.apporganizer.presentation.ui.launcher.buildFolders
 import com.armutlu.apporganizer.presentation.ui.launcher.fillDockSuggestions
+import com.armutlu.apporganizer.presentation.ui.launcher.filterTodayInstalledApps
 import com.armutlu.apporganizer.presentation.ui.launcher.isDockAdditionBlocked
 import com.armutlu.apporganizer.presentation.ui.launcher.selectHomeContextualRow
 import org.junit.Assert.assertEquals
@@ -308,4 +309,69 @@ class LauncherViewModelLogicTest {
         appName     = name,
         categoryId  = categoryId
     )
+
+    // ── filterTodayInstalledApps (EX01 — "Bugün Yüklenenler") ──────────────────
+
+    private fun appWithInstall(pkg: String, name: String, firstInstalledTime: Long, isHidden: Boolean = false) =
+        AppInfo(
+            packageName = pkg,
+            appName = name,
+            categoryId = "social",
+            firstInstalledTime = firstInstalledTime,
+            isHidden = isHidden,
+        )
+
+    @Test
+    fun `filterTodayInstalledApps sadece gun sinirlari icindeki uygulamalari dondurur`() {
+        val dayStart = 1_000_000L
+        val dayEnd = 2_000_000L
+        val apps = listOf(
+            appWithInstall("com.today1", "Today App 1", firstInstalledTime = 1_500_000L),
+            appWithInstall("com.yesterday", "Yesterday App", firstInstalledTime = 999_999L),
+            appWithInstall("com.tomorrow", "Tomorrow App", firstInstalledTime = 2_000_000L), // end exclusive
+            appWithInstall("com.today2", "Today App 2", firstInstalledTime = 1_000_000L), // start inclusive
+        )
+
+        val result = filterTodayInstalledApps(apps, dayStart, dayEnd)
+
+        assertEquals(setOf("com.today1", "com.today2"), result.map { it.packageName }.toSet())
+    }
+
+    @Test
+    fun `filterTodayInstalledApps en yeni yuklenen once gelecek sekilde siralar`() {
+        val dayStart = 0L
+        val dayEnd = 1_000_000L
+        val apps = listOf(
+            appWithInstall("com.early", "Early", firstInstalledTime = 100L),
+            appWithInstall("com.late", "Late", firstInstalledTime = 500L),
+            appWithInstall("com.mid", "Mid", firstInstalledTime = 300L),
+        )
+
+        val result = filterTodayInstalledApps(apps, dayStart, dayEnd)
+
+        assertEquals(listOf("com.late", "com.mid", "com.early"), result.map { it.packageName })
+    }
+
+    @Test
+    fun `filterTodayInstalledApps gizli uygulamalari dislar`() {
+        val dayStart = 0L
+        val dayEnd = 1_000_000L
+        val apps = listOf(
+            appWithInstall("com.visible", "Visible", firstInstalledTime = 100L, isHidden = false),
+            appWithInstall("com.hidden", "Hidden", firstInstalledTime = 200L, isHidden = true),
+        )
+
+        val result = filterTodayInstalledApps(apps, dayStart, dayEnd)
+
+        assertEquals(listOf("com.visible"), result.map { it.packageName })
+    }
+
+    @Test
+    fun `filterTodayInstalledApps bugun yukleme yoksa bos liste doner`() {
+        val apps = listOf(appWithInstall("com.old", "Old App", firstInstalledTime = 1L))
+
+        val result = filterTodayInstalledApps(apps, dayStartInclusive = 500L, dayEndExclusive = 1000L)
+
+        assertTrue(result.isEmpty())
+    }
 }

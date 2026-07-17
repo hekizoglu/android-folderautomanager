@@ -138,6 +138,8 @@ fun HomeScreen(
     var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
     var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
     var missionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)) }
+    var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
+    val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
     val tickerItems by viewModel.tickerItems.collectAsState()
     val digitalLifeScore by viewModel.digitalLifeScore.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
@@ -286,6 +288,10 @@ fun HomeScreen(
                     tickerEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_MISSIONS_ENABLED ->
                     missionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_INSTALLS_ENABLED -> {
+                    recentInstallsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)
+                    viewModel.refreshTodayInstalled()
+                }
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
                     gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_LONG_PRESS ->
@@ -645,6 +651,60 @@ fun HomeScreen(
                         },
                         modifier = Modifier.weight(1f),
                     )
+                }
+            }
+
+            // "Bugün Yüklenenler" kompakt girişi (EX01, kullanıcı talebi) — bugün yüklenmiş
+            // uygulama YOKSA veya ayar kapalıysa tamamen gizli. Dokununca çekmece yükleme
+            // tarihine göre sıralı (en yeni üstte) açılır.
+            if (recentInstallsEnabled && todayInstalledApps.isNotEmpty()) {
+                GlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp)
+                        .clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            com.armutlu.apporganizer.utils.AppPrefs.setAllAppsSortMode(
+                                context,
+                                AllAppsSortMode.INSTALL_DATE.name
+                            )
+                            viewModel.openAllApps()
+                        },
+                    cornerRadius = 18.dp,
+                    backgroundAlpha = 0.10f,
+                    borderAlpha = 0.18f,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text("📥", fontSize = 15.sp)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.recent_installs_home_chip_title),
+                                color = Color.White.copy(alpha = 0.90f),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                            )
+                            val count = todayInstalledApps.size
+                            val subtitle = if (count == 1) {
+                                stringResource(R.string.recent_installs_home_chip_subtitle_one)
+                            } else {
+                                stringResource(R.string.recent_installs_home_chip_subtitle_other, count)
+                            }
+                            Text(
+                                text = subtitle,
+                                color = Color.White.copy(alpha = 0.52f),
+                                fontSize = 11.sp,
+                                maxLines = 1,
+                            )
+                        }
+                        Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
+                    }
                 }
             }
 
@@ -1162,6 +1222,8 @@ fun HomeScreen(
                 },
                 recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
                 recentNotificationApps = recentNotificationApps,
+                todayInstalledAppsEnabled = recentInstallsEnabled,
+                todayInstalledApps = todayInstalledApps,
                 focusSearchOnOpen = focusSearchOnOpen,
                 onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
                 categories = categories,

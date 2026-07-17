@@ -563,6 +563,13 @@
     <string name="missions_settings_toggle_subtitle">Günlük/haftalık görevler, yıldız ödülleri ve ana ekrandaki kişilik etiketi</string>
     <string name="missions_settings_open_title">Görevler</string>
     <string name="missions_settings_open_subtitle">Bugünün görevlerini ve yıldızlarını gör</string>
+    <string name="recent_installs_settings_section">Bugün Yüklenenler</string>
+    <string name="recent_installs_settings_toggle_title">Yeni Yükleme Bildirimi</string>
+    <string name="recent_installs_settings_toggle_subtitle">Ana ekranda ve uygulama çekmecesinde bugün yüklenen uygulamaları göster</string>
+    <string name="recent_installs_home_chip_title">Bugün Yüklendi</string>
+    <string name="recent_installs_home_chip_subtitle_one">1 yeni uygulama</string>
+    <string name="recent_installs_home_chip_subtitle_other">%1$d yeni uygulama</string>
+    <string name="recent_installs_drawer_section_title">Bugün Yüklenenler</string>
     <string name="missions_home_chip_title">Görevler</string>
     <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
     <string name="digital_score_home_card_title">Skor %1$d</string>
