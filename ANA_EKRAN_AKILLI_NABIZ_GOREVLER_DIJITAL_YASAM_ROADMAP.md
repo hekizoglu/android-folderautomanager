@@ -1447,7 +1447,7 @@ Tıklama:
 
 **Bağımlılıklar:** D00, D01.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü D02 — commit: c7834a5 — tarih: 2026-07-17 — Not: Confidence engine'in mevcut computeConfidence'ından geliyor (yeni türetme gerekmedi). topReason = max |delta| (minimal; D04 PulseReasonPresenter tam yapacak). UNAVAILABLE'da tıklama kapalı.
 
 ---
 
