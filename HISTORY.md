@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu D04 - 2026-07-17 - Skor nedeni/rota + D FAZ KAPANISI
+
+**Yapilanlar:** PulseAction + PulseReasonPresenter (15 PulseReasonId -> etiket+eylem+pozitif bayragi, MissionTextSpec pattern'i) + PulseActionRouter (M05 pattern'i, ayri router); DigitalLifeCard topReason satiri tiklanabilir -> ilgili ekran. 16+7 yeni test. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, v1.3.86 (109). DIJITAL YASAM FAZI (D) TAMAM — skor tek kaynak, ISO trend, bilgi karti, tek gosterim, eylemli neden.
+
+**Bug:** Yok.
+
+**Sonraki:** T00 — ticker dusuk degerli icerik temizligi (Akilli Nabiz Seridi fazi basliyor).
+
 ## Akilli Nabiz Dongu D03 - 2026-07-17 - Pulse Clock skor tekrari kaldirildi
 
 **Yapilanlar:** PulseScoreRing widget'tan cikti (@Deprecated birakildi), saat karti 148->128dp / 112->96dp sikilastirildi (klasor gridine alan); KEY_DIGITAL_LIFE_CARD_VISIBLE + tek seferlik bayrakli migration (eski KEY_HOME_SCORE_VISIBLE'dan); Settings toggle yeni anahtari yonetiyor; HomeScreen reaktif gorunurluk (OnSharedPreferenceChangeListener); BackupManager yeni anahtari export/import ediyor. 5/5 migration testi + Pulse/AppPrefs testleri yesil.

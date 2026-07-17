@@ -92,6 +92,7 @@ import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.DockPrefs
+import com.armutlu.apporganizer.domain.home.PulseActionRouter
 import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
@@ -631,6 +632,18 @@ fun HomeScreen(
                                 runCatching { context.startActivity(intent) }
                             },
                             modifier = Modifier.weight(1f),
+                            onReasonAction = { action ->
+                                // Döngü D04: skor nedenine özel çözüm rotası — PulseActionRouter
+                                // TEK route kaynağı, burada sadece Intent'e çevrilir (M05 deseniyle aynı).
+                                val target = PulseActionRouter.resolve(action)
+                                if (target is PulseActionRouter.RouteTarget.Screen) {
+                                    val intent = Intent(context, MainActivity::class.java).apply {
+                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
+                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    runCatching { context.startActivity(intent) }
+                                }
+                            },
                         )
                     }
                 }

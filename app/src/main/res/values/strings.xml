@@ -635,6 +635,13 @@
     <string name="digital_life_card_reason_consistency_volatile">Kullanım haftalar arası değişken</string>
     <string name="digital_life_card_reason_consistency_no_data">Kilit açma verisi yok</string>
     <string name="digital_life_card_reason_task_missions">Görev katkısı</string>
+    <!-- Döngü D04 — PulseReasonPresenter sayı içeren nedenler (roadmap satır 1520-1526) -->
+    <string name="pulse_reason_organization_uncategorized_count">Kategorisiz %1$d uygulama</string>
+    <string name="pulse_reason_attention_noisy_label">Bildirim yoğunluğu</string>
+    <string name="pulse_reason_cleanup_unused_count">Uzun süredir kullanılmayan %1$d uygulama</string>
+    <string name="pulse_reason_balance_shift_label">Kullanım dağılımın değişti</string>
+    <string name="pulse_reason_task_missions_positive">Görev ilerlemen skora +%1$d katkı verdi</string>
+    <string name="pulse_reason_task_missions_negative">Görev durumu skoru %1$d etkiledi</string>
     <string name="usage_data_title">Kullanım Verileri</string>
     <string name="usage_data_hub_subtitle">Anonim kullanım, performans ve hata paylaşımı</string>
     <string name="usage_data_sharing_section">Anonim veri paylaşımı</string>

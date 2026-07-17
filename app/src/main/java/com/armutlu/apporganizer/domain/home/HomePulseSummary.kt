@@ -4,6 +4,7 @@ import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
 import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseSnapshot
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseReasonId
+import com.armutlu.apporganizer.domain.usecase.pulse.PulseScoreReason
 
 /**
  * Döngü D02 — "Dijital Yaşam" kartının UI'a taşıdığı özet (roadmap satır 1360-1450).
@@ -17,8 +18,10 @@ import com.armutlu.apporganizer.domain.usecase.pulse.PulseReasonId
  * @param statusBand skor bandına göre nötr durum etiketi — bkz. [PulseStatusBand].
  * @param delta [DigitalPulseSnapshot.scoreDelta] — önceki tam ISO haftasına göre fark, ilk hafta null.
  * @param topReasonId en büyük etkiye sahip sebep — [DigitalPulseSnapshot.score.reasons] içinden
- *   |delta| değeri en büyük olan seçilir; sebep yoksa null (minimal D02 eşlemesi, D04 tam
- *   [PulseReasonPresenter] yapacak).
+ *   |delta| değeri en büyük olan seçilir; sebep yoksa null.
+ * @param topReason [topReasonId] ile aynı seçimin tam [PulseScoreReason]'ı (value/delta dahil) —
+ *   Döngü D04: [PulseReasonPresenter] sayı içeren etiketler (ör. "Kategorisiz 8 uygulama")
+ *   üretebilsin diye eklendi. [topReasonId] geriye dönük uyumluluk için ayrıca tutulur.
  * @param confidence [DigitalPulseSnapshot.score.confidence] — LOW iken skor yerine "Veri birikiyor".
  * @param freshness [DataFreshness] — STALE'de "Son güncelleme X dk önce", UNAVAILABLE'da CTA.
  * @param staleMinutes freshness=STALE olduğunda geçen dakika sayısı (UI metni için); aksi halde null.
@@ -28,6 +31,7 @@ data class HomePulseSummary(
     val statusBand: PulseStatusBand?,
     val delta: Int?,
     val topReasonId: PulseReasonId?,
+    val topReason: PulseScoreReason? = null,
     val confidence: DataConfidence,
     val freshness: DataFreshness,
     val staleMinutes: Long? = null,
@@ -89,7 +93,6 @@ fun toHomePulseSummary(
     val topReason = snapshot.score.reasons
         .maxByOrNull { kotlin.math.abs(it.delta) }
         ?.takeIf { it.delta != 0 }
-        ?.id
 
     val staleMinutes = if (freshness == DataFreshness.STALE) {
         ((nowMillis - snapshot.computedAt).coerceAtLeast(0L) / MILLIS_PER_MINUTE)
@@ -101,7 +104,8 @@ fun toHomePulseSummary(
         score = total,
         statusBand = PulseStatusBand.forScore(total),
         delta = snapshot.scoreDelta,
-        topReasonId = topReason,
+        topReasonId = topReason?.id,
+        topReason = topReason,
         confidence = snapshot.score.confidence,
         freshness = freshness,
         staleMinutes = staleMinutes,

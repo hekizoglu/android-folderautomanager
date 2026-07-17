@@ -19,9 +19,10 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
+import com.armutlu.apporganizer.domain.home.PulseAction
+import com.armutlu.apporganizer.domain.home.PulseReasonPresenter
 import com.armutlu.apporganizer.domain.home.PulseStatusBand
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
-import com.armutlu.apporganizer.domain.usecase.pulse.PulseReasonId
 
 /**
  * Döngü D02 — "Dijital Yaşam" bilgi kartı, eski [DigitalScoreCard]'ın yerini alır
@@ -41,6 +42,7 @@ internal fun DigitalLifeCard(
     summary: HomePulseSummary?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onReasonAction: (PulseAction) -> Unit = {},
 ) {
     if (summary == null) return
     GlassCard(
@@ -91,17 +93,25 @@ internal fun DigitalLifeCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    // Satır 3: en büyük etki (varsa)
-                    summary.topReasonId?.let { reasonId ->
+                    // Satır 3: en büyük etki (varsa) — Döngü D04: PulseReasonPresenter'dan
+                    // gelen action varsa satır ayrıca tıklanabilir, doğru çözüm ekranına gider.
+                    summary.topReason?.let { reason ->
+                        val presented = PulseReasonPresenter.present(reason)
+                        val hasAction = presented.action != PulseAction.None
                         Text(
                             text = stringResource(
                                 R.string.digital_life_card_top_reason_prefix,
-                                stringResource(reasonId.labelRes()),
+                                stringResource(presented.label.resId, *presented.label.args.toTypedArray()),
                             ),
                             color = Color.White.copy(alpha = 0.52f),
                             fontSize = 11.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
+                            modifier = if (hasAction) {
+                                Modifier.clickable { onReasonAction(presented.action) }
+                            } else {
+                                Modifier
+                            },
                         )
                     }
                     // Satır 4: bayat veri uyarısı (STALE)
@@ -185,20 +195,3 @@ private fun PulseStatusBand.labelRes(): Int = when (this) {
     PulseStatusBand.IMPROVING -> R.string.digital_life_card_status_improving
 }
 
-private fun PulseReasonId.labelRes(): Int = when (this) {
-    PulseReasonId.ORGANIZATION_HIGH -> R.string.digital_life_card_reason_organization_high
-    PulseReasonId.ORGANIZATION_UNCATEGORIZED -> R.string.digital_life_card_reason_organization_uncategorized
-    PulseReasonId.ATTENTION_CALM -> R.string.digital_life_card_reason_attention_calm
-    PulseReasonId.ATTENTION_NOISY -> R.string.digital_life_card_reason_attention_noisy
-    PulseReasonId.ATTENTION_NIGHT -> R.string.digital_life_card_reason_attention_night
-    PulseReasonId.ATTENTION_NO_PERMISSION -> R.string.digital_life_card_reason_attention_no_permission
-    PulseReasonId.BALANCE_STEADY -> R.string.digital_life_card_reason_balance_steady
-    PulseReasonId.BALANCE_SHIFT -> R.string.digital_life_card_reason_balance_shift
-    PulseReasonId.BALANCE_NO_BASELINE -> R.string.digital_life_card_reason_balance_no_baseline
-    PulseReasonId.CLEANUP_TIDY -> R.string.digital_life_card_reason_cleanup_tidy
-    PulseReasonId.CLEANUP_UNUSED -> R.string.digital_life_card_reason_cleanup_unused
-    PulseReasonId.CONSISTENCY_STEADY -> R.string.digital_life_card_reason_consistency_steady
-    PulseReasonId.CONSISTENCY_VOLATILE -> R.string.digital_life_card_reason_consistency_volatile
-    PulseReasonId.CONSISTENCY_NO_DATA -> R.string.digital_life_card_reason_consistency_no_data
-    PulseReasonId.TASK_MISSIONS -> R.string.digital_life_card_reason_task_missions
-}
