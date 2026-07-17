@@ -1920,3 +1920,7 @@ Bu yapı AppOrganizer'ı üç ayrı erişim yöntemini birlikte kullanan bir lau
 3. **Listeyi görmek istiyorsan yukarı kaydır:** Uygulama çekmecesi.
 
 Dashboard uygulamalara erişimi engelleyen bir ara ekran değil; arama, dock ve çekmece sürekli erişilebilirken kullanıcının günlük durumunu gösteren ilk sayfadır.
+
+---
+
+> **Son güncelleme tarihi:** 2026-07-17
