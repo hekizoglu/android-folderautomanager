@@ -938,7 +938,7 @@ Kurallar:
 
 **Bağımlılıklar:** M00, M02.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M03 — commit: ab57061 — tarih: 2026-07-17 — Not: TextSpec resolve ViewModel'de (calculator saf Kotlin). MissionsScreen henüz yeni alanları kullanmıyor (M06). AVOID_AFTER_TIME sayısal metin üretmez — M06'da rozet/ikon UI'sı gerekir.
 
 ---
 
