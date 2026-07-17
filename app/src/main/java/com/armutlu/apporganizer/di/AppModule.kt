@@ -19,6 +19,8 @@ import com.armutlu.apporganizer.domain.home.NoOpMissionRuntimeSource
 import com.armutlu.apporganizer.domain.home.NoOpSmartTickerSource
 import com.armutlu.apporganizer.domain.home.SmartTickerEngine
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
+import com.armutlu.apporganizer.domain.usecase.missions.DefaultMissionUsageStatsSource
+import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -91,6 +93,12 @@ object AppModule {
     @Provides
     fun provideMissionInstanceDao(db: AppDatabase): com.armutlu.apporganizer.data.local.MissionInstanceDao =
         db.missionInstanceDao()
+
+    // Dongu M02 — MissionMetricSnapshotProvider'in UsageStatsHelper cagrilarini soyutlayan
+    // kaynak; uretimde gercek Android API'sine delege eder (bkz. MissionUsageStatsSource.kt).
+    @Provides
+    @Singleton
+    fun provideMissionUsageStatsSource(): MissionUsageStatsSource = DefaultMissionUsageStatsSource()
 
     @Provides
     @Singleton

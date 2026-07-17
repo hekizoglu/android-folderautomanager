@@ -8,16 +8,16 @@ import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
+import com.armutlu.apporganizer.domain.usecase.missions.MissionMetricSnapshotProvider
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
+import com.armutlu.apporganizer.domain.usecase.missions.toMissionCheckInput
 import com.armutlu.apporganizer.utils.TaskScoreManager
-import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +35,7 @@ import timber.log.Timber
 class MissionsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val missionsRepository: MissionsRepository,
+    private val missionMetricSnapshotProvider: MissionMetricSnapshotProvider,
 ) : ViewModel() {
 
     data class MissionUi(
@@ -95,7 +96,9 @@ class MissionsViewModel @Inject constructor(
         missionsRepository.syncLegacyPrefsIfNeeded()
         val epochDay = LocalDate.now().toEpochDay()
         val epochWeek = epochDay / 7
-        val input = buildCheckInput(epochDay, epochWeek)
+        // M02: tum gorev metrikleri tek zaman-tutarli snapshot'tan gelir — ViewModel hesaplama yapmaz.
+        val snapshot = missionMetricSnapshotProvider.capture()
+        val input = snapshot.toMissionCheckInput()
         val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
             currentEpochDay = epochDay,
             cooldownDays = MissionEngine.dailyCooldownDays(),
@@ -195,35 +198,6 @@ class MissionsViewModel @Inject constructor(
             taskScoreLastEvent = taskScore.lastEventLabel,
             celebrateStars = newStars.takeIf { it > 0 },
             loading = false,
-        )
-    }
-
-    private suspend fun buildCheckInput(epochDay: Long, epochWeek: Long): MissionEngine.MissionCheckInput {
-        val sessions = (UsageStatsHelper.getDailySessionUsage(context, days = 14)
-            as? UsageStatsHelper.DailySessionResult.Available)?.days
-
-        // Gun bazinda global ekran suresi (paketler ayni global degeri tasir — max al).
-        val minutesByDay = sessions?.groupBy { it.epochDay }
-            ?.mapValues { (_, list) ->
-                (list.maxOfOrNull { it.globalForegroundMs } ?: 0L) / TimeUnit.MINUTES.toMillis(1)
-            }
-
-        val todayEntries = sessions?.filter { it.epochDay == epochDay }
-        val usedAfter23 = todayEntries?.any { entry ->
-            entry.hourlyForegroundMs.getOrNull(23)?.let { it > 0L } == true
-        }
-
-        fun weekMinutes(week: Long): Long? = minutesByDay
-            ?.filterKeys { it / 7 == week }
-            ?.values?.sum()
-
-        return MissionEngine.MissionCheckInput(
-            screenTimeMinutesToday = if (minutesByDay != null) minutesByDay[epochDay] ?: 0L else null,
-            usedAfter23Today = usedAfter23,
-            unlockCountToday = UsageStatsHelper.getUnlockCount(context, days = 1),
-            weeklyScreenTimeMinutes = weekMinutes(epochWeek),
-            previousWeeklyScreenTimeMinutes = weekMinutes(epochWeek - 1),
-            taskEvents = missionsRepository.buildTaskEventInput(epochDay, epochWeek),
         )
     }
 

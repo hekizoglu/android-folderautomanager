@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M02 - 2026-07-17 - MissionMetricSnapshotProvider
+
+**Yapilanlar:** MissionMetricSnapshot + Provider (tek now, tek UsageStats okumasi, izin yoksa null/eylem sayaclari korunur) + MissionUsageStatsSource interface (test edilebilirlik); MissionsViewModel.buildCheckInput silindi, snapshot.toMissionCheckInput() koprusu. 6 yeni test, tum Mission testleri yesil.
+
+**Bug:** buildCheckInput haftalik siniri epochDay/7 ile hesapliyordu (persembe hizali) — provider'da ISO resolver sinirlarina gecirilerek DUZELTILDI (P0 2.5 gorev metrik tarafinda cozuldu; mission_history anahtari hala eski, M04'te).
+
+**Sonraki:** EX01 — Bugun Yuklenenler + cekmece refresh bug (kullanici talebi), sonra M03.
+
 ## Akilli Nabiz Dongu M01 - 2026-07-17 - mission_instances Room tablosu
 
 **Yapilanlar:** MissionInstanceEntity (deterministik instanceId, unique index) + MissionInstanceDao (7 fonksiyon) + AppDatabase v17->18 MIGRATION_17_18 (destructive yok, mission_history korundu) + schemas/18.json; MissionsRepository.pinInstances dual-write (haftalik anahtar ISO PeriodBoundaryResolver ile — yeni tablo temiz basladi); Hilt DAO binding. JVM 4 test + androidTest 6 DAO testi derlendi, Mission testleri yesil.
