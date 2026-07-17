@@ -1,6 +1,0 @@
-id: no-hardcoded-strings-ui
-language: kotlin
-severity: warning
-message: "UI'da hardcoded string. stringResource() kullan veya en azından sabit tanımla."
-rule:
-  pattern: 'Text("$TEXT")'
