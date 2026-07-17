@@ -1544,7 +1544,7 @@ Pozitif nedenlerde zorunlu CTA gerekmez.
 
 **Bağımlılıklar:** D02.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü D04 — commit: b98673b — tarih: 2026-07-17 — D FAZI KAPANDI: tam test + assembleDebug yeşil, APK v1.3.86 (109) Telegram'a gönderildi. PulseActionRouter ayrı router (MissionActionRouter'dan bağımsız); 15 PulseReasonId eşlendi; pozitif nedenlerde CTA yok.
 
 ---
 
