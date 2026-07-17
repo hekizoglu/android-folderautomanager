@@ -298,8 +298,8 @@ object TickerComposer {
         }
 
         // Dijital yasam skoru haberi KALDIRILDI (Dongu D00, P0 2.1) — TickerComposer artik
-        // kendi skorunu hesaplamiyor. Skor artik yalniz DigitalScoreCard'da (ayri kart,
-        // LauncherViewModel.digitalLifeScore -> HomeIntelligenceCoordinator -> DigitalPulseRepository)
+        // kendi skorunu hesaplamiyor. Skor artik yalniz DigitalLifeCard'da (ayri kart,
+        // LauncherViewModel.homePulseSummary -> HomeIntelligenceCoordinator -> DigitalPulseRepository)
         // gosteriliyor; ticker'a skor haberi eklemek T donguleri kapsaminda yeniden ele alinacak.
 
         // Karistirma: gunluk seed'li Random ile shuffle, sonra oncelige gore stabil sirala

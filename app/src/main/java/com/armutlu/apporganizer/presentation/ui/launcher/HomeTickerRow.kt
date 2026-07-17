@@ -19,7 +19,6 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -287,53 +286,6 @@ private fun Modifier.pointerInputTicker(
             // Sola kaydırma = sonraki haber (haber şeridi alışkanlığı), sağa = önceki
             if (accumulated < -48f) onSwipe(true)
             else if (accumulated > 48f) onSwipe(false)
-        }
-    }
-}
-
-/**
- * Dijital Yaşam Skoru — bağımsız kompakt kart (ROADMAP #28).
- * Eskiden ticker metnine gömülüydü ("Skor NN"); artık Görevler kartıyla aynı boyut/stilde,
- * yıldız ikonlu bağımsız bir kart — HomeScreen'de saat kartının altında Görevler'in SAĞINA
- * yerleştirilir. Skor null ise (yeterli veri yok) kart gösterilmez.
- */
-@Composable
-internal fun DigitalScoreCard(
-    score: Int?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    if (score == null) return
-    GlassCard(
-        modifier = modifier.clickable(onClick = onClick),
-        cornerRadius = 18.dp,
-        backgroundAlpha = 0.10f,
-        borderAlpha = 0.18f,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 9.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text("★", color = digitalLifeScoreColor(score), fontSize = 15.sp)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.digital_score_home_card_title, score),
-                    color = Color.White.copy(alpha = 0.90f),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                )
-                Text(
-                    text = stringResource(R.string.digital_score_home_card_subtitle),
-                    color = Color.White.copy(alpha = 0.52f),
-                    fontSize = 11.sp,
-                    maxLines = 1,
-                )
-            }
-            Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
         }
     }
 }

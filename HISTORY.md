@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu D02 - 2026-07-17 - DigitalLifeCard bilgi karti
+
+**Yapilanlar:** HomePulseSummary + mapper (skor bantlari->notr etiket, LOW confidence'ta sayi gizlenir "Veri birikiyor", STALE'de dakika, UNAVAILABLE'da CTA+tiklama kapali); DigitalLifeCard eski DigitalScoreCard'in yerine (silindi); topReason = max |delta| reason (minimal, D04 tam yapacak); TR/EN ~29 string. 23/23 mapper testi yesil.
+
+**Bug:** Yok. Ortam: 6. build kilidi SOP ile cozuldu.
+
+**Sonraki:** D03 — Pulse Clock skor tekrarini kaldir (zincir devam).
+
 ## Akilli Nabiz Dongu D01 - 2026-07-17 - ISO hafta trend/baseline
 
 **Yapilanlar:** PulseHistoryPrefs (weekStartEpochDay anahtarli kapanis skorlari, 8 hafta retention, running-score stratejisi — hafta degisince otomatik kapanis); DigitalPulseSnapshot.previousScore/scoreDelta; PulseClock+Wrapped ayni delta'yi okuyor; eski updateWeeklyPulseScore/updateDailyScore + olu anahtarlar SILINDI; tek seferlik migration bayrakli. 8/8 yeni test + tum Pulse/Wrapped testleri yesil.

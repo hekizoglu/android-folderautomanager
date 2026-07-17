@@ -286,7 +286,7 @@ class LauncherViewModel @Inject constructor(
             repository.ensureDefaultCategories()
         }
         // Dongu H02 — HomeIntelligenceCoordinator baglantisi: yalniz refresh tetikleme.
-        // Mevcut ticker/skor akislarina (tickerItems, digitalLifeScore, suggestedApps vb.)
+        // Mevcut ticker/skor akislarina (tickerItems, homePulseSummary, suggestedApps vb.)
         // DOKUNULMADI — bunlar D00/T dongulerinde bu koordinatore tasinacak.
         viewModelScope.launch(Dispatchers.IO) {
             runCatching { homeIntelligenceCoordinator.refresh(RefreshReason.APP_START) }
@@ -863,12 +863,25 @@ class LauncherViewModel @Inject constructor(
     // Assistant Kartları — her refresh'te rastgele seçim, tekrar önleme
     private val _insightCards = MutableStateFlow<List<InsightCard>>(emptyList())
 
-    // Dijital Yaşam Skoru — bağımsız kart (ROADMAP #28). Döngü D00'dan itibaren TickerComposer
-    // KENDİ skorunu hesaplamıyor; tek kaynak DigitalPulseRepository'dir (HomeIntelligenceCoordinator
-    // üzerinden okunur) — ana ekran kartı, Pulse Clock ve Wrapped raporu AYNI sayıyı gösterir.
-    val digitalLifeScore: StateFlow<Int?> = homeIntelligenceCoordinator.state
-        .map { it.pulse.valueOrNull()?.snapshot?.score?.total }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    // Dijital Yaşam kartı — Döngü D02: eski "Skor NN" rozeti yerine açıklayıcı özet
+    // (durum + trend + en büyük etki). Döngü D00'dan itibaren TickerComposer KENDİ skorunu
+    // hesaplamıyor; tek kaynak DigitalPulseRepository'dir (HomeIntelligenceCoordinator üzerinden
+    // okunur) — ana ekran kartı, Pulse Clock ve Wrapped raporu AYNI sayıyı gösterir.
+    private val homePulseFreshnessResolver = com.armutlu.apporganizer.domain.common.DataFreshnessResolver(
+        java.time.Clock.systemDefaultZone(),
+    )
+    val homePulseSummary: StateFlow<com.armutlu.apporganizer.domain.home.HomePulseSummary?> =
+        homeIntelligenceCoordinator.state
+            .map { state ->
+                val snapshot = state.pulse.valueOrNull()?.snapshot
+                val freshness = homePulseFreshnessResolver.resolve(snapshot?.computedAt)
+                com.armutlu.apporganizer.domain.home.toHomePulseSummary(
+                    snapshot = snapshot,
+                    freshness = freshness,
+                    nowMillis = System.currentTimeMillis(),
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val insightCards: StateFlow<List<InsightCard>> = _insightCards.asStateFlow()
 
     // Dongu M07 — Ana ekran "Görevler" karti (HomeMissionCard) icin
@@ -1011,8 +1024,8 @@ class LauncherViewModel @Inject constructor(
         val totalNotif = badges.values.sum()
 
         // Dijital yasam skoru ticker'dan KALDIRILDI (Dongu D00, P0 2.1) — TickerComposer artik
-        // skor hesaplamiyor. Skor ayri DigitalScoreCard'da digitalLifeScore StateFlow'undan
-        // (HomeIntelligenceCoordinator -> DigitalPulseRepository) gosteriliyor.
+        // skor hesaplamiyor. Skor ayri DigitalLifeCard'da homePulseSummary StateFlow'undan
+        // (HomeIntelligenceCoordinator -> DigitalPulseRepository) gosteriliyor (Dongu D02).
         val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
         val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,

@@ -141,7 +141,7 @@ fun HomeScreen(
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
     val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
     val tickerItems by viewModel.tickerItems.collectAsState()
-    val digitalLifeScore by viewModel.digitalLifeScore.collectAsState()
+    val homePulseSummary by viewModel.homePulseSummary.collectAsState()
     val homeMissionSummary by viewModel.homeMissionSummary.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
@@ -592,7 +592,7 @@ fun HomeScreen(
             // Görevler + Dijital Yaşam Skoru — aynı boyut/stilde iki bağımsız kart, yan yana
             // (Görevler solda, Skor sağda). Eskiden Görevler ayrı bir chip, Skor ticker metnine
             // gömülü bir rozetti (ROADMAP #28) — artık simetrik bir çift oluşturuyorlar.
-            if (missionsEnabled || digitalLifeScore != null) {
+            if (missionsEnabled || homePulseSummary != null) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -615,8 +615,8 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                         )
                     }
-                    DigitalScoreCard(
-                        score = digitalLifeScore,
+                    DigitalLifeCard(
+                        summary = homePulseSummary,
                         onClick = {
                             val intent = Intent(context, MainActivity::class.java).apply {
                                 putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
