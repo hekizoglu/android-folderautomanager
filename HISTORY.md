@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M08 - 2026-07-17 - Puan dengesi + M FAZ KAPANISI
+
+**Yapilanlar:** TaskScoreManager: bulkReward kademeli tavan (0/3/5/7/10 — eski dogrusal carpim 100 uygulamada +500 uretebiliyordu), snooze/dismiss cezalari kaldirildi (-1/-2 -> 0), siniflandirma onayi +3->+2, klasor kabul +5->+3; bildirim raporu gunluk tekillestirme ve +-10 pulse siniri dogrulandi. AppListViewModel toplu kabuller recordBulk'a gecti. 10/10 yeni test. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, APK 27.06 MB, v1.3.85 (108). GOREV FAZI (M) TAMAM — 2.3/2.4/2.5/2.6 P0-P1'leri cozuldu.
+
+**Bug:** Yok. Ortam: 5. build kilidi SOP ile cozuldu; Defender exclusion onerisi kullaniciya iletildi.
+
+**Sonraki:** D00 — eski skor motorunu kaldir, tek kaynaga gec (Dijital Yasam fazi basliyor).
+
 ## Akilli Nabiz Dongu M07 - 2026-07-17 - Ana ekran Gorevler karti canli
 
 **Yapilanlar:** MissionSummaryUseCase (tek hesap yolu; awardStars=false ile yan etkisiz okuma) + HomeMissionSummary/Selector (5 kurallik birincil gorev secimi, saf Kotlin) + RealMissionRuntimeSource (no-op binding gercek kaynaga cevrildi — koordinator ilk gercek verisini aldi) + HomeMissionCard (N/M, birincil gorev, tamamlandi/izin durumlari); HomeScreen statik kart degistirildi. 10 yeni test, 79/79 yesil.

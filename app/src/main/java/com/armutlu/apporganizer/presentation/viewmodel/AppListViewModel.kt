@@ -458,10 +458,10 @@ class AppListViewModel @Inject constructor(
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
             }
             AppPrefs.addAcceptedOverridePattern(getApplication(), categoryId, packageNames)
-            TaskScoreManager.record(
+            TaskScoreManager.recordBulk(
                 context = getApplication(),
                 eventType = TaskScoreManager.EventType.SimilarAppsAccepted,
-                weight = packageNames.size,
+                itemCount = packageNames.size,
             )
             clearSimilarCategorySuggestions()
         }
@@ -481,10 +481,10 @@ class AppListViewModel @Inject constructor(
                 repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
             }
             AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
-            TaskScoreManager.record(
+            TaskScoreManager.recordBulk(
                 context = getApplication(),
                 eventType = TaskScoreManager.EventType.FolderSuggestionAccepted,
-                weight = suggestion.packageNames.size.coerceAtLeast(1),
+                itemCount = suggestion.packageNames.size.coerceAtLeast(1),
             )
             _folderSuggestionRefresh.value += 1
         }

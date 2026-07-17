@@ -21,8 +21,10 @@ object TaskScoreManager {
         val eventKey: String,
         val defaultLabel: String,
     ) {
+        // ROADMAP M08: adil puan tablosu - reddetme/erteleme cezalandirmaz (delta=0),
+        // toplu kabuller dogrusal degil bulkReward() ile hesaplanir (bkz. recordBulk).
         ClassificationApproved(
-            delta = 3,
+            delta = 2,
             eventKey = "classification_approved",
             defaultLabel = "Siniflandirma onaylandi",
         ),
@@ -32,27 +34,29 @@ object TaskScoreManager {
             defaultLabel = "Siniflandirma duzeltildi",
         ),
         ClassificationSnoozed(
-            delta = -1,
+            delta = 0,
             eventKey = "classification_snoozed",
             defaultLabel = "Siniflandirma ertelendi",
         ),
+        // Tekil kabul - toplu kabul icin recordBulk() + bulkReward() kullanilir.
         FolderSuggestionAccepted(
-            delta = 5,
+            delta = 3,
             eventKey = "folder_suggestion_accepted",
             defaultLabel = "Klasor onerisi kabul edildi",
         ),
         FolderSuggestionSnoozed(
-            delta = -1,
+            delta = 0,
             eventKey = "folder_suggestion_snoozed",
             defaultLabel = "Klasor onerisi ertelendi",
         ),
         FolderSuggestionDismissed(
-            delta = -2,
+            delta = 0,
             eventKey = "folder_suggestion_dismissed",
             defaultLabel = "Klasor onerisi gizlendi",
         ),
+        // Tekil kabul - toplu kabul icin recordBulk() + bulkReward() kullanilir.
         SimilarAppsAccepted(
-            delta = 4,
+            delta = 3,
             eventKey = "similar_apps_accepted",
             defaultLabel = "Benzer uygulama onerisi kabul edildi",
         ),
@@ -105,6 +109,18 @@ object TaskScoreManager {
         )
     }
 
+    /**
+     * Toplu odul agirligi (ROADMAP M08) - dogrusal DEGIL. Tek buyuk toplu islem
+     * (orn. 100 uygulama) diger tum davranislari golgelemesin diye ust sinir 10'dur.
+     */
+    fun bulkReward(itemCount: Int): Int = when (itemCount) {
+        0 -> 0
+        1 -> 3
+        in 2..5 -> 5
+        in 6..10 -> 7
+        else -> 10
+    }
+
     suspend fun record(context: Context, eventType: EventType, weight: Int = 1): Snapshot {
         if (weight <= 0) return getSnapshotV2(context)
         val delta = eventType.delta * weight
@@ -123,6 +139,24 @@ object TaskScoreManager {
         } else {
             dao.insert(entry)
         }
+        return getSnapshotV2(context)
+    }
+
+    /**
+     * Toplu kabul olaylarini (klasor onerisi / benzer uygulama) kaydeder. Delta,
+     * itemCount'a dogrusal olarak degil [bulkReward] ile hesaplanir - boylece tek
+     * buyuk toplu islem diger butun gorev puanlarini golgelemez.
+     */
+    suspend fun recordBulk(context: Context, eventType: EventType, itemCount: Int): Snapshot {
+        val delta = bulkReward(itemCount)
+        if (delta <= 0) return getSnapshotV2(context)
+        val dao = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context).taskScoreEventDao()
+        val entry = com.armutlu.apporganizer.domain.models.TaskScoreEventEntry(
+            eventKey = eventType.eventKey,
+            label = eventType.defaultLabel,
+            delta = delta,
+        )
+        dao.insert(entry)
         return getSnapshotV2(context)
     }
 
