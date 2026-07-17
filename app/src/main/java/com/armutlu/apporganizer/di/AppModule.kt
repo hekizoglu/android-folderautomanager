@@ -89,6 +89,10 @@ object AppModule {
         db.taskScoreEventDao()
 
     @Provides
+    fun provideMissionInstanceDao(db: AppDatabase): com.armutlu.apporganizer.data.local.MissionInstanceDao =
+        db.missionInstanceDao()
+
+    @Provides
     @Singleton
     fun provideFilesIndexer(
         @ApplicationContext context: Context,

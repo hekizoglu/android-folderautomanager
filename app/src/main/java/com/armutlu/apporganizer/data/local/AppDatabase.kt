@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
+import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.TaskScoreEventEntry
 import com.armutlu.apporganizer.domain.models.WeeklyGoal
@@ -22,8 +23,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class],
-    version = 17,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class],
+    version = 18,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -35,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun weeklyGoalDao(): WeeklyGoalDao
     abstract fun missionHistoryDao(): MissionHistoryDao
     abstract fun taskScoreEventDao(): TaskScoreEventDao
+    abstract fun missionInstanceDao(): MissionInstanceDao
     
     companion object {
         @Volatile
@@ -221,6 +223,36 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v17→v18: mission_instances tablosu — Dongu M01. Gunluk/haftalik gorev ornekleri
+        // (id, hedef, odul) donem boyunca sabitlenir; mission_history (tamamlanma/yildiz
+        // ledger'i) DEGISTIRILMEZ, iki tablo paralel yasar.
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS mission_instances (
+                        instanceId TEXT NOT NULL,
+                        missionId TEXT NOT NULL,
+                        periodType TEXT NOT NULL,
+                        periodStartEpoch INTEGER NOT NULL,
+                        periodStartAt INTEGER NOT NULL,
+                        periodEndAt INTEGER NOT NULL,
+                        targetValue INTEGER,
+                        baselineValue INTEGER,
+                        starReward INTEGER NOT NULL,
+                        status TEXT NOT NULL,
+                        assignedAt INTEGER NOT NULL,
+                        settledAt INTEGER,
+                        definitionVersion INTEGER NOT NULL,
+                        PRIMARY KEY(instanceId)
+                    )
+                    """
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mission_instances_periodType_periodStartEpoch ON mission_instances(periodType, periodStartEpoch)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_mission_instances_missionId_periodType_periodStartEpoch ON mission_instances(missionId, periodType, periodStartEpoch)")
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -331,7 +363,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_13_14,
                         MIGRATION_14_15,
                         MIGRATION_15_16,
-                        MIGRATION_16_17
+                        MIGRATION_16_17,
+                        MIGRATION_17_18
                     )
                     .build()
 

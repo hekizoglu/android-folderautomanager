@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.MissionsRepository
+import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
@@ -110,19 +111,40 @@ class MissionsViewModel @Inject constructor(
         // "donem bitti" sinirlari (gece yarisi / Pazartesi 00:00) settlement is'idir (M04),
         // orada PeriodBoundaryResolver.nextLocalMidnight()/nextWeekBoundary() ile tetiklenecek
         // arka plan islemi kullanilacaktir. Referans birligini korumak icin burada tutulur.
-        periodBoundaryResolver.currentDay()
+        val dayBoundary = periodBoundaryResolver.currentDay()
+        val weekBoundary = periodBoundaryResolver.currentIsoWeek()
         val dayEnded = false
         val weekEnded = false
 
+        // M01: hedef/baseline degerleri MissionEngine.evaluate() ile ayni sabitler — sadece
+        // kalici kayit icin, degerlendirme mantigini degistirmez.
+        val dailyTargetValues = mapOf(
+            MissionEngine.DAILY_SCREEN_UNDER_3H to 180L,
+            MissionEngine.DAILY_UNLOCK_UNDER_30 to 30L,
+        )
+        val weeklyTargetValues = mapOf(
+            MissionEngine.WEEKLY_POSITIVE_ACTIONS to 3L,
+        )
+        val weeklyBaselineValues = mapOf(
+            MissionEngine.WEEKLY_SCREEN_LESS to input.previousWeeklyScreenTimeMinutes,
+        )
+
         var newStars = 0
         val dailyDone = missionsRepository.getCompletedDailyIds(epochDay).toMutableSet()
-        val daily = MissionEngine.generateDaily(
+        val dailyMissions = MissionEngine.generateDaily(
             epochDay = epochDay,
             selection = MissionEngine.MissionSelectionInput(
                 checkInput = input,
                 recentlyCompletedMissionIds = dailyCooldownIds,
             )
-        ).map { mission ->
+        )
+        missionsRepository.pinInstances(
+            missions = dailyMissions,
+            periodType = MissionInstanceEntity.PERIOD_DAILY,
+            boundary = dayBoundary,
+            targetValues = dailyTargetValues,
+        )
+        val daily = dailyMissions.map { mission ->
             val already = mission.id in dailyDone
             val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
             val status = if (already) MissionStatus.COMPLETED else evaluation.status
@@ -136,13 +158,21 @@ class MissionsViewModel @Inject constructor(
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
-        val weekly = MissionEngine.generateWeekly(
+        val weeklyMissions = MissionEngine.generateWeekly(
             epochWeek = epochWeek,
             selection = MissionEngine.MissionSelectionInput(
                 checkInput = input,
                 recentlyCompletedMissionIds = weeklyCooldownIds,
             )
-        ).map { mission ->
+        )
+        missionsRepository.pinInstances(
+            missions = weeklyMissions,
+            periodType = MissionInstanceEntity.PERIOD_WEEKLY,
+            boundary = weekBoundary,
+            targetValues = weeklyTargetValues,
+            baselineValues = weeklyBaselineValues,
+        )
+        val weekly = weeklyMissions.map { mission ->
             val already = mission.id in weeklyDone
             val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
             val status = if (already) MissionStatus.COMPLETED else evaluation.status

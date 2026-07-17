@@ -1,0 +1,54 @@
+package com.armutlu.apporganizer.data.local
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface MissionInstanceDao {
+
+    @Query(
+        """
+        SELECT * FROM mission_instances
+        WHERE periodType = :periodType AND periodStartEpoch = :periodStartEpoch
+        """
+    )
+    suspend fun getInstancesForPeriod(periodType: String, periodStartEpoch: Long): List<MissionInstanceEntity>
+
+    @Query(
+        """
+        SELECT * FROM mission_instances
+        WHERE status = 'assigned'
+        ORDER BY periodStartEpoch DESC
+        """
+    )
+    fun observeActiveInstances(): Flow<List<MissionInstanceEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAllIgnore(instances: List<MissionInstanceEntity>): List<Long>
+
+    @Query("UPDATE mission_instances SET status = :status WHERE instanceId = :instanceId")
+    suspend fun updateStatus(instanceId: String, status: String)
+
+    @Query(
+        """
+        UPDATE mission_instances SET status = :status, settledAt = :settledAt
+        WHERE instanceId = :instanceId
+        """
+    )
+    suspend fun settleInstance(instanceId: String, status: String, settledAt: Long)
+
+    @Query(
+        """
+        SELECT * FROM mission_instances
+        WHERE status = 'assigned' AND periodEndAt < :beforeEpochMillis
+        """
+    )
+    suspend fun getUnsettledBefore(beforeEpochMillis: Long): List<MissionInstanceEntity>
+
+    @Query("DELETE FROM mission_instances")
+    suspend fun clearAll()
+}

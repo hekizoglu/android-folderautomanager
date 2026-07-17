@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M01 - 2026-07-17 - mission_instances Room tablosu
+
+**Yapilanlar:** MissionInstanceEntity (deterministik instanceId, unique index) + MissionInstanceDao (7 fonksiyon) + AppDatabase v17->18 MIGRATION_17_18 (destructive yok, mission_history korundu) + schemas/18.json; MissionsRepository.pinInstances dual-write (haftalik anahtar ISO PeriodBoundaryResolver ile — yeni tablo temiz basladi); Hilt DAO binding. JVM 4 test + androidTest 6 DAO testi derlendi, Mission testleri yesil.
+
+**Bug:** Roadmap DB'yi v12 saniyordu, gercek v17 — gercek kod esas alindi (protokol kurali 2). room-testing altyapisi projede yok; MigrationTestHelper testi M-fazi kapanisina not edildi.
+
+**Sonraki:** M02 — MissionMetricSnapshotProvider (zincir devam).
+
 ## Akilli Nabiz Dongu M00 - 2026-07-17 - MissionStatus donemsel sonuc mantigi
 
 **Yapilanlar:** MissionStatus (8 durum) + MissionEvaluation; MissionEngine.evaluate() (LocalTime + dayEnded/weekEnded parametreli, checkProgress deprecated kopru); computeAndAward artik SADECE eylem gorevlerine (CLASSIFICATION_CLEANUP, VIEW_NOTIF_REPORT, POSITIVE_ACTIONS) aninda yildiz yazar — ust sinir/gece/haftalik gorevler settlement'a (M04) kaldi. P0 2.4 COZULDU, H00 kilitleme testleri dogru davranisa cevrildi. Testler yesil.

@@ -7,8 +7,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
+import com.armutlu.apporganizer.data.local.MissionInstanceDao
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.models.NotificationEvent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -32,6 +34,7 @@ class AppDatabaseTest {
     private lateinit var db: AppDatabase
     private lateinit var appDao: AppDao
     private lateinit var categoryDao: CategoryDao
+    private lateinit var missionInstanceDao: MissionInstanceDao
 
     @Before
     fun createDb() {
@@ -41,6 +44,7 @@ class AppDatabaseTest {
             .build()
         appDao = db.appDao()
         categoryDao = db.categoryDao()
+        missionInstanceDao = db.missionInstanceDao()
     }
 
     @After
@@ -166,5 +170,112 @@ class AppDatabaseTest {
 
         val remaining = notificationDao.eventsSince(0L).sortedBy { it.postedAt }
         assertEquals(listOf("com.boundary.app", "com.new.app"), remaining.map { it.packageName })
+    }
+
+    // ─── MissionInstanceDao (Dongu M01) ──────────────────────────────────────────
+
+    private fun sampleInstance(
+        missionId: String = "daily_screen_under_3h",
+        periodType: String = MissionInstanceEntity.PERIOD_DAILY,
+        periodStartEpoch: Long = 20_650L,
+        status: String = MissionInstanceEntity.STATUS_ASSIGNED,
+        assignedAt: Long = 1_800_000_000_000L,
+    ) = MissionInstanceEntity(
+        instanceId = MissionInstanceEntity.buildInstanceId(missionId, periodType, periodStartEpoch),
+        missionId = missionId,
+        periodType = periodType,
+        periodStartEpoch = periodStartEpoch,
+        periodStartAt = 1_799_900_000_000L,
+        periodEndAt = 1_800_100_000_000L,
+        targetValue = 180L,
+        baselineValue = null,
+        starReward = 1,
+        status = status,
+        assignedAt = assignedAt,
+        settledAt = null,
+        definitionVersion = MissionInstanceEntity.CURRENT_DEFINITION_VERSION,
+    )
+
+    @Test
+    fun missionInstance_insertAllIgnore_skipsDuplicatePeriodAndMission() = runTest {
+        val first = sampleInstance()
+        missionInstanceDao.insertAllIgnore(listOf(first))
+
+        // Ayni missionId+periodType+periodStartEpoch icin ikinci deneme — hedef degistirilmis
+        // olsa bile (targetValue=999) unique index nedeniyle IGNORE edilir, ilk kayit korunur.
+        val duplicateAttempt = first.copy(targetValue = 999L)
+        missionInstanceDao.insertAllIgnore(listOf(duplicateAttempt))
+
+        val stored = missionInstanceDao.getInstancesForPeriod(
+            MissionInstanceEntity.PERIOD_DAILY,
+            20_650L,
+        )
+        assertEquals(1, stored.size)
+        assertEquals(180L, stored.first().targetValue)
+    }
+
+    @Test
+    fun missionInstance_getInstancesForPeriod_filtersByPeriodTypeAndEpoch() = runTest {
+        missionInstanceDao.insertAllIgnore(
+            listOf(
+                sampleInstance(missionId = "daily_screen_under_3h", periodStartEpoch = 20_650L),
+                sampleInstance(missionId = "daily_no_late_night", periodStartEpoch = 20_650L),
+                sampleInstance(missionId = "daily_unlock_under_30", periodStartEpoch = 20_651L),
+                sampleInstance(missionId = "weekly_positive_actions", periodType = MissionInstanceEntity.PERIOD_WEEKLY, periodStartEpoch = 20_650L),
+            )
+        )
+
+        val dayResult = missionInstanceDao.getInstancesForPeriod(MissionInstanceEntity.PERIOD_DAILY, 20_650L)
+        assertEquals(2, dayResult.size)
+        assertTrue(dayResult.all { it.periodType == MissionInstanceEntity.PERIOD_DAILY && it.periodStartEpoch == 20_650L })
+
+        val weekResult = missionInstanceDao.getInstancesForPeriod(MissionInstanceEntity.PERIOD_WEEKLY, 20_650L)
+        assertEquals(1, weekResult.size)
+        assertEquals("weekly_positive_actions", weekResult.first().missionId)
+    }
+
+    @Test
+    fun missionInstance_settleInstance_writesStatusAndSettledAt() = runTest {
+        val instance = sampleInstance()
+        missionInstanceDao.insertAllIgnore(listOf(instance))
+
+        missionInstanceDao.settleInstance(instance.instanceId, MissionInstanceEntity.STATUS_COMPLETED, 1_800_050_000_000L)
+
+        val stored = missionInstanceDao.getInstancesForPeriod(MissionInstanceEntity.PERIOD_DAILY, 20_650L).first()
+        assertEquals(MissionInstanceEntity.STATUS_COMPLETED, stored.status)
+        assertEquals(1_800_050_000_000L, stored.settledAt)
+    }
+
+    @Test
+    fun missionInstance_updateStatus_updatesOnlyStatus() = runTest {
+        val instance = sampleInstance()
+        missionInstanceDao.insertAllIgnore(listOf(instance))
+
+        missionInstanceDao.updateStatus(instance.instanceId, MissionInstanceEntity.STATUS_FAILED)
+
+        val stored = missionInstanceDao.getInstancesForPeriod(MissionInstanceEntity.PERIOD_DAILY, 20_650L).first()
+        assertEquals(MissionInstanceEntity.STATUS_FAILED, stored.status)
+        assertNull(stored.settledAt)
+    }
+
+    @Test
+    fun missionInstance_getUnsettledBefore_returnsOnlyAssignedPastPeriodEnd() = runTest {
+        val past = sampleInstance(missionId = "daily_screen_under_3h", periodStartEpoch = 20_649L)
+            .copy(periodEndAt = 1_000L)
+        val future = sampleInstance(missionId = "daily_no_late_night", periodStartEpoch = 20_650L)
+            .copy(periodEndAt = 5_000L)
+        val alreadySettled = sampleInstance(missionId = "daily_unlock_under_30", periodStartEpoch = 20_649L)
+            .copy(periodEndAt = 1_000L, status = MissionInstanceEntity.STATUS_COMPLETED, settledAt = 900L)
+        missionInstanceDao.insertAllIgnore(listOf(past, future, alreadySettled))
+
+        val unsettled = missionInstanceDao.getUnsettledBefore(2_000L)
+        assertEquals(listOf("daily_screen_under_3h"), unsettled.map { it.missionId })
+    }
+
+    @Test
+    fun missionInstance_clearAll_removesEverything() = runTest {
+        missionInstanceDao.insertAllIgnore(listOf(sampleInstance()))
+        missionInstanceDao.clearAll()
+        assertTrue(missionInstanceDao.getInstancesForPeriod(MissionInstanceEntity.PERIOD_DAILY, 20_650L).isEmpty())
     }
 }

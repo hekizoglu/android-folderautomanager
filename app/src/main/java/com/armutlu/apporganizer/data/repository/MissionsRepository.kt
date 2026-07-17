@@ -2,8 +2,11 @@ package com.armutlu.apporganizer.data.repository
 
 import android.content.Context
 import com.armutlu.apporganizer.data.local.MissionHistoryDao
+import com.armutlu.apporganizer.data.local.MissionInstanceDao
 import com.armutlu.apporganizer.data.local.TaskScoreEventDao
 import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
+import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
+import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.utils.MissionPrefs
 import com.armutlu.apporganizer.utils.TaskScoreManager
@@ -19,6 +22,7 @@ class MissionsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val missionHistoryDao: MissionHistoryDao,
     private val taskScoreEventDao: TaskScoreEventDao,
+    private val missionInstanceDao: MissionInstanceDao,
 ) {
 
     suspend fun syncLegacyPrefsIfNeeded() {
@@ -169,5 +173,51 @@ class MissionsRepository @Inject constructor(
                 listOf(TaskScoreManager.EventType.NotificationReportViewed.eventKey),
             ) > 0,
         )
+    }
+
+    /**
+     * Dongu M01 — DUAL WRITE: uretilen gorev seti (missions) verilen donem sinirlariyla
+     * `mission_instances` tablosuna sabitlenir. `insertAllIgnore` sayesinde ayni donem+gorev
+     * icin ikinci cagri (orn. ekran yeniden acildiginda) sessizce yok sayilir — hedef/oduldeki
+     * ilk atama degismeden kalir. Bu SADECE kalici kayit amaclidir; MissionsViewModel'in okuma
+     * yolu HALA MissionEngine + mission_history uzerinden calisir (M02-M04'te degisecek).
+     *
+     * @param targetValues missionId -> hedef deger (ust sinir/haftalik karsilastirma gorevleri
+     * icin MissionEngine.evaluate() ile ayni sabitler; eylem/bayrak gorevlerinde null olabilir).
+     * @param baselineValues missionId -> baseline (yalniz haftalik karsilastirma gorevinde onceki
+     * hafta degeri; digerlerinde null).
+     */
+    suspend fun pinInstances(
+        missions: List<MissionEngine.Mission>,
+        periodType: String,
+        boundary: PeriodBoundary,
+        assignedAt: Long = System.currentTimeMillis(),
+        targetValues: Map<String, Long?> = emptyMap(),
+        baselineValues: Map<String, Long?> = emptyMap(),
+    ) {
+        if (missions.isEmpty()) return
+        val periodStartEpoch = if (periodType == MissionInstanceEntity.PERIOD_WEEKLY) {
+            boundary.weekStartEpochDay ?: boundary.epochDay
+        } else {
+            boundary.epochDay
+        }
+        val instances = missions.map { mission ->
+            MissionInstanceEntity(
+                instanceId = MissionInstanceEntity.buildInstanceId(mission.id, periodType, periodStartEpoch),
+                missionId = mission.id,
+                periodType = periodType,
+                periodStartEpoch = periodStartEpoch,
+                periodStartAt = boundary.startInclusive,
+                periodEndAt = boundary.endExclusive,
+                targetValue = targetValues[mission.id],
+                baselineValue = baselineValues[mission.id],
+                starReward = mission.starReward,
+                status = MissionInstanceEntity.STATUS_ASSIGNED,
+                assignedAt = assignedAt,
+                settledAt = null,
+                definitionVersion = MissionInstanceEntity.CURRENT_DEFINITION_VERSION,
+            )
+        }
+        missionInstanceDao.insertAllIgnore(instances)
     }
 }
