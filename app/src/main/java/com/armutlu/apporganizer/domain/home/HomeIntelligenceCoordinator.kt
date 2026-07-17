@@ -13,6 +13,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import com.armutlu.apporganizer.domain.common.HomeDataResult
+import com.armutlu.apporganizer.domain.common.HomeErrorCodes
+import com.armutlu.apporganizer.domain.common.MissingReason
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -76,6 +79,7 @@ class HomeIntelligenceCoordinator @Inject constructor(
         val pulseResult = refreshSource(
             sourceName = "DigitalPulseRepository",
             previous = _state.value.pulse,
+            errorCode = HomeErrorCodes.PULSE_COMPUTE_FAILED,
         ) {
             digitalPulseRepository.refresh()
             digitalPulseRepository.state.value
@@ -84,6 +88,7 @@ class HomeIntelligenceCoordinator @Inject constructor(
         val missionResult = refreshSource(
             sourceName = "MissionRuntimeRepository",
             previous = _state.value.mission,
+            errorCode = HomeErrorCodes.MISSION_SETTLEMENT_FAILED,
         ) {
             missionRuntimeRepository.refresh()
             missionRuntimeRepository.state.value
@@ -92,6 +97,7 @@ class HomeIntelligenceCoordinator @Inject constructor(
         val tickerResult = refreshSource(
             sourceName = "SmartTickerEngine",
             previous = _state.value.ticker,
+            errorCode = HomeErrorCodes.NOTIFICATION_DATA_UNAVAILABLE,
         ) {
             smartTickerEngine.refresh()
             smartTickerEngine.state.value
@@ -110,16 +116,30 @@ class HomeIntelligenceCoordinator @Inject constructor(
     }
 
     /**
-     * Tek bir kaynağı IO dispatcher üzerinde yeniler. Hata durumunda [previous] değeri
-     * korunarak döndürülür — UI state'i asla boşalmaz.
+     * Tek bir kaynağı IO dispatcher üzerinde yeniler ve sonucu [HomeDataResult] ile sarar
+     * (Döngü H04). Kaynak başarılı olursa [HomeDataResult.Ready]; hata atarsa ve önceki
+     * başarılı bir değer varsa [HomeDataResult.Stale] (UI eski veriyi göstermeye devam eder,
+     * [errorCode] uyarı olarak taşınır); hata atarsa ve önceki değer de yoksa
+     * [HomeDataResult.Failed]. UI state'i hiçbir durumda boşalmaz.
      */
     private suspend fun <T> refreshSource(
         sourceName: String,
-        previous: T?,
+        previous: HomeDataResult<T>,
+        errorCode: String,
         block: suspend () -> T,
-    ): T? = withContext(ioDispatcher) {
+    ): HomeDataResult<T> = withContext(ioDispatcher) {
         runCatching { block() }
-            .onFailure { Timber.w(it, "HomeIntelligenceCoordinator: $sourceName refresh hatası, önceki değer korunuyor") }
-            .getOrDefault(previous)
+            .fold(
+                onSuccess = { HomeDataResult.Ready(it) },
+                onFailure = { error ->
+                    Timber.w(error, "HomeIntelligenceCoordinator: $sourceName refresh hatası")
+                    when (previous) {
+                        is HomeDataResult.Ready -> HomeDataResult.Stale(previous.value, errorCode)
+                        is HomeDataResult.Stale -> HomeDataResult.Stale(previous.value, errorCode)
+                        is HomeDataResult.Missing,
+                        is HomeDataResult.Failed -> HomeDataResult.Failed(errorCode)
+                    }
+                },
+            )
     }
 }

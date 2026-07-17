@@ -1,5 +1,7 @@
 package com.armutlu.apporganizer.domain.home
 
+import com.armutlu.apporganizer.domain.common.HomeDataResult
+import com.armutlu.apporganizer.domain.common.HomeErrorCodes
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -18,11 +20,12 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * HomeIntelligenceCoordinator testleri (Döngü H02).
+ * HomeIntelligenceCoordinator testleri (Döngü H02, H04).
  *
  * Koordinatör sadece orkestrasyon yapar — bu testler skor/görev hesabı DEĞİL,
  * eşzamanlılık kontrolü (tek işe düşme), kaynak bazlı hata izolasyonu ve
- * son başarılı state'in korunmasını doğrular.
+ * [HomeDataResult] sarmalayıcısının doğru üretilmesini doğrular (Döngü H04:
+ * Ready/Stale/Missing/Failed geçişleri, tek/çift/üçlü kaynak hata kombinasyonları).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeIntelligenceCoordinatorTest {
@@ -76,7 +79,7 @@ class HomeIntelligenceCoordinatorTest {
     }
 
     // 2) Bir kaynak exception atınca diğer iki kaynağın yeni değeri state'e girer,
-    //    hatalı kaynağın son başarılı değeri korunur.
+    //    hatalı kaynağın son başarılı değeri Stale olarak korunur.
     @Test
     fun `one source failing does not block the other two from updating`() = runTest(testDispatcher) {
         // Önce başarılı bir refresh ile mission alanına gerçek bir değer koy.
@@ -84,7 +87,7 @@ class HomeIntelligenceCoordinatorTest {
         missionState.value = originalMission
         coordinator.refresh(RefreshReason.APP_START)
         advanceUntilIdle()
-        assertEquals(originalMission, coordinator.state.value.mission)
+        assertEquals(HomeDataResult.Ready(originalMission), coordinator.state.value.mission)
 
         // Şimdi mission kaynağı hata atsın, pulse/ticker ise yeni değerler yayınlasın.
         coEvery { missionRepo.refresh() } throws RuntimeException("boom")
@@ -97,13 +100,16 @@ class HomeIntelligenceCoordinatorTest {
         advanceUntilIdle()
 
         val state = coordinator.state.value
-        assertEquals(newPulse, state.pulse)
-        assertEquals(newTicker, state.ticker)
-        // mission kaynağı hata verdi — son başarılı değeri (originalMission) korunur, kaybolmaz.
-        assertEquals(originalMission, state.mission)
+        assertEquals(HomeDataResult.Ready(newPulse), state.pulse)
+        assertEquals(HomeDataResult.Ready(newTicker), state.ticker)
+        // mission kaynağı hata verdi — son başarılı değeri (originalMission) Stale olarak korunur, kaybolmaz.
+        assertEquals(
+            HomeDataResult.Stale(originalMission, HomeErrorCodes.MISSION_SETTLEMENT_FAILED),
+            state.mission,
+        )
     }
 
-    // 3) Geçici hata sırasında önceki başarılı state kaybolmaz.
+    // 3) Geçici hata sırasında önceki başarılı state kaybolmaz (Stale olarak korunur).
     @Test
     fun `previous successful state is preserved across a transient failure`() = runTest(testDispatcher) {
         // İlk başarılı refresh — mission değeri state'e girer.
@@ -111,15 +117,17 @@ class HomeIntelligenceCoordinatorTest {
         missionState.value = firstMission
         coordinator.refresh(RefreshReason.APP_START)
         advanceUntilIdle()
-        assertEquals(firstMission, coordinator.state.value.mission)
+        assertEquals(HomeDataResult.Ready(firstMission), coordinator.state.value.mission)
 
-        // İkinci refresh'te mission kaynağı geçici hata atar — mission alanı hala firstMission olmalı.
+        // İkinci refresh'te mission kaynağı geçici hata atar — mission alanı Stale(firstMission) olmalı.
         coEvery { missionRepo.refresh() } throws RuntimeException("transient")
         coordinator.refresh(RefreshReason.MANUAL_REFRESH)
         advanceUntilIdle()
 
-        assertEquals(firstMission, coordinator.state.value.mission)
-        assertTrue("hata sonrası state boşalmamalı", coordinator.state.value.mission != null)
+        val missionResult = coordinator.state.value.mission
+        assertTrue("hata sonrası state boşalmamalı, Stale olmalı", missionResult is HomeDataResult.Stale)
+        assertEquals(firstMission, (missionResult as HomeDataResult.Stale).value)
+        assertEquals(HomeErrorCodes.MISSION_SETTLEMENT_FAILED, missionResult.warningCode)
     }
 
     // 4) refresh reason'ın state'e yansıması.
@@ -133,5 +141,97 @@ class HomeIntelligenceCoordinatorTest {
         assertEquals(RefreshReason.NOTIFICATION_EVENT, coordinator.state.value.lastRefreshReason)
         assertNotNull(coordinator.state.value.lastRefreshAt)
         assertTrue("refresh bitince loading false olmalı", !coordinator.state.value.loading)
+    }
+
+    // 5) İlk refresh'te bir kaynak hata verirse (önceki değer yok) Failed döner.
+    @Test
+    fun `source failing on first refresh with no previous value yields Failed`() = runTest(testDispatcher) {
+        coEvery { pulseRepo.refresh() } throws RuntimeException("first-time boom")
+
+        coordinator.refresh(RefreshReason.APP_START)
+        advanceUntilIdle()
+
+        assertEquals(
+            HomeDataResult.Failed(HomeErrorCodes.PULSE_COMPUTE_FAILED),
+            coordinator.state.value.pulse,
+        )
+    }
+
+    // 6) İki kaynak aynı anda hata verirse ikisi de Failed (önceki değer yoksa) döner,
+    //    üçüncü kaynak Ready olarak güncellenir.
+    @Test
+    fun `two sources failing simultaneously both yield Failed while the third stays Ready`() = runTest(testDispatcher) {
+        coEvery { pulseRepo.refresh() } throws RuntimeException("pulse boom")
+        coEvery { missionRepo.refresh() } throws RuntimeException("mission boom")
+        val newTicker = TickerSourceState(items = listOf("ticker-ok"))
+        tickerState.value = newTicker
+
+        coordinator.refresh(RefreshReason.APP_START)
+        advanceUntilIdle()
+
+        val state = coordinator.state.value
+        assertEquals(HomeDataResult.Failed(HomeErrorCodes.PULSE_COMPUTE_FAILED), state.pulse)
+        assertEquals(HomeDataResult.Failed(HomeErrorCodes.MISSION_SETTLEMENT_FAILED), state.mission)
+        assertEquals(HomeDataResult.Ready(newTicker), state.ticker)
+    }
+
+    // 7) Üç kaynak da aynı anda hata verirse (önceki değer yok) hepsi Failed olur,
+    //    ekran state'i tamamen boşalmaz (loading false'a döner, state null değil).
+    @Test
+    fun `all three sources failing simultaneously all yield Failed`() = runTest(testDispatcher) {
+        coEvery { pulseRepo.refresh() } throws RuntimeException("pulse boom")
+        coEvery { missionRepo.refresh() } throws RuntimeException("mission boom")
+        coEvery { tickerEngine.refresh() } throws RuntimeException("ticker boom")
+
+        coordinator.refresh(RefreshReason.APP_START)
+        advanceUntilIdle()
+
+        val state = coordinator.state.value
+        assertEquals(HomeDataResult.Failed(HomeErrorCodes.PULSE_COMPUTE_FAILED), state.pulse)
+        assertEquals(HomeDataResult.Failed(HomeErrorCodes.MISSION_SETTLEMENT_FAILED), state.mission)
+        assertEquals(HomeDataResult.Failed(HomeErrorCodes.NOTIFICATION_DATA_UNAVAILABLE), state.ticker)
+        assertTrue("hata sonrası loading false olmalı", !state.loading)
+    }
+
+    // 8) Üç kaynak da önce başarılı olup sonra üçü birden hata verirse hepsi Stale olur
+    //    (önceki değerler korunur), state boşalmaz.
+    @Test
+    fun `all three sources failing after a prior success all yield Stale with previous values`() = runTest(testDispatcher) {
+        val firstPulse = PulseSourceState(snapshot = "pulse-first")
+        val firstMission = MissionSourceState(missions = listOf("mission-first"))
+        val firstTicker = TickerSourceState(items = listOf("ticker-first"))
+        pulseState.value = firstPulse
+        missionState.value = firstMission
+        tickerState.value = firstTicker
+
+        coordinator.refresh(RefreshReason.APP_START)
+        advanceUntilIdle()
+
+        coEvery { pulseRepo.refresh() } throws RuntimeException("pulse boom")
+        coEvery { missionRepo.refresh() } throws RuntimeException("mission boom")
+        coEvery { tickerEngine.refresh() } throws RuntimeException("ticker boom")
+
+        coordinator.refresh(RefreshReason.MANUAL_REFRESH)
+        advanceUntilIdle()
+
+        val state = coordinator.state.value
+        assertEquals(HomeDataResult.Stale(firstPulse, HomeErrorCodes.PULSE_COMPUTE_FAILED), state.pulse)
+        assertEquals(HomeDataResult.Stale(firstMission, HomeErrorCodes.MISSION_SETTLEMENT_FAILED), state.mission)
+        assertEquals(HomeDataResult.Stale(firstTicker, HomeErrorCodes.NOTIFICATION_DATA_UNAVAILABLE), state.ticker)
+    }
+
+    // 9) İlk state Missing(NO_DATA_YET) — henüz hiçbir refresh çağrılmadı.
+    @Test
+    fun `initial state before any refresh is Missing with NO_DATA_YET`() {
+        val freshCoordinator = HomeIntelligenceCoordinator(
+            digitalPulseRepository = pulseRepo,
+            missionRuntimeRepository = missionRepo,
+            smartTickerEngine = tickerEngine,
+            ioDispatcher = testDispatcher,
+        )
+
+        assertTrue(freshCoordinator.state.value.pulse is HomeDataResult.Missing)
+        assertTrue(freshCoordinator.state.value.mission is HomeDataResult.Missing)
+        assertTrue(freshCoordinator.state.value.ticker is HomeDataResult.Missing)
     }
 }

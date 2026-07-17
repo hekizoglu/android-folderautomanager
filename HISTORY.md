@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu H04 - 2026-07-17 - HomeDataResult + Hazirlik faz kapanisi
+
+**Yapilanlar:** domain/common: HomeDataResult sealed interface (Ready/Stale/Missing/Failed) + MissingReason + HomeErrorCodes (sabit kod ilkesi); koordinator kaynaklari HomeDataResult ile sarildi (hata: onceki deger varsa Stale, yoksa Failed). 9/9 koordinator testi. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, APK 27.01 MB, v1.3.83 (106).
+
+**Bug:** Yok.
+
+**Sonraki:** M00 — MissionStatus ve donemsel sonuc mantigi (zincirleme mod: hemen basliyor).
+
 ## Akilli Nabiz Dongu H03 - 2026-07-17 - DataFreshness ortak tazelik modeli
 
 **Yapilanlar:** domain/common: DataFreshness enum (LIVE<=5dk/RECENT<=30dk/STALE/UNAVAILABLE) + DataFreshnessResolver (Clock enjeksiyonu, sinirlar companion sabiti, gelecek timestamp=LIVE); AppModule binding. 8/8 sinir deger testi yesil.

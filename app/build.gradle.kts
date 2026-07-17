@@ -1,4 +1,4 @@
-import java.util.Properties
+﻿import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -11,7 +11,7 @@ plugins {
 val skipGoogleServices = project.hasProperty("skipGoogleServices")
 
 if (skipGoogleServices) {
-    println("[ci] skipGoogleServices aktif — Google Services islemleri atlaniyor")
+    println("[ci] skipGoogleServices aktif â€” Google Services islemleri atlaniyor")
     afterEvaluate {
         tasks.whenTaskAdded {
             if (name.startsWith("process") && name.contains("GoogleServices", ignoreCase = true)) {
@@ -39,8 +39,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 105
-        versionName = "1.3.82"
+        versionCode = 106
+        versionName = "1.3.83"
         buildConfigField(
             "boolean",
             "FIREBASE_BUILD_ENABLED",
@@ -70,7 +70,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Keystore yoksa debug imzaya dus — R8/minify release build'i keystore beklemeden
+            // Keystore yoksa debug imzaya dus â€” R8/minify release build'i keystore beklemeden
             // test edilebilsin (D236). Gercek yayin AAB'si icin keystore.properties SART;
             // debug imzali release APK Play'e YUKLENEMEZ, sadece yerel dogrulama icindir.
             val hasReleaseKeystore = rootProject.file("keystore.properties").exists()
@@ -184,7 +184,7 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 }
 
 // Workaround: local JVM test class discovery/runtime breaks when directory-based classpath
-// entries live under a non-ASCII workspace path (ör. "Klasörleri"). We mirror the
+// entries live under a non-ASCII workspace path (Ã¶r. "KlasÃ¶rleri"). We mirror the
 // relevant test class directories into an ASCII-only temp folder and point Gradle's
 // test scanning/runtime at those copies.
 afterEvaluate {
@@ -284,7 +284,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // Bundled SQLite with FTS5 — platform SQLite'da FTS5 eksikse fallback LIKE kullanılır
+    // Bundled SQLite with FTS5 â€” platform SQLite'da FTS5 eksikse fallback LIKE kullanÄ±lÄ±r
 
     // Hilt Dependency Injection
     implementation("com.google.dagger:hilt-android:2.52")
@@ -298,7 +298,7 @@ dependencies {
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    // Firebase — Analytics + Crashlytics + Messaging (FCM push)
+    // Firebase â€” Analytics + Crashlytics + Messaging (FCM push)
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
@@ -306,9 +306,9 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-installations")
 
-    // WorkManager — zamanlanmis yedekleme gorevi
+    // WorkManager â€” zamanlanmis yedekleme gorevi
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-    // Coil — async image loading (uygulama ikonu) — coil3 compileSdk36 gerektirir, coil2 kullan
+    // Coil â€” async image loading (uygulama ikonu) â€” coil3 compileSdk36 gerektirir, coil2 kullan
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.android.material:material:1.11.0")
 
@@ -326,6 +326,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    // LeakCanary unit test'te ASM transform ile classpath wiring bozuyor — kaldırıldı
+    // LeakCanary unit test'te ASM transform ile classpath wiring bozuyor â€” kaldÄ±rÄ±ldÄ±
     // debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 }
