@@ -84,12 +84,10 @@ class WrappedViewModel @Inject constructor(
                     .onFailure { e -> Timber.e(e, "WrappedReport üretilemedi") }
                     .getOrNull()
             }
-            // D244 bug fix: previousScore artık haftalık rotasyonla üretilir ve ScoreCard'a
-            // state üzerinden akar (WrappedSnapshotPrefs → previousScore → WrappedContent →
-            // ScoreCard). İlk hafta null döner — sahte +0 karşılaştırması gösterilmez.
-            val previousScore = result?.let {
-                WrappedSnapshotPrefs.updateWeeklyPulseScore(context, it.report.pulse.total)
-            }
+            // Döngü D01: previousScore artık gerçek ISO takvim haftasına dayanır ve paylaşılan
+            // DigitalPulseSnapshot'tan (RealDigitalPulseSource → PulseHistoryPrefs) gelir — state
+            // üzerinden ScoreCard'a akar. İlk hafta null döner — sahte +0 karşılaştırması gösterilmez.
+            val previousScore = result?.previousScore
             result?.report?.let { WrappedSnapshotPrefs.setLatestPulseScore(context, it.pulse.total) }
             _uiState.value = WrappedUiState(
                 loading = false,
@@ -201,7 +199,8 @@ class WrappedViewModel @Inject constructor(
         // skor artık DigitalPulseRepository'nin paylaşılan snapshot'ından gelir — ana ekran kartı,
         // Pulse Clock ve bu rapor aynı sayıyı gösterir (P0 2.1 çözümü).
         digitalPulseRepository.refresh()
-        val sharedPulse = digitalPulseRepository.state.value.valueOrNull()?.score
+        val sharedSnapshot = digitalPulseRepository.state.value.valueOrNull()
+        val sharedPulse = sharedSnapshot?.score
         val report = if (sharedPulse != null) {
             engineReport.copy(
                 score = engineReport.score.copy(
@@ -217,6 +216,7 @@ class WrappedViewModel @Inject constructor(
         }
         return BuildResult(
             report = report,
+            previousScore = sharedSnapshot?.previousScore,
             charts = WrappedChartData(
                 dailyUsageMinutes = buildDailyUsageTrend(dailySessions),
                 dailyNotificationCounts = buildDailyNotificationTrend(notificationEvents, nightOnly = false),
@@ -243,6 +243,7 @@ class WrappedViewModel @Inject constructor(
 private data class BuildResult(
     val report: WrappedEngine.WrappedReport,
     val charts: WrappedChartData,
+    val previousScore: Int? = null,
 )
 
 private fun buildDailyUsageTrend(dailySessions: List<com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage>?): List<Int> {

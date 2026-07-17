@@ -5,9 +5,11 @@ import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.common.HomeDataResult
 import com.armutlu.apporganizer.domain.common.HomeErrorCodes
+import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseEngine
 import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseSnapshot
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseInputFactory
+import com.armutlu.apporganizer.utils.PulseHistoryPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,6 +34,7 @@ class RealDigitalPulseSource @Inject constructor(
     @ApplicationContext private val context: Context,
     private val appRepository: AppRepository,
     private val notificationEventDao: NotificationEventDao,
+    private val periodBoundaryResolver: PeriodBoundaryResolver,
 ) : DigitalPulseRepository {
 
     private val _state = MutableStateFlow<HomeDataResult<DigitalPulseSnapshot>>(
@@ -59,10 +62,18 @@ class RealDigitalPulseSource @Inject constructor(
                     nowMillis = now,
                 )
                 val score = DigitalPulseEngine.compute(input)
+                // Döngü D01 — trend/baseline artık gerçek ISO takvim haftasına dayanır (eski
+                // günlük/7-gün rotasyonu YERİNE). Mevcut hafta içinde baseline değişmez; hafta
+                // değişince önceki haftanın son "running" skoru otomatik kapanışa döner.
+                val weekStartEpochDay = periodBoundaryResolver.currentIsoWeek().weekStartEpochDay
+                    ?: error("currentIsoWeek().weekStartEpochDay null olamaz")
+                val trend = PulseHistoryPrefs.updateCurrentWeekScore(context, weekStartEpochDay, score.total)
                 DigitalPulseSnapshot(
                     score = score,
                     computedAt = now,
                     validUntil = now + CACHE_TTL_MS,
+                    previousScore = trend.previousScore,
+                    scoreDelta = trend.scoreDelta,
                 )
             }.fold(
                 onSuccess = { snapshot -> _state.value = HomeDataResult.Ready(snapshot) },

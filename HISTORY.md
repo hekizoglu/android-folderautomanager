@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu D01 - 2026-07-17 - ISO hafta trend/baseline
+
+**Yapilanlar:** PulseHistoryPrefs (weekStartEpochDay anahtarli kapanis skorlari, 8 hafta retention, running-score stratejisi — hafta degisince otomatik kapanis); DigitalPulseSnapshot.previousScore/scoreDelta; PulseClock+Wrapped ayni delta'yi okuyor; eski updateWeeklyPulseScore/updateDailyScore + olu anahtarlar SILINDI; tek seferlik migration bayrakli. 8/8 yeni test + tum Pulse/Wrapped testleri yesil.
+
+**Bug:** Yok. Karar: atlanan haftalarda en son kapanmis hafta karsilastirilir (null degil — bilgi kaybi onlendi).
+
+**Sonraki:** D02 — DigitalLifeCard bilgi karti donusumu (zincir devam).
+
 ## Akilli Nabiz Dongu D00 - 2026-07-17 - Tek skor kaynagi (P0 2.1 COZULDU)
 
 **Yapilanlar:** RealDigitalPulseSource (PulseInputFactory + DigitalPulseEngine, 15dk cache, force refresh, HomeDataResult kontrati) no-op binding'in yerine gecti; TickerComposer.computeDigitalLifeScore + scoreTemplates + skor haberi tamamen KALDIRILDI (~90 satir V1 mantigi); LauncherViewModel._digitalLifeScore kaldirildi (koordinator state'inden map); PulseClockViewModel + WrappedViewModel ayni repository snapshot'ini okuyor. 7 yeni test, 53 test yesil.

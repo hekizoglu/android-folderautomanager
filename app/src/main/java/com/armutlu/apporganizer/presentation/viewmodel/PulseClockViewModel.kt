@@ -98,8 +98,9 @@ class PulseClockViewModel @Inject constructor(
         // içinde çağrılır. Burada repository'yi tazeleyip paylaşılan snapshot'ı okuyoruz; ana ekran
         // kartı ve Wrapped raporu da AYNI snapshot'ı görür (iki motor P0 2.1 çözüldü).
         digitalPulseRepository.refresh()
-        val pulse = digitalPulseRepository.state.value.valueOrNull()?.score
+        val snapshot = digitalPulseRepository.state.value.valueOrNull()
             ?: return PulseClockUiState(loading = false)
+        val pulse = snapshot.score
 
         // Içgörü üretimi ve dijital kişilik etiketi için PulseInput yeniden kurulur — bu SADECE
         // sunum katmanı zenginleştirmesi, skor DEĞİLDİR (skor yukarıda repository'den geldi).
@@ -131,8 +132,9 @@ class PulseClockViewModel @Inject constructor(
         val personality = WrappedEngine.computePersonality(input.apps, nightUsageRatio)
         val personalityLabel = "${personality.type.emoji} ${personality.type.label}"
 
-        // Haftalık karşılaştırma baseline'i — ilk hafta null (sahte +0 yasak).
-        val previousScore = WrappedSnapshotPrefs.updateWeeklyPulseScore(context, pulse.total)
+        // Döngü D01 — haftalık karşılaştırma baseline'i artık DigitalPulseSnapshot'tan (gerçek
+        // ISO takvim haftasına dayalı, PulseHistoryPrefs) gelir — ilk hafta null (sahte +0 yasak).
+        val previousScore = snapshot.previousScore
         WrappedSnapshotPrefs.setLatestPulseScore(context, pulse.total)
 
         // Tek içgörü — son gösterilen atlanarak dönüşümlü seçim.
@@ -146,7 +148,7 @@ class PulseClockViewModel @Inject constructor(
         return PulseClockUiState(
             score = pulse.total,
             previousScore = previousScore,
-            scoreDelta = previousScore?.let { pulse.total - it },
+            scoreDelta = snapshot.scoreDelta,
             insightText = insight?.let { resolveInsightText(it) },
             insightPositive = insight?.positive,
             insightRouteKey = insight?.routeKey,

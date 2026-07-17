@@ -84,6 +84,8 @@ object StatsResetService {
     }
 
     private fun resetWrappedSnapshots(context: Context) {
+        // WrappedSnapshotPrefs ve PulseHistoryPrefs AYNI SharedPreferences dosyasını
+        // ("wrapped_prefs") paylaşır — clear() ikisini de temizler (Döngü D01).
         WrappedSnapshotPrefs.clearAll(context)
     }
 
