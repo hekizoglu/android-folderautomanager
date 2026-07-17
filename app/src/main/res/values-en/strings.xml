@@ -571,6 +571,18 @@
     <string name="mission_duration_hours_only">%1$dh</string>
     <string name="mission_duration_minutes_only">%1$dm</string>
     <string name="mission_progress_data_unavailable">Waiting for data</string>
+    <!-- Dongu M06: countdown shown under each mission row -->
+    <string name="mission_deadline_day">%1$s until today ends</string>
+    <string name="mission_deadline_week">%1$s until this week ends</string>
+    <!-- Dongu M06: MissionRow status badge copy — status is never color-only -->
+    <string name="mission_status_safe">On track</string>
+    <string name="mission_status_at_risk">Close to the limit</string>
+    <string name="mission_status_awaiting_settlement">Will be decided at period end</string>
+    <string name="mission_status_failed">Today\'s goal was exceeded</string>
+    <string name="mission_status_data_unavailable">Usage data unavailable</string>
+    <string name="mission_status_in_progress">In progress</string>
+    <string name="mission_status_not_started">Not started yet</string>
+    <string name="mission_status_completed">Completed</string>
     <string name="missions_settings_section">Missions and Stars</string>
     <string name="missions_settings_toggle_title">Mission System</string>
     <string name="missions_settings_toggle_subtitle">Daily/weekly missions, star rewards and the home screen personality label</string>

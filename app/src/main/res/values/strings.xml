@@ -573,6 +573,18 @@
     <string name="mission_duration_hours_only">%1$d sa.</string>
     <string name="mission_duration_minutes_only">%1$d dk.</string>
     <string name="mission_progress_data_unavailable">Veri bekleniyor</string>
+    <!-- Dongu M06: gorev satirinin altindaki donem bitis geri sayimi -->
+    <string name="mission_deadline_day">Günün bitmesine %1$s</string>
+    <string name="mission_deadline_week">Haftanın bitmesine %1$s</string>
+    <!-- Dongu M06: MissionRow durum rozeti dili — renk yerine metin+ikon ile anlatilir -->
+    <string name="mission_status_safe">Hedef korunuyor</string>
+    <string name="mission_status_at_risk">Limite yaklaştın</string>
+    <string name="mission_status_awaiting_settlement">Dönem sonunda sonuçlanacak</string>
+    <string name="mission_status_failed">Bugünkü hedef aşıldı</string>
+    <string name="mission_status_data_unavailable">Kullanım verisi alınamıyor</string>
+    <string name="mission_status_in_progress">Devam ediyor</string>
+    <string name="mission_status_not_started">Henüz başlamadı</string>
+    <string name="mission_status_completed">Tamamlandı</string>
     <string name="missions_settings_section">Görevler ve Yıldızlar</string>
     <string name="missions_settings_toggle_title">Görev Sistemi</string>
     <string name="missions_settings_toggle_subtitle">Günlük/haftalık görevler, yıldız ödülleri ve ana ekrandaki kişilik etiketi</string>

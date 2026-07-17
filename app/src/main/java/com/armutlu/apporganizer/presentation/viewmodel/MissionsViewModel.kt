@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
+import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.MissionAction
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
@@ -14,6 +15,7 @@ import com.armutlu.apporganizer.domain.usecase.missions.MissionMetricSnapshotPro
 import com.armutlu.apporganizer.domain.usecase.missions.MissionProgressCalculator
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.missions.MissionTextSpec
+import com.armutlu.apporganizer.domain.usecase.missions.MissionValueFormatter
 import com.armutlu.apporganizer.domain.usecase.missions.SettleMissionInstancesUseCase
 import com.armutlu.apporganizer.domain.usecase.missions.toMissionCheckInput
 import com.armutlu.apporganizer.utils.TaskScoreManager
@@ -58,6 +60,10 @@ class MissionsViewModel @Inject constructor(
         val remainingText: String? = null,
         val progressText: String? = null,
         val progressFraction: Float? = null,
+        // Dongu M06: donemin (gun/hafta) bitisine kalan sure — "Gunun bitmesine 6 sa. 20 dk."
+        // PeriodBoundaryResolver'dan hesaplanir, MissionValueFormatter.durationSpec ile
+        // formatlanir. Donem zaten bitmisse (AWAITING_SETTLEMENT/COMPLETED/FAILED) null olabilir.
+        val deadlineText: String? = null,
         // Dongu M05: gorevi tamamlayacagi ekrana tek dokunusla goturen eylem. None ise
         // MissionsScreen eylem butonu gostermez. DATA_UNAVAILABLE durumunda MissionActionRouter
         // hedefi ne olursa olsun OpenSettingsUsageAccess'e dusurulur (asagida actionFor()).
@@ -194,7 +200,7 @@ class MissionsViewModel @Inject constructor(
                 runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
                     .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
-            mission.toUi(status, evaluation)
+            mission.toUi(status, evaluation, dayBoundary)
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
@@ -230,7 +236,7 @@ class MissionsViewModel @Inject constructor(
                 runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
                     .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
-            mission.toUi(status, evaluation)
+            mission.toUi(status, evaluation, weekBoundary)
         }
 
         val taskScore = TaskScoreManager.getSnapshotV2(context)
@@ -246,7 +252,11 @@ class MissionsViewModel @Inject constructor(
         )
     }
 
-    private fun MissionEngine.Mission.toUi(status: MissionStatus, evaluation: MissionEvaluation): MissionUi {
+    private fun MissionEngine.Mission.toUi(
+        status: MissionStatus,
+        evaluation: MissionEvaluation,
+        periodBoundary: PeriodBoundary,
+    ): MissionUi {
         // Dongu M03: MissionProgressCalculator saf Kotlin ciktisi -> burada context.getString ile
         // gosterime hazir stringe cozulur. Iki katmanli spec'ler (durationSpec ic ice gecebilir)
         // resolveTextSpec ile ozyinelemeli cozulur.
@@ -268,9 +278,37 @@ class MissionsViewModel @Inject constructor(
             remainingText = progress.remainingTextRes?.let { resolveTextSpec(it) },
             progressText = progress.progressTextRes?.let { resolveTextSpec(it) },
             progressFraction = progress.progressFraction,
+            deadlineText = deadlineTextFor(status, periodBoundary, type),
             action = action,
             actionLabel = actionLabelRes(action)?.let { context.getString(it) },
         )
+    }
+
+    /**
+     * Dongu M06: "Gunun/haftanin bitmesine <sure>" — donem henuz surerken (SAFE/AT_RISK/
+     * IN_PROGRESS/NOT_STARTED) gosterilir. Donem zaten kesinlesmisse (COMPLETED/FAILED/
+     * AWAITING_SETTLEMENT) veya veri yoksa (DATA_UNAVAILABLE) deadline anlamsizdir -> null.
+     */
+    private fun deadlineTextFor(
+        status: MissionStatus,
+        periodBoundary: PeriodBoundary,
+        missionType: MissionEngine.MissionType,
+    ): String? {
+        val showsDeadline = status == MissionStatus.SAFE ||
+            status == MissionStatus.AT_RISK ||
+            status == MissionStatus.IN_PROGRESS ||
+            status == MissionStatus.NOT_STARTED
+        if (!showsDeadline) return null
+        val remainingMillis = periodBoundary.endExclusive - periodBoundaryResolver.nowMillis()
+        if (remainingMillis <= 0) return null
+        val remainingMinutes = remainingMillis / 60_000L
+        val durationText = resolveTextSpec(MissionValueFormatter.durationSpec(remainingMinutes))
+        val labelRes = if (missionType == MissionEngine.MissionType.WEEKLY) {
+            R.string.mission_deadline_week
+        } else {
+            R.string.mission_deadline_day
+        }
+        return context.getString(labelRes, durationText)
     }
 
     /** Dongu M05: gorev id -> eylem eslemesi. Route/Intent cozumu MissionActionRouter'da yapilir. */

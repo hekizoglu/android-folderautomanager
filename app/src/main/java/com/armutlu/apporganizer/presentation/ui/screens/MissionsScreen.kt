@@ -4,24 +4,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,6 +39,9 @@ import kotlinx.coroutines.delay
  * Dongu M05: her gorev satirinin sonunda, action None degilse kucuk bir eylem butonu
  * gosterilir. Route cozumu MissionActionRouter'da tek yerde yapilir; bu composable sadece
  * sonucu tuketir (Screen -> onNavigateToRoute, SystemIntent -> context.startActivity).
+ *
+ * Dongu M06: gorev satiri kendisi ilerleme odakli yeniden tasarlandi — bkz. MissionCard.kt
+ * (MissionRow composable'i, 300 satir kuralini korumak icin ayri dosyaya cikarildi).
  */
 @Composable
 fun MissionsScreen(
@@ -193,48 +188,6 @@ private fun CelebrationCard(stars: Int) {
             color = MaterialTheme.colorScheme.onTertiaryContainer,
             modifier = Modifier.padding(16.dp),
         )
-    }
-}
-
-@Composable
-private fun MissionRow(
-    mission: MissionsViewModel.MissionUi,
-    onActionClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Icon(
-            imageVector = if (mission.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-            contentDescription = null,
-            tint = if (mission.completed) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = mission.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (mission.completed) FontWeight.Normal else FontWeight.Medium,
-            )
-            Text(
-                text = "⭐ x${mission.starReward}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        // Dongu M05: gorev tamamlanmadiysa ve bir eylemi varsa kucuk "Git" butonu.
-        // M06 tam yeniden tasarim yapana kadar sadece islevsel — gorsel dil korunur.
-        if (!mission.completed && mission.actionLabel != null) {
-            Spacer(Modifier.width(8.dp))
-            TextButton(onClick = onActionClick) {
-                Text(text = mission.actionLabel, style = MaterialTheme.typography.labelMedium)
-            }
-        }
     }
 }
 

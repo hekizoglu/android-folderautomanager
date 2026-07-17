@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M06 - 2026-07-17 - Gorevler ekrani ilerleme odakli tasarim
+
+**Yapilanlar:** MissionCard.kt (300 satir kurali icin ayri dosya): durum ikonu+rozet metni (renk-bagimsiz), Su an/Kalan satirlari, progressBarRangeInfo semantics'li LinearProgressIndicator, 48dp eylem butonu, deadline satiri (PeriodBoundaryResolver.nowMillis ile test edilebilir). MissionUi.deadlineText; TR/EN 10 string. 3 yeni resolver testi + tum Mission testleri yesil.
+
+**Bug:** Yok. Compose UI test altyapisi projede yok — saf Kotlin katmaninda dogrulandi (gerekce raporlandi).
+
+**Sonraki:** M07 — Ana ekran Gorevler kartini canli hale getir (zincir devam).
+
 ## Akilli Nabiz Dongu M05 - 2026-07-17 - Gorev eylemleri ve router
 
 **Yapilanlar:** MissionAction sealed interface + MissionActionRouter (route cozumu tek yerde; APP_LIST_UNCERTAIN/NOTIFICATION_REPORT/USAGE_REPORT + kullanim erisimi ayari); MissionUi.action/actionLabel; MissionsScreen satir sonuna minimal eylem butonu; TR/EN 3 string. Router testleri dahil Mission testleri yesil.

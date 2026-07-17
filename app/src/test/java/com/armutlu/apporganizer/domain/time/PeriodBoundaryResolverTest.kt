@@ -163,4 +163,43 @@ class PeriodBoundaryResolverTest {
         val expected = dayBeforeDst.plusDays(1).atStartOfDay(berlin).toInstant()
         assertEquals(expected, resolver.nextLocalMidnight())
     }
+
+    // Dongu M06: MissionsViewModel.deadlineTextFor "Gunun/haftanin bitmesine <sure>" hesabinda
+    // periodBoundary.endExclusive - nowMillis() kullanir. nowMillis()'in enjekte edilen Clock'a
+    // sadik kaldigini ve bu farkin dogru dakikaya karsilik geldigini burada dogruluyoruz —
+    // gercek metin uretimi (context.getString) Android bagimliligindan dolayi ViewModel
+    // katmaninda kalir, bu test sadece SAAT MATEMATIGINI kilitler.
+    @Test
+    fun `nowMillis reflects the injected fixed clock`() {
+        val instant = LocalDate.of(2026, 7, 15).atTime(18, 30, 0).atZone(istanbul).toInstant()
+        val resolver = PeriodBoundaryResolver(Clock.fixed(instant, istanbul), istanbul)
+
+        assertEquals(instant.toEpochMilli(), resolver.nowMillis())
+    }
+
+    @Test
+    fun `remaining time to day boundary matches expected minutes at 18_30`() {
+        // Gun 00:00'da baslar, 18:30'da 5 sa 30 dk (330 dk) kalmis olmali.
+        val day = LocalDate.of(2026, 7, 15)
+        val resolver = resolverAt(day.atTime(18, 30, 0))
+
+        val boundary = resolver.currentDay()
+        val remainingMillis = boundary.endExclusive - resolver.nowMillis()
+        val remainingMinutes = remainingMillis / 60_000L
+
+        assertEquals(330L, remainingMinutes)
+    }
+
+    @Test
+    fun `remaining time to week boundary is zero right at the boundary`() {
+        val nextMonday = LocalDate.of(2026, 7, 20)
+        val resolver = resolverAt(nextMonday.atTime(0, 0, 0))
+
+        val boundary = resolver.currentIsoWeek()
+        val remainingMillis = boundary.endExclusive - resolver.nowMillis()
+
+        // Tam sinirda (Pazartesi 00:00) yeni haftanin ta kendisindeyiz -> kalan tam 7 gun,
+        // 0 DEGIL (currentIsoWeek() o anki haftayi dondurur, gecmis haftayi degil).
+        assertEquals(7L * 24 * 60 * 60 * 1000, remainingMillis)
+    }
 }

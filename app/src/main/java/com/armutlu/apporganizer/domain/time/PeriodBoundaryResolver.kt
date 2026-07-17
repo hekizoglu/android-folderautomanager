@@ -27,6 +27,9 @@ class PeriodBoundaryResolver(
 
     private fun now(): ZonedDateTime = ZonedDateTime.now(clock).withZoneSameInstant(zoneId)
 
+    /** Enjekte edilen [clock]'a gore su anki epoch millis (Dongu M06 — deadline geri sayimi). */
+    fun nowMillis(): Long = clock.instant().toEpochMilli()
+
     /** Bulunulan yerel gunun sinirlarini dondurur (00:00:00.000 dahil - ertesi gun 00:00 haric). */
     fun currentDay(): PeriodBoundary = dayBoundary(now().toLocalDate())
 
