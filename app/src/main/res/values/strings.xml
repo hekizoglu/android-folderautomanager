@@ -558,6 +558,17 @@
     <string name="mission_weekly_screen_less">Haftalık ekran süresini geçen haftadan düşük tut</string>
     <string name="mission_weekly_positive_actions">Bu hafta en az 3 faydalı düzenleme aksiyonu yap</string>
     <string name="mission_unknown">Görev</string>
+    <string name="mission_progress_current_count">Şu an: %1$d / %2$d</string>
+    <string name="mission_progress_current_duration">Şu an: %1$s</string>
+    <string name="mission_progress_remaining_count">Kalan: %1$d</string>
+    <string name="mission_progress_remaining_duration">Kalan: %1$s</string>
+    <string name="mission_progress_percent_used">Limitin %%%1$d\'si kullanıldı</string>
+    <string name="mission_progress_exceeded_duration">%1$s aşıldı</string>
+    <string name="mission_progress_exceeded_count">%1$d aşıldı</string>
+    <string name="mission_duration_hours_minutes">%1$d sa. %2$d dk.</string>
+    <string name="mission_duration_hours_only">%1$d sa.</string>
+    <string name="mission_duration_minutes_only">%1$d dk.</string>
+    <string name="mission_progress_data_unavailable">Veri bekleniyor</string>
     <string name="missions_settings_section">Görevler ve Yıldızlar</string>
     <string name="missions_settings_toggle_title">Görev Sistemi</string>
     <string name="missions_settings_toggle_subtitle">Günlük/haftalık görevler, yıldız ödülleri ve ana ekrandaki kişilik etiketi</string>

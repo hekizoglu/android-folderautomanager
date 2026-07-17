@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M03 - 2026-07-17 - Gorev ilerleme modeli ve formatlayici
+
+**Yapilanlar:** MissionProgressKind (5 tur) + MissionProgress + MissionTextSpec (resource-id tabanli, ham string yok) + MissionProgressCalculator + MissionValueFormatter (saf Kotlin); MissionEngine.progressKindForMission; MissionUi'a nullable progress alanlari (resolve ViewModel'de, ozyinelemeli spec cozumu); TR/EN 11 string. 10+6 yeni test + tum proje testleri yesil.
+
+**Bug:** Yok. Negatif kalan gizlenir (exceededValue), fraction 0..1 clamp, UPPER_LIMIT dolu cubuk "limit kullanimi" etiketi tasir.
+
+**Sonraki:** M04 — settlement use case + WorkManager (zincir devam). M06 notu: AVOID_AFTER_TIME text uretmez, rozet UI gerekir.
+
 ## EX01 - 2026-07-17 - Bugun Yuklenenler + cekmece refresh bug (kullanici talebi)
 
 **Yapilanlar:** (1) BUG FIX: PACKAGE_ADDED broadcast'i PackageManager commit'inden once gelince getAppInfo null donup sessizce dusuyordu (12 saatlik reconcile'a kadar uygulama DB'ye hic girmiyordu) — PackageChangeReceiver + LauncherViewModel.onPackageAdded'a 3 denemeli backoff retry eklendi. (2) OZELLIK: HomeScreen'e "Bugun Yuklendi" GlassCard (bugun yukleme yoksa gizli), AllAppsDrawer'a Bugun Yuklenenler bolumu + yukleme tarihi sirali acilis, KEY_RECENT_INSTALLS_ENABLED toggle (SettingsStatsScreen), TR/EN 8 string. DB migration gerekmedi (firstInstalledTime v8'den beri var). 53/53 test yesil. v1.3.84 (107).

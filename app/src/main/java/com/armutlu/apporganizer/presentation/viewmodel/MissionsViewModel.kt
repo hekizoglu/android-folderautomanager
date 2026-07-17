@@ -8,8 +8,11 @@ import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
+import com.armutlu.apporganizer.domain.usecase.missions.MissionEvaluation
 import com.armutlu.apporganizer.domain.usecase.missions.MissionMetricSnapshotProvider
+import com.armutlu.apporganizer.domain.usecase.missions.MissionProgressCalculator
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
+import com.armutlu.apporganizer.domain.usecase.missions.MissionTextSpec
 import com.armutlu.apporganizer.domain.usecase.missions.toMissionCheckInput
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,6 +47,14 @@ class MissionsViewModel @Inject constructor(
         val starReward: Int,
         val status: MissionStatus,
         val autoCheckable: Boolean,
+        // Dongu M03: MissionProgressCalculator ciktisindan cozulmus, gosterime hazir metinler.
+        // Nullable — veri yoksa (DATA_UNAVAILABLE) veya gorev tipi metin uretmiyorsa (orn.
+        // AVOID_AFTER_TIME) null kalir. MissionsScreen M06'ya kadar bu alanlari KULLANMAK
+        // ZORUNDA DEGIL — ekran mevcut haliyle derlenip calismaya devam eder.
+        val currentText: String? = null,
+        val remainingText: String? = null,
+        val progressText: String? = null,
+        val progressFraction: Float? = null,
     ) {
         // M06'da status'e gore yeniden tasarlanana kadar UI kirilmasin diye korunur.
         val completed: Boolean get() = status == MissionStatus.COMPLETED
@@ -157,7 +168,7 @@ class MissionsViewModel @Inject constructor(
                 dailyDone += mission.id
                 newStars += mission.starReward
             }
-            mission.toUi(status)
+            mission.toUi(status, evaluation)
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
@@ -185,7 +196,7 @@ class MissionsViewModel @Inject constructor(
                 weeklyDone += mission.id
                 newStars += mission.starReward
             }
-            mission.toUi(status)
+            mission.toUi(status, evaluation)
         }
 
         val taskScore = TaskScoreManager.getSnapshotV2(context)
@@ -201,13 +212,35 @@ class MissionsViewModel @Inject constructor(
         )
     }
 
-    private fun MissionEngine.Mission.toUi(status: MissionStatus) = MissionUi(
-        id = id,
-        title = context.getString(titleRes(id)),
-        starReward = starReward,
-        status = status,
-        autoCheckable = autoCheckable,
-    )
+    private fun MissionEngine.Mission.toUi(status: MissionStatus, evaluation: MissionEvaluation): MissionUi {
+        // Dongu M03: MissionProgressCalculator saf Kotlin ciktisi -> burada context.getString ile
+        // gosterime hazir stringe cozulur. Iki katmanli spec'ler (durationSpec ic ice gecebilir)
+        // resolveTextSpec ile ozyinelemeli cozulur.
+        val progress = MissionProgressCalculator.calculate(evaluation, MissionEngine.progressKindForMission(id))
+        return MissionUi(
+            id = id,
+            title = context.getString(titleRes(id)),
+            starReward = starReward,
+            status = status,
+            autoCheckable = autoCheckable,
+            currentText = progress.currentTextRes?.let { resolveTextSpec(it) },
+            remainingText = progress.remainingTextRes?.let { resolveTextSpec(it) },
+            progressText = progress.progressTextRes?.let { resolveTextSpec(it) },
+            progressFraction = progress.progressFraction,
+        )
+    }
+
+    /**
+     * [MissionTextSpec] argumanlari baska bir [MissionTextSpec] tasiyabilir (orn. "Şu an: %1$s"
+     * kalibinin argumani "1 sa. 30 dk." formatlayan ic durationSpec'tir) — bu yuzden cozumleme
+     * ozyinelemelidir. Duz (Int/Long/String) argumanlar oldugu gibi `getString`'e verilir.
+     */
+    private fun resolveTextSpec(spec: MissionTextSpec): String {
+        val resolvedArgs = spec.args.map { arg ->
+            if (arg is MissionTextSpec) resolveTextSpec(arg) else arg
+        }
+        return context.getString(spec.resId, *resolvedArgs.toTypedArray())
+    }
 
     private fun titleRes(id: String): Int = when (id) {
         MissionEngine.DAILY_SCREEN_UNDER_3H -> R.string.mission_daily_screen_under_3h

@@ -122,6 +122,21 @@ object MissionEngine {
         else -> 0
     }
 
+    /**
+     * Gorev id -> ilerleme goruntuleme turu (Dongu M03). [MissionProgressCalculator] bu turu
+     * kullanarak [MissionEvaluation]'i UI-hazir [MissionProgress]'e cevirir.
+     */
+    fun progressKindForMission(missionId: String): MissionProgressKind = when (missionId) {
+        DAILY_SCREEN_UNDER_3H -> MissionProgressKind.UPPER_LIMIT
+        DAILY_UNLOCK_UNDER_30 -> MissionProgressKind.UPPER_LIMIT
+        DAILY_CLASSIFICATION_CLEANUP -> MissionProgressKind.ACTION_COUNT
+        DAILY_VIEW_NOTIF_REPORT -> MissionProgressKind.BOOLEAN_ACTION
+        DAILY_NO_LATE_NIGHT -> MissionProgressKind.AVOID_AFTER_TIME
+        WEEKLY_SCREEN_LESS -> MissionProgressKind.PERIOD_COMPARISON
+        WEEKLY_POSITIVE_ACTIONS -> MissionProgressKind.ACTION_COUNT
+        else -> MissionProgressKind.ACTION_COUNT
+    }
+
     fun dailyCooldownDays(): Long = DAILY_MISSION_COOLDOWN_DAYS
 
     fun weeklyCooldownWeeks(): Long = WEEKLY_MISSION_COOLDOWN_WEEKS
