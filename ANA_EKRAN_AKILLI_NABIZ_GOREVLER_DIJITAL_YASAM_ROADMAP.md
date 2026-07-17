@@ -1590,7 +1590,7 @@ Pozitif nedenlerde zorunlu CTA gerekmez.
 
 **Bağımlılıklar:** D00, M07.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü T00 — commit: b8b7da9 — tarih: 2026-07-17 — Not: Selamlama/şampiyon/klasör-istatistiği üreticileri silindi (-142 satır). Eşik değişiklikleri (45→60 gün, ipucu ilk-14-gün) SmartTickerItem gerektirdiği için T01+'a bırakıldı.
 
 ---
 
