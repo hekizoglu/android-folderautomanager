@@ -11,6 +11,7 @@ permissions:
   contents: write
 
 # One-shot workflow: remove after the roadmap commit is created.
+# Triggered through a merge so the workflow already exists on the default branch.
 jobs:
   append-date:
     runs-on: ubuntu-latest
