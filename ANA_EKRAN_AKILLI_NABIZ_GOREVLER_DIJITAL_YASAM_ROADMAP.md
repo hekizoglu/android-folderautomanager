@@ -486,7 +486,7 @@ Kurallar:
 
 **Bağımlılıklar:** H00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü H01 — commit: c5a158b — tarih: 2026-07-17 — Not: Mission/Wrapped tarafında `epochDay/7` → ISO geçişi kalıcı veri anahtarı riski nedeniyle M00-M02'ye bırakıldı; resolver şimdilik yeni altyapı + WeekUtils delegasyonu.
 
 ---
 
