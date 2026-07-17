@@ -845,7 +845,7 @@ Provider adımları:
 
 **Bağımlılıklar:** H01, H03, M01.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M02 — commit: b87b055 — tarih: 2026-07-17 — Not: buildCheckInput'taki epochDay/7 haftalık sınır bug'ı provider'da ISO resolver sınırlarıyla düzeltildi. MissionCheckInput köprüyle korundu; MissionsRepository.buildTaskEventInput ölü kod kaldı (ileride temizlik).
 
 ---
 
