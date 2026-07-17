@@ -53,6 +53,8 @@ google-services.json
 # QA otomatik raporlar (geÃ§ici build artifact)
 qa/reports/
 .roadmap-ai-audit-cron/
+automation/logs/
+automation/state/
 
 *.bak
 build_out*.txt
