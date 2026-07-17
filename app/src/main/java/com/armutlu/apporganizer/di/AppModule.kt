@@ -10,6 +10,7 @@ import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.repository.SearchRepository
+import com.armutlu.apporganizer.domain.common.DataFreshnessResolver
 import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
 import com.armutlu.apporganizer.domain.home.HomeIoDispatcher
 import com.armutlu.apporganizer.domain.home.MissionRuntimeRepository
@@ -54,6 +55,13 @@ object AppModule {
     @Singleton
     fun providePeriodBoundaryResolver(clock: Clock, zoneId: ZoneId): PeriodBoundaryResolver =
         PeriodBoundaryResolver(clock, zoneId)
+
+    // Dongu H03 — gorev/skor/serit bilesenlerinin ortak tazelik dili. Ayni Clock provider'i
+    // (satir 47) kullanilir; testlerde DataFreshnessResolver dogrudan sabit Clock ile ornekleniyor.
+    @Provides
+    @Singleton
+    fun provideDataFreshnessResolver(clock: Clock): DataFreshnessResolver =
+        DataFreshnessResolver(clock)
 
     @Provides
     fun provideAppDao(db: AppDatabase): AppDao = db.appDao()

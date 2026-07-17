@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu H03 - 2026-07-17 - DataFreshness ortak tazelik modeli
+
+**Yapilanlar:** domain/common: DataFreshness enum (LIVE<=5dk/RECENT<=30dk/STALE/UNAVAILABLE) + DataFreshnessResolver (Clock enjeksiyonu, sinirlar companion sabiti, gelecek timestamp=LIVE); AppModule binding. 8/8 sinir deger testi yesil.
+
+**Bug:** Yok. Ekran entegrasyonu bilerek yapilmadi — M02/D00 dongulerinde.
+
+**Sonraki:** H04 — HomeDataResult hata/fallback modeli (faz kapanisi: tam test + build + APK).
+
 ## Akilli Nabiz Dongu H02 - 2026-07-17 - HomeIntelligenceCoordinator iskeleti
 
 **Yapilanlar:** domain/home paketi: HomeIntelligenceCoordinator (Mutex+in-flight Deferred ile tek refresh, kaynak bazli runCatching — hatali kaynak eski degerini korur), HomeIntelligenceState, RefreshReason, 3 minimal kaynak interface (DigitalPulseRepository/MissionRuntimeRepository/SmartTickerEngine) + no-op binding'ler, @HomeIoDispatcher qualifier. LauncherViewModel'e APP_START tetikleyici baglandi (mevcut akislara dokunulmadi). 4/4 test yesil.
