@@ -1353,7 +1353,7 @@ data class PulseHistoryEntry(
 
 **Bağımlılıklar:** H01, D00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü D01 — commit: e78415a — tarih: 2026-07-17 — Not: SharedPreferences saklama (Room gerekmedi), 8 hafta retention, atlanan haftalarda en son kapanış karşılaştırılır (null değil). Eski rotasyon + updateDailyScore silindi, tek seferlik migration bayrağı var.
 
 ---
 
