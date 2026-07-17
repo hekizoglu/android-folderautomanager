@@ -2,6 +2,10 @@ package com.armutlu.apporganizer.domain.home
 
 import com.armutlu.apporganizer.domain.common.HomeDataResult
 import com.armutlu.apporganizer.domain.common.HomeErrorCodes
+import com.armutlu.apporganizer.domain.common.MissingReason
+import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
+import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore
+import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseSnapshot
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,9 +40,28 @@ class HomeIntelligenceCoordinatorTest {
     private lateinit var missionRepo: MissionRuntimeRepository
     private lateinit var tickerEngine: SmartTickerEngine
 
-    private val pulseState = MutableStateFlow(PulseSourceState())
+    private val pulseState = MutableStateFlow<HomeDataResult<DigitalPulseSnapshot>>(
+        HomeDataResult.Missing(MissingReason.NO_DATA_YET),
+    )
     private val missionState = MutableStateFlow(MissionSourceState())
     private val tickerState = MutableStateFlow(TickerSourceState())
+
+    private fun fakeSnapshot(total: Int = 70): DigitalPulseSnapshot = DigitalPulseSnapshot(
+        score = DigitalPulseScore(
+            total = total,
+            baseScore = total,
+            taskContribution = 0,
+            organization = 70,
+            attention = 70,
+            balance = 70,
+            cleanup = 70,
+            consistency = 70,
+            confidence = DataConfidence.MEDIUM,
+            reasons = emptyList(),
+        ),
+        computedAt = 0L,
+        validUntil = 0L,
+    )
 
     private lateinit var coordinator: HomeIntelligenceCoordinator
 
@@ -91,16 +114,16 @@ class HomeIntelligenceCoordinatorTest {
 
         // Şimdi mission kaynağı hata atsın, pulse/ticker ise yeni değerler yayınlasın.
         coEvery { missionRepo.refresh() } throws RuntimeException("boom")
-        val newPulse = PulseSourceState(snapshot = "pulse-v1")
+        val newSnapshot = fakeSnapshot(total = 71)
         val newTicker = TickerSourceState(items = listOf("ticker-item"))
-        pulseState.value = newPulse
+        pulseState.value = HomeDataResult.Ready(newSnapshot)
         tickerState.value = newTicker
 
         coordinator.refresh(RefreshReason.MANUAL_REFRESH)
         advanceUntilIdle()
 
         val state = coordinator.state.value
-        assertEquals(HomeDataResult.Ready(newPulse), state.pulse)
+        assertEquals(HomeDataResult.Ready(PulseSourceState(snapshot = newSnapshot)), state.pulse)
         assertEquals(HomeDataResult.Ready(newTicker), state.ticker)
         // mission kaynağı hata verdi — son başarılı değeri (originalMission) Stale olarak korunur, kaybolmaz.
         assertEquals(
@@ -197,10 +220,11 @@ class HomeIntelligenceCoordinatorTest {
     //    (önceki değerler korunur), state boşalmaz.
     @Test
     fun `all three sources failing after a prior success all yield Stale with previous values`() = runTest(testDispatcher) {
-        val firstPulse = PulseSourceState(snapshot = "pulse-first")
+        val firstSnapshot = fakeSnapshot(total = 72)
+        val firstPulse = PulseSourceState(snapshot = firstSnapshot)
         val firstMission = MissionSourceState(missions = listOf("mission-first"))
         val firstTicker = TickerSourceState(items = listOf("ticker-first"))
-        pulseState.value = firstPulse
+        pulseState.value = HomeDataResult.Ready(firstSnapshot)
         missionState.value = firstMission
         tickerState.value = firstTicker
 

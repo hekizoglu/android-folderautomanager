@@ -125,62 +125,6 @@ object TickerComposer {
         { total, biggest, count -> "Haftaya bakış: $total uygulama kayıtlı, $biggest klasörü zirvede ($count uygulama)" },
     )
 
-    /** Dijital yaşam skoru sablonlari — arrow parametresi trend oku ("" | " ↑" | " ↓" | " →"). */
-    private val scoreTemplates: List<(Int, String) -> String> = listOf(
-        { score, arrow -> "Dijital yaşam skorun: $score/100$arrow" },
-        { score, arrow -> "Bu haftaki dijital skorun: $score/100$arrow — rapora dokun" },
-        { score, arrow -> "Dijital denge puanın: $score/100$arrow" },
-    )
-
-    // Dijital yasam skoru turetimi icin kategori gruplari (WrappedEngine.computeScore ile ayni ruh).
-    private const val SCORE_UNUSED_THRESHOLD_DAYS = 60L
-    private val SCORE_SOCIAL_GAME_CATEGORIES = setOf("social", "communication", "dating", "games")
-    private val SCORE_UNCATEGORIZED = setOf("other", "uncategorized")
-
-    /**
-     * Ana ekran ticker'i icin hafif "Dijital Yaşam Skoru" (0-100) — GERCEK sinyallerden turetilir,
-     * uydurma metrik yok. WrappedEngine.computeScore erisilemedigi (private) icin ticker'in elindeki
-     * hafif snapshot'lardan (folders: kategori dagilimi + appCount, apps: lastUsedTimestamp) hesaplanir.
-     *
-     * Girdi yoksa (apps bos) null doner — bu durumda skor haberi hic gosterilmez.
-     * @return 0-100 arasi skor, veya yeterli veri yoksa null.
-     */
-    fun computeDigitalLifeScore(
-        folders: List<FolderSnapshot>,
-        apps: List<AppSnapshot>,
-        nowMillis: Long,
-    ): Int? {
-        if (apps.isEmpty()) return null
-        var total = 50 // notr baslangic (WrappedEngine ile ayni)
-
-        // Sinyal A — kullanilmayan oran (yalnizca lastUsedTimestamp'i olan uygulamalar, gercek veri)
-        val usedApps = apps.filter { it.lastUsedTimestamp > 0L }
-        if (usedApps.isNotEmpty()) {
-            val cutoff = SCORE_UNUSED_THRESHOLD_DAYS * MS_PER_DAY
-            val unusedCount = usedApps.count { (nowMillis - it.lastUsedTimestamp) >= cutoff }
-            val unusedRatio = unusedCount.toFloat() / usedApps.size
-            if (unusedRatio < 0.15f) total += 15
-            else if (unusedRatio > 0.4f) total -= 15
-        }
-
-        val totalApps = folders.sumOf { it.appCount }
-        if (totalApps > 0) {
-            // Sinyal B — sosyal/oyun yogunlugu (kategori dagilimi)
-            val socialGameApps = folders.filter { it.categoryId in SCORE_SOCIAL_GAME_CATEGORIES }.sumOf { it.appCount }
-            val socialGameRatio = socialGameApps.toFloat() / totalApps
-            if (socialGameRatio > 0.5f) total -= 15
-            else if (socialGameRatio < 0.2f) total += 10
-
-            // Sinyal C — kategorileme duzeni
-            val categorizedApps = folders.filter { it.categoryId !in SCORE_UNCATEGORIZED }.sumOf { it.appCount }
-            val categorizedRatio = categorizedApps.toFloat() / totalApps
-            if (categorizedRatio > 0.85f) total += 10
-            else if (categorizedRatio < 0.5f) total -= 5
-        }
-
-        return total.coerceIn(0, 100)
-    }
-
     // ---- Yardimci: gunluk seed'li deterministik secim ----
 
     /** Ayni gun + ayni item key -> ayni indeks. Ertesi gun degisir. */
@@ -203,10 +147,6 @@ object TickerComposer {
         insights: List<InsightSnapshot>,
         lowConfidenceCount: Int,
         nowMillis: Long,
-        /** Onceden hesaplanmis dijital yasam skoru (0-100) — null ise skor haberi eklenmez. */
-        digitalLifeScore: Int? = null,
-        /** Bir onceki gunun skoru — trend oku (↑/↓/→) icin. null ise ok gosterilmez. */
-        digitalLifeScorePrevious: Int? = null,
         epochDay: Long = LocalDate.now(ZoneId.systemDefault()).toEpochDay(),
         zone: ZoneId = ZoneId.systemDefault(),
         random: Random = Random(epochDay),
@@ -357,26 +297,10 @@ object TickerComposer {
             }
         }
 
-        // 10) Dijital yasam skoru — ara sira (deterministik gun kapisi ile ~3 gunde 1), gununde 1 kez.
-        // Skor ViewModel'de gercek sinyallerden hesaplanip verilir; burada sadece haber olarak eklenir.
-        if (digitalLifeScore != null && pickIndex(daySeed, "score_gate", 3) == 0) {
-            val arrow = when {
-                digitalLifeScorePrevious == null -> ""
-                digitalLifeScore > digitalLifeScorePrevious -> " ↑"
-                digitalLifeScore < digitalLifeScorePrevious -> " ↓"
-                else -> " →"
-            }
-            val pool = scoreTemplates
-            val idx = pickIndex(daySeed, "digital_life_score", pool.size)
-            specs.add(
-                TickerSpec(
-                    text = pool[idx](digitalLifeScore, arrow),
-                    emoji = "📈",
-                    routeKey = "WRAPPED_REPORT",
-                    priority = 70,
-                )
-            )
-        }
+        // Dijital yasam skoru haberi KALDIRILDI (Dongu D00, P0 2.1) — TickerComposer artik
+        // kendi skorunu hesaplamiyor. Skor artik yalniz DigitalScoreCard'da (ayri kart,
+        // LauncherViewModel.digitalLifeScore -> HomeIntelligenceCoordinator -> DigitalPulseRepository)
+        // gosteriliyor; ticker'a skor haberi eklemek T donguleri kapsaminda yeniden ele alinacak.
 
         // Karistirma: gunluk seed'li Random ile shuffle, sonra oncelige gore stabil sirala
         // (yuksek priority basa gelsin, ayni priority icinde shuffle sirasi korunsun).

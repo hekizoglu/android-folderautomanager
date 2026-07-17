@@ -863,10 +863,12 @@ class LauncherViewModel @Inject constructor(
     // Assistant Kartları — her refresh'te rastgele seçim, tekrar önleme
     private val _insightCards = MutableStateFlow<List<InsightCard>>(emptyList())
 
-    // Dijital Yaşam Skoru — bağımsız kart (ROADMAP #28) için ticker'dan ayrık olarak tutulur.
-    // tickerItems combine bloğu içinde güncellenir (aynı hesaplama tekrarlanmasın diye).
-    private val _digitalLifeScore = MutableStateFlow<Int?>(null)
-    val digitalLifeScore: StateFlow<Int?> = _digitalLifeScore.asStateFlow()
+    // Dijital Yaşam Skoru — bağımsız kart (ROADMAP #28). Döngü D00'dan itibaren TickerComposer
+    // KENDİ skorunu hesaplamıyor; tek kaynak DigitalPulseRepository'dir (HomeIntelligenceCoordinator
+    // üzerinden okunur) — ana ekran kartı, Pulse Clock ve Wrapped raporu AYNI sayıyı gösterir.
+    val digitalLifeScore: StateFlow<Int?> = homeIntelligenceCoordinator.state
+        .map { it.pulse.valueOrNull()?.snapshot?.score?.total }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val insightCards: StateFlow<List<InsightCard>> = _insightCards.asStateFlow()
 
     // Dongu M07 — Ana ekran "Görevler" karti (HomeMissionCard) icin
@@ -1008,25 +1010,9 @@ class LauncherViewModel @Inject constructor(
         }
         val totalNotif = badges.values.sum()
 
-        // Dijital yasam skoru (ticker) — GERCEK sinyallerden turetilir, Wrapped toggle'ina baglidir.
-        // updateDailyScore ile gunluk rotasyon: trend oku (↑/↓/→) icin dunku skor baseline olarak alinir.
-        var digitalLifeScore: Int? = null
-        var digitalLifeScorePrevious: Int? = null
-        if (AppPrefs.isWrappedEnabled(ctx)) {
-            val s = com.armutlu.apporganizer.utils.TickerComposer.computeDigitalLifeScore(
-                folders = folderSnapshots,
-                apps = appSnapshots,
-                nowMillis = System.currentTimeMillis(),
-            )
-            if (s != null) {
-                val epochDay = java.time.LocalDate.now().toEpochDay()
-                digitalLifeScore = s
-                digitalLifeScorePrevious =
-                    com.armutlu.apporganizer.utils.WrappedSnapshotPrefs.updateDailyScore(ctx, s, epochDay)
-            }
-        }
-        _digitalLifeScore.value = digitalLifeScore
-
+        // Dijital yasam skoru ticker'dan KALDIRILDI (Dongu D00, P0 2.1) — TickerComposer artik
+        // skor hesaplamiyor. Skor ayri DigitalScoreCard'da digitalLifeScore StateFlow'undan
+        // (HomeIntelligenceCoordinator -> DigitalPulseRepository) gosteriliyor.
         val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
         val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,
@@ -1035,8 +1021,6 @@ class LauncherViewModel @Inject constructor(
             insights = insightSnapshots,
             lowConfidenceCount = lowConfidenceCount,
             nowMillis = System.currentTimeMillis(),
-            digitalLifeScore = digitalLifeScore,
-            digitalLifeScorePrevious = digitalLifeScorePrevious,
         ).filter { spec ->
             val key = spec.suggestionKey ?: return@filter true
             SuggestionCoordinator.canShow(

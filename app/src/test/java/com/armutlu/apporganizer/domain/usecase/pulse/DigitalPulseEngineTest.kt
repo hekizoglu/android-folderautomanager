@@ -1,9 +1,6 @@
 package com.armutlu.apporganizer.domain.usecase.pulse
 
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
-import com.armutlu.apporganizer.utils.AppSnapshot as TickerAppSnapshot
-import com.armutlu.apporganizer.utils.FolderSnapshot as TickerFolderSnapshot
-import com.armutlu.apporganizer.utils.TickerComposer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -14,9 +11,8 @@ import org.junit.Test
  * kapsar: boş liste crash yok, eksik izin cezalandırmaz, yüksek sosyal/oyun tek başına
  * düşürmez, skor hep 0..100, ilk hafta delta null, confidence düşer vb.
  *
- * NOT (Döngü H00 — P0 2.1): "twoEnginesDisagreeOnSameProfile" testi, aynı kullanıcı profilinin
- * TickerComposer.computeDigitalLifeScore() ve DigitalPulseEngine.compute() ile FARKLI skorlar
- * ürettiğini kanıtlar. Bu, roadmap'te belirtilen "iki farklı motor" P0 sorunudur.
+ * NOT (Döngü D00 — P0 2.1 çözümü): eski "twoEnginesDisagreeOnSameProfile" testi kaldırıldı —
+ * TickerComposer.computeDigitalLifeScore() artık YOK, DigitalPulseEngine tek skor motoru.
  */
 class DigitalPulseEngineTest {
 
@@ -269,36 +265,4 @@ class DigitalPulseEngineTest {
         assertNull(result.reasons.firstOrNull { it.id == PulseReasonId.TASK_MISSIONS })
     }
 
-    // ── P0 2.1: iki farklı skor motoru aynı profilde farklı sonuç verir ─────────
-
-    @Test
-    fun `currentBehavior_p0_twoEnginesDisagreeOnSameProfile`() {
-        // Ayni kullanici profili: 10 uygulama, 8'i sosyal (yuksek sosyal oran), hepsi yakin zamanda kullanilmis.
-        val recentlyUsed = now - 1 * day
-        val pulseApps = (1..8).map { app("com.social.app$it", "social", usageCount = 50L, lastUsedTimestamp = recentlyUsed) } +
-            (1..2).map { app("com.prod.app$it", "productivity", usageCount = 50L, lastUsedTimestamp = recentlyUsed) }
-
-        val pulseResult = DigitalPulseEngine.compute(
-            PulseInput(apps = pulseApps, notification = null, previousCategoryUsage = null, nowMillis = now)
-        )
-
-        // Ayni profili TickerComposer'in bekledigi hafif snapshot formatina cevir.
-        val tickerApps = (1..8).map { TickerAppSnapshot("com.social.app$it", "Social $it", 50L, recentlyUsed) } +
-            (1..2).map { TickerAppSnapshot("com.prod.app$it", "Prod $it", 50L, recentlyUsed) }
-        val tickerFolders = listOf(
-            TickerFolderSnapshot("social", "Sosyal", "📱", 8),
-            TickerFolderSnapshot("productivity", "Verimlilik", "💼", 2),
-        )
-        val tickerScore = TickerComposer.computeDigitalLifeScore(tickerFolders, tickerApps, now)
-
-        // DigitalPulseEngine V2: yuksek sosyal orani TEK BASINA cezalandirmaz (tasarim ilkesi, dosya basi yorumu).
-        // TickerComposer (V1 mantigi): yuksek sosyal/oyun orani (>0.5) dogrudan -15 ceza uygular.
-        // Bu iki motor AYNI girdide FARKLI sonuc uretir -> P0 2.1'in kanitidir.
-        assertTrue(tickerScore != null)
-        assertTrue(
-            "Iki motor ayni profilde farkli skor uretmeli (P0 2.1 kaniti): " +
-                "pulse=${pulseResult.total} ticker=$tickerScore",
-            pulseResult.total != tickerScore
-        )
-    }
 }

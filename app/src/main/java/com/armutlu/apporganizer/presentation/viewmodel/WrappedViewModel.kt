@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.common.valueOrNull
+import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedAiCoach
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -59,6 +61,7 @@ class WrappedViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val notificationEventDao: NotificationEventDao,
     private val wrappedAiCoach: WrappedAiCoach,
+    private val digitalPulseRepository: DigitalPulseRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -192,7 +195,26 @@ class WrappedViewModel @Inject constructor(
             hasUsageAccess = UsageStatsHelper.hasPermission(context),
         )
 
-        val report = WrappedEngine.compute(input)
+        val engineReport = WrappedEngine.compute(input)
+        // Döngü D00 — tek skor kaynağı: DigitalPulseEngine.compute() halen WrappedEngine.compute()
+        // içinde çağrılıyor (motorun hesap mantığı DEĞİŞMEDİ), ama Wrapped ekranında GÖSTERİLEN
+        // skor artık DigitalPulseRepository'nin paylaşılan snapshot'ından gelir — ana ekran kartı,
+        // Pulse Clock ve bu rapor aynı sayıyı gösterir (P0 2.1 çözümü).
+        digitalPulseRepository.refresh()
+        val sharedPulse = digitalPulseRepository.state.value.valueOrNull()?.score
+        val report = if (sharedPulse != null) {
+            engineReport.copy(
+                score = engineReport.score.copy(
+                    score = sharedPulse.total,
+                    reasons = sharedPulse.reasons.map {
+                        WrappedEngine.ScoreReason(it.id.logLabel, it.delta)
+                    },
+                ),
+                pulse = sharedPulse,
+            )
+        } else {
+            engineReport
+        }
         return BuildResult(
             report = report,
             charts = WrappedChartData(

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu D00 - 2026-07-17 - Tek skor kaynagi (P0 2.1 COZULDU)
+
+**Yapilanlar:** RealDigitalPulseSource (PulseInputFactory + DigitalPulseEngine, 15dk cache, force refresh, HomeDataResult kontrati) no-op binding'in yerine gecti; TickerComposer.computeDigitalLifeScore + scoreTemplates + skor haberi tamamen KALDIRILDI (~90 satir V1 mantigi); LauncherViewModel._digitalLifeScore kaldirildi (koordinator state'inden map); PulseClockViewModel + WrappedViewModel ayni repository snapshot'ini okuyor. 7 yeni test, 53 test yesil.
+
+**Bug:** Yok. Iki motorun farkli skor uretmesi artik yapisal olarak imkansiz. WrappedSnapshotPrefs.updateDailyScore deprecated (D01'de silinecek).
+
+**Sonraki:** D01 — ISO hafta trend/baseline (zincir devam).
+
 ## Akilli Nabiz Dongu M08 - 2026-07-17 - Puan dengesi + M FAZ KAPANISI
 
 **Yapilanlar:** TaskScoreManager: bulkReward kademeli tavan (0/3/5/7/10 — eski dogrusal carpim 100 uygulamada +500 uretebiliyordu), snooze/dismiss cezalari kaldirildi (-1/-2 -> 0), siniflandirma onayi +3->+2, klasor kabul +5->+3; bildirim raporu gunluk tekillestirme ve +-10 pulse siniri dogrulandi. AppListViewModel toplu kabuller recordBulk'a gecti. 10/10 yeni test. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, APK 27.06 MB, v1.3.85 (108). GOREV FAZI (M) TAMAM — 2.3/2.4/2.5/2.6 P0-P1'leri cozuldu.

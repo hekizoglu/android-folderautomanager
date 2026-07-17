@@ -16,6 +16,7 @@ import timber.log.Timber
 import com.armutlu.apporganizer.domain.common.HomeDataResult
 import com.armutlu.apporganizer.domain.common.HomeErrorCodes
 import com.armutlu.apporganizer.domain.common.MissingReason
+import com.armutlu.apporganizer.domain.common.valueOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -82,7 +83,12 @@ class HomeIntelligenceCoordinator @Inject constructor(
             errorCode = HomeErrorCodes.PULSE_COMPUTE_FAILED,
         ) {
             digitalPulseRepository.refresh()
-            digitalPulseRepository.state.value
+            // DigitalPulseRepository.state kendi HomeDataResult sarmalamasini D00'dan itibaren
+            // yapiyor (15 dk cache + Ready/Stale/Failed) — koordinator burada onu tekrar
+            // sarmalamaz, PulseSourceState.snapshot alanina duzlestirir (valueOrNull: Ready/Stale
+            // -> snapshot dolu, Missing/Failed -> null). Kaynagin kendi hata durumu boylece
+            // korunur ama coordinator'in genel refreshSource sozlesmesiyle uyumlu kalir.
+            PulseSourceState(snapshot = digitalPulseRepository.state.value.valueOrNull())
         }
 
         val missionResult = refreshSource(

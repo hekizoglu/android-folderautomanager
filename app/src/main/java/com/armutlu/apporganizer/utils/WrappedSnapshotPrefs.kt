@@ -156,6 +156,12 @@ object WrappedSnapshotPrefs {
      *
      * @return karşılaştırma için bir önceki günün skoru (0-100), veya henüz baseline yoksa null.
      */
+    @Deprecated(
+        message = "Döngü D00 (P0 2.1): eski ticker skor yolu kaldırıldı — TickerComposer artık " +
+            "kendi skorunu hesaplamıyor, tek kaynak DigitalPulseRepository. Bu fonksiyonun " +
+            "hiçbir çağrı yeri kalmadığı doğrulandıktan sonra ayrı bir temizlik döngüsünde " +
+            "(D01 trend işi) silinecek — roadmap D00 madde 4.",
+    )
     fun updateDailyScore(context: Context, score: Int, epochDay: Long): Int? {
         return runCatching {
             val p = prefs(context)

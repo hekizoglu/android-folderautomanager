@@ -14,8 +14,8 @@ import com.armutlu.apporganizer.domain.common.DataFreshnessResolver
 import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
 import com.armutlu.apporganizer.domain.home.HomeIoDispatcher
 import com.armutlu.apporganizer.domain.home.MissionRuntimeRepository
-import com.armutlu.apporganizer.domain.home.NoOpDigitalPulseSource
 import com.armutlu.apporganizer.domain.home.NoOpSmartTickerSource
+import com.armutlu.apporganizer.domain.home.RealDigitalPulseSource
 import com.armutlu.apporganizer.domain.home.RealMissionRuntimeSource
 import com.armutlu.apporganizer.domain.home.SmartTickerEngine
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
@@ -139,12 +139,11 @@ object AppModule {
         return AppDatabaseService(context).also { it.loadFromCacheSync() }
     }
 
-    // Dongu H02 — HomeIntelligenceCoordinator kaynak interface'leri icin gecici no-op binding'ler.
-    // D00/M/T dongulerinde gercek DigitalPulseRepository/MissionRuntimeRepository/SmartTickerEngine
-    // implementasyonlari bu provider'lari degistirecek.
+    // Dongu D00 — gercek implementasyona baglandi (bkz. RealDigitalPulseSource). Tek skor
+    // motoru kurali: DigitalPulseEngine.compute() SADECE burada cagrilir.
     @Provides
     @Singleton
-    fun provideDigitalPulseRepository(impl: NoOpDigitalPulseSource): DigitalPulseRepository = impl
+    fun provideDigitalPulseRepository(impl: RealDigitalPulseSource): DigitalPulseRepository = impl
 
     // Dongu M07 — gercek implementasyona baglandi (bkz. RealMissionRuntimeSource).
     @Provides

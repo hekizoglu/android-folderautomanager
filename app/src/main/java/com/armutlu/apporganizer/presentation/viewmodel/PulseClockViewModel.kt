@@ -6,19 +6,17 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.common.valueOrNull
+import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
-import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseEngine
 import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseScore
-import com.armutlu.apporganizer.domain.usecase.pulse.PulseInput
+import com.armutlu.apporganizer.domain.usecase.pulse.PulseInputFactory
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseInsightEngine
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseInsightSpec
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseInsightType
-import com.armutlu.apporganizer.domain.usecase.pulse.PulseNotificationSignals
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.NotificationAnalyzer
-import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WeatherRepository
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
@@ -46,6 +44,7 @@ import timber.log.Timber
 class PulseClockViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val notificationEventDao: NotificationEventDao,
+    private val digitalPulseRepository: DigitalPulseRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -95,60 +94,27 @@ class PulseClockViewModel @Inject constructor(
     }
 
     private suspend fun compute(): PulseClockUiState {
-        val apps = appRepository.getAllApps()
-        val hasUsageAccess = UsageStatsHelper.hasPermission(context)
+        // Döngü D00 — tek skor kaynağı: DigitalPulseEngine.compute() SADECE DigitalPulseRepository
+        // içinde çağrılır. Burada repository'yi tazeleyip paylaşılan snapshot'ı okuyoruz; ana ekran
+        // kartı ve Wrapped raporu da AYNI snapshot'ı görür (iki motor P0 2.1 çözüldü).
+        digitalPulseRepository.refresh()
+        val pulse = digitalPulseRepository.state.value.valueOrNull()?.score
+            ?: return PulseClockUiState(loading = false)
+
+        // Içgörü üretimi ve dijital kişilik etiketi için PulseInput yeniden kurulur — bu SADECE
+        // sunum katmanı zenginleştirmesi, skor DEĞİLDİR (skor yukarıda repository'den geldi).
+        val input = PulseInputFactory.build(
+            context = context,
+            appRepository = appRepository,
+            notificationEventDao = notificationEventDao,
+        )
         val dailySessions = (UsageStatsHelper.getDailySessionUsage(context, days = 7)
             as? UsageStatsHelper.DailySessionResult.Available)?.days
-        val weeklyLaunches = dailySessions?.groupBy { it.packageName }
-            ?.mapValues { (_, days) -> days.sumOf { it.launchCount }.toLong() }
         val weeklyScreenTimeMinutes = dailySessions
             ?.groupBy { it.epochDay }
             ?.values
             ?.sumOf { days -> days.maxOfOrNull { it.globalForegroundMs } ?: 0L }
             ?.let { (it / TimeUnit.MINUTES.toMillis(1)).toInt() }
-
-        val snapshots = apps.map { app ->
-            WrappedEngine.AppSnapshot(
-                packageName = app.packageName,
-                appName = app.appName,
-                categoryId = app.categoryId,
-                usageCount = weeklyLaunches?.get(app.packageName) ?: app.launchCount,
-                lastUsedTimestamp = app.lastUsedTimestamp,
-                installTime = app.installTime,
-                firstInstalledTime = app.firstInstalledTime,
-                appSizeBytes = app.appSizeBytes,
-                isHidden = app.isHidden,
-                isSystemApp = app.isSystemApp,
-            )
-        }
-
-        val notifSignals = runCatching {
-            val since = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
-            val events = notificationEventDao.eventsSince(since)
-            if (events.isEmpty()) return@runCatching null
-            val appNames = apps.associate { it.packageName to it.appName }
-            val usageMs = dailySessions?.groupBy { it.packageName }
-                ?.mapValues { (_, days) -> days.sumOf { it.foregroundDurationMs } }
-                ?: emptyMap()
-            val report = NotificationAnalyzer.analyze(events, appNames, usageMs)
-            PulseNotificationSignals(
-                totalNotifications = report.totalNotifications,
-                disturbingCount = report.disturbing.size,
-                distractingCount = report.distracting.size,
-                nightCount = report.appStats.sumOf { it.nightCount },
-            )
-        }.getOrNull()
-
-        val input = PulseInput(
-            apps = snapshots.filter { !it.isHidden },
-            notification = notifSignals,
-            previousCategoryUsage = WrappedSnapshotPrefs.getPrevious(context)?.categoryUsage,
-            unlockCount = UsageStatsHelper.getUnlockCount(context, days = 7),
-            previousUnlockCount = WrappedSnapshotPrefs.getPreviousUnlockCount(context),
-            taskScoreContribution = TaskScoreManager.getPulseContribution(context),
-            hasUsageAccess = hasUsageAccess,
-        )
-        val pulse = DigitalPulseEngine.compute(input)
 
         // D257: dijital kişilik — gece kullanım oranı saatlik kovalardan türetilir (23:00-06:00).
         val nightUsageRatio = dailySessions?.takeIf { it.isNotEmpty() }?.let { days ->
