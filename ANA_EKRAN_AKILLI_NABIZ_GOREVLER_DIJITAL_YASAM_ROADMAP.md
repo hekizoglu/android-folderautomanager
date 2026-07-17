@@ -1647,7 +1647,7 @@ Model alanları:
 
 **Bağımlılıklar:** T00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü T01 — commit: b4fe7fe — tarih: 2026-07-18 — Not: Koordinatörün üç kaynağı da artık gerçek. Eski TickerItem UI köprüyle korunuyor (T04'te yenilenecek); string'ler kod içi literal kaldı (T04'te resource'a taşınacak).
 
 ---
 
