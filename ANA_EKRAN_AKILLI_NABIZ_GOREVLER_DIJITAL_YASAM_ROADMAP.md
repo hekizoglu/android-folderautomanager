@@ -1044,7 +1044,7 @@ Route çözümü UI içinde dağılmamalı; tek `MissionActionRouter` kullanılm
 
 **Bağımlılıklar:** M03.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M05 — commit: 8b6da73 — tarih: 2026-07-17 — Not: Router domain'de Intent NESNESİ kurmaz (JVM test uyumu) — SystemIntent(intentAction) string taşır, Intent UI'da kurulur. Gerçek route adları: app_list?filter=uncertain, notification_report, usage_report.
 
 ---
 
