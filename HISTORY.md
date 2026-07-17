@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu H00 - 2026-07-17 - Mevcut davranisi testlerle kilitle
+
+**Yapilanlar:** Refactor oncesi davranis fotografi: TickerComposerTest (+4), DigitalPulseEngineTest (+1), MissionEngineTest (+5) — 53 test yesil. Uc P0 test adiyla belgelendi: 2.1 cift skor motoru tutarsizligi, 2.4 erken yildiz odulu (checkProgress zaman farkindaligi yok), 2.5 epochDay/7 haftasi persembe baslar.
+
+**Bug:** Yok (kaynak kod degistirilmedi). Ortam: 1x Gradle build kilidi — java process kill + app\build sil ile cozuldu.
+
+**Sonraki:** H01 — PeriodBoundaryResolver (tek zaman/hafta cozumleyicisi). Otomasyon: 15dk cron + 30dk watchdog aktif.
+
 ## Home Screen Layout Editor H5.2 - 2026-07-16
 
 **Yapilanlar:** Bolum kartlarina TalkBack icin `Yukari tasi`, `Asagi tasi` ve `En uste tasi` ozel aksiyonlari eklendi; aksiyonlar bolge sinirlarini gecmiyor. Sistem animator olcegi kapaliysa bolum placement ve drag gorsel hareketi uygulanmiyor. Yeni aksiyonlar TR/EN kaynaklara tasindi. Surum `1.3.82` / `versionCode 105`.

@@ -10,6 +10,16 @@ import java.time.ZonedDateTime
 /**
  * TickerComposer.compose() senaryo testleri — şablon çeşitliliği, unutulan uygulama eşiği,
  * saat dilimi selamlaması ve günlük deterministiklik.
+ *
+ * NOT (Döngü H00 — ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md P0 2.1):
+ * Bu dosyadaki `computeDigitalLifeScore` testleri REFAKTÖR ÖNCESİ mevcut davranışı kilitler.
+ * DigitalPulseEngine.compute() İLE FARKLI BİR SKOR HESAPLAR (bkz. DigitalPulseEngineTest
+ * `currentBehavior_p0_...twoEnginesDisagreeOnSameProfile`). Bu testler ileride
+ * computeDigitalLifeScore kaldırılıp tek motor (DigitalPulseEngine) kullanılınca silinecektir.
+ *
+ * NOT (UI tekrarı): Aynı Dijital Yaşam Skoru hem Pulse Clock halkasında hem de ayrı bir
+ * kartta ikinci kez gösteriliyor (kaynak: HomeScreen + PulseRing + DigitalPulseCard).
+ * Bu tekrar için UI/snapshot testi bilerek YAZILMADI — sadece burada not düşülüyor.
  */
 class TickerComposerTest {
 
@@ -421,5 +431,79 @@ class TickerComposerTest {
         )
         val spec = result.first { it.priority == 5 }
         assertTrue(spec.routeKey != null || spec.packageName != null || spec.categoryId != null)
+    }
+
+    // ── computeDigitalLifeScore — mevcut davranışı kilitleyen testler (Döngü H00) ──────────
+
+    @Test
+    fun `currentBehavior_computeDigitalLifeScore returns null when apps list is empty`() {
+        val score = TickerComposer.computeDigitalLifeScore(
+            folders = sampleFolders,
+            apps = emptyList(),
+            nowMillis = millisAt(20000L, 12),
+        )
+        assertEquals(null, score)
+    }
+
+    @Test
+    fun `currentBehavior_computeDigitalLifeScore neutral baseline with no usage or folder signal`() {
+        // apps var ama hepsi lastUsedTimestamp = 0 (hic kullanilmamis) -> Sinyal A atlanir.
+        // folders bos -> Sinyal B/C atlanir. Sonuc notr baslangic olan 50 kalir.
+        val apps = listOf(AppSnapshot("com.a", "App A", 0, 0L))
+        val score = TickerComposer.computeDigitalLifeScore(
+            folders = emptyList(),
+            apps = apps,
+            nowMillis = millisAt(20000L, 12),
+        )
+        assertEquals(50, score)
+    }
+
+    @Test
+    fun `currentBehavior_p0_highSocialGameRatioDirectlyPenalizesScore`() {
+        // P0 2.1 kanit: sosyal/oyun orani tek basina dogrudan ceza olarak kullaniliyor
+        // (DigitalPulseEngine V2'de bu YASAKLANMIS bir davranistir - "V1 -15 cezasi kaldirildi"
+        // yorumuyla belgelenmis, ama TickerComposer.computeDigitalLifeScore hala V1 mantigini kullaniyor).
+        val now = millisAt(20000L, 12)
+        val usedRecently = now - 1 * (24L * 3600 * 1000)
+        val apps = (1..10).map { AppSnapshot("com.app$it", "App $it", 5, usedRecently) }
+
+        val highSocialFolders = listOf(
+            FolderSnapshot("social", "Sosyal", "📱", 8),
+            FolderSnapshot("productivity", "Verimlilik", "💼", 2),
+        )
+        val lowSocialFolders = listOf(
+            FolderSnapshot("social", "Sosyal", "📱", 1),
+            FolderSnapshot("productivity", "Verimlilik", "💼", 9),
+        )
+
+        val highSocialScore = TickerComposer.computeDigitalLifeScore(highSocialFolders, apps, now)
+        val lowSocialScore = TickerComposer.computeDigitalLifeScore(lowSocialFolders, apps, now)
+
+        assertTrue(highSocialScore != null && lowSocialScore != null)
+        // Yuksek sosyal/oyun orani (>0.5) dogrudan -15 ceza uygular; dusuk oran (<0.2) +10 bonus verir.
+        assertTrue(
+            "Yuksek sosyal oran daha dusuk skor uretmeli: high=$highSocialScore low=$lowSocialScore",
+            highSocialScore!! < lowSocialScore!!
+        )
+        // Mevcut davranisi tam olarak kilitle: 50 notr + kullanim bonusu(+15, unusedRatio<0.15) - 15 (sosyal>0.5), kategorize bonusu yok (ratio 1.0 -> +10)
+        assertEquals(60, highSocialScore)
+        // 50 + 15 (kullanim) + 10 (dusuk sosyal oran) + 10 (kategorize edilmis > 0.85) = 85
+        assertEquals(85, lowSocialScore)
+    }
+
+    @Test
+    fun `currentBehavior_computeDigitalLifeScore high unused ratio lowers score`() {
+        val now = millisAt(20000L, 12)
+        val cutoffMs = 60L * 24 * 3600 * 1000
+        // 10 uygulama, 5'i 60+ gundur kullanilmiyor -> unusedRatio = 0.5 (> 0.4 esigi)
+        val apps = (1..5).map { AppSnapshot("com.used$it", "Used $it", 5, now - 1000L) } +
+            (1..5).map { AppSnapshot("com.unused$it", "Unused $it", 0, now - cutoffMs - 1000L) }
+        val folders = listOf(FolderSnapshot("other", "Diger", "📦", 10))
+
+        val score = TickerComposer.computeDigitalLifeScore(folders, apps, now)
+
+        // 50 notr - 15 (unusedRatio>0.4) - 15 (sosyal/oyun degil ama kategorize edilmemis "other" -> categorizedRatio 0 < 0.5 -> -5)
+        // socialGameRatio: "other" SCORE_SOCIAL_GAME_CATEGORIES icinde degil -> 0/10 = 0 < 0.2 -> +10
+        assertEquals(50 - 15 + 10 - 5, score)
     }
 }
