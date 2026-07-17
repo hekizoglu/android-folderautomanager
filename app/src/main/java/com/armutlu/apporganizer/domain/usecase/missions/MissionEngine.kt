@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.domain.usecase.missions
 
+import java.time.LocalTime
 import java.util.Random
 
 /**
@@ -125,27 +126,170 @@ object MissionEngine {
 
     fun weeklyCooldownWeeks(): Long = WEEKLY_MISSION_COOLDOWN_WEEKS
 
-    /** Otomatik gorevlerde ilgili veri null ise false (uydurma basari yok). */
-    fun checkProgress(mission: Mission, input: MissionCheckInput): Boolean {
-        return when (mission.id) {
-            DAILY_SCREEN_UNDER_3H ->
-                input.screenTimeMinutesToday != null && input.screenTimeMinutesToday < 180L
-            DAILY_NO_LATE_NIGHT ->
-                input.usedAfter23Today == false
-            DAILY_UNLOCK_UNDER_30 ->
-                input.unlockCountToday != null && input.unlockCountToday in 1 until 30
-            DAILY_CLASSIFICATION_CLEANUP ->
-                input.taskEvents.classificationActionsToday > 0
-            DAILY_VIEW_NOTIF_REPORT ->
-                input.taskEvents.notificationReportViewedToday
-            WEEKLY_SCREEN_LESS ->
-                input.weeklyScreenTimeMinutes != null &&
-                    input.previousWeeklyScreenTimeMinutes != null &&
-                    input.previousWeeklyScreenTimeMinutes > 0L &&
-                    input.weeklyScreenTimeMinutes < input.previousWeeklyScreenTimeMinutes
-            WEEKLY_POSITIVE_ACTIONS ->
-                input.taskEvents.positiveEventsThisWeek >= 3
-            else -> false
+    /**
+     * KOPRU (Dongu M00): eski boolean sozlesmesi [evaluate]'in uzerine kurulur —
+     * "basarili" sadece status == COMPLETED oldugunda true doner. Donemsel gorevlerde
+     * artik erken (donem bitmeden) true DONMEZ; bu, P0 2.4'un cozumudur.
+     * Cagiran taraflar (MissionsViewModel) kademeli olarak [evaluate]'e gecmelidir.
+     */
+    @Deprecated(
+        "Zaman/donem farkindaligi olmayan boolean sozlesme yerine evaluate() kullanin.",
+        ReplaceWith("evaluate(mission, input, now).status == MissionStatus.COMPLETED"),
+    )
+    fun checkProgress(mission: Mission, input: MissionCheckInput, now: LocalTime = LocalTime.now()): Boolean =
+        evaluate(mission, input, now).status == MissionStatus.COMPLETED
+
+    /**
+     * Gorevi zaman/donem farkinda degerlendirir (Dongu M00). [dayEnded]/[weekEnded] cagiran
+     * tarafca (PeriodBoundaryResolver ile) hesaplanip gecirilir — MissionEngine saf kalir,
+     * Android/Clock bagimliligi almaz.
+     *
+     * Kurallar (roadmap M00):
+     * - Eylem sayisi gorevleri hedefe ulasinca aninda COMPLETED.
+     * - Ust sinir gorevleri (ekran suresi, kilit acma) donem bitmeden COMPLETED OLAMAZ:
+     *   deger hedefin altindaysa IN_PROGRESS (>= %80 kullanimda AT_RISK), donem bitince
+     *   settlement'ta kesinlesir (bu fonksiyon dayEnded=true oldugunda COMPLETED/FAILED doner).
+     *   Ust sinir ASILIRSA donem bitmeden FAILED olabilir.
+     * - Gece gorevi 23:00 oncesi NOT_STARTED; 23:00 sonrasi kullanim yoksa SAFE (odul yok,
+     *   gun bitince COMPLETED), kullanim varsa FAILED.
+     * - Haftalik karsilastirma hafta bitmeden COMPLETED olamaz -> IN_PROGRESS.
+     * - Veri yoksa DATA_UNAVAILABLE.
+     */
+    fun evaluate(
+        mission: Mission,
+        input: MissionCheckInput,
+        now: LocalTime = LocalTime.now(),
+        dayEnded: Boolean = false,
+        weekEnded: Boolean = false,
+    ): MissionEvaluation = when (mission.id) {
+        DAILY_SCREEN_UNDER_3H -> evaluateUpperLimit(
+            current = input.screenTimeMinutesToday,
+            target = 180L,
+            periodEnded = dayEnded,
+        )
+        DAILY_NO_LATE_NIGHT -> evaluateNoLateNight(input.usedAfter23Today, now, dayEnded)
+        DAILY_UNLOCK_UNDER_30 -> evaluateUpperLimit(
+            current = input.unlockCountToday?.toLong(),
+            target = 30L,
+            periodEnded = dayEnded,
+        )
+        DAILY_CLASSIFICATION_CLEANUP -> evaluateActionCount(
+            current = input.taskEvents.classificationActionsToday.toLong(),
+            target = 1L,
+        )
+        DAILY_VIEW_NOTIF_REPORT -> evaluateActionFlag(input.taskEvents.notificationReportViewedToday)
+        WEEKLY_SCREEN_LESS -> evaluateWeeklyComparison(
+            current = input.weeklyScreenTimeMinutes,
+            previous = input.previousWeeklyScreenTimeMinutes,
+            weekEnded = weekEnded,
+        )
+        WEEKLY_POSITIVE_ACTIONS -> evaluateActionCount(
+            current = input.taskEvents.positiveEventsThisWeek.toLong(),
+            target = 3L,
+        )
+        else -> MissionEvaluation(
+            status = MissionStatus.DATA_UNAVAILABLE,
+            currentValue = null,
+            targetValue = null,
+            remainingValue = null,
+        )
+    }
+
+    /** Eylem sayisi gorevleri: hedefe ulasinca aninda COMPLETED, ulasmadiysa IN_PROGRESS. */
+    private fun evaluateActionCount(current: Long, target: Long): MissionEvaluation {
+        val remaining = (target - current).coerceAtLeast(0L)
+        return MissionEvaluation(
+            status = if (current >= target) MissionStatus.COMPLETED else MissionStatus.IN_PROGRESS,
+            currentValue = current,
+            targetValue = target,
+            remainingValue = remaining,
+        )
+    }
+
+    /** Tek seferlik bayrak gorevleri (orn. rapor goruntulendi mi). */
+    private fun evaluateActionFlag(done: Boolean): MissionEvaluation = MissionEvaluation(
+        status = if (done) MissionStatus.COMPLETED else MissionStatus.IN_PROGRESS,
+        currentValue = if (done) 1L else 0L,
+        targetValue = 1L,
+        remainingValue = if (done) 0L else 1L,
+    )
+
+    /**
+     * Ust sinir gorevleri: veri yoksa DATA_UNAVAILABLE; hedef asildiysa (donem bitmemis olsa
+     * bile) FAILED; donem bittiyse ve hedef altindaysa COMPLETED, ustundeyse FAILED;
+     * donem surerken hedefin altindaysa IN_PROGRESS (>= %80 kullanimda AT_RISK).
+     */
+    private fun evaluateUpperLimit(current: Long?, target: Long, periodEnded: Boolean): MissionEvaluation {
+        if (current == null) {
+            return MissionEvaluation(MissionStatus.DATA_UNAVAILABLE, null, target, null)
+        }
+        val remaining = (target - current).coerceAtLeast(0L)
+        if (current >= target) {
+            return MissionEvaluation(
+                status = MissionStatus.FAILED,
+                currentValue = current,
+                targetValue = target,
+                remainingValue = 0L,
+                failureReasonCode = "UPPER_LIMIT_EXCEEDED",
+            )
+        }
+        if (periodEnded) {
+            return MissionEvaluation(MissionStatus.COMPLETED, current, target, remaining)
+        }
+        val ratio = current.toDouble() / target.toDouble()
+        val status = if (ratio >= 0.8) MissionStatus.AT_RISK else MissionStatus.IN_PROGRESS
+        return MissionEvaluation(status, current, target, remaining)
+    }
+
+    /**
+     * Gece kullanmama gorevi: 23:00 oncesi NOT_STARTED (veri var/yok fark etmez — donem
+     * henuz baslamadi). 23:00 sonrasi: veri yoksa DATA_UNAVAILABLE; kullanim varsa
+     * (dogrudan FAILED — donem bitmeden bile kesinlesir, kural asildi); kullanim yoksa
+     * SAFE (gun bitmediyse) veya COMPLETED (gun bittiyse).
+     */
+    private fun evaluateNoLateNight(usedAfter23: Boolean?, now: LocalTime, dayEnded: Boolean): MissionEvaluation {
+        val nightStart = LocalTime.of(23, 0)
+        if (now.isBefore(nightStart) && !dayEnded) {
+            return MissionEvaluation(MissionStatus.NOT_STARTED, null, null, null)
+        }
+        if (usedAfter23 == null) {
+            return MissionEvaluation(MissionStatus.DATA_UNAVAILABLE, null, null, null)
+        }
+        if (usedAfter23) {
+            return MissionEvaluation(
+                status = MissionStatus.FAILED,
+                currentValue = 1L,
+                targetValue = 0L,
+                remainingValue = 0L,
+                failureReasonCode = "LATE_NIGHT_USAGE_DETECTED",
+            )
+        }
+        val status = if (dayEnded) MissionStatus.COMPLETED else MissionStatus.SAFE
+        return MissionEvaluation(status, 0L, 0L, 0L)
+    }
+
+    /**
+     * Haftalik karsilastirma: baseline yoksa DATA_UNAVAILABLE; hafta bitmediyse her zaman
+     * IN_PROGRESS (erken odul yok — P0 2.4 fix); hafta bittiyse simdiki < onceki ise
+     * COMPLETED, degilse FAILED.
+     */
+    private fun evaluateWeeklyComparison(current: Long?, previous: Long?, weekEnded: Boolean): MissionEvaluation {
+        if (current == null || previous == null || previous <= 0L) {
+            return MissionEvaluation(MissionStatus.DATA_UNAVAILABLE, current, previous, null)
+        }
+        if (!weekEnded) {
+            return MissionEvaluation(MissionStatus.IN_PROGRESS, current, previous, (previous - current).coerceAtLeast(0L))
+        }
+        return if (current < previous) {
+            MissionEvaluation(MissionStatus.COMPLETED, current, previous, 0L)
+        } else {
+            MissionEvaluation(
+                status = MissionStatus.FAILED,
+                currentValue = current,
+                targetValue = previous,
+                remainingValue = 0L,
+                failureReasonCode = "WEEKLY_COMPARISON_NOT_IMPROVED",
+            )
         }
     }
 

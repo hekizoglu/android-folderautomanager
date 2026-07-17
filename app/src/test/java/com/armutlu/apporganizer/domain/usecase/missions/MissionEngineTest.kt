@@ -1,19 +1,19 @@
 package com.armutlu.apporganizer.domain.usecase.missions
 
 import com.armutlu.apporganizer.utils.TaskScoreManager
+import java.time.LocalTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * MissionEngine — deterministik uretim + checkProgress senaryolari (D257).
+ * MissionEngine — deterministik uretim + checkProgress/evaluate senaryolari (D257, M00).
  *
- * NOT (Döngü H00 — ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md P0 2.4 / 2.5):
- * Asagidaki "currentBehavior_p0_..." testleri REFAKTOR ONCESI mevcut (hatali) davranisi
- * kilitler; amac bu testleri kirmizi yapmak degil, mevcut hatayi görünür kilmaktir.
- * Roadmap sonraki dongude (WeekUtils / donem-farkinda checkProgress) bu testleri
- * dogru davranisa cevirecektir.
+ * NOT (Döngü M00 — ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md P0 2.4 fix):
+ * H00'daki "currentBehavior_p0_..." testleri REFAKTOR ONCESI hatali davranisi (donem
+ * bitmeden erken odul) kilitliyordu. Bu dongude MissionEngine.evaluate() zaman/donem
+ * farkindaligi kazandi; asagidaki testler artik DOGRU davranisi dogrular.
  */
 class MissionEngineTest {
     @Test
@@ -99,45 +99,54 @@ class MissionEngineTest {
     }
 
     @Test
-    fun `screen time under 3 hours completes daily mission and over does not`() {
+    fun `screen time under 3 hours completes daily mission only after day ends, over fails immediately`() {
+        // M00: ust sinir gorevi donem bitmeden COMPLETED olamaz -> gun surerken IN_PROGRESS,
+        // gun bittiyse (dayEnded=true) ve hedefin altindaysa COMPLETED. Hedef asilirsa
+        // (>=180) donem bitmesini beklemeden FAILED.
         val mission = MissionEngine.Mission(
             MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
             MissionEngine.DAILY_STAR, autoCheckable = true,
         )
-        assertTrue(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L)))
-        assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 200L)))
+        assertEquals(
+            MissionStatus.IN_PROGRESS,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L), dayEnded = false).status
+        )
+        assertEquals(
+            MissionStatus.COMPLETED,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L), dayEnded = true).status
+        )
+        assertEquals(
+            MissionStatus.FAILED,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 200L), dayEnded = false).status
+        )
         // Veri yoksa (izin verilmemis) uydurma basari yok
-        assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = null)))
+        assertEquals(
+            MissionStatus.DATA_UNAVAILABLE,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = null), dayEnded = false).status
+        )
     }
 
     @Test
-    fun `weekly screen less requires valid previous baseline`() {
+    fun `weekly screen less requires valid previous baseline and week end for completion`() {
+        // M00: haftalik karsilastirma hafta bitmeden COMPLETED olamaz -> IN_PROGRESS.
         val mission = MissionEngine.Mission(
             MissionEngine.WEEKLY_SCREEN_LESS, MissionEngine.MissionType.WEEKLY,
             MissionEngine.WEEKLY_STAR, autoCheckable = true,
         )
-        assertTrue(
-            MissionEngine.checkProgress(
-                mission,
-                MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 500L, previousWeeklyScreenTimeMinutes = 700L),
-            )
-        )
-        assertFalse(
-            MissionEngine.checkProgress(
-                mission,
-                MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 800L, previousWeeklyScreenTimeMinutes = 700L),
-            )
-        )
+        val improvingInput = MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 500L, previousWeeklyScreenTimeMinutes = 700L)
+        assertEquals(MissionStatus.IN_PROGRESS, MissionEngine.evaluate(mission, improvingInput, weekEnded = false).status)
+        assertEquals(MissionStatus.COMPLETED, MissionEngine.evaluate(mission, improvingInput, weekEnded = true).status)
+
+        val worseInput = MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 800L, previousWeeklyScreenTimeMinutes = 700L)
+        assertEquals(MissionStatus.FAILED, MissionEngine.evaluate(mission, worseInput, weekEnded = true).status)
+
         // Baseline 0 (ilk hafta) — sahte basari verilmez
-        assertFalse(
-            MissionEngine.checkProgress(
-                mission,
-                MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 100L, previousWeeklyScreenTimeMinutes = 0L),
-            )
-        )
+        val noBaselineInput = MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 100L, previousWeeklyScreenTimeMinutes = 0L)
+        assertEquals(MissionStatus.DATA_UNAVAILABLE, MissionEngine.evaluate(mission, noBaselineInput, weekEnded = true).status)
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `classification cleanup mission needs a real classification action`() {
         val mission = MissionEngine.Mission(
             MissionEngine.DAILY_CLASSIFICATION_CLEANUP, MissionEngine.MissionType.DAILY,
@@ -155,17 +164,29 @@ class MissionEngineTest {
     }
 
     @Test
-    fun `no late night mission true only when hourly data confirms no usage`() {
+    fun `no late night mission resolves only after 23h00 with hourly data confirming no usage`() {
+        // M00: gece gorevi zaman farkindalidir - 23:00 sonrasi degerlendirilebilir.
         val mission = MissionEngine.Mission(
             MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
             MissionEngine.DAILY_STAR, autoCheckable = true,
         )
-        assertTrue(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = false)))
-        assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = true)))
-        assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = null)))
+        val afterNight = LocalTime.of(23, 30)
+        assertEquals(
+            MissionStatus.SAFE,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = false), now = afterNight).status
+        )
+        assertEquals(
+            MissionStatus.FAILED,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = true), now = afterNight).status
+        )
+        assertEquals(
+            MissionStatus.DATA_UNAVAILABLE,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = null), now = afterNight).status
+        )
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `weekly positive actions needs three real positive events`() {
         val mission = MissionEngine.Mission(
             MissionEngine.WEEKLY_POSITIVE_ACTIONS, MissionEngine.MissionType.WEEKLY,
@@ -185,72 +206,109 @@ class MissionEngineTest {
         )
     }
 
-    // ── P0 2.4: donemsel gorevler erken tamamlaniyor ────────────────────────────
-    // MissionEngine.checkProgress() zaman/donem farkindaligi olmayan SAF bir fonksiyondur:
-    // sadece o an gecirilen anlik degeri degerlendirir, gunun/haftanin bitip bitmedigini bilmez.
-    // Cagiran taraf (MissionsViewModel.computeAndAward, her ekran acilisinda refresh() ile
-    // cagrilir) bu anlik sonucu DOGRUDAN "basarili" olarak isaretleyip yildiz veriyor.
-    // Su an Clock/now MissionEngine'e enjekte edilemiyor (checkProgress zaman parametresi almiyor,
-    // "simdi gunun/haftanin ortasi mi sonu mu" bilgisi yok) - bu yuzden "donem bitmeden odul
-    // verilmemeli" davranisini checkProgress seviyesinde dogrudan test edemiyoruz.
-    // Asagidaki testler MEVCUT (hatali) davranisi checkProgress girdi/cikti sozlesmesi
-    // uzerinden kanitliyor: ust sinir hedefine SABAH ARADA BILE ulasilsa (gun bitmeden)
-    // fonksiyon "basarili" doner - cunku gunun geri kalaninda sinirin asilip asilmayacagini
-    // bilmiyor.
+    // ── M00: donemsel gorevlerde erken odul kaldirildi (P0 2.4 fix) ─────────────
+    // MissionEngine.evaluate() artik zaman/donem farkindalidir: ust sinir ve haftalik
+    // karsilastirma gorevleri donem bitmeden (dayEnded/weekEnded=false) COMPLETED
+    // DONEMEZ, sadece IN_PROGRESS/AT_RISK/SAFE gibi ara durumlar doner. MissionsViewModel
+    // sadece status == COMPLETED oldugunda yildiz yazar; bu yuzden asagidaki testler
+    // "donem surerken odul yok" davranisini dogrudan evaluate() uzerinden kanitlar.
 
     @Test
-    fun `currentBehavior_p0_earlyRewardGivenForUpperLimitMission`() {
+    fun `morning screen time under target stays in progress without reward`() {
         // Sabah ekran suresi 90 dakika, gunluk hedef "3 saatin (180dk) altinda kal".
-        // Gun henuz bitmedi (bu bilgi checkProgress'e hic verilmiyor) ama fonksiyon
-        // simdiden "basarili" donuyor - MissionsViewModel bunu aninda yildizla odullendirir.
+        // Gun henuz bitmedi (dayEnded=false) - dogru davranis IN_PROGRESS, COMPLETED DEGIL.
         val mission = MissionEngine.Mission(
             MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
             MissionEngine.DAILY_STAR, autoCheckable = true,
         )
         val morningInput = MissionEngine.MissionCheckInput(screenTimeMinutesToday = 90L)
 
-        val result = MissionEngine.checkProgress(mission, morningInput)
+        val result = MissionEngine.evaluate(mission, morningInput, dayEnded = false)
 
-        // P0: dogru davranis "gun bitmeden basari kesinlesmemeli" olurdu; mevcut kod
-        // yalnizca anlik degeri esikle karsilastirdigi icin erken basari doner.
-        assertTrue(
-            "P0 2.4 kaniti: checkProgress zaman/donem bilgisi olmadan anlik degeri " +
-                "dogrudan basari sayiyor (90dk < 180dk esigi, gun henuz bitmemis olsa bile)",
-            result
-        )
+        assertEquals(MissionStatus.IN_PROGRESS, result.status)
+        assertEquals(90L, result.currentValue)
+        assertEquals(180L, result.targetValue)
     }
 
     @Test
-    fun `currentBehavior_p0_noLateNightMissionHasNoTimeOfDayAwareness`() {
-        // Saat 20:00'de (gece henuz gelmedi, 23:00 saati icin veri yok) "usedAfter23Today"
-        // sinyali henuz bilinemez durumda olabilir; ancak eger cagiran taraf yanlislikla
-        // "simdiye kadar 23:00'te kullanim yok" der ve false gecirirse, checkProgress
-        // saatin kac oldugunu HIC bilmedigi icin gunun geri kalaninda (20:00-23:59 arasi)
-        // kullanici gec saatte telefona bakabilecek olsa bile "basarili" doner.
-        // MissionEngine, "simdi saat kac / gun bitti mi" bilgisini enjekte edecek bir
-        // Clock/now parametresi ALMAZ - bu yuzden "saat 20:00'de gece gorevi
-        // odullendirilmemeli" senaryosunu checkProgress duzeyinde dogrudan simule edemiyoruz;
-        // yalnizca sozlesmenin zaman-korlugunu (time-blindness) belgeliyoruz.
+    fun `screen time at target upper limit fails even before day ends`() {
+        // 180/180 dakika -> ust sinire ULASILDI (asildi degil ama esit) - FAILED, donem
+        // bitmesini beklemeye gerek yok cunku kural zaten bozuldu.
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val input = MissionEngine.MissionCheckInput(screenTimeMinutesToday = 180L)
+
+        val result = MissionEngine.evaluate(mission, input, dayEnded = false)
+
+        assertEquals(MissionStatus.FAILED, result.status)
+        assertEquals("UPPER_LIMIT_EXCEEDED", result.failureReasonCode)
+    }
+
+    @Test
+    fun `night mission at 20h00 is not started yet`() {
+        // Saat 20:00'de gece gorevi henuz baslamamis olmali (23:00 esigi gecilmedi).
         val mission = MissionEngine.Mission(
             MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
             MissionEngine.DAILY_STAR, autoCheckable = true,
         )
-        // usedAfter23Today=false her zaman "basarili" doner - gunun hangi saatinde
-        // cagrildigindan BAGIMSIZ (checkProgress imzasinda saat/zaman parametresi yok).
-        val result = MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput(usedAfter23Today = false))
-
-        assertTrue(
-            "P0 2.4 kaniti: checkProgress saat bilgisini hic almadigi icin gun bitmeden " +
-                "(ornegin saat 20:00'de) de usedAfter23Today=false verilirse basari doner",
-            result
+        val result = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(usedAfter23Today = false),
+            now = LocalTime.of(20, 0),
         )
+
+        assertEquals(MissionStatus.NOT_STARTED, result.status)
     }
 
     @Test
-    fun `currentBehavior_p0_weeklyComparisonRewardsBeforeWeekEnds`() {
+    fun `night mission at 23h30 with no usage is safe but not yet rewarded`() {
+        // Saat 23:30, 23:00'ten sonra kullanim yok -> SAFE (gun sonuna kadar odul yok,
+        // COMPLETED sadece dayEnded=true oldugunda gelir).
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val result = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(usedAfter23Today = false),
+            now = LocalTime.of(23, 30),
+            dayEnded = false,
+        )
+
+        assertEquals(MissionStatus.SAFE, result.status)
+
+        val settled = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(usedAfter23Today = false),
+            now = LocalTime.of(23, 59),
+            dayEnded = true,
+        )
+        assertEquals(MissionStatus.COMPLETED, settled.status)
+    }
+
+    @Test
+    fun `night mission with late usage fails regardless of day end`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val result = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(usedAfter23Today = true),
+            now = LocalTime.of(23, 30),
+            dayEnded = false,
+        )
+
+        assertEquals(MissionStatus.FAILED, result.status)
+        assertEquals("LATE_NIGHT_USAGE_DETECTED", result.failureReasonCode)
+    }
+
+    @Test
+    fun `weekly comparison mid week stays in progress without reward`() {
         // Bu haftanin ekran suresi simdiye kadar 60dk, gecen hafta TOPLAM 1000dk idi.
-        // Hafta henuz bitmemis olsa bile (checkProgress bu bilgiyi bilmiyor) 60 < 1000
-        // oldugu icin basari doner - MissionsViewModel bunu hafta ortasinda bile odullendirir.
+        // Hafta henuz bitmedi (weekEnded=false) -> dogru davranis IN_PROGRESS.
         val mission = MissionEngine.Mission(
             MissionEngine.WEEKLY_SCREEN_LESS, MissionEngine.MissionType.WEEKLY,
             MissionEngine.WEEKLY_STAR, autoCheckable = true,
@@ -260,11 +318,28 @@ class MissionEngineTest {
             previousWeeklyScreenTimeMinutes = 1000L,
         )
 
-        val result = MissionEngine.checkProgress(mission, midWeekInput)
+        val result = MissionEngine.evaluate(mission, midWeekInput, weekEnded = false)
 
-        assertTrue(
-            "P0 2.4 kaniti: hafta henuz bitmeden (pazartesi, sadece 60dk gecmisken) " +
-                "gecen haftanin 1000dk'sina gore karsilastirma zaten basari donuyor",
+        assertEquals(MissionStatus.IN_PROGRESS, result.status)
+
+        val settled = MissionEngine.evaluate(mission, midWeekInput, weekEnded = true)
+        assertEquals(MissionStatus.COMPLETED, settled.status)
+    }
+
+    @Test
+    fun `checkProgress bridge only returns true when evaluate resolves to COMPLETED`() {
+        // Kopru sozlesmesi: donemsel gorev donem surerken artik true DONMEMELI (P0 2.4 fix).
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val morningInput = MissionEngine.MissionCheckInput(screenTimeMinutesToday = 90L)
+
+        @Suppress("DEPRECATION")
+        val result = MissionEngine.checkProgress(mission, morningInput)
+
+        assertFalse(
+            "M00 fix: checkProgress kopru fonksiyonu artik donem bitmeden true DONMEMELI",
             result
         )
     }

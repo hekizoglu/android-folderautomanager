@@ -5,12 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.MissionsRepository
+import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
+import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -35,9 +40,12 @@ class MissionsViewModel @Inject constructor(
         val id: String,
         val title: String,
         val starReward: Int,
-        val completed: Boolean,
+        val status: MissionStatus,
         val autoCheckable: Boolean,
-    )
+    ) {
+        // M06'da status'e gore yeniden tasarlanana kadar UI kirilmasin diye korunur.
+        val completed: Boolean get() = status == MissionStatus.COMPLETED
+    }
 
     data class MissionsUiState(
         val totalStars: Int = 0,
@@ -52,6 +60,18 @@ class MissionsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(MissionsUiState())
     val uiState: StateFlow<MissionsUiState> = _uiState.asStateFlow()
+
+    // M00: donem sinirlarini (gun/hafta bitti mi) hesaplamak icin H01 altyapisi (sistem saat dilimi).
+    private val periodBoundaryResolver = PeriodBoundaryResolver(Clock.systemDefaultZone(), ZoneId.systemDefault())
+
+    // Aninda (eylem sayisi/bayrak) tamamlanabilir gorevler — SADECE bunlar computeAndAward'da
+    // yildiz kazandirir. Donemsel (ust sinir / haftalik karsilastirma / gece) gorevler
+    // settlement'a kadar (M04) odul YAZMAZ.
+    private val instantlyCompletableMissionIds = setOf(
+        MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
+        MissionEngine.DAILY_VIEW_NOTIF_REPORT,
+        MissionEngine.WEEKLY_POSITIVE_ACTIONS,
+    )
 
     /** Ekran acilisinda cagrilir — otomatik gorevleri dogrular, yeni tamamlananlara yildiz yazar. */
     fun refresh() {
@@ -84,6 +104,16 @@ class MissionsViewModel @Inject constructor(
             cooldownWeeks = MissionEngine.weeklyCooldownWeeks(),
         )
 
+        val now = LocalTime.now()
+        // refresh() sadece ekran acikken (kullanici o an telefonu kullanirken) cagrilir, yani
+        // gorulen an her zaman donemin (gun/hafta) SIRASINDADIR - donem bitmis olamaz. Gercek
+        // "donem bitti" sinirlari (gece yarisi / Pazartesi 00:00) settlement is'idir (M04),
+        // orada PeriodBoundaryResolver.nextLocalMidnight()/nextWeekBoundary() ile tetiklenecek
+        // arka plan islemi kullanilacaktir. Referans birligini korumak icin burada tutulur.
+        periodBoundaryResolver.currentDay()
+        val dayEnded = false
+        val weekEnded = false
+
         var newStars = 0
         val dailyDone = missionsRepository.getCompletedDailyIds(epochDay).toMutableSet()
         val daily = MissionEngine.generateDaily(
@@ -94,13 +124,15 @@ class MissionsViewModel @Inject constructor(
             )
         ).map { mission ->
             val already = mission.id in dailyDone
-            val completed = already || MissionEngine.checkProgress(mission, input)
-            if (completed && !already) {
+            val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
+            val status = if (already) MissionStatus.COMPLETED else evaluation.status
+            val justCompleted = status == MissionStatus.COMPLETED && !already
+            if (justCompleted && mission.id in instantlyCompletableMissionIds) {
                 missionsRepository.markDailyCompleted(epochDay, mission.id)
                 dailyDone += mission.id
                 newStars += mission.starReward
             }
-            mission.toUi(completed)
+            mission.toUi(status)
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
@@ -112,13 +144,15 @@ class MissionsViewModel @Inject constructor(
             )
         ).map { mission ->
             val already = mission.id in weeklyDone
-            val completed = already || MissionEngine.checkProgress(mission, input)
-            if (completed && !already) {
+            val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
+            val status = if (already) MissionStatus.COMPLETED else evaluation.status
+            val justCompleted = status == MissionStatus.COMPLETED && !already
+            if (justCompleted && mission.id in instantlyCompletableMissionIds) {
                 missionsRepository.markWeeklyCompleted(epochWeek, mission.id)
                 weeklyDone += mission.id
                 newStars += mission.starReward
             }
-            mission.toUi(completed)
+            mission.toUi(status)
         }
 
         val taskScore = TaskScoreManager.getSnapshotV2(context)
@@ -163,11 +197,11 @@ class MissionsViewModel @Inject constructor(
         )
     }
 
-    private fun MissionEngine.Mission.toUi(completed: Boolean) = MissionUi(
+    private fun MissionEngine.Mission.toUi(status: MissionStatus) = MissionUi(
         id = id,
         title = context.getString(titleRes(id)),
         starReward = starReward,
-        completed = completed,
+        status = status,
         autoCheckable = autoCheckable,
     )
 
