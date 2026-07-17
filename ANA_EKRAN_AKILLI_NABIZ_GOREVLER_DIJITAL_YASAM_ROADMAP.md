@@ -998,7 +998,7 @@ WorkManager:
 
 **Bağımlılıklar:** M01, M02, M03.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M04 — commit: 8422c48 — tarih: 2026-07-17 — Not: Geçmiş dönem metrikleri periodEndAt-1 anıyla sorgulanır (10 gün lookback); DATA_UNAVAILABLE'da 48 saat grace period (tazeyse sonraki catch-up'a bırakılır, eskiyse FAILED). Transaction runner soyutlamasıyla unit test edilebilir. UsageStats saklama süresi cihaza göre değişebilir — gerçek cihaz gözlemi U04 test matrisine not.
 
 ---
 
