@@ -348,7 +348,11 @@ fun SettingsHomeScreenSection(
     // ── Saat ve Dijital Nabız (Pulse Clock, D244) ────────────────────────
     SettingsSectionTitle(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_clock_pulse_title))
     var clockStyle by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getClockStyle(context)) }
-    var homeScoreVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeScoreVisible(context)) }
+    // D03: eski "Ana Ekranda Skor Göster" (pulse ring) toggle'ı yerini Dijital Yaşam kartı
+    // görünürlüğüne bıraktı — skor artık PulseClockWidget'ta değil, HomeScreen'deki
+    // DigitalLifeCard'da tek yerde gösteriliyor. isDigitalLifeCardVisible() ilk çağrıda
+    // eski KEY_HOME_SCORE_VISIBLE değerini bir kez migrate eder.
+    var digitalLifeCardVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDigitalLifeCardVisible(context)) }
     var homeInsightVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeInsightVisible(context)) }
     var homeUsageChartVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeUsageChartVisible(context)) }
     var homeWeatherEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeWeatherEnabled(context)) }
@@ -487,12 +491,12 @@ fun SettingsHomeScreenSection(
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         SettingsSwitchRow(
             icon = Icons.Default.Star,
-            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_score_visible_title),
-            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_score_visible_desc),
-            checked = homeScoreVisible,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_digital_life_card_visible_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_digital_life_card_visible_desc),
+            checked = digitalLifeCardVisible,
             onCheckedChange = {
-                homeScoreVisible = it
-                com.armutlu.apporganizer.utils.AppPrefs.setHomeScoreVisible(context, it)
+                digitalLifeCardVisible = it
+                com.armutlu.apporganizer.utils.AppPrefs.setDigitalLifeCardVisible(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

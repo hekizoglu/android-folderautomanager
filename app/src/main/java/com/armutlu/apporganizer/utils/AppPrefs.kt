@@ -500,10 +500,48 @@ object AppPrefs {
         prefs(context).getString(KEY_CLOCK_STYLE, CLOCK_STYLE_PULSE) ?: CLOCK_STYLE_PULSE
     fun setClockStyle(context: Context, v: String) = prefs(context).edit().putString(KEY_CLOCK_STYLE, v).apply()
 
-    // Ana ekranda Dijital Yaşam Skoru halkası görünürlüğü
+    // Ana ekranda Dijital Yaşam Skoru halkası görünürlüğü — D03 itibariyle PulseClockWidget'taki
+    // PulseScoreRing artık çağrılmıyor (deprecated), bu yüzden bu ayar davranışsal olarak
+    // pasiftir. Geriye dönük okuma/migration kaynağı olarak SİLİNMEDEN bırakıldı.
     const val KEY_HOME_SCORE_VISIBLE = "home_score_visible"
     fun isHomeScoreVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_SCORE_VISIBLE, true)
     fun setHomeScoreVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_SCORE_VISIBLE, v).apply()
+
+    // ── Dijital Yaşam Kartı görünürlüğü (D03) ─────────────────────────────
+    // Skor artık TEK yerde: DigitalLifeCard (HomeScreen). PulseClockWidget içindeki
+    // PulseScoreRing kaldırıldı (deprecated). Migration: eski KEY_HOME_SCORE_VISIBLE bir
+    // kez okunur — eski skor görünürse yeni kart görünür başlar; pulse ring zaten kod
+    // seviyesinde her durumda kapalı. Migration bayrağı ile tek sefer çalışır.
+    const val KEY_DIGITAL_LIFE_CARD_VISIBLE = "digital_life_card_visible"
+    private const val KEY_DIGITAL_LIFE_CARD_MIGRATION_DONE = "digital_life_card_migration_done"
+
+    fun isDigitalLifeCardVisible(context: Context): Boolean {
+        migrateDigitalLifeCardVisibilityIfNeeded(context)
+        return prefs(context).getBoolean(KEY_DIGITAL_LIFE_CARD_VISIBLE, true)
+    }
+
+    fun setDigitalLifeCardVisible(context: Context, v: Boolean) {
+        // Kullanıcı elle değiştirdiyse migration'ın üzerine yazmasını da engellemiş oluyoruz —
+        // migration zaten tek seferlik bayrakla korunuyor, burada sadece garanti altına alıyoruz.
+        prefs(context).edit()
+            .putBoolean(KEY_DIGITAL_LIFE_CARD_VISIBLE, v)
+            .putBoolean(KEY_DIGITAL_LIFE_CARD_MIGRATION_DONE, true)
+            .apply()
+    }
+
+    /**
+     * D03 migration: eski `KEY_HOME_SCORE_VISIBLE` tercihini yeni `KEY_DIGITAL_LIFE_CARD_VISIBLE`e
+     * tek sefer taşır. Bayrak (`KEY_DIGITAL_LIFE_CARD_MIGRATION_DONE`) set edilmişse tekrar çalışmaz.
+     */
+    internal fun migrateDigitalLifeCardVisibilityIfNeeded(context: Context) {
+        val sharedPrefs = prefs(context)
+        if (sharedPrefs.getBoolean(KEY_DIGITAL_LIFE_CARD_MIGRATION_DONE, false)) return
+        val legacyScoreVisible = sharedPrefs.getBoolean(KEY_HOME_SCORE_VISIBLE, true)
+        sharedPrefs.edit()
+            .putBoolean(KEY_DIGITAL_LIFE_CARD_VISIBLE, legacyScoreVisible)
+            .putBoolean(KEY_DIGITAL_LIFE_CARD_MIGRATION_DONE, true)
+            .apply()
+    }
 
     // Ana ekranda tek satırlık içgörü görünürlüğü
     const val KEY_HOME_INSIGHT_VISIBLE = "home_insight_visible"

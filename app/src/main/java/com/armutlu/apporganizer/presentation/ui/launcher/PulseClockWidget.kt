@@ -62,9 +62,13 @@ import kotlinx.coroutines.delay
 
 /**
  * Pulse Clock — ana ekranın imza saat bileşeni (D244). Üç stil (Minimal/Pulse/Glass) destekler,
- * ayarlar AppPrefs.KEY_CLOCK_STYLE / KEY_HOME_SCORE_VISIBLE / KEY_HOME_INSIGHT_VISIBLE'dan okunur.
+ * ayarlar AppPrefs.KEY_CLOCK_STYLE / KEY_HOME_INSIGHT_VISIBLE'dan okunur.
  *
- * Performans: saat metni dakika sınırında güncellenir (her saniye DEĞİL); skor/içgörü
+ * D03: Skor artık burada gösterilmez — birincil ve tek gösterim DigitalLifeCard'dır
+ * (KEY_DIGITAL_LIFE_CARD_VISIBLE, HomeScreen). PulseClockWidget saat/tarih/hava ve isteğe
+ * bağlı kısa içgörü (KEY_HOME_INSIGHT_VISIBLE) gösterir.
+ *
+ * Performans: saat metni dakika sınırında güncellenir (her saniye DEĞİL); içgörü
  * PulseClockViewModel'den TEK motor (DigitalPulseEngine) üzerinden gelir ve 15dk cache'lidir —
  * saat tik'i asla skor hesabı tetiklemez.
  *
@@ -192,7 +196,9 @@ private fun PulseCard(
     modifier: Modifier,
 ) {
     val context = LocalContext.current
-    val cardHeight = if (compact) 112.dp else 148.dp
+    // D03: PulseScoreRing kaldırıldı (skor artık tek yerde — DigitalLifeCard). Ring alanı
+    // boşaldığı için kart yüksekliği sıkılaştırıldı, klasör gridine alan kazandırıldı.
+    val cardHeight = if (compact) 96.dp else 128.dp
     val bgAlpha = if (glass) 0.16f else 0.10f
     val borderAlpha = if (glass) 0.28f else 0.16f
 
@@ -275,18 +281,13 @@ private fun PulseCard(
                 }
             }
 
-            if (scoreVisible && uiState.score != null) {
-                Spacer(Modifier.width(12.dp))
-                PulseScoreRing(
-                    score = uiState.score,
-                    delta = uiState.scoreDelta,
-                    weeklyScreenTimeMinutes = uiState.weeklyScreenTimeMinutes,
-                    hourlyUsageMinutes = if (usageChartVisible) uiState.hourlyUsageMinutes else null,
-                    personalityLabel = if (missionsEnabled) uiState.personalityLabel else null,
-                    compact = compact,
-                    onClick = onOpenScoreDetails,
-                )
-            }
+            // D03: Skor halkası (PulseScoreRing) ana ekran düzeninden kaldırıldı — skorun
+            // birincil ve tek gösterimi artık DigitalLifeCard'dır (HomeScreen). PulseClockWidget
+            // artık yalnız saat/tarih/hava/kısa içgörü gösterir; ham skor burada tekrarlanmaz.
+            // `scoreVisible`/`usageChartVisible`/`missionsEnabled` parametreleri çağrı yerinde hâlâ
+            // hesaplanıyor (Settings toggle'ları geçerliliğini korusun diye) ama burada artık
+            // kullanılmıyor — derleyici "unused parameter" uyarısı verir, hata vermez. Ring'in
+            // kendisi silinmedi, bkz. @Deprecated PulseScoreRing.
         }
     }
 }
@@ -382,6 +383,13 @@ private fun WeatherSummary(
     }
 }
 
+/**
+ * D03: Ana ekran düzeninde artık ÇAĞRILMIYOR — skorun birincil gösterimi DigitalLifeCard'a
+ * taşındı (bkz. ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md Döngü D03). Kod
+ * kasıtlı olarak SİLİNMEDİ; hiçbir çağrı kalmadığı bir sonraki temizlik döngüsünde
+ * doğrulanınca kaldırılacak.
+ */
+@Deprecated("Ana ekranda artık kullanılmıyor — skor DigitalLifeCard'da gösterilir (D03).")
 @Composable
 private fun PulseScoreRing(
     score: Int,

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu D03 - 2026-07-17 - Pulse Clock skor tekrari kaldirildi
+
+**Yapilanlar:** PulseScoreRing widget'tan cikti (@Deprecated birakildi), saat karti 148->128dp / 112->96dp sikilastirildi (klasor gridine alan); KEY_DIGITAL_LIFE_CARD_VISIBLE + tek seferlik bayrakli migration (eski KEY_HOME_SCORE_VISIBLE'dan); Settings toggle yeni anahtari yonetiyor; HomeScreen reaktif gorunurluk (OnSharedPreferenceChangeListener); BackupManager yeni anahtari export/import ediyor. 5/5 migration testi + Pulse/AppPrefs testleri yesil.
+
+**Bug:** Yok. PulseClockViewModel skor state'i icgoru/kisilik uretimi icin bilinçli korundu (regresyon riski).
+
+**Sonraki:** D04 — PulseReasonPresenter + D FAZ KAPANISI (tam test + build + APK).
+
 ## Akilli Nabiz Dongu D02 - 2026-07-17 - DigitalLifeCard bilgi karti
 
 **Yapilanlar:** HomePulseSummary + mapper (skor bantlari->notr etiket, LOW confidence'ta sayi gizlenir "Veri birikiyor", STALE'de dakika, UNAVAILABLE'da CTA+tiklama kapali); DigitalLifeCard eski DigitalScoreCard'in yerine (silindi); topReason = max |delta| reason (minimal, D04 tam yapacak); TR/EN ~29 string. 23/23 mapper testi yesil.

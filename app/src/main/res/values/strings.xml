@@ -435,6 +435,8 @@
     <string name="settings_search_bar_position_desc">Tek elle kullanım için arama çubuğunu alta al</string>
     <string name="settings_home_score_visible_title">Ana Ekranda Skor Göster</string>
     <string name="settings_home_score_visible_desc">Saat kartında dijital yaşam skoru halkası görünür</string>
+    <string name="settings_digital_life_card_visible_title">Dijital Yaşam Kartı</string>
+    <string name="settings_digital_life_card_visible_desc">Ana ekranda dijital yaşam skorunu ve trendini gösteren kartı görünür yapar</string>
     <string name="settings_home_insight_visible_title">Ana Ekranda İçgörü Göster</string>
     <string name="settings_home_insight_visible_desc">Saat kartında tek satırlık kişisel içgörü görünür</string>
     <string name="settings_home_usage_chart_visible_title">Denge Altında 24 Saat Grafiği</string>

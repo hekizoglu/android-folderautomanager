@@ -433,6 +433,8 @@
     <string name="settings_search_bar_position_desc">Move the search bar to the bottom for one-handed use</string>
     <string name="settings_home_score_visible_title">Show Score on Home Screen</string>
     <string name="settings_home_score_visible_desc">Shows the digital life score ring in the clock card</string>
+    <string name="settings_digital_life_card_visible_title">Digital Life Card</string>
+    <string name="settings_digital_life_card_visible_desc">Shows the card with your digital life score and trend on the home screen</string>
     <string name="settings_home_insight_visible_title">Show Insight on Home Screen</string>
     <string name="settings_home_insight_visible_desc">Shows a one-line personal insight in the clock card</string>
     <string name="settings_home_usage_chart_visible_title">24-Hour Chart Under Balance</string>

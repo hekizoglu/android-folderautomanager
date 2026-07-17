@@ -138,6 +138,9 @@ fun HomeScreen(
     var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
     var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
     var missionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)) }
+    // D03: skor artık tek yerde — DigitalLifeCard. isDigitalLifeCardVisible() eski
+    // KEY_HOME_SCORE_VISIBLE tercihini ilk çağrıda bir kez migrate eder.
+    var digitalLifeCardVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDigitalLifeCardVisible(context)) }
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
     val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
     val tickerItems by viewModel.tickerItems.collectAsState()
@@ -289,6 +292,8 @@ fun HomeScreen(
                     tickerEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_MISSIONS_ENABLED ->
                     missionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_DIGITAL_LIFE_CARD_VISIBLE ->
+                    digitalLifeCardVisible = com.armutlu.apporganizer.utils.AppPrefs.isDigitalLifeCardVisible(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_INSTALLS_ENABLED -> {
                     recentInstallsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)
                     viewModel.refreshTodayInstalled()
@@ -592,7 +597,7 @@ fun HomeScreen(
             // Görevler + Dijital Yaşam Skoru — aynı boyut/stilde iki bağımsız kart, yan yana
             // (Görevler solda, Skor sağda). Eskiden Görevler ayrı bir chip, Skor ticker metnine
             // gömülü bir rozetti (ROADMAP #28) — artık simetrik bir çift oluşturuyorlar.
-            if (missionsEnabled || homePulseSummary != null) {
+            if (missionsEnabled || (digitalLifeCardVisible && homePulseSummary != null)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -615,17 +620,19 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                         )
                     }
-                    DigitalLifeCard(
-                        summary = homePulseSummary,
-                        onClick = {
-                            val intent = Intent(context, MainActivity::class.java).apply {
-                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
-                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
-                            runCatching { context.startActivity(intent) }
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
+                    if (digitalLifeCardVisible) {
+                        DigitalLifeCard(
+                            summary = homePulseSummary,
+                            onClick = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
 
