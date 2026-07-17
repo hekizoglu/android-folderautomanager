@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu H01 - 2026-07-17 - PeriodBoundaryResolver
+
+**Yapilanlar:** domain/time/PeriodBoundaryResolver + PeriodBoundary eklendi (ISO pazartesi haftasi, DST-guvenli gun sinirlari, Clock enjeksiyonu); WeekUtils resolver'a delege edildi (dis davranis korundu); AppModule'e Clock/ZoneId/Resolver @Provides. 11 yeni test + MissionEngine 15 test yesil.
+
+**Bug:** Yok. Karar: epochDay/7 -> ISO gecisi mission_history anahtar uyumsuzlugu riski nedeniyle YAPILMADI — entegrasyon M00-M02'ye birakildi (P0 2.5 hala acik).
+
+**Sonraki:** H02 — HomeIntelligenceCoordinator iskeleti.
+
 ## Akilli Nabiz Dongu H00 - 2026-07-17 - Mevcut davranisi testlerle kilitle
 
 **Yapilanlar:** Refactor oncesi davranis fotografi: TickerComposerTest (+4), DigitalPulseEngineTest (+1), MissionEngineTest (+5) — 53 test yesil. Uc P0 test adiyla belgelendi: 2.1 cift skor motoru tutarsizligi, 2.4 erken yildiz odulu (checkProgress zaman farkindaligi yok), 2.5 epochDay/7 haftasi persembe baslar.

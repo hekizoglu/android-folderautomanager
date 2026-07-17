@@ -10,11 +10,14 @@ import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.repository.SearchRepository
+import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.time.Clock
+import java.time.ZoneId
 import javax.inject.Singleton
 
 @Module
@@ -26,6 +29,22 @@ object AppModule {
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return AppDatabase.getInstance(context)
     }
+
+    // Dongu H01 — tek zaman/hafta sinir kaynagi. Sistem saatine/saat dilimine gore sabitlenir;
+    // testlerde PeriodBoundaryResolver dogrudan sabit Clock ile ornekleniyor, bu provider'lar
+    // uretimde kullanilir.
+    @Provides
+    @Singleton
+    fun provideClock(): Clock = Clock.systemDefaultZone()
+
+    @Provides
+    @Singleton
+    fun provideZoneId(): ZoneId = ZoneId.systemDefault()
+
+    @Provides
+    @Singleton
+    fun providePeriodBoundaryResolver(clock: Clock, zoneId: ZoneId): PeriodBoundaryResolver =
+        PeriodBoundaryResolver(clock, zoneId)
 
     @Provides
     fun provideAppDao(db: AppDatabase): AppDao = db.appDao()
