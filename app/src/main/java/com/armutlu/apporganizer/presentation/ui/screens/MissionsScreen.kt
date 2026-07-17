@@ -32,8 +32,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.usecase.missions.MissionActionRouter
 import com.armutlu.apporganizer.presentation.viewmodel.MissionsViewModel
 import kotlinx.coroutines.delay
 
@@ -41,13 +43,19 @@ import kotlinx.coroutines.delay
  * Gorevler ekrani (D257) — gunluk/haftalik gorevler + toplam yildiz sayaci.
  * Acilista otomatik dogrulama (refresh) yapilir; yeni yildiz kazanildiginda
  * basit AnimatedVisibility tebrik karti gosterilir (konfeti kutuphanesi yok).
+ *
+ * Dongu M05: her gorev satirinin sonunda, action None degilse kucuk bir eylem butonu
+ * gosterilir. Route cozumu MissionActionRouter'da tek yerde yapilir; bu composable sadece
+ * sonucu tuketir (Screen -> onNavigateToRoute, SystemIntent -> context.startActivity).
  */
 @Composable
 fun MissionsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToRoute: (String) -> Unit = {},
     viewModel: MissionsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     // Tebrik karti birkac saniye sonra kendini kapatir.
@@ -86,7 +94,10 @@ fun MissionsScreen(
             SettingsCard {
                 uiState.daily.forEachIndexed { index, mission ->
                     if (index > 0) MissionDivider()
-                    MissionRow(mission = mission)
+                    MissionRow(
+                        mission = mission,
+                        onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
+                    )
                 }
                 if (uiState.daily.isEmpty() && !uiState.loading) {
                     Text(
@@ -103,7 +114,10 @@ fun MissionsScreen(
             SettingsCard {
                 uiState.weekly.forEachIndexed { index, mission ->
                     if (index > 0) MissionDivider()
-                    MissionRow(mission = mission)
+                    MissionRow(
+                        mission = mission,
+                        onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
+                    )
                 }
             }
         }
@@ -185,6 +199,7 @@ private fun CelebrationCard(stars: Int) {
 @Composable
 private fun MissionRow(
     mission: MissionsViewModel.MissionUi,
+    onActionClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -212,6 +227,29 @@ private fun MissionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        // Dongu M05: gorev tamamlanmadiysa ve bir eylemi varsa kucuk "Git" butonu.
+        // M06 tam yeniden tasarim yapana kadar sadece islevsel — gorsel dil korunur.
+        if (!mission.completed && mission.actionLabel != null) {
+            Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onActionClick) {
+                Text(text = mission.actionLabel, style = MaterialTheme.typography.labelMedium)
+            }
+        }
+    }
+}
+
+/** Dongu M05: MissionActionRouter'dan gelen hedefi tuketir — route ise navigate, Intent ise startActivity. */
+private fun handleMissionAction(
+    action: com.armutlu.apporganizer.domain.usecase.missions.MissionAction,
+    context: android.content.Context,
+    onNavigateToRoute: (String) -> Unit,
+) {
+    when (val target = MissionActionRouter.resolve(action)) {
+        is MissionActionRouter.RouteTarget.Screen -> onNavigateToRoute(target.route)
+        is MissionActionRouter.RouteTarget.SystemIntent -> context.startActivity(
+            android.content.Intent(target.intentAction).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+        MissionActionRouter.RouteTarget.None -> Unit
     }
 }
 

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M05 - 2026-07-17 - Gorev eylemleri ve router
+
+**Yapilanlar:** MissionAction sealed interface + MissionActionRouter (route cozumu tek yerde; APP_LIST_UNCERTAIN/NOTIFICATION_REPORT/USAGE_REPORT + kullanim erisimi ayari); MissionUi.action/actionLabel; MissionsScreen satir sonuna minimal eylem butonu; TR/EN 3 string. Router testleri dahil Mission testleri yesil.
+
+**Bug:** Agent API hatasiyla yarida kesildi — is Fable tarafindan devralindi: domain katmaninda Intent nesnesi kurulmasi JVM testini kirmisti, SystemIntent(intentAction: String) olarak duzeltildi (Intent artik UI'da kurulur). Ortam: 4. build kilidi (mergeDebugResources) SOP ile cozuldu.
+
+**Sonraki:** M06 — Gorevler ekrani ilerleme odakli yeniden tasarim (zincir devam).
+
 ## Akilli Nabiz Dongu M04 - 2026-07-17 - Settlement ve odul servisi
 
 **Yapilanlar:** SettleMissionInstancesUseCase (donem sonu evaluate + yildiz tek sefer, withTransaction runner soyutlamasi) + MissionSettlementWorker (kendini yeniden planlayan OneTimeWork, exact alarm yok) + MissionWorkScheduler (min(gece yarisi, hafta siniri)); computeAndAward'da HOME_RESUME catch-up; eylem gorevlerinde instance senkronu. 9/9 yeni test + regresyonlar yesil.

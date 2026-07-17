@@ -7,6 +7,7 @@ import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
+import com.armutlu.apporganizer.domain.usecase.missions.MissionAction
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEvaluation
 import com.armutlu.apporganizer.domain.usecase.missions.MissionMetricSnapshotProvider
@@ -57,6 +58,11 @@ class MissionsViewModel @Inject constructor(
         val remainingText: String? = null,
         val progressText: String? = null,
         val progressFraction: Float? = null,
+        // Dongu M05: gorevi tamamlayacagi ekrana tek dokunusla goturen eylem. None ise
+        // MissionsScreen eylem butonu gostermez. DATA_UNAVAILABLE durumunda MissionActionRouter
+        // hedefi ne olursa olsun OpenSettingsUsageAccess'e dusurulur (asagida actionFor()).
+        val action: MissionAction = MissionAction.None,
+        val actionLabel: String? = null,
     ) {
         // M06'da status'e gore yeniden tasarlanana kadar UI kirilmasin diye korunur.
         val completed: Boolean get() = status == MissionStatus.COMPLETED
@@ -245,6 +251,13 @@ class MissionsViewModel @Inject constructor(
         // gosterime hazir stringe cozulur. Iki katmanli spec'ler (durationSpec ic ice gecebilir)
         // resolveTextSpec ile ozyinelemeli cozulur.
         val progress = MissionProgressCalculator.calculate(evaluation, MissionEngine.progressKindForMission(id))
+        // Dongu M05: DATA_UNAVAILABLE durumunda gorevin normal eylemi (orn. rapor ekrani)
+        // anlamsizdir — kullaniciyi once izin vermeye yonlendirmek gerekir.
+        val action = if (status == MissionStatus.DATA_UNAVAILABLE) {
+            MissionAction.OpenSettingsUsageAccess
+        } else {
+            actionFor(id)
+        }
         return MissionUi(
             id = id,
             title = context.getString(titleRes(id)),
@@ -255,7 +268,29 @@ class MissionsViewModel @Inject constructor(
             remainingText = progress.remainingTextRes?.let { resolveTextSpec(it) },
             progressText = progress.progressTextRes?.let { resolveTextSpec(it) },
             progressFraction = progress.progressFraction,
+            action = action,
+            actionLabel = actionLabelRes(action)?.let { context.getString(it) },
         )
+    }
+
+    /** Dongu M05: gorev id -> eylem eslemesi. Route/Intent cozumu MissionActionRouter'da yapilir. */
+    private fun actionFor(id: String): MissionAction = when (id) {
+        MissionEngine.DAILY_CLASSIFICATION_CLEANUP -> MissionAction.OpenClassificationReview
+        MissionEngine.DAILY_VIEW_NOTIF_REPORT -> MissionAction.OpenNotificationReport
+        MissionEngine.DAILY_SCREEN_UNDER_3H,
+        MissionEngine.DAILY_UNLOCK_UNDER_30,
+        MissionEngine.DAILY_NO_LATE_NIGHT,
+        MissionEngine.WEEKLY_SCREEN_LESS -> MissionAction.OpenUsageReport
+        MissionEngine.WEEKLY_POSITIVE_ACTIONS -> MissionAction.None
+        else -> MissionAction.None
+    }
+
+    private fun actionLabelRes(action: MissionAction): Int? = when (action) {
+        MissionAction.OpenClassificationReview -> R.string.mission_action_review
+        MissionAction.OpenNotificationReport -> R.string.mission_action_open_report
+        MissionAction.OpenUsageReport -> R.string.mission_action_open_report
+        MissionAction.OpenSettingsUsageAccess -> R.string.mission_action_grant_access
+        MissionAction.None -> null
     }
 
     /**

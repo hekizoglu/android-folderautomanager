@@ -255,7 +255,8 @@ fun AppNavigation(
         }
         composable(Routes.MISSIONS) {
             com.armutlu.apporganizer.presentation.ui.screens.MissionsScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRoute = { route -> navController.navigate(route) }
             )
         }
     }

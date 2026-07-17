@@ -548,6 +548,10 @@
     <string name="missions_mark_done">Mark as done</string>
     <string name="missions_congrats">Congrats! +%1$d ⭐</string>
     <string name="missions_empty">Preparing missions…</string>
+    <!-- Cycle M05: mission row action button labels -->
+    <string name="mission_action_review">Review</string>
+    <string name="mission_action_open_report">Open Report</string>
+    <string name="mission_action_grant_access">Grant Access</string>
     <string name="mission_daily_screen_under_3h">Keep your screen time under 3 hours today</string>
     <string name="mission_daily_no_late_night">Do not use your phone after 11 PM</string>
     <string name="mission_daily_unlock_under_30">Unlock your phone fewer than 30 times today</string>
