@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu T00 - 2026-07-17 - Ticker dusuk degerli icerik temizligi
+
+**Yapilanlar:** TickerComposer'dan selamlamalar (4 sablon havuzu), gunun sampiyonu ve 5-klasor istatistigi ureticileri SILINDI (net -142 satir kod+test); kalan 6 uretici: bildirim ozeti, unutulan uygulama, icgoru, dusuk guven uyarisi, ozellik ipucu, haftalik ozet. Bos listede serit zaten gizleniyordu (HomeTickerRow return). Testler guncellendi, yesil.
+
+**Bug:** Yok. Esik degisiklikleri (45->60 gun vb.) bilinçli T01+'a birakildi (SmartTickerItem gerekiyor).
+
+**Sonraki:** T01 — SmartTickerItem modeli (zincir devam).
+
 ## Akilli Nabiz Dongu D04 - 2026-07-17 - Skor nedeni/rota + D FAZ KAPANISI
 
 **Yapilanlar:** PulseAction + PulseReasonPresenter (15 PulseReasonId -> etiket+eylem+pozitif bayragi, MissionTextSpec pattern'i) + PulseActionRouter (M05 pattern'i, ayri router); DigitalLifeCard topReason satiri tiklanabilir -> ilgili ekran. 16+7 yeni test. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, v1.3.86 (109). DIJITAL YASAM FAZI (D) TAMAM — skor tek kaynak, ISO trend, bilgi karti, tek gosterim, eylemli neden.

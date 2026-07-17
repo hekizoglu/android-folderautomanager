@@ -59,7 +59,12 @@ data class TickerSpec(
  * Tasarim ilkeleri:
  * - Ayni gun icinde ayni haber icin ayni sablon secilir (deterministik seed), ertesi gun degisir.
  * - Seed = LocalDate.toEpochDay() + item'a ozgu hash — farkli haberler ayni gun farkli sablonlarla eslesir.
- * - Sonuc listesi gunluk seed'li Random ile karistirilir; ilk eleman en "taze" sinyal (bildirim > selamlama > digerleri).
+ * - Sonuc listesi gunluk seed'li Random ile karistirilir; ilk eleman en "taze" sinyal (bildirim > unutulan uygulama > digerleri).
+ *
+ * Dongu T00 (Akilli Nabiz Seridi P0): dusuk degerli/tekrarli uretici fonksiyonlar kaldirildi —
+ * sabah/ogle/aksam/gece selamlamalari, "gunun sampiyonu" ham mesaji, en kalabalik 5 klasorun
+ * uygulama sayisi istatistigi. Bu icerikler T01+ dongulerinde SmartTickerItem modeliyle
+ * kosullu/degerli formlara donusturulecek (roadmap bolum 8, Dongu T00).
  */
 object TickerComposer {
 
@@ -68,23 +73,10 @@ object TickerComposer {
 
     // ---- Sablon havuzlari ----
 
-    private val folderTemplates: List<(FolderSnapshot) -> String> = listOf(
-        { f -> "${f.categoryName} klasöründe ${f.appCount} uygulama var" },
-        { f -> "${f.categoryName} tarafında ${f.appCount} uygulama seni bekliyor" },
-        { f -> "En kalabalık köşen: ${f.categoryName} (${f.appCount} uygulama)" },
-        { f -> "${f.categoryName} klasörü ${f.appCount} uygulamayla dolu" },
-    )
-
     private val forgottenAppTemplates: List<(String, Long) -> String> = listOf(
         { app, days -> "$app uygulamasını $days gündür açmadın — hâlâ gerekli mi?" },
         { app, days -> "$app son $days gündür sessiz — silmeyi düşünür müsün?" },
         { app, days -> "$days gündür dokunmadığın bir uygulama: $app" },
-    )
-
-    private val championTemplates: List<(String) -> String> = listOf(
-        { app -> "Bu aralar favorin: $app" },
-        { app -> "En çok $app uygulamasını kullanıyorsun" },
-        { app -> "Gözde uygulaman belli oldu: $app" },
     )
 
     /** İpucu havuzu — statik, 6+ madde, gunluk rotasyon. routeKey hepsinde null (SETTINGS istenirse ViewModel eslestirebilir). */
@@ -96,27 +88,6 @@ object TickerComposer {
         TickerSpec("Klasör rengini ve emojisini özelleştirebilirsin", "🎨", routeKey = "SETTINGS_APPEARANCE"),
         TickerSpec("Sık kullandığın uygulamalar dock'a otomatik önerilir", "⚡", routeKey = "SETTINGS_LAUNCHER"),
         TickerSpec("Uygulamayı sürükleyip başka bir klasöre taşıyabilirsin", "📁", routeKey = "APP_LIST"),
-    )
-
-    private val morningTemplates: List<String> = listOf(
-        "Günaydın! Güne hazır mısın?",
-        "Yeni bir gün başladı — klasörlerine göz at",
-        "Günaydın! Bugün seni neler bekliyor?",
-    )
-    private val afternoonTemplates: List<String> = listOf(
-        "İyi öğlenler! Kısa bir mola zamanı",
-        "Gün ortası — en çok kullandığın uygulamalar hazır",
-        "Öğle arası bir göz atmaya ne dersin?",
-    )
-    private val eveningTemplates: List<String> = listOf(
-        "İyi akşamlar! Günü nasıl geçirdin?",
-        "Akşam oldu — bugünün özetine bakmak ister misin?",
-        "Günün yorgunluğunu at, bir göz gezdir",
-    )
-    private val nightTemplates: List<String> = listOf(
-        "İyi geceler! Telefonu bırakma vakti gelmedi mi?",
-        "Gece geç oldu — yarın için erken kalkmayı unutma",
-        "Sessiz bir gece — son bir tur mu atıyorsun?",
     )
 
     private val weeklyTemplates: List<(Int, String, Int) -> String> = listOf(
@@ -167,38 +138,9 @@ object TickerComposer {
             )
         }
 
-        // 2) Saat bazli selamlama + baglamsal klasor onerisi
         val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(nowMillis), zone)
-        val hour = zdt.hour
-        val (greetingPool, contextCategoryHints) = when {
-            hour in 5..10 -> morningTemplates to listOf("news", "finance", "productivity")
-            hour in 11..16 -> afternoonTemplates to listOf("productivity", "communication")
-            hour in 17..21 -> eveningTemplates to listOf("social", "entertainment")
-            else -> nightTemplates to listOf("entertainment", "social")
-        }
-        val greetingKey = "greeting_$hour"
-        var greetingText = greetingPool[pickIndex(daySeed, greetingKey, greetingPool.size)]
-        val hintFolder = folders.firstOrNull { f -> contextCategoryHints.any { hint -> f.categoryId.contains(hint, ignoreCase = true) } }
-        if (hintFolder != null) {
-            greetingText = "$greetingText ${hintFolder.emoji} ${hintFolder.categoryName} klasörüne göz at"
-        }
-        val greetingEmoji = when {
-            hour in 5..10 -> "☀️"
-            hour in 11..16 -> "🌤️"
-            hour in 17..21 -> "🌇"
-            else -> "🌙"
-        }
-        specs.add(
-            TickerSpec(
-                text = greetingText,
-                emoji = greetingEmoji,
-                categoryId = hintFolder?.categoryId,
-                routeKey = if (hintFolder == null) "REPORTS_CENTER" else null,
-                priority = 90,
-            )
-        )
 
-        // 3) Unutulan uygulamalar (45+ gun acilmamis)
+        // 2) Unutulan uygulamalar (45+ gun acilmamis)
         val forgottenCutoff = nowMillis - FORGOTTEN_APP_THRESHOLD_DAYS * MS_PER_DAY
         apps.filter { it.lastUsedTimestamp in 1 until forgottenCutoff }
             .sortedBy { it.lastUsedTimestamp }
@@ -217,37 +159,7 @@ object TickerComposer {
                 )
             }
 
-        // 4) Gunun sampiyonu — en yuksek usageCount/lastUsed
-        apps.filter { it.usageCount > 0 }
-            .maxByOrNull { it.usageCount }
-            ?.let { champion ->
-                val pool = championTemplates
-                val idx = pickIndex(daySeed, "champion_${champion.packageName}", pool.size)
-                specs.add(
-                    TickerSpec(
-                        text = pool[idx](champion.appName),
-                        emoji = "🏆",
-                        packageName = champion.packageName,
-                        priority = 50,
-                    )
-                )
-            }
-
-        // 5) Klasor istatistikleri — en kalabalik 5 klasor, sablon rotasyonlu
-        folders.sortedByDescending { it.appCount }.take(5).forEach { f ->
-            val pool = folderTemplates
-            val idx = pickIndex(daySeed, "folder_${f.categoryId}", pool.size)
-            specs.add(
-                TickerSpec(
-                    text = pool[idx](f),
-                    emoji = f.emoji.ifBlank { "📁" },
-                    categoryId = f.categoryId,
-                    priority = 20,
-                )
-            )
-        }
-
-        // 6) Icgoru kartlari (InsightEngine'den gelen)
+        // 3) Icgoru kartlari (InsightEngine'den gelen)
         insights.forEach { insight ->
             specs.add(
                 TickerSpec(
@@ -262,7 +174,7 @@ object TickerComposer {
             )
         }
 
-        // 7) Dusuk guvenli otomatik kategorileme uyarisi
+        // 4) Dusuk guvenli otomatik kategorileme uyarisi
         if (lowConfidenceCount > 0) {
             specs.add(
                 TickerSpec(
@@ -275,11 +187,11 @@ object TickerComposer {
             )
         }
 
-        // 8) Ozellik kesif ipucu — statik havuzdan gunluk rotasyon
+        // 5) Ozellik kesif ipucu — statik havuzdan gunluk rotasyon
         val tipIdx = pickIndex(daySeed, "tip_of_day", tips.size)
         specs.add(tips[tipIdx].copy(priority = 5))
 
-        // 9) Haftalik ozet — sadece pazartesi (dayOfWeek == 1)
+        // 6) Haftalik ozet — sadece pazartesi (dayOfWeek == 1)
         if (zdt.dayOfWeek.value == 1 && folders.isNotEmpty()) {
             val totalApps = folders.sumOf { it.appCount }
             val biggest = folders.maxByOrNull { it.appCount }

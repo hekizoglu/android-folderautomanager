@@ -8,14 +8,19 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
- * TickerComposer.compose() senaryo testleri — şablon çeşitliliği, unutulan uygulama eşiği,
- * saat dilimi selamlaması ve günlük deterministiklik.
+ * TickerComposer.compose() senaryo testleri — unutulan uygulama eşiği, öncelik sırası,
+ * içgörü yönlendirmeleri ve günlük deterministiklik.
  *
  * NOT (Döngü D00 — ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md P0 2.1 çözümü):
  * `computeDigitalLifeScore()` ve `compose()`'un digitalLifeScore/digitalLifeScorePrevious
  * parametreleri KALDIRILDI — TickerComposer artık kendi skorunu hesaplamıyor. Tek skor kaynağı
  * DigitalPulseEngine (DigitalPulseRepository üzerinden). Eski "iki motor farklı skor üretiyor"
  * testleri (DigitalPulseEngineTest ve bu dosyada) bu döngüde kaldırıldı.
+ *
+ * NOT (Döngü T00 — Akıllı Nabız Şeridi P0): folder istatistik şablonu, saat bazlı
+ * selamlama ve "günün şampiyonu" üreticileri düşük değerli/tekrarlı içerik olarak
+ * TickerComposer'dan kaldırıldı — bu üreticilere ait testler de silindi. Boş girdi
+ * durumunda listenin boş dönmesini doğrulayan test eklendi.
  */
 class TickerComposerTest {
 
@@ -34,27 +39,7 @@ class TickerComposerTest {
         FolderSnapshot("finance", "Finans", "💰", 3),
     )
 
-    // ── şablon çeşitliliği: farklı günler farklı metin ──────────────────────
-
-    @Test
-    fun `folder template varies across days`() {
-        val texts = (0 until 30).map { dayOffset ->
-            val day = 20000L + dayOffset
-            TickerComposer.compose(
-                folders = sampleFolders,
-                apps = emptyList(),
-                badgeTotal = 0,
-                insights = emptyList(),
-                lowConfidenceCount = 0,
-                nowMillis = millisAt(day, 12),
-                epochDay = day,
-                zone = zone,
-            ).first { it.categoryId == "social" }.text
-        }.toSet()
-
-        // 4 sablon var — 30 farkli gunde en az 2 farkli metin gormeliyiz.
-        assertTrue("Beklenen coklu sablon, bulunan: $texts", texts.size >= 2)
-    }
+    // ── ipucu rotasyonu: farklı günler farklı metin ──────────────────────────
 
     @Test
     fun `tip of day rotates across days`() {
@@ -177,30 +162,6 @@ class TickerComposerTest {
         assertTrue(result.none { it.priority == 40 && it.text.contains("Never Used") })
     }
 
-    // ── günün şampiyonu ──────────────────────────────────────────────────────
-
-    @Test
-    fun `champion is app with highest usageCount`() {
-        val now = millisAt(20000L, 12)
-        val apps = listOf(
-            AppSnapshot("com.low", "Low Usage", 2, now),
-            AppSnapshot("com.high", "High Usage", 99, now),
-        )
-        val result = TickerComposer.compose(
-            folders = emptyList(),
-            apps = apps,
-            badgeTotal = 0,
-            insights = emptyList(),
-            lowConfidenceCount = 0,
-            nowMillis = now,
-            epochDay = 20000L,
-            zone = zone,
-        )
-        val championSpec = result.first { it.priority == 50 }
-        assertTrue(championSpec.text.contains("High Usage"))
-        assertEquals("com.high", championSpec.packageName)
-    }
-
     @Test
     fun `forgotten app ticker carries package name for direct launch`() {
         val now = millisAt(20000L, 12)
@@ -220,56 +181,6 @@ class TickerComposerTest {
 
         val forgottenSpec = result.first { it.priority == 40 }
         assertEquals("com.forgotten", forgottenSpec.packageName)
-    }
-
-    // ── saat dilimi selamlaması ──────────────────────────────────────────────
-
-    @Test
-    fun `morning hour uses sun emoji greeting`() {
-        val result = TickerComposer.compose(
-            folders = emptyList(),
-            apps = emptyList(),
-            badgeTotal = 0,
-            insights = emptyList(),
-            lowConfidenceCount = 0,
-            nowMillis = millisAt(20000L, 8),
-            epochDay = 20000L,
-            zone = zone,
-        )
-        val greeting = result.first { it.priority == 90 }
-        assertEquals("☀️", greeting.emoji)
-    }
-
-    @Test
-    fun `night hour uses moon emoji greeting`() {
-        val result = TickerComposer.compose(
-            folders = emptyList(),
-            apps = emptyList(),
-            badgeTotal = 0,
-            insights = emptyList(),
-            lowConfidenceCount = 0,
-            nowMillis = millisAt(20000L, 2),
-            epochDay = 20000L,
-            zone = zone,
-        )
-        val greeting = result.first { it.priority == 90 }
-        assertEquals("🌙", greeting.emoji)
-    }
-
-    @Test
-    fun `evening hour uses sunset emoji greeting`() {
-        val result = TickerComposer.compose(
-            folders = emptyList(),
-            apps = emptyList(),
-            badgeTotal = 0,
-            insights = emptyList(),
-            lowConfidenceCount = 0,
-            nowMillis = millisAt(20000L, 19),
-            epochDay = 20000L,
-            zone = zone,
-        )
-        val greeting = result.first { it.priority == 90 }
-        assertEquals("🌇", greeting.emoji)
     }
 
     // ── öncelik: bildirim en tazedir ────────────────────────────────────────
@@ -408,5 +319,25 @@ class TickerComposerTest {
         )
         val spec = result.first { it.priority == 5 }
         assertTrue(spec.routeKey != null || spec.packageName != null || spec.categoryId != null)
+    }
+
+    // ── boş girdi: yararlı veri yoksa şerit sadece ipucuyla dolmaz ───────────
+
+    @Test
+    fun `no folders, apps, insights, badges or low confidence still yields tip only`() {
+        val result = TickerComposer.compose(
+            folders = emptyList(),
+            apps = emptyList(),
+            badgeTotal = 0,
+            insights = emptyList(),
+            lowConfidenceCount = 0,
+            nowMillis = millisAt(20000L, 12),
+            epochDay = 20000L,
+            zone = zone,
+        )
+        // Greeting/champion/folder-stats artik uretilmiyor (Dongu T00) — geriye sadece
+        // gunluk ipucu (priority 5) kalir; hafta pazartesi degilse haftalik ozet de yok.
+        assertTrue(result.isNotEmpty())
+        assertTrue(result.all { it.priority == 5 })
     }
 }
