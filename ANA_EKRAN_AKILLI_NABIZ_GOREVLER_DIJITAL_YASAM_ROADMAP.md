@@ -1720,7 +1720,7 @@ Mevcut `SuggestionCoordinator` tekrar geçmişi mümkün olduğunca yeniden kull
 
 **Bağımlılıklar:** T01.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü T02 — commit: 8852527 — tarih: 2026-07-18 — Not: Mevcut SuggestionCoordinator suppression olarak yeniden kullanıldı (roadmap talimatı — paralel history yok); dismiss cooldown mevcut 3 gün policy'si korundu. "Tıklanıp tamamlandı" cezası sinyal olmadığı için uygulanmadı (ileride action-completion sinyali gelirse eklenir).
 
 ---
 
