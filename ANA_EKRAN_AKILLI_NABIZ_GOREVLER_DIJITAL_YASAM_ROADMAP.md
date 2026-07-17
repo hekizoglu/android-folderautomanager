@@ -1493,7 +1493,7 @@ Saat kartının yüksekliği score ring kaldırıldıktan sonra yeniden değerle
 
 **Bağımlılıklar:** D02.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü D03 — commit: 32f8edc — tarih: 2026-07-17 — Not: PulseScoreRing @Deprecated bırakıldı (U01 temizliğinde silinebilir). Saat kartı 20dp/16dp kısaldı. PulseClockViewModel skor state'i içgörü üretimi için korundu. BackupManager yeni anahtarı da taşıyor.
 
 ---
 
