@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu T02 - 2026-07-18 - TickerRanker siralama/tekrar motoru
+
+**Yapilanlar:** TickerRanker (saf Kotlin): max 3 oge, tip basina 1 kota (CRITICAL_HEALTH muaf), dedupeKey tekillestirme, expired eleme, bugun-gosterildi -35 / 3-gunde-3x -70 cezalari (roadmap degerleri); mevcut SuggestionCoordinator suppression olarak yeniden kullanildi (paralel history sistemi kurulmadi — roadmap talimati); RealSmartTickerSource + LauncherViewModel ranker'dan geciyor. 9 yeni test, 46 Ticker testi yesil.
+
+**Bug:** Yok. Dismiss cooldown 3 gun (mevcut policy korundu, cakisan ikinci deger yaratilmadi). Ortam: 8. build kilidi SOP ile cozuldu.
+
+**Sonraki:** T03 — Gorev ve Dijital Yasam serit entegrasyonu (zincir devam).
+
 ## Akilli Nabiz Dongu T01 - 2026-07-18 - SmartTickerItem modeli
 
 **Yapilanlar:** SmartTickerItem (roadmap 3.3 semasi + dedupeKey/isExpired) + SmartTickerType (8 tur) + TickerAction sealed + TickerActionRouter; TickerComposer 6 uretici tipli modele tasindi (bildirim ozeti sensitive=true+6h expiry); RealSmartTickerSource binding'i gercek — koordinatorun UC kaynagi da artik canli. LauncherViewModel toTickerItem koprusuyle eski UI korundu (T04'e kadar). 46 test yesil.

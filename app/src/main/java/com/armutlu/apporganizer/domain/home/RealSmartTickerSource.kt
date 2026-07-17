@@ -10,6 +10,10 @@ import com.armutlu.apporganizer.utils.AppSnapshot
 import com.armutlu.apporganizer.utils.FolderSnapshot
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.InsightSnapshot
+import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
+import com.armutlu.apporganizer.utils.SuggestionCandidate
+import com.armutlu.apporganizer.utils.SuggestionChannel
+import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.TickerComposer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -30,7 +34,8 @@ import timber.log.Timber
  * arama istatistiği/Wrapped teaser haberlerini + oturum-bazlı dismiss filtresini uygular. Bu
  * sınıf [HomeIntelligenceCoordinator] üzerinden okunan koordinatör-seviyesi state için ayrı bir
  * (daha basit, DB'den taze) anlık görüntü üretir — görev/dijital-yaşam öğelerinin şeride
- * eklenmesi (T03) ve sıralama/limit (T02) burada henüz uygulanmaz.
+ * eklenmesi T03'te ele alınacak. Döngü T02: çıktı [TickerRanker.rank] üzerinden geçirilir —
+ * en fazla 3 öğe, tür kotası ve mevcut [SuggestionCoordinator] tekrar/bastırma geçmişi uygulanır.
  */
 @Singleton
 class RealSmartTickerSource @Inject constructor(
@@ -91,13 +96,36 @@ class RealSmartTickerSource @Inject constructor(
                 (showSystemApps || !app.isSystemApp) && classifier.isLowConfidence(app, app.categoryId)
             }
 
-            TickerComposer.compose(
+            val nowMillis = System.currentTimeMillis()
+            val composed = TickerComposer.compose(
                 folders = folderSnapshots,
                 apps = appSnapshots,
                 badgeTotal = badgeTotal,
                 insights = insightSnapshots,
                 lowConfidenceCount = lowConfidenceCount,
-                nowMillis = System.currentTimeMillis(),
+                nowMillis = nowMillis,
+            )
+
+            // Döngü T02: en fazla 3 yüksek değerli öğe + tekrar/suistimal önleme (roadmap 2.7).
+            // Suppression mevcut SuggestionCoordinator/SharedPrefsSuggestionHistoryStore üzerinden
+            // yeniden kullanılır — paralel bir history deposu YAZILMADI (roadmap notu).
+            val historyStore = SharedPrefsSuggestionHistoryStore(context)
+            TickerRanker.rank(
+                candidates = composed,
+                now = nowMillis,
+                isSuppressed = isSuppressed@{ item ->
+                    val key = item.suggestionKey ?: return@isSuppressed false
+                    !SuggestionCoordinator.canShow(
+                        candidate = SuggestionCandidate(
+                            dedupeKey = key,
+                            highValue = key == "notification_summary",
+                            timeSensitive = key == "notification_summary" || key == "low_confidence_review",
+                        ),
+                        channel = SuggestionChannel.TICKER,
+                        store = historyStore,
+                        nowMillis = nowMillis,
+                    )
+                },
             )
         }.fold(
             onSuccess = { items -> _state.value = TickerSourceState(items = items) },

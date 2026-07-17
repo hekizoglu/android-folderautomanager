@@ -1057,26 +1057,34 @@ class LauncherViewModel @Inject constructor(
         // (HomeIntelligenceCoordinator -> DigitalPulseRepository) gosteriliyor (Dongu D02).
         val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
         val nowForCompose = System.currentTimeMillis()
-        val composed = com.armutlu.apporganizer.utils.TickerComposer.compose(
+        val rawComposed = com.armutlu.apporganizer.utils.TickerComposer.compose(
             folders = folderSnapshots,
             apps = appSnapshots,
             badgeTotal = totalNotif,
             insights = insightSnapshots,
             lowConfidenceCount = lowConfidenceCount,
             nowMillis = nowForCompose,
-        ).filterNot { it.isExpired(nowForCompose) }.filter { spec ->
-            val key = spec.suggestionKey ?: return@filter true
-            SuggestionCoordinator.canShow(
-                candidate = SuggestionCandidate(
-                    dedupeKey = key,
-                    highValue = key == "notification_summary",
-                    timeSensitive = key == "notification_summary" || key == "low_confidence_review",
-                ),
-                channel = SuggestionChannel.TICKER,
-                store = historyStore,
-                nowMillis = System.currentTimeMillis(),
-            )
-        }.map { spec ->
+        )
+        // Döngü T02: TickerRanker en fazla 3 öğe + tür kotası uygular (roadmap 2.7). Bastırma
+        // (dismiss/çapraz-kanal cooldown) hâlâ mevcut SuggestionCoordinator üzerinden yapılır —
+        // paralel bir history deposu eklenmedi (roadmap notu, RealSmartTickerSource ile aynı desen).
+        val composed = com.armutlu.apporganizer.domain.home.TickerRanker.rank(
+            candidates = rawComposed,
+            now = nowForCompose,
+            isSuppressed = isSuppressed@{ spec ->
+                val key = spec.suggestionKey ?: return@isSuppressed false
+                !SuggestionCoordinator.canShow(
+                    candidate = SuggestionCandidate(
+                        dedupeKey = key,
+                        highValue = key == "notification_summary",
+                        timeSensitive = key == "notification_summary" || key == "low_confidence_review",
+                    ),
+                    channel = SuggestionChannel.TICKER,
+                    store = historyStore,
+                    nowMillis = nowForCompose,
+                )
+            },
+        ).map { spec ->
             val key = spec.suggestionKey
             if (key != null) {
                 SuggestionCoordinator.recordShown(
