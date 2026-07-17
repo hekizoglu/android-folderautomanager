@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu T03 - 2026-07-18 - Gorev/skor serit entegrasyonu
+
+**Yapilanlar:** MissionPulseTickerFactory: AT_RISK gorev, son-adim-kaldi (fraction>=0.99), gorev tamamlandi (donemde bir kez), tum gorevler bitti kutlamasi, |scoreDelta|>=5 degisim, cozulebilir negatif neden (PulseReasonPresenter+CTA). Rutin ilerleme/ham skor ASLA seride girmez. RealSmartTickerSource repository'leri direkt okur (koordinator dongusu onlendi). TickerAction.OpenMissions eklendi. 18 yeni test, tum Ticker testleri yesil.
+
+**Bug:** Yok. Confidence-gecisi ve haftalik-rapor-hazir tetikleri snapshot'ta sinyal olmadigi icin uygulanmadi (dokumante gap — uydurma sinyal yaratilmadi).
+
+**Sonraki:** T04 — HomeTickerRow davranis + erisilebilirlik yenilemesi (zincir devam).
+
 ## Akilli Nabiz Dongu T02 - 2026-07-18 - TickerRanker siralama/tekrar motoru
 
 **Yapilanlar:** TickerRanker (saf Kotlin): max 3 oge, tip basina 1 kota (CRITICAL_HEALTH muaf), dedupeKey tekillestirme, expired eleme, bugun-gosterildi -35 / 3-gunde-3x -70 cezalari (roadmap degerleri); mevcut SuggestionCoordinator suppression olarak yeniden kullanildi (paralel history sistemi kurulmadi — roadmap talimati); RealSmartTickerSource + LauncherViewModel ranker'dan geciyor. 9 yeni test, 46 Ticker testi yesil.

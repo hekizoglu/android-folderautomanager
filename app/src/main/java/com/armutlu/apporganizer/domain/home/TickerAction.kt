@@ -41,6 +41,9 @@ sealed interface TickerAction {
     /** Kullanım/ekran süresi raporunu aç. */
     data object OpenUsageReport : TickerAction
 
+    /** Görevler ekranını aç (Döngü T03 — görev kaynaklı ticker öğeleri). */
+    data object OpenMissions : TickerAction
+
     /** Eylem gerektirmeyen/hedefsiz öğe (ör. salt bilgilendirme). */
     data object None : TickerAction
 }

@@ -23,6 +23,10 @@ data class HomeMissionSummary(
     // dogrudan orer: birincil gorev AT_RISK ise urgent=true, roadmap baska bir "urgent" tanimi
     // vermiyor, bu yorum secim sirasiyla tutarli oldugu icin tercih edildi.
     val urgent: Boolean,
+    // Dongu T03 — birincil gorevin ham ilerleme orani (0f-1f). Sadece sablon secimi/karsilastirma
+    // icin degil, sertte "tek eylemle tamamlanabilir" ureticisinin (>= 0.99) ham veriye
+    // dayanmasi icin eklendi — onceden yalniz metin (remainingText) tahminine dayaniyordu.
+    val primaryProgressFraction: Float? = null,
 )
 
 /**
@@ -51,6 +55,7 @@ object HomeMissionSummarySelector {
             primaryRemainingText = primary?.remainingText,
             primaryStatus = primary?.status,
             urgent = primary?.status == MissionStatus.AT_RISK,
+            primaryProgressFraction = primary?.progressFraction,
         )
     }
 

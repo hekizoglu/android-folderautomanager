@@ -22,6 +22,7 @@ object TickerActionRouter {
     const val ROUTE_REPORTS_CENTER = "reports_center"
     const val ROUTE_USAGE_REPORT = "usage_report"
     const val ROUTE_WRAPPED_REPORT = "wrapped_report"
+    const val ROUTE_MISSIONS = "missions"
 
     /** Navigasyon hedefi: uygulama-içi route (opsiyonel klasör/paket bağlamıyla) ya da hedefsiz. */
     sealed interface RouteTarget {
@@ -46,6 +47,7 @@ object TickerActionRouter {
         TickerAction.OpenSearchStats -> RouteTarget.Screen(ROUTE_SETTINGS_STATS)
         TickerAction.OpenReportsCenter -> RouteTarget.Screen(ROUTE_REPORTS_CENTER)
         TickerAction.OpenUsageReport -> RouteTarget.Screen(ROUTE_USAGE_REPORT)
+        TickerAction.OpenMissions -> RouteTarget.Screen(ROUTE_MISSIONS)
         TickerAction.None, null -> RouteTarget.None
     }
 
