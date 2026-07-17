@@ -16,11 +16,21 @@ import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
 import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.components.SingletonComponent
 import timber.log.Timber
 
 @HiltAndroidApp
 class AppOrganizerApp : Application() {
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface MissionSchedulerEntryPoint {
+        fun missionWorkScheduler(): com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -54,6 +64,14 @@ class AppOrganizerApp : Application() {
                 if (AppPrefs.isSuggestionNotificationsEnabled(this)) {
                     SuggestionNotificationWorker.schedule(this)
                 }
+                // Dongu M04 — bir sonraki donem sinirina (gece yarisi/hafta baslangici) tek
+                // seferlik gorev sonuclandirma isi planlanir; worker kendini zincirleme yeniden
+                // planlar (bkz. MissionSettlementWorker.doWork -> scheduler.scheduleNext()).
+                runCatching {
+                    EntryPointAccessors.fromApplication(this, MissionSchedulerEntryPoint::class.java)
+                        .missionWorkScheduler()
+                        .scheduleNext()
+                }.onFailure { Timber.w(it, "MissionWorkScheduler baslatilamadi") }
                 createNotificationChannels()
                 if (firebaseApp != null) fetchFcmToken()
             }.onFailure { Timber.e(it, "Arka plan init hatasi") }

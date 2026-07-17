@@ -20,7 +20,9 @@ import com.armutlu.apporganizer.domain.home.NoOpSmartTickerSource
 import com.armutlu.apporganizer.domain.home.SmartTickerEngine
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.DefaultMissionUsageStatsSource
+import com.armutlu.apporganizer.domain.usecase.missions.MissionSettlementTransactionRunner
 import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
+import androidx.room.withTransaction
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -99,6 +101,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMissionUsageStatsSource(): MissionUsageStatsSource = DefaultMissionUsageStatsSource()
+
+    // Dongu M04 — SettleMissionInstancesUseCase'in odul+status yazimini Room withTransaction
+    // uzerinden atomik calistiran uretim implementasyonu. Testlerde gercek Room kurmadan
+    // basit bir pass-through ile degistirilir (bkz. SettleMissionInstancesUseCaseTest).
+    @Provides
+    @Singleton
+    fun provideMissionSettlementTransactionRunner(db: AppDatabase): MissionSettlementTransactionRunner =
+        object : MissionSettlementTransactionRunner {
+            override suspend fun <T> runInTransaction(block: suspend () -> T): T =
+                db.withTransaction { block() }
+        }
 
     @Provides
     @Singleton

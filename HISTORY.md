@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M04 - 2026-07-17 - Settlement ve odul servisi
+
+**Yapilanlar:** SettleMissionInstancesUseCase (donem sonu evaluate + yildiz tek sefer, withTransaction runner soyutlamasi) + MissionSettlementWorker (kendini yeniden planlayan OneTimeWork, exact alarm yok) + MissionWorkScheduler (min(gece yarisi, hafta siniri)); computeAndAward'da HOME_RESUME catch-up; eylem gorevlerinde instance senkronu. 9/9 yeni test + regresyonlar yesil.
+
+**Bug:** Yok. Karar: gecmis metrik periodEndAt-1 aniyla sorgulanir (10 gun lookback); DATA_UNAVAILABLE 48 saat grace — tazeyse beklenir, eskiyse FAILED (yildiz kaybi degil, kazanma sansi kaybi).
+
+**Sonraki:** M05 — MissionAction router (zincir devam).
+
 ## Akilli Nabiz Dongu M03 - 2026-07-17 - Gorev ilerleme modeli ve formatlayici
 
 **Yapilanlar:** MissionProgressKind (5 tur) + MissionProgress + MissionTextSpec (resource-id tabanli, ham string yok) + MissionProgressCalculator + MissionValueFormatter (saf Kotlin); MissionEngine.progressKindForMission; MissionUi'a nullable progress alanlari (resolve ViewModel'de, ozyinelemeli spec cozumu); TR/EN 11 string. 10+6 yeni test + tum proje testleri yesil.

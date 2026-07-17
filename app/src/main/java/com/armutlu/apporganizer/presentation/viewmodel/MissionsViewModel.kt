@@ -13,6 +13,7 @@ import com.armutlu.apporganizer.domain.usecase.missions.MissionMetricSnapshotPro
 import com.armutlu.apporganizer.domain.usecase.missions.MissionProgressCalculator
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.missions.MissionTextSpec
+import com.armutlu.apporganizer.domain.usecase.missions.SettleMissionInstancesUseCase
 import com.armutlu.apporganizer.domain.usecase.missions.toMissionCheckInput
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ class MissionsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val missionsRepository: MissionsRepository,
     private val missionMetricSnapshotProvider: MissionMetricSnapshotProvider,
+    private val settleMissionInstancesUseCase: SettleMissionInstancesUseCase,
 ) : ViewModel() {
 
     data class MissionUi(
@@ -105,6 +107,14 @@ class MissionsViewModel @Inject constructor(
 
     private suspend fun computeAndAward(): MissionsUiState {
         missionsRepository.syncLegacyPrefsIfNeeded()
+        // Dongu M04 — HOME_RESUME catch-up: WorkManager donem sinirinda (gece yarisi/hafta
+        // baslangici) tam zamaninda calismamis olabilir (Doze, batarya optimizasyonu, telefon
+        // kapali). Ekran her acildiginda gecikmis (periodEndAt gecmis ama hala "assigned")
+        // instance'lar burada da sonuclandirilir — boylece yildiz, gorev ekrani hic acilmasa bile
+        // WorkManager'dan, ekran acilirsa da buradan garanti yazilir (ayni instance iki kez
+        // sonuclanmaz, bkz. SettleMissionInstancesUseCase.settleOverdue).
+        runCatching { settleMissionInstancesUseCase.settleOverdue(System.currentTimeMillis()) }
+            .onFailure { e -> Timber.w(e, "Catch-up settlement basarisiz") }
         val epochDay = LocalDate.now().toEpochDay()
         val epochWeek = epochDay / 7
         // M02: tum gorev metrikleri tek zaman-tutarli snapshot'tan gelir — ViewModel hesaplama yapmaz.
@@ -167,6 +177,16 @@ class MissionsViewModel @Inject constructor(
                 missionsRepository.markDailyCompleted(epochDay, mission.id)
                 dailyDone += mission.id
                 newStars += mission.starReward
+                // M04: mission_instances kaydini da COMPLETED+settled isaretle — odul zaten
+                // markDailyCompleted ile mission_history'ye yazildi, completeActionMission
+                // ikinci bir odul YAZMAZ (sadece instance status senkronu).
+                val instanceId = MissionInstanceEntity.buildInstanceId(
+                    mission.id,
+                    MissionInstanceEntity.PERIOD_DAILY,
+                    dayBoundary.epochDay,
+                )
+                runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
+                    .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
             mission.toUi(status, evaluation)
         }
@@ -195,6 +215,14 @@ class MissionsViewModel @Inject constructor(
                 missionsRepository.markWeeklyCompleted(epochWeek, mission.id)
                 weeklyDone += mission.id
                 newStars += mission.starReward
+                val weeklyPeriodStartEpoch = weekBoundary.weekStartEpochDay ?: weekBoundary.epochDay
+                val instanceId = MissionInstanceEntity.buildInstanceId(
+                    mission.id,
+                    MissionInstanceEntity.PERIOD_WEEKLY,
+                    weeklyPeriodStartEpoch,
+                )
+                runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
+                    .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
             mission.toUi(status, evaluation)
         }

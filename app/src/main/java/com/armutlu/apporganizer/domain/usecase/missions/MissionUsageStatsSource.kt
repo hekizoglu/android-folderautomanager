@@ -12,19 +12,32 @@ import com.armutlu.apporganizer.utils.UsageStatsHelper
  * calisir. Buyuk bir UsageStatsHelper refactor'u YAPILMAZ — sadece bu iki cagri enjekte edilir.
  */
 interface MissionUsageStatsSource {
-    /** İzin yoksa veya event verisi yoksa null doner. */
-    fun getDailySessionUsage(context: Context, days: Int): List<DailyPackageUsage>?
+    /**
+     * İzin yoksa veya event verisi yoksa null doner.
+     * [nowMillis] — Dongu M04: settlement gecmis donemleri degerlendirirken pencereyi donemin
+     * bitisine (periodEndAt) sabitler; sistem "su an" hala pencere disina veri sizdirmasin diye.
+     * Varsayilan `System.currentTimeMillis()` M02 cagri yerlerini bozmaz.
+     */
+    fun getDailySessionUsage(
+        context: Context,
+        days: Int,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): List<DailyPackageUsage>?
 
-    /** İzin yoksa veya SDK < P ise null doner. */
-    fun getUnlockCount(context: Context, days: Int): Int?
+    /** İzin yoksa veya SDK < P ise null doner. [nowMillis] — bkz. [getDailySessionUsage]. */
+    fun getUnlockCount(
+        context: Context,
+        days: Int,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Int?
 }
 
 /** Uretimde kullanilan varsayilan implementasyon — dogrudan [UsageStatsHelper]'a delege eder. */
 class DefaultMissionUsageStatsSource : MissionUsageStatsSource {
-    override fun getDailySessionUsage(context: Context, days: Int): List<DailyPackageUsage>? =
-        (UsageStatsHelper.getDailySessionUsage(context, days = days)
+    override fun getDailySessionUsage(context: Context, days: Int, nowMillis: Long): List<DailyPackageUsage>? =
+        (UsageStatsHelper.getDailySessionUsage(context, days = days, nowMillis = nowMillis)
             as? UsageStatsHelper.DailySessionResult.Available)?.days
 
-    override fun getUnlockCount(context: Context, days: Int): Int? =
-        UsageStatsHelper.getUnlockCount(context, days = days)
+    override fun getUnlockCount(context: Context, days: Int, nowMillis: Long): Int? =
+        UsageStatsHelper.getUnlockCount(context, days = days, nowMillis = nowMillis)
 }
