@@ -599,6 +599,8 @@
     <string name="recent_installs_drawer_section_title">Bugün Yüklenenler</string>
     <string name="missions_home_chip_title">Görevler</string>
     <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
+    <string name="missions_home_card_usage_access_required">Kullanım erişimi gerekli</string>
+    <string name="missions_home_card_all_completed">Bugünkü görevler tamamlandı ⭐</string>
     <string name="digital_score_home_card_title">Skor %1$d</string>
     <string name="digital_score_home_card_subtitle">Dijital yaşam</string>
     <string name="usage_data_title">Kullanım Verileri</string>

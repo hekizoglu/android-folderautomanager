@@ -142,6 +142,7 @@ fun HomeScreen(
     val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
     val tickerItems by viewModel.tickerItems.collectAsState()
     val digitalLifeScore by viewModel.digitalLifeScore.collectAsState()
+    val homeMissionSummary by viewModel.homeMissionSummary.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val recentNotificationCounts by viewModel.recentNotificationCounts.collectAsState()
@@ -599,46 +600,20 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (missionsEnabled) {
-                        GlassCard(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    val intent = Intent(context, MainActivity::class.java).apply {
-                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
-                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    }
-                                    runCatching { context.startActivity(intent) }
-                                },
-                            cornerRadius = 18.dp,
-                            backgroundAlpha = 0.10f,
-                            borderAlpha = 0.18f,
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 9.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                Text("★", color = Color(0xFFFFD54F), fontSize = 15.sp)
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(R.string.missions_home_chip_title),
-                                        color = Color.White.copy(alpha = 0.90f),
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        maxLines = 1,
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.missions_home_chip_subtitle),
-                                        color = Color.White.copy(alpha = 0.52f),
-                                        fontSize = 11.sp,
-                                        maxLines = 1,
-                                    )
+                        // Dongu M07: statik "Bugünün görevleri" chip'i yerine canli HomeMissionCard —
+                        // HomeIntelligenceCoordinator.state.mission dilimini (LauncherViewModel.homeMissionSummary)
+                        // gosterir; tıklama davranışı (Routes.MISSIONS) korunur.
+                        HomeMissionCard(
+                            summary = homeMissionSummary,
+                            onClick = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
-                                Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
-                            }
-                        }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            modifier = Modifier.weight(1f),
+                        )
                     }
                     DigitalScoreCard(
                         score = digitalLifeScore,

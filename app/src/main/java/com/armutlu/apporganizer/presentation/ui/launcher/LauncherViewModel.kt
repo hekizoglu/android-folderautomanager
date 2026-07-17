@@ -8,7 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
+import com.armutlu.apporganizer.domain.common.valueOrNull
 import com.armutlu.apporganizer.domain.home.HomeIntelligenceCoordinator
+import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.RefreshReason
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
@@ -866,6 +868,15 @@ class LauncherViewModel @Inject constructor(
     private val _digitalLifeScore = MutableStateFlow<Int?>(null)
     val digitalLifeScore: StateFlow<Int?> = _digitalLifeScore.asStateFlow()
     val insightCards: StateFlow<List<InsightCard>> = _insightCards.asStateFlow()
+
+    // Dongu M07 — Ana ekran "Görevler" karti (HomeMissionCard) icin
+    // HomeIntelligenceCoordinator.state.mission dilimi. Ready/Stale -> ozet dolu; Missing/Failed
+    // -> null (kart bu durumda kendi bos/DATA_UNAVAILABLE gosterimini yapar, coordinator'in
+    // ham hata kodunu HomeScreen'e sizdirmaya gerek yok — primaryStatus zaten DATA_UNAVAILABLE
+    // tasiyabiliyor).
+    val homeMissionSummary: StateFlow<HomeMissionSummary?> = homeIntelligenceCoordinator.state
+        .map { it.mission.valueOrNull()?.summary }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun refreshInsights(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {

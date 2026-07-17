@@ -597,6 +597,8 @@
     <string name="recent_installs_drawer_section_title">Installed Today</string>
     <string name="missions_home_chip_title">Missions</string>
     <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
+    <string name="missions_home_card_usage_access_required">Usage access required</string>
+    <string name="missions_home_card_all_completed">Today\'s missions completed ⭐</string>
     <string name="usage_data_title">Usage Data</string>
     <string name="usage_data_hub_subtitle">Anonymous usage, performance, and error sharing</string>
     <string name="usage_data_sharing_section">Anonymous data sharing</string>

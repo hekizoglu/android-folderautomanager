@@ -15,8 +15,8 @@ import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
 import com.armutlu.apporganizer.domain.home.HomeIoDispatcher
 import com.armutlu.apporganizer.domain.home.MissionRuntimeRepository
 import com.armutlu.apporganizer.domain.home.NoOpDigitalPulseSource
-import com.armutlu.apporganizer.domain.home.NoOpMissionRuntimeSource
 import com.armutlu.apporganizer.domain.home.NoOpSmartTickerSource
+import com.armutlu.apporganizer.domain.home.RealMissionRuntimeSource
 import com.armutlu.apporganizer.domain.home.SmartTickerEngine
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.DefaultMissionUsageStatsSource
@@ -146,9 +146,10 @@ object AppModule {
     @Singleton
     fun provideDigitalPulseRepository(impl: NoOpDigitalPulseSource): DigitalPulseRepository = impl
 
+    // Dongu M07 — gercek implementasyona baglandi (bkz. RealMissionRuntimeSource).
     @Provides
     @Singleton
-    fun provideMissionRuntimeRepository(impl: NoOpMissionRuntimeSource): MissionRuntimeRepository = impl
+    fun provideMissionRuntimeRepository(impl: RealMissionRuntimeSource): MissionRuntimeRepository = impl
 
     @Provides
     @Singleton

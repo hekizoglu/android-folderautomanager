@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu M07 - 2026-07-17 - Ana ekran Gorevler karti canli
+
+**Yapilanlar:** MissionSummaryUseCase (tek hesap yolu; awardStars=false ile yan etkisiz okuma) + HomeMissionSummary/Selector (5 kurallik birincil gorev secimi, saf Kotlin) + RealMissionRuntimeSource (no-op binding gercek kaynaga cevrildi — koordinator ilk gercek verisini aldi) + HomeMissionCard (N/M, birincil gorev, tamamlandi/izin durumlari); HomeScreen statik kart degistirildi. 10 yeni test, 79/79 yesil.
+
+**Bug:** Yok. Not: AppPrefs'te missions toggle yok — kart gizleme gate'i eklenmedi (dogru karar; T05 ayarlar dongusunde degerlendirilebilir).
+
+**Sonraki:** M08 — puan dengesi + M FAZ KAPANISI (tam test + build + APK).
+
 ## Akilli Nabiz Dongu M06 - 2026-07-17 - Gorevler ekrani ilerleme odakli tasarim
 
 **Yapilanlar:** MissionCard.kt (300 satir kurali icin ayri dosya): durum ikonu+rozet metni (renk-bagimsiz), Su an/Kalan satirlari, progressBarRangeInfo semantics'li LinearProgressIndicator, 48dp eylem butonu, deadline satiri (PeriodBoundaryResolver.nowMillis ile test edilebilir). MissionUi.deadlineText; TR/EN 10 string. 3 yeni resolver testi + tum Mission testleri yesil.
