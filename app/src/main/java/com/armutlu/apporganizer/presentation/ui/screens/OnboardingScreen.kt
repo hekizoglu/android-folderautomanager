@@ -43,6 +43,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
@@ -379,19 +381,18 @@ private fun OnboardingStrengthsCard() {
 private fun OnboardingOrganizationPreview(viewModel: AppListViewModel) {
     val state by viewModel.screenState.collectAsState()
     val pending by viewModel.classificationAttentionApps.collectAsState()
-    val categorized = state.apps.count { it.categoryId != com.armutlu.apporganizer.domain.models.Category.CAT_UNCATEGORIZED }
-    val activeFolders = state.categories.count { category ->
-        state.apps.any { it.categoryId == category.categoryId }
+    val metrics = remember(state.apps, state.categories, state.isProcessing, pending) {
+        onboardingPreviewMetrics(state, pending)
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            OnboardingPreviewMetric("Uygulama", state.apps.size.toString(), Modifier.weight(1f))
-            OnboardingPreviewMetric("Klasor", activeFolders.toString(), Modifier.weight(1f))
+            OnboardingPreviewMetric("Uygulama", metrics.appCountLabel, Modifier.weight(1f))
+            OnboardingPreviewMetric("Klasor", metrics.folderCountLabel, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            OnboardingPreviewMetric("Kategorili", categorized.toString(), Modifier.weight(1f))
-            OnboardingPreviewMetric("Kontrol", pending.size.toString(), Modifier.weight(1f))
+            OnboardingPreviewMetric("Kategorili", metrics.categorizedCountLabel, Modifier.weight(1f))
+            OnboardingPreviewMetric("Kontrol", metrics.pendingCountLabel, Modifier.weight(1f))
         }
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -456,4 +457,41 @@ private fun OnboardingPreviewMetric(label: String, value: String, modifier: Modi
         Text(value, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
         Text(label, color = Color.White.copy(0.62f), fontSize = 12.sp)
     }
+}
+
+internal data class OnboardingPreviewMetrics(
+    val appCount: Int,
+    val folderCount: Int,
+    val categorizedCount: Int,
+    val pendingCount: Int,
+    val loadingEmpty: Boolean,
+) {
+    val appCountLabel: String get() = labelFor(appCount)
+    val folderCountLabel: String get() = labelFor(folderCount)
+    val categorizedCountLabel: String get() = labelFor(categorizedCount)
+    val pendingCountLabel: String get() = labelFor(pendingCount)
+
+    private fun labelFor(value: Int): String = if (loadingEmpty) "..." else value.toString()
+}
+
+internal fun onboardingPreviewMetrics(
+    state: AppListScreenState,
+    pendingApps: List<AppInfo>,
+): OnboardingPreviewMetrics {
+    val apps = state.apps
+    val loadingEmpty = state.isProcessing && apps.isEmpty()
+    val categorized = apps.count {
+        it.categoryId.isNotBlank() && it.categoryId != Category.CAT_UNCATEGORIZED
+    }
+    val activeFolders = state.categories.count { category ->
+        category.categoryId != Category.CAT_UNCATEGORIZED &&
+            apps.any { it.categoryId == category.categoryId }
+    }
+    return OnboardingPreviewMetrics(
+        appCount = apps.size,
+        folderCount = activeFolders,
+        categorizedCount = categorized,
+        pendingCount = pendingApps.size,
+        loadingEmpty = loadingEmpty,
+    )
 }

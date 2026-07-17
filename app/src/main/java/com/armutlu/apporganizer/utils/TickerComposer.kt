@@ -91,7 +91,7 @@ object TickerComposer {
     private val tips: List<TickerSpec> = listOf(
         TickerSpec("İpucu: Klasöre uzun basarak yeniden adlandırabilirsin", "💡", routeKey = "SETTINGS_APPEARANCE"),
         TickerSpec("Arama çubuğuna 2 harf yaz — kişilerini de bulur", "🔍", routeKey = "SEARCH_SETTINGS"),
-        TickerSpec("Dock'a 4 uygulama sabitleyebilirsin", "📌", routeKey = "SETTINGS_LAUNCHER"),
+        TickerSpec("Dock'a 5 uygulama veya klasor sabitleyebilirsin", "📌", routeKey = "SETTINGS_LAUNCHER"),
         TickerSpec("Bildirim rozetlerini ayarlardan kapatabilirsin", "🔔", routeKey = "SETTINGS_NOTIFICATIONS"),
         TickerSpec("Klasör rengini ve emojisini özelleştirebilirsin", "🎨", routeKey = "SETTINGS_APPEARANCE"),
         TickerSpec("Sık kullandığın uygulamalar dock'a otomatik önerilir", "⚡", routeKey = "SETTINGS_LAUNCHER"),

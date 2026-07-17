@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPack
 import com.armutlu.apporganizer.presentation.ui.launcher.buildAllApps
 import com.armutlu.apporganizer.presentation.ui.launcher.buildFolders
 import com.armutlu.apporganizer.presentation.ui.launcher.fillDockSuggestions
+import com.armutlu.apporganizer.presentation.ui.launcher.isDockAdditionBlocked
 import com.armutlu.apporganizer.presentation.ui.launcher.selectHomeContextualRow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -234,6 +235,13 @@ class LauncherViewModelLogicTest {
         )
 
         assertEquals(listOf("fixed.1", "fixed.2", "fixed.3", "fixed.4", "fixed.5"), result)
+    }
+
+    @Test
+    fun `dock edit sheet bes slotta bir oge cikarilinca yeni eklemeye izin verir`() {
+        assertFalse(isDockAdditionBlocked(dockSize = DOCK_MAX_SIZE - 1, itemInDock = false))
+        assertTrue(isDockAdditionBlocked(dockSize = DOCK_MAX_SIZE, itemInDock = false))
+        assertFalse(isDockAdditionBlocked(dockSize = DOCK_MAX_SIZE, itemInDock = true))
     }
 
     // ── Yardımcı ──────────────────────────────────────────────────────────────

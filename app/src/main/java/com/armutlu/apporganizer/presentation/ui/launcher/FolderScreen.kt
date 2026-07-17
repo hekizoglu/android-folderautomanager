@@ -262,6 +262,12 @@ fun FolderScreen(
         val appsWithNotifs = remember(f.apps, badgeCounts) {
             f.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
         }
+        val displayApps = remember(sortedApps, badgeCounts, latestTexts) {
+            sortedApps.withLiveNotificationState(
+                badgeCounts = badgeCounts,
+                latestTexts = latestTexts,
+            )
+        }
 
         val transitionFrame = remember(
             transitionMode,
@@ -599,7 +605,7 @@ fun FolderScreen(
                             .fillMaxWidth()
                             .weight(1f),
                     ) {
-                        items(sortedApps, key = { it.packageName }) { app ->
+                        items(displayApps, key = { it.packageName }) { app ->
                             AppIconView(
                                 app = app,
                                 onClick = {
@@ -935,6 +941,22 @@ private fun FolderPageEdgeStrip(
                 .width(18.dp)
                 .align(if (startEdge) Alignment.CenterStart else Alignment.CenterEnd)
                 .background(edgeShadowBrush),
+        )
+    }
+}
+
+internal fun List<AppInfo>.withLiveNotificationState(
+    badgeCounts: Map<String, Int>,
+    latestTexts: Map<String, String>,
+): List<AppInfo> = map { app ->
+    val liveCount = badgeCounts[app.packageName]
+    val liveText = latestTexts[app.packageName]
+    if (liveCount == null && liveText == null) {
+        app
+    } else {
+        app.copy(
+            notificationCount = liveCount ?: app.notificationCount,
+            notificationText = liveText ?: app.notificationText,
         )
     }
 }

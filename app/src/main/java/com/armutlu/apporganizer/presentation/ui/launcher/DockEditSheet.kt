@@ -64,7 +64,7 @@ fun DockEditSheet(
     onAdd: (String) -> Unit,
     onRemove: (String) -> Unit,
     onDismiss: () -> Unit,
-    maxDock: Int = 4
+    maxDock: Int = DockPrefs.MAX_SLOTS
 ) {
     var query by remember { mutableStateOf("") }
     var showFolders by remember { mutableStateOf(false) }
@@ -207,7 +207,7 @@ fun DockEditSheet(
                     items(items = filteredFolders, key = { it.category.categoryId }) { folder ->
                         val dockItem = DockPrefs.folderItem(folder.category.categoryId)
                         val inDock = dockItem in dockPackages
-                        val full = dockPackages.size >= maxDock && !inDock
+                        val full = isDockAdditionBlocked(dockPackages.size, inDock, maxDock)
 
                         Row(
                             Modifier.fillMaxWidth().height(52.dp)
@@ -254,7 +254,7 @@ fun DockEditSheet(
                 } else {
                     items(items = filtered, key = { it.packageName }) { app ->
                         val inDock = app.packageName in dockPackages
-                        val full = dockPackages.size >= maxDock && !inDock
+                        val full = isDockAdditionBlocked(dockPackages.size, inDock, maxDock)
                         val icon = rememberIcon(app.packageName)
 
                         Row(
@@ -300,3 +300,9 @@ fun DockEditSheet(
         }
     }
 }
+
+internal fun isDockAdditionBlocked(
+    dockSize: Int,
+    itemInDock: Boolean,
+    maxDock: Int = DockPrefs.MAX_SLOTS,
+): Boolean = dockSize >= maxDock && !itemInDock

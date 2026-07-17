@@ -61,6 +61,7 @@ build_cycle*.txt
 build_warn.txt
 build_test_out.txt
 gradle_test_run*.txt
+app-debug-FIREBASE-ENABLED.apk
 
 # Python
 __pycache__/

@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.os.SystemClock
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -27,6 +29,7 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LauncherActivity : ComponentActivity() {
@@ -114,13 +117,18 @@ class LauncherActivity : ComponentActivity() {
             WidgetHostManager.deleteId(this, pendingWidgetId)
         }
         pendingWidgetId = WidgetHostManager.allocateId(this)
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, pendingWidgetId)
-        }
-        val launched = runCatching { widgetPickerLauncher.launch(intent) }.isSuccess
+        val intent = createWidgetPickIntent(pendingWidgetId)
+        val launched = runCatching { widgetPickerLauncher.launch(intent) }
+            .onFailure { Timber.e(it, "Widget picker baslatilamadi") }
+            .isSuccess
         if (!launched) {
             WidgetHostManager.deleteId(this, pendingWidgetId)
             pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+            Toast.makeText(
+                this,
+                "Widget seçici açılamadı. Cihaz bu widget host akışını desteklemiyor olabilir.",
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
 
@@ -310,3 +318,16 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 }
+
+internal fun createWidgetPickIntent(appWidgetId: Int): Intent =
+    Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {
+        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        putParcelableArrayListExtra(
+            AppWidgetManager.EXTRA_CUSTOM_INFO,
+            ArrayList<AppWidgetProviderInfo>(),
+        )
+        putParcelableArrayListExtra(
+            AppWidgetManager.EXTRA_CUSTOM_EXTRAS,
+            ArrayList<Bundle>(),
+        )
+    }
