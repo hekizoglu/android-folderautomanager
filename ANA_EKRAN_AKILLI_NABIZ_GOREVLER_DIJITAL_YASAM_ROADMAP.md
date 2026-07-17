@@ -1111,7 +1111,7 @@ Erişilebilirlik:
 
 **Bağımlılıklar:** M03, M05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M06 — commit: 02ffaa3 — tarih: 2026-07-17 — Not: MissionRow ayrı MissionCard.kt dosyasına çıkarıldı (300 satır kuralı). Compose UI test altyapısı projede olmadığından doğrulama saf Kotlin katmanında; Compose test altyapısı ihtiyacı U04 test matrisinde değerlendirilecek.
 
 ---
 
