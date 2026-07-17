@@ -783,7 +783,7 @@ Migration:
 
 **Bağımlılıklar:** M00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M01 — commit: 36a19cc — tarih: 2026-07-17 — Not: Gerçek DB sürümü v17 idi (roadmap v12 sanıyordu) → migration 17→18 yazıldı, schemas/18.json git'te. Dual-write: instance'lar görev üretimine paralel yazılıyor, okuma yolu M02-M04'te taşınacak. Haftalık instance anahtarı ISO (yeni tablo temiz başladı); mission_history eski anahtarla ledger. room-testing altyapısı yok — MigrationTestHelper testi M08 faz kapanışında değerlendirilecek.
 
 ---
 
