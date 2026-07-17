@@ -10,12 +10,21 @@ import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.repository.SearchRepository
+import com.armutlu.apporganizer.domain.home.DigitalPulseRepository
+import com.armutlu.apporganizer.domain.home.HomeIoDispatcher
+import com.armutlu.apporganizer.domain.home.MissionRuntimeRepository
+import com.armutlu.apporganizer.domain.home.NoOpDigitalPulseSource
+import com.armutlu.apporganizer.domain.home.NoOpMissionRuntimeSource
+import com.armutlu.apporganizer.domain.home.NoOpSmartTickerSource
+import com.armutlu.apporganizer.domain.home.SmartTickerEngine
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import java.time.Clock
 import java.time.ZoneId
 import javax.inject.Singleton
@@ -96,5 +105,24 @@ object AppModule {
     fun provideAppDatabaseService(@ApplicationContext context: Context): AppDatabaseService {
         return AppDatabaseService(context).also { it.loadFromCacheSync() }
     }
+
+    // Dongu H02 — HomeIntelligenceCoordinator kaynak interface'leri icin gecici no-op binding'ler.
+    // D00/M/T dongulerinde gercek DigitalPulseRepository/MissionRuntimeRepository/SmartTickerEngine
+    // implementasyonlari bu provider'lari degistirecek.
+    @Provides
+    @Singleton
+    fun provideDigitalPulseRepository(impl: NoOpDigitalPulseSource): DigitalPulseRepository = impl
+
+    @Provides
+    @Singleton
+    fun provideMissionRuntimeRepository(impl: NoOpMissionRuntimeSource): MissionRuntimeRepository = impl
+
+    @Provides
+    @Singleton
+    fun provideSmartTickerEngine(impl: NoOpSmartTickerSource): SmartTickerEngine = impl
+
+    @Provides
+    @HomeIoDispatcher
+    fun provideHomeIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
 }

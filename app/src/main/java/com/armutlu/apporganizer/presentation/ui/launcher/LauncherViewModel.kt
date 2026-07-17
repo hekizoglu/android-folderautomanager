@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
+import com.armutlu.apporganizer.domain.home.HomeIntelligenceCoordinator
+import com.armutlu.apporganizer.domain.home.RefreshReason
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
@@ -120,7 +122,8 @@ class LauncherViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
     private val notificationEventDao: NotificationEventDao,
     private val packageManagerHelper: PackageManagerHelper,
-    private val classifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+    private val classifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier,
+    private val homeIntelligenceCoordinator: HomeIntelligenceCoordinator,
 ) : AndroidViewModel(application) {
 
     private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -266,6 +269,13 @@ class LauncherViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             repository.ensureDefaultCategories()
+        }
+        // Dongu H02 — HomeIntelligenceCoordinator baglantisi: yalniz refresh tetikleme.
+        // Mevcut ticker/skor akislarina (tickerItems, digitalLifeScore, suggestedApps vb.)
+        // DOKUNULMADI — bunlar D00/T dongulerinde bu koordinatore tasinacak.
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { homeIntelligenceCoordinator.refresh(RefreshReason.APP_START) }
+                .onFailure { Timber.w(it, "HomeIntelligenceCoordinator APP_START refresh hatası") }
         }
         // P0.5: NotificationListenerService'ten gelen AKTIF bildirim sayilarini ham haliyle
         // DB'ye yazmak yerine "okunmamis" modelinden gecir. "Aktif sistem bildirimi" ile
@@ -515,6 +525,17 @@ class LauncherViewModel @Inject constructor(
             com.armutlu.apporganizer.utils.NotificationReadPrefs.markRead(context, packageName, ts)
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
+        }
+    }
+
+    /**
+     * Dongu H02 — HomeScreen onResume'da cagrilabilir (opsiyonel, henuz UI tarafinda bagli degil).
+     * Mevcut onResume akislarina (refreshLastLaunched vb.) DOKUNMAZ, sadece koordinatoru tetikler.
+     */
+    fun refreshHomeIntelligence(reason: RefreshReason = RefreshReason.HOME_RESUME) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { homeIntelligenceCoordinator.refresh(reason) }
+                .onFailure { Timber.w(it, "HomeIntelligenceCoordinator $reason refresh hatası") }
         }
     }
 

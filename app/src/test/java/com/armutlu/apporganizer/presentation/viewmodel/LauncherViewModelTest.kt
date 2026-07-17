@@ -62,6 +62,7 @@ class LauncherViewModelTest {
     private lateinit var mockPmHelper: PackageManagerHelper
     private lateinit var mockContext: Context
     private lateinit var mockClassifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+    private lateinit var mockHomeIntelligenceCoordinator: com.armutlu.apporganizer.domain.home.HomeIntelligenceCoordinator
 
     /** Repository'den yayılan kontrol edilebilir flow */
     private val appsFlow = MutableStateFlow<List<AppInfo>>(emptyList())
@@ -79,6 +80,7 @@ class LauncherViewModelTest {
         mockPmHelper = mockk(relaxed = true)
         mockContext = mockk(relaxed = true)
         mockClassifier = mockk(relaxed = true)
+        mockHomeIntelligenceCoordinator = mockk(relaxed = true)
 
         every { mockRepository.getAllAppsFlow() } returns appsFlow
         every { mockNotificationEventDao.observeCountsSince(any()) } returns flowOf(emptyList())
@@ -95,7 +97,8 @@ class LauncherViewModelTest {
             searchRepository = mockSearchRepository,
             notificationEventDao = mockNotificationEventDao,
             packageManagerHelper = mockPmHelper,
-            classifier = mockClassifier
+            classifier = mockClassifier,
+            homeIntelligenceCoordinator = mockHomeIntelligenceCoordinator
         )
     }
 

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu H02 - 2026-07-17 - HomeIntelligenceCoordinator iskeleti
+
+**Yapilanlar:** domain/home paketi: HomeIntelligenceCoordinator (Mutex+in-flight Deferred ile tek refresh, kaynak bazli runCatching — hatali kaynak eski degerini korur), HomeIntelligenceState, RefreshReason, 3 minimal kaynak interface (DigitalPulseRepository/MissionRuntimeRepository/SmartTickerEngine) + no-op binding'ler, @HomeIoDispatcher qualifier. LauncherViewModel'e APP_START tetikleyici baglandi (mevcut akislara dokunulmadi). 4/4 test yesil.
+
+**Bug:** Yok. Ortam: 1x build kilidi (hiltJavaCompileDebug) — java kill + app\build sil SOP ile cozuldu.
+
+**Sonraki:** H03 — DataFreshness ortak veri tazeligi modeli.
+
 ## Akilli Nabiz Dongu H01 - 2026-07-17 - PeriodBoundaryResolver
 
 **Yapilanlar:** domain/time/PeriodBoundaryResolver + PeriodBoundary eklendi (ISO pazartesi haftasi, DST-guvenli gun sinirlari, Clock enjeksiyonu); WeekUtils resolver'a delege edildi (dis davranis korundu); AppModule'e Clock/ZoneId/Resolver @Provides. 11 yeni test + MissionEngine 15 test yesil.
