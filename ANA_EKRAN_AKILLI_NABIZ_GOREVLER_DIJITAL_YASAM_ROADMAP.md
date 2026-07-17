@@ -1304,7 +1304,7 @@ Repository mevcut `PulseClockViewModel.compute()` içindeki input hazırlama iş
 
 **Bağımlılıklar:** H02, H03.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü D00 — commit: a280408 — tarih: 2026-07-17 — P0 2.1 çözüldü: V1 motor (~90 satır) silindi, ticker skor öğesi kaldırıldı (T döngüleri şeridi yeniden ele alacak). WrappedEngine iç hesabı korunuyor ama gösterilen sayı repository snapshot'ından override ediliyor. updateDailyScore deprecated — D01'de silinecek.
 
 ---
 
