@@ -1193,7 +1193,7 @@ Davranış:
 
 **Bağımlılıklar:** H02, M06.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü M07 — commit: bf2d34b — tarih: 2026-07-17 — Not: MissionSummaryUseCase tek hesap yolu (ViewModel + home kartı çift hesap yapmaz; awardStars bayrağıyla yan etki kontrolü). AppPrefs'te missions toggle yok — kart gizleme gate'i T05 ayarlar döngüsünde eklenebilir. "Tek eylem kaldı" kuralı progressFraction>=0.99 olarak yorumlandı.
 
 ---
 
