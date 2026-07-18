@@ -795,7 +795,7 @@ fun HomeScreen(
                 // slotu içinde, FolderPager'ın hemen altında render ediliyordu).
                 val state = homePagerState
                 if (state != null) {
-                    HomePageIndicator(pageCount = homePagerPageCount, pagerState = state)
+                    HomePageIndicator(pages = homePages, pagerState = state)
                 }
             },
             dock = {

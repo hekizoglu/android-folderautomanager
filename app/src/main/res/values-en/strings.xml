@@ -650,6 +650,9 @@
     <string name="recent_installs_drawer_section_title">Installed Today</string>
     <string name="missions_home_chip_title">Missions</string>
     <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
+    <string name="home_page_indicator_dashboard_selected">Smart Home, selected</string>
+    <string name="home_page_indicator_dashboard_unselected">Smart Home</string>
+    <string name="home_page_indicator_folder_page">Folder page %1$d / %2$d</string>
     <string name="missions_home_card_usage_access_required">Usage access required</string>
     <string name="missions_home_card_all_completed">Today\'s missions completed ⭐</string>
     <string name="digital_life_card_title">Digital Life</string>

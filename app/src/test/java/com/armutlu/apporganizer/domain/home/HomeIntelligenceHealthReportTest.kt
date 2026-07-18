@@ -124,7 +124,7 @@ class HomeIntelligenceHealthReportTest {
         val report = HomeIntelligenceHealthReport.build(baseInput(state))
 
         assertTrue(report.missionSystem.warningCodes.contains(HomeErrorCodes.MISSION_PROGRESS_DATA_STALE))
-        assertTrue(report.missionSystem.lines.any { it.contains("Aktif: Hayır") })
+        assertTrue(report.missionSystem.lines.any { it.contains("Aktif: Hayir") })
     }
 
     // 5) Settlement hiç çalışmamış (lastSucceededAt=0) ve bekleyen instance varsa MISSION_SETTLEMENT_STALE.

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P14 - 2026-07-18 - Dashboard indicator
+
+**Yapilanlar:** HomePageIndicator artik List<HomePageSpec> aliyor: Dashboard sayfasi ev ikonu (16/13dp secili/degil), klasorler nokta; 28x48dp dokunma alani + tiklaninca animateScrollToPage; contentDescription TR/EN; reduce-motion uyumu. Saf model buildHomePageIndicatorItems + 7 test (dashboard-kapali gorunum-farksizlik kaniti dahil). Flag kapaliyken gorunum birebir eski.
+
+**Bug:** Yok. Ortam: 1 build kilidi (exclusion sonrasi ilk — tek seferlik, FROM-CACHE ile cozuldu; kalici sorun degil, izleniyor).
+
+**Sonraki:** P15 — HomeLayoutConfig v2 migration (zincir devam).
+
 ## Dashboard Dongu P13 - 2026-07-18 - Son sayfa anchor kenar durumlari
 
 **Yapilanlar:** 8 madde zaten saglaniyordu (dogrulandi); GERCEK EKSIK kapatildi: plan degisiminde (reorder/silme/page-size) mevcut sayfa HAM index'le clamp ediliyordu — resolvePageAfterPlanChange saf fonksiyonu + LaunchedEffect(pages) reconciliation eklendi (eski sayfa anchor'a cevrilir, yeni planda semantik cozulur — kullanici reorder sonrasi yanlis klasore dusmez). 8 yeni test, HomePagerHostTest 20/20.

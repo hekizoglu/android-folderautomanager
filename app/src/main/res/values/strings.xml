@@ -652,6 +652,9 @@
     <string name="recent_installs_drawer_section_title">Bugün Yüklenenler</string>
     <string name="missions_home_chip_title">Görevler</string>
     <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
+    <string name="home_page_indicator_dashboard_selected">Akıllı Ana Ekran, seçili</string>
+    <string name="home_page_indicator_dashboard_unselected">Akıllı Ana Ekran</string>
+    <string name="home_page_indicator_folder_page">Klasör sayfası %1$d / %2$d</string>
     <string name="missions_home_card_usage_access_required">Kullanım erişimi gerekli</string>
     <string name="missions_home_card_all_completed">Bugünkü görevler tamamlandı ⭐</string>
     <string name="digital_life_card_title">Dijital Yaşam</string>

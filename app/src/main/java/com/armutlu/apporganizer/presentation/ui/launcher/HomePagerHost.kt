@@ -76,6 +76,51 @@ internal fun resolvePageAfterPlanChange(
 }
 
 /**
+ * Döngü P14 — indicator item modeli. `List<HomePageSpec>`'i (Dashboard/FolderPage karışık)
+ * saf biçimde indicator'ın çizeceği dot listesine çevirir; Compose/Android bağımlılığı yoktur,
+ * `UnifiedHomePageIndicator` composable'ı bu modeli tüketir.
+ *
+ * `folderNumber`: yalnız [HomePageSpec.FolderPage] item'larında dolu — "Klasör sayfası N/M"
+ * açıklamasındaki N değeri (Dashboard hariç, 1'den başlayan klasör-sırası).
+ * `folderPageCount`: plandaki TOPLAM klasör sayfası sayısı (M) — Dashboard hariç.
+ *
+ * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md Döngü P14 (satır 1115-1171).
+ */
+internal data class HomePageIndicatorItem(
+    val pageIndex: Int,
+    val isDashboard: Boolean,
+    val isSelected: Boolean,
+    val folderNumber: Int?,
+    val folderPageCount: Int,
+)
+
+/**
+ * [pages]'i indicator dot modeline çevirir. `selectedPageIndex` sınır dışıysa güvenli sınıra
+ * çekilir (aynı [clampPageToSafeBounds] deseni) — indicator hiçbir zaman "seçili yok" durumuna
+ * düşmez.
+ */
+internal fun buildHomePageIndicatorItems(
+    pages: List<HomePageSpec>,
+    selectedPageIndex: Int,
+): List<HomePageIndicatorItem> {
+    if (pages.isEmpty()) return emptyList()
+    val safeSelected = clampPageToSafeBounds(pages, selectedPageIndex)
+    val folderPageCount = pages.count { it is HomePageSpec.FolderPage }
+    var folderCounter = 0
+    return pages.mapIndexed { index, spec ->
+        val isDashboard = spec is HomePageSpec.Dashboard
+        if (!isDashboard) folderCounter++
+        HomePageIndicatorItem(
+            pageIndex = index,
+            isDashboard = isDashboard,
+            isSelected = index == safeSelected,
+            folderNumber = if (isDashboard) null else folderCounter,
+            folderPageCount = folderPageCount,
+        )
+    }
+}
+
+/**
  * Döngü P05 — tek yatay ana ekran pager'ı. `HomePageSpec` listesindeki sayfaları (Dashboard
  * veya klasör sayfası) tek `HorizontalPager` içinde render eder; iç içe `HorizontalPager` YOKTUR
  * (eskiden `FolderPager`in kendi pager'ı vardı, P05'te söküldü — bkz. HomeScreenFolderPager.kt).
