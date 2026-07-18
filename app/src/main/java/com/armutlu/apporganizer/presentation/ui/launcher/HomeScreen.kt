@@ -1382,6 +1382,37 @@ fun HomeScreen(
                     }
             }
 
+            // Döngü P13 — sayfa PLANI değiştiğinde (klasör reorder/silme, page size değişimi,
+            // Dashboard aç/kapat) `pagerState.currentPage` Compose'un kendi pageCount clamp'i
+            // ile sadece HAM index sınırına çekilir; bu, "3. sayfadaydım" davranışıdır ve
+            // reorder sonrası kullanıcıyı yanlış klasöre fırlatabilir (roadmap P13 kabul
+            // kriteri: "Ham page index persistence kullanılmaz"). Bu efekt bir önceki planı +
+            // current page'i saklar, plan değiştiğinde `resolvePageAfterPlanChange` ile SEMANTİK
+            // olarak yeniden çözer ve gerekirse (animasyonsuz, kullanıcı hareketi değil arka
+            // plan senkronizasyonu olduğu için) `scrollToPage` ile oraya taşır.
+            var previousPagesForReconcile by remember { mutableStateOf(pages) }
+            var previousPageIndexForReconcile by remember { mutableStateOf(initialPage) }
+            LaunchedEffect(pages) {
+                val fromPages = previousPagesForReconcile
+                val fromIndex = previousPageIndexForReconcile
+                if (fromPages !== pages) {
+                    val samePlan = fromPages.size == pages.size &&
+                        fromPages.indices.all { fromPages[it].stableKey == pages[it].stableKey }
+                    if (!samePlan) {
+                        val resolvedIndex = resolvePageAfterPlanChange(
+                            previousPages = fromPages,
+                            previousPageIndex = fromIndex,
+                            newPages = pages,
+                        )
+                        if (pagerState.currentPage != resolvedIndex) {
+                            pagerState.scrollToPage(resolvedIndex)
+                        }
+                    }
+                }
+                previousPagesForReconcile = pages
+                previousPageIndexForReconcile = pagerState.currentPage
+            }
+
             // İndicator hoisting (HomeShell slotuna) — bkz. yukarıdaki homePagerState/homePagerPageCount.
             homePagerState = pagerState
             homePagerPageCount = pageCount

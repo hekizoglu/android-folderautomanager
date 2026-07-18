@@ -100,4 +100,89 @@ class HomePagerHostTest {
             )
         }
     }
+
+    // ── Döngü P13 — plan degisince current page semantik yeniden cozumu (resolvePageAfterPlanChange) ─
+
+    @Test fun `klasor reorder sonrasi ayni klasorun yeni index ine takip eder`() {
+        // Onceki plan: Dashboard, a, b, c -> kullanici "b" sayfasinda (index 2).
+        val previousPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"), folderPage(2, "c"))
+        // Reorder sonrasi: b en basa alindi -> Dashboard, b, a, c.
+        val newPages = listOf(HomePageSpec.Dashboard, folderPage(0, "b"), folderPage(1, "a"), folderPage(2, "c"))
+
+        val resolved = resolvePageAfterPlanChange(previousPages, previousPageIndex = 2, newPages = newPages)
+
+        assertEquals(1, resolved) // "b" artik index 1'de -> oraya takip eder, index 2'de kalmaz (c olurdu).
+    }
+
+    @Test fun `page size degisince ayni klasoru iceren yeni chunk a cozulur`() {
+        // pageSize 8 -> tek FolderPage: Dashboard, [a,b,c,d,e]. Kullanici "d" nin sayfasinda (index 1).
+        val previousPages = listOf(
+            HomePageSpec.Dashboard,
+            HomePageSpec.FolderPage(pageIndex = 0, firstFolderCategoryId = "a", folders = listOf(folder("a"), folder("b"), folder("c"), folder("d"), folder("e"))),
+        )
+        // pageSize 8 -> 4: Dashboard, [a,b,c,d], [e]. "d" hala ilk chunk'ta (firstFolderCategoryId "a").
+        val newPages = listOf(
+            HomePageSpec.Dashboard,
+            HomePageSpec.FolderPage(pageIndex = 0, firstFolderCategoryId = "a", folders = listOf(folder("a"), folder("b"), folder("c"), folder("d"))),
+            HomePageSpec.FolderPage(pageIndex = 1, firstFolderCategoryId = "e", folders = listOf(folder("e"))),
+        )
+
+        val resolved = resolvePageAfterPlanChange(previousPages, previousPageIndex = 1, newPages = newPages)
+
+        // Onceki sayfanin anchor'i Folder("a") (chunk'in ilk klasoru) -> yeni planda hala index 1.
+        assertEquals(1, resolved)
+    }
+
+    @Test fun `goruntulenen klasor silinince ayni chunk taki baska klasore degil dashboard a duser`() {
+        // Onceki plan: Dashboard, a, b. Kullanici "b" sayfasinda (index 2).
+        val previousPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+        // "b" silindi -> yeni plan: Dashboard, a.
+        val newPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"))
+
+        val resolved = resolvePageAfterPlanChange(previousPages, previousPageIndex = 2, newPages = newPages)
+
+        assertEquals(0, resolved) // HomePageAnchorResolver kurali: silinen klasor -> Dashboard (varsa).
+    }
+
+    @Test fun `dashboard kapatilinca ilk klasor sayfasina duser`() {
+        val previousPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+        val newPages = listOf(folderPage(0, "a"), folderPage(1, "b")) // dashboardEnabled=false
+
+        val resolved = resolvePageAfterPlanChange(previousPages, previousPageIndex = 0, newPages = newPages)
+
+        assertEquals(0, resolved) // Dashboard anchor + Dashboard yok -> ilk sayfa.
+    }
+
+    @Test fun `dashboard acilinca kullanicinin klasoru korunur ilk sayfaya zorlanmaz`() {
+        val previousPages = listOf(folderPage(0, "a"), folderPage(1, "b"))
+        val newPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+
+        val resolved = resolvePageAfterPlanChange(previousPages, previousPageIndex = 1, newPages = newPages)
+
+        assertEquals(2, resolved) // "b" klasoru yeni planda index 2'ye kaydi -> oraya takip eder.
+    }
+
+    @Test fun `plan degismezse (ayni stableKey dizisi) index degismeden dondurulur`() {
+        val pages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+        val resolved = resolvePageAfterPlanChange(pages, previousPageIndex = 2, newPages = pages)
+        assertEquals(2, resolved)
+    }
+
+    @Test fun `onceki plan bossa (ilk composition) previousPageIndex guvenli sinira cekilerek kullanilir`() {
+        val newPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"))
+        assertEquals(1, resolvePageAfterPlanChange(emptyList(), previousPageIndex = 1, newPages = newPages))
+        assertEquals(1, resolvePageAfterPlanChange(emptyList(), previousPageIndex = 99, newPages = newPages)) // clamp
+    }
+
+    @Test fun `yeni plan bossa 0 doner`() {
+        val previousPages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"))
+        assertEquals(0, resolvePageAfterPlanChange(previousPages, previousPageIndex = 1, newPages = emptyList()))
+    }
+
+    @Test fun `bos klasor sayfasindaki PageIndex fallback yeni planda da index korur`() {
+        // categoryId olmayan (bos) klasor sayfasi anchorForCurrentPage'de PageIndex fallback kullanir.
+        val previousPages = listOf(folderPage(0, null))
+        val newPages = listOf(folderPage(0, null), folderPage(1, "a"))
+        assertEquals(0, resolvePageAfterPlanChange(previousPages, previousPageIndex = 0, newPages = newPages))
+    }
 }

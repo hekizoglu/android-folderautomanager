@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P13 - 2026-07-18 - Son sayfa anchor kenar durumlari
+
+**Yapilanlar:** 8 madde zaten saglaniyordu (dogrulandi); GERCEK EKSIK kapatildi: plan degisiminde (reorder/silme/page-size) mevcut sayfa HAM index'le clamp ediliyordu — resolvePageAfterPlanChange saf fonksiyonu + LaunchedEffect(pages) reconciliation eklendi (eski sayfa anchor'a cevrilir, yeni planda semantik cozulur — kullanici reorder sonrasi yanlis klasore dusmez). 8 yeni test, HomePagerHostTest 20/20.
+
+**Bug:** Yukaridaki eksik. Build kilidi OLMADI — Defender exclusion ise yaradi (ilk kilitsiz dongu).
+
+**Sonraki:** P14 — Dashboard farkini gosteren indicator (zincir devam).
+
 ## Dashboard Dongu P12 - 2026-07-18 - Home komut akisi
 
 **Yapilanlar:** HomeCommandPolicy saf cozumleyici (All Apps kapat > CloseSearch > CloseModal > GoToStartPage[StartPageMode'a gore: dashboard/ilk sayfa/son anchor] > cift basista OpenAllApps, 500ms pencere korundu); akis: onNewIntent -> VM SharedFlow -> HomeScreen LaunchedEffect -> animateScrollToPage (reduce-motion duyarli). LauncherActivity sadelesti (lastHomePressMs HomeScreen'e tasindi). 8 yeni test + P00 6/6 + tum Home suite yesil.

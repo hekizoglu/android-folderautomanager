@@ -48,6 +48,34 @@ internal fun clampPageToSafeBounds(pages: List<HomePageSpec>, currentPage: Int):
 }
 
 /**
+ * Döngü P13 — sayfa planı (klasör reorder/silme, Dashboard aç/kapat, page size değişimi)
+ * değiştiğinde current page'in yeni planda SEMANTİK olarak yeniden çözülmesini sağlar.
+ *
+ * Ham index persistence kullanılmaz (roadmap P13 kabul kriteri): eski plandaki current page
+ * önce [anchorForCurrentPage] ile anchor'a çevrilir (`previousPages[previousPageIndex]`),
+ * sonra bu anchor yeni planda [HomePageAnchorResolver.resolve] ile tekrar index'e çözülür.
+ * Böylece "3. sayfadaydım" değil "İş klasöründeydim" bilgisi taşınır — reorder sonrası
+ * kullanıcı rastgele başka sayfaya fırlamaz (aynı klasör yeni planda başka index'e taşınmışsa
+ * oraya takip eder; klasör silinmişse `HomePageAnchorResolver` kuralları uygulanır).
+ *
+ * `previousPages` boşsa (ilk composition) veya iki plan da aynı stableKey dizisine sahipse
+ * (gerçek bir değişiklik yoksa) gereksiz re-resolve yapılmaz — çağıran taraf zaten
+ * `pages` identity/stableKey listesini `LaunchedEffect` key'i olarak kullanmalı.
+ */
+internal fun resolvePageAfterPlanChange(
+    previousPages: List<HomePageSpec>,
+    previousPageIndex: Int,
+    newPages: List<HomePageSpec>,
+): Int {
+    if (newPages.isEmpty()) return 0
+    if (previousPages.isEmpty()) return previousPageIndex.coerceIn(0, newPages.lastIndex)
+
+    val safePreviousIndex = clampPageToSafeBounds(previousPages, previousPageIndex)
+    val anchor = anchorForCurrentPage(previousPages, safePreviousIndex)
+    return HomePageAnchorResolver.resolve(newPages, anchor).coerceIn(0, newPages.lastIndex)
+}
+
+/**
  * Döngü P05 — tek yatay ana ekran pager'ı. `HomePageSpec` listesindeki sayfaları (Dashboard
  * veya klasör sayfası) tek `HorizontalPager` içinde render eder; iç içe `HorizontalPager` YOKTUR
  * (eskiden `FolderPager`in kendi pager'ı vardı, P05'te söküldü — bkz. HomeScreenFolderPager.kt).
