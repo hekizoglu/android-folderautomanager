@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -190,7 +191,9 @@ private fun PulseCard(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .height(cardHeight)
+            // İçgörü ve hava durumu dar ekranlarda iki satıra çıktığında saat kartı
+            // sabit yüksekliğe sığmaya çalışıp alt içeriği kırpmamalı.
+            .heightIn(min = cardHeight)
             .animateContentSize()
             .clip(RoundedCornerShape(24.dp))
             .background(
@@ -229,9 +232,11 @@ private fun PulseCard(
                 Text(
                     text = timeFormat.format(now),
                     color = Color.White,
-                    fontSize = if (compact) 48.sp else 66.sp,
+                    fontSize = if (compact) 46.sp else 64.sp,
                     fontWeight = FontWeight.Thin,
-                    letterSpacing = (-2).sp,
+                    letterSpacing = 0.sp,
+                    maxLines = 1,
+                    softWrap = false,
                 )
                 if (insightVisible) {
                     Spacer(Modifier.height(if (compact) 2.dp else 6.dp))

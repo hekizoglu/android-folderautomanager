@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -99,6 +100,9 @@ internal fun SmartDashboardPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // Dashboard içeriği kendi kaydırma alanında kalır; üçüncü parti widget çizimi
+            // pager dışına taşarak arama/dock katmanlarının üzerine gelemez.
+            .clipToBounds()
             .verticalScroll(scrollState)
     ) {
         val compactClock = state.clock.compact || density != DashboardDensity.COMFORTABLE

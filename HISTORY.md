@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P20 - 2026-07-19 - Klasor hizalama + APK teslimi
+
+**Yapilanlar:** Az sayida klasor iceren sayfalarda dikey ust hizalama duzeltildi; klasor icerigi kapasitesi bilgi paneli alanini hesaba katiyor; adaptif sayfa boyutu ile gereksiz bos sayfa azaltildi; saat widget'i kirpilma ve tasma korumasi kazandi; dashboard tasma siniri eklendi; varsayilan widget ayarlari acik tutuldu. Debug APK `v1.3.98 (121)` olusturuldu, unit testler ve bagli tablet smoke testi gecti.
+
+**Bug:** Yok. Tablet kurulumunda fatal exception: 0.
+
+**Sonraki:** Yeni kullanici kabul testi.
+
 ## Dashboard Dongu P19 - 2026-07-18 - Erisilebilirlik + buyuk yazi
 
 **Yapilanlar:** Denetim: 5 madde zaten karsilaniyordu (48dp indicator, reduce-motion, FolderTile semantics...). Kapatilan eksikler: pager kok contentDescription + Sonraki/Onceki CustomAction (saf homePagerCurrentPageDescription + 5 test); arama alani sabit rol aciklamasi (Role.Search bu Compose surumunde yok — bytecode ile dogrulandi); Bugun Yuklenenler chip mergeDescendants; FolderGridPage paneTitle "Klasor sayfasi X/Y" (indicator ile ayni kaynak). Fable duzeltmesi: agent'in unuttugu 4 EN string eklendi (TR/EN esitligi korundu), compile yesil.

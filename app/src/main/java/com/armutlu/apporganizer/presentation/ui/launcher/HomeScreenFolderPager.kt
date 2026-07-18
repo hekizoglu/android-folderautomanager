@@ -2,15 +2,19 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -25,6 +29,8 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
 import com.armutlu.apporganizer.telemetry.TelemetryEvent
@@ -80,24 +86,32 @@ internal fun FolderGridPage(
     pageAccessibilityLabel: String? = null,
     modifier: Modifier = Modifier
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(columnsCount),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-        modifier = modifier.then(
-            if (pageAccessibilityLabel != null) {
-                Modifier.semantics {
-                    isTraversalGroup = true
-                    paneTitle = pageAccessibilityLabel
-                    contentDescription = pageAccessibilityLabel
-                }
-            } else {
-                Modifier
-            }
-        ),
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
-        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
-        userScrollEnabled = false
+    val pageApps = pageFolders.sumOf { it.apps.size }
+    val pageNotifications = pageFolders.sumOf { folder -> folder.apps.sumOf { it.notificationCount } }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .then(
+                if (pageAccessibilityLabel != null) {
+                    Modifier.semantics {
+                        isTraversalGroup = true
+                        paneTitle = pageAccessibilityLabel
+                        contentDescription = pageAccessibilityLabel
+                    }
+                } else Modifier
+            )
     ) {
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columnsCount),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                modifier = Modifier.fillMaxSize(),
+                // Klasör grubu, özellikle tek satırlı/az klasörlü sayfalarda üstte kalmaz;
+                // tüm grup kullanılabilir alanda dikey olarak merkezlenir.
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
+                userScrollEnabled = false
+            ) {
         items(pageFolders.size) { pageIndex ->
             val index = globalStartIndex + pageIndex
             val folder = pageFolders[pageIndex]
@@ -172,22 +186,35 @@ internal fun FolderGridPage(
                     )
             )
         }
-        val emptySlots = pageSize - pageFolders.size
-        if (emptySlots > 0) {
-            items(emptySlots) { _ ->
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onHomeLongPress()
-                                }
-                            )
-                        }
-                )
             }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(112.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .background(Color(0xFF171717), RoundedCornerShape(12.dp))
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = "Bu sayfadaki klasörler",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "${pageFolders.size} klasör · $pageApps uygulama",
+                color = Color.White.copy(alpha = 0.72f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim" else "Yeni bildirim ve öneriler burada görünür",
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

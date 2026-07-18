@@ -426,7 +426,7 @@ object AppPrefs {
 
     // Widget Auto-Resize — ekran yüksekliğine göre widget yüksekliği otomatik ayarla
     const val KEY_WIDGET_AUTO_RESIZE = "widget_auto_resize"
-    fun isWidgetAutoResizeEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AUTO_RESIZE, false)
+    fun isWidgetAutoResizeEnabled(context: Context) = prefs(context).getBoolean(KEY_WIDGET_AUTO_RESIZE, true)
     fun setWidgetAutoResizeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_WIDGET_AUTO_RESIZE, v).apply()
 
     // Arka plan tipi — "wallpaper" (duvar kağıdı) | "solid" (düz renk)
@@ -565,7 +565,7 @@ object AppPrefs {
 
     // Ana ekranda tek satırlık içgörü görünürlüğü
     const val KEY_HOME_INSIGHT_VISIBLE = "home_insight_visible"
-    fun isHomeInsightVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_INSIGHT_VISIBLE, false)
+    fun isHomeInsightVisible(context: Context) = prefs(context).getBoolean(KEY_HOME_INSIGHT_VISIBLE, true)
     fun setHomeInsightVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_INSIGHT_VISIBLE, v).apply()
 
     // Skor halkası ("Denge") altında 24 saatlik mini kullanım grafiği görünürlüğü

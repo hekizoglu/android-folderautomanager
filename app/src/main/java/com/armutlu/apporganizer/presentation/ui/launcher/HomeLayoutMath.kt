@@ -17,6 +17,8 @@ object HomeLayoutMath {
     const val LABEL_HEIGHT_DP = 36
     /** HomePageIndicator + SwipeHint için ayrılan pay. */
     const val INDICATOR_RESERVE_DP = 36
+    /** Klasör sayfasının altındaki iki/üç satırlı bilgi paneli için ayrılan pay. */
+    const val INFO_PANEL_RESERVE_DP = 112
 
     /**
      * Verilen yükseklikte kırpılmadan sığan klasör sayısı. En az 1 satır garanti edilir
@@ -24,7 +26,7 @@ object HomeLayoutMath {
      */
     fun folderCapacity(availableHeightDp: Int, folderSizeDp: Int, columns: Int): Int {
         val rowHeight = folderSizeDp + LABEL_HEIGHT_DP
-        val usable = availableHeightDp - GRID_VERTICAL_PADDING_DP - INDICATOR_RESERVE_DP
+        val usable = availableHeightDp - GRID_VERTICAL_PADDING_DP - INDICATOR_RESERVE_DP - INFO_PANEL_RESERVE_DP
         if (usable <= rowHeight) return max(MIN_VISIBLE_FOLDERS, columns)
         // n satır koşulu: n*rowHeight + (n-1)*spacing <= usable
         val rows = max(1, (usable + ROW_SPACING_DP) / (rowHeight + ROW_SPACING_DP))
@@ -33,6 +35,10 @@ object HomeLayoutMath {
 
     fun pageSize(requestedPageSize: Int, folderCapacity: Int): Int =
         minOf(requestedPageSize, max(MIN_VISIBLE_FOLDERS, folderCapacity))
+
+    /** Varsayılan 8 değeri gerçek bir limit değildir; ekranın sığdırabildiği kadarını kullanır. */
+    fun adaptivePageSize(folderCapacity: Int): Int =
+        max(MIN_VISIBLE_FOLDERS, folderCapacity)
 
     /**
      * Klasör sayfa sayısı — Döngü P04'ten itibaren HomeScreen.kt bu fonksiyonu doğrudan çağırır

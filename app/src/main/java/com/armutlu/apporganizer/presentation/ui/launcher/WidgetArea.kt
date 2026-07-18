@@ -68,8 +68,10 @@ fun WidgetArea(
     val displayIds = draggingIds ?: widgetIds
 
     Column(
-        modifier = modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        // Widget'ler ana ekranın kullanılabilir genişliğini kesintisiz kullanır;
+        // aradaki ekstra boşluk küçük ekranlarda gereksiz kırpılma hissi oluşturuyordu.
+        modifier = modifier.padding(vertical = 2.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         displayIds.forEachIndexed { index, id ->
             val isDragging = dragFromIndex == index

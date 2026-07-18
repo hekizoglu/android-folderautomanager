@@ -49,6 +49,12 @@ class HomeLayoutMathTest {
         assertEquals(4, pageSize)
     }
 
+    @Test
+    fun `varsayilan duzen kapasiteyi 8 ile sinirlamaz`() {
+        assertEquals(24, HomeLayoutMath.adaptivePageSize(folderCapacity = 24))
+        assertEquals(HomeLayoutMath.MIN_VISIBLE_FOLDERS, HomeLayoutMath.adaptivePageSize(folderCapacity = 2))
+    }
+
     // --- pageCount: FolderGridPage'in dayandigi sayfalama ---
 
     @Test

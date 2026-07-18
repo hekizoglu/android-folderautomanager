@@ -160,13 +160,8 @@ fun FolderTile(
             runCatching { Color(android.graphics.Color.parseColor(hex)) }
                 .getOrDefault(Color.White)
         }
-        // Etiket metni klasör ikon dairesinin DIŞINDA, doğrudan duvar kağıdı/tema arka planının
-        // üzerinde durur — bu yüzden customColor'a (dairenin rengi) göre değil, HomeScreen'den
-        // gelen labelColor'a (gerçek arka plana göre hesaplanmış) göre renklendirilmeli.
-        // ESKİ HATA (D210'da düzeltildi): açık customColor'lu klasörlerde metin neredeyse siyah
-        // (0xFF212121) yapılıyordu ama koyu duvar kağıdında bu görünmez oluyordu — "klasör ismi
-        // kayboluyor" bug'ı buradan kaynaklanıyordu.
-        val effectiveLabelColor = labelColor
+        // Klasör adı ikon rengiyle aynı ailede kalır; sabit siyah zeminde renkli fihrist okunur.
+        val effectiveLabelColor = catColor
         val tileShape = when (folderShape) {
             "square"   -> RoundedCornerShape(0.dp)
             "rounded"  -> RoundedCornerShape(16.dp)
@@ -371,7 +366,8 @@ fun FolderTile(
                         color = effectiveLabelColor.copy(alpha = 0.80f * textAlpha),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Medium,
-                        maxLines = 1,
+                        lineHeight = 11.sp,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )

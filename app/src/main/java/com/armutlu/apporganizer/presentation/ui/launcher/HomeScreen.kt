@@ -674,18 +674,12 @@ fun HomeScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Root box — duvar kağıdı (transparent) veya düz renk arka plan
+    // Launcher yüzeyi: klasörler ve dashboard okunabilirliği için sabit siyah zemin.
     // NOT: .haze() gesture'lardan SONRA — Haze 0.7.3 önce gelince pointer event tüketiyor
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then(
-                when (bgType) {
-                    "solid" -> Modifier.background(Color(bgColorInt))
-                    "gradient" -> Modifier.background(homeBackgroundBrush(bgGradientStyle))
-                    else -> Modifier
-                }
-            )
+            .background(Color.Black)
             .nestedScroll(nestedScrollConnection)
             .pointerInput("tap") {
                 detectTapGestures(
@@ -1241,7 +1235,8 @@ fun HomeScreen(
                     tickerMutedUntilState = 0L
                 }
             }
-            if (tickerVisibleNow && !tickerMuted) {
+            // SmartDashboardPage aynı ticker'ı dashboard slotunda tek kez çizer.
+            if (false && tickerVisibleNow && !tickerMuted) {
                 HomeTickerRow(
                     items = tickerItems,
                     visible = homeTickerVisible,
@@ -1367,7 +1362,14 @@ fun HomeScreen(
             val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns) {
                 HomeLayoutMath.folderCapacity(availableHeightDp, effectiveFolderSizeDp, screenColumns)
             }
-            val pageSize = HomeLayoutMath.pageSize(requestedPageSize, folderCapacity)
+            // 8, yeni kurulumdaki otomatik düzen değeridir; kapasiteyi 8 ile sınırlamak
+            // geniş tabletlerde gereksiz klasör sayfaları üretiyordu. Manuel 4/6/8/12
+            // tercihlerinde ise kullanıcının seçimi korunur.
+            val pageSize = if (pageFolderCount == 8) {
+                HomeLayoutMath.adaptivePageSize(folderCapacity)
+            } else {
+                HomeLayoutMath.pageSize(requestedPageSize, folderCapacity)
+            }
             // Kullanıcının manuel seçtiği sayfa boyutu ekrana sığmıyorsa görüntüyü bozmadan uyar
             LaunchedEffect(pageFolderCount, folderCapacity) {
                 if (pageFolderCount != 8 && pageFolderCount > folderCapacity &&
