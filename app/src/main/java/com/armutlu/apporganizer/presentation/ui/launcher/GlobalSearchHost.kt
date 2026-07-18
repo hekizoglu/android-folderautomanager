@@ -34,9 +34,15 @@ import com.armutlu.apporganizer.domain.models.SourceType
  * uygulayan opak bir `Box` (bkz. HomeScreenComponents.kt ~2483) — bu yüzden Column tabanlı
  * `topSearch`/`bottomSearch` slotu içine gömülemez (Column'da yalnız kalan alanı kaplar, dock/pager
  * ile üst üste binmesi gereken davranışı bozar). Bu yüzden bu host overlay'i KENDİSİ render ETMEZ;
- * bunun yerine [onFullScreenSearchOpenChanged] ile açık/kapalı durumunu dışarı (HomeScreen) bildirir,
- * HomeScreen bunu eskiden olduğu gibi `HomeShell`'in `overlays` (Box) slotunda render eder — mutlak
- * konumlandırma/z-order BİREBİR korunur, sadece state kaynağı bu host'a taşındı.
+ * bunun yerine [onFullScreenSearchOpenChanged] ile açık/kapalı durumunu dışarı (HomeScreen) bildirir.
+ *
+ * Döngü P09 (roadmap satır 867-919) — HomeScreen bu bayrağı artık `HomeShell`'in AYRI
+ * `searchOverlay` slotunda render eder (eskiden genel `overlays` Box slotundaydı). Böylece arama
+ * sonuçları hangi sayfa (Dashboard, klasör pager'ı) açık olursa olsun aynı global katmanda, sayfa
+ * bounds'u tarafından kırpılmadan görünür; z-order sözleşmesi de netleşti: pager/dock <
+ * searchOverlay < overlays (All Apps/Quick Wheel her zaman aramanın üzerinde). Bkz. HomeShell.kt
+ * doc-comment. Mutlak konumlandırma (`fillMaxSize` Box) davranışı BİREBİR korunur, sadece hangi
+ * slotta çizildiği değişti.
  *
  * Davranış BİREBİR korunur:
  * - `homeAppSearchEnabled` açıkken birleşik arama çubuğu ([HomeAppSearchBar]) render edilir.

@@ -662,6 +662,10 @@ fun HomeScreen(
         // sayfa içeriği (saat, kartlar, klasör pager'ı, favoriler vb.) `pager` slotunda kalıyor.
         // Sistem bar + IME padding artık yalnız HomeShell'in kök Column'unda uygulanıyor
         // (ROADMAP #4 notu HomeShell.kt'ye taşındı — davranış birebir korunur).
+        // Döngü P09 — FullScreenSearchOverlayV2 artık HomeShell'in AYRI `searchOverlay` slotunda
+        // (roadmap satır 867-919): z-order sözleşmesi net — pager'ın üzerinde, All Apps'in
+        // (genel `overlays` slotu) altında render edilir. Konumlandırma/davranış DEĞİŞMEDİ,
+        // sadece hangi slotta render edildiği (bkz. HomeShell.kt doc-comment).
         HomeShell(
             topSearch = if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
                 { searchBarSection() }
@@ -741,7 +745,10 @@ fun HomeScreen(
                         }
                 )
             },
-            overlays = {
+            searchOverlay = {
+                // Döngü P09 — genel `overlays` slotundan taşındı; z-order artık HomeShell
+                // tarafından garanti edilir (searchOverlay, overlays'ten ÖNCE çizilir → All Apps
+                // her zaman aramanın üzerinde kalır). Görünürlük koşulu ve içerik BİREBİR aynı.
                 if (fullScreenSearchOpen && homeAppSearchEnabled && fullscreenSearchEnabled) {
                     key(fullScreenSearchOpen) {
                         FullScreenSearchOverlayV2(
@@ -767,7 +774,8 @@ fun HomeScreen(
                         )
                     }
                 }
-
+            },
+            overlays = {
                 // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel
                 AnimatedVisibility(
                     visible = allAppsOpen,

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P09 - 2026-07-18 - Arama sonuc overlay'i global katmanda
+
+**Yapilanlar:** HomeShell'e overlays'ten AYRI searchOverlay slotu (z-order kod duzeyinde garanti: pager ustu, All Apps alti); FullScreenSearchOverlayV2 bu slota tasindi (gorunurluk kosulu birebir); Back davranisi ve P05 pager kilidi dogrulandi. Yeni sarmalayici dosyalar bilinçli acilmadi (mevcut overlay zaten tam tesekkullu — duplikasyon reddedildi). 10/10 + 16/16 P00 regresyon yesil.
+
+**Bug:** Yok. Risk notu: inline kisa sonuc onizlemesi sayfa Column'unda kaldi (roadmap 'tam sonuclar' yorumu); TalkBack/buyuk font manuel dogrulama cihaz oturumuna.
+
+**Sonraki:** P10 — gesture arbitration katmani (zincir devam).
+
 ## Dashboard Dongu P08 - 2026-07-18 - GlobalSearchHost
 
 **Yapilanlar:** GlobalSearchHost (sayfa bagimsiz arama bileseni — HomeAppSearchBar/FolderSearchBar delegasyonu) + GlobalSearchUiState saf turev fonksiyonu (active/overlayVisible/fullscreenVisible). State sahipligi LauncherViewModel'de kaldi (cift state yok); HEADER/FOOTER, tam ekran acilis, 4 kaynak, 30s klasor arama temizligi birebir korundu. 7 yeni test + tum arama/regresyon testleri yesil.

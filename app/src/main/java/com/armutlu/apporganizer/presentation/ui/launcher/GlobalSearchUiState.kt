@@ -13,8 +13,10 @@ import com.armutlu.apporganizer.domain.models.SourceType
  * — "mevcut LauncherViewModel akışlarını yeniden kullan, çift state yaratma"); bu dosya sadece
  * o akışlardan TÜRETİLEN salt-okunur anlık görüntüyü (snapshot) ve türetim mantığını taşır.
  *
- * P09 bu state'i tüketip sonuç overlay'ini yeniden tasarlayacak — bu döngüde overlay tasarımı
- * DEĞİŞMEZ, sadece state'in tek bir yerden hesaplanması sağlanır.
+ * Döngü P09 (roadmap satır 867-919) bu state'i tüketerek `fullscreenVisible`/`overlayVisible`
+ * bayraklarına göre `FullScreenSearchOverlayV2`'nin `HomeShell.searchOverlay` slotunda render
+ * edilip edilmeyeceğine karar verir (bkz. HomeScreen.kt `searchOverlay =` bloğu) — bu türetim
+ * mantığı DEĞİŞMEDİ, sadece tüketici tarafı (hangi slotta çizildiği) netleşti.
  */
 data class GlobalSearchUiState(
     val query: String,

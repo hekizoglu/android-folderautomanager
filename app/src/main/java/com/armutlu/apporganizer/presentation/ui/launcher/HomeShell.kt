@@ -30,6 +30,21 @@ import androidx.compose.ui.Modifier
  *
  * Sistem bar ve IME padding'i yalnız burada (root shell) uygulanır;
  * sayfa içerikleri bu padding'i tekrar uygulamaz.
+ *
+ * Döngü P09 — `searchOverlay` slotu (roadmap satır 867-919). Global arama sonuç overlay'i
+ * (`FullScreenSearchOverlayV2`) artık genel `overlays` slotundan AYRI, kendi z-order sözleşmesi
+ * net bir slotta render edilir — P08'in bıraktığı boşluk (bkz. GlobalSearchHost.kt dosya başı
+ * NOT'u) burada kapatılır:
+ * - `searchOverlay`, kök `Column` (pager/indicator/dock) render edildikten SONRA ama `overlays`
+ *   render edilmeden ÖNCE çizilir → sayfa (Dashboard veya klasör pager'ı) `Column` içinde kalsa
+ *   bile arama sonuçları sayfa bounds'u tarafından KIRPILMAZ (roadmap amaç: "Sonuçların Dashboard
+ *   veya klasör page bounds'u tarafından kırpılmasını önlemek").
+ * - `overlays` (All Apps Drawer, Quick Wheel, Snackbar, ...) `searchOverlay`'den SONRA çizilir →
+ *   All Apps her zaman arama sonuçlarının ÜZERİNDE görünür (roadmap madde 2: "pager'ın üzerinde,
+ *   All Apps'in altında"). Fiili z-order: pager/dock < searchOverlay < overlays.
+ * - Davranış BİREBİR korunur: `searchOverlay` boşsa (`{}`) hiçbir görsel/gesture farkı oluşmaz —
+ *   var olan `overlays` içindeki `FullScreenSearchOverlayV2` çağrısı buraya taşınır, konumlandırma
+ *   mantığı (`fillMaxSize` Box) değişmez.
  */
 @Composable
 fun HomeShell(
@@ -39,6 +54,7 @@ fun HomeShell(
     indicator: @Composable () -> Unit = {},
     bottomSearch: (@Composable () -> Unit)? = null,
     dock: @Composable () -> Unit,
+    searchOverlay: @Composable BoxScope.() -> Unit = {},
     overlays: @Composable BoxScope.() -> Unit = {},
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -56,6 +72,7 @@ fun HomeShell(
             bottomSearch?.invoke()
             dock()
         }
+        searchOverlay()
         overlays()
     }
 }

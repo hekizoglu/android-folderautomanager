@@ -86,6 +86,52 @@ class GlobalSearchHostTest {
         assertTrue(state.overlayVisible)
     }
 
+    // ── Döngü P09: HomeShell.searchOverlay slotu tam bu bayrağa göre koşullu render eder ────
+    // (bkz. HomeScreen.kt `searchOverlay = { if (fullScreenSearchOpen && ... ) ... }`) — bu
+    // kombinasyonlar overlay'in yanlış anda görünmediğini/görünmesi gerektiğini doğrular.
+
+    @Test
+    fun `fullscreen kapaliyken hicbir overlay gorunmez ve query bos`() {
+        val state = computeGlobalSearchUiState(
+            query = "",
+            fullscreenOpen = false,
+            fullscreenEnabled = true,
+            resultGroups = emptyMap(),
+            filesIndexState = FileIndexState.Disabled,
+        )
+        assertFalse(state.fullscreenVisible)
+        assertFalse(state.overlayVisible)
+        assertFalse(state.active)
+    }
+
+    @Test
+    fun `fullscreen ayari tamamen kapali - query aktif olsa da fullscreenVisible hep false`() {
+        val state = computeGlobalSearchUiState(
+            query = "kahve",
+            fullscreenOpen = false,
+            fullscreenEnabled = false,
+            resultGroups = emptyMap(),
+            filesIndexState = FileIndexState.Disabled,
+        )
+        assertFalse("fullscreenOpen false iken fullscreenEnabled ne olursa olsun gorunmez", state.fullscreenVisible)
+        assertTrue(state.overlayVisible)
+    }
+
+    @Test
+    fun `fullscreen acik ve etkin - HomeShell searchOverlay slotu render kosulunu karsilar`() {
+        // HomeScreen.kt: fullScreenSearchOpen && homeAppSearchEnabled && fullscreenSearchEnabled
+        val state = computeGlobalSearchUiState(
+            query = "market",
+            fullscreenOpen = true,
+            fullscreenEnabled = true,
+            resultGroups = mapOf(SourceType.APP to listOf(doc("pkg.market"))),
+            filesIndexState = FileIndexState.Disabled,
+        )
+        assertTrue(state.fullscreenVisible)
+        assertFalse(state.overlayVisible)
+        assertTrue(state.active)
+    }
+
     // ── sonuç grupları ve dosya indeks durumu birebir taşınır ───────────────────────────────
 
     @Test
