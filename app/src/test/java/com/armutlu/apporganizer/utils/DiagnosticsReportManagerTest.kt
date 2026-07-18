@@ -21,6 +21,10 @@ class DiagnosticsReportManagerTest {
         val report = renderReport(sampleSnapshot())
 
         assertTrue(report.contains("[Uygulama]"))
+        assertTrue(report.contains("Rapor standardi: v2 | AI analizine uygun yapilandirilmis cikti"))
+        assertTrue(report.contains("[Yonetici Ozeti]"))
+        assertTrue(report.contains("Genel durum:"))
+        assertTrue(report.contains("[Oncelikli Aksiyonlar]"))
         assertTrue(report.contains("Surum: 1.3.36 (59)"))
         assertTrue(report.contains("Android: 16 (API 36)"))
         assertTrue(report.contains("[Izinler]"))
@@ -64,6 +68,16 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("Arama bolgesi: HEADER"))
         assertTrue(report.contains("Widget sayisi: 2"))
         assertTrue(report.contains("Dock oge sayisi: 5"))
+        assertTrue(report.contains("[Ana Ekran Mimarisi]"))
+        assertTrue(report.contains("Ana ekran modu: Akilli Dashboard"))
+        assertTrue(report.contains("Baslangic sayfasi: Dashboard"))
+        assertTrue(report.contains("Son sayfa turu: Dashboard"))
+        assertTrue(report.contains("Toplam ana sayfa: 4"))
+        assertTrue(report.contains("Klasor sayfasi: 3"))
+        assertTrue(report.contains("Global arama konumu: Ust"))
+        assertTrue(report.contains("Pager restore: OK"))
+        assertTrue(report.contains("Pager v2 flag: false"))
+        assertTrue(report.contains("Gesture policy: Normal"))
         assertTrue(report.contains("[Worker Ozeti]"))
         assertTrue(report.contains("Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL"))
         assertTrue(report.contains("[Gorev Sistemi]"))
@@ -76,6 +90,7 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("## AI_METRICS"))
         assertTrue(report.contains("classification.totalUserApps=87"))
         assertTrue(report.contains("homeLayout.widgetCount=2, dockItemCount=5"))
+        assertTrue(report.contains("homeArchitecture.totalPages=4, folderPages=3, searchPosition=Ust"))
         assertTrue(report.contains("severity=WARN | area=home_intelligence | signal=MISSION_PROGRESS_DATA_STALE"))
         assertTrue(report.contains("[Kritik Hatalar]"))
         assertTrue(report.contains("1. safeMode=hayir, summary=IllegalStateException: sample"))
@@ -379,6 +394,16 @@ class DiagnosticsReportManagerTest {
         ),
         homeStartPageMode = "SMART_DASHBOARD",
         homeLastPageAnchorType = "DASHBOARD",
+        homeArchitecture = HomeArchitectureDiagnostics(
+            homeMode = "Akilli Dashboard",
+            startPage = "Dashboard",
+            lastPageType = "Dashboard",
+            totalPageCount = 4,
+            folderPageCount = 3,
+            globalSearchPosition = "Ust",
+            pagerRestore = "OK",
+            gesturePolicy = "Normal",
+        ),
         workerSummary = listOf(
             "Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL",
             "Files index periodic: enabled=evet, work=RUNNING, attempts=1",

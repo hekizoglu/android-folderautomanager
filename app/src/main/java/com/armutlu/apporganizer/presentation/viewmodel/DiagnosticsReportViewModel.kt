@@ -29,11 +29,19 @@ class DiagnosticsReportViewModel @Inject constructor(
     val uiState: StateFlow<DiagnosticsReportUiState> = _uiState.asStateFlow()
 
     fun generateReport() {
+        generate { diagnosticsReportManager.createShareIntent() }
+    }
+
+    fun generateFeedbackReport() {
+        generate { diagnosticsReportManager.createFeedbackShareIntent() }
+    }
+
+    private fun generate(createIntent: suspend () -> Intent) {
         if (_uiState.value.isGenerating) return
         _uiState.value = _uiState.value.copy(isGenerating = true, errorMessage = null, shareIntent = null)
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
-                runCatching { diagnosticsReportManager.createShareIntent() }
+                runCatching { createIntent() }
             }
             _uiState.value = result.fold(
                 onSuccess = { shareIntent ->

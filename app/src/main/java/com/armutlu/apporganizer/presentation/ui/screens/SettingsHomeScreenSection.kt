@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.presentation.ui.launcher.HomePageTelemetryPolicy
+import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
 
 /**
@@ -618,11 +620,13 @@ fun SettingsHomeScreenSection(
             onCheckedChange = { enabled ->
                 smartDashboardEnabled = enabled
                 com.armutlu.apporganizer.utils.HomePagePrefs.setSmartDashboardEnabled(context, enabled)
+                AppAnalytics.smartDashboardToggled(enabled)
                 // Roadmap P17 madde 3: Dashboard kapatılırken SMART_DASHBOARD seçiliyse
                 // FIRST_FOLDER_PAGE'e normalize edilir — kapalı bir sayfaya "başlangıç" denemez.
                 if (!enabled && startPageMode == com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD) {
                     startPageMode = com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE
                     com.armutlu.apporganizer.utils.HomePagePrefs.setStartPageMode(context, startPageMode)
+                    AppAnalytics.homeStartModeChanged(HomePageTelemetryPolicy.startMode(startPageMode))
                 }
             }
         )
@@ -661,6 +665,7 @@ fun SettingsHomeScreenSection(
                             .clickable(enabled = optionEnabled) {
                                 startPageMode = mode
                                 com.armutlu.apporganizer.utils.HomePagePrefs.setStartPageMode(context, mode)
+                                AppAnalytics.homeStartModeChanged(HomePageTelemetryPolicy.startMode(mode))
                             }
                             .padding(horizontal = 14.dp, vertical = 8.dp),
                     ) {

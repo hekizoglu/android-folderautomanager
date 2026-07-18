@@ -35,6 +35,68 @@ object AppAnalytics {
         // Intentionally not part of the first-version analytics catalog.
     }
 
+    fun homePageViewed(
+        pageType: TelemetryEvent.HomePageType,
+        pagePosition: TelemetryEvent.HomePagePositionBucket,
+        navigationSource: TelemetryEvent.HomeNavigationSource,
+        searchPosition: TelemetryEvent.HomeSearchPosition,
+        startMode: TelemetryEvent.HomeStartMode,
+        deviceClass: TelemetryEvent.HomeTelemetryDeviceClass,
+    ) {
+        log(
+            TelemetryEvent.HomePageViewed(
+                pageType = pageType,
+                pagePosition = pagePosition,
+                navigationSource = navigationSource,
+                searchPosition = searchPosition,
+                startMode = startMode,
+                deviceClass = deviceClass,
+            )
+        )
+    }
+
+    fun homePageSwiped(
+        pageType: TelemetryEvent.HomePageType,
+        pagePosition: TelemetryEvent.HomePagePositionBucket,
+        deviceClass: TelemetryEvent.HomeTelemetryDeviceClass,
+    ) {
+        log(TelemetryEvent.HomePageSwiped(pageType, pagePosition, deviceClass))
+    }
+
+    fun homeSearchOpened(
+        searchPosition: TelemetryEvent.HomeSearchPosition,
+        pageType: TelemetryEvent.HomePageType,
+    ) {
+        log(TelemetryEvent.HomeSearchOpened(searchPosition, pageType))
+    }
+
+    fun allAppsOpenedFromPage(
+        pageType: TelemetryEvent.HomePageType,
+        pagePosition: TelemetryEvent.HomePagePositionBucket,
+        deviceClass: TelemetryEvent.HomeTelemetryDeviceClass,
+    ) {
+        log(TelemetryEvent.AllAppsOpenedFromPage(pageType, pagePosition, deviceClass))
+    }
+
+    fun homeButtonNavigation(
+        startMode: TelemetryEvent.HomeStartMode,
+        targetPageType: TelemetryEvent.HomePageType,
+    ) {
+        log(TelemetryEvent.HomeButtonNavigation(startMode, targetPageType))
+    }
+
+    fun homeStartModeChanged(startMode: TelemetryEvent.HomeStartMode) {
+        log(TelemetryEvent.HomeStartModeChanged(startMode))
+    }
+
+    fun smartDashboardToggled(enabled: Boolean) {
+        log(
+            TelemetryEvent.SmartDashboardToggled(
+                if (enabled) TelemetryEvent.ToggleState.ENABLED else TelemetryEvent.ToggleState.DISABLED
+            )
+        )
+    }
+
     fun categoryReclassified(
         sourceType: TelemetryEvent.SourceType,
         resultType: TelemetryEvent.TargetType,

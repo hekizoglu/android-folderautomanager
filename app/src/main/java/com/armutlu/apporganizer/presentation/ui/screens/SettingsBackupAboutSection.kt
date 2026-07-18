@@ -820,6 +820,36 @@ internal fun LazyListScope.settingsBackupAboutSection(
     }
 
     // ── Debug ────────────────────────────────────────────────────────────
+    item { SettingsSectionTitle("Geliştirici") }
+    item {
+        val context = LocalContext.current
+        var pagerV2Enabled by remember { mutableStateOf(AppPrefs.isHomePagerV2Enabled(context)) }
+        var safeMode by remember { mutableStateOf(AppPrefs.isHomePagerV2SafeMode(context)) }
+        SettingsCard {
+            SettingsSwitchRow(
+                icon = Icons.Default.Science,
+                title = "Ana ekran pager v2 (demo)",
+                subtitle = if (safeMode) "Safe mode aktif; eski davranış korunuyor" else "Yeni pager ve Dashboard yolunu açar",
+                checked = pagerV2Enabled,
+                onCheckedChange = {
+                    pagerV2Enabled = it
+                    AppPrefs.setHomePagerV2Enabled(context, it)
+                },
+            )
+            SettingsSwitchRow(
+                icon = Icons.Default.Shield,
+                title = "Ana ekran safe mode",
+                subtitle = "Sorun halinde yeni yolu devre dışı bırakır",
+                checked = safeMode,
+                onCheckedChange = {
+                    safeMode = it
+                    AppPrefs.setHomePagerV2SafeMode(context, it)
+                },
+            )
+        }
+    }
+
+    // ── Debug ────────────────────────────────────────────────────────────
     if (logs.isNotEmpty()) {
         item { SettingsSectionTitle("Debug") }
         item {

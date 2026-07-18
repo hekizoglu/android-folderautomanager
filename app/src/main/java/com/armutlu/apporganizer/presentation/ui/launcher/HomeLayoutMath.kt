@@ -45,12 +45,11 @@ object HomeLayoutMath {
     }
 
     /**
-     * Ekran genişliğine göre klasör grid sütun sayısı — HomeScreen.kt satır ~170-174 ve
-     * HomeScreenFolderPager.kt satır ~73-78 ile senkron tutulmalı (breakpoint: 600dp/840dp).
+     * Ekran genişliğine göre klasör grid sütun sayısı. Döngü P20 — asıl eşik kaynağı artık
+     * `HomeAdaptiveLayoutPolicy.deviceClass()`/`folderColumns()` (600dp/840dp); bu fonksiyon geri
+     * uyumluluk köprüsüdür (mevcut test sözleşmesi `HomeLayoutMath.screenColumns` çağırıyor —
+     * bkz. `HomeScreenNavigationContractTest`), TEK gerçek eşik tanımı değildir.
      */
-    fun screenColumns(screenWidthDp: Int): Int = when {
-        screenWidthDp >= 840 -> 6
-        screenWidthDp >= 600 -> 5
-        else -> 4
-    }
+    fun screenColumns(screenWidthDp: Int): Int =
+        HomeAdaptiveLayoutPolicy.folderColumns(HomeAdaptiveLayoutPolicy.deviceClass(screenWidthDp))
 }

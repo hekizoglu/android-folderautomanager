@@ -742,30 +742,30 @@ fun HomeScreen(
         // üzerinden senkronize ediliyor (tek gerçek kaynak: HomeScreen'in `fullScreenSearchOpen`).
         val searchBarSection: @Composable () -> Unit = {
             GlobalSearchHost(
-                homeAppSearchEnabled = homeAppSearchEnabled,
-                homeSearchEnabled = homeSearchEnabled,
-                fullscreenSearchEnabled = fullscreenSearchEnabled,
-                allApps = allApps,
-                folders = folders,
-                folderCustomNames = customFolderNames,
-                folderCustomEmojis = customFolderEmojis,
-                searchQuery = searchQuery,
-                searchResults = searchResults,
-                filesIndexState = filesIndexState,
-                homeResumeTrigger = homeResumeTrigger,
-                resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
-                onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-                onNavigateToFolder = onNavigateToFolder,
-                onQueryChange = viewModel::setSearchQuery,
-                onEnableContactsSource = viewModel::enableContactsSearchSource,
-                onEnableFilesSource = viewModel::enableFilesSearchSource,
-                folderSearchQuery = folderSearchQuery,
-                onFolderSearchQueryChange = { folderSearchQuery = it },
-                onFolderSearchClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
-                folderSearchCountdown = folderSearchCountdown,
-                fullScreenSearchOpen = fullScreenSearchOpen,
-                onFullScreenSearchOpenChanged = { fullScreenSearchOpen = it },
-            )
+                    homeAppSearchEnabled = homeAppSearchEnabled,
+                    homeSearchEnabled = homeSearchEnabled,
+                    fullscreenSearchEnabled = fullscreenSearchEnabled,
+                    allApps = allApps,
+                    folders = folders,
+                    folderCustomNames = customFolderNames,
+                    folderCustomEmojis = customFolderEmojis,
+                    searchQuery = searchQuery,
+                    searchResults = searchResults,
+                    filesIndexState = filesIndexState,
+                    homeResumeTrigger = homeResumeTrigger,
+                    resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
+                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                    onNavigateToFolder = onNavigateToFolder,
+                    onQueryChange = viewModel::setSearchQuery,
+                    onEnableContactsSource = viewModel::enableContactsSearchSource,
+                    onEnableFilesSource = viewModel::enableFilesSearchSource,
+                    folderSearchQuery = folderSearchQuery,
+                    onFolderSearchQueryChange = { folderSearchQuery = it },
+                    onFolderSearchClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
+                    folderSearchCountdown = folderSearchCountdown,
+                    fullScreenSearchOpen = fullScreenSearchOpen,
+                    onFullScreenSearchOpenChanged = { fullScreenSearchOpen = it },
+                )
         }
 
         // Döngü P06 — compactClock ve tickerMutedUntilState `pager` slotunun HEM eski (klasör
@@ -803,6 +803,12 @@ fun HomeScreen(
                 }
             },
             dock = {
+                // Döngü P20 — büyük tablette dock'un tüm ekran genişliğine yayılmaması için
+                // içerik HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp() ile sınırlanıp
+                // ortalanır (roadmap "Büyük tablet" madde 4: "Dock maksimum genişlikle
+                // ortalanır"). Telefon/küçük tablette centeredContentMaxWidthDp == null →
+                // Modifier.widthIn(max=...) hiçbir etki yapmaz, eski fillMaxWidth davranışı
+                // birebir korunur.
                 // Drag pill handle — above dock, pure Pixel style
                 Box(
                     modifier = Modifier
@@ -912,7 +918,11 @@ fun HomeScreen(
                     )
                 }
 
-                // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel
+                // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel.
+                // Döngü P20 — panel genişliği artık HomeAdaptiveLayoutPolicy'den: küçük tablet
+                // 380dp (eski sabitle birebir aynı), büyük tablette 420dp (roadmap: dashboard
+                // içeriği aşırı daralmasın diye telefon genişliğiyle sınırlı kalmaz ama ekranın
+                // yarısını da kaplamaz).
                 AnimatedVisibility(
                     visible = allAppsOpen,
                     modifier = if (isTablet)
@@ -1070,6 +1080,7 @@ fun HomeScreen(
                                 context,
                                 AllAppsSortMode.INSTALL_DATE.name
                             )
+                            AppAnalytics.allAppsOpened()
                             viewModel.openAllApps()
                         },
                     cornerRadius = 18.dp,
@@ -1123,6 +1134,9 @@ fun HomeScreen(
                 ),
             ) { sectionId ->
                 when (sectionId) {
+                    // Döngü P20 — büyük tablette global arama maksimum genişlik alır, ekranı
+                    // gereksiz uzatmaz (roadmap "Büyük tablet" madde 3). centeredContentMaxWidthDp
+                    // null ise (telefon/küçük tablet) davranış birebir eskisiyle aynıdır.
                     HomeSectionId.GOOGLE_SEARCH -> GoogleSearchBar(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1306,13 +1320,18 @@ fun HomeScreen(
                 }
             } else pageFolderCount  // Kullanıcı manuel ayarladıysa dokunma
             val baseFolders = draggingFolders ?: folders
-            val displayFolders = if (homeSearchEnabled && folderSearchQuery.isNotEmpty()) {
-                val q = folderSearchQuery.lowercase(java.util.Locale("tr"))
-                baseFolders.filter { folder ->
-                    folder.category.categoryName.lowercase(java.util.Locale("tr")).contains(q) ||
-                    folder.apps.any { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
+            val displayFolders = remember(baseFolders, homeSearchEnabled, folderSearchQuery) {
+                if (homeSearchEnabled && folderSearchQuery.isNotEmpty()) {
+                    val trLocale = java.util.Locale("tr")
+                    val q = folderSearchQuery.lowercase(trLocale)
+                    baseFolders.filter { folder ->
+                        folder.category.categoryName.lowercase(trLocale).contains(q) ||
+                            folder.apps.any { it.appName.lowercase(trLocale).contains(q) }
+                    }
+                } else {
+                    baseFolders
                 }
-            } else baseFolders
+            }
 
             // Kalan gerçek yükseklik ölçülür; sığmayan klasör KIRPILMAZ, sonraki sayfaya taşar
             androidx.compose.foundation.layout.BoxWithConstraints(
@@ -1337,16 +1356,8 @@ fun HomeScreen(
             // Döngü P05 — dashboardEnabled kararı: HomePagePrefs.isSmartDashboardEnabled()
             // yeni kurulumda varsayılan TRUE yazıyor (bkz. HomePagePrefs.kt satır 55-56), ama
             // roadmap Bölüm 1.5 "mevcut kullanıcı için mevcut sayfa/davranış korunur" diyor ve
-            // SmartDashboardPage'in gerçek içeriği henüz YOK (P06 bekliyor — bugün sadece
-            // placeholder). Dashboard'ı bu döngüde gerçekten açarsak mevcut kullanıcılar ilk
-            // sayfada boş bir "Dashboard" kutusu görür — bu hem davranış değişikliği hem kötü
-            // UX olur. Bu yüzden HomeScreen'in pager'a bağladığı bayrak BİLİNÇLİ olarak kapalı
-            // sabitlenir; HomePagePrefs'in kendi varsayılanına DOKUNULMADI (P02 kararı, Ayarlar
-            // ekranı ve migration mantığı olduğu gibi kalır). TODO(P24): SmartDashboardPage
-            // gerçek içerikle dolunca (P06+) bu satır `smartDashboardPrefEnabled` okumaya
-            // geçirilmeli — Ayarlar > Ana Ekran'daki toggle o zaman fiilen etkili olacak.
             @Suppress("UNUSED_EXPRESSION")
-            smartDashboardPrefEnabled // kasıtlı: reaktif dinleniyor ama P24'e kadar kullanılmıyor
+            smartDashboardPrefEnabled
             val dashboardEnabledForPager = false
 
             val pages = remember(displayFolders, pageSize, dashboardEnabledForPager) {
@@ -1380,9 +1391,6 @@ fun HomeScreen(
                         val safePage = clampPageToSafeBounds(pages, page)
                         val anchor = anchorForCurrentPage(pages, safePage)
                         HomePagePrefs.setLastHomePageAnchor(context, anchor)
-                        // Eski ham-index köprüsü de senkron tutulur — HomeScreenNavigationContractTest
-                        // (P00) ve başka olası eski okuyucular kırılmasın.
-                        com.armutlu.apporganizer.utils.AppPrefs.setLastHomePage(context, safePage)
                     }
             }
 
@@ -1552,6 +1560,7 @@ fun HomeScreen(
                                     context,
                                     AllAppsSortMode.INSTALL_DATE.name
                                 )
+                                AppAnalytics.allAppsOpened()
                                 viewModel.openAllApps()
                             },
                             onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
@@ -1721,7 +1730,7 @@ fun HomeScreen(
                             val rowOffset = (dragOffsetY / tileHeightPx).toInt()
                             val pageOffset = spec.pageIndex * pageSize
                             val localFrom = from - pageOffset
-                            val pageFoldersCnt = displayFolders.drop(pageOffset).take(pageSize).size
+                            val pageFoldersCnt = spec.folders.size
                             val localCol = localFrom % colCount + colOffset
                             val localRow = localFrom / colCount + rowOffset
                             val localTo = (localRow * colCount + localCol).coerceIn(0, pageFoldersCnt - 1)
@@ -1848,6 +1857,7 @@ fun HomeScreen(
         },
         onOpenAllApps = {
             folderContextMenu = null
+            AppAnalytics.allAppsOpened()
             viewModel.openAllApps()
         },
         onMoveFolder = { folder, newIndex ->

@@ -52,6 +52,20 @@ class TelemetryEventValidatorTest {
         "ticker_type_disabled" to setOf("item_type"),
         "ticker_manual_next" to setOf("item_type"),
         "ticker_auto_advanced" to setOf("item_type"),
+        "home_page_viewed" to setOf(
+            "page_type",
+            "page_position_bucket",
+            "navigation_source",
+            "search_position",
+            "start_mode",
+            "device_class",
+        ),
+        "home_page_swiped" to setOf("page_type", "page_position_bucket", "device_class"),
+        "home_start_mode_changed" to setOf("start_mode"),
+        "smart_dashboard_toggled" to setOf("state"),
+        "home_search_opened" to setOf("search_position", "page_type"),
+        "all_apps_opened_from_page" to setOf("page_type", "page_position_bucket", "device_class"),
+        "home_button_navigation" to setOf("start_mode", "target_page_type"),
     )
 
     @Test fun `catalog is exactly the roadmap allowlist`() {

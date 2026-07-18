@@ -22,6 +22,7 @@
 |--------|-----------------|-------------------|----------|
 | `add_defender_exclusion.ps1` | Kalici cozum; build kilidi tekrar tekrar olusuyorsa bir kez calistir. | Evet, UAC self-elevation kullanir. | `app\build`, `.gradle`, `.android` klasorlerini Windows Defender real-time taramasindan dislar. `-CheckOnly` admin gerektirmeden path kontrolu yapar. |
 | `clear_build_lock.ps1` | Acil workaround; build su an kilitliyse kullan. | Hayir. | `gradlew --stop` ile Gradle daemon'u durdurur ve sadece bu projenin `app\build` klasorunu siler. Kaynak koda ve git'e dokunmaz. |
+| `clear_test_locks.ps1` | Unit test/debug ASM generated klasorleri kilitliyse kullan. | Hayir. | `gradlew --stop` calistirir; yalniz whitelist edilmis `app\build` generated hedeflerini siler. `-WhatIf` destekler. |
 
 ## Notlar
 

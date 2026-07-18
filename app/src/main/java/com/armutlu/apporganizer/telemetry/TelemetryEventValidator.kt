@@ -49,6 +49,34 @@ object TelemetryEventValidator {
         "ticker_type_disabled" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
         "ticker_manual_next" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
         "ticker_auto_advanced" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
+        "home_page_viewed" to mapOf(
+            "page_type" to values(TelemetryEvent.HomePageType.entries.toTypedArray()),
+            "page_position_bucket" to values(TelemetryEvent.HomePagePositionBucket.entries.toTypedArray()),
+            "navigation_source" to values(TelemetryEvent.HomeNavigationSource.entries.toTypedArray()),
+            "search_position" to values(TelemetryEvent.HomeSearchPosition.entries.toTypedArray()),
+            "start_mode" to values(TelemetryEvent.HomeStartMode.entries.toTypedArray()),
+            "device_class" to values(TelemetryEvent.HomeTelemetryDeviceClass.entries.toTypedArray()),
+        ),
+        "home_page_swiped" to mapOf(
+            "page_type" to values(TelemetryEvent.HomePageType.entries.toTypedArray()),
+            "page_position_bucket" to values(TelemetryEvent.HomePagePositionBucket.entries.toTypedArray()),
+            "device_class" to values(TelemetryEvent.HomeTelemetryDeviceClass.entries.toTypedArray()),
+        ),
+        "home_start_mode_changed" to mapOf("start_mode" to values(TelemetryEvent.HomeStartMode.entries.toTypedArray())),
+        "smart_dashboard_toggled" to mapOf("state" to values(TelemetryEvent.ToggleState.entries.toTypedArray())),
+        "home_search_opened" to mapOf(
+            "search_position" to values(TelemetryEvent.HomeSearchPosition.entries.toTypedArray()),
+            "page_type" to values(TelemetryEvent.HomePageType.entries.toTypedArray()),
+        ),
+        "all_apps_opened_from_page" to mapOf(
+            "page_type" to values(TelemetryEvent.HomePageType.entries.toTypedArray()),
+            "page_position_bucket" to values(TelemetryEvent.HomePagePositionBucket.entries.toTypedArray()),
+            "device_class" to values(TelemetryEvent.HomeTelemetryDeviceClass.entries.toTypedArray()),
+        ),
+        "home_button_navigation" to mapOf(
+            "start_mode" to values(TelemetryEvent.HomeStartMode.entries.toTypedArray()),
+            "target_page_type" to values(TelemetryEvent.HomePageType.entries.toTypedArray()),
+        ),
     )
 
     fun isValid(event: TelemetryEvent): Boolean = isValidPayload(event.eventName, event.parameters)

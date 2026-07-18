@@ -1492,7 +1492,7 @@ enum class HomeDeviceClass { PHONE, COMPACT_TABLET, EXPANDED_TABLET }
 
 **Bağımlılıklar:** P06, P19.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P20 — tarih: 2026-07-18 — Not: HomeAdaptiveLayoutPolicy eklendi; 600/840dp kırılımları tek kaynağa alındı; HomeScreen kolon, tablet side panel, global arama ve dock max-width kararlarını bu politikadan türetiyor. `:app:compileDebugKotlin` yeşil. Odaklı test yeşil: `:app:testDebugUnitTest --tests HomeAdaptiveLayoutPolicyTest --tests HomeScreenNavigationContractTest`. Gerçek telefon/tablet portrait-landscape görsel kabul kanıtı eksik olduğu için `Tamamlandı` değil.
 
 ---
 
@@ -1558,7 +1558,7 @@ device_class = phone | compact_tablet | expanded_tablet
 
 **Bağımlılıklar:** Telemetri roadmap'inin merkezi manager döngüsü, P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P21 — tarih: 2026-07-18 — Not: Privacy-safe home page telemetry event katalogu eklendi (`home_page_viewed`, `home_page_swiped`, start/toggle/search/drawer/home-button event şemaları); HomePageTelemetryPolicy saf mapper eklendi; HomeScreen settled page impression'ı `RESTORE`, sonraki page değişimlerini `SWIPE` olarak logluyor. Global search, All Apps drawer açılışları, home button navigation, başlangıç modu değişimi ve Smart Dashboard toggle call-site'ları privacy-safe parametrelerle bağlandı. Odaklı test yeşil: `:app:testDebugUnitTest --tests TelemetryEventValidatorTest --tests HomePageTelemetryEventValidatorTest --tests HomePageTelemetryPolicyTest`. `scripts/clear_test_locks.ps1` ile Windows generated test kilitleri temizlenebilir. Kalan: gerçek cihazda consent-off/no-remote-log smoke ve DebugView/remote no-op kanıtı.
 
 ---
 
@@ -1591,7 +1591,7 @@ Gesture policy: Normal / Search kilidi / Modal kilidi
 
 **Bağımlılıklar:** P02, P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P22 — tarih: 2026-07-18 — Not: Sağlık raporuna `[Ana Ekran Mimarisi]` eklendi; AI tanı paketine `homeArchitecture.*` metrikleri eklendi. Rapor yalnız mod, başlangıç sayfası tipi, son sayfa tipi, toplam/folder sayfa sayısı, global arama konumu, pager restore ve gesture policy özetini verir; categoryId/klasör adı/paket/sorgu yazmaz. Odaklı test yeşil: `:app:testDebugUnitTest --tests DiagnosticsReportManagerTest`; derleme yeşil: `:app:compileDebugKotlin`. Kalan: gerçek cihaz raporu kabul kanıtı.
 
 ---
 
@@ -1639,7 +1639,7 @@ home_page_switch
 
 **Bağımlılıklar:** P05, P06.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P23 — tarih: 2026-07-18 — Not: HomeScreen folder search sonucu `remember(baseFolders, homeSearchEnabled, folderSearchQuery)` ile anahtarlandı; drag sırasında sayfa içi klasör sayısı `drop/take` yerine hazır `spec.folders.size` üzerinden okunuyor. Odaklı test yeşil: `:app:testDebugUnitTest --tests HomeScreenNavigationContractTest --tests LauncherViewModelLogicTest`; derleme yeşil: `:app:compileDebugKotlin`. Kalan: trace eventleri, baseline profile/macrobenchmark veya cihaz üstü jank ölçüm kanıtı.
 
 ---
 
@@ -1676,7 +1676,7 @@ KEY_HOME_PAGER_V2_ENABLED
 
 **Bağımlılıklar:** P03–P23.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P24 — tarih: 2026-07-18 — Not: `AppPrefs` içine kapalı varsayılan `KEY_HOME_PAGER_V2_ENABLED` ve `KEY_HOME_PAGER_V2_SAFE_MODE` eklendi; HomeScreen flag'i reaktif dinliyor; Debug/Geliştirici bölümüne demo toggle'ları eklendi; sağlık raporu ve AI tanı paketine rollout/safe-mode durumu eklendi. Politika testi ve Kotlin derlemesi yeşil. Kalan: gerçek cihazda flag aç/kapat, safe-mode ve dört cihaz kanıtı; fallback davranışı P25'e kadar korunacak.
 
 ---
 
@@ -1708,7 +1708,7 @@ KEY_HOME_PAGER_V2_ENABLED
 
 **Bağımlılıklar:** P24 gerçek cihaz doğrulaması.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P25 — tarih: 2026-07-18 — Not: Repo-wide kullanım araması yapıldı. `HomeScreenFolderPager.kt` artık eski pager değil, tek sayfa grid renderer; `HomeScreenPageIndicator.kt` yeni indicator; `FOLDER_GRID` layout modelinde hâlâ gerekli. Runtime’da semantic anchor yazılırken ham `last_home_page` indeksini tekrar yazan legacy senkron kaldırıldı; eski anahtar yalnız migration/restore uyumluluğu için tutuluyor. Kalan: dört cihaz kanıtından sonra diğer legacy API ve test fixture temizliği.
 
 ---
 

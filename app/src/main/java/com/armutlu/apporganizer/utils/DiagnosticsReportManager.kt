@@ -26,6 +26,7 @@ import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnostics
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnosticsCalculator
+import com.armutlu.apporganizer.presentation.ui.launcher.HomeLayoutMath
 import com.armutlu.apporganizer.workers.MissionSettlementWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
@@ -160,6 +161,34 @@ class DiagnosticsReportManager @Inject constructor(
 
     suspend fun createShareIntent(): Intent {
         val file = writeReportFile()
+        return createFileShareIntent(file, "AppOrganizer saglik raporu")
+    }
+
+    suspend fun createFeedbackShareIntent(): Intent {
+        val file = writeReportFile()
+        val device = "${Build.MANUFACTURER} ${Build.MODEL} (API ${Build.VERSION.SDK_INT})"
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${BuildConfig.APPLICATION_ID}.provider",
+            file,
+        )
+        return Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("huseyinekizoglu@gmail.com"))
+            putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer - Talep / Oneri")
+            putExtra(
+                Intent.EXTRA_TEXT,
+                "Talep / Oneri detayini bu alana yazabilirsiniz.\n\n" +
+                    "Asagidaki ek, kullanici onayi ile olusturulan gizlilik-korumali saglik raporudur.\n" +
+                    "Cihaz: $device",
+            )
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            clipData = android.content.ClipData.newRawUri(file.name, uri)
+        }
+    }
+
+    private fun createFileShareIntent(file: File, subject: String): Intent {
         val uri = FileProvider.getUriForFile(
             context,
             "${BuildConfig.APPLICATION_ID}.provider",
@@ -168,7 +197,7 @@ class DiagnosticsReportManager @Inject constructor(
         return Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer saglik raporu")
+            putExtra(Intent.EXTRA_SUBJECT, subject)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             clipData = android.content.ClipData.newRawUri(file.name, uri)
         }
@@ -223,6 +252,16 @@ class DiagnosticsReportManager @Inject constructor(
         // burada ZORLAMIYORUZ (folder listesi olmadan tetiklemek yanlis anchor uretir).
         val homeStartPageMode = HomePagePrefs.getStartPageMode(context).name
         val homeLastPageAnchorType = HomePagePrefs.peekLastHomePageAnchorType(context)
+        val homeArchitecture = homeArchitectureDiagnostics(
+            smartDashboardEnabled = HomePagePrefs.isSmartDashboardEnabled(context),
+            startPageMode = HomePagePrefs.getStartPageMode(context),
+            lastPageAnchorType = homeLastPageAnchorType,
+            folderCount = categories.size,
+            requestedPageSize = AppPrefs.getPageSize(context),
+            searchBarPosition = AppPrefs.getSearchBarPosition(context),
+            pagerV2Enabled = AppPrefs.isHomePagerV2Enabled(context),
+            pagerV2SafeMode = AppPrefs.isHomePagerV2SafeMode(context),
+        )
         val workerSummary = workerSummary()
         val crashSummary = crashSummary()
         val homeIntelligenceHealth = homeIntelligenceHealthReport(now)
@@ -296,10 +335,47 @@ class DiagnosticsReportManager @Inject constructor(
                 homeLayoutSummary = layoutSummary,
                 homeStartPageMode = homeStartPageMode,
                 homeLastPageAnchorType = homeLastPageAnchorType,
+                homeArchitecture = homeArchitecture,
                 workerSummary = workerSummary,
                 crashSummary = crashSummary,
                 homeIntelligenceHealth = homeIntelligenceHealth,
             ),
+        )
+    }
+
+    private fun homeArchitectureDiagnostics(
+        smartDashboardEnabled: Boolean,
+        startPageMode: HomePagePrefs.StartPageMode,
+        lastPageAnchorType: String,
+        folderCount: Int,
+        requestedPageSize: Int,
+        searchBarPosition: String,
+        pagerV2Enabled: Boolean,
+        pagerV2SafeMode: Boolean,
+    ): HomeArchitectureDiagnostics {
+        val safePageSize = maxOf(1, requestedPageSize)
+        val folderPageCount = HomeLayoutMath.pageCount(folderCount, safePageSize)
+        val totalPageCount = folderPageCount + if (smartDashboardEnabled) 1 else 0
+        val pagerRestore = if (lastPageAnchorType == "UNMIGRATED") "FALLBACK" else "OK"
+        return HomeArchitectureDiagnostics(
+            homeMode = if (smartDashboardEnabled) "Akilli Dashboard" else "Klasik",
+            startPage = when (startPageMode) {
+                HomePagePrefs.StartPageMode.SMART_DASHBOARD -> "Dashboard"
+                HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE -> "Ilk klasor"
+                HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE -> "Son ziyaret"
+            },
+            lastPageType = when (lastPageAnchorType) {
+                "DASHBOARD" -> "Dashboard"
+                "FOLDER", "PAGE_INDEX" -> "Klasor"
+                else -> "Bilinmiyor"
+            },
+            totalPageCount = totalPageCount,
+            folderPageCount = folderPageCount,
+            globalSearchPosition = if (searchBarPosition == AppPrefs.SEARCH_BAR_POS_BOTTOM) "Alt" else "Ust",
+            pagerRestore = pagerRestore,
+            gesturePolicy = "Normal",
+            pagerV2Enabled = pagerV2Enabled,
+            pagerV2SafeMode = pagerV2SafeMode,
         )
     }
 
@@ -527,14 +603,31 @@ internal data class DiagnosticsReportSnapshot(
     val homeLayoutSummary: HomeLayoutPrefs.DiagnosticsSummary,
     val homeStartPageMode: String,
     val homeLastPageAnchorType: String,
+    val homeArchitecture: HomeArchitectureDiagnostics,
     val workerSummary: List<String>,
     val crashSummary: List<String>,
     val homeIntelligenceHealth: com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport.Report,
 )
 
+internal data class HomeArchitectureDiagnostics(
+    val homeMode: String,
+    val startPage: String,
+    val lastPageType: String,
+    val totalPageCount: Int,
+    val folderPageCount: Int,
+    val globalSearchPosition: String,
+    val pagerRestore: String,
+    val gesturePolicy: String,
+    val pagerV2Enabled: Boolean = false,
+    val pagerV2SafeMode: Boolean = false,
+)
+
 internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildString {
     appendLine("AppOrganizer Saglik Raporu")
+    appendLine("Rapor standardi: v2 | AI analizine uygun yapilandirilmis cikti")
     appendLine("Olusturma: ${snapshot.generatedAt}")
+    appendLine()
+    appendProfessionalSummary(snapshot)
     appendLine()
     appendLine("[Uygulama]")
     appendLine("Surum: ${snapshot.appVersionName} (${snapshot.appVersionCode})")
@@ -634,6 +727,18 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("Baslangic sayfa modu: ${snapshot.homeStartPageMode}")
     appendLine("Son sayfa anchor tipi: ${snapshot.homeLastPageAnchorType}")
     appendLine()
+    appendLine("[Ana Ekran Mimarisi]")
+    appendLine("Ana ekran modu: ${snapshot.homeArchitecture.homeMode}")
+    appendLine("Baslangic sayfasi: ${snapshot.homeArchitecture.startPage}")
+    appendLine("Son sayfa turu: ${snapshot.homeArchitecture.lastPageType}")
+    appendLine("Toplam ana sayfa: ${snapshot.homeArchitecture.totalPageCount}")
+    appendLine("Klasor sayfasi: ${snapshot.homeArchitecture.folderPageCount}")
+    appendLine("Global arama konumu: ${snapshot.homeArchitecture.globalSearchPosition}")
+    appendLine("Pager restore: ${snapshot.homeArchitecture.pagerRestore}")
+    appendLine("Gesture policy: ${snapshot.homeArchitecture.gesturePolicy}")
+    appendLine("Pager v2 flag: ${snapshot.homeArchitecture.pagerV2Enabled}")
+    appendLine("Pager v2 safe mode: ${snapshot.homeArchitecture.pagerV2SafeMode}")
+    appendLine()
     appendLine("[Worker Ozeti]")
     snapshot.workerSummary.forEach { appendLine(it) }
     appendLine()
@@ -668,6 +773,31 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine()
     appendLine("[Gizlilik Notu]")
     appendLine("Bu rapor paket listesi, bildirim metni, kisi adi/numarasi ve arama sorgulari icermez.")
+}
+
+private fun StringBuilder.appendProfessionalSummary(snapshot: DiagnosticsReportSnapshot) {
+    val issues = aiDiagnosticIssues(snapshot)
+    val status = when {
+        issues.any { it.severity == "ERROR" } -> "KRITIK"
+        issues.any { it.severity == "WARNING" } -> "UYARI"
+        else -> "NORMAL"
+    }
+    appendLine("[Yonetici Ozeti]")
+    appendLine("Genel durum: $status")
+    appendLine("Bulgu sayisi: ${issues.size}")
+    appendLine("Oncelik: ${issues.maxByOrNull { it.rank }?.severity ?: "INFO"}")
+    appendLine("Kapsam: uygulama, izinler, depolama, worker'lar, ana ekran, arama ve crash sinyalleri")
+    appendLine("Veri ilkesi: kullanici verisi icerikleri rapora dahil edilmez")
+    appendLine("[Oncelikli Aksiyonlar]")
+    if (issues.isEmpty()) {
+        appendLine("1. Kritik aksiyon yok; normal izleme surdurulebilir.")
+    } else {
+        issues.sortedWith(compareByDescending<AiDiagnosticIssue> { it.rank }.thenBy { it.area })
+            .take(5)
+            .forEachIndexed { index, issue ->
+                appendLine("${index + 1}. [${issue.severity}] ${issue.area}: ${issue.nextAction}")
+            }
+    }
 }
 
 private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportSnapshot) {
@@ -720,6 +850,10 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
     appendLine("homeLayout.hidden=${snapshot.homeLayoutSummary.hiddenSections.joinToString { it.name }.ifBlank { "-" }}")
     appendLine("homeLayout.widgetCount=${snapshot.homeLayoutSummary.widgetCount}, dockItemCount=${snapshot.homeLayoutSummary.dockItemCount}")
     appendLine("homePage.startMode=${snapshot.homeStartPageMode}, lastAnchorType=${snapshot.homeLastPageAnchorType}")
+    appendLine("homeArchitecture.mode=${snapshot.homeArchitecture.homeMode}, startPage=${snapshot.homeArchitecture.startPage}, lastPageType=${snapshot.homeArchitecture.lastPageType}")
+    appendLine("homeArchitecture.totalPages=${snapshot.homeArchitecture.totalPageCount}, folderPages=${snapshot.homeArchitecture.folderPageCount}, searchPosition=${snapshot.homeArchitecture.globalSearchPosition}")
+    appendLine("homeArchitecture.pagerRestore=${snapshot.homeArchitecture.pagerRestore}, gesturePolicy=${snapshot.homeArchitecture.gesturePolicy}")
+    appendLine("homeArchitecture.pagerV2Enabled=${snapshot.homeArchitecture.pagerV2Enabled}, pagerV2SafeMode=${snapshot.homeArchitecture.pagerV2SafeMode}")
     appendLine("missions.enabled=${snapshot.missionsEnabled}, wrapped=${snapshot.wrappedEnabled}, prefsMigrated=${snapshot.missionPrefsMigrated}")
     appendLine("missions.dailyCompletions=${snapshot.dailyMissionCompletions}, weeklyCompletions=${snapshot.weeklyMissionCompletions}")
     appendLine("taskScore.positive=${snapshot.positiveTaskScore}, negative=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}")

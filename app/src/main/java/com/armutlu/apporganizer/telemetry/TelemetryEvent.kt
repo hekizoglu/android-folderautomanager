@@ -48,6 +48,57 @@ sealed class TelemetryEvent(
     data class TickerManualNext(val itemType: TickerItemType) : TelemetryEvent("ticker_manual_next", p("item_type", itemType))
     data class TickerAutoAdvanced(val itemType: TickerItemType) : TelemetryEvent("ticker_auto_advanced", p("item_type", itemType))
 
+    // Dongu P21 - Ana ekran sayfa mimarisi telemetrisi. Folder/category identity, app package,
+    // search query veya exact page index tasinmaz; yalniz tip ve bucket parametreleri gider.
+    data class HomePageViewed(
+        val pageType: HomePageType,
+        val pagePosition: HomePagePositionBucket,
+        val navigationSource: HomeNavigationSource,
+        val searchPosition: HomeSearchPosition,
+        val startMode: HomeStartMode,
+        val deviceClass: HomeTelemetryDeviceClass,
+    ) : TelemetryEvent(
+        "home_page_viewed",
+        p(
+            "page_type", pageType,
+            "page_position_bucket", pagePosition,
+            "navigation_source", navigationSource,
+            "search_position", searchPosition,
+            "start_mode", startMode,
+            "device_class", deviceClass,
+        ),
+    )
+
+    data class HomePageSwiped(
+        val pageType: HomePageType,
+        val pagePosition: HomePagePositionBucket,
+        val deviceClass: HomeTelemetryDeviceClass,
+    ) : TelemetryEvent(
+        "home_page_swiped",
+        p("page_type", pageType, "page_position_bucket", pagePosition, "device_class", deviceClass),
+    )
+
+    data class HomeStartModeChanged(val startMode: HomeStartMode) :
+        TelemetryEvent("home_start_mode_changed", p("start_mode", startMode))
+
+    data class SmartDashboardToggled(val state: ToggleState) :
+        TelemetryEvent("smart_dashboard_toggled", p("state", state))
+
+    data class HomeSearchOpened(val searchPosition: HomeSearchPosition, val pageType: HomePageType) :
+        TelemetryEvent("home_search_opened", p("search_position", searchPosition, "page_type", pageType))
+
+    data class AllAppsOpenedFromPage(
+        val pageType: HomePageType,
+        val pagePosition: HomePagePositionBucket,
+        val deviceClass: HomeTelemetryDeviceClass,
+    ) : TelemetryEvent(
+        "all_apps_opened_from_page",
+        p("page_type", pageType, "page_position_bucket", pagePosition, "device_class", deviceClass),
+    )
+
+    data class HomeButtonNavigation(val startMode: HomeStartMode, val targetPageType: HomePageType) :
+        TelemetryEvent("home_button_navigation", p("start_mode", startMode, "target_page_type", targetPageType))
+
     interface WireValue { val wireValue: String }
     enum class EntryType(override val wireValue: String) : WireValue { FIRST_LAUNCH("first_launch"), SETTINGS("settings"), RECOVERY("recovery") }
     enum class OnboardingStepType(override val wireValue: String) : WireValue { WELCOME("welcome"), PERMISSIONS("permissions"), ORGANIZATION("organization"), FINISH("finish") }
@@ -93,6 +144,13 @@ sealed class TelemetryEvent(
         MISSION_ACHIEVEMENT("mission_achievement"), PULSE_CHANGE("pulse_change"), CONTEXTUAL_SUGGESTION("contextual_suggestion"),
         WEEKLY_REPORT("weekly_report"), FEATURE_DISCOVERY("feature_discovery"),
     }
+    enum class HomePageType(override val wireValue: String) : WireValue { DASHBOARD("dashboard"), FOLDER("folder") }
+    enum class HomePagePositionBucket(override val wireValue: String) : WireValue { FIRST("first"), MIDDLE("middle"), LAST("last") }
+    enum class HomeNavigationSource(override val wireValue: String) : WireValue { SWIPE("swipe"), INDICATOR("indicator"), HOME_BUTTON("home_button"), RESTORE("restore") }
+    enum class HomeSearchPosition(override val wireValue: String) : WireValue { TOP("top"), BOTTOM("bottom") }
+    enum class HomeStartMode(override val wireValue: String) : WireValue { DASHBOARD("dashboard"), FIRST_FOLDER("first_folder"), LAST_VISITED("last_visited") }
+    enum class HomeTelemetryDeviceClass(override val wireValue: String) : WireValue { PHONE("phone"), COMPACT_TABLET("compact_tablet"), EXPANDED_TABLET("expanded_tablet") }
+    enum class ToggleState(override val wireValue: String) : WireValue { ENABLED("enabled"), DISABLED("disabled") }
 
     companion object {
         private fun p(vararg pairs: Any): Map<String, String> = pairs.asList().chunked(2).associate { (key, value) ->

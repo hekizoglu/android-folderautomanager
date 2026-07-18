@@ -7,6 +7,22 @@ object AppPrefs {
     const val KEY_ONBOARDING_DONE = "onboarding_done"
     const val KEY_LAUNCHER_SETUP_SHOWN = "launcher_setup_shown"
 
+    // P24 rollout gate: kapali varsayilan, demo/test cihazinda ayarlardan acilabilir.
+    const val KEY_HOME_PAGER_V2_ENABLED = "home_pager_v2_enabled"
+    const val KEY_HOME_PAGER_V2_SAFE_MODE = "home_pager_v2_safe_mode"
+
+    fun isHomePagerV2Enabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HOME_PAGER_V2_ENABLED, false)
+
+    fun setHomePagerV2Enabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_HOME_PAGER_V2_ENABLED, enabled).apply()
+
+    fun isHomePagerV2SafeMode(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HOME_PAGER_V2_SAFE_MODE, false)
+
+    fun setHomePagerV2SafeMode(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_HOME_PAGER_V2_SAFE_MODE, enabled).apply()
+
     const val KEY_TELEMETRY_CONSENT_DECIDED = "telemetry_consent_decided"
     const val KEY_TELEMETRY_ENABLED = "telemetry_enabled"
     const val KEY_TELEMETRY_CONSENT_VERSION = "telemetry_consent_version"
