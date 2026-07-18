@@ -1106,7 +1106,7 @@ Search/modal açık → kapatma komutu gönder
 
 **Bağımlılıklar:** P02, P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P13 — commit: 8eb8faa — tarih: 2026-07-18 — Not: 8 madde P05/P12'de zaten sağlanmıştı (doğrulandı); gerçek eksik kapatıldı: plan değişiminde semantik reconciliation (resolvePageAfterPlanChange — reorder sonrası yanlış klasöre düşme yok). Eski setLastHomePage köprüsü ikincil/deprecated duruyor (P25 temizliğinde kaldırılabilir).
 
 ---
 
