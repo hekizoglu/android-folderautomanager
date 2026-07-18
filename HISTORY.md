@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu U04 - 2026-07-18 - Test matrisi + yayin kapisi — ROADMAP TAMAMLANDI
+
+**Yapilanlar:** Test matrisi siniflandirildi: JVM kapsami zaten tam (799 test/87 sinif/0 hata), lintDebug sifir error (510 baseline uyarisi), TR/EN string esligi saglandi (680=680 key, 7 olu kaynak silindi). Yayin kapisi: 6/8 kriter kanitli; debug APK v1.3.88 (111) uretildi. AKILLI NABIZ ROADMAP'I (30 dongu + EX01) TAMAMLANDI — 3 P0 cozuldu, gorev/skor/serit sistemleri bastan insa edildi.
+
+**Bug:** Yok. Cihaz gerektiren maddeler acik: emulatorde smoke + Compose UI matrisi (altyapi yok) + gercek cihaz matrisi. Ortam: 11. build kilidi SOP ile cozuldu.
+
+**Sonraki:** ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md — ilk dongu (zincir otomatik geciyor).
+
 ## Akilli Nabiz Dongu U03 - 2026-07-18 - Saglik raporuna zeka sistemi durumlari
 
 **Yapilanlar:** HomeIntelligenceHealthReport (saf Kotlin): koordinator 3 kaynak durumu + settlement son/sonraki calisma + pulse cache yasi + bekleyen instance sayisi -> DiagnosticsReportManager'a [Gorev Sistemi]/[Dijital Yasam]/[Akilli Nabiz]/[Uyarilar] bolumleri (uyari = sabit kod, serbest metin yok); HomeErrorCodes'a 5 yeni kod; MissionInstanceDao.countUnsettledBefore. 12 yeni test (gizlilik sizinti testi dahil) + etkilenen testler duzeltildi, yesil.

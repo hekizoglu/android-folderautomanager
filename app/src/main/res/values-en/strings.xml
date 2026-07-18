@@ -667,20 +667,15 @@
     <string name="digital_life_card_stale_minutes">Updated %1$d min ago</string>
     <string name="digital_life_card_unavailable_cta">Usage access required</string>
     <string name="digital_life_card_reason_organization_high">Most apps are categorized</string>
-    <string name="digital_life_card_reason_organization_uncategorized">Many uncategorized apps</string>
     <string name="digital_life_card_reason_attention_calm">Notification load is calm</string>
-    <string name="digital_life_card_reason_attention_noisy">Notification intensity</string>
     <string name="digital_life_card_reason_attention_night">Night notification rate</string>
     <string name="digital_life_card_reason_attention_no_permission">No notification access</string>
     <string name="digital_life_card_reason_balance_steady">Usage balance is steady</string>
-    <string name="digital_life_card_reason_balance_shift">Category distribution shifted</string>
     <string name="digital_life_card_reason_balance_no_baseline">Data is building up for comparison</string>
     <string name="digital_life_card_reason_cleanup_tidy">Apps are kept tidy</string>
-    <string name="digital_life_card_reason_cleanup_unused">Long-unused apps found</string>
     <string name="digital_life_card_reason_consistency_steady">Usage pattern is steady</string>
     <string name="digital_life_card_reason_consistency_volatile">Usage varies a lot week to week</string>
     <string name="digital_life_card_reason_consistency_no_data">No unlock data</string>
-    <string name="digital_life_card_reason_task_missions">Mission contribution</string>
     <!-- Cycle D04 — PulseReasonPresenter count-based reasons (roadmap line 1520-1526) -->
     <string name="pulse_reason_organization_uncategorized_count">%1$d uncategorized apps</string>
     <string name="pulse_reason_attention_noisy_label">Notification intensity</string>

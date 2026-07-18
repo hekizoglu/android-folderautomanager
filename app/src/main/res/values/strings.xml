@@ -653,8 +653,6 @@
     <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
     <string name="missions_home_card_usage_access_required">Kullanım erişimi gerekli</string>
     <string name="missions_home_card_all_completed">Bugünkü görevler tamamlandı ⭐</string>
-    <string name="digital_score_home_card_title">Skor %1$d</string>
-    <string name="digital_score_home_card_subtitle">Dijital yaşam</string>
     <string name="digital_life_card_title">Dijital Yaşam</string>
     <string name="digital_life_card_status_excellent">Çok iyi</string>
     <string name="digital_life_card_status_good">İyi</string>
@@ -671,20 +669,15 @@
     <string name="digital_life_card_stale_minutes">Son güncelleme %1$d dk önce</string>
     <string name="digital_life_card_unavailable_cta">Kullanım erişimi gerekli</string>
     <string name="digital_life_card_reason_organization_high">Uygulamaların büyük kısmı kategorilenmiş</string>
-    <string name="digital_life_card_reason_organization_uncategorized">Kategorisiz uygulama yoğunluğu</string>
     <string name="digital_life_card_reason_attention_calm">Bildirim yükü sakin</string>
-    <string name="digital_life_card_reason_attention_noisy">Bildirim yoğunluğu</string>
     <string name="digital_life_card_reason_attention_night">Gece bildirim oranı</string>
     <string name="digital_life_card_reason_attention_no_permission">Bildirim erişimi yok</string>
     <string name="digital_life_card_reason_balance_steady">Kullanım dengesi istikrarlı</string>
-    <string name="digital_life_card_reason_balance_shift">Kategori dağılımında değişim</string>
     <string name="digital_life_card_reason_balance_no_baseline">Karşılaştırma için veri birikiyor</string>
     <string name="digital_life_card_reason_cleanup_tidy">Uygulamalar düzenli tutulmuş</string>
-    <string name="digital_life_card_reason_cleanup_unused">Uzun süredir açılmayan uygulamalar</string>
     <string name="digital_life_card_reason_consistency_steady">Kullanım düzeni istikrarlı</string>
     <string name="digital_life_card_reason_consistency_volatile">Kullanım haftalar arası değişken</string>
     <string name="digital_life_card_reason_consistency_no_data">Kilit açma verisi yok</string>
-    <string name="digital_life_card_reason_task_missions">Görev katkısı</string>
     <!-- Döngü D04 — PulseReasonPresenter sayı içeren nedenler (roadmap satır 1520-1526) -->
     <string name="pulse_reason_organization_uncategorized_count">Kategorisiz %1$d uygulama</string>
     <string name="pulse_reason_attention_noisy_label">Bildirim yoğunluğu</string>
