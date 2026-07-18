@@ -1011,7 +1011,7 @@ enum class HomeGestureDecision {
 
 **Bağımlılıklar:** P10.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P11 — commit: e79cc98 — tarih: 2026-07-18 — Not: 5/7 madde zaten sağlanıyordu (doğrulandı); düzeltilen 2 gerçek eksik: tablet side-panel pointer sızıntısı (scrim) + drawer açıkken kök pager kilidi (arbiter bypass kaldırıldı).
 
 ---
 
