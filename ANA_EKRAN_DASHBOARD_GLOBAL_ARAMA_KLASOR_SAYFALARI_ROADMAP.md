@@ -750,7 +750,7 @@ enum class DashboardDensity { COMFORTABLE, COMPACT, ULTRA_COMPACT }
 
 **Bağımlılıklar:** P05 ve Akıllı Nabız/Görev/Dijital Yaşam roadmap'indeki ilgili model döngüleri.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P06 — commit: ba742d9 — tarih: 2026-07-18 — Not: DashboardUiState 7 alt modelle; mevcut bileşenler taşındı (yeniden yazılmadı); flag kapalıyken bileşenler eski yerlerinde (davranış değişmedi), P24 açınca Dashboard'a geçecek. P07 riski: SmartDashboardPage verticalScroll ↔ global swipe-up nested scroll ilişkisi.
 
 ---
 
