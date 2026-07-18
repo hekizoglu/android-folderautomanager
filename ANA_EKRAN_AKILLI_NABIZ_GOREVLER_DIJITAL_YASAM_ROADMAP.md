@@ -1841,7 +1841,7 @@ Mevcut yalnız bütün şeridi sessize alma davranışı içerik bazlı kontroll
 
 **Bağımlılıklar:** T01, T02.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü T04 — commit: 3e86346 — tarih: 2026-07-18 — Not: Üretici string'leri bilinçli taşınmadı (46 test literal assert ediyor + üretici-dokunulmaz kuralı) — ayrı temizlik döngüsü adayı. sensitive bayrağı davranışsız (kilit ekranı senaryosu yok). KEY_TICKER_HIDDEN_TYPES tür bazlı gizleme eklendi.
 
 ---
 
