@@ -654,6 +654,13 @@ fun HomeScreen(
             }
         }
 
+        // Döngü P06 — compactClock ve tickerMutedUntilState `pager` slotunun HEM eski (klasör
+        // sayfası üstü) konumundaki kod HEM de dashboardContent lambda'sındaki SmartDashboardPage
+        // tarafından okunur/yazılır — tek doğruluk kaynağı olsun diye pager slotundan önce,
+        // burada tanımlanır (bkz. görev raporu "koşullu ikili yerleşim" kararı).
+        val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700
+        var tickerMutedUntilState by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
+
         // Döngü P03 — global shell: search/dock/indicator artık HomeShell'de toplanıyor,
         // sayfa içeriği (saat, kartlar, klasör pager'ı, favoriler vb.) `pager` slotunda kalıyor.
         // Sistem bar + IME padding artık yalnız HomeShell'in kök Column'unda uygulanıyor
@@ -843,7 +850,8 @@ fun HomeScreen(
 
             // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
             // Dar ekran / kalabalık grid'de kompakt: klasörler kaybolmasın diye saat küçülür
-            val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700
+            // (compactClock artık Column'dan ÖNCE hesaplanıyor — bkz. aşağıdaki tanım — P06'da
+            // SmartDashboardPage'in dashboardContent lambda'sı da aynı değeri kullanabilsin diye.)
             PulseClockWidget(
                 compact = compactClock,
                 onOpenWeeklyReport = {
@@ -1043,13 +1051,14 @@ fun HomeScreen(
             // Haber şeridi — "Alışveriş klasöründe 5 uygulama var" tarzı akan bilgiler.
             // Dokunma → hedef açılır; kaydırma → önceki/sonraki haber; basılı tut → sessize al (8s/1g/7g).
             // Kapalıysa eski istatistik bandı döner. Sessizdeyken hiçbir şey gösterilmez, süre dolunca geri gelir.
-            var tickerMutedUntil by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
-            val tickerMuted = tickerMutedUntil > System.currentTimeMillis()
+            // P06: tickerMutedUntilState artık yukarıda (Column'dan önce) tek yerde tanımlı —
+            // dashboardContent lambda'sındaki SmartDashboardPage ile aynı state paylaşılır.
+            val tickerMuted = tickerMutedUntilState > System.currentTimeMillis()
             if (tickerMuted) {
                 // Süre dolduğunda ana ekran açıkken bile şerit kendiliğinden geri gelsin
-                LaunchedEffect(tickerMutedUntil) {
-                    kotlinx.coroutines.delay((tickerMutedUntil - System.currentTimeMillis()).coerceAtLeast(0L))
-                    tickerMutedUntil = 0L
+                LaunchedEffect(tickerMutedUntilState) {
+                    kotlinx.coroutines.delay((tickerMutedUntilState - System.currentTimeMillis()).coerceAtLeast(0L))
+                    tickerMutedUntilState = 0L
                 }
             }
             if (tickerEnabled && !tickerMuted) {
@@ -1059,7 +1068,7 @@ fun HomeScreen(
                     onMute = { duration ->
                         val until = System.currentTimeMillis() + duration
                         com.armutlu.apporganizer.utils.AppPrefs.setTickerMutedUntil(context, until)
-                        tickerMutedUntil = until
+                        tickerMutedUntilState = until
                     },
                     onDismissItem = { item ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1257,14 +1266,217 @@ fun HomeScreen(
                 pagerState = pagerState,
                 userScrollEnabled = pagerScrollEnabled,
                 dashboardContent = {
-                    // P06'da SmartDashboardPage burada render edilecek — bugün iskelet placeholder.
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Dashboard",
-                            color = Color.White.copy(alpha = 0.7f),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+                    // Döngü P06 — gerçek SmartDashboardPage. NOT: dashboardEnabledForPager P24'e
+                    // kadar sabit false olduğu için bu slot bugün compose edilmez (HomePagerHost
+                    // yalnız pages listesindeki HomePageSpec.Dashboard sayfası için çağırır ve
+                    // HomePagePlanner.buildPages dashboardEnabled=false iken Dashboard sayfası
+                    // üretmez) — yapı P24 için hazırlanıyor, davranış değişmedi.
+                    SmartDashboardPage(
+                        state = DashboardUiState(
+                            clock = DashboardClockState(compact = compactClock),
+                            intelligence = DashboardIntelligenceState(
+                                missionsEnabled = missionsEnabled,
+                                mission = homeMissionSummary,
+                                digitalLifeCardVisible = digitalLifeCardVisible,
+                                pulse = homePulseSummary,
+                            ),
+                            recentInstalls = DashboardRecentInstallsState(
+                                enabled = recentInstallsEnabled,
+                                apps = todayInstalledApps,
+                            ),
+                            secondarySections = DashboardSecondarySectionsState(
+                                googleSearchEnabled = !hideSecondaryRowsForIme,
+                                widgetAreaEnabled = widgetAreaEnabled,
+                                widgetIds = widgetIds,
+                                widgetAutoResize = widgetAutoResize,
+                                screenHeightDp = LocalConfiguration.current.screenHeightDp,
+                            ),
+                            insights = DashboardInsightsState(
+                                assistantCardsEnabled = assistantCardsEnabled,
+                                tickerEnabled = tickerEnabled,
+                                insightCards = insightCards,
+                            ),
+                            ticker = DashboardTickerState(
+                                tickerEnabled = tickerEnabled,
+                                tickerMuted = tickerMutedUntilState > System.currentTimeMillis(),
+                                tickerItems = tickerItems,
+                                homeTickerVisible = homeTickerVisible,
+                                tickerAutoAdvance = tickerAutoAdvance,
+                                tickerIntervalSeconds = tickerIntervalSeconds,
+                                folders = folders,
+                            ),
+                            favorites = DashboardFavoritesState(
+                                favoritesEnabled = favoritesEnabled,
+                                favoriteApps = favoriteApps,
+                                suggestionsEnabled = suggestionsEnabled,
+                                suggestedApps = suggestedApps,
+                                suggestionsIconSizeDp = suggestionsIconSizeDp,
+                                recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                                recentNotificationApps = recentNotificationApps,
+                                recentNotificationCounts = recentNotificationCounts,
+                                recentAppsEnabled = recentAppsEnabled,
+                                recentApps = recentApps,
+                                dockPackages = contextualDockPackages,
+                                iconPackPkg = suggestionIconPack,
+                                screenHeightDp = screenHeightDp,
+                            ),
+                            hideSecondaryRowsForIme = hideSecondaryRowsForIme,
+                        ),
+                        actions = DashboardActions(
+                            onOpenWeeklyReport = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onOpenScoreDetails = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onClockLongPress = { viewModel.openManager(context) },
+                            onMissionClick = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onPulseClick = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onPulseReasonAction = { action ->
+                                val target = PulseActionRouter.resolve(action)
+                                if (target is PulseActionRouter.RouteTarget.Screen) {
+                                    val intent = Intent(context, MainActivity::class.java).apply {
+                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
+                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    runCatching { context.startActivity(intent) }
+                                }
+                            },
+                            onOpenRecentInstalls = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                com.armutlu.apporganizer.utils.AppPrefs.setAllAppsSortMode(
+                                    context,
+                                    AllAppsSortMode.INSTALL_DATE.name
+                                )
+                                viewModel.openAllApps()
+                            },
+                            onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
+                            onReorderWidgets = { newOrder -> viewModel.reorderWidgets(context, newOrder) },
+                            onInsightCardClick = { card ->
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                when {
+                                    card.packageName != null -> viewModel.launchApp(context, card.packageName)
+                                    card.categoryId != null -> {
+                                        val folder = folders.find { it.category.categoryId == card.categoryId }
+                                        if (folder != null) onNavigateToFolder(folder) else {
+                                            val intent = Intent(context, MainActivity::class.java).apply {
+                                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                            runCatching { context.startActivity(intent) }
+                                        }
+                                    }
+                                    else -> {
+                                        val intent = Intent(context, MainActivity::class.java).apply {
+                                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                        runCatching { context.startActivity(intent) }
+                                    }
+                                }
+                            },
+                            onOpenDashboardShortcut = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onTickerMute = { duration ->
+                                val until = System.currentTimeMillis() + duration
+                                com.armutlu.apporganizer.utils.AppPrefs.setTickerMutedUntil(context, until)
+                                tickerMutedUntilState = until
+                            },
+                            onTickerDismissItem = { item ->
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                viewModel.dismissTickerItem(item.dedupeKey)
+                            },
+                            onTickerHideType = { type -> viewModel.hideTickerType(type) },
+                            onOpenTickerSettings = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS_SMART_TICKER)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onDisableTicker = {
+                                com.armutlu.apporganizer.utils.AppPrefs.setTickerEnabled(context, false)
+                                tickerEnabled = false
+                            },
+                            onTickerItemClick = { item ->
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                viewModel.dismissTickerItem(item.dedupeKey)
+                                when (val target = viewModel.resolveTickerTarget(item)) {
+                                    is com.armutlu.apporganizer.domain.home.TickerActionRouter.RouteTarget.Screen -> when {
+                                        target.packageName != null -> viewModel.launchApp(context, target.packageName)
+                                        target.categoryId != null -> {
+                                            val folder = folders.find { it.category.categoryId == target.categoryId }
+                                            if (folder != null) onNavigateToFolder(folder)
+                                        }
+                                        else -> {
+                                            val intent = Intent(context, MainActivity::class.java).apply {
+                                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
+                                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
+                                            runCatching { context.startActivity(intent) }
+                                        }
+                                    }
+                                    com.armutlu.apporganizer.domain.home.TickerActionRouter.RouteTarget.None -> Unit
+                                }
+                            },
+                            onOpenFolderStats = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.REPORTS_CENTER)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onOpenAppStats = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.APP_LIST)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onOpenDashboard = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onOpenUsageReport = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.USAGE_REPORT)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                            onAppLongClick = { pkg -> contextMenuPkg = pkg },
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 },
                 folderPageContent = { spec ->
                     FolderGridPage(

@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P06 - 2026-07-18 - SmartDashboardPage
+
+**Yapilanlar:** DashboardUiState/Actions saf modelleri (7 alt model) + SmartDashboardPage (dikey scroll; PulseClock, HomeIntelligenceCardsRow, Bugun Yuklendi, GoogleSearchBar+WidgetArea, AssistantInsightRow, ticker, favoriler — mevcut bilesenler cagrildi, yeniden yazilmadi); dashboard_empty_hint TR/EN. compactClock/tickerMuted state'leri tek kaynaga tasindi. dashboardEnabledForPager=false — kullanici davranisi degismedi, icerik P24 acilisina hazir.
+
+**Bug:** Yok. Ortam: 12. build kilidi SOP ile cozuldu. P07 riski dokumante: SmartDashboardPage verticalScroll'u ile global swipe-up nested scroll iliskisi test edilmedi.
+
+**Sonraki:** P07 — dashboard dikey alan + swipe-up catismasi (zincir devam).
+
 ## Dashboard Dongu P05 - 2026-07-18 - HomePagerHost tek pager birlestirme (KRITIK)
 
 **Yapilanlar:** HomePagerHost: TEK HorizontalPager (Dashboard placeholder + FolderGridPage'ler), FolderPager SILINDI (tek cagri noktasi vardi); anchor tabanli sayfa kaliciligi (snapshotFlow->anchor yaz, acilista resolver; eski int kopru paralel — P00 yesil); indicator hoisting tamamlandi (HomeShell slotu, remember holder'lar); YENI: pager scroll gating (arama/reorder/modal acikken kilit) + reduced-motion'da efekt yok. dashboardEnabledForPager=false hardcoded + TODO(P24) — bos placeholder kullaniciya gosterilmiyor, davranis %100 korundu. 11 yeni test + P00 16/16 yesil.
