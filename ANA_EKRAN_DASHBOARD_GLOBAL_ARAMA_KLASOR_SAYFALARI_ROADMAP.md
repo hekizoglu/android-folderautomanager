@@ -1330,7 +1330,7 @@ Görevler, dijital yaşam ve öneriler ilk sayfada; klasörlerin hemen yanında.
 
 **Bağımlılıklar:** P02, P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P17 — commit: cfecdd0 — tarih: 2026-07-18 — Not: "Ana Sayfa Yapısı" kartı (Akıllı Dashboard toggle + Başlangıç Sayfası segmented); toggle kapanınca StartPageMode otomatik normalize edilir, Dashboard seçeneği dimmed. Görünür pager etkisi P24 flag'inde.
 
 ---
 
