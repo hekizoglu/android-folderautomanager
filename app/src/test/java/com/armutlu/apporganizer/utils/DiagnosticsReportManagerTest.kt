@@ -1,6 +1,10 @@
 package com.armutlu.apporganizer.utils
 
 import androidx.work.WorkInfo
+import com.armutlu.apporganizer.domain.common.HomeDataResult
+import com.armutlu.apporganizer.domain.common.MissingReason
+import com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport
+import com.armutlu.apporganizer.domain.home.HomeIntelligenceState
 import com.armutlu.apporganizer.domain.usecase.classify.AttentionReason
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnostics
 import org.junit.Assert.assertEquals
@@ -62,6 +66,10 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("Dock oge sayisi: 5"))
         assertTrue(report.contains("[Worker Ozeti]"))
         assertTrue(report.contains("Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL"))
+        assertTrue(report.contains("[Gorev Sistemi]"))
+        assertTrue(report.contains("[Dijital Yasam]"))
+        assertTrue(report.contains("[Akilli Nabiz]"))
+        assertTrue(report.contains("[Ana Ekran Zeka Sagligi Uyarilari]"))
         assertTrue(report.contains("[Kritik Hatalar]"))
         assertTrue(report.contains("1. safeMode=hayir, summary=IllegalStateException: sample"))
         assertTrue(report.contains("[Gizlilik Notu]"))
@@ -367,6 +375,21 @@ class DiagnosticsReportManagerTest {
         ),
         crashSummary = listOf(
             "1. safeMode=hayir, summary=IllegalStateException: sample",
+        ),
+        homeIntelligenceHealth = HomeIntelligenceHealthReport.build(
+            HomeIntelligenceHealthReport.Input(
+                homeIntelligenceState = HomeIntelligenceState(
+                    pulse = HomeDataResult.Missing(MissingReason.NO_DATA_YET),
+                    mission = HomeDataResult.Missing(MissingReason.NO_DATA_YET),
+                    ticker = HomeDataResult.Missing(MissingReason.NO_DATA_YET),
+                ),
+                settlementLastSucceededAt = 0L,
+                settlementLastFailedAt = 0L,
+                settlementLastFailureCode = "-",
+                settlementNextScheduledAt = null,
+                pendingSettlementCount = 0,
+                now = 1_800_000_000_000L,
+            ),
         ),
     )
 

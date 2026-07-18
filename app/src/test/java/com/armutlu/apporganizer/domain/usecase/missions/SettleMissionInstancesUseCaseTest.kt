@@ -76,6 +76,9 @@ class SettleMissionInstancesUseCaseTest {
                 it.status == MissionInstanceEntity.STATUS_ASSIGNED && it.periodEndAt < beforeEpochMillis
             }
 
+        override suspend fun countUnsettledBefore(beforeEpochMillis: Long): Int =
+            getUnsettledBefore(beforeEpochMillis).size
+
         override suspend fun clearAll() {
             store.clear()
         }

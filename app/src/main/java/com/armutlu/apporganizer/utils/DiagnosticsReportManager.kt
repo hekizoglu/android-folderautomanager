@@ -17,11 +17,16 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.local.MissionHistoryDao
+import com.armutlu.apporganizer.data.local.MissionInstanceDao
 import com.armutlu.apporganizer.data.local.TaskScoreEventDao
+import com.armutlu.apporganizer.domain.home.HomeIntelligenceCoordinator
+import com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport
 import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
 import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
+import com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnostics
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnosticsCalculator
+import com.armutlu.apporganizer.workers.MissionSettlementWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.text.SimpleDateFormat
@@ -149,6 +154,8 @@ class DiagnosticsReportManager @Inject constructor(
     private val notificationEventDao: NotificationEventDao,
     private val missionHistoryDao: MissionHistoryDao,
     private val taskScoreEventDao: TaskScoreEventDao,
+    private val missionInstanceDao: MissionInstanceDao,
+    private val homeIntelligenceCoordinator: HomeIntelligenceCoordinator,
 ) {
 
     suspend fun createShareIntent(): Intent {
@@ -213,6 +220,7 @@ class DiagnosticsReportManager @Inject constructor(
         )
         val workerSummary = workerSummary()
         val crashSummary = crashSummary()
+        val homeIntelligenceHealth = homeIntelligenceHealthReport(now)
         val listenerEnabled = NotificationAccessUtils.isNotificationListenerEnabled(context)
         val storageSummary = storageSummary()
         val exitSummary = exitSummary()
@@ -283,6 +291,36 @@ class DiagnosticsReportManager @Inject constructor(
                 homeLayoutSummary = layoutSummary,
                 workerSummary = workerSummary,
                 crashSummary = crashSummary,
+                homeIntelligenceHealth = homeIntelligenceHealth,
+            ),
+        )
+    }
+
+    /**
+     * Döngü U03 — üç ana ekran zeka kaynağının (Dijital Nabız/Görev/Şerit) koordinatör state'i +
+     * MissionSettlementWorker telemetrisi + bekleyen instance sayısından sağlık raporu bölümü
+     * üretir. Koordinatör/worker davranışına DOKUNMAZ, sadece mevcut state'i okur.
+     */
+    private suspend fun homeIntelligenceHealthReport(now: Long): HomeIntelligenceHealthReport.Report {
+        val settlementTelemetry = WorkerTelemetryPrefs.getSnapshot(context, MissionSettlementWorker.WORK_NAME)
+        val nextScheduledAt = runCatching {
+            WorkManager.getInstance(context)
+                .getWorkInfosForUniqueWork(MissionWorkScheduler.WORK_NAME)
+                .get()
+        }.getOrDefault(emptyList())
+            .firstOrNull()
+            ?.nextScheduleTimeMillisCompat()
+        val pendingSettlementCount = runCatching { missionInstanceDao.countUnsettledBefore(now) }.getOrDefault(0)
+
+        return HomeIntelligenceHealthReport.build(
+            HomeIntelligenceHealthReport.Input(
+                homeIntelligenceState = homeIntelligenceCoordinator.state.value,
+                settlementLastSucceededAt = settlementTelemetry.lastSucceededAt,
+                settlementLastFailedAt = settlementTelemetry.lastFailedAt,
+                settlementLastFailureCode = settlementTelemetry.lastFailureCode,
+                settlementNextScheduledAt = nextScheduledAt,
+                pendingSettlementCount = pendingSettlementCount,
+                now = now,
             ),
         )
     }
@@ -482,6 +520,7 @@ internal data class DiagnosticsReportSnapshot(
     val homeLayoutSummary: HomeLayoutPrefs.DiagnosticsSummary,
     val workerSummary: List<String>,
     val crashSummary: List<String>,
+    val homeIntelligenceHealth: com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport.Report,
 )
 
 internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildString {
@@ -586,6 +625,23 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine()
     appendLine("[Worker Ozeti]")
     snapshot.workerSummary.forEach { appendLine(it) }
+    appendLine()
+    val homeHealth = snapshot.homeIntelligenceHealth
+    appendLine("[Gorev Sistemi]")
+    homeHealth.missionSystem.lines.forEach { appendLine(it) }
+    appendLine()
+    appendLine("[Dijital Yasam]")
+    homeHealth.digitalLife.lines.forEach { appendLine(it) }
+    appendLine()
+    appendLine("[Akilli Nabiz]")
+    homeHealth.smartPulseTicker.lines.forEach { appendLine(it) }
+    appendLine()
+    appendLine("[Ana Ekran Zeka Sagligi Uyarilari]")
+    if (homeHealth.allWarningCodes.isEmpty()) {
+        appendLine("Uyari yok.")
+    } else {
+        homeHealth.allWarningCodes.sorted().forEach { appendLine(it) }
+    }
     appendLine()
     appendLine("[Kritik Hatalar]")
     if (!classification.isConsistent) {

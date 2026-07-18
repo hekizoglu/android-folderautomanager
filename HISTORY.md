@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu U03 - 2026-07-18 - Saglik raporuna zeka sistemi durumlari
+
+**Yapilanlar:** HomeIntelligenceHealthReport (saf Kotlin): koordinator 3 kaynak durumu + settlement son/sonraki calisma + pulse cache yasi + bekleyen instance sayisi -> DiagnosticsReportManager'a [Gorev Sistemi]/[Dijital Yasam]/[Akilli Nabiz]/[Uyarilar] bolumleri (uyari = sabit kod, serbest metin yok); HomeErrorCodes'a 5 yeni kod; MissionInstanceDao.countUnsettledBefore. 12 yeni test (gizlilik sizinti testi dahil) + etkilenen testler duzeltildi, yesil.
+
+**Bug:** Yok. Ortam: 10. build kilidi SOP ile cozuldu.
+
+**Sonraki:** U04 — tam test matrisi + yayin kapisi (ROADMAP FINALI, faz kapanisi).
+
 ## Akilli Nabiz Dongu U02 - 2026-07-18 - Gizlilik guvenli telemetri
 
 **Yapilanlar:** Mevcut TelemetryManager/Validator mimarisi genisletildi (yeni altyapi kurulmadi): 13 yeni event + 5 kapali enum (WireValue — public API'de String yolu yok, derleme garantisi) + catalog whitelist + forbiddenKeys ikinci katman. Kart viewed/opened, ticker impression/opened/dismissed/snoozed/type_disabled baglandi. Mevcut isTelemetryEnabled consent fail-closed. 6/6 validator + Ticker testleri yesil.

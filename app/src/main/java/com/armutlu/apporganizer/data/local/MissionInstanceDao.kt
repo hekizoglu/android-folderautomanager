@@ -49,6 +49,20 @@ interface MissionInstanceDao {
     )
     suspend fun getUnsettledBefore(beforeEpochMillis: Long): List<MissionInstanceEntity>
 
+    /**
+     * Döngü U03 — Sağlık raporu "Settlement bekleyen" sayacı için: dönemi bitmiş ama hâlâ
+     * "assigned" olan (henüz [SettleMissionInstancesUseCase.settleOverdue] tarafından
+     * sonuçlandırılmamış) instance sayısı. [getUnsettledBefore] ile aynı koşulu kullanır,
+     * sadece COUNT döner — rapor tam listeye ihtiyaç duymaz.
+     */
+    @Query(
+        """
+        SELECT COUNT(*) FROM mission_instances
+        WHERE status = 'assigned' AND periodEndAt < :beforeEpochMillis
+        """
+    )
+    suspend fun countUnsettledBefore(beforeEpochMillis: Long): Int
+
     @Query("DELETE FROM mission_instances")
     suspend fun clearAll()
 }
