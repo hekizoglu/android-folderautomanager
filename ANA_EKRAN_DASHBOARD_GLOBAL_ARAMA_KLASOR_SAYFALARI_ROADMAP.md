@@ -405,7 +405,7 @@ Aşağıdaki mevcut davranışlar için test yazılmalıdır:
 
 **Bağımlılıklar:** Yok.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P00 — commit: 5316f3c — tarih: 2026-07-18 — Not: 25 regresyon testi; roadmap dosya adı düzeltmesi: HomeLayoutPrefsMigrationTest yok, gerçek dosya HomeLayoutPrefsTest (P02'de o genişletilmeli). Roadmap bölüm 2 varsayımları gerçek kodla doğrulandı.
 
 ---
 
