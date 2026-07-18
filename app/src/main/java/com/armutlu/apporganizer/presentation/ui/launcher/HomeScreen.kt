@@ -1500,6 +1500,7 @@ fun HomeScreen(
                                 screenHeightDp = screenHeightDp,
                             ),
                             hideSecondaryRowsForIme = hideSecondaryRowsForIme,
+                            contentOrder = remember(homeLayoutConfig) { dashboardContentOrder(homeLayoutConfig) },
                         ),
                         actions = DashboardActions(
                             onOpenWeeklyReport = {

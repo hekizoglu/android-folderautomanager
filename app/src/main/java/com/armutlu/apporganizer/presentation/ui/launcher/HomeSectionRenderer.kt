@@ -56,3 +56,29 @@ internal fun HomeSectionRenderer(
         key(entry.stableKey) { content(entry.sectionId) }
     }
 }
+
+/**
+ * P16 — `SmartDashboardPage`'in CONTENT zone bölüm sırasını gerçek editör tercihinden (Ayarlar >
+ * Ana Ekranı Düzenle) türetir. `HomeLayoutConfig`'te yer ALMAYAN dashboard-özel öğeler (örn.
+ * RECENT_INSTALLS chip'i, "hasAnyContent" boş durumu) bu sıralamanın dışındadır — onlar sabit
+ * konumlarını korur (üstte saat/görev kartlarının hemen altı, en altta boş durum). Yalnız
+ * `HomeSectionId` karşılığı olan CONTENT bölümleri (GOOGLE_SEARCH, ANDROID_WIDGETS,
+ * ASSISTANT_INSIGHTS/TICKER_OR_STATS ikilisi, favoriler grubu) bu sırayla render edilir.
+ *
+ * Saf fonksiyon — Compose bağımlılığı yok, `SmartDashboardPageLogicTest`'te doğrudan test edilir.
+ */
+internal fun dashboardContentOrder(config: HomeLayoutConfig): List<HomeSectionId> =
+    config.items.asSequence()
+        .filter { it.zone == HomeLayoutZone.CONTENT && it.sectionId != HomeSectionId.FOLDER_GRID }
+        .filter(HomeLayoutItem::visible)
+        .sortedBy(HomeLayoutItem::order)
+        .map(HomeLayoutItem::sectionId)
+        .toList()
+
+/**
+ * P16 madde 10 — küçük cihazlarda (kısa ekran yüksekliği) tüm görünür Dashboard bölümlerinin
+ * elle kaydırmadan sığmayacağını bildiren basit kapasite uyarısı. Eşik `DashboardLayoutPolicy`
+ * ile aynı ULTRA_COMPACT sınırını kullanır; saf fonksiyon, editor testinde doğrudan çağrılır.
+ */
+internal fun isSmallDeviceForDashboard(screenHeightDp: Int, visibleContentSectionCount: Int): Boolean =
+    screenHeightDp in 1 until 640 && visibleContentSectionCount >= 6

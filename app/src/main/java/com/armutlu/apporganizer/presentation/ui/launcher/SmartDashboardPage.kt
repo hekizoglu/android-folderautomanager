@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.models.HomeSectionId
 
 /**
  * Döngü P06 — Akıllı Ana Ekran / Dashboard sayfası. Roadmap bölüm 1.2 "Sayfa 0" içerik
@@ -162,93 +163,108 @@ internal fun SmartDashboardPage(
         }
 
         val hideSecondaryRows = state.hideSecondaryRowsForIme
-        com.armutlu.apporganizer.presentation.ui.launcher.HomeSectionRenderer(
-            items = listOf(
-                com.armutlu.apporganizer.domain.models.HomeLayoutItem(
-                    com.armutlu.apporganizer.domain.models.HomeSectionId.GOOGLE_SEARCH,
-                    com.armutlu.apporganizer.domain.models.HomeSectionId.GOOGLE_SEARCH.defaultZone,
-                    0,
-                    !hideSecondaryRows && state.secondarySections.googleSearchEnabled,
-                ),
-                com.armutlu.apporganizer.domain.models.HomeLayoutItem(
-                    com.armutlu.apporganizer.domain.models.HomeSectionId.ANDROID_WIDGETS,
-                    com.armutlu.apporganizer.domain.models.HomeSectionId.ANDROID_WIDGETS.defaultZone,
-                    1,
-                    !hideSecondaryRows && state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty(),
-                ),
-            ),
-        ) { sectionId ->
-            when (sectionId) {
-                com.armutlu.apporganizer.domain.models.HomeSectionId.GOOGLE_SEARCH -> GoogleSearchBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                )
-                com.armutlu.apporganizer.domain.models.HomeSectionId.ANDROID_WIDGETS -> WidgetArea(
-                    widgetIds = state.secondarySections.widgetIds,
-                    onRemoveWidget = actions.onRemoveWidget,
-                    onReorderWidgets = actions.onReorderWidgets,
-                    autoResize = state.secondarySections.widgetAutoResize,
-                    screenHeightDp = state.secondarySections.screenHeightDp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                else -> Unit
+        // P16 — bu üç blok (arama+widget, içgörü+ticker, favoriler) CONTENT zone'un reorderable
+        // gruplarıdır; sıraları editörden (Ayarlar > Ana Ekranı Düzenle) gelen
+        // `state.contentOrder`'a göre belirlenir. Grup İÇİ alt bileşen sırası (örn. GOOGLE_SEARCH
+        // her zaman ANDROID_WIDGETS'tan önce) sabit kalır — editör yalnız grupları birbirine göre
+        // taşır, gruplar içindeki alt-bileşen sırasını değiştirmez (bkz. dashboardGroupOrder()).
+        dashboardGroupOrder(state.contentOrder).forEach { group ->
+            when (group) {
+                DashboardContentGroup.SEARCH_AND_WIDGETS -> {
+                    com.armutlu.apporganizer.presentation.ui.launcher.HomeSectionRenderer(
+                        items = listOf(
+                            com.armutlu.apporganizer.domain.models.HomeLayoutItem(
+                                HomeSectionId.GOOGLE_SEARCH,
+                                HomeSectionId.GOOGLE_SEARCH.defaultZone,
+                                0,
+                                !hideSecondaryRows && state.secondarySections.googleSearchEnabled,
+                            ),
+                            com.armutlu.apporganizer.domain.models.HomeLayoutItem(
+                                HomeSectionId.ANDROID_WIDGETS,
+                                HomeSectionId.ANDROID_WIDGETS.defaultZone,
+                                1,
+                                !hideSecondaryRows && state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty(),
+                            ),
+                        ),
+                    ) { sectionId ->
+                        when (sectionId) {
+                            HomeSectionId.GOOGLE_SEARCH -> GoogleSearchBar(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                            HomeSectionId.ANDROID_WIDGETS -> WidgetArea(
+                                widgetIds = state.secondarySections.widgetIds,
+                                onRemoveWidget = actions.onRemoveWidget,
+                                onReorderWidgets = actions.onReorderWidgets,
+                                autoResize = state.secondarySections.widgetAutoResize,
+                                screenHeightDp = state.secondarySections.screenHeightDp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            else -> Unit
+                        }
+                    }
+                }
+
+                DashboardContentGroup.INSIGHTS_AND_TICKER -> {
+                    if (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled) {
+                        if (state.insights.insightCards.isNotEmpty()) {
+                            AssistantInsightRow(
+                                cards = state.insights.insightCards,
+                                onCardClick = actions.onInsightCardClick,
+                                onOpenDashboard = actions.onOpenDashboardShortcut,
+                            )
+                        }
+                    }
+
+                    if (state.ticker.tickerEnabled && !state.ticker.tickerMuted) {
+                        HomeTickerRow(
+                            items = state.ticker.tickerItems,
+                            visible = state.ticker.homeTickerVisible,
+                            onMute = actions.onTickerMute,
+                            onDismissItem = actions.onTickerDismissItem,
+                            onHideType = actions.onTickerHideType,
+                            onOpenTickerSettings = actions.onOpenTickerSettings,
+                            onDisableTicker = actions.onDisableTicker,
+                            autoAdvanceEnabled = state.ticker.tickerAutoAdvance,
+                            autoAdvanceIntervalMs = state.ticker.tickerIntervalSeconds * 1000L,
+                            onItemClick = actions.onTickerItemClick,
+                        )
+                    } else if (!state.ticker.tickerEnabled) {
+                        FolderStatsRow(
+                            folders = state.ticker.folders,
+                            onOpenFolderStats = actions.onOpenFolderStats,
+                            onOpenAppStats = actions.onOpenAppStats,
+                            onOpenDashboard = actions.onOpenDashboard,
+                            onOpenUsageReport = actions.onOpenUsageReport,
+                        )
+                    }
+                }
+
+                DashboardContentGroup.FAVORITES -> {
+                    if (!state.hideSecondaryRowsForIme) {
+                        HomeFavoritesSection(
+                            favoritesEnabled = state.favorites.favoritesEnabled,
+                            favoriteApps = state.favorites.favoriteApps,
+                            suggestionsEnabled = state.favorites.suggestionsEnabled,
+                            suggestedApps = state.favorites.suggestedApps,
+                            suggestionsIconSizeDp = state.favorites.suggestionsIconSizeDp,
+                            recentNotificationAppsEnabled = state.favorites.recentNotificationAppsEnabled,
+                            recentNotificationApps = state.favorites.recentNotificationApps,
+                            recentNotificationCounts = state.favorites.recentNotificationCounts,
+                            recentAppsEnabled = state.favorites.recentAppsEnabled,
+                            recentApps = state.favorites.recentApps,
+                            dockPackages = state.favorites.dockPackages,
+                            iconPackPkg = state.favorites.iconPackPkg,
+                            haptic = androidx.compose.ui.platform.LocalHapticFeedback.current,
+                            onLaunchApp = actions.onLaunchApp,
+                            onAppLongClick = actions.onAppLongClick,
+                            screenHeightDp = state.favorites.screenHeightDp,
+                            showSecondaryRowsInCompactMode = false,
+                        )
+                    }
+                }
             }
-        }
-
-        if (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled) {
-            if (state.insights.insightCards.isNotEmpty()) {
-                AssistantInsightRow(
-                    cards = state.insights.insightCards,
-                    onCardClick = actions.onInsightCardClick,
-                    onOpenDashboard = actions.onOpenDashboardShortcut,
-                )
-            }
-        }
-
-        if (state.ticker.tickerEnabled && !state.ticker.tickerMuted) {
-            HomeTickerRow(
-                items = state.ticker.tickerItems,
-                visible = state.ticker.homeTickerVisible,
-                onMute = actions.onTickerMute,
-                onDismissItem = actions.onTickerDismissItem,
-                onHideType = actions.onTickerHideType,
-                onOpenTickerSettings = actions.onOpenTickerSettings,
-                onDisableTicker = actions.onDisableTicker,
-                autoAdvanceEnabled = state.ticker.tickerAutoAdvance,
-                autoAdvanceIntervalMs = state.ticker.tickerIntervalSeconds * 1000L,
-                onItemClick = actions.onTickerItemClick,
-            )
-        } else if (!state.ticker.tickerEnabled) {
-            FolderStatsRow(
-                folders = state.ticker.folders,
-                onOpenFolderStats = actions.onOpenFolderStats,
-                onOpenAppStats = actions.onOpenAppStats,
-                onOpenDashboard = actions.onOpenDashboard,
-                onOpenUsageReport = actions.onOpenUsageReport,
-            )
-        }
-
-        if (!state.hideSecondaryRowsForIme) {
-            HomeFavoritesSection(
-                favoritesEnabled = state.favorites.favoritesEnabled,
-                favoriteApps = state.favorites.favoriteApps,
-                suggestionsEnabled = state.favorites.suggestionsEnabled,
-                suggestedApps = state.favorites.suggestedApps,
-                suggestionsIconSizeDp = state.favorites.suggestionsIconSizeDp,
-                recentNotificationAppsEnabled = state.favorites.recentNotificationAppsEnabled,
-                recentNotificationApps = state.favorites.recentNotificationApps,
-                recentNotificationCounts = state.favorites.recentNotificationCounts,
-                recentAppsEnabled = state.favorites.recentAppsEnabled,
-                recentApps = state.favorites.recentApps,
-                dockPackages = state.favorites.dockPackages,
-                iconPackPkg = state.favorites.iconPackPkg,
-                haptic = androidx.compose.ui.platform.LocalHapticFeedback.current,
-                onLaunchApp = actions.onLaunchApp,
-                onAppLongClick = actions.onAppLongClick,
-                screenHeightDp = state.favorites.screenHeightDp,
-                showSecondaryRowsInCompactMode = false,
-            )
         }
 
         if (!hasAnyContent) {
@@ -266,6 +282,34 @@ internal fun SmartDashboardPage(
             }
         }
     }
+    }
+}
+
+/**
+ * P16 — `SmartDashboardPage`'in CONTENT zone içinde birlikte taşınan (reorderable) blok grupları.
+ * CLOCK/MISSIONS_AND_SCORE ikilisi ve RECENT_INSTALLS chip'i editörde de her zaman en üstte kalır
+ * (roadmap madde 7 yalnız "Dashboard section reorder" der; sayaç/görev kartları sayfanın kimliğidir,
+ * taşınmaz) — bu yüzden burada yer almaz. Boş durum mesajı (`hasAnyContent` false) her zaman en
+ * altta sabit kalır.
+ */
+internal enum class DashboardContentGroup(val representativeSection: HomeSectionId) {
+    SEARCH_AND_WIDGETS(HomeSectionId.GOOGLE_SEARCH),
+    INSIGHTS_AND_TICKER(HomeSectionId.ASSISTANT_INSIGHTS),
+    FAVORITES(HomeSectionId.FAVORITES),
+}
+
+/**
+ * `contentOrder` (editörden gelen CONTENT zone bölüm sırası) içindeki her grubun temsilci
+ * section'ının ilk göründüğü konuma göre grupları sıralar. `contentOrder` boşsa veya temsilci
+ * section'lardan hiçbiri içinde yoksa `DashboardContentGroup.entries`'in doğal (varsayılan) sırası
+ * korunur — geriye dönük uyumluluk, eski çağrı yerleri (testler) bozulmaz.
+ *
+ * Saf fonksiyon — Compose bağımlılığı yok, doğrudan test edilir.
+ */
+internal fun dashboardGroupOrder(contentOrder: List<HomeSectionId>): List<DashboardContentGroup> {
+    if (contentOrder.isEmpty()) return DashboardContentGroup.entries
+    return DashboardContentGroup.entries.sortedBy { group ->
+        contentOrder.indexOf(group.representativeSection).let { if (it < 0) Int.MAX_VALUE else it }
     }
 }
 

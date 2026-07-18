@@ -6,6 +6,7 @@ import com.armutlu.apporganizer.domain.home.PulseAction
 import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.utils.InsightCard
 // AppFolder aynı pakette (presentation.ui.launcher) tanımlı — bkz. LauncherViewModel.kt.
 
@@ -85,6 +86,11 @@ data class DashboardUiState(
     val ticker: DashboardTickerState,
     val favorites: DashboardFavoritesState,
     val hideSecondaryRowsForIme: Boolean,
+    // P16 — Ayarlar > Ana Ekranı Düzenle'den gelen CONTENT zone bölüm sırası (HomeLayoutPrefs
+    // KEY_CONTENT_ORDER). SmartDashboardPage bu sırayla reorderable bölüklerini (GOOGLE_SEARCH,
+    // ANDROID_WIDGETS, ASSISTANT_INSIGHTS/TICKER_OR_STATS, favoriler grubu) dizer. Boş liste ise
+    // (örn. eski test çağrıları) varsayılan sabit sıra korunur — bkz. dashboardContentOrder().
+    val contentOrder: List<HomeSectionId> = emptyList(),
 )
 
 /** `SmartDashboardPage` içindeki tıklama/eylem callback'leri — tek yerde toplanır. */

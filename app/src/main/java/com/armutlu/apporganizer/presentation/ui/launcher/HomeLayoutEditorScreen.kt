@@ -58,8 +58,16 @@ import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
 import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
 import com.armutlu.apporganizer.domain.models.HomeSectionId
+import com.armutlu.apporganizer.domain.models.withSearchZone
 import com.armutlu.apporganizer.utils.HomeLayoutPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Surface
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalConfiguration
 
 internal data class HomeLayoutEditorState(
     val original: HomeLayoutConfig,
@@ -75,6 +83,16 @@ internal fun HomeLayoutConfig.withSectionVisibility(sectionId: HomeSectionId, vi
 }
 
 internal fun HomeLayoutEditorState.resetDraft(): HomeLayoutEditorState = copy(draft = HomeLayoutConfig.DEFAULT)
+
+/**
+ * P16 — editörün "Akıllı Ana Ekran bölümleri" listesi: yalnız CONTENT zone'daki, FOLDER_GRID
+ * hariç Dashboard section'ları (roadmap madde 2: FOLDER_GRID kartı tamamen kaldırılır; madde 3:
+ * klasör sırası ayrı bir başlık altında yönetilir). MAIN_SEARCH (HEADER/FOOTER) ve DOCK (FOOTER)
+ * bu listede yer almaz — onlar "Global alanlar" bölümünde ayrı kontrollerle yönetilir.
+ */
+internal fun HomeLayoutConfig.dashboardSectionItems(): List<HomeLayoutItem> = items
+    .filter { it.zone == HomeLayoutZone.CONTENT && it.sectionId != HomeSectionId.FOLDER_GRID }
+    .sortedBy(HomeLayoutItem::order)
 
 internal fun HomeLayoutConfig.moveSection(sectionId: HomeSectionId, direction: Int): HomeLayoutConfig {
     if (direction == 0) return this
@@ -278,17 +296,84 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
             TextButton(onClick = { showResetDialog = true }) {
                 Text(stringResource(R.string.home_layout_reset))
             }
+            val screenHeightDp = LocalConfiguration.current.screenHeightDp
+            val dashboardSectionItems = editorState.draft.dashboardSectionItems()
+            val visibleDashboardItems = dashboardSectionItems.filter { it.visible }
+            val hiddenDashboardItems = dashboardSectionItems.filterNot { it.visible }
+            val mainSearchItem = editorState.draft.items.single { it.sectionId == HomeSectionId.MAIN_SEARCH }
+            if (isSmallDeviceForDashboard(screenHeightDp, visibleDashboardItems.size)) {
+                Text(
+                    text = stringResource(R.string.home_layout_small_device_warning),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                )
+            }
             LazyColumn(
                 contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                val orderedItems = editorState.draft.items.sortedWith(compareBy({ it.zone.ordinal }, { it.order }))
-                items(orderedItems.filter { it.visible },
-                    key = { it.sectionId.name }) { item ->
+                // P16 madde 1 — "Global alanlar": Her Şeyi Ara (konum seçimi) ve Dock (sabit).
+                item(key = "section_header_global") {
+                    Text(
+                        text = stringResource(R.string.home_layout_section_global),
+                        style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
+                    )
+                }
+                item(key = "main_search_position") {
+                    MainSearchPositionCard(
+                        item = mainSearchItem,
+                        onZoneSelected = { zone ->
+                            editorState = editorState.copy(draft = editorState.draft.withSearchZone(zone))
+                        },
+                        onVisibilityChange = { visible ->
+                            editorState = editorState.copy(
+                                draft = editorState.draft.withSectionVisibility(HomeSectionId.MAIN_SEARCH, visible),
+                            )
+                        },
+                    )
+                }
+                item(key = "dock_fixed_notice") {
+                    DockFixedNoticeCard()
+                }
+                if (draftDockItems.isNotEmpty()) {
+                    item(key = "dock_editor") {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(draftDockItems, key = { "dock_$it" }) { dockItem ->
+                                DockOrderCard(
+                                    modifier = Modifier.animateItemPlacement(),
+                                    item = dockItem,
+                                    folder = DockPrefs.folderId(dockItem)?.let { id ->
+                                        folders.firstOrNull { it.category.categoryId == id }
+                                    },
+                                    reorderState = dockReorderState,
+                                    onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+                                    onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // P16 madde 1/7 — "Akıllı Ana Ekran bölümleri": yalnız CONTENT zone, FOLDER_GRID hariç.
+                item(key = "section_header_dashboard") {
+                    Text(
+                        text = stringResource(R.string.home_layout_section_dashboard),
+                        style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+                    )
+                }
+                items(visibleDashboardItems, key = { it.sectionId.name }) { item ->
                     EditableHomeSection(
                         modifier = if (reduceMotion) Modifier else Modifier.animateItemPlacement(),
                         item = item,
-                        position = orderedItems.filter { it.visible }.indexOf(item) + 1,
+                        position = visibleDashboardItems.indexOf(item) + 1,
                         reorderState = reorderState,
                         onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
                         onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
@@ -312,20 +397,7 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                         },
                     )
                 }
-                if (orderedItems.any { it.sectionId == HomeSectionId.FOLDER_GRID && it.visible }) {
-                    items(draftFolderIds, key = { "folder_$it" }) { folderId ->
-                        folders.firstOrNull { it.category.categoryId == folderId }?.let { folder ->
-                            FolderOrderCard(
-                                modifier = Modifier.animateItemPlacement(),
-                                folder = folder,
-                                reorderState = folderReorderState,
-                                onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
-                                onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
-                            )
-                        }
-                    }
-                }
-                if (orderedItems.any { it.sectionId == HomeSectionId.ANDROID_WIDGETS && it.visible } && draftWidgetIds.isNotEmpty()) {
+                if (visibleDashboardItems.any { it.sectionId == HomeSectionId.ANDROID_WIDGETS } && draftWidgetIds.isNotEmpty()) {
                     item(key = "widget_editor") {
                         WidgetArea(
                             widgetIds = draftWidgetIds,
@@ -336,34 +408,38 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                         )
                     }
                 }
-                if (orderedItems.any { it.sectionId == HomeSectionId.DOCK && it.visible } && draftDockItems.isNotEmpty()) {
-                    item(key = "dock_editor") {
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            items(draftDockItems, key = { "dock_$it" }) { dockItem ->
-                                DockOrderCard(
-                                    modifier = Modifier.animateItemPlacement(),
-                                    item = dockItem,
-                                    folder = DockPrefs.folderId(dockItem)?.let { id ->
-                                        folders.firstOrNull { it.category.categoryId == id }
-                                    },
-                                    reorderState = dockReorderState,
-                                    onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
-                                    onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
-                                )
-                            }
-                        }
+                if (hiddenDashboardItems.isNotEmpty()) {
+                    item(key = "hidden_header") {
+                        Text(stringResource(R.string.home_layout_hidden_sections), Modifier.padding(16.dp))
                     }
-                }
-                val hiddenItems = orderedItems.filterNot { it.visible }
-                if (hiddenItems.isNotEmpty()) {
-                    item { Text(stringResource(R.string.home_layout_hidden_sections), Modifier.padding(16.dp)) }
-                    items(hiddenItems, key = { "hidden_${it.sectionId.name}" }) { item ->
+                    items(hiddenDashboardItems, key = { "hidden_${it.sectionId.name}" }) { item ->
                         HiddenHomeSection(item) {
                             editorState = editorState.copy(
                                 draft = editorState.draft.withSectionVisibility(item.sectionId, true),
+                            )
+                        }
+                    }
+                }
+
+                // P16 madde 3 — "Klasör Sayfaları": FOLDER_GRID kartı kaldırıldığı için ayrı,
+                // her zaman görünen başlık altında (klasör varsa) yönetilir.
+                if (draftFolderIds.isNotEmpty()) {
+                    item(key = "section_header_folders") {
+                        Text(
+                            text = stringResource(R.string.home_layout_section_folders),
+                            style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+                        )
+                    }
+                    items(draftFolderIds, key = { "folder_$it" }) { folderId ->
+                        folders.firstOrNull { it.category.categoryId == folderId }?.let { folder ->
+                            FolderOrderCard(
+                                modifier = Modifier.animateItemPlacement(),
+                                folder = folder,
+                                reorderState = folderReorderState,
+                                onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
+                                onItemMoved = { haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove) },
                             )
                         }
                     }
@@ -601,6 +677,79 @@ private fun EditableHomeSection(
                 }
             },
         )
+    }
+}
+
+/**
+ * P16 madde 4 — MAIN_SEARCH için tek etkileşim: üstte sabit ya da altta (dock üstünde) sabit
+ * konum seçimi. Sürükle/reorder yerine iki seçenekli `FilterChip` kullanılır çünkü zone'un tek
+ * üyesi olduğu için drag zaten no-op'tur (bkz. HomeLayoutConfig.moveSection).
+ */
+@Composable
+private fun MainSearchPositionCard(
+    item: HomeLayoutItem,
+    onZoneSelected: (HomeLayoutZone) -> Unit,
+    onVisibilityChange: (Boolean) -> Unit,
+) {
+    val name = stringResource(R.string.home_section_main_search)
+    Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)) {
+        ListItem(
+            headlineContent = { Text(name) },
+            supportingContent = { Text(stringResource(R.string.home_layout_main_search_description)) },
+            trailingContent = {
+                IconButton(onClick = { onVisibilityChange(!item.visible) }) {
+                    Icon(
+                        if (item.visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = stringResource(
+                            if (item.visible) R.string.home_layout_hide_section else R.string.home_layout_show_section,
+                            name,
+                        ),
+                    )
+                }
+            },
+        )
+        if (item.visible) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = item.zone == HomeLayoutZone.HEADER,
+                    onClick = { onZoneSelected(HomeLayoutZone.HEADER) },
+                    label = { Text(stringResource(R.string.home_layout_search_position_top)) },
+                )
+                FilterChip(
+                    selected = item.zone == HomeLayoutZone.FOOTER,
+                    onClick = { onZoneSelected(HomeLayoutZone.FOOTER) },
+                    label = { Text(stringResource(R.string.home_layout_search_position_bottom)) },
+                )
+            }
+        }
+    }
+}
+
+/** P16 madde 5 — Dock'un konumu/varlığı sabit olduğunu açıklayan bilgi kartı (etkileşimsiz). */
+@Composable
+private fun DockFixedNoticeCard() {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
+        shape = androidx.compose.material3.MaterialTheme.shapes.medium,
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.Lock, contentDescription = null)
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(stringResource(R.string.home_section_dock), fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = stringResource(R.string.home_layout_dock_description),
+                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
     }
 }
 

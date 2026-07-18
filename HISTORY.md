@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P16 - 2026-07-18 - Editor Dashboard odakli
+
+**Yapilanlar:** Editor 3 bolume ayrildi: Global alanlar (MainSearchPositionCard ust/alt chip + DockFixedNoticeCard bilgi karti), Akilli Ana Ekran bolumleri (CONTENT zone kartlari — mevcut drag+TalkBack pattern'i, FOLDER_GRID karti kaldirildi), Klasor Sayfalari. Kucuk cihaz uyarisi (640dp+6 bolum). Render baglantisi: dashboardContentOrder(config) -> SmartDashboardPage grup siralamasi (flag kapaliyken gorunmez). withSearchZone API. TR/EN 9 string. 17+13 test yesil.
+
+**Bug:** Yok. Build kilidi olmadi.
+
+**Sonraki:** P17 — baslangic sayfasi + klasik mod ayarlari (zincir devam).
+
 ## Dashboard Dongu P15 - 2026-07-18 - HomeLayoutConfig v2 migration
 
 **Yapilanlar:** HomeLayout v2: 10 Dashboard section'i CONTENT zone'una tasindi (MAIN_SEARCH HEADER'da, DOCK FOOTER'da), CURRENT_VERSION=2, order cakismasi duzeltildi (FOLDER_GRID CONTENT sonunda); KEY_CONTENT_ORDER + v1->v2 partition migration (idempotent, bozuk veri guvenli varsayilana), BackupManager homeContentOrder round-trip. 6 yeni + guncellenen testler; hedefli 117 test + TAM SUITE 971 test yesil.

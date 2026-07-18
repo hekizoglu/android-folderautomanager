@@ -93,3 +93,23 @@ data class HomeLayoutConfig(
             HomeLayoutItem(sectionId, sectionId.defaultZone, order, visible)
     }
 }
+
+/**
+ * P16 — editor'de MAIN_SEARCH için tek izin verilen etkileşim: HEADER (üstte sabit) ile FOOTER
+ * (altta, dock üstünde sabit) arasında konum seçimi. MAIN_SEARCH ilgili zone'un TEK üyesi olarak
+ * en başa (order=0) yerleşir; DOCK her zaman FOOTER'ın son sırasındadır (order=Int.MAX_VALUE ile
+ * korunur, bkz. HomeSectionRenderer.homeZoneRenderPlan).
+ */
+fun HomeLayoutConfig.withSearchZone(zone: HomeLayoutZone): HomeLayoutConfig {
+    require(zone == HomeLayoutZone.HEADER || zone == HomeLayoutZone.FOOTER) {
+        "MAIN_SEARCH can only live in HEADER or FOOTER, not $zone"
+    }
+    val current = items.single { it.sectionId == HomeSectionId.MAIN_SEARCH }
+    if (current.zone == zone) return this
+    return copy(items = items.map { item ->
+        when (item.sectionId) {
+            HomeSectionId.MAIN_SEARCH -> item.copy(zone = zone, order = 0)
+            else -> item
+        }
+    })
+}

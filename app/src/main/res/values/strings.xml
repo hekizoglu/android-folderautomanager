@@ -756,6 +756,14 @@
     <string name="home_layout_move_up">Yukarı taşı</string>
     <string name="home_layout_move_down">Aşağı taşı</string>
     <string name="home_layout_move_top">En üste taşı</string>
+    <string name="home_layout_section_global">Global alanlar</string>
+    <string name="home_layout_section_dashboard">Akıllı Ana Ekran bölümleri</string>
+    <string name="home_layout_section_folders">Klasör Sayfaları</string>
+    <string name="home_layout_main_search_description">Her Şeyi Ara çubuğu ana ekranda üstte ya da altta (dock üstünde) sabit durur.</string>
+    <string name="home_layout_search_position_top">Üstte sabit</string>
+    <string name="home_layout_search_position_bottom">Altta sabit</string>
+    <string name="home_layout_dock_description">Dock her zaman en altta sabittir; konumu değiştirilemez ama içeriği yukarıdan düzenlenebilir.</string>
+    <string name="home_layout_small_device_warning">Ekranın küçük olduğu görünüyor — çok sayıda bölüm açık kalırsa Ana Ekran kaydırma gerektirebilir.</string>
     <string name="home_section_clock">Saat</string>
     <string name="home_section_missions_score">Görevler ve puan</string>
     <string name="home_section_main_search">Ana arama</string>

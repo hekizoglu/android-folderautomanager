@@ -137,4 +137,79 @@ class SmartDashboardPageLogicTest {
         val state = emptyState(suggestionsEnabled = true, recentAppsEnabled = true, recentNotificationAppsEnabled = true)
         assertEquals(2, countVisibleSections(state)) // saat + favorites section (tek satır olarak sayılır)
     }
+
+    // P16 — dashboardGroupOrder(): editörden gelen CONTENT sırasına göre reorderable blok
+    // gruplarını (arama+widget / içgörü+ticker / favoriler) sıralar.
+
+    @Test fun `bos contentOrder varsayilan grup sirasini korur`() {
+        assertEquals(
+            listOf(
+                DashboardContentGroup.SEARCH_AND_WIDGETS,
+                DashboardContentGroup.INSIGHTS_AND_TICKER,
+                DashboardContentGroup.FAVORITES,
+            ),
+            dashboardGroupOrder(emptyList()),
+        )
+    }
+
+    @Test fun `contentOrder favorileri one alirsa grup sirasi degisir`() {
+        val order = listOf(
+            com.armutlu.apporganizer.domain.models.HomeSectionId.FAVORITES,
+            com.armutlu.apporganizer.domain.models.HomeSectionId.GOOGLE_SEARCH,
+            com.armutlu.apporganizer.domain.models.HomeSectionId.ASSISTANT_INSIGHTS,
+        )
+        assertEquals(
+            listOf(
+                DashboardContentGroup.FAVORITES,
+                DashboardContentGroup.SEARCH_AND_WIDGETS,
+                DashboardContentGroup.INSIGHTS_AND_TICKER,
+            ),
+            dashboardGroupOrder(order),
+        )
+    }
+
+    @Test fun `contentOrder temsilci icermeyen gruplar sona duser`() {
+        val order = listOf(com.armutlu.apporganizer.domain.models.HomeSectionId.FAVORITES)
+        assertEquals(
+            listOf(
+                DashboardContentGroup.FAVORITES,
+                DashboardContentGroup.SEARCH_AND_WIDGETS,
+                DashboardContentGroup.INSIGHTS_AND_TICKER,
+            ),
+            dashboardGroupOrder(order),
+        )
+    }
+
+    // P16 — dashboardContentOrder(): HomeLayoutConfig'ten CONTENT zone sırasını (FOLDER_GRID
+    // hariç, yalnız görünür section'lar) türetir.
+
+    @Test fun `dashboardContentOrder default config icin FOLDER_GRID haric gorunur CONTENT sirasini doner`() {
+        val order = dashboardContentOrder(com.armutlu.apporganizer.domain.models.HomeLayoutConfig.DEFAULT)
+        assertEquals(false, order.contains(com.armutlu.apporganizer.domain.models.HomeSectionId.FOLDER_GRID))
+        assertEquals(
+            listOf(
+                com.armutlu.apporganizer.domain.models.HomeSectionId.CLOCK,
+                com.armutlu.apporganizer.domain.models.HomeSectionId.MISSIONS_AND_SCORE,
+                com.armutlu.apporganizer.domain.models.HomeSectionId.FAVORITES,
+                com.armutlu.apporganizer.domain.models.HomeSectionId.SUGGESTIONS,
+                com.armutlu.apporganizer.domain.models.HomeSectionId.RECENT_NOTIFICATIONS,
+                com.armutlu.apporganizer.domain.models.HomeSectionId.RECENT_APPS,
+            ),
+            order,
+        )
+    }
+
+    // P16 madde 10 — küçük cihaz kapasite uyarısı.
+
+    @Test fun `kucuk ekran ve cok section aciksa uyari tetiklenir`() {
+        assertEquals(true, isSmallDeviceForDashboard(screenHeightDp = 600, visibleContentSectionCount = 6))
+    }
+
+    @Test fun `buyuk ekranda uyari tetiklenmez`() {
+        assertEquals(false, isSmallDeviceForDashboard(screenHeightDp = 900, visibleContentSectionCount = 10))
+    }
+
+    @Test fun `kucuk ekran ama az section aciksa uyari tetiklenmez`() {
+        assertEquals(false, isSmallDeviceForDashboard(screenHeightDp = 600, visibleContentSectionCount = 2))
+    }
 }
