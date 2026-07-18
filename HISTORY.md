@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P08 - 2026-07-18 - GlobalSearchHost
+
+**Yapilanlar:** GlobalSearchHost (sayfa bagimsiz arama bileseni — HomeAppSearchBar/FolderSearchBar delegasyonu) + GlobalSearchUiState saf turev fonksiyonu (active/overlayVisible/fullscreenVisible). State sahipligi LauncherViewModel'de kaldi (cift state yok); HEADER/FOOTER, tam ekran acilis, 4 kaynak, 30s klasor arama temizligi birebir korundu. 7 yeni test + tum arama/regresyon testleri yesil.
+
+**Bug:** Yok. Ortam: 13. build kilidi SOP ile cozuldu. P09 sozlesmesi dokumante: FullScreenSearchOverlayV2 fillMaxSize/Box-vs-Column kisiti nedeniyle host'a tasinamadi — P09'da HomeShell'e search-overlay slotu gerekebilir.
+
+**Sonraki:** P09 — arama sonuclarini global overlay'e tasima (zincir devam).
+
 ## Dashboard Dongu P07 - 2026-07-18 - Dashboard dikey alan + swipe-up
 
 **Yapilanlar:** Kritik bulgu: mevcut nestedScroll zinciri (child-first) roadmap kuralini ZATEN sagliyor — ic scroll oncelikli, sinirda kalan hareket swipe-up'a akar; ek connection gerekmedi. Asil is: DashboardLayoutPolicy (COMFORTABLE/COMPACT/ULTRA_COMPACT — 640/700dp + section sayisi esikleri) ile scroll ihtiyacini azaltma + countVisibleSections; WidgetArea touch tuketimi belgelendi. 8+6 yeni test, 15 launcher test sinifi yesil.

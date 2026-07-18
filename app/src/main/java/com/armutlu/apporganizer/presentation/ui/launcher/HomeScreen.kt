@@ -351,6 +351,11 @@ fun HomeScreen(
     var categoryPickerApp by remember { mutableStateOf<com.armutlu.apporganizer.domain.models.AppInfo?>(null) }
     var folderContextMenu by remember { mutableStateOf<AppFolder?>(null) }
     var homeLongPressOpen by remember { mutableStateOf(false) }
+    // Döngü P08 — fullscreen arama açık/kapalı bayrağı tek gerçek kaynak olarak burada kalır
+    // (davranış DEĞİŞMEDİ — eskiden de HomeScreen'in local `rememberSaveable` state'iydi).
+    // GlobalSearchHost bu değeri okur ve arama çubuğuna tıklanınca `onFullScreenSearchOpenChanged`
+    // ile günceller; overlay'in kendisi (FullScreenSearchOverlayV2) hâlâ HomeShell'in `overlays`
+    // (Box) slotunda, bu değere göre render edilir — mutlak konumlandırma bozulmaz.
     var fullScreenSearchOpen by rememberSaveable { mutableStateOf(false) }
     var quickWheelVisible by remember { mutableStateOf(false) }
     var quickWheelX by remember { mutableStateOf(0f) }
@@ -611,47 +616,39 @@ fun HomeScreen(
         // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
         // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
         // BOTTOM = dock'un hemen üstü (tek elle kullanım — D246).
-        // Döngü P03: HomeShell'in topSearch/bottomSearch slotlarına verilebilmesi için
-        // artık HomeShell çağrısından ÖNCE tanımlanıyor (eskiden pager içeriğinin başındaydı).
+        // Döngü P08 — searchBarSection local lambda GlobalSearchHost'a taşındı (roadmap satır
+        // 805-866): arama artık sayfa bağımsız tek bir composable/host üzerinden besleniyor.
+        // FullScreenSearchOverlayV2 kendi kökünde fillMaxSize Box olduğu için (bkz.
+        // GlobalSearchHost.kt dosya başı NOT'u) Column tabanlı bu slotta DEĞİL, HomeShell'in
+        // `overlays` (Box) slotunda render edilmeye devam eder — sadece açık/kapalı state artık
+        // host ile HomeScreen arasında `fullScreenSearchOpen`/`onFullScreenSearchOpenChanged`
+        // üzerinden senkronize ediliyor (tek gerçek kaynak: HomeScreen'in `fullScreenSearchOpen`).
         val searchBarSection: @Composable () -> Unit = {
-            if (homeAppSearchEnabled) {
-                HomeAppSearchBar(
-                    allApps = allApps,
-                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-                    // Klasör grubu "Klasor ve Kategori Aramasi" toggle'ına bağlı kalır
-                    folders = if (homeSearchEnabled) folders else emptyList(),
-                    folderCustomNames = customFolderNames,
-                    folderCustomEmojis = customFolderEmojis,
-                    onFolderClick = { folder ->
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onNavigateToFolder(folder)
-                    },
-                    searchResults = searchResults,
-                    onQueryChange = viewModel::setSearchQuery,
-                    onEnableContactsSource = viewModel::enableContactsSearchSource,
-                    onEnableFilesSource = viewModel::enableFilesSearchSource,
-                    filesIndexState = filesIndexState,
-                    fullScreenEnabled = fullscreenSearchEnabled,
-                    onOpenFullScreen = { fullScreenSearchOpen = true },
-                    homeResumeTrigger = homeResumeTrigger,
-                    // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
-                    resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            } else if (homeSearchEnabled) {
-                // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
-                FolderSearchBar(
-                    query = folderSearchQuery,
-                    onQueryChange = { folderSearchQuery = it },
-                    onClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
-                    countdown = folderSearchCountdown,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            }
+            GlobalSearchHost(
+                homeAppSearchEnabled = homeAppSearchEnabled,
+                homeSearchEnabled = homeSearchEnabled,
+                fullscreenSearchEnabled = fullscreenSearchEnabled,
+                allApps = allApps,
+                folders = folders,
+                folderCustomNames = customFolderNames,
+                folderCustomEmojis = customFolderEmojis,
+                searchQuery = searchQuery,
+                searchResults = searchResults,
+                filesIndexState = filesIndexState,
+                homeResumeTrigger = homeResumeTrigger,
+                resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
+                onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                onNavigateToFolder = onNavigateToFolder,
+                onQueryChange = viewModel::setSearchQuery,
+                onEnableContactsSource = viewModel::enableContactsSearchSource,
+                onEnableFilesSource = viewModel::enableFilesSearchSource,
+                folderSearchQuery = folderSearchQuery,
+                onFolderSearchQueryChange = { folderSearchQuery = it },
+                onFolderSearchClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
+                folderSearchCountdown = folderSearchCountdown,
+                fullScreenSearchOpen = fullScreenSearchOpen,
+                onFullScreenSearchOpenChanged = { fullScreenSearchOpen = it },
+            )
         }
 
         // Döngü P06 — compactClock ve tickerMutedUntilState `pager` slotunun HEM eski (klasör
