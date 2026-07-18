@@ -1067,7 +1067,7 @@ Search/modal açık → kapatma komutu gönder
 
 **Bağımlılıklar:** P02, P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P12 — commit: 66e9117 — tarih: 2026-07-18 — Not: HomeCommandPolicy sıralaması: drawer > search > modal > GoToStartPage (StartPageMode) > çift basış All Apps (500ms). Ayar UI'sı P17'de. Önceki oturum kesintisinde P12 hiç başlamamıştı — attempt 2 ile kurtarıldı.
 
 ---
 
