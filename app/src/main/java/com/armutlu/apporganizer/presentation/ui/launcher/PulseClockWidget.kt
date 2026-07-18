@@ -1,13 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.collectAsState
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,8 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -92,19 +88,13 @@ internal fun PulseClockWidget(
     LaunchedEffect(Unit) { viewModel.refreshIfStale() }
 
     var clockStyle by remember { mutableStateOf(AppPrefs.getClockStyle(context)) }
-    var scoreVisible by remember { mutableStateOf(AppPrefs.isHomeScoreVisible(context)) }
     var insightVisible by remember { mutableStateOf(AppPrefs.isHomeInsightVisible(context)) }
-    var usageChartVisible by remember { mutableStateOf(AppPrefs.isHomeUsageChartVisible(context)) }
-    var missionsEnabled by remember { mutableStateOf(AppPrefs.isMissionsEnabled(context)) }
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 AppPrefs.KEY_CLOCK_STYLE -> clockStyle = AppPrefs.getClockStyle(context)
-                AppPrefs.KEY_HOME_SCORE_VISIBLE -> scoreVisible = AppPrefs.isHomeScoreVisible(context)
                 AppPrefs.KEY_HOME_INSIGHT_VISIBLE -> insightVisible = AppPrefs.isHomeInsightVisible(context)
-                AppPrefs.KEY_HOME_USAGE_CHART_VISIBLE -> usageChartVisible = AppPrefs.isHomeUsageChartVisible(context)
-                AppPrefs.KEY_MISSIONS_ENABLED -> missionsEnabled = AppPrefs.isMissionsEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -131,10 +121,7 @@ internal fun PulseClockWidget(
             dateFormat = dateFormat,
             compact = compact,
             glass = clockStyle == AppPrefs.CLOCK_STYLE_GLASS,
-            scoreVisible = scoreVisible,
             insightVisible = insightVisible,
-            usageChartVisible = usageChartVisible,
-            missionsEnabled = missionsEnabled,
             uiState = uiState,
             onOpenWeeklyReport = onOpenWeeklyReport,
             onOpenScoreDetails = onOpenScoreDetails,
@@ -185,10 +172,7 @@ private fun PulseCard(
     dateFormat: SimpleDateFormat,
     compact: Boolean,
     glass: Boolean,
-    scoreVisible: Boolean,
     insightVisible: Boolean,
-    usageChartVisible: Boolean,
-    missionsEnabled: Boolean,
     uiState: PulseClockViewModel.PulseClockUiState,
     onOpenWeeklyReport: () -> Unit,
     onOpenScoreDetails: () -> Unit,
@@ -281,13 +265,11 @@ private fun PulseCard(
                 }
             }
 
-            // D03: Skor halkası (PulseScoreRing) ana ekran düzeninden kaldırıldı — skorun
+            // D03/U01: Skor halkası (PulseScoreRing) ana ekran düzeninden kaldırıldı — skorun
             // birincil ve tek gösterimi artık DigitalLifeCard'dır (HomeScreen). PulseClockWidget
             // artık yalnız saat/tarih/hava/kısa içgörü gösterir; ham skor burada tekrarlanmaz.
-            // `scoreVisible`/`usageChartVisible`/`missionsEnabled` parametreleri çağrı yerinde hâlâ
-            // hesaplanıyor (Settings toggle'ları geçerliliğini korusun diye) ama burada artık
-            // kullanılmıyor — derleyici "unused parameter" uyarısı verir, hata vermez. Ring'in
-            // kendisi silinmedi, bkz. @Deprecated PulseScoreRing.
+            // scoreVisible/usageChartVisible/missionsEnabled parametreleri Döngü U01'de silindi
+            // (kullanılmayan parametre temizliği — PulseScoreRing zaten kaldırılmıştı).
         }
     }
 }
@@ -383,172 +365,6 @@ private fun WeatherSummary(
     }
 }
 
-/**
- * D03: Ana ekran düzeninde artık ÇAĞRILMIYOR — skorun birincil gösterimi DigitalLifeCard'a
- * taşındı (bkz. ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md Döngü D03). Kod
- * kasıtlı olarak SİLİNMEDİ; hiçbir çağrı kalmadığı bir sonraki temizlik döngüsünde
- * doğrulanınca kaldırılacak.
- */
-@Deprecated("Ana ekranda artık kullanılmıyor — skor DigitalLifeCard'da gösterilir (D03).")
-@Composable
-private fun PulseScoreRing(
-    score: Int,
-    delta: Int?,
-    weeklyScreenTimeMinutes: Int?,
-    hourlyUsageMinutes: List<Int>?,
-    personalityLabel: String?,
-    compact: Boolean,
-    onClick: () -> Unit,
-) {
-    val context = LocalContext.current
-    val ringSize = if (compact) 42.dp else 52.dp
-    val stroke = 5.dp
-    val animatedProgress by animateFloatAsState(
-        targetValue = score / 100f,
-        animationSpec = tween(durationMillis = 800),
-        label = "pulse_score_ring_progress",
-    )
-    val ringColor = pulseScoreColor(score)
-    val deltaText = when {
-        delta == null -> null
-        delta > 0 -> "+$delta"
-        delta < 0 -> "$delta"
-        else -> null
-    }
-    val contentDesc = when {
-        delta == null -> context.getString(R.string.pulse_score_content_desc_no_baseline, score)
-        delta == 0 -> context.getString(R.string.pulse_score_content_desc_flat, score)
-        else -> context.getString(
-            R.string.pulse_score_content_desc,
-            score,
-            kotlin.math.abs(delta),
-            if (delta > 0) context.getString(R.string.pulse_score_delta_up) else context.getString(R.string.pulse_score_delta_down),
-        )
-    }
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(48.dp) // >= 48dp dokunma hedefi (erişilebilirlik)
-                .clickable(onClick = onClick)
-                .semantics { contentDescription = contentDesc },
-        ) {
-            Canvas(modifier = Modifier.size(ringSize)) {
-                val strokeWidth = stroke.toPx()
-                drawArc(
-                    color = Color.White.copy(alpha = 0.18f),
-                    startAngle = -90f,
-                    sweepAngle = 360f,
-                    useCenter = false,
-                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                )
-                drawArc(
-                    color = ringColor,
-                    startAngle = -90f,
-                    sweepAngle = 360f * animatedProgress,
-                    useCenter = false,
-                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                )
-            }
-            Text(
-                text = "$score",
-                color = Color.White,
-                fontSize = if (compact) 13.sp else 15.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
-        if (deltaText != null) {
-            Spacer(Modifier.height(2.dp))
-            val arrowColor = if (delta!! > 0) Color(0xFF69F0AE) else Color(0xFFFF8A80)
-            Text(
-                text = "$deltaText ${if (delta > 0) "↗" else "↘"}",
-                color = arrowColor,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-            )
-        }
-        // Mini açıklama — skorun ne anlama geldiği ilk bakışta belli olsun (D245)
-        if (!compact) {
-            Spacer(Modifier.height(1.dp))
-            val screenTimeText = weeklyScreenTimeMinutes
-                ?.takeIf { it > 0 }
-                ?.let { minutes ->
-                    if (minutes >= 60) {
-                        stringResource(R.string.pulse_score_screen_time_hours, minutes / 60, minutes % 60)
-                    } else {
-                        stringResource(R.string.pulse_score_screen_time_minutes, minutes)
-                    }
-                }
-            Text(
-                text = listOfNotNull(stringResource(R.string.pulse_score_ring_caption), screenTimeText).joinToString(" · "),
-                color = Color.White.copy(alpha = 0.45f),
-                fontSize = 9.sp,
-            )
-            // 24 saatlik mini kullanım grafiği — Ayarlar'dan kapatılabilir (KEY_HOME_USAGE_CHART_VISIBLE)
-            if (hourlyUsageMinutes != null && hourlyUsageMinutes.any { it > 0 }) {
-                Spacer(Modifier.height(3.dp))
-                HourlyUsageSparkline(
-                    minutes = hourlyUsageMinutes,
-                    barColor = pulseScoreColor(score),
-                )
-            }
-            // D257: dijital kişilik etiketi — Ayarlar > Görevler kapalıyken gizli (compact'ta da yok)
-            if (!personalityLabel.isNullOrBlank()) {
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = personalityLabel,
-                    color = Color.White.copy(alpha = 0.45f),
-                    fontSize = 9.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
-}
-
-/**
- * 24 kovalı mini çubuk grafik — son 24 saatin ekran süresi, sağdaki çubuk şu anki saat.
- * Skor halkasının genişliğine sığacak kadar küçük; dokunma hedefi yok, salt görsel.
- */
-@Composable
-private fun HourlyUsageSparkline(
-    minutes: List<Int>,
-    barColor: Color,
-    width: androidx.compose.ui.unit.Dp = 52.dp,
-    height: androidx.compose.ui.unit.Dp = 12.dp,
-) {
-    val context = LocalContext.current
-    val maxMinutes = (minutes.maxOrNull() ?: 0).coerceAtLeast(1)
-    val chartDesc = context.getString(R.string.pulse_usage_chart_content_desc)
-    Canvas(
-        modifier = Modifier
-            .width(width)
-            .height(height)
-            .semantics { contentDescription = chartDesc },
-    ) {
-        val gap = 1.dp.toPx()
-        val barWidth = (size.width - gap * (minutes.size - 1)) / minutes.size
-        minutes.forEachIndexed { index, value ->
-            val barHeight = (size.height * value / maxMinutes).coerceAtLeast(1.5.dp.toPx())
-            drawRoundRect(
-                color = if (value > 0) barColor.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.20f),
-                topLeft = androidx.compose.ui.geometry.Offset(
-                    x = index * (barWidth + gap),
-                    y = size.height - barHeight,
-                ),
-                size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(barWidth / 2f),
-            )
-        }
-    }
-}
-
-/** Skor renkleri sadece bilgilendirici — anlam yalnızca renkle taşınmaz (sayı + ok/metin de var). */
-private fun pulseScoreColor(score: Int): Color = when {
-    score >= 80 -> Color(0xFF26C6DA) // primary/teal ailesi
-    score >= 60 -> Color(0xFF4DD0E1)
-    score >= 40 -> Color(0xFFFFB74D) // amber
-    else -> Color(0xFFFF8A80) // coral
-}
+// D03: PulseScoreRing/HourlyUsageSparkline/pulseScoreColor kaldırıldı (Döngü U01) — skorun
+// birincil gösterimi DigitalLifeCard'a taşındığından beri (bkz. ANA_EKRAN_AKILLI_NABIZ_GOREVLER_
+// DIJITAL_YASAM_ROADMAP.md Döngü D03) hiçbir çağrı kalmamıştı; grep ile doğrulandı.

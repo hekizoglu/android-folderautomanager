@@ -13,7 +13,6 @@ import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -147,33 +146,6 @@ class MissionsRepository @Inject constructor(
     }
 
     suspend fun getTotalStars(): Int = missionHistoryDao.getTotalStars()
-
-    suspend fun buildTaskEventInput(epochDay: Long, epochWeek: Long): MissionEngine.TaskEventInput {
-        val zone = ZoneId.systemDefault()
-        val dayStart = LocalDate.ofEpochDay(epochDay).atStartOfDay(zone).toInstant().toEpochMilli()
-        val dayEnd = LocalDate.ofEpochDay(epochDay + 1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
-        val weekStartDay = epochWeek * 7
-        val weekStart = LocalDate.ofEpochDay(weekStartDay).atStartOfDay(zone).toInstant().toEpochMilli()
-        val weekEnd = LocalDate.ofEpochDay(weekStartDay + 7).atStartOfDay(zone).toInstant().toEpochMilli() - 1
-
-        return MissionEngine.TaskEventInput(
-            positiveEventsToday = taskScoreEventDao.countEventsBetween(dayStart, dayEnd, positiveOnly = true),
-            positiveEventsThisWeek = taskScoreEventDao.countEventsBetween(weekStart, weekEnd, positiveOnly = true),
-            classificationActionsToday = taskScoreEventDao.countEventsBetweenByKeys(
-                dayStart,
-                dayEnd,
-                listOf(
-                    TaskScoreManager.EventType.ClassificationApproved.eventKey,
-                    TaskScoreManager.EventType.ClassificationCorrected.eventKey,
-                )
-            ),
-            notificationReportViewedToday = taskScoreEventDao.countEventsBetweenByKeys(
-                dayStart,
-                dayEnd,
-                listOf(TaskScoreManager.EventType.NotificationReportViewed.eventKey),
-            ) > 0,
-        )
-    }
 
     /**
      * Dongu M01 — DUAL WRITE: uretilen gorev seti (missions) verilen donem sinirlariyla

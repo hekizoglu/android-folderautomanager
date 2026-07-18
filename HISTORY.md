@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu U01 - 2026-07-18 - LauncherViewModel sadelestirme
+
+**Yapilanlar:** Ticker compose+rank+filtre mantigi HomeTickerComposer use-case'ine tasindi (VM sadece combine+delege); olu kod silindi: PulseScoreRing + HourlyUsageSparkline + pulseScoreColor, PulseCard'in kullanilmayan 3 parametresi, MissionsRepository.buildTaskEventInput. LauncherViewModel 1305->1055 satir (-%19). TAM suite: 785 test / 0 hata.
+
+**Bug:** Yok. Mimari bulgu (dokunulmadi): koordinatorun ticker state'i hicbir UI'ya bagli degil — HomeScreen VM akisini tuketiyor; birlestirme sonraki donguye not edildi.
+
+**Sonraki:** U02 — gizlilik guvenli telemetri (zincir devam).
+
 ## Akilli Nabiz Dongu U00 - 2026-07-18 - Kart yerlesim birlestirme
 
 **Yapilanlar:** HomeIntelligenceCardsRow: Gorevler+Dijital Yasam kartlari tek duzen bileseninde — genis ekranda weight(1f) esit yan yana, dar ekran (<360dp) veya buyuk fontta (>=1.3) alt alta, tek kart tam genislik, ikisi kapaliysa satir tamamen gizli (klasorlere alan); tablet 640dp max ortalanir; bosluklar tek sabit setinde. Kart ic tasarimlari degismedi. 39 test yesil.

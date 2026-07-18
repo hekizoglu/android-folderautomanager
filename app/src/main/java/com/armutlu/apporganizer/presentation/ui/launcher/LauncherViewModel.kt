@@ -14,7 +14,6 @@ import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.RefreshReason
 import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
-import com.armutlu.apporganizer.domain.home.TickerAction
 import com.armutlu.apporganizer.domain.home.TickerActionRouter
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
@@ -29,8 +28,6 @@ import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
-import com.armutlu.apporganizer.utils.SuggestionCandidate
-import com.armutlu.apporganizer.utils.SuggestionChannel
 import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WidgetHostManager
@@ -994,64 +991,13 @@ class LauncherViewModel @Inject constructor(
         return screen.copy(route = resolveTickerRoute(screen.route) ?: screen.route)
     }
 
-    /** Haftalik Rapor (Wrapped) teaser haberi — hafta sonu ve pazartesi gorunur, dokununca rapor acilir. */
-    private fun buildWrappedTicker(): List<SmartTickerItem> = runCatching {
-        val ctx = getApplication<Application>()
-        if (!AppPrefs.isWrappedEnabled(ctx)) return@runCatching emptyList()
-        val day = java.time.LocalDate.now().dayOfWeek
-        val weekendOrMonday = day == java.time.DayOfWeek.SATURDAY ||
-            day == java.time.DayOfWeek.SUNDAY || day == java.time.DayOfWeek.MONDAY
-        if (!weekendOrMonday) return@runCatching emptyList()
-        listOf(
-            SmartTickerItem(
-                id = "wrapped_teaser",
-                type = SmartTickerType.WEEKLY_REPORT,
-                title = "Haftalık raporun hazır",
-                subtitle = "Skorunu ve rozetlerini gör",
-                icon = "🎁",
-                priority = 60,
-                createdAt = System.currentTimeMillis(),
-                action = TickerAction.OpenWeeklyReport,
-                suggestionKey = "wrapped_teaser",
-            )
-        )
-    }.getOrDefault(emptyList())
-
-    /** Arama istatistigi haberi — SearchStatsPrefs anonim agregatlarindan uretilir; 5+ arama olunca gorunur. */
-    private fun buildSearchStatsTicker(): List<SmartTickerItem> = runCatching {
-        val ctx = getApplication<Application>()
-        if (!AppPrefs.isSearchStatsEnabled(ctx)) return@runCatching emptyList()
-        val s = com.armutlu.apporganizer.utils.SearchStatsPrefs.getSummary(ctx)
-        if (s.totalSearches < 5) return@runCatching emptyList()
-        val title: String
-        val subtitle: String
-        if (s.totalClicks > 0) {
-            val firstPct = s.firstResultClicks * 100 / s.totalClicks
-            title = "${s.totalSearches} arama yaptın"
-            subtitle = "%$firstPct ilk sonuçta buldu — detay için dokun"
-        } else {
-            title = "${s.totalSearches} arama yaptın"
-            subtitle = "İstatistikler için dokun"
-        }
-        listOf(
-            SmartTickerItem(
-                id = "search_stats_summary",
-                type = SmartTickerType.CONTEXTUAL_SUGGESTION,
-                title = title,
-                subtitle = subtitle,
-                icon = "🔎",
-                priority = 20,
-                createdAt = System.currentTimeMillis(),
-                action = TickerAction.OpenSearchStats,
-                suggestionKey = "search_stats_summary",
-            )
-        )
-    }.getOrDefault(emptyList())
-
-    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + ipucu
-    // (TickerComposer, D227 çeşitlilik). MissionPulseTickerFactory (T03) bu akışa henüz
-    // bağlanmadı — RealSmartTickerSource/HomeIntelligenceCoordinator üzerinden ayrı çalışıyor
-    // (bkz. MissionPulseTickerFactory.kt dosya başı notu, döngüsel bağımlılık nedeniyle).
+    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + ipucu.
+    // Döngü U01: snapshot inşası, TickerComposer/TickerRanker çağrısı, tür/hassasiyet/dismiss
+    // filtreleri ve ekstra üreticiler (arama istatistiği/Wrapped) [HomeTickerComposer] use-case'ine
+    // taşındı — ViewModel burada yalnızca kaynak flow'ları combine edip ona devreder.
+    // MissionPulseTickerFactory (T03) bu akışa henüz bağlanmadı — RealSmartTickerSource/
+    // HomeIntelligenceCoordinator üzerinden ayrı çalışıyor (bkz. MissionPulseTickerFactory.kt
+    // dosya başı notu, döngüsel bağımlılık nedeniyle).
     // Döngü T04: SmartTickerItem doğrudan UI'ya taşınır (T01 köprüsü kaldırıldı) — dokunma hedefi
     // [resolveTickerTarget] ile, dismiss/hideType [dismissTickerItem]/[hideTickerType] ile çözülür.
     // kotlinx.coroutines combine() en fazla 5 flow'u tipli overload'la destekler; T05'in
@@ -1068,112 +1014,17 @@ class LauncherViewModel @Inject constructor(
         hiddenTypesAndPrefsRevision,
     ) { folderList, cards, badges, dismissed, hiddenTypesAndRevision ->
         val (hiddenTypes, _) = hiddenTypesAndRevision
-        val folderSnapshots = folderList.map { f ->
-            com.armutlu.apporganizer.utils.FolderSnapshot(
-                categoryId = f.category.categoryId,
-                categoryName = f.category.categoryName,
-                emoji = f.category.iconEmoji,
-                appCount = f.apps.size,
-            )
-        }
-        val appSnapshots = folderList.flatMap { it.apps }.map { a ->
-            com.armutlu.apporganizer.utils.AppSnapshot(
-                packageName = a.packageName,
-                appName = a.appName,
-                usageCount = a.usageCount,
-                lastUsedTimestamp = a.lastUsedTimestamp,
-            )
-        }
-        val insightSnapshots = cards.map { card ->
-            com.armutlu.apporganizer.utils.InsightSnapshot(
-                id = card.id,
-                message = card.message,
-                categoryId = card.categoryId,
-                packageName = card.packageName,
-            )
-        }
-        val ctx = getApplication<Application>()
-        val showSystemApps = AppPrefs.isShowSystemApps(ctx)
-        // Dusuk guvenli otomatik kategorileme uyarisi (K3, Dongu 227, Fable danismanligi) —
-        // getConfidence() mevcuttu ama hicbir UX'e baglanmamisti. Esik: 60 altinda "belirsiz" sayilir.
-        val lowConfidenceCount = folderList.sumOf { f ->
-            f.apps.count { app ->
-                (showSystemApps || !app.isSystemApp) && classifier.isLowConfidence(app, f.category.categoryId)
-            }
-        }
-        val totalNotif = badges.values.sum()
-
-        // Dijital yasam skoru ticker'dan KALDIRILDI (Dongu D00, P0 2.1) — TickerComposer artik
-        // skor hesaplamiyor. Skor ayri DigitalLifeCard'da homePulseSummary StateFlow'undan
-        // (HomeIntelligenceCoordinator -> DigitalPulseRepository) gosteriliyor (Dongu D02).
-        val historyStore = SharedPrefsSuggestionHistoryStore(ctx)
-        val nowForCompose = System.currentTimeMillis()
-        val rawComposed = com.armutlu.apporganizer.utils.TickerComposer.compose(
-            folders = folderSnapshots,
-            apps = appSnapshots,
-            badgeTotal = totalNotif,
-            insights = insightSnapshots,
-            lowConfidenceCount = lowConfidenceCount,
-            nowMillis = nowForCompose,
+        com.armutlu.apporganizer.domain.home.HomeTickerComposer.compose(
+            context = getApplication(),
+            classifier = classifier,
+            input = com.armutlu.apporganizer.domain.home.HomeTickerComposer.Input(
+                folders = folderList,
+                insightCards = cards,
+                badgeCounts = badges,
+                dismissedKeys = dismissed,
+                hiddenTickerTypes = hiddenTypes,
+            ),
         )
-        // Döngü T02: TickerRanker en fazla 3 öğe + tür kotası uygular (roadmap 2.7). Bastırma
-        // (dismiss/çapraz-kanal cooldown) hâlâ mevcut SuggestionCoordinator üzerinden yapılır —
-        // paralel bir history deposu eklenmedi (roadmap notu, RealSmartTickerSource ile aynı desen).
-        val composed = com.armutlu.apporganizer.domain.home.TickerRanker.rank(
-            candidates = rawComposed,
-            now = nowForCompose,
-            isSuppressed = isSuppressed@{ spec ->
-                val key = spec.suggestionKey ?: return@isSuppressed false
-                !SuggestionCoordinator.canShow(
-                    candidate = SuggestionCandidate(
-                        dedupeKey = key,
-                        highValue = key == "notification_summary",
-                        timeSensitive = key == "notification_summary" || key == "low_confidence_review",
-                    ),
-                    channel = SuggestionChannel.TICKER,
-                    store = historyStore,
-                    nowMillis = nowForCompose,
-                )
-            },
-        ).map { spec ->
-            val key = spec.suggestionKey
-            if (key != null) {
-                SuggestionCoordinator.recordShown(
-                    candidate = SuggestionCandidate(
-                        dedupeKey = key,
-                        highValue = key == "notification_summary",
-                        timeSensitive = key == "notification_summary" || key == "low_confidence_review",
-                    ),
-                    channel = SuggestionChannel.TICKER,
-                    store = historyStore,
-                    nowMillis = System.currentTimeMillis(),
-                )
-            }
-            spec
-        } + buildSearchStatsTicker() + buildWrappedTicker()
-
-        // İçerik bazlı bastırma (roadmap T04 "Bu tür bilgileri gösterme") — dismissed'ten ÖNCE
-        // uygulanır, tür kalıcı olarak gizlenmişse tekil dismiss listesine hiç girmez.
-        val notHiddenType = composed.filterNot { it.type.name in hiddenTypes }
-        // T05 (Akıllı Nabız ayarları) — toplu içerik-türü ayarları AppPrefs.isSmartTickerTypeVisible
-        // ile AND edilir; T04'ün tekil "bu türü gösterme" kapatmasıyla aynı sonuca (öğe hiç
-        // üretilmemiş gibi davranır) varır ama ayrı bir tercih kümesidir.
-        val notHiddenByGroup = notHiddenType.filter {
-            AppPrefs.isSmartTickerTypeVisible(ctx, it.type.name)
-        }
-        // T05 — "Hassas bilgileri göster" kapalıyken sensitive=true işaretli öğeler (ör. aktif
-        // bildirim sayısı) şeritte hiç görünmez; varsayılan kapalı (roadmap mock satır 1868).
-        val notSensitive = if (AppPrefs.isTickerSensitiveVisible(ctx)) {
-            notHiddenByGroup
-        } else {
-            notHiddenByGroup.filterNot { it.sensitive }
-        }
-        val visible = notSensitive.filterNot { it.dedupeKey in dismissed }
-        // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
-        // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
-        // notSensitive kullanılır (notHiddenType değil) — aksi halde tür/hassas-bilgi ayarıyla
-        // kapatılmış öğeler dismiss-reset sırasında yanlışlıkla geri gelirdi.
-        if (visible.isEmpty()) notSensitive else visible
         // WhileSubscribed: ticker yalnizca HomeScreen gorunurken hesaplanir; initial emptyList
         // HomeTickerRow'da erken-donus ile guvenli — cold start yuku azaltildi (D234).
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
