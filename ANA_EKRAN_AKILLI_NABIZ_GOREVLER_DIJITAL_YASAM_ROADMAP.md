@@ -2050,7 +2050,7 @@ Gönderilmesi yasak alanlar:
 
 **Bağımlılıklar:** M07, D02, T04; telemetri altyapısı.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü U02 — commit: 052dc77 — tarih: 2026-07-18 — Not: Mevcut TelemetryEvent sealed API'si genişletildi (yeni altyapı yok). mission_completed isim çakışması → mission_card_*; HomeMissionType.NONE (başlıktan tür türetme sızıntı riski); completed/failed UI tetiği sonraki döngü adayı. Consent fail-closed.
 
 ---
 
