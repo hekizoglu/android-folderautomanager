@@ -1985,7 +1985,7 @@ val homeIntelligence: StateFlow<HomeIntelligenceUiState>
 
 **Bağımlılıklar:** H02, T03, U00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü U01 — commit: ebf308f — tarih: 2026-07-18 — Not: HomeTickerComposer use-case'i; VM 1305→1055 satır. Mimari bulgu: koordinatörün ticker state'i UI'ya bağlı değil (HomeScreen VM akışını tüketiyor) — birleştirme ayrı döngü adayı.
 
 ---
 
