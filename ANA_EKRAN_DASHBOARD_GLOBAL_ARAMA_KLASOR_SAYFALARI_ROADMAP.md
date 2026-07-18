@@ -1233,7 +1233,7 @@ const val KEY_CONTENT_ORDER = "content_order"
 
 **Bağımlılıklar:** P06.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P15 — commit: dd0197a — tarih: 2026-07-18 — Not: v2 şeması (10 section CONTENT zone'a), idempotent v1→v2 partition migration, backup round-trip. Tam suite 971 test yeşil. HomeScreen.homeZonePlan hâlâ tüketilmiyor — P16 render bağlantısını yapacak.
 
 ---
 
