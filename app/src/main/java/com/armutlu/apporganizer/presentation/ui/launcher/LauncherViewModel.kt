@@ -184,6 +184,20 @@ class LauncherViewModel @Inject constructor(
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
 
+    // Döngü P12 — Home tuşu ham sinyali. LauncherActivity.onNewIntent() All Apps zaten açıksa
+    // (kapatıp) erken döner ve BU flow'a hiç emit ETMEZ (roadmap madde 1, HomeCommandPolicy.kt
+    // dosya başı notu) — dolayısıyla bu flow'u toplayan taraf (HomeScreen) `allAppsOpen==false`
+    // varsayımıyla HomeCommandPolicy.resolveHomeCommand() çağırabilir. Search/modal açık/kapalı
+    // bilgisi HomeScreen'in kendi local state'inde yaşadığı için komut ÇÖZÜMÜ (resolveHomeCommand)
+    // burada değil, HomeScreen'in bu flow'u topladığı LaunchedEffect içinde yapılır.
+    private val _homePressed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val homePressed: SharedFlow<Unit> = _homePressed.asSharedFlow()
+
+    /** LauncherActivity.onNewIntent() tarafından çağrılır — All Apps kapalıyken Home basışı. */
+    fun onHomePressed() {
+        _homePressed.tryEmit(Unit)
+    }
+
     private val _focusSearchOnOpen = MutableStateFlow(false)
     val focusSearchOnOpen: StateFlow<Boolean> = _focusSearchOnOpen.asStateFlow()
 

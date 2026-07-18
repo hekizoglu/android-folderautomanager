@@ -357,6 +357,16 @@ fun HomeScreen(
     // ile günceller; overlay'in kendisi (FullScreenSearchOverlayV2) hâlâ HomeShell'in `overlays`
     // (Box) slotunda, bu değere göre render edilir — mutlak konumlandırma bozulmaz.
     var fullScreenSearchOpen by rememberSaveable { mutableStateOf(false) }
+    // Döngü P12 — Home tuşu çift-basış penceresi artık burada tutulur (eskiden LauncherActivity
+    // alan değişkeniydi, bkz. LauncherActivity.kt yorumu). Search/modal state'i (fullScreenSearchOpen,
+    // folderSearchQuery, dockEditOpen vb.) yalnız burada bilindiği için HomeCommandPolicy.
+    // resolveHomeCommand() çağrısı da burada yapılır — LauncherActivity.onNewIntent artık yalnızca
+    // ham sinyali (viewModel.onHomePressed()) yayınlar.
+    var lastHomePressMs by rememberSaveable { mutableStateOf(0L) }
+    // HomePagerHost.kt'deki aynı desen — "azaltılmış hareket" açıkken GoToStartPage komutu da
+    // animasyonsuz scrollToPage kullanır (roadmap madde 5: animateScrollToPage veya reduce
+    // motion'da scrollToPage).
+    val reduceMotionEnabled = remember { !android.animation.ValueAnimator.areAnimatorsEnabled() }
     var quickWheelVisible by remember { mutableStateOf(false) }
     var quickWheelX by remember { mutableStateOf(0f) }
     var quickWheelY by remember { mutableStateOf(0f) }
@@ -374,6 +384,10 @@ fun HomeScreen(
     // `indicator` slotunda okumak güvenlidir (aynı frame, tek composition geçişi).
     var homePagerPageCount by remember { mutableStateOf(1) }
     var homePagerState by remember { mutableStateOf<androidx.compose.foundation.pager.PagerState?>(null) }
+    // Döngü P12 — GoToStartPage komutu StartPageMode'a göre doğru index'i hesaplayabilsin diye
+    // güncel `pages` listesi de aynı hoisting deseniyle (yukarıdaki yorum) dışarı taşınır.
+    var homePages by remember { mutableStateOf<List<com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec>>(emptyList()) }
+    var homePageSize by remember { mutableStateOf(8) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -461,6 +475,75 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         com.armutlu.apporganizer.utils.AppPrefs.clearLegacyFolderBlurPreference(context)
+    }
+
+    // Döngü P12 — Home komut akışı. LauncherActivity.onNewIntent() All Apps kapalıyken Home
+    // basışını viewModel.onHomePressed() ile yayınlar (roadmap madde 1: All Apps açıksa Activity
+    // erken döner, bu flow'a hiç emit ETMEZ — bkz. LauncherViewModel.kt yorumu). Search/modal
+    // kapatma önceliği + başlangıç sayfasına anında dönüş + çift-basış All Apps kararı tek
+    // noktada (HomeCommandPolicy.resolveHomeCommand) çözülür.
+    LaunchedEffect(Unit) {
+        viewModel.homePressed.collect {
+            val result = resolveHomeCommand(
+                context = HomeCommandContext(
+                    searchActive = fullScreenSearchOpen || (homeSearchEnabled && folderSearchQuery.isNotEmpty()),
+                    modalOpen = dockEditOpen || homeLongPressOpen || folderContextMenu != null ||
+                        contextMenuPkg != null || categoryPickerApp != null,
+                ),
+                lastHomePressMs = lastHomePressMs,
+                nowMs = System.currentTimeMillis(),
+            )
+            lastHomePressMs = result.nextLastHomePressMs
+            when (result.command) {
+                HomeCommand.CloseSearch -> {
+                    fullScreenSearchOpen = false
+                    folderSearchQuery = ""
+                }
+                HomeCommand.CloseModal -> {
+                    dockEditOpen = false
+                    homeLongPressOpen = false
+                    folderContextMenu = null
+                    contextMenuPkg = null
+                    categoryPickerApp = null
+                }
+                HomeCommand.GoToStartPage -> {
+                    val pagerState = homePagerState
+                    val pages = homePages
+                    if (pagerState != null && pages.isNotEmpty()) {
+                        // Roadmap madde 6 — start mode'a göre hedef sayfa:
+                        // SMART_DASHBOARD -> Dashboard sayfası (yoksa ilk sayfa, HomePageAnchorResolver
+                        //   fallback'i). FIRST_FOLDER_PAGE -> her zaman ilk klasör sayfası (index 0,
+                        //   pages listesinde Dashboard varsa index 1 olur — anchor Dashboard DEĞİL,
+                        //   ilk sayfa index'i doğrudan kullanılır). RESTORE_LAST_PAGE -> kaydedilmiş
+                        //   semantic anchor (HomePagePrefs.getLastHomePageAnchor, P13'ün de kullandığı
+                        //   aynı kaynak).
+                        val startPageMode = com.armutlu.apporganizer.utils.HomePagePrefs.getStartPageMode(context)
+                        val targetIndex = when (startPageMode) {
+                            com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD ->
+                                HomePageAnchorResolver.resolve(pages, com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor.Dashboard)
+                            com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE ->
+                                0
+                            com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE -> {
+                                val anchor = com.armutlu.apporganizer.utils.HomePagePrefs.getLastHomePageAnchor(context, folders, homePageSize)
+                                HomePageAnchorResolver.resolve(pages, anchor)
+                            }
+                        }.coerceIn(0, pages.lastIndex)
+                        if (pagerState.currentPage != targetIndex) {
+                            if (reduceMotionEnabled) {
+                                pagerState.scrollToPage(targetIndex)
+                            } else {
+                                pagerState.animateScrollToPage(targetIndex)
+                            }
+                        }
+                    }
+                }
+                HomeCommand.OpenAllApps -> {
+                    AppAnalytics.allAppsOpened()
+                    viewModel.openAllApps()
+                }
+                HomeCommand.None -> Unit
+            }
+        }
     }
 
     // Klasör arama 30s otomatik sıfırlama — yeni sorgu gelince eski sayaç iptal edilir
@@ -1302,6 +1385,8 @@ fun HomeScreen(
             // İndicator hoisting (HomeShell slotuna) — bkz. yukarıdaki homePagerState/homePagerPageCount.
             homePagerState = pagerState
             homePagerPageCount = pageCount
+            homePages = pages
+            homePageSize = pageSize
 
             // Search aktifken, reorder sırasında veya modal/dock edit açıkken pager scroll kilitli
             // kalır — eskiden FolderPager'ın kendi HorizontalPager'ı bu kısıtlamaları hiç

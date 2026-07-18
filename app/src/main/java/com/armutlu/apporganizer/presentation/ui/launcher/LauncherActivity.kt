@@ -36,8 +36,6 @@ class LauncherActivity : ComponentActivity() {
 
     private val viewModel: LauncherViewModel by viewModels()
 
-    private var lastHomePressMs = 0L
-
     // config_navBarInteractionMode cihaz yeniden başlamadan değişmez — bir kere okumak yeterli
     private val gestureNavEnabled: Boolean by lazy {
         val resId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
@@ -136,7 +134,6 @@ class LauncherActivity : ComponentActivity() {
         val activityStartedAt = SystemClock.elapsedRealtime()
         val coldStart = AppOrganizerApp.consumeColdStart()
         super.onCreate(savedInstanceState)
-        lastHomePressMs = savedInstanceState?.getLong(KEY_LAST_HOME_PRESS_MS) ?: 0L
         pendingWidgetId = savedInstanceState?.getInt(
             KEY_PENDING_WIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID,
@@ -191,11 +188,17 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(KEY_LAST_HOME_PRESS_MS, lastHomePressMs)
         outState.putInt(KEY_PENDING_WIDGET_ID, pendingWidgetId)
     }
 
-    // Home tuşuna iki kez hızlıca basılınca (≤500ms) AllApps açılır.
+    // Döngü P12 — Home tuşu artık pager'a doğrudan erişmez; Activity yalnızca "All Apps zaten
+    // açık mı" kısa devresini kendisi ele alır (roadmap madde 1, davranış P00'dan beri DEĞİŞMEDİ),
+    // aksi halde ham sinyali LauncherViewModel.onHomePressed() ile yayınlar. Çift-basış penceresi
+    // + search/modal kapatma + başlangıç sayfasına dönme kararı artık HomeCommandPolicy.
+    // resolveHomeCommand() içinde — bu karar search/modal state'inin (fullScreenSearchOpen,
+    // folderSearchQuery, dockEditOpen vb.) yaşadığı HomeScreen'de toplanır (bkz. HomeScreen.kt
+    // `LaunchedEffect(Unit) { viewModel.homePressed.collect { ... } }`). `lastHomePressMs` de bu
+    // yüzden HomeScreen'e taşındı (rememberSaveable) — Activity artık bu zaman damgasını TUTMAZ.
     // Launcher zaten ön planda iken HOME → onNewIntent tetiklenir.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -203,15 +206,7 @@ class LauncherActivity : ComponentActivity() {
             viewModel.closeAllApps()
             return
         }
-        when (val decision = homePressDecision(lastHomePressMs, System.currentTimeMillis())) {
-            is HomePressDecision.OpenAllApps -> {
-                viewModel.openAllApps()
-                lastHomePressMs = decision.nextLastHomePressMs
-            }
-            is HomePressDecision.RecordPress -> {
-                lastHomePressMs = decision.nextLastHomePressMs
-            }
-        }
+        viewModel.onHomePressed()
     }
 
     private val packageReceiver = object : BroadcastReceiver() {
@@ -310,7 +305,6 @@ class LauncherActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val KEY_LAST_HOME_PRESS_MS = "last_home_press_ms"
         private const val KEY_PENDING_WIDGET_ID = "pending_widget_id"
         private val PACKAGE_FILTER = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)

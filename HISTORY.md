@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P12 - 2026-07-18 - Home komut akisi
+
+**Yapilanlar:** HomeCommandPolicy saf cozumleyici (All Apps kapat > CloseSearch > CloseModal > GoToStartPage[StartPageMode'a gore: dashboard/ilk sayfa/son anchor] > cift basista OpenAllApps, 500ms pencere korundu); akis: onNewIntent -> VM SharedFlow -> HomeScreen LaunchedEffect -> animateScrollToPage (reduce-motion duyarli). LauncherActivity sadelesti (lastHomePressMs HomeScreen'e tasindi). 8 yeni test + P00 6/6 + tum Home suite yesil.
+
+**Bug:** Yok. Onceki oturum kesintisi: P12 hic baslamamisti — kilit attempt 2 ile kurtarildi, is kaybi yok.
+
+**Sonraki:** P13 — son ziyaret sayfa anchor kaydi (zincir devam).
+
 ## Dashboard Dongu P11 - 2026-07-18 - Cekmece-pager baglantisi
 
 **Yapilanlar:** 7 roadmap maddesinden 5'i zaten saglaniyordu (dogrulandi); 2 GERCEK EKSIK duzeltildi: (1) tablet side-panel pointer sizintisi — allAppsOpen iken tum ekrani kaplayan dokunus-yutan scrim (telefonda no-op); (2) drawer acikken kok pager kilidi — arbiter adaptorundeki allAppsOpen/quickWheelOpen bypass'i kaldirildi (P11 madde 7 acik istegi). Test guncellendi + yeni quickWheel testi. 22/22 yesil.
