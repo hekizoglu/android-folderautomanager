@@ -796,7 +796,7 @@ enum class DashboardDensity { COMFORTABLE, COMPACT, ULTRA_COMPACT }
 
 **Bağımlılıklar:** P06.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P07 — commit: 9d8af74 — tarih: 2026-07-18 — Not: Mevcut child-first nestedScroll zinciri kuralı zaten sağlıyordu (ek connection gerekmedi); DashboardLayoutPolicy yoğunluk modları eklendi (640/700dp + section eşikleri). Fallback modu bilinçli uygulanmadı (roadmap şartı: test edilmeden varsayılan olmasın). Gerçek gesture doğrulaması P24 flag açılışında cihazda.
 
 ---
 
