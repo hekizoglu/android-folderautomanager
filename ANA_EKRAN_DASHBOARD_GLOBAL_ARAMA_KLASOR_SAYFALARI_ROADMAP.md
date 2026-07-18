@@ -667,7 +667,7 @@ internal fun HomePagerHost(
 
 **Bağımlılıklar:** P04.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P05 — commit: c0420a9 — tarih: 2026-07-18 — Not: FolderPager silindi (tek pager sahibi HomePagerHost). Anchor kalıcılığı + eski int köprü paralel. Indicator hoisting tamam. Scroll gating + reduced-motion eklendi. dashboardEnabledForPager=false hardcoded (boş placeholder kullanıcıya gösterilmez) — P06 içeriği doldurur, P24 flag'i açar.
 
 ---
 
