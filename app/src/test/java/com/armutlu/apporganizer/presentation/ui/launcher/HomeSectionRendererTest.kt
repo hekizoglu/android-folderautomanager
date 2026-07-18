@@ -46,7 +46,10 @@ class HomeSectionRendererTest {
 
         assertEquals(HomeSectionId.MAIN_SEARCH, plan.footer.first().sectionId)
         assertEquals(HomeSectionId.DOCK, plan.footer.last().sectionId)
-        assertEquals(listOf(HomeSectionId.FOLDER_GRID), plan.content.map { it.sectionId })
+        // P15 v2: CONTENT now hosts all Dashboard sections, not just FOLDER_GRID — it must still be
+        // present (protected) among them.
+        assertEquals(true, plan.content.any { it.sectionId == HomeSectionId.FOLDER_GRID })
+        assertEquals(false, plan.header.any { it.sectionId == HomeSectionId.MAIN_SEARCH })
     }
 
     @Test
@@ -61,7 +64,9 @@ class HomeSectionRendererTest {
 
         val plan = homeZoneRenderPlan(HomeLayoutConfig(HomeLayoutConfig.CURRENT_VERSION, items))
 
-        assertEquals(listOf(HomeSectionId.FOLDER_GRID), plan.content.map { it.sectionId })
+        // P15 v2: CONTENT now hosts all Dashboard sections, not just FOLDER_GRID — it must still be
+        // forced back into CONTENT (protected) regardless of the misplaced HEADER zone in the input.
+        assertEquals(true, plan.content.any { it.sectionId == HomeSectionId.FOLDER_GRID })
         assertEquals(HomeSectionId.DOCK, plan.footer.last().sectionId)
         assertEquals(false, plan.header.any { it.sectionId == HomeSectionId.FOLDER_GRID || it.sectionId == HomeSectionId.DOCK })
     }

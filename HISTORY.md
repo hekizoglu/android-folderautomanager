@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P15 - 2026-07-18 - HomeLayoutConfig v2 migration
+
+**Yapilanlar:** HomeLayout v2: 10 Dashboard section'i CONTENT zone'una tasindi (MAIN_SEARCH HEADER'da, DOCK FOOTER'da), CURRENT_VERSION=2, order cakismasi duzeltildi (FOLDER_GRID CONTENT sonunda); KEY_CONTENT_ORDER + v1->v2 partition migration (idempotent, bozuk veri guvenli varsayilana), BackupManager homeContentOrder round-trip. 6 yeni + guncellenen testler; hedefli 117 test + TAM SUITE 971 test yesil.
+
+**Bug:** Yok. Ortam: 1 build kilidi (hiltJavaCompile FileAlreadyExists — SOP ile cozuldu; exclusion sonrasi 2. tekil olay, izleniyor).
+
+**Sonraki:** P16 — ana ekran duzenleyicisini Dashboard odakli yapma (zincir devam). APK YOK — kullanici karari: tek APK P25 finalinde.
+
 ## Dashboard Dongu P14 - 2026-07-18 - Dashboard indicator
 
 **Yapilanlar:** HomePageIndicator artik List<HomePageSpec> aliyor: Dashboard sayfasi ev ikonu (16/13dp secili/degil), klasorler nokta; 28x48dp dokunma alani + tiklaninca animateScrollToPage; contentDescription TR/EN; reduce-motion uyumu. Saf model buildHomePageIndicatorItems + 7 test (dashboard-kapali gorunum-farksizlik kaniti dahil). Flag kapaliyken gorunum birebir eski.

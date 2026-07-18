@@ -9,17 +9,17 @@ enum class HomeSectionId(
     val movement: HomeSectionMovement = HomeSectionMovement.MOVABLE,
     val hideable: Boolean = true,
 ) {
-    CLOCK(HomeLayoutZone.HEADER),
-    MISSIONS_AND_SCORE(HomeLayoutZone.HEADER),
+    CLOCK(HomeLayoutZone.CONTENT),
+    MISSIONS_AND_SCORE(HomeLayoutZone.CONTENT),
     MAIN_SEARCH(HomeLayoutZone.HEADER),
-    GOOGLE_SEARCH(HomeLayoutZone.HEADER),
-    FAVORITES(HomeLayoutZone.HEADER),
-    SUGGESTIONS(HomeLayoutZone.HEADER),
-    RECENT_NOTIFICATIONS(HomeLayoutZone.HEADER),
-    RECENT_APPS(HomeLayoutZone.HEADER),
-    ANDROID_WIDGETS(HomeLayoutZone.HEADER),
-    ASSISTANT_INSIGHTS(HomeLayoutZone.HEADER),
-    TICKER_OR_STATS(HomeLayoutZone.HEADER),
+    GOOGLE_SEARCH(HomeLayoutZone.CONTENT),
+    FAVORITES(HomeLayoutZone.CONTENT),
+    SUGGESTIONS(HomeLayoutZone.CONTENT),
+    RECENT_NOTIFICATIONS(HomeLayoutZone.CONTENT),
+    RECENT_APPS(HomeLayoutZone.CONTENT),
+    ANDROID_WIDGETS(HomeLayoutZone.CONTENT),
+    ASSISTANT_INSIGHTS(HomeLayoutZone.CONTENT),
+    TICKER_OR_STATS(HomeLayoutZone.CONTENT),
     FOLDER_GRID(HomeLayoutZone.CONTENT, HomeSectionMovement.RESTRICTED, hideable = false),
     DOCK(HomeLayoutZone.FOOTER, HomeSectionMovement.FIXED, hideable = false),
     ;
@@ -62,24 +62,29 @@ data class HomeLayoutConfig(
     }
 
     companion object {
-        const val CURRENT_VERSION = 1
+        const val CURRENT_VERSION = 2
 
         /** The single source of truth for a new home layout. */
         val DEFAULT = HomeLayoutConfig(
             version = CURRENT_VERSION,
             items = listOf(
+                // HEADER: MAIN_SEARCH is the sole header-zone section in v2.
+                defaultItem(HomeSectionId.MAIN_SEARCH, 0),
+                // CONTENT: Dashboard sections, order is zone-relative (P15 v2 — orders must be
+                // unique WITHIN a zone; FOLDER_GRID shares CONTENT with the dashboard sections so
+                // it needs its own non-colliding slot, placed after the visible defaults).
                 defaultItem(HomeSectionId.CLOCK, 0),
-                defaultItem(HomeSectionId.MAIN_SEARCH, 1),
-                defaultItem(HomeSectionId.MISSIONS_AND_SCORE, 2),
-                defaultItem(HomeSectionId.FAVORITES, 3),
-                defaultItem(HomeSectionId.SUGGESTIONS, 4),
-                defaultItem(HomeSectionId.RECENT_NOTIFICATIONS, 5),
-                defaultItem(HomeSectionId.RECENT_APPS, 6),
-                defaultItem(HomeSectionId.GOOGLE_SEARCH, 7, visible = false),
-                defaultItem(HomeSectionId.ANDROID_WIDGETS, 8, visible = false),
-                defaultItem(HomeSectionId.ASSISTANT_INSIGHTS, 9, visible = false),
-                defaultItem(HomeSectionId.TICKER_OR_STATS, 10, visible = false),
-                defaultItem(HomeSectionId.FOLDER_GRID, 0),
+                defaultItem(HomeSectionId.MISSIONS_AND_SCORE, 1),
+                defaultItem(HomeSectionId.FAVORITES, 2),
+                defaultItem(HomeSectionId.SUGGESTIONS, 3),
+                defaultItem(HomeSectionId.RECENT_NOTIFICATIONS, 4),
+                defaultItem(HomeSectionId.RECENT_APPS, 5),
+                defaultItem(HomeSectionId.GOOGLE_SEARCH, 6, visible = false),
+                defaultItem(HomeSectionId.ANDROID_WIDGETS, 7, visible = false),
+                defaultItem(HomeSectionId.ASSISTANT_INSIGHTS, 8, visible = false),
+                defaultItem(HomeSectionId.TICKER_OR_STATS, 9, visible = false),
+                defaultItem(HomeSectionId.FOLDER_GRID, 10),
+                // FOOTER: DOCK is fixed as the final entry.
                 defaultItem(HomeSectionId.DOCK, 0),
             ),
         )

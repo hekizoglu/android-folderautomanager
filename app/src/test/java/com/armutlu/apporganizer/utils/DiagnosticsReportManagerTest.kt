@@ -70,6 +70,13 @@ class DiagnosticsReportManagerTest {
         assertTrue(report.contains("[Dijital Yasam]"))
         assertTrue(report.contains("[Akilli Nabiz]"))
         assertTrue(report.contains("[Ana Ekran Zeka Sagligi Uyarilari]"))
+        assertTrue(report.contains("[AI Tani Paketi]"))
+        assertTrue(report.contains("## AI_SUMMARY"))
+        assertTrue(report.contains("## AI_ISSUES"))
+        assertTrue(report.contains("## AI_METRICS"))
+        assertTrue(report.contains("classification.totalUserApps=87"))
+        assertTrue(report.contains("homeLayout.widgetCount=2, dockItemCount=5"))
+        assertTrue(report.contains("severity=WARN | area=home_intelligence | signal=MISSION_PROGRESS_DATA_STALE"))
         assertTrue(report.contains("[Kritik Hatalar]"))
         assertTrue(report.contains("1. safeMode=hayir, summary=IllegalStateException: sample"))
         assertTrue(report.contains("[Gizlilik Notu]"))
@@ -84,6 +91,7 @@ class DiagnosticsReportManagerTest {
         assertFalse(report.contains("Ayse Yilmaz"))
         assertFalse(report.contains("top secret search"))
         assertTrue(report.contains("paket listesi, bildirim metni, kisi adi/numarasi ve arama sorgulari icermez"))
+        assertTrue(report.contains("Gizlilik siniri: Paket adi, bildirim metni, kisi, dosya adi ve arama sorgusu yoktur."))
     }
 
     @Test

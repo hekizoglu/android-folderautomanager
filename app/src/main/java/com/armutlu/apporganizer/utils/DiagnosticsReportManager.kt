@@ -654,6 +654,8 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
         homeHealth.allWarningCodes.sorted().forEach { appendLine(it) }
     }
     appendLine()
+    appendAiDiagnosticSection(snapshot)
+    appendLine()
     appendLine("[Kritik Hatalar]")
     if (!classification.isConsistent) {
         appendLine("Siniflandirma sayac uyusmazligi: userApps=${classification.totalUserApps}, bucketTotal=${classification.reconciledTotal}")
@@ -666,4 +668,198 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine()
     appendLine("[Gizlilik Notu]")
     appendLine("Bu rapor paket listesi, bildirim metni, kisi adi/numarasi ve arama sorgulari icermez.")
+}
+
+private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportSnapshot) {
+    appendLine("[AI Tani Paketi]")
+    appendLine("Amac: Bu bolum yapay zeka analizine uygun, gizlilik-korumali ve yapilandirilmis hata sinyalleri icerir.")
+    appendLine("Gizlilik siniri: Paket adi, bildirim metni, kisi, dosya adi ve arama sorgusu yoktur.")
+    appendLine("GeneratedAt=${snapshot.generatedAt}")
+    appendLine("Build=${snapshot.appVersionName}(${snapshot.appVersionCode}), package=${snapshot.packageVersionName}(${snapshot.packageLongVersionCode})")
+    appendLine("Device=${snapshot.deviceName}, Android=${snapshot.androidVersion}")
+    appendLine("ConsentDerivedSignals=diagnostics_only")
+    appendLine()
+
+    appendLine("## AI_SUMMARY")
+    val issues = aiDiagnosticIssues(snapshot)
+    appendLine("issueCount=${issues.size}")
+    appendLine("highestSeverity=${issues.maxByOrNull { it.rank }?.severity ?: "INFO"}")
+    appendLine("warningCodes=${snapshot.homeIntelligenceHealth.allWarningCodes.sorted().joinToString().ifBlank { "-" }}")
+    appendLine()
+
+    appendLine("## AI_ISSUES")
+    if (issues.isEmpty()) {
+        appendLine("severity=INFO | area=overall | signal=no_blocking_signal | evidence=Rapor icinde kritik/uyari sinyali yok | next=Normal izleme")
+    } else {
+        issues.sortedWith(compareByDescending<AiDiagnosticIssue> { it.rank }.thenBy { it.area }).forEach { issue ->
+            appendLine(
+                "severity=${issue.severity} | area=${issue.area} | signal=${issue.signal} | " +
+                    "evidence=${issue.evidence} | next=${issue.nextAction}"
+            )
+        }
+    }
+    appendLine()
+
+    appendLine("## AI_METRICS")
+    appendLine("classification.totalUserApps=${snapshot.classificationDiagnostics.totalUserApps}")
+    appendLine("classification.reconciledTotal=${snapshot.classificationDiagnostics.reconciledTotal}")
+    appendLine("classification.isConsistent=${snapshot.classificationDiagnostics.isConsistent}")
+    appendLine("classification.needsAttention=${snapshot.classificationDiagnostics.needsAttention}")
+    appendLine("classification.uncategorized=${snapshot.classificationDiagnostics.uncategorized}")
+    appendLine("classification.invalidOrUnknown=${snapshot.classificationDiagnostics.invalidOrUnknown}")
+    appendLine("classification.attentionByReason=${snapshot.classificationDiagnostics.attentionByReason.entries.joinToString { "${it.key.name}:${it.value}" }}")
+    appendLine("search.counters=${snapshot.searchCounterLine}")
+    appendLine("search.interactions=${snapshot.searchInteractionLine}")
+    appendLine("search.clickSources=${snapshot.searchClickSourcesLine}")
+    appendLine("search.actions=${snapshot.searchActionLine}")
+    appendLine("notifications.listener=${snapshot.notificationListenerEnabled}")
+    appendLine("notifications.freshness=${snapshot.notificationFreshness}")
+    appendLine("notifications.total=${snapshot.notificationTotal}, last7d=${snapshot.notificationLast7d}, last24h=${snapshot.notificationLast24h}")
+    appendLine("permissions.postNotifications=${snapshot.postNotificationsState}, readContacts=${snapshot.readContactsState}, coarseLocation=${snapshot.coarseLocationState}")
+    appendLine("homeLayout.version=${snapshot.homeLayoutSummary.version}, customized=${snapshot.homeLayoutSummary.customized}, searchZone=${snapshot.homeLayoutSummary.searchZone.name}")
+    appendLine("homeLayout.hidden=${snapshot.homeLayoutSummary.hiddenSections.joinToString { it.name }.ifBlank { "-" }}")
+    appendLine("homeLayout.widgetCount=${snapshot.homeLayoutSummary.widgetCount}, dockItemCount=${snapshot.homeLayoutSummary.dockItemCount}")
+    appendLine("homePage.startMode=${snapshot.homeStartPageMode}, lastAnchorType=${snapshot.homeLastPageAnchorType}")
+    appendLine("missions.enabled=${snapshot.missionsEnabled}, wrapped=${snapshot.wrappedEnabled}, prefsMigrated=${snapshot.missionPrefsMigrated}")
+    appendLine("missions.dailyCompletions=${snapshot.dailyMissionCompletions}, weeklyCompletions=${snapshot.weeklyMissionCompletions}")
+    appendLine("taskScore.positive=${snapshot.positiveTaskScore}, negative=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}")
+    appendLine("startup=${snapshot.startupSummary}")
+    appendLine("exit=${snapshot.exitSummary}")
+    appendLine("storage=${snapshot.storageSummary}")
+    appendLine()
+
+    appendLine("## AI_HOME_INTELLIGENCE")
+    appendAiSectionLines("mission", snapshot.homeIntelligenceHealth.missionSystem)
+    appendAiSectionLines("digitalLife", snapshot.homeIntelligenceHealth.digitalLife)
+    appendAiSectionLines("smartPulseTicker", snapshot.homeIntelligenceHealth.smartPulseTicker)
+    appendLine()
+
+    appendLine("## AI_WORKERS")
+    snapshot.workerSummary.forEach { appendLine(it) }
+    appendLine()
+
+    appendLine("## AI_CRASHES")
+    if (snapshot.crashSummary.isEmpty()) {
+        appendLine("-")
+    } else {
+        snapshot.crashSummary.forEach { appendLine(it) }
+    }
+}
+
+private fun StringBuilder.appendAiSectionLines(
+    key: String,
+    section: com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport.Section,
+) {
+    appendLine("$key.warningCodes=${section.warningCodes.sorted().joinToString().ifBlank { "-" }}")
+    section.lines.forEach { line -> appendLine("$key.$line") }
+}
+
+private data class AiDiagnosticIssue(
+    val severity: String,
+    val rank: Int,
+    val area: String,
+    val signal: String,
+    val evidence: String,
+    val nextAction: String,
+)
+
+private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiagnosticIssue> {
+    val issues = mutableListOf<AiDiagnosticIssue>()
+    val classification = snapshot.classificationDiagnostics
+    if (!classification.isConsistent) {
+        issues += AiDiagnosticIssue(
+            severity = "ERROR",
+            rank = 3,
+            area = "classification",
+            signal = "counter_mismatch",
+            evidence = "userApps=${classification.totalUserApps}, reconciled=${classification.reconciledTotal}",
+            nextAction = "ClassificationDiagnosticsCalculator bucket siralamasini ve AppInfo state alanlarini kontrol et",
+        )
+    }
+    if (classification.invalidOrUnknown > 0) {
+        issues += AiDiagnosticIssue(
+            severity = "ERROR",
+            rank = 3,
+            area = "classification",
+            signal = "invalid_or_unknown_state",
+            evidence = "invalidOrUnknown=${classification.invalidOrUnknown}",
+            nextAction = "classificationReviewState/source/reason enum disi kayit ureten path'i bul",
+        )
+    }
+    if (classification.needsAttention > 0 || classification.uncategorized > 0) {
+        issues += AiDiagnosticIssue(
+            severity = "WARN",
+            rank = 2,
+            area = "classification",
+            signal = "review_backlog",
+            evidence = "needsAttention=${classification.needsAttention}, uncategorized=${classification.uncategorized}",
+            nextAction = "Dikkat nedenlerini ve otomatik kategori kabul kosullarini incele",
+        )
+    }
+    snapshot.homeIntelligenceHealth.allWarningCodes.sorted().forEach { code ->
+        issues += AiDiagnosticIssue(
+            severity = "WARN",
+            rank = 2,
+            area = "home_intelligence",
+            signal = code,
+            evidence = "Ana ekran zeka sagligi uyarisi",
+            nextAction = homeHealthNextAction(code),
+        )
+    }
+    if (snapshot.notificationFreshness != "NORMAL") {
+        issues += AiDiagnosticIssue(
+            severity = "WARN",
+            rank = 2,
+            area = "notifications",
+            signal = "freshness_not_normal",
+            evidence = snapshot.notificationFreshness,
+            nextAction = "Notification listener izni, son event zamani ve NotificationEventDao yazimlarini kontrol et",
+        )
+    }
+    if (snapshot.workerSummary.any { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }) {
+        issues += AiDiagnosticIssue(
+            severity = "WARN",
+            rank = 2,
+            area = "workers",
+            signal = "worker_health_not_normal",
+            evidence = snapshot.workerSummary.filter { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }
+                .joinToString(" || "),
+            nextAction = "WorkManager unique work kayitlari, tercih kapilari ve WorkerTelemetryPrefs durumlarini karsilastir",
+        )
+    }
+    if (snapshot.crashSummary.isNotEmpty()) {
+        issues += AiDiagnosticIssue(
+            severity = "WARN",
+            rank = 2,
+            area = "crash",
+            signal = "recent_crash_log_present",
+            evidence = "crashCountShown=${snapshot.crashSummary.size}",
+            nextAction = "Crash ozetindeki exception sinifini ilgili feature degisikligiyle eslestir",
+        )
+    }
+    if (snapshot.postNotificationsState == "denied" && snapshot.notificationAnalyticsEnabled == "evet") {
+        issues += AiDiagnosticIssue(
+            severity = "INFO",
+            rank = 1,
+            area = "permissions",
+            signal = "post_notifications_denied",
+            evidence = "POST_NOTIFICATIONS=denied, analytics=${snapshot.notificationAnalyticsEnabled}",
+            nextAction = "Bildirim ozelliklerinde izin kapali deneyimin beklenen fallback'e dustugunu dogrula",
+        )
+    }
+    return issues
+}
+
+private fun homeHealthNextAction(code: String): String = when (code) {
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.MISSION_SETTLEMENT_STALE ->
+        "MissionSettlementWorker schedule, last success/failure ve countUnsettledBefore sonucunu kontrol et"
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.MISSION_PROGRESS_DATA_STALE ->
+        "MissionRuntimeRepository refresh/state akisini ve coordinator stale fallback davranisini kontrol et"
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.PULSE_SNAPSHOT_STALE ->
+        "DigitalPulseRepository cache/compute zamanlarini ve izin kaynaklarini kontrol et"
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.PULSE_SOURCE_MISMATCH ->
+        "DigitalPulseSnapshot skor araligini ve tek skor kaynagi sozlesmesini kontrol et"
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.TICKER_EMPTY_WITH_ACTIONABLE_ITEMS ->
+        "SmartTickerEngine ranker/suppression filtrelerini ve urgent mission adaylarini kontrol et"
+    else -> "Ilgili sabit uyarinin uretildigi kaynak akislarini kontrol et"
 }

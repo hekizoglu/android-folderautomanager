@@ -11,11 +11,19 @@ class HomeLayoutTest {
     fun `default config is the complete deterministic section source`() {
         val config = HomeLayoutConfig.DEFAULT
         assertEquals(HomeSectionId.entries.toSet(), config.items.map { it.sectionId }.toSet())
+        // P15 v2: Dashboard section'ları artık CONTENT zone'una ait; HEADER yalnızca MAIN_SEARCH'ü
+        // barındırır.
         assertEquals(
-            listOf(HomeSectionId.CLOCK, HomeSectionId.MAIN_SEARCH, HomeSectionId.MISSIONS_AND_SCORE,
-                HomeSectionId.FAVORITES, HomeSectionId.SUGGESTIONS,
-                HomeSectionId.RECENT_NOTIFICATIONS, HomeSectionId.RECENT_APPS),
+            listOf(HomeSectionId.MAIN_SEARCH),
             config.items.filter { it.zone == HomeLayoutZone.HEADER && it.visible }
+                .sortedBy { it.order }.map { it.sectionId },
+        )
+        assertEquals(
+            listOf(HomeSectionId.CLOCK, HomeSectionId.MISSIONS_AND_SCORE,
+                HomeSectionId.FAVORITES, HomeSectionId.SUGGESTIONS,
+                HomeSectionId.RECENT_NOTIFICATIONS, HomeSectionId.RECENT_APPS,
+                HomeSectionId.FOLDER_GRID),
+            config.items.filter { it.zone == HomeLayoutZone.CONTENT && it.visible }
                 .sortedBy { it.order }.map { it.sectionId },
         )
     }

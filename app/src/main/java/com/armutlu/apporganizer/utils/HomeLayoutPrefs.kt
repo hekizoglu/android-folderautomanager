@@ -10,6 +10,10 @@ object HomeLayoutPrefs {
     internal const val PREFS_NAME = "home_layout_prefs"
     internal const val KEY_HEADER_ORDER = "header_order"
     internal const val KEY_FOOTER_ORDER = "footer_order"
+    // P15: Dashboard section sırasını saklar (v2 şeması — HomeLayoutConfig.CURRENT_VERSION = 2).
+    // v1 kayıtlarında bu anahtar yok; read() sırasında HEADER_ORDER'daki Dashboard section'ları
+    // buraya taşınır (bkz. migrateV1ToV2).
+    internal const val KEY_CONTENT_ORDER = "content_order"
     internal const val KEY_HIDDEN_SECTIONS = "hidden_sections"
     internal const val KEY_LAYOUT_VERSION = "layout_version"
     internal const val KEY_CUSTOMIZED = "customized"
@@ -20,6 +24,7 @@ object HomeLayoutPrefs {
         val version: Int?,
         val headerOrder: String?,
         val footerOrder: String?,
+        val contentOrder: String? = null,
         val hiddenSections: String?,
         val customized: Boolean?,
     )
@@ -51,6 +56,7 @@ object HomeLayoutPrefs {
     internal data class StoredLayout(
         val headerOrder: String?, val footerOrder: String?, val hiddenSections: String?,
         val version: Int?, val customized: Boolean?,
+        val contentOrder: String? = null,
     )
 
     fun read(context: Context): State {
@@ -68,6 +74,7 @@ object HomeLayoutPrefs {
             runCatching { prefs.getString(KEY_HIDDEN_SECTIONS, null) }.getOrNull(),
             runCatching { prefs.getInt(KEY_LAYOUT_VERSION, 0) }.getOrNull(),
             runCatching { prefs.getBoolean(KEY_CUSTOMIZED, false) }.getOrNull(),
+            runCatching { prefs.getString(KEY_CONTENT_ORDER, null) }.getOrNull(),
         ))
     }
 
@@ -76,6 +83,7 @@ object HomeLayoutPrefs {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
             putString(KEY_HEADER_ORDER, clean.config.idsIn(HomeLayoutZone.HEADER).joinToString(","))
             putString(KEY_FOOTER_ORDER, clean.config.idsIn(HomeLayoutZone.FOOTER).joinToString(","))
+            putString(KEY_CONTENT_ORDER, clean.config.idsIn(HomeLayoutZone.CONTENT).joinToString(","))
             putString(KEY_HIDDEN_SECTIONS, clean.config.items.filterNot { it.visible }.joinToString(",") { it.sectionId.name })
             putInt(KEY_LAYOUT_VERSION, HomeLayoutConfig.CURRENT_VERSION)
             putBoolean(KEY_CUSTOMIZED, clean.customized)
@@ -88,13 +96,15 @@ object HomeLayoutPrefs {
             version = clean.config.version,
             headerOrder = clean.config.idsIn(HomeLayoutZone.HEADER).joinToString(","),
             footerOrder = clean.config.idsIn(HomeLayoutZone.FOOTER).joinToString(","),
+            contentOrder = clean.config.idsIn(HomeLayoutZone.CONTENT).joinToString(","),
             hiddenSections = clean.config.items.filterNot { it.visible }.joinToString(",") { it.sectionId.name },
             customized = clean.customized,
         )
     }
 
     internal fun fromBackupFields(fields: BackupFields): State = sanitize(
-        StoredLayout(fields.headerOrder, fields.footerOrder, fields.hiddenSections, fields.version, fields.customized)
+        StoredLayout(fields.headerOrder, fields.footerOrder, fields.hiddenSections, fields.version, fields.customized,
+            fields.contentOrder)
     )
 
     internal fun diagnosticsSummary(state: State, widgetCount: Int, dockItemCount: Int): DiagnosticsSummary {
@@ -112,15 +122,30 @@ object HomeLayoutPrefs {
 
     internal fun sanitize(stored: StoredLayout): State {
         val present = stored.headerOrder != null || stored.footerOrder != null || stored.hiddenSections != null ||
-            stored.version != null || stored.customized != null
+            stored.version != null || stored.customized != null || stored.contentOrder != null
         if (!present) return State(HomeLayoutConfig.DEFAULT, false)
-        val suppliedHeader = parseIds(stored.headerOrder).filter { it.allowedIn(HomeLayoutZone.HEADER) }.distinct()
+        // P15 v1->v2: v1 kayıtlarında Dashboard section'ları HEADER_ORDER içinde saklanıyordu
+        // (eski defaultZone = HEADER) ve CONTENT_ORDER hiç yoktu. v1 verisi okunduğunda,
+        // HEADER_ORDER'daki section'lardan bugünkü şemada defaultZone'u CONTENT olanlar (MAIN_SEARCH
+        // hariç — o hep HEADER/FOOTER arasında hareket eder) CONTENT_ORDER'a taşınır, göreli sıraları
+        // korunur. Bu dönüşüm deterministiktir: aynı v1 girdisi her zaman aynı v2 çıktısını üretir.
+        val isLegacyV1 = stored.version != null && stored.version < 2 && stored.contentOrder == null
+        val rawHeader = parseIds(stored.headerOrder)
+        val (headerSource, contentFromHeader) = if (isLegacyV1) {
+            rawHeader.partition { it == HomeSectionId.MAIN_SEARCH || it.defaultZone == HomeLayoutZone.HEADER }
+        } else {
+            rawHeader to emptyList()
+        }
+        val suppliedHeader = headerSource.filter { it.allowedIn(HomeLayoutZone.HEADER) }.distinct()
         val suppliedFooter = parseIds(stored.footerOrder).filter { it.allowedIn(HomeLayoutZone.FOOTER) }.distinct()
+        val suppliedContent = (contentFromHeader + parseIds(stored.contentOrder))
+            .filter { it.allowedIn(HomeLayoutZone.CONTENT) }.distinct()
         val searchZone = if (HomeSectionId.MAIN_SEARCH in suppliedFooter &&
             HomeSectionId.MAIN_SEARCH !in suppliedHeader) HomeLayoutZone.FOOTER else HomeLayoutZone.HEADER
         val orders = mapOf(
             HomeLayoutZone.HEADER to sanitizeOrder(suppliedHeader, HomeLayoutZone.HEADER, searchZone),
             HomeLayoutZone.FOOTER to sanitizeOrder(suppliedFooter, HomeLayoutZone.FOOTER, searchZone),
+            HomeLayoutZone.CONTENT to sanitizeOrder(suppliedContent, HomeLayoutZone.CONTENT, searchZone),
         )
         val hidden = parseIds(stored.hiddenSections).filterTo(mutableSetOf()) { it.hideable }
         val items = HomeLayoutConfig.DEFAULT.items.map { item ->

@@ -456,6 +456,10 @@ object BackupManager {
             put("homeLayoutVersion", fields.version)
             put("homeHeaderOrder", fields.headerOrder)
             put("homeFooterOrder", fields.footerOrder)
+            // P15: v2 şeması — Dashboard section sırası. Eski (v1) yedekler bu alanı içermez;
+            // homeLayoutFromJson bu durumu HomeLayoutPrefs.sanitize() içindeki v1->v2 dönüşümüne
+            // devreder (homeLayoutVersion < 2 && contentOrder == null -> legacy path).
+            put("homeContentOrder", fields.contentOrder)
             put("homeHiddenSections", fields.hiddenSections)
             put("homeLayoutCustomized", fields.customized)
         }
@@ -467,6 +471,7 @@ object BackupManager {
                 version = json.optInt("homeLayoutVersion", 0),
                 headerOrder = json.opt("homeHeaderOrder") as? String,
                 footerOrder = json.opt("homeFooterOrder") as? String,
+                contentOrder = json.opt("homeContentOrder") as? String,
                 hiddenSections = json.opt("homeHiddenSections") as? String,
                 customized = json.opt("homeLayoutCustomized") as? Boolean,
             )
