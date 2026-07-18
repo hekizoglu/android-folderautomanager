@@ -598,6 +598,87 @@ fun SettingsHomeScreenSection(
         )
     }
 
+    // ── Ana Sayfa Yapısı (Döngü P17) ─────────────────────────────────────
+    // Dashboard istemeyen kullanıcıların hızlı klasör deneyimini korur — bu ayarlar tercihi
+    // HomePagePrefs'e yazar; Akıllı Dashboard'ın pager'da fiilen görünmesi P24'ü bekliyor
+    // (HomeScreen.kt satır ~1341-1346, dashboardEnabledForPager bilinçli olarak false).
+    SettingsSectionTitle(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_structure_title))
+    var smartDashboardEnabled by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.HomePagePrefs.isSmartDashboardEnabled(context))
+    }
+    var startPageMode by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.HomePagePrefs.getStartPageMode(context))
+    }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.Dashboard,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_smart_dashboard_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_smart_dashboard_desc),
+            checked = smartDashboardEnabled,
+            onCheckedChange = { enabled ->
+                smartDashboardEnabled = enabled
+                com.armutlu.apporganizer.utils.HomePagePrefs.setSmartDashboardEnabled(context, enabled)
+                // Roadmap P17 madde 3: Dashboard kapatılırken SMART_DASHBOARD seçiliyse
+                // FIRST_FOLDER_PAGE'e normalize edilir — kapalı bir sayfaya "başlangıç" denemez.
+                if (!enabled && startPageMode == com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD) {
+                    startPageMode = com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE
+                    com.armutlu.apporganizer.utils.HomePagePrefs.setStartPageMode(context, startPageMode)
+                }
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_start_page_mode_title),
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+            )
+            Text(
+                androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_start_page_mode_desc),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val modes = listOf(
+                    com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD to com.armutlu.apporganizer.R.string.settings_start_page_mode_dashboard,
+                    com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE to com.armutlu.apporganizer.R.string.settings_start_page_mode_first_folder,
+                    com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE to com.armutlu.apporganizer.R.string.settings_start_page_mode_restore_last,
+                )
+                modes.forEach { (mode, labelRes) ->
+                    // Dashboard kapalıyken Dashboard seçeneği devre dışı — kullanıcıyı kapalı
+                    // bir sayfaya yönlendiren tutarsız bir tercihe izin vermeyiz.
+                    val optionEnabled = smartDashboardEnabled ||
+                        mode != com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD
+                    val selected = startPageMode == mode
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            )
+                            .clickable(enabled = optionEnabled) {
+                                startPageMode = mode
+                                com.armutlu.apporganizer.utils.HomePagePrefs.setStartPageMode(context, mode)
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    ) {
+                        Text(
+                            androidx.compose.ui.res.stringResource(labelRes),
+                            fontSize = 13.sp,
+                            color = when {
+                                selected -> MaterialTheme.colorScheme.onPrimary
+                                !optionEnabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     // ── Tüm Uygulamalar Ekranı ────────────────────────────────────────────
     SettingsSectionTitle("Tüm Uygulamalar")
     SettingsCard {

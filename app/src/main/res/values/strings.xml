@@ -442,6 +442,14 @@
     <string name="settings_home_usage_chart_visible_title">Denge Altında 24 Saat Grafiği</string>
     <string name="settings_home_usage_chart_visible_desc">Skor halkasının altında son 24 saatin kullanım grafiği görünür</string>
     <string name="pulse_usage_chart_content_desc">Son 24 saatlik kullanım grafiği</string>
+    <string name="settings_home_structure_title">Ana Sayfa Yapısı</string>
+    <string name="settings_smart_dashboard_title">Akıllı Dashboard Sayfası</string>
+    <string name="settings_smart_dashboard_desc">Görevler, dijital yaşam ve öneriler için ayrı bir sayfa ayır</string>
+    <string name="settings_start_page_mode_title">Başlangıç Sayfası</string>
+    <string name="settings_start_page_mode_desc">Ana ekranı açtığında hangi sayfadan başlayacağını seç</string>
+    <string name="settings_start_page_mode_dashboard">Dashboard</string>
+    <string name="settings_start_page_mode_first_folder">İlk Klasör</string>
+    <string name="settings_start_page_mode_restore_last">Son Sayfa</string>
 
     <!-- HomeTickerRow — Akıllı Nabız şeridi (Döngü T04) -->
     <string name="ticker_mute_8h">8 saat sessize al</string>

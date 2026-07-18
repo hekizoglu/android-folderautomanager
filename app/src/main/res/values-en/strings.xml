@@ -437,6 +437,14 @@
     <string name="settings_digital_life_card_visible_desc">Shows the card with your digital life score and trend on the home screen</string>
     <string name="settings_home_insight_visible_title">Show Insight on Home Screen</string>
     <string name="settings_home_insight_visible_desc">Shows a one-line personal insight in the clock card</string>
+    <string name="settings_home_structure_title">Home Page Structure</string>
+    <string name="settings_smart_dashboard_title">Smart Dashboard Page</string>
+    <string name="settings_smart_dashboard_desc">Reserve a separate page for tasks, digital life and suggestions</string>
+    <string name="settings_start_page_mode_title">Start Page</string>
+    <string name="settings_start_page_mode_desc">Choose which page opens first when you go home</string>
+    <string name="settings_start_page_mode_dashboard">Dashboard</string>
+    <string name="settings_start_page_mode_first_folder">First Folder</string>
+    <string name="settings_start_page_mode_restore_last">Last Page</string>
     <string name="settings_home_usage_chart_visible_title">24-Hour Chart Under Balance</string>
     <string name="settings_home_usage_chart_visible_desc">Shows the last 24 hours of usage as a mini chart under the score ring</string>
     <string name="pulse_usage_chart_content_desc">Usage chart for the last 24 hours</string>

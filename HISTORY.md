@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P17 - 2026-07-18 - Baslangic sayfasi + klasik mod ayarlari
+
+**Yapilanlar:** SettingsHomeScreenSection'a "Ana Sayfa Yapisi" karti: Akilli Dashboard toggle (kapaninca StartPageMode otomatik FIRST_FOLDER_PAGE'e normalize — tutarsiz durum onlenir) + Baslangic Sayfasi segmented (Dashboard/Ilk Klasor/Son Sayfa; Dashboard secenegi toggle kapaliyken dimmed). Mevcut prefs/migration/backup/diagnostics degisiklik gerektirmedi. TR/EN 9 string. Testler yesil.
+
+**Bug:** Yok. dashboardEnabledForPager=false korundu (P24); onboarding dokunulmadi.
+
+**Sonraki:** P18 — Focus Mode uyumu (zincir devam).
+
 ## Dashboard Dongu P16 - 2026-07-18 - Editor Dashboard odakli
 
 **Yapilanlar:** Editor 3 bolume ayrildi: Global alanlar (MainSearchPositionCard ust/alt chip + DockFixedNoticeCard bilgi karti), Akilli Ana Ekran bolumleri (CONTENT zone kartlari — mevcut drag+TalkBack pattern'i, FOLDER_GRID karti kaldirildi), Klasor Sayfalari. Kucuk cihaz uyarisi (640dp+6 bolum). Render baglantisi: dashboardContentOrder(config) -> SmartDashboardPage grup siralamasi (flag kapaliyken gorunmez). withSearchZone API. TR/EN 9 string. 17+13 test yesil.
