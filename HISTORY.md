@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P10 - 2026-07-18 - Gesture arbitration katmani
+
+**Yapilanlar:** HomeGestureArbiter saf karar cekirdegi (HomeGestureContext -> ALLOW_HORIZONTAL_PAGER/OPEN_ALL_APPS/HANDLE_CHILD/IGNORE; oncelik: search>modal>reorder>child>tur-esik) + sabit-kod debug nedenleri. Uc dagitik kosul delege edildi: pagerScrollEnabled, nestedScroll onPost*, kok dikey drag (ham -60px -> 60dp density-bagimsiz — kasitli iyilestirme). swipeLock debounce cagri noktasinda korundu. 21/21 yeni test + Home regresyonlari yesil.
+
+**Bug:** Yok. Cihaz dogrulamasi: 60dp esigin fiziksel hissi + predictive back + tablet panel.
+
+**Sonraki:** P11 — cekmece davranisini yeni pager'a baglama (zincir devam).
+
 ## Dashboard Dongu P09 - 2026-07-18 - Arama sonuc overlay'i global katmanda
 
 **Yapilanlar:** HomeShell'e overlays'ten AYRI searchOverlay slotu (z-order kod duzeyinde garanti: pager ustu, All Apps alti); FullScreenSearchOverlayV2 bu slota tasindi (gorunurluk kosulu birebir); Back davranisi ve P05 pager kilidi dogrulandi. Yeni sarmalayici dosyalar bilinçli acilmadi (mevcut overlay zaten tam tesekkullu — duplikasyon reddedildi). 10/10 + 16/16 P00 regresyon yesil.

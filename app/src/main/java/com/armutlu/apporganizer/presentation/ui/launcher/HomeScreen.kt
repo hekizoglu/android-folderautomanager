@@ -388,6 +388,10 @@ fun HomeScreen(
 
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 80.dp.toPx() }
+    // Döngü P10 — kök pointerInput("drag") dikey eşiği artık density-bağımsız (roadmap madde 3).
+    // Eskiden ham `-60f` px sabitiydi; HomeGestureArbiter.VERTICAL_SWIPE_THRESHOLD_DP (60dp) buraya
+    // taşındı ve density ile px'e çevrildi — mdpi cihazda sayısal olarak birebir aynı (60dp == 60px).
+    val rootVerticalDragThresholdPx = with(density) { HomeGestureArbiter.VERTICAL_SWIPE_THRESHOLD_DP.dp.toPx() }
     var swipeDelta by rememberSaveable { mutableStateOf(0f) }
 
     // rememberUpdatedState ile closure'lar her zaman güncel değeri okur
@@ -404,19 +408,37 @@ fun HomeScreen(
         }
     }
 
+    // Döngü P10 — nestedScroll'un dikey-eşik kararı HomeGestureArbiter.decide(NESTED_VERTICAL_SCROLL)
+    // çekirdeğine delege edilir (davranış DEĞİŞMEZ — aynı 200f/80dp eşikleri, aynı sıra).
+    // swipeLock (çift tetikleme önleyici debounce) arbiter'ın UI-durum modelinde YOKTUR — roadmap
+    // kural tablosunda karşılığı olmayan saf zamanlama korumasıdır, çağrı noktasında kalır.
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (!currentAllAppsOpen && !swipeLock && available.y < -200f) {
-                    AppAnalytics.allAppsOpened()
-                    viewModel.dispatchGestureAction(context, gestureSwipeUp)
+                if (!swipeLock && available.y < -200f) {
+                    val result = HomeGestureArbiter.decide(
+                        kind = HomeGestureKind.NESTED_VERTICAL_SCROLL,
+                        context = HomeGestureContext(allAppsOpen = currentAllAppsOpen),
+                        verticalDeltaPx = available.y,
+                        thresholdPx = 0f,
+                    )
+                    if (result.decision == HomeGestureDecision.OPEN_ALL_APPS) {
+                        AppAnalytics.allAppsOpened()
+                        viewModel.dispatchGestureAction(context, gestureSwipeUp)
+                    }
                 }
                 return Velocity.Zero
             }
             override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
-                if (!currentAllAppsOpen && !swipeLock && available.y < 0f) {
+                if (!swipeLock && available.y < 0f) {
                     swipeDelta += available.y
-                    if (swipeDelta < -swipeThresholdPx) {
+                    val result = HomeGestureArbiter.decide(
+                        kind = HomeGestureKind.NESTED_VERTICAL_SCROLL,
+                        context = HomeGestureContext(allAppsOpen = currentAllAppsOpen),
+                        verticalDeltaPx = swipeDelta,
+                        thresholdPx = swipeThresholdPx,
+                    )
+                    if (result.decision == HomeGestureDecision.OPEN_ALL_APPS) {
                         AppAnalytics.allAppsOpened()
                         viewModel.openAllApps()
                         swipeDelta = 0f
@@ -599,13 +621,25 @@ fun HomeScreen(
                     onDragCancel = { accumulated = 0f },
                     onVerticalDrag = { change, dragAmount ->
                         // gestureZonePx kontrolünü kaldırdık — tüm ekrandan swipe çalışsın
+                        // Döngü P10 — eskiden ham `-60f` px sabiti kullanılıyordu (roadmap madde 3:
+                        // "sabit raw -60f kaldırılır"); artık HomeGestureArbiter.VERTICAL_SWIPE_THRESHOLD_DP
+                        // density'e göre px'e çevrilir (rootVerticalDragThresholdPx, aşağıda tanımlı) —
+                        // karar HomeGestureArbiter.decide(VERTICAL_DRAG) çekirdeğine delege edilir.
                         if (!currentAllAppsOpen) {
                             accumulated += dragAmount
-                            if (!swipeLock && accumulated < -60f) {
-                                change.consume()
-                                accumulated = 0f
-                                AppAnalytics.allAppsOpened()
-                                viewModel.dispatchGestureAction(context, gestureSwipeUp)
+                            if (!swipeLock) {
+                                val result = HomeGestureArbiter.decide(
+                                    kind = HomeGestureKind.VERTICAL_DRAG,
+                                    context = HomeGestureContext(allAppsOpen = currentAllAppsOpen),
+                                    verticalDeltaPx = accumulated,
+                                    thresholdPx = rootVerticalDragThresholdPx,
+                                )
+                                if (result.decision == HomeGestureDecision.OPEN_ALL_APPS) {
+                                    change.consume()
+                                    accumulated = 0f
+                                    AppAnalytics.allAppsOpened()
+                                    viewModel.dispatchGestureAction(context, gestureSwipeUp)
+                                }
                             }
                         }
                     }
@@ -1257,12 +1291,21 @@ fun HomeScreen(
             // Search aktifken, reorder sırasında veya modal/dock edit açıkken pager scroll kilitli
             // kalır — eskiden FolderPager'ın kendi HorizontalPager'ı bu kısıtlamaları hiç
             // uygulamıyordu (roadmap P05 madde 9-11 bu döngüde eklendi).
+            // Döngü P10 — karar artık HomeGestureArbiter'a delege edilir (merkezileştirme,
+            // davranış DEĞİŞMEZ): searchActive/reorderActive/modalOpen hesapları aynı kalır,
+            // sadece "bu üçünden biri açıkken pager kilitlenir" kuralı tek çekirdekte yaşar.
             val searchActive = fullScreenSearchOpen ||
                 (homeSearchEnabled && folderSearchQuery.isNotEmpty())
             val reorderActive = dragFromIndex != null
             val modalOpen = dockEditOpen || homeLongPressOpen || folderContextMenu != null ||
                 contextMenuPkg != null || categoryPickerApp != null
-            val pagerScrollEnabled = !searchActive && !reorderActive && !modalOpen
+            val pagerScrollEnabled = HomeGestureArbiter.isHorizontalPagerScrollEnabled(
+                HomeGestureContext(
+                    searchActive = searchActive,
+                    modalOpen = modalOpen,
+                    folderReorderActive = reorderActive,
+                )
+            )
 
             Column(modifier = Modifier.fillMaxSize()) {
 
