@@ -911,7 +911,7 @@ data class GlobalSearchUiState(
 
 **Bağımlılıklar:** P08.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P09 — commit: 958662d — tarih: 2026-07-18 — Not: HomeShell'e ayrı searchOverlay slotu (z-order kod garantisi); FullScreenSearchOverlayV2 taşındı, sarmalayıcı dosyalar bilinçli açılmadı (duplikasyon). Inline kısa önizleme sayfa içinde kaldı. TalkBack/büyük font doğrulaması cihaz oturumuna.
 
 ---
 
