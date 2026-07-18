@@ -1145,7 +1145,9 @@ fun HomeScreen(
                     )
                 }
             }
-            val pageCount = maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)
+            // Döngü P04: HomeLayoutMath.pageCount() ile hizalandı — tekil kaynak, indicator
+            // hoisting zemini (P05'te HomePagerHost/planner bu değeri tek yerden üretecek).
+            val pageCount = HomeLayoutMath.pageCount(displayFolders.size, pageSize)
             // Son görüntülenen sayfa AppPrefs'ten okunur — geri tuşu/process death sonrası
             // ilk sayfaya sıfırlanmasın (D210 fix). pageCount değişirse sınır dışına taşmasın.
             val initialPage = remember { com.armutlu.apporganizer.utils.AppPrefs.getLastHomePage(context).coerceIn(0, pageCount - 1) }

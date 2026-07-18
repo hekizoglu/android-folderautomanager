@@ -35,8 +35,8 @@ object HomeLayoutMath {
         minOf(requestedPageSize, max(MIN_VISIBLE_FOLDERS, folderCapacity))
 
     /**
-     * Klasör sayfa sayısı — HomeScreen.kt satır ~984 ile senkron tutulmalı:
-     * `maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)` (tavan bölme).
+     * Klasör sayfa sayısı — Döngü P04'ten itibaren HomeScreen.kt bu fonksiyonu doğrudan çağırır
+     * (eskiden inline `maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)` kopyası vardı).
      * En az 1 sayfa garanti edilir (klasör olmasa bile Dashboard/boş sayfa gösterilir).
      */
     fun pageCount(folderCount: Int, pageSize: Int): Int {

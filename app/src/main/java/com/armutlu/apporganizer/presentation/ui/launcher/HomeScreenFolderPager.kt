@@ -90,9 +90,36 @@ internal fun FolderPager(
         val pageOffset = signedOffset.absoluteValue.coerceIn(0f, 1f)
         val pageStart = page * pageSize
         val pageFolders = displayFolders.drop(pageStart).take(pageSize)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(columns),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        FolderGridPage(
+            pageFolders = pageFolders,
+            globalStartIndex = pageStart,
+            pageSize = pageSize,
+            columnsCount = columns,
+            dragFromIndex = dragFromIndex,
+            dragToIndex = dragToIndex,
+            textAlpha = textAlpha,
+            folderSizeDp = folderSizeDp,
+            labelColor = labelColor,
+            customFolderNames = customFolderNames,
+            customFolderEmojis = customFolderEmojis,
+            customFolderColors = customFolderColors,
+            folderCountVisible = folderCountVisible,
+            folderSwipeHint = folderSwipeHint,
+            notifTextEnabled = notifTextEnabled,
+            unusedInfoEnabled = unusedInfoEnabled,
+            folderBadgeEnabled = folderBadgeEnabled,
+            folderShape = folderShape,
+            haptic = haptic,
+            onFolderClick = onFolderClick,
+            onFolderLongClick = onFolderLongClick,
+            onSwipeUp = onSwipeUp,
+            onNotificationTap = onNotificationTap,
+            onDragStart = onDragStart,
+            onDrag = { dragAmount -> onDrag(dragAmount, page) },
+            onDragEnd = onDragEnd,
+            onDragCancel = onDragCancel,
+            onHomeLongPress = onHomeLongPress,
+            editMode = editMode,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -101,101 +128,150 @@ internal fun FolderPager(
                     scaleY = 1f - (pageOffset * 0.055f)
                     rotationY = signedOffset.coerceIn(-1f, 1f) * -4f
                     cameraDistance = 18f * density
-                },
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
-            userScrollEnabled = false
-        ) {
-            items(pageFolders.size) { pageIndex ->
-                val index = pageStart + pageIndex
-                val folder = pageFolders[pageIndex]
-                val isDragging = dragFromIndex == index
-                val isDropTarget = dragToIndex == index && dragFromIndex != null && !isDragging
-                FolderTile(
-                    folder = folder,
-                    onClick = {
-                        if (dragFromIndex == null) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            AppAnalytics.folderOpened(
-                                folderType = if (folder.category.isSystemCategory) {
-                                    TelemetryEvent.FolderType.SYSTEM
-                                } else {
-                                    TelemetryEvent.FolderType.USER_CREATED
-                                },
-                                appCount = FolderAppCountBucket.from(folder.apps.size)
-                            )
-                            onFolderClick(folder)
-                        }
-                    },
-                    onLongClick = {
-                        if (dragFromIndex == null) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onFolderLongClick(folder)
-                        }
-                    },
-                    onSwipeUp = onSwipeUp,
-                    onNotificationTap = onNotificationTap,
-                    textAlpha = textAlpha,
-                    folderSizeDp = folderSizeDp,
-                    labelColor = labelColor,
-                    customName = customFolderNames[folder.category.categoryId],
-                    customEmoji = customFolderEmojis[folder.category.categoryId],
-                    customColor = customFolderColors[folder.category.categoryId],
-                    folderCountVisible = folderCountVisible,
-                    folderSwipeHintEnabled = folderSwipeHint,
-                    notifTextEnabled = notifTextEnabled,
-                    unusedInfoEnabled = unusedInfoEnabled,
-                    folderBadgeEnabled = folderBadgeEnabled,
-                    folderShape = folderShape,
-                    modifier = Modifier
-                        .then(if (folderGestureMode(editMode) == FolderGestureMode.REORDER) Modifier.pointerInput(index) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onDragStart(index)
-                                },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    onDrag(dragAmount, page)
-                                },
-                                onDragEnd = onDragEnd,
-                                onDragCancel = onDragCancel
-                            )
-                        } else Modifier)
-                        .then(
-                            when {
-                                isDragging ->
-                                    Modifier
-                                        .background(Color.White.copy(alpha = 0.18f), RoundedCornerShape(12.dp))
-                                        .scale(1.08f)
-                                isDropTarget ->
-                                    Modifier.background(
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.28f),
-                                        RoundedCornerShape(12.dp)
-                                    )
-                                dragFromIndex != null ->
-                                    Modifier.alpha(0.72f)
-                                else -> Modifier
-                            }
-                        )
-                )
-            }
-            val emptySlots = pageSize - pageFolders.size
-            if (emptySlots > 0) {
-                items(emptySlots) { _ ->
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onLongPress = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onHomeLongPress()
-                                    }
-                                )
-                            }
-                    )
                 }
+        )
+    }
+}
+
+/**
+ * Döngü P04: `FolderPager`ın tek-sayfa grid render mantığı buraya taşındı. Saf/test edilebilir —
+ * pager state veya sayfa geçiş efekti bağımlılığı yok; `globalStartIndex` ile dışarıdan verilen
+ * gerçek index üzerinden drag/reorder ve empty-slot davranışı hesaplanır.
+ *
+ * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md bölüm Döngü P04.
+ * P05'te `HomePagerHost`'un bir sayfası olarak kullanılacak; sayfa geçiş graphicsLayer efekti
+ * çağıran taraf (bugün `FolderPager`, P05'te `HomePagerHost`) tarafından `modifier` ile uygulanır.
+ */
+@Composable
+internal fun FolderGridPage(
+    pageFolders: List<AppFolder>,
+    globalStartIndex: Int,
+    pageSize: Int,
+    columnsCount: Int,
+    dragFromIndex: Int?,
+    dragToIndex: Int?,
+    textAlpha: Float,
+    folderSizeDp: Int,
+    labelColor: Color,
+    customFolderNames: Map<String, String>,
+    customFolderEmojis: Map<String, String>,
+    customFolderColors: Map<String, String>,
+    folderCountVisible: Boolean,
+    folderSwipeHint: Boolean,
+    notifTextEnabled: Boolean,
+    unusedInfoEnabled: Boolean = false,
+    folderBadgeEnabled: Boolean = false,
+    folderShape: String,
+    haptic: HapticFeedback,
+    onFolderClick: (AppFolder) -> Unit,
+    onFolderLongClick: (AppFolder) -> Unit,
+    onSwipeUp: (String) -> Unit,
+    onNotificationTap: (String) -> Unit,
+    onDragStart: (index: Int) -> Unit,
+    onDrag: (dragAmount: Offset) -> Unit,
+    onDragEnd: () -> Unit,
+    onDragCancel: () -> Unit,
+    onHomeLongPress: () -> Unit,
+    editMode: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columnsCount),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        modifier = modifier,
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
+        userScrollEnabled = false
+    ) {
+        items(pageFolders.size) { pageIndex ->
+            val index = globalStartIndex + pageIndex
+            val folder = pageFolders[pageIndex]
+            val isDragging = dragFromIndex == index
+            val isDropTarget = dragToIndex == index && dragFromIndex != null && !isDragging
+            FolderTile(
+                folder = folder,
+                onClick = {
+                    if (dragFromIndex == null) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        AppAnalytics.folderOpened(
+                            folderType = if (folder.category.isSystemCategory) {
+                                TelemetryEvent.FolderType.SYSTEM
+                            } else {
+                                TelemetryEvent.FolderType.USER_CREATED
+                            },
+                            appCount = FolderAppCountBucket.from(folder.apps.size)
+                        )
+                        onFolderClick(folder)
+                    }
+                },
+                onLongClick = {
+                    if (dragFromIndex == null) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onFolderLongClick(folder)
+                    }
+                },
+                onSwipeUp = onSwipeUp,
+                onNotificationTap = onNotificationTap,
+                textAlpha = textAlpha,
+                folderSizeDp = folderSizeDp,
+                labelColor = labelColor,
+                customName = customFolderNames[folder.category.categoryId],
+                customEmoji = customFolderEmojis[folder.category.categoryId],
+                customColor = customFolderColors[folder.category.categoryId],
+                folderCountVisible = folderCountVisible,
+                folderSwipeHintEnabled = folderSwipeHint,
+                notifTextEnabled = notifTextEnabled,
+                unusedInfoEnabled = unusedInfoEnabled,
+                folderBadgeEnabled = folderBadgeEnabled,
+                folderShape = folderShape,
+                modifier = Modifier
+                    .then(if (folderGestureMode(editMode) == FolderGestureMode.REORDER) Modifier.pointerInput(index) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onDragStart(index)
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                onDrag(dragAmount)
+                            },
+                            onDragEnd = onDragEnd,
+                            onDragCancel = onDragCancel
+                        )
+                    } else Modifier)
+                    .then(
+                        when {
+                            isDragging ->
+                                Modifier
+                                    .background(Color.White.copy(alpha = 0.18f), RoundedCornerShape(12.dp))
+                                    .scale(1.08f)
+                            isDropTarget ->
+                                Modifier.background(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.28f),
+                                    RoundedCornerShape(12.dp)
+                                )
+                            dragFromIndex != null ->
+                                Modifier.alpha(0.72f)
+                            else -> Modifier
+                        }
+                    )
+            )
+        }
+        val emptySlots = pageSize - pageFolders.size
+        if (emptySlots > 0) {
+            items(emptySlots) { _ ->
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onHomeLongPress()
+                                }
+                            )
+                        }
+                )
             }
         }
     }

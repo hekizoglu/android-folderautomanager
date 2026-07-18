@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P04 - 2026-07-18 - FolderGridPage donusumu
+
+**Yapilanlar:** FolderPager'in tek-sayfa grid mantigi (LazyVerticalGrid, drag/reorder, empty-slot) internal FolderGridPage composable'ina cikti — pager-state bagimliligindan arindi (columnsCount saf parametre, graphicsLayer efekti FolderPager'da kalip modifier ile geciyor, globalStartIndex ile gercek drag index). HomeScreen pageCount hesabi HomeLayoutMath.pageCount'a hizalandi. Yeni HomeLayoutMathTest, tum testler yesil.
+
+**Bug:** Yok. P05 hazir: FolderGridPage dogrudan HomePagerHost sayfasi olabilir.
+
+**Sonraki:** P05 — HomePagerHost tek pager birlestirme (kritik dongu, zincir devam).
+
 ## Dashboard Dongu P03 - 2026-07-18 - HomeScreen'den global shell cikarma
 
 **Yapilanlar:** HomeShell composable (topSearch/pager/indicator/bottomSearch/dock/overlays slot'lari): arama cubugu tek tanimla konuma gore slot'a, dock+pill tek yerde, overlay'ler (arama/drawer/snackbar/quickwheel) BoxScope slotunda. Gorsel davranis birebir; reaktif prefs bloklari yerinde. HomeScreen 1382->1340 satir. 39 test task yesil. NOT: 1. deneme kota kesintisiyle yarida kaldi — watchdog temizleyip attempt 2 ile bastan basardi (mekanizma kanitlandi).
