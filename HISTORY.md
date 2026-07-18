@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P01 - 2026-07-18 - HomePageSpec + HomePagePlanner
+
+**Yapilanlar:** HomePageSpec sealed (Dashboard + FolderPage, stableKey semantigi) + HomePagePlanner saf planner (8'li dilim, dashboard on/off, bos durum fallback'leri, dedupeStableKeys savunmasi) — roadmap 3.1/3.2 semasiyla birebir, AppFolder mevcut tip kullanildi. 14 yeni test + navigation sozlesme testleri, 33 yesil. UI baglantisi yok (P05).
+
+**Bug:** Yok. Not: .claude/worktrees altinda P02-P13 icin eski worktree'ler var — merge sirasinda dikkat.
+
+**Sonraki:** P02 — semantik sayfa preference + migration (zincir devam).
+
 ## Dashboard Dongu P00 - 2026-07-18 - Mevcut ana ekran davranislarini kilitle
 
 **Yapilanlar:** 25 yeni regresyon testi (4 dosya): Home cift-basis politikasi (500ms pure fonksiyona cikarildi), sayfa sayisi/bos slot/sutun esigi sozlesmeleri (HomeLayoutMath.pageCount/screenColumns), getLastHomePage kaliciligi, Turkce locale-aware arama filtresi (filterAllAppsByQuery pure). Roadmap varsayimlari dogrulandi (FolderPager kendi pager'i, ham Int sayfa, Home tek-basis komutsuz); dosya adi hatasi bulundu: HomeLayoutPrefsMigrationTest yok, gercek dosya HomeLayoutPrefsTest. 55 test yesil.
