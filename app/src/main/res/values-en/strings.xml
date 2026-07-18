@@ -464,6 +464,38 @@
     <string name="ticker_type_weekly_report">Weekly report</string>
     <string name="ticker_type_feature_discovery">Tip</string>
 
+    <!-- Smart Pulse Strip Settings (Cycle T05) -->
+    <string name="smart_ticker_settings_title">Smart Pulse Strip</string>
+    <string name="smart_ticker_settings_master_title">Smart Pulse Strip</string>
+    <string name="smart_ticker_settings_master_desc">Short reminders and updates flowing on the home screen</string>
+    <string name="smart_ticker_settings_content_section">Content to show</string>
+    <string name="smart_ticker_settings_actions_title">Things to do</string>
+    <string name="smart_ticker_settings_actions_desc">Quick-fix items like your notification summary</string>
+    <string name="smart_ticker_settings_missions_title">Mission alerts and achievements</string>
+    <string name="smart_ticker_settings_missions_desc">Ongoing missions and the achievements you\'ve earned</string>
+    <string name="smart_ticker_settings_pulse_title">Digital Life changes</string>
+    <string name="smart_ticker_settings_pulse_desc">Meaningful ups and downs in your Digital Life score</string>
+    <string name="smart_ticker_settings_reports_title">Weekly report</string>
+    <string name="smart_ticker_settings_reports_desc">A short nudge when your weekly summary is ready</string>
+    <string name="smart_ticker_settings_contextual_title">Time-based suggestions</string>
+    <string name="smart_ticker_settings_contextual_desc">Contextual tips like forgotten apps and insights</string>
+    <string name="smart_ticker_settings_discovery_title">Feature tips</string>
+    <string name="smart_ticker_settings_discovery_desc">Briefly introduces features you haven\'t discovered yet</string>
+    <string name="smart_ticker_settings_health_title">System health alerts</string>
+    <string name="smart_ticker_settings_health_desc">Warnings for critical issues like missing permissions</string>
+    <string name="smart_ticker_settings_behavior_section">Playback behavior</string>
+    <string name="smart_ticker_settings_auto_advance_title">Auto-advance</string>
+    <string name="smart_ticker_settings_auto_advance_desc">Items move to the next one on their own</string>
+    <string name="smart_ticker_settings_interval_title">Advance interval</string>
+    <string name="smart_ticker_settings_interval_desc">Moves to the next item every %1$d seconds</string>
+    <string name="smart_ticker_settings_sensitive_title">Show sensitive info</string>
+    <string name="smart_ticker_settings_sensitive_desc">When off, things like your active notification count stay hidden from the strip</string>
+    <string name="smart_ticker_settings_quiet_section">Quiet hours</string>
+    <string name="smart_ticker_settings_quiet_active">Strip is muted until %1$s</string>
+    <string name="smart_ticker_settings_quiet_inactive">Strip isn\'t muted right now</string>
+    <string name="smart_ticker_settings_quiet_clear_action">Clear mute</string>
+    <string name="smart_ticker_settings_hidden_types_note">Types you turned off from the strip\'s long-press menu (\"Don\'t show this type of item\") can also be turned back on here.</string>
+
     <!-- Search fallback rows -->
     <string name="search_fallback_google">Search Google: %1$s</string>
     <string name="search_fallback_play_store">Search Play Store: %1$s</string>

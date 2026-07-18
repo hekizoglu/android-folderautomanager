@@ -91,6 +91,8 @@ internal fun HomeTickerRow(
     onHideType: ((SmartTickerType) -> Unit)? = null,
     onOpenTickerSettings: (() -> Unit)? = null,
     onDisableTicker: (() -> Unit)? = null,
+    autoAdvanceEnabled: Boolean = true,
+    autoAdvanceIntervalMs: Long = AUTO_ADVANCE_INTERVAL_MS,
 ) {
     if (items.isEmpty()) return
     var index by remember(items.size) { mutableStateOf(0) }
@@ -125,12 +127,13 @@ internal fun HomeTickerRow(
         }.getOrDefault(false)
     }
 
-    // Otomatik ilerleme — visible=false, TalkBack aktif, kritik öğe (autoAdvanceAllowed=false)
-    // veya kullanıcı yakın zamanda etkileşimde bulunduysa (pausedUntil) çalışmaz.
-    LaunchedEffect(index, items.size, visible, touchExplorationEnabled, current.autoAdvanceAllowed) {
-        if (!visible || touchExplorationEnabled || !current.autoAdvanceAllowed || items.size <= 1) return@LaunchedEffect
+    // Otomatik ilerleme — visible=false, TalkBack aktif, kritik öğe (autoAdvanceAllowed=false),
+    // Ayarlar'dan kapatılmış (autoAdvanceEnabled=false, roadmap T05) veya kullanıcı yakın
+    // zamanda etkileşimde bulunduysa (pausedUntil) çalışmaz.
+    LaunchedEffect(index, items.size, visible, touchExplorationEnabled, current.autoAdvanceAllowed, autoAdvanceEnabled, autoAdvanceIntervalMs) {
+        if (!visible || !autoAdvanceEnabled || touchExplorationEnabled || !current.autoAdvanceAllowed || items.size <= 1) return@LaunchedEffect
         val now = System.currentTimeMillis()
-        val waitMillis = (AUTO_ADVANCE_INTERVAL_MS).coerceAtLeast(pausedUntil - now)
+        val waitMillis = autoAdvanceIntervalMs.coerceAtLeast(pausedUntil - now)
         delay(waitMillis)
         direction = 1
         index = (index + 1) % items.size

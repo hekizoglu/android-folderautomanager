@@ -138,6 +138,9 @@ fun HomeScreen(
     var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
     var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
+    // T05 (Akıllı Nabız ayarları) — otomatik geçiş aç/kapat + geçiş süresi Ayarlar'dan gelir.
+    var tickerAutoAdvance by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerAutoAdvanceEnabled(context)) }
+    var tickerIntervalSeconds by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerIntervalSeconds(context)) }
     var missionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)) }
     // D03: skor artık tek yerde — DigitalLifeCard. isDigitalLifeCardVisible() eski
     // KEY_HOME_SCORE_VISIBLE tercihini ilk çağrıda bir kez migrate eder.
@@ -289,8 +292,12 @@ fun HomeScreen(
                     doubleTapSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ASSISTANT_CARDS ->
                     assistantCardsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_ENABLED ->
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SMART_TICKER_ENABLED ->
                     tickerEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_AUTO_ADVANCE ->
+                    tickerAutoAdvance = com.armutlu.apporganizer.utils.AppPrefs.isTickerAutoAdvanceEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_INTERVAL_SECONDS ->
+                    tickerIntervalSeconds = com.armutlu.apporganizer.utils.AppPrefs.getTickerIntervalSeconds(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_MISSIONS_ENABLED ->
                     missionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_DIGITAL_LIFE_CARD_VISIBLE ->
@@ -873,7 +880,7 @@ fun HomeScreen(
                     onHideType = { type -> viewModel.hideTickerType(type) },
                     onOpenTickerSettings = {
                         val intent = Intent(context, MainActivity::class.java).apply {
-                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS)
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS_SMART_TICKER)
                             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
                         runCatching { context.startActivity(intent) }
@@ -882,6 +889,8 @@ fun HomeScreen(
                         com.armutlu.apporganizer.utils.AppPrefs.setTickerEnabled(context, false)
                         tickerEnabled = false
                     },
+                    autoAdvanceEnabled = tickerAutoAdvance,
+                    autoAdvanceIntervalMs = tickerIntervalSeconds * 1000L,
                     onItemClick = { item ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         // Dokunulan haber bu oturumda tekrar gösterilmesin — ticker çeşitlensin (D226)

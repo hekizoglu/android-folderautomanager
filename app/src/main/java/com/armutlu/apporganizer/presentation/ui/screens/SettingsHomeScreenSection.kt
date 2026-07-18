@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsHomeScreenSection(
     onNavigateToSearchSettings: () -> Unit = {},
+    onNavigateToSmartTickerSettings: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
@@ -74,16 +75,14 @@ fun SettingsHomeScreenSection(
             onClick = onNavigateToSearchSettings,
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
-        SettingsSwitchRow(
+        // T05: eskiden burada tek "Haber Şeridi" aç/kapat switch'i vardı — artık kullanıcı
+        // içerik türlerini, otomatik geçişi ve hassas bilgi gösterimini ayrı ayrı kontrol
+        // edebildiği için dedike ekrana taşındı (SmartTickerSettingsScreen).
+        SettingsButtonRow(
             icon = Icons.Default.Campaign,
-            title = "Haber Şeridi",
-            subtitle = "Günün akışı ve kısa hatırlatmalar için hareketli şerit",
-            checked = tickerEnabled,
-            onCheckedChange = {
-                tickerEnabled = it
-                com.armutlu.apporganizer.utils.AppPrefs.setTickerEnabled(context, it)
-            }
+            title = "Akıllı Nabız Şeridi",
+            subtitle = "Günün akışı, hatırlatmalar ve gösterilecek içerik türleri",
+            onClick = onNavigateToSmartTickerSettings,
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         var shineEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSearchShineEnabled(context)) }

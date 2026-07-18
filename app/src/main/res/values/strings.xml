@@ -466,6 +466,38 @@
     <string name="ticker_type_weekly_report">Haftalık rapor</string>
     <string name="ticker_type_feature_discovery">İpucu</string>
 
+    <!-- Akıllı Nabız Şeridi Ayarları (Döngü T05) -->
+    <string name="smart_ticker_settings_title">Akıllı Nabız Şeridi</string>
+    <string name="smart_ticker_settings_master_title">Akıllı Nabız Şeridi</string>
+    <string name="smart_ticker_settings_master_desc">Ana ekranda akan kısa hatırlatmalar ve haberler</string>
+    <string name="smart_ticker_settings_content_section">Gösterilecek içerikler</string>
+    <string name="smart_ticker_settings_actions_title">Yapılması gerekenler</string>
+    <string name="smart_ticker_settings_actions_desc">Bildirim özeti gibi hemen çözülebilecek konular</string>
+    <string name="smart_ticker_settings_missions_title">Görev uyarıları ve başarılar</string>
+    <string name="smart_ticker_settings_missions_desc">Devam eden görevler ve kazandığın başarılar</string>
+    <string name="smart_ticker_settings_pulse_title">Dijital Yaşam değişimleri</string>
+    <string name="smart_ticker_settings_pulse_desc">Dijital Yaşam skorundaki anlamlı yükseliş/düşüşler</string>
+    <string name="smart_ticker_settings_reports_title">Haftalık rapor</string>
+    <string name="smart_ticker_settings_reports_desc">Haftalık özet hazır olduğunda kısa bir hatırlatma</string>
+    <string name="smart_ticker_settings_contextual_title">Zaman bazlı öneriler</string>
+    <string name="smart_ticker_settings_contextual_desc">Unutulan uygulamalar ve içgörüler gibi bağlamsal öneriler</string>
+    <string name="smart_ticker_settings_discovery_title">Özellik ipuçları</string>
+    <string name="smart_ticker_settings_discovery_desc">Henüz keşfetmediğin özellikleri kısaca tanıtır</string>
+    <string name="smart_ticker_settings_health_title">Sistem sağlık uyarıları</string>
+    <string name="smart_ticker_settings_health_desc">İzin veya kurulum gibi kritik durumlar için uyarı</string>
+    <string name="smart_ticker_settings_behavior_section">Akış davranışı</string>
+    <string name="smart_ticker_settings_auto_advance_title">Otomatik geçiş</string>
+    <string name="smart_ticker_settings_auto_advance_desc">Haberler kendiliğinden bir sonrakine geçer</string>
+    <string name="smart_ticker_settings_interval_title">Geçiş süresi</string>
+    <string name="smart_ticker_settings_interval_desc">%1$d saniyede bir sonraki habere geçilir</string>
+    <string name="smart_ticker_settings_sensitive_title">Hassas bilgileri göster</string>
+    <string name="smart_ticker_settings_sensitive_desc">Kapalıyken aktif bildirim sayısı gibi bilgiler şeritte gösterilmez</string>
+    <string name="smart_ticker_settings_quiet_section">Sessiz saatler</string>
+    <string name="smart_ticker_settings_quiet_active">Şerit sessizde — %1$s tarihine kadar</string>
+    <string name="smart_ticker_settings_quiet_inactive">Şerit şu an sessizde değil</string>
+    <string name="smart_ticker_settings_quiet_clear_action">Sessizliği kaldır</string>
+    <string name="smart_ticker_settings_hidden_types_note">Şerit üzerinde uzun basıp \"Bu tür bilgileri gösterme\" ile kapattığın türler de buradan tekrar açılabilir.</string>
+
     <!-- Arama fallback satırları -->
     <string name="search_fallback_google">Google\'da ara: %1$s</string>
     <string name="search_fallback_play_store">Play Store\'da ara: %1$s</string>

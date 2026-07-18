@@ -21,6 +21,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsLauncherScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsNotificationsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SmartTickerSettingsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsSecurityScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsStatsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsUsageDataScreen
@@ -57,6 +58,10 @@ object Routes {
     const val PERMISSIONS_GUIDE = "permissions_guide"
     const val CLASSIFICATION_REVIEW = "classification_review"
     const val FOLDER_SUGGESTIONS = "folder_suggestions"
+    // T05 — Akıllı Nabız Şeridi ayarları (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
+    // satır 1848-1905): "Ana Ekran Ayarları" içindeki tek satırdan dedike alt ekrana taşındı,
+    // ticker uzun-basma menüsündeki "Akıllı Nabız ayarları" de doğrudan bu ekrana açılır.
+    const val SETTINGS_SMART_TICKER = "settings_smart_ticker"
 
     // Güvenlik: MainActivity EXTRA_OPEN_ROUTE dışarıdan (üçüncü parti intent) gelebilir -
     // yalnızca burada tanımlı bilinen route'lara navigate edilmeli (whitelist doğrulaması).
@@ -65,7 +70,7 @@ object Routes {
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_USAGE_DATA, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
-        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS
+        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, SETTINGS_SMART_TICKER
     )
 
     fun isValid(route: String?): Boolean = route != null && route in ALL
@@ -150,7 +155,8 @@ fun AppNavigation(
             SettingsLauncherScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) }
+                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
+                onNavigateToSmartTickerSettings = { navController.navigate(Routes.SETTINGS_SMART_TICKER) }
             )
         }
         composable(Routes.SETTINGS_NOTIFICATIONS) {
@@ -242,6 +248,9 @@ fun AppNavigation(
         }
         composable(Routes.SEARCH_SETTINGS) {
             SearchSettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(Routes.SETTINGS_SMART_TICKER) {
+            SmartTickerSettingsScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Routes.NOTIFICATION_REPORT) {
             com.armutlu.apporganizer.presentation.ui.screens.NotificationReportScreen(

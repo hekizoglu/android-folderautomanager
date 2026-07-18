@@ -559,9 +559,112 @@ object AppPrefs {
     fun setPulseLastInsightId(context: Context, id: String) = prefs(context).edit().putString(KEY_PULSE_LAST_INSIGHT_ID, id).apply()
 
     // Haber şeridi (ticker) — klasör/içgörü/bildirim haberleri ana ekranda akar
+    // T05 (Akıllı Nabız ayarları, ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
+    // satır 1848-1905): eski KEY_TICKER_ENABLED yeni KEY_SMART_TICKER_ENABLED'e migrate edilir.
+    // Eski anahtar SİLİNMEDİ — geri okuma/roll-back güvenliği ve tek seferlik migration kaynağı.
+    @Deprecated("KEY_SMART_TICKER_ENABLED kullan — bu yalnızca migration kaynağı olarak kalır")
     const val KEY_TICKER_ENABLED = "home_ticker_enabled"
-    fun isTickerEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_ENABLED, true)
-    fun setTickerEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_ENABLED, v).apply()
+    const val KEY_SMART_TICKER_ENABLED = "smart_ticker_enabled"
+    private const val KEY_SMART_TICKER_ENABLED_MIGRATION_DONE = "smart_ticker_enabled_migration_done"
+
+    fun isTickerEnabled(context: Context): Boolean {
+        migrateSmartTickerEnabledIfNeeded(context)
+        return prefs(context).getBoolean(KEY_SMART_TICKER_ENABLED, true)
+    }
+
+    fun setTickerEnabled(context: Context, v: Boolean) {
+        prefs(context).edit()
+            .putBoolean(KEY_SMART_TICKER_ENABLED, v)
+            .putBoolean(KEY_SMART_TICKER_ENABLED_MIGRATION_DONE, true)
+            .apply()
+    }
+
+    /** T05 migration: eski `KEY_TICKER_ENABLED` tercihini yeni anahtara tek sefer taşır. */
+    internal fun migrateSmartTickerEnabledIfNeeded(context: Context) {
+        val sharedPrefs = prefs(context)
+        if (sharedPrefs.getBoolean(KEY_SMART_TICKER_ENABLED_MIGRATION_DONE, false)) return
+        @Suppress("DEPRECATION")
+        val legacyEnabled = sharedPrefs.getBoolean(KEY_TICKER_ENABLED, true)
+        sharedPrefs.edit()
+            .putBoolean(KEY_SMART_TICKER_ENABLED, legacyEnabled)
+            .putBoolean(KEY_SMART_TICKER_ENABLED_MIGRATION_DONE, true)
+            .apply()
+    }
+
+    // T05 — içerik türü bazlı görünürlük anahtarları. SmartTickerType enum adları iç mantık
+    // olduğu için kullanıcıya HİÇBİR YERDE gösterilmez (CLAUDE.md "iç mantık sızdırılmaz");
+    // Ayarlar ekranı yalnızca kullanıcı dili etiketleri kullanır (bkz. SmartTickerSettingsScreen).
+    // Roadmap mock'ta 7 kullanıcı görünür satır var; MISSION_PROGRESS + MISSION_ACHIEVEMENT tek
+    // "Görev uyarıları ve başarılar" switch'i altında BİRLEŞTİRİLİR (aynı switch iki türü de
+    // kontrol eder) — roadmap listesinde ayrı satır olarak yer almıyor, kullanıcı için tek
+    // kavram (görevler). Diğer 6 tür 1:1 eşlenir.
+    const val KEY_SMART_TICKER_ACTIONS = "smart_ticker_show_actions"           // Yapılması gerekenler (ACTION_REQUIRED)
+    const val KEY_SMART_TICKER_MISSIONS = "smart_ticker_show_missions"        // Görev uyarıları ve başarılar (MISSION_PROGRESS + MISSION_ACHIEVEMENT)
+    const val KEY_SMART_TICKER_PULSE = "smart_ticker_show_pulse"              // Dijital Yaşam değişimleri (PULSE_CHANGE)
+    const val KEY_SMART_TICKER_REPORTS = "smart_ticker_show_reports"          // Haftalık rapor (WEEKLY_REPORT)
+    const val KEY_SMART_TICKER_CONTEXTUAL = "smart_ticker_show_contextual"    // Zaman bazlı öneriler (CONTEXTUAL_SUGGESTION)
+    const val KEY_SMART_TICKER_DISCOVERY = "smart_ticker_show_discovery"      // Özellik ipuçları (FEATURE_DISCOVERY) — roadmap mock'ta varsayılan KAPALI
+    const val KEY_SMART_TICKER_HEALTH = "smart_ticker_show_health"            // Sistem sağlık uyarıları (CRITICAL_HEALTH)
+
+    fun isSmartTickerActionsVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_ACTIONS, true)
+    fun setSmartTickerActionsVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_ACTIONS, v).apply()
+
+    fun isSmartTickerMissionsVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_MISSIONS, true)
+    fun setSmartTickerMissionsVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_MISSIONS, v).apply()
+
+    fun isSmartTickerPulseVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_PULSE, true)
+    fun setSmartTickerPulseVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_PULSE, v).apply()
+
+    fun isSmartTickerReportsVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_REPORTS, true)
+    fun setSmartTickerReportsVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_REPORTS, v).apply()
+
+    fun isSmartTickerContextualVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_CONTEXTUAL, true)
+    fun setSmartTickerContextualVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_CONTEXTUAL, v).apply()
+
+    // Roadmap mock (satır 1863): "[ ] Özellik ipuçları" — bu satır tek başlangıçta kapalı olan.
+    fun isSmartTickerDiscoveryVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_DISCOVERY, false)
+    fun setSmartTickerDiscoveryVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_DISCOVERY, v).apply()
+
+    fun isSmartTickerHealthVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_HEALTH, true)
+    fun setSmartTickerHealthVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_HEALTH, v).apply()
+
+    /**
+     * Belirli bir [SmartTickerType] adının (iç enum ismi) kullanıcı tercihine göre görünür olup
+     * olmadığını döndürür — T04'ün `KEY_TICKER_HIDDEN_TYPES` (tekil kapatma menüsü) ile BİRLİKTE
+     * çalışır: bu fonksiyon T05 toplu ayar ekranının sonucu, hidden-types ise "bu tür bilgileri
+     * gösterme" hızlı kapatmanın sonucudur — ViewModel ikisini de AND ile birleştirir.
+     */
+    fun isSmartTickerTypeVisible(context: Context, typeName: String): Boolean = when (typeName) {
+        "ACTION_REQUIRED" -> isSmartTickerActionsVisible(context)
+        "MISSION_PROGRESS", "MISSION_ACHIEVEMENT" -> isSmartTickerMissionsVisible(context)
+        "PULSE_CHANGE" -> isSmartTickerPulseVisible(context)
+        "WEEKLY_REPORT" -> isSmartTickerReportsVisible(context)
+        "CONTEXTUAL_SUGGESTION" -> isSmartTickerContextualVisible(context)
+        "FEATURE_DISCOVERY" -> isSmartTickerDiscoveryVisible(context)
+        "CRITICAL_HEALTH" -> isSmartTickerHealthVisible(context)
+        else -> true
+    }
+
+    // T05 — otomatik geçiş aç/kapat + geçiş süresi (saniye, 5-20 arası, varsayılan 10 —
+    // HomeTickerRow.AUTO_ADVANCE_INTERVAL_MS ile aynı varsayılan).
+    const val KEY_TICKER_AUTO_ADVANCE = "smart_ticker_auto_advance"
+    const val KEY_TICKER_INTERVAL_SECONDS = "smart_ticker_interval_seconds"
+    const val TICKER_INTERVAL_DEFAULT_SECONDS = 10
+
+    fun isTickerAutoAdvanceEnabled(context: Context) = prefs(context).getBoolean(KEY_TICKER_AUTO_ADVANCE, true)
+    fun setTickerAutoAdvanceEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_AUTO_ADVANCE, v).apply()
+
+    fun getTickerIntervalSeconds(context: Context): Int =
+        prefs(context).getInt(KEY_TICKER_INTERVAL_SECONDS, TICKER_INTERVAL_DEFAULT_SECONDS)
+    fun setTickerIntervalSeconds(context: Context, seconds: Int) =
+        prefs(context).edit().putInt(KEY_TICKER_INTERVAL_SECONDS, seconds.coerceIn(5, 20)).apply()
+
+    // T05 — "Hassas bilgileri göster": kapalıyken sensitive=true işaretli haberler (ör. aktif
+    // bildirim sayısı) şeritte gösterilmez. Varsayılan KAPALI (roadmap mock satır 1868) — kilit
+    // ekranı yakınında/başkasının görebileceği ortamda gizlilik varsayılan olarak korunur.
+    const val KEY_TICKER_SENSITIVE_VISIBLE = "smart_ticker_sensitive_visible"
+    fun isTickerSensitiveVisible(context: Context) = prefs(context).getBoolean(KEY_TICKER_SENSITIVE_VISIBLE, false)
+    fun setTickerSensitiveVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TICKER_SENSITIVE_VISIBLE, v).apply()
 
     // Ana ekran arka plan stili — 3 hazir gradient secenegi (D260)
     const val KEY_HOME_BACKGROUND_STYLE = "home_background_style"
@@ -598,6 +701,8 @@ object AppPrefs {
     const val KEY_TICKER_MUTED_UNTIL = "home_ticker_muted_until"
     fun getTickerMutedUntil(context: Context) = prefs(context).getLong(KEY_TICKER_MUTED_UNTIL, 0L)
     fun setTickerMutedUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, untilMillis).apply()
+    /** T05 — Ayarlar ekranındaki "Sessiz saatler" göstergesinden erken kaldırma. */
+    fun clearTickerMutedUntil(context: Context) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, 0L).apply()
 
     // Icerik bazli ticker bastirma (Dongu T04) — "Bu tur bilgileri gosterme" secilince
     // SmartTickerType.name bu sete eklenir; TickerRow'a dokunmadan LauncherViewModel
@@ -607,6 +712,9 @@ object AppPrefs {
         prefs(context).getStringSet(KEY_TICKER_HIDDEN_TYPES, emptySet()) ?: emptySet()
     fun addTickerHiddenType(context: Context, typeName: String) =
         prefs(context).edit().putStringSet(KEY_TICKER_HIDDEN_TYPES, getTickerHiddenTypes(context) + typeName).apply()
+    /** T05 — toplu ayar ekranından tekil "Bu türü gösterme" kapatmasını geri açar. */
+    fun removeTickerHiddenType(context: Context, typeName: String) =
+        prefs(context).edit().putStringSet(KEY_TICKER_HIDDEN_TYPES, getTickerHiddenTypes(context) - typeName).apply()
 
     // Arama çubuğu elmas parlaması — 10-15 sn'de bir gradient süpürme animasyonu
     const val KEY_SEARCH_SHINE_ENABLED = "search_shine_enabled"

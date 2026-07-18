@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu T05 - 2026-07-18 - Akilli Nabiz ayarlari + T FAZ KAPANISI
+
+**Yapilanlar:** SmartTickerSettingsScreen (yeni rota SETTINGS_SMART_TICKER): master toggle (KEY_SMART_TICKER_ENABLED migration'li), 7 kullanici dostu icerik turu anahtari (gorev turleri tek satirda gruplu), auto-advance + 5-20sn slider, hassas bilgi toggle (varsayilan kapali), sessiz saat goster/kaldir. LauncherViewModel tur+hassasiyet filtresi ve reaktif prefs revizyonu. 16 yeni test. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, v1.3.87 (110). AKILLI NABIZ SERIDI FAZI (T) TAMAM.
+
+**Bug:** Yok. Ortam: 9. build kilidi SOP ile cozuldu (agent tarafinda).
+
+**Sonraki:** U00 — ana ekran kart yerlesimini birlestir (U birlestirme/yayin fazi basliyor).
+
 ## Akilli Nabiz Dongu T04 - 2026-07-18 - Serit UI + erisilebilirlik
 
 **Yapilanlar:** HomeTickerRow tamamen yeniden: SmartTickerItem dogrudan tuketiliyor (T01 koprusu + eski TickerItem SILINDI); title+subtitle ayri satir (marquee kalkti); auto-advance 10s + etkilesimde 15s durak + autoAdvanceAllowed=false/TalkBack/ON_PAUSE'da durur; CRITICAL/ACTION tiplerinde belirgin vurgu; reduced-motion'da fade; uzun basma menusu genisletildi (tur bazli gizleme dahil, KEY_TICKER_HIDDEN_TYPES) + 48dp X butonu; semantics contentDescription + Prev/Next CustomAccessibilityAction. Serit UI string'leri TR/EN resource'a tasindi. Tum Ticker + tam unit test yesil.

@@ -36,6 +36,7 @@ fun SettingsLauncherScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToSearchSettings: () -> Unit = {},
+    onNavigateToSmartTickerSettings: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -213,7 +214,12 @@ fun SettingsLauncherScreen(
         item { WidgetSuggestionSection(viewModel = viewModel) }
 
         // ── Ana Ekran / Widget / İkon Paketi ──────────────────────────────
-        item { SettingsHomeScreenSection(onNavigateToSearchSettings = onNavigateToSearchSettings) }
+        item {
+            SettingsHomeScreenSection(
+                onNavigateToSearchSettings = onNavigateToSearchSettings,
+                onNavigateToSmartTickerSettings = onNavigateToSmartTickerSettings,
+            )
+        }
 
         item { SettingsSectionTitle("Klasor Gecisleri") }
         item {

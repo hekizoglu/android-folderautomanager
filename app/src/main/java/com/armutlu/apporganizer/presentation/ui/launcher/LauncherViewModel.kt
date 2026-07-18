@@ -40,6 +40,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -932,6 +933,33 @@ class LauncherViewModel @Inject constructor(
         _hiddenTickerTypes.value = AppPrefs.getTickerHiddenTypes(ctx)
     }
 
+    // T05 (Akıllı Nabız ayarları) — SmartTickerSettingsScreen'deki toplu içerik-türü/hassas-bilgi
+    // switch'leri doğrudan AppPrefs'e yazılır (SettingsSwitchRow + rememberBooleanPreferenceState);
+    // bu ViewModel'in combine() zincirinde o değerleri OKUYAN filtre yeniden tetiklenmeli, aksi
+    // halde Ayarlar'dan dönüşte şerit eski haliyle kalır (CLAUDE.md "Reaktif AppPrefs" tuzağı).
+    // Basit sayaç: hangi anahtar değiştiği önemli değil, herhangi bir T05 anahtarı değişince
+    // tickerItems combine'ı yeniden hesaplanır.
+    private val _smartTickerPrefsRevision = MutableStateFlow(0)
+    private val smartTickerPrefKeys = setOf(
+        AppPrefs.KEY_SMART_TICKER_ACTIONS,
+        AppPrefs.KEY_SMART_TICKER_MISSIONS,
+        AppPrefs.KEY_SMART_TICKER_PULSE,
+        AppPrefs.KEY_SMART_TICKER_REPORTS,
+        AppPrefs.KEY_SMART_TICKER_CONTEXTUAL,
+        AppPrefs.KEY_SMART_TICKER_DISCOVERY,
+        AppPrefs.KEY_SMART_TICKER_HEALTH,
+        AppPrefs.KEY_TICKER_SENSITIVE_VISIBLE,
+    )
+    private val smartTickerPrefsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in smartTickerPrefKeys) {
+            _smartTickerPrefsRevision.value = _smartTickerPrefsRevision.value + 1
+        }
+    }.also { listener ->
+        getApplication<Application>()
+            .getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(listener)
+    }
+
     /**
      * [TickerActionRouter] route stringi -> `presentation.navigation.Routes` sabiti eslemesi.
      * Router domain katmaninda kendi string sabitlerini tutar (navigation modulune bagimli
@@ -1026,13 +1054,20 @@ class LauncherViewModel @Inject constructor(
     // (bkz. MissionPulseTickerFactory.kt dosya başı notu, döngüsel bağımlılık nedeniyle).
     // Döngü T04: SmartTickerItem doğrudan UI'ya taşınır (T01 köprüsü kaldırıldı) — dokunma hedefi
     // [resolveTickerTarget] ile, dismiss/hideType [dismissTickerItem]/[hideTickerType] ile çözülür.
+    // kotlinx.coroutines combine() en fazla 5 flow'u tipli overload'la destekler; T05'in
+    // yeni _smartTickerPrefsRevision sinyalini eklemek için _hiddenTickerTypes ile önce ikili
+    // combine edilip Pair olarak taşınır (6. flow ekleme ihtiyacını Pair'e sığdırma deseni).
+    private val hiddenTypesAndPrefsRevision: Flow<Pair<Set<String>, Int>> =
+        combine(_hiddenTickerTypes, _smartTickerPrefsRevision) { hidden, revision -> hidden to revision }
+
     val tickerItems: StateFlow<List<SmartTickerItem>> = combine(
         folders,
         insightCards,
         AppNotificationListenerService.badgeCounts,
         _dismissedTickerKeys,
-        _hiddenTickerTypes,
-    ) { folderList, cards, badges, dismissed, hiddenTypes ->
+        hiddenTypesAndPrefsRevision,
+    ) { folderList, cards, badges, dismissed, hiddenTypesAndRevision ->
+        val (hiddenTypes, _) = hiddenTypesAndRevision
         val folderSnapshots = folderList.map { f ->
             com.armutlu.apporganizer.utils.FolderSnapshot(
                 categoryId = f.category.categoryId,
@@ -1120,10 +1155,25 @@ class LauncherViewModel @Inject constructor(
         // İçerik bazlı bastırma (roadmap T04 "Bu tür bilgileri gösterme") — dismissed'ten ÖNCE
         // uygulanır, tür kalıcı olarak gizlenmişse tekil dismiss listesine hiç girmez.
         val notHiddenType = composed.filterNot { it.type.name in hiddenTypes }
-        val visible = notHiddenType.filterNot { it.dedupeKey in dismissed }
+        // T05 (Akıllı Nabız ayarları) — toplu içerik-türü ayarları AppPrefs.isSmartTickerTypeVisible
+        // ile AND edilir; T04'ün tekil "bu türü gösterme" kapatmasıyla aynı sonuca (öğe hiç
+        // üretilmemiş gibi davranır) varır ama ayrı bir tercih kümesidir.
+        val notHiddenByGroup = notHiddenType.filter {
+            AppPrefs.isSmartTickerTypeVisible(ctx, it.type.name)
+        }
+        // T05 — "Hassas bilgileri göster" kapalıyken sensitive=true işaretli öğeler (ör. aktif
+        // bildirim sayısı) şeritte hiç görünmez; varsayılan kapalı (roadmap mock satır 1868).
+        val notSensitive = if (AppPrefs.isTickerSensitiveVisible(ctx)) {
+            notHiddenByGroup
+        } else {
+            notHiddenByGroup.filterNot { it.sensitive }
+        }
+        val visible = notSensitive.filterNot { it.dedupeKey in dismissed }
         // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
         // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
-        if (visible.isEmpty()) notHiddenType else visible
+        // notSensitive kullanılır (notHiddenType değil) — aksi halde tür/hassas-bilgi ayarıyla
+        // kapatılmış öğeler dismiss-reset sırasında yanlışlıkla geri gelirdi.
+        if (visible.isEmpty()) notSensitive else visible
         // WhileSubscribed: ticker yalnizca HomeScreen gorunurken hesaplanir; initial emptyList
         // HomeTickerRow'da erken-donus ile guvenli — cold start yuku azaltildi (D234).
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
