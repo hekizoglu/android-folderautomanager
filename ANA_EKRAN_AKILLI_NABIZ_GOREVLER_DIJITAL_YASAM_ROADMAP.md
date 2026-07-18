@@ -1951,7 +1951,7 @@ fun HomeIntelligenceCardsRow(
 
 **Bağımlılıklar:** M07, D02, D03.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü U00 — commit: 08b723b — tarih: 2026-07-18 — Not: HomeIntelligenceCardsRow; dar ekran <360dp veya fontScale>=1.3'te dikey; ikisi kapalıysa satır tamamen gizli; tablet 640dp max. Bugün Yüklendi + şerit ayrı bloklar (kapsam dışı, bilinçli).
 
 ---
 
