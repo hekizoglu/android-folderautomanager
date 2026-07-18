@@ -980,7 +980,7 @@ enum class HomeGestureDecision {
 
 **Bağımlılıklar:** P05, P09.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P10 — commit: 844bdfa — tarih: 2026-07-18 — Not: HomeGestureArbiter saf çekirdek; 3 dağınık koşul delege edildi; -60px→60dp density-bağımsız eşik (kasıtlı iyileştirme). swipeLock debounce çağrı noktasında korundu. Cihaz doğrulaması: eşik hissi + predictive back + tablet panel.
 
 ---
 
