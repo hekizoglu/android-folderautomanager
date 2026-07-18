@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">App Organizer</string>
     <string name="app_version">0.1.0 Beta</string>
@@ -19,7 +19,7 @@
     <string name="btn_save">Save</string>
 
     <!-- Messages -->
-    <string name="msg_loading_apps">Loading apps…</string>
+    <string name="msg_loading_apps">Loading appsâ€¦</string>
     <string name="msg_success">Done</string>
     <string name="msg_error">Something went wrong</string>
     <string name="msg_permission_required">Permission required</string>
@@ -44,7 +44,7 @@
     <string name="all_apps_title">All Apps</string>
 
     <!-- Search -->
-    <string name="search_hint">Search apps…</string>
+    <string name="search_hint">Search appsâ€¦</string>
     <string name="home_search_hint_basic">Search apps, folders or settings</string>
     <string name="home_search_hint_full">Search apps, folders, settings, contacts or files</string>
     <string name="home_search_contacts_enable_title">Search contacts too</string>
@@ -64,7 +64,7 @@
 
     <!-- State Messages -->
     <string name="no_apps_found">No apps found</string>
-    <string name="loading">Loading…</string>
+    <string name="loading">Loadingâ€¦</string>
 
     <!-- HomeScreen -->
     <string name="launcher_settings">Launcher Settings</string>
@@ -79,7 +79,7 @@
     <string name="folder_open">Open Folder</string>
     <string name="folder_move">Move Position</string>
     <string name="folder_goto_all_apps">Go to All Apps</string>
-    <string name="folder_move_target_hint">Target position (1–%1$d)</string>
+    <string name="folder_move_target_hint">Target position (1â€“%1$d)</string>
     <string name="folder_move_confirm">Move</string>
     <string name="folder_edit">Edit Folder</string>
     <string name="folder_emoji_pick">Pick emoji</string>
@@ -105,7 +105,7 @@
     <string name="settings_reset_categories_desc">Delete all assignments and re-classify</string>
     <string name="settings_show">Show</string>
     <string name="settings_developer">Developer</string>
-    <string name="settings_developer_name">Hüseyin Ekizoğlu</string>
+    <string name="settings_developer_name">HÃ¼seyin EkizoÄŸlu</string>
     <string name="settings_database">Database</string>
     <string name="settings_feedback">Send Feedback</string>
     <string name="settings_feedback_desc">Report a bug or suggestion by e-mail</string>
@@ -157,7 +157,7 @@
 
     <string name="onb_autobackup_title">Auto Backup</string>
     <string name="onb_autobackup_desc">Automatically save a JSON backup of your category assignments on each launch?</string>
-    <string name="onb_autobackup_why">Weekly background backup — you won\'t lose your data.</string>
+    <string name="onb_autobackup_why">Weekly background backup â€” you won\'t lose your data.</string>
     <string name="onb_autobackup_btn">Continue</string>
 
     <string name="onb_notiftext_title">Notification Text</string>
@@ -168,7 +168,7 @@
     <string name="onb_notifaccess_title">Notification Access</string>
     <string name="onb_notifaccess_desc">Full access is required to show real notification counts on app icons.</string>
     <string name="onb_notifaccess_why">Android requires a separate permission for this.</string>
-    <string name="onb_notifaccess_privacy">🔒 All notification data stays on your device only — nothing leaves it.</string>
+    <string name="onb_notifaccess_privacy">ğŸ”’ All notification data stays on your device only â€” nothing leaves it.</string>
     <string name="onb_notifaccess_btn">Allow Access</string>
 
     <string name="onb_swipe_title">Swipe-up Hint</string>
@@ -223,12 +223,12 @@
     <string name="onb_classify_desc">We can group your apps by category or by manufacturer.</string>
     <string name="onb_classify_btn">Continue</string>
     <string name="onb_classify_cat_title">By Category</string>
-    <string name="onb_classify_cat_desc">Social Media, Games, Finance…</string>
+    <string name="onb_classify_cat_desc">Social Media, Games, Financeâ€¦</string>
     <string name="onb_classify_mfr_title">By Manufacturer</string>
-    <string name="onb_classify_mfr_desc">Google, Samsung, Microsoft…</string>
+    <string name="onb_classify_mfr_desc">Google, Samsung, Microsoftâ€¦</string>
 
     <string name="onb_done_title">You\'re All Set!</string>
-    <string name="onb_done_desc">Setup complete — your apps are already organized! Smart folders, your weekly report and universal search are waiting on the home screen. Enjoy exploring!</string>
+    <string name="onb_done_desc">Setup complete â€” your apps are already organized! Smart folders, your weekly report and universal search are waiting on the home screen. Enjoy exploring!</string>
     <string name="onb_done_btn">Start</string>
 
     <string name="onb_continue">Continue</string>
@@ -272,29 +272,29 @@
     <string name="font_mono">Mono</string>
     <string name="font_serif">Serif</string>
 
-    <!-- Notification Report (Cycle 224 — state separation) -->
+    <!-- Notification Report (Cycle 224 â€” state separation) -->
     <string name="notif_report_title">Notification Report</string>
     <string name="notif_report_back">Back</string>
     <string name="notif_report_perm_title">Notification access required</string>
-    <string name="notif_report_perm_desc">AppOrganizer needs to see notifications to build this report. After you grant access, data is collected on your device only — content is never stored, just app name and time.</string>
+    <string name="notif_report_perm_desc">AppOrganizer needs to see notifications to build this report. After you grant access, data is collected on your device only â€” content is never stored, just app name and time.</string>
     <string name="notif_report_perm_btn">Open Notification Access</string>
     <string name="notif_report_disabled_title">Notification Analysis is off</string>
-    <string name="notif_report_disabled_desc">You turned Notification Analysis off — while it\'s off, no new data is collected and no report is built. If you enable it, data stays on your device; notification content is never stored.</string>
+    <string name="notif_report_disabled_desc">You turned Notification Analysis off â€” while it\'s off, no new data is collected and no report is built. If you enable it, data stays on your device; notification content is never stored.</string>
     <string name="notif_report_disabled_btn">Enable Analysis</string>
     <string name="notif_report_collecting_title">Collecting data</string>
     <string name="notif_report_collecting_desc">Analysis is on, but not enough notifications have accumulated yet. After a few days of normal use, your report will appear here.</string>
-    <string name="notif_report_paused_banner">Notification Analysis is off — the report is not being updated.</string>
-    <string name="notif_report_perm_banner">Notification access not granted — the report is not being updated.</string>
+    <string name="notif_report_paused_banner">Notification Analysis is off â€” the report is not being updated.</string>
+    <string name="notif_report_perm_banner">Notification access not granted â€” the report is not being updated.</string>
     <string name="notif_report_perm_banner_btn">Grant Access</string>
     <string name="notif_report_summary_period">Last 7 days</string>
     <string name="notif_report_summary_total">total notifications</string>
     <string name="notif_report_summary_top">%1$s sent %2$d notifications</string>
-    <string name="notif_report_section_talkative">📢 Most Talkative</string>
-    <string name="notif_report_section_disturbing">🌙 Disturbing</string>
-    <string name="notif_report_section_distracting">🎯 Distracting</string>
-    <string name="notif_report_distracting_hint">Apps that send many notifications but are rarely used — consider muting them.</string>
-    <string name="notif_report_no_disturbing">No apps disturbing you at night 🎉</string>
-    <string name="notif_report_no_distracting">No distracting apps detected ✨</string>
+    <string name="notif_report_section_talkative">ğŸ“¢ Most Talkative</string>
+    <string name="notif_report_section_disturbing">ğŸŒ™ Disturbing</string>
+    <string name="notif_report_section_distracting">ğŸ¯ Distracting</string>
+    <string name="notif_report_distracting_hint">Apps that send many notifications but are rarely used â€” consider muting them.</string>
+    <string name="notif_report_no_disturbing">No apps disturbing you at night ğŸ‰</string>
+    <string name="notif_report_no_distracting">No distracting apps detected âœ¨</string>
     <string name="notif_report_night_ratio">%1$d%% at night</string>
     <string name="notif_report_burst">up to %1$d per hour</string>
     <string name="notif_report_count_usage">%1$d notifications / %2$d min of use</string>
@@ -306,12 +306,12 @@
     <string name="privacy_report_summary_none">No app can access sensitive permissions</string>
     <string name="privacy_report_group_granted_count">%1$d apps can access</string>
     <string name="privacy_report_group_requested_not_granted">%1$d apps requested, not granted</string>
-    <string name="privacy_report_empty_title">Your privacy is safe 🎉</string>
+    <string name="privacy_report_empty_title">Your privacy is safe ğŸ‰</string>
     <string name="privacy_report_empty_desc">No app has been granted sensitive permissions like camera, microphone, or location.</string>
     <string name="privacy_report_disabled_title">Privacy Analysis is off</string>
-    <string name="privacy_report_disabled_desc">You have turned off Privacy Analysis. Turn it on to see which sensitive permissions your installed apps have — nothing is ever sent anywhere.</string>
+    <string name="privacy_report_disabled_desc">You have turned off Privacy Analysis. Turn it on to see which sensitive permissions your installed apps have â€” nothing is ever sent anywhere.</string>
     <string name="privacy_report_disabled_btn">Turn On Analysis</string>
-    <string name="privacy_report_footer_note">All analysis happens on your device — nothing is ever sent anywhere.</string>
+    <string name="privacy_report_footer_note">All analysis happens on your device â€” nothing is ever sent anywhere.</string>
 
     <!-- Privacy Analysis settings (SettingsSecurityScreen) -->
     <string name="settings_privacy_report_title">Privacy Analysis</string>
@@ -324,7 +324,7 @@
     <string name="settings_notif_analytics_title">Notification Analysis</string>
     <string name="settings_notif_analytics_desc">Notification counts are recorded to feed the Notification Report (content is never stored)</string>
     <string name="settings_notif_report_title">Notification Report</string>
-    <string name="settings_notif_report_desc">See last 7 days of notification behavior — talkative, disturbing, distracting</string>
+    <string name="settings_notif_report_desc">See last 7 days of notification behavior â€” talkative, disturbing, distracting</string>
 
     <!-- Smart Suggestions Row -->
     <string name="suggestions_label_morning">Your morning most-used</string>
@@ -339,7 +339,7 @@
     <string name="recent_notifications_row_signal">Last 24h, no content</string>
 
     <!-- Wrapped Report -->
-    <string name="wrapped_title">🎁 Weekly Report</string>
+    <string name="wrapped_title">ğŸ Weekly Report</string>
     <string name="wrapped_back">Back</string>
     <string name="wrapped_empty_title">Not enough data yet</string>
     <string name="wrapped_empty_desc">Your weekly report will appear here after you use a few apps.</string>
@@ -352,16 +352,16 @@
     <string name="wrapped_personality_title">Your Digital Personality</string>
     <string name="wrapped_personality_dominant_pct">%1$d%% dominant usage</string>
     <string name="wrapped_stats_title">Interesting Stats</string>
-    <string name="wrapped_stat_most_opened">🔥 Most Opened</string>
-    <string name="wrapped_stat_least_opened">🐢 Least Opened</string>
-    <string name="wrapped_stat_largest_app">💽 Largest App</string>
-    <string name="wrapped_stat_oldest_installed">🕰️ Oldest Installed</string>
-    <string name="wrapped_stat_newest_installed">✨ Newest Installed</string>
-    <string name="wrapped_stat_longest_unused">😴 Longest Unused</string>
+    <string name="wrapped_stat_most_opened">ğŸ”¥ Most Opened</string>
+    <string name="wrapped_stat_least_opened">ğŸ¢ Least Opened</string>
+    <string name="wrapped_stat_largest_app">ğŸ’½ Largest App</string>
+    <string name="wrapped_stat_oldest_installed">ğŸ•°ï¸ Oldest Installed</string>
+    <string name="wrapped_stat_newest_installed">âœ¨ Newest Installed</string>
+    <string name="wrapped_stat_longest_unused">ğŸ˜´ Longest Unused</string>
     <string name="wrapped_stat_usage_count">%1$d times</string>
     <string name="wrapped_badges_title">Your Badges</string>
     <string name="wrapped_growth_title">Fastest Growing This Week</string>
-    <string name="wrapped_comparison_pending">Gathering data — comparison ready next week</string>
+    <string name="wrapped_comparison_pending">Gathering data â€” comparison ready next week</string>
     <string name="wrapped_notif_link_title">Your Notification Summary</string>
     <string name="wrapped_notif_link_desc">See the detailed notification report</string>
     <string name="wrapped_notif_link_open">Open</string>
@@ -420,7 +420,7 @@
     <string name="settings_home_weather_city_hint">Example: Istanbul</string>
     <string name="weather_setup_needed">Select a city to enable weather</string>
     <string name="weather_loading">Preparing weather data</string>
-    <string name="weather_current_line">%1$d° now  •  Low %2$d°  •  High %3$d°</string>
+    <string name="weather_current_line">%1$dÂ° now  â€¢  Low %2$dÂ°  â€¢  High %3$dÂ°</string>
     <string name="weather_updated_at">Updated %1$s</string>
     <string name="weather_fetch_failed">Weather data could not be loaded</string>
     <string name="settings_clock_style_title">Clock Style</string>
@@ -449,7 +449,7 @@
     <string name="settings_home_usage_chart_visible_desc">Shows the last 24 hours of usage as a mini chart under the score ring</string>
     <string name="pulse_usage_chart_content_desc">Usage chart for the last 24 hours</string>
 
-    <!-- HomeTickerRow — Smart Pulse strip (Cycle T04) -->
+    <!-- HomeTickerRow â€” Smart Pulse strip (Cycle T04) -->
     <string name="ticker_mute_8h">Mute for 8 hours</string>
     <string name="ticker_mute_1d">Mute for 1 day</string>
     <string name="ticker_mute_7d">Mute for 7 days</string>
@@ -523,7 +523,7 @@
     <string name="settings_stats_search_reset_subtitle">Deletes all search counters</string>
     <string name="settings_stats_weekly_report_section">Weekly Report</string>
     <string name="settings_stats_weekly_report_title">Weekly Report</string>
-    <string name="settings_stats_weekly_report_desc">Digital life score, personality type and badges — shown in the Reports Center</string>
+    <string name="settings_stats_weekly_report_desc">Digital life score, personality type and badges â€” shown in the Reports Center</string>
 
     <!-- P0.4: Scoped stats reset wizard -->
     <string name="stats_reset_wizard_title">Reset Usage Data</string>
@@ -582,12 +582,12 @@
     <string name="search_settings_contact_suggestions_clear_title">Clear Contact Suggestion History</string>
     <string name="search_settings_contact_suggestions_clear_subtitle">Deletes the saved contact action history and resets suggestions</string>
 
-    <!-- SearchSettingsScreen — P0.3: File search permission/index state -->
+    <!-- SearchSettingsScreen â€” P0.3: File search permission/index state -->
     <string name="search_settings_files_title">File Names</string>
     <string name="search_settings_files_subtitle_disabled">Off by default. Asks for Android file permission for media/download names; content is not read</string>
-    <string name="search_settings_files_subtitle_permission_required">Permission required — file names are not indexed yet</string>
-    <string name="search_settings_files_subtitle_indexing">Indexing…</string>
-    <string name="search_settings_files_subtitle_ready">%1$d items indexed · Last indexed: %2$s</string>
+    <string name="search_settings_files_subtitle_permission_required">Permission required â€” file names are not indexed yet</string>
+    <string name="search_settings_files_subtitle_indexing">Indexingâ€¦</string>
+    <string name="search_settings_files_subtitle_ready">%1$d items indexed Â· Last indexed: %2$s</string>
     <string name="search_settings_files_subtitle_failed">Indexing failed</string>
     <string name="search_settings_files_permission_required_hint">File search needs an Android permission. Without it, file results are not shown.</string>
     <string name="search_settings_files_grant_permission_action">Grant Permission</string>
@@ -606,8 +606,8 @@
     <string name="missions_daily_section">Today\'s Missions</string>
     <string name="missions_weekly_section">Weekly Missions</string>
     <string name="missions_mark_done">Mark as done</string>
-    <string name="missions_congrats">Congrats! +%1$d ⭐</string>
-    <string name="missions_empty">Preparing missions…</string>
+    <string name="missions_congrats">Congrats! +%1$d â­</string>
+    <string name="missions_empty">Preparing missionsâ€¦</string>
     <!-- Cycle M05: mission row action button labels -->
     <string name="mission_action_review">Review</string>
     <string name="mission_action_open_report">Open Report</string>
@@ -634,7 +634,7 @@
     <!-- Dongu M06: countdown shown under each mission row -->
     <string name="mission_deadline_day">%1$s until today ends</string>
     <string name="mission_deadline_week">%1$s until this week ends</string>
-    <!-- Dongu M06: MissionRow status badge copy — status is never color-only -->
+    <!-- Dongu M06: MissionRow status badge copy â€” status is never color-only -->
     <string name="mission_status_safe">On track</string>
     <string name="mission_status_at_risk">Close to the limit</string>
     <string name="mission_status_awaiting_settlement">Will be decided at period end</string>
@@ -654,7 +654,7 @@
     <string name="recent_installs_home_chip_title">Installed Today</string>
     <string name="recent_installs_home_chip_subtitle_one">1 new app</string>
     <string name="recent_installs_home_chip_subtitle_other">%1$d new apps</string>
-    <string name="dashboard_empty_hint">Smart Home is ready — turn on cards and widgets in Settings to customize this page</string>
+    <string name="dashboard_empty_hint">Smart Home is ready â€” turn on cards and widgets in Settings to customize this page</string>
     <string name="recent_installs_drawer_section_title">Installed Today</string>
     <string name="missions_home_chip_title">Missions</string>
     <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
@@ -662,7 +662,7 @@
     <string name="home_page_indicator_dashboard_unselected">Smart Home</string>
     <string name="home_page_indicator_folder_page">Folder page %1$d / %2$d</string>
     <string name="missions_home_card_usage_access_required">Usage access required</string>
-    <string name="missions_home_card_all_completed">Today\'s missions completed ⭐</string>
+    <string name="missions_home_card_all_completed">Today\'s missions completed â­</string>
     <string name="digital_life_card_title">Digital Life</string>
     <string name="digital_life_card_status_excellent">Excellent</string>
     <string name="digital_life_card_status_good">Good</string>
@@ -688,7 +688,7 @@
     <string name="digital_life_card_reason_consistency_steady">Usage pattern is steady</string>
     <string name="digital_life_card_reason_consistency_volatile">Usage varies a lot week to week</string>
     <string name="digital_life_card_reason_consistency_no_data">No unlock data</string>
-    <!-- Cycle D04 — PulseReasonPresenter count-based reasons (roadmap line 1520-1526) -->
+    <!-- Cycle D04 â€” PulseReasonPresenter count-based reasons (roadmap line 1520-1526) -->
     <string name="pulse_reason_organization_uncategorized_count">%1$d uncategorized apps</string>
     <string name="pulse_reason_attention_noisy_label">Notification intensity</string>
     <string name="pulse_reason_cleanup_unused_count">%1$d apps unused for a while</string>
@@ -721,7 +721,7 @@
     <string name="usage_data_ci_build_warning_description">This build is intended only for code and CI verification. Analytics, Crashlytics, and Performance are unavailable. Install the Firebase-enabled test APK for device testing.</string>
     <string name="usage_data_ci_build_test_disabled">Firebase is disabled in this build</string>
     <string name="usage_data_status_idle">No connection test has been run yet.</string>
-    <string name="usage_data_status_testing">Testing Firebase configuration…</string>
+    <string name="usage_data_status_testing">Testing Firebase configurationâ€¦</string>
     <string name="usage_data_status_success">Connection test succeeded.</string>
     <string name="usage_data_status_partial">Firebase configuration found. Service access will be verified by the next connection test.</string>
     <string name="usage_data_status_failed">Firebase configuration was not found.</string>
@@ -769,7 +769,7 @@
     <string name="home_layout_search_position_top">Fixed at top</string>
     <string name="home_layout_search_position_bottom">Fixed at bottom</string>
     <string name="home_layout_dock_description">The dock always stays fixed at the bottom; its position can\'t change, but its apps can be reordered above.</string>
-    <string name="home_layout_small_device_warning">Your screen looks small — keeping many sections on may require scrolling on the Home screen.</string>
+    <string name="home_layout_small_device_warning">Your screen looks small â€” keeping many sections on may require scrolling on the Home screen.</string>
     <string name="home_section_clock">Clock</string>
     <string name="home_section_missions_score">Missions and score</string>
     <string name="home_section_main_search">Main search</string>
@@ -783,4 +783,9 @@
     <string name="home_section_ticker">Ticker and stats</string>
     <string name="home_section_folders">Folders</string>
     <string name="home_section_dock">Dock</string>
+    <!-- Cycle P19: pager accessibility -->
+    <string name="home_pager_position_suffix">Page %1$d / %2$d</string>
+    <string name="home_pager_next_page_action">Next page</string>
+    <string name="home_pager_previous_page_action">Previous page</string>
+    <string name="search_field_role_description">Search field</string>
 </resources>

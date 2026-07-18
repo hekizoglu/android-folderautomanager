@@ -185,4 +185,36 @@ class HomePagerHostTest {
         val newPages = listOf(folderPage(0, null), folderPage(1, "a"))
         assertEquals(0, resolvePageAfterPlanChange(previousPages, previousPageIndex = 0, newPages = newPages))
     }
+
+    // ── Döngü P19 — TalkBack sayfa başlığı (homePagerCurrentPageDescription) ────────────────
+
+    private fun folderLabelFormat(n: Int, m: Int) = "Klasör sayfası $n / $m"
+
+    @Test fun `Dashboard sayfasindayken dashboard etiketi doner`() {
+        val pages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+        val result = homePagerCurrentPageDescription(pages, 0, "Akıllı Ana Ekran", ::folderLabelFormat)
+        assertEquals("Akıllı Ana Ekran", result)
+    }
+
+    @Test fun `klasor sayfasindayken N M formatinda etiket doner`() {
+        val pages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+        assertEquals("Klasör sayfası 1 / 2", homePagerCurrentPageDescription(pages, 1, "Akıllı Ana Ekran", ::folderLabelFormat))
+        assertEquals("Klasör sayfası 2 / 2", homePagerCurrentPageDescription(pages, 2, "Akıllı Ana Ekran", ::folderLabelFormat))
+    }
+
+    @Test fun `Dashboard kapaliyken ilk sayfa klasor etiketi 1 M doner`() {
+        val pages = listOf(folderPage(0, "a"), folderPage(1, "b"))
+        assertEquals("Klasör sayfası 1 / 2", homePagerCurrentPageDescription(pages, 0, "Akıllı Ana Ekran", ::folderLabelFormat))
+    }
+
+    @Test fun `bos sayfa listesinde dashboard etiketi fallback olarak doner`() {
+        val result = homePagerCurrentPageDescription(emptyList(), 0, "Akıllı Ana Ekran", ::folderLabelFormat)
+        assertEquals("Akıllı Ana Ekran", result)
+    }
+
+    @Test fun `sinir disi currentPage guvenli sinira cekilip dogru etiketi uretir`() {
+        val pages = listOf(HomePageSpec.Dashboard, folderPage(0, "a"), folderPage(1, "b"))
+        // rawPage=99 -> clamp edilip son sayfaya (index 2, klasor b) duser.
+        assertEquals("Klasör sayfası 2 / 2", homePagerCurrentPageDescription(pages, 99, "Akıllı Ana Ekran", ::folderLabelFormat))
+    }
 }

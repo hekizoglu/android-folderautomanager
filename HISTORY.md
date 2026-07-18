@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P19 - 2026-07-18 - Erisilebilirlik + buyuk yazi
+
+**Yapilanlar:** Denetim: 5 madde zaten karsilaniyordu (48dp indicator, reduce-motion, FolderTile semantics...). Kapatilan eksikler: pager kok contentDescription + Sonraki/Onceki CustomAction (saf homePagerCurrentPageDescription + 5 test); arama alani sabit rol aciklamasi (Role.Search bu Compose surumunde yok — bytecode ile dogrulandi); Bugun Yuklenenler chip mergeDescendants; FolderGridPage paneTitle "Klasor sayfasi X/Y" (indicator ile ayni kaynak). Fable duzeltmesi: agent'in unuttugu 4 EN string eklendi (TR/EN esitligi korundu), compile yesil.
+
+**Bug:** Yok. Not: HomeMissionCard/DigitalLifeCard'da semantics YOK cikti (CLAUDE.md bilgisi bayat) — kapsam disi birakildi, ayri gorev adayi. Cihaz dogrulamasi: TalkBack duyurusu, font %200 alt bilesenler, D-pad focus sirasi, RTL.
+
+**Sonraki:** P20 — telefon/tablet adaptif duzen (zincir devam).
+
 ## Dashboard Dongu P18 - 2026-07-18 - Focus Mode uyumu
 
 **Yapilanlar:** Focus Mode paralel bypass ekrani (if/else placeholder Box) KALDIRILDI — artik icerik preset'i: applyFocusMode saf fonksiyonu (saat kompakt, gorev/dijital yasam/oneri/ticker kapali, klasorler+arama+favoriler acik); ticker yerine FolderStatsRow; ayar aciklamasi guncellendi. Sayfa plani/anchor yapisal olarak etkilenmiyor. Bonus: showSecondaryRowsInCompactMode leftover hatasi temizlendi. 6 yeni test, 14/14 policy + HomePage testleri yesil.

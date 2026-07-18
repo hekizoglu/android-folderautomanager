@@ -20,6 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
@@ -67,12 +71,29 @@ internal fun FolderGridPage(
     onDragCancel: () -> Unit,
     onHomeLongPress: () -> Unit,
     editMode: Boolean = false,
+    // Döngü P19 madde 5 — "Klasör sayfası X / Y" açıklaması. İndicator dot'ları zaten bu metni
+    // taşıyordu (home_page_indicator_folder_page), ama TalkBack kullanıcısı indicator'a değil
+    // doğrudan sayfa İÇERİĞİNE odaklandığında (swipe ile page'e girince) aynı bilgi eksikti —
+    // bu parametre `HomeScreen.kt`'de `homePagerCurrentPageDescription`/indicator ile AYNI
+    // string kaynağından (home_page_indicator_folder_page) üretilip buraya geçirilir; null ise
+    // (tek klasör sayfası / eski çağrı yerleri) davranış DEĞİŞMEZ, semantics eklenmez.
+    pageAccessibilityLabel: String? = null,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columnsCount),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-        modifier = modifier,
+        modifier = modifier.then(
+            if (pageAccessibilityLabel != null) {
+                Modifier.semantics {
+                    isTraversalGroup = true
+                    paneTitle = pageAccessibilityLabel
+                    contentDescription = pageAccessibilityLabel
+                }
+            } else {
+                Modifier
+            }
+        ),
         verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
         userScrollEnabled = false

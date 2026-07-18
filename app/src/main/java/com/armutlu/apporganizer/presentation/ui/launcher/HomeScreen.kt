@@ -1663,11 +1663,27 @@ fun HomeScreen(
                     )
                 },
                 folderPageContent = { spec ->
+                    // Döngü P19 madde 5 — indicator'ın kullandığı AYNI hesaplamadan ("Klasör
+                    // sayfası N/M") üretilir; iki yerde de aynı cümle okunur (bkz. HomePagerHost.kt
+                    // homePagerCurrentPageDescription, HomeScreenPageIndicator.kt buildHomePageIndicatorItems).
+                    val pageIndexInPages = pages.indexOf(spec)
+                    val folderPageLabel = if (pageIndexInPages >= 0) {
+                        val items = buildHomePageIndicatorItems(pages, pageIndexInPages)
+                        val current = items.getOrNull(pageIndexInPages)
+                        if (current != null && !current.isDashboard) {
+                            stringResource(
+                                R.string.home_page_indicator_folder_page,
+                                current.folderNumber ?: (current.pageIndex + 1),
+                                current.folderPageCount.coerceAtLeast(1),
+                            )
+                        } else null
+                    } else null
                     FolderGridPage(
                         pageFolders = spec.folders,
                         globalStartIndex = spec.pageIndex * pageSize,
                         pageSize = pageSize,
                         columnsCount = screenColumns,
+                        pageAccessibilityLabel = folderPageLabel,
                         dragFromIndex = dragFromIndex,
                         dragToIndex = dragToIndex,
                         textAlpha = textAlpha,

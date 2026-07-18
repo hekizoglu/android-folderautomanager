@@ -1255,6 +1255,8 @@ internal fun HomeAppSearchBar(
     // Focus state — arama alanı seçilince kart belirginleşir (E9)
     var isFocused by remember { mutableStateOf(false) }
     var showGhostZones by remember { mutableStateOf(false) }
+    // Döngü P19 madde 3 — arama alanı contentDescription'ı, ortak string kaynağı.
+    val searchFieldRoleDescription = stringResource(R.string.search_field_role_description)
     val barScale by animateFloatAsState(
         targetValue = if (isDragging) 1.04f else 1f,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
@@ -1765,6 +1767,11 @@ internal fun HomeAppSearchBar(
                     Icon(Icons.Default.Search, contentDescription = "Ara",
                         tint = if (isFocused) Color.White else Color.White.copy(alpha = 0.65f),
                         modifier = Modifier.size(18.dp))
+                    // Döngü P19 madde 3 — global arama TalkBack'e `heading` DEĞİL, ayrı bir
+                    // "arama alanı" contentDescription'ı ile yansır (bu Compose UI sürümünde
+                    // `Role.Search` yok — mevcut Role enum'u Button/Checkbox/Switch/RadioButton/
+                    // Tab/Image/DropdownList ile sınırlı, bkz. görev raporu) — `home_page_indicator_...`
+                    // gibi sayfa başlıklarıyla karıştırılmaması için ayrı string kaynağı kullanılır.
                     BasicTextField(
                         value = query,
                         onValueChange = { query = it },
@@ -1772,7 +1779,10 @@ internal fun HomeAppSearchBar(
                         textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
                         modifier = Modifier
                             .weight(1f)
-                            .onFocusChanged { isFocused = it.isFocused },
+                            .onFocusChanged { isFocused = it.isFocused }
+                            .semantics {
+                                contentDescription = searchFieldRoleDescription
+                            },
                         decorationBox = { inner ->
                             Box(Modifier.weight(1f)) {
                                 // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez
@@ -2949,6 +2959,7 @@ internal fun FolderSearchBar(
     modifier: Modifier = Modifier
 ) {
     val active = query.isNotEmpty() || countdown < 30
+    val searchFieldRoleDescription = stringResource(R.string.search_field_role_description)
     Row(
         modifier = modifier
             .height(44.dp)
@@ -2972,6 +2983,7 @@ internal fun FolderSearchBar(
             tint = if (active) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.55f),
             modifier = Modifier.size(18.dp)
         )
+        // Döngü P19 madde 3 — HomeAppSearchBar ile aynı desen: ayrı "arama alanı" contentDescription'ı.
         BasicTextField(
             value = query,
             onValueChange = onQueryChange,
@@ -2989,7 +3001,11 @@ internal fun FolderSearchBar(
                     inner()
                 }
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .semantics {
+                    contentDescription = searchFieldRoleDescription
+                }
         )
         if (active) {
             Text(

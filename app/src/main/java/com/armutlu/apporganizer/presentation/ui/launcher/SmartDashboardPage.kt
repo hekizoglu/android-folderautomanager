@@ -18,6 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -119,11 +123,26 @@ internal fun SmartDashboardPage(
         )
 
         if (state.recentInstalls.enabled && state.recentInstalls.apps.isNotEmpty()) {
+            val recentInstallsTitle = stringResource(R.string.recent_installs_home_chip_title)
+            val recentInstallsCount = state.recentInstalls.apps.size
+            val recentInstallsSubtitle = if (recentInstallsCount == 1) {
+                stringResource(R.string.recent_installs_home_chip_subtitle_one)
+            } else {
+                stringResource(R.string.recent_installs_home_chip_subtitle_other, recentInstallsCount)
+            }
             GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 2.dp)
-                    .clickable { actions.onOpenRecentInstalls() },
+                    .clickable { actions.onOpenRecentInstalls() }
+                    // Döngü P19 madde 4 — kart tek bir açıklayıcı contentDescription üretir;
+                    // içindeki dekoratif "📥"/"›" glyph'leri TalkBack'e AYRI okunmaz
+                    // (mergeDescendants=true altındaki Text node'ları kendi contentDescription'ını
+                    // taşımadığından otomatik birleşir — HomeTickerRow.kt/FolderTile.kt aynı desen).
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "$recentInstallsTitle, $recentInstallsSubtitle"
+                        role = Role.Button
+                    },
                 cornerRadius = 18.dp,
                 backgroundAlpha = 0.10f,
                 borderAlpha = 0.18f,
@@ -138,20 +157,14 @@ internal fun SmartDashboardPage(
                     androidx.compose.material3.Text("📥", fontSize = 15.sp)
                     Column(modifier = Modifier.weight(1f)) {
                         androidx.compose.material3.Text(
-                            text = stringResource(R.string.recent_installs_home_chip_title),
+                            text = recentInstallsTitle,
                             color = Color.White.copy(alpha = 0.90f),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             maxLines = 1,
                         )
-                        val count = state.recentInstalls.apps.size
-                        val subtitle = if (count == 1) {
-                            stringResource(R.string.recent_installs_home_chip_subtitle_one)
-                        } else {
-                            stringResource(R.string.recent_installs_home_chip_subtitle_other, count)
-                        }
                         androidx.compose.material3.Text(
-                            text = subtitle,
+                            text = recentInstallsSubtitle,
                             color = Color.White.copy(alpha = 0.52f),
                             fontSize = 11.sp,
                             maxLines = 1,

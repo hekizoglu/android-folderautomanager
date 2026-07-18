@@ -8,14 +8,22 @@ import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec
 import kotlin.math.absoluteValue
+import kotlinx.coroutines.launch
 
 /**
  * Saf yardımcı — geçerli pager sayfa index'ini [HomePageAnchor]'a çevirir (yazma yönü).
@@ -121,6 +129,32 @@ internal fun buildHomePageIndicatorItems(
 }
 
 /**
+ * Döngü P19 — saf yardımcı: geçerli sayfa için TalkBack'in okuyacağı "sayfa başlığı" metnini
+ * üretir ("Akıllı Ana Ekran" veya "Klasör sayfası N / M", indicator dot'larındaki
+ * `home_page_indicator_folder_page` deseniyle BİREBİR aynı biçim — roadmap madde 5 iki yerde
+ * de aynı cümleyi ister). Compose bağımlılığı yoktur; `HomePagerHost` bu metni kök pager
+ * `contentDescription`'ına yazar (roadmap madde 1: "current page title").
+ */
+internal fun homePagerCurrentPageDescription(
+    pages: List<HomePageSpec>,
+    currentPage: Int,
+    dashboardLabel: String,
+    folderPageLabelFormat: (folderNumber: Int, folderPageCount: Int) -> String,
+): String {
+    if (pages.isEmpty()) return dashboardLabel
+    val items = buildHomePageIndicatorItems(pages, currentPage)
+    val current = items.firstOrNull { it.isSelected } ?: return dashboardLabel
+    return if (current.isDashboard) {
+        dashboardLabel
+    } else {
+        folderPageLabelFormat(
+            current.folderNumber ?: (current.pageIndex + 1),
+            current.folderPageCount.coerceAtLeast(1),
+        )
+    }
+}
+
+/**
  * Döngü P05 — tek yatay ana ekran pager'ı. `HomePageSpec` listesindeki sayfaları (Dashboard
  * veya klasör sayfası) tek `HorizontalPager` içinde render eder; iç içe `HorizontalPager` YOKTUR
  * (eskiden `FolderPager`in kendi pager'ı vardı, P05'te söküldü — bkz. HomeScreenFolderPager.kt).
@@ -134,6 +168,12 @@ internal fun buildHomePageIndicatorItems(
  *
  * `pages` boş olamaz (çağıran taraf `HomePagePlanner.buildPages` üzerinden en az bir sayfa
  * garanti eder) — yine de savunma amaçlı `pages.isEmpty()` durumunda hiçbir şey çizilmez.
+ *
+ * Döngü P19 — erişilebilirlik (roadmap madde 1): kök pager `contentDescription`'ı geçerli
+ * sayfa başlığını + toplam sayfa sayısını taşır (`homePagerCurrentPageDescription` +
+ * "Sayfa N / M" eki), `customActions` ile TalkBack kullanıcısı yatay swipe yapmadan sonraki/
+ * önceki sayfaya geçebilir (`animateScrollToPage`, reduce motion'da `scrollToPage` — aynı
+ * kural `HomeScreen.kt`'nin `GoToStartPage` komutunda da uygulanır, bkz. dosya başı yorum).
  */
 @Composable
 internal fun HomePagerHost(
@@ -151,6 +191,31 @@ internal fun HomePagerHost(
         state = pagerState,
         pagerSnapDistance = PagerSnapDistance.atMost(1)
     )
+    val scope = rememberCoroutineScope()
+
+    val dashboardLabel = stringResource(R.string.home_page_indicator_dashboard_unselected)
+    val folderPageLabelTemplate = stringResource(R.string.home_page_indicator_folder_page)
+    val pagerPositionSuffix = stringResource(
+        R.string.home_pager_position_suffix,
+        pagerState.currentPage + 1,
+        pages.size,
+    )
+    val currentPageTitle = homePagerCurrentPageDescription(
+        pages = pages,
+        currentPage = pagerState.currentPage,
+        dashboardLabel = dashboardLabel,
+        folderPageLabelFormat = { n, m -> String.format(folderPageLabelTemplate, n, m) },
+    )
+    val nextPageActionLabel = stringResource(R.string.home_pager_next_page_action)
+    val previousPageActionLabel = stringResource(R.string.home_pager_previous_page_action)
+
+    fun goToPage(index: Int) {
+        val target = index.coerceIn(0, pages.lastIndex)
+        if (target == pagerState.currentPage) return
+        scope.launch {
+            if (reduceMotionEnabled) pagerState.scrollToPage(target) else pagerState.animateScrollToPage(target)
+        }
+    }
 
     HorizontalPager(
         state = pagerState,
@@ -160,7 +225,19 @@ internal fun HomePagerHost(
         userScrollEnabled = userScrollEnabled,
         // Dashboard pahalı state hesaplayabilir (P06+) — komşu sayfa önceden compose edilmesin.
         beyondViewportPageCount = 0,
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .semantics {
+                contentDescription = "$currentPageTitle, $pagerPositionSuffix"
+                customActions = buildList {
+                    if (pagerState.currentPage < pages.lastIndex) {
+                        add(CustomAccessibilityAction(nextPageActionLabel) { goToPage(pagerState.currentPage + 1); true })
+                    }
+                    if (pagerState.currentPage > 0) {
+                        add(CustomAccessibilityAction(previousPageActionLabel) { goToPage(pagerState.currentPage - 1); true })
+                    }
+                }
+            },
     ) { pageIndex ->
         val signedOffset = (pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction
         val pageOffset = signedOffset.absoluteValue.coerceIn(0f, 1f)
