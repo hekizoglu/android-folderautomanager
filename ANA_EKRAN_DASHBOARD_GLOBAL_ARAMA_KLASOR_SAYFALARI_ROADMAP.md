@@ -1378,7 +1378,7 @@ C. Focus Mode kaldırılır ve Dashboard section ayarlarına göç ettirilir.
 
 **Bağımlılıklar:** P06, P17.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P18 — commit: fc9fdcc — tarih: 2026-07-18 — Not: Paralel bypass ekranı kaldırıldı; Focus artık applyFocusMode içerik preset'i (klasörler/arama/favoriler açık kalır). Sayfa planı/anchor etkilenmez. Roadmap dosya adı düzeltmesi: Focus switch gerçekte SettingsLauncherScreen'de.
 
 ---
 
