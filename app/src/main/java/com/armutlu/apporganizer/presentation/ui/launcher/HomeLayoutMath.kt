@@ -33,4 +33,24 @@ object HomeLayoutMath {
 
     fun pageSize(requestedPageSize: Int, folderCapacity: Int): Int =
         minOf(requestedPageSize, max(MIN_VISIBLE_FOLDERS, folderCapacity))
+
+    /**
+     * Klasör sayfa sayısı — HomeScreen.kt satır ~984 ile senkron tutulmalı:
+     * `maxOf(1, (displayFolders.size + pageSize - 1) / pageSize)` (tavan bölme).
+     * En az 1 sayfa garanti edilir (klasör olmasa bile Dashboard/boş sayfa gösterilir).
+     */
+    fun pageCount(folderCount: Int, pageSize: Int): Int {
+        val safePageSize = max(1, pageSize)
+        return max(1, (folderCount + safePageSize - 1) / safePageSize)
+    }
+
+    /**
+     * Ekran genişliğine göre klasör grid sütun sayısı — HomeScreen.kt satır ~170-174 ve
+     * HomeScreenFolderPager.kt satır ~73-78 ile senkron tutulmalı (breakpoint: 600dp/840dp).
+     */
+    fun screenColumns(screenWidthDp: Int): Int = when {
+        screenWidthDp >= 840 -> 6
+        screenWidthDp >= 600 -> 5
+        else -> 4
+    }
 }

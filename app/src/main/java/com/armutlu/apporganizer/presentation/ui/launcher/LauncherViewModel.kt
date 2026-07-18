@@ -95,6 +95,20 @@ internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
     apps.filter { !it.isHidden }.sortedBy { it.appName }
 
 /**
+ * LauncherViewModel.filteredAllApps ile senkron tutulmalı — searchQuery'e göre uygulama
+ * adı/paket adı filtreler (Türkçe locale-aware lowercase, D0 kuralı: contains(ignoreCase)
+ * Türkçe'de güvenilmez). Pure function — sayfa/pager state'inden tamamen bağımsızdır.
+ */
+internal fun filterAllAppsByQuery(sortedApps: List<AppInfo>, query: String): List<AppInfo> {
+    val trimmed = query.trim().lowercase(java.util.Locale("tr"))
+    if (trimmed.isEmpty()) return sortedApps
+    return sortedApps.filter {
+        it.appName.lowercase(java.util.Locale("tr")).contains(trimmed) ||
+        it.packageName.lowercase().contains(trimmed)
+    }
+}
+
+/**
  * EX01 — "Bugün Yüklenenler" filtresi. Pure function — Android bağımlılığı yok, birim
  * testlerinden doğrudan çağrılabilir. [dayStartInclusive]/[dayEndExclusive] çağıran taraf
  * PeriodBoundaryResolver.currentDay() ile üretir (yerel gün sınırı, DST-safe).
@@ -274,14 +288,8 @@ class LauncherViewModel @Inject constructor(
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,
         _searchQuery.debounce(300)
-    ) { apps, q ->
-        val query = q.trim().lowercase(java.util.Locale("tr"))
-        if (query.isEmpty()) buildAllApps(apps)
-        else buildAllApps(apps).filter {
-            it.appName.lowercase(java.util.Locale("tr")).contains(query) ||
-            it.packageName.lowercase().contains(query)
-        }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    ) { apps, q -> filterAllAppsByQuery(buildAllApps(apps), q) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
         viewModelScope.launch(Dispatchers.IO) {

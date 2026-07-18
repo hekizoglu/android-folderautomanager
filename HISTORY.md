@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P00 - 2026-07-18 - Mevcut ana ekran davranislarini kilitle
+
+**Yapilanlar:** 25 yeni regresyon testi (4 dosya): Home cift-basis politikasi (500ms pure fonksiyona cikarildi), sayfa sayisi/bos slot/sutun esigi sozlesmeleri (HomeLayoutMath.pageCount/screenColumns), getLastHomePage kaliciligi, Turkce locale-aware arama filtresi (filterAllAppsByQuery pure). Roadmap varsayimlari dogrulandi (FolderPager kendi pager'i, ham Int sayfa, Home tek-basis komutsuz); dosya adi hatasi bulundu: HomeLayoutPrefsMigrationTest yok, gercek dosya HomeLayoutPrefsTest. 55 test yesil.
+
+**Bug:** Yok. Not: .claude\worktrees\wt-p02..wt-p13 orphan klasorleri diskte (git worktree list bos) — ileride temizlik.
+
+**Sonraki:** P01 — HomePageSpec + HomePagePlanner (zincir devam).
+
 ## Akilli Nabiz Dongu U04 - 2026-07-18 - Test matrisi + yayin kapisi — ROADMAP TAMAMLANDI
 
 **Yapilanlar:** Test matrisi siniflandirildi: JVM kapsami zaten tam (799 test/87 sinif/0 hata), lintDebug sifir error (510 baseline uyarisi), TR/EN string esligi saglandi (680=680 key, 7 olu kaynak silindi). Yayin kapisi: 6/8 kriter kanitli; debug APK v1.3.88 (111) uretildi. AKILLI NABIZ ROADMAP'I (30 dongu + EX01) TAMAMLANDI — 3 P0 cozuldu, gorev/skor/serit sistemleri bastan insa edildi.

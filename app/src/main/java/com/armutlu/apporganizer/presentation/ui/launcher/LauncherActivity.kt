@@ -203,12 +203,14 @@ class LauncherActivity : ComponentActivity() {
             viewModel.closeAllApps()
             return
         }
-        val now = System.currentTimeMillis()
-        if (now - lastHomePressMs <= 500L) {
-            viewModel.openAllApps()
-            lastHomePressMs = 0L
-        } else {
-            lastHomePressMs = now
+        when (val decision = homePressDecision(lastHomePressMs, System.currentTimeMillis())) {
+            is HomePressDecision.OpenAllApps -> {
+                viewModel.openAllApps()
+                lastHomePressMs = decision.nextLastHomePressMs
+            }
+            is HomePressDecision.RecordPress -> {
+                lastHomePressMs = decision.nextLastHomePressMs
+            }
         }
     }
 
@@ -318,6 +320,25 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 }
+
+/**
+ * Home tuşu çift-basış politikası — LauncherActivity.onNewIntent() ile senkron tutulmalı.
+ * AllApps zaten açıkken bu fonksiyon çağrılmaz (çağıran taraf önce kapatır).
+ */
+internal sealed interface HomePressDecision {
+    val nextLastHomePressMs: Long
+    data class OpenAllApps(override val nextLastHomePressMs: Long) : HomePressDecision
+    data class RecordPress(override val nextLastHomePressMs: Long) : HomePressDecision
+}
+
+internal const val HOME_DOUBLE_PRESS_WINDOW_MS = 500L
+
+internal fun homePressDecision(lastHomePressMs: Long, nowMs: Long): HomePressDecision =
+    if (nowMs - lastHomePressMs <= HOME_DOUBLE_PRESS_WINDOW_MS) {
+        HomePressDecision.OpenAllApps(nextLastHomePressMs = 0L)
+    } else {
+        HomePressDecision.RecordPress(nextLastHomePressMs = nowMs)
+    }
 
 internal fun createWidgetPickIntent(appWidgetId: Int): Intent =
     Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {

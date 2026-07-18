@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPack
 import com.armutlu.apporganizer.presentation.ui.launcher.buildAllApps
 import com.armutlu.apporganizer.presentation.ui.launcher.buildFolders
 import com.armutlu.apporganizer.presentation.ui.launcher.fillDockSuggestions
+import com.armutlu.apporganizer.presentation.ui.launcher.filterAllAppsByQuery
 import com.armutlu.apporganizer.presentation.ui.launcher.filterTodayInstalledApps
 import com.armutlu.apporganizer.presentation.ui.launcher.isDockAdditionBlocked
 import com.armutlu.apporganizer.presentation.ui.launcher.selectHomeContextualRow
@@ -302,6 +303,47 @@ class LauncherViewModelLogicTest {
 
         assertEquals(HomeLayoutMath.MIN_VISIBLE_FOLDERS, capacity)
         assertEquals(HomeLayoutMath.MIN_VISIBLE_FOLDERS, pageSize)
+    }
+
+    // ── filterAllAppsByQuery (P00 — searchQuery sayfadan bağımsız pure filtre) ─────────────
+
+    @Test
+    fun `filterAllAppsByQuery bos sorguda tum listeyi degistirmeden dondurur`() {
+        val apps = listOf(app("com.a", "Alpha", "social"), app("com.b", "Beta", "social"))
+        assertEquals(apps, filterAllAppsByQuery(apps, ""))
+        assertEquals(apps, filterAllAppsByQuery(apps, "   "))
+    }
+
+    @Test
+    fun `filterAllAppsByQuery uygulama adina gore filtreler`() {
+        val apps = listOf(
+            app("com.a", "Alpha", "social"),
+            app("com.b", "Beta", "social"),
+            app("com.c", "Gamma", "social"),
+        )
+        assertEquals(listOf("Alpha"), filterAllAppsByQuery(apps, "alp").map { it.appName })
+    }
+
+    @Test
+    fun `filterAllAppsByQuery paket adina gore de filtreler`() {
+        val apps = listOf(
+            app("com.whatsapp", "WhatsApp", "social"),
+            app("com.telegram", "Telegram", "social"),
+        )
+        assertEquals(listOf("WhatsApp"), filterAllAppsByQuery(apps, "whats").map { it.appName })
+    }
+
+    @Test
+    fun `filterAllAppsByQuery turkce locale ile buyuk kucuk harf duyarsiz calisir`() {
+        val apps = listOf(app("com.i", "İstanbul App", "social"))
+        // Türkçe'de "İ".lowercase() -> "i̇" değil "i" (Locale("tr") ile) — D0 kuralı testi.
+        assertEquals(1, filterAllAppsByQuery(apps, "istanbul").size)
+    }
+
+    @Test
+    fun `filterAllAppsByQuery eslesme yoksa bos liste doner`() {
+        val apps = listOf(app("com.a", "Alpha", "social"))
+        assertTrue(filterAllAppsByQuery(apps, "zzz").isEmpty())
     }
 
     private fun app(pkg: String, name: String, categoryId: String) = AppInfo(
