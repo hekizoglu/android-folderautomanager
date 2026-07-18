@@ -78,7 +78,17 @@ function Resolve-Codex {
 }
 
 try {
-    if (-not (Test-Path $roadmapPath)) { throw "Roadmap bulunamadi: $roadmapPath" }
+    if (-not (Test-Path $roadmapPath)) {
+        $previousStatus = ""
+        if (Test-Path $stateFile) {
+            try { $previousStatus = (Get-Content -LiteralPath $stateFile -Raw | ConvertFrom-Json).status } catch { }
+        }
+        Save-State "retired" "Roadmap insan kabulüyle silindi; denetim görevi kapatıldı."
+        if ($previousStatus -ne "retired") {
+            Send-Notice "AppOrganizer full audit kapatildi: roadmap insan kabulüyle silindi; bekleyen madde yok."
+        }
+        exit 0
+    }
     if (-not (Test-Path $promptPath)) { throw "Prompt bulunamadi: $promptPath" }
     if (Test-Path $lockFile) {
         Save-State "locked" "Onceki tur hala aktif." "" 2
