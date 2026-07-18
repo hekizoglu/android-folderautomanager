@@ -1,5 +1,7 @@
 ﻿import java.util.Properties
 
+import com.google.firebase.perf.plugin.FirebasePerfExtension
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -39,8 +41,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 112
-        versionName = "1.3.89"
+        versionCode = 120
+        versionName = "1.3.97"
         buildConfigField(
             "boolean",
             "FIREBASE_BUILD_ENABLED",
@@ -101,6 +103,12 @@ android {
         debug {
             isMinifyEnabled = false
             isDebuggable = true
+            // Compose-generated HomeScreen methods can fail ART verification after
+            // Firebase Perf ASM instrumentation; keep the SDK available while
+            // disabling bytecode instrumentation for the debug variant.
+            configure<FirebasePerfExtension> {
+                setInstrumentationEnabled(false)
+            }
             if (skipGoogleServices) {
                 versionNameSuffix = "-ci-no-firebase"
             }

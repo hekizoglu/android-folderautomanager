@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -50,7 +50,7 @@ import androidx.compose.ui.Modifier
 fun HomeShell(
     modifier: Modifier = Modifier,
     topSearch: (@Composable () -> Unit)? = null,
-    pager: @Composable ColumnScope.() -> Unit,
+    pager: @Composable () -> Unit,
     indicator: @Composable () -> Unit = {},
     bottomSearch: (@Composable () -> Unit)? = null,
     dock: @Composable () -> Unit,
@@ -67,7 +67,13 @@ fun HomeShell(
             verticalArrangement = Arrangement.Top
         ) {
             topSearch?.invoke()
-            pager()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) {
+                pager()
+            }
             indicator()
             bottomSearch?.invoke()
             dock()

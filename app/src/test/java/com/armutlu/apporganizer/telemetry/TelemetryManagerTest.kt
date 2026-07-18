@@ -89,7 +89,7 @@ class TelemetryManagerTest {
         TelemetryManager.configureForTest(enabled = false, performanceGateway = gateway)
         assertEquals("ok", TelemetryManager.trace(PerformanceTraceName.GLOBAL_SEARCH) { "ok" })
         assertTrue(gateway.started.isEmpty())
-        assertEquals(8, PerformanceTraceName.entries.size)
+        assertEquals(12, PerformanceTraceName.entries.size)
     }
 
     @Test

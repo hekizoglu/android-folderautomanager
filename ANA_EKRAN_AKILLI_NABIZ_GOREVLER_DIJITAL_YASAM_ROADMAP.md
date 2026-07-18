@@ -2194,7 +2194,7 @@ Cihaz senaryoları:
 
 **Bağımlılıklar:** Tüm önceki döngüler.
 
-**Durum:** ✅ Tamamlandı — Döngü U04 — commit: 5d3befe — tarih: 2026-07-18 — ROADMAP TAMAMLANDI: 799 test/0 hata, lint sıfır error, TR/EN eşliği 680=680, APK v1.3.88 (111). Açık kalan cihaz maddeleri: emülatör smoke, Compose UI test altyapısı (yok), gerçek cihaz matrisi (4 cihaz × 9 senaryo) — cihaz oturumunda kapatılacak.
+**Durum:** 🟡 Kısmen tamamlandı — Döngü U04 — commit: 5d3befe — tarih: 2026-07-18 — Unit test/lint/çeviri eşliği ve APK kapısı kanıtlandı. Açık kalan cihaz maddeleri: emülatör smoke, Compose UI test altyapısı (yok), gerçek cihaz matrisi (4 cihaz × 9 senaryo) — bu maddeler kanıtlanmadan roadmap tamamlandı sayılamaz.
 
 ---
 

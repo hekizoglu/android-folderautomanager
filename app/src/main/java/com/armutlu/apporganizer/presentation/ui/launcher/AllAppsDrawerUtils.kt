@@ -134,6 +134,9 @@ internal fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): Ima
 }
 
 // ── Sidebar label hesaplama ───────────────────────────────────────────────────
+internal fun formatLaunchCount(count: Long): String =
+    "${count.coerceAtLeast(0L)}x"
+
 internal data class SidebarEntry(val label: String, val scrollIndex: Int)
 
 internal fun buildSidebarEntries(
@@ -161,8 +164,8 @@ internal fun buildSidebarEntries(
         AllAppsSortMode.USAGE -> {
             val steps = listOf(1000L, 500L, 200L, 100L, 50L, 20L, 10L, 5L, 1L, 0L)
             steps.mapNotNull { threshold ->
-                val idx = apps.indexOfFirst { it.usageCount <= threshold }
-                if (idx >= 0) SidebarEntry("${threshold}×", idx) else null
+                val idx = apps.indexOfFirst { it.launchCount <= threshold }
+                if (idx >= 0) SidebarEntry(formatLaunchCount(threshold), idx) else null
             }.distinctBy { it.scrollIndex }
         }
         AllAppsSortMode.SIZE_DESC -> {

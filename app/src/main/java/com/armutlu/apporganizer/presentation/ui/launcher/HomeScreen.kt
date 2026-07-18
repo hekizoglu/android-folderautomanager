@@ -321,11 +321,16 @@ fun HomeScreen(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    // Döngü P05 — HomePagePrefs.KEY_SMART_DASHBOARD_ENABLED reaktif okuma (Reaktif AppPrefs
-    // pattern, CLAUDE.md §5). NOT: bu değer HomePagerHost'a bağlanırken TODO(P24) ile bilinçli
-    // olarak "false"a sabitlenir — bkz. dashboardEnabledForPager altında gerekçe.
+    // P24 — Dashboard tercihi ve pager rollout/safe-mode bayrakları reaktif okunur; ayarlardan
+    // yapılan değişiklikler yeni sayfa planına yeniden bağlanır.
     var smartDashboardPrefEnabled by remember {
         mutableStateOf(HomePagePrefs.isSmartDashboardEnabled(context))
+    }
+    var homePagerV2Enabled by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2Enabled(context))
+    }
+    var homePagerV2SafeMode by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2SafeMode(context))
     }
     DisposableEffect(context) {
         val homePagePrefs = context.getSharedPreferences(
@@ -338,6 +343,21 @@ fun HomeScreen(
         }
         homePagePrefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { homePagePrefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    DisposableEffect(context) {
+        val appPrefs = context.getSharedPreferences(
+            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_PAGER_V2_ENABLED ->
+                    homePagerV2Enabled = com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2Enabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_PAGER_V2_SAFE_MODE ->
+                    homePagerV2SafeMode = com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2SafeMode(context)
+            }
+        }
+        appPrefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { appPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     val haptic = LocalHapticFeedback.current
@@ -778,6 +798,7 @@ fun HomeScreen(
         // paylaşır (clock.compact = true) — tek doğruluk kaynağı politika fonksiyonundadır.
         val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700 || focusModeEnabled
         var tickerMutedUntilState by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
+        val hideSecondaryRowsForIme = homeAppSearchEnabled && imeVisible
 
         // Döngü P03 — global shell: search/dock/indicator artık HomeShell'de toplanıyor,
         // sayfa içeriği (saat, kartlar, klasör pager'ı, favoriler vb.) `pager` slotunda kalıyor.
@@ -997,6 +1018,10 @@ fun HomeScreen(
                 }
             },
             pager = {
+            // P25: Dashboard içeriğinin eski, pager-dışı kopyası kaldırıldı. Dashboard artık
+            // yalnız HomePagerHost.dashboardContent içinde; klasörler yalnız folderPageContent
+            // içinde çizilir. Böylece ikinci ve sonraki sayfalar Dashboard'u tekrar etmez.
+            if (false) {
             // İzin uyarıları artık ana ekranda değil — Ayarlar > Eksik İzinler bölümünde
 
             // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
@@ -1191,6 +1216,7 @@ fun HomeScreen(
                     )
                 }
             }
+            }
             // P18 — Odak Modu artık paralel bir ana ekran (placeholder metni) DEĞİL, bu pager
             // slotunun kendisidir: klasör sayfaları ve global arama HER ZAMAN erişilebilir kalır
             // (roadmap kabul kriteri: "yeni page mimarisini bypass eden paralel bir ana ekran
@@ -1335,7 +1361,7 @@ fun HomeScreen(
 
             // Kalan gerçek yükseklik ölçülür; sığmayan klasör KIRPILMAZ, sonraki sayfaya taşar
             androidx.compose.foundation.layout.BoxWithConstraints(
-                modifier = Modifier.fillMaxWidth().weight(1f)
+                modifier = Modifier.fillMaxSize()
             ) {
             val availableHeightDp = with(density) { constraints.maxHeight.toDp().value.toInt() }
             val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns) {
@@ -1353,19 +1379,24 @@ fun HomeScreen(
                     )
                 }
             }
-            // Döngü P05 — dashboardEnabled kararı: HomePagePrefs.isSmartDashboardEnabled()
-            // yeni kurulumda varsayılan TRUE yazıyor (bkz. HomePagePrefs.kt satır 55-56), ama
-            // roadmap Bölüm 1.5 "mevcut kullanıcı için mevcut sayfa/davranış korunur" diyor ve
-            @Suppress("UNUSED_EXPRESSION")
-            smartDashboardPrefEnabled
-            val dashboardEnabledForPager = false
+            // P24 rollout: yeni pager ancak flag açık, safe-mode kapalı ve Dashboard tercihi
+            // açıkken kullanılır. Safe-mode böylece kullanıcı verisini silmeden eski yolu açar.
+            val dashboardEnabledForPager = HomePagerRolloutPolicy.dashboardEnabled(
+                flagEnabled = homePagerV2Enabled,
+                safeMode = homePagerV2SafeMode,
+                dashboardPreferenceEnabled = smartDashboardPrefEnabled,
+            )
 
             val pages = remember(displayFolders, pageSize, dashboardEnabledForPager) {
-                HomePagePlanner.buildPages(
-                    folders = displayFolders,
-                    pageSize = pageSize,
-                    dashboardEnabled = dashboardEnabledForPager,
-                )
+                com.armutlu.apporganizer.telemetry.TelemetryManager.trace(
+                    com.armutlu.apporganizer.telemetry.PerformanceTraceName.HOME_FOLDER_PAGE_READY
+                ) {
+                    HomePagePlanner.buildPages(
+                        folders = displayFolders,
+                        pageSize = pageSize,
+                        dashboardEnabled = dashboardEnabledForPager,
+                    )
+                }
             }
             // Döngü P04: HomeLayoutMath.pageCount() ile hizalandı — tekil kaynak.
             val pageCount = pages.size
@@ -1381,6 +1412,52 @@ fun HomeScreen(
                 HomePageAnchorResolver.resolve(pages, initialAnchor).coerceIn(0, pageCount - 1)
             }
             val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { pageCount })
+
+            LaunchedEffect(Unit) {
+                com.armutlu.apporganizer.telemetry.TelemetryManager.trace(
+                    com.armutlu.apporganizer.telemetry.PerformanceTraceName.HOME_SHELL_READY
+                ) { Unit }
+            }
+            LaunchedEffect(pagerState, pages) {
+                var firstImpression = true
+                snapshotFlow { pagerState.settledPage }.collect { page ->
+                    val pageSpec = pages.getOrNull(page)
+                    val traceName = if (pageSpec is HomePageSpec.Dashboard) {
+                        com.armutlu.apporganizer.telemetry.PerformanceTraceName.HOME_DASHBOARD_READY
+                    } else {
+                        com.armutlu.apporganizer.telemetry.PerformanceTraceName.HOME_PAGE_SWITCH
+                    }
+                    com.armutlu.apporganizer.telemetry.TelemetryManager.trace(traceName) { Unit }
+                    val pageType = HomePageTelemetryPolicy.pageType(pageSpec)
+                    val position = HomePageTelemetryPolicy.positionBucket(page, pageCount)
+                    AppAnalytics.homePageViewed(
+                        pageType = pageType,
+                        pagePosition = position,
+                        navigationSource = if (firstImpression) {
+                            com.armutlu.apporganizer.telemetry.TelemetryEvent.HomeNavigationSource.RESTORE
+                        } else {
+                            com.armutlu.apporganizer.telemetry.TelemetryEvent.HomeNavigationSource.SWIPE
+                        },
+                        searchPosition = HomePageTelemetryPolicy.searchPosition(searchBarPosition),
+                        startMode = HomePageTelemetryPolicy.startMode(
+                            HomePagePrefs.getStartPageMode(context)
+                        ),
+                        deviceClass = HomePageTelemetryPolicy.deviceClass(
+                            HomeAdaptiveLayoutPolicy.deviceClass(configuration.screenWidthDp)
+                        ),
+                    )
+                    if (!firstImpression) {
+                        AppAnalytics.homePageSwiped(
+                            pageType = pageType,
+                            pagePosition = position,
+                            deviceClass = HomePageTelemetryPolicy.deviceClass(
+                                HomeAdaptiveLayoutPolicy.deviceClass(configuration.screenWidthDp)
+                            ),
+                        )
+                    }
+                    firstImpression = false
+                }
+            }
 
             // Sayfa listesi değiştiğinde (klasör eklendi/silindi, dashboard aç/kapat) current
             // page güvenli sınıra çekilir — pageCount küçülürse pagerState kendiliğinden clamp
@@ -1457,11 +1534,8 @@ fun HomeScreen(
                 pagerState = pagerState,
                 userScrollEnabled = pagerScrollEnabled,
                 dashboardContent = {
-                    // Döngü P06 — gerçek SmartDashboardPage. NOT: dashboardEnabledForPager P24'e
-                    // kadar sabit false olduğu için bu slot bugün compose edilmez (HomePagerHost
-                    // yalnız pages listesindeki HomePageSpec.Dashboard sayfası için çağırır ve
-                    // HomePagePlanner.buildPages dashboardEnabled=false iken Dashboard sayfası
-                    // üretmez) — yapı P24 için hazırlanıyor, davranış değişmedi.
+                    // P06/P24 — gerçek SmartDashboardPage; rollout ve kullanıcı tercihi açıkken
+                    // HomePagerHost'un Dashboard sayfasında compose edilir.
                     SmartDashboardPage(
                         state = DashboardUiState(
                             clock = DashboardClockState(compact = compactClock),
@@ -1767,7 +1841,7 @@ fun HomeScreen(
                         editMode = false,
                     )
                 },
-                modifier = Modifier.fillMaxWidth().weight(1f)
+                modifier = Modifier.fillMaxSize()
             )
 
             // Sayfa noktaciklari artık HomeShell'in indicator slotunda render ediliyor
@@ -1778,7 +1852,7 @@ fun HomeScreen(
             } // end inner Column
             } // end BoxWithConstraints
 
-            if (!hideSecondaryRowsForIme) {
+            if (false && !hideSecondaryRowsForIme) {
                 // P18 — Odak Modu öneriler/favoriler alanını minimuma indirir: yalnız favoriler
                 // (varsa) kalır, öneri/son bildirim/son kullanılan satırları kapanır — aynı kural
                 // DashboardLayoutPolicy.applyFocusMode içindeki DashboardFavoritesState daralmasıyla

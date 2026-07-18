@@ -12,7 +12,7 @@ object AppPrefs {
     const val KEY_HOME_PAGER_V2_SAFE_MODE = "home_pager_v2_safe_mode"
 
     fun isHomePagerV2Enabled(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_HOME_PAGER_V2_ENABLED, false)
+        prefs(context).getBoolean(KEY_HOME_PAGER_V2_ENABLED, true)
 
     fun setHomePagerV2Enabled(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_HOME_PAGER_V2_ENABLED, enabled).apply()

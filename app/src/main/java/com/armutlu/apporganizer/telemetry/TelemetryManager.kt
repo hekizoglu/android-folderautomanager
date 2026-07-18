@@ -23,6 +23,8 @@ interface PerformanceTrace {
 
 enum class PerformanceTraceName(val wireValue: String) {
     APP_COLD_START("app_cold_start"), HOME_SCREEN_READY("home_screen_ready"),
+    HOME_SHELL_READY("home_shell_ready"), HOME_DASHBOARD_READY("home_dashboard_ready"),
+    HOME_FOLDER_PAGE_READY("home_folder_page_ready"), HOME_PAGE_SWITCH("home_page_switch"),
     GLOBAL_SEARCH("global_search"), APP_CATALOG_RECONCILE("app_catalog_reconcile"),
     CLASSIFICATION_RUN("classification_run"), USAGE_SYNC("usage_sync"),
     FILE_INDEX("file_index"), HEALTH_REPORT_GENERATION("health_report_generation")
