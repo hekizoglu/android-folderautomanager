@@ -1163,7 +1163,7 @@ Akıllı Ana Ekran · Klasör 1/3
 
 **Bağımlılıklar:** P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P14 — commit: 1f84567 — tarih: 2026-07-18 — Not: Ev ikonu vs nokta ayrımı (renk-bağımsız), 48dp tıklanabilir hedefler, TR/EN contentDescription; flag kapalıyken görünüm birebir eski (testle kanıtlı).
 
 ---
 
