@@ -1788,6 +1788,16 @@ fun HomeScreen(
                         onFolderLongClick = { folderContextMenu = it },
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
+                        // EX02 — "N okunmamış bildirim" alt bilgi satırı Bildirim Raporu ekranını açar
+                        // (FolderStatsRow.onOpenDashboard ile aynı MainActivity.EXTRA_OPEN_ROUTE deseni).
+                        onNotificationSummaryTap = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            val intent = Intent(context, MainActivity::class.java).apply {
+                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.NOTIFICATION_REPORT)
+                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            runCatching { context.startActivity(intent) }
+                        },
                         onDragStart = { index ->
                             dragFromIndex = index
                             dragOffsetX = 0f

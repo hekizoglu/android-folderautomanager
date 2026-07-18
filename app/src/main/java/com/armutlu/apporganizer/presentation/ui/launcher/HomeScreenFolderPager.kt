@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,7 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -24,9 +25,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +74,11 @@ internal fun FolderGridPage(
     onFolderLongClick: (AppFolder) -> Unit,
     onSwipeUp: (String) -> Unit,
     onNotificationTap: (String) -> Unit,
+    // EX02 — "Bu sayfadaki klasörler" alt bilgi panelindeki "N okunmamış bildirim" satırı
+    // artık gerçek hedefe sahip: Bildirim Raporu ekranı (Routes.NOTIFICATION_REPORT).
+    // pageNotifications == 0 iken de (ipucu metni gösterilirken) dokunulabilir kalır; tek
+    // hedef olduğundan davranış tutarlıdır.
+    onNotificationSummaryTap: () -> Unit = {},
     onDragStart: (index: Int) -> Unit,
     onDrag: (dragAmount: Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -191,7 +199,7 @@ internal fun FolderGridPage(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(112.dp)
+                .heightIn(min = 112.dp)
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .background(Color(0xFF171717), RoundedCornerShape(12.dp))
                 .padding(horizontal = 14.dp, vertical = 8.dp)
@@ -213,7 +221,19 @@ internal fun FolderGridPage(
                 text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim" else "Yeni bildirim ve öneriler burada görünür",
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .fillMaxWidth()
+                    .clickable(onClick = onNotificationSummaryTap)
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = if (pageNotifications > 0) {
+                            "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun."
+                        } else {
+                            "Bildirim raporunu açmak için dokun."
+                        }
+                    }
             )
         }
     }

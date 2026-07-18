@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## EX02 - 2026-07-19 - Okunmamis bildirim satiri tiklanabilir (tablet canli test)
+
+**Yapilanlar:** FolderGridPage alt bilgi panelindeki "N okunmamis bildirim" metni gercek tiklanabilir hedef oldu (48dp, Role.Button, contentDescription, haptic) -> NOTIFICATION_REPORT rotasi (mevcut EXTRA_OPEN_ROUTE deseni). CANLI KANIT (Samsung R92Y200CBKX): UI dump clickable=true dogrulandi, tap sonrasi Bildirim Raporu acildi, crash yok. BONUS: build'i bloke eden FirebasePerfExtension hatasi duzeltildi (skipGoogleServices korumasi).
+
+**Bug:** FirebasePerfExtension kosulsuz cagrisi (paralel oturumun bump'inda gelmis olabilir) — build tamamen kirikti, duzeltildi.
+
+**Sonraki:** FAZ A — roadmap hasadi (9 sari durum tablet dogrulamasi).
+
 ## Dashboard Dongu P20 - 2026-07-19 - Klasor hizalama + APK teslimi
 
 **Yapilanlar:** Az sayida klasor iceren sayfalarda dikey ust hizalama duzeltildi; klasor icerigi kapasitesi bilgi paneli alanini hesaba katiyor; adaptif sayfa boyutu ile gereksiz bos sayfa azaltildi; saat widget'i kirpilma ve tasma korumasi kazandi; dashboard tasma siniri eklendi; varsayilan widget ayarlari acik tutuldu. Debug APK `v1.3.98 (121)` olusturuldu, unit testler ve bagli tablet smoke testi gecti.

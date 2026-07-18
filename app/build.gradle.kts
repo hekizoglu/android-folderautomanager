@@ -106,10 +106,11 @@ android {
             // Compose-generated HomeScreen methods can fail ART verification after
             // Firebase Perf ASM instrumentation; keep the SDK available while
             // disabling bytecode instrumentation for the debug variant.
-            configure<FirebasePerfExtension> {
-                setInstrumentationEnabled(false)
-            }
-            if (skipGoogleServices) {
+            if (!skipGoogleServices) {
+                configure<FirebasePerfExtension> {
+                    setInstrumentationEnabled(false)
+                }
+            } else {
                 versionNameSuffix = "-ci-no-firebase"
             }
         }
