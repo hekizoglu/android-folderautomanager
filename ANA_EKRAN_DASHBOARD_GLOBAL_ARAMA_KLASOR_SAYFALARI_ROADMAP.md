@@ -442,7 +442,7 @@ Aşağıdaki mevcut davranışlar için test yazılmalıdır:
 
 **Bağımlılıklar:** P00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P01 — commit: d22bc67 — tarih: 2026-07-18 — Not: AppFolder mevcut tip kullanıldı (LauncherViewModel'dekiler); dashboardEnabled saf parametre (P24 flag'ine P05'te bağlanacak). 14 planner testi + HomeLayoutMath çapraz tutarlılık.
 
 ---
 
