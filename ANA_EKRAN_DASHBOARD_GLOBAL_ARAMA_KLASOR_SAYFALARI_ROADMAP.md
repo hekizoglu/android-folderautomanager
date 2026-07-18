@@ -860,7 +860,7 @@ data class GlobalSearchUiState(
 
 **Bağımlılıklar:** P03, P05.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P08 — commit: cc28079 — tarih: 2026-07-18 — Not: State LauncherViewModel'de kaldı (çift state yok); FullScreenSearchOverlayV2 fillMaxSize/Box-vs-Column kısıtı nedeniyle host'a taşınmadı — P09'da HomeShell'e search-overlay slotu gerekebilir (host dosyasında dokümante).
 
 ---
 
