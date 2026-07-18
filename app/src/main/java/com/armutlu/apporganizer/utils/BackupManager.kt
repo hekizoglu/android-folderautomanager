@@ -157,6 +157,7 @@ object BackupManager {
                     put("classificationMode", AppPrefs.getClassificationMode(context).name)
                 })
                 put("homeLayout", homeLayoutToJson(HomeLayoutPrefs.read(context)))
+                put("homePagePrefs", homePagePrefsToJson(HomePagePrefs.toBackupFields(context)))
             }
             root.toString(2)
         }
@@ -438,6 +439,10 @@ object BackupManager {
                 HomeLayoutPrefs.write(context, homeLayoutFromJson(layout))
             } ?: HomeLayoutPrefs.read(context)
 
+            root.optJSONObject("homePagePrefs")?.let { pagePrefs ->
+                HomePagePrefs.fromBackupFields(context, homePagePrefsFromJson(pagePrefs))
+            }
+
             ImportResult(success = true, updatedCount = updated, missingPackages = missing, restoredVersion = version)
         }.getOrElse { e ->
             Timber.e(e, "Import failed")
@@ -465,6 +470,22 @@ object BackupManager {
                 hiddenSections = json.opt("homeHiddenSections") as? String,
                 customized = json.opt("homeLayoutCustomized") as? Boolean,
             )
+        )
+
+    // P02: Semantik sayfa preference'ları — categoryId gibi klasör kimlikleri backup içeriğine
+    // yazılır (yerel yedek/geri yükleme kapsamında, telemetri değil) ancak diagnostics raporuna
+    // ASLA yazılmaz (bkz. HomePagePrefs.anchorTypeLabel + DiagnosticsReportManager).
+    internal fun homePagePrefsToJson(fields: HomePagePrefs.BackupFields): JSONObject = JSONObject().apply {
+        put("homeStartPageMode", fields.startPageMode)
+        put("homeLastPageAnchor", fields.lastPageAnchor)
+        put("homeSmartDashboardEnabled", fields.smartDashboardEnabled)
+    }
+
+    internal fun homePagePrefsFromJson(json: JSONObject): HomePagePrefs.BackupFields =
+        HomePagePrefs.BackupFields(
+            startPageMode = json.opt("homeStartPageMode") as? String,
+            lastPageAnchor = json.opt("homeLastPageAnchor") as? String,
+            smartDashboardEnabled = json.opt("homeSmartDashboardEnabled") as? Boolean,
         )
 
     // Geriye dönük uyumluluk: context gerektirmeyen eski imza

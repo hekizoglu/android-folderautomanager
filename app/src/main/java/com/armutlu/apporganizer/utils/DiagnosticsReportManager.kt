@@ -218,6 +218,11 @@ class DiagnosticsReportManager @Inject constructor(
             WidgetPrefs.getWidgetIds(context).size,
             DockPrefs.getDockPackages(context).size,
         )
+        // P02: yalnizca TIP raporlanir (DASHBOARD/FOLDER/PAGE_INDEX/UNMIGRATED) — categoryId gibi
+        // klasor kimligi diagnostics raporuna asla yazilmaz (roadmap kabul kriteri). Migration'i
+        // burada ZORLAMIYORUZ (folder listesi olmadan tetiklemek yanlis anchor uretir).
+        val homeStartPageMode = HomePagePrefs.getStartPageMode(context).name
+        val homeLastPageAnchorType = HomePagePrefs.peekLastHomePageAnchorType(context)
         val workerSummary = workerSummary()
         val crashSummary = crashSummary()
         val homeIntelligenceHealth = homeIntelligenceHealthReport(now)
@@ -289,6 +294,8 @@ class DiagnosticsReportManager @Inject constructor(
                 negativeTaskScore = negativeTaskScore,
                 widgetSummary = widgetSummary,
                 homeLayoutSummary = layoutSummary,
+                homeStartPageMode = homeStartPageMode,
+                homeLastPageAnchorType = homeLastPageAnchorType,
                 workerSummary = workerSummary,
                 crashSummary = crashSummary,
                 homeIntelligenceHealth = homeIntelligenceHealth,
@@ -518,6 +525,8 @@ internal data class DiagnosticsReportSnapshot(
     val negativeTaskScore: Int,
     val widgetSummary: String,
     val homeLayoutSummary: HomeLayoutPrefs.DiagnosticsSummary,
+    val homeStartPageMode: String,
+    val homeLastPageAnchorType: String,
     val workerSummary: List<String>,
     val crashSummary: List<String>,
     val homeIntelligenceHealth: com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport.Report,
@@ -622,6 +631,8 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("Arama bolgesi: ${snapshot.homeLayoutSummary.searchZone.name}")
     appendLine("Widget sayisi: ${snapshot.homeLayoutSummary.widgetCount}")
     appendLine("Dock oge sayisi: ${snapshot.homeLayoutSummary.dockItemCount}")
+    appendLine("Baslangic sayfa modu: ${snapshot.homeStartPageMode}")
+    appendLine("Son sayfa anchor tipi: ${snapshot.homeLastPageAnchorType}")
     appendLine()
     appendLine("[Worker Ozeti]")
     snapshot.workerSummary.forEach { appendLine(it) }

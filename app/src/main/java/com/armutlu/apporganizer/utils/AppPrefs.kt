@@ -346,6 +346,10 @@ object AppPrefs {
     fun setAutoFolderSizeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_AUTO_FOLDER_SIZE, v).apply()
 
     // Son görüntülenen klasör sayfası — process death/geri tuşu sonrası ilk sayfaya sıfırlanmasın (D210)
+    // DEPRECATED (P02, ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md): ham Int index
+    // yerine semantik HomePageAnchor kullanılmalı — bkz. HomePagePrefs.getLastHomePageAnchor().
+    // Bu iki fonksiyon SADECE (a) migration kaynağı ve (b) P00 regresyon testinin (AppPrefsLastHomePageTest)
+    // kilitlediği eski davranış için köprü olarak kalıyor; SİLİNMEDİ. Yeni kod HomePagePrefs kullanmalı.
     const val KEY_LAST_HOME_PAGE = "last_home_page"
     fun getLastHomePage(context: Context): Int = prefs(context).getInt(KEY_LAST_HOME_PAGE, 0)
     fun setLastHomePage(context: Context, page: Int) = prefs(context).edit().putInt(KEY_LAST_HOME_PAGE, page).apply()

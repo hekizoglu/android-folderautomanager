@@ -369,6 +369,8 @@ class DiagnosticsReportManagerTest {
             widgetCount = 2,
             dockItemCount = 5,
         ),
+        homeStartPageMode = "SMART_DASHBOARD",
+        homeLastPageAnchorType = "DASHBOARD",
         workerSummary = listOf(
             "Weekly digest: enabled=evet, work=ENQUEUED, attempts=0, durum=NORMAL",
             "Files index periodic: enabled=evet, work=RUNNING, attempts=1",

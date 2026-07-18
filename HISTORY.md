@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P02 - 2026-07-18 - Semantik sayfa anchor + migration
+
+**Yapilanlar:** HomePageAnchor sealed (dashboard/folder:<id>/index:<n> serilestirme, bozuk girdi null-guvenli) + HomePageAnchorResolver (silinmis klasor->Dashboard->ilk sayfa fallback, index clamp) + HomePagePrefs (StartPageMode, bayrakli tek seferlik legacy Int migration, backup + diagnostics koprusu — categoryId asla rapora yazilmaz). Eski getLastHomePage deprecated kopru (P00 regresyonu yesil). 50 test yesil.
+
+**Bug:** Yok. BACKUP_VERSION degistirilmedi (yeni alan opsiyonel — eski yedekler uyumlu).
+
+**Sonraki:** P03 — HomeScreen'den global shell cikarma (zincir devam).
+
 ## Dashboard Dongu P01 - 2026-07-18 - HomePageSpec + HomePagePlanner
 
 **Yapilanlar:** HomePageSpec sealed (Dashboard + FolderPage, stableKey semantigi) + HomePagePlanner saf planner (8'li dilim, dashboard on/off, bos durum fallback'leri, dedupeStableKeys savunmasi) — roadmap 3.1/3.2 semasiyla birebir, AppFolder mevcut tip kullanildi. 14 yeni test + navigation sozlesme testleri, 33 yesil. UI baglantisi yok (P05).
