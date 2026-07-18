@@ -552,7 +552,7 @@ fun HomeShell(
 
 **Bağımlılıklar:** P00.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P03 — commit: 3862679 — tarih: 2026-07-18 — Not: HomeShell slot yapısı kuruldu; indicator slotu bilinçli boş (pagerState BoxWithConstraints ölçümüne bağımlı — gerçek hoisting P04/P05'te). 1. deneme kota kesintisiyle yarıda kaldı, watchdog attempt 2 ile tamamladı.
 
 ---
 
