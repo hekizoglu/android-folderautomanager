@@ -15,6 +15,16 @@ $repoRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $gradlew = Join-Path $repoRoot "gradlew.bat"
 
 $targets = @(
+    "app\build\compose_compiler",
+    "app\build\crashlytics",
+    "app\build\generated",
+    "app\build\gmpAppId",
+    "app\build\intermediates",
+    "app\build\kotlin",
+    "app\build\kspCaches",
+    "app\build\outputs",
+    "app\build\snapshot",
+    "app\build\tmp",
     "app\build\intermediates\classes\debug\transformDebugClassesWithAsm\dirs",
     "app\build\intermediates\classes\debugUnitTest\transformDebugUnitTestClassesWithAsm\dirs",
     "app\build\test-results\testDebugUnitTest\binary",
