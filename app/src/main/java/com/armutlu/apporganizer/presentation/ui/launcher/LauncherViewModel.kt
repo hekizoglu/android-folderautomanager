@@ -491,6 +491,11 @@ class LauncherViewModel @Inject constructor(
     fun closeAllApps() {
         _allAppsOpen.value = false
         _focusSearchOnOpen.value = false
+        // Döngü P11 (roadmap madde 4) — AllAppsDrawer ve GlobalSearchHost/HomeAppSearchBar AYNI
+        // _searchQuery state'ini paylaşır ("Tercih" seçeneği: ayrı state yaratmak yerine, drawer
+        // kapanınca query temizlenir). Kök gesture'lar zaten searchActive==true iken kilitlendiği
+        // için (HomeGestureArbiter.SEARCH_ACTIVE_LOCKS_ROOT) global arama açıkken swipe-up ile
+        // drawer açılamaz — iki arama arasında gerçek bir çakışma senaryosu oluşmaz.
         _searchQuery.value = ""
     }
 

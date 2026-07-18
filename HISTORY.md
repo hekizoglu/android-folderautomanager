@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P11 - 2026-07-18 - Cekmece-pager baglantisi
+
+**Yapilanlar:** 7 roadmap maddesinden 5'i zaten saglaniyordu (dogrulandi); 2 GERCEK EKSIK duzeltildi: (1) tablet side-panel pointer sizintisi — allAppsOpen iken tum ekrani kaplayan dokunus-yutan scrim (telefonda no-op); (2) drawer acikken kok pager kilidi — arbiter adaptorundeki allAppsOpen/quickWheelOpen bypass'i kaldirildi (P11 madde 7 acik istegi). Test guncellendi + yeni quickWheel testi. 22/22 yesil.
+
+**Bug:** Yukaridaki 2 eksik. Davranis degisikligi minimal ve roadmap geregi.
+
+**Sonraki:** P12 — Home komut akisi (zincir devam).
+
 ## Dashboard Dongu P10 - 2026-07-18 - Gesture arbitration katmani
 
 **Yapilanlar:** HomeGestureArbiter saf karar cekirdegi (HomeGestureContext -> ALLOW_HORIZONTAL_PAGER/OPEN_ALL_APPS/HANDLE_CHILD/IGNORE; oncelik: search>modal>reorder>child>tur-esik) + sabit-kod debug nedenleri. Uc dagitik kosul delege edildi: pagerScrollEnabled, nestedScroll onPost*, kok dikey drag (ham -60px -> 60dp density-bagimsiz — kasitli iyilestirme). swipeLock debounce cagri noktasinda korundu. 21/21 yeni test + Home regresyonlari yesil.

@@ -171,13 +171,18 @@ object HomeGestureArbiter {
     /**
      * İnce adaptör — `HomePagerHost`'a verilecek `userScrollEnabled` değerini üretir. HomeScreen.kt
      * ~1265'teki `pagerScrollEnabled = !searchActive && !reorderActive && !modalOpen` satırının
-     * birebir karşılığıdır (allAppsOpen/quickWheelOpen o satırda zaten kontrol edilmiyordu —
-     * pager slotu allAppsOpen==true iken de arkada var olmaya devam eder, bu yüzden burada da
-     * yalnız search/modal/reorder kilidi uygulanır — davranış DEĞİŞMEZ).
+     * karşılığıdır.
+     *
+     * Döngü P11 (roadmap madde 7: "All Apps open olduğunda root pager userScrollEnabled = false") —
+     * eskiden (P10) `allAppsOpen`/`quickWheelOpen` burada bilerek gate edilmiyordu (pager slotu
+     * arkada var olmaya devam ediyordu, ama artık drawer açıkken kök pager'ın parmak izini ALMASI
+     * gerekiyor — aksi halde çekmece üzerinde yatay kaydırma arkadaki sayfayı değiştirebiliyordu.
+     * Artık `context` filtrelenmeden `decide()`'a verilir — search/modal/reorder kilidiyle AYNI
+     * önceliğe sahip: allAppsOpen/quickWheelOpen açıkken de HANDLE_CHILD döner, dolayısıyla
+     * `ALLOW_HORIZONTAL_PAGER` olmaz ve pager kilitlenir.
      */
     fun isHorizontalPagerScrollEnabled(context: HomeGestureContext): Boolean {
-        val contextWithoutAllAppsGate = context.copy(allAppsOpen = false, quickWheelOpen = false)
-        return decide(HomeGestureKind.HORIZONTAL_DRAG, contextWithoutAllAppsGate).decision ==
+        return decide(HomeGestureKind.HORIZONTAL_DRAG, context).decision ==
             HomeGestureDecision.ALLOW_HORIZONTAL_PAGER
     }
 }

@@ -810,6 +810,21 @@ fun HomeScreen(
                 }
             },
             overlays = {
+                // Döngü P11 (roadmap madde 6) — tablette All Apps yalnız 380dp sağ side panel
+                // olarak açılır; solda kalan dock/global search GÖRSEL olarak arkada kalır ama
+                // Compose pointer input'u otomatik BLOKLAMAZ (z-order sadece çizim sırasıdır).
+                // Bu şeffaf scrim allAppsOpen açıkken tüm ekranı kaplayıp pointer'ı yutar —
+                // AllAppsDrawer kendi panel alanında normal şekilde üstte render edildiği için
+                // dokunuşlar drawer'a ulaşmaya devam eder (scrim drawer'DAN ÖNCE çizilir, drawer
+                // onun üzerinde). Telefonda drawer zaten tam ekran olduğundan bu scrim no-op'tur.
+                if (allAppsOpen) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) { detectTapGestures { } }
+                    )
+                }
+
                 // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel
                 AnimatedVisibility(
                     visible = allAppsOpen,

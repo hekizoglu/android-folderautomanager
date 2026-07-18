@@ -197,13 +197,20 @@ class HomeGestureCoordinatorTest {
         assertEquals(HomeGestureDecision.HANDLE_CHILD, result.decision)
     }
 
-    @Test fun `isHorizontalPagerScrollEnabled allAppsOpen gate edilir, sadece search-modal-reorder etkiler`() {
-        // HomeScreen.kt ~1265: pagerScrollEnabled hesabı tarihsel olarak yalnız
-        // search/reorder/modal'a bakar — allAppsOpen'ı kontrol etmez (pager slotu arkada var
-        // olmaya devam eder). isHorizontalPagerScrollEnabled adaptörü bu davranışı korur.
+    @Test fun `isHorizontalPagerScrollEnabled allAppsOpen iken false doner (P11 madde 7)`() {
+        // Döngü P11 (roadmap madde 7): "All Apps open olduğunda root pager userScrollEnabled = false".
+        // P10'da bilerek gate edilmiyordu (pager arkada var olmaya devam ediyordu); P11 bunu
+        // kapatıyor — drawer açıkken kök pager parmak izini almamalı.
         assertEquals(
-            true,
+            false,
             HomeGestureArbiter.isHorizontalPagerScrollEnabled(HomeGestureContext(allAppsOpen = true))
+        )
+    }
+
+    @Test fun `isHorizontalPagerScrollEnabled quickWheelOpen iken false doner (P11 madde 7)`() {
+        assertEquals(
+            false,
+            HomeGestureArbiter.isHorizontalPagerScrollEnabled(HomeGestureContext(quickWheelOpen = true))
         )
     }
 
