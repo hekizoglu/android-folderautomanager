@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P03 - 2026-07-18 - HomeScreen'den global shell cikarma
+
+**Yapilanlar:** HomeShell composable (topSearch/pager/indicator/bottomSearch/dock/overlays slot'lari): arama cubugu tek tanimla konuma gore slot'a, dock+pill tek yerde, overlay'ler (arama/drawer/snackbar/quickwheel) BoxScope slotunda. Gorsel davranis birebir; reaktif prefs bloklari yerinde. HomeScreen 1382->1340 satir. 39 test task yesil. NOT: 1. deneme kota kesintisiyle yarida kaldi — watchdog temizleyip attempt 2 ile bastan basardi (mekanizma kanitlandi).
+
+**Bug:** Yok. Bilincli sapma: indicator slotu bos — pagerState BoxWithConstraints olcumune bagimli, gercek hoisting P04/P05'te (HomeShell'de yorumla belgeli).
+
+**Sonraki:** P04 — FolderPager -> FolderGridPage donusumu (zincir devam).
+
 ## Dashboard Dongu P02 - 2026-07-18 - Semantik sayfa anchor + migration
 
 **Yapilanlar:** HomePageAnchor sealed (dashboard/folder:<id>/index:<n> serilestirme, bozuk girdi null-guvenli) + HomePageAnchorResolver (silinmis klasor->Dashboard->ilk sayfa fallback, index clamp) + HomePagePrefs (StartPageMode, bayrakli tek seferlik legacy Int migration, backup + diagnostics koprusu — categoryId asla rapora yazilmaz). Eski getLastHomePage deprecated kopru (P00 regresyonu yesil). 50 test yesil.

@@ -576,16 +576,230 @@ fun HomeScreen(
                 )
             }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                // Klavye acilinca arama cubugu klavyenin biraz ustune biniyordu (ROADMAP #4) —
-                // imePadding() WindowInsetsAnimation ile senkron calisir, manuel offset'ten guvenilir.
-                .imePadding(),
-            verticalArrangement = Arrangement.Top
-        ) {
+        // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,
+        // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
+        // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
+        // BOTTOM = dock'un hemen üstü (tek elle kullanım — D246).
+        // Döngü P03: HomeShell'in topSearch/bottomSearch slotlarına verilebilmesi için
+        // artık HomeShell çağrısından ÖNCE tanımlanıyor (eskiden pager içeriğinin başındaydı).
+        val searchBarSection: @Composable () -> Unit = {
+            if (homeAppSearchEnabled) {
+                HomeAppSearchBar(
+                    allApps = allApps,
+                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                    // Klasör grubu "Klasor ve Kategori Aramasi" toggle'ına bağlı kalır
+                    folders = if (homeSearchEnabled) folders else emptyList(),
+                    folderCustomNames = customFolderNames,
+                    folderCustomEmojis = customFolderEmojis,
+                    onFolderClick = { folder ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onNavigateToFolder(folder)
+                    },
+                    searchResults = searchResults,
+                    onQueryChange = viewModel::setSearchQuery,
+                    onEnableContactsSource = viewModel::enableContactsSearchSource,
+                    onEnableFilesSource = viewModel::enableFilesSearchSource,
+                    filesIndexState = filesIndexState,
+                    fullScreenEnabled = fullscreenSearchEnabled,
+                    onOpenFullScreen = { fullScreenSearchOpen = true },
+                    homeResumeTrigger = homeResumeTrigger,
+                    // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
+                    resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            } else if (homeSearchEnabled) {
+                // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
+                FolderSearchBar(
+                    query = folderSearchQuery,
+                    onQueryChange = { folderSearchQuery = it },
+                    onClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
+                    countdown = folderSearchCountdown,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
+        }
+
+        // Döngü P03 — global shell: search/dock/indicator artık HomeShell'de toplanıyor,
+        // sayfa içeriği (saat, kartlar, klasör pager'ı, favoriler vb.) `pager` slotunda kalıyor.
+        // Sistem bar + IME padding artık yalnız HomeShell'in kök Column'unda uygulanıyor
+        // (ROADMAP #4 notu HomeShell.kt'ye taşındı — davranış birebir korunur).
+        HomeShell(
+            topSearch = if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
+                { searchBarSection() }
+            } else null,
+            bottomSearch = if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
+                { searchBarSection() }
+            } else null,
+            dock = {
+                // Drag pill handle — above dock, pure Pixel style
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(32.dp)
+                            .height(4.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.30f),
+                                shape = RoundedCornerShape(50)
+                            )
+                    )
+                }
+
+                // Bottom dock — frosted pill (uzun bas → düzenle)
+                PixelDock(
+                    packages = contextualDockPackages,
+                    folders = folders,
+                    iconPackPkg = suggestionIconPack,
+                    onLaunchApp = { pkg ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        viewModel.launchApp(context, pkg)
+                    },
+                    onOpenFolder = { folder ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onNavigateToFolder(folder)
+                    },
+                    onLongPress = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        dockEditOpen = true
+                    },
+                    onAppLongPress = { pkg ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        contextMenuPkg = pkg
+                    },
+                    onFolderLongPress = { folder ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        folderContextMenu = folder
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                        .onGloballyPositioned { coords ->
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val pos = coords.positionInWindow()
+                                val l = pos.x.toInt()
+                                val t = pos.y.toInt()
+                                val r = (pos.x + coords.size.width).toInt()
+                                val b = (pos.y + coords.size.height).toInt()
+                                val prev = dockRectHolder.rect
+                                if (prev == null || prev.left != l || prev.top != t || prev.right != r || prev.bottom != b) {
+                                    val newRect = android.graphics.Rect(l, t, r, b)
+                                    dockRectHolder.rect = newRect
+                                    composeView.systemGestureExclusionRects = listOf(newRect)
+                                }
+                            }
+                        }
+                )
+            },
+            overlays = {
+                if (fullScreenSearchOpen && homeAppSearchEnabled && fullscreenSearchEnabled) {
+                    key(fullScreenSearchOpen) {
+                        FullScreenSearchOverlayV2(
+                        allApps = allApps,
+                        folders = if (homeSearchEnabled) folders else emptyList(),
+                        folderCustomNames = customFolderNames,
+                        searchResults = searchResults,
+                        filesIndexState = filesIndexState,
+                        suggestedContacts = suggestedContacts,
+                        onClose = { fullScreenSearchOpen = false },
+                        onAppClick = { pkg ->
+                            fullScreenSearchOpen = false
+                            viewModel.launchApp(context, pkg)
+                        },
+                        onFolderClick = { folder ->
+                            fullScreenSearchOpen = false
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onNavigateToFolder(folder)
+                        },
+                        onEnableContactsSource = viewModel::enableContactsSearchSource,
+                        onEnableFilesSource = viewModel::enableFilesSearchSource,
+                        onQueryChange = viewModel::setSearchQuery,
+                        )
+                    }
+                }
+
+                // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel
+                AnimatedVisibility(
+                    visible = allAppsOpen,
+                    modifier = if (isTablet)
+                        Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(380.dp)
+                    else Modifier,
+                    enter = if (isTablet)
+                        slideInHorizontally(tween(280, easing = LinearOutSlowInEasing)) { it } + fadeIn(tween(200))
+                    else
+                        slideInVertically(tween(300, easing = LinearOutSlowInEasing)) { it } + fadeIn(tween(200)),
+                    exit = if (isTablet)
+                        slideOutHorizontally(tween(220, easing = FastOutLinearInEasing)) { it } + fadeOut(tween(180))
+                    else
+                        slideOutVertically(tween(220, easing = FastOutLinearInEasing)) { it } + fadeOut(tween(180))
+                ) {
+                    AllAppsDrawer(
+                        apps = allApps,
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = viewModel::setSearchQuery,
+                        onAppClick = { pkg ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.launchApp(context, pkg)
+                        },
+                        onAppLongClick = { app ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            contextMenuPkg = app.packageName
+                        },
+                        onClose = viewModel::closeAllApps,
+                        favoriteApps = favoriteApps,
+                        favoritesEnabled = favoritesEnabledAllApps,
+                        onFavoriteAppClick = { pkg ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.launchApp(context, pkg)
+                        },
+                        recentApps = recentApps,
+                        recentAppsEnabled = recentAppsEnabledAllApps,
+                        onRecentAppClick = { pkg ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.launchApp(context, pkg)
+                        },
+                        recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                        recentNotificationApps = recentNotificationApps,
+                        todayInstalledAppsEnabled = recentInstallsEnabled,
+                        todayInstalledApps = todayInstalledApps,
+                        focusSearchOnOpen = focusSearchOnOpen,
+                        onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
+                        categories = categories,
+                        searchResults = searchResults,
+                        recentNotificationCounts = recentNotificationCounts,
+                        filesIndexState = filesIndexState,
+                        onEnableFilesSource = viewModel::enableFilesSearchSource
+                    )
+                }
+
+                // Kapasite aşımı snackbar'ı — layout'u bozmadan dock'un üzerinde görünür
+                androidx.compose.material3.SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp)
+                )
+
+                // Quick Wheel overlay — uzun bas ile radyal uygulama çarkı
+                if (quickWheelVisible) {
+                    val metrics = android.content.res.Resources.getSystem().displayMetrics
+                    QuickWheelOverlay(
+                        apps = allApps,
+                        pressX = quickWheelX,
+                        pressY = quickWheelY,
+                        screenWidthPx = metrics.widthPixels.toFloat(),
+                        screenHeightPx = metrics.heightPixels.toFloat(),
+                        onLaunch = { pkg -> viewModel.launchApp(context, pkg) },
+                        onDismiss = { quickWheelVisible = false }
+                    )
+                }
+            },
+            pager = {
             // İzin uyarıları artık ana ekranda değil — Ayarlar > Eksik İzinler bölümünde
 
             // Clock widget — top center, Pixel style (uzun bas → yönetim ekranı)
@@ -704,56 +918,6 @@ fun HomeScreen(
                         Text("›", color = Color.White.copy(alpha = 0.45f), fontSize = 18.sp)
                     }
                 }
-            }
-
-            // Birleşik arama çubuğu bölümü (S1) — uygulama + klasör + kişi + dosya tek çubukta,
-            // sonuçlar kaynak gruplarıyla gösterilir; "Uygulama / Klasör" sekmesi kaldırıldı.
-            // Konum AppPrefs.KEY_SEARCH_BAR_POSITION'a göre: TOP = saat widget'ının altı,
-            // BOTTOM = dock'un hemen üstü (tek elle kullanım — D246).
-            val searchBarSection: @Composable () -> Unit = {
-                if (homeAppSearchEnabled) {
-                    HomeAppSearchBar(
-                        allApps = allApps,
-                        onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
-                        // Klasör grubu "Klasor ve Kategori Aramasi" toggle'ına bağlı kalır
-                        folders = if (homeSearchEnabled) folders else emptyList(),
-                        folderCustomNames = customFolderNames,
-                        folderCustomEmojis = customFolderEmojis,
-                        onFolderClick = { folder ->
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onNavigateToFolder(folder)
-                        },
-                        searchResults = searchResults,
-                        onQueryChange = viewModel::setSearchQuery,
-                        onEnableContactsSource = viewModel::enableContactsSearchSource,
-                        onEnableFilesSource = viewModel::enableFilesSearchSource,
-                        filesIndexState = filesIndexState,
-                        fullScreenEnabled = fullscreenSearchEnabled,
-                        onOpenFullScreen = { fullScreenSearchOpen = true },
-                        homeResumeTrigger = homeResumeTrigger,
-                        // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
-                        resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                    )
-                } else if (homeSearchEnabled) {
-                    // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
-                    FolderSearchBar(
-                        query = folderSearchQuery,
-                        onQueryChange = { folderSearchQuery = it },
-                        onClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
-                        countdown = folderSearchCountdown,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            // TOP konumu: arama çubuğu saat widget'ının hemen altında
-            if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
-                searchBarSection()
             }
 
             // Klavye acikken (arama yapiliyorken) ikincil satirlar gecici gizlenir — sonuc
@@ -1105,175 +1269,12 @@ fun HomeScreen(
                 )
             }
 
-            // BOTTOM konumu: arama çubuğu dock'un hemen üstünde — tek elle kullanım (D246)
-            if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
-                searchBarSection()
-            }
             } // end else !focusModeEnabled
-
-            // Drag pill handle — above dock, pure Pixel style
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(32.dp)
-                        .height(4.dp)
-                        .background(
-                            color = Color.White.copy(alpha = 0.30f),
-                            shape = RoundedCornerShape(50)
-                        )
-                )
-            }
-
-            // Bottom dock — frosted pill (uzun bas → düzenle)
-            PixelDock(
-                packages = contextualDockPackages,
-                folders = folders,
-                iconPackPkg = suggestionIconPack,
-                onLaunchApp = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    viewModel.launchApp(context, pkg)
-                },
-                onOpenFolder = { folder ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onNavigateToFolder(folder)
-                },
-                onLongPress = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    dockEditOpen = true
-                },
-                onAppLongPress = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    contextMenuPkg = pkg
-                },
-                onFolderLongPress = { folder ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    folderContextMenu = folder
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-                    .onGloballyPositioned { coords ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            val pos = coords.positionInWindow()
-                            val l = pos.x.toInt()
-                            val t = pos.y.toInt()
-                            val r = (pos.x + coords.size.width).toInt()
-                            val b = (pos.y + coords.size.height).toInt()
-                            val prev = dockRectHolder.rect
-                            if (prev == null || prev.left != l || prev.top != t || prev.right != r || prev.bottom != b) {
-                                val newRect = android.graphics.Rect(l, t, r, b)
-                                dockRectHolder.rect = newRect
-                                composeView.systemGestureExclusionRects = listOf(newRect)
-                            }
-                        }
-                    }
-            )
-        }
-
-        if (fullScreenSearchOpen && homeAppSearchEnabled && fullscreenSearchEnabled) {
-            key(fullScreenSearchOpen) {
-                FullScreenSearchOverlayV2(
-                allApps = allApps,
-                folders = if (homeSearchEnabled) folders else emptyList(),
-                folderCustomNames = customFolderNames,
-                searchResults = searchResults,
-                filesIndexState = filesIndexState,
-                suggestedContacts = suggestedContacts,
-                onClose = { fullScreenSearchOpen = false },
-                onAppClick = { pkg ->
-                    fullScreenSearchOpen = false
-                    viewModel.launchApp(context, pkg)
-                },
-                onFolderClick = { folder ->
-                    fullScreenSearchOpen = false
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onNavigateToFolder(folder)
-                },
-                onEnableContactsSource = viewModel::enableContactsSearchSource,
-                onEnableFilesSource = viewModel::enableFilesSearchSource,
-                onQueryChange = viewModel::setSearchQuery,
-                )
-            }
-        }
-
-        // All Apps Drawer — telefonda tam ekran overlay, tablette sağ side panel
-        AnimatedVisibility(
-            visible = allAppsOpen,
-            modifier = if (isTablet)
-                Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(380.dp)
-            else Modifier,
-            enter = if (isTablet)
-                slideInHorizontally(tween(280, easing = LinearOutSlowInEasing)) { it } + fadeIn(tween(200))
-            else
-                slideInVertically(tween(300, easing = LinearOutSlowInEasing)) { it } + fadeIn(tween(200)),
-            exit = if (isTablet)
-                slideOutHorizontally(tween(220, easing = FastOutLinearInEasing)) { it } + fadeOut(tween(180))
-            else
-                slideOutVertically(tween(220, easing = FastOutLinearInEasing)) { it } + fadeOut(tween(180))
-        ) {
-            AllAppsDrawer(
-                apps = allApps,
-                searchQuery = searchQuery,
-                onSearchQueryChange = viewModel::setSearchQuery,
-                onAppClick = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    viewModel.launchApp(context, pkg)
-                },
-                onAppLongClick = { app ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    contextMenuPkg = app.packageName
-                },
-                onClose = viewModel::closeAllApps,
-                favoriteApps = favoriteApps,
-                favoritesEnabled = favoritesEnabledAllApps,
-                onFavoriteAppClick = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    viewModel.launchApp(context, pkg)
-                },
-                recentApps = recentApps,
-                recentAppsEnabled = recentAppsEnabledAllApps,
-                onRecentAppClick = { pkg ->
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    viewModel.launchApp(context, pkg)
-                },
-                recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
-                recentNotificationApps = recentNotificationApps,
-                todayInstalledAppsEnabled = recentInstallsEnabled,
-                todayInstalledApps = todayInstalledApps,
-                focusSearchOnOpen = focusSearchOnOpen,
-                onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
-                categories = categories,
-                searchResults = searchResults,
-                recentNotificationCounts = recentNotificationCounts,
-                filesIndexState = filesIndexState,
-                onEnableFilesSource = viewModel::enableFilesSearchSource
-            )
-        }
-
-        // Kapasite aşımı snackbar'ı — layout'u bozmadan dock'un üzerinde görünür
-        androidx.compose.material3.SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp)
+            // Döngü P03: BOTTOM arama çubuğu, drag pill, PixelDock ve tüm overlay'ler
+            // (FullScreenSearchOverlayV2/AllAppsDrawer/SnackbarHost/QuickWheelOverlay) artık
+            // HomeShell'in bottomSearch/dock/overlays slotlarında — burada tekrar render edilmez.
+            } // end pager slot
         )
-
-        // Quick Wheel overlay — uzun bas ile radyal uygulama çarkı
-        if (quickWheelVisible) {
-            val metrics = android.content.res.Resources.getSystem().displayMetrics
-            QuickWheelOverlay(
-                apps = allApps,
-                pressX = quickWheelX,
-                pressY = quickWheelY,
-                screenWidthPx = metrics.widthPixels.toFloat(),
-                screenHeightPx = metrics.heightPixels.toFloat(),
-                onLaunch = { pkg -> viewModel.launchApp(context, pkg) },
-                onDismiss = { quickWheelVisible = false }
-            )
-        }
     }
 
     HomeScreenOverlays(
