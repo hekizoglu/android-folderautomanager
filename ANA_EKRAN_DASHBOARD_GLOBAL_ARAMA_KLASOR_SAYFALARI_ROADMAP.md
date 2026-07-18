@@ -1279,7 +1279,7 @@ const val KEY_CONTENT_ORDER = "content_order"
 
 **Bağımlılıklar:** P15.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P16 — commit: c7294b6 — tarih: 2026-07-18 — Not: Editor 3 bölge (global/dashboard/klasörler); MAIN_SEARCH chip'le konum seçer (drag değil), DOCK sabit bilgi kartı; CONTENT sırası SmartDashboardPage grup sıralamasına bağlandı (flag kapalıyken görünmez). Küçük cihaz uyarısı DashboardLayoutPolicy eşiğiyle tutarlı.
 
 ---
 
