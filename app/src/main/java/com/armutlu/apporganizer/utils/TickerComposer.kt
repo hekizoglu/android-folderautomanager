@@ -54,9 +54,8 @@ data class InsightSnapshot(
  *
  * Dongu T01 (roadmap §3.3): cikti tipi metin+priority'den ibaret TickerSpec yerine davranis
  * tasiyan [SmartTickerItem] oldu — her ogenin turu ([SmartTickerType]), son gecerlilik zamani
- * (expiresAt) ve dokunma eylemi ([TickerAction]) acikca modellenir. LauncherViewModel bu ciktiyi
- * eski UI modeline (`presentation.ui.launcher.TickerItem`) bir kopru fonksiyonuyla esler — T04
- * dongusu HomeTickerRow'u dogrudan SmartTickerItem tuketecek sekilde yeniden yazacak.
+ * (expiresAt) ve dokunma eylemi ([TickerAction]) acikca modellenir. Dongu T04: HomeTickerRow
+ * bu tipi dogrudan tuketir (eski `presentation.ui.launcher.TickerItem` koprusu kaldirildi).
  */
 object TickerComposer {
 

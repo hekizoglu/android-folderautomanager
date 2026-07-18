@@ -1,32 +1,37 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,113 +47,96 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.LocalAccessibilityManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.provider.Settings
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.home.SmartTickerItem
+import com.armutlu.apporganizer.domain.home.SmartTickerType
+import com.armutlu.apporganizer.domain.home.TickerAction
 import kotlinx.coroutines.delay
 
 /**
- * Ana ekran haber şeridi maddesi.
- * @param categoryId dolu ise dokununca ilgili klasör açılır
- * @param route dolu ise dokununca MainActivity içinde ilgili rota açılır (Dashboard, Bildirim Raporu...)
- */
-data class TickerItem(
-    val text: String,
-    val emoji: String = "📰",
-    val categoryId: String? = null,
-    val route: String? = null,
-    val packageName: String? = null,
-    val suggestionKey: String? = null,
-) {
-    /** Dismiss/rotasyon takibi için kararlı kimlik — aynı haber tekrar tekrar dönmesin (D226). */
-    val key: String get() = suggestionKey ?: "${packageName ?: ""}|${categoryId ?: ""}|${route ?: ""}|$text"
-}
-
-@Composable
-private fun DigitalLifeScoreBadge(score: Int) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(digitalLifeScoreColor(score).copy(alpha = 0.92f))
-            .border(0.6.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(999.dp))
-            .padding(horizontal = 8.dp, vertical = 3.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Skor $score",
-            color = Color.White,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-        )
-    }
-}
-
-private fun extractDigitalLifeScore(text: String): Int? {
-    val normalized = text.lowercase()
-    val hasDigitalScoreContext =
-        normalized.contains("dijital") || normalized.contains("skor") || normalized.contains("denge")
-    if (!hasDigitalScoreContext) return null
-
-    return DIGITAL_LIFE_SCORE_REGEX.find(text)
-        ?.groupValues
-        ?.getOrNull(1)
-        ?.toIntOrNull()
-        ?.coerceIn(0, 100)
-}
-
-internal fun digitalLifeScoreColor(score: Int): Color = when {
-    score >= 80 -> Color(0xFF2E7D32)
-    score >= 60 -> Color(0xFF43A047)
-    score >= 40 -> Color(0xFFF9A825)
-    else -> Color(0xFFE53935)
-}
-
-private val DIGITAL_LIFE_SCORE_REGEX = Regex("""\b(\d{1,3})/100\b""")
-
-/**
- * Etkileşimli haber şeridi — haber bülteni tarzı:
- * - Her seferinde 1 haber; ~6 sn'de bir otomatik sonrakine geçer (slide animasyonu)
- * - Dokunma → haberin hedefi açılır (klasör / rapor / dashboard)
- * - Yatay kaydırma → önceki/sonraki haber
- * - Uzun metin `basicMarquee` ile kayar
- * Animasyon state'i bu composable'ın içinde kalır — HomeScreen recompose olmaz.
+ * Döngü T04 — HomeTickerRow davranış ve erişilebilirlik yenilemesi
+ * (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md satır 1791-1844).
+ *
+ * T01 köprüsü ([presentation.ui.launcher.TickerItem] + LauncherViewModel.toTickerItem)
+ * KALDIRILDI — bileşen artık [SmartTickerItem]'ı doğrudan tüketir.
+ *
+ * Davranış değişiklikleri (roadmap):
+ * - `basicMarquee` kaldırıldı — başlık ve alt başlık her biri en fazla 1 satır, doğal kırpma.
+ * - Varsayılan otomatik geçiş 10 saniye (öncesi 6 sn).
+ * - `autoAdvanceAllowed = false` öğeler (kritik/aksiyon gerektiren) otomatik geçmez.
+ * - Dokunma sonrası otomatik geçiş en az 15 saniye durur; manuel swipe timer'ı sıfırlar.
+ * - Ekran görünür değilken (`visible = false`) timer çalışmaz.
+ * - TalkBack (dokunarak keşfet) aktifken otomatik geçiş tamamen kapanır.
+ * - Sistem "animasyonları azalt" tercihinde slide yerine yalnız fade kullanılır.
  */
 @Composable
 internal fun HomeTickerRow(
-    items: List<TickerItem>,
-    onItemClick: (TickerItem) -> Unit,
+    items: List<SmartTickerItem>,
+    onItemClick: (SmartTickerItem) -> Unit,
     modifier: Modifier = Modifier,
+    visible: Boolean = true,
     onMute: ((durationMillis: Long) -> Unit)? = null,
+    onDismissItem: ((SmartTickerItem) -> Unit)? = null,
+    onHideType: ((SmartTickerType) -> Unit)? = null,
+    onOpenTickerSettings: (() -> Unit)? = null,
+    onDisableTicker: (() -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
     var index by remember(items.size) { mutableStateOf(0) }
     var direction by remember { mutableStateOf(1) } // 1 = ileri, -1 = geri
-    // Basili tut -> sessize alma menusu (8 saat / 1 gun / 7 gun) (D233)
-    var muteMenuOpen by remember { mutableStateOf(false) }
+    // Basili tut -> genisletilmis menu (D233 + T04: icerik bazli kontrol eklendi).
+    var menuOpen by remember { mutableStateOf(false) }
     // Ayni ogeye art arda tiklama sonrasi navigation cakismasi/donma tespit edildi (D247 Roadmap #5).
-    // Son basarili tiklamadan 700ms gecmeden yeni tiklama yok sayilir.
     var lastClickAt by remember { mutableStateOf(0L) }
+    // Dokunma sonrasi otomatik gecis en az 15 sn durur (roadmap T04) — bu zaman damgasindan
+    // once LaunchedEffect'in yeniden baslamasi engellenir.
+    var pausedUntil by remember { mutableStateOf(0L) }
+
     val current = items[index.coerceIn(0, items.lastIndex)]
-    // D247/Roadmap #25 kok neden: pointerInputTicker Modifier.pointerInput(Unit) ile TEK SEFER
-    // baslatiliyor (asagida bkz.), yani ilk kompozisyonda yakalanan onTap/onItemClick
-    // closure'lari SABIT kaliyor — index degisip `current` yeni bir haberi gosterse bile
-    // dokunma her zaman ilk baslatmadaki eski `current` degerini kullaniyordu. Gesture'i
-    // yeniden baslatmadan (swipe animasyonunu kesmeden) en guncel degeri okumak icin
-    // rememberUpdatedState ile "canli" referanslar tutuluyor.
+    // D247/Roadmap #25: rememberUpdatedState ile "canli" referanslar — gesture yeniden
+    // baslatilmadan en guncel index/kapatma degerlerini okur.
     val latestCurrent by rememberUpdatedState(current)
     val latestOnItemClick by rememberUpdatedState(onItemClick)
 
-    // Otomatik ilerleme — index veya liste değişince sayaç sıfırlanır
-    LaunchedEffect(index, items.size) {
-        delay(6_000)
+    val context = LocalContext.current
+    val accessibilityManager = LocalAccessibilityManager.current
+    // TalkBack/dokunarak-kesfet aktifken otomatik gecis tamamen kapanir (roadmap T04).
+    val touchExplorationEnabled = accessibilityManager?.let {
+        runCatching {
+            val am = context.getSystemService(android.view.accessibility.AccessibilityManager::class.java)
+            am?.isTouchExplorationEnabled == true
+        }.getOrDefault(false)
+    } ?: false
+    // Sistem "animasyonlari azalt" tercihi — slide yerine yalniz fade/anlik gecis (roadmap T04).
+    val reduceMotion = remember(context) {
+        runCatching {
+            Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+        }.getOrDefault(false)
+    }
+
+    // Otomatik ilerleme — visible=false, TalkBack aktif, kritik öğe (autoAdvanceAllowed=false)
+    // veya kullanıcı yakın zamanda etkileşimde bulunduysa (pausedUntil) çalışmaz.
+    LaunchedEffect(index, items.size, visible, touchExplorationEnabled, current.autoAdvanceAllowed) {
+        if (!visible || touchExplorationEnabled || !current.autoAdvanceAllowed || items.size <= 1) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        val waitMillis = (AUTO_ADVANCE_INTERVAL_MS).coerceAtLeast(pausedUntil - now)
+        delay(waitMillis)
         direction = 1
         index = (index + 1) % items.size
     }
 
-    // "CANLI" noktası — yumuşak nabız animasyonu
+    // "CANLI" noktası — yumuşak nabız animasyonu (reduceMotion'da da düşük maliyetli, atlanmıyor).
     val pulse by rememberInfiniteTransition(label = "ticker_pulse").animateFloat(
         initialValue = 0.4f,
         targetValue = 1f,
@@ -156,91 +144,250 @@ internal fun HomeTickerRow(
         label = "ticker_pulse_alpha"
     )
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(Color.White.copy(alpha = 0.10f))
-            .border(0.5.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
-            .pointerInputTicker(
-                onTap = {
-                    val now = System.currentTimeMillis()
-                    if (now - lastClickAt > 700L) {
-                        lastClickAt = now
-                        latestOnItemClick(latestCurrent)
-                    }
-                },
-                onLongPress = { if (onMute != null) muteMenuOpen = true },
-                onSwipe = { forward ->
-                    direction = if (forward) 1 else -1
-                    index = if (forward) (index + 1) % items.size
-                            else (index - 1 + items.size) % items.size
-                }
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .alpha(pulse)
-                .background(Color(0xFF26C6DA), CircleShape)
+    val typeLabel = current.type.toTypeLabel()
+    val subtitleText = current.subtitle
+    val a11yDescription = if (current.action != TickerAction.None) {
+        stringResource(
+            R.string.ticker_content_description,
+            typeLabel,
+            if (subtitleText != null) "${current.title} — $subtitleText" else current.title,
         )
-        AnimatedContent(
-            targetState = index,
-            transitionSpec = {
-                (slideInHorizontally { it * direction } + fadeIn(tween(200)))
-                    .togetherWith(slideOutHorizontally { -it * direction } + fadeOut(tween(150)))
-            },
-            label = "ticker_content",
-            modifier = Modifier.weight(1f)
-        ) { i ->
-            val item = items[i.coerceIn(0, items.lastIndex)]
-            val digitalScore = remember(item.text) { extractDigitalLifeScore(item.text) }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(item.emoji, fontSize = 12.sp)
-                if (digitalScore != null) {
-                    DigitalLifeScoreBadge(score = digitalScore)
+    } else {
+        stringResource(
+            R.string.ticker_content_description_no_action,
+            typeLabel,
+            if (subtitleText != null) "${current.title} — $subtitleText" else current.title,
+        )
+    }
+    val prevActionLabel = stringResource(R.string.ticker_action_previous)
+    val nextActionLabel = stringResource(R.string.ticker_action_next)
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(current.type.emphasisBackgroundColor())
+                .border(0.5.dp, current.type.emphasisBorderColor(), RoundedCornerShape(18.dp))
+                .semantics(mergeDescendants = true) {
+                    contentDescription = a11yDescription
+                    customActions = buildList {
+                        if (items.size > 1) {
+                            add(CustomAccessibilityAction(prevActionLabel) {
+                                direction = -1
+                                index = (index - 1 + items.size) % items.size
+                                pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
+                                true
+                            })
+                            add(CustomAccessibilityAction(nextActionLabel) {
+                                direction = 1
+                                index = (index + 1) % items.size
+                                pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
+                                true
+                            })
+                        }
+                    }
                 }
+                .pointerInputTicker(
+                    onTap = {
+                        val now = System.currentTimeMillis()
+                        if (now - lastClickAt > 700L) {
+                            lastClickAt = now
+                            pausedUntil = now + USER_INTERACTION_PAUSE_MS
+                            latestOnItemClick(latestCurrent)
+                        }
+                    },
+                    onLongPress = { if (onMute != null || onDismissItem != null) menuOpen = true },
+                    onSwipe = { forward ->
+                        direction = if (forward) 1 else -1
+                        index = if (forward) (index + 1) % items.size
+                                else (index - 1 + items.size) % items.size
+                        pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
+                    }
+                )
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .alpha(pulse)
+                    .background(current.type.dotColor(), CircleShape)
+            )
+            val transitionSpec: androidx.compose.animation.AnimatedContentTransitionScope<Int>.() -> androidx.compose.animation.ContentTransform = {
+                if (reduceMotion) {
+                    fadeIn(tween(150)).togetherWith(fadeOut(tween(120)))
+                } else {
+                    (slideInHorizontally { it * direction } + fadeIn(tween(200)))
+                        .togetherWith(slideOutHorizontally { -it * direction } + fadeOut(tween(150)))
+                }
+            }
+            AnimatedContent(
+                targetState = index,
+                transitionSpec = transitionSpec,
+                label = "ticker_content",
+                modifier = Modifier.weight(1f)
+            ) { i ->
+                val item = items[i.coerceIn(0, items.lastIndex)]
+                Column {
+                    Text(
+                        text = "${item.icon} ${item.title}",
+                        color = Color.White.copy(alpha = 0.92f),
+                        fontSize = 12.sp,
+                        fontWeight = if (item.type.isEmphasized()) FontWeight.Bold else FontWeight.Medium,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    item.subtitle?.let { sub ->
+                        Text(
+                            text = sub,
+                            color = Color.White.copy(alpha = 0.70f),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Normal,
+                            maxLines = 1,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+            if (items.size > 1) {
                 Text(
-                    text = item.text,
-                    color = Color.White.copy(alpha = 0.88f),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .weight(1f)
-                        .basicMarquee(iterations = Int.MAX_VALUE, velocity = 36.dp)
+                    text = stringResource(R.string.ticker_page_indicator, index + 1, items.size),
+                    color = Color.White.copy(alpha = 0.45f),
+                    fontSize = 10.sp
                 )
             }
-        }
-        Text(
-            text = "${index + 1}/${items.size}",
-            color = Color.White.copy(alpha = 0.45f),
-            fontSize = 10.sp
-        )
-
-        // Sessize alma menusu — basili tutunca acilir; secilen sure kadar serit gizlenir (D233)
-        if (onMute != null) {
-            DropdownMenu(expanded = muteMenuOpen, onDismissRequest = { muteMenuOpen = false }) {
-                listOf(
-                    stringResource(R.string.ticker_mute_8h) to 8L * 60 * 60 * 1000,
-                    stringResource(R.string.ticker_mute_1d) to 24L * 60 * 60 * 1000,
-                    stringResource(R.string.ticker_mute_7d) to 7L * 24 * 60 * 60 * 1000,
-                ).forEach { (label, duration) ->
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = {
-                            muteMenuOpen = false
-                            onMute(duration)
+            if (onDismissItem != null) {
+                IconButton(
+                    onClick = {
+                        onDismissItem(current)
+                        if (items.size > 1) {
+                            index = index.coerceIn(0, (items.size - 2).coerceAtLeast(0))
                         }
+                    },
+                    modifier = Modifier
+                        .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                        .semantics { contentDescription = context.getString(R.string.ticker_action_dismiss) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.55f),
+                        modifier = Modifier.size(14.dp)
                     )
+                }
+            }
+
+            // Uzun basma menüsü — sessize alma + içerik bazlı kontrol (roadmap T04).
+            if (onMute != null || onDismissItem != null || onHideType != null || onOpenTickerSettings != null || onDisableTicker != null) {
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    if (onDismissItem != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ticker_menu_hide_item)) },
+                            onClick = {
+                                menuOpen = false
+                                onDismissItem(current)
+                            }
+                        )
+                    }
+                    if (onHideType != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ticker_menu_hide_type)) },
+                            onClick = {
+                                menuOpen = false
+                                onHideType(current.type)
+                            }
+                        )
+                    }
+                    if (onMute != null) {
+                        listOf(
+                            stringResource(R.string.ticker_mute_8h) to 8L * 60 * 60 * 1000,
+                            stringResource(R.string.ticker_mute_1d) to 24L * 60 * 60 * 1000,
+                            stringResource(R.string.ticker_mute_7d) to 7L * 24 * 60 * 60 * 1000,
+                        ).forEach { (label, duration) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    menuOpen = false
+                                    onMute(duration)
+                                }
+                            )
+                        }
+                    }
+                    if (onOpenTickerSettings != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ticker_menu_settings)) },
+                            onClick = {
+                                menuOpen = false
+                                onOpenTickerSettings()
+                            }
+                        )
+                    }
+                    if (onDisableTicker != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ticker_menu_disable)) },
+                            onClick = {
+                                menuOpen = false
+                                onDisableTicker()
+                            }
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+private const val AUTO_ADVANCE_INTERVAL_MS = 10_000L
+private const val USER_INTERACTION_PAUSE_MS = 15_000L
+
+/**
+ * Dijital Yaşam skoru -> renk eşlemesi — [DigitalLifeCard] tarafından da kullanılır.
+ * T04 rewrite'ında ticker artık ham skor metnini üretmiyor (bu üretici TickerComposer'dan
+ * D00'da kaldırıldı) ama paylaşılan yardımcı fonksiyon burada korunur (aynı dosya/paket).
+ */
+internal fun digitalLifeScoreColor(score: Int): Color = when {
+    score >= 80 -> Color(0xFF2E7D32)
+    score >= 60 -> Color(0xFF43A047)
+    score >= 40 -> Color(0xFFF9A825)
+    else -> Color(0xFFE53935)
+}
+
+@Composable
+private fun SmartTickerType.toTypeLabel(): String = when (this) {
+    SmartTickerType.CRITICAL_HEALTH -> stringResource(R.string.ticker_type_critical_health)
+    SmartTickerType.ACTION_REQUIRED -> stringResource(R.string.ticker_type_action_required)
+    SmartTickerType.MISSION_PROGRESS -> stringResource(R.string.ticker_type_mission_progress)
+    SmartTickerType.MISSION_ACHIEVEMENT -> stringResource(R.string.ticker_type_mission_achievement)
+    SmartTickerType.PULSE_CHANGE -> stringResource(R.string.ticker_type_pulse_change)
+    SmartTickerType.CONTEXTUAL_SUGGESTION -> stringResource(R.string.ticker_type_contextual_suggestion)
+    SmartTickerType.WEEKLY_REPORT -> stringResource(R.string.ticker_type_weekly_report)
+    SmartTickerType.FEATURE_DISCOVERY -> stringResource(R.string.ticker_type_feature_discovery)
+}
+
+/** Renk-bağımsız tip göstergesi zaten ikon (emoji) ile sağlanıyor — bu yalnız ek görsel vurgu. */
+private fun SmartTickerType.isEmphasized(): Boolean =
+    this == SmartTickerType.CRITICAL_HEALTH || this == SmartTickerType.ACTION_REQUIRED
+
+private fun SmartTickerType.emphasisBackgroundColor(): Color = when (this) {
+    SmartTickerType.CRITICAL_HEALTH -> Color(0xFFE53935).copy(alpha = 0.22f)
+    SmartTickerType.ACTION_REQUIRED -> Color(0xFFF9A825).copy(alpha = 0.18f)
+    else -> Color.White.copy(alpha = 0.10f)
+}
+
+private fun SmartTickerType.emphasisBorderColor(): Color = when (this) {
+    SmartTickerType.CRITICAL_HEALTH -> Color(0xFFE53935).copy(alpha = 0.55f)
+    SmartTickerType.ACTION_REQUIRED -> Color(0xFFF9A825).copy(alpha = 0.45f)
+    else -> Color.White.copy(alpha = 0.18f)
+}
+
+private fun SmartTickerType.dotColor(): Color = when (this) {
+    SmartTickerType.CRITICAL_HEALTH -> Color(0xFFE53935)
+    SmartTickerType.ACTION_REQUIRED -> Color(0xFFF9A825)
+    else -> Color(0xFF26C6DA)
 }
 
 /**

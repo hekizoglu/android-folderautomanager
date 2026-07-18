@@ -443,10 +443,28 @@
     <string name="settings_home_usage_chart_visible_desc">Skor halkasının altında son 24 saatin kullanım grafiği görünür</string>
     <string name="pulse_usage_chart_content_desc">Son 24 saatlik kullanım grafiği</string>
 
-    <!-- HomeTickerRow — sessize alma menüsü -->
+    <!-- HomeTickerRow — Akıllı Nabız şeridi (Döngü T04) -->
     <string name="ticker_mute_8h">8 saat sessize al</string>
     <string name="ticker_mute_1d">1 gün sessize al</string>
     <string name="ticker_mute_7d">7 gün sessize al</string>
+    <string name="ticker_menu_hide_item">Bu bilgiyi gizle</string>
+    <string name="ticker_menu_hide_type">Bu tür bilgileri gösterme</string>
+    <string name="ticker_menu_settings">Akıllı Nabız ayarları</string>
+    <string name="ticker_menu_disable">Şeridi kapat</string>
+    <string name="ticker_page_indicator">%1$d / %2$d</string>
+    <string name="ticker_action_previous">Önceki haber</string>
+    <string name="ticker_action_next">Sonraki haber</string>
+    <string name="ticker_action_dismiss">Bu haberi kapat</string>
+    <string name="ticker_content_description">%1$s: %2$s. Açmak için dokun.</string>
+    <string name="ticker_content_description_no_action">%1$s: %2$s.</string>
+    <string name="ticker_type_critical_health">Kritik uyarı</string>
+    <string name="ticker_type_action_required">Eylem gerekli</string>
+    <string name="ticker_type_mission_progress">Görev ilerlemesi</string>
+    <string name="ticker_type_mission_achievement">Görev başarısı</string>
+    <string name="ticker_type_pulse_change">Dijital Yaşam değişimi</string>
+    <string name="ticker_type_contextual_suggestion">Öneri</string>
+    <string name="ticker_type_weekly_report">Haftalık rapor</string>
+    <string name="ticker_type_feature_discovery">İpucu</string>
 
     <!-- Arama fallback satırları -->
     <string name="search_fallback_google">Google\'da ara: %1$s</string>

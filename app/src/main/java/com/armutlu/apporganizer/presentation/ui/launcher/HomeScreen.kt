@@ -488,9 +488,19 @@ fun HomeScreen(
     // tekrarlayan zamanlayıcı değil (D210 fix, bkz. ShineEffect.kt).
     var homeResumeTrigger by remember { mutableStateOf(0) }
     val lifecycleOwner = LocalLifecycleOwner.current
+    // Şerit görünürlüğü (roadmap T04) — ana ekran arka plandayken (ON_PAUSE) otomatik geçiş
+    // timer'ı çalışmamalı; HomeTickerRow'a visible= olarak iletilir.
+    var homeTickerVisible by remember { mutableStateOf(true) }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) homeResumeTrigger++
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    homeResumeTrigger++
+                    homeTickerVisible = true
+                }
+                Lifecycle.Event.ON_PAUSE -> homeTickerVisible = false
+                else -> Unit
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -848,29 +858,50 @@ fun HomeScreen(
             }
             if (tickerEnabled && !tickerMuted) {
                 HomeTickerRow(
+                    items = tickerItems,
+                    visible = homeTickerVisible,
                     onMute = { duration ->
                         val until = System.currentTimeMillis() + duration
                         com.armutlu.apporganizer.utils.AppPrefs.setTickerMutedUntil(context, until)
                         tickerMutedUntil = until
                     },
-                    items = tickerItems,
+                    onDismissItem = { item ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        // Dokunulan/kapatilan haber bu oturumda tekrar gösterilmesin (D226).
+                        viewModel.dismissTickerItem(item.dedupeKey)
+                    },
+                    onHideType = { type -> viewModel.hideTickerType(type) },
+                    onOpenTickerSettings = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    },
+                    onDisableTicker = {
+                        com.armutlu.apporganizer.utils.AppPrefs.setTickerEnabled(context, false)
+                        tickerEnabled = false
+                    },
                     onItemClick = { item ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         // Dokunulan haber bu oturumda tekrar gösterilmesin — ticker çeşitlensin (D226)
-                        viewModel.dismissTickerItem(item.key)
-                        when {
-                            item.packageName != null -> viewModel.launchApp(context, item.packageName)
-                            item.categoryId != null -> {
-                                val folder = folders.find { it.category.categoryId == item.categoryId }
-                                if (folder != null) onNavigateToFolder(folder)
-                            }
-                            item.route != null -> {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, item.route)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        viewModel.dismissTickerItem(item.dedupeKey)
+                        when (val target = viewModel.resolveTickerTarget(item)) {
+                            is com.armutlu.apporganizer.domain.home.TickerActionRouter.RouteTarget.Screen -> when {
+                                target.packageName != null -> viewModel.launchApp(context, target.packageName)
+                                target.categoryId != null -> {
+                                    val folder = folders.find { it.category.categoryId == target.categoryId }
+                                    if (folder != null) onNavigateToFolder(folder)
                                 }
-                                runCatching { context.startActivity(intent) }
+                                else -> {
+                                    val intent = Intent(context, MainActivity::class.java).apply {
+                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
+                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    runCatching { context.startActivity(intent) }
+                                }
                             }
+                            com.armutlu.apporganizer.domain.home.TickerActionRouter.RouteTarget.None -> Unit
                         }
                     }
                 )

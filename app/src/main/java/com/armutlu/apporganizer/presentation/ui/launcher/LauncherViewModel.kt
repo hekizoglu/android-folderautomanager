@@ -12,6 +12,10 @@ import com.armutlu.apporganizer.domain.common.valueOrNull
 import com.armutlu.apporganizer.domain.home.HomeIntelligenceCoordinator
 import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.RefreshReason
+import com.armutlu.apporganizer.domain.home.SmartTickerItem
+import com.armutlu.apporganizer.domain.home.SmartTickerType
+import com.armutlu.apporganizer.domain.home.TickerAction
+import com.armutlu.apporganizer.domain.home.TickerActionRouter
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
@@ -918,105 +922,117 @@ class LauncherViewModel @Inject constructor(
         )
     }
 
+    // İçerik bazlı bastırma ("Bu tür bilgileri gösterme", roadmap T04) — SmartTickerType.name
+    // AppPrefs.KEY_TICKER_HIDDEN_TYPES setine yazılır, bu StateFlow reaktif olarak yansıtır.
+    private val _hiddenTickerTypes = MutableStateFlow(AppPrefs.getTickerHiddenTypes(getApplication()))
+
+    fun hideTickerType(type: SmartTickerType) {
+        val ctx = getApplication<Application>()
+        AppPrefs.addTickerHiddenType(ctx, type.name)
+        _hiddenTickerTypes.value = AppPrefs.getTickerHiddenTypes(ctx)
+    }
+
     /**
-     * [com.armutlu.apporganizer.domain.home.TickerActionRouter] route stringi ->
-     * `presentation.navigation.Routes` sabiti eslemesi. Router domain katmaninda kendi
-     * string sabitlerini tutar (navigation modulune bagimli olmamak icin); burada TEK
-     * yerde gercek Routes sabitine cevrilir (D04 PulseActionRouter ile ayni desen).
+     * [TickerActionRouter] route stringi -> `presentation.navigation.Routes` sabiti eslemesi.
+     * Router domain katmaninda kendi string sabitlerini tutar (navigation modulune bagimli
+     * olmamak icin); burada TEK yerde gercek Routes sabitine cevrilir (D04 PulseActionRouter
+     * ile ayni desen).
      */
     private fun resolveTickerRoute(routeString: String?): String? = when (routeString) {
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_DASHBOARD ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_NOTIFICATION_REPORT ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_APP_LIST_UNCERTAIN ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_APP_LIST ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_LAUNCHER ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_LAUNCHER
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_NOTIFICATIONS ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_NOTIFICATIONS
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_APPEARANCE ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_APPEARANCE
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_STATS ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SEARCH_SETTINGS ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.SEARCH_SETTINGS
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_REPORTS_CENTER ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.REPORTS_CENTER
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_USAGE_REPORT ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT
-        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_WRAPPED_REPORT ->
-            com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
+        TickerActionRouter.ROUTE_DASHBOARD -> com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
+        TickerActionRouter.ROUTE_NOTIFICATION_REPORT -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
+        TickerActionRouter.ROUTE_APP_LIST_UNCERTAIN -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
+        TickerActionRouter.ROUTE_APP_LIST -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
+        TickerActionRouter.ROUTE_SETTINGS -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
+        TickerActionRouter.ROUTE_SETTINGS_LAUNCHER -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_LAUNCHER
+        TickerActionRouter.ROUTE_SETTINGS_NOTIFICATIONS -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_NOTIFICATIONS
+        TickerActionRouter.ROUTE_SETTINGS_APPEARANCE -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_APPEARANCE
+        TickerActionRouter.ROUTE_SETTINGS_STATS -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
+        TickerActionRouter.ROUTE_SEARCH_SETTINGS -> com.armutlu.apporganizer.presentation.navigation.Routes.SEARCH_SETTINGS
+        TickerActionRouter.ROUTE_REPORTS_CENTER -> com.armutlu.apporganizer.presentation.navigation.Routes.REPORTS_CENTER
+        TickerActionRouter.ROUTE_USAGE_REPORT -> com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT
+        TickerActionRouter.ROUTE_WRAPPED_REPORT -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
         else -> null
     }
 
+    /**
+     * [SmartTickerItem.action] -> navigasyon hedefi çözümü (Döngü T04, T01 köprüsünün yerini
+     * alır). HomeScreen bu sonucu tüketip klasör/route/paket açılışını UI katmanında kurar
+     * (M05/D04 pattern'i — Intent UI'da kurulur, ViewModel yalnız hedefi çözer).
+     */
+    fun resolveTickerTarget(item: SmartTickerItem): TickerActionRouter.RouteTarget {
+        val target = TickerActionRouter.resolve(item.action)
+        val screen = target as? TickerActionRouter.RouteTarget.Screen ?: return TickerActionRouter.RouteTarget.None
+        return screen.copy(route = resolveTickerRoute(screen.route) ?: screen.route)
+    }
+
     /** Haftalik Rapor (Wrapped) teaser haberi — hafta sonu ve pazartesi gorunur, dokununca rapor acilir. */
-    private fun buildWrappedTicker(): List<TickerItem> = runCatching {
+    private fun buildWrappedTicker(): List<SmartTickerItem> = runCatching {
         val ctx = getApplication<Application>()
         if (!AppPrefs.isWrappedEnabled(ctx)) return@runCatching emptyList()
         val day = java.time.LocalDate.now().dayOfWeek
         val weekendOrMonday = day == java.time.DayOfWeek.SATURDAY ||
             day == java.time.DayOfWeek.SUNDAY || day == java.time.DayOfWeek.MONDAY
         if (!weekendOrMonday) return@runCatching emptyList()
-        listOf(TickerItem(
-            text = "Haftalık raporun hazır — skorunu ve rozetlerini gör",
-            emoji = "🎁",
-            route = com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
-        ))
+        listOf(
+            SmartTickerItem(
+                id = "wrapped_teaser",
+                type = SmartTickerType.WEEKLY_REPORT,
+                title = "Haftalık raporun hazır",
+                subtitle = "Skorunu ve rozetlerini gör",
+                icon = "🎁",
+                priority = 60,
+                createdAt = System.currentTimeMillis(),
+                action = TickerAction.OpenWeeklyReport,
+                suggestionKey = "wrapped_teaser",
+            )
+        )
     }.getOrDefault(emptyList())
 
     /** Arama istatistigi haberi — SearchStatsPrefs anonim agregatlarindan uretilir; 5+ arama olunca gorunur. */
-    private fun buildSearchStatsTicker(): List<TickerItem> = runCatching {
+    private fun buildSearchStatsTicker(): List<SmartTickerItem> = runCatching {
         val ctx = getApplication<Application>()
         if (!AppPrefs.isSearchStatsEnabled(ctx)) return@runCatching emptyList()
         val s = com.armutlu.apporganizer.utils.SearchStatsPrefs.getSummary(ctx)
         if (s.totalSearches < 5) return@runCatching emptyList()
-        val text = if (s.totalClicks > 0) {
+        val title: String
+        val subtitle: String
+        if (s.totalClicks > 0) {
             val firstPct = s.firstResultClicks * 100 / s.totalClicks
-            "${s.totalSearches} arama yaptın, %$firstPct ilk sonuçta buldu — detay için dokun"
+            title = "${s.totalSearches} arama yaptın"
+            subtitle = "%$firstPct ilk sonuçta buldu — detay için dokun"
         } else {
-            "${s.totalSearches} arama yaptın — istatistikler için dokun"
+            title = "${s.totalSearches} arama yaptın"
+            subtitle = "İstatistikler için dokun"
         }
-        listOf(TickerItem(
-            text = text,
-            emoji = "🔎",
-            route = com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
-        ))
+        listOf(
+            SmartTickerItem(
+                id = "search_stats_summary",
+                type = SmartTickerType.CONTEXTUAL_SUGGESTION,
+                title = title,
+                subtitle = subtitle,
+                icon = "🔎",
+                priority = 20,
+                createdAt = System.currentTimeMillis(),
+                action = TickerAction.OpenSearchStats,
+                suggestionKey = "search_stats_summary",
+            )
+        )
     }.getOrDefault(emptyList())
 
-    /**
-     * [SmartTickerItem] -> eski UI modeli [TickerItem] köprüsü (Döngü T01). HomeTickerRow hâlâ
-     * text/emoji tabanlı eski tipi tükettiği için burada tek satırlı title+subtitle birleştirilir;
-     * T04 döngüsü HomeTickerRow'u doğrudan SmartTickerItem tüketecek şekilde yeniden yazınca bu
-     * fonksiyon kaldırılacak.
-     */
-    private fun com.armutlu.apporganizer.domain.home.SmartTickerItem.toTickerItem(): TickerItem {
-        val target = com.armutlu.apporganizer.domain.home.TickerActionRouter.resolve(action)
-        val screen = target as? com.armutlu.apporganizer.domain.home.TickerActionRouter.RouteTarget.Screen
-        val combinedText = if (!subtitle.isNullOrBlank()) "$title — $subtitle" else title
-        return TickerItem(
-            text = combinedText,
-            emoji = icon.ifBlank { "📰" },
-            categoryId = screen?.categoryId,
-            route = resolveTickerRoute(screen?.route),
-            packageName = screen?.packageName,
-            suggestionKey = suggestionKey,
-        )
-    }
-
-    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + saat bazlı
-    // selamlama + unutulan uygulama + günün şampiyonu + ipucu (TickerComposer, D227 çeşitlilik).
-    // Dokunma hedefleri: klasör haberi → FolderScreen, bildirim haberi → Bildirim Raporu, içgörü → Dashboard.
-    val tickerItems: StateFlow<List<TickerItem>> = combine(
+    // Haber şeridi (ticker) — klasör istatistikleri + içgörüler + bildirim özeti + ipucu
+    // (TickerComposer, D227 çeşitlilik). MissionPulseTickerFactory (T03) bu akışa henüz
+    // bağlanmadı — RealSmartTickerSource/HomeIntelligenceCoordinator üzerinden ayrı çalışıyor
+    // (bkz. MissionPulseTickerFactory.kt dosya başı notu, döngüsel bağımlılık nedeniyle).
+    // Döngü T04: SmartTickerItem doğrudan UI'ya taşınır (T01 köprüsü kaldırıldı) — dokunma hedefi
+    // [resolveTickerTarget] ile, dismiss/hideType [dismissTickerItem]/[hideTickerType] ile çözülür.
+    val tickerItems: StateFlow<List<SmartTickerItem>> = combine(
         folders,
         insightCards,
         AppNotificationListenerService.badgeCounts,
-        _dismissedTickerKeys
-    ) { folderList, cards, badges, dismissed ->
+        _dismissedTickerKeys,
+        _hiddenTickerTypes,
+    ) { folderList, cards, badges, dismissed, hiddenTypes ->
         val folderSnapshots = folderList.map { f ->
             com.armutlu.apporganizer.utils.FolderSnapshot(
                 categoryId = f.category.categoryId,
@@ -1098,13 +1114,16 @@ class LauncherViewModel @Inject constructor(
                     nowMillis = System.currentTimeMillis(),
                 )
             }
-            spec.toTickerItem()
+            spec
         } + buildSearchStatsTicker() + buildWrappedTicker()
 
-        val visible = composed.filterNot { it.key in dismissed }
+        // İçerik bazlı bastırma (roadmap T04 "Bu tür bilgileri gösterme") — dismissed'ten ÖNCE
+        // uygulanır, tür kalıcı olarak gizlenmişse tekil dismiss listesine hiç girmez.
+        val notHiddenType = composed.filterNot { it.type.name in hiddenTypes }
+        val visible = notHiddenType.filterNot { it.dedupeKey in dismissed }
         // Hepsi dismiss edildiyse bu oturumda haberler tükendi demektir — sıfırla ki
         // ticker boş kalmasın (yeni klasör/içgörü verisi geldiğinde zaten otomatik güncellenir).
-        if (visible.isEmpty()) composed else visible
+        if (visible.isEmpty()) notHiddenType else visible
         // WhileSubscribed: ticker yalnizca HomeScreen gorunurken hesaplanir; initial emptyList
         // HomeTickerRow'da erken-donus ile guvenli — cold start yuku azaltildi (D234).
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())

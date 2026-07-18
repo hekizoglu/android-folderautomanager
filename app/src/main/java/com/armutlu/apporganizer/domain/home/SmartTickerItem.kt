@@ -6,10 +6,8 @@ package com.armutlu.apporganizer.domain.home
  * eskiden [com.armutlu.apporganizer.utils.TickerSpec] sadece metin + priority taşıyordu;
  * bu model tür, süre (expiresAt) ve davranışı (action) açık şekilde taşır.
  *
- * [TickerComposer] artık bu tipi üretir; [HomeTickerRow] hâlâ eski
- * [com.armutlu.apporganizer.presentation.ui.launcher.TickerItem] tipini tükettiği için
- * LauncherViewModel içinde bir köprü (`toTickerItem()`) SmartTickerItem'ı eski UI modeline
- * eşler — T04 döngüsü UI'yı doğrudan SmartTickerItem tüketecek şekilde yeniden yazacak.
+ * [TickerComposer] bu tipi üretir; [HomeTickerRow] bu tipi DOĞRUDAN tüketir (Döngü T04 —
+ * eski [com.armutlu.apporganizer.presentation.ui.launcher.TickerItem] köprüsü kaldırıldı).
  */
 data class SmartTickerItem(
     val id: String,

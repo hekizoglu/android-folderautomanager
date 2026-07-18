@@ -441,10 +441,28 @@
     <string name="settings_home_usage_chart_visible_desc">Shows the last 24 hours of usage as a mini chart under the score ring</string>
     <string name="pulse_usage_chart_content_desc">Usage chart for the last 24 hours</string>
 
-    <!-- HomeTickerRow — mute menu -->
+    <!-- HomeTickerRow — Smart Pulse strip (Cycle T04) -->
     <string name="ticker_mute_8h">Mute for 8 hours</string>
     <string name="ticker_mute_1d">Mute for 1 day</string>
     <string name="ticker_mute_7d">Mute for 7 days</string>
+    <string name="ticker_menu_hide_item">Hide this item</string>
+    <string name="ticker_menu_hide_type">Don\'t show this type of item</string>
+    <string name="ticker_menu_settings">Smart Pulse settings</string>
+    <string name="ticker_menu_disable">Turn off strip</string>
+    <string name="ticker_page_indicator">%1$d / %2$d</string>
+    <string name="ticker_action_previous">Previous item</string>
+    <string name="ticker_action_next">Next item</string>
+    <string name="ticker_action_dismiss">Dismiss this item</string>
+    <string name="ticker_content_description">%1$s: %2$s. Tap to open.</string>
+    <string name="ticker_content_description_no_action">%1$s: %2$s.</string>
+    <string name="ticker_type_critical_health">Critical alert</string>
+    <string name="ticker_type_action_required">Action required</string>
+    <string name="ticker_type_mission_progress">Mission progress</string>
+    <string name="ticker_type_mission_achievement">Mission achievement</string>
+    <string name="ticker_type_pulse_change">Digital Life change</string>
+    <string name="ticker_type_contextual_suggestion">Suggestion</string>
+    <string name="ticker_type_weekly_report">Weekly report</string>
+    <string name="ticker_type_feature_discovery">Tip</string>
 
     <!-- Search fallback rows -->
     <string name="search_fallback_google">Search Google: %1$s</string>

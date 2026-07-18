@@ -599,6 +599,15 @@ object AppPrefs {
     fun getTickerMutedUntil(context: Context) = prefs(context).getLong(KEY_TICKER_MUTED_UNTIL, 0L)
     fun setTickerMutedUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, untilMillis).apply()
 
+    // Icerik bazli ticker bastirma (Dongu T04) — "Bu tur bilgileri gosterme" secilince
+    // SmartTickerType.name bu sete eklenir; TickerRow'a dokunmadan LauncherViewModel
+    // tickerItems akisinda filtrelenir (dismissedTickerKeys ile ayni desen, tur bazli).
+    const val KEY_TICKER_HIDDEN_TYPES = "home_ticker_hidden_types"
+    fun getTickerHiddenTypes(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_TICKER_HIDDEN_TYPES, emptySet()) ?: emptySet()
+    fun addTickerHiddenType(context: Context, typeName: String) =
+        prefs(context).edit().putStringSet(KEY_TICKER_HIDDEN_TYPES, getTickerHiddenTypes(context) + typeName).apply()
+
     // Arama çubuğu elmas parlaması — 10-15 sn'de bir gradient süpürme animasyonu
     const val KEY_SEARCH_SHINE_ENABLED = "search_shine_enabled"
     fun isSearchShineEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHINE_ENABLED, true)
