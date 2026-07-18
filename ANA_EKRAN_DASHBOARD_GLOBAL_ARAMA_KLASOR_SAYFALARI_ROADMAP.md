@@ -493,7 +493,7 @@ const val KEY_SMART_DASHBOARD_ENABLED = "smart_dashboard_enabled"
 
 **Bağımlılıklar:** P01.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P02 — commit: 1e081d8 — tarih: 2026-07-18 — Not: HomePagePrefs (StartPageMode + bayraklı legacy migration + backup/diagnostics köprüsü); resolver fallback'leri: silinmiş klasör→Dashboard→ilk sayfa, index clamp. categoryId diagnostics'e asla yazılmaz. UI bağlama P05/P13'te.
 
 ---
 
