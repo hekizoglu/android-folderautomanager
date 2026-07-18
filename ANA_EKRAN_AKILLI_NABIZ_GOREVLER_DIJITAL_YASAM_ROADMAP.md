@@ -1902,7 +1902,7 @@ Eski `KEY_TICKER_ENABLED` yeni anahtara migrate edilmelidir.
 
 **Bağımlılıklar:** T01, T04.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü T05 — commit: a83943b — tarih: 2026-07-18 — T FAZI KAPANDI: tam test + assembleDebug yeşil, APK v1.3.87 (110) Telegram'a gönderildi. Ayrı SmartTickerSettingsScreen; görev türleri tek kullanıcı satırında gruplu; iç enum adları UI'ya sızdırılmadı; hassas bilgi varsayılan kapalı.
 
 ---
 
