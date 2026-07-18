@@ -45,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
+import com.armutlu.apporganizer.telemetry.TelemetryEvent
+import com.armutlu.apporganizer.telemetry.TelemetryManager
 import com.armutlu.apporganizer.utils.AppPrefs
 import java.text.DateFormat
 import java.util.Date
@@ -150,6 +152,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             actionsVisible = it
                             AppPrefs.setSmartTickerActionsVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.ACTION_REQUIRED))
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -162,6 +165,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             missionsVisible = it
                             AppPrefs.setSmartTickerMissionsVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.MISSION_PROGRESS))
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -174,6 +178,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             pulseVisible = it
                             AppPrefs.setSmartTickerPulseVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.PULSE_CHANGE))
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -186,6 +191,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             reportsVisible = it
                             AppPrefs.setSmartTickerReportsVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.WEEKLY_REPORT))
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -198,6 +204,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             contextualVisible = it
                             AppPrefs.setSmartTickerContextualVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.CONTEXTUAL_SUGGESTION))
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -210,6 +217,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             discoveryVisible = it
                             AppPrefs.setSmartTickerDiscoveryVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.FEATURE_DISCOVERY))
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -222,6 +230,7 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             healthVisible = it
                             AppPrefs.setSmartTickerHealthVisible(context, it)
+                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.CRITICAL_HEALTH))
                         },
                     )
                 }

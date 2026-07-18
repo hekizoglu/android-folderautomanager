@@ -33,7 +33,22 @@ object TelemetryEventValidator {
             "warning_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet(), "classification_consistent" to setOf("true", "false", "unknown"),
             "worker_failure_bucket" to CountBucket.entries.map { it.wireValue }.toSet(), "search_latency_bucket" to setOf("under_50_ms", "50_99_ms", "100_249_ms", "250_499_ms", "500_999_ms", "1_3_sec", "over_3_sec", "unknown"),
             "file_index_age_bucket" to setOf("under_24_hours", "1_3_days", "4_7_days", "over_7_days", "unknown")
-        )
+        ),
+        // Döngü U02 — ana ekran görev/skor/şerit telemetrisi (roadmap satır 1992-2055).
+        "home_mission_card_viewed" to mapOf("mission_type" to values(TelemetryEvent.HomeMissionType.entries.toTypedArray()), "status" to values(TelemetryEvent.HomeMissionStatus.entries.toTypedArray())),
+        "home_mission_card_opened" to mapOf("mission_type" to values(TelemetryEvent.HomeMissionType.entries.toTypedArray()), "status" to values(TelemetryEvent.HomeMissionStatus.entries.toTypedArray())),
+        "mission_progress_viewed" to mapOf("mission_type" to values(TelemetryEvent.HomeMissionType.entries.toTypedArray()), "progress_bucket" to values(TelemetryEvent.ProgressBucket.entries.toTypedArray())),
+        "mission_card_completed" to mapOf("mission_type" to values(TelemetryEvent.HomeMissionType.entries.toTypedArray())),
+        "mission_card_failed" to mapOf("mission_type" to values(TelemetryEvent.HomeMissionType.entries.toTypedArray())),
+        "home_pulse_card_viewed" to mapOf("score_bucket" to values(TelemetryEvent.ScoreBucket.entries.toTypedArray()), "confidence" to values(TelemetryEvent.ConfidenceBucket.entries.toTypedArray())),
+        "home_pulse_card_opened" to mapOf("score_bucket" to values(TelemetryEvent.ScoreBucket.entries.toTypedArray()), "confidence" to values(TelemetryEvent.ConfidenceBucket.entries.toTypedArray())),
+        "ticker_impression" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray()), "position_bucket" to values(TelemetryEvent.PositionBucket.entries.toTypedArray())),
+        "ticker_opened" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray()), "position_bucket" to values(TelemetryEvent.PositionBucket.entries.toTypedArray())),
+        "ticker_dismissed" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
+        "ticker_snoozed" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
+        "ticker_type_disabled" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
+        "ticker_manual_next" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
+        "ticker_auto_advanced" to mapOf("item_type" to values(TelemetryEvent.TickerItemType.entries.toTypedArray())),
     )
 
     fun isValid(event: TelemetryEvent): Boolean = isValidPayload(event.eventName, event.parameters)

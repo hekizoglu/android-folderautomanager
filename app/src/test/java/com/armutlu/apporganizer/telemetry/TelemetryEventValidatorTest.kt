@@ -37,7 +37,21 @@ class TelemetryEventValidatorTest {
             "worker_failure_bucket",
             "search_latency_bucket",
             "file_index_age_bucket"
-        )
+        ),
+        "home_mission_card_viewed" to setOf("mission_type", "status"),
+        "home_mission_card_opened" to setOf("mission_type", "status"),
+        "mission_progress_viewed" to setOf("mission_type", "progress_bucket"),
+        "mission_card_completed" to setOf("mission_type"),
+        "mission_card_failed" to setOf("mission_type"),
+        "home_pulse_card_viewed" to setOf("score_bucket", "confidence"),
+        "home_pulse_card_opened" to setOf("score_bucket", "confidence"),
+        "ticker_impression" to setOf("item_type", "position_bucket"),
+        "ticker_opened" to setOf("item_type", "position_bucket"),
+        "ticker_dismissed" to setOf("item_type"),
+        "ticker_snoozed" to setOf("item_type"),
+        "ticker_type_disabled" to setOf("item_type"),
+        "ticker_manual_next" to setOf("item_type"),
+        "ticker_auto_advanced" to setOf("item_type"),
     )
 
     @Test fun `catalog is exactly the roadmap allowlist`() {
@@ -66,5 +80,34 @@ class TelemetryEventValidatorTest {
         assertTrue(TelemetryEventValidator.catalog.keys.all(validName::matches))
         assertTrue(TelemetryEventValidator.catalog.values.flatMap { it.keys }.all(validName::matches))
         assertTrue(TelemetryEventValidator.catalog.keys.none { it.startsWith("firebase_") || it.startsWith("google_") || it.startsWith("ga_") })
+    }
+
+    // Döngü U02 — ana ekran görev/skor/şerit telemetrisi: yasak alanların (isim/paket/bildirim
+    // metni/dosya adı) hiçbir yolla event'e giremediğini ve tipli API'nin yalnız kapalı enum
+    // değerleri gönderdiğini doğrular.
+    @Test fun `home intelligence events contain only bounded values`() {
+        val events = listOf(
+            TelemetryEvent.HomeMissionCardViewed(TelemetryEvent.HomeMissionType.CLASSIFICATION_REVIEW, TelemetryEvent.HomeMissionStatus.IN_PROGRESS),
+            TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.USAGE_REPORT, TelemetryEvent.HomeMissionStatus.AT_RISK),
+            TelemetryEvent.MissionProgressViewed(TelemetryEvent.HomeMissionType.NOTIFICATION_REPORT, TelemetryEvent.ProgressBucket.HIGH),
+            TelemetryEvent.MissionCardCompleted(TelemetryEvent.HomeMissionType.NONE),
+            TelemetryEvent.MissionCardFailed(TelemetryEvent.HomeMissionType.UNAVAILABLE),
+            TelemetryEvent.HomePulseCardViewed(TelemetryEvent.ScoreBucket.S60_79, TelemetryEvent.ConfidenceBucket.MEDIUM),
+            TelemetryEvent.HomePulseCardOpened(TelemetryEvent.ScoreBucket.S80_100, TelemetryEvent.ConfidenceBucket.HIGH),
+            TelemetryEvent.TickerImpression(TelemetryEvent.TickerItemType.MISSION_PROGRESS, TelemetryEvent.PositionBucket.FIRST),
+            TelemetryEvent.TickerOpened(TelemetryEvent.TickerItemType.PULSE_CHANGE, TelemetryEvent.PositionBucket.TWO_TO_FIVE),
+            TelemetryEvent.TickerDismissed(TelemetryEvent.TickerItemType.CONTEXTUAL_SUGGESTION),
+            TelemetryEvent.TickerSnoozed(TelemetryEvent.TickerItemType.FEATURE_DISCOVERY),
+            TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.WEEKLY_REPORT),
+            TelemetryEvent.TickerManualNext(TelemetryEvent.TickerItemType.ACTION_REQUIRED),
+            TelemetryEvent.TickerAutoAdvanced(TelemetryEvent.TickerItemType.CRITICAL_HEALTH),
+        )
+        assertTrue(events.all(TelemetryEventValidator::isValid))
+    }
+
+    @Test fun `home intelligence events reject free text substituted for enum wire values`() {
+        assertFalse(TelemetryEventValidator.isValidPayload("home_mission_card_opened", mapOf("mission_type" to "Bildirim İncelemesi", "status" to "in_progress")))
+        assertFalse(TelemetryEventValidator.isValidPayload("ticker_dismissed", mapOf("item_type" to "com.whatsapp")))
+        assertFalse(TelemetryEventValidator.isValidPayload("ticker_impression", mapOf("item_type" to "mission_progress", "position_bucket" to "first", "title" to "Unutulan uygulama: Spotify")))
     }
 }

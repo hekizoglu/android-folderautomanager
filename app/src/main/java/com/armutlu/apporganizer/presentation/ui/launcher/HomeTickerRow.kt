@@ -62,6 +62,8 @@ import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
 import com.armutlu.apporganizer.domain.home.TickerAction
+import com.armutlu.apporganizer.telemetry.TelemetryEvent
+import com.armutlu.apporganizer.telemetry.TelemetryManager
 import kotlinx.coroutines.delay
 
 /**
@@ -137,6 +139,13 @@ internal fun HomeTickerRow(
         delay(waitMillis)
         direction = 1
         index = (index + 1) % items.size
+        // Döngü U02 — otomatik geçiş sonrası yeni gösterilen öğenin türü (başlık/metin YOK).
+        TelemetryManager.log(TelemetryEvent.TickerAutoAdvanced(items[index.coerceIn(0, items.lastIndex)].type.toWireType()))
+    }
+
+    // Döngü U02 — her yeni öğe göründüğünde bir kez "impression" (tür + sıradaki pozisyon).
+    LaunchedEffect(current.dedupeKey) {
+        TelemetryManager.log(TelemetryEvent.TickerImpression(current.type.toWireType(), positionBucketOf(index)))
     }
 
     // "CANLI" noktası — yumuşak nabız animasyonu (reduceMotion'da da düşük maliyetli, atlanmıyor).
@@ -199,6 +208,8 @@ internal fun HomeTickerRow(
                         if (now - lastClickAt > 700L) {
                             lastClickAt = now
                             pausedUntil = now + USER_INTERACTION_PAUSE_MS
+                            // Döngü U02 — açılan öğenin türü + o anki pozisyonu (başlık/hedef YOK).
+                            TelemetryManager.log(TelemetryEvent.TickerOpened(latestCurrent.type.toWireType(), positionBucketOf(index)))
                             latestOnItemClick(latestCurrent)
                         }
                     },
@@ -208,6 +219,10 @@ internal fun HomeTickerRow(
                         index = if (forward) (index + 1) % items.size
                                 else (index - 1 + items.size) % items.size
                         pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
+                        if (forward) {
+                            // Döngü U02 — kullanıcının elle "sonraki"ye geçtiği öğenin türü.
+                            TelemetryManager.log(TelemetryEvent.TickerManualNext(items[index.coerceIn(0, items.lastIndex)].type.toWireType()))
+                        }
                     }
                 )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -266,6 +281,8 @@ internal fun HomeTickerRow(
             if (onDismissItem != null) {
                 IconButton(
                     onClick = {
+                        // Döngü U02 — kapatılan öğenin türü (başlık/hedef YOK).
+                        TelemetryManager.log(TelemetryEvent.TickerDismissed(current.type.toWireType()))
                         onDismissItem(current)
                         if (items.size > 1) {
                             index = index.coerceIn(0, (items.size - 2).coerceAtLeast(0))
@@ -292,6 +309,8 @@ internal fun HomeTickerRow(
                             text = { Text(stringResource(R.string.ticker_menu_hide_item)) },
                             onClick = {
                                 menuOpen = false
+                                // Döngü U02 — kapatılan öğenin türü (başlık/hedef YOK).
+                                TelemetryManager.log(TelemetryEvent.TickerDismissed(current.type.toWireType()))
                                 onDismissItem(current)
                             }
                         )
@@ -301,6 +320,8 @@ internal fun HomeTickerRow(
                             text = { Text(stringResource(R.string.ticker_menu_hide_type)) },
                             onClick = {
                                 menuOpen = false
+                                // Döngü U02 — tüm türü kapatan kullanıcı kararı (bkz. roadmap ticker_type_disabled).
+                                TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(current.type.toWireType()))
                                 onHideType(current.type)
                             }
                         )
@@ -315,6 +336,8 @@ internal fun HomeTickerRow(
                                 text = { Text(label) },
                                 onClick = {
                                     menuOpen = false
+                                    // Döngü U02 — sessize alma (tüm şerit) — o anki öğenin türü örneklenir.
+                                    TelemetryManager.log(TelemetryEvent.TickerSnoozed(current.type.toWireType()))
                                     onMute(duration)
                                 }
                             )
@@ -357,6 +380,25 @@ internal fun digitalLifeScoreColor(score: Int): Color = when {
     score >= 60 -> Color(0xFF43A047)
     score >= 40 -> Color(0xFFF9A825)
     else -> Color(0xFFE53935)
+}
+
+/** [SmartTickerType] -> kapalı telemetri enum'u (Döngü U02) — asla başlık/alt başlık taşımaz. */
+private fun SmartTickerType.toWireType(): TelemetryEvent.TickerItemType = when (this) {
+    SmartTickerType.CRITICAL_HEALTH -> TelemetryEvent.TickerItemType.CRITICAL_HEALTH
+    SmartTickerType.ACTION_REQUIRED -> TelemetryEvent.TickerItemType.ACTION_REQUIRED
+    SmartTickerType.MISSION_PROGRESS -> TelemetryEvent.TickerItemType.MISSION_PROGRESS
+    SmartTickerType.MISSION_ACHIEVEMENT -> TelemetryEvent.TickerItemType.MISSION_ACHIEVEMENT
+    SmartTickerType.PULSE_CHANGE -> TelemetryEvent.TickerItemType.PULSE_CHANGE
+    SmartTickerType.CONTEXTUAL_SUGGESTION -> TelemetryEvent.TickerItemType.CONTEXTUAL_SUGGESTION
+    SmartTickerType.WEEKLY_REPORT -> TelemetryEvent.TickerItemType.WEEKLY_REPORT
+    SmartTickerType.FEATURE_DISCOVERY -> TelemetryEvent.TickerItemType.FEATURE_DISCOVERY
+}
+
+/** Şerit içi sıra (0-based index) -> kapalı pozisyon bucket'ı (Döngü U02). */
+private fun positionBucketOf(index: Int): TelemetryEvent.PositionBucket = when {
+    index <= 0 -> TelemetryEvent.PositionBucket.FIRST
+    index <= 4 -> TelemetryEvent.PositionBucket.TWO_TO_FIVE
+    else -> TelemetryEvent.PositionBucket.SIX_PLUS
 }
 
 @Composable

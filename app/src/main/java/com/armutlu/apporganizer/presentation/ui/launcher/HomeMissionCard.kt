@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +18,8 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
+import com.armutlu.apporganizer.telemetry.TelemetryEvent
+import com.armutlu.apporganizer.telemetry.TelemetryManager
 
 /**
  * Dongu M07 — Ana ekran "Görevler" kartinin canli hali. Eskiden statik "Bugünün görevleri"
@@ -36,8 +39,21 @@ internal fun HomeMissionCard(
     val showsUsageAccessRequired = summary == null || summary.primaryStatus == MissionStatus.DATA_UNAVAILABLE
     val allCompleted = summary != null && summary.totalCount > 0 && summary.completedCount == summary.totalCount
 
+    // Döngü U02 — kart her göründüğünde bir kez "viewed" (isim/içerik taşımaz, sadece
+    // durum+ilerleme bucket'ı). recomposition'da tekrar tetiklenmemesi için summary'nin
+    // durum+ilerleme çiftine anahtarlanır (aynı özet için yeniden loglanmaz).
+    val wireStatus = summary.toWireStatus()
+    val wireProgress = progressBucketOf(summary?.primaryProgressFraction)
+    LaunchedEffect(wireStatus, wireProgress) {
+        TelemetryManager.log(TelemetryEvent.HomeMissionCardViewed(TelemetryEvent.HomeMissionType.NONE, wireStatus))
+        TelemetryManager.log(TelemetryEvent.MissionProgressViewed(TelemetryEvent.HomeMissionType.NONE, wireProgress))
+    }
+
     GlassCard(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier.clickable(onClick = {
+            TelemetryManager.log(TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.NONE, wireStatus))
+            onClick()
+        }),
         cornerRadius = 18.dp,
         backgroundAlpha = 0.10f,
         borderAlpha = 0.18f,
@@ -103,4 +119,26 @@ internal fun HomeMissionCard(
             }
         }
     }
+}
+
+/** [HomeMissionSummary.primaryStatus] -> kapalı telemetri enum'u (Döngü U02). */
+private fun HomeMissionSummary?.toWireStatus(): TelemetryEvent.HomeMissionStatus = when (this?.primaryStatus) {
+    MissionStatus.DATA_UNAVAILABLE, null -> TelemetryEvent.HomeMissionStatus.DATA_UNAVAILABLE
+    MissionStatus.NOT_STARTED -> TelemetryEvent.HomeMissionStatus.NOT_STARTED
+    MissionStatus.IN_PROGRESS -> TelemetryEvent.HomeMissionStatus.IN_PROGRESS
+    MissionStatus.SAFE -> TelemetryEvent.HomeMissionStatus.SAFE
+    MissionStatus.AT_RISK -> TelemetryEvent.HomeMissionStatus.AT_RISK
+    MissionStatus.AWAITING_SETTLEMENT -> TelemetryEvent.HomeMissionStatus.AWAITING_SETTLEMENT
+    MissionStatus.COMPLETED -> TelemetryEvent.HomeMissionStatus.COMPLETED
+    MissionStatus.FAILED -> TelemetryEvent.HomeMissionStatus.FAILED
+}
+
+/** Ham ilerleme oranı (0f-1f) -> kapalı bucket (Döngü U02) — sayı değil bant gönderilir. */
+private fun progressBucketOf(fraction: Float?): TelemetryEvent.ProgressBucket = when {
+    fraction == null -> TelemetryEvent.ProgressBucket.UNKNOWN
+    fraction <= 0f -> TelemetryEvent.ProgressBucket.ZERO
+    fraction < 0.34f -> TelemetryEvent.ProgressBucket.LOW
+    fraction < 0.67f -> TelemetryEvent.ProgressBucket.MEDIUM
+    fraction < 1f -> TelemetryEvent.ProgressBucket.HIGH
+    else -> TelemetryEvent.ProgressBucket.COMPLETE
 }

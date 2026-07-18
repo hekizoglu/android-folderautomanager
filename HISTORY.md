@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu U02 - 2026-07-18 - Gizlilik guvenli telemetri
+
+**Yapilanlar:** Mevcut TelemetryManager/Validator mimarisi genisletildi (yeni altyapi kurulmadi): 13 yeni event + 5 kapali enum (WireValue — public API'de String yolu yok, derleme garantisi) + catalog whitelist + forbiddenKeys ikinci katman. Kart viewed/opened, ticker impression/opened/dismissed/snoozed/type_disabled baglandi. Mevcut isTelemetryEnabled consent fail-closed. 6/6 validator + Ticker testleri yesil.
+
+**Bug:** Yok. Kararlar: mission_completed isim cakismasi -> mission_card_* (mevcut agregasyon bozulmadi); HomeMissionType.NONE (baslktan tur turetme = sizinti riski); completed/failed UI tetigi sonraki donguye (sessiz refresh'te atesleme yanlis olurdu).
+
+**Sonraki:** U03 — saglik raporuna yeni sistem durumlari (zincir devam).
+
 ## Akilli Nabiz Dongu U01 - 2026-07-18 - LauncherViewModel sadelestirme
 
 **Yapilanlar:** Ticker compose+rank+filtre mantigi HomeTickerComposer use-case'ine tasindi (VM sadece combine+delege); olu kod silindi: PulseScoreRing + HourlyUsageSparkline + pulseScoreColor, PulseCard'in kullanilmayan 3 parametresi, MissionsRepository.buildTaskEventInput. LauncherViewModel 1305->1055 satir (-%19). TAM suite: 785 test / 0 hata.

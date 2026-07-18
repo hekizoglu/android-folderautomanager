@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +24,8 @@ import com.armutlu.apporganizer.domain.home.PulseAction
 import com.armutlu.apporganizer.domain.home.PulseReasonPresenter
 import com.armutlu.apporganizer.domain.home.PulseStatusBand
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
+import com.armutlu.apporganizer.telemetry.TelemetryEvent
+import com.armutlu.apporganizer.telemetry.TelemetryManager
 
 /**
  * Döngü D02 — "Dijital Yaşam" bilgi kartı, eski [DigitalScoreCard]'ın yerini alır
@@ -45,8 +48,19 @@ internal fun DigitalLifeCard(
     onReasonAction: (PulseAction) -> Unit = {},
 ) {
     if (summary == null) return
+
+    // Döngü U02 — kart göründüğünde bir kez isimsiz/içeriksiz "viewed" (skor bucket + güven).
+    val wireScore = scoreBucketOf(summary.score, summary.shouldHideScore)
+    val wireConfidence = confidenceBucketOf(summary.confidence)
+    LaunchedEffect(wireScore, wireConfidence) {
+        TelemetryManager.log(TelemetryEvent.HomePulseCardViewed(wireScore, wireConfidence))
+    }
+
     GlassCard(
-        modifier = modifier.clickable(enabled = summary.isActionable, onClick = onClick),
+        modifier = modifier.clickable(enabled = summary.isActionable, onClick = {
+            TelemetryManager.log(TelemetryEvent.HomePulseCardOpened(wireScore, wireConfidence))
+            onClick()
+        }),
         cornerRadius = 18.dp,
         backgroundAlpha = 0.10f,
         borderAlpha = 0.18f,
@@ -195,3 +209,18 @@ private fun PulseStatusBand.labelRes(): Int = when (this) {
     PulseStatusBand.IMPROVING -> R.string.digital_life_card_status_improving
 }
 
+/** Ham skor (0-100) -> kapalı bucket (Döngü U02) — skor gizliyken (LOW confidence) UNKNOWN. */
+private fun scoreBucketOf(score: Int?, hidden: Boolean): TelemetryEvent.ScoreBucket = when {
+    hidden || score == null -> TelemetryEvent.ScoreBucket.UNKNOWN
+    score < 20 -> TelemetryEvent.ScoreBucket.S0_19
+    score < 40 -> TelemetryEvent.ScoreBucket.S20_39
+    score < 60 -> TelemetryEvent.ScoreBucket.S40_59
+    score < 80 -> TelemetryEvent.ScoreBucket.S60_79
+    else -> TelemetryEvent.ScoreBucket.S80_100
+}
+
+private fun confidenceBucketOf(confidence: DataConfidence): TelemetryEvent.ConfidenceBucket = when (confidence) {
+    DataConfidence.LOW -> TelemetryEvent.ConfidenceBucket.LOW
+    DataConfidence.MEDIUM -> TelemetryEvent.ConfidenceBucket.MEDIUM
+    DataConfidence.HIGH -> TelemetryEvent.ConfidenceBucket.HIGH
+}

@@ -23,6 +23,31 @@ sealed class TelemetryEvent(
     internal class DailyUsageSummary(parameters: Map<String, String>) : TelemetryEvent("daily_usage_summary", parameters)
     internal class DailyHealthSummary(parameters: Map<String, String>) : TelemetryEvent("daily_health_summary", parameters)
 
+    // Döngü U02 — Gizlilik güvenli telemetri (roadmap satır 1992-2055): ana ekran görev/skor/
+    // şerit sistemlerinin kullanımı. Yalnız enum/sayı taşınır; başlık/uygulama/paket/bildirim/
+    // dosya/klasör adı hiçbir parametreye giremez (aşağıdaki enum'lar bunu derleme zamanında
+    // garanti eder — public API String parametresi kabul etmez).
+    //
+    // NOT: roadmap "mission_completed" ismini önerir ama bu isim yukarıda FARKLI parametrelerle
+    // (mission_type + reward_bucket, Görevler ekranı ödül akışı) zaten kullanılıyor ve
+    // LocalTelemetryStore günlük özet agregasyonuna bağlı — event adı/şema değiştirmek mevcut
+    // agregasyonu bozar. Bu yüzden ana ekran görev kartı için "mission_card_completed" /
+    // "mission_card_failed" adları kullanılır (aynı anlam, çakışmayan şema).
+    data class HomeMissionCardViewed(val missionType: HomeMissionType, val status: HomeMissionStatus) : TelemetryEvent("home_mission_card_viewed", p("mission_type", missionType, "status", status))
+    data class HomeMissionCardOpened(val missionType: HomeMissionType, val status: HomeMissionStatus) : TelemetryEvent("home_mission_card_opened", p("mission_type", missionType, "status", status))
+    data class MissionProgressViewed(val missionType: HomeMissionType, val progress: ProgressBucket) : TelemetryEvent("mission_progress_viewed", p("mission_type", missionType, "progress_bucket", progress))
+    data class MissionCardCompleted(val missionType: HomeMissionType) : TelemetryEvent("mission_card_completed", p("mission_type", missionType))
+    data class MissionCardFailed(val missionType: HomeMissionType) : TelemetryEvent("mission_card_failed", p("mission_type", missionType))
+    data class HomePulseCardViewed(val scoreBucket: ScoreBucket, val confidence: ConfidenceBucket) : TelemetryEvent("home_pulse_card_viewed", p("score_bucket", scoreBucket, "confidence", confidence))
+    data class HomePulseCardOpened(val scoreBucket: ScoreBucket, val confidence: ConfidenceBucket) : TelemetryEvent("home_pulse_card_opened", p("score_bucket", scoreBucket, "confidence", confidence))
+    data class TickerImpression(val itemType: TickerItemType, val position: PositionBucket) : TelemetryEvent("ticker_impression", p("item_type", itemType, "position_bucket", position))
+    data class TickerOpened(val itemType: TickerItemType, val position: PositionBucket) : TelemetryEvent("ticker_opened", p("item_type", itemType, "position_bucket", position))
+    data class TickerDismissed(val itemType: TickerItemType) : TelemetryEvent("ticker_dismissed", p("item_type", itemType))
+    data class TickerSnoozed(val itemType: TickerItemType) : TelemetryEvent("ticker_snoozed", p("item_type", itemType))
+    data class TickerTypeDisabled(val itemType: TickerItemType) : TelemetryEvent("ticker_type_disabled", p("item_type", itemType))
+    data class TickerManualNext(val itemType: TickerItemType) : TelemetryEvent("ticker_manual_next", p("item_type", itemType))
+    data class TickerAutoAdvanced(val itemType: TickerItemType) : TelemetryEvent("ticker_auto_advanced", p("item_type", itemType))
+
     interface WireValue { val wireValue: String }
     enum class EntryType(override val wireValue: String) : WireValue { FIRST_LAUNCH("first_launch"), SETTINGS("settings"), RECOVERY("recovery") }
     enum class OnboardingStepType(override val wireValue: String) : WireValue { WELCOME("welcome"), PERMISSIONS("permissions"), ORGANIZATION("organization"), FINISH("finish") }
@@ -46,6 +71,28 @@ sealed class TelemetryEvent(
     enum class WarningCode(override val wireValue: String) : WireValue { SEARCH_LATENCY_HIGH("search_latency_high"), REQUIRED_PERMISSION_MISSING("required_permission_missing"), WORKER_FAILURE("worker_failure"), DATA_STALE("data_stale") }
     enum class Severity(override val wireValue: String) : WireValue { INFO("info"), WARNING("warning"), ERROR("error") }
     enum class VersionBucket(override val wireValue: String) : WireValue { CURRENT("current"), OUTDATED("outdated"), UNKNOWN("unknown") }
+
+    // Döngü U02 — ana ekran görev/skor/şerit telemetrisi için kapalı enum'lar.
+    /** [com.armutlu.apporganizer.domain.usecase.missions.MissionAction] sınıf adına eşlenir — hangi ekran türüne yönlendirdiğini taşır, görev başlığını DEĞİL. */
+    enum class HomeMissionType(override val wireValue: String) : WireValue {
+        CLASSIFICATION_REVIEW("classification_review"), NOTIFICATION_REPORT("notification_report"),
+        USAGE_REPORT("usage_report"), USAGE_ACCESS_SETTINGS("usage_access_settings"),
+        NONE("none"), UNAVAILABLE("unavailable"),
+    }
+    /** [com.armutlu.apporganizer.domain.usecase.missions.MissionStatus]'un wire karşılığı. */
+    enum class HomeMissionStatus(override val wireValue: String) : WireValue {
+        DATA_UNAVAILABLE("data_unavailable"), NOT_STARTED("not_started"), IN_PROGRESS("in_progress"),
+        SAFE("safe"), AT_RISK("at_risk"), AWAITING_SETTLEMENT("awaiting_settlement"),
+        COMPLETED("completed"), FAILED("failed"),
+    }
+    enum class ProgressBucket(override val wireValue: String) : WireValue { ZERO("0"), LOW("1_33"), MEDIUM("34_66"), HIGH("67_99"), COMPLETE("100"), UNKNOWN("unknown") }
+    enum class ScoreBucket(override val wireValue: String) : WireValue { S0_19("0_19"), S20_39("20_39"), S40_59("40_59"), S60_79("60_79"), S80_100("80_100"), UNKNOWN("unknown") }
+    /** [com.armutlu.apporganizer.domain.home.SmartTickerType]'ın wire karşılığı — başlık/alt başlık DEĞİL, yalnızca tür. */
+    enum class TickerItemType(override val wireValue: String) : WireValue {
+        CRITICAL_HEALTH("critical_health"), ACTION_REQUIRED("action_required"), MISSION_PROGRESS("mission_progress"),
+        MISSION_ACHIEVEMENT("mission_achievement"), PULSE_CHANGE("pulse_change"), CONTEXTUAL_SUGGESTION("contextual_suggestion"),
+        WEEKLY_REPORT("weekly_report"), FEATURE_DISCOVERY("feature_discovery"),
+    }
 
     companion object {
         private fun p(vararg pairs: Any): Map<String, String> = pairs.asList().chunked(2).associate { (key, value) ->
