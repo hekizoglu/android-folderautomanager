@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P05 - 2026-07-18 - HomePagerHost tek pager birlestirme (KRITIK)
+
+**Yapilanlar:** HomePagerHost: TEK HorizontalPager (Dashboard placeholder + FolderGridPage'ler), FolderPager SILINDI (tek cagri noktasi vardi); anchor tabanli sayfa kaliciligi (snapshotFlow->anchor yaz, acilista resolver; eski int kopru paralel — P00 yesil); indicator hoisting tamamlandi (HomeShell slotu, remember holder'lar); YENI: pager scroll gating (arama/reorder/modal acikken kilit) + reduced-motion'da efekt yok. dashboardEnabledForPager=false hardcoded + TODO(P24) — bos placeholder kullaniciya gosterilmiyor, davranis %100 korundu. 11 yeni test + P00 16/16 yesil.
+
+**Bug:** Yok. P06 sozlesmesi: dashboardContent lambda'sini SmartDashboardPage ile degistir, flag P24'te acilacak.
+
+**Sonraki:** P06 — SmartDashboardPage (zincir devam).
+
 ## Dashboard Dongu P04 - 2026-07-18 - FolderGridPage donusumu
 
 **Yapilanlar:** FolderPager'in tek-sayfa grid mantigi (LazyVerticalGrid, drag/reorder, empty-slot) internal FolderGridPage composable'ina cikti — pager-state bagimliligindan arindi (columnsCount saf parametre, graphicsLayer efekti FolderPager'da kalip modifier ile geciyor, globalStartIndex ile gercek drag index). HomeScreen pageCount hesabi HomeLayoutMath.pageCount'a hizalandi. Yeni HomeLayoutMathTest, tum testler yesil.

@@ -6,15 +6,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.foundation.pager.PagerSnapDistance
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -23,124 +17,24 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalConfiguration
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
 import com.armutlu.apporganizer.telemetry.TelemetryEvent
-import kotlin.math.absoluteValue
-
-@Composable
-internal fun FolderPager(
-    pagerState: PagerState,
-    displayFolders: List<AppFolder>,
-    pageSize: Int,
-    columnsCount: Int = 0,
-    dragFromIndex: Int?,
-    dragToIndex: Int?,
-    @Suppress("UNUSED_PARAMETER") dragOffsetX: Float,
-    @Suppress("UNUSED_PARAMETER") dragOffsetY: Float,
-    textAlpha: Float,
-    folderSizeDp: Int,
-    labelColor: Color,
-    customFolderNames: Map<String, String>,
-    customFolderEmojis: Map<String, String>,
-    customFolderColors: Map<String, String>,
-    folderCountVisible: Boolean,
-    folderSwipeHint: Boolean,
-    notifTextEnabled: Boolean,
-    unusedInfoEnabled: Boolean = false,
-    folderBadgeEnabled: Boolean = false,
-    folderShape: String,
-    haptic: HapticFeedback,
-    onFolderClick: (AppFolder) -> Unit,
-    onFolderLongClick: (AppFolder) -> Unit,
-    onSwipeUp: (String) -> Unit,
-    onNotificationTap: (String) -> Unit,
-    onDragStart: (index: Int) -> Unit,
-    onDrag: (dragAmount: Offset, page: Int) -> Unit,
-    onDragEnd: () -> Unit,
-    onDragCancel: () -> Unit,
-    onHomeLongPress: () -> Unit,
-    editMode: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    val configuration = LocalConfiguration.current
-    val columns = when {
-        columnsCount > 0 -> columnsCount
-        configuration.screenWidthDp >= 840 -> 6
-        configuration.screenWidthDp >= 600 -> 5
-        else -> 4
-    }
-    val flingBehavior = PagerDefaults.flingBehavior(
-        state = pagerState,
-        pagerSnapDistance = PagerSnapDistance.atMost(1)
-    )
-    HorizontalPager(
-        state = pagerState,
-        pageSpacing = 8.dp,
-        flingBehavior = flingBehavior,
-        modifier = modifier
-    ) { page ->
-        val signedOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-        val pageOffset = signedOffset.absoluteValue.coerceIn(0f, 1f)
-        val pageStart = page * pageSize
-        val pageFolders = displayFolders.drop(pageStart).take(pageSize)
-        FolderGridPage(
-            pageFolders = pageFolders,
-            globalStartIndex = pageStart,
-            pageSize = pageSize,
-            columnsCount = columns,
-            dragFromIndex = dragFromIndex,
-            dragToIndex = dragToIndex,
-            textAlpha = textAlpha,
-            folderSizeDp = folderSizeDp,
-            labelColor = labelColor,
-            customFolderNames = customFolderNames,
-            customFolderEmojis = customFolderEmojis,
-            customFolderColors = customFolderColors,
-            folderCountVisible = folderCountVisible,
-            folderSwipeHint = folderSwipeHint,
-            notifTextEnabled = notifTextEnabled,
-            unusedInfoEnabled = unusedInfoEnabled,
-            folderBadgeEnabled = folderBadgeEnabled,
-            folderShape = folderShape,
-            haptic = haptic,
-            onFolderClick = onFolderClick,
-            onFolderLongClick = onFolderLongClick,
-            onSwipeUp = onSwipeUp,
-            onNotificationTap = onNotificationTap,
-            onDragStart = onDragStart,
-            onDrag = { dragAmount -> onDrag(dragAmount, page) },
-            onDragEnd = onDragEnd,
-            onDragCancel = onDragCancel,
-            onHomeLongPress = onHomeLongPress,
-            editMode = editMode,
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    alpha = 1f - (pageOffset * 0.18f)
-                    scaleX = 1f - (pageOffset * 0.055f)
-                    scaleY = 1f - (pageOffset * 0.055f)
-                    rotationY = signedOffset.coerceIn(-1f, 1f) * -4f
-                    cameraDistance = 18f * density
-                }
-        )
-    }
-}
 
 /**
- * Döngü P04: `FolderPager`ın tek-sayfa grid render mantığı buraya taşındı. Saf/test edilebilir —
- * pager state veya sayfa geçiş efekti bağımlılığı yok; `globalStartIndex` ile dışarıdan verilen
- * gerçek index üzerinden drag/reorder ve empty-slot davranışı hesaplanır.
+ * Döngü P04: `FolderPager`ın (P05'te söküldü — bkz. HomePagerHost.kt) tek-sayfa grid render
+ * mantığı buraya taşındı. Saf/test edilebilir — pager state veya sayfa geçiş efekti bağımlılığı
+ * yok; `globalStartIndex` ile dışarıdan verilen gerçek index üzerinden drag/reorder ve
+ * empty-slot davranışı hesaplanır.
  *
- * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md bölüm Döngü P04.
- * P05'te `HomePagerHost`'un bir sayfası olarak kullanılacak; sayfa geçiş graphicsLayer efekti
- * çağıran taraf (bugün `FolderPager`, P05'te `HomePagerHost`) tarafından `modifier` ile uygulanır.
+ * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md bölüm Döngü P04/P05.
+ * Döngü P05'ten itibaren `HomePagerHost`'un bir sayfası olarak (folderPageContent slotu üzerinden)
+ * çağrılır; sayfa geçiş graphicsLayer efekti artık tek yerden `HomePagerHost` tarafından uygulanır
+ * (eskiden `FolderPager` içindeydi, iç içe HorizontalPager kaldırıldığı için buraya taşınamaz).
  */
 @Composable
 internal fun FolderGridPage(

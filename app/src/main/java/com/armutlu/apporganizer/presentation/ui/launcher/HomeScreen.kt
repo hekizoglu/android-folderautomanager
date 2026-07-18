@@ -4,6 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.pager.rememberPagerState
+import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec
+import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor
+import com.armutlu.apporganizer.utils.HomePagePrefs
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -318,6 +321,25 @@ fun HomeScreen(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
+    // Döngü P05 — HomePagePrefs.KEY_SMART_DASHBOARD_ENABLED reaktif okuma (Reaktif AppPrefs
+    // pattern, CLAUDE.md §5). NOT: bu değer HomePagerHost'a bağlanırken TODO(P24) ile bilinçli
+    // olarak "false"a sabitlenir — bkz. dashboardEnabledForPager altında gerekçe.
+    var smartDashboardPrefEnabled by remember {
+        mutableStateOf(HomePagePrefs.isSmartDashboardEnabled(context))
+    }
+    DisposableEffect(context) {
+        val homePagePrefs = context.getSharedPreferences(
+            HomePagePrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == HomePagePrefs.KEY_SMART_DASHBOARD_ENABLED) {
+                smartDashboardPrefEnabled = HomePagePrefs.isSmartDashboardEnabled(context)
+            }
+        }
+        homePagePrefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { homePagePrefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
     val dockPackages by viewModel.dockPackages.collectAsState()
@@ -338,6 +360,15 @@ fun HomeScreen(
     // Kapasite aşımı uyarısı — aynı (istek, kapasite) çifti için bir kez gösterilir
     val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
     var lastCapacityWarning by rememberSaveable { mutableStateOf<Pair<Int, Int>?>(null) }
+
+    // Döngü P05 — indicator hoisting: pageCount/pagerState artık `pager` slotu içinde
+    // (BoxWithConstraints ölçümünden sonra) hesaplanıyor ama HomeShell'in `indicator` slotu
+    // aynı üst `HomeScreen` recomposition kapsamında AYRI bir lambda — parametre olarak
+    // doğrudan iletilemez. `pager` slotu her zaman `indicator` slotundan ÖNCE compose edildiği
+    // için (HomeShell.kt: pager() -> indicator() -> ...) bu `remember` holder'a yazıp
+    // `indicator` slotunda okumak güvenlidir (aynı frame, tek composition geçişi).
+    var homePagerPageCount by remember { mutableStateOf(1) }
+    var homePagerState by remember { mutableStateOf<androidx.compose.foundation.pager.PagerState?>(null) }
 
     // Drag & drop state
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
@@ -634,6 +665,14 @@ fun HomeScreen(
             bottomSearch = if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
                 { searchBarSection() }
             } else null,
+            indicator = {
+                // Döngü P05 — HomeShell'in indicator slotuna hoist edildi (eskiden `pager`
+                // slotu içinde, FolderPager'ın hemen altında render ediliyordu).
+                val state = homePagerState
+                if (state != null) {
+                    HomePageIndicator(pageCount = homePagerPageCount, pagerState = state)
+                }
+            },
             dock = {
                 // Drag pill handle — above dock, pure Pixel style
                 Box(
@@ -1145,104 +1184,173 @@ fun HomeScreen(
                     )
                 }
             }
-            // Döngü P04: HomeLayoutMath.pageCount() ile hizalandı — tekil kaynak, indicator
-            // hoisting zemini (P05'te HomePagerHost/planner bu değeri tek yerden üretecek).
-            val pageCount = HomeLayoutMath.pageCount(displayFolders.size, pageSize)
-            // Son görüntülenen sayfa AppPrefs'ten okunur — geri tuşu/process death sonrası
-            // ilk sayfaya sıfırlanmasın (D210 fix). pageCount değişirse sınır dışına taşmasın.
-            val initialPage = remember { com.armutlu.apporganizer.utils.AppPrefs.getLastHomePage(context).coerceIn(0, pageCount - 1) }
+            // Döngü P05 — dashboardEnabled kararı: HomePagePrefs.isSmartDashboardEnabled()
+            // yeni kurulumda varsayılan TRUE yazıyor (bkz. HomePagePrefs.kt satır 55-56), ama
+            // roadmap Bölüm 1.5 "mevcut kullanıcı için mevcut sayfa/davranış korunur" diyor ve
+            // SmartDashboardPage'in gerçek içeriği henüz YOK (P06 bekliyor — bugün sadece
+            // placeholder). Dashboard'ı bu döngüde gerçekten açarsak mevcut kullanıcılar ilk
+            // sayfada boş bir "Dashboard" kutusu görür — bu hem davranış değişikliği hem kötü
+            // UX olur. Bu yüzden HomeScreen'in pager'a bağladığı bayrak BİLİNÇLİ olarak kapalı
+            // sabitlenir; HomePagePrefs'in kendi varsayılanına DOKUNULMADI (P02 kararı, Ayarlar
+            // ekranı ve migration mantığı olduğu gibi kalır). TODO(P24): SmartDashboardPage
+            // gerçek içerikle dolunca (P06+) bu satır `smartDashboardPrefEnabled` okumaya
+            // geçirilmeli — Ayarlar > Ana Ekran'daki toggle o zaman fiilen etkili olacak.
+            @Suppress("UNUSED_EXPRESSION")
+            smartDashboardPrefEnabled // kasıtlı: reaktif dinleniyor ama P24'e kadar kullanılmıyor
+            val dashboardEnabledForPager = false
+
+            val pages = remember(displayFolders, pageSize, dashboardEnabledForPager) {
+                HomePagePlanner.buildPages(
+                    folders = displayFolders,
+                    pageSize = pageSize,
+                    dashboardEnabled = dashboardEnabledForPager,
+                )
+            }
+            // Döngü P04: HomeLayoutMath.pageCount() ile hizalandı — tekil kaynak.
+            val pageCount = pages.size
+
+            // Açılışta ham index değil semantik anchor'dan çözülür (roadmap Bölüm 9:
+            // "Sayfa restore = Ham index değil semantic anchor"). Eski AppPrefs.getLastHomePage
+            // deprecated köprü olarak HomePagePrefs.getLastHomePageAnchor() içinde tek seferlik
+            // migration ile okunuyor — bu çağrı UI'yı o köprüye bağlar.
+            val initialAnchor = remember {
+                HomePagePrefs.getLastHomePageAnchor(context, displayFolders, pageSize)
+            }
+            val initialPage = remember(pages) {
+                HomePageAnchorResolver.resolve(pages, initialAnchor).coerceIn(0, pageCount - 1)
+            }
             val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { pageCount })
+
+            // Sayfa listesi değiştiğinde (klasör eklendi/silindi, dashboard aç/kapat) current
+            // page güvenli sınıra çekilir — pageCount küçülürse pagerState kendiliğinden clamp
+            // eder ama biz burada ayrıca en güncel stableKey'e göre anchor'ı tazeleriz.
             LaunchedEffect(pagerState) {
                 snapshotFlow { pagerState.currentPage }
-                    .collect { page -> com.armutlu.apporganizer.utils.AppPrefs.setLastHomePage(context, page) }
+                    .collect { page ->
+                        val safePage = clampPageToSafeBounds(pages, page)
+                        val anchor = anchorForCurrentPage(pages, safePage)
+                        HomePagePrefs.setLastHomePageAnchor(context, anchor)
+                        // Eski ham-index köprüsü de senkron tutulur — HomeScreenNavigationContractTest
+                        // (P00) ve başka olası eski okuyucular kırılmasın.
+                        com.armutlu.apporganizer.utils.AppPrefs.setLastHomePage(context, safePage)
+                    }
             }
+
+            // İndicator hoisting (HomeShell slotuna) — bkz. yukarıdaki homePagerState/homePagerPageCount.
+            homePagerState = pagerState
+            homePagerPageCount = pageCount
+
+            // Search aktifken, reorder sırasında veya modal/dock edit açıkken pager scroll kilitli
+            // kalır — eskiden FolderPager'ın kendi HorizontalPager'ı bu kısıtlamaları hiç
+            // uygulamıyordu (roadmap P05 madde 9-11 bu döngüde eklendi).
+            val searchActive = fullScreenSearchOpen ||
+                (homeSearchEnabled && folderSearchQuery.isNotEmpty())
+            val reorderActive = dragFromIndex != null
+            val modalOpen = dockEditOpen || homeLongPressOpen || folderContextMenu != null ||
+                contextMenuPkg != null || categoryPickerApp != null
+            val pagerScrollEnabled = !searchActive && !reorderActive && !modalOpen
 
             Column(modifier = Modifier.fillMaxSize()) {
 
-            FolderPager(
+            HomePagerHost(
+                pages = pages,
                 pagerState = pagerState,
-                displayFolders = displayFolders,
-                pageSize = pageSize,
-                columnsCount = screenColumns,
-                dragFromIndex = dragFromIndex,
-                dragToIndex = dragToIndex,
-                dragOffsetX = dragOffsetX,
-                dragOffsetY = dragOffsetY,
-                textAlpha = textAlpha,
-                folderSizeDp = effectiveFolderSizeDp,
-                labelColor = labelColor,
-                customFolderNames = customFolderNames,
-                customFolderEmojis = customFolderEmojis,
-                customFolderColors = customFolderColors,
-                folderCountVisible = folderCountVisible,
-                folderSwipeHint = folderSwipeHint,
-                notifTextEnabled = notifTextEnabled,
-                unusedInfoEnabled = unusedInfoEnabled,
-                folderBadgeEnabled = folderBadgeEnabled,
-                folderShape = folderShape,
-                haptic = haptic,
-                onFolderClick = { onNavigateToFolder(it) },
-                onFolderLongClick = { folderContextMenu = it },
-                onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
-                onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
-                onDragStart = { index ->
-                    dragFromIndex = index
-                    dragOffsetX = 0f
-                    dragOffsetY = 0f
-                    draggingFolders = folders.toMutableList()
-                },
-                onDrag = { dragAmount, page ->
-                    val from = dragFromIndex ?: return@FolderPager
-                    dragOffsetX += dragAmount.x
-                    dragOffsetY += dragAmount.y
-                    val colCount = 4
-                    val screenWidthPx = with(density) { android.content.res.Resources.getSystem().displayMetrics.widthPixels.toFloat() }
-                    val tileWidthPx = screenWidthPx / colCount
-                    val tileHeightPx = with(density) { 100.dp.toPx() }
-                    val colOffset = (dragOffsetX / tileWidthPx).toInt()
-                    val rowOffset = (dragOffsetY / tileHeightPx).toInt()
-                    val pageOffset = page * pageSize
-                    val localFrom = from - pageOffset
-                    val pageFoldersCnt = displayFolders.drop(pageOffset).take(pageSize).size
-                    val localCol = localFrom % colCount + colOffset
-                    val localRow = localFrom / colCount + rowOffset
-                    val localTo = (localRow * colCount + localCol).coerceIn(0, pageFoldersCnt - 1)
-                    val globalTo = pageOffset + localTo
-                    if (globalTo != dragToIndex) {
-                        dragToIndex = globalTo
-                        draggingFolders = draggingFolders?.toMutableList()?.also { list ->
-                            if (from != globalTo && from in list.indices && globalTo in list.indices) {
-                                val item = list.removeAt(from)
-                                list.add(globalTo, item)
-                                dragFromIndex = globalTo
-                                dragOffsetX = 0f
-                                dragOffsetY = 0f
-                            }
-                        }
+                userScrollEnabled = pagerScrollEnabled,
+                dashboardContent = {
+                    // P06'da SmartDashboardPage burada render edilecek — bugün iskelet placeholder.
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Dashboard",
+                            color = Color.White.copy(alpha = 0.7f),
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 },
-                onDragEnd = {
-                    draggingFolders?.let { viewModel.reorderFolders(context, it) }
-                    dragFromIndex = null
-                    dragToIndex = null
-                    draggingFolders = null
-                    dragOffsetX = 0f
-                    dragOffsetY = 0f
+                folderPageContent = { spec ->
+                    FolderGridPage(
+                        pageFolders = spec.folders,
+                        globalStartIndex = spec.pageIndex * pageSize,
+                        pageSize = pageSize,
+                        columnsCount = screenColumns,
+                        dragFromIndex = dragFromIndex,
+                        dragToIndex = dragToIndex,
+                        textAlpha = textAlpha,
+                        folderSizeDp = effectiveFolderSizeDp,
+                        labelColor = labelColor,
+                        customFolderNames = customFolderNames,
+                        customFolderEmojis = customFolderEmojis,
+                        customFolderColors = customFolderColors,
+                        folderCountVisible = folderCountVisible,
+                        folderSwipeHint = folderSwipeHint,
+                        notifTextEnabled = notifTextEnabled,
+                        unusedInfoEnabled = unusedInfoEnabled,
+                        folderBadgeEnabled = folderBadgeEnabled,
+                        folderShape = folderShape,
+                        haptic = haptic,
+                        onFolderClick = { onNavigateToFolder(it) },
+                        onFolderLongClick = { folderContextMenu = it },
+                        onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
+                        onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
+                        onDragStart = { index ->
+                            dragFromIndex = index
+                            dragOffsetX = 0f
+                            dragOffsetY = 0f
+                            draggingFolders = folders.toMutableList()
+                        },
+                        onDrag = { dragAmount ->
+                            val from = dragFromIndex ?: return@FolderGridPage
+                            dragOffsetX += dragAmount.x
+                            dragOffsetY += dragAmount.y
+                            val colCount = 4
+                            val screenWidthPx = with(density) { android.content.res.Resources.getSystem().displayMetrics.widthPixels.toFloat() }
+                            val tileWidthPx = screenWidthPx / colCount
+                            val tileHeightPx = with(density) { 100.dp.toPx() }
+                            val colOffset = (dragOffsetX / tileWidthPx).toInt()
+                            val rowOffset = (dragOffsetY / tileHeightPx).toInt()
+                            val pageOffset = spec.pageIndex * pageSize
+                            val localFrom = from - pageOffset
+                            val pageFoldersCnt = displayFolders.drop(pageOffset).take(pageSize).size
+                            val localCol = localFrom % colCount + colOffset
+                            val localRow = localFrom / colCount + rowOffset
+                            val localTo = (localRow * colCount + localCol).coerceIn(0, pageFoldersCnt - 1)
+                            val globalTo = pageOffset + localTo
+                            if (globalTo != dragToIndex) {
+                                dragToIndex = globalTo
+                                draggingFolders = draggingFolders?.toMutableList()?.also { list ->
+                                    if (from != globalTo && from in list.indices && globalTo in list.indices) {
+                                        val item = list.removeAt(from)
+                                        list.add(globalTo, item)
+                                        dragFromIndex = globalTo
+                                        dragOffsetX = 0f
+                                        dragOffsetY = 0f
+                                    }
+                                }
+                            }
+                        },
+                        onDragEnd = {
+                            draggingFolders?.let { viewModel.reorderFolders(context, it) }
+                            dragFromIndex = null
+                            dragToIndex = null
+                            draggingFolders = null
+                            dragOffsetX = 0f
+                            dragOffsetY = 0f
+                        },
+                        onDragCancel = {
+                            dragFromIndex = null
+                            dragToIndex = null
+                            draggingFolders = null
+                            dragOffsetX = 0f
+                            dragOffsetY = 0f
+                        },
+                        onHomeLongPress = { homeLongPressOpen = true },
+                        editMode = false,
+                    )
                 },
-                onDragCancel = {
-                    dragFromIndex = null
-                    dragToIndex = null
-                    draggingFolders = null
-                    dragOffsetX = 0f
-                    dragOffsetY = 0f
-                },
-                onHomeLongPress = { homeLongPressOpen = true },
-                editMode = false,
                 modifier = Modifier.fillMaxWidth().weight(1f)
             )
 
-            // Sayfa noktaciklari — HomeScreenPageIndicator.kt
-            HomePageIndicator(pageCount = pageCount, pagerState = pagerState)
+            // Sayfa noktaciklari artık HomeShell'in indicator slotunda render ediliyor
+            // (bkz. homePagerState/homePagerPageCount yukarıda) — burada tekrar çizilmez.
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)
