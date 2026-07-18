@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -65,12 +67,36 @@ internal fun SmartDashboardPage(
         state.favorites.recentNotificationAppsEnabled ||
         state.favorites.recentAppsEnabled
 
+    // Döngü P07 madde 1-3: kullanılabilir Dashboard yüksekliği `BoxWithConstraints` ile ölçülür
+    // (arama çubuğu/indicator/dock zaten HomeShell seviyesinde bu Box'ın dışında kaldığı için
+    // `maxHeight` çıkarım gerektirmez — bkz. HomeScreen.kt BoxWithConstraints, satır ~1177).
+    // `DashboardLayoutPolicy.mode()` görünür section sayısına göre kompakt varyant seçer; bu
+    // yalnızca iç boşlukları daraltır, scroll ihtiyacını azaltmak içindir — scroll hâlâ mevcutsa
+    // (madde 7: root swipe-up yalnız gesture arbitration sonucunda açılır) alttaki
+    // `verticalScroll` taşan miktarı Compose'un doğal nested-scroll teslimiyle HomeScreen'in
+    // swipe-up `NestedScrollConnection`'ına iletir (bkz. DashboardLayoutPolicy.kt dosya başı notu).
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val availableHeightDp = maxHeight.value.toInt()
+        val visibleSectionCount = remember(state) { countVisibleSections(state) }
+        val density = remember(availableHeightDp, visibleSectionCount, state.secondarySections.widgetAreaEnabled) {
+            DashboardLayoutPolicy.mode(
+                screenHeightDp = availableHeightDp,
+                visibleSectionCount = visibleSectionCount,
+                hasWidgets = state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty(),
+            )
+        }
+        val clockTopPadding = when (density) {
+            DashboardDensity.COMFORTABLE -> 32.dp
+            DashboardDensity.COMPACT -> 20.dp
+            DashboardDensity.ULTRA_COMPACT -> 12.dp
+        }
+
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        val compactClock = state.clock.compact
+        val compactClock = state.clock.compact || density != DashboardDensity.COMFORTABLE
         PulseClockWidget(
             compact = compactClock,
             onOpenWeeklyReport = actions.onOpenWeeklyReport,
@@ -78,7 +104,7 @@ internal fun SmartDashboardPage(
             onLongPress = actions.onClockLongPress,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = if (compactClock) 16.dp else 32.dp, bottom = 8.dp)
+                .padding(top = if (compactClock) 16.dp else clockTopPadding, bottom = 8.dp)
         )
 
         HomeIntelligenceCardsRow(
@@ -240,4 +266,36 @@ internal fun SmartDashboardPage(
             }
         }
     }
+    }
+}
+
+/**
+ * Döngü P07 madde 3-4 — saf yardımcı: `state`'e göre şu an render edilecek (görünür) Dashboard
+ * section sayısını sayar. `DashboardLayoutPolicy.mode()`'a girdi sağlar; Compose bağımlılığı
+ * yoktur, `SmartDashboardPage` içindeki `if`/`when` görünürlük koşullarıyla birebir eşleşir —
+ * ikisi ayrıştığında testler kırılır (bkz. SmartDashboardPageLogicTest).
+ */
+internal fun countVisibleSections(state: DashboardUiState): Int {
+    var count = 1 // Saat (PulseClockWidget) her zaman render edilir.
+    if (state.intelligence.missionsEnabled) count++
+    if (state.intelligence.digitalLifeCardVisible && state.intelligence.pulse != null) count++
+    if (state.recentInstalls.enabled && state.recentInstalls.apps.isNotEmpty()) count++
+    val hideSecondaryRows = state.hideSecondaryRowsForIme
+    if (!hideSecondaryRows && state.secondarySections.googleSearchEnabled) count++
+    if (!hideSecondaryRows && state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty()) count++
+    if (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled && state.insights.insightCards.isNotEmpty()) count++
+    if (state.ticker.tickerEnabled && !state.ticker.tickerMuted) {
+        count++
+    } else if (!state.ticker.tickerEnabled && state.ticker.folders.isNotEmpty()) {
+        count++
+    }
+    if (!state.hideSecondaryRowsForIme &&
+        (state.favorites.favoritesEnabled ||
+            state.favorites.suggestionsEnabled ||
+            state.favorites.recentNotificationAppsEnabled ||
+            state.favorites.recentAppsEnabled)
+    ) {
+        count++
+    }
+    return count
 }

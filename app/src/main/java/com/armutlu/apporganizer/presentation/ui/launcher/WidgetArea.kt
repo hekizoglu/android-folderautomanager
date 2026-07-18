@@ -41,6 +41,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import kotlin.math.roundToInt
 
+/**
+ * Döngü P07 madde 6: Android widget'ları (`AppWidgetHostView`, native `View`) kendi içinde dikey
+ * scroll alabilir (ör. liste widget'ları) — bu durumda widget'ın pointer alanı, Compose'un ana
+ * gövde `pointerInput("drag")`/`nestedScroll` swipe-up algılamasından DOĞAL olarak hariç kalır:
+ * `AndroidView` widget View'ı kendi `onTouchEvent`'ini tüketir, tükettiği dokunuşlar Compose
+ * gesture zincirine `available` olarak yansımaz. Ayrıca ek bir "gesture bölgesi" tanımına gerek
+ * yoktur (bkz. `DashboardLayoutPolicy.kt` dosya başı notu, `SmartDashboardPage.kt`).
+ */
 @Composable
 fun WidgetArea(
     widgetIds: List<Int>,

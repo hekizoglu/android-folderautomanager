@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P07 - 2026-07-18 - Dashboard dikey alan + swipe-up
+
+**Yapilanlar:** Kritik bulgu: mevcut nestedScroll zinciri (child-first) roadmap kuralini ZATEN sagliyor — ic scroll oncelikli, sinirda kalan hareket swipe-up'a akar; ek connection gerekmedi. Asil is: DashboardLayoutPolicy (COMFORTABLE/COMPACT/ULTRA_COMPACT — 640/700dp + section sayisi esikleri) ile scroll ihtiyacini azaltma + countVisibleSections; WidgetArea touch tuketimi belgelendi. 8+6 yeni test, 15 launcher test sinifi yesil.
+
+**Bug:** Yok. Fallback modu bilinçli uygulanmadi (roadmap: test edilmeden varsayilan yapilmasin). Gercek gesture dogrulamasi P24 flag acilisinda cihazla.
+
+**Sonraki:** P08 — GlobalSearchHost (zincir devam).
+
 ## Dashboard Dongu P06 - 2026-07-18 - SmartDashboardPage
 
 **Yapilanlar:** DashboardUiState/Actions saf modelleri (7 alt model) + SmartDashboardPage (dikey scroll; PulseClock, HomeIntelligenceCardsRow, Bugun Yuklendi, GoogleSearchBar+WidgetArea, AssistantInsightRow, ticker, favoriler — mevcut bilesenler cagrildi, yeniden yazilmadi); dashboard_empty_hint TR/EN. compactClock/tickerMuted state'leri tek kaynaga tasindi. dashboardEnabledForPager=false — kullanici davranisi degismedi, icerik P24 acilisina hazir.
