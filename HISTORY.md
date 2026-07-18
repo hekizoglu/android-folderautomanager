@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Dashboard Dongu P18 - 2026-07-18 - Focus Mode uyumu
+
+**Yapilanlar:** Focus Mode paralel bypass ekrani (if/else placeholder Box) KALDIRILDI — artik icerik preset'i: applyFocusMode saf fonksiyonu (saat kompakt, gorev/dijital yasam/oneri/ticker kapali, klasorler+arama+favoriler acik); ticker yerine FolderStatsRow; ayar aciklamasi guncellendi. Sayfa plani/anchor yapisal olarak etkilenmiyor. Bonus: showSecondaryRowsInCompactMode leftover hatasi temizlendi. 6 yeni test, 14/14 policy + HomePage testleri yesil.
+
+**Bug:** Roadmap dosya adi yine hataliydi (Focus switch SettingsLauncherScreen'de, SettingsHomeScreenSection'da degil) — gercek kod esas alindi.
+
+**Sonraki:** P19 — erisilebilirlik + buyuk yazi (zincir devam).
+
 ## Dashboard Dongu P17 - 2026-07-18 - Baslangic sayfasi + klasik mod ayarlari
 
 **Yapilanlar:** SettingsHomeScreenSection'a "Ana Sayfa Yapisi" karti: Akilli Dashboard toggle (kapaninca StartPageMode otomatik FIRST_FOLDER_PAGE'e normalize — tutarsiz durum onlenir) + Baslangic Sayfasi segmented (Dashboard/Ilk Klasor/Son Sayfa; Dashboard secenegi toggle kapaliyken dimmed). Mevcut prefs/migration/backup/diagnostics degisiklik gerektirmedi. TR/EN 9 string. Testler yesil.

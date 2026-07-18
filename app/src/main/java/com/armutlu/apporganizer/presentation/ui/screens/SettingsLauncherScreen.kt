@@ -359,10 +359,13 @@ fun SettingsLauncherScreen(
                     }
                 )
                 HorizontalDivider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
+                // P18 — Odak Modu artık klasörleri/aramayı gizleyen ayrı bir ekran değil, ana
+                // ekranın sade bir görünümüdür: saat küçülür, görev/skor ve öneri/haber şeridi
+                // kartları kapanır; klasör sayfaları ve arama her zaman açık kalır.
                 SettingsSwitchRow(
                     icon = Icons.Default.DoNotDisturb,
                     title = "Search-first / Odak Modu",
-                    subtitle = "Daha sade bir ana ekran görünümü sağlar",
+                    subtitle = "Saat küçülür, görev/öneri kartları kapanır — klasörler ve arama açık kalır",
                     checked = focusMode,
                     onCheckedChange = {
                         focusMode = it

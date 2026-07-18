@@ -55,6 +55,44 @@ object DashboardLayoutPolicy {
             else -> DashboardDensity.COMFORTABLE
         }
     }
+
+    /**
+     * Döngü P18 — Focus Mode (Search-first / Odak Modu) artık ayrı bir paralel ana ekran
+     * DEĞİL, Dashboard'un sade bir preset'idir (roadmap Döngü P18, "Önerilen karar: A").
+     * Bu saf fonksiyon [DashboardUiState]'i alır ve odak modu kurallarına göre daraltılmış bir
+     * kopyasını döner — Compose bağımlılığı yoktur, doğrudan JVM testinden çağrılabilir.
+     *
+     * Kurallar (roadmap P18 "Nasıl yapılmalı" 1. madde, satır 1353-1357):
+     * - Saat kompakt: [DashboardClockState.compact] = true.
+     * - Görev/skor opsiyonel: missions/digital-life-card kapatılır (state.intelligence sıfırlanır).
+     * - Global arama görünür kalır: [DashboardSecondarySectionsState.googleSearchEnabled] DOKUNULMAZ.
+     * - Öneriler/favoriler minimum: yalnız favoriler (varsa) kalır, suggestions/recent-apps/
+     *   recent-notification satırları kapatılır — dock zaten HomeShell seviyesinde ayrı render edilir.
+     * - Widget alanı ve içgörü kartları/ticker de "minimum" kapsamında kapatılır (odak modunun
+     *   amacı dikkat dağıtan içeriği azaltmaktır); istatistik bandı (FolderStatsRow) korunur çünkü
+     *   arama-öncelikli kullanıcı için klasör/uygulama sayısı bilgilendiricidir, dikkat dağıtmaz.
+     *
+     * Sayfa SAYISINI etkilemez (roadmap madde 4) — yalnızca [SmartDashboardPage] içeriğini
+     * daraltır, [HomePagePlanner.buildPages] bu fonksiyondan habersizdir.
+     */
+    fun applyFocusMode(state: DashboardUiState): DashboardUiState = state.copy(
+        clock = state.clock.copy(compact = true),
+        intelligence = state.intelligence.copy(
+            missionsEnabled = false,
+            digitalLifeCardVisible = false,
+        ),
+        insights = state.insights.copy(
+            assistantCardsEnabled = false,
+        ),
+        ticker = state.ticker.copy(
+            tickerEnabled = false,
+        ),
+        favorites = state.favorites.copy(
+            suggestionsEnabled = false,
+            recentNotificationAppsEnabled = false,
+            recentAppsEnabled = false,
+        ),
+    )
 }
 
 /**

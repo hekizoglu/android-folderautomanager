@@ -772,7 +772,11 @@ fun HomeScreen(
         // sayfası üstü) konumundaki kod HEM de dashboardContent lambda'sındaki SmartDashboardPage
         // tarafından okunur/yazılır — tek doğruluk kaynağı olsun diye pager slotundan önce,
         // burada tanımlanır (bkz. görev raporu "koşullu ikili yerleşim" kararı).
-        val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700
+        // Döngü P18 — Focus Mode (Search-first / Odak Modu) artık ayrı bir paralel ana ekran
+        // değil, bu pager slotunun sade bir preset'idir (roadmap Döngü P18, "Önerilen karar: A").
+        // Saat kompaklaştırma kuralı DashboardLayoutPolicy.applyFocusMode ile aynı politikayı
+        // paylaşır (clock.compact = true) — tek doğruluk kaynağı politika fonksiyonundadır.
+        val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700 || focusModeEnabled
         var tickerMutedUntilState by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
 
         // Döngü P03 — global shell: search/dock/indicator artık HomeShell'de toplanıyor,
@@ -1014,10 +1018,12 @@ fun HomeScreen(
             // (HomeIntelligenceCardsRow.kt). Eskiden bu iki kart burada ayrı Row bloğunda
             // çağrılıyordu (bkz. git geçmişi); artık görünürlük/genişlik/yükseklik kararları
             // tek yerde, HomeScreen sadece state + click handler sağlıyor (ROADMAP U00).
+            // P18 — Odak Modu görev/skor kartlarını opsiyonel kılar (roadmap madde 1):
+            // DashboardLayoutPolicy.applyFocusMode ile aynı kural (missions/digitalLifeCard kapalı).
             HomeIntelligenceCardsRow(
-                missionsEnabled = missionsEnabled,
+                missionsEnabled = missionsEnabled && !focusModeEnabled,
                 mission = homeMissionSummary,
-                digitalLifeCardVisible = digitalLifeCardVisible,
+                digitalLifeCardVisible = digitalLifeCardVisible && !focusModeEnabled,
                 pulse = homePulseSummary,
                 onMissionClick = {
                     // Dongu M07: statik "Bugünün görevleri" chip'i yerine canli HomeMissionCard —
@@ -1139,8 +1145,9 @@ fun HomeScreen(
                 viewModel.refreshInsights(context)
             }
 
-            // Assistant kartları — ticker açıkken gizli (içerik haber şeridinde akar)
-            if (assistantCardsEnabled && !tickerEnabled) {
+            // Assistant kartları — ticker açıkken gizli (içerik haber şeridinde akar).
+            // P18 — Odak Modu içgörü kartlarını da kapatır (dikkat dağıtan içerik minimum).
+            if (assistantCardsEnabled && !tickerEnabled && !focusModeEnabled) {
                 if (insightCards.isNotEmpty()) {
                     // Dashboard kısayolu — FolderStatsRow.onOpenDashboard ile aynı intent
                     val openDashboard = {
@@ -1170,26 +1177,22 @@ fun HomeScreen(
                     )
                 }
             }
-            // Odak Modu aktifken klasör grid ve istatistik gizlenir
-            if (focusModeEnabled) {
-                androidx.compose.foundation.layout.Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    androidx.compose.material3.Text(
-                        text = "Search-first Home modu aktif",
-                        color = Color.White.copy(alpha = 0.55f),
-                        fontSize = 14.sp
-                    )
-                }
-            } else {
+            // P18 — Odak Modu artık paralel bir ana ekran (placeholder metni) DEĞİL, bu pager
+            // slotunun kendisidir: klasör sayfaları ve global arama HER ZAMAN erişilebilir kalır
+            // (roadmap kabul kriteri: "yeni page mimarisini bypass eden paralel bir ana ekran
+            // oluşturmaz"). Haber şeridi (ticker) odak modunda kapatılır (dikkat dağıtan içerik
+            // minimum, roadmap madde 1) — kapandığında zaten aşağıdaki `else if (!tickerVisibleNow)`
+            // dalı klasör/uygulama istatistik bandını (FolderStatsRow) gösterir, bu korunur.
+            run {
             // Haber şeridi — "Alışveriş klasöründe 5 uygulama var" tarzı akan bilgiler.
             // Dokunma → hedef açılır; kaydırma → önceki/sonraki haber; basılı tut → sessize al (8s/1g/7g).
             // Kapalıysa eski istatistik bandı döner. Sessizdeyken hiçbir şey gösterilmez, süre dolunca geri gelir.
             // P06: tickerMutedUntilState artık yukarıda (Column'dan önce) tek yerde tanımlı —
             // dashboardContent lambda'sındaki SmartDashboardPage ile aynı state paylaşılır.
+            // P18 — Odak Modu ticker'ı kapatır (dikkat dağıtan içerik minimum); kullanıcının kendi
+            // tickerEnabled tercihine DOKUNMAZ (Ayarlar'daki gerçek değer korunur, sadece bu
+            // pager'da geçici olarak bastırılır) — bu yüzden ayrı bir isimle tutulur.
+            val tickerVisibleNow = tickerEnabled && !focusModeEnabled
             val tickerMuted = tickerMutedUntilState > System.currentTimeMillis()
             if (tickerMuted) {
                 // Süre dolduğunda ana ekran açıkken bile şerit kendiliğinden geri gelsin
@@ -1198,7 +1201,7 @@ fun HomeScreen(
                     tickerMutedUntilState = 0L
                 }
             }
-            if (tickerEnabled && !tickerMuted) {
+            if (tickerVisibleNow && !tickerMuted) {
                 HomeTickerRow(
                     items = tickerItems,
                     visible = homeTickerVisible,
@@ -1249,8 +1252,9 @@ fun HomeScreen(
                         }
                     }
                 )
-            } else if (!tickerEnabled)
-            // İstatistik bandı — toplam klasör ve uygulama sayısı (sessize alınmışsa hiçbiri gösterilmez)
+            } else if (!tickerVisibleNow)
+            // İstatistik bandı — toplam klasör ve uygulama sayısı (sessize alınmışsa hiçbiri gösterilmez).
+            // Odak Modunda ticker her zaman bastırıldığı için bu dal devreye girer (istatistik bandı korunur).
             FolderStatsRow(
                 folders = folders,
                 onOpenFolderStats = {
@@ -1750,16 +1754,20 @@ fun HomeScreen(
             } // end BoxWithConstraints
 
             if (!hideSecondaryRowsForIme) {
+                // P18 — Odak Modu öneriler/favoriler alanını minimuma indirir: yalnız favoriler
+                // (varsa) kalır, öneri/son bildirim/son kullanılan satırları kapanır — aynı kural
+                // DashboardLayoutPolicy.applyFocusMode içindeki DashboardFavoritesState daralmasıyla
+                // birebir eşleşir (tek doğruluk kaynağı: o politika fonksiyonu).
                 HomeFavoritesSection(
                     favoritesEnabled = favoritesEnabled,
                     favoriteApps = favoriteApps,
-                    suggestionsEnabled = suggestionsEnabled,
+                    suggestionsEnabled = suggestionsEnabled && !focusModeEnabled,
                     suggestedApps = suggestedApps,
                     suggestionsIconSizeDp = suggestionsIconSizeDp,
-                    recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
+                    recentNotificationAppsEnabled = recentNotificationAppsRowEnabled && !focusModeEnabled,
                     recentNotificationApps = recentNotificationApps,
                     recentNotificationCounts = recentNotificationCounts,
-                    recentAppsEnabled = recentAppsEnabled,
+                    recentAppsEnabled = recentAppsEnabled && !focusModeEnabled,
                     recentApps = recentApps,
                     dockPackages = contextualDockPackages,
                     iconPackPkg = suggestionIconPack,
@@ -1767,11 +1775,10 @@ fun HomeScreen(
                     onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
                     onAppLongClick = { pkg -> contextMenuPkg = pkg },
                     screenHeightDp = screenHeightDp,
-                    showSecondaryRowsInCompactMode = focusModeEnabled,
                 )
             }
 
-            } // end else !focusModeEnabled
+            } // end run (P18: eski "else !focusModeEnabled" bloğu artık koşulsuz)
             // Döngü P03: BOTTOM arama çubuğu, drag pill, PixelDock ve tüm overlay'ler
             // (FullScreenSearchOverlayV2/AllAppsDrawer/SnackbarHost/QuickWheelOverlay) artık
             // HomeShell'in bottomSearch/dock/overlays slotlarında — burada tekrar render edilmez.
