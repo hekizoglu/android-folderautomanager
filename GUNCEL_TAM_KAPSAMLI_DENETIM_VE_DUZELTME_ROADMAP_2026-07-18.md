@@ -1,85 +1,144 @@
 # AppOrganizer — Güncel Tam Kapsamlı Sistem Denetimi ve Düzeltme Roadmap'i
 
-> **Denetim tarihi:** 2026-07-18  
+> **Revizyon:** 2  
+> **Son denetim tarihi:** 2026-07-18  
 > **Denetlenen dal:** `main`  
-> **Denetlenen commit:** `7e8f49436e4cd4845108d3373e3416830b4c03c7`  
-> **Denetlenen sürüm:** `1.3.88 (111)`  
-> **Kapsam:** veri bütünlüğü, paket olayları, Room, repository sözleşmeleri, arama, bildirim, Dashboard geçişi, ana ekran yerleşimi, görev/skor sistemi, performans, görsel kalite, erişilebilirlik, güvenlik, yedekleme, CI ve yayın süreci.  
-> **Ana karar:** Yeni özellik geliştirme, aşağıdaki yayın engelleyici döngüler tamamlanana kadar ikinci plandadır. Öncelik yeni özellik değil, mevcut sistemin doğru ve güvenilir çalışmasıdır.
+> **Denetlenen HEAD:** `be08f7b667bfbbb6be14f2c500b6d72f87e98d5c`  
+> **Önceki denetim commit'i:** `7e8f49436e4cd4845108d3373e3416830b4c03c7`  
+> **Denetlenen sürüm:** `1.3.89 (112)`  
+> **Kapsam:** veri bütünlüğü, paket olayları, Room, repository sözleşmeleri, arama, izin yaşam döngüsü, dosya/kişi indeksleri, bildirimler, Dashboard rollout, ana ekran yerleşimi, görev/skor sistemi, zaman sınırları, performans, erişilebilirlik, güvenlik, yedekleme, telemetri, CI ve yayın süreci.  
+> **Ana karar:** Yeni özellik geliştirme ikinci plandadır. Öncelik, mevcut sistemin veri kaybetmeden, kullanıcının seçtiği ayarı gerçekten uygulayarak ve gizlilik sözünü teknik olarak doğrulayarak çalışmasıdır.
+
+---
+
+# 0. Revizyon 2 — Neden yeniden yazıldı?
+
+İlk roadmap `7e8f494...` kodunu denetliyordu. Denetim sürerken `main` dalına `be08f7b...` merge commit'i geldi ve sürüm `1.3.89 (112)` oldu. Bu commit;
+
+- P20 adaptif layout altyapısı,
+- P21 ana ekran telemetri şeması,
+- P22 diagnostics özeti,
+- P23 bazı recomposition iyileştirmeleri,
+- P24 rollout preference/policy altyapısı,
+- P25 bazı legacy temizlikleri
+
+eklediğini beyan ediyor.
+
+İkinci kod geçişinde şu gerçek durum doğrulandı:
+
+1. `HomeAdaptiveLayoutPolicy` ve testleri var; fakat `HomeScreen` runtime'da hâlâ kendi `600/840dp` eşiklerini, sabit `380.dp` panel genişliğini ve drag sırasında sabit `colCount = 4` değerini kullanıyor.
+2. `HomePagerRolloutPolicy` ve preference anahtarları var; fakat policy'nin üretim çağrısı yok. `HomeScreen` hâlâ `val dashboardEnabledForPager = false` kullanıyor.
+3. Home page telemetry event sınıfları, validator ve `AppAnalytics` wrapper'ları var; fakat `homePageViewed`, `homePageSwiped` ve `homeSearchOpened` için üretim çağrı noktaları yok.
+4. Diagnostics altyapısı genişletilmiş; ancak gerçek cihaz raporu, dört cihaz karşılaştırması ve privacy-safe çıktı kanıtı henüz yok.
+5. P23 kapsamında yalnız iki mikro optimizasyon var; trace, baseline profile, macrobenchmark ve jank kanıtı yok.
+6. P25'te runtime ham page-index yazımı kaldırılmış; diğer legacy yollar gerçek cihaz rollout kanıtını bekliyor.
+7. Merge commit'i için GitHub combined status/check sonucu bulunmuyor. Roadmap içindeki “test yeşil” notu tek başına bağımsız CI kanıtı değildir.
+
+**Sonuç:** P20, P21 ve P24 için “runtime entegrasyonu tamamlandı” kabul edilmeyecektir. Bunların durumu `🚧 Altyapı var, üretim bağlantısı eksik` olarak değerlendirilir.
 
 ---
 
 # 1. Yönetici özeti
 
-Repo ciddi biçimde ilerlemiştir. Tek pager mimarisi, semantic sayfa anchor'ı, global shell, Dashboard bileşeni, layout v2, Focus Mode politikası ve erişilebilirlik altyapısı önemli kazanımlardır.
+Repo mimari olarak ciddi ilerleme kaydetmiştir. Tek pager, semantic page anchor, global shell, Dashboard component, HomeLayout v2, Focus Mode politikası, telemetri doğrulayıcıları ve diagnostics altyapısı doğru yöndedir.
 
-Ancak güncel kodda hâlâ şu sınıflarda doğrulanmış riskler bulunmaktadır:
+Ancak uygulamanın güvenilir bir launcher ve Play Store ürünü sayılması için aşağıdaki ana riskler kapanmalıdır:
 
-1. Uygulama güncellemesinin gerçek kaldırma gibi işlenebilmesi.
-2. Aynı paket olayının iki receiver tarafından işlenmesi.
-3. `PACKAGE_CHANGED` akışının `INSERT IGNORE` nedeniyle Room kaydını güncellememesi.
-4. Repository mutasyonlarının hataları yutması ve üst katmanın işlemi başarılı sanması.
-5. Kategori ve paket temizleme işlemlerinin atomik olmaması.
-6. Dashboard ayarlarının kullanıcıya gösterilmesine rağmen pager'da bilinçli olarak etkisiz tutulması.
-7. Ana ekran düzenleyicisinde gizlenen bölümlerin gerçek render state'ine uygulanmaması.
-8. Arama çubuğu konumunun iki ayrı preference kaynağında tutulması.
-9. Dashboard editörünün tekil bölüm sırası sunarken renderer'ın yalnız üç grup üzerinden sıralama yapması.
-10. Arama sonuçlarında uygulamaların diğer kaynakları tek global limit içinde ezmesi.
-11. Arama indeksinin sil-sonra-yaz yaklaşımıyla atomik olmayan şekilde yeniden kurulması.
-12. Bildirim listener yeniden bağlandığında zaman/önem bilgisinin doğru yeniden üretilmemesi.
-13. Bildirim DB yazımlarında iç içe coroutine nedeniyle eski emisyonun yeniyi ezebilmesi.
-14. Son 24 saat bildirim sınırının ViewModel oluşturulurken bir kez hesaplanması.
-15. İlk yükleme durumunun gerçek ilk Room emisyonundan önce tamamlandı sayılabilmesi.
-16. CI'ın lint/detekt/ktlint hatalarını zorunlu yayın kapısı yapmaması.
-17. Android 11 ve altı yedek kurallarında `deepseek_prefs.xml` istisnasının eksik olması.
-18. Launcher'ın açık tema altyapısı varken zorla koyu tema ile açılması.
-19. Gerçek uygulama boyutu yerine yalnız temel APK dosyasının ölçülmesi.
-20. Uzak sınıflandırma verisinin mutable `main` dalından hash/imza doğrulaması olmadan indirilmesi.
+1. Paket güncellemesi gerçek uninstall gibi işlenebilir.
+2. Aynı package event iki receiver tarafından işlenebilir.
+3. `PACKAGE_CHANGED` metadata güncellemesi `INSERT IGNORE` nedeniyle kaybolabilir.
+4. Package event yolu launchable/visible katalog uygunluğunu kontrol etmiyor.
+5. Repository mutasyonları hataları yutup üst katmana başarı izlenimi veriyor.
+6. Kategori silme ve paket referans temizliği atomik değil.
+7. Exported package receiver dışarıdan explicit intent ile tetiklenmeye açık.
+8. DeepSeek anahtarı gerçekte `app_organizer_prefs` içindeyken backup kuralı kullanılmayan `deepseek_prefs.xml` dosyasını hariç tutuyor.
+9. Auto Backup geniş `include path="."` denylist yaklaşımıyla kişi aksiyon geçmişi, hava konum cache'i, crash logları, FCM token ve cihaz-yerel state'i yedekleyebilir.
+10. Dashboard preference, rollout preference ve rollout policy kullanıcıya/diagnostics'e sunulsa da runtime page planını değiştirmiyor.
+11. Adaptive layout policy oluşturulmuş olsa da üretim hâlâ dağınık sabit eşikler kullanıyor.
+12. Layout editöründeki görünürlük ve sıra kararları renderer ile birebir değil.
+13. Arama çubuğu konumu iki ayrı preference kaynağında tutuluyor.
+14. Arama kaynakları tek global limitte app-first sıralamayla kişi/dosya/ayar sonuçlarını aç bırakıyor.
+15. Arama ekranındaki ranking, fuzzy, phonetic, instant, usage-sort ve max-result ayarlarının önemli bölümü runtime tarafından tüketilmiyor.
+16. Rehber veya medya izni sistemden geri alındığında eski indeks kayıtları aramada kalabilir.
+17. Contact observer process restart sonrasında yeniden kurulmayabilir ve sıradan `Job` hatası gelecekteki güncellemeleri durdurabilir.
+18. Files index sabit Images→Video→Audio→Downloads sırasıyla tek 1000 sınırı kullanıyor; fotoğraf çoksa diğer kaynaklar tamamen aç kalabilir.
+19. Arama indeksleri delete-then-insert ile transaction dışında yenileniyor; doğal unique key yok.
+20. Bildirim reconnect, emisyon sırası ve hareketli 24 saat sınırı hatalı sonuç üretebilir.
+21. `initialLoadDone` gerçek ilk Room emisyonunu ayırmıyor; HomePage legacy migration boş klasör listesinde Dashboard'a kalıcı yanlış migration yapabilir.
+22. Remote katalog mutable `main` dalından timeout/hash/schema/category allowlist olmadan indiriliyor.
+23. Remote katalog birleştirme kararı kayıt sayısına dayanıyor; silinen veya düşürülen veriler doğru yönetilemiyor.
+24. FCM token yerel preference'a yazılıyor fakat topic subscription veya authenticated server registration görünmüyor; `db_update` dağıtım kanalı işlevsel olmayabilir.
+25. Haftalık ve günlük dönem anahtarları ViewModel/process ömründe sabitlenebilir; pazartesi veya timezone değişiminde eski dönemde kalabilir.
+26. CI'da ktlint görevi çağrılıyor fakat ktlint Gradle plugin/task tanımı yok.
+27. Ana CI lint/detekt/format kontrolünü zorunlu bloklamıyor; lint `abortOnError=false`.
+28. Launcher zorla dark theme açıyor, semantic renk yerine yoğun `Color.White` kullanıyor.
+29. Uygulama boyutu yalnız base APK `sourceDir.length()` ile ölçülüyor.
+30. Manuel backup import bazı alanları tam doğrulamadan önce mevcut dock/customization/override verisini temizleyebilir.
+31. Notification permission metni “içerik okunmaz” diyor; uygulamada isteğe bağlı preview text çıkarma desteği bulunuyor.
+32. Telemetri şeması var fakat ana sayfa event call-site'ları yok; “event var” ile “ölçüm çalışıyor” karıştırılıyor.
 
-## Yayın kararı
+## 1.1 Yayın kararı
 
-Aşağıdaki döngüler bitmeden:
+Aşağıdaki şartlar tamamlanmadan:
 
-- Dashboard üretimde varsayılan açılmamalı.
-- `KEY_HOME_PAGER_V2_ENABLED` tüm kullanıcılara açılmamalı.
-- Play Store üretim sürümü hazırlanmış sayılmamalı.
-- Yeni büyük özellik eklenmemeli.
+- Dashboard üretimde varsayılan açılmayacak.
+- `KEY_HOME_PAGER_V2_ENABLED` geniş kullanıcı grubuna açılmayacak.
+- Play Store üretim sürümü hazır kabul edilmeyecek.
+- Yeni büyük özellik eklenmeyecek.
+- “Tamamlandı” etiketi yalnız roadmap notuna bakılarak verilmeyecek.
 
-**Yayın engelleyici sıra:** `R00 → R01 → R02 → R03 → R04 → R05 → R06 → R07 → R08 → R09 → R10 → R11 → R12 → R13 → R14 → R15`.
+## 1.2 Güncel yayın engelleyici sıra
+
+```text
+R00 → R01 → R02 → R03 → R04 → R05 → R06 → R07 → R08
+→ R09 → R10 → R11 → R12 → R33 → R34 → R35
+→ R13 → R14 → R15 → R37 → R30 → R32
+```
+
+`R20`, `R21`, `R27` ve `R28` rollout öncesi kalite kapısında paralel ilerleyebilir; ancak R30 kapanmadan tamamlanmış sayılmaz.
 
 ---
 
 # 2. Yapay zekâ çalışma protokolü
 
-Her döngü tek başına uygulanacaktır. Bir görev tamamlanmadan sonraki göreve geçilmeyecektir.
+Her döngü tek başına uygulanacaktır. Bir görev tamamlanmadan bağımlı göreve geçilmeyecektir.
 
 ## 2.1 Zorunlu çalışma sırası
 
 1. Görevde belirtilen dosyaları güncel `main` üzerinden yeniden oku.
-2. Roadmap ile kod farklıysa güncel kodu esas al; farkı görev raporuna yaz.
-3. Yalnız döngü kapsamındaki dosyaları değiştir.
-4. Davranış değişikliği varsa önce saf politika veya use-case testini yaz.
+2. Roadmap ile kod farklıysa güncel kodu esas al ve farkı görev raporuna yaz.
+3. Önce kök nedeni doğrulayan test ekle; yalnız sonra üretim kodunu değiştir.
+4. Yalnız döngü kapsamındaki dosyaları değiştir.
 5. Room değişikliği varsa migration/schema testi ekle.
-6. Kullanıcı metni ekleniyorsa hem `values` hem `values-en` kaynaklarını güncelle.
-7. Kod değişikliğinden sonra en az ilgili testleri çalıştır.
-8. Döngü sonunda tek ve anlamlı commit oluştur.
-9. Test geçmeden `✅ Tamamlandı` yazma.
-10. Gerçek cihaz kriteri varsa cihaz kanıtı olmadan `✅ Tamamlandı` yazma; `🟡 Kısmen tamamlandı` kullan.
-11. Hata yakalayıp sessizce yutma. Başarı/başarısızlık üst katmana açıkça taşınmalıdır.
-12. Zamanlama için `delay(...)` ekleyerek veri tutarlılığı çözmeye çalışma.
-13. Aynı veri için ikinci preference veya ikinci state kaynağı oluşturma.
-14. İlgisiz formatlama, toplu isim değiştirme ve geniş refactor yapma.
+6. Permission veya backup değişikliği varsa hem legacy hem modern Android kuralını test et.
+7. Kullanıcı metni varsa `values`, `values-en` ve pseudolocale doğrulamasını güncelle.
+8. Visible setting ekleniyorsa runtime consumer'ı aynı committe bulunmalıdır.
+9. Policy/helper dosyası eklendiyse en az bir production call-site aynı committe olmalıdır.
+10. Event schema ekleniyorsa event'in gerçek call-site ve consent-off testi aynı committe olmalıdır.
+11. Kod değişikliğinden sonra ilgili testleri ve en az `compileDebugKotlin` çalıştır.
+12. Döngü sonunda tek, anlamlı commit oluştur.
+13. Test geçmeden `✅ Tamamlandı` yazma.
+14. Gerçek cihaz kriteri varsa cihaz kanıtı olmadan `✅ Tamamlandı` yazma.
+15. GitHub Actions sonucu yoksa “CI yeşil” yazma; yalnız yerel test çalıştırıldı de.
+16. Hata yakalayıp sessizce yutma; typed result veya exception ile üst katmana taşı.
+17. `delay(...)` ile Room/UI veri tutarlılığı çözme.
+18. Aynı veri için ikinci preference/state kaynağı oluşturma.
+19. İlgisiz formatlama ve geniş refactor yapma.
+20. Roadmap durumunu değiştirmeden önce production usage search yap.
 
 ## 2.2 Her görev sonunda yazılacak rapor
 
 ```text
 Döngü:
 Commit:
+Denetlenen önceki HEAD:
 Değişen dosyalar:
 Kök neden:
 Uygulanan çözüm:
+Production call-site:
 Eklenen testler:
 Çalıştırılan komutlar:
+GitHub Actions sonucu:
 Sonuç:
 Cihaz kanıtı:
 Kalan risk:
@@ -89,1260 +148,726 @@ Sonraki bağımlı döngü:
 ## 2.3 Durum değerleri
 
 - `⏳ Bekliyor`: Kodlama başlamadı.
-- `🚧 Devam ediyor`: Kod yazıldı; test veya doğrulama sürüyor.
-- `🟡 Kısmen tamamlandı`: Otomatik testler geçti; gerçek cihaz veya yayın kanıtı eksik.
-- `✅ Tamamlandı`: Kod, otomatik testler ve gerekli cihaz kanıtı tamamlandı.
-- `⛔ Bloke`: Harici bağımlılık, izin, cihaz veya mağaza işlemi bekleniyor.
+- `🚧 Altyapı var, runtime eksik`: Model/policy/test var; production call-site yok.
+- `🚧 Devam ediyor`: Runtime kodu var; test veya doğrulama eksik.
+- `🟡 Kısmen tamamlandı`: Otomatik test kanıtı var; gerçek cihaz/yayın kanıtı eksik.
+- `✅ Tamamlandı`: Runtime bağlantısı, otomatik test, CI ve gerekli cihaz kanıtı tamamlandı.
+- `⛔ Bloke`: Harici bağımlılık, cihaz, mağaza veya izin bekleniyor.
 
 ## 2.4 Temel doğrulama komutları
 
 ```bash
-./gradlew assembleDebug -PskipGoogleServices=true
-./gradlew testDebugUnitTest -PskipGoogleServices=true
-./gradlew lintDebug -PskipGoogleServices=true
-./gradlew detekt -PskipGoogleServices=true
-./gradlew ktlintCheck -PskipGoogleServices=true
+./gradlew :app:compileDebugKotlin -PskipGoogleServices=true --console=plain
+./gradlew :app:assembleDebug -PskipGoogleServices=true --console=plain
+./gradlew :app:testDebugUnitTest -PskipGoogleServices=true --console=plain
+./gradlew :app:lintDebug -PskipGoogleServices=true --console=plain
+./gradlew :app:detekt -PskipGoogleServices=true --console=plain
+./gradlew qualityGate -PskipGoogleServices=true --console=plain
 ```
+
+> `ktlintCheck` ancak ktlint Gradle plugin'i ve görevi gerçekten eklendikten sonra komut listesine alınacaktır. Şu an workflow'da adı geçmesi, görevin mevcut olduğu anlamına gelmez.
 
 Room değişikliği olan döngüler:
 
 ```bash
-./gradlew connectedDebugAndroidTest -PskipGoogleServices=true
+./gradlew :app:connectedDebugAndroidTest -PskipGoogleServices=true --console=plain
 ```
 
 Release/R8 doğrulaması:
 
 ```bash
-./gradlew assembleRelease -PskipGoogleServices=true -PallowDebugReleaseSigning=true
+./gradlew :app:assembleRelease -PskipGoogleServices=true -PallowDebugReleaseSigning=true --console=plain
 ```
 
 ---
 
 # 3. Doğrulanmış hata envanteri
 
-| ID | Seviye | Sorun | Kök dosyalar | Hedef döngü |
+| ID | Seviye | Sorun | Kök dosyalar | Hedef |
 |---|---|---|---|---|
-| DATA-01 | P0 | Güncelleme sırasında `PACKAGE_REMOVED + EXTRA_REPLACING=true` gerçek kaldırma gibi silme yapıyor | `PackageChangeReceiver.kt` | R01 |
-| DATA-02 | P0 | Statik receiver ve `LauncherActivity` receiver aynı olayı işliyor | `PackageChangeReceiver.kt`, `LauncherActivity.kt` | R02 |
-| DATA-03 | P0 | `PACKAGE_CHANGED` sonrası `insertApps(IGNORE)` metadata güncellemesini yok sayıyor | `PackageChangeReceiver.kt`, `AppDao.kt` | R03 |
-| DATA-04 | P0 | Repository mutasyonları exception yutuyor | `AppRepository.kt`, `SearchRepository.kt` | R04 |
-| DATA-05 | P0 | Kategori silme ve uygulamaları taşıma atomik değil | `AppListViewModel.kt`, DAO'lar | R05 |
-| DATA-06 | P0 | Paket kaldırılınca dock/favori/manual override/index temizliği farklı yerlerde ve eksik | receiver, ViewModel, prefs | R06 |
-| SEC-01 | P0 | Android 11 ve altı backup kuralında `deepseek_prefs.xml` hariç değil | `backup_rules.xml` | R07 |
-| CI-01 | P0 | Ana CI lint/detekt/ktlint çalıştırmıyor; QA bunları bloklamıyor | workflow'lar, Gradle lint | R08 |
-| HOME-01 | P0 | Dashboard ayarı görünür fakat pager bayrağı sabit `false` | `HomeScreen.kt`, `SettingsHomeScreenSection.kt` | R09 |
-| HOME-02 | P0 | Layout editöründeki visibility ayarı gerçek Dashboard render'ına uygulanmıyor | layout editor, Dashboard state/renderer | R10-R11 |
-| HOME-03 | P1 | Search zone iki ayrı kaynaktan yönetiliyor | `AppPrefs`, `HomeLayoutPrefs` | R10 |
-| HOME-04 | P1 | Editör tekil section sıralıyor, renderer üç temsilci grup sıralıyor | editor, `SmartDashboardPage.kt` | R11 |
-| HOME-05 | P1 | Boş Dashboard gerçek içerik yerine yalnız feature flag'e bakıyor | `SmartDashboardPage.kt` | R11 |
-| SEARCH-01 | P1 | Tek global limit ve app-first order diğer kaynakları aç bırakıyor | `SearchRepository.kt` | R12 |
-| SEARCH-02 | P1 | Bootstrap `deleteAll` ardından `insertAll`; süreç kesilirse indeks boş kalabilir | `SearchRepository.kt`, `SearchDao.kt` | R12 |
-| NOTIF-01 | P1 | Listener reconnect `lastPostedAt` ve importance bilgisini yeniden kurmuyor | listener service | R13 |
-| NOTIF-02 | P1 | Nested coroutine yazımları emisyon sırasını bozabilir | `LauncherViewModel.kt` | R13 |
-| NOTIF-03 | P1 | 24 saat sınırı ViewModel ömrü boyunca sabit | `LauncherViewModel.kt` | R13 |
-| START-01 | P1 | `initialLoadDone` gerçek ilk Room verisini ayırmıyor | `LauncherViewModel.kt` | R14 |
-| START-02 | P1 | Reconcile başka coroutine başlatıp gerçek tamamlanmayı beklemiyor | `LauncherViewModel.kt` | R14 |
-| START-03 | P1 | Kategori değişiminden sonra `delay(50)` ile UI tetiklenmeye çalışılıyor | `LauncherViewModel.kt` | R14 |
-| REMOTE-01 | P1 | Remote katalog mutable `main` dalı, timeout/hash/imza yok | `AppDatabaseService.kt` | R15 |
-| ARCH-01 | P1 | `HomeScreen` çok sayıda Flow ve preference state'ini doğrudan taşıyor | `HomeScreen.kt` | R16-R17 |
-| SEARCH-03 | P1 | Global search ve All Apps query aynı state'i paylaşıyor | ViewModel, drawer, global search | R18 |
-| SEARCH-04 | P1 | Türkçe normalizasyon/alias/typo modeli kaynaklar arasında tutarlı değil | indexer, entity, repository | R19 |
-| UI-01 | P1 | Launcher `darkTheme=true` ile zorlanıyor | `LauncherActivity.kt` | R21 |
-| UI-02 | P1 | Dashboard/Home bileşenlerinde sabit `Color.White` kullanımları var | launcher UI dosyaları | R21 |
-| UI-03 | P1 | Kullanıcı metinlerinin önemli bölümü hardcode | Settings, drawer, launcher UI | R22 |
-| A11Y-01 | P1 | Pager custom accessibility action, search/modal kilidini bypass edebilir | `HomePagerHost.kt` | R22 |
-| TEST-01 | P1 | Gerçek screenshot/golden test altyapısı yok | Gradle, androidTest/screenshotTest | R23 |
-| SIZE-01 | P2 | `sourceDir.length()` gerçek uygulama boyutu değil | `PackageManagerHelper.kt` | R24 |
-| MISSION-01 | P2 | XP, dijital yaşam skoru ve yıldız anlatımı kullanıcı açısından karışık | görev/skor ekranları | R25 |
-| MISSION-02 | P2 | `mission_instances` yazılıyor fakat ana okuma yolu tamamen taşınmamış | missions repository/ViewModel | R25 |
-| BACKUP-01 | P2 | Manuel JSON yedeği kullanım profili içeriyor ve şifresiz | `BackupManager.kt` | R26 |
-| PERF-01 | P2 | Dashboard rollout öncesi macrobenchmark/baseline profile kanıtı yok | benchmark altyapısı | R28 |
-| PERM-01 | P2 | Manifest izinleri özellik bazında yeniden doğrulanmalı | manifest, permission UI | R29 |
-| GOV-01 | P2 | Bazı eski roadmap döngüleri kabul kriteri eksikken tamamlandı işaretlenmiş | roadmap yönetimi | R00 |
+| DATA-01 | P0 | `PACKAGE_REMOVED + EXTRA_REPLACING=true` gerçek uninstall gibi silinebilir | `PackageChangeReceiver.kt` | R01 |
+| DATA-02 | P0 | Statik receiver ve Activity receiver aynı package event'i işliyor | receiver, `LauncherActivity.kt` | R02 |
+| DATA-03 | P0 | `PACKAGE_CHANGED` metadata güncellemesi `INSERT IGNORE` ile kayboluyor | receiver, `AppDao.kt` | R03 |
+| DATA-04 | P0 | Repository mutasyon exception'larını yutuyor | repository'ler | R04 |
+| DATA-05 | P0 | Kategori silme/taşıma transaction değil | ViewModel, DAO | R05 |
+| DATA-06 | P0 | Uninstall referans temizliği dağınık ve eksik | receiver, prefs, dock, search | R06 |
+| DATA-07 | P0 | Event path launchable/hidden katalog uygunluğunu doğrulamıyor | `PackageManagerHelper.kt` | R01-R03 |
+| DATA-08 | P1 | PM yarışında retry biterse uygulama 12 saatlik reconcile'a kadar kaybolabilir | receiver, reconcile | R01 |
+| SEC-01 | P0 | DeepSeek anahtarı `app_organizer_prefs` içinde; backup kuralı yanlış `deepseek_prefs.xml` dosyasını hariç tutuyor | `AppPrefs.kt`, backup XML | R07 |
+| SEC-02 | P0 | Geniş backup include, kişi aksiyonu/konum cache/crash log/FCM/device state'i taşıyabilir | backup XML, prefs | R07 |
+| SEC-03 | P0 | Package receiver `exported=true` ve yıkıcı mutasyon yapıyor | manifest, receiver | R02/R29 |
+| CI-01 | P0 | Ana CI kalite kontrollerini zorunlu bloklamıyor | workflows | R08 |
+| CI-02 | P0 | Workflow `ktlintCheck` çağırıyor fakat plugin/task tanımı yok | root/app Gradle, QA workflow | R08 |
+| CI-03 | P1 | `be08f7b...` merge için combined status/check kanıtı yok | GitHub Actions | R08/R32 |
+| HOME-01 | P0 | Dashboard preference görünür; runtime `dashboardEnabledForPager=false` | `HomeScreen.kt` | R09 |
+| HOME-02 | P0 | Rollout prefs/policy var; production consumer yok | `AppPrefs`, rollout policy, HomeScreen | R09/R30 |
+| HOME-03 | P0 | Layout visibility gerçek Dashboard state'ine tam uygulanmıyor | editor, Dashboard state | R10-R11 |
+| HOME-04 | P1 | Search zone `AppPrefs` ve `HomeLayoutPrefs` ile çift kaynak | settings, layout prefs | R10 |
+| HOME-05 | P1 | Editor tekil section, renderer üç grup sıralıyor | editor, SmartDashboard | R11 |
+| HOME-06 | P1 | Legacy page migration boş folder listesinde kalıcı Dashboard anchor yazabilir | `HomePagePrefs.kt`, load state | R14 |
+| ADAPT-01 | P1 | Adaptive policy var; HomeScreen hâlâ inline 600/840 eşikleri kullanıyor | policy, HomeScreen | R20 |
+| ADAPT-02 | P1 | Tablet All Apps paneli yorumda adaptive, runtime sabit `380.dp` | HomeScreen | R20 |
+| ADAPT-03 | P1 | Folder drag hesabı tablette de `colCount=4` | HomeScreen | R20 |
+| SEARCH-01 | P1 | Tek global limit/app-first diğer kaynakları aç bırakıyor | SearchRepository | R12 |
+| SEARCH-02 | P1 | Index rebuild transaction dışı delete-then-insert | SearchRepository, indexer'lar | R12 |
+| SEARCH-03 | P1 | Search document için doğal unique `(sourceType, sourceId)` index yok | entity, Room migration | R12 |
+| SEARCH-04 | P1 | Global search ve All Apps aynı query state'i kullanıyor | ViewModel/UI | R18 |
+| SEARCH-05 | P0 | Ranking/fuzzy/phonetic/instant/usage/max-result ayarlarının runtime consumer'ı yok | Search settings, repository | R33 |
+| SEARCH-06 | P0 | Contact/file izni geri alınsa eski docs aramada kalabilir | source eligibility/indexer | R34 |
+| SEARCH-07 | P1 | Contact observer restart'ta kurulmayabilir; normal Job tek hatada ölebilir | `ContactsIndexer.kt` | R34 |
+| SEARCH-08 | P1 | Unknown `SourceType` güvenli fallback yerine crash üretebilir | `SearchDocument.kt` | R12 |
+| FILE-01 | P1 | Tek 1000 sınırı images-first nedeniyle video/audio/downloads aç bırakabilir | FilesIndexer | R35 |
+| FILE-02 | P1 | “Any permission” tüm kaynaklar hazır gibi yorumlanabilir | permission dialog/index state | R35 |
+| FILE-03 | P1 | Dokümantasyon “izin gerekmez” derken runtime medya izni istiyor | FilesIndexer/UI | R35 |
+| CONTACT-01 | P1 | Contact yükleme 500 kişiye kadar N+1 telefon sorgusu yapıyor | ContactsIndexer | R34/R28 |
+| NOTIF-01 | P1 | Listener reconnect post-time/importance state'ini tam kurmuyor | listener | R13 |
+| NOTIF-02 | P1 | Nested coroutine DB emisyon sırasını bozabilir | LauncherViewModel | R13 |
+| NOTIF-03 | P1 | 24 saat cutoff ViewModel ömründe sabit | LauncherViewModel | R13/R36 |
+| NOTIF-04 | P1 | İzin açıklaması “içerik okunmaz” diyor; optional preview extraction var | permission dialog, listener | R22/R29 |
+| START-01 | P1 | `initialLoadDone` initial empty StateFlow'u gerçek Room emisyonu sanabilir | LauncherViewModel | R14 |
+| START-02 | P1 | Reconcile başka coroutine başlatıp gerçek bitişi beklemiyor | LauncherViewModel | R14 |
+| START-03 | P1 | `delay(50)` ile Room/UI refresh bekleniyor | LauncherViewModel | R14 |
+| REMOTE-01 | P1 | Mutable main URL, timeout/hash/imza/schema yok | AppDatabaseService | R15 |
+| REMOTE-02 | P1 | Category ID/package/version doğrulaması ve downgrade koruması yok | service, classifier | R15 |
+| REMOTE-03 | P1 | FCM token saklanıyor; topic/backend registration görünmüyor | FCM service, AppPrefs | R37 |
+| BACKUP-01 | P1 | Import validation tamamlanmadan mevcut bazı alanları temizleyebilir | BackupManager | R26 |
+| BACKUP-02 | P1 | SAF URI/biometric/device state cihazlar arası restore edilebilir | BackupManager/AppPrefs | R26 |
+| PRIV-01 | P0 | `crash_logs`, contact actions ve location cache Auto Backup'a girebilir | CrashReporter, prefs, XML | R07 |
+| TIME-01 | P1 | Singleton ZoneId process ömründe timezone değişimini kaçırabilir | AppModule, PeriodBoundaryResolver | R36 |
+| TIME-02 | P1 | Weekly goals anahtarı ViewModel creation'da sabitleniyor | AppListViewModel | R36 |
+| TEL-01 | P1 | Home telemetry schema/wrapper var; production page call-site yok | AppAnalytics, HomeScreen | R27 |
+| TEL-02 | P1 | Roadmap event entegrasyonu iddiası usage search ile doğrulanmıyor | P21 notu | R27/R32 |
+| PERF-01 | P1 | Macrobenchmark/baseline/jank kanıtı yok | benchmark altyapısı | R28 |
+| UI-01 | P1 | Launcher `darkTheme=true` zorlaması | LauncherActivity | R21 |
+| UI-02 | P1 | Semantic token yerine yoğun `Color.White` | launcher UI | R21 |
+| UI-03 | P1 | Kullanıcı metinleri Kotlin içinde hardcode | Settings/UI | R22 |
+| A11Y-01 | P1 | Pager accessibility action navigation lock'u bypass edebilir | HomePagerHost | R22 |
+| SIZE-01 | P2 | `sourceDir.length()` gerçek app storage değil | PackageManagerHelper | R24 |
+| MISSION-01 | P2 | XP, yıldız, digital-life score kavramları karışık | görev/skor | R25 |
+| GOV-01 | P1 | Roadmap durumu production call-site ve CI kanıtı olmadan yükseltiliyor | roadmap süreci | R00/R32 |
 
 ---
 
-# 4. Faz A — Yayın engelleyici veri ve davranış düzeltmeleri
+# 4. Faz A — Yayın engelleyici veri bütünlüğü ve güvenlik
 
-## R00 — Denetim bazını kilitle ve regresyon testlerini hazırla
+## R00 — Regresyon bazını ve kanıt sözleşmesini kilitle
 
-**Amaç:** Düzeltme öncesindeki kritik davranışları testle görünür hale getirmek.
+**Amaç:** Düzeltme yaparken mevcut çalışan davranışların bozulmasını ve yalnız yorumla “tamamlandı” ilan edilmesini engellemek.
 
 **Değişecek/yeni dosyalar:**
 
-- `app/src/test/.../PackageEventPolicyTest.kt`
-- `app/src/test/.../RepositoryMutationContractTest.kt`
-- `app/src/test/.../HomeLayoutRenderContractTest.kt`
-- `app/src/test/.../SearchSourceAllocationTest.kt`
-- `app/src/test/.../NotificationSummaryPolicyTest.kt`
-- `docs/internal/audit_baseline_2026-07-18.md`
+- `docs/internal/current_system_contract_1_3_89.md`
+- `app/src/test/.../PackageEventContractTest.kt`
+- `app/src/test/.../SettingsRuntimeContractTest.kt`
+- `scripts/audit_runtime_consumers.*`
+- CI workflow artifact ayarları.
 
-**Nokta atışı yapılacaklar:**
+**Yapılacaklar:**
 
-1. Test fixture'larında kullanıcı tarafından düzeltilmiş kategori, favori, dock, gizli uygulama ve notification state bulunan örnek uygulama oluştur.
-2. Güncelleme dizisini modelle: `REMOVED(replacing=true) → ADDED(replacing=true) → REPLACED`.
-3. Gerçek kaldırma dizisini ayrı modelle: `REMOVED(replacing=false)`.
-4. Dashboard toggle açık fakat pager kapalı olan mevcut durumu kontrat testiyle belgeleyip test adını `currentBehavior_...` şeklinde yaz; sonraki döngü bu testi bilinçli değiştirsin.
-5. Eski roadmap durumlarını değiştirme; eksik kabul kriterlerini bu roadmap'te yeniden görev olarak aç.
+1. `be08f7b...` HEAD için davranış envanteri çıkar.
+2. Her görünür preference kontrolü için en az bir production read/consumer doğrula.
+3. Her policy/helper için test dışında production call-site doğrula.
+4. Her telemetry event için gerçek call-site, validator ve consent-off testi doğrula.
+5. Test raporları, lint, detekt ve runtime consumer raporu artifact olarak saklansın.
+6. Roadmap durum parser'ı “Tamamlandı” satırında commit/test/device kanıtı arayabilsin.
 
-**Kabul kriteri:** Kritik hata senaryoları test isimleri ve fixture'larla yeniden üretilebilir.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R01 — Paket olaylarını semantik olarak ayır
-
-**Amaç:** Uygulama güncellemesini gerçek kaldırmadan ayırmak ve veri kaybını durdurmak.
-
-**Yeni dosya:**
-
-- `domain/usecase/packages/PackageEventPolicy.kt`
-
-**Model:**
-
-```kotlin
-sealed interface PackageEvent {
-    data class Added(val packageName: String, val replacing: Boolean) : PackageEvent
-    data class Removed(val packageName: String, val replacing: Boolean) : PackageEvent
-    data class Changed(val packageName: String) : PackageEvent
-    data class Replaced(val packageName: String) : PackageEvent
-}
-
-enum class PackageMutation {
-    INSERT_NEW,
-    REFRESH_METADATA,
-    DELETE_REAL,
-    IGNORE_TRANSIENT_REMOVE,
-}
-```
-
-**Değişecek dosyalar:**
-
-- `presentation/receivers/PackageChangeReceiver.kt`
-- Manifest intent-filter testleri.
-
-**Nokta atışı değişiklik:**
-
-1. `EXTRA_REPLACING` hem `PACKAGE_ADDED` hem `PACKAGE_REMOVED` için policy'ye verilsin.
-2. `PACKAGE_REMOVED && replacing=true` durumunda Room, search, favori veya dock mutasyonu yapılmasın.
-3. `PACKAGE_ADDED && replacing=true` yeni uygulama bildirimi üretmesin; metadata refresh yapsın.
-4. `PACKAGE_REPLACED` doğrudan metadata refresh olarak işlensin.
-5. Gerçek kaldırma yalnız `replacing=false` ile mümkün olsun.
-6. Receiver içinde business logic kalmasın; yalnız event üretip coordinator'a aktarsın.
-
-**Testler:**
-
-- Update remove → `IGNORE_TRANSIENT_REMOVE`.
-- Real remove → `DELETE_REAL`.
-- Added replacing → `REFRESH_METADATA`.
-- Added fresh → `INSERT_NEW`.
-- Replaced → `REFRESH_METADATA`.
-
-**Kabul kriteri:** Play Store güncellemesi kullanıcı kategorisini, favoriyi, dock'u ve sayaçları silemez.
+**Kabul:** P20/P21/P24 benzeri “dosya var ama runtime yok” durumu otomatik raporlanır.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R02 — Tek paket receiver ve tek coordinator oluştur
-
-**Amaç:** Aynı olayın iki farklı akışta işlenmesini engellemek.
-
-**Yeni dosya:**
-
-- `domain/usecase/packages/PackageEventCoordinator.kt`
+## R01 — Replacing paket olayını ve katalog uygunluğunu düzelt
 
 **Değişecek dosyalar:**
 
-- `LauncherActivity.kt`
 - `PackageChangeReceiver.kt`
-- `AndroidManifest.xml`
-- Hilt module/entry point dosyaları.
-
-**Nokta atışı değişiklik:**
-
-1. `LauncherActivity.packageReceiver` alanını tamamen kaldır.
-2. `onStart()` içindeki `registerReceiver` ve `onStop()` içindeki `unregisterReceiver` kodunu kaldır.
-3. Manifest receiver tek olay kaynağı olsun.
-4. Receiver `android:exported="false"` yapılmalı.
-5. `PackageEventCoordinator` şu sırayı yönetsin:
-
-```text
-policy resolve
-→ PackageManager'dan taze metadata
-→ Room mutation
-→ search index mutation
-→ user preference cleanup/notification
-→ result log/telemetry
-```
-
-6. Coordinator tüm operasyonları idempotent tasarlasın; aynı event iki kez gelse de sonuç değişmesin.
-7. UI, Room Flow üzerinden güncellensin; Activity ayrıca paket olayı dinlemesin.
-
-**Testler:**
-
-- Aynı Added event iki kez → tek uygulama kaydı.
-- Aynı Removed event iki kez → crash yok.
-- Activity oluşturulmadan paket olayı → katalog doğru güncellenir.
-
-**Kabul kriteri:** Repo genelinde paket olayını işleyen yalnız bir koordinasyon yolu bulunur.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R03 — Insert ve metadata update yollarını ayır
-
-**Amaç:** `PACKAGE_CHANGED` ve güncelleme olaylarında Room metadata'sının gerçekten yenilenmesi.
-
-**Değişecek dosyalar:**
-
-- `AppDao.kt`
-- `AppRepository.kt`
-- `PackageEventCoordinator.kt`
 - `PackageManagerHelper.kt`
-- Search index entegrasyonu.
+- yeni `PackageCatalogEligibility.kt`
+- package event testleri.
 
-**Nokta atışı değişiklik:**
-
-1. `insertApps(IGNORE)` yalnız gerçek yeni paket eklemek için kullanılsın.
-2. Mevcut uygulama metadata'sı için DAO'ya alan bazlı query ekle:
+**Kesin çözüm:**
 
 ```kotlin
-@Query("""
-UPDATE apps SET
-    appName = :appName,
-    isSystemApp = :isSystemApp,
-    lastUpdated = :lastUpdated,
-    firstInstalledTime = :firstInstalledTime,
-    lastUpdatedTime = :lastUpdatedTime,
-    targetSdkVersion = :targetSdkVersion,
-    versionName = :versionName,
-    appSizeBytes = :appSizeBytes
-WHERE packageName = :packageName
-""")
-suspend fun updatePackageMetadata(...): Int
-```
-
-3. Query yalnız PackageManager alanlarını değiştirsin; kategori, sınıflandırma kilidi, usage, launch count, hidden, notes ve notification alanlarına dokunmasın.
-4. Dönen satır sayısı `0` ise paket yeni kabul edilip insert yolu çalışsın.
-5. `onPackageChanged()` içinde `repo.insertApps(listOf(merged))` çağrısını kaldır.
-6. Search index yalnız Room mutation başarılı olduktan sonra güncellensin.
-7. Uygulama adı değişmişse eski search document silinip yenisi yazılsın.
-
-**Testler:**
-
-- Versiyon güncelleme user category'yi korur.
-- App adı değişir, search yeni adı bulur.
-- Hidden/usage/launch count korunur.
-- Update olmayan paket insert edilir.
-
-**Kabul kriteri:** Room ve search index aynı uygulama adını/sürümünü gösterir.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R04 — Repository mutasyon sözleşmesini düzelt
-
-**Amaç:** Sessiz başarısızlıkları kaldırmak.
-
-**Karar:** DAO/repository mutasyonları başarısızsa exception üst katmana çıkmalıdır. `runCatching` yalnız use-case/coordinator sınırında kullanılmalıdır.
-
-**Değişecek dosyalar:**
-
-- `AppRepository.kt`
-- `SearchRepository.kt`
-- `MissionsRepository.kt` mutasyonları kontrol edilecek.
-- `AppListViewModel.kt`
-- `LauncherViewModel.kt`
-- `BackupManager.kt`
-- Paket coordinator.
-
-**Nokta atışı değişiklik:**
-
-1. Şu desen mutasyon fonksiyonlarından kaldırılmalı:
-
-```kotlin
-try { dao.update(...) } catch (e: Exception) { Timber.e(e) }
-```
-
-2. Okuma fonksiyonlarında güvenli fallback gerekiyorsa korunabilir; yazma fonksiyonlarında sessiz fallback yasaktır.
-3. DAO update/delete query'leri mümkünse `Int` döndürsün.
-4. Beklenen satır sayısı `0` ise `MutationRejectedException` veya açık domain sonucu üret.
-5. ViewModel şu yan etkileri yalnız Room başarısından sonra yapsın:
-   - manual override yazma,
-   - search reindex,
-   - görev puanı verme,
-   - başarı mesajı gösterme.
-6. UI'ya tek kullanımlık hata event'i gönder.
-7. Log mesajlarında paket adı release telemetrisine gönderilmesin; yerel debug log ile sınırlandır.
-
-**Testler:**
-
-- DAO hata atar → manual override yazılmaz.
-- DAO hata atar → görev puanı artmaz.
-- DAO update 0 row → başarı mesajı gösterilmez.
-- Search index hatası → Room geri alınmayacaksa repair queue oluşturulur.
-
-**Kabul kriteri:** Üst katman başarısız bir DB işlemini başarılı sanamaz.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R05 — Kategori silme ve yeniden atamayı transaction yap
-
-**Amaç:** Silinmiş kategoriye bağlı orphan uygulama bırakmamak.
-
-**Yeni dosya/adayı:**
-
-- `data/repository/CatalogTransactionRepository.kt`
-
-**Değişecek dosyalar:**
-
-- `AppDao.kt`
-- `CategoryDao.kt`
-- `AppDatabase.kt`
-- `AppListViewModel.kt`
-- Search repository.
-
-**Nokta atışı değişiklik:**
-
-1. `AppDatabase.withTransaction` kullan.
-2. Transaction içinde:
-   - kategorinin custom olduğunu doğrula,
-   - bağlı uygulamaları `uncategorized` yap,
-   - classification metadata'yı `FALLBACK_OTHER/PENDING` uyumlu hale getir,
-   - kategoriyi sil.
-3. Transaction başarılı olduktan sonra manual override kayıtlarını temizle.
-4. Search index için `repairCategoryDeletion(categoryId, affectedPackages)` fonksiyonu oluştur.
-5. Search update başarısızsa idempotent repair flag/worker bırak; DB transaction'ını sessizce başarılı sayıp indeksi sonsuza kadar bozuk bırakma.
-6. Sistem kategorileri için transaction başlamadan reddet.
-
-**Testler:**
-
-- 0 uygulamalı custom kategori.
-- 20 uygulamalı custom kategori.
-- Sistem kategorisi silme reddi.
-- Uygulama taşıma hatası → kategori silinmez.
-- Process death sonrası orphan categoryId yok.
-
-**Kabul kriteri:** `apps.categoryId` her zaman mevcut veya izin verilen özel fallback kategoriye işaret eder.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R06 — Paket kaldırma referans temizliğini tek yerde topla
-
-**Amaç:** Kaldırılmış uygulamanın dock, favori, search ve tercih kayıtlarında kalmaması.
-
-**Yeni dosya:**
-
-- `domain/usecase/packages/PackageReferenceCleaner.kt`
-
-**Temizlenecek alanlar:**
-
-- Room app row.
-- Search document.
-- `DockPrefs`.
-- Favorites.
-- Manual category override.
-- Notification read timestamp.
-- Folder suggestion accepted/dismissed patternlerinde paket bazlı kayıt varsa ilgili öğe.
-- Icon cache.
-- In-memory ViewModel state'i Room/Prefs flow üzerinden.
-
-**Nokta atışı değişiklik:**
-
-1. `LauncherViewModel.onPackageRemoved()` kaldırılmalı veya yalnız coordinator sonucunu gözlemleyen UI yardımcısına dönüşmeli.
-2. Yalnız bellekte `_dockPackages.value = current - packageName` yapmak yasak; `DockPrefs.removeFromDock` kalıcı olarak çağrılmalı.
-3. `AppPrefs.removeFavorite` ve manual override temizliği coordinator sonrası tek noktada yapılmalı.
-4. Cleaner idempotent olmalı.
-5. Kategori dock item'ı, kategori silme döngüsünde ayrıca temizlenmeli.
-
-**Testler:**
-
-- Dock'taki uygulama kaldırılır → yeniden açılışta geri gelmez.
-- Favori kaldırılır.
-- Manual override kaldırılır.
-- İkinci cleanup çağrısı hata üretmez.
-
-**Kabul kriteri:** Kaldırılan uygulama hiçbir kullanıcı yüzeyinde kırık referans bırakmaz.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R07 — Backup ve API anahtarı güvenliğini düzelt
-
-**Amaç:** Eski Android sürümlerinde hassas preference'ın yedeklenmesini ve düz metin secret saklanmasını engellemek.
-
-**Değişecek dosyalar:**
-
-- `res/xml/backup_rules.xml`
-- `res/xml/data_extraction_rules.xml`
-- DeepSeek/API anahtarı okuyan-yazan sınıf.
-- Güvenlik testleri/dokümantasyon.
-
-**Nokta atışı değişiklik:**
-
-1. `backup_rules.xml` içine ekle:
-
-```xml
-<exclude domain="sharedpref" path="deepseek_prefs.xml" />
-```
-
-2. Android 12+ ve eski backup kurallarını aynı hassas dosya listesiyle senkron tutan test/script ekle.
-3. API anahtarını normal SharedPreferences'tan çıkar.
-4. `SecretStore` oluştur; Android Keystore AES/GCM veya güvenli eşdeğer kullan.
-5. Secret verisini `noBackupFilesDir`/yedek dışı depoda tut.
-6. Mevcut kullanıcı anahtarını tek seferlik migrate et; migration başarılıysa eski preference değerini sil.
-7. Diagnostics/backup/export içinde anahtar, kısmi anahtar veya hash bulunmamalı.
-
-**Testler:**
-
-- Legacy preference → secure store migration.
-- Migration sonrası eski key yok.
-- Backup XML parity testi.
-- Export JSON secret içermez.
-
-**Kabul kriteri:** API anahtarı hiçbir Android sürümünde cloud backup veya manuel JSON yedeğine girmez.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R08 — Tek ve bloklayıcı CI kalite kapısı oluştur
-
-**Amaç:** Yeşil build'in gerçekten kalite kontrollerini geçtiği anlamına gelmesi.
-
-**Değişecek dosyalar:**
-
-- `.github/workflows/android-ci.yml`
-- `.github/workflows/android-qa.yml`
-- Gereksiz/duplicate workflow'lar.
-- `app/build.gradle.kts`
-- Detekt/ktlint config.
-
-**Nokta atışı değişiklik:**
-
-1. Tüm otomatik kontroller JDK 17 kullanmalı.
-2. Ana PR/push workflow şu görevleri zorunlu çalıştırmalı:
-
-```text
-assembleDebug
-unit tests
-lintDebug
-detekt
-ktlintCheck
-Room schema/migration verification
-```
-
-3. `continue-on-error: true` kaldırılmalı.
-4. `lint.abortOnError = true` yapılmalı.
-5. Raporlar `if: always()` ile artifact olarak yüklenmeli; fakat hata job'ı başarısız bırakmalı.
-6. Duplicate workflow'lar ya kaldırılmalı ya yalnız release/device amacıyla açıkça ayrılmalı.
-7. Gradle/JDK sürümü tek kaynakta belgelenmeli.
-8. GitHub branch protection'ta bu workflow required check yapılmalı; bu adım repo ayarı olduğu için görev raporunda kanıt verilmeli.
-
-**Kabul kriteri:** Lint/detekt/ktlint hatalı commit `main`e birleşemez.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R09 — Dashboard ayarlarını gerçek davranışla eşleştir
-
-**Amaç:** Kullanıcıya çalışan gibi görünen fakat etkisiz ayar sunmamak.
-
-**Karar:** R01-R08 bitmeden Dashboard genel kullanıma açılmayacak. Bu aşamada internal feature flag ile dürüst geçiş yapılacak.
-
-**Yeni anahtar:**
-
-```kotlin
-KEY_HOME_PAGER_V2_ENABLED
-```
-
-**Değişecek dosyalar:**
-
-- `HomeScreen.kt`
-- `SettingsHomeScreenSection.kt`
-- `HomePagePrefs.kt`
-- Geliştirici ayarları.
-- Diagnostics.
-
-**Nokta atışı değişiklik:**
-
-1. `dashboardEnabledForPager = false` sabiti kaldırılmadan önce internal feature flag ekle.
-2. Üretim kullanıcılarında flag kapalıysa Dashboard toggle ve Dashboard start mode seçeneği gizlensin veya açıkça “Deneysel — henüz etkin değil” olarak disabled gösterilsin.
-3. Flag açıkken:
-
-```kotlin
-val dashboardEnabledForPager =
-    homePagerV2Enabled && smartDashboardPrefEnabled
-```
-
-4. Start mode resolver gerçek page listesine göre normalize etsin.
-5. Dashboard kapalıyken SMART_DASHBOARD saklanamasın.
-6. Dashboard açılıp/kapanınca semantic anchor doğru sayfaya taşınsın.
-7. Flag cihaz bazlı ve backup dışı olmalı; rollout kontrol ayarı kullanıcı yedeğiyle başka cihaza taşınmamalı.
-
-**Testler:**
-
-- Flag off → no-op kontrol görünmez/disabled.
-- Flag on + Dashboard on → page 0 Dashboard.
-- Dashboard off → ilk klasör page 0.
-- Start mode normalization.
-
-**Kabul kriteri:** Ayarlar ekranında seçilebilen her seçenek anında gerçek davranış üretir.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R10 — HomeLayout için tek doğruluk kaynağı oluştur
-
-**Amaç:** Search konumu, bölüm görünürlüğü ve sıra ayarlarının iki preference sistemine dağılmasını bitirmek.
-
-**Yeni dosya:**
-
-- `data/repository/HomeLayoutRepository.kt`
-
-**Değişecek dosyalar:**
-
-- `HomeLayoutPrefs.kt`
-- `AppPrefs.kt`
-- `HomeScreen.kt`
-- `SettingsHomeScreenSection.kt`
-- `HomeLayoutEditorScreen.kt`
-- Backup/diagnostics.
-
-**Nokta atışı değişiklik:**
-
-1. `HomeLayoutRepository` şu state'i yayınlasın:
-
-```kotlin
-data class HomeLayoutState(
-    val config: HomeLayoutConfig,
-    val customized: Boolean,
-)
-```
-
-2. `HomeLayoutPrefs` yeni düzen için tek disk kaynağı olsun.
-3. `AppPrefs.KEY_SEARCH_BAR_POSITION` yalnız legacy migration kaynağı olarak kalsın; yeni yazma yapılmasın.
-4. Settings'teki üst/alt search seçimi `HomeLayoutRepository.setSearchZone()` kullansın.
-5. Editor `write()` yerine repository action kullansın.
-6. `HomeScreen` `remember(context) { HomeLayoutPrefs.read(...) }` kullanmasın; reaktif Flow toplasın.
-7. `.first { MAIN_SEARCH }` yerine sanitize edilmiş state ve `firstOrNull` + default kullan.
-8. Editor kaydından sonra Launcher aynı process içinde anında yeni config'i alsın.
-9. Backup restore tek kaynağa yazsın; AppPrefs eski key'ini yeniden canlandırmasın.
-
-**Testler:**
-
-- Settings top/bottom seçimi restart sonrası korunur.
-- Editor search zone seçimi Settings'e yansır.
-- Bozuk config sanitize edilir.
-- Aynı ayar iki farklı değer taşıyamaz.
-
-**Kabul kriteri:** Search zone ve layout için yalnız bir aktif persistence kaynağı vardır.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R11 — Dashboard renderer'ı editörle birebir eşleştir
-
-**Amaç:** Kullanıcının gizlediği/taşıdığı her bölümün gerçekten aynı şekilde render edilmesi.
-
-**Yeni dosyalar:**
-
-- `DashboardSectionRenderer.kt`
-- `DashboardVisibilityPolicy.kt`
-
-**Değişecek dosyalar:**
-
-- `SmartDashboardPage.kt`
-- `DashboardUiState.kt`
-- `HomeLayoutEditorScreen.kt`
-- `HomeFavoritesSection.kt`
-- `HomeScreen.kt`
-- İlgili testler.
-
-**Nokta atışı değişiklik:**
-
-1. `DashboardUiState` içine sanitize edilmiş `List<HomeLayoutItem>` ekle; yalnız `contentOrder` göndermek yeterli değildir.
-2. Renderer `config.items.filter { zone == CONTENT && visible }` sırasını doğrudan kullansın.
-3. `DashboardContentGroup` ve temsilci section sıralaması kaldırılmalı veya editör de yalnız aynı üç grubu göstermelidir. **Tercih edilen çözüm: gerçek tekil section renderer.**
-4. Birleşik `HomeFavoritesSection` şu alt composable'lara ayrılmalı:
-   - `HomeFavoritesRow`
-   - `HomeSuggestionsRow`
-   - `HomeRecentNotificationsRow`
-   - `HomeRecentAppsRow`
-5. `GOOGLE_SEARCH` ve `ANDROID_WIDGETS` bağımsız taşınabilsin.
-6. `ASSISTANT_INSIGHTS` ve `TICKER_OR_STATS` bağımsız taşınabilsin.
-7. Recent installs ürün yüzeyinde düzenlenebilir olacaksa `RECENT_INSTALLS` section modeli ekle; olmayacaksa editörde açıkça “sabit bölüm” olarak göster.
-8. `DashboardVisibilityPolicy` gerçek render koşullarını tek yerde hesaplasın. Feature açık fakat liste boşsa görünür sayılmasın.
-9. `hasAnyContent` ve `countVisibleSections` aynı policy sonucunu kullansın.
-10. Boş Dashboard saat dışında içerik yoksa açıklayıcı boş durum gösterilsin.
-
-**Testler:**
-
-- Her section hide/show.
-- Her section reorder.
-- Favoriler açık ama liste boş → boş içerik sayılmaz.
-- Widget açık ama widget yok → görünmez.
-- Editor preview ve gerçek renderer aynı sıralama.
-
-**Kabul kriteri:** Editörde görülen düzen ile gerçek Dashboard arasında birebir sözleşme vardır.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R12 — Arama kaynak adaletini ve indeks atomikliğini düzelt
-
-**Amaç:** Uygulama sonuçlarının kişi/dosya/ayar/kategori kaynaklarını ezmesini önlemek ve indeksin boş kalma riskini kaldırmak.
-
-**Değişecek dosyalar:**
-
-- `SearchRepository.kt`
-- `SearchDao.kt`
-- `SearchDocument.kt`
-- `AppDatabase.kt`
-- Search testleri.
-
-**Nokta atışı değişiklik:**
-
-1. Tek global `ORDER BY app first LIMIT N` yaklaşımını kaldır.
-2. Kaynak başına varsayılan kota uygula:
-
-```text
-APP: 8
-CATEGORY: 4
-SETTING: 4
-CONTACT: 4
-FILE: 4
-```
-
-3. Sonuç map'i her kaynak için kendi relevance sırasını korusun.
-4. Global toplam limit küçükse minimum çeşitlilik sağla; kullanılmayan kota diğer kaynaklara dağıtılabilir.
-5. Exact/prefix eşleşme source order'dan önce puanlanmalı.
-6. `bootstrapIndex()` şu transaction içinde çalışmalı:
-
-```kotlin
-db.withTransaction {
-    searchDao.deleteBaseSources()
-    searchDao.insertAll(baseDocs)
+sealed interface PackageCatalogDecision {
+    data class AddOrUpdate(val app: AppInfo) : PackageCatalogDecision
+    data object RemoveFromCatalog : PackageCatalogDecision
+    data object Ignore : PackageCatalogDecision
+    data class Retry(val reason: String) : PackageCatalogDecision
 }
 ```
 
-7. Contacts/files kendi source transaction'larında yenilenmeli; base index'i silmemeli.
-8. `settingsSeeded` yalnız DB yazımı başarıyla bitince true olsun.
-9. Search mutation fonksiyonları exception yutmasın; repair yolu oluştur.
-10. Telemetri query metni olmadan kaynak bazlı impression/result-count ölçsün.
+1. `ACTION_PACKAGE_REMOVED` + `EXTRA_REPLACING=true` hiçbir kullanıcı verisini silmemeli.
+2. `getAppInfo` yerine `resolveCatalogEligibility(packageName)` kullanılmalı.
+3. Paket launchable değilse veya `shouldHide` eşleşiyorsa katalogdan çıkarılmalı/ignore edilmeli.
+4. Launcher component disable/enable geçişi test edilmeli.
+5. PM üç retry sonunda hazır değilse WorkManager one-time reconcile planlanmalı; sessiz skip yapılmamalı.
+6. `goAsync` işi timeout ile sınırlandırılmalı.
 
-**Testler:**
-
-- 50 app eşleşmesi + 1 contact → contact görünür.
-- 50 app + 1 setting → setting görünür.
-- Bootstrap insert hatası → eski indeks korunur veya transaction rollback olur.
-- FTS ve LIKE aynı source allocation kontratına uyar.
-
-**Kabul kriteri:** Açık her arama kaynağı uygun sorguda sonuç yüzeyine çıkabilir.
+**Testler:** update, uninstall, non-launchable install, hidden system package, component disabled/enabled, PM delayed visibility.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R13 — Bildirim state modelini ve yazım sırasını düzelt
+## R02 — Tek receiver ve güvenli PackageEventCoordinator
 
-**Amaç:** Badge, son bildirim zamanı, preview ve 24 saat raporunu birbirinden doğru ayırmak.
+**Değişecek dosyalar:** receiver, `LauncherActivity.kt`, manifest, yeni coordinator.
+
+1. Activity dynamic receiver kaldırılmalı.
+2. Manifest receiver yalnız event adapter olmalı.
+3. `android:exported="false"` kullanılmalı ve gerçek cihazda sistem package broadcast alımı doğrulanmalı.
+4. Explicit spoof intent instrumentation testi eklenmeli.
+5. Tek paket için aynı anda gelen event'ler `Mutex`/actor ile seri işlenmeli.
+6. Tek coordinator DB, search, dock/favorite cleanup ve notification kararını yönetmeli.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R03 — Insert-only ve metadata update yollarını ayır
+
+1. `insertApps` yalnız yeni kayıt sınıflandırması için kullanılmalı.
+2. `updateInstalledMetadata` kullanıcı category/hidden/usage/classification alanlarını korumalı.
+3. DAO update row count döndürmeli; `0` ise typed not-found sonucu üretmeli.
+4. `INSERT IGNORE` update amacıyla kullanılmamalı.
+5. Package changed, renamed app, version update ve icon change testleri eklenmeli.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R04 — Repository mutasyon sonuç sözleşmesi
+
+```kotlin
+sealed interface MutationResult<out T> {
+    data class Success<T>(val value: T) : MutationResult<T>
+    data class NotFound(val key: String) : MutationResult<Nothing>
+    data class Failure(val operation: String, val cause: Throwable) : MutationResult<Nothing>
+}
+```
+
+- Loglayıp normal dönme kaldırılmalı.
+- ViewModel yalnız gerçek success sonrasında toast, XP, migration flag ve telemetry üretmeli.
+- Search/bootstrap/import partial failure ayrıntılı rapor vermeli.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R05 — Atomik kategori mutasyonları
+
+- `db.withTransaction` altında app taşıma + category silme + search index update planı.
+- Default/locked category silme engeli domain policy'ye alınmalı.
+- Mid-transaction failure rollback testi.
+- User override ve folder customizations kategoriyle birlikte kontrollü temizlenmeli.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R06 — Paket referans cleanup use-case
+
+Tek `RemovePackageReferencesUseCase` şu kaynakları temizlemeli:
+
+- apps row,
+- search document,
+- dock app item,
+- favorites,
+- manual category override,
+- notification read/preview state,
+- suggestion/rejection cache,
+- icon cache,
+- app-specific note,
+- package bazlı pending work.
+
+Update/replacing akışında bu use-case çalışmamalı.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R07 — Secret store ve backup privacy allowlist
+
+**Bu görev P0'dır. Önceki roadmap bulgusu düzeltilmiştir.**
+
+DeepSeek key `deepseek_prefs.xml` içinde değildir; `AppPrefs.PREFS_NAME = app_organizer_prefs` içinde saklanır. Bu nedenle mevcut XML exclusion anahtarı korumaz.
+
+**Yeni mimari:**
+
+```text
+backup_safe_prefs.xml       → tema, görünüm, kullanıcı tercihleri
+runtime_device_prefs.xml    → FCM token, SAF URI, install/session marker, rate limits
+private_history_prefs.xml   → contact actions, search/usage/read histories, weather target/cache
+secret_prefs.xml            → DeepSeek/API secrets; Keystore-backed
+```
+
+**Yapılacaklar:**
+
+1. Secret key Keystore-backed store'a taşınmalı.
+2. Legacy `app_organizer_prefs/deepseek_api_key` bir kez migrate edilmeli; başarılı yazımdan sonra eski key silinmeli.
+3. `backup_rules.xml` ve `data_extraction_rules.xml` denylist yerine mümkünse allowlist kullanmalı.
+4. `secret_prefs`, runtime/device prefs, private history prefs, `crash_logs`, database WAL/SHM ve widget IDs kesin hariç tutulmalı.
+5. `contact_action_prefs`, weather cache, crash reporter prefs/logları, FCM token, SAF URI, telemetry rate limit ve notification read state sınıflandırılmalı.
+6. “Veri cihazda kalır” metni Auto Backup gerçeğiyle uyumlu hale getirilmeli.
+7. Legacy Android ve Android 12+ XML parity testi yazılmalı.
+8. ADB backup/device-transfer testinde secret marker ve private history bulunmadığı kanıtlanmalı.
+
+**Kabul:** DeepSeek key ve private local histories hiçbir cloud backup/device transfer çıktısında yoktur.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R08 — Gerçek bloklayıcı CI kalite kapısı
+
+**Düzeltilecekler:**
+
+1. JDK tüm workflow'larda 17 olmalı.
+2. Root Gradle'a ktlint plugin/task gerçekten eklenmeli veya workflow'daki sahte `ktlintCheck` kaldırılıp detekt-formatting tek formatter olarak belirlenmeli.
+3. `continue-on-error` kalite adımlarından kaldırılmalı.
+4. lint `abortOnError=true` olmalı.
+5. Ana CI: compile, unit, lint, detekt, format, duplicate category, runtime-consumer audit.
+6. Release workflow: R8, migration, backup rules, screenshot verify, benchmark smoke.
+7. Merge commit status görünmüyorsa release evidence eksik sayılmalı.
+
+**Kabul:** Bilerek oluşturulan lint/format/no-op-setting hatası CI'ı kırar.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+# 5. Faz B — Dashboard, layout ve rollout doğruluğu
+
+## R09 — Dashboard no-op kontrolünü kaldır
+
+1. `dashboardEnabledForPager=false` kaldırılmadan önce R10/R11 ve rollout fallback hazır olmalı.
+2. Gerçek karar:
+
+```kotlin
+val dashboardEnabled = HomePagerRolloutPolicy.dashboardEnabled(
+    flagEnabled = rolloutEnabled,
+    safeMode = rolloutSafeMode,
+    dashboardPreferenceEnabled = smartDashboardPrefEnabled,
+)
+```
+
+3. Rollout ve safe-mode prefs reaktif okunmalı.
+4. Toggle görünür olacaksa anında page planını değiştirmeli; aksi halde UI'dan gizlenmeli.
+5. Legacy page content Dashboard açıkken ikinci kez render edilmemeli.
+6. Empty folder + Dashboard off güvenli fallback sayfası üretmeli.
+
+**Durum:** 🚧 Altyapı var, runtime eksik — policy/prefs mevcut; HomeScreen hâlâ `false`.
+
+---
+
+## R10 — Tek HomeLayout preference kaynağı
+
+- `HomeLayoutRepository` typed `StateFlow<HomeLayoutConfig>` sunmalı.
+- Search position yalnız HomeLayout içindeki MAIN_SEARCH zone'dan gelmeli.
+- SearchSettingsScreen'deki ayrı AppPrefs kontrolü kaldırılmalı veya repository'ye delege edilmeli.
+- HomeScreen `remember(context)` snapshot yerine reaktif collect kullanmalı.
+- Visibility/order/zone tek atomik write ile saklanmalı.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R11 — Editor ve renderer birebir sözleşmesi
+
+1. Editörde görünen her `HomeSectionId` renderer'da tekil karşılığa sahip olmalı.
+2. Üç temsilci grup yaklaşımı kaldırılmalı veya editör yalnız gerçek üç grubu göstermeli.
+3. Section visibility DashboardUiState'e uygulanmalı.
+4. `hasAnyContent` gerçek görünür layout item'larından türetilmeli.
+5. Contract test her editable section için hide/show/move sonucunu doğrulamalı.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R20 — Telefon/tablet adaptif runtime entegrasyonu
+
+**Mevcut:** Policy ve JVM testleri var.
+
+**Eksik runtime değişiklikleri:**
+
+1. HomeScreen inline `isTablet` ve `screenColumns` hesaplarını policy'ye bağla.
+2. All Apps panel sabit `380.dp` yerine policy değeri kullansın.
+3. Search/dock gerçek `widthIn(max=...)` ile ortalansın; yalnız yorum eklemek yetmez.
+4. Folder drag `colCount=4` yerine güncel `screenColumns` kullansın.
+5. Screen width/orientation değişiminde state yeniden hesaplansın.
+6. 600/840dp, portrait/landscape ve foldable config change testleri.
+7. Gerçek 7–8 ve 10+ inç tablet screenshot kanıtı.
+
+**Durum:** 🚧 Altyapı var, runtime eksik
+
+---
+
+## R21 — Tema ve semantic renk sistemi
+
+- `AppOrganizerTheme(darkTheme=true)` kaldırılmalı veya ürün kararı açık enum olmalı.
+- Wallpaper content contrast modeli oluşturulmalı.
+- `Color.White.copy` yerine semantic tokens.
+- Light/dark/dynamic + wallpaper contrast snapshot'ları.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R22 — Lokalizasyon, erişilebilirlik ve doğru izin açıklaması
+
+1. Hardcode TR metinleri resource'a taşı.
+2. Notification listener açıklaması optional preview text'i dürüstçe açıklamalı.
+3. Pager custom actions yalnız navigation/pager lock açıkken sunulmalı.
+4. Mission/Digital Life kartları tek semantic description.
+5. 48dp target, font 2.0, RTL, pseudolocale.
+6. Reduce motion runtime değişimine reaktif olmalı.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R23 — Screenshot/golden regresyon altyapısı
+
+- Tek araç: Paparazzi, Roborazzi veya Compose Preview Screenshot Testing.
+- Matris: 360/411/600/840dp, portrait/landscape, light/dark, font 1.0/1.3/2.0, TR/EN/pseudo.
+- Dashboard off/on/empty/dense, 0/1/8/20/42 folder, All Apps search/empty/long list.
+- CI yalnız verify; golden update manuel.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R30 — Kontrollü Dashboard rollout
+
+**Mevcut:** preference anahtarları, saf policy, debug toggle ve diagnostics alanları eklenmiş.
+
+**Eksikler:**
+
+1. Policy production route'a bağlanmalı.
+2. Safe mode gerçek eski render path'e dönmeli.
+3. Toggle değişimi process restart gerektirmeden uygulanmalı.
+4. Rollback category/order/anchor/preferences kaybetmemeli.
+5. Consent/telemetry kapalıyken rollout çalışmalı.
+6. Dört cihaz flag on/off/safe-mode kanıtı.
+7. Crash/ANR threshold'a bağlı otomatik rollback kararı tanımlanmalı.
+
+**Durum:** 🚧 Altyapı var, runtime eksik
+
+---
+
+## R31 — Legacy render ve preference temizliği
+
+**Mevcut ilerleme:** semantic anchor yazılırken eski ham index tekrar yazılmıyor.
+
+**Kalan:**
+
+- Eski page APIs yalnız migration reader olarak sınırlandırılmalı.
+- Duplicate legacy Dashboard content branch rollout sonrası silinmeli.
+- Kullanılmayan comments/TODO/P24 notları güncellenmeli.
+- Old tests yeni typed modellerle taşınmalı.
+
+**Durum:** 🟡 Kısmen tamamlandı — rollout kanıtı eksik
+
+---
+
+# 6. Faz C — Arama, kişi ve dosya kaynakları
+
+## R12 — Search fairness, doğal unique key ve atomik indeks
+
+1. `(sourceType, sourceId)` unique index + Room migration.
+2. Upsert doğal key ile yapılmalı.
+3. Rebuild staging/transaction ile atomik olmalı.
+4. Kaynak başına minimum kota + global rerank.
+5. Unknown SourceType güvenli `UNKNOWN`/skip davranışı.
+6. Contacts/Files indexer delete-then-insert transaction'a alınmalı.
+7. App/category rename/remove indeks tutarlılık testi.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R18 — Global Search ve All Apps query ayrımı
+
+- `globalSearchQuery`, `allAppsQuery`, `folderFilterQuery` ayrı state.
+- Drawer kapanması global query'yi temizlememeli.
+- Search source enable/permission state global query'den bağımsız.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R19 — Türkçe normalizasyon ve gerçek ranking
+
+- Tek `SearchNormalizer`: Locale.ROOT storage + Türkçe aliases/transliteration.
+- `ş/s, ı/i, ğ/g, ç/c, ö/o, ü/u` toleransı ayara bağlı.
+- FTS ve LIKE aynı normalize modelini kullanmalı.
+- Ranking profile gerçekten query order/quotas/rerank'i değiştirmeli.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R33 — Görünür arama ayarlarının runtime sözleşmesi
+
+**P0 mantık hatası:** SearchSettingsScreen'de bulunan bazı ayarlar yalnız preference'a yazılıyor.
 
 **Yeni model:**
 
 ```kotlin
-data class ActiveNotificationSummary(
-    val activeCount: Int,
-    val latestPostedAt: Long,
-    val maxImportance: Int,
-    val latestPreview: NotificationPreview?,
+data class SearchPreferencesSnapshot(
+    val rankingProfile: SearchRankingProfile,
+    val fuzzyEnabled: Boolean,
+    val phoneticEnabled: Boolean,
+    val instantEnabled: Boolean,
+    val sortByUsage: Boolean,
+    val maxResults: Int,
+    val showIcons: Boolean,
+    val showContactAvatar: Boolean,
 )
 ```
 
-**Değişecek dosyalar:**
+**Yapılacaklar:**
 
-- `AppNotificationListenerService.kt`
-- `UnreadNotificationModel.kt`
-- `LauncherViewModel.kt`
-- `AppInfo.kt` veya ayrı summary entity.
-- DAO/repository batch fonksiyonları.
-
-**Nokta atışı değişiklik:**
-
-1. `System.currentTimeMillis()` yerine notification zamanı için `sbn.postTime` kullan.
-2. Ranking importance bilgisini listener callback/ranking map üzerinden al.
-3. `onListenerConnected()` aktif bildirimlerden count, latestPostedAt, importance ve preview'ı baştan oluştursun.
-4. Disconnect sırasında eski `lastPostedAt` state'i bırakılmasın; reconnect kaynağı aktif bildirimler olsun.
-5. Dört ayrı map yerine mümkünse tek `StateFlow<Map<String, ActiveNotificationSummary>>` yayınla.
-6. ViewModel içindeki `onEach { viewModelScope.launch(IO) { ... } }` desenini kaldır.
-7. `collectLatest` veya seri actor/channel kullan; eski emisyon yeniyi ezemesin.
-8. Count/text/importance/timestamp DB yazımı tek transaction/batch olsun.
-9. Son 24 saat query sınırını sabit oluşturma zamanına bağlama. Saatlik ticker veya repository refresh parametresi kullan.
-10. “Aktif bildirim”, “launcher'da okunmamış”, “son 24 saat olay sayısı” ayrı modeller olarak kalmalı.
-
-**Testler:**
-
-- Listener reconnect sonrası eski aktif notification doğru timestamp taşır.
-- Uygulama açıldıktan sonra launcher badge 0; sistem bildirimi silinmez.
-- Hızlı iki emisyon → son emisyon DB'de kalır.
-- 24 saat sınırı saat ilerleyince yenilenir.
-
-**Kabul kriteri:** Bildirim rozeti ve rapor aynı sayacı farklı anlamlarda kullanmaz.
+1. Typed repository/flow ile reaktif snapshot üret.
+2. Ranking profile source order/quotas'ı değiştirsin.
+3. Usage sort yalnız app grubunda stabil tie-breaker olsun.
+4. Max result gerçek repository/UI limitini belirlesin; hardcoded 24 kaldırılmalı.
+5. Instant kapalıysa IME submit olmadan search çalışmamalı.
+6. Fuzzy/phonetic gerçek normalizer/ranker'a bağlanmalı.
+7. Uygulanmayacak ayar UI'dan kaldırılmalı; no-op bırakılmamalı.
+8. `SettingsRuntimeContractTest` production consumer bulunmayan görünür setting'i fail etmeli.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R14 — İlk yükleme ve reconcile state machine oluştur
+## R34 — Permission-aware source lifecycle ve Contact observer
 
-**Amaç:** Yükleme, boş katalog, hata ve hazır durumlarını açıkça ayırmak; `delay(50)` gibi zamanlama yamalarını kaldırmak.
+1. Source eligibility = preference açık **ve** runtime permission valid **ve** index state güvenli.
+2. Permission revoke edildiğinde stale contact/file docs anında silinmeli.
+3. Process start'ta preference/permission/index reconcile yapılmalı.
+4. Contacts observer app scope `SupervisorJob` veya WorkManager actor ile yönetilmeli.
+5. Bir index hatası gelecekteki observer event'lerini öldürmemeli.
+6. Contact loading N+1 phone sorgusu yerine batch query.
+7. Grant→index→revoke→search testi: sonuç sıfır.
+8. Process restart'ta observer yeniden kayıt testi.
 
-**Yeni model:**
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R35 — Files index fairness ve scoped-storage sözleşmesi
+
+1. Her collection için ayrı izin/availability state.
+2. “Any permission” yerine hangi media türlerinin erişilebilir olduğu raporlanmalı.
+3. 1000 global images-first sınırı kaldırılmalı:
+   - per-source quota + global modified-time merge, veya
+   - provider limitli ayrı sorgular + fair merge.
+4. Downloads kapsamı Android sürümüne göre dürüstçe belirtilmeli; gerekirse SAF.
+5. Dokümantasyon ile runtime permission davranışı eşleşmeli.
+6. Partial permission UI “tam hazır” göstermemeli.
+7. 5000 images + video/audio/downloads fixture fairness testi.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+# 7. Faz D — Bildirim, yükleme ve zaman doğruluğu
+
+## R13 — Notification summary state ve seri DB yazımı
+
+- Listener tek immutable summary yayınlasın: counts, lastPostedAt, previews, texts.
+- Reconnect active notifications üzerinden bütün alanları yeniden kursun.
+- ViewModel nested launch yerine `collectLatest`/actor ile seri yazsın.
+- Moving 24h window timer/period flow ile yenilensin.
+- Read-state ve active-system-notification ayrımı korunsun.
+
+**Durum:** ⏳ Bekliyor
+
+---
+
+## R14 — CatalogLoadState, reconcile ve güvenli page migration
 
 ```kotlin
 sealed interface CatalogLoadState {
     data object Loading : CatalogLoadState
     data object Empty : CatalogLoadState
-    data class Ready(val appCount: Int) : CatalogLoadState
-    data class Failed(val reason: CatalogLoadFailure) : CatalogLoadState
+    data object Ready : CatalogLoadState
+    data class Failed(val code: String) : CatalogLoadState
 }
 ```
 
-**Değişecek dosyalar:**
-
-- `LauncherViewModel.kt`
-- `HomeScreen.kt`
-- `AppRepository.kt`
-- Reconcile testleri.
-
-**Nokta atışı değişiklik:**
-
-1. `initialLoadDone = allAppsSource.map { true }` kaldır.
-2. İlk gerçek DAO emisyonunu veya repository bootstrap sonucunu açık state'e çevir.
-3. `reconcileIfNeeded()` başka bir `launch` başlatıp dönmesin; iç işlem suspend olarak aynı coroutine içinde tamamlansın.
-4. `loadAppsIfEmpty()` adı `reconcileCatalog()` olsun; gerçek davranış yalnız boş DB değil.
-5. Reconcile sonucu `Added/Updated/Removed/Failed` sayılarıyla dönsün.
-6. Stale app silme `PackageReferenceCleaner` üzerinden yapılsın.
-7. `updateAppCategory()` içindeki `delay(50)` ve `_folderOrder.update { it.toList() }` kaldır. Room Flow gerçek state'i tetiklemeli.
-8. Loading ekranı yalnız gerçekten veri beklenirken gösterilsin; boş katalog ayrı açıklama ve retry aksiyonu sunsun.
-9. Reconcile bitmeden schema/current/reconciled bayrakları yazılmasın.
-
-**Testler:**
-
-- StateIn initial empty, Room henüz emit yok → Loading.
-- Gerçek boş DB → Empty.
-- 100 app → Ready(100).
-- Package scan error → Failed.
-- Kategori update için delay kullanılmaz ve UI Flow ile değişir.
-
-**Kabul kriteri:** UI zaman gecikmesine değil veri state'ine göre güncellenir.
+1. Gerçek DAO first emission ile state üretilmeli.
+2. `allAppsSource` initial empty value Ready sayılmamalı.
+3. Reconcile suspend use-case olarak gerçek tamamlanmayı döndürmeli.
+4. `delay(50)` kaldırılmalı.
+5. HomePage migration folder catalog Ready olmadan çalışmamalı.
+6. Empty input migration flag yazmamalı; `Deferred` dönmeli.
+7. Cold start empty initial state→Room data testi.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R15 — Uzak sınıflandırma kataloğunu güvenli ve sürümlü yap
+## R36 — Dinamik timezone, gün ve hafta rollover
 
-**Amaç:** Mutable `main` dosyasının doğrudan üretim verisi olmasını bitirmek.
-
-**Yeni format:**
-
-```text
-catalog-manifest.json
-catalog-vNN.json
-catalog-vNN.sha256
-```
-
-**Değişecek dosyalar:**
-
-- `AppDatabaseService.kt`
-- Remote katalog üretim script'i.
-- Asset fallback.
-- Unit/integration testleri.
-
-**Nokta atışı değişiklik:**
-
-1. Raw `main/app_database.json` URL'si kaldırılmalı.
-2. GitHub Release asset veya immutable tag/commit tabanlı URL kullan.
-3. Connection/read timeout açıkça ayarla.
-4. Maksimum dosya boyutu sınırı koy.
-5. SHA-256 doğrulaması yap.
-6. Version monoton artmalı; daha eski remote katalog cache'i düşürmemeli.
-7. Bilinmeyen categoryId değerlerini reddet veya `other` fallback'e normalize et.
-8. JSON parse ve doğrulama tamamlanmadan aktif `cachedMap` değiştirilmesin.
-9. Cache yazımı geçici dosya/atomic rename veya tek doğrulanmış payload ile yapılsın.
-10. ETag/If-None-Match veya version manifest ile gereksiz indirmeyi önle.
-11. Hata halinde son doğrulanmış cache/asset korunmalı.
-
-**Testler:**
-
-- Hash yanlış → yeni katalog aktive olmaz.
-- JSON yarım → eski cache korunur.
-- Version düşük → reddedilir.
-- Timeout → asset/cache fallback.
-- Bilinmeyen kategori → güvenli fallback.
-
-**Kabul kriteri:** Repo hesabındaki yanlış/yarım bir commit kullanıcı sınıflandırmasını doğrudan bozamaz.
+1. `ZoneId.systemDefault()` singleton snapshot yerine dinamik provider.
+2. `TIMEZONE_CHANGED`, `TIME_SET`, `DATE_CHANGED` event'lerinde period state yenilensin.
+3. Weekly goals `periodKeyFlow.flatMapLatest(dao::observeGoals)` kullansın.
+4. Notification 24h, mission deadlines, daily limits ve report boundaries aynı period kaynağını kullansın.
+5. Pazartesi 00:00, DST 23/25 saat, timezone değişimi ve process-alive testleri.
+6. WorkManager görevleri timezone değişiminde yeniden planlansın.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-# 5. Faz B — Ana ekran mimarisi ve state sadeleştirme
+# 8. Faz E — Remote katalog, FCM ve backup/import
 
-## R16 — HomePreferencesRepository ve tek HomeUiState
+## R15 — Güvenli remote katalog
 
-**Amaç:** `HomeScreen` içindeki onlarca `remember + SharedPreferences listener` state'ini kaldırmak.
-
-**Yeni dosyalar:**
-
-- `data/repository/HomePreferencesRepository.kt`
-- `presentation/ui/launcher/HomeUiState.kt`
-- `presentation/ui/launcher/HomeUiAction.kt`
-
-**Yapılacaklar:**
-
-1. Arka plan, görünürlük, klasör görünümü, search, dock ve gesture ayarlarını typed modellere ayır.
-2. Preferences/DataStore akışlarını tek `StateFlow<HomePreferences>` içinde birleştir.
-3. `LauncherViewModel` HomeUiState üretirken katalog, layout, notification ve intelligence state'lerini birleştirsin.
-4. Composable doğrudan `AppPrefs.get...` çağırmasın.
-5. `collectAsStateWithLifecycle()` kullan.
-6. One-off UI olaylarını state içinde kalıcı tutma; event flow kullan.
-
-**Kabul kriteri:** Yeni bir ana ekran ayarı eklemek için HomeScreen'e listener anahtarı eklemek gerekmez.
+1. Mutable `main` URL yerine immutable release asset veya signed manifest.
+2. Connect/read timeout, HTTP status, max payload, max entry count.
+3. Monotonic version; downgrade reddi.
+4. Package name ve category ID allowlist/schema doğrulaması.
+5. Remote category bundled/android sinyalini yalnız doğrulanmış policy ile override etmeli.
+6. Kayıt sayısına dayalı merge heuristic kaldırılmalı; full snapshot/delta semantiği açık olmalı.
+7. Stage→validate→atomic commit→last-known-good rollback.
+8. Hash/signature mismatch ve unknown category testleri.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R17 — HomeScreen'i orchestration seviyesine indir
+## R26 — Güvenli manuel backup/import
 
-**Amaç:** Monolit Composable'ı sorumluluk bazlı parçalamak.
-
-**Yeni/ayrılacak dosyalar:**
-
-- `HomeRoute.kt`
-- `HomeOverlayHost.kt`
-- `HomeDockHost.kt`
-- `HomeGestureHost.kt`
-- `HomePagerStateHolder.kt`
-
-**Yapılacaklar:**
-
-1. HomeScreen yalnız state toplasın ve host'ları bağlasın.
-2. Overlay local state'lerini tek `HomeOverlayState` modelinde topla.
-3. Pager state/semantic anchor koordinasyonunu ayrı state holder'a taşı.
-4. Gesture policy yalnız `HomeGestureArbiter` sonucunu uygulasın.
-5. Intent oluşturma tekrarlarını `HomeNavigationRouter` içine taşı.
-6. `homePagerState`/`homePages` gibi composition sırasına güvenen holder yazımlarını kaldır.
-
-**Hedef:** `HomeScreen.kt` orchestration dahil yaklaşık 300-500 satır bandına indirilmeli; bu sayı tek başına kabul kriteri değil, sorumluluk ayrımının göstergesidir.
+1. Bütün JSON önce size/schema/version/item-count doğrulamasından geçmeli.
+2. Immutable `RestorePlan` oluşturulmadan mevcut veri temizlenmemeli.
+3. Missing field “preserve” veya version sözleşmesine göre explicit reset olmalı.
+4. Transaction/compensation ve section-level sonuç raporu.
+5. SAF URI, FCM token, biometric enabled, permissions/device IDs restore edilmemeli.
+6. Standard JSON + authenticated encrypted backup seçeneği.
+7. Notification text/contact/file path/secrets export'a girmemeli.
+8. Partial/corrupt v3-v6 backup mevcut veriyi silmeme testleri.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R18 — Global search ve All Apps arama state'ini ayır
+## R37 — FCM ve remote update teslimat sözleşmesi
 
-**Amaç:** Drawer kapanınca global query'nin temizlenmesi veya iki yüzeyin birbirini etkilemesi sorununu kaldırmak.
+**Sorun:** FCM token saklanıyor, `db_update` mesajı işleniyor; ancak topic subscription veya authenticated backend registration görünmüyor.
 
-**Yeni state:**
+**Karar seçenekleri:**
 
-```kotlin
-data class SearchQueries(
-    val globalQuery: String = "",
-    val drawerQuery: String = "",
-    val folderQuery: String = "",
-)
-```
+A. Consent sonrası sabit, privacy-reviewed topic subscription.  
+B. Authenticated registration backend ve token rotation/delete lifecycle.  
+C. FCM mekanizmasını kaldır; periodic verified catalog worker kullan.
 
-**Değişecek dosyalar:**
+**Zorunlu kurallar:**
 
-- `LauncherViewModel.kt`
-- `GlobalSearchHost.kt`
-- `FullScreenSearchOverlayV2.kt`
-- `AllAppsDrawer.kt`
-- `HomeScreen.kt`
-
-**Yapılacaklar:**
-
-1. `_searchQuery` üç ayrı amaca hizmet etmesin.
-2. Drawer kapanınca yalnız drawer query temizlensin.
-3. Global overlay kapanınca global query ürün kararına göre korunur veya temizlenir; açık kural test edilir.
-4. Search active gesture kilidi aktif yüzeye göre hesaplanır.
-5. `focusSearchOnOpen` yalnız drawer search'e etki eder.
+- Token device-local backup-excluded store'da.
+- Raw/partial token loglanmaz.
+- `onNewToken`, logout/reset/uninstall lifecycle tanımlı.
+- Message yalnız doğrulanmış katalog fetch'ini tetikler; payload kategori verisi doğrudan uygulanmaz.
+- End-to-end test cihazına update teslim kanıtı.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R19 — Türkçe arama normalizasyonu, alias ve typo toleransı
+# 9. Faz F — Mimari, performans, ürün anlamı ve yayın kanıtı
 
-**Amaç:** Tüm kaynaklarda aynı normalize/rank modelini kullanmak.
+## R16 — Typed HomePreferences ve HomeUiState
 
-**Yeni yardımcılar:**
-
-- `SearchNormalizer.kt`
-- `SearchRanker.kt`
-- `SearchAliases.kt`
-
-**Yapılacaklar:**
-
-1. Türkçe `İ/i`, `I/ı`, aksan ve noktalama normalizasyonu.
-2. `normalizedTitle`, `normalizedSubtitle`, `aliases`, `keywords` indeks alanları.
-3. Exact > prefix > token > fuzzy sırası.
-4. Bilinen alias örnekleri: `insta`, `watsap/whatsapp`, `wp`, `wifi`, `bluetooth`.
-5. Fuzzy yalnız minimum query uzunluğu ve kontrollü edit distance ile çalışsın.
-6. Search query metni telemetriye gitmesin.
-7. FTS ve LIKE fallback aynı normalizasyon kontratını kullansın.
+- Onlarca SharedPreferences listener yerine repository `StateFlow`.
+- `collectAsStateWithLifecycle`.
+- `HomeUiState` immutable ve feature substate'lere ayrılmış.
+- IO/permission/feature state UI'dan ayrılmış.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R20 — Telefon, tablet, landscape ve foldable adaptif politika
+## R17 — HomeScreen orchestration dosyasına indir
 
-**Amaç:** Ekran sınıfı kararlarını tek helper'da toplamak.
-
-**Yeni dosya:**
-
-- `HomeAdaptiveLayoutPolicy.kt`
-
-**Model:**
-
-```kotlin
-enum class HomeDeviceClass { PHONE, COMPACT_TABLET, EXPANDED_TABLET }
-```
-
-**Yapılacaklar:**
-
-1. Sütun sayısı, Dashboard density, search max width, dock max width ve drawer panel genişliği aynı policy'den türesin.
-2. `Resources.getSystem().displayMetrics` yerine mevcut window bounds kullan.
-3. Landscape Dashboard iki kolon seçeneği değerlendirilip test edilir.
-4. Font scale ve usable height policy girdisi olsun.
-5. Foldable posture desteklenmiyorsa güvenli config-change davranışı doğrulansın.
+- Gesture coordinator, overlay host, pager coordinator, layout state holder ayrılmalı.
+- HomeScreen hedefi yalnız state bağlama ve top-level composition.
+- Local state ownership matrisi dokümante edilmeli.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-# 6. Faz C — Görsel kalite, tema ve erişilebilirlik
+## R24 — Uygulama boyutunu doğru ölç veya doğru adlandır
 
-## R21 — Tema sözleşmesi ve renk token'ları
-
-**Amaç:** Zorla koyu tema ve sabit beyaz renk kullanımını kaldırmak.
-
-**Değişecek dosyalar:**
-
-- `LauncherActivity.kt`
-- `Theme.kt`
-- `SmartDashboardPage.kt`
-- `HomeScreen.kt`
-- `FolderTile.kt`
-- `AllAppsDrawer.kt`
-- Diğer launcher bileşenleri.
-
-**Yapılacaklar:**
-
-1. `AppOrganizerTheme(darkTheme = true)` kaldır; sistem/kullanıcı tema tercihini kullan.
-2. Launcher için açık tema desteklenmeyecekse bu ürün kararı açık bir enum ve ayar olarak tanımlansın; yanlışlıkla açık tema altyapısı varmış gibi davranılmasın.
-3. `Color.White.copy(...)` yerine semantic color token kullan.
-4. Duvar kâğıdı üzerindeki etiket kontrastı ayrı `WallpaperContentColors` modeliyle çözülsün.
-5. Minimum kontrast kontrolleri test helper'ı ile doğrulansın.
-6. Glass/frosted yüzeylerde açık ve koyu tema snapshot'ları üretilsin.
+- StorageStatsManager ile app/data/cache mümkünse.
+- Aksi halde split APK toplamı `APK boyutu` olarak etiketlenmeli.
+- Bilinmiyorsa `0 B` değil “Bilinmiyor”.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R22 — Lokalizasyon ve erişilebilirlik sözleşmesini tamamla
+## R25 — XP, yıldız, Digital Life ve mission instance modeli
 
-**Amaç:** Hardcode metinleri, küçük touch target'ları ve kilit bypass eden accessibility action'ları düzeltmek.
-
-**Değişecek dosyalar:**
-
-- `SettingsHomeScreenSection.kt`
-- `AllAppsDrawer.kt`
-- `CategoryEditorScreen.kt`
-- `HomePagerHost.kt`
-- Görev ve Digital Life kartları.
-- `values/strings.xml`, `values-en/strings.xml`.
-
-**Yapılacaklar:**
-
-1. Kullanıcıya gösterilen tüm sabit Türkçe metinleri resource'a taşı.
-2. Pseudolocale testini CI'a ekle.
-3. Filter/sort chip touch target'ları minimum 48dp yap.
-4. `HomePagerHost` custom next/previous action'larını yalnız `userScrollEnabled/navigationEnabled` true iken sun. Search/modal/reorder açıkken TalkBack action pager'ı değiştirmemeli.
-5. `HomeMissionCard` ve `DigitalLifeCard` tek birleşik contentDescription üretmeli.
-6. Dekoratif emoji/glyph'leri semantics tree'den çıkar.
-7. Font scale 2.0'da temel aksiyonlar görünür kalmalı.
-8. Reduce motion ayarı process içinde değişirse state yeniden değerlendirilmeli.
+- XP = düzenleme/görev ilerleme puanı.
+- Digital Life = 0–100 davranış kalitesi.
+- Stars = görev başarısı.
+- Ana okuma `mission_instances`; dual-write migration sonrası kaldırılmalı.
+- Ödül yalnız başarılı DB transaction sonrası.
+- Baseline/target instance oluşturulurken sabitlenmeli.
 
 **Durum:** ⏳ Bekliyor
 
 ---
 
-## R23 — Gerçek screenshot/golden regresyon altyapısı
+## R27 — Privacy-safe telemetri ve diagnostics
 
-**Amaç:** Yazılı görsel test kurallarını çalışan CI alarmına dönüştürmek.
+**Mevcut:** Event modelleri, validator, wrapper'lar ve home architecture diagnostics alanları var.
 
-**Araç kararı:** Compose Preview Screenshot Testing, Roborazzi veya Paparazzi seçeneklerinden repo/AGP ile en uyumlu tek araç seçilecek; birden fazla araç aynı anda eklenmeyecek.
+**Eksik:**
 
-**Test matrisi:**
+1. `homePageViewed`, `homePageSwiped`, `homeSearchOpened` production call-site'ları.
+2. Settled page impression debounce ve navigation-source doğruluğu.
+3. Runtime event testleri; yalnız wrapper testleri yeterli değil.
+4. Consent off: remote gateway ve local aggregate write yok kanıtı.
+5. Diagnostics'te category/package/query/contact/file path bulunmadığını fixture testi.
+6. Dört cihaz health report karşılaştırması.
+7. Rate-limit prefs backup-excluded device runtime store'a taşınmalı.
 
-```text
-360dp phone
-411dp phone
-600dp tablet
-840dp tablet
-portrait / landscape
-light / dark / dynamic
-font 1.0 / 1.3 / 2.0
-TR / EN / pseudolocale
-Dashboard empty / normal / dense
-1 / 8 / 20 / 42 folder
-All Apps empty / search / long list
-```
-
-**Yapılacaklar:**
-
-1. Golden dosya konvansiyonu tanımla.
-2. CI verify task ekle.
-3. Golden güncelleme ayrı manuel komut olsun; CI otomatik golden yazmasın.
-4. Görsel fark artifact olarak yüklensin.
-5. En az HomeScreen, SmartDashboard, FolderTile, AllAppsDrawer, LayoutEditor ve Settings test edilsin.
-
-**Durum:** ⏳ Bekliyor
+**Durum:** 🚧 Altyapı var, runtime call-site eksik
 
 ---
 
-# 7. Faz D — Veri doğruluğu ve ürün anlamı
+## R28 — Macrobenchmark, baseline profile ve jank kanıtı
 
-## R24 — Uygulama boyutu verisini doğru adlandır veya doğru ölç
+**Mevcut:** folder search `remember` ve `spec.folders.size` mikro optimizasyonları var.
 
-**Amaç:** Base APK boyutunu gerçek uygulama depolaması gibi göstermemek.
+**Kalan:**
 
-**Değişecek dosyalar:**
+- Cold start.
+- Dashboard first compose.
+- Dashboard↔folder swipe.
+- All Apps tablet panel.
+- Search typing/results.
+- 100/500/1000 apps.
+- Baseline profile.
+- JankStats/Macrobenchmark artifact.
 
-- `PackageManagerHelper.kt`
-- App size worker/repository.
-- Boyut kullanan rapor ve sort ekranları.
-
-**Yapılacaklar:**
-
-1. Usage access mevcutsa `StorageStatsManager` ile app+data+cache kırılımı al.
-2. Permission yoksa yalnız base/split APK toplamı hesaplanabiliyorsa alanı `apkSizeBytes` olarak adlandır.
-3. Gerçek total bilinmiyorsa “Boyut bilinmiyor” göster; `0 B` gösterme.
-4. Sort mode yalnız karşılaştırılabilir doğru değerleri sıralasın.
-5. Split APK dosyalarını hesaba kat.
-
-**Durum:** ⏳ Bekliyor
+**Durum:** 🚧 Devam ediyor — ölçüm altyapısı yok
 
 ---
 
-## R25 — Görev XP, yıldız ve dijital yaşam skorunu ayır
+## R29 — Manifest ve permission hardening
 
-**Amaç:** Kullanıcı açısından üç farklı puan sistemini anlaşılır hale getirmek ve görev instance geçişini tamamlamak.
-
-**Yapılacaklar:**
-
-1. `TaskScore` kullanıcı metninde `XP` veya `Düzenleme puanı` olarak adlandırılsın.
-2. Digital Life score davranış kalitesi olarak 0-100 ölçeğinde kalsın.
-3. Stars yalnız tamamlanan görev başarısı olarak gösterilsin.
-4. Aynı kartta üç değeri açıklamasız yan yana koyma.
-5. `mission_instances` ana okuma kaynağına geçirilsin; dual-write geçici kodu migration sonrası kaldır.
-6. Dönem hedefi/baseline instance atanırken sabitlensin; görev ekranı her açılışta hedefi yeniden üretmesin.
-7. XP verme yalnız DB işlemi gerçekten başarıyla tamamlandıktan sonra olsun.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R26 — Manuel yedeği güvenli hale getir
-
-**Amaç:** Paket/kullanım profilini içeren JSON yedeğinin riskini azaltmak.
-
-**Yapılacaklar:**
-
-1. Export öncesi açık gizlilik uyarısı göster.
-2. Kullanıcıya iki seçenek sun:
-   - standart JSON,
-   - parola ile şifreli yedek.
-3. Şifreli formatta authenticated encryption kullan; salt/nonce dosyada, parola saklanmaz.
-4. Import önce schema/version/size doğrulaması yapsın.
-5. Import transaction planı oluştur; yarım restore durumunda rollback veya ayrıntılı sonuç ver.
-6. Notification text, contact, file path ve secrets export'a kesinlikle girmesin.
-7. Backup test fixture'ları v1-v6 ve bozuk dosya senaryolarını kapsasın.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-# 8. Faz E — Telemetri, performans ve güvenlik sertleştirme
-
-## R27 — Privacy-safe telemetri ve sağlık raporu
-
-**Amaç:** Yeni mimarinin çalışmasını kişisel veri toplamadan ölçmek.
-
-**Güvenli alanlar:**
-
-```text
-page_type
-device_class
-start_mode
-search_source_type
-result_count_bucket
-navigation_source
-layout_version
-catalog_load_state
-package_event_outcome
-```
-
-**Gönderilmeyecekler:**
-
-- Paket adı.
-- Uygulama/klasör/kategori adı veya ID.
-- Search query.
-- Kişi/file bilgisi.
-- Bildirim metni.
-
-**Yapılacaklar:**
-
-1. Recomposition duplicate event üretmesin.
-2. Package event success/failure yalnız outcome ve event type ile ölçülsün.
-3. Diagnostics'e Dashboard flag/pref/gerçek page planı ayrı yazılsın; no-op ayar kolay görülsün.
-4. Layout hidden sections raporda isim yerine güvenli sayısal özet veya enum listesi ürün kararına göre yazılsın.
-5. Consent off iken hiçbir event gönderilmesin.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R28 — Macrobenchmark, baseline profile ve jank bütçesi
-
-**Amaç:** Dashboard açılırken launcher akıcılığını ölçmek.
-
-**Senaryolar:**
-
-1. Cold start → home ready.
-2. Dashboard → folder swipe.
-3. Folder → Dashboard swipe.
-4. All Apps aç/kapat.
-5. Global search aç ve 5 karakter yaz.
-6. Tablet side panel.
-7. 40+ klasör.
-8. 4 widget.
-
-**Hedef metrikler:**
-
-- Startup baseline'a göre anlamlı kötüleşme yok.
-- Frame time/jank ölçülür.
-- Search P95 ölçülür.
-- Dashboard ilk compose ve tekrar dönüş ayrı ölçülür.
-
-**Yapılacaklar:**
-
-1. Benchmark modülü veya mevcut altyapıya Macrobenchmark ekle.
-2. Baseline profile üret.
-3. CI'da emulator benchmark nightly/manual çalışabilir; PR'da saf performans regression testleri çalışsın.
-4. `HomeScreen` recomposition sayısı debug ölçümünde kaydedilsin.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R29 — Manifest izin ve exported yüzey denetimi
-
-**Amaç:** Yalnız gerekli izinleri ve minimum dışa açık bileşeni bırakmak.
-
-**Yapılacaklar:**
-
-1. Package receiver `exported=false` doğrula.
-2. `QUERY_ALL_PACKAGES` kullanımını launcher temel işleviyle belgeleyen Play deklarasyon metni hazırla.
-3. READ_MEDIA izinlerinin gerçekten dosya arama akışında kullanılıp kullanılmadığını doğrula. SAF kullanılıyorsa gereksiz izinleri kaldır.
-4. `BIND_APPWIDGET` deklarasyonunun gerekli/etkili olup olmadığını doğrula; gereksizse kaldır.
-5. `REQUEST_DELETE_PACKAGES` yalnız uninstall özelliği varsa kalsın.
-6. Exported Activity intent input'ları sanitize edilsin.
-7. FileProvider path'leri yalnız gereken dizinleri açsın.
-8. Network security config yalnız kullanılan domainleri içersin; remote katalog domaini yeni mimariye göre güncellensin.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-# 9. Faz F — Kontrollü Dashboard rollout ve temizlik
-
-## R30 — Dört cihaz kanıtlı kontrollü Dashboard rollout
-
-**Ön koşul:** R00-R29 içinden P0/P1 olarak işaretli tüm görevler tamamlanmış olmalı.
-
-**Rollout sırası:**
-
-1. Developer-only flag.
-2. İç test kullanıcıları.
-3. Dört cihaz matrisi.
-4. Küçük yüzde rollout veya beta.
-5. Default on.
-
-**Cihaz matrisi:**
-
-- Küçük telefon.
-- Standart günlük telefon.
-- Büyük telefon/izinleri eksik cihaz.
-- 7-10 inç tablet.
-
-**Zorunlu test:**
-
-- Temiz kurulum.
-- Mevcut sürümden upgrade.
-- Dashboard aç/kapat.
-- Start mode üç seçenek.
-- Search top/bottom.
-- Folder reorder/page size.
-- Widget ekle/sil.
-- Update olan üçüncü taraf uygulamanın kategori/favori/dock bilgisini koruma.
-- Gerçek app kaldırma cleanup.
-- TalkBack/font %200.
-- Açık/koyu tema.
-- 24 saat kullanım.
-
-**Rollback:** Safe mode yalnız render flag'ini eski yola almalı; kullanıcı verisi veya yeni layout preference'ı silinmemeli.
-
-**Durum:** ⏳ Bekliyor
-
----
-
-## R31 — Legacy ana ekran ve preference temizliği
-
-**Amaç:** Rollout doğrulandıktan sonra iki paralel kod yolu taşımamak.
-
-**Silinecek/deprecate edilecekler:**
-
-- Legacy folder-only render bloğu.
-- `dashboardEnabledForPager=false` geçiş kodu.
-- Ham `lastHomePage` yazımı.
-- Legacy search position write yolu.
-- Duplicate Dashboard component çağrıları.
-- Kullanılmayan `homePagerPageCount` holder'ları.
-- Eski focus bypass branch'leri.
-- `delay(50)` ve yapay state refresh kodları.
-- Migration süresi dolmuş preference okuma köprüleri.
-
-**Kabul kriteri:** Üretimde tek ana ekran render yolu, tek layout kaynağı ve tek semantic page persistence bulunur.
+- Package receiver exported false.
+- QUERY_ALL_PACKAGES Play declaration ve minimal queries review.
+- Media permissions özellik kapalıysa istenmemeli.
+- Notification listener ve contacts açıklaması gerçek davranışla eşleşmeli.
+- FileProvider path en dar alana indirilmeli.
+- Backup/service/exported component matrix testi.
 
 **Durum:** ⏳ Bekliyor
 
@@ -1350,35 +875,38 @@ package_event_outcome
 
 ## R32 — Nihai release evidence paketi
 
-**Amaç:** “Derlendi” yerine kanıtlanmış yayın kararı üretmek.
-
-**Çıktılar:**
+**Zorunlu artifact'ler:**
 
 ```text
-build/test reports
+compile/build report
+unit test report
 lint report
-detekt report
-ktlint report
+detekt/format report
+runtime-consumer contract report
 Room migration report
+backup allowlist/secret test report
+permission revoke test report
 screenshot diff report
-benchmark report
+benchmark/baseline report
 four-device diagnostics
 upgrade test report
 backup/restore matrix
 Play permission declaration
 privacy/data safety checklist
+rollout/rollback evidence
 ```
 
 **Yayın kapısı:**
 
 - P0 açık bulgu: 0.
-- P1 açık bulgu: 0 veya belgelenmiş release exception.
+- P1 açık bulgu: 0 veya imzalı release exception.
 - Crash/ANR kritik regresyon: 0.
 - Upgrade sırasında kategori/favori/dock kaybı: 0.
-- Görsel kritik kırılma: 0.
-- Secret backup testi: başarılı.
-- Search source fairness testleri: başarılı.
-- Dashboard feature flag rollback: başarılı.
+- Backup çıktısında secret/private-history: 0.
+- Visible no-op setting: 0.
+- Permission revoke sonrası stale contact/file result: 0.
+- Dashboard flag/safe-mode gerçek runtime testi: başarılı.
+- GitHub Actions status/check: yeşil.
 
 **Durum:** ⏳ Bekliyor
 
@@ -1388,127 +916,164 @@ privacy/data safety checklist
 
 | Dosya | Ana görev |
 |---|---|
-| `PackageChangeReceiver.kt` | Yalnız event adapter; replacing policy ve coordinator çağrısı |
-| `LauncherActivity.kt` | Dynamic package receiver kaldırma; tema kaynağı düzeltme |
-| `PackageEventCoordinator.kt` | Tek paket mutation akışı |
-| `AppDao.kt` | Insert-only ve metadata update ayrımı; row count |
-| `AppRepository.kt` | Yazma hatalarını üst katmana taşıma |
-| `CategoryDao.kt` | Transaction uyumlu kategori silme |
-| `SearchRepository.kt` | Kaynak kotası, atomik bootstrap, açık hata sözleşmesi |
-| `AppNotificationListenerService.kt` | Tek summary state, reconnect rebuild, postTime/importance |
-| `LauncherViewModel.kt` | Seri notification collector, gerçek load state, suspend reconcile, query ayrımı |
-| `HomeScreen.kt` | Reaktif layout/preferences, orchestration sadeleştirme, gerçek feature flag |
-| `SmartDashboardPage.kt` | Tekil section renderer, gerçek visibility policy |
-| `HomeLayoutEditorScreen.kt` | Renderer ile birebir section sözleşmesi, repository save |
-| `HomeLayoutPrefs.kt` | Tek layout kaynağı ve migration |
-| `SettingsHomeScreenSection.kt` | No-op kontrolü engelleme, layout repository kullanımı, string kaynakları |
-| `HomePagerHost.kt` | Navigation lock'a uyan accessibility actions |
-| `PackageManagerHelper.kt` | Gerçek/etiketlenmiş app size |
-| `AppDatabaseService.kt` | Immutable, hash doğrulamalı ve timeout'lu katalog |
-| `backup_rules.xml` | Legacy Android secret exclusion |
-| `data_extraction_rules.xml` | Modern backup parity |
-| `AndroidManifest.xml` | Exported/permission minimizasyonu |
-| `android-ci.yml` | Bloklayıcı kalite kapısı |
-| `android-qa.yml` | JDK standardı; non-blocking kalite kontrolünü kaldırma |
-| `build.gradle.kts` | `abortOnError=true`, screenshot/benchmark bağımlılıkları |
+| `PackageChangeReceiver.kt` | replacing, eligibility, tek coordinator |
+| `LauncherActivity.kt` | dynamic receiver kaldırma, tema |
+| `AndroidManifest.xml` | receiver exported, izin hardening |
+| `PackageManagerHelper.kt` | launchable eligibility, doğru app size |
+| `AppDao.kt` | insert/update ayrımı, row count |
+| `AppRepository.kt` | typed mutation results |
+| `CategoryDao.kt` | transaction-safe category mutation |
+| `SearchDocument.kt` | unique natural key, safe SourceType |
+| `SearchDao.kt` | atomic upsert/rebuild |
+| `SearchRepository.kt` | fairness, preference consumer, permission eligibility |
+| `ContactsIndexer.kt` | lifecycle, SupervisorJob, batch query, revoke cleanup |
+| `FilesIndexer.kt` | per-source permission/state, fair quotas |
+| `AppNotificationListenerService.kt` | immutable summary, reconnect |
+| `LauncherViewModel.kt` | load state, serial writes, query split |
+| `HomeScreen.kt` | rollout/adaptive runtime bağlantısı, typed state |
+| `HomeAdaptiveLayoutPolicy.kt` | üretim tek breakpoint kaynağı |
+| `HomePagerRolloutPolicy.kt` | route-level production consumer |
+| `HomePagePrefs.kt` | deferred migration on not-ready catalog |
+| `HomeLayoutPrefs.kt` | tek reactive layout source |
+| `HomeLayoutEditorScreen.kt` | renderer ile birebir contract |
+| `SmartDashboardPage.kt` | item-level order/visibility |
+| `SearchSettingsScreen.kt` | no-op ayarları implement/remove |
+| `ContextualPermissionDialog.kt` | doğru disclosure ve partial grants |
+| `AppDatabaseService.kt` | immutable/versioned/validated catalog |
+| `AppFirebaseMessagingService.kt` | delivery contract/token lifecycle |
+| `BackupManager.kt` | validate-plan-transaction restore |
+| `backup_rules.xml` | allowlist/secret exclusion |
+| `data_extraction_rules.xml` | modern parity |
+| `AppPrefs.kt` | prefs partition/migration |
+| `TelemetryManager.kt` | device-local limiter, consent tests |
+| `DiagnosticsReportManager.kt` | privacy-safe evidence |
+| workflows/Gradle | gerçek bloklayıcı quality gate |
 
 ---
 
 # 11. Yasak desenler
 
-Aşağıdaki desenler yeni kodda kullanılmayacaktır:
-
-1. `delay(...)` ile Room Flow veya UI refresh beklemek.
-2. Mutasyon exception'ını loglayıp başarılı dönmek.
-3. Aynı Android olayını iki receiver ile işlemek.
-4. Mevcut satırı güncellemek için `INSERT IGNORE` kullanmak.
-5. Aynı ayarı AppPrefs ve HomeLayoutPrefs içinde aktif olarak birlikte tutmak.
-6. Composable içinde onlarca SharedPreferences listener yönetmek.
-7. Kullanıcıya no-op toggle göstermek.
-8. Editörde sunulan bir ayarı renderer'da yok saymak.
-9. Tek global search limitinde app-first sıralama ile kaynakları aç bırakmak.
-10. `deleteAll → insertAll` işlemini transaction dışı yapmak.
-11. Flow `onEach` içinde kontrolsüz yeni `viewModelScope.launch` açmak.
-12. Tema token'ı yerine rastgele `Color.White` kullanmak.
-13. UI metnini Kotlin dosyasında hardcode etmek.
-14. CI'da `continue-on-error` ile kalite kontrolü yapmak.
-15. Release lint için `abortOnError=false` kullanmak.
-16. Mutable branch dosyasını doğrulamasız üretim kataloğu yapmak.
-17. Base APK boyutunu gerçek uygulama boyutu diye sunmak.
-18. Gerçek cihaz kriteri eksikken roadmap maddesini tamamlandı işaretlemek.
+1. `delay(...)` ile Room/UI refresh beklemek.
+2. Exception loglayıp başarılı dönmek.
+3. Aynı Android event'ini iki receiver ile işlemek.
+4. Update için `INSERT IGNORE` kullanmak.
+5. Aynı setting'i iki preference dosyasında aktif tutmak.
+6. Görünür ayar ekleyip runtime consumer eklememek.
+7. Policy/helper ekleyip yalnız testte kullanmak.
+8. Event schema ekleyip production call-site eklememek.
+9. Roadmap yorumunu CI/runtime kanıtı saymak.
+10. Delete-all→insert-all işlemini transaction dışında yapmak.
+11. Permission revoke edildiğinde stale private index tutmak.
+12. Auto Backup'ta geniş include + eksik denylist kullanmak.
+13. Secret'ı genel AppPrefs içinde saklamak.
+14. Mutable branch remote dosyasını doğrulamasız uygulamak.
+15. Source fairness olmadan tek global limit kullanmak.
+16. Flow collector içinde kontrolsüz nested `viewModelScope.launch` açmak.
+17. `Color.White` ile semantic tema kontratını bypass etmek.
+18. Hardcode kullanıcı metni eklemek.
+19. CI'da `continue-on-error` ile kalite kontrolü yapmak.
+20. Gerçek cihaz kanıtı yokken `✅ Tamamlandı` yazmak.
 
 ---
 
 # 12. Definition of Done
 
-Bu roadmap yalnız aşağıdaki koşulların tamamı sağlandığında bitmiş sayılır:
+Bu roadmap yalnız aşağıdakilerin tamamında bitmiş sayılır:
 
-1. Uygulama update sırasında kullanıcı verisi silinmez.
-2. Gerçek uninstall bütün referansları temizler.
-3. Paket event'i tek coordinator tarafından işlenir.
-4. Repository mutasyon hataları üst katmana ulaşır.
-5. Kategori silme atomiktir.
-6. Room ve search index tutarlılığı repair edilebilir ve testlidir.
-7. Dashboard ayarı gerçek page planını anında değiştirir veya kullanıcıya sunulmaz.
-8. Layout editor visibility/order gerçek renderer ile birebirdir.
-9. Search zone tek preference kaynağına sahiptir.
-10. Arama kişi/dosya/ayar/kategori kaynaklarını app sonuçları altında kaybetmez.
-11. Bildirim reconnect ve hızlı emisyon testleri geçer.
-12. İlk yükleme gerçek Loading/Empty/Ready/Failed state'ine sahiptir.
-13. CI assemble, test, lint, detekt ve ktlint için bloklayıcıdır.
-14. Android 11 ve altı dahil secret backup dışıdır.
-15. Remote katalog immutable ve hash doğrulamalıdır.
-16. HomeScreen typed state üzerinden çalışır ve lifecycle-aware toplama kullanır.
-17. Global search ve drawer query bağımsızdır.
-18. Açık/koyu tema ve semantic renkler tutarlıdır.
-19. TR/EN/pseudolocale testleri geçer.
-20. Screenshot matrix kritik fark üretmez.
-21. App size doğru veya doğru biçimde “APK boyutu/bilinmiyor” olarak etiketlidir.
-22. XP, yıldız ve dijital yaşam skoru kullanıcıya net anlatılır.
-23. Privacy-safe telemetri query/paket/kişi/file verisi göndermez.
-24. Dört cihaz upgrade ve 24 saat kullanım testi geçer.
-25. Dashboard rollout geri alınabilir.
-26. Legacy paralel render yolu temizlenmiştir.
-27. Release evidence paketi repoda veya workflow artifact'lerinde mevcuttur.
+1. Update sırasında kullanıcı verisi silinmez.
+2. Uninstall bütün referansları temizler.
+3. Package event tek, non-exported coordinator yolundan geçer.
+4. Non-launchable/hidden package launcher kataloğuna girmez.
+5. Repository hataları üst katmana ulaşır.
+6. Category mutation transaction'dır.
+7. DeepSeek/API secrets backup dışında ve Keystore-backed'tır.
+8. Contact actions, location cache, crash logs, FCM token ve device state Auto Backup dışında kalır.
+9. CI compile/test/lint/detekt/format/runtime-consumer adımlarını bloklar.
+10. Dashboard toggle ve rollout flag gerçek page planını değiştirir.
+11. Safe mode veri kaybetmeden legacy yola döner.
+12. Adaptive policy HomeScreen, panel, dock/search ve drag tarafından gerçekten kullanılır.
+13. Layout editor ve renderer birebirdir.
+14. Search zone tek kaynaktır.
+15. Bütün görünür search ayarları runtime'da çalışır veya kaldırılmıştır.
+16. Search fairness kişi/dosya/ayar kaynaklarını aç bırakmaz.
+17. Search rebuild atomik ve natural-key unique'tir.
+18. Permission revoke sonrası stale contact/file result yoktur.
+19. Contact observer restart ve hata sonrası çalışmaya devam eder.
+20. File index partial permissions ve fair source quotas ile çalışır.
+21. Notification reconnect/ordering/moving-window testleri geçer.
+22. Catalog load typed state ve page migration readiness testleri geçer.
+23. Timezone/midnight/Monday rollover doğru çalışır.
+24. Remote catalog immutable, versioned, validated ve rollback'lidir.
+25. FCM update delivery ya uçtan uca çalışır ya ürün kodundan kaldırılmıştır.
+26. Backup import parse/validate tamamlanmadan veri silmez.
+27. Home page telemetry production call-site'lara bağlıdır ve consent-off no-op kanıtlıdır.
+28. Diagnostics kişisel identifier taşımaz.
+29. Screenshot matrisi kritik fark üretmez.
+30. Benchmark ve baseline profile artifact'i vardır.
+31. App size doğru veya doğru şekilde `APK boyutu/Bilinmiyor` etiketlidir.
+32. XP/yıldız/Digital Life kullanıcıya net anlatılır.
+33. Dört cihaz upgrade, 24 saat kullanım ve rollout rollback testi geçer.
+34. GitHub Actions sonucu yeşildir.
+35. Release evidence paketi saklanmıştır.
 
 ---
 
-# 13. Uygulama sırası — kısa liste
+# 13. Güncel uygulama sırası
 
 ```text
-R00  Regresyon bazını kilitle
-R01  Replacing paket olayını düzelt
-R02  Tek receiver/coordinator
-R03  Metadata update yolunu düzelt
-R04  Repository hata sözleşmesi
-R05  Kategori transaction
-R06  Paket referans cleanup
-R07  Secret/backup güvenliği
+R00  Regresyon ve kanıt sözleşmesi
+R01  Replacing + katalog eligibility
+R02  Tek non-exported receiver/coordinator
+R03  Insert/update ayrımı
+R04  Repository typed error contract
+R05  Category transaction
+R06  Package reference cleanup
+R07  Secret store + backup allowlist
 R08  Bloklayıcı CI
-R09  Dashboard no-op kontrolünü kaldır
-R10  Tek HomeLayout kaynağı
+R09  Dashboard runtime gate
+R10  Tek HomeLayout source
 R11  Editor-renderer birebirliği
-R12  Search fairness + atomic index
-R13  Notification summary + seri yazım
-R14  Catalog load/reconcile state machine
-R15  Güvenli remote katalog
-R16  HomePreferences + HomeUiState
+R12  Search fairness + atomic unique index
+R33  Search setting runtime contract
+R34  Permission-aware source lifecycle
+R35  File index fairness
+R13  Notification summary/order/window
+R14  CatalogLoadState + safe migration
+R36  Timezone/period rollover
+R15  Secure remote catalog
+R37  FCM delivery contract
+R16  Typed HomePreferences/HomeUiState
 R17  HomeScreen parçalama
-R18  Search query ayrımı
+R18  Query ayrımı
 R19  Türkçe normalize/rank
-R20  Adaptive layout
-R21  Tema ve renk token'ları
-R22  Lokalizasyon + erişilebilirlik
-R23  Screenshot testleri
+R20  Adaptive runtime integration
+R21  Tema/semantic colors
+R22  Lokalizasyon/a11y/disclosure
+R23  Screenshot tests
 R24  Doğru app size
-R25  Görev/XP/yıldız modeli
-R26  Güvenli manuel backup
-R27  Telemetri/diagnostics
-R28  Benchmark/baseline profile
-R29  Manifest/izin sertleştirme
-R30  Kontrollü Dashboard rollout
-R31  Legacy temizlik
-R32  Nihai release evidence
+R25  Mission/XP/star modeli
+R26  Safe manual backup/import
+R27  Telemetry/diagnostics runtime
+R28  Benchmark/baseline
+R29  Manifest/permission hardening
+R30  Controlled rollout
+R31  Legacy cleanup
+R32  Release evidence
 ```
 
-**Son ürün kararı:** AppOrganizer'ın avantajı özellik sayısı değil; kullanıcı düzenini ve alışkanlık verisini bozmadan çalışan akıllı launcher olmasıdır. Veri kaybı veya etkisiz ayar varken yeni kart, yeni animasyon veya yeni öneri sistemi eklemek ürünü büyütmez; yalnız teknik borcu büyütür.
+---
+
+# 14. Hemen başlanacak görev
+
+İlk uygulama commit'i **R00** olmalıdır. Ardından kullanıcı verisi ve güvenlik riski nedeniyle sırasıyla **R01–R08** tamamlanmalıdır.
+
+P20–P25 roadmap notlarının mevcut “kısmen tamamlandı” ifadeleri bu belgedeki runtime kanıt kurallarına göre yeniden değerlendirilmelidir. Özellikle:
+
+- P20: policy var, HomeScreen runtime bağlantısı yok.
+- P21: event schema/wrapper var, page event production call-site yok.
+- P22: diagnostics kodu var, gerçek cihaz ve privacy output kanıtı yok.
+- P23: mikro optimizasyon var, benchmark yok.
+- P24: preference/policy var, Dashboard runtime gate yok.
+- P25: ham index write temizliği var, rollout sonrası legacy cleanup eksik.
+
+**Net ürün kararı:** Şu anda Dashboard rollout açılmamalıdır. Önce temel veri bütünlüğü, backup güvenliği, no-op setting'ler ve permission revoke davranışı düzeltilmelidir.
