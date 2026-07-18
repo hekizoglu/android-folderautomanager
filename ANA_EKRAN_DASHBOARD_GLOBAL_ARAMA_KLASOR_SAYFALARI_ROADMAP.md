@@ -604,7 +604,7 @@ internal fun FolderGridPage(
 
 **Bağımlılıklar:** P01, P03.
 
-**Durum:** ⏳ Bekliyor
+**Durum:** ✅ Tamamlandı — Döngü P04 — commit: 1841ab2 — tarih: 2026-07-18 — Not: FolderGridPage pager-state'siz saf bileşen (columnsCount parametre, graphicsLayer efekti FolderPager'da, globalStartIndex drag index). Dosya adı HomeScreenFolderPager.kt korundu — P05'te FolderGridPage.kt'ye ayrılabilir. pageCount tek kaynak: HomeLayoutMath.
 
 ---
 
