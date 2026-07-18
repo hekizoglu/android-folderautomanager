@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## Akilli Nabiz Dongu U00 - 2026-07-18 - Kart yerlesim birlestirme
+
+**Yapilanlar:** HomeIntelligenceCardsRow: Gorevler+Dijital Yasam kartlari tek duzen bileseninde — genis ekranda weight(1f) esit yan yana, dar ekran (<360dp) veya buyuk fontta (>=1.3) alt alta, tek kart tam genislik, ikisi kapaliysa satir tamamen gizli (klasorlere alan); tablet 640dp max ortalanir; bosluklar tek sabit setinde. Kart ic tasarimlari degismedi. 39 test yesil.
+
+**Bug:** Yok. Bugun Yuklendi + serit ayri bloklar olarak kaldi (U00 kapsami Gorevler+Dijital Yasam cifti — dogru karar).
+
+**Sonraki:** U01 — LauncherViewModel sorumluluk sadelestirme (zincir devam).
+
 ## Akilli Nabiz Dongu T05 - 2026-07-18 - Akilli Nabiz ayarlari + T FAZ KAPANISI
 
 **Yapilanlar:** SmartTickerSettingsScreen (yeni rota SETTINGS_SMART_TICKER): master toggle (KEY_SMART_TICKER_ENABLED migration'li), 7 kullanici dostu icerik turu anahtari (gorev turleri tek satirda gruplu), auto-advance + 5-20sn slider, hassas bilgi toggle (varsayilan kapali), sessiz saat goster/kaldir. LauncherViewModel tur+hassasiyet filtresi ve reaktif prefs revizyonu. 16 yeni test. FAZ KAPANISI: tam testDebugUnitTest + assembleDebug yesil, v1.3.87 (110). AKILLI NABIZ SERIDI FAZI (T) TAMAM.

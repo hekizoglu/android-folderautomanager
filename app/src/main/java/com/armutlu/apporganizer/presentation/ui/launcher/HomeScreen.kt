@@ -612,59 +612,45 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(top = if (compactClock) 16.dp else 32.dp, bottom = 8.dp)
             )
-            // Görevler + Dijital Yaşam Skoru — aynı boyut/stilde iki bağımsız kart, yan yana
-            // (Görevler solda, Skor sağda). Eskiden Görevler ayrı bir chip, Skor ticker metnine
-            // gömülü bir rozetti (ROADMAP #28) — artık simetrik bir çift oluşturuyorlar.
-            if (missionsEnabled || (digitalLifeCardVisible && homePulseSummary != null)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    if (missionsEnabled) {
-                        // Dongu M07: statik "Bugünün görevleri" chip'i yerine canli HomeMissionCard —
-                        // HomeIntelligenceCoordinator.state.mission dilimini (LauncherViewModel.homeMissionSummary)
-                        // gosterir; tıklama davranışı (Routes.MISSIONS) korunur.
-                        HomeMissionCard(
-                            summary = homeMissionSummary,
-                            onClick = {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }
-                            },
-                            modifier = Modifier.weight(1f),
-                        )
+            // Görevler + Dijital Yaşam — Döngü U00: tek yerleşim bileşeninde birleşti
+            // (HomeIntelligenceCardsRow.kt). Eskiden bu iki kart burada ayrı Row bloğunda
+            // çağrılıyordu (bkz. git geçmişi); artık görünürlük/genişlik/yükseklik kararları
+            // tek yerde, HomeScreen sadece state + click handler sağlıyor (ROADMAP U00).
+            HomeIntelligenceCardsRow(
+                missionsEnabled = missionsEnabled,
+                mission = homeMissionSummary,
+                digitalLifeCardVisible = digitalLifeCardVisible,
+                pulse = homePulseSummary,
+                onMissionClick = {
+                    // Dongu M07: statik "Bugünün görevleri" chip'i yerine canli HomeMissionCard —
+                    // HomeIntelligenceCoordinator.state.mission dilimini (LauncherViewModel.homeMissionSummary)
+                    // gosterir; tıklama davranışı (Routes.MISSIONS) korunur.
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                    if (digitalLifeCardVisible) {
-                        DigitalLifeCard(
-                            summary = homePulseSummary,
-                            onClick = {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }
-                            },
-                            modifier = Modifier.weight(1f),
-                            onReasonAction = { action ->
-                                // Döngü D04: skor nedenine özel çözüm rotası — PulseActionRouter
-                                // TEK route kaynağı, burada sadece Intent'e çevrilir (M05 deseniyle aynı).
-                                val target = PulseActionRouter.resolve(action)
-                                if (target is PulseActionRouter.RouteTarget.Screen) {
-                                    val intent = Intent(context, MainActivity::class.java).apply {
-                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
-                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    }
-                                    runCatching { context.startActivity(intent) }
-                                }
-                            },
-                        )
+                    runCatching { context.startActivity(intent) }
+                },
+                onPulseClick = {
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-                }
-            }
+                    runCatching { context.startActivity(intent) }
+                },
+                onPulseReasonAction = { action ->
+                    // Döngü D04: skor nedenine özel çözüm rotası — PulseActionRouter
+                    // TEK route kaynağı, burada sadece Intent'e çevrilir (M05 deseniyle aynı).
+                    val target = PulseActionRouter.resolve(action)
+                    if (target is PulseActionRouter.RouteTarget.Screen) {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    }
+                },
+            )
 
             // "Bugün Yüklenenler" kompakt girişi (EX01, kullanıcı talebi) — bugün yüklenmiş
             // uygulama YOKSA veya ayar kapalıysa tamamen gizli. Dokununca çekmece yükleme
