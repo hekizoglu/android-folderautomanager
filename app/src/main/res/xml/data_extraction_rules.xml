@@ -8,7 +8,11 @@
         <exclude domain="file" path="logs" />
         <exclude domain="file" path="temp" />
         <exclude domain="file" path="crash_log.txt" />
+        <!-- F1 denetimi (P0): DeepSeek API anahtari artik ayri "deepseek_prefs" dosyasinda
+             (AppPrefs.kt migrateSensitivePrefsIfNeeded) — dosya adi burada dogrulandi. -->
         <exclude domain="sharedpref" path="deepseek_prefs.xml" />
+        <!-- FCM token cihaza ozeldir, ayri "device_prefs" dosyasinda tutulur. -->
+        <exclude domain="sharedpref" path="device_prefs.xml" />
         <!-- Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — baska
              cihazda veya yeniden kurulumda gecersizdir (F21, D261 denetimi). -->
         <exclude domain="sharedpref" path="widget_prefs.xml" />
@@ -25,6 +29,7 @@
         <include domain="database" path="." />
         <include domain="sharedpref" path="." />
         <exclude domain="sharedpref" path="deepseek_prefs.xml" />
+        <exclude domain="sharedpref" path="device_prefs.xml" />
         <exclude domain="sharedpref" path="widget_prefs.xml" />
         <exclude domain="file" path="install_marker" />
         <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si cihazlar arasi aktarima dahil edilmez -->

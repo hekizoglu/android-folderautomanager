@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F1 - 2026-07-19 - DeepSeek anahtari yedek sizintisi kapatildi (P0)
+
+**Yapilanlar:** IDDIA DOGRULANDI (harici denetim hakliydi): anahtar app_organizer_prefs'te duz metindi, backup kurali var olmayan dosyayi haric tutuyordu. FIX: anahtar ayri "deepseek_prefs" dosyasina (tek seferlik migrateSensitivePrefsIfNeeded — eski deger silinir), FCM token ayri "device_prefs" dosyasina; her iki dosya backup_rules.xml + data_extraction_rules.xml'de (cloud-backup ve device-transfer ikisinde de) haric; tum okumalar merkezi AppPrefs.getDeepSeekApiKey uzerinden — otomatik kapsandi. Migration testleri yesil. NOT: Codex paralel calisirken tamamlandi — sadece F1 dosyalari commit'lendi, java kill SOP'u devre disi birakildi.
+
+**Bug:** Yukaridaki P0. EncryptedSharedPreferences eklenmedi (security-crypto bagimliligi projede yok — yeni bagimlilik riski; ayri dosya + backup exclusion ilk savunma, S4'te degerlendirilebilir).
+
+**Sonraki:** F2 biyometrik route guard (Codex bitince).
+
 ## A3-EMU - 2026-07-19 - Telefon emulatoru cihaz dogrulamasi (2/4 matris)
 
 **Yapilanlar:** Pixel6_AOSP33 emulatorunde (telefon sinifi, v1.4.0) Fable KONTROLLU kosum: rotasyon+swipe 6x stres (EX03 regresyon kontrolu) + missions/settings/home gezinme — kayitli logcat kanitiyla 0 CRASH. P20/P21/P24/P25 sari notlarina "2/4 cihaz dogrulandi" guncellemesi islendi. NOT: emulator-tester agent'inin ilk raporu GECERSIZDI (10-27 crash iddialari dosya kaydi olmadan, halusinasyonlu dosya atiflari; hicbir dosyayi da duzenlememis) — iddialar Fable'in kontrollu tekrarinda dogrulanAMAdi, kod temiz.

@@ -14,6 +14,11 @@
     <!-- Widget ID'leri cihaza/kuruluma ozeldir (AppWidgetManager tarafindan uretilir) — baska
          cihazda veya yeniden kurulumda gecersizdir (F21, D261 denetimi). -->
     <exclude domain="sharedpref" path="widget_prefs.xml" />
+    <!-- F1 denetimi (P0): DeepSeek API anahtari ve FCM token ayri prefs dosyalarina tasindi
+         (AppPrefs.kt migrateSensitivePrefsIfNeeded). Anahtar sizintisini onlemek icin ikisi de
+         Auto Backup'tan haric tutulur; FCM token zaten cihaza ozeldir. -->
+    <exclude domain="sharedpref" path="deepseek_prefs.xml" />
+    <exclude domain="sharedpref" path="device_prefs.xml" />
     <!-- Gizlilik: bildirim metni (apps.notificationText) icerebilen Room DB'si yedeğe dahil edilmez -->
     <exclude domain="database" path="app_organizer_db" />
     <exclude domain="database" path="app_organizer_db-wal" />

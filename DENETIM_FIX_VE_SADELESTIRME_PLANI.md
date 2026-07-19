@@ -4,10 +4,7 @@
 
 ## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
 
-### F1 — DeepSeek anahtarı yedek sızıntısı (P0, YAYIN ENGELLEYİCİ ADAYI)
-İddia: anahtar `app_organizer_prefs`'te düz metin; backup kuralı var olmayan `deepseek_prefs.xml`'i hariç tutuyor; FCM token da yedeğe giriyor.
-Yapılacak: DOĞRULA (grep: deepseek_api_key nerede, backup_rules/data_extraction_rules içeriği) → anahtarı ayrı `deepseek_prefs` dosyasına migrate et (tek seferlik, eski değer silinir; EncryptedSharedPreferences mümkünse tercih — bağımlılık matrisi kontrol), FCM token'ı da yedek dışına al, backup kurallarını GERÇEK dosya adlarıyla düzelt, kural dosyalarına test/dokümantasyon.
-Durum: ⏳ Bekliyor
+> ✅ **F1 tamamlandı (2026-07-19)** — iddia doğrulandı ve kapatıldı; HISTORY.md'de.
 
 ### F2 — Biyometrik ayarlar kilidi route bypass (P0)
 İddia: kilit yalnız SettingsScreen'de; `settings_*` alt rotaları whitelist'te ve korumasız; kilit açılınca SettingsLockSession.unlocked sıfırlanmıyor.

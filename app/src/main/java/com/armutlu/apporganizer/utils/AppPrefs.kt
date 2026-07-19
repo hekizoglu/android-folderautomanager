@@ -917,18 +917,63 @@ object AppPrefs {
         prefs(context).edit().remove(LEGACY_KEY_FOLDER_BLUR).apply()
 
     // DeepSeek API anahtari — LLM fallback kategorize icin
+    // F1 denetimi (P0): anahtar eskiden ana app_organizer_prefs dosyasindaydi ve Auto Backup'a
+    // dahildi (data_extraction_rules.xml'deki exclusion yanlis dosya adini hedefliyordu — bkz.
+    // fix). Artik AYRI "deepseek_prefs" dosyasinda tutuluyor, o dosya backup/device-transfer
+    // kurallarindan tamamen haric tutuluyor. migrateSensitivePrefsIfNeeded() eski degeri tasir.
+    private const val DEEPSEEK_PREFS_NAME = "deepseek_prefs"
     const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
-    fun getDeepSeekApiKey(context: Context): String =
-        prefs(context).getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
-    fun setDeepSeekApiKey(context: Context, key: String) =
-        prefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, key.trim()).apply()
+    private fun deepSeekPrefs(context: Context) =
+        context.getSharedPreferences(DEEPSEEK_PREFS_NAME, Context.MODE_PRIVATE)
 
-    // FCM token — push bildirim için sunucu kaydı
+    fun getDeepSeekApiKey(context: Context): String {
+        migrateSensitivePrefsIfNeeded(context)
+        return deepSeekPrefs(context).getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
+    }
+    fun setDeepSeekApiKey(context: Context, key: String) {
+        migrateSensitivePrefsIfNeeded(context)
+        deepSeekPrefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, key.trim()).apply()
+    }
+
+    // FCM token — push bildirim için sunucu kaydı. Cihaza ozeldir, yedekten donunce zaten
+    // gecersizdir; ayni F1 denetimiyle ayri "device_prefs" dosyasina tasindi ve haric tutuldu.
+    private const val DEVICE_PREFS_NAME = "device_prefs"
     const val KEY_FCM_TOKEN = "fcm_token"
-    fun getFcmToken(context: Context): String =
-        prefs(context).getString(KEY_FCM_TOKEN, "") ?: ""
-    fun setFcmToken(context: Context, token: String) =
-        prefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
+    private fun devicePrefs(context: Context) =
+        context.getSharedPreferences(DEVICE_PREFS_NAME, Context.MODE_PRIVATE)
+
+    fun getFcmToken(context: Context): String {
+        migrateSensitivePrefsIfNeeded(context)
+        return devicePrefs(context).getString(KEY_FCM_TOKEN, "") ?: ""
+    }
+    fun setFcmToken(context: Context, token: String) {
+        migrateSensitivePrefsIfNeeded(context)
+        devicePrefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
+    }
+
+    // Tek seferlik migration bayragi: eski app_organizer_prefs icindeki deepseek_api_key ve
+    // fcm_token degerlerini yeni ayri dosyalara tasir, eskisini siler. Idempotent — bayrak
+    // set edildikten sonra tekrar calismaz.
+    private const val KEY_SENSITIVE_PREFS_MIGRATED = "sensitive_prefs_migrated_v1"
+    private fun migrateSensitivePrefsIfNeeded(context: Context) {
+        val main = prefs(context)
+        if (main.getBoolean(KEY_SENSITIVE_PREFS_MIGRATED, false)) return
+
+        val legacyKey = main.getString(KEY_DEEPSEEK_API_KEY, null)
+        if (!legacyKey.isNullOrBlank()) {
+            deepSeekPrefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, legacyKey).apply()
+        }
+        val legacyToken = main.getString(KEY_FCM_TOKEN, null)
+        if (!legacyToken.isNullOrBlank()) {
+            devicePrefs(context).edit().putString(KEY_FCM_TOKEN, legacyToken).apply()
+        }
+
+        main.edit()
+            .remove(KEY_DEEPSEEK_API_KEY)
+            .remove(KEY_FCM_TOKEN)
+            .putBoolean(KEY_SENSITIVE_PREFS_MIGRATED, true)
+            .apply()
+    }
 
     // Çift tıkla arama — HomeScreen boş alana çift tıklayınca AllAppsDrawer açılır + search odaklanır
     const val KEY_DOUBLE_TAP_SEARCH = "double_tap_search"
