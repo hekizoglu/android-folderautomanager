@@ -4,12 +4,7 @@
 
 ## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
 
-> ✅ **F1 + F2 + F3 + F4 + F5 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
-
-### F6 — Çekmece kategori onClick + Firebase arama event düzeltmesi (P1, küçük)
-İddia A: arama sonucundaki kategori satırı tıklanabilir görünüyor ama onClick boş → klasörü açsın.
-İddia B: arama eventi her sorgu değişiminde tetikleniyor + sourceMix=APPS_ONLY yanlış → debounce sonrası/sonuç açılınca tek event, gerçek kaynak karışımı.
-Durum: ⏳ Bekliyor
+> ✅ **F1-F6 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
 
 ### F7 — Küçük tutarlılık temizliği (P2)
 `if (false && ticker...)` ölü kodu; home pager varsayılan yorum/kod çelişkisi (KEY_HOME_PAGER_V2 vs KEY_SMART_DASHBOARD default'ları — tek doğruluk kaynağına indir); Firebase bağlantı testi metnini dürüstleştir ("SDK yapılandırması başarılı; panel görünürlüğü ayrıca doğrulanmalı").

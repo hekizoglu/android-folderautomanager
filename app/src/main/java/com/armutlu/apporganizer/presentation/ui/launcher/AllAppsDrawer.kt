@@ -516,7 +516,8 @@ private fun DrawerAppList(
     recentNotificationCounts: Map<String, Int> = emptyMap(),
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
-    onEnableFilesSource: () -> Unit = {}
+    onEnableFilesSource: () -> Unit = {},
+    onCategoryClick: (String) -> Unit = {}
 ) {
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
@@ -675,7 +676,7 @@ private fun DrawerAppList(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { /* kategori açma — HomeScreen'de folder ile yönetiliyor */ }
+                                .clickable { onCategoryClick(cat.categoryId) }
                                 .padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1079,6 +1080,7 @@ fun AllAppsDrawer(
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
     onEnableFilesSource: () -> Unit = {},
+    onCategoryClick: (String) -> Unit = {},
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -1133,16 +1135,32 @@ fun AllAppsDrawer(
     val sidebarEntries    = drawerData.sidebarEntries
     val quickFilterCounts = drawerData.quickFilterCounts
 
-    LaunchedEffect(searchQuery, sortedApps.size) {
-        if (searchQuery.trim().length >= 2) AppAnalytics.searchPerformed(
-            resultCount = when (sortedApps.size) {
+    // F6: her tus vurusunda event YOK — sorgu 600ms duraksayinca TEK event; sourceMix de
+    // sabit APPS_ONLY yerine gercek kaynak karisimindan hesaplanir (kategori/ayar/kisi/dosya
+    // eslesmesi varsa MIXED, yalniz dosya varsa FILES_ONLY, hic sonuc yoksa OTHER).
+    LaunchedEffect(searchQuery, sortedApps.size, searchResults, categories) {
+        val q = searchQuery.trim()
+        if (q.length < 2) return@LaunchedEffect
+        kotlinx.coroutines.delay(600)
+        val trLocale = java.util.Locale("tr")
+        val lowerQ = q.lowercase(trLocale)
+        val categoryHits = categories.count { it.categoryName.lowercase(trLocale).contains(lowerQ) }
+        val nonAppHits = categoryHits + searchResults.values.sumOf { it.size }
+        val appHits = sortedApps.size
+        AppAnalytics.searchPerformed(
+            resultCount = when (appHits + nonAppHits) {
                 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ZERO
                 in 1..5 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ONE_TO_FIVE
                 in 6..20 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.SIX_TO_TWENTY
                 else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.TWENTY_ONE_PLUS
             },
             latency = com.armutlu.apporganizer.telemetry.TelemetryEvent.LatencyBucket.UNKNOWN,
-            sourceMix = com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.APPS_ONLY
+            sourceMix = when {
+                appHits > 0 && nonAppHits == 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.APPS_ONLY
+                appHits > 0 || categoryHits > 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.MIXED
+                nonAppHits > 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.FILES_ONLY
+                else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.OTHER
+            }
         )
     }
 
@@ -1212,7 +1230,8 @@ fun AllAppsDrawer(
                         searchResults = searchResults,
                         recentNotificationCounts = recentNotificationCounts,
                         filesIndexState = filesIndexState,
-                        onEnableFilesSource = onEnableFilesSource
+                        onEnableFilesSource = onEnableFilesSource,
+                        onCategoryClick = onCategoryClick
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {

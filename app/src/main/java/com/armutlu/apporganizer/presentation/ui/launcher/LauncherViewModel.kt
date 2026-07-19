@@ -468,6 +468,15 @@ class LauncherViewModel @Inject constructor(
         _openFolderId.value = folder.category.categoryId
     }
 
+    /**
+     * F6: cekmece arama sonucundaki kategori satirindan klasor acma — categoryId ile.
+     * openFolder StateFlow'u zaten id'yi folders listesinden cozer; klasor yoksa
+     * (bos kategori) hicbir sey acilmaz, sessizce yok sayilir.
+     */
+    fun openFolderByCategoryId(categoryId: String) {
+        _openFolderId.value = categoryId
+    }
+
     fun openAdjacentFolder(next: Boolean): Boolean {
         val currentId = _openFolderId.value ?: return false
         val folderList = folders.value

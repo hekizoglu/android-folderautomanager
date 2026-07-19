@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F6 - 2026-07-19 - Cekmece kategori onClick + arama eventi duzeltmesi (P1)
+
+**Yapilanlar:** IDDIA A DOGRULANDI: arama sonucundaki kategori satiri tiklanabilir gorunuyordu ama onClick bosttu (AllAppsDrawer:678). FIX: onCategoryClick callback'i DrawerAppList->AllAppsDrawer->HomeScreen zinciriyle baglandi; tiklaninca cekmece kapanir + LauncherViewModel.openFolderByCategoryId ile klasor acilir (haptic dahil). IDDIA B KISMEN DOGRULANDI: search_performed eventi her tus vurusunda tetikleniyordu ve sourceMix sabit APPS_ONLY idi. FIX: 600ms debounce (LaunchedEffect restart iptali) + gercek kaynak karisimi (kategori/ayar/kisi/dosya varsa MIXED, yalniz dosya FILES_ONLY, sonucsuz OTHER); resultCount butun kaynaklari sayar. compileDebugKotlin yesil.
+
+**Bug:** Yukaridaki P1'ler. Yan etki yok — yeni parametreler default'lu.
+
+**Sonraki:** F7 kucuk tutarlilik temizligi (Paket F kapanisi).
+
 ## F5 - 2026-07-19 - Focus suresi gece yarisi bolunmesi (P1) + v1.4.1 APK dongusu
 
 **Yapilanlar:** IDDIA DOGRULANDI (G3a eksigim): 23:50-00:20 focus oturumu 30dk'nin tamamini yeni gune yaziyordu; devam eden oturumda getFocusMinutesToday dunku payi da bugune sayiyordu. FIX: endFocusSession sureyi gun sinirlarinda bolerek her gune kendi payini yaziyor (cok gunluk oturumlar dahil — while dongusu); getFocusMinutesToday aktif oturumda yalniz max(startAt, bugun 00:00) sonrasini sayiyor. Yeni AppPrefsFocusSessionTest (4 sinir testi) yesil. Dongu 18 APK kapisi: versionCode 124 / versionName 1.4.1, tam testDebugUnitTest + assembleDebug.

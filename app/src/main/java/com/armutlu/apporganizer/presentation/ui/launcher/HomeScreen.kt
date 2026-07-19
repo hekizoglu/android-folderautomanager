@@ -987,7 +987,12 @@ fun HomeScreen(
                         searchResults = searchResults,
                         recentNotificationCounts = recentNotificationCounts,
                         filesIndexState = filesIndexState,
-                        onEnableFilesSource = viewModel::enableFilesSearchSource
+                        onEnableFilesSource = viewModel::enableFilesSearchSource,
+                        onCategoryClick = { categoryId ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.closeAllApps()
+                            viewModel.openFolderByCategoryId(categoryId)
+                        }
                     )
                 }
 
