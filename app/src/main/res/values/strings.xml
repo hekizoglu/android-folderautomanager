@@ -489,6 +489,16 @@
     <string name="smart_ticker_settings_reports_desc">Haftalık özet hazır olduğunda kısa bir hatırlatma</string>
     <string name="smart_ticker_settings_contextual_title">Zaman bazlı öneriler</string>
     <string name="smart_ticker_settings_contextual_desc">Unutulan uygulamalar ve içgörüler gibi bağlamsal öneriler</string>
+    <string name="smart_ticker_settings_tidiness_title">Cihaz düzeni içgörüleri</string>
+    <string name="smart_ticker_settings_tidiness_desc">Depolama, kullanılmayan uygulama ve bildirim yükü hakkında sayılı, kanıtlanabilir öneriler</string>
+    <!-- Döngü G8 — Cihaz Düzeni İçgörüleri: sayı içeren, davet dilinde, korku dili yasak ticker metinleri -->
+    <string name="tidiness_storage_title">Depolama %%%1$d dolu; %2$d gündür açmadığın %3$d uygulama %4$s GB tutuyor</string>
+    <string name="tidiness_unused_title">%1$d gündür açılmayan %2$d uygulama var</string>
+    <string name="tidiness_notifications_title">Bu hafta %1$d bildirim, %%%2$d\'si 3 uygulamadan</string>
+    <string name="tidiness_diagnostics_title">Kullanım izni kapalı — skorun güncellenemiyor</string>
+    <string name="tidiness_action_inspect">İncele</string>
+    <string name="tidiness_action_report">Rapor</string>
+    <string name="tidiness_action_fix">Düzelt</string>
     <string name="smart_ticker_settings_discovery_title">Özellik ipuçları</string>
     <string name="smart_ticker_settings_discovery_desc">Henüz keşfetmediğin özellikleri kısaca tanıtır</string>
     <string name="smart_ticker_settings_health_title">Sistem sağlık uyarıları</string>

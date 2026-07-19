@@ -487,8 +487,18 @@
     <string name="smart_ticker_settings_reports_desc">A short nudge when your weekly summary is ready</string>
     <string name="smart_ticker_settings_contextual_title">Time-based suggestions</string>
     <string name="smart_ticker_settings_contextual_desc">Contextual tips like forgotten apps and insights</string>
+    <string name="smart_ticker_settings_tidiness_title">Device tidiness insights</string>
+    <string name="smart_ticker_settings_tidiness_desc">Numbered, provable suggestions about storage, unused apps, and notification load</string>
     <string name="smart_ticker_settings_discovery_title">Feature tips</string>
     <string name="smart_ticker_settings_discovery_desc">Briefly introduces features you haven\'t discovered yet</string>
+    <!-- Cycle G8 — Device Tidiness Insights: number-backed, inviting language, no fear language -->
+    <string name="tidiness_storage_title">Storage %%%1$d full; %2$d apps unused for %3$d days take up %4$s GB</string>
+    <string name="tidiness_unused_title">%1$d apps unused for %2$d days</string>
+    <string name="tidiness_notifications_title">%1$d notifications this week, %%%2$d from 3 apps</string>
+    <string name="tidiness_diagnostics_title">Usage permission is off — your score can\'t update</string>
+    <string name="tidiness_action_inspect">Inspect</string>
+    <string name="tidiness_action_report">Report</string>
+    <string name="tidiness_action_fix">Fix</string>
     <string name="smart_ticker_settings_health_title">System health alerts</string>
     <string name="smart_ticker_settings_health_desc">Warnings for critical issues like missing permissions</string>
     <string name="smart_ticker_settings_behavior_section">Playback behavior</string>

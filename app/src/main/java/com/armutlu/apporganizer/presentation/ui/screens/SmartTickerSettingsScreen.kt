@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lightbulb
@@ -86,6 +87,9 @@ fun SmartTickerSettingsScreen(
     }
     var contextualVisible by rememberBooleanPreferenceState(context, AppPrefs.KEY_SMART_TICKER_CONTEXTUAL) {
         AppPrefs.isSmartTickerContextualVisible(context)
+    }
+    var tidinessVisible by rememberBooleanPreferenceState(context, AppPrefs.KEY_DEVICE_TIDINESS_INSIGHTS) {
+        AppPrefs.isDeviceTidinessInsightsEnabled(context)
     }
     var discoveryVisible by rememberBooleanPreferenceState(context, AppPrefs.KEY_SMART_TICKER_DISCOVERY) {
         AppPrefs.isSmartTickerDiscoveryVisible(context)
@@ -205,6 +209,18 @@ fun SmartTickerSettingsScreen(
                             contextualVisible = it
                             AppPrefs.setSmartTickerContextualVisible(context, it)
                             if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.CONTEXTUAL_SUGGESTION))
+                        },
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsSwitchRow(
+                        icon = Icons.Default.CleaningServices,
+                        title = stringResource(R.string.smart_ticker_settings_tidiness_title),
+                        subtitle = stringResource(R.string.smart_ticker_settings_tidiness_desc),
+                        checked = tidinessVisible,
+                        enabled = tickerEnabled,
+                        onCheckedChange = {
+                            tidinessVisible = it
+                            AppPrefs.setDeviceTidinessInsightsEnabled(context, it)
                         },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

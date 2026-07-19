@@ -54,16 +54,7 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 - **Dijital Yaşam bağı:** Zaten ±10 katkı var - seviye atlama anı PULSE_CHANGE olarak şeride düşer.
 - Para/satın alma YOK - tamamen içsel motivasyon.
 
-### G8 - Cihaz Düzeni İçgörüleri (Hüseyin talebi, 2026-07-19)
-**Karar gerekçesi:** "Telefonunuz yavaş çalışıyor" tarzı teşhis YAPILMAZ - kanıtlanamaz (Android 3. parti uygulamaya CPU/RAM baskısı vermez), sahte "cleaner app" imajı yaratır ve Play aldatıcı davranış politikası inceleme reddi riski taşır. Bunun yerine: **sayı veren, kanıtlanabilir, tek dokunuşla eyleme bağlanan düzen fırsatları.**
-- **Depolama fırsatı:** StorageStatsManager ile - "Depolama %91 dolu; 6 aydır açmadığın 9 uygulama 3,2 GB tutuyor → İncele". İddia her zaman doğrulanabilir sayıyla.
-- **Kullanılmayan uygulama temizliği:** Mevcut CLEANUP_UNUSED reason'ı kaldırma akışına bağlanır (çoklu seçim + sistem uninstall dialogu).
-- **Bildirim yükü özeti:** Mevcut NotificationAnalyzer verisi - "Bu hafta 412 bildirim, %70'i 3 uygulamadan → Rapor".
-- **Öz-tanı (dürüst sağlık):** DiagnosticsReportManager'dan yalnız KENDİ uygulamamızın düzeltilebilir sorunları - "Kullanım izni kapanmış, skorun güncellenemiyor → Düzelt". Başka uygulamalar/sistem hakkında yargı YOK.
-- **Dil kuralları (mutlak):** Korku dili yasak ("yavaş", "tehlike", "acil"); her içgörü SAYI içerir; "temizle!" emri değil "istersen incele" daveti; genel cihaz yargısı asla.
-- **Entegrasyon:** İçgörüler ticker CONTEXTUAL_SUGGESTION tipi + G3 düzen görevleri olarak yaşar ("Bugün 2 kullanılmayan uygulamayı kaldır → ⭐"); Dashboard'da ayrı bölüm GEREKMEZ (tekrar önleme 1.4 kuralı).
-- **Ayar:** KEY_DEVICE_TIDINESS_INSIGHTS (varsayılan açık) - tek toggle ile tamamen kapanır.
-- **Play policy notu:** Uninstall önerileri sistem dialoguyla yapılır (sessiz kaldırma yok); depolama sayıları StorageStats izni gerektirirse izin CTA'sı dürüst metinle sunulur.
+> ✅ **G8 tamamlandı (2026-07-19)** — HISTORY.md'de. Uninstall çoklu seçim akışı G3b ile derinleşebilir.
 
 ---
 
@@ -78,9 +69,9 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 | G5 | Kutlama | **15** (4+4+4+3) | G4 ile birlikte anlamlı |
 | G6 | Yıldız ekonomisi | **14** (4+3+4+3) | Kozmetik varlık üretimi gerektirir - sona |
 | ~~G7~~ | ✅ Tamamlandı 2026-07-19 (G1'e iliştirildi) | 13 | HISTORY'de |
-| G8 | Cihaz düzeni içgörüleri | **16** (5+4+3+4) | Hüseyin talebi; korku dili yasak, sayılı/eylemli fırsat çerçevesi |
+| ~~G8~~ | ✅ Tamamlandı 2026-07-19 | 16 | HISTORY'de |
 
-**Kalan uygulama sırası:** G8 → G3a → G5 → G3b → G6
+**Kalan uygulama sırası:** G3a → G5 → G3b → G6
 Toplam tahmin: 7-8 döngü. Her döngü tek commit, kademeli doğrulama, ara APK yok (kullanıcı kuralı).
 
 ## 4. Kırmızı Çizgiler (mevcut ilkeler korunur)

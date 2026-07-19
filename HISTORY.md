@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G8 - 2026-07-19 - Cihaz duzeni icgorulerinin (Huseyin fikri, guvenli cerceve)
+
+**Yapilanlar:** DeviceTidinessInsights saf uretici (metinler TidinessTexts lambda ile disaridan — hardcoded string yok): depolama firsati (>=%85 doluluk VE >=500MB kazanc), 90+ gun kullanilmayan (>=5), bildirim yuku (>=200/hafta VE top-3 >=%60), oz-tani (izin kapali). Korku dili yok, hepsi sayili, davet dili. Ticker CONTEXTUAL_SUGGESTION entegrasyonu (ranker/suppression otomatik); KEY_DEVICE_TIDINESS_INSIGHTS toggle; TR/EN tam. 20 yeni test, tam suite yesil.
+
+**Bug:** Yok. Sessiz uninstall yok — tum aksiyonlar ekrana goturur (Play policy).
+
+**Sonraki:** G3a — cekirdek yeni gorev tipleri (zincir devam).
+
 ## G4 - 2026-07-19 - Streak (seri) sistemi
 
 **Yapilanlar:** MissionStreakPrefs (advancePure saf fonksiyon: ardisik +1, 1 gun bosluk+haftalik dondurma hakki otomatik harcanir seri korunur, 2+ bosluk nazik sifirlama CEZASIZ; golden 3/3 ayri sayac; bestStreak azalmaz; ISO hafta basinda hak tazelenir); settlement entegrasyonu (gun bazli grup, idempotent, runCatching — odul akisini etkilemez); HomeMissionCard "🔥 N" rozeti + MissionsScreen seri satiri + dondurma bilgisi; 3/7/30 kilometre taslari ticker MISSION_ACHIEVEMENT. TR/EN stringler (EN unutulmadi). 10+4 yeni test; TUM PROJE 1054 test 0 hata.

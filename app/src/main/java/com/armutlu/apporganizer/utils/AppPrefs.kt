@@ -641,6 +641,13 @@ object AppPrefs {
     fun isSmartTickerContextualVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_CONTEXTUAL, true)
     fun setSmartTickerContextualVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_CONTEXTUAL, v).apply()
 
+    // Döngü G8 — Cihaz Düzeni İçgörüleri (depolama/kullanılmayan uygulama/bildirim yükü/öz-tanı
+    // fırsatları, GOREV_SISTEMI_AKILLI_GELISTIRME_PLANI.md G8). Varsayılan AÇIK, tek toggle ile
+    // tamamen kapanır — kapalıyken DeviceTidinessInsights.all() hiç çağrılmaz.
+    const val KEY_DEVICE_TIDINESS_INSIGHTS = "device_tidiness_insights_enabled"
+    fun isDeviceTidinessInsightsEnabled(context: Context) = prefs(context).getBoolean(KEY_DEVICE_TIDINESS_INSIGHTS, true)
+    fun setDeviceTidinessInsightsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_DEVICE_TIDINESS_INSIGHTS, v).apply()
+
     // Roadmap mock (satır 1863): "[ ] Özellik ipuçları" — bu satır tek başlangıçta kapalı olan.
     fun isSmartTickerDiscoveryVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_DISCOVERY, false)
     fun setSmartTickerDiscoveryVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_DISCOVERY, v).apply()

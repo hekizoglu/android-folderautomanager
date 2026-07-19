@@ -1,10 +1,14 @@
 package com.armutlu.apporganizer.domain.home
 
 import android.content.Context
+import android.os.Environment
+import android.os.StatFs
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.domain.common.valueOrNull
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.insight.DeviceTidinessInsights
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.AppSnapshot
@@ -16,7 +20,9 @@ import com.armutlu.apporganizer.utils.SuggestionCandidate
 import com.armutlu.apporganizer.utils.SuggestionChannel
 import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.TickerComposer
+import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +60,7 @@ class RealSmartTickerSource @Inject constructor(
     private val classifier: AppClassifier,
     private val missionRuntimeRepository: MissionRuntimeRepository,
     private val digitalPulseRepository: DigitalPulseRepository,
+    private val notificationEventDao: NotificationEventDao,
 ) : SmartTickerEngine {
 
     private val _state = MutableStateFlow(TickerSourceState())
@@ -132,7 +139,16 @@ class RealSmartTickerSource @Inject constructor(
                 nowMillis = nowMillis,
             )
 
-            val allCandidates = composed + missionItems + pulseItems + streakItems
+            // Döngü G8 — Cihaz Düzeni İçgörüleri. Toggle kapalıyken hiçbir tidiness öğesi
+            // üretilmez (plan G8 kısıtı). DeviceTidinessInsights saf Kotlin — bu sınıf
+            // Android/DB kaynaklarını (StatFs, apps, NotificationEventDao) okuyup besler.
+            val tidinessItems = if (AppPrefs.isDeviceTidinessInsightsEnabled(context)) {
+                buildTidinessCandidates(apps, nowMillis)
+            } else {
+                emptyList()
+            }
+
+            val allCandidates = composed + missionItems + pulseItems + streakItems + tidinessItems
 
             // Döngü T02: en fazla 3 yüksek değerli öğe + tekrar/suistimal önleme (roadmap 2.7).
             // Suppression mevcut SuggestionCoordinator/SharedPrefsSuggestionHistoryStore üzerinden
@@ -152,7 +168,8 @@ class RealSmartTickerSource @Inject constructor(
                                 key.startsWith("streak_milestone_"),
                             timeSensitive = key == "notification_summary" ||
                                 key == "low_confidence_review" ||
-                                key.startsWith("mission_at_risk_"),
+                                key.startsWith("mission_at_risk_") ||
+                                key == "tidiness_permission",
                         ),
                         channel = SuggestionChannel.TICKER,
                         store = historyStore,
@@ -167,6 +184,77 @@ class RealSmartTickerSource @Inject constructor(
                 // Hata durumunda onceki state korunur (coordinator Stale/Failed sinifladirmasini
                 // digerleri gibi kendi refreshSource try/catch'inde yapar).
             },
+        )
+    }
+
+    /**
+     * Döngü G8 — [DeviceTidinessInsights] için Android/DB kaynaklarını (StatFs, apps,
+     * haftalık bildirim sayıları) okuyup saf Kotlin üreticiye besler. Yerelleştirilmiş metinler
+     * burada `context.getString(...)` ile üretilir — üretici objenin kendisi hiçbir hardcoded
+     * kullanıcı-dili string TAŞIMAZ (TR/EN ikisi de burada çözülür, plan G8 "EN'i unutma" notu).
+     */
+    private suspend fun buildTidinessCandidates(
+        apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
+        nowMillis: Long,
+    ): List<SmartTickerItem> {
+        val hasUsageAccess = UsageStatsHelper.hasPermission(context)
+
+        val statFs = runCatching { StatFs(Environment.getDataDirectory().path) }.getOrNull()
+        val totalBytes = statFs?.let { it.blockSizeLong * it.blockCountLong } ?: 0L
+        val freeBytes = statFs?.let { it.blockSizeLong * it.availableBlocksLong } ?: 0L
+
+        val appSnapshots = apps.map { app ->
+            DeviceTidinessInsights.AppUsageSnapshot(
+                packageName = app.packageName,
+                lastUsedTimestamp = app.lastUsedTimestamp,
+                appSizeBytes = app.appSizeBytes,
+            )
+        }
+
+        val weeklyCounts = runCatching {
+            notificationEventDao.countsSince(nowMillis - TimeUnit.DAYS.toMillis(7))
+        }.getOrDefault(emptyList()).map { it.count }
+
+        val texts = DeviceTidinessInsights.TidinessTexts(
+            storageTitle = { percent, unusedCount, gbFreed ->
+                context.getString(
+                    com.armutlu.apporganizer.R.string.tidiness_storage_title,
+                    percent,
+                    DeviceTidinessInsights.UNUSED_THRESHOLD_DAYS,
+                    unusedCount,
+                    gbFreed,
+                )
+            },
+            unusedTitle = { count ->
+                context.getString(
+                    com.armutlu.apporganizer.R.string.tidiness_unused_title,
+                    DeviceTidinessInsights.UNUSED_THRESHOLD_DAYS,
+                    count,
+                )
+            },
+            notificationTitle = { total, topSharePercent ->
+                context.getString(
+                    com.armutlu.apporganizer.R.string.tidiness_notifications_title,
+                    total,
+                    topSharePercent,
+                )
+            },
+            diagnosticsTitle = {
+                context.getString(com.armutlu.apporganizer.R.string.tidiness_diagnostics_title)
+            },
+            actionInspect = context.getString(com.armutlu.apporganizer.R.string.tidiness_action_inspect),
+            actionReport = context.getString(com.armutlu.apporganizer.R.string.tidiness_action_report),
+            actionFix = context.getString(com.armutlu.apporganizer.R.string.tidiness_action_fix),
+        )
+
+        return DeviceTidinessInsights.all(
+            hasUsageAccessPermission = hasUsageAccess,
+            totalBytes = totalBytes,
+            freeBytes = freeBytes,
+            apps = appSnapshots,
+            weeklyNotificationCountsByPackage = weeklyCounts,
+            nowMillis = nowMillis,
+            texts = texts,
         )
     }
 }
