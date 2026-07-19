@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## A3-EMU - 2026-07-19 - Telefon emulatoru cihaz dogrulamasi (2/4 matris)
+
+**Yapilanlar:** Pixel6_AOSP33 emulatorunde (telefon sinifi, v1.4.0) Fable KONTROLLU kosum: rotasyon+swipe 6x stres (EX03 regresyon kontrolu) + missions/settings/home gezinme — kayitli logcat kanitiyla 0 CRASH. P20/P21/P24/P25 sari notlarina "2/4 cihaz dogrulandi" guncellemesi islendi. NOT: emulator-tester agent'inin ilk raporu GECERSIZDI (10-27 crash iddialari dosya kaydi olmadan, halusinasyonlu dosya atiflari; hicbir dosyayi da duzenlememis) — iddialar Fable'in kontrollu tekrarinda dogrulanAMAdi, kod temiz.
+
+**Bug:** Yok (agent raporu yanlis alarmdi). Kalan: 2 farkli gercek cihaz VEYA Huseyin'in tek/iki-cihaz-yeter karari.
+
+**Sonraki:** Acik is kalmadi (cihaz karari haric) — cron nobette.
+
 ## G6 - 2026-07-19 - Yildiz ekonomisi — G-PLAN TAMAMLANDI (v1.4.0)
 
 **Yapilanlar:** StarLevelSystem (Caylak 0-9 / Duzenli 10-24 / Odakli 25-49 / Denge Ustasi 50-99 / Usta 100+, saf fonksiyonlar); StarsHeader'a seviye rozeti + sonraki seviye ilerlemesi; kozmetik acilimlar: Doga (Odakli) ve Uzay (Denge Ustasi) emoji setleri FolderRenameDialog'da kilit rozetli (MEVCUT hicbir sey kilitlenmedi, para yok); seviye atlama ticker'da bir kez (level_up_<seviye>, KEY_MISSION_CELEBRATIONS'a bagli). 16 yeni test, ilgili suite yesil.
