@@ -191,7 +191,13 @@ private fun CelebrationCard(stars: Int) {
     }
 }
 
-/** Dongu M05: MissionActionRouter'dan gelen hedefi tuketir — route ise navigate, Intent ise startActivity. */
+/**
+ * Dongu M05: MissionActionRouter'dan gelen hedefi tuketir — route ise navigate, Intent ise
+ * startActivity. Dongu G2: SystemIntent cozumlenemezse (resolveActivity null — cihaz/ROM
+ * bu ayari desteklemiyorsa, orn. bazi OEM'lerde Bedtime ayri uygulamadir) kullanim raporuna
+ * duser — bu karar UI katmaninda Intent cozumlemesiyle verilir, domain katmani Android
+ * PackageManager'a bagimli olmaz.
+ */
 private fun handleMissionAction(
     action: com.armutlu.apporganizer.domain.usecase.missions.MissionAction,
     context: android.content.Context,
@@ -199,9 +205,15 @@ private fun handleMissionAction(
 ) {
     when (val target = MissionActionRouter.resolve(action)) {
         is MissionActionRouter.RouteTarget.Screen -> onNavigateToRoute(target.route)
-        is MissionActionRouter.RouteTarget.SystemIntent -> context.startActivity(
-            android.content.Intent(target.intentAction).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
+        is MissionActionRouter.RouteTarget.SystemIntent -> {
+            val intent = android.content.Intent(target.intentAction)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                onNavigateToRoute(MissionActionRouter.ROUTE_USAGE_REPORT)
+            }
+        }
         MissionActionRouter.RouteTarget.None -> Unit
     }
 }

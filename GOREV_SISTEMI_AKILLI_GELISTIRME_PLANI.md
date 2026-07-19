@@ -29,27 +29,7 @@
 
 ## 2. Geliştirme Paketleri (öncelik sırasıyla)
 
-### G1 — Kişisel Hedefler (EN YÜKSEK ETKİ / EN DÜŞÜK RİSK)
-Sabit hedef yerine kullanıcının kendi geçmişinden türetilen hedef:
-- Ekran süresi hedefi = son 7 gün medyanının **%90'ı** (min 1 sa., max 6 sa. sınırlı) — "Dünden 15 dk daha az" hissi.
-- Kilit açma hedefi aynı formülle.
-- İlk 3 gün veri toplanır, hedefsiz "tanışma görevi" gösterilir ("Alışkanlıklarını öğreniyorum").
-- **Altyapı hazır:** mission_instances.baselineValue/targetValue zaten şemada; MissionMetricSnapshotProvider haftalık geçmişi zaten okuyor. Sadece hedef-türetme saf fonksiyonu + pinInstances'ta doldurma gerekir.
-- Hedef dönem içinde SABİT kalır (M01 ilkesi) — gün ortasında değişmez.
-
-### G2 — Tıkla→Aksiyon Genişletmesi (KULLANICI TALEBİ)
-Her görev satırının TAMAMI tıklanabilir olur (buton değil, satır) ve en anlamlı yere götürür:
-| Görev | Tıklayınca |
-|---|---|
-| Ekran süresi / haftalık karşılaştırma | Kullanım raporu — **ilgili gün/hafta sekmesi açık** |
-| Kilit açma | Kullanım raporu kilit açma bölümü |
-| Gece kullanmama | Sistem **Bedtime/Rahatsız Etmeyin** ayarı (Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS; cihaz desteklemiyorsa uygulama içi gece ipucu sayfası) |
-| Sınıflandırma | Kontrol Bekleyenler (mevcut) |
-| Bildirim raporu | Bildirim Raporu (mevcut) |
-| Uygulama-spesifik görev (G3) | O uygulamanın kullanım detayı; uzun basışta sistem App Info |
-| DATA_UNAVAILABLE | Kullanım erişimi izni (mevcut) |
-- Teknik: MissionAction sealed'a yeni hedefler + Router'a rota/intent eşlemeleri (M05 pattern'i — Intent UI'da kurulur, JVM test korunur).
-- Satır semantics: "Görev + şu an + kalan. Açmak için dokun." (M06 erişilebilirlik diliyle).
+> ✅ **G1+G7 ve G2 tamamlandı (2026-07-19)** — HISTORY.md'ye taşındı (commit'ler: 7355593, G2 kapanış commit'i HISTORY'de). Uygulama-spesifik görev tıklaması G3'te gelecek.
 
 ### G3 — Görev Çeşitliliği: Yeni Görev Tipleri
 Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullanıcının zayıf alanına öncelik — InsightEngine/PulseScoreReason'dan beslenir):
@@ -80,10 +60,6 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 - **Dijital Yaşam bağı:** Zaten ±10 katkı var — seviye atlama anı PULSE_CHANGE olarak şeride düşer.
 - Para/satın alma YOK — tamamen içsel motivasyon.
 
-### G7 — Zorluk Profili (Ayarlar)
-- "Görev temposu": Rahat / Dengeli / İddialı — G1 hedef formülünün katsayısını değiştirir (%100 / %90 / %80).
-- Onboarding'e DOKUNMADAN Settings'te (sıra kuralı mutlak).
-
 ### G8 — Cihaz Düzeni İçgörüleri (Hüseyin talebi, 2026-07-19)
 **Karar gerekçesi:** "Telefonunuz yavaş çalışıyor" tarzı teşhis YAPILMAZ — kanıtlanamaz (Android 3. parti uygulamaya CPU/RAM baskısı vermez), sahte "cleaner app" imajı yaratır ve Play aldatıcı davranış politikası inceleme reddi riski taşır. Bunun yerine: **sayı veren, kanıtlanabilir, tek dokunuşla eyleme bağlanan düzen fırsatları.**
 - **Depolama fırsatı:** StorageStatsManager ile — "Depolama %91 dolu; 6 aydır açmadığın 9 uygulama 3,2 GB tutuyor → İncele". İddia her zaman doğrulanabilir sayıyla.
@@ -101,16 +77,16 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 
 | Döngü | İçerik | Puan | Not |
 |---|---|---|---|
-| G1 | Kişisel hedefler | **19** (5+5+4+5) | baselineValue hazır; en yüksek değer/risk oranı |
-| G2 | Tıkla→aksiyon genişletme | **18** (5+5+4+4) | Kullanıcı talebi; M05 pattern'i kopyalanır |
+| ~~G1~~ | ✅ Tamamlandı 2026-07-19 | 19 | HISTORY'de |
+| ~~G2~~ | ✅ Tamamlandı 2026-07-19 | 18 | HISTORY'de |
 | G3 | Görev çeşitliliği (18 görev + ağırlıklı seçim) | **17** (5+4+4+4) | En büyük içerik işi; 2 döngüye bölünebilir (G3a çekirdek tipler, G3b uygulama-spesifik) |
 | G4 | Streak | **17** (5+5+4+3) | Küçük iş, büyük retention etkisi |
 | G5 | Kutlama | **15** (4+4+4+3) | G4 ile birlikte anlamlı |
 | G6 | Yıldız ekonomisi | **14** (4+3+4+3) | Kozmetik varlık üretimi gerektirir — sona |
-| G7 | Zorluk profili | **13** (3+5+5+... ) | G1'in küçük eki, G1 içinde de yapılabilir |
+| ~~G7~~ | ✅ Tamamlandı 2026-07-19 (G1'e iliştirildi) | 13 | HISTORY'de |
 | G8 | Cihaz düzeni içgörüleri | **16** (5+4+3+4) | Hüseyin talebi; korku dili yasak, sayılı/eylemli fırsat çerçevesi |
 
-**Önerilen uygulama sırası:** G1 → G2 → G4 → G8 → G3a → G5 → G3b → G6 (+G7 G1'e iliştirilir)
+**Kalan uygulama sırası:** G4 → G8 → G3a → G5 → G3b → G6
 Toplam tahmin: 7-8 döngü. Her döngü tek commit, kademeli doğrulama, ara APK yok (kullanıcı kuralı).
 
 ## 4. Kırmızı Çizgiler (mevcut ilkeler korunur)

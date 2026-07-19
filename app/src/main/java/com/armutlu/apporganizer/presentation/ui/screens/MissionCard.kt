@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.HourglassEmpty
@@ -21,16 +23,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,8 +53,13 @@ import com.armutlu.apporganizer.presentation.viewmodel.MissionsViewModel
  * progressFraction null gelir — bu satirlar gosterilmez, sadece durum rozeti kalir (M03 notu).
  *
  * Erisilebilirlik: durum renkle degil ikon+metin ile anlatilir; LinearProgressIndicator
- * progressBarRangeInfo semantics tasir; TextButton min 48dp dokunma alanina sizeIn ile
- * garanti edilir; hicbir Text maxLines ile kirpilmaz (dogal wrap).
+ * progressBarRangeInfo semantics tasir; hicbir Text maxLines ile kirpilmaz (dogal wrap).
+ *
+ * Dongu G2: satirin TAMAMI tiklanabilir (Card degil, Row.clickable) — eylem gerektiren
+ * gorevlerde (actionLabel != null, tamamlanmamis) tum satir en anlamli ekrana goturur.
+ * Eski TextButton yerini kucuk bir chevron ikonu alir (M06 gorsel dilini sadelestirir,
+ * cift dokunma alani olusturmaz). Satir role=Button + P19 pattern'i ile
+ * ".. Acmak icin dokun." son eki tasir.
  */
 @Composable
 internal fun MissionRow(
@@ -57,10 +67,28 @@ internal fun MissionRow(
     onActionClick: () -> Unit,
 ) {
     val statusMeta = mission.status.toStatusMeta()
-    Row(
-        modifier = Modifier
+    val isActionable = !mission.completed && mission.actionLabel != null
+    val haptic = LocalHapticFeedback.current
+    val rowModifier = if (isActionable) {
+        val tapHint = stringResource(R.string.mission_row_tap_hint, mission.title)
+        Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onActionClick()
+            }
+            .semantics {
+                role = Role.Button
+                contentDescription = tapHint
+            }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    }
+    Row(
+        modifier = rowModifier,
         verticalAlignment = Alignment.Top,
     ) {
         Icon(
@@ -148,14 +176,20 @@ internal fun MissionRow(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f, fill = false),
                     )
-                    // M06 erisilebilirlik: dokunma alani minimum 48dp (sizeIn ile garanti).
-                    if (!mission.completed && mission.actionLabel != null) {
-                        TextButton(
-                            onClick = onActionClick,
-                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
-                        ) {
-                            Text(text = mission.actionLabel, style = MaterialTheme.typography.labelMedium)
-                        }
+                    // Dongu G2: satirin tamami zaten tiklanabilir (onActionClick) — buton
+                    // yerine sade bir yon oku ipucu birakilir, cift dokunma alani olusmaz.
+                    // Ikon kendi basina odaklanabilir/tiklanabilir DEGIL (clearAndSetSemantics
+                    // yerine sadece gorsel ipucu; ekran okuyucu ust satirin role=Button + tap
+                    // hint semantics'ini kullanir).
+                    if (isActionable) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .sizeIn(minWidth = 24.dp, minHeight = 24.dp)
+                                .padding(start = 4.dp),
+                        )
                     }
                 }
             }

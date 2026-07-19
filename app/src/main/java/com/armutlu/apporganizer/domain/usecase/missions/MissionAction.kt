@@ -20,6 +20,14 @@ sealed interface MissionAction {
     /** Kullanim erisimi izni verilmemis — Android sistem ayarina yonlendir. */
     data object OpenSettingsUsageAccess : MissionAction
 
+    /**
+     * Gece kullanmama gorevi — sistem Rahatsiz Etmeyin/Bedtime ayarina yonlendir (Dongu G2).
+     * UI katmani Intent'i cozemezse (resolveActivity null — cihaz desteklemiyorsa)
+     * [OpenUsageReport] hedefine dusurur; bu karar domain katmaninda DEGIL, MissionsScreen'de
+     * Intent cozumlemesiyle verilir (Android API'si JVM testte kullanilamaz).
+     */
+    data object OpenDoNotDisturbSettings : MissionAction
+
     /** Eylem gerektirmeyen gorev (orn. pasif/otomatik izlenen gorevler). */
     data object None : MissionAction
 }

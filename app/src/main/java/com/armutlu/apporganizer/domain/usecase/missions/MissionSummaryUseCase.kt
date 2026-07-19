@@ -267,8 +267,8 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.DAILY_VIEW_NOTIF_REPORT -> MissionAction.OpenNotificationReport
         MissionEngine.DAILY_SCREEN_UNDER_3H,
         MissionEngine.DAILY_UNLOCK_UNDER_30,
-        MissionEngine.DAILY_NO_LATE_NIGHT,
         MissionEngine.WEEKLY_SCREEN_LESS -> MissionAction.OpenUsageReport
+        MissionEngine.DAILY_NO_LATE_NIGHT -> MissionAction.OpenDoNotDisturbSettings
         MissionEngine.WEEKLY_POSITIVE_ACTIONS -> MissionAction.None
         else -> MissionAction.None
     }
@@ -278,6 +278,7 @@ class MissionSummaryUseCase @Inject constructor(
         MissionAction.OpenNotificationReport -> R.string.mission_action_open_report
         MissionAction.OpenUsageReport -> R.string.mission_action_open_report
         MissionAction.OpenSettingsUsageAccess -> R.string.mission_action_grant_access
+        MissionAction.OpenDoNotDisturbSettings -> R.string.mission_action_open_dnd_settings
         MissionAction.None -> null
     }
 

@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G2 - 2026-07-19 - Gorev satiri tikla-aksiyon genisletmesi
+
+**Yapilanlar:** Gorev satirinin TAMAMI tiklanabilir (Row.clickable + chevron ipucu, buton kalkti; haptic + role=Button + "Acmak icin dokun" semantics); YENI MissionAction.OpenDoNotDisturbSettings — gece gorevi sistem Rahatsiz Etmeyin ayarina gider (ZEN_MODE_PRIORITY_SETTINGS), cihaz cozemezse resolveActivity fallback -> kullanim raporu (UI katmaninda, JVM test korundu); DATA_UNAVAILABLE izin CTA onceligi korundu. Fable duzeltmesi: 2 eksik EN string eklendi. Mission testleri + yeni router testi yesil. 6. dongu APK kurali: v1.3.99 (122).
+
+**Bug:** Yok. USAGE_REPORT rotasi parametre desteklemiyor — duz acilir (rota grafigi degistirilmedi).
+
+**Sonraki:** G4 streak sistemi (zincir devam).
+
 ## G1+G7 - 2026-07-19 - Kisisel gorev hedefleri + tempo profili
 
 **Yapilanlar:** PersonalTargetCalculator (son 7 gun medyani x tempo katsayisi; ekran 60-360dk, kilit 15-80 clamp; <3 gun veri -> null/tanisma modu); KEY_MISSION_TEMPO (Rahat 1.0/Dengeli 0.9/Iddiali 0.8, Ayarlar segmented); pinInstances hedefi baselineValue/targetValue'ya yazar (M01'den beri bos duran alanlar doldu); MissionCheckInput.personalScreenTarget/UnlockTarget -> evaluate override, sabitler fallback; gorev basligi kisisel hedefi gosterir. Kota kesintisinde yarim kalan is Fable tarafindan sahiplenildi: 2 yasak karakterli test adi + 2 yanlis durum beklentisi (AT_RISK/IN_PROGRESS) duzeltildi. Mission+PersonalTarget testleri yesil.

@@ -49,6 +49,16 @@ class MissionActionRouterTest {
     }
 
     @Test
+    fun openDoNotDisturbSettings_resolvesToSystemIntent() {
+        val target = MissionActionRouter.resolve(MissionAction.OpenDoNotDisturbSettings)
+        assertTrue(target is MissionActionRouter.RouteTarget.SystemIntent)
+        assertEquals(
+            "android.settings.ZEN_MODE_PRIORITY_SETTINGS",
+            (target as MissionActionRouter.RouteTarget.SystemIntent).intentAction,
+        )
+    }
+
+    @Test
     fun none_resolvesToNoTarget() {
         val target = MissionActionRouter.resolve(MissionAction.None)
         assertEquals(MissionActionRouter.RouteTarget.None, target)

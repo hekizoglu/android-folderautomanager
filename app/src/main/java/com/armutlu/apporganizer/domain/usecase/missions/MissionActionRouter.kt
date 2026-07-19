@@ -42,6 +42,9 @@ object MissionActionRouter {
         is MissionAction.OpenSettingsUsageAccess -> RouteTarget.SystemIntent(
             Settings.ACTION_USAGE_ACCESS_SETTINGS
         )
+        is MissionAction.OpenDoNotDisturbSettings -> RouteTarget.SystemIntent(
+            Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS
+        )
         MissionAction.None, null -> RouteTarget.None
     }
 }
