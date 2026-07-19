@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F3 - 2026-07-19 - Seri hesabi settlement batch hatasi duzeltildi (P0)
+
+**Yapilanlar:** IDDIA DOGRULANDI (G4 acigim): advance() yalniz settlement batch'indeki sonuclarla besleniyordu; anında tamamlanan gorevler (completeActionMission) batch'e girmediginden gun 0/1 gorunup seri kirilabiliyordu (gercek 2/3), tek gorevlik batch de sahte %100 verebiliyordu. FIX: SettleMissionInstancesUseCase artik yalniz dokunulan epochDay setini tutuyor; advance()'e giden completed/total donguden sonra DB gun-butunu sorgularindan (countCompletedForDay/countSettledForDay — G5) okunuyor. Regresyon testi eklendi (2 erken-settle + 1 batch'te FAILED -> seri ilerler); tum SettleMissionInstancesUseCaseTest yesil. Fable dogruladi ve kendisi uyguladi (kucuk cerrahi diff).
+
+**Bug:** Yukaridaki P0. Yan etki yok — DAO sorgulari G5'ten mevcuttu.
+
+**Sonraki:** F4 STATUS_DATA_UNAVAILABLE.
+
 ## F2 - 2026-07-19 - Biyometrik ayarlar kilidi route-guard seviyesine tasindi (P0)
 
 **Yapilanlar:** IDDIA DOGRULANDI: kilit yalniz SettingsScreen composable'indaydi; 10+ settings_* alt rotasi ayri composable hedefi olarak korumasizdi ve MainActivity open_route deep-link'i ile dogrudan acilabiliyordu; kilidi kapatmak da biyometrik istemiyordu. FIX: yeni SettingsLockGuard.kt (SettingsLockSession + SENSITIVE_ROUTES 12 rota + SettingsLockGate composable); AppNavigation'da tum hassas rotalar gate ile sarildi; SettingsSecurityScreen toggle ac/kapa artik once biyometrik dogruluyor, acilinca session reset (sonraki giris kilitli). Cihazda biyometrik yoksa kullanici kilitlenmez. TR+EN string'ler eklendi. Sonnet agent uyguladi, Fable dogruladi; compileDebugKotlin yesil.

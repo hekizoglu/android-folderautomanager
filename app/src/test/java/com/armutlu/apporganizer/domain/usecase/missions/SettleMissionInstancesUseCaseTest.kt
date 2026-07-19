@@ -560,4 +560,32 @@ class SettleMissionInstancesUseCaseTest {
         useCase.settleOverdue(instance.periodEndAt + 10_000L)
         assertEquals(1, MissionStreakPrefs.read(context).currentStreak)
     }
+
+    // ---- F3 — advance() gun-butunu sayimla beslenir (batch ici sayim degil) ----
+
+    @Test
+    fun `early settled completions count toward the streak even when only a failed mission remains in the batch`() = runBlocking {
+        val epochDay = 100L
+        // 2 gorev gun icinde ANINDA tamamlanip settle edilmis (completeActionMission yolu) —
+        // settlement batch'ine HIC girmezler.
+        val earlySettled = listOf("m_open_folder", "m_review_apps").map { id ->
+            dailyInstance(id, epochDay).copy(
+                status = MissionInstanceEntity.STATUS_COMPLETED,
+                settledAt = epochDay * 86_400_000L + 3_600_000L,
+            )
+        }
+        // 1 gorev gun sonunda basarisiz settle olacak (180/180 -> FAILED).
+        val overdueFailing = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, epochDay, targetValue = 180L)
+        val dao = FakeMissionInstanceDao(earlySettled + overdueFailing)
+        val usage = FakeUsageStatsSource(dailyMinutesByEpochDay = mapOf(epochDay to 180L))
+        val prefs = FakeSharedPreferences()
+        val useCase = buildUseCase(dao, usageStatsSource = usage, context = fakeContextWithPrefs(prefs))
+
+        useCase.settleOverdue(overdueFailing.periodEndAt + 1_000L)
+
+        // Eski (hatali) davranis: advance batch'ten 0/1 gorurdu -> seri ILERLEMEZDI.
+        // Dogru davranis: gun-butunu sorgu 2 completed / 3 settled gorur -> seri 1 olur.
+        val streak = MissionStreakPrefs.read(fakeContextWithPrefs(prefs))
+        assertEquals(1, streak.currentStreak)
+    }
 }

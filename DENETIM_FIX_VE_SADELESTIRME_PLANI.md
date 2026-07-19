@@ -4,12 +4,7 @@
 
 ## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
 
-> ✅ **F1 + F2 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
-
-### F3 — Seri (streak) hesabı settlement batch hatası (P0)
-İddia (Fable onaylı — G4 açığı): anında tamamlanan görevler erken settle olduğu için gün sonu advance() eksik sayımla çağrılabiliyor (0/1 vs gerçek 2/3; ters yönde sahte altın seri).
-Yapılacak: advance çağrısını settlement batch sayımından değil, kapanan günün TÜM instance'larını okuyan mevcut `countCompletedForDay/countSettledForDay` (G5) sorgularından besle; regresyon testleri (erken-settle + gün sonu karışık senaryolar).
-Durum: ⏳ Bekliyor
+> ✅ **F1 + F2 + F3 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
 
 ### F4 — STATUS_DATA_UNAVAILABLE (P1)
 İddia: 48h grace sonrası DATA_UNAVAILABLE, FAILED olarak yazılıyor — raporlar/seri/başarısızlık sayıları kirlenebilir.

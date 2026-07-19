@@ -94,13 +94,12 @@ class SettleMissionInstancesUseCase @Inject constructor(
         var dataUnavailable = 0
         var skippedRetryLater = 0
 
-        // Dongu G4 — gunluk instance'larin bu cagrida SETTLE EDILEN (skippedRetryLater HARIC)
-        // sonuclarini periodStartEpoch (epochDay) bazinda topluyoruz; gun kapanisi kesinlestiginde
-        // (asagida donguden sonra) MissionStreakPrefs.advance TEK KEZ, o gunun completed/total
-        // sayisiyla cagirilir. Ayni epochDay birden fazla gorev icerebilir (ör. 2 gunluk gorev) —
-        // bu yuzden gorev bazinda degil, GUN bazinda advance cagirmak dogru "en az 1 tamamlandi mi"
-        // sorusuna cevap verir.
-        val dailyOutcomesByEpochDay = mutableMapOf<Long, MutableList<Boolean>>()
+        // F3 (G4 duzeltmesi) — burada yalniz DOKUNULAN gunlerin listesi tutulur; advance()'e
+        // giden completed/total sayilari donguden SONRA DB'nin gun-butunu sorgularindan
+        // (countCompletedForDay/countSettledForDay) okunur. Batch ici sayim YANLISTI: anında
+        // tamamlanan gorevler (completeActionMission) bu batch'e hic girmedigi icin gun 0/1
+        // gorunebiliyordu (gercek 2/3) — ters yonde de tek gorevlik batch sahte %100 verebiliyordu.
+        val touchedDailyEpochDays = mutableSetOf<Long>()
 
         for (instance in overdue) {
             val ageMs = now - instance.periodEndAt
@@ -150,8 +149,7 @@ class SettleMissionInstancesUseCase @Inject constructor(
             }
 
             if (instance.periodType == MissionInstanceEntity.PERIOD_DAILY) {
-                dailyOutcomesByEpochDay.getOrPut(instance.periodStartEpoch) { mutableListOf() }
-                    .add(evaluation.status == MissionStatus.COMPLETED)
+                touchedDailyEpochDays.add(instance.periodStartEpoch)
             }
         }
 
@@ -167,9 +165,11 @@ class SettleMissionInstancesUseCase @Inject constructor(
         // "zaten sayildi mi" kontrolu GEREKMEZ, ama yine de guvenlik icin runCatching ile sarilir:
         // seri hesaplama hatasi ODUL/INSTANCE durumunu ETKILEMEMELI (bagimsiz katman).
         runCatching {
-            dailyOutcomesByEpochDay.forEach { (epochDay, outcomes) ->
-                val completedCount = outcomes.count { it }
-                val totalCount = outcomes.size
+            touchedDailyEpochDays.forEach { epochDay ->
+                // Gun kapanisinin GERCEK tablosu: tum settle edilmis instance'lar (erken tamamlananlar
+                // dahil) — batch'te ne oldugundan bagimsiz.
+                val completedCount = missionInstanceDao.countCompletedForDay(epochDay)
+                val totalCount = missionInstanceDao.countSettledForDay(epochDay)
                 // Dondurma hakkinin haftalik yenilenmesi SETTLENEN GUNUN kendi ISO haftasina gore
                 // olmali (settlement gecikmis gunleri toplu isleyebilir — "now"in haftasi yanlis
                 // olur). Gunun ortasina (12:00) sabitlenmis bir Clock ile o gunun haftasi cozulur.
