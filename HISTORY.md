@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F7 - 2026-07-19 - Tutarlilik temizligi + PAKET F KAPANDI (P2)
+
+**Yapilanlar:** 3 iddia da dogrulandi. (1) HomeScreen'deki 3 buyuk if(false) olu blogu silindi (~276 satir — P25'ten kalan pager-disi eski kopyalar; parantez dengesi 397/397 dogrulandi). (2) Bayat yorumlar kodla eslendi: AppPrefs "kapali varsayilan" derken default true idi; SmartDashboardPage/PageIndicator/SettingsHomeScreenSection "flag sabit false, P24 bekliyor" diyordu ama dashboardEnabledForPager artik HomePagerRolloutPolicy'den geliyor. (3) Firebase test metni durustlestirildi (TR+EN): "SDK yapilandirmasi dogrulandi; panel gorunurlugu konsoldan ayrica kontrol edilmeli". Sonnet agent uyguladi. PAKET F kapanis kapisi: v1.4.2 (125) tam test + APK.
+
+**Bug:** fix_encoding.py values-en XML'ini bozdu (escape dizisi + .bak res klasorunde) — git checkout ile geri alindi, tek string Edit ile tekrar uygulandi. DERS: res/ altindaki XML'lere fix_encoding.py CALISTIRMA (.bak dosyasi mergeResources'i kirar, quote donusumu escape bozar).
+
+**Sonraki:** PAKET S (S1 tek BUGUN karti).
+
 ## F6 - 2026-07-19 - Cekmece kategori onClick + arama eventi duzeltmesi (P1)
 
 **Yapilanlar:** IDDIA A DOGRULANDI: arama sonucundaki kategori satiri tiklanabilir gorunuyordu ama onClick bosttu (AllAppsDrawer:678). FIX: onCategoryClick callback'i DrawerAppList->AllAppsDrawer->HomeScreen zinciriyle baglandi; tiklaninca cekmece kapanir + LauncherViewModel.openFolderByCategoryId ile klasor acilir (haptic dahil). IDDIA B KISMEN DOGRULANDI: search_performed eventi her tus vurusunda tetikleniyordu ve sourceMix sabit APPS_ONLY idi. FIX: 600ms debounce (LaunchedEffect restart iptali) + gercek kaynak karisimi (kategori/ayar/kisi/dosya varsa MIXED, yalniz dosya FILES_ONLY, sonucsuz OTHER); resultCount butun kaynaklari sayar. compileDebugKotlin yesil.

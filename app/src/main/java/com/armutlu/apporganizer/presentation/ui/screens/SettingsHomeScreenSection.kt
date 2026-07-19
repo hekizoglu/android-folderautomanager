@@ -602,8 +602,8 @@ fun SettingsHomeScreenSection(
 
     // ── Ana Sayfa Yapısı (Döngü P17) ─────────────────────────────────────
     // Dashboard istemeyen kullanıcıların hızlı klasör deneyimini korur — bu ayarlar tercihi
-    // HomePagePrefs'e yazar; Akıllı Dashboard'ın pager'da fiilen görünmesi P24'ü bekliyor
-    // (HomeScreen.kt satır ~1341-1346, dashboardEnabledForPager bilinçli olarak false).
+    // HomePagePrefs'e yazar; Akıllı Dashboard'ın pager'da fiilen görünmesi HomePagerRolloutPolicy
+    // üzerinden bu tercihe bağlıdır (P24/P25 tamamlandı, HomeScreen.kt dashboardEnabled).
     SettingsSectionTitle(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_structure_title))
     var smartDashboardEnabled by remember {
         mutableStateOf(com.armutlu.apporganizer.utils.HomePagePrefs.isSmartDashboardEnabled(context))

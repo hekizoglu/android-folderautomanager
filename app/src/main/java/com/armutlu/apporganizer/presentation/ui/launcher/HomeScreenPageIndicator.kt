@@ -37,10 +37,11 @@ import kotlinx.coroutines.launch
  *
  * Döngü P14 — artık [pages] (`List<HomePageSpec>`) alır, sadece `pageCount` değil: bu sayede
  * Dashboard sayfası klasör sayfalarından görsel olarak ayırt edilebilir (ev ikonu vs. nokta).
- * `dashboardEnabledForPager=false` iken (bugünkü varsayılan, P24 bekliyor) `pages` listesinde
- * hiçbir [HomePageSpec.Dashboard] ELEMANI OLMAZ (`HomePagePlanner.buildPages` bunu garanti eder)
- * — bu durumda tüm item'lar `isDashboard=false` döner ve görünüm bugünküyle BİREBİR aynı kalır
- * (yalnız standart noktalar, ev ikonu hiç render edilmez). Roadmap kabul kriteri budur.
+ * `dashboardEnabledForPager=false` iken `pages` listesinde hiçbir [HomePageSpec.Dashboard]
+ * ELEMANI OLMAZ (`HomePagePlanner.buildPages` bunu garanti eder) — bu durumda tüm item'lar
+ * `isDashboard=false` döner ve görünüm standart noktalarla sınırlı kalır (ev ikonu render
+ * edilmez). `dashboardEnabledForPager` artık `HomePagerRolloutPolicy` üzerinden gerçek kullanıcı
+ * tercihine bağlı (P24/P25 tamamlandı).
  *
  * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md Döngü P14 (satır 1115-1171).
  */

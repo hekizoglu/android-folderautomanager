@@ -39,14 +39,11 @@ import com.armutlu.apporganizer.domain.models.HomeSectionId
  * FolderStatsRow, HomeFavoritesSection) doğrudan çağrılmasıdır — görsel/mantıksal davranışları
  * HomeScreen.kt'deki eski konumlarıyla birebir aynıdır.
  *
- * ÖNEMLİ (P06 koşullu ikili yerleşim kararı — bkz. görev raporu): Bu composable şu an yalnız
- * `HomePagerHost`'un `dashboardContent` slotundan çağrılır ve `dashboardEnabledForPager` P24'e
- * kadar `false` sabit olduğu için EKRANDA GÖRÜNMEZ. Aynı bileşenler HomeScreen.kt'de eski
- * konumlarında (pager slotunun başında, klasör grid'inin üstünde) render EDİLMEYE DEVAM EDER —
- * tek doğruluk kaynağı aynı alt composable çağrılarıdır, sadece iki farklı çağıran (caller) var.
- * P24 `dashboardEnabledForPager`'ı gerçek tercihe bağladığında HomeScreen'deki eski çağrı
- * bloğu `if (!dashboardEnabled)` koşuluyla kapatılacak (bu döngüde henüz yapılmadı — flag hâlâ
- * sabit false, davranış değişmemeli).
+ * ÖNEMLİ (P06/P25 güncel durum): Bu composable `HomePagerHost`'un `dashboardContent` slotundan
+ * çağrılır; görünürlüğü HomeScreen.kt:1391 `HomePagerRolloutPolicy.dashboardEnabled` ile gerçek
+ * kullanıcı tercihinden hesaplanır. HomeScreen.kt'deki eski pager-dışı kopya (Dashboard/ticker/
+ * favoriler blokları) P25/F7'de kaldırıldı — artık tek doğruluk kaynağı bu composable ve
+ * HomePagerHost'un ilgili slotlarıdır.
  *
  * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md Döngü P06 (satır 676-756),
  * Bölüm 1.2 "Sayfa 0" içerik listesi (satır 90-105).

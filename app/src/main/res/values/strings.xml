@@ -778,7 +778,7 @@
     <string name="usage_data_ci_build_test_disabled">Bu derlemede Firebase kapalı</string>
     <string name="usage_data_status_idle">Henüz bağlantı testi yapılmadı.</string>
     <string name="usage_data_status_testing">Firebase yapılandırması test ediliyor…</string>
-    <string name="usage_data_status_success">Bağlantı testi başarılı.</string>
+    <string name="usage_data_status_success">SDK yapılandırması doğrulandı. Panel görünürlüğü Firebase konsolundan ayrıca kontrol edilmelidir.</string>
     <string name="usage_data_status_partial">Firebase yapılandırması bulundu. Servis erişimi sonraki bağlantı testinde doğrulanacak.</string>
     <string name="usage_data_status_failed">Firebase yapılandırması bulunamadı.</string>
     <string name="usage_data_result_configuration">Firebase yapılandırması: %1$s</string>

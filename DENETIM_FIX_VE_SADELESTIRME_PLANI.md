@@ -2,15 +2,11 @@
 
 > **Oluşturma:** 2026-07-19 · **Kaynak:** Harici kapsamlı denetim raporu (Fable triyajı ile) · **Kural:** Her madde önce KODA KARŞI DOĞRULANIR, sonra düzeltilir — rapor statik analizdi, yanlış alarm olabilir (bkz. A3 dersi). Tamamlanan bölüm HISTORY'ye taşınır + silinir; dosya boşalınca silinir. Her 6 döngüde APK.
 
-## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
+## PAKET F — Güvenlik & Mantık Fix'leri
 
-> ✅ **F1-F6 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
+> ✅ **PAKET F TAMAMLANDI (2026-07-19, F1-F7)** — tüm iddialar koda karşı doğrulandı ve kapatıldı; ayrıntılar HISTORY.md'de.
 
-### F7 — Küçük tutarlılık temizliği (P2)
-`if (false && ticker...)` ölü kodu; home pager varsayılan yorum/kod çelişkisi (KEY_HOME_PAGER_V2 vs KEY_SMART_DASHBOARD default'ları — tek doğruluk kaynağına indir); Firebase bağlantı testi metnini dürüstleştir ("SDK yapılandırması başarılı; panel görünürlüğü ayrıca doğrulanmalı").
-Durum: ⏳ Bekliyor
-
-## PAKET S — Sadeleştirme (F bitince)
+## PAKET S — Sadeleştirme
 
 ### S1 — Tek "BUGÜN" kartı
 HomeIntelligenceCardsRow (2 kart) + Bugün Yüklendi + asistan satırları → TEK bağlamsal kart: öncelik sırası (kritik izin > riskli görev > klasör incelemesi > rapor hazır > denge özeti). M07 birincil-aksiyon seçici temel alınır. Eski kartlar toggle'larla geri açılabilir (güç kullanıcı).

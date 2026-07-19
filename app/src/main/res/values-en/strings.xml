@@ -767,7 +767,7 @@
     <string name="usage_data_ci_build_test_disabled">Firebase is disabled in this build</string>
     <string name="usage_data_status_idle">No connection test has been run yet.</string>
     <string name="usage_data_status_testing">Testing Firebase configurationâ€¦</string>
-    <string name="usage_data_status_success">Connection test succeeded.</string>
+    <string name="usage_data_status_success">SDK configuration verified. Dashboard visibility should be confirmed separately in the Firebase console.</string>
     <string name="usage_data_status_partial">Firebase configuration found. Service access will be verified by the next connection test.</string>
     <string name="usage_data_status_failed">Firebase configuration was not found.</string>
     <string name="usage_data_result_configuration">Firebase configuration: %1$s</string>

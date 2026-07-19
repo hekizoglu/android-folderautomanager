@@ -7,7 +7,7 @@ object AppPrefs {
     const val KEY_ONBOARDING_DONE = "onboarding_done"
     const val KEY_LAUNCHER_SETUP_SHOWN = "launcher_setup_shown"
 
-    // P24 rollout gate: kapali varsayilan, demo/test cihazinda ayarlardan acilabilir.
+    // P24/P25 tamamlandı: pager v2 varsayılan AÇIK; safe-mode sorun çıkarsa eski davranışa döndürür.
     const val KEY_HOME_PAGER_V2_ENABLED = "home_pager_v2_enabled"
     const val KEY_HOME_PAGER_V2_SAFE_MODE = "home_pager_v2_safe_mode"
 
