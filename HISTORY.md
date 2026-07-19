@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## S1 - 2026-07-20 - Tek "BUGUN" karti (sadelestirme)
+
+**Yapilanlar:** Dashboard'daki 3 bilgi yuzeyi (HomeIntelligenceCardsRow 2 kart + bugun yuklenenler + AssistantInsightRow) tek baglamsal TodayCard'a indi. Yeni: TodayCardSelector (saf domain, oncelik: kritik izin [pulse UNAVAILABLE] > riskli gorev [urgent/AT_RISK] > klasor incelemesi [ORGANIZATION_UNCATEGORIZED] > rapor hazir [ticker WEEKLY_REPORT] > denge ozeti; girdisizse null) + TodayCard composable (GlassCard, kind'a gore dogru aksiyona yonlendirir). KEY_TODAY_CARD_ENABLED varsayilan ACIK; kapatinca eski yuzeyler aynen geri gelir (hicbir composable silinmedi). Settings > Ana Sayfa Yapisi'na toggle. TR+EN string'ler. 8 selector testi + compile yesil. Sonnet uyguladi, Fable dogruladi.
+
+**Bug:** Yok.
+
+**Sonraki:** S2 odul yuzeyi sadelestirme.
+
 ## F7 - 2026-07-19 - Tutarlilik temizligi + PAKET F KAPANDI (P2)
 
 **Yapilanlar:** 3 iddia da dogrulandi. (1) HomeScreen'deki 3 buyuk if(false) olu blogu silindi (~276 satir — P25'ten kalan pager-disi eski kopyalar; parantez dengesi 397/397 dogrulandi). (2) Bayat yorumlar kodla eslendi: AppPrefs "kapali varsayilan" derken default true idi; SmartDashboardPage/PageIndicator/SettingsHomeScreenSection "flag sabit false, P24 bekliyor" diyordu ama dashboardEnabledForPager artik HomePagerRolloutPolicy'den geliyor. (3) Firebase test metni durustlestirildi (TR+EN): "SDK yapilandirmasi dogrulandi; panel gorunurlugu konsoldan ayrica kontrol edilmeli". Sonnet agent uyguladi. PAKET F kapanis kapisi: v1.4.2 (125) tam test + APK.

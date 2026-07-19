@@ -5,6 +5,7 @@ import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.PulseAction
 import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
+import com.armutlu.apporganizer.domain.home.TodayCardSpec
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.utils.InsightCard
@@ -26,6 +27,11 @@ data class DashboardIntelligenceState(
     val mission: HomeMissionSummary?,
     val digitalLifeCardVisible: Boolean,
     val pulse: HomePulseSummary?,
+    // Görev S1 — açıkken bu bölümün (HomeMissionCard+DigitalLifeCard) yerine tek TodayCard çizilir.
+    // [todayCardSpec] null ise (TodayCardSelector hiçbir önceliği seçemedi) kart hiç gösterilmez —
+    // eski ayrı kartlar da geri GELMEZ (todayCardEnabled açıkken tek doğruluk kaynağı budur).
+    val todayCardEnabled: Boolean = false,
+    val todayCardSpec: TodayCardSpec? = null,
 )
 
 data class DashboardRecentInstallsState(

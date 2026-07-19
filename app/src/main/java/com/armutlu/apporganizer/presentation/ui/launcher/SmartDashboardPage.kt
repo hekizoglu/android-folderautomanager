@@ -57,18 +57,32 @@ internal fun SmartDashboardPage(
     val scrollState = rememberScrollState()
 
     // P06 madde 8: Dashboard boş kalırsa yalnız saat + öneri açıklaması gösterilir.
-    val hasAnyContent = state.intelligence.missionsEnabled ||
-        (state.intelligence.digitalLifeCardVisible && state.intelligence.pulse != null) ||
-        state.recentInstalls.let { it.enabled && it.apps.isNotEmpty() } ||
-        state.secondarySections.googleSearchEnabled ||
-        (state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty()) ||
-        (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled && state.insights.insightCards.isNotEmpty()) ||
-        (state.ticker.tickerEnabled && !state.ticker.tickerMuted) ||
-        (!state.ticker.tickerEnabled && state.ticker.folders.isNotEmpty()) ||
-        state.favorites.favoritesEnabled ||
-        state.favorites.suggestionsEnabled ||
-        state.favorites.recentNotificationAppsEnabled ||
-        state.favorites.recentAppsEnabled
+    // Görev S1 — todayCardEnabled açıkken intelligence/recentInstalls/insight koşulları yerine
+    // tek todayCardSpec varlığı kontrol edilir (bu üç bölüm todayCard açıkken hiç çizilmez).
+    val hasAnyContent = if (state.intelligence.todayCardEnabled) {
+        state.intelligence.todayCardSpec != null ||
+            state.secondarySections.googleSearchEnabled ||
+            (state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty()) ||
+            (state.ticker.tickerEnabled && !state.ticker.tickerMuted) ||
+            (!state.ticker.tickerEnabled && state.ticker.folders.isNotEmpty()) ||
+            state.favorites.favoritesEnabled ||
+            state.favorites.suggestionsEnabled ||
+            state.favorites.recentNotificationAppsEnabled ||
+            state.favorites.recentAppsEnabled
+    } else {
+        state.intelligence.missionsEnabled ||
+            (state.intelligence.digitalLifeCardVisible && state.intelligence.pulse != null) ||
+            state.recentInstalls.let { it.enabled && it.apps.isNotEmpty() } ||
+            state.secondarySections.googleSearchEnabled ||
+            (state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty()) ||
+            (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled && state.insights.insightCards.isNotEmpty()) ||
+            (state.ticker.tickerEnabled && !state.ticker.tickerMuted) ||
+            (!state.ticker.tickerEnabled && state.ticker.folders.isNotEmpty()) ||
+            state.favorites.favoritesEnabled ||
+            state.favorites.suggestionsEnabled ||
+            state.favorites.recentNotificationAppsEnabled ||
+            state.favorites.recentAppsEnabled
+    }
 
     // Döngü P07 madde 1-3: kullanılabilir Dashboard yüksekliği `BoxWithConstraints` ile ölçülür
     // (arama çubuğu/indicator/dock zaten HomeShell seviyesinde bu Box'ın dışında kaldığı için
@@ -113,17 +127,35 @@ internal fun SmartDashboardPage(
                 .padding(top = if (compactClock) 16.dp else clockTopPadding, bottom = 8.dp)
         )
 
-        HomeIntelligenceCardsRow(
-            missionsEnabled = state.intelligence.missionsEnabled,
-            mission = state.intelligence.mission,
-            digitalLifeCardVisible = state.intelligence.digitalLifeCardVisible,
-            pulse = state.intelligence.pulse,
-            onMissionClick = actions.onMissionClick,
-            onPulseClick = actions.onPulseClick,
-            onPulseReasonAction = actions.onPulseReasonAction,
-        )
+        // Görev S1 — todayCardEnabled açıkken tek bağlamsal "BUGÜN" kartı, HomeIntelligenceCardsRow
+        // (HomeMissionCard+DigitalLifeCard) yerine geçer. spec null ise (TodayCardSelector hiçbir
+        // önceliği seçemedi) HİÇBİR ŞEY çizilmez — kapalıyken eski davranış AYNEN korunur.
+        if (state.intelligence.todayCardEnabled) {
+            state.intelligence.todayCardSpec?.let { spec ->
+                TodayCard(
+                    spec = spec,
+                    onMissionClick = actions.onMissionClick,
+                    onPulseClick = actions.onPulseClick,
+                    onFolderReviewClick = actions.onOpenFolderStats,
+                    onReportReadyClick = actions.onOpenWeeklyReport,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                )
+            }
+        } else {
+            HomeIntelligenceCardsRow(
+                missionsEnabled = state.intelligence.missionsEnabled,
+                mission = state.intelligence.mission,
+                digitalLifeCardVisible = state.intelligence.digitalLifeCardVisible,
+                pulse = state.intelligence.pulse,
+                onMissionClick = actions.onMissionClick,
+                onPulseClick = actions.onPulseClick,
+                onPulseReasonAction = actions.onPulseReasonAction,
+            )
+        }
 
-        if (state.recentInstalls.enabled && state.recentInstalls.apps.isNotEmpty()) {
+        if (!state.intelligence.todayCardEnabled && state.recentInstalls.enabled && state.recentInstalls.apps.isNotEmpty()) {
             val recentInstallsTitle = stringResource(R.string.recent_installs_home_chip_title)
             val recentInstallsCount = state.recentInstalls.apps.size
             val recentInstallsSubtitle = if (recentInstallsCount == 1) {
@@ -221,7 +253,12 @@ internal fun SmartDashboardPage(
                 }
 
                 DashboardContentGroup.INSIGHTS_AND_TICKER -> {
-                    if (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled) {
+                    // Görev S1 — todayCardEnabled açıkken assistant insight satırı TodayCard'a
+                    // devredilir, ayrıca çizilmez (ticker satırı bu kuralın dışında kalır — S1
+                    // görev tanımı yalnız intelligence+recentInstalls+insight satırlarını kapsar).
+                    if (!state.intelligence.todayCardEnabled &&
+                        state.insights.assistantCardsEnabled && !state.insights.tickerEnabled
+                    ) {
                         if (state.insights.insightCards.isNotEmpty()) {
                             AssistantInsightRow(
                                 cards = state.insights.insightCards,
@@ -335,13 +372,18 @@ internal fun dashboardGroupOrder(contentOrder: List<HomeSectionId>): List<Dashbo
  */
 internal fun countVisibleSections(state: DashboardUiState): Int {
     var count = 1 // Saat (PulseClockWidget) her zaman render edilir.
-    if (state.intelligence.missionsEnabled) count++
-    if (state.intelligence.digitalLifeCardVisible && state.intelligence.pulse != null) count++
-    if (state.recentInstalls.enabled && state.recentInstalls.apps.isNotEmpty()) count++
     val hideSecondaryRows = state.hideSecondaryRowsForIme
+    if (state.intelligence.todayCardEnabled) {
+        // Görev S1 — intelligence/recentInstalls/insight üç ayrı bölüm yerine tek TodayCard.
+        if (state.intelligence.todayCardSpec != null) count++
+    } else {
+        if (state.intelligence.missionsEnabled) count++
+        if (state.intelligence.digitalLifeCardVisible && state.intelligence.pulse != null) count++
+        if (state.recentInstalls.enabled && state.recentInstalls.apps.isNotEmpty()) count++
+        if (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled && state.insights.insightCards.isNotEmpty()) count++
+    }
     if (!hideSecondaryRows && state.secondarySections.googleSearchEnabled) count++
     if (!hideSecondaryRows && state.secondarySections.widgetAreaEnabled && state.secondarySections.widgetIds.isNotEmpty()) count++
-    if (state.insights.assistantCardsEnabled && !state.insights.tickerEnabled && state.insights.insightCards.isNotEmpty()) count++
     if (state.ticker.tickerEnabled && !state.ticker.tickerMuted) {
         count++
     } else if (!state.ticker.tickerEnabled && state.ticker.folders.isNotEmpty()) {

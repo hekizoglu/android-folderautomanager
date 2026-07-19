@@ -8,9 +8,7 @@
 
 ## PAKET S — Sadeleştirme
 
-### S1 — Tek "BUGÜN" kartı
-HomeIntelligenceCardsRow (2 kart) + Bugün Yüklendi + asistan satırları → TEK bağlamsal kart: öncelik sırası (kritik izin > riskli görev > klasör incelemesi > rapor hazır > denge özeti). M07 birincil-aksiyon seçici temel alınır. Eski kartlar toggle'larla geri açılabilir (güç kullanıcı).
-Durum: ⏳ Bekliyor
+> ✅ **S1 tamamlandı (2026-07-20)** — HISTORY.md'de.
 
 ### S2 — Ödül yüzeyi sadeleştirme
 Görevler ekranı başlığında yalnız: Yıldız + Seviye + Seri. Görev puanı/altın seri/dondurma → görev detay/genişletilebilir bölüm. Görev puanı kullanıcı ekonomisi olarak gizlenir (pulse girdisi kalır). Usta (100⭐) seviyesine gerçek ödül: özel saat stili + klasör teması.

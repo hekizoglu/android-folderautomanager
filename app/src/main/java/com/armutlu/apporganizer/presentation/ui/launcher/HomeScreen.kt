@@ -149,6 +149,9 @@ fun HomeScreen(
     // KEY_HOME_SCORE_VISIBLE tercihini ilk çağrıda bir kez migrate eder.
     var digitalLifeCardVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDigitalLifeCardVisible(context)) }
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
+    // Görev S1 — tek "BUGÜN" kartı ayarı; açıkken SmartDashboardPage intelligence/recentInstalls/
+    // insight bölümlerini TodayCard ile değiştirir.
+    var todayCardEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTodayCardEnabled(context)) }
     val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
     val tickerItems by viewModel.tickerItems.collectAsState()
     val homePulseSummary by viewModel.homePulseSummary.collectAsState()
@@ -309,6 +312,8 @@ fun HomeScreen(
                     recentInstallsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)
                     viewModel.refreshTodayInstalled()
                 }
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_TODAY_CARD_ENABLED ->
+                    todayCardEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTodayCardEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
                     gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_LONG_PRESS ->
@@ -1306,6 +1311,20 @@ fun HomeScreen(
                                 mission = homeMissionSummary,
                                 digitalLifeCardVisible = digitalLifeCardVisible,
                                 pulse = homePulseSummary,
+                                todayCardEnabled = todayCardEnabled,
+                                todayCardSpec = remember(todayCardEnabled, homeMissionSummary, homePulseSummary, tickerItems) {
+                                    if (!todayCardEnabled) {
+                                        null
+                                    } else {
+                                        com.armutlu.apporganizer.domain.home.TodayCardSelector.select(
+                                            mission = homeMissionSummary,
+                                            pulse = homePulseSummary,
+                                            weeklyReportReady = tickerItems.any {
+                                                it.type == com.armutlu.apporganizer.domain.home.SmartTickerType.WEEKLY_REPORT
+                                            },
+                                        )
+                                    }
+                                },
                             ),
                             recentInstalls = DashboardRecentInstallsState(
                                 enabled = recentInstallsEnabled,

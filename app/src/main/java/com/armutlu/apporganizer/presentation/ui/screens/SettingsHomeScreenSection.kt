@@ -611,6 +611,10 @@ fun SettingsHomeScreenSection(
     var startPageMode by remember {
         mutableStateOf(com.armutlu.apporganizer.utils.HomePagePrefs.getStartPageMode(context))
     }
+    // Görev S1 — tek "BUGÜN" kartı; varsayılan AÇIK (yeni özellik=ayar kuralı).
+    var todayCardEnabled by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTodayCardEnabled(context))
+    }
     SettingsCard {
         SettingsSwitchRow(
             icon = Icons.Default.Dashboard,
@@ -682,6 +686,17 @@ fun SettingsHomeScreenSection(
                 }
             }
         }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Star,
+            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_today_card_enabled_title),
+            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_today_card_enabled_desc),
+            checked = todayCardEnabled,
+            onCheckedChange = {
+                todayCardEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setTodayCardEnabled(context, it)
+            }
+        )
     }
 
     // ── Tüm Uygulamalar Ekranı ────────────────────────────────────────────

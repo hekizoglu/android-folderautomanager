@@ -447,6 +447,16 @@
     <string name="settings_start_page_mode_restore_last">Last Page</string>
     <string name="settings_home_usage_chart_visible_title">24-Hour Chart Under Balance</string>
     <string name="settings_home_usage_chart_visible_desc">Shows the last 24 hours of usage as a mini chart under the score ring</string>
+
+    <!-- Task S1 — Single "TODAY" card (TodayCardSelector/TodayCard) -->
+    <string name="today_card_title">Today</string>
+    <string name="today_card_critical_permission_subtitle">Some features need a permission</string>
+    <string name="today_card_risky_mission_subtitle">A task deadline is approaching</string>
+    <string name="today_card_folder_review_subtitle">A few apps are waiting for a folder</string>
+    <string name="today_card_report_ready_subtitle">Your weekly report is ready</string>
+    <string name="today_card_balance_summary_subtitle">Your balance looks good today</string>
+    <string name="settings_today_card_enabled_title">Single \'Today\' card</string>
+    <string name="settings_today_card_enabled_desc">Shows one contextual card instead of separate task, digital life and suggestion cards; turning it off brings the separate cards back</string>
     <string name="pulse_usage_chart_content_desc">Usage chart for the last 24 hours</string>
 
     <!-- HomeTickerRow â€” Smart Pulse strip (Cycle T04) -->

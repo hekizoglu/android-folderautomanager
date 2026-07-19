@@ -451,6 +451,16 @@
     <string name="settings_start_page_mode_first_folder">İlk Klasör</string>
     <string name="settings_start_page_mode_restore_last">Son Sayfa</string>
 
+    <!-- Görev S1 — Tek "BUGÜN" kartı (TodayCardSelector/TodayCard) -->
+    <string name="today_card_title">Bugün</string>
+    <string name="today_card_critical_permission_subtitle">Bazı özellikler için izin gerekiyor</string>
+    <string name="today_card_risky_mission_subtitle">Bir görevin süresi daralıyor</string>
+    <string name="today_card_folder_review_subtitle">Birkaç uygulama klasör bekliyor</string>
+    <string name="today_card_report_ready_subtitle">Haftalık raporun hazır</string>
+    <string name="today_card_balance_summary_subtitle">Bugün dengen gayet iyi görünüyor</string>
+    <string name="settings_today_card_enabled_title">Tek \'Bugün\' kartı</string>
+    <string name="settings_today_card_enabled_desc">Görev, dijital yaşam ve öneri kartları yerine tek bağlamsal kart gösterilir; kapatınca ayrı kartlar geri gelir</string>
+
     <!-- HomeTickerRow — Akıllı Nabız şeridi (Döngü T04) -->
     <string name="ticker_mute_8h">8 saat sessize al</string>
     <string name="ticker_mute_1d">1 gün sessize al</string>

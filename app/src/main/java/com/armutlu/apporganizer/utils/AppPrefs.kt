@@ -721,6 +721,13 @@ object AppPrefs {
     fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)
     fun setMissionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSIONS_ENABLED, v).apply()
 
+    // Görev S1 — Dashboard'da tek bağlamsal "BUGÜN" kartı. Açıkken HomeMissionCard/DigitalLifeCard/
+    // AssistantInsightRow/bugün yüklenenler satırı yerine TodayCard çizilir; kapalıyken mevcut
+    // bireysel kart toggle'ları (missions_enabled, digital_life_card_visible, ...) AYNEN çalışır.
+    const val KEY_TODAY_CARD_ENABLED = "today_card_enabled"
+    fun isTodayCardEnabled(context: Context) = prefs(context).getBoolean(KEY_TODAY_CARD_ENABLED, true)
+    fun setTodayCardEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TODAY_CARD_ENABLED, v).apply()
+
     // Dongu G5 — Kutlama & Mikro-etkilesim (GOREV_SISTEMI_AKILLI_GELISTIRME_PLANI.md G5).
     // Kapaliyken: tamamlanma animasyonu, 3/3 gunu parilti VE sabah ozeti sirit ogesi TAMAMEN
     // kapanir (haptic de dahil — kullanici tum mikro-etkilesimi istemiyorsa hicbiri kalmaz).
