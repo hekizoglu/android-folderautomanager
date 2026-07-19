@@ -127,8 +127,12 @@ class RealSmartTickerSource @Inject constructor(
             val pulseSnapshot = digitalPulseRepository.state.value.valueOrNull()
             val missionItems = MissionPulseTickerFactory.missionCandidates(missionSummary, nowMillis)
             val pulseItems = MissionPulseTickerFactory.pulseCandidates(pulseSnapshot, nowMillis)
+            val streakItems = MissionPulseTickerFactory.streakCandidates(
+                currentStreak = missionSummary?.currentStreak ?: 0,
+                nowMillis = nowMillis,
+            )
 
-            val allCandidates = composed + missionItems + pulseItems
+            val allCandidates = composed + missionItems + pulseItems + streakItems
 
             // Döngü T02: en fazla 3 yüksek değerli öğe + tekrar/suistimal önleme (roadmap 2.7).
             // Suppression mevcut SuggestionCoordinator/SharedPrefsSuggestionHistoryStore üzerinden
@@ -144,7 +148,8 @@ class RealSmartTickerSource @Inject constructor(
                             dedupeKey = key,
                             highValue = key == "notification_summary" ||
                                 key.startsWith("mission_at_risk_") ||
-                                key == "mission_all_completed",
+                                key == "mission_all_completed" ||
+                                key.startsWith("streak_milestone_"),
                             timeSensitive = key == "notification_summary" ||
                                 key == "low_confidence_review" ||
                                 key.startsWith("mission_at_risk_"),

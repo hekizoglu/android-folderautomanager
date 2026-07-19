@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,6 +77,22 @@ internal fun HomeMissionCard(
                     maxLines = 1,
                     modifier = Modifier.weight(1f),
                 )
+                if (summary != null && summary.currentStreak >= 2) {
+                    val streakDescription = stringResource(
+                        R.string.home_mission_streak_content_description,
+                        summary.currentStreak,
+                    )
+                    Text(
+                        text = stringResource(R.string.home_mission_streak_badge, summary.currentStreak),
+                        color = Color.White.copy(alpha = 0.90f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .padding(end = 6.dp)
+                            .semantics { contentDescription = streakDescription },
+                    )
+                }
                 if (summary != null && summary.totalCount > 0) {
                     Text(
                         text = "${summary.completedCount}/${summary.totalCount}",

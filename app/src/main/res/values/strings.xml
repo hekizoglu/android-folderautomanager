@@ -605,6 +605,12 @@
     <string name="missions_total_stars">Toplam yıldız</string>
     <string name="missions_task_score_value">Görev puanı: %1$d</string>
     <string name="missions_task_score_delta">Son işlem: %1$s (%2$s)</string>
+    <!-- Dongu G4: Streak (Seri) Sistemi -->
+    <string name="missions_streak_row">🔥 %1$d gün · En iyi: %2$d</string>
+    <string name="missions_streak_golden_suffix"> · Altın seri: %1$d</string>
+    <string name="missions_streak_frozen_yesterday">Dün seri donduruldu ❄</string>
+    <string name="home_mission_streak_badge">🔥 %1$d</string>
+    <string name="home_mission_streak_content_description">%1$d günlük seri</string>
     <string name="missions_daily_section">Bugünün Görevleri</string>
     <string name="missions_weekly_section">Haftalık Görevler</string>
     <string name="missions_mark_done">Tamamladım</string>

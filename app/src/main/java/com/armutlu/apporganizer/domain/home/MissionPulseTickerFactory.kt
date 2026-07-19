@@ -32,12 +32,18 @@ object MissionPulseTickerFactory {
     /** Haftalık Dijital Yaşam skor değişiminin şeride girmesi için gereken minimum mutlak fark (roadmap satır 1757). */
     const val PULSE_SCORE_DELTA_THRESHOLD = 5
 
+    /** Dongu G4 — seri kilometre taşları (roadmap G4: "3/7/30 gün → MISSION_ACHIEVEMENT"). */
+    val STREAK_MILESTONES = listOf(3, 7, 30)
+
     private const val MS_PER_DAY = 24L * 3600 * 1000
     /** Görev/başarı öğeleri en fazla bir gün geçerli — ertesi gün yeni dönemin verisiyle yeniden üretilir. */
     private const val MISSION_ITEM_EXPIRY_MS = MS_PER_DAY
 
     /** Pulse öğeleri de aynı gün içinde geçerli — bir sonraki gün skor yeniden değerlendirilir. */
     private const val PULSE_ITEM_EXPIRY_MS = MS_PER_DAY
+
+    /** Seri kilometre taşı öğesi de aynı gün içinde geçerli. */
+    private const val STREAK_ITEM_EXPIRY_MS = MS_PER_DAY
 
     /**
      * Görev kaynaklı ticker adayları. Roadmap satır 1733-1739 üretim şartları:
@@ -142,6 +148,36 @@ object MissionPulseTickerFactory {
         }
 
         return items
+    }
+
+    /**
+     * Dongu G4 — seri kilometre taşı öğesi: [currentStreak] tam olarak [STREAK_MILESTONES]
+     * içindeki bir değere ULAŞTIĞI gün (>= değil == — aksi halde her gün aynı milestone tekrar
+     * üretilir, `suggestionKey` dedupe TickerRanker'da yalnız "aynı ID" için çalışır, gün
+     * değişince suggestionKey aynı kaldığı sürece yeniden gösterilmez ama expiresAt 1 gün olduğu
+     * için ertesi gün yine == kontrolüyle üretilmeyecektir çünkü seri o gün artık farklı bir
+     * sayıdadır). Dönemde bir kez: `suggestionKey = "streak_milestone_<n>"` — TickerRanker aynı
+     * suggestionKey'i tekrar göstermez (roadmap G4 "dönemde bir kez").
+     */
+    fun streakCandidates(
+        currentStreak: Int,
+        nowMillis: Long,
+    ): List<SmartTickerItem> {
+        val milestone = STREAK_MILESTONES.firstOrNull { it == currentStreak } ?: return emptyList()
+        return listOf(
+            SmartTickerItem(
+                id = "streak_milestone_${milestone}_${nowMillis / STREAK_ITEM_EXPIRY_MS}",
+                type = SmartTickerType.MISSION_ACHIEVEMENT,
+                title = "🔥 $milestone günlük seri!",
+                subtitle = "Görevleri gör",
+                icon = "🔥",
+                priority = 60,
+                createdAt = nowMillis,
+                expiresAt = nowMillis + STREAK_ITEM_EXPIRY_MS,
+                action = TickerAction.OpenMissions,
+                suggestionKey = "streak_milestone_$milestone",
+            )
+        )
     }
 
     /**

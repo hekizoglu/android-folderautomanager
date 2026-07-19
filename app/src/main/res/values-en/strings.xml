@@ -603,6 +603,12 @@
     <string name="missions_total_stars">Total stars</string>
     <string name="missions_task_score_value">Task score: %1$d</string>
     <string name="missions_task_score_delta">Last action: %1$s (%2$s)</string>
+    <!-- Cycle G4: Streak system -->
+    <string name="missions_streak_row">🔥 %1$d days · Best: %2$d</string>
+    <string name="missions_streak_golden_suffix"> · Golden streak: %1$d</string>
+    <string name="missions_streak_frozen_yesterday">Streak was frozen yesterday ❄</string>
+    <string name="home_mission_streak_badge">🔥 %1$d</string>
+    <string name="home_mission_streak_content_description">%1$d day streak</string>
     <string name="missions_daily_section">Today\'s Missions</string>
     <string name="missions_weekly_section">Weekly Missions</string>
     <string name="missions_mark_done">Mark as done</string>

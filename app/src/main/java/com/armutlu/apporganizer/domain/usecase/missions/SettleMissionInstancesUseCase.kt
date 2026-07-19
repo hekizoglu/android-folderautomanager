@@ -5,7 +5,10 @@ import com.armutlu.apporganizer.data.local.MissionHistoryDao
 import com.armutlu.apporganizer.data.local.MissionInstanceDao
 import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
+import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
+import com.armutlu.apporganizer.utils.MissionStreakPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -71,6 +74,9 @@ class SettleMissionInstancesUseCase @Inject constructor(
 
         /** UsageStats event gunlugunun tipik olarak eristigi gecmis pencere (gun). */
         private const val HISTORICAL_LOOKBACK_DAYS = 10
+
+        /** Dongu G4 — epochDay -> gun ortasi millis donusumu icin. */
+        private const val MS_PER_DAY = 24L * 3600 * 1000
     }
 
     /**
@@ -87,6 +93,14 @@ class SettleMissionInstancesUseCase @Inject constructor(
         var failures = 0
         var dataUnavailable = 0
         var skippedRetryLater = 0
+
+        // Dongu G4 — gunluk instance'larin bu cagrida SETTLE EDILEN (skippedRetryLater HARIC)
+        // sonuclarini periodStartEpoch (epochDay) bazinda topluyoruz; gun kapanisi kesinlestiginde
+        // (asagida donguden sonra) MissionStreakPrefs.advance TEK KEZ, o gunun completed/total
+        // sayisiyla cagirilir. Ayni epochDay birden fazla gorev icerebilir (ör. 2 gunluk gorev) —
+        // bu yuzden gorev bazinda degil, GUN bazinda advance cagirmak dogru "en az 1 tamamlandi mi"
+        // sorusuna cevap verir.
+        val dailyOutcomesByEpochDay = mutableMapOf<Long, MutableList<Boolean>>()
 
         for (instance in overdue) {
             val ageMs = now - instance.periodEndAt
@@ -134,6 +148,11 @@ class SettleMissionInstancesUseCase @Inject constructor(
                 MissionStatus.DATA_UNAVAILABLE -> dataUnavailable++
                 else -> failures++
             }
+
+            if (instance.periodType == MissionInstanceEntity.PERIOD_DAILY) {
+                dailyOutcomesByEpochDay.getOrPut(instance.periodStartEpoch) { mutableListOf() }
+                    .add(evaluation.status == MissionStatus.COMPLETED)
+            }
         }
 
         if (settledCount > 0 || skippedRetryLater > 0) {
@@ -142,6 +161,31 @@ class SettleMissionInstancesUseCase @Inject constructor(
                     "dataUnavailable=$dataUnavailable retryLater=$skippedRetryLater",
             )
         }
+
+        // Dongu G4 — her kapanan gunun seri durumunu GUNCELLE. MissionStreakPrefs.advance kendi
+        // idempotency'sini tasir (lastCountedEpochDay ayniysa hicbir sey degismez) — burada ayrica
+        // "zaten sayildi mi" kontrolu GEREKMEZ, ama yine de guvenlik icin runCatching ile sarilir:
+        // seri hesaplama hatasi ODUL/INSTANCE durumunu ETKILEMEMELI (bagimsiz katman).
+        runCatching {
+            dailyOutcomesByEpochDay.forEach { (epochDay, outcomes) ->
+                val completedCount = outcomes.count { it }
+                val totalCount = outcomes.size
+                // Dondurma hakkinin haftalik yenilenmesi SETTLENEN GUNUN kendi ISO haftasina gore
+                // olmali (settlement gecikmis gunleri toplu isleyebilir — "now"in haftasi yanlis
+                // olur). Gunun ortasina (12:00) sabitlenmis bir Clock ile o gunun haftasi cozulur.
+                val dayMiddayMillis = epochDay * MS_PER_DAY + MS_PER_DAY / 2
+                val dayResolver = PeriodBoundaryResolver(Clock.fixed(Instant.ofEpochMilli(dayMiddayMillis), zoneId), zoneId)
+                val weekBoundary = dayResolver.currentIsoWeek()
+                val weekStartEpochDay = weekBoundary.weekStartEpochDay ?: weekBoundary.epochDay
+                MissionStreakPrefs.advance(
+                    context = context,
+                    epochDay = epochDay,
+                    completedCount = completedCount,
+                    totalCount = totalCount,
+                    weekStartEpochDayForFreezeCheck = weekStartEpochDay,
+                )
+            }
+        }.onFailure { e -> Timber.w(e, "MissionStreakPrefs.advance basarisiz (settlement etkilenmedi)") }
 
         return SettlementResult(
             settledCount = settledCount,

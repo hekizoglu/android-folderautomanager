@@ -7,6 +7,7 @@ import com.armutlu.apporganizer.domain.usecase.missions.MissionAction
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.missions.MissionSummaryUseCase
 import com.armutlu.apporganizer.utils.TaskScoreManager
+import java.time.LocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -65,6 +66,11 @@ class MissionsViewModel @Inject constructor(
         val taskScoreLastEvent: String = "",
         val celebrateStars: Int? = null, // yeni kazanilan yildiz — tebrik karti tetikler
         val loading: Boolean = true,
+        // Dongu G4 — Streak (Seri) Sistemi.
+        val currentStreak: Int = 0,
+        val bestStreak: Int = 0,
+        val goldenStreak: Int = 0,
+        val streakFrozenYesterday: Boolean = false,
     )
 
     private val _uiState = MutableStateFlow(MissionsUiState())
@@ -96,6 +102,7 @@ class MissionsViewModel @Inject constructor(
     private suspend fun computeAndAward(): MissionsUiState {
         val result = missionSummaryUseCase.compute(awardStars = true)
         val taskScore = TaskScoreManager.getSnapshotV2(context)
+        val todayEpochDay = LocalDate.now().toEpochDay()
         return MissionsUiState(
             totalStars = result.totalStars,
             daily = result.daily.map { it.toMissionUi() },
@@ -105,6 +112,10 @@ class MissionsViewModel @Inject constructor(
             taskScoreLastEvent = taskScore.lastEventLabel,
             celebrateStars = result.newlyAwardedStars.takeIf { it > 0 },
             loading = false,
+            currentStreak = result.streak.currentStreak,
+            bestStreak = result.streak.bestStreak,
+            goldenStreak = result.streak.goldenStreak,
+            streakFrozenYesterday = result.streak.wasFrozenYesterday(todayEpochDay),
         )
     }
 

@@ -1,11 +1,14 @@
 package com.armutlu.apporganizer.domain.usecase.missions
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.armutlu.apporganizer.data.local.MissionHistoryDao
 import com.armutlu.apporganizer.data.local.MissionInstanceDao
 import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
+import com.armutlu.apporganizer.utils.MissionStreakPrefs
+import io.mockk.every
 import io.mockk.mockk
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
@@ -34,6 +37,61 @@ class SettleMissionInstancesUseCaseTest {
     // Pass-through transaction runner — gercek Room gerektirmez, sadece blogu calistirir.
     private val passthroughTransactionRunner = object : MissionSettlementTransactionRunner {
         override suspend fun <T> runInTransaction(block: suspend () -> T): T = block()
+    }
+
+    /**
+     * Dongu G4 — basit in-memory SharedPreferences fake'i. MissionStreakPrefs settlement
+     * icinde bu Context uzerinden cagrilir; testler gercek Android SharedPreferences olmadan
+     * seri ilerlemesini dogrudan okuyabilsin diye kullanilir.
+     */
+    private class FakeSharedPreferences : SharedPreferences {
+        val values = mutableMapOf<String, Any?>()
+
+        override fun getAll(): MutableMap<String, *> = values
+        override fun getString(key: String?, defValue: String?): String? = values[key] as? String ?: defValue
+        override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? =
+            @Suppress("UNCHECKED_CAST") (values[key] as? MutableSet<String> ?: defValues)
+        override fun getInt(key: String?, defValue: Int): Int = values[key] as? Int ?: defValue
+        override fun getLong(key: String?, defValue: Long): Long = values[key] as? Long ?: defValue
+        override fun getFloat(key: String?, defValue: Float): Float = values[key] as? Float ?: defValue
+        override fun getBoolean(key: String?, defValue: Boolean): Boolean = values[key] as? Boolean ?: defValue
+        override fun contains(key: String?): Boolean = values.containsKey(key)
+        override fun edit(): SharedPreferences.Editor = FakeEditor(this)
+        override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) = Unit
+        override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) = Unit
+    }
+
+    private class FakeEditor(private val prefs: FakeSharedPreferences) : SharedPreferences.Editor {
+        private val pending = mutableMapOf<String, Any?>()
+        private var cleared = false
+
+        override fun putString(key: String?, value: String?): SharedPreferences.Editor = apply { pending[key!!] = value }
+        override fun putStringSet(key: String?, values: MutableSet<String>?): SharedPreferences.Editor = apply { pending[key!!] = values }
+        override fun putInt(key: String?, value: Int): SharedPreferences.Editor = apply { pending[key!!] = value }
+        override fun putLong(key: String?, value: Long): SharedPreferences.Editor = apply { pending[key!!] = value }
+        override fun putFloat(key: String?, value: Float): SharedPreferences.Editor = apply { pending[key!!] = value }
+        override fun putBoolean(key: String?, value: Boolean): SharedPreferences.Editor = apply { pending[key!!] = value }
+        override fun remove(key: String?): SharedPreferences.Editor = apply { pending[key!!] = REMOVE_MARKER }
+        override fun clear(): SharedPreferences.Editor = apply { cleared = true }
+        override fun commit(): Boolean {
+            apply()
+            return true
+        }
+        override fun apply() {
+            if (cleared) prefs.values.clear()
+            pending.forEach { (k, v) -> if (v === REMOVE_MARKER) prefs.values.remove(k) else prefs.values[k] = v }
+            pending.clear()
+        }
+
+        companion object {
+            private val REMOVE_MARKER = Any()
+        }
+    }
+
+    private fun fakeContextWithPrefs(prefs: FakeSharedPreferences): Context {
+        val context = mockk<Context>(relaxed = true)
+        every { context.getSharedPreferences(any(), any()) } returns prefs
+        return context
     }
 
     private class FakeMissionInstanceDao(
@@ -179,8 +237,9 @@ class SettleMissionInstancesUseCaseTest {
         instanceDao: FakeMissionInstanceDao,
         historyDao: FakeMissionHistoryDao = FakeMissionHistoryDao(),
         usageStatsSource: MissionUsageStatsSource = FakeUsageStatsSource(),
+        context: Context = mockk<Context>(relaxed = true),
     ): SettleMissionInstancesUseCase = SettleMissionInstancesUseCase(
-        context = mockk<Context>(relaxed = true),
+        context = context,
         transactionRunner = passthroughTransactionRunner,
         missionInstanceDao = instanceDao,
         missionHistoryDao = historyDao,
@@ -412,5 +471,81 @@ class SettleMissionInstancesUseCaseTest {
         assertEquals(MissionInstanceEntity.STATUS_COMPLETED, dao.store[instance.instanceId]?.status)
         assertEquals(123L, dao.store[instance.instanceId]?.settledAt)
         assertTrue(historyDao.entries.isEmpty()) // mission_history'ye dokunmadi — caller zaten yazdi.
+    }
+
+    // ---- Dongu G4 — settlement -> MissionStreakPrefs entegrasyonu ----
+
+    @Test
+    fun `settling a day with a completed mission advances the streak to 1`() = runBlocking {
+        val epochDay = 100L
+        val instance = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, epochDay, targetValue = 180L)
+        val dao = FakeMissionInstanceDao(listOf(instance))
+        val usage = FakeUsageStatsSource(dailyMinutesByEpochDay = mapOf(epochDay to 90L))
+        val prefs = FakeSharedPreferences()
+        val useCase = buildUseCase(dao, usageStatsSource = usage, context = fakeContextWithPrefs(prefs))
+
+        useCase.settleOverdue(instance.periodEndAt + 1_000L)
+
+        val streak = MissionStreakPrefs.read(fakeContextWithPrefs(prefs))
+        assertEquals(1, streak.currentStreak)
+        assertEquals(1, streak.bestStreak)
+    }
+
+    @Test
+    fun `settling a day where the mission failed does not advance the streak`() = runBlocking {
+        val epochDay = 100L
+        val instance = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, epochDay, targetValue = 180L)
+        val dao = FakeMissionInstanceDao(listOf(instance))
+        // 180/180 -> FAILED (bkz. "day end 180 of 180 fails without star" testi).
+        val usage = FakeUsageStatsSource(dailyMinutesByEpochDay = mapOf(epochDay to 180L))
+        val prefs = FakeSharedPreferences()
+        val useCase = buildUseCase(dao, usageStatsSource = usage, context = fakeContextWithPrefs(prefs))
+
+        useCase.settleOverdue(instance.periodEndAt + 1_000L)
+
+        val streak = MissionStreakPrefs.read(fakeContextWithPrefs(prefs))
+        assertEquals(0, streak.currentStreak)
+    }
+
+    @Test
+    fun `settling three consecutive overdue days in one catch-up call builds a three day streak`() = runBlocking {
+        val instances = (1L..3L).map { offset ->
+            val epochDay = 100L + offset
+            dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, epochDay, targetValue = 180L)
+        }
+        val dao = FakeMissionInstanceDao(instances)
+        val dailyMinutes = instances.associate { it.periodStartEpoch to 90L }
+        val usage = FakeUsageStatsSource(dailyMinutesByEpochDay = dailyMinutes)
+        val prefs = FakeSharedPreferences()
+        val useCase = buildUseCase(dao, usageStatsSource = usage, context = fakeContextWithPrefs(prefs))
+
+        val now = instances.maxOf { it.periodEndAt } + 1_000L
+        useCase.settleOverdue(now)
+
+        // Uc ayri gun tek cagrida settle edildi -> her biri kendi epochDay'i ile advance edilir,
+        // sonuc ardisik 3 gunluk seri olmali (gunler ardisik: 101,102,103).
+        val streak = MissionStreakPrefs.read(fakeContextWithPrefs(prefs))
+        assertEquals(3, streak.currentStreak)
+        assertEquals(3, streak.bestStreak)
+    }
+
+    @Test
+    fun `settling the same day twice does not double count the streak`() = runBlocking {
+        val epochDay = 100L
+        val instance = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, epochDay, targetValue = 180L)
+        val dao = FakeMissionInstanceDao(listOf(instance))
+        val usage = FakeUsageStatsSource(dailyMinutesByEpochDay = mapOf(epochDay to 90L))
+        val prefs = FakeSharedPreferences()
+        val context = fakeContextWithPrefs(prefs)
+        val useCase = buildUseCase(dao, usageStatsSource = usage, context = context)
+
+        useCase.settleOverdue(instance.periodEndAt + 1_000L)
+        assertEquals(1, MissionStreakPrefs.read(context).currentStreak)
+
+        // Instance artik assigned degil -> ikinci cagri no-op (getUnsettledBefore bos doner),
+        // dolayisiyla streak icin de ikinci bir advance TETIKLENMEZ. Ayrica MissionStreakPrefs
+        // idempotency guard'i da (lastCountedEpochDay ayniysa) ayni sonucu garanti eder.
+        useCase.settleOverdue(instance.periodEndAt + 10_000L)
+        assertEquals(1, MissionStreakPrefs.read(context).currentStreak)
     }
 }

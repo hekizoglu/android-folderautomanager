@@ -27,6 +27,9 @@ data class HomeMissionSummary(
     // icin degil, sertte "tek eylemle tamamlanabilir" ureticisinin (>= 0.99) ham veriye
     // dayanmasi icin eklendi — onceden yalniz metin (remainingText) tahminine dayaniyordu.
     val primaryProgressFraction: Float? = null,
+    // Dongu G4 — gunluk seri sayisi (en az 1 gorev tamamlanan ardisik gun). HomeMissionCard
+    // koseginde "N>=2 ise" 🔥 rozeti icin kullanilir (roadmap G4).
+    val currentStreak: Int = 0,
 )
 
 /**
@@ -40,7 +43,10 @@ data class HomeMissionSummary(
  */
 object HomeMissionSummarySelector {
 
-    fun build(missions: List<MissionSummaryUseCase.MissionOutcome>): HomeMissionSummary {
+    fun build(
+        missions: List<MissionSummaryUseCase.MissionOutcome>,
+        currentStreak: Int = 0,
+    ): HomeMissionSummary {
         val totalCount = missions.size
         val completedCount = missions.count { it.status == MissionStatus.COMPLETED }
 
@@ -56,6 +62,7 @@ object HomeMissionSummarySelector {
             primaryStatus = primary?.status,
             urgent = primary?.status == MissionStatus.AT_RISK,
             primaryProgressFraction = primary?.progressFraction,
+            currentStreak = currentStreak,
         )
     }
 

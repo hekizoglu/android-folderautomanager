@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G4 - 2026-07-19 - Streak (seri) sistemi
+
+**Yapilanlar:** MissionStreakPrefs (advancePure saf fonksiyon: ardisik +1, 1 gun bosluk+haftalik dondurma hakki otomatik harcanir seri korunur, 2+ bosluk nazik sifirlama CEZASIZ; golden 3/3 ayri sayac; bestStreak azalmaz; ISO hafta basinda hak tazelenir); settlement entegrasyonu (gun bazli grup, idempotent, runCatching — odul akisini etkilemez); HomeMissionCard "🔥 N" rozeti + MissionsScreen seri satiri + dondurma bilgisi; 3/7/30 kilometre taslari ticker MISSION_ACHIEVEMENT. TR/EN stringler (EN unutulmadi). 10+4 yeni test; TUM PROJE 1054 test 0 hata.
+
+**Bug:** Yok.
+
+**Sonraki:** G8 cihaz duzeni icgorulerinin (zincir devam).
+
 ## G2 - 2026-07-19 - Gorev satiri tikla-aksiyon genisletmesi
 
 **Yapilanlar:** Gorev satirinin TAMAMI tiklanabilir (Row.clickable + chevron ipucu, buton kalkti; haptic + role=Button + "Acmak icin dokun" semantics); YENI MissionAction.OpenDoNotDisturbSettings — gece gorevi sistem Rahatsiz Etmeyin ayarina gider (ZEN_MODE_PRIORITY_SETTINGS), cihaz cozemezse resolveActivity fallback -> kullanim raporu (UI katmaninda, JVM test korundu); DATA_UNAVAILABLE izin CTA onceligi korundu. Fable duzeltmesi: 2 eksik EN string eklendi. Mission testleri + yeni router testi yesil. 6. dongu APK kurali: v1.3.99 (122).

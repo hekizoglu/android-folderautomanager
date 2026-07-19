@@ -71,6 +71,10 @@ fun MissionsScreen(
                 taskScore = uiState.taskScore,
                 taskScoreDelta = uiState.taskScoreDelta,
                 taskScoreLastEvent = uiState.taskScoreLastEvent,
+                currentStreak = uiState.currentStreak,
+                bestStreak = uiState.bestStreak,
+                goldenStreak = uiState.goldenStreak,
+                streakFrozenYesterday = uiState.streakFrozenYesterday,
             )
         }
 
@@ -125,6 +129,10 @@ private fun StarsHeader(
     taskScore: Int,
     taskScoreDelta: Int,
     taskScoreLastEvent: String,
+    currentStreak: Int = 0,
+    bestStreak: Int = 0,
+    goldenStreak: Int = 0,
+    streakFrozenYesterday: Boolean = false,
 ) {
     Card(
         modifier = Modifier
@@ -165,6 +173,29 @@ private fun StarsHeader(
                         taskScoreLastEvent,
                         if (taskScoreDelta > 0) "+$taskScoreDelta" else taskScoreDelta.toString(),
                     ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                )
+            }
+            // Dongu G4 — Streak (Seri) Sistemi: sadece anlamli bir seri varsa gosterilir (>=1),
+            // "0 gün" gibi olumsuz bir mesaj asla uretilmez (M08 ceza yok ilkesi).
+            if (currentStreak >= 1) {
+                Spacer(Modifier.height(8.dp))
+                val goldenSuffix = if (goldenStreak >= 1) {
+                    stringResource(R.string.missions_streak_golden_suffix, goldenStreak)
+                } else {
+                    ""
+                }
+                Text(
+                    text = stringResource(R.string.missions_streak_row, currentStreak, bestStreak) + goldenSuffix,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+            if (streakFrozenYesterday) {
+                Text(
+                    text = stringResource(R.string.missions_streak_frozen_yesterday),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
                 )

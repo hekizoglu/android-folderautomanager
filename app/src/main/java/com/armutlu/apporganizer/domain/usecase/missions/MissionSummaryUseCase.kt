@@ -6,6 +6,7 @@ import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
+import com.armutlu.apporganizer.utils.MissionStreakPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock
 import java.time.LocalDate
@@ -57,6 +58,10 @@ class MissionSummaryUseCase @Inject constructor(
         val daily: List<MissionOutcome>,
         val weekly: List<MissionOutcome>,
         val newlyAwardedStars: Int,
+        // Dongu G4 — okuma amacli, MissionStreakPrefs.read() ile doldurulur (compute() DB yazimi
+        // yapmaz, sadece SettleMissionInstancesUseCase.settleOverdue TARAFINDAN ilerletilmis
+        // durumu YANSITIR). awardStars=false cagrilarinda da guvenle okunabilir.
+        val streak: MissionStreakPrefs.StreakState,
     )
 
     // Aninda (eylem sayisi/bayrak) tamamlanabilir gorevler — SADECE bunlar awardStars=true iken
@@ -210,6 +215,7 @@ class MissionSummaryUseCase @Inject constructor(
             daily = daily,
             weekly = weekly,
             newlyAwardedStars = newStars,
+            streak = MissionStreakPrefs.read(context),
         )
     }
 
