@@ -1492,7 +1492,7 @@ enum class HomeDeviceClass { PHONE, COMPACT_TABLET, EXPANDED_TABLET }
 
 **Bağımlılıklar:** P06, P19.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü P20 — tarih: 2026-07-18 — Not: HomeAdaptiveLayoutPolicy eklendi; 600/840dp kırılımları tek kaynağa alındı; HomeScreen kolon, tablet side panel, global arama ve dock max-width kararlarını bu politikadan türetiyor. `:app:compileDebugKotlin` yeşil. Odaklı test yeşil: `:app:testDebugUnitTest --tests HomeAdaptiveLayoutPolicyTest --tests HomeScreenNavigationContractTest`. Gerçek telefon/tablet portrait-landscape görsel kabul kanıtı eksik olduğu için `Tamamlandı` değil.
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P20 — tarih: 2026-07-18 — Not: HomeAdaptiveLayoutPolicy eklendi; 600/840dp kırılımları tek kaynağa alındı; HomeScreen kolon, tablet side panel, global arama ve dock max-width kararlarını bu politikadan türetiyor. `:app:compileDebugKotlin` yeşil. Odaklı test yeşil: `:app:testDebugUnitTest --tests HomeAdaptiveLayoutPolicyTest --tests HomeScreenNavigationContractTest`. FAZ A-1 (2026-07-19, cihaz: R92Y200CBKX Samsung SM-X210 tablet, Android 15): portrait ve landscape ekran görüntüleri kırpma/taşma olmadan doğrulandı (Dashboard kartları, 6 sütun klasör grid, dock, arama çubuğu hepsi düzgün render), ANCAK rotasyon değişimi hemen ardından folder-sayfası swipe'ı yapıldığında gerçek cihazda crash bulundu: `java.lang.IllegalArgumentException: measure is called on a deactivated node` (LazyGrid, androidx.compose.foundation.lazy.grid) — activity otomatik yeniden başladı, veri kaybı olmadı, uygulama içi Hata Raporları'na da düştü. Görsel kabul kanıtı artık var ama bu crash nedeniyle `Tamamlandı` değil — düzeltme bu turun kapsamı dışında, FİKİRLER.md'ye yeni görev olarak eklendi. Kalan: rotasyon+swipe crash fix + diğer 3 cihazda (telefon, temiz kurulum, izin-kapalı) doğrulama.
 
 ---
 
@@ -1558,7 +1558,7 @@ device_class = phone | compact_tablet | expanded_tablet
 
 **Bağımlılıklar:** Telemetri roadmap'inin merkezi manager döngüsü, P05.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü P21 — tarih: 2026-07-18 — Not: Privacy-safe home page telemetry event katalogu eklendi (`home_page_viewed`, `home_page_swiped`, start/toggle/search/drawer/home-button event şemaları); HomePageTelemetryPolicy saf mapper eklendi; HomeScreen settled page impression'ı `RESTORE`, sonraki page değişimlerini `SWIPE` olarak logluyor. Global search, All Apps drawer açılışları, home button navigation, başlangıç modu değişimi ve Smart Dashboard toggle call-site'ları privacy-safe parametrelerle bağlandı. Odaklı test yeşil: `:app:testDebugUnitTest --tests TelemetryEventValidatorTest --tests HomePageTelemetryEventValidatorTest --tests HomePageTelemetryPolicyTest`. `scripts/clear_test_locks.ps1` ile Windows generated test kilitleri temizlenebilir. Kalan: gerçek cihazda consent-off/no-remote-log smoke ve DebugView/remote no-op kanıtı.
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P21 — tarih: 2026-07-18 — Not: Privacy-safe home page telemetry event katalogu eklendi (`home_page_viewed`, `home_page_swiped`, start/toggle/search/drawer/home-button event şemaları); HomePageTelemetryPolicy saf mapper eklendi; HomeScreen settled page impression'ı `RESTORE`, sonraki page değişimlerini `SWIPE` olarak logluyor. Global search, All Apps drawer açılışları, home button navigation, başlangıç modu değişimi ve Smart Dashboard toggle call-site'ları privacy-safe parametrelerle bağlandı. Odaklı test yeşil: `:app:testDebugUnitTest --tests TelemetryEventValidatorTest --tests HomePageTelemetryEventValidatorTest --tests HomePageTelemetryPolicyTest`. `scripts/clear_test_locks.ps1` ile Windows generated test kilitleri temizlenebilir. FAZ A-1 (2026-07-19, cihaz: R92Y200CBKX): telemetry consent kararı verilmemiş halde (fail-closed, `isTelemetryEnabled=false` varsayılan) ana ekran gezinme (dashboard swipe, klasör aç, global arama, home button) yapıldı; tam logcat taraması (2210 satır) `home_page_viewed/swiped`, `logEvent`, `setUserProperty` veya Firebase `FA` tag aktivitesi göstermedi — consent-off fail-closed davranışı cihazda kanıtlandı. Kalan: Firebase DebugView/remote konsolunda no-op teyidi (bu adb-only turun kapsamı dışında, ayrı Firebase erişimi gerektirir).
 
 ---
 
@@ -1591,7 +1591,7 @@ Gesture policy: Normal / Search kilidi / Modal kilidi
 
 **Bağımlılıklar:** P02, P05.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü P22 — tarih: 2026-07-18 — Not: Sağlık raporuna `[Ana Ekran Mimarisi]` eklendi; AI tanı paketine `homeArchitecture.*` metrikleri eklendi. Rapor yalnız mod, başlangıç sayfası tipi, son sayfa tipi, toplam/folder sayfa sayısı, global arama konumu, pager restore ve gesture policy özetini verir; categoryId/klasör adı/paket/sorgu yazmaz. Odaklı test yeşil: `:app:testDebugUnitTest --tests DiagnosticsReportManagerTest`; derleme yeşil: `:app:compileDebugKotlin`. Kalan: gerçek cihaz raporu kabul kanıtı.
+**Durum:** ✅ Tamamlandı — Döngü P22 — tarih: 2026-07-19 — Cihaz kanıtı: R92Y200CBKX (Fable hasadı: Ayarlar > İstatistikler & Raporlar > Sağlık Raporu ile üretilen gerçek TXT dosyasında `[Ana Ekran Mimarisi]` bölümü canlı verilerle (mode=Akilli Dashboard, startPage=Dashboard, lastPageType=Klasor, totalPages=7, folderPages=6, searchPosition=Alt, pagerRestore=OK, gesturePolicy=Normal, pagerV2Enabled=true) doğru render oldu; categoryId/klasör adı/paket adı raporda yok — gizlilik kriteri de sağlandı). Not (Döngü P22 orijinal): Sağlık raporuna `[Ana Ekran Mimarisi]` eklendi; AI tanı paketine `homeArchitecture.*` metrikleri eklendi. Odaklı test yeşil: `:app:testDebugUnitTest --tests DiagnosticsReportManagerTest`; derleme yeşil: `:app:compileDebugKotlin`.
 
 ---
 
@@ -1639,7 +1639,7 @@ home_page_switch
 
 **Bağımlılıklar:** P05, P06.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü P23 — tarih: 2026-07-18 — Not: HomeScreen folder search sonucu `remember(baseFolders, homeSearchEnabled, folderSearchQuery)` ile anahtarlandı; drag sırasında sayfa içi klasör sayısı `drop/take` yerine hazır `spec.folders.size` üzerinden okunuyor. Odaklı test yeşil: `:app:testDebugUnitTest --tests HomeScreenNavigationContractTest --tests LauncherViewModelLogicTest`; derleme yeşil: `:app:compileDebugKotlin`. Kalan: trace eventleri, baseline profile/macrobenchmark veya cihaz üstü jank ölçüm kanıtı.
+**Durum:** ✅ Tamamlandı — Döngü P23 — tarih: 2026-07-19 — Cihaz kanıtı: R92Y200CBKX (Fable hasadı: `adb shell dumpsys gfxinfo` ile izole ölçümde 404 frame / %14.11 janky frame oranı — %20 kabul eşiğinin altında; 50p=28ms, 90p=44ms, 99p=150ms). Not (Döngü P23 orijinal): HomeScreen folder search sonucu `remember(baseFolders, homeSearchEnabled, folderSearchQuery)` ile anahtarlandı; drag sırasında sayfa içi klasör sayısı `drop/take` yerine hazır `spec.folders.size` üzerinden okunuyor. Odaklı test yeşil: `:app:testDebugUnitTest --tests HomeScreenNavigationContractTest --tests LauncherViewModelLogicTest`; derleme yeşil: `:app:compileDebugKotlin`. Not: baseline profile/macrobenchmark trace altyapısı hâlâ yok (ayrı görev), ama gerçek cihaz jank ölçüm kanıtı bu turda sağlandı.
 
 ---
 
@@ -1676,7 +1676,7 @@ KEY_HOME_PAGER_V2_ENABLED
 
 **Bağımlılıklar:** P03–P23.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü P24 — tarih: 2026-07-18 — Not: `AppPrefs` içine kapalı varsayılan `KEY_HOME_PAGER_V2_ENABLED` ve `KEY_HOME_PAGER_V2_SAFE_MODE` eklendi; HomeScreen flag'i reaktif dinliyor; Debug/Geliştirici bölümüne demo toggle'ları eklendi; sağlık raporu ve AI tanı paketine rollout/safe-mode durumu eklendi. Politika testi ve Kotlin derlemesi yeşil. Kalan: gerçek cihazda flag aç/kapat, safe-mode ve dört cihaz kanıtı; fallback davranışı P25'e kadar korunacak.
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P24 — tarih: 2026-07-18 — Not: `AppPrefs` içine kapalı varsayılan `KEY_HOME_PAGER_V2_ENABLED` ve `KEY_HOME_PAGER_V2_SAFE_MODE` eklendi; HomeScreen flag'i reaktif dinliyor; Debug/Geliştirici bölümüne demo toggle'ları eklendi; sağlık raporu ve AI tanı paketine rollout/safe-mode durumu eklendi. Politika testi ve Kotlin derlemesi yeşil. FAZ A-1 (2026-07-19, cihaz: R92Y200CBKX) tek cihazda tam senaryo kanıtlandı: pager v2 OFF → HOME legacy folder-grid'e (Dashboard yok, sayfa noktası yok) reaktif geçti, crashsiz; ON → Dashboard geri geldi; pager v2 ON + safe mode ON → HOME yine legacy görünüme düştü ve ayar satırı "Safe mode aktif; eski davranış korunuyor" olarak güncellendi, crashsiz; her geçişte logcat FATAL taraması temiz. Kalan: kalan 3 cihazda (telefon, temiz kurulum, izin-kapalı) aynı senaryonun doğrulanması; fallback davranışı P25'e kadar korunacak.
 
 ---
 
@@ -1708,7 +1708,7 @@ KEY_HOME_PAGER_V2_ENABLED
 
 **Bağımlılıklar:** P24 gerçek cihaz doğrulaması.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü P25 — tarih: 2026-07-18 — Not: Repo-wide kullanım araması yapıldı. `HomeScreenFolderPager.kt` artık eski pager değil, tek sayfa grid renderer; `HomeScreenPageIndicator.kt` yeni indicator; `FOLDER_GRID` layout modelinde hâlâ gerekli. Runtime’da semantic anchor yazılırken ham `last_home_page` indeksini tekrar yazan legacy senkron kaldırıldı; eski anahtar yalnız migration/restore uyumluluğu için tutuluyor. Kalan: dört cihaz kanıtından sonra diğer legacy API ve test fixture temizliği.
+**Durum:** 🟡 Kısmen tamamlandı — Döngü P25 — tarih: 2026-07-18 — Not: Repo-wide kullanım araması yapıldı. `HomeScreenFolderPager.kt` artık eski pager değil, tek sayfa grid renderer; `HomeScreenPageIndicator.kt` yeni indicator; `FOLDER_GRID` layout modelinde hâlâ gerekli. Runtime’da semantic anchor yazılırken ham `last_home_page` indeksini tekrar yazan legacy senkron kaldırıldı; eski anahtar yalnız migration/restore uyumluluğu için tutuluyor. FAZ A-1 (2026-07-19, cihaz: R92Y200CBKX) genel smoke testi crashsiz geçti: ana ekran, All Apps drawer (tablette yan panel olarak render), global arama ("meet" sorgusu doğru sonuç döndürdü), klasör açma hepsi sorunsuz; `last_home_page` anahtarının hâlâ sadece migration/restore için tutulduğu kod tarafında teyit edildi (yeni kullanım yok). Kalan: dört cihaz kanıtı tamamlanmadan (bu turda sadece 1/4 cihaz test edildi) diğer legacy API ve test fixture temizliği başlatılamaz.
 
 ---
 

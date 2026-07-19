@@ -2194,7 +2194,7 @@ Cihaz senaryoları:
 
 **Bağımlılıklar:** Tüm önceki döngüler.
 
-**Durum:** 🟡 Kısmen tamamlandı — Döngü U04 — commit: 5d3befe — tarih: 2026-07-18 — Unit test/lint/çeviri eşliği ve APK kapısı kanıtlandı. Açık kalan cihaz maddeleri: emülatör smoke, Compose UI test altyapısı (yok), gerçek cihaz matrisi (4 cihaz × 9 senaryo) — bu maddeler kanıtlanmadan roadmap tamamlandı sayılamaz.
+**Durum:** 🟡 Kısmen tamamlandı — Döngü U04 — commit: 5d3befe — tarih: 2026-07-18 — Unit test/lint/çeviri eşliği ve APK kapısı kanıtlandı. FAZ A-1 (2026-07-19, cihaz: R92Y200CBKX Samsung tablet) ile 9 senaryodan 1'i (ekran döndürme/tablet) gerçek cihazda kısmen kanıtlandı: portrait/landscape/folder-grid render sorunsuz ama rotasyon+swipe kombinasyonunda LazyGrid "measure is called on a deactivated node" IllegalArgumentException crash'i tetiklendi (activity kendini otomatik toparladı, veri kaybı yok — bkz. FİKİRLER.md yeni bug kaydı). Kalan: tek telefon + temiz kurulum + izin kapatma senaryoları + kalan 8 senaryo + emülatör smoke + Compose UI test altyapısı + tam 4 cihaz matrisi — bu maddeler kanıtlanmadan roadmap tamamlandı sayılamaz.
 
 ---
 

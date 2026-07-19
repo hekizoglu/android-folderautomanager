@@ -22,6 +22,7 @@
 | Tarih | Puan | Kaynak | Madde | Durum |
 |-------|------|--------|-------|-------|
 | 2026-06-16 | 19p | ROADMAP | **QUERY_ALL_PACKAGES Play Store beyan formu** — göndermeden önce zorunlu, aksi halde APK reddedilir. Play Console'da temel işlev gerekçesi, kullanıcı faydası ve daha dar görünürlük alternatiflerinin neden yetersiz olduğu kanıtlanmalı. (KV:5 · U:5 · BR:5 · EA:4 = **19p**) | Bekliyor ⚠️ — dış aksiyon (Play Console) gerekli |
+| 2026-07-19 | 17p | FAZ A-1 cihaz doğrulama | **🐛 Rotasyon + hızlı klasör-sayfası swipe crash'i** — Gerçek tablette (R92Y200CBKX, Android 15) `user_rotation` ile portrait↔landscape geçişi hemen ardından folder-grid sayfasında swipe yapılınca `java.lang.IllegalArgumentException: measure is called on a deactivated node` (androidx.compose.foundation.lazy.grid.LazyGridMeasuredItemProvider → LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure). Activity otomatik yeniden başlıyor (crash sonrası state korunuyor, veri kaybı yok) ama kullanıcı deneyimi kesintiye uğruyor. Uygulama içi Hata Raporları ekranına da düşüyor (in-app crash reporter çalışıyor). Muhtemel kök neden: rotasyon sırasında LazyGrid composition'ı deactivate edilirken measure pass'in yarışa girmesi (Compose recomposition/rotation race). ROADMAP P20 (adaptif düzen) kapsamına giriyor, P20'yi ✅'ya çevirmeyi engelliyor. (KV:4 · U:4 · BR:5 · EA:4 = **17p**) | Bekliyor — repro adımları: landscape/portrait rotasyonu hemen ardından folder page'de yatay swipe |
 
 ---
 
