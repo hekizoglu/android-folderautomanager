@@ -31,14 +31,7 @@
 
 > ✅ **G1+G7 ve G2 tamamlandı (2026-07-19)** - HISTORY.md'ye taşındı (commit'ler: 7355593, G2 kapanış commit'i HISTORY'de). Uygulama-spesifik görev tıklaması G3'te gelecek.
 
-### G3 - Görev Çeşitliliği: Yeni Görev Tipleri
-Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullanıcının zayıf alanına öncelik - InsightEngine/PulseScoreReason'dan beslenir):
-- **Uygulama-spesifik:** "Bugün [en çok kullandığın sosyal uygulama]'yı 45 dk altında tut" - hedef uygulama kullanıcının verisinden seçilir, adı görevde görünür (Firebase'e ASLA gitmez - U02 kuralı).
-- **Düzen görevleri:** "2 kategorisiz uygulamayı yerleştir", "Bir klasöre emoji/renk ver", "Hiç açmadığın 1 uygulamayı kaldır veya gizle".
-- **Odak görevi:** "Bugün 1 kez Focus Mode'da 45 dk geçir" (P18 preset'iyle entegre - açılış/kapanış zamanı ölçülür).
-- **Keşif görevleri (nadir, %10 ağırlık):** "Akıllı Nabız ayarlarına göz at", "Haftalık raporunu incele" - özellik keşfi + retention.
-- **Sabah pozitifi:** "İlk 30 dk'da sosyal medya açmadan başla" (gece görevinin sabah simetriği).
-- Kural: Aynı gün en az 1 "kaçınma" + 1 "eylem" görevi karışır (hepsi pasif bekleyiş olmasın - eylem görevleri anında tamamlanabilir, tatmin verir).
+> ✅ **G3a+G3b tamamlandı (2026-07-19)** — HISTORY.md'de. Havuz 7→13, ağırlıklı seçim + uygulama-spesifik limit görevi.
 
 > ✅ **G4 tamamlandı (2026-07-19)** - HISTORY.md'de.
 
@@ -60,14 +53,14 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 |---|---|---|---|
 | ~~G1~~ | ✅ Tamamlandı 2026-07-19 | 19 | HISTORY'de |
 | ~~G2~~ | ✅ Tamamlandı 2026-07-19 | 18 | HISTORY'de |
-| G3 | Görev çeşitliliği (18 görev + ağırlıklı seçim) | **17** (5+4+4+4) | En büyük içerik işi; 2 döngüye bölünebilir (G3a çekirdek tipler, G3b uygulama-spesifik) |
+| ~~G3~~ | ✅ Tamamlandı 2026-07-19 (a+b) | 17 | HISTORY'de |
 | ~~G4~~ | ✅ Tamamlandı 2026-07-19 | 17 | HISTORY'de |
 | ~~G5~~ | ✅ Tamamlandı 2026-07-19 | 15 | HISTORY'de |
 | G6 | Yıldız ekonomisi | **14** (4+3+4+3) | Kozmetik varlık üretimi gerektirir - sona |
 | ~~G7~~ | ✅ Tamamlandı 2026-07-19 (G1'e iliştirildi) | 13 | HISTORY'de |
 | ~~G8~~ | ✅ Tamamlandı 2026-07-19 | 16 | HISTORY'de |
 
-**Kalan uygulama sırası:** G3b → G6
+**Kalan uygulama sırası:** G6
 Toplam tahmin: 7-8 döngü. Her döngü tek commit, kademeli doğrulama, ara APK yok (kullanıcı kuralı).
 
 ## 4. Kırmızı Çizgiler (mevcut ilkeler korunur)

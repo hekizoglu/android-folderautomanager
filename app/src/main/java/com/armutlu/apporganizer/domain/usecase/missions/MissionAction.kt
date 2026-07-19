@@ -30,4 +30,11 @@ sealed interface MissionAction {
 
     /** Eylem gerektirmeyen gorev (orn. pasif/otomatik izlenen gorevler). */
     data object None : MissionAction
+
+    /**
+     * Dongu G3b — uygulama-spesifik gorevde (DAILY_APP_LIMIT) uzun basis: hedef uygulamanin
+     * Android "Uygulama Bilgisi" ekranini ac (Settings.ACTION_APPLICATION_DETAILS_SETTINGS +
+     * paket URI). [packageName] SADECE bu action nesnesinde tasinir, telemetriye YAZILMAZ.
+     */
+    data class OpenAppInfo(val packageName: String) : MissionAction
 }

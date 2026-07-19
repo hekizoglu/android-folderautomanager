@@ -58,6 +58,9 @@ class MissionsViewModel @Inject constructor(
         // cagrisinin sonucunu tasir, kalici bir "gorulmedi" bayragi tutmaz — celeprasyon zaten
         // LaunchedEffect(mission.id, justCompleted) ile bir kez tetiklenir).
         val justCompleted: Boolean = false,
+        // Dongu G3b — SADECE DAILY_APP_LIMIT icin dolu gelir (uzun basis "App Info" hedefi).
+        // Telemetriye ASLA yazilmaz (U02) — MissionsScreen SADECE Intent kurmak icin okur.
+        val longPressTargetPackageName: String? = null,
     ) {
         // M06'da status'e gore yeniden tasarlanana kadar UI kirilmasin diye korunur.
         val completed: Boolean get() = status == MissionStatus.COMPLETED
@@ -139,5 +142,6 @@ class MissionsViewModel @Inject constructor(
         action = action,
         actionLabel = actionLabel,
         justCompleted = justCompleted,
+        longPressTargetPackageName = longPressTargetPackageName,
     )
 }

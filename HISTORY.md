@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G3b - 2026-07-19 - Uygulama-spesifik gorevler
+
+**Yapilanlar:** DAILY_APP_LIMIT: "Bugun [uygulama]'yi X dk altinda tut" — aday saf secici (sosyal/oyun/video, 7g ort >=30dk, en yuksek kullanim; hedef medyan x0.8 x tempo, 15-360dk clamp); paket AppPrefs epochDay anahtarinda (DB semasi degismedi), donem boyunca sabit pin; per-package UsageStats okuma; dinamik baslik (PackageManager etiketi, fallback'li); uzun basis App Info (OpenAppInfo + dataPackage'li SystemIntent), tek tik kullanim raporu; BALANCE zayif alaninda 2x agirlik (havuz 13). TELEMETRI SIZINTISI YOK (HomeMissionType.NONE kosulsuz — dogrulandi). 13+7+2 yeni test, tam suite yesil.
+
+**Bug:** Yok. Ortam: 1 build kilidi SOP ile cozuldu.
+
+**Sonraki:** G6 — yildiz ekonomisi (FINAL: plan dosyasi kapanisi + APK).
+
 ## G5 - 2026-07-19 - Kutlama & mikro-etkilesim
 
 **Yapilanlar:** Tamamlanma aninda MissionRow scale+glow animasyonu + haptic (kutuphanesiz Animatable; reduced-motion'da haptic+renk); 3/3 gununde HomeMissionCard parilti + "Bugunu topladin ⭐⭐⭐" (gun basina bir kez, AppPrefs bayragi); sabah ozeti ticker'da "Dun 2/3 · Serin N gunde" (morning_summary_<epochDay> gunde bir, veri yoksa uretilmez); KEY_MISSION_CELEBRATIONS toggle (kapaliyken tumu sessiz). TR/EN tam. 212 test 0 hata.

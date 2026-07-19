@@ -9,6 +9,7 @@ import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import com.armutlu.apporganizer.utils.AppPrefs
+import java.time.LocalDate
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock
@@ -169,6 +170,25 @@ class MissionMetricSnapshotProvider @Inject constructor(
             }.getOrNull()
         }
 
+        // 8c. Dongu G3b — uygulama-spesifik gorev (DAILY_APP_LIMIT). Sadece izin VARSA
+        // (sessions != null) hesaplanir; aksi halde her ikisi de bos/null kalir (sahte
+        // veri UYDURULMAZ, MissionEngine.isEligible() zaten appLimitTargetMinutes==null
+        // durumunda gorevi havuza almaz).
+        val appLimitCandidates = if (sessions != null) {
+            runCatching { buildAppLimitCandidates(sessions, epochDay) }.getOrDefault(emptyList())
+        } else {
+            emptyList()
+        }
+        val pinnedAppLimitPackage = AppPrefs.getAppLimitTargetPackage(context, epochDay)
+        val appLimitUsageMinutesToday = if (pinnedAppLimitPackage != null && minutesByDay != null) {
+            todayEntries
+                ?.filter { it.packageName == pinnedAppLimitPackage }
+                ?.maxOfOrNull { it.foregroundDurationMs }
+                ?.let { it / TimeUnit.MINUTES.toMillis(1) }
+        } else {
+            null
+        }
+
         // 8. Snapshot.
         return MissionMetricSnapshot(
             capturedAt = nowMillis,
@@ -188,7 +208,41 @@ class MissionMetricSnapshotProvider @Inject constructor(
             wrappedReportViewedThisWeek = wrappedReportViewedThisWeek,
             socialAppOpenedInFirst30MinToday = socialAppOpenedInFirst30MinToday,
             focusModeMinutesToday = focusModeMinutesToday,
+            appLimitCandidates = appLimitCandidates,
+            appLimitUsageMinutesToday = appLimitUsageMinutesToday,
         )
+    }
+
+    /**
+     * Dongu G3b — sessions'daki HER paket icin son 7 TAMAMLANMIS gunun gunluk dakikalarini
+     * cikarir, kategorisini AppDao'dan okur (sadece eligible kategoride olanlar tutulur —
+     * gereksiz paketler icin kategori sorgusu atlanir, performans). AppLimitCandidateSelector
+     * bu listeden aday secip hedef hesaplar; burasi SADECE veri toplar, karar VERMEZ.
+     */
+    private suspend fun buildAppLimitCandidates(
+        sessions: List<DailyPackageUsage>,
+        epochDay: Long,
+    ): List<AppLimitCandidateSelector.PackageUsageCandidate> {
+        val minutesByPackageAndDay = sessions
+            .filter { it.epochDay < epochDay && it.epochDay >= epochDay - 7 }
+            .groupBy { it.packageName }
+            .mapValues { (_, entries) ->
+                entries.associate { it.epochDay to it.foregroundDurationMs / TimeUnit.MINUTES.toMillis(1) }
+            }
+        if (minutesByPackageAndDay.isEmpty()) return emptyList()
+
+        val eligiblePackages = AppLimitCandidateSelector.ELIGIBLE_CATEGORY_IDS
+            .flatMap { categoryId -> appDao.getPackageNamesByCategory(categoryId).map { it to categoryId } }
+            .toMap()
+
+        return minutesByPackageAndDay.mapNotNull { (packageName, dayMap) ->
+            val categoryId = eligiblePackages[packageName] ?: return@mapNotNull null
+            AppLimitCandidateSelector.PackageUsageCandidate(
+                packageName = packageName,
+                categoryId = categoryId,
+                dailyMinutesLast7Days = dayMap.values.toList(),
+            )
+        }
     }
 
     /**
@@ -234,4 +288,8 @@ fun MissionMetricSnapshot.toMissionCheckInput(): MissionEngine.MissionCheckInput
         ),
         socialAppOpenedInFirst30MinToday = socialAppOpenedInFirst30MinToday,
         focusModeMinutesToday = focusModeMinutesToday,
+        // appLimitTargetMinutes BURADA DEGIL — MissionSummaryUseCase.compute() aday secimini
+        // (AppLimitCandidateSelector + AppPrefs pin) yaptiktan SONRA .copy() ile ekler (bkz.
+        // personalScreenTarget/personalUnlockTarget ile AYNI desen).
+        appLimitUsageMinutesToday = appLimitUsageMinutesToday,
     )

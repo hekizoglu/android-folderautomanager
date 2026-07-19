@@ -692,4 +692,113 @@ class MissionEngineTest {
 
         assertEquals(first.map { it.id }, second.map { it.id })
     }
+
+    // Dongu G3b — DAILY_APP_LIMIT (uygulama-spesifik gorev). Aday yoksa (appLimitTargetMinutes
+    // null) gorev havuza HIC girmez; asagidaki testler bu sozlesmeyi ve evaluate() ust sinir
+    // davranisini dogrular. Paket adi MissionEngine seviyesinde HIC gecmez (U02) — sadece
+    // dakika degerleri tasinir.
+
+    @Test
+    fun `daily app limit is excluded from pool when no candidate target is assigned`() {
+        val missions = MissionEngine.generateDaily(
+            epochDay = 20_700L,
+            selection = MissionEngine.MissionSelectionInput(
+                checkInput = MissionEngine.MissionCheckInput(
+                    appLimitTargetMinutes = null,
+                    appLimitUsageMinutesToday = null,
+                )
+            )
+        )
+        assertFalse(missions.any { it.id == MissionEngine.DAILY_APP_LIMIT })
+    }
+
+    @Test
+    fun `daily app limit becomes eligible once a candidate target is assigned`() {
+        // Force it via cooldown-free selection input with a real target; run across a few seeds
+        // to make sure isEligible() genuinely allows it into the shuffled/weighted pool.
+        var sawAppLimit = false
+        for (day in 20_701L..20_720L) {
+            val missions = MissionEngine.generateDaily(
+                epochDay = day,
+                selection = MissionEngine.MissionSelectionInput(
+                    checkInput = MissionEngine.MissionCheckInput(
+                        appLimitTargetMinutes = 45L,
+                        appLimitUsageMinutesToday = 10L,
+                    )
+                )
+            )
+            if (missions.any { it.id == MissionEngine.DAILY_APP_LIMIT }) sawAppLimit = true
+        }
+        assertTrue("DAILY_APP_LIMIT hicbir seed'de secilmedi (havuzda olmali)", sawAppLimit)
+    }
+
+    @Test
+    fun `daily app limit evaluate is DATA_UNAVAILABLE when target is missing`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_APP_LIMIT, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val evaluation = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(appLimitTargetMinutes = null, appLimitUsageMinutesToday = 10L),
+        )
+        assertEquals(MissionStatus.DATA_UNAVAILABLE, evaluation.status)
+    }
+
+    @Test
+    fun `daily app limit evaluate follows upper limit semantics like screen time`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_APP_LIMIT, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val underInput = MissionEngine.MissionCheckInput(appLimitTargetMinutes = 45L, appLimitUsageMinutesToday = 20L)
+        assertEquals(MissionStatus.IN_PROGRESS, MissionEngine.evaluate(mission, underInput, dayEnded = false).status)
+        assertEquals(MissionStatus.COMPLETED, MissionEngine.evaluate(mission, underInput, dayEnded = true).status)
+
+        val overInput = MissionEngine.MissionCheckInput(appLimitTargetMinutes = 45L, appLimitUsageMinutesToday = 60L)
+        assertEquals(MissionStatus.FAILED, MissionEngine.evaluate(mission, overInput, dayEnded = false).status)
+
+        val atRiskInput = MissionEngine.MissionCheckInput(appLimitTargetMinutes = 100L, appLimitUsageMinutesToday = 85L)
+        assertEquals(MissionStatus.AT_RISK, MissionEngine.evaluate(mission, atRiskInput, dayEnded = false).status)
+    }
+
+    @Test
+    fun `daily app limit progress kind is upper limit`() {
+        assertEquals(
+            MissionProgressKind.UPPER_LIMIT,
+            MissionEngine.progressKindForMission(MissionEngine.DAILY_APP_LIMIT),
+        )
+    }
+
+    @Test
+    fun `daily app limit weak area weighting participates in BALANCE bucket`() {
+        // Run several seeds with a BALANCE weak area and a real app-limit candidate present;
+        // over enough seeds DAILY_APP_LIMIT should appear at least as often as an unweighted
+        // control run without a weak area (sanity — not a precise statistical assertion).
+        var withWeakArea = 0
+        var withoutWeakArea = 0
+        for (day in 20_800L..20_849L) {
+            val checkInput = MissionEngine.MissionCheckInput(
+                appLimitTargetMinutes = 45L,
+                appLimitUsageMinutesToday = 10L,
+            )
+            val weighted = MissionEngine.generateDaily(
+                epochDay = day,
+                selection = MissionEngine.MissionSelectionInput(
+                    checkInput = checkInput,
+                    weakArea = MissionEngine.WeakAreaCategory.BALANCE,
+                )
+            )
+            val unweighted = MissionEngine.generateDaily(
+                epochDay = day,
+                selection = MissionEngine.MissionSelectionInput(checkInput = checkInput)
+            )
+            if (weighted.any { it.id == MissionEngine.DAILY_APP_LIMIT }) withWeakArea++
+            if (unweighted.any { it.id == MissionEngine.DAILY_APP_LIMIT }) withoutWeakArea++
+        }
+        assertTrue(
+            "BALANCE agirlikli secim ($withWeakArea) agirliksizdan ($withoutWeakArea) daha az OLMAMALI",
+            withWeakArea >= withoutWeakArea,
+        )
+    }
 }

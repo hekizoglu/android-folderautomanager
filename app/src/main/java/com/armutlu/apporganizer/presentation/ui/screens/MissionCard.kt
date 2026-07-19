@@ -3,8 +3,10 @@ package com.armutlu.apporganizer.presentation.ui.screens
 import android.animation.ValueAnimator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -82,11 +84,16 @@ import com.armutlu.apporganizer.utils.AppPrefs
  * Reduced-motion (ValueAnimator.areAnimatorsEnabled() false) acikken animasyon ATLANIR — sadece
  * haptic + kisa renk vurgusu (arka plan alfa) kalir, HomePagerHost/FolderScreen ile ayni desen.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun MissionRow(
     mission: MissionsViewModel.MissionUi,
     onActionClick: () -> Unit,
     justCompleted: Boolean = false,
+    // Dongu G3b — SADECE mission.longPressTargetPackageName doluysa cagirilir (App Info).
+    // Diger gorev tiplerinde bu lambda hic tetiklenmez (asagida uzun basis, sadece hedef
+    // paket varsa kurulur).
+    onLongPressAction: () -> Unit = {},
 ) {
     val statusMeta = mission.status.toStatusMeta()
     val isActionable = !mission.completed && mission.actionLabel != null
@@ -115,14 +122,30 @@ internal fun MissionRow(
         }
     }
 
-    val rowModifier = if (isActionable) {
+    // Dongu G3b — DAILY_APP_LIMIT'te uzun basis App Info acar (plan G2 tablosu). combinedClickable
+    // hem tap hem long-press'i TEK Modifier'da tasir; longPressTargetPackageName null ise
+    // onLongPress lambda'si null gecilir (uzun basis GESTURE'i bile kurulmaz - digital gorevlerde
+    // yan etki YOK).
+    val hasLongPress = mission.longPressTargetPackageName != null
+    val rowModifier = if (isActionable || hasLongPress) {
         val tapHint = stringResource(R.string.mission_row_tap_hint, mission.title)
         Modifier
             .fillMaxWidth()
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onActionClick()
-            }
+            .combinedClickable(
+                onClick = {
+                    if (!isActionable) return@combinedClickable
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onActionClick()
+                },
+                onLongClick = if (hasLongPress) {
+                    {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongPressAction()
+                    }
+                } else {
+                    null
+                },
+            )
             .semantics {
                 role = Role.Button
                 contentDescription = tapHint

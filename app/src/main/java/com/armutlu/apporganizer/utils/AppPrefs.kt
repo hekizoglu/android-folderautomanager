@@ -1115,6 +1115,25 @@ object AppPrefs {
         return stored + activeMinutes
     }
 
+    // Dongu G3b — DAILY_APP_LIMIT gorevi icin gunluk hedef PAKET adi saklanir. DB semasi
+    // DEGISMEZ (mission_instances yeni kolon almaz) — en temiz yol epochDay-anahtarli basit
+    // SharedPreferences kaydi (KEY_FOCUS_MINUTES_TODAY ile AYNI desen). Paket adi SADECE bu
+    // prefs anahtarinda ve gorev BASLIGINDA gorunur, hicbir telemetri/diagnostics olayina
+    // yazilmaz (U02). Gun degisince eski anahtar otomatik gecersiz sayilir (yeni epochDay farkli
+    // key uretir) — eski kayitlar dosyada birikip kalsa da onemsizdir (tek String deger).
+    private fun appLimitTargetPackageKey(epochDay: Long) = "app_limit_target_pkg_$epochDay"
+
+    /** [epochDay] icin secilen aday PAKET adini kaydeder (MissionSummaryUseCase.compute() cagirir). */
+    fun setAppLimitTargetPackage(context: Context, epochDay: Long, packageName: String) {
+        prefs(context).edit().putString(appLimitTargetPackageKey(epochDay), packageName).apply()
+    }
+
+    /** [epochDay] icin daha once kaydedilmis aday PAKET adi - donem boyunca SABIT kalmasi icin
+     * (gun ortasinda kullanim degisip farkli bir uygulama one cikarsa hedef KAYMASIN diye)
+     * MissionSummaryUseCase her cagrida ONCE burayi okur, yoksa yeni secim yapar. */
+    fun getAppLimitTargetPackage(context: Context, epochDay: Long): String? =
+        prefs(context).getString(appLimitTargetPackageKey(epochDay), null)
+
     // Quick Wheel / Pie Mode — uzun bas ile radyal uygulama çarkı (varsayılan kapalı)
     const val KEY_QUICK_WHEEL = "quick_wheel_enabled"
     fun isQuickWheelEnabled(context: Context) = prefs(context).getBoolean(KEY_QUICK_WHEEL, false)

@@ -56,6 +56,10 @@ class MissionSummaryUseCase @Inject constructor(
         // dolu gelir ama MissionsViewModel SADECE awardStars=true ile calisir — pratikte bu
         // alan yalniz kullanicinin Gorevler ekranini actigi an anlamlidir.
         val justCompleted: Boolean = false,
+        // Dongu G3b — SADECE DAILY_APP_LIMIT icin dolu gelir; uzun basis "App Info" hedefini
+        // kurmak icin UI katmanina (MissionsScreen) gecirilir. Telemetri/analytics event'lerine
+        // ASLA yazilmaz (U02) — sadece Intent data URI'sinde ve baslikta kullanilir.
+        val longPressTargetPackageName: String? = null,
     )
 
     data class Result(
@@ -126,10 +130,52 @@ class MissionSummaryUseCase @Inject constructor(
         val personalUnlockTarget = existingDailyInstances[MissionEngine.DAILY_UNLOCK_UNDER_30]?.targetValue
             ?: PersonalTargetCalculator.calculateUnlockTarget(snapshot.unlockCountLast7CompletedDays, tempo)
 
+        // Dongu G3b — uygulama-spesifik gorev. ONCE bugun icin daha once pin edilmis PAKET var
+        // mi bakilir (AppPrefs — donem boyunca SABIT, gun ortasinda kullanim degisip farkli bir
+        // uygulama one cikarsa hedef KAYMAZ). Yoksa AppLimitCandidateSelector ile YENI aday
+        // secilir ve HEMEN pin edilir (sonraki cagrilarda ayni paket kullanilsin diye) — aday
+        // yoksa (esik altinda/kategori disi) pin edilecek bir sey YOKTUR, appLimitTargetMinutes
+        // null kalir ve MissionEngine.isEligible() gorevi havuza almaz.
+        var pinnedAppLimitPackage = com.armutlu.apporganizer.utils.AppPrefs.getAppLimitTargetPackage(context, epochDay)
+        var appLimitUsageMinutesToday = snapshot.appLimitUsageMinutesToday
+        val appLimitTargetMinutes: Long? = if (pinnedAppLimitPackage != null) {
+            existingDailyInstances[MissionEngine.DAILY_APP_LIMIT]?.targetValue
+                ?: AppLimitCandidateSelector.calculateTarget(
+                    snapshot.appLimitCandidates.firstOrNull { it.packageName == pinnedAppLimitPackage }
+                        ?.dailyMinutesLast7Days ?: emptyList(),
+                    tempo,
+                )
+        } else {
+            val selected = AppLimitCandidateSelector.selectCandidate(snapshot.appLimitCandidates, tempo)
+            if (selected != null) {
+                // Dongu M07 sozlesmesi: awardStars=false (Ana ekran karti sessiz refresh) HICBIR
+                // DB/prefs YAN ETKISI YARATMAZ — bu yuzden pin YAZIMI SADECE awardStars=true iken
+                // yapilir (MissionsViewModel, kullanicinin ekrani actigi an). false cagrida aday
+                // yine de GORUNTULENIR (gecici, o cagriya ozel) ama SONRAKI cagrida FARKLI bir
+                // aday secilebilir — bu, DB'ye hicbir sey yazilmadigi surece kabul edilebilir
+                // (Ana ekran karti zaten "en guncel durumu" gosterir, sabitlik garantisi vermez).
+                if (awardStars) {
+                    com.armutlu.apporganizer.utils.AppPrefs.setAppLimitTargetPackage(context, epochDay, selected.packageName)
+                }
+                pinnedAppLimitPackage = selected.packageName
+                // Yeni pin: bugunku kullanim provider'da HENUZ bu paket icin okunmadi (o an
+                // pinlenmemisti). 0 dakika ile baslamak guvenlidir — gercek 0 (kullanim yok) ile
+                // veri-yok ayrimini bozmaz, cunku appLimitCandidates zaten izin VARKEN doldu
+                // (izin yoksa selectCandidate zaten null doner, bu dala hic girilmez).
+                appLimitUsageMinutesToday = 0L
+                selected.targetMinutes
+            } else {
+                null
+            }
+        }
+
         val input = snapshot.toMissionCheckInput().copy(
             personalScreenTargetMinutes = personalScreenTarget,
             personalUnlockTarget = personalUnlockTarget,
+            appLimitUsageMinutesToday = appLimitUsageMinutesToday,
+            appLimitTargetMinutes = appLimitTargetMinutes,
         )
+        val appLimitTargetPackageName = pinnedAppLimitPackage
         val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
             currentEpochDay = epochDay,
             cooldownDays = MissionEngine.dailyCooldownDays(),
@@ -139,10 +185,12 @@ class MissionSummaryUseCase @Inject constructor(
             cooldownWeeks = MissionEngine.weeklyCooldownWeeks(),
         )
 
-        val dailyTargetValues = mapOf(
-            MissionEngine.DAILY_SCREEN_UNDER_3H to (personalScreenTarget ?: MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES),
-            MissionEngine.DAILY_UNLOCK_UNDER_30 to (personalUnlockTarget ?: MissionEngine.DEFAULT_UNLOCK_TARGET),
-        )
+        val dailyTargetValues = buildMap {
+            put(MissionEngine.DAILY_SCREEN_UNDER_3H, personalScreenTarget ?: MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES)
+            put(MissionEngine.DAILY_UNLOCK_UNDER_30, personalUnlockTarget ?: MissionEngine.DEFAULT_UNLOCK_TARGET)
+            // Dongu G3b — aday varsa hedefi de instance'a pinle (donem boyunca sabit kalsin).
+            if (appLimitTargetMinutes != null) put(MissionEngine.DAILY_APP_LIMIT, appLimitTargetMinutes)
+        }
         val weeklyTargetValues = mapOf(
             MissionEngine.WEEKLY_POSITIVE_ACTIONS to 3L,
         )
@@ -184,7 +232,7 @@ class MissionSummaryUseCase @Inject constructor(
                 runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
                     .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
-            mission.toOutcome(status, evaluation, dayBoundary, justCompleted = justCompleted)
+            mission.toOutcome(status, evaluation, dayBoundary, justCompleted = justCompleted, appLimitTargetPackageName = appLimitTargetPackageName)
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
@@ -239,6 +287,10 @@ class MissionSummaryUseCase @Inject constructor(
         evaluation: MissionEvaluation,
         periodBoundary: PeriodBoundary,
         justCompleted: Boolean = false,
+        // Dongu G3b — SADECE DAILY_APP_LIMIT baslik/eylem uretimi icin kullanilir. Bu deger
+        // MissionOutcome/telemetriye ASLA yazilmaz (U02) — sadece context.getString(...) ile
+        // BASLIK METNINE gomulur ve actionFor()'da Intent data URI'sine gecer.
+        appLimitTargetPackageName: String? = null,
     ): MissionOutcome {
         val progress = MissionProgressCalculator.calculate(
             evaluation,
@@ -248,11 +300,11 @@ class MissionSummaryUseCase @Inject constructor(
         val action = if (status == MissionStatus.DATA_UNAVAILABLE) {
             MissionAction.OpenSettingsUsageAccess
         } else {
-            actionFor(id)
+            actionFor(id, appLimitTargetPackageName)
         }
         return MissionOutcome(
             id = id,
-            title = titleFor(id, evaluation.targetValue),
+            title = titleFor(id, evaluation.targetValue, appLimitTargetPackageName),
             starReward = starReward,
             status = status,
             autoCheckable = autoCheckable,
@@ -264,6 +316,7 @@ class MissionSummaryUseCase @Inject constructor(
             action = action,
             actionLabel = actionLabelRes(action)?.let { context.getString(it) },
             justCompleted = justCompleted,
+            longPressTargetPackageName = if (id == MissionEngine.DAILY_APP_LIMIT) appLimitTargetPackageName else null,
         )
     }
 
@@ -289,7 +342,7 @@ class MissionSummaryUseCase @Inject constructor(
         return context.getString(labelRes, durationText)
     }
 
-    private fun actionFor(id: String): MissionAction = when (id) {
+    private fun actionFor(id: String, appLimitTargetPackageName: String? = null): MissionAction = when (id) {
         MissionEngine.DAILY_CLASSIFICATION_CLEANUP -> MissionAction.OpenClassificationReview
         MissionEngine.DAILY_VIEW_NOTIF_REPORT -> MissionAction.OpenNotificationReport
         MissionEngine.DAILY_SCREEN_UNDER_3H,
@@ -304,6 +357,15 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.DAILY_MORNING_CALM -> MissionAction.None
         MissionEngine.DAILY_FOCUS_SESSION -> MissionAction.None
         MissionEngine.DISCOVER_WEEKLY -> MissionAction.None
+        // Dongu G3b (plan G2 tablosu satiri: "gorev satiri -> o uygulamanin kullanim detayi").
+        // Bu ekranda ayrica paket-ozel kullanim detayi YOKTUR, en yakin karsilik genel kullanim
+        // raporudur. Uzun basisla App Info (paket URI'li SystemIntent) MissionsScreen'de AYRI
+        // bir gesture olarak kurulur (bkz. MissionActionRouter.resolveLongPress).
+        MissionEngine.DAILY_APP_LIMIT -> if (appLimitTargetPackageName != null) {
+            MissionAction.OpenUsageReport
+        } else {
+            MissionAction.None
+        }
         else -> MissionAction.None
     }
 
@@ -313,6 +375,7 @@ class MissionSummaryUseCase @Inject constructor(
         MissionAction.OpenUsageReport -> R.string.mission_action_open_report
         MissionAction.OpenSettingsUsageAccess -> R.string.mission_action_grant_access
         MissionAction.OpenDoNotDisturbSettings -> R.string.mission_action_open_dnd_settings
+        is MissionAction.OpenAppInfo -> null // uzun-basisla tetiklenir, gorunur eylem butonu YOK
         MissionAction.None -> null
     }
 
@@ -345,7 +408,7 @@ class MissionSummaryUseCase @Inject constructor(
      * atanmis) kisisellestirilmis basligi, aksi halde eski sabit basligi doner. [target]
      * evaluate() sonucundaki targetValue'dur (pinInstances ile ayni deger, donem boyunca sabit).
      */
-    private fun titleFor(id: String, target: Long?): String = when (id) {
+    private fun titleFor(id: String, target: Long?, appLimitTargetPackageName: String? = null): String = when (id) {
         MissionEngine.DAILY_SCREEN_UNDER_3H -> if (target != null && target != MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES) {
             context.getString(
                 R.string.mission_daily_screen_under_personal,
@@ -359,6 +422,29 @@ class MissionSummaryUseCase @Inject constructor(
         } else {
             context.getString(R.string.mission_daily_unlock_under_30)
         }
+        // Dongu G3b — "Bugün [Uygulama]'yı [hedef] altında tut". Uygulama etiketi PackageManager'dan
+        // COZULUR (Room'daki appName degil - guncel/kullanicinin gordugu ad garanti edilir).
+        // Etiket cozulemezse (uygulama kaldirildi vb.) genel bir baslika DUSER — asla bos/crash
+        // OLMAZ. Paket adinin KENDISI bu metnin DISINA (telemetriye) hicbir zaman gecmez.
+        MissionEngine.DAILY_APP_LIMIT -> {
+            val label = appLimitTargetPackageName?.let { resolveAppLabel(it) }
+            if (label != null && target != null) {
+                context.getString(
+                    R.string.mission_daily_app_limit,
+                    label,
+                    resolveTextSpec(MissionValueFormatter.durationSpec(target)),
+                )
+            } else {
+                context.getString(R.string.mission_daily_app_limit_fallback)
+            }
+        }
         else -> context.getString(titleRes(id))
     }
+
+    /** Dongu G3b — kurulu uygulamanin gorunen adi. Kaldirilmissa/erisilemezse null (crash yerine fallback baslik). */
+    private fun resolveAppLabel(packageName: String): String? = runCatching {
+        val pm = context.packageManager
+        val appInfo = pm.getApplicationInfo(packageName, 0)
+        pm.getApplicationLabel(appInfo).toString()
+    }.getOrNull()
 }

@@ -97,6 +97,15 @@ fun MissionsScreen(
                         mission = mission,
                         onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
                         justCompleted = mission.justCompleted,
+                        onLongPressAction = {
+                            mission.longPressTargetPackageName?.let { pkg ->
+                                handleMissionAction(
+                                    com.armutlu.apporganizer.domain.usecase.missions.MissionAction.OpenAppInfo(pkg),
+                                    context,
+                                    onNavigateToRoute,
+                                )
+                            }
+                        },
                     )
                 }
                 if (uiState.daily.isEmpty() && !uiState.loading) {
@@ -118,6 +127,15 @@ fun MissionsScreen(
                         mission = mission,
                         onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
                         justCompleted = mission.justCompleted,
+                        onLongPressAction = {
+                            mission.longPressTargetPackageName?.let { pkg ->
+                                handleMissionAction(
+                                    com.armutlu.apporganizer.domain.usecase.missions.MissionAction.OpenAppInfo(pkg),
+                                    context,
+                                    onNavigateToRoute,
+                                )
+                            }
+                        },
                     )
                 }
             }
@@ -241,6 +259,10 @@ private fun handleMissionAction(
         is MissionActionRouter.RouteTarget.SystemIntent -> {
             val intent = android.content.Intent(target.intentAction)
                 .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Dongu G3b — App Info (ve benzeri paket-ozel) intent'ler data URI'si gerektirir.
+            target.dataPackage?.let { pkg ->
+                intent.data = android.net.Uri.fromParts("package", pkg, null)
+            }
             if (intent.resolveActivity(context.packageManager) != null) {
                 context.startActivity(intent)
             } else {

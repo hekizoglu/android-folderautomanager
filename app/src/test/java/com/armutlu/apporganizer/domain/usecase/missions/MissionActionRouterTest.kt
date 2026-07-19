@@ -59,6 +59,21 @@ class MissionActionRouterTest {
     }
 
     @Test
+    fun openAppInfo_resolvesToSystemIntentWithDataPackage() {
+        val target = MissionActionRouter.resolve(MissionAction.OpenAppInfo("com.example.social"))
+        assertTrue(target is MissionActionRouter.RouteTarget.SystemIntent)
+        val systemIntent = target as MissionActionRouter.RouteTarget.SystemIntent
+        assertEquals("android.settings.APPLICATION_DETAILS_SETTINGS", systemIntent.intentAction)
+        assertEquals("com.example.social", systemIntent.dataPackage)
+    }
+
+    @Test
+    fun otherSystemIntents_carryNullDataPackage() {
+        val target = MissionActionRouter.resolve(MissionAction.OpenSettingsUsageAccess)
+        assertEquals(null, (target as MissionActionRouter.RouteTarget.SystemIntent).dataPackage)
+    }
+
+    @Test
     fun none_resolvesToNoTarget() {
         val target = MissionActionRouter.resolve(MissionAction.None)
         assertEquals(MissionActionRouter.RouteTarget.None, target)

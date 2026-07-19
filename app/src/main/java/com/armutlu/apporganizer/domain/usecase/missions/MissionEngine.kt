@@ -46,6 +46,12 @@ object MissionEngine {
         val socialAppOpenedInFirst30MinToday: Boolean? = null,
         // Dongu G3a — Focus Mode'da bugun biriken dakika (basit prefs sayaci, AppPrefs).
         val focusModeMinutesToday: Long? = null,
+        // Dongu G3b — uygulama-spesifik gorev (DAILY_APP_LIMIT). Hedef uygulamanin PAKET ADI
+        // burada TASINMAZ (U02 - telemetriye asla gitmez); sadece bugunku kullanim dakikasi ve
+        // (varsa) o gun icin secilmis hedef dakika gecirilir. Ikisi de null ise (aday yok/veri
+        // yok) gorev isEligible() tarafindan havuza alinmaz.
+        val appLimitUsageMinutesToday: Long? = null,
+        val appLimitTargetMinutes: Long? = null,
     )
 
     data class TaskEventInput(
@@ -85,6 +91,11 @@ object MissionEngine {
     const val DAILY_FOCUS_SESSION = "daily_focus_session"
     const val DISCOVER_WEEKLY = "discover_weekly"
 
+    // Dongu G3b — uygulama-spesifik gorev. TEK sabit id (dinamik degil); hedef paket adi
+    // MissionCheckInput'a caller tarafindan (AppPrefs gunluk anahtari uzerinden) enjekte edilir,
+    // DB semasi DEGISMEZ. Bkz. AppLimitCandidateSelector (aday secimi + hedef hesabi).
+    const val DAILY_APP_LIMIT = "daily_app_limit"
+
     const val DAILY_STAR = 1
     const val WEEKLY_STAR = 2
     const val DAILY_MISSION_COUNT = 3
@@ -112,6 +123,8 @@ object MissionEngine {
         Mission(DAILY_CUSTOMIZE_FOLDER, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         Mission(DAILY_MORNING_CALM, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         Mission(DAILY_FOCUS_SESSION, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
+        // Dongu G3b — havuz 12 -> 13. Aday yoksa isEligible() bunu ele alir (havuza girmez).
+        Mission(DAILY_APP_LIMIT, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
     )
 
     // Gorev id -> "kacinma" (pasif, AVOID_* kind) mi "eylem" (aninda tamamlanabilir) mi.
@@ -136,6 +149,8 @@ object MissionEngine {
         DAILY_SCREEN_UNDER_3H to WeakAreaCategory.BALANCE,
         DAILY_UNLOCK_UNDER_30 to WeakAreaCategory.BALANCE,
         DAILY_FOCUS_SESSION to WeakAreaCategory.BALANCE,
+        // Dongu G3b — plan G3 satiri: "BALANCE zayif alaninda 2x" agirlik.
+        DAILY_APP_LIMIT to WeakAreaCategory.BALANCE,
     )
     private const val WEAK_AREA_WEIGHT = 2
 
@@ -220,6 +235,8 @@ object MissionEngine {
         DAILY_MORNING_CALM -> MissionProgressKind.AVOID_BEFORE_TIME
         DAILY_FOCUS_SESSION -> MissionProgressKind.BOOLEAN_ACTION
         DISCOVER_WEEKLY -> MissionProgressKind.BOOLEAN_ACTION
+        // Dongu G3b — DAILY_SCREEN_UNDER_3H/DAILY_UNLOCK_UNDER_30 ile ayni gorsel dil (ust sinir).
+        DAILY_APP_LIMIT -> MissionProgressKind.UPPER_LIMIT
         else -> MissionProgressKind.ACTION_COUNT
     }
 
@@ -299,6 +316,9 @@ object MissionEngine {
             (input.focusModeMinutesToday ?: 0L) >= FOCUS_SESSION_TARGET_MINUTES
         )
         DISCOVER_WEEKLY -> evaluateActionFlag(input.taskEvents.wrappedReportViewedThisWeek)
+        // Dongu G3b — uygulama-spesifik ust sinir. Hedef/kullanim ikisi de veri gerektirir
+        // (isEligible zaten aday yoksa havuza almaz, ama evaluate savunmaci kalir).
+        DAILY_APP_LIMIT -> evaluateAppLimit(input.appLimitUsageMinutesToday, input.appLimitTargetMinutes, dayEnded)
         else -> MissionEvaluation(
             status = MissionStatus.DATA_UNAVAILABLE,
             currentValue = null,
@@ -351,6 +371,23 @@ object MissionEngine {
         val ratio = current.toDouble() / target.toDouble()
         val status = if (ratio >= 0.8) MissionStatus.AT_RISK else MissionStatus.IN_PROGRESS
         return MissionEvaluation(status, current, target, remaining)
+    }
+
+    /**
+     * Dongu G3b — DAILY_APP_LIMIT icin [evaluateUpperLimit] sarmalayicisi (block-body fonksiyon
+     * kullanir cunku target null oldugunda erken DATA_UNAVAILABLE donmesi gerekir - evaluate()
+     * expression-body oldugundan icinde dogrudan `return` yapilamaz, bu yuzden ayri fonksiyon).
+     */
+    private fun evaluateAppLimit(current: Long?, target: Long?, dayEnded: Boolean): MissionEvaluation {
+        if (target == null) {
+            return MissionEvaluation(
+                status = MissionStatus.DATA_UNAVAILABLE,
+                currentValue = current,
+                targetValue = null,
+                remainingValue = null,
+            )
+        }
+        return evaluateUpperLimit(current = current, target = target, periodEnded = dayEnded)
     }
 
     /**
@@ -472,6 +509,10 @@ object MissionEngine {
         DAILY_MORNING_CALM -> input.socialAppOpenedInFirst30MinToday != null
         DAILY_FOCUS_SESSION -> true
         DISCOVER_WEEKLY -> true
+        // Dongu G3b — hedef atanmamissa (aday yoksa AppLimitCandidateSelector null doner ->
+        // caller appLimitTargetMinutes'i null birakir) gorev havuza HIC girmez ("aday yoksa
+        // gorev havuza girmez" plan kurali).
+        DAILY_APP_LIMIT -> input.appLimitTargetMinutes != null
         else -> false
     }
 

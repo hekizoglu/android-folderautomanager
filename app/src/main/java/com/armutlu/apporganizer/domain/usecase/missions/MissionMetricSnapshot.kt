@@ -48,4 +48,13 @@ data class MissionMetricSnapshot(
      */
     val screenTimeMinutesLast7CompletedDays: List<Long> = emptyList(),
     val unlockCountLast7CompletedDays: List<Long> = emptyList(),
+    // Dongu G3b — uygulama-spesifik gorev (DAILY_APP_LIMIT). Paket adlari SADECE bu alanlarda
+    // ve gorev BASLIGINDA gorunur, telemetriye ASLA gitmez (U02). packageDailyMinutesLast7Days
+    // MissionSummaryUseCase'in aday secimi (AppLimitCandidateSelector) icin kullandigi ham veri;
+    // appLimitUsageMinutesToday ise ONCEDEN secilmis (AppPrefs'te sabitlenmis) hedef paketin
+    // BUGUNKU kullanim dakikasidir (evaluate() bunu dogrudan tuketir).
+    /** Kategori-eligible (sosyal/oyun/video) paketlerin son 7 TAMAMLANMIS gunluk dakikalari. */
+    val appLimitCandidates: List<AppLimitCandidateSelector.PackageUsageCandidate> = emptyList(),
+    /** AppPrefs'te sabitlenmis hedef paketin BUGUNKU kullanim dakikasi (varsa). */
+    val appLimitUsageMinutesToday: Long? = null,
 )

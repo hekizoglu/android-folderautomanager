@@ -655,6 +655,9 @@
     <string name="mission_daily_morning_calm">Güne sosyal medya açmadan başla (ilk 30 dk)</string>
     <string name="mission_daily_focus_session">Bugün Odak Modu\'nda en az 30 dk geçir</string>
     <string name="mission_discover_weekly">Haftalık raporunu incele</string>
+    <!-- Dongu G3b: uygulama-spesifik gorev - %1$s uygulama adi (PackageManager'dan cozulur), %2$s hedef sure metni -->
+    <string name="mission_daily_app_limit">Bugün %1$s\'ı %2$s altında tut</string>
+    <string name="mission_daily_app_limit_fallback">Bugün en çok kullandığın uygulamayı sınırla</string>
     <string name="mission_unknown">Görev</string>
     <string name="mission_progress_current_count">Şu an: %1$d / %2$d</string>
     <string name="mission_progress_current_duration">Şu an: %1$s</string>
