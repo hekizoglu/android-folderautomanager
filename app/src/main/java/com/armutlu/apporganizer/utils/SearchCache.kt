@@ -53,7 +53,7 @@ object SearchCache {
         val trigramIdx = HashMap<String, MutableList<AppInfo>>()
 
         for (app in apps) {
-            val norm = asciiFold(app.appName.lowercase())
+            val norm = appSearchText(app, phonetic = true)
             normMap[norm] = app
 
             // Prefix index: her 1-4 uzunluklu prefix
@@ -174,6 +174,7 @@ object SearchCache {
     ): List<AppInfo> {
         if (appList.isEmpty()) return emptyList()
         val q = if (phonetic) asciiFold(query.trim().lowercase()) else query.trim().lowercase()
+        val compactQ = q.compactSearchText()
         if (q.isEmpty()) return emptyList()
 
         data class Scored(val app: AppInfo, val score: Int)
@@ -182,11 +183,12 @@ object SearchCache {
 
         // 1. Prefix / contains match (yüksek skor)
         for (app in appList) {
-            val norm = if (phonetic) asciiFold(app.appName.lowercase()) else app.appName.lowercase()
+            val norm = appSearchText(app, phonetic)
+            val compactNorm = norm.compactSearchText()
             val score = when {
-                norm == q -> 100
+                norm == q || compactNorm == compactQ -> 100
                 norm.startsWith(q) -> 80
-                norm.contains(q) -> 60
+                norm.contains(q) || compactNorm.contains(compactQ) -> 60
                 else -> 0
             }
             if (score > 0) {
@@ -207,7 +209,7 @@ object SearchCache {
             }
             for ((pkg, hitCount) in candidateCounts) {
                 val app = appList.firstOrNull { it.packageName == pkg } ?: continue
-                val norm = if (phonetic) asciiFold(app.appName.lowercase()) else app.appName.lowercase()
+                val norm = appSearchText(app, phonetic)
                 val appTrigrams = trigramSet(norm)
                 val similarity = hitCount.toFloat() / maxOf(queryTrigrams.size, appTrigrams.size)
                 if (similarity >= 0.35f) {
@@ -301,4 +303,15 @@ object SearchCache {
         for (i in 0..padded.length - 3) set += padded.substring(i, i + 3)
         return set
     }
+
+    private fun appSearchText(app: AppInfo, phonetic: Boolean): String {
+        val text = listOf(app.appName, app.packageName, app.appFileName)
+            .filter { it.isNotBlank() }
+            .joinToString(" ")
+            .lowercase()
+        return if (phonetic) asciiFold(text) else text
+    }
+
+    private fun String.compactSearchText(): String =
+        filter { it.isLetterOrDigit() }
 }

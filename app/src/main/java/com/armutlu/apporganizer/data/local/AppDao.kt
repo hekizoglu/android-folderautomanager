@@ -193,13 +193,21 @@ interface AppDao {
      * Search apps by name
      */
     @Deprecated("Use searchAppsByNameLimited to avoid unbounded UI reads.")
-    @Query("SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' ORDER BY appName ASC")
+    @Query(
+        "SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' " +
+            "OR packageName LIKE '%' || :query || '%' " +
+            "OR appFileName LIKE '%' || :query || '%' ORDER BY appName ASC"
+    )
     fun searchAppsByName(query: String): Flow<List<AppInfo>>
 
     /**
      * Search apps with a bounded result set for UI paths.
      */
-    @Query("SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' ORDER BY appName ASC LIMIT :limit")
+    @Query(
+        "SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' " +
+            "OR packageName LIKE '%' || :query || '%' " +
+            "OR appFileName LIKE '%' || :query || '%' ORDER BY appName ASC LIMIT :limit"
+    )
     fun searchAppsByNameLimited(query: String, limit: Int = 50): Flow<List<AppInfo>>
     
     /**

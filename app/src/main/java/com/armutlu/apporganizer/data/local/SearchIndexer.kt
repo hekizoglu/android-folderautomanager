@@ -33,11 +33,14 @@ class SearchIndexer @Inject constructor() {
      * @param categoryName Kategorinin görünen adı (subtitle olarak eklenir)
      */
     fun appToDocument(app: AppInfo, categoryName: String = ""): SearchDocument {
+        val appAliases = listOf(categoryName, app.packageName, app.appFileName)
+            .filter { it.isNotBlank() }
+            .joinToString(" ")
         return SearchDocument(
             sourceType = SOURCE_APP,
             sourceId = app.packageName,
             title = app.appName,
-            subtitle = categoryName,
+            subtitle = appAliases,
             iconKey = app.packageName,
             sourceGroup = GROUP_APP,
             lastModified = app.lastUpdated

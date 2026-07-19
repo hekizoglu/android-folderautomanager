@@ -76,6 +76,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                                 AppInfo(
                                     packageName = ri.activityInfo.packageName,
                                     appName = appInfo.loadLabel(packageManager).toString(),
+                                    appFileName = appInfo.packageFileName(),
                                     categoryId = "uncategorized",
                                     isSystemApp = appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0,
                                     isInstalled = true,
@@ -106,6 +107,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                                 AppInfo(
                                     packageName = pkgInfo.packageName,
                                     appName = appInfo.loadLabel(packageManager).toString(),
+                                    appFileName = appInfo.packageFileName(),
                                     categoryId = "uncategorized",
                                     isSystemApp = isSystemApp(appInfo),
                                     isInstalled = true,
@@ -175,6 +177,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                 AppInfo(
                     packageName = packageName,
                     appName = appName,
+                    appFileName = appInfo.packageFileName(),
                     isSystemApp = isSystemApp(appInfo),
                     isInstalled = true,
                     installTime = pkgInfo.firstInstallTime,
@@ -260,6 +263,11 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
      */
     private fun isSystemApp(appInfo: ApplicationInfo): Boolean {
         return (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+    }
+
+    private fun ApplicationInfo.packageFileName(): String {
+        val source = publicSourceDir ?: sourceDir ?: return ""
+        return java.io.File(source).nameWithoutExtension
     }
     
     /**

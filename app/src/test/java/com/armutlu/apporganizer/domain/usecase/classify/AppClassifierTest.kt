@@ -316,6 +316,18 @@ class AppClassifierTest {
     @Test fun `Perplexity CAT_PRODUCTIVITY`() = assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.perplexity.app", "Perplexity")))
     @Test fun `Gemini CAT_PRODUCTIVITY`() = assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.google.android.apps.gemini", "Gemini")))
 
+    @Test
+    fun `dosya adindaki keyword kategori sinyali olarak kullanilir`() {
+        val app = AppInfo(
+            packageName = "x.y",
+            appName = "Yerel Ad",
+            appFileName = "remote-desktop"
+        )
+
+        assertEquals(Category.CAT_UTILITIES, classifier.classifyApp(app))
+        assertEquals(ClassificationConfidence.PACKAGE_NAME_KEYWORD, classifier.getConfidence(app, Category.CAT_UTILITIES))
+    }
+
     private fun appInfo(packageName: String, appName: String) = AppInfo(
         packageName = packageName,
         appName = appName

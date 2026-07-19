@@ -117,7 +117,11 @@ class AppClassifier @Inject constructor(
         }
         val appNameDecision = appNameKeywordDecision(appInfo.appName)
         val packageDecision = packageKeywordDecision(appInfo.packageName)
-        val keywordDecision = strongestKeywordDecision(appNameDecision, packageDecision)
+        val appFileNameDecision = packageKeywordDecision(appInfo.appFileName)
+        val keywordDecision = strongestKeywordDecision(
+            strongestKeywordDecision(appNameDecision, packageDecision),
+            appFileNameDecision,
+        )
         val conflict = hasConflictingSignals(androidDecision, keywordDecision)
         if (conflict && androidDecision != null) {
             return androidDecision.copy(
@@ -214,33 +218,23 @@ class AppClassifier @Inject constructor(
         }
 
     private fun appNameKeywordDecision(appName: String): ClassificationDecision? {
-        val lowerName = appName.lowercase(java.util.Locale("tr"))
-        KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
-            if (keywords.any { lowerName.contains(it) }) {
-                return autoDecision(
-                    categoryId = category,
-                    confidence = ClassificationConfidence.APP_NAME_KEYWORD,
-                    source = ClassificationSource.APP_NAME_KEYWORD,
-                    reasonCode = ClassificationReason.APP_NAME_MATCH,
-                )
-            }
-        }
-        return null
+        val category = bestKeywordCategory(appName, java.util.Locale("tr")) ?: return null
+        return autoDecision(
+            categoryId = category,
+            confidence = ClassificationConfidence.APP_NAME_KEYWORD,
+            source = ClassificationSource.APP_NAME_KEYWORD,
+            reasonCode = ClassificationReason.APP_NAME_MATCH,
+        )
     }
 
     private fun packageKeywordDecision(packageName: String): ClassificationDecision? {
-        val lowerPkg = packageName.lowercase()
-        KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
-            if (keywords.any { lowerPkg.contains(it) }) {
-                return autoDecision(
-                    categoryId = category,
-                    confidence = ClassificationConfidence.PACKAGE_NAME_KEYWORD,
-                    source = ClassificationSource.PACKAGE_NAME_KEYWORD,
-                    reasonCode = ClassificationReason.PACKAGE_NAME_MATCH,
-                )
-            }
-        }
-        return null
+        val category = bestKeywordCategory(packageName) ?: return null
+        return autoDecision(
+            categoryId = category,
+            confidence = ClassificationConfidence.PACKAGE_NAME_KEYWORD,
+            source = ClassificationSource.PACKAGE_NAME_KEYWORD,
+            reasonCode = ClassificationReason.PACKAGE_NAME_MATCH,
+        )
     }
 
     private fun strongestKeywordDecision(
@@ -348,6 +342,7 @@ class AppClassifier @Inject constructor(
             hasExactMatch(appInfo.packageName, categoryId) -> ClassificationConfidence.BUNDLED_CATALOG_EXACT
             hasKeywordMatch(appInfo.appName, categoryId) -> ClassificationConfidence.APP_NAME_KEYWORD
             hasPackageKeywordMatch(appInfo.packageName, categoryId) -> ClassificationConfidence.PACKAGE_NAME_KEYWORD
+            hasPackageKeywordMatch(appInfo.appFileName, categoryId) -> ClassificationConfidence.PACKAGE_NAME_KEYWORD
             else -> 50
         }
     }
@@ -371,6 +366,7 @@ class AppClassifier @Inject constructor(
                 hasSameManufacturerSignal(source, candidate) ||
                     hasKeywordMatch(candidate.appName, categoryId) ||
                     hasPackageKeywordMatch(candidate.packageName, categoryId) ||
+                    hasPackageKeywordMatch(candidate.appFileName, categoryId) ||
                     classifyByPlayStoreCategory(candidate.packageName) == categoryId
             }
             .sortedWith(compareBy<AppInfo> { it.appName.lowercase(java.util.Locale("tr")) })
@@ -411,7 +407,8 @@ class AppClassifier @Inject constructor(
             .filter { candidate ->
                 hasSameManufacturerSignal(changedApp, candidate) ||
                     hasKeywordMatch(candidate.appName, newCategoryId) ||
-                    hasPackageKeywordMatch(candidate.packageName, newCategoryId)
+                    hasPackageKeywordMatch(candidate.packageName, newCategoryId) ||
+                    hasPackageKeywordMatch(candidate.appFileName, newCategoryId)
             }
             .sortedWith(compareBy<AppInfo> { it.appName.lowercase(java.util.Locale("tr")) })
             .take(limit)
@@ -450,10 +447,38 @@ class AppClassifier @Inject constructor(
         exactMatchMap[packageName] == categoryId
 
     private fun hasKeywordMatch(appName: String, categoryId: String) =
-        KeywordDatabase.getKeywords(categoryId).any { appName.lowercase().contains(it) }
+        appName.lowercase().let { lower ->
+            val compact = lower.compactClassifierText()
+            KeywordDatabase.getKeywords(categoryId).any { lower.contains(it) || compact.contains(it.compactClassifierText()) }
+        }
 
     private fun hasPackageKeywordMatch(packageName: String, categoryId: String) =
-        KeywordDatabase.getKeywords(categoryId).any { packageName.lowercase().contains(it) }
+        packageName.lowercase().let { lower ->
+            val compact = lower.compactClassifierText()
+            KeywordDatabase.getKeywords(categoryId).any { lower.contains(it) || compact.contains(it.compactClassifierText()) }
+        }
+
+    private fun bestKeywordCategory(text: String, locale: java.util.Locale = java.util.Locale.ROOT): String? {
+        val lower = text.lowercase(locale)
+        val compact = lower.compactClassifierText()
+        var bestCategory: String? = null
+        var bestLength = 0
+        KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
+            keywords.forEach { keyword ->
+                val compactKeyword = keyword.compactClassifierText()
+                if (compactKeyword.isBlank()) return@forEach
+                val matches = lower.contains(keyword) || compact.contains(compactKeyword)
+                if (matches && compactKeyword.length > bestLength) {
+                    bestCategory = category
+                    bestLength = compactKeyword.length
+                }
+            }
+        }
+        return bestCategory
+    }
+
+    private fun String.compactClassifierText(): String =
+        filter { it.isLetterOrDigit() }
 
     private companion object {
         const val LOW_CONFIDENCE_THRESHOLD = ClassificationConfidence.REVIEW_THRESHOLD

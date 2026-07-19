@@ -14,7 +14,8 @@ import java.io.Serializable
     indices = [
         Index(value = ["appName"]),
         Index(value = ["categoryId"]),
-        Index(value = ["appName", "categoryId"])
+        Index(value = ["appName", "categoryId"]),
+        Index(value = ["appFileName"])
     ]
 )
 data class AppInfo(
@@ -22,6 +23,8 @@ data class AppInfo(
     val packageName: String,
     
     val appName: String,
+
+    val appFileName: String = "",
     
     val categoryId: String = "uncategorized",
     
