@@ -1992,7 +1992,6 @@ internal fun FullScreenSearchOverlay(
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
         onQueryChange("")
     }
     LaunchedEffect(allApps) {
@@ -2386,7 +2385,6 @@ internal fun FullScreenSearchOverlayV2(
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
         onQueryChange("")
     }
     LaunchedEffect(allApps) {
