@@ -2,6 +2,14 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## EX03 - 2026-07-19 - Rotasyon+swipe LazyGrid crash fix (BOM bump)
+
+**Yapilanlar:** "measure is called on a deactivated node" crash'i cozuldu: kok neden Compose 1.7.x framework race (pager deactivation + bekleyen remeasure). 2 kod workaround yeterli olmadi (canli repro'da devam etti) -> Compose BOM 2024.09.03->2024.12.01 (uyumluluk matrisi dogrulandi, Kotlin 2.x GEREKMEDI). Canli kanit: fix oncesi 2/2 crash, sonrasi 16/16 temiz (SM-X210). Workaround'lar da kalici (deferred graphicsLayer read + beyondViewportPageCount=1). Tam suite + assembleDebug yesil.
+
+**Bug:** Yukaridaki. Not: Compose issue tracker'da tam kapali degil — gelecek BOM yukseltmesinde yeniden dogrula.
+
+**Sonraki:** FAZ A-2 HISTORY hasadi, sonra G-plan.
+
 ## EX02 - 2026-07-19 - Okunmamis bildirim satiri tiklanabilir (tablet canli test)
 
 **Yapilanlar:** FolderGridPage alt bilgi panelindeki "N okunmamis bildirim" metni gercek tiklanabilir hedef oldu (48dp, Role.Button, contentDescription, haptic) -> NOTIFICATION_REPORT rotasi (mevcut EXTRA_OPEN_ROUTE deseni). CANLI KANIT (Samsung R92Y200CBKX): UI dump clickable=true dogrulandi, tap sonrasi Bildirim Raporu acildi, crash yok. BONUS: build'i bloke eden FirebasePerfExtension hatasi duzeltildi (skipGoogleServices korumasi).

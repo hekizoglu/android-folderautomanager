@@ -279,7 +279,16 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
+    // Fix EX03/FAZ A-1 (2026-07-19) — 2024.09.03 -> 2024.12.01: canlı Samsung tablet testinde
+    // "measure is called on a deactivated node" (Compose 1.7.x LazyGrid/Pager deactivation race,
+    // rotasyon + hızlı klasör sayfası swipe kombinasyonunda tetikleniyordu) HorizontalPager
+    // graphicsLayer deferred-read fix'i VE beyondViewportPageCount=1 tamponuyla dahi
+    // giderilemedi (canlı repro'da hâlâ crash atıyordu) — kod seviyesi workaround yetersiz
+    // kaldığı için CLAUDE.md §5 uyumluluk matrisi doğrulanarak BOM yükseltildi. 2024.12.01 hâlâ
+    // Kotlin 1.9.25 / kotlinCompilerExtensionVersion 1.5.15 ile uyumlu (Kotlin 2.x GEÇİŞİ
+    // GEREKMEDİ) — sadece Compose Foundation'ın sonraki 1.7.x nokta sürümündeki
+    // deactivated-node/layer-reuse düzeltmelerini alır.
+    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")

@@ -223,8 +223,16 @@ internal fun HomePagerHost(
         pageSpacing = 8.dp,
         flingBehavior = flingBehavior,
         userScrollEnabled = userScrollEnabled,
-        // Dashboard pahalı state hesaplayabilir (P06+) — komşu sayfa önceden compose edilmesin.
-        beyondViewportPageCount = 0,
+        // Fix EX03/FAZ A-1 (devam) — eskiden 0'dı: görünür alandan çıkan sayfa AYNI ANDA
+        // deactivate ediliyordu. Rotasyon (BoxWithConstraints yeniden ölçüm) + hızlı art arda
+        // swipe kombinasyonunda, deactivate edilen sayfanın LazyVerticalGrid'i üzerinde HALA
+        // bekleyen bir snapshot-observed remeasure isteği varsa Compose 1.7.x'te
+        // "measure is called on a deactivated node" ile çöküyordu (canlı doğrulama: Samsung
+        // tablet, 03:16, gerçek crash). 1 komşu sayfa tamponu, o sayfanın node'unun deactivate
+        // edilmesini bir sonraki page geçişine erteler — Dashboard'un pahalı state hesaplaması
+        // (P06+ yorumu) hâlâ geçerli ama artık YALNIZ 1 komşu (sağ VEYA sol, mevcut sayfaya
+        // bağlı) önceden compose ediliyor; performans etkisi ölçülebilir düzeyde değil.
+        beyondViewportPageCount = 1,
         modifier = modifier
             .fillMaxSize()
             .semantics {
@@ -239,15 +247,27 @@ internal fun HomePagerHost(
                 }
             },
     ) { pageIndex ->
-        val signedOffset = (pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction
-        val pageOffset = signedOffset.absoluteValue.coerceIn(0f, 1f)
-
+        // Fix EX03/FAZ A-1 — "measure is called on a deactivated node" (LazyVerticalGrid içinde
+        // rotasyon + hızlı swipe kombinasyonunda çöküyordu). Kök neden: `signedOffset`/`pageOffset`
+        // eskiden BURADA (page content composable scope'unda, graphicsLayer lambda'sının DIŞINDA)
+        // `pagerState.currentPage`/`currentPageOffsetFraction` okuyordu — bu, page içeriğinin
+        // (FolderGridPage -> LazyVerticalGrid dahil) HER frame'de yeniden COMPOSE edilmesine
+        // sebep oluyordu (sadece re-layer değil). `beyondViewportPageCount = 0` ile pager sayfa
+        // görünür alandan çıkar çıkmaz deactivate ediyor; rotasyon `BoxWithConstraints` ölçümünü
+        // tetikleyip `pagerState`i içeren `remember` zincirini yeniden kurarken TAM O ANDA hızlı
+        // swipe page content'i recompose ediyorsa, LazyVerticalGrid alt node'u deactivate
+        // edilirken üstünde bekleyen bir remeasure isteği devam edip crash atıyordu.
+        // Çözüm: `pagerState` okumaları `graphicsLayer { }` içine taşındı — Compose'un resmi
+        // Pager kılavuzundaki "deferred read" deseni. graphicsLayer lambda'sı GraphicsLayerScope
+        // içinde çalışır ve sadece layer'ı invalidate eder, page İÇERİĞİNİ recompose ETMEZ.
         val pageModifier = if (reduceMotionEnabled) {
             Modifier.fillMaxSize()
         } else {
             Modifier
                 .fillMaxSize()
                 .graphicsLayer {
+                    val signedOffset = (pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction
+                    val pageOffset = signedOffset.absoluteValue.coerceIn(0f, 1f)
                     alpha = 1f - (pageOffset * 0.18f)
                     scaleX = 1f - (pageOffset * 0.055f)
                     scaleY = 1f - (pageOffset * 0.055f)

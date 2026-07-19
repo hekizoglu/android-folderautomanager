@@ -299,3 +299,9 @@ _(3 tekrara ulaşınca 🔼 tablosuna ve CLAUDE.md §5'e taşınır)_
 ---
 
 *Son güncelleme: 2026-06-29 — v8: MD denetim N1-N9 kapatildi (D191). KiloCode CLAUDE.md §5'e promote edildi. Onboarding 17 adim guncellendi.*
+
+## Compose "measure is called on a deactivated node" (EX03, 2026-07-19)
+- Belirti: HorizontalPager + LazyVerticalGrid, rotasyon + hizli swipe kombinasyonunda IllegalArgumentException crash.
+- Kok neden: Compose 1.7.x (BOM 2024.09.03) framework race — pager sayfayi deactivate ederken bekleyen remeasure sonradan tetikleniyor.
+- COZUM: BOM 2024.12.01 (Kotlin 1.9.25 ile uyumlu, Kotlin 2.x GEREKMEZ). Kod workaround'lari (graphicsLayer icinde deferred state read, beyondViewportPageCount=1) tek basina YETMEZ ama frekansi dusurur — kalici birakildi.
+- Gelecek BOM yukseltmesinde bu repro (rotasyon+swipe 5+ tekrar, gercek cihaz) yeniden kosulmali.
