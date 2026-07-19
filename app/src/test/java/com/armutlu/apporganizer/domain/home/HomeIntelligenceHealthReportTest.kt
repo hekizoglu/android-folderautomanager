@@ -242,6 +242,30 @@ class HomeIntelligenceHealthReportTest {
     // 11) Gizlilik: rapor satırları uygulama paket adı, bildirim metni veya kişi bilgisi içermemeli
     //     (yalnızca sayaç/kod/zaman damgası taşınmalı).
     @Test
+    fun `stale digital life data with low confidence is degraded warning`() {
+        val state = HomeIntelligenceState(
+            pulse = HomeDataResult.Ready(
+                PulseSourceState(
+                    snapshot = fakeSnapshot(
+                        computedAt = now - 31 * 60 * 1000L,
+                        confidence = DataConfidence.LOW,
+                    ),
+                ),
+            ),
+            mission = HomeDataResult.Ready(MissionSourceState(summary = fakeMissionSummary())),
+            ticker = HomeDataResult.Ready(TickerSourceState(items = listOf(fakeTickerItem()))),
+        )
+
+        val report = HomeIntelligenceHealthReport.build(baseInput(state))
+
+        assertTrue(report.digitalLife.warningCodes.contains(HomeErrorCodes.DIGITAL_LIFE_DATA_STALE))
+        assertTrue(report.digitalLife.warningCodes.contains(HomeErrorCodes.DIGITAL_LIFE_LOW_CONFIDENCE))
+        assertTrue(report.digitalLife.lines.contains("Confidence: LOW"))
+        assertTrue(report.digitalLife.lines.contains("Veri tazeligi: STALE"))
+        assertEquals(HomeIntelligenceHealthReport.OverallStatus.DEGRADED_WARN, report.overallStatus)
+    }
+
+    @Test
     fun `report lines never leak app package or personal content`() {
         val state = HomeIntelligenceState(
             pulse = HomeDataResult.Ready(PulseSourceState(snapshot = fakeSnapshot())),

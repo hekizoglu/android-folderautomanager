@@ -110,6 +110,21 @@ class DiagnosticsReportManagerTest {
     }
 
     @Test
+    fun renderReport_filesIndexPermissionBlockedDoesNotEmitPeriodicMissingIssue() {
+        val report = renderReport(
+            sampleSnapshot().copy(
+                workerSummary = listOf(
+                    "Files index periodic: enabled=evet, eligible=hayir(permission), work=yok, durum=NORMAL_KAPALI",
+                ),
+            ),
+        )
+
+        assertTrue(report.contains("Files index periodic: enabled=evet, eligible=hayir(permission), work=yok"))
+        assertFalse(report.contains("signal=files_index_periodic_missing"))
+        assertFalse(report.contains("evidence=Files index periodic: enabled=evet, eligible=evet, work=yok"))
+    }
+
+    @Test
     fun unusedDeniedPermission_isNormal() {
         assertTrue(permissionHealthLine("Konum", granted = false, needed = false).contains("NORMAL_KULLANILMIYOR"))
     }

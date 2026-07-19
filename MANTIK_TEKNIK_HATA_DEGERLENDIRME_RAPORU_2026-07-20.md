@@ -11,7 +11,24 @@ Kapsam: Saglik raporu mantigi, WorkManager dosya indeksleme, one-shot worker yor
 - [x] Backup/restore sonrasi `FilesIndexWorkCoordinator.ensurePeriodicWorkScheduled(context)` cagrisi garanti altina alindi.
 - [x] `appFileName` backfill akisi eklendi; reconcile mevcut kayitlarda dosya adini metadata olarak guncelliyor.
 - [x] Room 18 -> 19 migration testi eklendi; `appFileName` sutunu ve index dogrulaniyor.
-- [ ] Health snapshot testleri periodic permission, one-shot completed ve digital life stale/low confidence senaryolariyla genisletilecek.
+- [x] Health snapshot testleri periodic permission false-positive ve digital life stale/low confidence senaryolariyla genisletildi; one-shot completed/calisiyor/gecikmis senaryolari zaten `DiagnosticsReportManagerTest` icinde mevcut.
+
+## Skill Arastirmasi: Performans ve Olu Kod
+
+- Mevcut Codex skill listesinde performans profilleme veya olu kod analizi icin ozel bir skill bulunmadi.
+- `tool_search` ile yapilan plugin/tool taramasinda da bu ise dogrudan adanmis bir arac cikmadi; gelen araclar GitHub, security ve connector odakli.
+- Performans arastirmasi icin onerilen yol: resmi Android Profiler, Startup Profiles/Baseline Profiles, mevcut `qa/rules/performance.md`, build raporlari ve gerekirse macrobenchmark smoke.
+- Olu kod arastirmasi icin onerilen yol: statik kullanim taramasi (`rg`, Kotlin/Gradle source-set kontrolu), resource reachability, manifest/navigation entrypoint haritasi ve sonra bulgularin review raporu halinde listelenmesi.
+- Gerekirse guvenlik tarafindan etkilenebilecek kod temizligi icin `codex-security:security-scan` ayri bir tamamlayici tarama olarak kullanilabilir; performans/olu kodun ana skill'i degil.
+
+## Dogrulama Notu
+
+- `git diff --check` temiz.
+- Hedef testler eklendi, ancak yerel Gradle calismasi Windows build output kilidi nedeniyle `mergeReleaseResources` / generated output silme asamasinda durdu.
+- Hata kaynak kod derlemesine ulasmadan once olusuyor: `Unable to delete directory app/build/intermediates/merged_res_blame_folder/...`.
+- Kilit temizlenince calistirilacak komutlar:
+  - `.\gradlew.bat :app:testDebugUnitTest --tests "com.armutlu.apporganizer.utils.DiagnosticsReportManagerTest" --tests "com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReportTest"`
+  - `.\gradlew.bat :app:connectedDebugAndroidTest --tests "com.armutlu.apporganizer.AppDatabaseMigrationTest"`
 
 ## Arastirma Ozeti
 
@@ -283,6 +300,7 @@ Oncelik: Yuksek, cunku release oncesi raporun yanlis alarm uretmesi kararlari bu
    - periodic enabled + permission yok
    - one-shot completed + work yok
    - digital life stale + low confidence
+   - Durum: [x] periodic permission ve digital life stale/low confidence eklendi; one-shot completed zaten mevcut testle kapsaniyor.
 7. Release smoke'ta bu maddeleri gercek cihaz raporuyla kanitla.
 
 ## Kisa Karar
