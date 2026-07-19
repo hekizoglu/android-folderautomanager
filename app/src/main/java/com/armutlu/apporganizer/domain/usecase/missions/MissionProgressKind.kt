@@ -20,6 +20,13 @@ enum class MissionProgressKind {
     /** Belirli saatten sonra kullanimdan kacinma gorevi (gece 23:00 sonrasi). */
     AVOID_AFTER_TIME,
 
+    /**
+     * Dongu G3a — belirli bir saate KADAR (gunun basinda) bir kategoriden kacinma gorevi
+     * (orn. "ilk 30 dk sosyal medya acma"). AVOID_AFTER_TIME'in sabah simetrigi: gorev
+     * penceresi gunun basinda kapanir, o pencere gecince (veya ihlal edilince) kesinlesir.
+     */
+    AVOID_BEFORE_TIME,
+
     /** Donemsel karsilastirma gorevleri (bu hafta / gecen hafta). */
     PERIOD_COMPARISON,
 }

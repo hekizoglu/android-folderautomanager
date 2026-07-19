@@ -1,10 +1,14 @@
 package com.armutlu.apporganizer.domain.usecase.missions
 
 import android.content.Context
+import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.TaskScoreEventDao
 import com.armutlu.apporganizer.domain.common.DataFreshnessResolver
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
+import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock
@@ -41,6 +45,7 @@ class MissionMetricSnapshotProvider @Inject constructor(
     private val clock: Clock,
     private val zoneId: ZoneId,
     private val usageStatsSource: MissionUsageStatsSource,
+    private val appDao: AppDao,
 ) {
 
     suspend fun capture(usageWindowDays: Int = 14): MissionMetricSnapshot {
@@ -135,6 +140,35 @@ class MissionMetricSnapshotProvider @Inject constructor(
             positiveOnly = true,
         )
 
+        // 7b. Dongu G3a — yeni eylem sayaclari (ayni TaskScore event deseni).
+        val folderCustomizedToday = taskScoreEventDao.countEventsBetweenByKeys(
+            dayStart,
+            dayEnd,
+            listOf(TaskScoreManager.EventType.FolderCustomized.eventKey),
+        ) > 0
+        val wrappedReportViewedThisWeek = taskScoreEventDao.countEventsBetweenByKeys(
+            weekStart,
+            weekEnd,
+            listOf(TaskScoreManager.EventType.WrappedReportViewed.eventKey),
+        ) > 0
+
+        // 7c. Dongu G3a — DAILY_FOCUS_SESSION: AppPrefs basit prefs sayaci (izin bagimsiz,
+        // UsageStats gerektirmez).
+        val focusModeMinutesToday = AppPrefs.getFocusMinutesToday(context, nowMillis, zoneId)
+
+        // 7d. Dongu G3a — DAILY_MORNING_CALM: gunun ilk kullaniminin paketi CAT_SOCIAL
+        // kategorisindeyse (ilk 30dk penceresi icinde) gorev ihlal edilmis sayilir. Sadece
+        // izin VARSA ve bugun en az bir kullanim gerceklestiyse hesaplanir; aksi halde null
+        // (veri yok, pencere henuz acilmadi) — sahte basari/basarisizlik UYDURULMAZ.
+        val socialAppOpenedInFirst30MinToday = if (todayEntries.isNullOrEmpty()) {
+            null
+        } else {
+            runCatching {
+                val socialPackages = appDao.getPackageNamesByCategory(Category.CAT_SOCIAL).toSet()
+                detectSocialInMorningWindow(todayEntries, socialPackages)
+            }.getOrNull()
+        }
+
         // 8. Snapshot.
         return MissionMetricSnapshot(
             capturedAt = nowMillis,
@@ -150,11 +184,39 @@ class MissionMetricSnapshotProvider @Inject constructor(
             freshness = dataFreshnessResolver.resolve(nowMillis),
             screenTimeMinutesLast7CompletedDays = screenTimeMinutesLast7CompletedDays,
             unlockCountLast7CompletedDays = unlockCountLast7CompletedDays,
+            folderCustomizedToday = folderCustomizedToday,
+            wrappedReportViewedThisWeek = wrappedReportViewedThisWeek,
+            socialAppOpenedInFirst30MinToday = socialAppOpenedInFirst30MinToday,
+            focusModeMinutesToday = focusModeMinutesToday,
         )
+    }
+
+    /**
+     * Dongu G3a — bugunun paket-bazli saatlik kovalarindan ("hourlyForegroundMs", 24 eleman)
+     * ilk kullanimin gerceklestigi saati bulur, o saatin ILK YARIM SAATINDA ("first-hour-half
+     * heuristic" — kova cozunurlugu saatlik oldugundan dakika hassasiyeti yoktur) hangi
+     * paketlerin aktif oldugunu belirler ve bunlardan herhangi biri sosyal kategorideyse true
+     * doner. Kova cozunurlugu saatlik oldugu icin tam "ilk 30 dakika" degil "ilk kullanimin
+     * gerceklestigi saat dilimi" olarak yorumlanir — kabul edilebilir yaklaşıklık (roadmap G3a
+     * kapsaminda dakika hassasiyetli event-stream analizi asiri mühendislik olurdu).
+     */
+    private fun detectSocialInMorningWindow(
+        todayEntries: List<DailyPackageUsage>,
+        socialPackages: Set<String>,
+    ): Boolean? {
+        if (socialPackages.isEmpty()) return null
+        val firstActiveHour = (0..23).firstOrNull { hour ->
+            todayEntries.any { it.hourlyForegroundMs.getOrNull(hour)?.let { ms -> ms > 0L } == true }
+        } ?: return null
+        val activePackagesInFirstHour = todayEntries
+            .filter { it.hourlyForegroundMs.getOrNull(firstActiveHour)?.let { ms -> ms > 0L } == true }
+            .map { it.packageName }
+            .toSet()
+        return activePackagesInFirstHour.any { it in socialPackages }
     }
 }
 
-/** [MissionMetricSnapshot] -> [MissionEngine.MissionCheckInput] koprusu (M02). */
+/** [MissionMetricSnapshot] -> [MissionEngine.MissionCheckInput] koprusu (M02, G3a genisletildi). */
 fun MissionMetricSnapshot.toMissionCheckInput(): MissionEngine.MissionCheckInput =
     MissionEngine.MissionCheckInput(
         screenTimeMinutesToday = screenTimeMinutesToday,
@@ -167,5 +229,9 @@ fun MissionMetricSnapshot.toMissionCheckInput(): MissionEngine.MissionCheckInput
             positiveEventsThisWeek = positiveActionsThisWeek,
             classificationActionsToday = classificationActionsToday,
             notificationReportViewedToday = notificationReportViewedToday,
+            folderCustomizedToday = folderCustomizedToday,
+            wrappedReportViewedThisWeek = wrappedReportViewedThisWeek,
         ),
+        socialAppOpenedInFirst30MinToday = socialAppOpenedInFirst30MinToday,
+        focusModeMinutesToday = focusModeMinutesToday,
     )

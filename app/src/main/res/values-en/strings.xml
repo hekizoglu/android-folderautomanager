@@ -635,6 +635,12 @@
     <string name="mission_daily_view_notif_report">Review the notification report</string>
     <string name="mission_weekly_screen_less">Keep weekly screen time below last week</string>
     <string name="mission_weekly_positive_actions">Do at least 3 useful cleanup actions this week</string>
+    <!-- Cycle G3a: new core missions (no app names - category based) -->
+    <string name="mission_daily_organize_uncategorized">Place 2 uncategorized apps today</string>
+    <string name="mission_daily_customize_folder">Give a folder an emoji or color</string>
+    <string name="mission_daily_morning_calm">Start your day without social media (first 30 min)</string>
+    <string name="mission_daily_focus_session">Spend at least 30 min in Focus Mode today</string>
+    <string name="mission_discover_weekly">Check out your weekly report</string>
     <string name="mission_unknown">Mission</string>
     <string name="mission_progress_current_count">Now: %1$d / %2$d</string>
     <string name="mission_progress_current_duration">Now: %1$s</string>

@@ -370,6 +370,10 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         focusMode = it
                         AppPrefs.setFocusModeEnabled(context, it)
+                        // Dongu G3a — DAILY_FOCUS_SESSION gorevi icin basit sure olcumu:
+                        // acilista baslangic zamani kaydedilir, kapanista gecen sure gunun
+                        // toplamina eklenir (bkz. AppPrefs.startFocusSession/endFocusSession).
+                        if (it) AppPrefs.startFocusSession(context) else AppPrefs.endFocusSession(context)
                     }
                 )
             }

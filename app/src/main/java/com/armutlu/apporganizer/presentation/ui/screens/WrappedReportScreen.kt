@@ -64,6 +64,16 @@ fun WrappedReportScreen(
     onNavigateToNotificationReport: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Dongu G3a — DISCOVER_WEEKLY gorevi: haftalik rapor ziyareti gorev tamamlama sayilir
+    // (NotificationReportScreen'deki ayni desen — ekran ziyareti = tamamlanma).
+    LaunchedEffect(Unit) {
+        com.armutlu.apporganizer.utils.TaskScoreManager.record(
+            context,
+            com.armutlu.apporganizer.utils.TaskScoreManager.EventType.WrappedReportViewed,
+        )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,

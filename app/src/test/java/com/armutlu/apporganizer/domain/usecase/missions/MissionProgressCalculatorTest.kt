@@ -130,4 +130,28 @@ class MissionProgressCalculatorTest {
         assertTrue(over.progressFraction!! <= 1f)
         assertTrue(over.progressFraction!! >= 0f)
     }
+
+    // ── Dongu G3a: AVOID_BEFORE_TIME (sabah pozitifi) ────────────────────────────────
+
+    @Test
+    fun `avoid before time safe flag yields zero fraction and no exceeded`() {
+        val progress = MissionProgressCalculator.calculate(
+            MissionEvaluation(MissionStatus.COMPLETED, 0L, 0L, 0L),
+            MissionProgressKind.AVOID_BEFORE_TIME,
+        )
+        assertEquals(0f, progress.progressFraction)
+        assertNull(progress.exceededValue)
+        assertEquals(0L, progress.remainingValue)
+    }
+
+    @Test
+    fun `avoid before time violated flag yields full fraction and exceeded value`() {
+        val progress = MissionProgressCalculator.calculate(
+            MissionEvaluation(MissionStatus.FAILED, 1L, 0L, 0L, failureReasonCode = "MORNING_SOCIAL_USAGE_DETECTED"),
+            MissionProgressKind.AVOID_BEFORE_TIME,
+        )
+        assertEquals(1f, progress.progressFraction)
+        assertEquals(1L, progress.exceededValue)
+        assertNull(progress.remainingValue)
+    }
 }

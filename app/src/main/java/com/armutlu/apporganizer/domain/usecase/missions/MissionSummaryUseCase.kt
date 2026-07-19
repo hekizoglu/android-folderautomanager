@@ -71,6 +71,16 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
         MissionEngine.DAILY_VIEW_NOTIF_REPORT,
         MissionEngine.WEEKLY_POSITIVE_ACTIONS,
+        // Dongu G3a — yeni eylem/bayrak gorevleri, ayni "aninda tamamlanabilir" sozlesmesine
+        // girer (donemsel ust sinir/haftalik karsilastirma DEGIL — settlement beklemezler).
+        // DAILY_MORNING_CALM istisnadir: AVOID_BEFORE_TIME kacinma gorevi olsa da, penceresi
+        // (ilk 30dk) zaten kapandiktan SONRA COMPLETED doner (bkz. evaluateAvoidBeforeTime) —
+        // bu yuzden erken odul riski YOK, aninda yildiz yazilabilir.
+        MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED,
+        MissionEngine.DAILY_CUSTOMIZE_FOLDER,
+        MissionEngine.DAILY_MORNING_CALM,
+        MissionEngine.DAILY_FOCUS_SESSION,
+        MissionEngine.DISCOVER_WEEKLY,
     )
 
     private val periodBoundaryResolver = PeriodBoundaryResolver(Clock.systemDefaultZone(), ZoneId.systemDefault())
@@ -280,6 +290,13 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.WEEKLY_SCREEN_LESS -> MissionAction.OpenUsageReport
         MissionEngine.DAILY_NO_LATE_NIGHT -> MissionAction.OpenDoNotDisturbSettings
         MissionEngine.WEEKLY_POSITIVE_ACTIONS -> MissionAction.None
+        // Dongu G3a — DAILY_ORGANIZE_UNCATEGORIZED ayni sinyali (siniflandirma aksiyonu)
+        // kullandigindan DAILY_CLASSIFICATION_CLEANUP ile ayni hedef ekrana yonlendirilir.
+        MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED -> MissionAction.OpenClassificationReview
+        MissionEngine.DAILY_CUSTOMIZE_FOLDER -> MissionAction.None
+        MissionEngine.DAILY_MORNING_CALM -> MissionAction.None
+        MissionEngine.DAILY_FOCUS_SESSION -> MissionAction.None
+        MissionEngine.DISCOVER_WEEKLY -> MissionAction.None
         else -> MissionAction.None
     }
 
@@ -307,6 +324,12 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.DAILY_VIEW_NOTIF_REPORT -> R.string.mission_daily_view_notif_report
         MissionEngine.WEEKLY_SCREEN_LESS -> R.string.mission_weekly_screen_less
         MissionEngine.WEEKLY_POSITIVE_ACTIONS -> R.string.mission_weekly_positive_actions
+        // Dongu G3a
+        MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED -> R.string.mission_daily_organize_uncategorized
+        MissionEngine.DAILY_CUSTOMIZE_FOLDER -> R.string.mission_daily_customize_folder
+        MissionEngine.DAILY_MORNING_CALM -> R.string.mission_daily_morning_calm
+        MissionEngine.DAILY_FOCUS_SESSION -> R.string.mission_daily_focus_session
+        MissionEngine.DISCOVER_WEEKLY -> R.string.mission_discover_weekly
         else -> R.string.mission_unknown
     }
 

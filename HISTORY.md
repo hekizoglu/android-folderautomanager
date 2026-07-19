@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G3a - 2026-07-19 - Cekirdek yeni gorev tipleri + agirlikli secim
+
+**Yapilanlar:** 5 yeni gorev: ORGANIZE_UNCATEGORIZED (2 kategorisiz yerlestir), CUSTOMIZE_FOLDER (emoji/renk — yeni FolderCustomized eventi), MORNING_CALM (sabah sosyal medya acmama — yeni AVOID_BEFORE_TIME kind, kategori bazli/isimsiz), FOCUS_SESSION (30dk odak — AppPrefs sure sayaci), DISCOVER_WEEKLY (haftalik rapor kesfi). Agirlikli deterministik secim: zayif alan (PulseScoreReason) 2x + her gun >=1 kacinma + >=1 eylem garantisi. Havuz 7->12. Tum when eslemeleri dogrulandi; istatistiksel secim testi (300 gun) dahil tam suite yesil.
+
+**Bug:** Yok. 2 eski test havuz buyumesine gore guncellendi.
+
+**Sonraki:** G5 kutlama & mikro-etkilesim (zincir devam).
+
 ## G8 - 2026-07-19 - Cihaz duzeni icgorulerinin (Huseyin fikri, guvenli cerceve)
 
 **Yapilanlar:** DeviceTidinessInsights saf uretici (metinler TidinessTexts lambda ile disaridan — hardcoded string yok): depolama firsati (>=%85 doluluk VE >=500MB kazanc), 90+ gun kullanilmayan (>=5), bildirim yuku (>=200/hafta VE top-3 >=%60), oz-tani (izin kapali). Korku dili yok, hepsi sayili, davet dili. Ticker CONTEXTUAL_SUGGESTION entegrasyonu (ranker/suppression otomatik); KEY_DEVICE_TIDINESS_INSIGHTS toggle; TR/EN tam. 20 yeni test, tam suite yesil.

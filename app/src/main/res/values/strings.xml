@@ -642,6 +642,12 @@
     <string name="mission_daily_view_notif_report">Bildirim raporunu incele</string>
     <string name="mission_weekly_screen_less">Haftalık ekran süresini geçen haftadan düşük tut</string>
     <string name="mission_weekly_positive_actions">Bu hafta en az 3 faydalı düzenleme aksiyonu yap</string>
+    <!-- Dongu G3a: yeni cekirdek gorevler (uygulama adi GECMEZ - kategori bazli) -->
+    <string name="mission_daily_organize_uncategorized">Bugün 2 kategorisiz uygulamayı yerleştir</string>
+    <string name="mission_daily_customize_folder">Bir klasöre emoji veya renk ver</string>
+    <string name="mission_daily_morning_calm">Güne sosyal medya açmadan başla (ilk 30 dk)</string>
+    <string name="mission_daily_focus_session">Bugün Odak Modu\'nda en az 30 dk geçir</string>
+    <string name="mission_discover_weekly">Haftalık raporunu incele</string>
     <string name="mission_unknown">Görev</string>
     <string name="mission_progress_current_count">Şu an: %1$d / %2$d</string>
     <string name="mission_progress_current_duration">Şu an: %1$s</string>

@@ -1049,6 +1049,52 @@ object AppPrefs {
     fun isFocusModeEnabled(context: Context) = prefs(context).getBoolean(KEY_FOCUS_MODE, false)
     fun setFocusModeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOCUS_MODE, v).apply()
 
+    // Dongu G3a — DAILY_FOCUS_SESSION gorevi icin basit prefs sayaci. Focus Mode acilinca
+    // KEY_FOCUS_SESSION_START_AT o anin epoch-milli degerini tutar; kapaninca gecen sure
+    // gunun toplamina (KEY_FOCUS_MINUTES_TODAY_<epochDay>) eklenir. Gun degisince eski
+    // gunun sayaci otomatik gecersiz sayilir (anahtar epochDay'e gore degisir) — ekstra
+    // temizlik/migration gerekmez, SharedPreferences dosyasinda birikip kalsa da onemsizdir
+    // (kucuk int degerler). Buyuk Room tablosu GEREKMEZ - bu tek kullanicilik yerel sayac.
+    private const val KEY_FOCUS_SESSION_START_AT = "focus_session_start_at_ms"
+    private fun focusMinutesTodayKey(epochDay: Long) = "focus_minutes_today_$epochDay"
+
+    /** Focus Mode ACILDIGINDA cagrilir — aktif oturum baslangicini kaydeder. */
+    fun startFocusSession(context: Context, nowMillis: Long = System.currentTimeMillis()) {
+        prefs(context).edit().putLong(KEY_FOCUS_SESSION_START_AT, nowMillis).apply()
+    }
+
+    /**
+     * Focus Mode KAPANDIGINDA cagrilir — acik kalan suреyi (dakika) o GUNUN (nowMillis'in
+     * epochDay'i) toplam sayacina ekler. Baslangic kaydi yoksa (orn. process restart) hicbir
+     * sey eklenmez — sahte sure UYDURULMAZ.
+     */
+    fun endFocusSession(context: Context, nowMillis: Long = System.currentTimeMillis(), zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault()) {
+        val p = prefs(context)
+        val startAt = p.getLong(KEY_FOCUS_SESSION_START_AT, 0L)
+        if (startAt <= 0L) return
+        p.edit().remove(KEY_FOCUS_SESSION_START_AT).apply()
+        val elapsedMinutes = ((nowMillis - startAt).coerceAtLeast(0L)) / 60_000L
+        if (elapsedMinutes <= 0L) return
+        val epochDay = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate().toEpochDay()
+        val key = focusMinutesTodayKey(epochDay)
+        val current = p.getLong(key, 0L)
+        p.edit().putLong(key, current + elapsedMinutes).apply()
+    }
+
+    /**
+     * Bugune kadar biriken Focus Mode dakikasi — devam eden (henuz kapanmamis) oturum varsa
+     * o da dahil edilir (canli ilerleme goruntusu icin). Gorev degerlendirmesi bu toplami
+     * DAILY_FOCUS_SESSION hedefiyle (30dk) karsilastirir.
+     */
+    fun getFocusMinutesToday(context: Context, nowMillis: Long = System.currentTimeMillis(), zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault()): Long {
+        val p = prefs(context)
+        val epochDay = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate().toEpochDay()
+        val stored = p.getLong(focusMinutesTodayKey(epochDay), 0L)
+        val startAt = p.getLong(KEY_FOCUS_SESSION_START_AT, 0L)
+        val activeMinutes = if (startAt > 0L) ((nowMillis - startAt).coerceAtLeast(0L)) / 60_000L else 0L
+        return stored + activeMinutes
+    }
+
     // Quick Wheel / Pie Mode — uzun bas ile radyal uygulama çarkı (varsayılan kapalı)
     const val KEY_QUICK_WHEEL = "quick_wheel_enabled"
     fun isQuickWheelEnabled(context: Context) = prefs(context).getBoolean(KEY_QUICK_WHEEL, false)

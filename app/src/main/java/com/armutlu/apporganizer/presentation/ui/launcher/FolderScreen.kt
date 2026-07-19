@@ -692,6 +692,18 @@ fun FolderScreen(
                         AppPrefs.setFolderCustomName(context, catId, nameToSave)
                         AppPrefs.setFolderCustomEmoji(context, catId, emojiToSave)
                         AppPrefs.setFolderCustomColor(context, catId, newColor)
+                        // Dongu G3a — DAILY_CUSTOMIZE_FOLDER gorevi sinyali: emoji veya renk
+                        // fiilen degistiyse (bos string'e donus/varsayilana sifirlama SAYILMAZ)
+                        // gunde bir kez kaydedilir (TaskScoreManager.record kendi ici gunluk
+                        // tekillik korumasi tasir).
+                        if (emojiToSave.isNotBlank() || newColor.isNotBlank()) {
+                            scope.launch {
+                                com.armutlu.apporganizer.utils.TaskScoreManager.record(
+                                    context,
+                                    com.armutlu.apporganizer.utils.TaskScoreManager.EventType.FolderCustomized,
+                                )
+                            }
+                        }
                         showEditDialog = false
                     },
                 )

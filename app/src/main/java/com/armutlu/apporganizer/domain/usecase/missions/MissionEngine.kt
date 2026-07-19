@@ -41,6 +41,11 @@ object MissionEngine {
         // sabit varsayilana (DEFAULT_SCREEN_TARGET_MINUTES/DEFAULT_UNLOCK_TARGET) duser.
         val personalScreenTargetMinutes: Long? = null,
         val personalUnlockTarget: Long? = null,
+        // Dongu G3a — sabahin ilk yarim saatinde (ilk kullanimdan itibaren) sosyal kategori
+        // acildi mi? null = veri yok (izin yok veya henuz ilk kullanim gerceklesmedi).
+        val socialAppOpenedInFirst30MinToday: Boolean? = null,
+        // Dongu G3a — Focus Mode'da bugun biriken dakika (basit prefs sayaci, AppPrefs).
+        val focusModeMinutesToday: Long? = null,
     )
 
     data class TaskEventInput(
@@ -48,11 +53,20 @@ object MissionEngine {
         val positiveEventsThisWeek: Int = 0,
         val classificationActionsToday: Int = 0,
         val notificationReportViewedToday: Boolean = false,
+        // Dongu G3a — yeni eylem sayaclari (TaskScore event tablosundan, izin bagimsiz).
+        val folderCustomizedToday: Boolean = false,
+        val wrappedReportViewedThisWeek: Boolean = false,
     )
+
+    /** Dongu G3a — ağırlıklı seçim girdisi: kullanıcının zayıf alanı (bkz. WeakAreaCategory). */
+    enum class WeakAreaCategory { ORGANIZATION, ATTENTION, BALANCE, NONE }
 
     data class MissionSelectionInput(
         val checkInput: MissionCheckInput = MissionCheckInput(),
         val recentlyCompletedMissionIds: Set<String> = emptySet(),
+        // Dongu G3a — kullanicinin en negatif Dijital Nabiz alt-skoru (PulseScoreReason'dan
+        // turetilir, caller sorumlulugunda). NONE/bilinmiyor ise agirliksiz (eski davranis).
+        val weakArea: WeakAreaCategory = WeakAreaCategory.NONE,
     )
 
     // Gorev id sabitleri - strings.xml eslesmeleri bu id'lere baglidir, degistirme.
@@ -64,6 +78,13 @@ object MissionEngine {
     const val WEEKLY_SCREEN_LESS = "weekly_screen_less"
     const val WEEKLY_POSITIVE_ACTIONS = "weekly_positive_actions"
 
+    // Dongu G3a — yeni cekirdek gorevler (uygulama-spesifik DEGIL, G3b'ye kadar isimsiz).
+    const val DAILY_ORGANIZE_UNCATEGORIZED = "daily_organize_uncategorized"
+    const val DAILY_CUSTOMIZE_FOLDER = "daily_customize_folder"
+    const val DAILY_MORNING_CALM = "daily_morning_calm"
+    const val DAILY_FOCUS_SESSION = "daily_focus_session"
+    const val DISCOVER_WEEKLY = "discover_weekly"
+
     const val DAILY_STAR = 1
     const val WEEKLY_STAR = 2
     const val DAILY_MISSION_COUNT = 3
@@ -73,17 +94,55 @@ object MissionEngine {
     const val DEFAULT_SCREEN_TARGET_MINUTES = 180L
     const val DEFAULT_UNLOCK_TARGET = 30L
 
+    // Dongu G3a — yeni gorev hedefleri (sabit, kisisellestirme kapsami disi).
+    const val UNCATEGORIZED_ORGANIZE_TARGET = 2L
+    const val FOCUS_SESSION_TARGET_MINUTES = 30L
+
+    // Dongu G3a — DISCOVER_WEEKLY %10 nadir agirlik: shuffledWeeklyPool sirasindan BAGIMSIZ,
+    // generateWeekly icinde ayrica uygulanir (bkz. asagidaki not).
+    private const val DISCOVERY_WEIGHT_PERCENT = 10
+
     private val DAILY_POOL = listOf(
         Mission(DAILY_SCREEN_UNDER_3H, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         Mission(DAILY_NO_LATE_NIGHT, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         Mission(DAILY_UNLOCK_UNDER_30, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         Mission(DAILY_CLASSIFICATION_CLEANUP, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         Mission(DAILY_VIEW_NOTIF_REPORT, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
+        Mission(DAILY_ORGANIZE_UNCATEGORIZED, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
+        Mission(DAILY_CUSTOMIZE_FOLDER, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
+        Mission(DAILY_MORNING_CALM, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
+        Mission(DAILY_FOCUS_SESSION, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
     )
+
+    // Gorev id -> "kacinma" (pasif, AVOID_* kind) mi "eylem" (aninda tamamlanabilir) mi.
+    // generateDaily kuralinda kullanilir: her gun en az 1 kacinma + 1 eylem gorevi.
+    private val AVOIDANCE_MISSION_IDS = setOf(DAILY_NO_LATE_NIGHT, DAILY_MORNING_CALM)
+    private val ACTION_MISSION_IDS = setOf(
+        DAILY_CLASSIFICATION_CLEANUP,
+        DAILY_VIEW_NOTIF_REPORT,
+        DAILY_ORGANIZE_UNCATEGORIZED,
+        DAILY_CUSTOMIZE_FOLDER,
+        DAILY_FOCUS_SESSION,
+    )
+
+    // Gorev id -> hangi WeakAreaCategory'nin agirlikli secimini artirdigi (Dongu G3a).
+    private val WEAK_AREA_BY_MISSION_ID = mapOf(
+        DAILY_ORGANIZE_UNCATEGORIZED to WeakAreaCategory.ORGANIZATION,
+        DAILY_CLASSIFICATION_CLEANUP to WeakAreaCategory.ORGANIZATION,
+        DAILY_CUSTOMIZE_FOLDER to WeakAreaCategory.ORGANIZATION,
+        DAILY_VIEW_NOTIF_REPORT to WeakAreaCategory.ATTENTION,
+        DAILY_NO_LATE_NIGHT to WeakAreaCategory.ATTENTION,
+        DAILY_MORNING_CALM to WeakAreaCategory.ATTENTION,
+        DAILY_SCREEN_UNDER_3H to WeakAreaCategory.BALANCE,
+        DAILY_UNLOCK_UNDER_30 to WeakAreaCategory.BALANCE,
+        DAILY_FOCUS_SESSION to WeakAreaCategory.BALANCE,
+    )
+    private const val WEAK_AREA_WEIGHT = 2
 
     private val WEEKLY_POOL = listOf(
         Mission(WEEKLY_SCREEN_LESS, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
         Mission(WEEKLY_POSITIVE_ACTIONS, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
+        Mission(DISCOVER_WEEKLY, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
     )
 
     /** Gunun 3 gorevi - seed epochDay oldugundan ayni gun hep ayni set doner. */
@@ -97,13 +156,22 @@ object MissionEngine {
         val shuffled = shuffledDailyPool(epochDay)
         val eligible = shuffled.filter { isEligible(it, selection.checkInput) }
         val withoutCooldown = eligible.filterNot { it.id in selection.recentlyCompletedMissionIds }
-        val picked = when {
+        val pool = when {
             withoutCooldown.size >= DAILY_MISSION_COUNT -> withoutCooldown
             eligible.size >= DAILY_MISSION_COUNT -> eligible
             withoutCooldown.isNotEmpty() -> withoutCooldown
             eligible.isNotEmpty() -> eligible
             else -> shuffled.filterNot { it.id in selection.recentlyCompletedMissionIds }
                 .ifEmpty { shuffled }
+        }
+        // Dongu G3a — agirlikli secim: zayif alan gorevleri 2x sansla one cikar. Seed AYNI
+        // epochDay + AYNI weakArea icin HER ZAMAN ayni sonucu uretir (Random(epochDay) taze
+        // baslatilir, shuffledDailyPool'daki seed'den BAGIMSIZ ikinci bir deterministik akis).
+        val weighted = weightedSample(pool, selection.weakArea, Random(epochDay), DAILY_MISSION_COUNT)
+        val picked = if (weighted.size >= DAILY_MISSION_COUNT) {
+            ensureAvoidanceAndActionMix(weighted, pool)
+        } else {
+            weighted
         }
         return picked.take(DAILY_MISSION_COUNT).sortedBy { it.id }
     }
@@ -144,6 +212,14 @@ object MissionEngine {
         DAILY_NO_LATE_NIGHT -> MissionProgressKind.AVOID_AFTER_TIME
         WEEKLY_SCREEN_LESS -> MissionProgressKind.PERIOD_COMPARISON
         WEEKLY_POSITIVE_ACTIONS -> MissionProgressKind.ACTION_COUNT
+        // Dongu G3a — DAILY_FOCUS_SESSION suresi bir esik gorevidir (>= 30dk mi), "kac" degil;
+        // BOOLEAN_ACTION (0/1 bayrak) ile ayni ACTION_COUNT gorseli yeterli/dogru — evaluate()
+        // 0L/1L bayrak uretir, gercek dakika sayisi UI'da gosterilmez (esik gecildi mi onemli).
+        DAILY_ORGANIZE_UNCATEGORIZED -> MissionProgressKind.ACTION_COUNT
+        DAILY_CUSTOMIZE_FOLDER -> MissionProgressKind.BOOLEAN_ACTION
+        DAILY_MORNING_CALM -> MissionProgressKind.AVOID_BEFORE_TIME
+        DAILY_FOCUS_SESSION -> MissionProgressKind.BOOLEAN_ACTION
+        DISCOVER_WEEKLY -> MissionProgressKind.BOOLEAN_ACTION
         else -> MissionProgressKind.ACTION_COUNT
     }
 
@@ -212,6 +288,17 @@ object MissionEngine {
             current = input.taskEvents.positiveEventsThisWeek.toLong(),
             target = 3L,
         )
+        // Dongu G3a — yeni cekirdek gorevler.
+        DAILY_ORGANIZE_UNCATEGORIZED -> evaluateActionCount(
+            current = input.taskEvents.classificationActionsToday.toLong(),
+            target = UNCATEGORIZED_ORGANIZE_TARGET,
+        )
+        DAILY_CUSTOMIZE_FOLDER -> evaluateActionFlag(input.taskEvents.folderCustomizedToday)
+        DAILY_MORNING_CALM -> evaluateAvoidBeforeTime(input.socialAppOpenedInFirst30MinToday)
+        DAILY_FOCUS_SESSION -> evaluateActionFlag(
+            (input.focusModeMinutesToday ?: 0L) >= FOCUS_SESSION_TARGET_MINUTES
+        )
+        DISCOVER_WEEKLY -> evaluateActionFlag(input.taskEvents.wrappedReportViewedThisWeek)
         else -> MissionEvaluation(
             status = MissionStatus.DATA_UNAVAILABLE,
             currentValue = null,
@@ -294,6 +381,32 @@ object MissionEngine {
     }
 
     /**
+     * Dongu G3a — sabah pozitifi: gunun ilk 30 dakikasinda sosyal kategoride uygulama acildi mi
+     * (AVOID_AFTER_TIME'in sabah simetrigi). Veri saglayici ([MissionMetricSnapshotProvider])
+     * "ilk 30 dakika" penceresini zaten kapali/acik olarak hesaplar (henuz ilk kullanim
+     * gerceklesmediyse pencere acik sayilmaz — DATA_UNAVAILABLE yerine caller basitce null
+     * gecirir, bu da burada DATA_UNAVAILABLE'a duser; gun ilerledikce gercek veri gelir).
+     * Gece gorevinden farkli olarak zaman esigi caller'da (snapshot provider) cozulur -
+     * MissionEngine burada saf bir bayrak degerlendirir, LocalTime almaz.
+     */
+    private fun evaluateAvoidBeforeTime(socialOpenedInFirst30Min: Boolean?): MissionEvaluation {
+        if (socialOpenedInFirst30Min == null) {
+            return MissionEvaluation(MissionStatus.DATA_UNAVAILABLE, null, null, null)
+        }
+        return if (socialOpenedInFirst30Min) {
+            MissionEvaluation(
+                status = MissionStatus.FAILED,
+                currentValue = 1L,
+                targetValue = 0L,
+                remainingValue = 0L,
+                failureReasonCode = "MORNING_SOCIAL_USAGE_DETECTED",
+            )
+        } else {
+            MissionEvaluation(MissionStatus.COMPLETED, 0L, 0L, 0L)
+        }
+    }
+
+    /**
      * Haftalik karsilastirma: baseline yoksa DATA_UNAVAILABLE; hafta bitmediyse her zaman
      * IN_PROGRESS (erken odul yok — P0 2.4 fix); hafta bittiyse simdiki < onceki ise
      * COMPLETED, degilse FAILED.
@@ -353,6 +466,83 @@ object MissionEngine {
                 input.previousWeeklyScreenTimeMinutes != null &&
                 input.previousWeeklyScreenTimeMinutes > 0L
         WEEKLY_POSITIVE_ACTIONS -> true
+        // Dongu G3a
+        DAILY_ORGANIZE_UNCATEGORIZED -> true
+        DAILY_CUSTOMIZE_FOLDER -> true
+        DAILY_MORNING_CALM -> input.socialAppOpenedInFirst30MinToday != null
+        DAILY_FOCUS_SESSION -> true
+        DISCOVER_WEEKLY -> true
         else -> false
+    }
+
+    /**
+     * Dongu G3a — kullanicinin en zayif alanina (weakArea) 2x agirlik veren deterministik
+     * secim. [Random.nextInt] tabanli agirlikli ornekleme (agirlikli "havuzdan cekme" yerine
+     * TEK bir Random akisi kullanilir ki epochDay seed'i sabit kaldikca sonuc HER ZAMAN ayni
+     * olsun). Her adimda kalan adaylarin agirlik toplami hesaplanir, [Random.nextInt] o toplam
+     * araliginda bir nokta secer, hangi adaya dustugu (agirlik siniri) bulunur ve o aday
+     * listeden cikarilir — klasik "weighted sampling without replacement".
+     */
+    private fun weightedSample(
+        candidates: List<Mission>,
+        weakArea: WeakAreaCategory,
+        rnd: Random,
+        count: Int,
+    ): List<Mission> {
+        val remaining = candidates.toMutableList()
+        val result = mutableListOf<Mission>()
+        fun weightOf(mission: Mission): Int =
+            if (weakArea != WeakAreaCategory.NONE && WEAK_AREA_BY_MISSION_ID[mission.id] == weakArea) {
+                WEAK_AREA_WEIGHT
+            } else {
+                1
+            }
+        while (result.size < count && remaining.isNotEmpty()) {
+            val totalWeight = remaining.sumOf { weightOf(it) }
+            var pick = rnd.nextInt(totalWeight)
+            var chosenIndex = 0
+            for (i in remaining.indices) {
+                pick -= weightOf(remaining[i])
+                if (pick < 0) {
+                    chosenIndex = i
+                    break
+                }
+            }
+            result += remaining.removeAt(chosenIndex)
+        }
+        return result
+    }
+
+    /**
+     * Dongu G3a — secilen gunluk 3'lu icinde en az 1 "kacinma" (AVOIDANCE_MISSION_IDS) ve en az
+     * 1 "eylem" (ACTION_MISSION_IDS) gorevi olmasini garanti eder. `eligible` havuzunda uygun
+     * aday varsa ama secilen 3'luye girmediyse, en dusuk oncelikli (son sıradaki) uygun-olmayan
+     * turdeki gorevin yerine takas edilir — boylece 3 sayisi SABIT kalir, sadece ic karisim
+     * duzelir. Aday yoksa (havuzda o turden hic eligible gorev yoksa) degisiklik yapilmaz
+     * (kullaniciya haksizlik/sahte gorev DAYATILMAZ).
+     */
+    private fun ensureAvoidanceAndActionMix(
+        picked: List<Mission>,
+        eligiblePool: List<Mission>,
+    ): List<Mission> {
+        if (picked.size < DAILY_MISSION_COUNT) return picked
+        var result = picked
+
+        fun swapInIfMissing(idSet: Set<String>) {
+            if (result.any { it.id in idSet }) return
+            val candidate = eligiblePool.firstOrNull { it.id in idSet && it !in result } ?: return
+            // Diger turden GEREKSIZ olan (ayni turde birden fazla varsa) son elemanla degistir;
+            // yoksa listenin son elemaniyla degistir.
+            val otherSet = if (idSet === AVOIDANCE_MISSION_IDS) ACTION_MISSION_IDS else AVOIDANCE_MISSION_IDS
+            val redundantIndex = result.indices.lastOrNull { idx ->
+                val id = result[idx].id
+                id !in idSet && (id !in otherSet || result.count { it.id in otherSet } > 1)
+            } ?: (result.size - 1)
+            result = result.toMutableList().apply { set(redundantIndex, candidate) }
+        }
+
+        swapInIfMissing(AVOIDANCE_MISSION_IDS)
+        swapInIfMissing(ACTION_MISSION_IDS)
+        return result
     }
 }

@@ -27,6 +27,19 @@ data class MissionMetricSnapshot(
     val notificationReportViewedToday: Boolean,
     val positiveActionsThisWeek: Int,
     val freshness: DataFreshness,
+    // Dongu G3a — yeni gorev sinyalleri.
+    /** Bugun bir klasor emoji/rengi ozellestirildi mi (TaskScore event tabanli). */
+    val folderCustomizedToday: Boolean = false,
+    /** Bu hafta haftalik rapor (Wrapped) acildi mi (TaskScore event tabanli). */
+    val wrappedReportViewedThisWeek: Boolean = false,
+    /**
+     * Gunun ilk 30 dakikasinda (ilk kullanimdan itibaren) sosyal kategoride bir uygulama
+     * acildi mi. null = veri yok (izin yok VEYA bugun henuz hic kullanim yok — pencere
+     * baslamadi). Uygulama adi bu alanda ASLA tasinmaz, sadece kategori-bazli bayrak.
+     */
+    val socialAppOpenedInFirst30MinToday: Boolean? = null,
+    /** Bugun Focus Mode'da biriken toplam dakika (AppPrefs basit sayaci, izin bagimsiz). */
+    val focusModeMinutesToday: Long = 0L,
     /**
      * Dongu G1 (kisisel gorev hedefi) — bugun HARIC son (en fazla 7) TAMAMLANMIS gunun gunluk
      * ekran suresi (dk)/kilit acma listesi, eskiden yeniye sirali. Bugun donem bitmedigi icin

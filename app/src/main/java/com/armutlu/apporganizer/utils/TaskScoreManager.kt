@@ -65,6 +65,20 @@ object TaskScoreManager {
             eventKey = "notification_report_viewed",
             defaultLabel = "Bildirim raporu acildi",
         ),
+        // Dongu G3a — DAILY_CUSTOMIZE_FOLDER gorevi icin sinyal. Gunde bir kez sayilmasi
+        // (insertOnceBetween ile) gorev tarafinda degil, TaskScoreManager.record cagrisinda
+        // NotificationReportViewed ile ayni "gunde bir" desenini izler.
+        FolderCustomized(
+            delta = 2,
+            eventKey = "folder_customized",
+            defaultLabel = "Klasor ozellestirildi (emoji/renk)",
+        ),
+        // Dongu G3a — DISCOVER_WEEKLY gorevi icin sinyal (haftalik rapor acildi).
+        WrappedReportViewed(
+            delta = 1,
+            eventKey = "wrapped_report_viewed",
+            defaultLabel = "Haftalik rapor acildi",
+        ),
     }
 
     data class Snapshot(
@@ -130,7 +144,10 @@ object TaskScoreManager {
                 label = eventType.defaultLabel,
                 delta = delta,
             )
-        if (eventType == EventType.NotificationReportViewed) {
+        if (eventType == EventType.NotificationReportViewed ||
+            eventType == EventType.FolderCustomized ||
+            eventType == EventType.WrappedReportViewed
+        ) {
             val zone = ZoneId.systemDefault()
             val day = Instant.ofEpochMilli(entry.createdAt).atZone(zone).toLocalDate()
             val from = day.atStartOfDay(zone).toInstant().toEpochMilli()

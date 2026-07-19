@@ -127,6 +127,15 @@ interface AppDao {
     @Query("SELECT * FROM apps WHERE categoryId = 'uncategorized' ORDER BY appName ASC")
     fun getUncategorizedApps(): Flow<List<AppInfo>>
 
+    /**
+     * Dongu G3a — DAILY_MORNING_CALM gorevi icin: belirli bir kategorideki (orn. CAT_SOCIAL)
+     * paket adlarini tek seferlik (suspend) okur. Kategori adi hicbir yerde kullaniciya
+     * gosterilmez, sadece MissionMetricSnapshotProvider'in ilk-kullanim paketiyle kesisim
+     * kontrolu icin kullanilir (U02 — uygulama adi telemetriye/gorev metnine gitmez).
+     */
+    @Query("SELECT packageName FROM apps WHERE categoryId = :categoryId")
+    suspend fun getPackageNamesByCategory(categoryId: String): List<String>
+
     @Query("""
         SELECT * FROM apps
         WHERE classificationReviewState = 'PENDING'

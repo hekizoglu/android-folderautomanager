@@ -55,7 +55,8 @@ class MissionEngineTest {
             )
         )
 
-        assertEquals(2, weekly.size)
+        // Dongu G3a: WEEKLY_POOL 2 -> 3 elemana cikti (DISCOVER_WEEKLY eklendi).
+        assertEquals(3, weekly.size)
         assertTrue(weekly.all { it.type == MissionEngine.MissionType.WEEKLY })
         assertTrue(weekly.all { it.starReward == MissionEngine.WEEKLY_STAR })
     }
@@ -76,8 +77,19 @@ class MissionEngineTest {
         assertFalse(missions.any { it.id == MissionEngine.DAILY_SCREEN_UNDER_3H })
         assertFalse(missions.any { it.id == MissionEngine.DAILY_NO_LATE_NIGHT })
         assertFalse(missions.any { it.id == MissionEngine.DAILY_UNLOCK_UNDER_30 })
-        assertTrue(missions.any { it.id == MissionEngine.DAILY_CLASSIFICATION_CLEANUP })
-        assertTrue(missions.any { it.id == MissionEngine.DAILY_VIEW_NOTIF_REPORT })
+        // Dongu G3a: DAILY_MORNING_CALM de veri-bagimli (socialAppOpenedInFirst30MinToday=null)
+        // olan tek yeni gorevdir, o da elenmeli. Kalan 5 gorev (CLASSIFICATION_CLEANUP,
+        // VIEW_NOTIF_REPORT, ORGANIZE_UNCATEGORIZED, CUSTOMIZE_FOLDER, FOCUS_SESSION) her zaman
+        // eligible'dir — secilen 3'lu bunlarin bir alt kumesi olmali.
+        assertFalse(missions.any { it.id == MissionEngine.DAILY_MORNING_CALM })
+        val alwaysEligibleIds = setOf(
+            MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
+            MissionEngine.DAILY_VIEW_NOTIF_REPORT,
+            MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED,
+            MissionEngine.DAILY_CUSTOMIZE_FOLDER,
+            MissionEngine.DAILY_FOCUS_SESSION,
+        )
+        assertTrue(missions.all { it.id in alwaysEligibleIds })
     }
 
     @Test
@@ -454,5 +466,230 @@ class MissionEngineTest {
         )
         assertEquals(MissionStatus.FAILED, evaluation.status)
         assertEquals(18L, evaluation.targetValue)
+    }
+
+    // ── Dongu G3a: yeni cekirdek gorev tipleri ─────────────────────────────────────
+
+    @Test
+    fun `organize uncategorized needs 2 classification actions today`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val zero = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(classificationActionsToday = 0)),
+        )
+        assertEquals(MissionStatus.IN_PROGRESS, zero.status)
+        assertEquals(2L, zero.remainingValue)
+
+        val one = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(classificationActionsToday = 1)),
+        )
+        assertEquals(MissionStatus.IN_PROGRESS, one.status)
+        assertEquals(1L, one.remainingValue)
+
+        val two = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(classificationActionsToday = 2)),
+        )
+        assertEquals(MissionStatus.COMPLETED, two.status)
+    }
+
+    @Test
+    fun `customize folder mission completes only when today's flag is true`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_CUSTOMIZE_FOLDER, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        assertEquals(
+            MissionStatus.IN_PROGRESS,
+            MissionEngine.evaluate(
+                mission,
+                MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(folderCustomizedToday = false)),
+            ).status,
+        )
+        assertEquals(
+            MissionStatus.COMPLETED,
+            MissionEngine.evaluate(
+                mission,
+                MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(folderCustomizedToday = true)),
+            ).status,
+        )
+    }
+
+    @Test
+    fun `morning calm mission fails when social app opened in first 30 min, completes otherwise`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_MORNING_CALM, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        assertEquals(
+            MissionStatus.DATA_UNAVAILABLE,
+            MissionEngine.evaluate(
+                mission,
+                MissionEngine.MissionCheckInput(socialAppOpenedInFirst30MinToday = null),
+            ).status,
+        )
+        val failed = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(socialAppOpenedInFirst30MinToday = true),
+        )
+        assertEquals(MissionStatus.FAILED, failed.status)
+        assertEquals("MORNING_SOCIAL_USAGE_DETECTED", failed.failureReasonCode)
+
+        assertEquals(
+            MissionStatus.COMPLETED,
+            MissionEngine.evaluate(
+                mission,
+                MissionEngine.MissionCheckInput(socialAppOpenedInFirst30MinToday = false),
+            ).status,
+        )
+    }
+
+    @Test
+    fun `focus session mission completes at 30 minutes threshold`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_FOCUS_SESSION, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        assertEquals(
+            MissionStatus.IN_PROGRESS,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(focusModeMinutesToday = 29L)).status,
+        )
+        assertEquals(
+            MissionStatus.COMPLETED,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(focusModeMinutesToday = 30L)).status,
+        )
+        assertEquals(
+            MissionStatus.IN_PROGRESS,
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(focusModeMinutesToday = null)).status,
+        )
+    }
+
+    @Test
+    fun `discover weekly mission completes only when wrapped report viewed this week`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DISCOVER_WEEKLY, MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+        )
+        assertEquals(
+            MissionStatus.IN_PROGRESS,
+            MissionEngine.evaluate(
+                mission,
+                MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(wrappedReportViewedThisWeek = false)),
+            ).status,
+        )
+        assertEquals(
+            MissionStatus.COMPLETED,
+            MissionEngine.evaluate(
+                mission,
+                MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(wrappedReportViewedThisWeek = true)),
+            ).status,
+        )
+    }
+
+    // ── Dongu G3a: agirlikli secim + kacinma/eylem karisimi ─────────────────────────
+
+    @Test
+    fun `weighted selection favors weak area missions across many days`() {
+        // Tum sinyaller mevcut (hicbir gorev veri eksikligiyle elenmiyor) - genis bir havuzdan
+        // 3'lu seciliyor. ORGANIZATION zayif alaniyla agirliklandirilmis secim, agirliksiz
+        // (NONE) secime kiyasla ORGANIZATION gorevlerini ISTATISTIKSEL olarak daha sik
+        // sececek (2x agirlik) - tek gun degil, genis bir epochDay araliginda ortalama alinir.
+        val fullInput = MissionEngine.MissionCheckInput(
+            screenTimeMinutesToday = 90L,
+            usedAfter23Today = false,
+            unlockCountToday = 10,
+            socialAppOpenedInFirst30MinToday = false,
+            focusModeMinutesToday = 10L,
+        )
+        val organizationMissionIds = setOf(
+            MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED,
+            MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
+            MissionEngine.DAILY_CUSTOMIZE_FOLDER,
+        )
+
+        var weightedHits = 0
+        var neutralHits = 0
+        val sampleDays = 300L
+        for (day in 0 until sampleDays) {
+            val weighted = MissionEngine.generateDaily(
+                epochDay = day,
+                selection = MissionEngine.MissionSelectionInput(
+                    checkInput = fullInput,
+                    weakArea = MissionEngine.WeakAreaCategory.ORGANIZATION,
+                ),
+            )
+            weightedHits += weighted.count { it.id in organizationMissionIds }
+
+            val neutral = MissionEngine.generateDaily(
+                epochDay = day,
+                selection = MissionEngine.MissionSelectionInput(
+                    checkInput = fullInput,
+                    weakArea = MissionEngine.WeakAreaCategory.NONE,
+                ),
+            )
+            neutralHits += neutral.count { it.id in organizationMissionIds }
+        }
+
+        assertTrue(
+            "Agirlikli secim (ORGANIZATION) $weightedHits >= agirliksiz secim $neutralHits olmali",
+            weightedHits > neutralHits,
+        )
+    }
+
+    @Test
+    fun `daily selection mixes at least one avoidance and one action mission when both available`() {
+        val fullInput = MissionEngine.MissionCheckInput(
+            screenTimeMinutesToday = 90L,
+            usedAfter23Today = false,
+            unlockCountToday = 10,
+            socialAppOpenedInFirst30MinToday = false,
+            focusModeMinutesToday = 10L,
+        )
+        val avoidanceIds = setOf(MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.DAILY_MORNING_CALM)
+        val actionIds = setOf(
+            MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
+            MissionEngine.DAILY_VIEW_NOTIF_REPORT,
+            MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED,
+            MissionEngine.DAILY_CUSTOMIZE_FOLDER,
+            MissionEngine.DAILY_FOCUS_SESSION,
+        )
+
+        for (day in 0 until 60L) {
+            val missions = MissionEngine.generateDaily(
+                epochDay = day,
+                selection = MissionEngine.MissionSelectionInput(checkInput = fullInput),
+            )
+            assertTrue(
+                "Gun $day: en az 1 kacinma gorevi olmali, secilen: ${missions.map { it.id }}",
+                missions.any { it.id in avoidanceIds },
+            )
+            assertTrue(
+                "Gun $day: en az 1 eylem gorevi olmali, secilen: ${missions.map { it.id }}",
+                missions.any { it.id in actionIds },
+            )
+        }
+    }
+
+    @Test
+    fun `same epochDay and weakArea produces identical weighted selection`() {
+        val fullInput = MissionEngine.MissionCheckInput(
+            screenTimeMinutesToday = 90L,
+            usedAfter23Today = false,
+            unlockCountToday = 10,
+            socialAppOpenedInFirst30MinToday = false,
+            focusModeMinutesToday = 10L,
+        )
+        val selection = MissionEngine.MissionSelectionInput(
+            checkInput = fullInput,
+            weakArea = MissionEngine.WeakAreaCategory.ATTENTION,
+        )
+        val first = MissionEngine.generateDaily(epochDay = 12_345L, selection = selection)
+        val second = MissionEngine.generateDaily(epochDay = 12_345L, selection = selection)
+
+        assertEquals(first.map { it.id }, second.map { it.id })
     }
 }

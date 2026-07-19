@@ -44,6 +44,7 @@ object MissionProgressCalculator {
             MissionProgressKind.ACTION_COUNT -> calculateActionCount(current, target)
             MissionProgressKind.BOOLEAN_ACTION -> calculateActionCount(current, target)
             MissionProgressKind.AVOID_AFTER_TIME -> calculateAvoidAfterTime(current, target)
+            MissionProgressKind.AVOID_BEFORE_TIME -> calculateAvoidAfterTime(current, target)
             MissionProgressKind.PERIOD_COMPARISON -> calculatePeriodComparison(current, target)
         }
     }
@@ -98,7 +99,12 @@ object MissionProgressCalculator {
         )
     }
 
-    /** Gece kullanmama gorevi — current/target 0L/1L bayrak degerleridir (bkz. MissionEngine.evaluateNoLateNight), sayisal ilerleme cubugu anlamli degildir. */
+    /**
+     * Kacinma gorevleri (gece kullanmama / sabah sosyal medya acmama) — current/target 0L/1L
+     * bayrak degerleridir (bkz. MissionEngine.evaluateNoLateNight / evaluateAvoidBeforeTime),
+     * sayisal ilerleme cubugu anlamli degildir. AVOID_AFTER_TIME ve AVOID_BEFORE_TIME ikisi de
+     * bu fonksiyonu kullanir — ayni bayrak semantigini paylasirlar.
+     */
     private fun calculateAvoidAfterTime(current: Long, target: Long): MissionProgress {
         val fraction = if (current > 0L) 1f else 0f
         return MissionProgress(

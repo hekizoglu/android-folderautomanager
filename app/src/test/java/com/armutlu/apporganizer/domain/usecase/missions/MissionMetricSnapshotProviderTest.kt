@@ -104,11 +104,18 @@ class MissionMetricSnapshotProviderTest {
         override fun getUnlockCountPerDay(context: Context, days: Int, nowMillis: Long): Map<Long, Int>? = unlockCountPerDay
     }
 
+    /** Dongu G3a — DAILY_MORNING_CALM icin sahte kategori->paket eslesmesi. */
+    private class FakeAppDao(private val socialPackages: List<String> = emptyList()) : com.armutlu.apporganizer.data.local.AppDao by mockk(relaxed = true) {
+        override suspend fun getPackageNamesByCategory(categoryId: String): List<String> =
+            if (categoryId == com.armutlu.apporganizer.domain.models.Category.CAT_SOCIAL) socialPackages else emptyList()
+    }
+
     private fun buildProvider(
         instant: Instant = fixedInstant,
         sessions: List<DailyPackageUsage>?,
         unlockCount: Int?,
         dao: FakeTaskScoreEventDao = FakeTaskScoreEventDao(),
+        appDao: com.armutlu.apporganizer.data.local.AppDao = FakeAppDao(),
     ): MissionMetricSnapshotProvider {
         val clock = clockAt(instant)
         return MissionMetricSnapshotProvider(
@@ -119,6 +126,7 @@ class MissionMetricSnapshotProviderTest {
             clock = clock,
             zoneId = zoneId,
             usageStatsSource = FakeUsageStatsSource(sessions, unlockCount),
+            appDao = appDao,
         )
     }
 
@@ -126,10 +134,11 @@ class MissionMetricSnapshotProviderTest {
         epochDay: Long,
         globalForegroundMs: Long,
         hourly: LongArray = LongArray(24),
+        packageName: String = "com.example.app",
     ) = DailyPackageUsage(
         localDate = java.time.LocalDate.ofEpochDay(epochDay).toString(),
         epochDay = epochDay,
-        packageName = "com.example.app",
+        packageName = packageName,
         launchCount = 1,
         foregroundDurationMs = globalForegroundMs,
         hourlyForegroundMs = hourly.toList(),
@@ -225,5 +234,61 @@ class MissionMetricSnapshotProviderTest {
 
         assertEquals(fixedInstant.toEpochMilli(), snapshot.capturedAt)
         assertEquals(DataFreshness.LIVE, snapshot.freshness)
+    }
+
+    // ── Dongu G3a: yeni gorev sinyalleri ─────────────────────────────────────────────
+
+    @Test
+    fun `no usage today means social morning flag is null (window not open yet)`() = runBlocking {
+        val provider = buildProvider(sessions = emptyList(), unlockCount = 0)
+        val snapshot = provider.capture()
+
+        assertNull(snapshot.socialAppOpenedInFirst30MinToday)
+    }
+
+    @Test
+    fun `social app active in first used hour marks morning flag true`() = runBlocking {
+        val epochDay = fixedInstant.atZone(zoneId).toLocalDate().toEpochDay()
+        val hourly = LongArray(24).also { it[7] = 5 * 60_000L } // saat 07 ilk kullanim
+        val today = dailyUsage(epochDay, globalForegroundMs = 5 * 60_000L, hourly = hourly, packageName = "com.social.app")
+        val provider = buildProvider(
+            sessions = listOf(today),
+            unlockCount = 1,
+            appDao = FakeAppDao(socialPackages = listOf("com.social.app")),
+        )
+
+        val snapshot = provider.capture()
+
+        assertTrue(snapshot.socialAppOpenedInFirst30MinToday == true)
+    }
+
+    @Test
+    fun `non-social app active in first used hour marks morning flag false`() = runBlocking {
+        val epochDay = fixedInstant.atZone(zoneId).toLocalDate().toEpochDay()
+        val hourly = LongArray(24).also { it[7] = 5 * 60_000L }
+        val today = dailyUsage(epochDay, globalForegroundMs = 5 * 60_000L, hourly = hourly, packageName = "com.news.app")
+        val provider = buildProvider(
+            sessions = listOf(today),
+            unlockCount = 1,
+            appDao = FakeAppDao(socialPackages = listOf("com.social.app")),
+        )
+
+        val snapshot = provider.capture()
+
+        assertFalse(snapshot.socialAppOpenedInFirst30MinToday == true)
+    }
+
+    @Test
+    fun `folder customized and wrapped report view counters read from TaskScore events`() = runBlocking {
+        val dao = FakeTaskScoreEventDao()
+        val todayStartMs = fixedInstant.atZone(zoneId).toLocalDate().atStartOfDay(zoneId).toInstant().toEpochMilli()
+        dao.seed(TaskScoreManager.EventType.FolderCustomized.eventKey, 2, todayStartMs + 1000)
+        dao.seed(TaskScoreManager.EventType.WrappedReportViewed.eventKey, 1, todayStartMs + 2000)
+
+        val provider = buildProvider(sessions = null, unlockCount = null, dao = dao)
+        val snapshot = provider.capture()
+
+        assertTrue(snapshot.folderCustomizedToday)
+        assertTrue(snapshot.wrappedReportViewedThisWeek)
     }
 }
