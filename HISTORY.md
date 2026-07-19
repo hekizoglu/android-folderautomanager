@@ -1,5 +1,15 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G6 - 2026-07-19 - Yildiz ekonomisi — G-PLAN TAMAMLANDI (v1.4.0)
+
+**Yapilanlar:** StarLevelSystem (Caylak 0-9 / Duzenli 10-24 / Odakli 25-49 / Denge Ustasi 50-99 / Usta 100+, saf fonksiyonlar); StarsHeader'a seviye rozeti + sonraki seviye ilerlemesi; kozmetik acilimlar: Doga (Odakli) ve Uzay (Denge Ustasi) emoji setleri FolderRenameDialog'da kilit rozetli (MEVCUT hicbir sey kilitlenmedi, para yok); seviye atlama ticker'da bir kez (level_up_<seviye>, KEY_MISSION_CELEBRATIONS'a bagli). 16 yeni test, ilgili suite yesil.
+
+**G-PLAN TOPLAM (G1-G8, 12 dongu):** kisisel hedefler+tempo, tam-satir tikla-aksiyon+DND, streak+dondurma, cihaz duzeni icgorulerinin, 13 gorevlik havuz (uygulama-spesifik dahil), kutlamalar, seviye sistemi. Plan dosyasi hasat edilip silindi (kullanici kurali).
+
+**Bug:** Yok. Ortam: 2 build kilidi SOP+robocopy ile cozuldu.
+
+**Sonraki:** Kalan tek acik is: 5 cihaz-kapili sari (4-cihaz kaniti karari Huseyin'de).
+
 ## G3b - 2026-07-19 - Uygulama-spesifik gorevler
 
 **Yapilanlar:** DAILY_APP_LIMIT: "Bugun [uygulama]'yi X dk altinda tut" — aday saf secici (sosyal/oyun/video, 7g ort >=30dk, en yuksek kullanim; hedef medyan x0.8 x tempo, 15-360dk clamp); paket AppPrefs epochDay anahtarinda (DB semasi degismedi), donem boyunca sabit pin; per-package UsageStats okuma; dinamik baslik (PackageManager etiketi, fallback'li); uzun basis App Info (OpenAppInfo + dataPackage'li SystemIntent), tek tik kullanim raporu; BALANCE zayif alaninda 2x agirlik (havuz 13). TELEMETRI SIZINTISI YOK (HomeMissionType.NONE kosulsuz — dogrulandi). 13+7+2 yeni test, tam suite yesil.

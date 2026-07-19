@@ -27,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.usecase.missions.FolderEmojiSets
+import com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem
 
 internal val EMOJI_PICKER = listOf(
     "📁","📝","🎮","👥","🛍️","📰","❤️","💰","🎓","🔧",
@@ -53,6 +55,10 @@ internal fun FolderRenameDialog(
     currentName: String,
     currentEmoji: String,
     currentColor: String = "",
+    // Dongu G6 — Yildiz Ekonomisi kozmetik acilim: kilit durumu icin toplam ⭐. Varsayilan 0
+    // (cagiran taraf gecmediyse) TUM yeni setleri kilitli gosterir — GUVENLI varsayilan, mevcut
+    // EMOJI_PICKER hicbir sekilde etkilenmez (kirmizi cizgi).
+    totalStars: Int = 0,
     onDismiss: () -> Unit,
     onSave: (name: String, emoji: String, color: String) -> Unit,
 ) {
@@ -105,6 +111,51 @@ internal fun FolderRenameDialog(
                             contentAlignment = Alignment.Center
                         ) { Text(emoji, fontSize = 20.sp) }
                     }
+                }
+                // Dongu G6 — kozmetik acilim: YENI emoji setleri (mevcut EMOJI_PICKER'a dokunulmadi).
+                // Kilitliyse tiklayinca "X seviyesinde acilir (N ⭐)" bilgisi gosterilir, secim yapilmaz.
+                var lockInfoMessage by remember { mutableStateOf<String?>(null) }
+                FolderEmojiSets.SETS.forEach { set ->
+                    val unlocked = FolderEmojiSets.isUnlocked(set, totalStars)
+                    val setName = stringResource(set.nameRes)
+                    Text(
+                        text = if (unlocked) setName else "$setName 🔒",
+                        color = onSurface.copy(0.6f),
+                        fontSize = 13.sp,
+                    )
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        itemsIndexed(set.emojis, key = { _, emoji -> "${set.id}_$emoji" }) { _, emoji ->
+                            Box(
+                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        when {
+                                            !unlocked -> onSurface.copy(0.04f)
+                                            emoji == selectedEmoji -> primary.copy(0.35f)
+                                            else -> onSurface.copy(0.08f)
+                                        }
+                                    )
+                                    .clickable {
+                                        if (unlocked) {
+                                            selectedEmoji = emoji
+                                        } else {
+                                            val (level, threshold) = FolderEmojiSets.lockInfo(set)
+                                            lockInfoMessage = level.labelTr + "|" + threshold
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(emoji, fontSize = 20.sp, color = if (unlocked) Color.Unspecified else onSurface.copy(0.35f))
+                            }
+                        }
+                    }
+                }
+                lockInfoMessage?.let { raw ->
+                    val (levelName, threshold) = raw.split("|").let { it[0] to it[1].toInt() }
+                    Text(
+                        text = stringResource(R.string.folder_emoji_set_locked_hint, levelName, threshold),
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                    )
                 }
                 Text(stringResource(R.string.folder_color_pick), color = onSurface.copy(0.6f), fontSize = 13.sp)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

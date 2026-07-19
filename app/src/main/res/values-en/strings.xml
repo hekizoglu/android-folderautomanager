@@ -617,6 +617,19 @@
     <string name="missions_streak_row">🔥 %1$d days · Best: %2$d</string>
     <string name="missions_streak_golden_suffix"> · Golden streak: %1$d</string>
     <string name="missions_streak_frozen_yesterday">Streak was frozen yesterday ❄</string>
+    <!-- Cycle G6: Star Economy — level badge + progress + cosmetic unlock -->
+    <string name="missions_level_badge">🎖 %1$s</string>
+    <string name="missions_level_progress">%1$s · %2$d ⭐ to %3$s</string>
+    <string name="missions_level_max">%1$s · top level</string>
+    <string name="missions_level_beginner">Beginner</string>
+    <string name="missions_level_steady">Steady</string>
+    <string name="missions_level_focused">Focused</string>
+    <string name="missions_level_balance_master">Balance Master</string>
+    <string name="missions_level_master">Master</string>
+    <string name="folder_emoji_set_locked_hint">Unlocks at %1$s level (%2$d ⭐)</string>
+    <string name="folder_emoji_set_nature">Nature</string>
+    <string name="folder_emoji_set_space">Space</string>
+    <string name="ticker_level_up">🎖 New level: %1$s</string>
     <string name="home_mission_streak_badge">🔥 %1$d</string>
     <string name="home_mission_streak_content_description">%1$d day streak</string>
     <string name="missions_daily_section">Today\'s Missions</string>

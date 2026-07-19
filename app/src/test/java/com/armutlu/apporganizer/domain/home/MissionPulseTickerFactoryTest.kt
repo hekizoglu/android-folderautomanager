@@ -398,4 +398,55 @@ class MissionPulseTickerFactoryTest {
         assertTrue(ranked.size <= TickerRanker.MAX_VISIBLE)
         assertEquals(3, ranked.size)
     }
+
+    // ---- Dongu G6: Yildiz Ekonomisi — seviye atlama tespiti ----
+
+    @Test
+    fun `null previous level produces no level-up item (first read, not a real transition)`() {
+        val items = MissionPulseTickerFactory.levelUpCandidate(
+            previousLevelName = null,
+            currentLevel = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.FOCUSED,
+            levelLabel = "Odaklı",
+            nowMillis = fixedNow,
+        )
+        assertTrue(items.isEmpty())
+    }
+
+    @Test
+    fun `same previous and current level produces no item`() {
+        val items = MissionPulseTickerFactory.levelUpCandidate(
+            previousLevelName = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.STEADY.name,
+            currentLevel = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.STEADY,
+            levelLabel = "Düzenli",
+            nowMillis = fixedNow,
+        )
+        assertTrue(items.isEmpty())
+    }
+
+    @Test
+    fun `real level transition produces exactly one MISSION_ACHIEVEMENT item with dedupe key once`() {
+        val items = MissionPulseTickerFactory.levelUpCandidate(
+            previousLevelName = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.STEADY.name,
+            currentLevel = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.FOCUSED,
+            levelLabel = "Odaklı",
+            nowMillis = fixedNow,
+        )
+        assertEquals(1, items.size)
+        val item = items.single()
+        assertEquals(SmartTickerType.MISSION_ACHIEVEMENT, item.type)
+        assertTrue("Başlık yeni seviye adını içermeli", item.title.contains("Odaklı"))
+        assertEquals("level_up_FOCUSED", item.suggestionKey)
+    }
+
+    @Test
+    fun `level-up title never leaks raw star count`() {
+        val items = MissionPulseTickerFactory.levelUpCandidate(
+            previousLevelName = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.BEGINNER.name,
+            currentLevel = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.STEADY,
+            levelLabel = "Düzenli",
+            nowMillis = fixedNow,
+        )
+        val item = items.single()
+        assertTrue(!item.title.contains("10"))
+    }
 }

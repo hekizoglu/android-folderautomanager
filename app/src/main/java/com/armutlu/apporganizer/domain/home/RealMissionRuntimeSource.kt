@@ -29,7 +29,11 @@ class RealMissionRuntimeSource @Inject constructor(
     override suspend fun refresh() {
         val result = missionSummaryUseCase.compute(awardStars = false)
         val combined = result.daily + result.weekly
-        val summary = HomeMissionSummarySelector.build(combined, currentStreak = result.streak.currentStreak)
+        val summary = HomeMissionSummarySelector.build(
+            combined,
+            currentStreak = result.streak.currentStreak,
+            totalStars = result.totalStars,
+        )
         _state.value = MissionSourceState(summary = summary)
     }
 }

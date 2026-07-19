@@ -678,10 +678,15 @@ fun FolderScreen(
             }
 
             if (showEditDialog) {
+                // Dongu G6 — Yildiz Ekonomisi kozmetik acilim kilit kontrolu icin toplam ⭐.
+                // homeMissionSummary zaten HomeIntelligenceCoordinator uzerinden reaktif akiyor
+                // (M07), burada ek bir kaynak/DI eklenmedi.
+                val missionSummaryForEdit by viewModel.homeMissionSummary.collectAsState()
                 FolderRenameDialog(
                     currentName = customName.ifBlank { f.category.categoryName },
                     currentEmoji = customEmoji.ifBlank { f.category.iconEmoji },
                     currentColor = customColor,
+                    totalStars = missionSummaryForEdit?.totalStars ?: 0,
                     onDismiss = { showEditDialog = false },
                     onSave = { newName, newEmoji, newColor ->
                         val nameToSave = if (newName == f.category.categoryName) "" else newName

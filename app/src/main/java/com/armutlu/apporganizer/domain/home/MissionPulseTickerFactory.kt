@@ -180,6 +180,40 @@ object MissionPulseTickerFactory {
         )
     }
 
+    /** Seviye atlama öğesi de aynı gün içinde geçerli — suggestionKey zaten "bir kez" garantisi verir. */
+    private const val LEVEL_UP_ITEM_EXPIRY_MS = MS_PER_DAY
+
+    /**
+     * Dongu G6 — Yıldız Ekonomisi: seviye atlama anı. [previousLevelName] null ise (ilk okuma,
+     * henüz kayıtlı seviye yok) hiçbir öğe üretilmez — kurulumdan itibaren zaten mevcut olan
+     * seviye sahte bir "yeni seviye!" bildirimi TETİKLEMEZ (yalnız gerçek bir ileri geçiş
+     * tetikler). [currentLevelName] önceki kayıtla AYNIYSA da üretilmez (henüz atlama yok).
+     * suggestionKey = "level_up_<seviye>" — dönemde/hayatta BİR KEZ (TickerRanker dedupe).
+     */
+    fun levelUpCandidate(
+        previousLevelName: String?,
+        currentLevel: com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level,
+        levelLabel: String,
+        nowMillis: Long,
+    ): List<SmartTickerItem> {
+        if (previousLevelName == null) return emptyList()
+        if (previousLevelName == currentLevel.name) return emptyList()
+        return listOf(
+            SmartTickerItem(
+                id = "level_up_${currentLevel.name}_${nowMillis / LEVEL_UP_ITEM_EXPIRY_MS}",
+                type = SmartTickerType.MISSION_ACHIEVEMENT,
+                title = "🎖 Yeni seviye: $levelLabel",
+                subtitle = "Görevleri gör",
+                icon = "🎖",
+                priority = 75,
+                createdAt = nowMillis,
+                expiresAt = nowMillis + LEVEL_UP_ITEM_EXPIRY_MS,
+                action = TickerAction.OpenMissions,
+                suggestionKey = "level_up_${currentLevel.name}",
+            )
+        )
+    }
+
     /** Sabah özeti öğesi de aynı gün içinde geçerli (bir sonraki gün yeni dünle yeniden üretilir). */
     private const val MORNING_SUMMARY_ITEM_EXPIRY_MS = MS_PER_DAY
 

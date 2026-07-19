@@ -619,6 +619,19 @@
     <string name="missions_streak_row">🔥 %1$d gün · En iyi: %2$d</string>
     <string name="missions_streak_golden_suffix"> · Altın seri: %1$d</string>
     <string name="missions_streak_frozen_yesterday">Dün seri donduruldu ❄</string>
+    <!-- Dongu G6: Yildiz Ekonomisi — seviye rozeti + ilerleme + kozmetik acilim -->
+    <string name="missions_level_badge">🎖 %1$s</string>
+    <string name="missions_level_progress">%1$s · %2$d ⭐ sonra %3$s</string>
+    <string name="missions_level_max">%1$s · en üst seviye</string>
+    <string name="missions_level_beginner">Çaylak</string>
+    <string name="missions_level_steady">Düzenli</string>
+    <string name="missions_level_focused">Odaklı</string>
+    <string name="missions_level_balance_master">Denge Ustası</string>
+    <string name="missions_level_master">Usta</string>
+    <string name="folder_emoji_set_locked_hint">%1$s seviyesinde açılır (%2$d ⭐)</string>
+    <string name="folder_emoji_set_nature">Doğa</string>
+    <string name="folder_emoji_set_space">Uzay</string>
+    <string name="ticker_level_up">🎖 Yeni seviye: %1$s</string>
     <string name="home_mission_streak_badge">🔥 %1$d</string>
     <string name="home_mission_streak_content_description">%1$d günlük seri</string>
     <string name="missions_daily_section">Bugünün Görevleri</string>

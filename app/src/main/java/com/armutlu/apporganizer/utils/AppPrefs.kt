@@ -728,6 +728,16 @@ object AppPrefs {
     fun markAllCompletedCelebrated(context: Context, epochDay: Long) =
         prefs(context).edit().putLong(KEY_MISSION_ALL_COMPLETED_CELEBRATED_EPOCH_DAY, epochDay).apply()
 
+    // Dongu G6 — Yildiz Ekonomisi: seviye atlama tespiti icin en son bilinen seviye adi
+    // (StarLevelSystem.Level.name) saklanir. Ilk okumada deger yoksa (-1 sentinel yerine bos
+    // string) mevcut seviye "gecis" olarak SAYILMAZ — kurulumdan itibaren zaten o seviyedeki
+    // kullanicilar sahte bir "yeni seviye!" bildirimi gormez (yalniz ileri git-gel gercek bir
+    // atlama tetikler).
+    private const val KEY_LAST_KNOWN_STAR_LEVEL = "last_known_star_level"
+    fun getLastKnownStarLevel(context: Context): String? = prefs(context).getString(KEY_LAST_KNOWN_STAR_LEVEL, null)
+    fun setLastKnownStarLevel(context: Context, levelName: String) =
+        prefs(context).edit().putString(KEY_LAST_KNOWN_STAR_LEVEL, levelName).apply()
+
     // "Bugun Yuklenenler" — ana ekran kompakt girisi + cekmece bolumu (EX01, kullanici talebi)
     const val KEY_RECENT_INSTALLS_ENABLED = "recent_installs_enabled"
     fun isRecentInstallsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_INSTALLS_ENABLED, true)

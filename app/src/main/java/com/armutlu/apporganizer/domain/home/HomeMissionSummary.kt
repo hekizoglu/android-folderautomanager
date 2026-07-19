@@ -30,6 +30,11 @@ data class HomeMissionSummary(
     // Dongu G4 — gunluk seri sayisi (en az 1 gorev tamamlanan ardisik gun). HomeMissionCard
     // koseginde "N>=2 ise" 🔥 rozeti icin kullanilir (roadmap G4).
     val currentStreak: Int = 0,
+    // Dongu G6 — Yildiz Ekonomisi: toplam ⭐ birikimi. HomeMissionCard'a KASITLI olarak
+    // eklenmedi (plan G6, kart sade kalmali) — sadece kozmetik acilim kilit kontrolu
+    // (FolderRenameDialog emoji seti) ve seviye atlama tespiti (RealSmartTickerSource) bu
+    // alani okur. StarLevelSystem.levelFor(totalStars) ile seviyeye cevrilir.
+    val totalStars: Int = 0,
 )
 
 /**
@@ -46,6 +51,7 @@ object HomeMissionSummarySelector {
     fun build(
         missions: List<MissionSummaryUseCase.MissionOutcome>,
         currentStreak: Int = 0,
+        totalStars: Int = 0,
     ): HomeMissionSummary {
         val totalCount = missions.size
         val completedCount = missions.count { it.status == MissionStatus.COMPLETED }
@@ -63,6 +69,7 @@ object HomeMissionSummarySelector {
             urgent = primary?.status == MissionStatus.AT_RISK,
             primaryProgressFraction = primary?.progressFraction,
             currentStreak = currentStreak,
+            totalStars = totalStars,
         )
     }
 

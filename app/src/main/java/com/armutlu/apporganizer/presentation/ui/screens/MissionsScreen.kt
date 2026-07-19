@@ -179,6 +179,8 @@ private fun StarsHeader(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
             )
+            Spacer(Modifier.height(8.dp))
+            StarLevelRow(totalStars)
             Spacer(Modifier.height(14.dp))
             Text(
                 text = stringResource(R.string.missions_task_score_value, taskScore),
@@ -222,6 +224,45 @@ private fun StarsHeader(
             }
         }
     }
+}
+
+/**
+ * Dongu G6 — Yildiz Ekonomisi: seviye rozeti + bir sonraki seviyeye ince ilerleme satiri.
+ * SADECE Gorevler ekraninda gosterilir — HomeMissionCard'a bilerek DOKUNULMADI (plan G6,
+ * kart sade kalmali). [com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem]
+ * saf hesaplamayi yapar, burada sadece stringResource'a esleme yapilir.
+ */
+@Composable
+private fun StarLevelRow(totalStars: Int) {
+    val level = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.levelFor(totalStars)
+    val levelLabel = stringResource(level.labelRes())
+    Text(
+        text = stringResource(R.string.missions_level_badge, levelLabel),
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+    val starsToNext = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.starsToNextLevel(totalStars)
+    val nextLevelOrdinal = level.ordinal + 1
+    val nextLevel = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.entries.getOrNull(nextLevelOrdinal)
+    Text(
+        text = if (starsToNext != null && nextLevel != null) {
+            stringResource(R.string.missions_level_progress, levelLabel, starsToNext, stringResource(nextLevel.labelRes()))
+        } else {
+            stringResource(R.string.missions_level_max, levelLabel)
+        },
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+    )
+}
+
+/** [com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level] -> yerelleştirilmiş string resource. */
+private fun com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.labelRes(): Int = when (this) {
+    com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.BEGINNER -> R.string.missions_level_beginner
+    com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.STEADY -> R.string.missions_level_steady
+    com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.FOCUSED -> R.string.missions_level_focused
+    com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.BALANCE_MASTER -> R.string.missions_level_balance_master
+    com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.Level.MASTER -> R.string.missions_level_master
 }
 
 @Composable

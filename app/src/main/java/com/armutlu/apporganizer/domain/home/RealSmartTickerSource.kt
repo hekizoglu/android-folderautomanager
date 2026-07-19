@@ -143,6 +143,31 @@ class RealSmartTickerSource @Inject constructor(
                 nowMillis = nowMillis,
             )
 
+            // Dongu G6 — Yildiz Ekonomisi: seviye atlama tespiti. AppPrefs'te saklanan en son
+            // bilinen seviye ile su anki seviye karsilastirilir; farkliysa ticker'a bir kez
+            // dusurulur ve yeni seviye kaydedilir (idempotent — ikinci cagride ayni oldugu icin
+            // tekrar uretilmez). KEY_MISSION_CELEBRATIONS kapaliyken bu mikro-etkilesim de
+            // uretilmez (G5 ile ayni toggle, plan G6 "tum mikro-etkilesimler" kapsaminda).
+            val levelUpItems = if (AppPrefs.isMissionCelebrationsEnabled(context)) {
+                runCatching {
+                    val totalStars = missionSummary?.totalStars ?: 0
+                    val currentLevel = com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem.levelFor(totalStars)
+                    val previousLevelName = AppPrefs.getLastKnownStarLevel(context)
+                    val items = MissionPulseTickerFactory.levelUpCandidate(
+                        previousLevelName = previousLevelName,
+                        currentLevel = currentLevel,
+                        levelLabel = currentLevel.labelTr,
+                        nowMillis = nowMillis,
+                    )
+                    if (previousLevelName != currentLevel.name) {
+                        AppPrefs.setLastKnownStarLevel(context, currentLevel.name)
+                    }
+                    items
+                }.getOrDefault(emptyList())
+            } else {
+                emptyList()
+            }
+
             // Döngü G5 — sabah özeti: dünün settlement sonucu (mission_instances) + güncel seri.
             // Kutlama ayarı kapalıysa (KEY_MISSION_CELEBRATIONS) hiç üretilmez (plan G5 kısıtı —
             // tüm mikro-etkileşimler tek toggle ile kapanır). Push bildirimi YOK, sadece şerit.
@@ -172,7 +197,7 @@ class RealSmartTickerSource @Inject constructor(
                 emptyList()
             }
 
-            val allCandidates = composed + missionItems + pulseItems + streakItems + morningItems + tidinessItems
+            val allCandidates = composed + missionItems + pulseItems + streakItems + levelUpItems + morningItems + tidinessItems
 
             // Döngü T02: en fazla 3 yüksek değerli öğe + tekrar/suistimal önleme (roadmap 2.7).
             // Suppression mevcut SuggestionCoordinator/SharedPrefsSuggestionHistoryStore üzerinden
@@ -189,7 +214,8 @@ class RealSmartTickerSource @Inject constructor(
                             highValue = key == "notification_summary" ||
                                 key.startsWith("mission_at_risk_") ||
                                 key == "mission_all_completed" ||
-                                key.startsWith("streak_milestone_"),
+                                key.startsWith("streak_milestone_") ||
+                                key.startsWith("level_up_"),
                             timeSensitive = key == "notification_summary" ||
                                 key == "low_confidence_review" ||
                                 key.startsWith("mission_at_risk_") ||
