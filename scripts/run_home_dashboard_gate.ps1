@@ -2,13 +2,15 @@
 # Kullanim:
 #   .\scripts\run_home_dashboard_gate.ps1
 #   .\scripts\run_home_dashboard_gate.ps1 -SkipLint -SkipAssemble
+#   .\scripts\run_home_dashboard_gate.ps1 -SkipAndroidTestApk
 #   .\scripts\run_home_dashboard_gate.ps1 -SkipLockClear
 
 [CmdletBinding()]
 param(
     [switch] $SkipLockClear,
     [switch] $SkipLint,
-    [switch] $SkipAssemble
+    [switch] $SkipAssemble,
+    [switch] $SkipAndroidTestApk
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,6 +67,11 @@ try {
     if (-not $SkipAssemble) {
         Write-Host "Debug APK kapisi calisiyor..." -ForegroundColor Cyan
         & $gradlew ":app:assembleDebug" "--console=plain"
+    }
+
+    if (-not $SkipAndroidTestApk) {
+        Write-Host "Android test APK kapisi calisiyor..." -ForegroundColor Cyan
+        & $gradlew ":app:assembleDebugAndroidTest" "--console=plain"
     }
 } finally {
     Pop-Location
