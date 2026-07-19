@@ -115,7 +115,8 @@ class SettleMissionInstancesUseCase @Inject constructor(
             val settledAt = now
             val finalStatus = when (evaluation.status) {
                 MissionStatus.COMPLETED -> MissionInstanceEntity.STATUS_COMPLETED
-                MissionStatus.DATA_UNAVAILABLE -> MissionInstanceEntity.STATUS_FAILED
+                // F4: veri-yok gorev FAILED olarak YAZILMAZ — raporlar/seri kirlenmesin.
+                MissionStatus.DATA_UNAVAILABLE -> MissionInstanceEntity.STATUS_DATA_UNAVAILABLE
                 else -> MissionInstanceEntity.STATUS_FAILED
             }
 
@@ -170,6 +171,9 @@ class SettleMissionInstancesUseCase @Inject constructor(
                 // dahil) — batch'te ne oldugundan bagimsiz.
                 val completedCount = missionInstanceDao.countCompletedForDay(epochDay)
                 val totalCount = missionInstanceDao.countSettledForDay(epochDay)
+                // F4: gunun TUM gorevleri veri-yok kapandiysa (totalCount 0 — sorgu
+                // data_unavailable'i saymaz) gun NOTR'dur: seri ne ilerler ne kirilir.
+                if (totalCount == 0) return@forEach
                 // Dondurma hakkinin haftalik yenilenmesi SETTLENEN GUNUN kendi ISO haftasina gore
                 // olmali (settlement gecikmis gunleri toplu isleyebilir — "now"in haftasi yanlis
                 // olur). Gunun ortasina (12:00) sabitlenmis bir Clock ile o gunun haftasi cozulur.

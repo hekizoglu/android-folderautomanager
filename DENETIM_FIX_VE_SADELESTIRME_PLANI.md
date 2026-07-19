@@ -4,12 +4,7 @@
 
 ## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
 
-> ✅ **F1 + F2 + F3 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
-
-### F4 — STATUS_DATA_UNAVAILABLE (P1)
-İddia: 48h grace sonrası DATA_UNAVAILABLE, FAILED olarak yazılıyor — raporlar/seri/başarısızlık sayıları kirlenebilir.
-Yapılacak: mission_instances durumlarına `STATUS_DATA_UNAVAILABLE` ekle (String kolon — migration GEREKMEZ), settlement bu durumu yazsın (ödül yok ama başarısızlık da değil); seri hesabı totalCount'tan bu görevleri düşsün; UI'da nötr gösterim.
-Durum: ⏳ Bekliyor
+> ✅ **F1 + F2 + F3 + F4 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
 
 ### F5 — Focus süresi gece yarısı bölünmesi (P1)
 İddia (Fable onaylı — G3a eksiği): 23:50-00:20 oturumu 30dk'yı yeni güne yazıyor.

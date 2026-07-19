@@ -45,6 +45,13 @@ data class MissionInstanceEntity(
         const val STATUS_COMPLETED = "completed"
         const val STATUS_FAILED = "failed"
 
+        /**
+         * F4 — 48s grace sonrasi hala veri yoksa gorev BASARISIZ degil VERI-YOK olarak kapanir:
+         * odul verilmez ama basarisizlik istatistiklerini/seriyi de kirletmez (String kolon —
+         * Room migration gerektirmez).
+         */
+        const val STATUS_DATA_UNAVAILABLE = "data_unavailable"
+
         const val CURRENT_DEFINITION_VERSION = 1
 
         /** Deterministik instanceId — ayni donem+gorev her zaman ayni id'ye map olur. */

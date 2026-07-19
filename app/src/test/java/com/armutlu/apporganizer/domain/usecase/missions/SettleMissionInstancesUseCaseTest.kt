@@ -140,7 +140,8 @@ class SettleMissionInstancesUseCaseTest {
         override suspend fun countSettledForDay(epochDay: Long): Int =
             store.values.count {
                 it.periodType == MissionInstanceEntity.PERIOD_DAILY && it.periodStartEpoch == epochDay &&
-                    it.status != MissionInstanceEntity.STATUS_ASSIGNED
+                    it.status != MissionInstanceEntity.STATUS_ASSIGNED &&
+                    it.status != MissionInstanceEntity.STATUS_DATA_UNAVAILABLE
             }
 
         override suspend fun countCompletedForDay(epochDay: Long): Int =
@@ -389,7 +390,7 @@ class SettleMissionInstancesUseCaseTest {
     }
 
     @Test
-    fun `data unavailable older than grace period settles as failed without star`() = runBlocking {
+    fun `data unavailable older than grace period settles as data unavailable without star`() = runBlocking {
         val epochDay = 100L
         val instance = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, epochDay, targetValue = 180L)
         val dao = FakeMissionInstanceDao(listOf(instance))
@@ -404,7 +405,8 @@ class SettleMissionInstancesUseCaseTest {
         assertEquals(1, result.settledCount)
         assertEquals(0, result.starsAwarded)
         assertEquals(1, result.dataUnavailable)
-        assertEquals(MissionInstanceEntity.STATUS_FAILED, dao.store[instance.instanceId]?.status)
+        // F4: FAILED degil DATA_UNAVAILABLE yazilir — raporlar/seri kirlenmez.
+        assertEquals(MissionInstanceEntity.STATUS_DATA_UNAVAILABLE, dao.store[instance.instanceId]?.status)
         assertTrue(historyDao.entries.isEmpty())
     }
 
@@ -587,5 +589,27 @@ class SettleMissionInstancesUseCaseTest {
         // Dogru davranis: gun-butunu sorgu 2 completed / 3 settled gorur -> seri 1 olur.
         val streak = MissionStreakPrefs.read(fakeContextWithPrefs(prefs))
         assertEquals(1, streak.currentStreak)
+    }
+
+    @Test
+    fun `a day settled entirely as data unavailable is neutral for the streak`() = runBlocking {
+        // Onceki gun seriyi 1 yapmis olsun; ertesi gunun TEK gorevi veri-yok kapaniyor —
+        // seri ne ilerlemeli ne kirilmali (notr gun).
+        val day1 = 100L
+        val day2 = 101L
+        val completedDay1 = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, day1, targetValue = 180L)
+        val unavailableDay2 = dailyInstance(MissionEngine.DAILY_SCREEN_UNDER_3H, day2, targetValue = 180L)
+        val dao = FakeMissionInstanceDao(listOf(completedDay1, unavailableDay2))
+        // day1 verisi var (90dk -> COMPLETED), day2 verisi yok -> grace sonrasi DATA_UNAVAILABLE.
+        val usage = FakeUsageStatsSource(dailyMinutesByEpochDay = mapOf(day1 to 90L))
+        val prefs = FakeSharedPreferences()
+        val context = fakeContextWithPrefs(prefs)
+        val useCase = buildUseCase(dao, usageStatsSource = usage, context = context)
+
+        useCase.settleOverdue(unavailableDay2.periodEndAt + TimeUnit.HOURS.toMillis(49))
+
+        assertEquals(MissionInstanceEntity.STATUS_DATA_UNAVAILABLE, dao.store[unavailableDay2.instanceId]?.status)
+        val streak = MissionStreakPrefs.read(context)
+        assertEquals(1, streak.currentStreak) // day1 ilerletti, day2 dokunmadi.
     }
 }

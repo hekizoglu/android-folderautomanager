@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F4 - 2026-07-19 - STATUS_DATA_UNAVAILABLE ayri durum oldu (P1)
+
+**Yapilanlar:** IDDIA DOGRULANDI: 48s grace sonrasi veri-yok gorevler STATUS_FAILED yaziliyordu — raporlar/seri kirlenebilirdi. FIX: MissionInstanceEntity.STATUS_DATA_UNAVAILABLE eklendi (String kolon, migration yok); settlement artik bu durumu yaziyor (odul yok, basarisizlik da degil); countSettledForDay sorgusu data_unavailable'i paydadan dusuyor (sabah ozeti "2/3" adil kaldi); gunun tamami veri-yok ise seri NOTR (advance atlanir — ne ilerler ne kirilir). 2 test guncellendi + notr-gun regresyon testi eklendi; tum testler yesil. UI zaten nötr (MissionSummaryUseCase DATA_UNAVAILABLE'i ayri isliyor; STATUS_FAILED'i geri okuyan tuketici yok — grep'le dogrulandi).
+
+**Bug:** Yukaridaki P1. Yan etki yok.
+
+**Sonraki:** F5 focus gece yarisi bolunmesi.
+
 ## F3 - 2026-07-19 - Seri hesabi settlement batch hatasi duzeltildi (P0)
 
 **Yapilanlar:** IDDIA DOGRULANDI (G4 acigim): advance() yalniz settlement batch'indeki sonuclarla besleniyordu; anında tamamlanan gorevler (completeActionMission) batch'e girmediginden gun 0/1 gorunup seri kirilabiliyordu (gercek 2/3), tek gorevlik batch de sahte %100 verebiliyordu. FIX: SettleMissionInstancesUseCase artik yalniz dokunulan epochDay setini tutuyor; advance()'e giden completed/total donguden sonra DB gun-butunu sorgularindan (countCompletedForDay/countSettledForDay — G5) okunuyor. Regresyon testi eklendi (2 erken-settle + 1 batch'te FAILED -> seri ilerler); tum SettleMissionInstancesUseCaseTest yesil. Fable dogruladi ve kendisi uyguladi (kucuk cerrahi diff).
