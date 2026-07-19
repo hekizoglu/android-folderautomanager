@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
@@ -233,6 +234,7 @@ internal fun FolderGridPage(
             Text(
                 text = "Bu sayfadaki klasörler",
                 color = Color.White,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -240,6 +242,7 @@ internal fun FolderGridPage(
             Text(
                 text = "${pageFolders.size} klasör · $pageApps uygulama",
                 color = Color.White.copy(alpha = 0.72f),
+                fontSize = 11.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -251,6 +254,7 @@ internal fun FolderGridPage(
                     Text(
                         text = pageInsightText,
                         color = Color.White.copy(alpha = 0.78f),
+                        fontSize = 11.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -274,6 +278,7 @@ internal fun FolderGridPage(
             Text(
                 text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim" else "Yeni bildirim ve öneriler burada görünür",
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                fontSize = 11.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
