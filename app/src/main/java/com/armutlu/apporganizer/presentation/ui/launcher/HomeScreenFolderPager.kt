@@ -8,15 +8,24 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
@@ -34,9 +43,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
 import com.armutlu.apporganizer.utils.AppAnalytics
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
 import com.armutlu.apporganizer.telemetry.TelemetryEvent
+import java.util.concurrent.TimeUnit
 
 /**
  * Döngü P04: `FolderPager`ın (P05'te söküldü — bkz. HomePagerHost.kt) tek-sayfa grid render
@@ -94,8 +106,22 @@ internal fun FolderGridPage(
     pageAccessibilityLabel: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val pageApps = pageFolders.sumOf { it.apps.size }
     val pageNotifications = pageFolders.sumOf { folder -> folder.apps.sumOf { it.notificationCount } }
+    var pageInsightsEnabled by remember(context) {
+        mutableStateOf(AppPrefs.isFolderPageInsightsEnabled(context))
+    }
+    var pageInsightsMutedUntil by remember(context) {
+        mutableStateOf(AppPrefs.getFolderPageInsightsMutedUntil(context))
+    }
+    val pageInsightText = remember(pageFolders, pageInsightsEnabled, pageInsightsMutedUntil) {
+        if (!pageInsightsEnabled || pageInsightsMutedUntil > System.currentTimeMillis()) {
+            null
+        } else {
+            buildFolderPageInsightText(pageFolders)
+        }
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -199,7 +225,7 @@ internal fun FolderGridPage(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 112.dp)
+                .heightIn(min = if (pageInsightText != null) 152.dp else 112.dp)
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .background(Color(0xFF171717), RoundedCornerShape(12.dp))
                 .padding(horizontal = 14.dp, vertical = 8.dp)
@@ -217,6 +243,34 @@ internal fun FolderGridPage(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            if (pageInsightText != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = pageInsightText,
+                        color = Color.White.copy(alpha = 0.78f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = {
+                            val until = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(7)
+                            AppPrefs.muteFolderPageInsights(context, until)
+                            pageInsightsMutedUntil = until
+                        }
+                    ) { Text("Sessize al") }
+                    TextButton(
+                        onClick = {
+                            AppPrefs.setFolderPageInsightsEnabled(context, false)
+                            pageInsightsEnabled = false
+                        }
+                    ) { Text("Kapat") }
+                }
+                Spacer(Modifier.width(1.dp))
+            }
             Text(
                 text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim" else "Yeni bildirim ve öneriler burada görünür",
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
@@ -243,3 +297,20 @@ internal enum class FolderGestureMode { CONTEXT_MENU, REORDER }
 
 internal fun folderGestureMode(editMode: Boolean): FolderGestureMode =
     if (editMode) FolderGestureMode.REORDER else FolderGestureMode.CONTEXT_MENU
+
+private fun buildFolderPageInsightText(pageFolders: List<AppFolder>): String? {
+    val smallFolderCount = pageFolders.count { it.apps.size in 1..2 }
+    val pendingAppCount = pageFolders.sumOf { folder ->
+        folder.apps.count { app ->
+            !app.isSystemApp &&
+                !app.isHidden &&
+                !app.isCategoryLocked &&
+                app.classificationReviewState == "PENDING"
+        }
+    }
+    val parts = buildList {
+        if (smallFolderCount >= 2) add("Klasor birlestir: $smallFolderCount kucuk klasor aday")
+        if (pendingAppCount > 0) add("Uygulama tanimla: $pendingAppCount bekliyor")
+    }
+    return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ")
+}

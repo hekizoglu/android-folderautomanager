@@ -375,6 +375,19 @@ object AppPrefs {
     fun getPageSize(context: Context): Int = prefs(context).getInt(KEY_PAGE_SIZE, 8)
     fun setPageSize(context: Context, v: Int) = prefs(context).edit().putInt(KEY_PAGE_SIZE, v).apply()
 
+    // Klasor sayfasi duzen onerileri: kucuk klasorleri birlestirme ve tanim bekleyen
+    // uygulamalari hatirlatma. Kullanici kapatabilir ya da gecici sessize alabilir.
+    const val KEY_FOLDER_PAGE_INSIGHTS_ENABLED = "folder_page_insights_enabled"
+    const val KEY_FOLDER_PAGE_INSIGHTS_MUTED_UNTIL = "folder_page_insights_muted_until"
+    fun isFolderPageInsightsEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FOLDER_PAGE_INSIGHTS_ENABLED, true)
+    fun setFolderPageInsightsEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_PAGE_INSIGHTS_ENABLED, enabled).apply()
+    fun getFolderPageInsightsMutedUntil(context: Context): Long =
+        prefs(context).getLong(KEY_FOLDER_PAGE_INSIGHTS_MUTED_UNTIL, 0L)
+    fun muteFolderPageInsights(context: Context, until: Long) =
+        prefs(context).edit().putLong(KEY_FOLDER_PAGE_INSIGHTS_MUTED_UNTIL, until).apply()
+
     // Klasör sıralama modu — tüm klasörler için global
     const val KEY_FOLDER_SORT_MODE = "folder_sort_mode"
     fun getFolderSortMode(context: Context): String =

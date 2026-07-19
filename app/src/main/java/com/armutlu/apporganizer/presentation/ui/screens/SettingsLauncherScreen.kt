@@ -132,6 +132,26 @@ fun SettingsLauncherScreen(
             }
         }
         item {
+            var folderPageInsights by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOLDER_PAGE_INSIGHTS_ENABLED,
+                read = { AppPrefs.isFolderPageInsightsEnabled(context) }
+            )
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.AutoAwesome,
+                    title = "Klasor sayfasi onerileri",
+                    subtitle = "Sayfa ozetinde klasor birlestirme ve uygulama tanimlama onerilerini goster",
+                    checked = folderPageInsights,
+                    onCheckedChange = {
+                        folderPageInsights = it
+                        AppPrefs.setFolderPageInsightsEnabled(context, it)
+                        if (it) AppPrefs.muteFolderPageInsights(context, 0L)
+                    }
+                )
+            }
+        }
+        item {
             var dockPkgs by remember { mutableStateOf(DockPrefs.getDockPackages(context)) }
             val pm = context.packageManager
             SettingsCard {
