@@ -533,6 +533,7 @@ object BackupManager {
     ) {
         if (searchRepository == null) {
             Timber.w("Backup restore: SearchRepository yok, arama kaynak lifecycle senkronu atlandi")
+            FilesIndexWorkCoordinator.ensurePeriodicWorkScheduled(context)
             return
         }
         if (AppPrefs.isSearchSourceContactsEnabled(context)) {
@@ -545,6 +546,7 @@ object BackupManager {
         } else {
             searchRepository.disableFilesSource()
         }
+        FilesIndexWorkCoordinator.ensurePeriodicWorkScheduled(context)
     }
 
     data class ImportResult(

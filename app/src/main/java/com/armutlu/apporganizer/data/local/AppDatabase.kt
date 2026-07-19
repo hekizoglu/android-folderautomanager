@@ -253,7 +253,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_18_19 = object : Migration(18, 19) {
+        internal val MIGRATION_18_19 = object : Migration(18, 19) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "appFileName", "TEXT NOT NULL DEFAULT ''")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appFileName ON apps(appFileName)")

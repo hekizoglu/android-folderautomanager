@@ -437,6 +437,7 @@ class LauncherViewModel @Inject constructor(
                         val installedApp = installedByPkg[dbApp.packageName] ?: return@forEach
                         if (
                             dbApp.appName != installedApp.appName ||
+                            dbApp.appFileName != installedApp.appFileName ||
                             dbApp.isSystemApp != installedApp.isSystemApp ||
                             dbApp.lastUpdatedTime != installedApp.lastUpdatedTime ||
                             dbApp.versionName != installedApp.versionName ||
@@ -445,6 +446,7 @@ class LauncherViewModel @Inject constructor(
                             repository.updateApp(
                                 dbApp.copy(
                                     appName = installedApp.appName,
+                                    appFileName = installedApp.appFileName,
                                     isSystemApp = installedApp.isSystemApp,
                                     lastUpdated = System.currentTimeMillis(),
                                     lastUpdatedTime = installedApp.lastUpdatedTime,

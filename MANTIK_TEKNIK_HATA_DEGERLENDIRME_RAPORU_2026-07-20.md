@@ -4,6 +4,15 @@ Tarih: 2026-07-20
 
 Kapsam: Saglik raporu mantigi, WorkManager dosya indeksleme, one-shot worker yorumu, Dijital Yasam saglik modeli, uygulama arama/siniflandirma sinyalleri, uygulama baslatma davranisi ve yayin oncesi riskler.
 
+## Cozum Durumu
+
+- [x] One-shot worker icin `work=yok` durumunun tek basina hata sayilmamasi kod/test tarafinda mevcut: `NORMAL`, `NORMAL_TAMAMLANDI`, `NORMAL_CALISIYOR`, `WARN_GECIKMIS` ayrimi var.
+- [x] Dosya indeksleme health raporuna `eligible` ayrimi eklendi; izin yokken `enabled=evet, work=yok` yanlis periodic missing bulgusu uretmeyecek.
+- [x] Backup/restore sonrasi `FilesIndexWorkCoordinator.ensurePeriodicWorkScheduled(context)` cagrisi garanti altina alindi.
+- [x] `appFileName` backfill akisi eklendi; reconcile mevcut kayitlarda dosya adini metadata olarak guncelliyor.
+- [x] Room 18 -> 19 migration testi eklendi; `appFileName` sutunu ve index dogrulaniyor.
+- [ ] Health snapshot testleri periodic permission, one-shot completed ve digital life stale/low confidence senaryolariyla genisletilecek.
+
 ## Arastirma Ozeti
 
 - Android WorkManager resmi dokumani, tekrar eden islerin `enqueueUniquePeriodicWork()` ile benzersiz isim uzerinden yonetilmesini onerir. Bu, ayni isin birden fazla kez planlanmasini engeller ve scheduler/health reporter tarafinda tek isim kullanmayi gerekli kilar.
@@ -265,11 +274,11 @@ Oncelik: Yuksek, cunku release oncesi raporun yanlis alarm uretmesi kararlari bu
 
 ## Onerilen Is Sirasi
 
-1. One-shot worker health modelini `requested/pending/completed` durumlarina ayir.
-2. Health raporunda `preferenceEnabled`, `schedulerEligible`, `permissionState` alanlarini ayir.
-3. Restore tamamlandiktan sonra files index coordinator'i tetikle.
-4. `appFileName` backfill icin reconcile/update akisini ekle.
-5. Room migration 18 -> 19 testi ekle.
+1. [x] One-shot worker health modelini `requested/pending/completed` durumlarina ayir.
+2. [x] Health raporunda `preferenceEnabled`, `schedulerEligible`, `permissionState` alanlarini ayir.
+3. [x] Restore tamamlandiktan sonra files index coordinator'i tetikle.
+4. [x] `appFileName` backfill icin reconcile/update akisini ekle.
+5. [x] Room migration 18 -> 19 testi ekle.
 6. Health raporu snapshot testlerine su senaryolari ekle:
    - periodic enabled + permission yok
    - one-shot completed + work yok

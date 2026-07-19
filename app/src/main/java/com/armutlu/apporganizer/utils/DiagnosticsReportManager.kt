@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.BuildConfig
 import com.armutlu.apporganizer.data.local.FilesIndexWorker
 import com.armutlu.apporganizer.data.local.AppDao
@@ -456,9 +457,10 @@ class DiagnosticsReportManager @Inject constructor(
             WorkManager.getInstance(context).getWorkInfosForUniqueWork(spec.uniqueName).get()
         }.getOrDefault(emptyList())
         val enabled = spec.enabled()
+        val eligible = spec.eligible?.invoke() ?: enabled
         val telemetry = WorkerTelemetryPrefs.getSnapshot(context, spec.uniqueName)
         val health = workerPlanHealth(
-            enabled = enabled,
+            enabled = eligible,
             hasWork = infos.isNotEmpty(),
             kind = spec.kind,
             requested = telemetry.pending,
@@ -484,7 +486,12 @@ class DiagnosticsReportManager @Inject constructor(
             }
         }
         buildString {
-            append("${spec.label}: enabled=${yesNo(enabled)}, work=$stateText, durum=${workerPlanHealthText(health)}")
+            append("${spec.label}: enabled=${yesNo(enabled)}")
+            if (spec.eligible != null) {
+                append(", eligible=${yesNo(eligible)}")
+                if (enabled && !eligible) append("(permission)")
+            }
+            append(", work=$stateText, durum=${workerPlanHealthText(health)}")
             append(", ${workerTelemetryText(telemetry, ::formatDateTime)}")
             if (spec.uniqueName == "auto_backup_weekly") {
                 appendLine()
@@ -575,6 +582,7 @@ class DiagnosticsReportManager @Inject constructor(
         val uniqueName: String,
         val kind: WorkerKind,
         val enabled: () -> Boolean,
+        val eligible: (() -> Boolean)? = null,
     )
 
     private val WORK_SPECS = listOf(
@@ -582,8 +590,20 @@ class DiagnosticsReportManager @Inject constructor(
         WorkerSpec("Smart insight", "smart_insight_daily", WorkerKind.PERIODIC, enabled = { AppPrefs.isSmartNotifEnabled(context) }),
         WorkerSpec("Suggestion notification", "suggestion_notification_daily", WorkerKind.PERIODIC, enabled = { AppPrefs.isSuggestionNotificationsEnabled(context) }),
         WorkerSpec("Weekly digest", "weekly_digest", WorkerKind.PERIODIC, enabled = { AppPrefs.isWeeklyDigestEnabled(context) }),
-        WorkerSpec("Files index periodic", FilesIndexWorker.FILES_INDEX_PERIODIC_WORK_NAME, WorkerKind.PERIODIC, enabled = { AppPrefs.isSearchSourceFilesEnabled(context) }),
-        WorkerSpec("Files index one-shot", FilesIndexWorker.ONE_TIME_WORK_NAME, WorkerKind.ONE_SHOT, enabled = { AppPrefs.isSearchSourceFilesEnabled(context) }),
+        WorkerSpec(
+            "Files index periodic",
+            FilesIndexWorker.FILES_INDEX_PERIODIC_WORK_NAME,
+            WorkerKind.PERIODIC,
+            enabled = { AppPrefs.isSearchSourceFilesEnabled(context) },
+            eligible = { AppPrefs.isSearchSourceFilesEnabled(context) && FilesIndexer.hasMediaStoreReadAccess(context) },
+        ),
+        WorkerSpec(
+            "Files index one-shot",
+            FilesIndexWorker.ONE_TIME_WORK_NAME,
+            WorkerKind.ONE_SHOT,
+            enabled = { AppPrefs.isSearchSourceFilesEnabled(context) },
+            eligible = { AppPrefs.isSearchSourceFilesEnabled(context) && FilesIndexer.hasMediaStoreReadAccess(context) },
+        ),
     )
 
     private companion object {
@@ -995,13 +1015,18 @@ private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiag
             nextAction = "Notification listener izni, son event zamani ve NotificationEventDao yazimlarini kontrol et",
         )
     }
-    if (snapshot.workerSummary.any { it.contains("Files index periodic: enabled=evet, work=yok") }) {
+    if (snapshot.workerSummary.any {
+            it.contains("Files index periodic: enabled=evet") &&
+                it.contains("eligible=evet") &&
+                it.contains("work=yok")
+        }
+    ) {
         issues += AiDiagnosticIssue(
             severity = "WARN",
             rank = 3,
             area = "workers",
             signal = "files_index_periodic_missing",
-            evidence = "Files index periodic: enabled=evet, work=yok",
+            evidence = "Files index periodic: enabled=evet, eligible=evet, work=yok",
             nextAction = "Dosya arama kaynagi acikken FilesIndexWorker.schedule(context) app startup ve restore sonrasi yeniden garanti altina alinmali",
         )
     }
