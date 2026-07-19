@@ -1152,34 +1152,51 @@ object AppPrefs {
     }
 
     /**
-     * Focus Mode KAPANDIGINDA cagrilir — acik kalan suреyi (dakika) o GUNUN (nowMillis'in
-     * epochDay'i) toplam sayacina ekler. Baslangic kaydi yoksa (orn. process restart) hicbir
-     * sey eklenmez — sahte sure UYDURULMAZ.
+     * Focus Mode KAPANDIGINDA cagrilir — acik kalan sureyi (dakika) gunlere BOLEREK yazar.
+     * F5: gece yarisini asan oturum (orn. 23:50-00:20) eskiden 30dk'nin tamamini yeni gune
+     * yaziyordu; artik her gun kendi 00:00 sinirina kadar olan payini alir (10dk dun, 20dk
+     * bugun). Baslangic kaydi yoksa (orn. process restart) hicbir sey eklenmez — sahte sure
+     * UYDURULMAZ.
      */
     fun endFocusSession(context: Context, nowMillis: Long = System.currentTimeMillis(), zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault()) {
         val p = prefs(context)
         val startAt = p.getLong(KEY_FOCUS_SESSION_START_AT, 0L)
         if (startAt <= 0L) return
         p.edit().remove(KEY_FOCUS_SESSION_START_AT).apply()
-        val elapsedMinutes = ((nowMillis - startAt).coerceAtLeast(0L)) / 60_000L
-        if (elapsedMinutes <= 0L) return
-        val epochDay = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate().toEpochDay()
-        val key = focusMinutesTodayKey(epochDay)
-        val current = p.getLong(key, 0L)
-        p.edit().putLong(key, current + elapsedMinutes).apply()
+        if (nowMillis <= startAt) return
+        val editor = p.edit()
+        var changed = false
+        var cursor = startAt
+        while (cursor < nowMillis) {
+            val day = java.time.Instant.ofEpochMilli(cursor).atZone(zoneId).toLocalDate()
+            val nextMidnight = day.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
+            val segmentEnd = minOf(nextMidnight, nowMillis)
+            val segmentMinutes = (segmentEnd - cursor) / 60_000L
+            if (segmentMinutes > 0L) {
+                val key = focusMinutesTodayKey(day.toEpochDay())
+                editor.putLong(key, p.getLong(key, 0L) + segmentMinutes)
+                changed = true
+            }
+            cursor = segmentEnd
+        }
+        if (changed) editor.apply()
     }
 
     /**
      * Bugune kadar biriken Focus Mode dakikasi — devam eden (henuz kapanmamis) oturum varsa
-     * o da dahil edilir (canli ilerleme goruntusu icin). Gorev degerlendirmesi bu toplami
-     * DAILY_FOCUS_SESSION hedefiyle (30dk) karsilastirir.
+     * o da dahil edilir (canli ilerleme goruntusu icin). F5: devam eden oturum gece yarisini
+     * astiysa yalniz BUGUNUN 00:00 sonrasi sayilir — dunku pay bugune yazilmaz. Gorev
+     * degerlendirmesi bu toplami DAILY_FOCUS_SESSION hedefiyle (30dk) karsilastirir.
      */
     fun getFocusMinutesToday(context: Context, nowMillis: Long = System.currentTimeMillis(), zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault()): Long {
         val p = prefs(context)
-        val epochDay = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate().toEpochDay()
-        val stored = p.getLong(focusMinutesTodayKey(epochDay), 0L)
+        val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate()
+        val stored = p.getLong(focusMinutesTodayKey(today.toEpochDay()), 0L)
         val startAt = p.getLong(KEY_FOCUS_SESSION_START_AT, 0L)
-        val activeMinutes = if (startAt > 0L) ((nowMillis - startAt).coerceAtLeast(0L)) / 60_000L else 0L
+        val activeMinutes = if (startAt > 0L) {
+            val todayStartMillis = today.atStartOfDay(zoneId).toInstant().toEpochMilli()
+            ((nowMillis - maxOf(startAt, todayStartMillis)).coerceAtLeast(0L)) / 60_000L
+        } else 0L
         return stored + activeMinutes
     }
 

@@ -4,12 +4,7 @@
 
 ## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
 
-> ✅ **F1 + F2 + F3 + F4 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
-
-### F5 — Focus süresi gece yarısı bölünmesi (P1)
-İddia (Fable onaylı — G3a eksiği): 23:50-00:20 oturumu 30dk'yı yeni güne yazıyor.
-Yapılacak: endFocusSession süreyi gün sınırında böl; getFocusMinutesToday devam eden oturumda yalnız bugünün 00:00 sonrasını saysın; sınır testleri.
-Durum: ⏳ Bekliyor
+> ✅ **F1 + F2 + F3 + F4 + F5 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
 
 ### F6 — Çekmece kategori onClick + Firebase arama event düzeltmesi (P1, küçük)
 İddia A: arama sonucundaki kategori satırı tıklanabilir görünüyor ama onClick boş → klasörü açsın.

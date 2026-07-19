@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F5 - 2026-07-19 - Focus suresi gece yarisi bolunmesi (P1) + v1.4.1 APK dongusu
+
+**Yapilanlar:** IDDIA DOGRULANDI (G3a eksigim): 23:50-00:20 focus oturumu 30dk'nin tamamini yeni gune yaziyordu; devam eden oturumda getFocusMinutesToday dunku payi da bugune sayiyordu. FIX: endFocusSession sureyi gun sinirlarinda bolerek her gune kendi payini yaziyor (cok gunluk oturumlar dahil — while dongusu); getFocusMinutesToday aktif oturumda yalniz max(startAt, bugun 00:00) sonrasini sayiyor. Yeni AppPrefsFocusSessionTest (4 sinir testi) yesil. Dongu 18 APK kapisi: versionCode 124 / versionName 1.4.1, tam testDebugUnitTest + assembleDebug.
+
+**Bug:** Yukaridaki P1 + HOTFIX: Codex'in c3b9fa0 compact-keyword eslesmesi ayrac koprulemesiyle sahte pozitif uretiyordu ("com.app.x" compact'i "comappx" icinde "map" -> her com.app.* paketi TRAVEL'a siniflanirdi; AppClassifierEdgeCaseTest yakaladi). Fix: compact eslesme yalniz keyword'un kendisi ayrac iceriyorsa uygulanir — alias ozelligi korundu. 1147 test yesil.
+
+**Sonraki:** F6 cekmece kategori onClick + Firebase arama eventi.
+
 ## F4 - 2026-07-19 - STATUS_DATA_UNAVAILABLE ayri durum oldu (P1)
 
 **Yapilanlar:** IDDIA DOGRULANDI: 48s grace sonrasi veri-yok gorevler STATUS_FAILED yaziliyordu — raporlar/seri kirlenebilirdi. FIX: MissionInstanceEntity.STATUS_DATA_UNAVAILABLE eklendi (String kolon, migration yok); settlement artik bu durumu yaziyor (odul yok, basarisizlik da degil); countSettledForDay sorgusu data_unavailable'i paydadan dusuyor (sabah ozeti "2/3" adil kaldi); gunun tamami veri-yok ise seri NOTR (advance atlanir — ne ilerler ne kirilir). 2 test guncellendi + notr-gun regresyon testi eklendi; tum testler yesil. UI zaten nötr (MissionSummaryUseCase DATA_UNAVAILABLE'i ayri isliyor; STATUS_FAILED'i geri okuyan tuketici yok — grep'le dogrulandi).

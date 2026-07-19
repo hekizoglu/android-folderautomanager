@@ -449,13 +449,13 @@ class AppClassifier @Inject constructor(
     private fun hasKeywordMatch(appName: String, categoryId: String) =
         appName.lowercase().let { lower ->
             val compact = lower.compactClassifierText()
-            KeywordDatabase.getKeywords(categoryId).any { lower.contains(it) || compact.contains(it.compactClassifierText()) }
+            KeywordDatabase.getKeywords(categoryId).any { keywordMatches(it, lower, compact) }
         }
 
     private fun hasPackageKeywordMatch(packageName: String, categoryId: String) =
         packageName.lowercase().let { lower ->
             val compact = lower.compactClassifierText()
-            KeywordDatabase.getKeywords(categoryId).any { lower.contains(it) || compact.contains(it.compactClassifierText()) }
+            KeywordDatabase.getKeywords(categoryId).any { keywordMatches(it, lower, compact) }
         }
 
     private fun bestKeywordCategory(text: String, locale: java.util.Locale = java.util.Locale.ROOT): String? {
@@ -467,14 +467,26 @@ class AppClassifier @Inject constructor(
             keywords.forEach { keyword ->
                 val compactKeyword = keyword.compactClassifierText()
                 if (compactKeyword.isBlank()) return@forEach
-                val matches = lower.contains(keyword) || compact.contains(compactKeyword)
-                if (matches && compactKeyword.length > bestLength) {
+                if (keywordMatches(keyword, lower, compact) && compactKeyword.length > bestLength) {
                     bestCategory = category
                     bestLength = compactKeyword.length
                 }
             }
         }
         return bestCategory
+    }
+
+    /**
+     * Compact (ayrac-suzulmus) eslesme YALNIZ keyword'un kendisi ayrac iceriyorsa uygulanir
+     * ("yandex taxi" -> "yandextaxi" gibi alias'lar icin). Duz keyword'lerde compact metinde
+     * arama yapmak ayrac koprulemesiyle sahte pozitif uretir: "com.app.123456" compact'i
+     * "comapp123456" icinde "map" gecer ve her com.app.* paketi TRAVEL'a siniflanirdi
+     * (AppClassifierEdgeCaseTest'in yakaladigi regresyon).
+     */
+    private fun keywordMatches(keyword: String, lowerText: String, compactText: String): Boolean {
+        if (lowerText.contains(keyword)) return true
+        val compactKeyword = keyword.compactClassifierText()
+        return compactKeyword != keyword && compactKeyword.isNotBlank() && compactText.contains(compactKeyword)
     }
 
     private fun String.compactClassifierText(): String =
