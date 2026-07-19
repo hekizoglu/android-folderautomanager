@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
+import com.armutlu.apporganizer.presentation.ui.security.SettingsLockSession
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.BiometricHelper
 
@@ -66,9 +67,21 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                     Switch(
                         checked = biometricLock,
                         enabled = biometricAvailable,
-                        onCheckedChange = {
-                            biometricLock = it
-                            AppPrefs.setBiometricSettingsLockEnabled(context, it)
+                        onCheckedChange = { desired ->
+                            // F2: Açma da kapama da önce biyometrik doğrulama ister —
+                            // aksi halde kilidi biri fiziksel erişimle sessizce kapatabilir.
+                            if (activity == null) return@Switch
+                            BiometricHelper.authenticate(
+                                activity = activity,
+                                onSuccess = {
+                                    biometricLock = desired
+                                    AppPrefs.setBiometricSettingsLockEnabled(context, desired)
+                                    // Bir sonraki Ayarlar girişi kilitli başlasın (kullanıcı
+                                    // bu ekranda kalmaya devam eder, hemen çıkarılmaz).
+                                    SettingsLockSession.reset()
+                                },
+                                onFailure = { /* doğrulama başarısız/iptal — toggle değişmez */ }
+                            )
                         }
                     )
                 }

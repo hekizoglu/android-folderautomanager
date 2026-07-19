@@ -27,21 +27,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentActivity
 import com.armutlu.apporganizer.R
-import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.BiometricHelper
 
 /**
  * U1: Ayarlar hub ekranı — eski tek uzun liste yerine her ana kategori
@@ -52,21 +43,10 @@ import com.armutlu.apporganizer.utils.BiometricHelper
  * SettingsStatsScreen, SettingsSecurityScreen, SettingsAboutScreen.
  */
 /**
- * ROADMAP [27] fix (KRİTİK): Biyometrik Ayarlar Kilidi açıkken SettingsScreen
- * her navigasyonda (ör. Haftalık Rapor'dan geri dönüşte) NavHost tarafından
- * yeniden compose ediliyor; `remember{}` state kaybolduğu için biometricUnlocked
- * her seferinde false'a dönüyor ve LaunchedEffect(Unit) yeniden biyometrik
- * doğrulama istiyordu. Doğrulama tek bir yanlış eşleşme/iptal ile
- * `onFailure = { onNavigateBack() }` çağırıp kullanıcıyı Ayarlar'dan tamamen
- * dışlıyordu (geri gitmeye çalıştıkça tekrar tekrar başarısız oluyordu).
- * Çözüm: kilidi process ömrü boyunca tek seferlik composable-dışı bir
- * singleton'da tut — aynı oturumda Ayarlar'a her dönüşte tekrar biyometrik
- * istenmez.
+ * F2: Biyometrik Ayarlar Kilidi artık NavHost seviyesinde `SettingsLockGate`
+ * (presentation/ui/security/SettingsLockGuard.kt) tarafından uygulanıyor —
+ * bu composable'a girilebilmesi zaten kilidin açılmış olduğu anlamına gelir.
  */
-private object SettingsLockSession {
-    var unlocked: Boolean = false
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -82,40 +62,6 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit = {},
     onNavigateToPermissionsGuide: () -> Unit = {},
 ) {
-    val context = LocalContext.current
-
-    // Biometric Settings Lock — açılışta kilidi doğrula (alt ekranlara
-    // yalnızca bu hub üzerinden girildiği için kilit burada yeterli)
-    var biometricUnlocked by remember { mutableStateOf(SettingsLockSession.unlocked) }
-    LaunchedEffect(Unit) {
-        // D27 fix: bu oturumda daha once basariyla acildiysa (ör. Haftalik Rapor'a
-        // gidip geri donulduyse) tekrar biyometrik istenmez — asagidaki dal atlanir.
-        if (SettingsLockSession.unlocked) {
-            biometricUnlocked = true
-            return@LaunchedEffect
-        }
-        val lockEnabled = AppPrefs.isBiometricSettingsLockEnabled(context)
-        if (!lockEnabled) {
-            biometricUnlocked = true
-            SettingsLockSession.unlocked = true
-            return@LaunchedEffect
-        }
-        val activity = context as? FragmentActivity
-        if (activity == null || !BiometricHelper.isAvailable(activity)) {
-            onNavigateBack()
-            return@LaunchedEffect
-        }
-        BiometricHelper.authenticate(
-            activity = activity,
-            onSuccess = {
-                biometricUnlocked = true
-                SettingsLockSession.unlocked = true
-            },
-            onFailure = { onNavigateBack() }
-        )
-    }
-    if (!biometricUnlocked) return
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,

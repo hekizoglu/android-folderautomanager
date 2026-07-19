@@ -26,6 +26,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.SettingsSecurityScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsStatsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsUsageDataScreen
 import com.armutlu.apporganizer.presentation.ui.screens.UsageReportScreen
+import com.armutlu.apporganizer.presentation.ui.security.SettingsLockGate
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 object Routes {
@@ -133,44 +134,55 @@ fun AppNavigation(
         }
         composable(Routes.SETTINGS) {
             // U1: Ayarlar hub'ı - her kategori satırı kendi alt route'una gider
-            SettingsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
-                onNavigateToLauncher = { navController.navigate(Routes.SETTINGS_LAUNCHER) },
-                onNavigateToNotifications = { navController.navigate(Routes.SETTINGS_NOTIFICATIONS) },
-                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
-                onNavigateToApps = { navController.navigate(Routes.SETTINGS_APPS) },
-                onNavigateToStats = { navController.navigate(Routes.SETTINGS_STATS) },
-                onNavigateToUsageData = { navController.navigate(Routes.SETTINGS_USAGE_DATA) },
-                onNavigateToSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
-                onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) },
-                onNavigateToPermissionsGuide = { navController.navigate(Routes.PERMISSIONS_GUIDE) }
-            )
+            // F2: hassas rota — biyometrik kilit route-guard seviyesinde
+            SettingsLockGate {
+                SettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
+                    onNavigateToLauncher = { navController.navigate(Routes.SETTINGS_LAUNCHER) },
+                    onNavigateToNotifications = { navController.navigate(Routes.SETTINGS_NOTIFICATIONS) },
+                    onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
+                    onNavigateToApps = { navController.navigate(Routes.SETTINGS_APPS) },
+                    onNavigateToStats = { navController.navigate(Routes.SETTINGS_STATS) },
+                    onNavigateToUsageData = { navController.navigate(Routes.SETTINGS_USAGE_DATA) },
+                    onNavigateToSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
+                    onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) },
+                    onNavigateToPermissionsGuide = { navController.navigate(Routes.PERMISSIONS_GUIDE) }
+                )
+            }
         }
         // U1: Ayarlar alt ekranları
         composable(Routes.SETTINGS_APPEARANCE) {
-            SettingsAppearanceScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsLockGate {
+                SettingsAppearanceScreen(onNavigateBack = { navController.popBackStack() })
+            }
         }
         composable(Routes.SETTINGS_LAUNCHER) {
-            SettingsLauncherScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
-                onNavigateToSmartTickerSettings = { navController.navigate(Routes.SETTINGS_SMART_TICKER) }
-            )
+            SettingsLockGate {
+                SettingsLauncherScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
+                    onNavigateToSmartTickerSettings = { navController.navigate(Routes.SETTINGS_SMART_TICKER) }
+                )
+            }
         }
         composable(Routes.SETTINGS_NOTIFICATIONS) {
-            SettingsNotificationsScreen(
-                onNavigateBack = { navController.popBackStack() },
-            )
+            SettingsLockGate {
+                SettingsNotificationsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
         }
         composable(Routes.SETTINGS_APPS) {
-            SettingsAppsScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) },
-                onNavigateToFolderSuggestions = { navController.navigate(Routes.FOLDER_SUGGESTIONS) }
-            )
+            SettingsLockGate {
+                SettingsAppsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) },
+                    onNavigateToFolderSuggestions = { navController.navigate(Routes.FOLDER_SUGGESTIONS) }
+                )
+            }
         }
         composable(Routes.CLASSIFICATION_REVIEW) {
             ClassificationReviewScreen(
@@ -185,32 +197,40 @@ fun AppNavigation(
             )
         }
         composable(Routes.SETTINGS_STATS) {
-            SettingsStatsScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
-                onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
-                onNavigateToMissions = { navController.navigate(Routes.MISSIONS) },
-                onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) }
-            )
+            SettingsLockGate {
+                SettingsStatsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
+                    onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
+                    onNavigateToMissions = { navController.navigate(Routes.MISSIONS) },
+                    onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) }
+                )
+            }
         }
         composable(Routes.SETTINGS_USAGE_DATA) {
-            SettingsUsageDataScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsLockGate {
+                SettingsUsageDataScreen(onNavigateBack = { navController.popBackStack() })
+            }
         }
         composable(Routes.SETTINGS_SECURITY) {
-            SettingsSecurityScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsLockGate {
+                SettingsSecurityScreen(onNavigateBack = { navController.popBackStack() })
+            }
         }
         composable(Routes.PERMISSIONS_GUIDE) {
             PermissionsGuideScreen(onNavigateBack = { navController.popBackStack() })
         }
         composable(Routes.SETTINGS_ABOUT) {
-            SettingsAboutScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) },
-                onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
-                onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) }
-            )
+            SettingsLockGate {
+                SettingsAboutScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) },
+                    onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
+                    onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) }
+                )
+            }
         }
         composable(Routes.PRIVACY_POLICY) {
             PrivacyPolicyScreen(onBack = { navController.popBackStack() })
@@ -247,10 +267,14 @@ fun AppNavigation(
             )
         }
         composable(Routes.SEARCH_SETTINGS) {
-            SearchSettingsScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsLockGate {
+                SearchSettingsScreen(onNavigateBack = { navController.popBackStack() })
+            }
         }
         composable(Routes.SETTINGS_SMART_TICKER) {
-            SmartTickerSettingsScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsLockGate {
+                SmartTickerSettingsScreen(onNavigateBack = { navController.popBackStack() })
+            }
         }
         composable(Routes.NOTIFICATION_REPORT) {
             com.armutlu.apporganizer.presentation.ui.screens.NotificationReportScreen(
@@ -258,9 +282,11 @@ fun AppNavigation(
             )
         }
         composable(Routes.PRIVACY_REPORT) {
-            com.armutlu.apporganizer.presentation.ui.screens.PrivacyReportScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SettingsLockGate {
+                com.armutlu.apporganizer.presentation.ui.screens.PrivacyReportScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
         composable(Routes.MISSIONS) {
             com.armutlu.apporganizer.presentation.ui.screens.MissionsScreen(

@@ -4,12 +4,7 @@
 
 ## PAKET F — Güvenlik & Mantık Fix'leri (öncelikli)
 
-> ✅ **F1 tamamlandı (2026-07-19)** — iddia doğrulandı ve kapatıldı; HISTORY.md'de.
-
-### F2 — Biyometrik ayarlar kilidi route bypass (P0)
-İddia: kilit yalnız SettingsScreen'de; `settings_*` alt rotaları whitelist'te ve korumasız; kilit açılınca SettingsLockSession.unlocked sıfırlanmıyor.
-Yapılacak: DOĞRULA → korumayı navigation guard seviyesine taşı (hassas rota listesi: settings*, usage-data, backup, security, diagnostics, privacy), kilit etkinleştirilince session'ı sıfırla + etkinleştirme de biyometrik istesin.
-Durum: ⏳ Bekliyor
+> ✅ **F1 + F2 tamamlandı (2026-07-19)** — iddialar doğrulandı ve kapatıldı; HISTORY.md'de.
 
 ### F3 — Seri (streak) hesabı settlement batch hatası (P0)
 İddia (Fable onaylı — G4 açığı): anında tamamlanan görevler erken settle olduğu için gün sonu advance() eksik sayımla çağrılabiliyor (0/1 vs gerçek 2/3; ters yönde sahte altın seri).

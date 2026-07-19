@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## F2 - 2026-07-19 - Biyometrik ayarlar kilidi route-guard seviyesine tasindi (P0)
+
+**Yapilanlar:** IDDIA DOGRULANDI: kilit yalniz SettingsScreen composable'indaydi; 10+ settings_* alt rotasi ayri composable hedefi olarak korumasizdi ve MainActivity open_route deep-link'i ile dogrudan acilabiliyordu; kilidi kapatmak da biyometrik istemiyordu. FIX: yeni SettingsLockGuard.kt (SettingsLockSession + SENSITIVE_ROUTES 12 rota + SettingsLockGate composable); AppNavigation'da tum hassas rotalar gate ile sarildi; SettingsSecurityScreen toggle ac/kapa artik once biyometrik dogruluyor, acilinca session reset (sonraki giris kilitli). Cihazda biyometrik yoksa kullanici kilitlenmez. TR+EN string'ler eklendi. Sonnet agent uyguladi, Fable dogruladi; compileDebugKotlin yesil.
+
+**Bug:** Yukaridaki P0 bypass. Ortam: 2x build kilidi (AccessDeniedException) — SOP (java kill + app\build sil) ile cozuldu.
+
+**Sonraki:** F3 streak settlement batch hatasi.
+
 ## F1 - 2026-07-19 - DeepSeek anahtari yedek sizintisi kapatildi (P0)
 
 **Yapilanlar:** IDDIA DOGRULANDI (harici denetim hakliydi): anahtar app_organizer_prefs'te duz metindi, backup kurali var olmayan dosyayi haric tutuyordu. FIX: anahtar ayri "deepseek_prefs" dosyasina (tek seferlik migrateSensitivePrefsIfNeeded — eski deger silinir), FCM token ayri "device_prefs" dosyasina; her iki dosya backup_rules.xml + data_extraction_rules.xml'de (cloud-backup ve device-transfer ikisinde de) haric; tum okumalar merkezi AppPrefs.getDeepSeekApiKey uzerinden — otomatik kapsandi. Migration testleri yesil. NOT: Codex paralel calisirken tamamlandi — sadece F1 dosyalari commit'lendi, java kill SOP'u devre disi birakildi.

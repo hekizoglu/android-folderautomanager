@@ -839,4 +839,7 @@
     <string name="home_section_ticker">Bilgi akışı ve istatistikler</string>
     <string name="home_section_folders">Klasörler</string>
     <string name="home_section_dock">Dock</string>
+    <!-- F2: Ayarlar route-guard biyometrik kilit -->
+    <string name="settings_lock_waiting_title">Kimlik doğrulaması bekleniyor</string>
+    <string name="settings_lock_retry_button">Tekrar dene</string>
 </resources>
