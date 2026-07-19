@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.domain.home
 import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.common.HomeDataResult
 import com.armutlu.apporganizer.domain.common.HomeErrorCodes
+import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,6 +40,18 @@ object HomeIntelligenceHealthReport {
     ) {
         val allWarningCodes: Set<String> =
             missionSystem.warningCodes + digitalLife.warningCodes + smartPulseTicker.warningCodes
+
+        val overallStatus: OverallStatus = classifyOverallStatus(
+            missionSystem = missionSystem,
+            digitalLife = digitalLife,
+            smartPulseTicker = smartPulseTicker,
+        )
+    }
+
+    enum class OverallStatus {
+        OK,
+        DEGRADED_WARN,
+        ERROR,
     }
 
     fun build(input: Input): Report = Report(
@@ -117,6 +130,12 @@ object HomeIntelligenceHealthReport {
             else -> null
         }
         val freshness = freshnessOf(snapshot?.computedAt, input.now)
+        if (freshness == DataFreshness.STALE || freshness == DataFreshness.UNAVAILABLE) {
+            warnings += HomeErrorCodes.DIGITAL_LIFE_DATA_STALE
+        }
+        if (snapshot?.score?.confidence == DataConfidence.LOW) {
+            warnings += HomeErrorCodes.DIGITAL_LIFE_LOW_CONFIDENCE
+        }
 
         val scoreOutOfRange = snapshot?.score?.total?.let { it !in 0..100 } ?: false
         if (scoreOutOfRange) {
@@ -164,6 +183,31 @@ object HomeIntelligenceHealthReport {
         )
 
         return Section(lines, warnings)
+    }
+
+    private fun classifyOverallStatus(
+        missionSystem: Section,
+        digitalLife: Section,
+        smartPulseTicker: Section,
+    ): OverallStatus {
+        val warningCodes = missionSystem.warningCodes + digitalLife.warningCodes + smartPulseTicker.warningCodes
+        if (warningCodes.isEmpty()) return OverallStatus.OK
+
+        // Kullanici deneyimi calisiyorsa kaynak tazelikleri ve bos serit gibi durumlar hata degil,
+        // izlenmesi gereken saglik uyarilaridir.
+        val nonFatalWarnings = setOf(
+            HomeErrorCodes.MISSION_PROGRESS_DATA_STALE,
+            HomeErrorCodes.MISSION_SETTLEMENT_STALE,
+            HomeErrorCodes.PULSE_SNAPSHOT_STALE,
+            HomeErrorCodes.DIGITAL_LIFE_DATA_STALE,
+            HomeErrorCodes.DIGITAL_LIFE_LOW_CONFIDENCE,
+            HomeErrorCodes.TICKER_EMPTY_WITH_ACTIONABLE_ITEMS,
+        )
+        return if (warningCodes.all { it in nonFatalWarnings }) {
+            OverallStatus.DEGRADED_WARN
+        } else {
+            OverallStatus.ERROR
+        }
     }
 
     private enum class SourceHealth { READY, STALE, MISSING, FAILED }

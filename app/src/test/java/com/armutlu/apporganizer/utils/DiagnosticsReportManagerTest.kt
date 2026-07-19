@@ -211,7 +211,7 @@ class DiagnosticsReportManagerTest {
 
     @Test
     fun workerPlanHealth_disabledAndMissingIsNormalClosed() {
-        val health = workerPlanHealth(enabled = false, hasWork = false)
+        val health = workerPlanHealth(enabled = false, hasWork = false, kind = WorkerKind.PERIODIC)
 
         assertEquals(WorkerPlanHealth.NORMAL_KAPALI, health)
         assertEquals("NORMAL_KAPALI", workerPlanHealthText(health))
@@ -219,7 +219,28 @@ class DiagnosticsReportManagerTest {
 
     @Test
     fun workerPlanHealth_enabledAndMissingIsError() {
-        val health = workerPlanHealth(enabled = true, hasWork = false)
+        val health = workerPlanHealth(enabled = true, hasWork = false, kind = WorkerKind.PERIODIC)
+
+        assertEquals(WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING, health)
+        assertEquals("HATA: etkin fakat work bulunamadi", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_enabledAndMissingOneShotIsNormal() {
+        val health = workerPlanHealth(enabled = true, hasWork = false, kind = WorkerKind.ONE_SHOT)
+
+        assertEquals(WorkerPlanHealth.NORMAL, health)
+        assertEquals("NORMAL", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_pendingOneShotRequestAndMissingWorkIsError() {
+        val health = workerPlanHealth(
+            enabled = true,
+            hasWork = false,
+            kind = WorkerKind.ONE_SHOT,
+            requested = true,
+        )
 
         assertEquals(WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING, health)
         assertEquals("HATA: etkin fakat work bulunamadi", workerPlanHealthText(health))
@@ -227,7 +248,7 @@ class DiagnosticsReportManagerTest {
 
     @Test
     fun workerPlanHealth_disabledButScheduledIsWarning() {
-        val health = workerPlanHealth(enabled = false, hasWork = true)
+        val health = workerPlanHealth(enabled = false, hasWork = true, kind = WorkerKind.PERIODIC)
 
         assertEquals(WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED, health)
         assertEquals("UYARI: kapali ozellik icin work mevcut", workerPlanHealthText(health))
@@ -235,10 +256,78 @@ class DiagnosticsReportManagerTest {
 
     @Test
     fun workerPlanHealth_enabledAndScheduledIsNormal() {
-        val health = workerPlanHealth(enabled = true, hasWork = true)
+        val health = workerPlanHealth(enabled = true, hasWork = true, kind = WorkerKind.PERIODIC)
 
         assertEquals(WorkerPlanHealth.NORMAL, health)
         assertEquals("NORMAL", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_completedOneShotAndMissingWorkIsCompletedNormal() {
+        val health = workerPlanHealth(
+            enabled = true,
+            hasWork = false,
+            kind = WorkerKind.ONE_SHOT,
+            telemetry = emptyTelemetry().copy(successCount = 1, lastSucceededAt = 2_500L),
+        )
+
+        assertEquals(WorkerPlanHealth.NORMAL_TAMAMLANDI, health)
+        assertEquals("NORMAL_TAMAMLANDI", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_runningOneShotIsRunningNormal() {
+        val health = workerPlanHealth(
+            enabled = true,
+            hasWork = true,
+            kind = WorkerKind.ONE_SHOT,
+            states = listOf(WorkInfo.State.RUNNING),
+        )
+
+        assertEquals(WorkerPlanHealth.NORMAL_CALISIYOR, health)
+        assertEquals("NORMAL_CALISIYOR", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_delayedQueuedOneShotIsWarning() {
+        val health = workerPlanHealth(
+            enabled = true,
+            hasWork = true,
+            kind = WorkerKind.ONE_SHOT,
+            states = listOf(WorkInfo.State.ENQUEUED),
+            nextScheduleTimes = listOf(now - 16 * 60 * 1000L),
+            now = now,
+        )
+
+        assertEquals(WorkerPlanHealth.WARN_GECIKMIS, health)
+        assertEquals("WARN_GECIKMIS", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_failedOneShotIsError() {
+        val health = workerPlanHealth(
+            enabled = true,
+            hasWork = true,
+            kind = WorkerKind.ONE_SHOT,
+            states = listOf(WorkInfo.State.FAILED),
+        )
+
+        assertEquals(WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING, health)
+        assertEquals("HATA: etkin fakat work bulunamadi", workerPlanHealthText(health))
+    }
+
+    @Test
+    fun workerPlanHealth_cancelledRequiredOneShotIsError() {
+        val health = workerPlanHealth(
+            enabled = true,
+            hasWork = true,
+            kind = WorkerKind.ONE_SHOT,
+            requested = true,
+            states = listOf(WorkInfo.State.CANCELLED),
+        )
+
+        assertEquals(WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING, health)
+        assertEquals("HATA: etkin fakat work bulunamadi", workerPlanHealthText(health))
     }
 
     @Test
@@ -253,10 +342,13 @@ class DiagnosticsReportManagerTest {
         val text = workerTelemetryText(
             WorkerTelemetryPrefs.Snapshot(
                 workerName = "weekly_digest",
+                lastRequestedAt = 0L,
                 lastStartedAt = 1_000L,
                 lastFinishedAt = 2_500L,
+                lastCompletedAt = 2_500L,
                 lastSucceededAt = 2_500L,
                 lastFailedAt = 0L,
+                lastResult = WorkerTelemetryPrefs.RESULT_SUCCESS,
                 lastFailureCode = "-",
                 lastDurationMs = 1_500L,
                 successCount = 2,
@@ -266,7 +358,7 @@ class DiagnosticsReportManagerTest {
         )
 
         assertEquals(
-            "lastStart=1000, lastSuccess=2500, lastFailure=-, durationMs=1500, success=2, failure=0, failureCode=-",
+            "lastStart=1000, lastSuccess=2500, lastFailure=-, lastResult=SUCCESS, durationMs=1500, success=2, failure=0, failureCode=-",
             text,
         )
     }
@@ -430,10 +522,13 @@ class DiagnosticsReportManagerTest {
 
     private fun emptyTelemetry(lastFailureCode: String = "-") = WorkerTelemetryPrefs.Snapshot(
         workerName = "worker",
+        lastRequestedAt = 0L,
         lastStartedAt = 0L,
         lastFinishedAt = 0L,
+        lastCompletedAt = 0L,
         lastSucceededAt = 0L,
         lastFailedAt = 0L,
+        lastResult = WorkerTelemetryPrefs.RESULT_UNKNOWN,
         lastFailureCode = lastFailureCode,
         lastDurationMs = 0L,
         successCount = 0,

@@ -149,6 +149,15 @@
         </receiver>
 
         <!-- Play Store: Gizlilik Politikası URL -->
+        <receiver
+            android:name=".presentation.receivers.AppUpdateReceiver"
+            android:exported="false"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <meta-data
             android:name="android.app.PRIVACY_POLICY_URL"
             android:value="https://hekizoglu.github.io/android-folderautomanager/privacy_policy.html" />

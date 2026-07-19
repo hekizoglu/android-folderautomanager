@@ -24,7 +24,11 @@ class HomeIntelligenceHealthReportTest {
 
     private val now = 1_800_000_000_000L
 
-    private fun fakeSnapshot(total: Int = 72, computedAt: Long = now): DigitalPulseSnapshot = DigitalPulseSnapshot(
+    private fun fakeSnapshot(
+        total: Int = 72,
+        computedAt: Long = now,
+        confidence: DataConfidence = DataConfidence.HIGH,
+    ): DigitalPulseSnapshot = DigitalPulseSnapshot(
         score = DigitalPulseScore(
             total = total,
             baseScore = total,
@@ -34,7 +38,7 @@ class HomeIntelligenceHealthReportTest {
             balance = 70,
             cleanup = 70,
             consistency = 70,
-            confidence = DataConfidence.HIGH,
+            confidence = confidence,
             reasons = emptyList(),
         ),
         computedAt = computedAt,
@@ -81,6 +85,7 @@ class HomeIntelligenceHealthReportTest {
         val report = HomeIntelligenceHealthReport.build(baseInput(state))
 
         assertTrue(report.allWarningCodes.isEmpty())
+        assertEquals(HomeIntelligenceHealthReport.OverallStatus.OK, report.overallStatus)
     }
 
     // 2) Pulse kaynağı Failed ise PULSE_SNAPSHOT_STALE uyarısı üretilmeli (doğru koda map).
@@ -96,6 +101,7 @@ class HomeIntelligenceHealthReportTest {
 
         assertTrue(report.digitalLife.warningCodes.contains(HomeErrorCodes.PULSE_SNAPSHOT_STALE))
         assertTrue(report.allWarningCodes.contains(HomeErrorCodes.PULSE_SNAPSHOT_STALE))
+        assertEquals(HomeIntelligenceHealthReport.OverallStatus.DEGRADED_WARN, report.overallStatus)
     }
 
     // 3) Mission kaynağı Stale ise MISSION_PROGRESS_DATA_STALE uyarısı üretilmeli.
@@ -187,6 +193,7 @@ class HomeIntelligenceHealthReportTest {
 
         assertTrue(report.missionSystem.lines.contains("Son worker durumu: FAILED(DATABASE_ERROR)"))
         assertTrue(report.missionSystem.warningCodes.contains(HomeErrorCodes.MISSION_SETTLEMENT_STALE))
+        assertEquals(HomeIntelligenceHealthReport.OverallStatus.DEGRADED_WARN, report.overallStatus)
     }
 
     // 8) Şerit boş ama birincil görev AT_RISK (aksiyon alınabilir) ise TICKER_EMPTY_WITH_ACTIONABLE_ITEMS.
@@ -229,6 +236,7 @@ class HomeIntelligenceHealthReportTest {
         val report = HomeIntelligenceHealthReport.build(baseInput(state))
 
         assertTrue(report.digitalLife.warningCodes.contains(HomeErrorCodes.PULSE_SOURCE_MISMATCH))
+        assertEquals(HomeIntelligenceHealthReport.OverallStatus.ERROR, report.overallStatus)
     }
 
     // 11) Gizlilik: rapor satırları uygulama paket adı, bildirim metni veya kişi bilgisi içermemeli
@@ -257,6 +265,8 @@ class HomeIntelligenceHealthReportTest {
             HomeErrorCodes.MISSION_SETTLEMENT_STALE,
             HomeErrorCodes.MISSION_PROGRESS_DATA_STALE,
             HomeErrorCodes.PULSE_SNAPSHOT_STALE,
+            HomeErrorCodes.DIGITAL_LIFE_DATA_STALE,
+            HomeErrorCodes.DIGITAL_LIFE_LOW_CONFIDENCE,
             HomeErrorCodes.PULSE_SOURCE_MISMATCH,
             HomeErrorCodes.TICKER_EMPTY_WITH_ACTIONABLE_ITEMS,
         )

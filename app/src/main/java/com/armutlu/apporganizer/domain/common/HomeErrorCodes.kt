@@ -27,6 +27,8 @@ object HomeErrorCodes {
 
     /** Dijital Nabız anlık görüntüsü (DigitalPulseRepository) koordinatörde Stale/Missing/Failed durumda. */
     const val PULSE_SNAPSHOT_STALE = "PULSE_SNAPSHOT_STALE"
+    const val DIGITAL_LIFE_DATA_STALE = "DIGITAL_LIFE_DATA_STALE"
+    const val DIGITAL_LIFE_LOW_CONFIDENCE = "DIGITAL_LIFE_LOW_CONFIDENCE"
 
     /** Ana ekran kartı ve Pulse Clock/Haftalık Rapor farklı skor kaynağından besleniyormuş gibi bir tutarsızlık tespit edildi. */
     const val PULSE_SOURCE_MISMATCH = "PULSE_SOURCE_MISMATCH"

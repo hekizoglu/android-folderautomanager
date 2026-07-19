@@ -13,6 +13,7 @@ import androidx.core.content.FileProvider
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.armutlu.apporganizer.BuildConfig
+import com.armutlu.apporganizer.data.local.FilesIndexWorker
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
@@ -44,22 +45,52 @@ internal enum class WorkerKind {
 
 internal enum class WorkerPlanHealth {
     NORMAL,
+    NORMAL_TAMAMLANDI,
+    NORMAL_CALISIYOR,
+    WARN_GECIKMIS,
     NORMAL_KAPALI,
     WARNING_DISABLED_BUT_SCHEDULED,
     ERROR_ENABLED_BUT_MISSING,
 }
 
 private const val MAX_REASONABLE_SCHEDULE_HORIZON_DAYS = 3650L
+private const val ONE_SHOT_DELAY_WARN_MS = 15 * 60 * 1000L
 
-internal fun workerPlanHealth(enabled: Boolean, hasWork: Boolean): WorkerPlanHealth = when {
+internal fun workerPlanHealth(
+    enabled: Boolean,
+    hasWork: Boolean,
+    kind: WorkerKind,
+    requested: Boolean = false,
+    telemetry: WorkerTelemetryPrefs.Snapshot? = null,
+    states: List<WorkInfo.State> = emptyList(),
+    nextScheduleTimes: List<Long?> = emptyList(),
+    now: Long = System.currentTimeMillis(),
+): WorkerPlanHealth = when {
     !enabled && !hasWork -> WorkerPlanHealth.NORMAL_KAPALI
     !enabled && hasWork -> WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED
+    enabled && kind == WorkerKind.ONE_SHOT && requested && WorkInfo.State.CANCELLED in states ->
+        WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING
+    enabled && kind == WorkerKind.ONE_SHOT && WorkInfo.State.FAILED in states ->
+        WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING
+    enabled && kind == WorkerKind.ONE_SHOT && WorkInfo.State.RUNNING in states ->
+        WorkerPlanHealth.NORMAL_CALISIYOR
+    enabled && kind == WorkerKind.ONE_SHOT && states.contains(WorkInfo.State.ENQUEUED) &&
+        nextScheduleTimes.filterNotNull().any { it < now - ONE_SHOT_DELAY_WARN_MS } ->
+        WorkerPlanHealth.WARN_GECIKMIS
+    enabled && !hasWork && kind == WorkerKind.ONE_SHOT && requested ->
+        WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING
+    enabled && !hasWork && kind == WorkerKind.ONE_SHOT && (telemetry?.successCount ?: 0) > 0 ->
+        WorkerPlanHealth.NORMAL_TAMAMLANDI
+    enabled && !hasWork && kind == WorkerKind.ONE_SHOT -> WorkerPlanHealth.NORMAL
     enabled && !hasWork -> WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING
     else -> WorkerPlanHealth.NORMAL
 }
 
 internal fun workerPlanHealthText(health: WorkerPlanHealth): String = when (health) {
     WorkerPlanHealth.NORMAL -> "NORMAL"
+    WorkerPlanHealth.NORMAL_TAMAMLANDI -> "NORMAL_TAMAMLANDI"
+    WorkerPlanHealth.NORMAL_CALISIYOR -> "NORMAL_CALISIYOR"
+    WorkerPlanHealth.WARN_GECIKMIS -> "WARN_GECIKMIS"
     WorkerPlanHealth.NORMAL_KAPALI -> "NORMAL_KAPALI"
     WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED -> "UYARI: kapali ozellik icin work mevcut"
     WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING -> "HATA: etkin fakat work bulunamadi"
@@ -76,6 +107,7 @@ internal fun workerTelemetryText(snapshot: WorkerTelemetryPrefs.Snapshot, format
         append("lastStart=${formatDate(snapshot.lastStartedAt)}")
         append(", lastSuccess=${formatDate(snapshot.lastSucceededAt)}")
         append(", lastFailure=${formatDate(snapshot.lastFailedAt)}")
+        append(", lastResult=${snapshot.lastResult}")
         append(", durationMs=${snapshot.lastDurationMs}")
         append(", success=${snapshot.successCount}")
         append(", failure=${snapshot.failureCount}")
@@ -93,6 +125,9 @@ internal fun backupHealthLine(
     val preference = if (enabled) "acik" else "kapali"
     val health = when (planHealth) {
         WorkerPlanHealth.NORMAL -> "NORMAL"
+        WorkerPlanHealth.NORMAL_TAMAMLANDI -> "NORMAL"
+        WorkerPlanHealth.NORMAL_CALISIYOR -> "NORMAL"
+        WorkerPlanHealth.WARN_GECIKMIS -> "UYARI_GECIKMIS"
         WorkerPlanHealth.NORMAL_KAPALI -> "NORMAL"
         WorkerPlanHealth.WARNING_DISABLED_BUT_SCHEDULED -> "UYARI_KAPALI_WORK_VAR"
         WorkerPlanHealth.ERROR_ENABLED_BUT_MISSING -> "HATA_PLANLANMAMIS"
@@ -416,11 +451,22 @@ class DiagnosticsReportManager @Inject constructor(
     }
 
     private fun workerSummary(): List<String> = WORK_SPECS.map { spec ->
+        val now = System.currentTimeMillis()
         val infos = runCatching {
             WorkManager.getInstance(context).getWorkInfosForUniqueWork(spec.uniqueName).get()
         }.getOrDefault(emptyList())
         val enabled = spec.enabled()
-        val health = workerPlanHealth(enabled = enabled, hasWork = infos.isNotEmpty())
+        val telemetry = WorkerTelemetryPrefs.getSnapshot(context, spec.uniqueName)
+        val health = workerPlanHealth(
+            enabled = enabled,
+            hasWork = infos.isNotEmpty(),
+            kind = spec.kind,
+            requested = telemetry.pending,
+            telemetry = telemetry,
+            states = infos.map { it.state },
+            nextScheduleTimes = infos.map { it.nextScheduleTimeMillisCompat() },
+            now = now,
+        )
         val stateText = if (infos.isEmpty()) {
             "yok"
         } else {
@@ -432,12 +478,11 @@ class DiagnosticsReportManager @Inject constructor(
                         state = info.state,
                         kind = spec.kind,
                         nextScheduleTimeMillis = info.nextScheduleTimeMillisCompat(),
-                        now = System.currentTimeMillis(),
+                        now = now,
                     )?.let { append(", $it") }
                 }
             }
         }
-        val telemetry = WorkerTelemetryPrefs.getSnapshot(context, spec.uniqueName)
         buildString {
             append("${spec.label}: enabled=${yesNo(enabled)}, work=$stateText, durum=${workerPlanHealthText(health)}")
             append(", ${workerTelemetryText(telemetry, ::formatDateTime)}")
@@ -533,12 +578,12 @@ class DiagnosticsReportManager @Inject constructor(
     )
 
     private val WORK_SPECS = listOf(
-        WorkerSpec("Auto backup", "auto_backup_weekly", WorkerKind.PERIODIC) { AppPrefs.isAutoBackupEnabled(context) },
-        WorkerSpec("Smart insight", "smart_insight_daily", WorkerKind.PERIODIC) { AppPrefs.isSmartNotifEnabled(context) },
-        WorkerSpec("Suggestion notification", "suggestion_notification_daily", WorkerKind.PERIODIC) { AppPrefs.isSuggestionNotificationsEnabled(context) },
-        WorkerSpec("Weekly digest", "weekly_digest", WorkerKind.PERIODIC) { AppPrefs.isWeeklyDigestEnabled(context) },
-        WorkerSpec("Files index periodic", "files_index_periodic", WorkerKind.PERIODIC) { AppPrefs.isSearchSourceFilesEnabled(context) },
-        WorkerSpec("Files index one-shot", "files_index_once", WorkerKind.ONE_SHOT) { AppPrefs.isSearchSourceFilesEnabled(context) },
+        WorkerSpec("Auto backup", "auto_backup_weekly", WorkerKind.PERIODIC, enabled = { AppPrefs.isAutoBackupEnabled(context) }),
+        WorkerSpec("Smart insight", "smart_insight_daily", WorkerKind.PERIODIC, enabled = { AppPrefs.isSmartNotifEnabled(context) }),
+        WorkerSpec("Suggestion notification", "suggestion_notification_daily", WorkerKind.PERIODIC, enabled = { AppPrefs.isSuggestionNotificationsEnabled(context) }),
+        WorkerSpec("Weekly digest", "weekly_digest", WorkerKind.PERIODIC, enabled = { AppPrefs.isWeeklyDigestEnabled(context) }),
+        WorkerSpec("Files index periodic", FilesIndexWorker.FILES_INDEX_PERIODIC_WORK_NAME, WorkerKind.PERIODIC, enabled = { AppPrefs.isSearchSourceFilesEnabled(context) }),
+        WorkerSpec("Files index one-shot", FilesIndexWorker.ONE_TIME_WORK_NAME, WorkerKind.ONE_SHOT, enabled = { AppPrefs.isSearchSourceFilesEnabled(context) }),
     )
 
     private companion object {
@@ -950,6 +995,16 @@ private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiag
             nextAction = "Notification listener izni, son event zamani ve NotificationEventDao yazimlarini kontrol et",
         )
     }
+    if (snapshot.workerSummary.any { it.contains("Files index periodic: enabled=evet, work=yok") }) {
+        issues += AiDiagnosticIssue(
+            severity = "WARN",
+            rank = 3,
+            area = "workers",
+            signal = "files_index_periodic_missing",
+            evidence = "Files index periodic: enabled=evet, work=yok",
+            nextAction = "Dosya arama kaynagi acikken FilesIndexWorker.schedule(context) app startup ve restore sonrasi yeniden garanti altina alinmali",
+        )
+    }
     if (snapshot.workerSummary.any { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }) {
         issues += AiDiagnosticIssue(
             severity = "WARN",
@@ -991,6 +1046,10 @@ private fun homeHealthNextAction(code: String): String = when (code) {
         "MissionRuntimeRepository refresh/state akisini ve coordinator stale fallback davranisini kontrol et"
     com.armutlu.apporganizer.domain.common.HomeErrorCodes.PULSE_SNAPSHOT_STALE ->
         "DigitalPulseRepository cache/compute zamanlarini ve izin kaynaklarini kontrol et"
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.DIGITAL_LIFE_DATA_STALE ->
+        "Dijital Yasam snapshot hesap zamanini ve tazelik esigini kontrol et"
+    com.armutlu.apporganizer.domain.common.HomeErrorCodes.DIGITAL_LIFE_LOW_CONFIDENCE ->
+        "Dijital Yasam confidence dusukse eksik izin/sinyal ve input kapsamlarini kontrol et"
     com.armutlu.apporganizer.domain.common.HomeErrorCodes.PULSE_SOURCE_MISMATCH ->
         "DigitalPulseSnapshot skor araligini ve tek skor kaynagi sozlesmesini kontrol et"
     com.armutlu.apporganizer.domain.common.HomeErrorCodes.TICKER_EMPTY_WITH_ACTIONABLE_ITEMS ->

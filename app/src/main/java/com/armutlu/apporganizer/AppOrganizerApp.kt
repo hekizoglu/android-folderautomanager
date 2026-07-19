@@ -9,6 +9,7 @@ import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.FilesIndexWorkCoordinator
 import com.armutlu.apporganizer.workers.BackupWorker
 import com.armutlu.apporganizer.workers.SmartInsightWorker
 import com.armutlu.apporganizer.workers.SuggestionNotificationWorker
@@ -61,6 +62,7 @@ class AppOrganizerApp : Application() {
                 enableGrantedContactSearchByDefault()
                 WeeklyDigestWorker.schedule(this)
                 SmartInsightWorker.schedule(this)
+                FilesIndexWorkCoordinator.ensurePeriodicWorkScheduled(this)
                 if (AppPrefs.isSuggestionNotificationsEnabled(this)) {
                     SuggestionNotificationWorker.schedule(this)
                 }

@@ -42,6 +42,22 @@ class FilesIndexer(
         private const val SOURCE_FILE = "file"
         private const val GROUP_FILE = "file"
         private const val MAX_FILES = 1000
+
+        fun hasMediaStoreReadAccess(context: Context): Boolean {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                arrayOf(
+                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                    android.Manifest.permission.READ_MEDIA_VIDEO,
+                    android.Manifest.permission.READ_MEDIA_AUDIO,
+                )
+            } else {
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+            return permissions.any { permission ->
+                ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            }
+        }
     }
 
     private val _indexState = MutableStateFlow(currentState(isIndexing = false))
@@ -49,7 +65,7 @@ class FilesIndexer(
 
     private fun currentState(isIndexing: Boolean): FileIndexState = computeFileIndexState(
         sourceEnabled = AppPrefs.isSearchSourceFilesEnabled(context),
-        hasPermission = hasMediaStoreReadAccess(),
+        hasPermission = hasMediaStoreReadAccess(context),
         isIndexing = isIndexing,
         lastFailureReason = AppPrefs.getFileIndexFailureReason(context),
         itemCount = AppPrefs.getFileIndexItemCount(context),
@@ -67,7 +83,7 @@ class FilesIndexer(
             _indexState.value = currentState(isIndexing = false)
             return@withContext
         }
-        if (!hasMediaStoreReadAccess()) {
+        if (!hasMediaStoreReadAccess(context)) {
             Timber.w("FilesIndexer: dosya arama izni yok, indeksleme atlandi")
             _indexState.value = currentState(isIndexing = false)
             return@withContext
@@ -201,19 +217,4 @@ class FilesIndexer(
             MediaStore.Files.getContentUri("external")
         }
 
-    private fun hasMediaStoreReadAccess(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
-        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arrayOf(
-                android.Manifest.permission.READ_MEDIA_IMAGES,
-                android.Manifest.permission.READ_MEDIA_VIDEO,
-                android.Manifest.permission.READ_MEDIA_AUDIO,
-            )
-        } else {
-            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-        return permissions.any { permission ->
-            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-        }
-    }
 }

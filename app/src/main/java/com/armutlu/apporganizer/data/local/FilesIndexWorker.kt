@@ -38,7 +38,7 @@ class FilesIndexWorker(
     }
 
     override suspend fun doWork(): Result {
-        val workName = inputData.getString(KEY_WORK_NAME) ?: WORK_NAME
+        val workName = inputData.getString(KEY_WORK_NAME) ?: FILES_INDEX_PERIODIC_WORK_NAME
         val startedAt = WorkerTelemetryPrefs.markStarted(applicationContext, workName)
         return try {
             if (!AppPrefs.isSearchSourceFilesEnabled(applicationContext)) {
@@ -66,11 +66,13 @@ class FilesIndexWorker(
     }
 
     companion object {
+        const val FILES_INDEX_PERIODIC_WORK_NAME = "files_index_periodic_v1"
+        const val ONE_TIME_WORK_NAME = "files_index_once"
         private const val KEY_WORK_NAME = "work_name"
-        private const val WORK_NAME = "files_index_periodic"
-        private const val ONE_TIME_WORK_NAME = "files_index_once"
+        private const val LEGACY_PERIODIC_WORK_NAME = "files_index_periodic"
 
         fun enqueueNow(context: Context) {
+            WorkerTelemetryPrefs.markRequested(context, ONE_TIME_WORK_NAME)
             val request = OneTimeWorkRequestBuilder<FilesIndexWorker>()
                 .setConstraints(
                     Constraints.Builder()
@@ -96,11 +98,11 @@ class FilesIndexWorker(
                         .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
                         .build(),
                 )
-                .setInputData(workDataOf(KEY_WORK_NAME to WORK_NAME))
+                .setInputData(workDataOf(KEY_WORK_NAME to FILES_INDEX_PERIODIC_WORK_NAME))
                 .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                WORK_NAME,
+                FILES_INDEX_PERIODIC_WORK_NAME,
                 ExistingPeriodicWorkPolicy.UPDATE,
                 request,
             )
@@ -109,7 +111,8 @@ class FilesIndexWorker(
 
         fun cancel(context: Context) {
             WorkManager.getInstance(context).cancelUniqueWork(ONE_TIME_WORK_NAME)
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+            WorkManager.getInstance(context).cancelUniqueWork(FILES_INDEX_PERIODIC_WORK_NAME)
+            WorkManager.getInstance(context).cancelUniqueWork(LEGACY_PERIODIC_WORK_NAME)
         }
     }
 }

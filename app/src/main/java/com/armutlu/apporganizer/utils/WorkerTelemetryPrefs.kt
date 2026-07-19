@@ -8,21 +8,37 @@ object WorkerTelemetryPrefs {
     const val FAILURE_IO_ERROR = "IO_ERROR"
     const val FAILURE_DATABASE_ERROR = "DATABASE_ERROR"
     const val FAILURE_STORAGE_UNAVAILABLE = "STORAGE_UNAVAILABLE"
+    const val FAILURE_REPLAN_CANCELLED_WORK = "REPLAN_CANCELLED_WORK"
+    const val FAILURE_REPLAN_FAILED_WORK = "REPLAN_FAILED_WORK"
     const val FAILURE_UNKNOWN = "UNKNOWN"
+    const val RESULT_UNKNOWN = "UNKNOWN"
+    const val RESULT_SUCCESS = "SUCCESS"
+    const val RESULT_FAILED = "FAILED"
 
     private const val PREFS_NAME = "worker_telemetry_prefs"
 
     data class Snapshot(
         val workerName: String,
+        val lastRequestedAt: Long,
         val lastStartedAt: Long,
         val lastFinishedAt: Long,
+        val lastCompletedAt: Long,
         val lastSucceededAt: Long,
         val lastFailedAt: Long,
+        val lastResult: String,
         val lastFailureCode: String,
         val lastDurationMs: Long,
         val successCount: Int,
         val failureCount: Int,
-    )
+    ) {
+        val pending: Boolean = lastRequestedAt > lastCompletedAt
+    }
+
+    fun markRequested(context: Context, workerName: String, now: Long = System.currentTimeMillis()) {
+        prefs(context).edit()
+            .putLong(key(workerName, "lastRequestedAt"), now)
+            .apply()
+    }
 
     fun markStarted(context: Context, workerName: String, now: Long = System.currentTimeMillis()): Long {
         prefs(context).edit()
@@ -41,6 +57,7 @@ object WorkerTelemetryPrefs {
         p.edit()
             .putLong(key(workerName, "lastFinishedAt"), finishedAt)
             .putLong(key(workerName, "lastSucceededAt"), finishedAt)
+            .putString(key(workerName, "lastResult"), RESULT_SUCCESS)
             .putLong(key(workerName, "lastDurationMs"), duration(startedAt, finishedAt))
             .putInt(key(workerName, "successCount"), p.getInt(key(workerName, "successCount"), 0) + 1)
             .apply()
@@ -57,6 +74,7 @@ object WorkerTelemetryPrefs {
         p.edit()
             .putLong(key(workerName, "lastFinishedAt"), finishedAt)
             .putLong(key(workerName, "lastFailedAt"), finishedAt)
+            .putString(key(workerName, "lastResult"), RESULT_FAILED)
             .putString(key(workerName, "lastFailureCode"), sanitizeFailureCode(failureCode))
             .putLong(key(workerName, "lastDurationMs"), duration(startedAt, finishedAt))
             .putInt(key(workerName, "failureCount"), p.getInt(key(workerName, "failureCount"), 0) + 1)
@@ -67,10 +85,13 @@ object WorkerTelemetryPrefs {
         val p = prefs(context)
         return Snapshot(
             workerName = workerName,
+            lastRequestedAt = p.getLong(key(workerName, "lastRequestedAt"), 0L),
             lastStartedAt = p.getLong(key(workerName, "lastStartedAt"), 0L),
             lastFinishedAt = p.getLong(key(workerName, "lastFinishedAt"), 0L),
+            lastCompletedAt = p.getLong(key(workerName, "lastFinishedAt"), 0L),
             lastSucceededAt = p.getLong(key(workerName, "lastSucceededAt"), 0L),
             lastFailedAt = p.getLong(key(workerName, "lastFailedAt"), 0L),
+            lastResult = p.getString(key(workerName, "lastResult"), RESULT_UNKNOWN) ?: RESULT_UNKNOWN,
             lastFailureCode = p.getString(key(workerName, "lastFailureCode"), "-") ?: "-",
             lastDurationMs = p.getLong(key(workerName, "lastDurationMs"), 0L),
             successCount = p.getInt(key(workerName, "successCount"), 0),
