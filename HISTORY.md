@@ -2,6 +2,75 @@
 
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
+## ARSIV: ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md — 2026-07-19
+
+> Bu dosyanin 33 tamamlanan (✅) donguye ait tam SOP metni silindi (dosyada kalan tek is: U04 — 🟡 Kismen tamamlandi). Asagida her donguye ait tek satirlik SHA referansi. Notlardaki kritik bilgiler zaten HISTORY.md donguye ozel girdilerinde veya asagida ozetlenmis.
+
+- Döngü H00 — Mevcut davranışı testlerle kilitle — commit: 275851a — 2026-07-17
+- Döngü H01 — Tek zaman ve hafta çözümleyicisi — commit: c5a158b — 2026-07-17 — epochDay/7→ISO geçişi M00-M02'ye bırakıldı
+- Döngü H02 — HomeIntelligenceCoordinator iskeleti — commit: 575c56d — 2026-07-17 — üç kaynak no-op binding, gerçek implementasyon D00/M/T'de
+- Döngü H03 — Ortak veri tazeliği modeli — commit: 520ad47 — 2026-07-17 — ekran entegrasyonu M02/D00'a ertelendi
+- Döngü H04 — Güvenli hata/fallback modeli — commit: 88ed0c6 — 2026-07-17 — FAZ H kapanışı, APK v1.3.83 (106)
+- Döngü M00 — MissionStatus ve dönemsel sonuç mantığı — commit: 3f95210 — 2026-07-17
+- Döngü M01 — Görev örneklerini DB'de sabitle — commit: 36a19cc — 2026-07-17 — DB v17→v18 migration, schemas/18.json
+- Döngü M02 — MissionMetricSnapshotProvider — commit: b87b055 — 2026-07-17 — epochDay/7 haftalık sınır bug'ı ISO ile düzeltildi
+- Döngü M03 — Görev ilerleme modeli/formatlayıcı — commit: ab57061 — 2026-07-17
+- Döngü M04 — Görev sonuçlandırma/ödül servisi — commit: 8422c48 — 2026-07-17
+- Döngü M05 — Göreve özel eylemler/route'lar — commit: 8b6da73 — 2026-07-17
+- Döngü M06 — Görevler ekranı ilerleme odaklı — commit: 02ffaa3 — 2026-07-17 — MissionCard.kt ayrıldı
+- Döngü M07 — Ana ekran Görevler kartı canlı — commit: bf2d34b — 2026-07-17
+- Döngü M08 — Görev puanı/ödül dengesi — commit: c1bc9a4 — 2026-07-17 — M FAZI KAPANDI, APK v1.3.85 (108)
+- Döngü D00 — Eski skor motoru kaldırıldı, tek kaynak — commit: a280408 — 2026-07-17 — P0 2.1 çözüldü
+- Döngü D01 — Skor trend/baseline güvenilirliği — commit: e78415a — 2026-07-17 — SharedPreferences, 8 hafta retention
+- Döngü D02 — Dijital Yaşam kartı bilgi kartına dönüştü — commit: c7834a5 — 2026-07-17
+- Döngü D03 — Pulse Clock skor tekrarı kaldırıldı — commit: 32f8edc — 2026-07-17
+- Döngü D04 — Skor nedeni ve çözüm rotası — commit: b98673b — 2026-07-17 — D FAZI KAPANDI, APK v1.3.86 (109)
+- Döngü T00 — Düşük değerli/tekrarlı içerik temizliği — commit: b8b7da9 — 2026-07-17
+- Döngü T01 — SmartTickerItem ve içerik türleri — commit: b4fe7fe — 2026-07-18
+- Döngü T02 — TickerRanker sıralama/tekrar motoru — commit: 8852527 — 2026-07-18
+- Döngü T03 — Görev ve Dijital Yaşam entegrasyonu — commit: e95cd80 — 2026-07-18
+- Döngü T04 — HomeTickerRow davranış/erişilebilirlik — commit: 3e86346 — 2026-07-18
+- Döngü T05 — Akıllı Nabız ayarları — commit: a83943b — 2026-07-18 — T FAZI KAPANDI, APK v1.3.87 (110)
+- Döngü U00 — Ana ekran kart yerleşimi birleşti — commit: 08b723b — 2026-07-18
+- Döngü U01 — LauncherViewModel sadeleştirme — commit: ebf308f — 2026-07-18 — VM 1305→1055 satır
+- Döngü U02 — Gizlilik güvenli telemetri — commit: 052dc77 — 2026-07-18
+- Döngü U03 — Sağlık raporuna yeni sistem durumları — commit: 36bb371 — 2026-07-18
+
+**Açık kalan:** Döngü U04 — Tam test matrisi ve yayın kapısı — 🟡 Kısmen tamamlandı (bkz. dosyanın kendisi).
+
+## ARSIV: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md — 2026-07-19
+
+> Bu dosyanin 26 tamamlanan (✅) donguye ait tam SOP metni silindi (dosyada kalan is: P20/P21/P24/P25 — hepsi 🟡 Kismen tamamlandi). Asagida her donguye ait tek satirlik SHA referansi.
+
+- Döngü P00 — Mevcut ana ekran davranışlarını testlerle kilitle — commit: 5316f3c — 2026-07-18 — 25 regresyon testi
+- Döngü P01 — HomePageSpec ve HomePagePlanner — commit: d22bc67 — 2026-07-18
+- Döngü P02 — Semantik sayfa preference ve migration — commit: 1e081d8 — 2026-07-18
+- Döngü P03 — HomeScreen'den global shell çıkarma — commit: 3862679 — 2026-07-18
+- Döngü P04 — FolderPager → FolderGridPage — commit: 1841ab2 — 2026-07-18
+- Döngü P05 — HomePagerHost, Dashboard+klasör tek pager — commit: c0420a9 — 2026-07-18 — dashboardEnabledForPager=false hardcoded, P24 açacak
+- Döngü P06 — SmartDashboardPage oluşturma — commit: ba742d9 — 2026-07-18
+- Döngü P07 — Dashboard dikey alan/swipe-up çatışması — commit: 9d8af74 — 2026-07-18
+- Döngü P08 — GlobalSearchHost — commit: cc28079 — 2026-07-18
+- Döngü P09 — Arama sonuçları global overlay'e taşındı — commit: 958662d — 2026-07-18
+- Döngü P10 — Gesture arbitration katmanı — commit: 844bdfa — 2026-07-18 — HomeGestureArbiter, 60dp density-bağımsız eşik
+- Döngü P11 — Uygulama çekmecesi yeni pager'a bağlandı — commit: e79cc98 — 2026-07-18 — tablet scrim + pager kilidi fix
+- Döngü P12 — Home komut akışı — commit: 66e9117 — 2026-07-18 — HomeCommandPolicy
+- Döngü P13 — Son ziyaret sayfa semantic anchor — commit: 8eb8faa — 2026-07-18 — resolvePageAfterPlanChange
+- Döngü P14 — Dashboard farkını gösteren indicator — commit: 1f84567 — 2026-07-18
+- Döngü P15 — HomeLayoutConfig v2 migration — commit: dd0197a — 2026-07-18 — v1→v2 partition migration
+- Döngü P16 — Ana ekran düzenleyici Dashboard odaklı — commit: c7294b6 — 2026-07-18
+- Döngü P17 — Başlangıç sayfası/klasik mod ayarları — commit: cfecdd0 — 2026-07-18
+- Döngü P18 — Focus Mode yeni sayfa sistemine uyum — commit: fc9fdcc — 2026-07-18
+- Döngü P19 — Erişilebilirlik ve büyük yazı desteği — commit: cb3380d — 2026-07-18
+- Döngü P22 — Sağlık raporuna ana ekran mimarisi özeti — tarih: 2026-07-19 — cihaz kanıtı R92Y200CBKX
+- Döngü P23 — Performans ve recomposition optimizasyonu — tarih: 2026-07-19 — cihaz kanıtı R92Y200CBKX, %14.11 janky frame
+
+**Açık kalan (🟡 Kısmen tamamlandı — dosyanın kendisinde tam metin):**
+- Döngü P20 — Telefon/tablet adaptif düzen — rotasyon+swipe crash bulundu (EX03'te düzeltildi), kalan 3 cihaz doğrulaması bekliyor
+- Döngü P21 — Anonim sayfa kullanım telemetrisi — Firebase DebugView/remote konsol teyidi bekliyor
+- Döngü P24 — Feature flag ile kontrollü geçiş — kalan 3 cihazda (telefon, temiz kurulum, izin-kapalı) doğrulama bekliyor
+- Döngü P25 — Eski folder-only pager/legacy kod temizliği — P24 dört cihaz kanıtı tamamlanmadan başlatılamaz
+
 ## EX03 - 2026-07-19 - Rotasyon+swipe LazyGrid crash fix (BOM bump)
 
 **Yapilanlar:** "measure is called on a deactivated node" crash'i cozuldu: kok neden Compose 1.7.x framework race (pager deactivation + bekleyen remeasure). 2 kod workaround yeterli olmadi (canli repro'da devam etti) -> Compose BOM 2024.09.03->2024.12.01 (uyumluluk matrisi dogrulandi, Kotlin 2.x GEREKMEDI). Canli kanit: fix oncesi 2/2 crash, sonrasi 16/16 temiz (SM-X210). Workaround'lar da kalici (deferred graphicsLayer read + beyondViewportPageCount=1). Tam suite + assembleDebug yesil.
