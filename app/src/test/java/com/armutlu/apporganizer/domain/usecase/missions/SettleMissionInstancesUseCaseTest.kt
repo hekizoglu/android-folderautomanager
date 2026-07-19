@@ -168,6 +168,11 @@ class SettleMissionInstancesUseCaseTest {
             // Testte 1-gunluk pencere kullaniliyor; anchorMillis'in epochDay'i ile eslesir varsayilir.
             return unlockCountByEpochDay.values.firstOrNull()
         }
+
+        override fun getUnlockCountPerDay(context: Context, days: Int, nowMillis: Long): Map<Long, Int>? {
+            if (!dataAvailable) return null
+            return unlockCountByEpochDay.ifEmpty { null }
+        }
     }
 
     private fun buildUseCase(

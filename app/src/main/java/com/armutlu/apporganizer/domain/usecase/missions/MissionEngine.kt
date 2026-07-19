@@ -36,6 +36,11 @@ object MissionEngine {
         val weeklyScreenTimeMinutes: Long? = null,
         val previousWeeklyScreenTimeMinutes: Long? = null,
         val taskEvents: TaskEventInput = TaskEventInput(),
+        // Dongu G1 (kisisel gorev hedefi) — pinInstances sirasinda kararlastirilan, donem
+        // boyunca SABIT kisisel hedef. null ise (tanisma modu veya henuz pin edilmemis) engine
+        // sabit varsayilana (DEFAULT_SCREEN_TARGET_MINUTES/DEFAULT_UNLOCK_TARGET) duser.
+        val personalScreenTargetMinutes: Long? = null,
+        val personalUnlockTarget: Long? = null,
     )
 
     data class TaskEventInput(
@@ -62,6 +67,11 @@ object MissionEngine {
     const val DAILY_STAR = 1
     const val WEEKLY_STAR = 2
     const val DAILY_MISSION_COUNT = 3
+
+    // Dongu G1 — kisisel hedef yoksa (tanisma modu / henuz pin edilmemis) kullanilan sabit
+    // varsayilanlar. Eski davranisla birebir ayni (roadmap oncesi sabit degerler).
+    const val DEFAULT_SCREEN_TARGET_MINUTES = 180L
+    const val DEFAULT_UNLOCK_TARGET = 30L
 
     private val DAILY_POOL = listOf(
         Mission(DAILY_SCREEN_UNDER_3H, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
@@ -179,13 +189,13 @@ object MissionEngine {
     ): MissionEvaluation = when (mission.id) {
         DAILY_SCREEN_UNDER_3H -> evaluateUpperLimit(
             current = input.screenTimeMinutesToday,
-            target = 180L,
+            target = input.personalScreenTargetMinutes ?: DEFAULT_SCREEN_TARGET_MINUTES,
             periodEnded = dayEnded,
         )
         DAILY_NO_LATE_NIGHT -> evaluateNoLateNight(input.usedAfter23Today, now, dayEnded)
         DAILY_UNLOCK_UNDER_30 -> evaluateUpperLimit(
             current = input.unlockCountToday?.toLong(),
-            target = 30L,
+            target = input.personalUnlockTarget ?: DEFAULT_UNLOCK_TARGET,
             periodEnded = dayEnded,
         )
         DAILY_CLASSIFICATION_CLEANUP -> evaluateActionCount(

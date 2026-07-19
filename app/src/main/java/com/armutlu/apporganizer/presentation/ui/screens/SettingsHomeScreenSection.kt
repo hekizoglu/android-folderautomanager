@@ -737,6 +737,49 @@ fun SettingsHomeScreenSection(
         )
     }
 
+    // ── Görev Temposu (G1/G7) ────────────────────────────────────────────
+    // Kisisel gorev hedefi formulunun katsayisini belirler — hedef = son 7 gun medyani x tempo.
+    SettingsSectionTitle("Görev Temposu")
+    var missionTempo by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getMissionTempo(context)) }
+    SettingsCard {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                "Görevler senin geçmiş kullanımına göre kişiselleşir. Ne kadar zorlayıcı olsun?",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val options = listOf(
+                    com.armutlu.apporganizer.utils.AppPrefs.MissionTempo.RAHAT to "Rahat",
+                    com.armutlu.apporganizer.utils.AppPrefs.MissionTempo.DENGELI to "Dengeli",
+                    com.armutlu.apporganizer.utils.AppPrefs.MissionTempo.IDDIALI to "İddialı",
+                )
+                options.forEach { (tempo, label) ->
+                    FilterChip(
+                        selected = missionTempo == tempo,
+                        onClick = {
+                            missionTempo = tempo
+                            com.armutlu.apporganizer.utils.AppPrefs.setMissionTempo(context, tempo)
+                        },
+                        label = { Text(label, fontSize = 12.sp) }
+                    )
+                }
+            }
+            Text(
+                when (missionTempo) {
+                    com.armutlu.apporganizer.utils.AppPrefs.MissionTempo.RAHAT ->
+                        "Hedefler alışkanlığına yakın — kolay başarılır."
+                    com.armutlu.apporganizer.utils.AppPrefs.MissionTempo.DENGELI ->
+                        "Hedefler alışkanlığından biraz daha iyisini ister."
+                    com.armutlu.apporganizer.utils.AppPrefs.MissionTempo.IDDIALI ->
+                        "Hedefler seni daha çok zorlar — hızlı ilerleme için."
+                },
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+
     // ── İkon Paketi ───────────────────────────────────────────────────────
     // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) — burada sadece yönlendirme kartı gösterilir.
     SettingsSectionTitle("İkon Paketi")

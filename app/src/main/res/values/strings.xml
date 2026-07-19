@@ -615,8 +615,11 @@
     <string name="mission_action_open_report">Raporu Aç</string>
     <string name="mission_action_grant_access">İzin Ver</string>
     <string name="mission_daily_screen_under_3h">Bugün ekran süreni 3 saatin altında tut</string>
+    <!-- Dongu G1: kisisel hedef bulunan kullanicilar icin dinamik baslik — %1$s onceden cozulmus sure metni (orn. "2 sa. 40 dk.") -->
+    <string name="mission_daily_screen_under_personal">Bugün ekran süreni %1$s altında tut</string>
     <string name="mission_daily_no_late_night">Gece 23:00 sonrası telefonu açma</string>
     <string name="mission_daily_unlock_under_30">Bugün telefonu 30\'dan az kez aç</string>
+    <string name="mission_daily_unlock_under_personal">Bugün telefonu %1$d\'den az kez aç</string>
     <string name="mission_daily_classification_cleanup">Bugün en az 1 sınıflandırma kararını netleştir</string>
     <string name="mission_daily_view_notif_report">Bildirim raporunu incele</string>
     <string name="mission_weekly_screen_less">Haftalık ekran süresini geçen haftadan düşük tut</string>

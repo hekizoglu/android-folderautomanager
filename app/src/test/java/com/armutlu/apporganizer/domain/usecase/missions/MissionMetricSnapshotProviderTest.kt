@@ -95,10 +95,13 @@ class MissionMetricSnapshotProviderTest {
     private class FakeUsageStatsSource(
         private val sessions: List<DailyPackageUsage>?,
         private val unlockCount: Int?,
+        private val unlockCountPerDay: Map<Long, Int>? = null,
     ) : MissionUsageStatsSource {
         override fun getDailySessionUsage(context: Context, days: Int, nowMillis: Long): List<DailyPackageUsage>? = sessions
 
         override fun getUnlockCount(context: Context, days: Int, nowMillis: Long): Int? = unlockCount
+
+        override fun getUnlockCountPerDay(context: Context, days: Int, nowMillis: Long): Map<Long, Int>? = unlockCountPerDay
     }
 
     private fun buildProvider(

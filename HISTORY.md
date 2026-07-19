@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G1+G7 - 2026-07-19 - Kisisel gorev hedefleri + tempo profili
+
+**Yapilanlar:** PersonalTargetCalculator (son 7 gun medyani x tempo katsayisi; ekran 60-360dk, kilit 15-80 clamp; <3 gun veri -> null/tanisma modu); KEY_MISSION_TEMPO (Rahat 1.0/Dengeli 0.9/Iddiali 0.8, Ayarlar segmented); pinInstances hedefi baselineValue/targetValue'ya yazar (M01'den beri bos duran alanlar doldu); MissionCheckInput.personalScreenTarget/UnlockTarget -> evaluate override, sabitler fallback; gorev basligi kisisel hedefi gosterir. Kota kesintisinde yarim kalan is Fable tarafindan sahiplenildi: 2 yasak karakterli test adi + 2 yanlis durum beklentisi (AT_RISK/IN_PROGRESS) duzeltildi. Mission+PersonalTarget testleri yesil.
+
+**Bug:** Agent beklentisi M00 AT_RISK kuralini atlamisti — kod dogruydu, testler duzeltildi.
+
+**Sonraki:** G2 tikla-aksiyon genisletmesi (6. dongu — APK kurali tetiklenecek).
+
 > CLAUDE.md'den taşınan döngü-spesifik değişiklik logları. **Her konuşmada okunmaz** - sadece "geçmişte X'i nasıl yapmıştık?" sorusunda referans.
 
 ## ARSIV: ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md — 2026-07-19

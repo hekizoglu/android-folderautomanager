@@ -1240,5 +1240,26 @@ object AppPrefs {
     fun isContactSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, true)
     fun setContactSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, v).apply()
 
+    // ── Gorev Temposu (G1/G7, GOREV_SISTEMI_AKILLI_GELISTIRME_PLANI.md) ────────────────────
+    // Kisisel gorev hedefi formulunun katsayisi: hedef = son 7 gun medyani x tempo.
+    // Rahat=1.0 (medyan aynen), Dengeli=0.9 (varsayilan, "dunden biraz az" hissi),
+    // Iddiali=0.8 (daha zorlayici sinirlama). PersonalTargetCalculator bu katsayiyi tuketir.
+    enum class MissionTempo(val coefficient: Double) {
+        RAHAT(1.0),
+        DENGELI(0.9),
+        IDDIALI(0.8),
+    }
+
+    const val KEY_MISSION_TEMPO = "mission_tempo"
+    val DEFAULT_MISSION_TEMPO = MissionTempo.DENGELI
+
+    fun getMissionTempo(context: Context): MissionTempo {
+        val stored = prefs(context).getString(KEY_MISSION_TEMPO, null)
+        return stored?.let { s -> runCatching { MissionTempo.valueOf(s) }.getOrNull() } ?: DEFAULT_MISSION_TEMPO
+    }
+
+    fun setMissionTempo(context: Context, tempo: MissionTempo) =
+        prefs(context).edit().putString(KEY_MISSION_TEMPO, tempo.name).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

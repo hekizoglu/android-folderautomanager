@@ -131,6 +131,40 @@ object UsageStatsHelper {
         }
     }
 
+    /**
+     * Dongu G1 (kisisel gorev hedefi) — kilit acma sayisini gun bazinda gruplar. [getUnlockCount]
+     * gibi ayni KEYGUARD_HIDDEN olayini kullanir, sadece epochDay'e gore ayristirir.
+     * Izin yoksa veya SDK < P ise null doner.
+     */
+    fun getUnlockCountPerDay(
+        context: Context,
+        days: Int = 7,
+        nowMillis: Long = System.currentTimeMillis(),
+        zoneId: ZoneId = ZoneId.systemDefault(),
+    ): Map<Long, Int>? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || !hasPermission(context)) return null
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val windowStart = nowMillis - days.toLong() * 24 * 60 * 60 * 1000
+            val events = manager.queryEvents(windowStart, nowMillis) ?: return null
+            val event = UsageEvents.Event()
+            val counts = mutableMapOf<Long, Int>()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (event.eventType == UsageEvents.Event.KEYGUARD_HIDDEN) {
+                    val epochDay = java.time.Instant.ofEpochMilli(event.timeStamp)
+                        .atZone(zoneId).toLocalDate().toEpochDay()
+                    counts[epochDay] = (counts[epochDay] ?: 0) + 1
+                }
+            }
+            counts
+        } catch (_: SecurityException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun getLastUsedTimes(context: Context, days: Int = 90): Map<String, Long> {
         return try {
             val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager

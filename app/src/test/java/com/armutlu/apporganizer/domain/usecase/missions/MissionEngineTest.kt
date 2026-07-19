@@ -397,4 +397,62 @@ class MissionEngineTest {
         assertEquals(thursdayEpochWeek, wednesdayEpochWeek)
         assertEquals(thursdayMissions.map { it.id }, wednesdayMissions.map { it.id })
     }
+
+    // ── Dongu G1: kisisel hedef enjeksiyonu ─────────────────────────────────────────────
+    @Test
+    fun `personal screen target overrides default 180 minute limit`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        // Kisisel hedef 160dk: 150dk kullanim hedefin altinda ama >=%80 -> AT_RISK (M00 kurali)
+        val underPersonal = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(screenTimeMinutesToday = 150L, personalScreenTargetMinutes = 160L),
+            dayEnded = false,
+        )
+        assertEquals(MissionStatus.AT_RISK, underPersonal.status)
+        assertEquals(160L, underPersonal.targetValue)
+
+        // Ayni 150dk sabit varsayilan (180dk) ile degerlendirilseydi de IN_PROGRESS olurdu ama
+        // burada asil nokta: kisisel hedef asilinca (170 >= 160) donem bitmeden FAILED olmasi -
+        // sabit 180dk varsayilaninda bu deger hala basarili sayilirdi.
+        val overPersonal = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(screenTimeMinutesToday = 170L, personalScreenTargetMinutes = 160L),
+            dayEnded = false,
+        )
+        assertEquals(MissionStatus.FAILED, overPersonal.status)
+    }
+
+    @Test
+    fun `null personal target falls back to fixed default`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val evaluation = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(screenTimeMinutesToday = 170L, personalScreenTargetMinutes = null),
+            dayEnded = false,
+        )
+        assertEquals(MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES, evaluation.targetValue)
+        // 170/180 = %94 kullanim >= %80 -> AT_RISK (M00 kurali); asil dogrulama targetValue fallback'i
+        assertEquals(MissionStatus.AT_RISK, evaluation.status)
+    }
+
+    @Test
+    fun `personal unlock target overrides default 30 count limit`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.DAILY_UNLOCK_UNDER_30, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val evaluation = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(unlockCountToday = 20, personalUnlockTarget = 18L),
+            dayEnded = false,
+        )
+        assertEquals(MissionStatus.FAILED, evaluation.status)
+        assertEquals(18L, evaluation.targetValue)
+    }
 }

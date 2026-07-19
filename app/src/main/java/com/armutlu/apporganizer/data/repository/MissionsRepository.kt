@@ -192,4 +192,12 @@ class MissionsRepository @Inject constructor(
         }
         missionInstanceDao.insertAllIgnore(instances)
     }
+
+    /**
+     * Dongu G1 — pin edilmis instance'lari geri okur. `insertAllIgnore` sayesinde donem icinde
+     * ikinci pin denemesi yok sayildigindan, buradan donen targetValue/baselineValue HER ZAMAN
+     * donemin ILK atamasidir (kisisel hedef gun ortasinda degismez).
+     */
+    suspend fun getInstancesForPeriod(periodType: String, periodStartEpoch: Long): List<MissionInstanceEntity> =
+        missionInstanceDao.getInstancesForPeriod(periodType, periodStartEpoch)
 }

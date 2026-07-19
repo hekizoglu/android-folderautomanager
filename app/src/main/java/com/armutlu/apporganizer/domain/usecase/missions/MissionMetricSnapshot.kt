@@ -27,4 +27,12 @@ data class MissionMetricSnapshot(
     val notificationReportViewedToday: Boolean,
     val positiveActionsThisWeek: Int,
     val freshness: DataFreshness,
+    /**
+     * Dongu G1 (kisisel gorev hedefi) — bugun HARIC son (en fazla 7) TAMAMLANMIS gunun gunluk
+     * ekran suresi (dk)/kilit acma listesi, eskiden yeniye sirali. Bugun donem bitmedigi icin
+     * dahil edilmez (yaris kosulu: gun ortasinda hedef degismesin). Izin yoksa veya veri yoksa
+     * bos liste doner — PersonalTargetCalculator zaten <3 gun icin null uretir (tanisma modu).
+     */
+    val screenTimeMinutesLast7CompletedDays: List<Long> = emptyList(),
+    val unlockCountLast7CompletedDays: List<Long> = emptyList(),
 )

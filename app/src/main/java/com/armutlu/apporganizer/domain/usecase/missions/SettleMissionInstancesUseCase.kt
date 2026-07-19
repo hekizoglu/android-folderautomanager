@@ -220,11 +220,22 @@ class SettleMissionInstancesUseCase @Inject constructor(
         return when (instance.missionId) {
             MissionEngine.DAILY_SCREEN_UNDER_3H -> {
                 val minutes = dailyForegroundMinutes(anchorMillis) ?: return null
-                MissionEngine.MissionCheckInput(screenTimeMinutesToday = minutes, taskEvents = taskEvents)
+                MissionEngine.MissionCheckInput(
+                    screenTimeMinutesToday = minutes,
+                    taskEvents = taskEvents,
+                    // Dongu G1: pin edilmis kisisel hedef (donem boyunca sabit) settlement'ta da
+                    // AYNI olmali — aksi halde pin sirasinda 2sa.40dk ile tamamlanmis sayilan bir
+                    // gorev, settlement'ta sabit 180dk ile degerlendirilip tutarsizlik yaratir.
+                    personalScreenTargetMinutes = instance.targetValue,
+                )
             }
             MissionEngine.DAILY_UNLOCK_UNDER_30 -> {
                 val unlocks = unlockCountForDay(anchorMillis) ?: return null
-                MissionEngine.MissionCheckInput(unlockCountToday = unlocks, taskEvents = taskEvents)
+                MissionEngine.MissionCheckInput(
+                    unlockCountToday = unlocks,
+                    taskEvents = taskEvents,
+                    personalUnlockTarget = instance.targetValue,
+                )
             }
             MissionEngine.DAILY_NO_LATE_NIGHT -> {
                 val usedAfter23 = usedAfter23(anchorMillis) ?: return null

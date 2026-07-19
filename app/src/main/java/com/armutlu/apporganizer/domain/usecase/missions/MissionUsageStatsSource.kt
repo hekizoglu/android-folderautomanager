@@ -30,6 +30,16 @@ interface MissionUsageStatsSource {
         days: Int,
         nowMillis: Long = System.currentTimeMillis(),
     ): Int?
+
+    /**
+     * Dongu G1 (kisisel gorev hedefi) — kilit acma sayisini epochDay -> adet olarak doner.
+     * Izin yoksa veya SDK < P ise null doner.
+     */
+    fun getUnlockCountPerDay(
+        context: Context,
+        days: Int,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Map<Long, Int>?
 }
 
 /** Uretimde kullanilan varsayilan implementasyon — dogrudan [UsageStatsHelper]'a delege eder. */
@@ -40,4 +50,7 @@ class DefaultMissionUsageStatsSource : MissionUsageStatsSource {
 
     override fun getUnlockCount(context: Context, days: Int, nowMillis: Long): Int? =
         UsageStatsHelper.getUnlockCount(context, days = days, nowMillis = nowMillis)
+
+    override fun getUnlockCountPerDay(context: Context, days: Int, nowMillis: Long): Map<Long, Int>? =
+        UsageStatsHelper.getUnlockCountPerDay(context, days = days, nowMillis = nowMillis)
 }

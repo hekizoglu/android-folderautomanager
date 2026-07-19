@@ -84,7 +84,32 @@ class MissionSummaryUseCase @Inject constructor(
         val epochDay = LocalDate.now().toEpochDay()
         val epochWeek = epochDay / 7
         val snapshot = missionMetricSnapshotProvider.capture()
-        val input = snapshot.toMissionCheckInput()
+
+        val now = LocalTime.now()
+        val dayBoundary = periodBoundaryResolver.currentDay()
+        val weekBoundary = periodBoundaryResolver.currentIsoWeek()
+        val dayEnded = false
+        val weekEnded = false
+
+        // Dongu G1 — kisisel hedef ONCE bu donem icin daha once pin edilmis mi diye kontrol
+        // edilir (varsa o SABIT deger kullanilir, tanisma/tempo degisikligi donem ortasinda
+        // hedefi degistiremez). Pin edilmemisse tempo tercihine gore YENI hesaplanir; awardStars
+        // ise bu deger asagida pinInstances ile sabitlenir.
+        val existingDailyInstances = missionsRepository.getInstancesForPeriod(
+            MissionInstanceEntity.PERIOD_DAILY,
+            dayBoundary.epochDay,
+        ).associateBy { it.missionId }
+
+        val tempo = com.armutlu.apporganizer.utils.AppPrefs.getMissionTempo(context).coefficient
+        val personalScreenTarget = existingDailyInstances[MissionEngine.DAILY_SCREEN_UNDER_3H]?.targetValue
+            ?: PersonalTargetCalculator.calculateScreenTimeTarget(snapshot.screenTimeMinutesLast7CompletedDays, tempo)
+        val personalUnlockTarget = existingDailyInstances[MissionEngine.DAILY_UNLOCK_UNDER_30]?.targetValue
+            ?: PersonalTargetCalculator.calculateUnlockTarget(snapshot.unlockCountLast7CompletedDays, tempo)
+
+        val input = snapshot.toMissionCheckInput().copy(
+            personalScreenTargetMinutes = personalScreenTarget,
+            personalUnlockTarget = personalUnlockTarget,
+        )
         val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
             currentEpochDay = epochDay,
             cooldownDays = MissionEngine.dailyCooldownDays(),
@@ -94,15 +119,9 @@ class MissionSummaryUseCase @Inject constructor(
             cooldownWeeks = MissionEngine.weeklyCooldownWeeks(),
         )
 
-        val now = LocalTime.now()
-        val dayBoundary = periodBoundaryResolver.currentDay()
-        val weekBoundary = periodBoundaryResolver.currentIsoWeek()
-        val dayEnded = false
-        val weekEnded = false
-
         val dailyTargetValues = mapOf(
-            MissionEngine.DAILY_SCREEN_UNDER_3H to 180L,
-            MissionEngine.DAILY_UNLOCK_UNDER_30 to 30L,
+            MissionEngine.DAILY_SCREEN_UNDER_3H to (personalScreenTarget ?: MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES),
+            MissionEngine.DAILY_UNLOCK_UNDER_30 to (personalUnlockTarget ?: MissionEngine.DEFAULT_UNLOCK_TARGET),
         )
         val weeklyTargetValues = mapOf(
             MissionEngine.WEEKLY_POSITIVE_ACTIONS to 3L,
@@ -207,7 +226,7 @@ class MissionSummaryUseCase @Inject constructor(
         }
         return MissionOutcome(
             id = id,
-            title = context.getString(titleRes(id)),
+            title = titleFor(id, evaluation.targetValue),
             starReward = starReward,
             status = status,
             autoCheckable = autoCheckable,
@@ -278,5 +297,27 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.WEEKLY_SCREEN_LESS -> R.string.mission_weekly_screen_less
         MissionEngine.WEEKLY_POSITIVE_ACTIONS -> R.string.mission_weekly_positive_actions
         else -> R.string.mission_unknown
+    }
+
+    /**
+     * Dongu G1 — ust sinir gorevlerinde hedef sabit varsayilandan farkliysa (kisisel hedef
+     * atanmis) kisisellestirilmis basligi, aksi halde eski sabit basligi doner. [target]
+     * evaluate() sonucundaki targetValue'dur (pinInstances ile ayni deger, donem boyunca sabit).
+     */
+    private fun titleFor(id: String, target: Long?): String = when (id) {
+        MissionEngine.DAILY_SCREEN_UNDER_3H -> if (target != null && target != MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES) {
+            context.getString(
+                R.string.mission_daily_screen_under_personal,
+                resolveTextSpec(MissionValueFormatter.durationSpec(target)),
+            )
+        } else {
+            context.getString(R.string.mission_daily_screen_under_3h)
+        }
+        MissionEngine.DAILY_UNLOCK_UNDER_30 -> if (target != null && target != MissionEngine.DEFAULT_UNLOCK_TARGET) {
+            context.getString(R.string.mission_daily_unlock_under_personal, target.toInt())
+        } else {
+            context.getString(R.string.mission_daily_unlock_under_30)
+        }
+        else -> context.getString(titleRes(id))
     }
 }

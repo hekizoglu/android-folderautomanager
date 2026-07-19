@@ -81,6 +81,22 @@ class MissionMetricSnapshotProvider @Inject constructor(
         // 5. Kilit acma sayisi.
         val unlockCountToday = usageStatsSource.getUnlockCount(context, days = 1)
 
+        // 5b. Dongu G1 — kisisel hedef icin bugun HARIC son 7 TAMAMLANMIS gunun gecmisi.
+        // Bugun donem bitmeden dahil edilmezse hedef gun ortasinda kaymaz (M01 sabitlik ilkesi).
+        val screenTimeMinutesLast7CompletedDays = minutesByDay
+            ?.filterKeys { it < epochDay && it >= epochDay - 7 }
+            ?.toSortedMap()
+            ?.values
+            ?.toList()
+            ?: emptyList()
+        val unlockCountByDay = usageStatsSource.getUnlockCountPerDay(context, days = 8)
+        val unlockCountLast7CompletedDays = unlockCountByDay
+            ?.filterKeys { it < epochDay && it >= epochDay - 7 }
+            ?.toSortedMap()
+            ?.values
+            ?.map { it.toLong() }
+            ?: emptyList()
+
         // 6. 23:00 sonrasi ilk kullanim zamani (varsa) — bugunun saatlik foreground kovalarindan
         // cikarilir. hourlyForegroundMs[23] > 0 ise gece kullanimi var demektir; kesin an
         // saatlik veriden bilinmez, bu yuzden saat diliminin baslangici (23:00 yerel) raporlanir.
@@ -132,6 +148,8 @@ class MissionMetricSnapshotProvider @Inject constructor(
             notificationReportViewedToday = notificationReportViewedToday,
             positiveActionsThisWeek = positiveActionsThisWeek,
             freshness = dataFreshnessResolver.resolve(nowMillis),
+            screenTimeMinutesLast7CompletedDays = screenTimeMinutesLast7CompletedDays,
+            unlockCountLast7CompletedDays = unlockCountLast7CompletedDays,
         )
     }
 }
