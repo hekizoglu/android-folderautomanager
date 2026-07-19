@@ -13,7 +13,16 @@ package com.armutlu.apporganizer.domain.usecase.missions
  */
 object MissionProgressCalculator {
 
-    fun calculate(evaluation: MissionEvaluation, kind: MissionProgressKind): MissionProgress {
+    /**
+     * @param countBased UPPER_LIMIT gorevinde deger ADET midir (kilit acma) yoksa DAKIKA mi
+     * (ekran suresi)? Adet gorevleri "16 / 30" count formati alir — sure formati ("16 dk.")
+     * adet icin yaniltici olur (EX: G2 tablet demosunda yakalanan gorsel hata).
+     */
+    fun calculate(
+        evaluation: MissionEvaluation,
+        kind: MissionProgressKind,
+        countBased: Boolean = false,
+    ): MissionProgress {
         val current = evaluation.currentValue
         val target = evaluation.targetValue
 
@@ -31,7 +40,7 @@ object MissionProgressCalculator {
         }
 
         return when (kind) {
-            MissionProgressKind.UPPER_LIMIT -> calculateUpperLimit(current, target)
+            MissionProgressKind.UPPER_LIMIT -> calculateUpperLimit(current, target, countBased)
             MissionProgressKind.ACTION_COUNT -> calculateActionCount(current, target)
             MissionProgressKind.BOOLEAN_ACTION -> calculateActionCount(current, target)
             MissionProgressKind.AVOID_AFTER_TIME -> calculateAvoidAfterTime(current, target)
@@ -39,8 +48,8 @@ object MissionProgressCalculator {
         }
     }
 
-    /** Ekran suresi / kilit acma gibi ust sinir gorevleri — dakika/adet ayrimini cagiran (kind uzerinden degil, deger buyuklugune gore) degil, ortak dakika bicimi ile ele alir; adet-bazli (kilit acma) ekranlar remaining/current icin count spec'i tercih eder. */
-    private fun calculateUpperLimit(current: Long, target: Long): MissionProgress {
+    /** Ust sinir gorevleri — countBased=true (kilit acma) adet formati, false (ekran suresi) sure formati kullanir. */
+    private fun calculateUpperLimit(current: Long, target: Long, countBased: Boolean): MissionProgress {
         val rawRemaining = target - current
         val reachedOrExceeded = current >= target
         val remaining = rawRemaining.coerceAtLeast(0L)
@@ -50,7 +59,8 @@ object MissionProgressCalculator {
         val fraction = fractionOf(current, target)
 
         val progressText = if (exceeded != null && exceeded > 0L) {
-            MissionValueFormatter.exceededCountSpec(exceeded)
+            if (countBased) MissionValueFormatter.exceededCountSpec(exceeded)
+            else MissionValueFormatter.exceededDurationSpec(exceeded)
         } else {
             MissionValueFormatter.percentUsedSpec(fraction)
         }
@@ -61,8 +71,13 @@ object MissionProgressCalculator {
             remainingValue = if (reachedOrExceeded) null else remaining,
             progressFraction = fraction,
             exceededValue = exceeded,
-            currentTextRes = MissionValueFormatter.currentDurationSpec(current),
-            remainingTextRes = if (reachedOrExceeded) null else MissionValueFormatter.remainingDurationSpec(remaining),
+            currentTextRes = if (countBased) MissionValueFormatter.currentCountSpec(current, target)
+            else MissionValueFormatter.currentDurationSpec(current),
+            remainingTextRes = when {
+                reachedOrExceeded -> null
+                countBased -> MissionValueFormatter.remainingCountSpec(remaining)
+                else -> MissionValueFormatter.remainingDurationSpec(remaining)
+            },
             progressTextRes = progressText,
         )
     }

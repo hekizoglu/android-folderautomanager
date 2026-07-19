@@ -218,7 +218,11 @@ class MissionSummaryUseCase @Inject constructor(
         evaluation: MissionEvaluation,
         periodBoundary: PeriodBoundary,
     ): MissionOutcome {
-        val progress = MissionProgressCalculator.calculate(evaluation, MissionEngine.progressKindForMission(id))
+        val progress = MissionProgressCalculator.calculate(
+            evaluation,
+            MissionEngine.progressKindForMission(id),
+            countBased = id == MissionEngine.DAILY_UNLOCK_UNDER_30,
+        )
         val action = if (status == MissionStatus.DATA_UNAVAILABLE) {
             MissionAction.OpenSettingsUsageAccess
         } else {
