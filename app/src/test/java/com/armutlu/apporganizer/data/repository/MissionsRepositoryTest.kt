@@ -53,6 +53,12 @@ class MissionsRepositoryTest {
 
         override suspend fun countUnsettledBefore(beforeEpochMillis: Long): Int = 0
 
+        override suspend fun countSettledForDay(epochDay: Long): Int =
+            store.values.count { it.periodType == "daily" && it.periodStartEpoch == epochDay && it.status != "assigned" }
+
+        override suspend fun countCompletedForDay(epochDay: Long): Int =
+            store.values.count { it.periodType == "daily" && it.periodStartEpoch == epochDay && it.status == "completed" }
+
         override suspend fun clearAll() {
             store.clear()
         }

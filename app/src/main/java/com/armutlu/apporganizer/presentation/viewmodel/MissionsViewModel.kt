@@ -52,6 +52,12 @@ class MissionsViewModel @Inject constructor(
         // hedefi ne olursa olsun OpenSettingsUsageAccess'e dusurulur (asagida actionFor()).
         val action: MissionAction = MissionAction.None,
         val actionLabel: String? = null,
+        // Dongu G5 — bu refresh() cagrisinda COMPLETED'a YENI gecti mi (bir onceki durum
+        // COMPLETED degildi). MissionRow tek seferlik kutlama animasyonu/haptic icin kullanir;
+        // ayni gorev ikinci recomposition'da tekrar true GELMEZ (viewModel yalniz bu compute
+        // cagrisinin sonucunu tasir, kalici bir "gorulmedi" bayragi tutmaz — celeprasyon zaten
+        // LaunchedEffect(mission.id, justCompleted) ile bir kez tetiklenir).
+        val justCompleted: Boolean = false,
     ) {
         // M06'da status'e gore yeniden tasarlanana kadar UI kirilmasin diye korunur.
         val completed: Boolean get() = status == MissionStatus.COMPLETED
@@ -132,5 +138,6 @@ class MissionsViewModel @Inject constructor(
         deadlineText = deadlineText,
         action = action,
         actionLabel = actionLabel,
+        justCompleted = justCompleted,
     )
 }

@@ -180,6 +180,56 @@ object MissionPulseTickerFactory {
         )
     }
 
+    /** Sabah özeti öğesi de aynı gün içinde geçerli (bir sonraki gün yeni dünle yeniden üretilir). */
+    private const val MORNING_SUMMARY_ITEM_EXPIRY_MS = MS_PER_DAY
+
+    /**
+     * Dongu G5 — sabah özeti: "Dün 2/3 tamamladın · Serin N günde" (roadmap G5, satır 48).
+     * Push bildirimi YOK — yalnız şeride (ticker) düşen, günde BİR KEZ üretilen bir öğe.
+     *
+     * [yesterdayCompletedCount]/[yesterdayTotalCount] dünün GÜNLÜK görev instance'larının
+     * settlement SONUCU (bkz. MissionsRepository.getYesterdaySettlementCounts) — henüz hiç
+     * settled instance yoksa (gün henüz kapanmadı veya hiç görev atanmadı) totalCount 0 gelir
+     * ve öğe üretilmez (roadmap "veri yoksa üretme" ilkesiyle tutarlı, M08 ceza yok).
+     *
+     * [currentStreak] MissionStreakPrefs'ten güncel seri — 0 ise metne serİ eklenmez (roadmap
+     * "seri varsa göster", 0 gün gibi olumsuz bir sayı asla üretilmez, G4 ile aynı ilke).
+     *
+     * suggestionKey = "morning_summary_<epochDay>" — [todayEpochDay] bazlı, bu yüzden aynı gün
+     * içinde tekrar tekrar üretilse bile TickerRanker/SuggestionCoordinator dedupe eder (günde
+     * bir). Tip MISSION_ACHIEVEMENT (roadmap notu: "WEEKLY_REPORT veya MISSION_ACHIEVEMENT" —
+     * içerik görev sonucu olduğu için MISSION_ACHIEVEMENT seçildi, KEY_SMART_TICKER_MISSIONS
+     * toggle'ıyla aynı görünürlük grubuna girer).
+     */
+    fun morningSummaryCandidate(
+        yesterdayCompletedCount: Int,
+        yesterdayTotalCount: Int,
+        currentStreak: Int,
+        todayEpochDay: Long,
+        nowMillis: Long,
+    ): List<SmartTickerItem> {
+        if (yesterdayTotalCount <= 0) return emptyList()
+        val title = if (currentStreak >= 1) {
+            "☀️ Dün $yesterdayCompletedCount/$yesterdayTotalCount tamamladın · Serin $currentStreak günde"
+        } else {
+            "☀️ Dün $yesterdayCompletedCount/$yesterdayTotalCount tamamladın"
+        }
+        return listOf(
+            SmartTickerItem(
+                id = "morning_summary_$todayEpochDay",
+                type = SmartTickerType.MISSION_ACHIEVEMENT,
+                title = title,
+                subtitle = "Görevleri gör",
+                icon = "☀️",
+                priority = 40,
+                createdAt = nowMillis,
+                expiresAt = nowMillis + MORNING_SUMMARY_ITEM_EXPIRY_MS,
+                action = TickerAction.OpenMissions,
+                suggestionKey = "morning_summary_$todayEpochDay",
+            )
+        )
+    }
+
     /**
      * Roadmap örneği: "⏳ Ekran süresi hedefinde yalnız 12 dk kaldı" — [HomeMissionSummary]
      * ham dakika taşımadığı için mevcut çözülmüş metinlerden ([primaryCurrentText]/

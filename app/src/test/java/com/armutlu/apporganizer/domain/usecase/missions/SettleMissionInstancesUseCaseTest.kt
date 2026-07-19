@@ -137,6 +137,18 @@ class SettleMissionInstancesUseCaseTest {
         override suspend fun countUnsettledBefore(beforeEpochMillis: Long): Int =
             getUnsettledBefore(beforeEpochMillis).size
 
+        override suspend fun countSettledForDay(epochDay: Long): Int =
+            store.values.count {
+                it.periodType == MissionInstanceEntity.PERIOD_DAILY && it.periodStartEpoch == epochDay &&
+                    it.status != MissionInstanceEntity.STATUS_ASSIGNED
+            }
+
+        override suspend fun countCompletedForDay(epochDay: Long): Int =
+            store.values.count {
+                it.periodType == MissionInstanceEntity.PERIOD_DAILY && it.periodStartEpoch == epochDay &&
+                    it.status == MissionInstanceEntity.STATUS_COMPLETED
+            }
+
         override suspend fun clearAll() {
             store.clear()
         }

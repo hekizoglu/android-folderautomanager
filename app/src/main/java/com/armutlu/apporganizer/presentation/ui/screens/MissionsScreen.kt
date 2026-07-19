@@ -96,6 +96,7 @@ fun MissionsScreen(
                     MissionRow(
                         mission = mission,
                         onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
+                        justCompleted = mission.justCompleted,
                     )
                 }
                 if (uiState.daily.isEmpty() && !uiState.loading) {
@@ -116,6 +117,7 @@ fun MissionsScreen(
                     MissionRow(
                         mission = mission,
                         onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
+                        justCompleted = mission.justCompleted,
                     )
                 }
             }

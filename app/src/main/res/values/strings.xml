@@ -626,6 +626,13 @@
     <string name="missions_mark_done">Tamamladım</string>
     <string name="missions_congrats">Tebrikler! +%1$d ⭐</string>
     <string name="missions_empty">Görevler hazırlanıyor…</string>
+    <!-- Dongu G5: Kutlama & Mikro-etkileşim -->
+    <string name="mission_row_completed_content_description">%1$s tamamlandı, +%2$d ⭐</string>
+    <string name="missions_all_completed_today">Bugünü topladın ⭐⭐⭐</string>
+    <string name="missions_settings_celebrations_title">Kutlama ve mikro-etkileşim</string>
+    <string name="missions_settings_celebrations_subtitle">Görev tamamlanma animasyonu, 3/3 günü parıltısı ve sabah özeti</string>
+    <string name="ticker_morning_summary_with_streak">Dün %1$d/%2$d tamamladın · Serin %3$d günde</string>
+    <string name="ticker_morning_summary_no_streak">Dün %1$d/%2$d tamamladın</string>
     <!-- Dongu M05: gorev satirindaki eylem butonu etiketleri -->
     <string name="mission_action_review">İncele</string>
     <string name="mission_action_open_report">Raporu Aç</string>

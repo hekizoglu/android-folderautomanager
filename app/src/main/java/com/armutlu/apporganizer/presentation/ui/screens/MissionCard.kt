@@ -1,5 +1,9 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.animation.ValueAnimator
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
@@ -24,11 +29,18 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -42,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.presentation.viewmodel.MissionsViewModel
+import com.armutlu.apporganizer.utils.AppPrefs
 
 /**
  * Gorev satiri (Dongu M06 — ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
@@ -60,15 +73,48 @@ import com.armutlu.apporganizer.presentation.viewmodel.MissionsViewModel
  * Eski TextButton yerini kucuk bir chevron ikonu alir (M06 gorsel dilini sadelestirir,
  * cift dokunma alani olusturmaz). Satir role=Button + P19 pattern'i ile
  * ".. Acmak icin dokun." son eki tasir.
+ *
+ * Dongu G5 — Kutlama & Mikro-etkilesim: [justCompleted] true geldiginde (gorev bu refresh'te
+ * COMPLETED'a YENI gecti — MissionsViewModel.computeAndAward zaten bu bilgiyi tek seferlik
+ * uretir, MissionRow ikinci bir "daha once goruldu mu" kontrolu YAPMAZ, cagiran taraf sorumlu)
+ * tek seferlik olcek+parilti animasyonu + kisa haptic tetiklenir. AppPrefs.isMissionCelebrationsEnabled
+ * kapaliysa hicbir sey olmaz (M08 "asiri odul" degil, sade "goster/gosterme" toggle'i).
+ * Reduced-motion (ValueAnimator.areAnimatorsEnabled() false) acikken animasyon ATLANIR — sadece
+ * haptic + kisa renk vurgusu (arka plan alfa) kalir, HomePagerHost/FolderScreen ile ayni desen.
  */
 @Composable
 internal fun MissionRow(
     mission: MissionsViewModel.MissionUi,
     onActionClick: () -> Unit,
+    justCompleted: Boolean = false,
 ) {
     val statusMeta = mission.status.toStatusMeta()
     val isActionable = !mission.completed && mission.actionLabel != null
     val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
+
+    val celebrationsEnabled = remember { AppPrefs.isMissionCelebrationsEnabled(context) }
+    val reduceMotionEnabled = remember { !ValueAnimator.areAnimatorsEnabled() }
+    val celebrationScale = remember { Animatable(1f) }
+    var celebrationHighlightAlpha by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(mission.id, justCompleted) {
+        if (!justCompleted || !celebrationsEnabled) return@LaunchedEffect
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (reduceMotionEnabled) {
+            // Animasyon atlanir — sadece kisa renk vurgusu (haptic yukarida zaten tetiklendi).
+            celebrationHighlightAlpha = 0.35f
+            kotlinx.coroutines.delay(500)
+            celebrationHighlightAlpha = 0f
+        } else {
+            celebrationHighlightAlpha = 0.35f
+            celebrationScale.snapTo(1f)
+            celebrationScale.animateTo(1.06f, tween(180))
+            celebrationScale.animateTo(1f, tween(220))
+            celebrationHighlightAlpha = 0f
+        }
+    }
+
     val rowModifier = if (isActionable) {
         val tapHint = stringResource(R.string.mission_row_tap_hint, mission.title)
         Modifier
@@ -88,7 +134,12 @@ internal fun MissionRow(
             .padding(horizontal = 16.dp, vertical = 12.dp)
     }
     Row(
-        modifier = rowModifier,
+        modifier = rowModifier
+            .scale(celebrationScale.value)
+            .background(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = celebrationHighlightAlpha),
+                shape = RoundedCornerShape(12.dp),
+            ),
         verticalAlignment = Alignment.Top,
     ) {
         Icon(

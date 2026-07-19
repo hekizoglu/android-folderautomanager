@@ -5,6 +5,7 @@ import android.os.Environment
 import android.os.StatFs
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.common.valueOrNull
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
@@ -15,6 +16,7 @@ import com.armutlu.apporganizer.utils.AppSnapshot
 import com.armutlu.apporganizer.utils.FolderSnapshot
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.InsightSnapshot
+import com.armutlu.apporganizer.utils.MissionStreakPrefs
 import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
 import com.armutlu.apporganizer.utils.SuggestionCandidate
 import com.armutlu.apporganizer.utils.SuggestionChannel
@@ -22,6 +24,7 @@ import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.TickerComposer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,6 +64,7 @@ class RealSmartTickerSource @Inject constructor(
     private val missionRuntimeRepository: MissionRuntimeRepository,
     private val digitalPulseRepository: DigitalPulseRepository,
     private val notificationEventDao: NotificationEventDao,
+    private val missionsRepository: MissionsRepository,
 ) : SmartTickerEngine {
 
     private val _state = MutableStateFlow(TickerSourceState())
@@ -139,6 +143,26 @@ class RealSmartTickerSource @Inject constructor(
                 nowMillis = nowMillis,
             )
 
+            // Döngü G5 — sabah özeti: dünün settlement sonucu (mission_instances) + güncel seri.
+            // Kutlama ayarı kapalıysa (KEY_MISSION_CELEBRATIONS) hiç üretilmez (plan G5 kısıtı —
+            // tüm mikro-etkileşimler tek toggle ile kapanır). Push bildirimi YOK, sadece şerit.
+            val morningItems = if (AppPrefs.isMissionCelebrationsEnabled(context)) {
+                runCatching {
+                    val todayEpochDay = LocalDate.now().toEpochDay()
+                    val yesterdayEpochDay = todayEpochDay - 1
+                    val (completed, total) = missionsRepository.getYesterdaySettlementCounts(yesterdayEpochDay)
+                    MissionPulseTickerFactory.morningSummaryCandidate(
+                        yesterdayCompletedCount = completed,
+                        yesterdayTotalCount = total,
+                        currentStreak = MissionStreakPrefs.read(context).currentStreak,
+                        todayEpochDay = todayEpochDay,
+                        nowMillis = nowMillis,
+                    )
+                }.getOrDefault(emptyList())
+            } else {
+                emptyList()
+            }
+
             // Döngü G8 — Cihaz Düzeni İçgörüleri. Toggle kapalıyken hiçbir tidiness öğesi
             // üretilmez (plan G8 kısıtı). DeviceTidinessInsights saf Kotlin — bu sınıf
             // Android/DB kaynaklarını (StatFs, apps, NotificationEventDao) okuyup besler.
@@ -148,7 +172,7 @@ class RealSmartTickerSource @Inject constructor(
                 emptyList()
             }
 
-            val allCandidates = composed + missionItems + pulseItems + streakItems + tidinessItems
+            val allCandidates = composed + missionItems + pulseItems + streakItems + morningItems + tidinessItems
 
             // Döngü T02: en fazla 3 yüksek değerli öğe + tekrar/suistimal önleme (roadmap 2.7).
             // Suppression mevcut SuggestionCoordinator/SharedPrefsSuggestionHistoryStore üzerinden

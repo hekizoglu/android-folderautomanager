@@ -200,4 +200,16 @@ class MissionsRepository @Inject constructor(
      */
     suspend fun getInstancesForPeriod(periodType: String, periodStartEpoch: Long): List<MissionInstanceEntity> =
         missionInstanceDao.getInstancesForPeriod(periodType, periodStartEpoch)
+
+    /**
+     * Döngü G5 — sabah özeti için dünün settlement sonucu: (tamamlanan, settled-toplam).
+     * Hiç settled instance yoksa (0, 0) döner — çağıran taraf bunu "veri yok" olarak yorumlar
+     * (bkz. MissionPulseTickerFactory.morningSummaryCandidate, totalCount == 0 -> öğe üretilmez).
+     */
+    suspend fun getYesterdaySettlementCounts(yesterdayEpochDay: Long): Pair<Int, Int> {
+        val total = missionInstanceDao.countSettledForDay(yesterdayEpochDay)
+        if (total == 0) return 0 to 0
+        val completed = missionInstanceDao.countCompletedForDay(yesterdayEpochDay)
+        return completed to total
+    }
 }

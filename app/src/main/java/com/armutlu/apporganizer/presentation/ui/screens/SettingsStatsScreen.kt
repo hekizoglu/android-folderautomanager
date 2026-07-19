@@ -192,6 +192,25 @@ fun SettingsStatsScreen(
                         subtitle = stringResource(R.string.missions_settings_open_subtitle),
                         onClick = onNavigateToMissions,
                     )
+                    // Dongu G5 — Kutlama & Mikro-etkilesim: gorev sistemi kapaliyken bu toggle
+                    // zaten anlamsiz (gorevler hic gorunmuyor), bu yuzden SADECE missionsEnabled
+                    // acikken gosterilir.
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    var celebrationsEnabled by rememberBooleanPreferenceState(
+                        context = context,
+                        key = AppPrefs.KEY_MISSION_CELEBRATIONS,
+                        read = { AppPrefs.isMissionCelebrationsEnabled(context) }
+                    )
+                    SettingsSwitchRow(
+                        icon = Icons.Default.AutoAwesome,
+                        title = stringResource(R.string.missions_settings_celebrations_title),
+                        subtitle = stringResource(R.string.missions_settings_celebrations_subtitle),
+                        checked = celebrationsEnabled,
+                        onCheckedChange = {
+                            celebrationsEnabled = it
+                            AppPrefs.setMissionCelebrationsEnabled(context, it)
+                        },
+                    )
                 }
             }
         }

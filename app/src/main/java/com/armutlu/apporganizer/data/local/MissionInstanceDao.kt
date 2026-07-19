@@ -63,6 +63,29 @@ interface MissionInstanceDao {
     )
     suspend fun countUnsettledBefore(beforeEpochMillis: Long): Int
 
+    /**
+     * Döngü G5 — sabah özeti ("Dün 2/3 tamamladın"): dünün GÜNLÜK instance'larından settled
+     * (completed/failed/data_unavailable — status != 'assigned') olanların toplam sayısı.
+     * Henüz settle edilmemiş ('assigned' kalan) instance'lar sayılmaz — gün henüz kapanmamış
+     * demektir, sabah özeti üretilmemeli (bkz. MissionPulseTickerFactory.morningSummaryCandidate).
+     */
+    @Query(
+        """
+        SELECT COUNT(*) FROM mission_instances
+        WHERE periodType = 'daily' AND periodStartEpoch = :epochDay AND status != 'assigned'
+        """
+    )
+    suspend fun countSettledForDay(epochDay: Long): Int
+
+    /** Aynı gün için, settled olanlar arasında COMPLETED olanların sayısı. */
+    @Query(
+        """
+        SELECT COUNT(*) FROM mission_instances
+        WHERE periodType = 'daily' AND periodStartEpoch = :epochDay AND status = 'completed'
+        """
+    )
+    suspend fun countCompletedForDay(epochDay: Long): Int
+
     @Query("DELETE FROM mission_instances")
     suspend fun clearAll()
 }

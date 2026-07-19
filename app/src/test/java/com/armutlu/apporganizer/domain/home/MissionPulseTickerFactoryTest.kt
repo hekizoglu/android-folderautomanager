@@ -280,6 +280,82 @@ class MissionPulseTickerFactoryTest {
         }
     }
 
+    // ---- Sabah özeti (Döngü G5) ----
+
+    @Test
+    fun `morning summary with no yesterday data produces no item`() {
+        val result = MissionPulseTickerFactory.morningSummaryCandidate(
+            yesterdayCompletedCount = 0,
+            yesterdayTotalCount = 0,
+            currentStreak = 0,
+            todayEpochDay = 100L,
+            nowMillis = fixedNow,
+        )
+
+        assertTrue("Dün hiç settled instance yoksa öğe üretilmemeli", result.isEmpty())
+    }
+
+    @Test
+    fun `morning summary with yesterday data and no streak produces item without streak text`() {
+        val result = MissionPulseTickerFactory.morningSummaryCandidate(
+            yesterdayCompletedCount = 2,
+            yesterdayTotalCount = 3,
+            currentStreak = 0,
+            todayEpochDay = 100L,
+            nowMillis = fixedNow,
+        )
+
+        assertEquals(1, result.size)
+        val item = result.single()
+        assertEquals(SmartTickerType.MISSION_ACHIEVEMENT, item.type)
+        assertEquals(TickerAction.OpenMissions, item.action)
+        assertTrue(item.title.contains("2/3"))
+        assertTrue("Seri 0 iken 'Seri' metni asla eklenmemeli", !item.title.contains("Serin"))
+    }
+
+    @Test
+    fun `morning summary with an active streak includes the streak count`() {
+        val result = MissionPulseTickerFactory.morningSummaryCandidate(
+            yesterdayCompletedCount = 3,
+            yesterdayTotalCount = 3,
+            currentStreak = 5,
+            todayEpochDay = 100L,
+            nowMillis = fixedNow,
+        )
+
+        val item = result.single()
+        assertTrue(item.title.contains("3/3"))
+        assertTrue(item.title.contains("5"))
+    }
+
+    @Test
+    fun `morning summary suggestionKey is scoped to the day, once per day`() {
+        val day1 = MissionPulseTickerFactory.morningSummaryCandidate(
+            yesterdayCompletedCount = 1,
+            yesterdayTotalCount = 3,
+            currentStreak = 1,
+            todayEpochDay = 100L,
+            nowMillis = fixedNow,
+        ).single()
+        val day1Again = MissionPulseTickerFactory.morningSummaryCandidate(
+            yesterdayCompletedCount = 1,
+            yesterdayTotalCount = 3,
+            currentStreak = 1,
+            todayEpochDay = 100L,
+            nowMillis = fixedNow + 1000,
+        ).single()
+        val day2 = MissionPulseTickerFactory.morningSummaryCandidate(
+            yesterdayCompletedCount = 1,
+            yesterdayTotalCount = 3,
+            currentStreak = 1,
+            todayEpochDay = 101L,
+            nowMillis = fixedNow,
+        ).single()
+
+        assertEquals("Aynı gün içinde tekrar üretim aynı suggestionKey'i döndürmeli", day1.suggestionKey, day1Again.suggestionKey)
+        assertTrue("Farklı gün farklı suggestionKey üretmeli", day1.suggestionKey != day2.suggestionKey)
+    }
+
     // ---- Ranker entegrasyonu ile toplam üst sınır ----
 
     @Test

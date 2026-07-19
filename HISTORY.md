@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## G5 - 2026-07-19 - Kutlama & mikro-etkilesim
+
+**Yapilanlar:** Tamamlanma aninda MissionRow scale+glow animasyonu + haptic (kutuphanesiz Animatable; reduced-motion'da haptic+renk); 3/3 gununde HomeMissionCard parilti + "Bugunu topladin ⭐⭐⭐" (gun basina bir kez, AppPrefs bayragi); sabah ozeti ticker'da "Dun 2/3 · Serin N gunde" (morning_summary_<epochDay> gunde bir, veri yoksa uretilmez); KEY_MISSION_CELEBRATIONS toggle (kapaliyken tumu sessiz). TR/EN tam. 212 test 0 hata.
+
+**Bug:** Yok. Onceki deneme kota kesintisiyle bos dustu — attempt 2 temiz tamamladi.
+
+**Sonraki:** G3b — uygulama-spesifik gorevler (12. dongu, APK'li).
+
 ## G3a - 2026-07-19 - Cekirdek yeni gorev tipleri + agirlikli secim
 
 **Yapilanlar:** 5 yeni gorev: ORGANIZE_UNCATEGORIZED (2 kategorisiz yerlestir), CUSTOMIZE_FOLDER (emoji/renk — yeni FolderCustomized eventi), MORNING_CALM (sabah sosyal medya acmama — yeni AVOID_BEFORE_TIME kind, kategori bazli/isimsiz), FOCUS_SESSION (30dk odak — AppPrefs sure sayaci), DISCOVER_WEEKLY (haftalik rapor kesfi). Agirlikli deterministik secim: zayif alan (PulseScoreReason) 2x + her gun >=1 kacinma + >=1 eylem garantisi. Havuz 7->12. Tum when eslemeleri dogrulandi; istatistiksel secim testi (300 gun) dahil tam suite yesil.

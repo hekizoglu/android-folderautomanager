@@ -708,6 +708,26 @@ object AppPrefs {
     fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)
     fun setMissionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSIONS_ENABLED, v).apply()
 
+    // Dongu G5 — Kutlama & Mikro-etkilesim (GOREV_SISTEMI_AKILLI_GELISTIRME_PLANI.md G5).
+    // Kapaliyken: tamamlanma animasyonu, 3/3 gunu parilti VE sabah ozeti sirit ogesi TAMAMEN
+    // kapanir (haptic de dahil — kullanici tum mikro-etkilesimi istemiyorsa hicbiri kalmaz).
+    const val KEY_MISSION_CELEBRATIONS = "mission_celebrations_enabled"
+    fun isMissionCelebrationsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSION_CELEBRATIONS, true)
+    fun setMissionCelebrationsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSION_CELEBRATIONS, v).apply()
+
+    // Gun basina bir kez "3/3 gunu" parilti + "Bugunu topladin" mesaji gostermek icin bayrak —
+    // epochDay saklanir, ayni gun tekrar tetiklenmez (HomeMissionCard, G5).
+    private const val KEY_MISSION_ALL_COMPLETED_CELEBRATED_EPOCH_DAY = "mission_all_completed_celebrated_epoch_day"
+    private const val NO_EPOCH_DAY = -1L
+
+    /** [epochDay] icin 3/3 kutlamasi daha once gosterildi mi. */
+    fun wasAllCompletedCelebrated(context: Context, epochDay: Long): Boolean =
+        prefs(context).getLong(KEY_MISSION_ALL_COMPLETED_CELEBRATED_EPOCH_DAY, NO_EPOCH_DAY) == epochDay
+
+    /** [epochDay] icin 3/3 kutlamasi gosterildi olarak isaretle (idempotent — ayni gun tekrar yazilabilir). */
+    fun markAllCompletedCelebrated(context: Context, epochDay: Long) =
+        prefs(context).edit().putLong(KEY_MISSION_ALL_COMPLETED_CELEBRATED_EPOCH_DAY, epochDay).apply()
+
     // "Bugun Yuklenenler" — ana ekran kompakt girisi + cekmece bolumu (EX01, kullanici talebi)
     const val KEY_RECENT_INSTALLS_ENABLED = "recent_installs_enabled"
     fun isRecentInstallsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_INSTALLS_ENABLED, true)

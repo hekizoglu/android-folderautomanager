@@ -42,11 +42,7 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 
 > ✅ **G4 tamamlandı (2026-07-19)** - HISTORY.md'de.
 
-### G5 - Kutlama & Mikro-etkileşim
-- Görev tamamlanma ANI: satırda tek seferlik yıldız patlaması animasyonu + kısa haptic (reduced-motion'da sadece haptic + renk).
-- 3/3 günü: HomeMissionCard'da konfeti benzeri hafif parıltı + "Bugünü topladın ⭐⭐⭐".
-- Dönem sonu (settlement worker zaten gece çalışıyor): sabah ilk açılışta tek satırlık özet - "Dün 2/3 tamamladın, serin 5 günde" (ticker WEEKLY_REPORT tipi; ayrı bildirim İSTEĞE BAĞLI, varsayılan kapalı).
-- Tümü KEY_ ile kapatılabilir (CLAUDE.md ayar kuralı).
+> ✅ **G5 tamamlandı (2026-07-19)** — HISTORY.md'de.
 
 ### G6 - Yıldız Ekonomisi (ödül döngüsünü kapat)
 - **Seviye:** Toplam ⭐ → seviye adları ("Çaylak → Düzenli → Odaklı → Denge Ustası" - nötr, yargısız dil). Görevler ekranı başlığında rozet.
@@ -66,12 +62,12 @@ Havuzu 7'den ~18'e çıkar; günlük 3'lü seçim **ağırlıklı** olur (kullan
 | ~~G2~~ | ✅ Tamamlandı 2026-07-19 | 18 | HISTORY'de |
 | G3 | Görev çeşitliliği (18 görev + ağırlıklı seçim) | **17** (5+4+4+4) | En büyük içerik işi; 2 döngüye bölünebilir (G3a çekirdek tipler, G3b uygulama-spesifik) |
 | ~~G4~~ | ✅ Tamamlandı 2026-07-19 | 17 | HISTORY'de |
-| G5 | Kutlama | **15** (4+4+4+3) | G4 ile birlikte anlamlı |
+| ~~G5~~ | ✅ Tamamlandı 2026-07-19 | 15 | HISTORY'de |
 | G6 | Yıldız ekonomisi | **14** (4+3+4+3) | Kozmetik varlık üretimi gerektirir - sona |
 | ~~G7~~ | ✅ Tamamlandı 2026-07-19 (G1'e iliştirildi) | 13 | HISTORY'de |
 | ~~G8~~ | ✅ Tamamlandı 2026-07-19 | 16 | HISTORY'de |
 
-**Kalan uygulama sırası:** G3a → G5 → G3b → G6
+**Kalan uygulama sırası:** G3b → G6
 Toplam tahmin: 7-8 döngü. Her döngü tek commit, kademeli doğrulama, ara APK yok (kullanıcı kuralı).
 
 ## 4. Kırmızı Çizgiler (mevcut ilkeler korunur)

@@ -51,6 +51,11 @@ class MissionSummaryUseCase @Inject constructor(
         val deadlineText: String?,
         val action: MissionAction,
         val actionLabel: String?,
+        // Dongu G5 — bu compute() cagrisinda COMPLETED'a YENI gecti mi (kutlama animasyonu
+        // tetikleyicisi). awardStars=false cagrilarinda (Ana ekran karti, sessiz refresh) da
+        // dolu gelir ama MissionsViewModel SADECE awardStars=true ile calisir — pratikte bu
+        // alan yalniz kullanicinin Gorevler ekranini actigi an anlamlidir.
+        val justCompleted: Boolean = false,
     )
 
     data class Result(
@@ -179,7 +184,7 @@ class MissionSummaryUseCase @Inject constructor(
                 runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
                     .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
-            mission.toOutcome(status, evaluation, dayBoundary)
+            mission.toOutcome(status, evaluation, dayBoundary, justCompleted = justCompleted)
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
@@ -217,7 +222,7 @@ class MissionSummaryUseCase @Inject constructor(
                 runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
                     .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
-            mission.toOutcome(status, evaluation, weekBoundary)
+            mission.toOutcome(status, evaluation, weekBoundary, justCompleted = justCompleted)
         }
 
         return Result(
@@ -233,6 +238,7 @@ class MissionSummaryUseCase @Inject constructor(
         status: MissionStatus,
         evaluation: MissionEvaluation,
         periodBoundary: PeriodBoundary,
+        justCompleted: Boolean = false,
     ): MissionOutcome {
         val progress = MissionProgressCalculator.calculate(
             evaluation,
@@ -257,6 +263,7 @@ class MissionSummaryUseCase @Inject constructor(
             deadlineText = deadlineTextFor(status, periodBoundary, type),
             action = action,
             actionLabel = actionLabelRes(action)?.let { context.getString(it) },
+            justCompleted = justCompleted,
         )
     }
 
