@@ -271,14 +271,32 @@ internal fun SmartDashboardPage(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 6.dp)
                             )
-                            HomeSectionId.ANDROID_WIDGETS -> WidgetArea(
-                                widgetIds = state.secondarySections.widgetIds,
-                                onRemoveWidget = actions.onRemoveWidget,
-                                onReorderWidgets = actions.onReorderWidgets,
-                                autoResize = state.secondarySections.widgetAutoResize,
-                                screenHeightDp = state.secondarySections.screenHeightDp,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            HomeSectionId.ANDROID_WIDGETS -> {
+                                // Faz S3 — deneysel, varsayılan KAPALI (widgetFreeGridEnabled).
+                                // Kapalıyken WidgetArea'nın mevcut 1D dikey reorder davranışı
+                                // birebir korunur; açıkken serbest 2D yerleşime (WidgetFreeGrid)
+                                // geçilir. WidgetArea.kt hiç değiştirilmedi.
+                                if (state.secondarySections.widgetFreeGridEnabled) {
+                                    WidgetFreeGrid(
+                                        widgetIds = state.secondarySections.widgetIds,
+                                        onRemoveWidget = actions.onRemoveWidget,
+                                        onReorderWidgets = actions.onReorderWidgets,
+                                        autoResize = state.secondarySections.widgetAutoResize,
+                                        screenHeightDp = state.secondarySections.screenHeightDp,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onDragActiveChange = actions.onWidgetDragActiveChange,
+                                    )
+                                } else {
+                                    WidgetArea(
+                                        widgetIds = state.secondarySections.widgetIds,
+                                        onRemoveWidget = actions.onRemoveWidget,
+                                        onReorderWidgets = actions.onReorderWidgets,
+                                        autoResize = state.secondarySections.widgetAutoResize,
+                                        screenHeightDp = state.secondarySections.screenHeightDp,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
                             else -> Unit
                         }
                     }

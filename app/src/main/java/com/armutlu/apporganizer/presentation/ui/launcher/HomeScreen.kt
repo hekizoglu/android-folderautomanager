@@ -198,6 +198,8 @@ fun HomeScreen(
     var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var pixelLookEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)) }
+    // Faz S3 — deneysel, varsayılan KAPALI. Açıkken Dashboard widget alanı WidgetFreeGrid'e döner.
+    var widgetFreeGridEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetFreeGridEnabled(context)) }
     var folderGlassBorderEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderGlassBorderEnabled(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
@@ -228,6 +230,8 @@ fun HomeScreen(
             when (key) {
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED ->
                     pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_WIDGET_FREE_GRID_ENABLED ->
+                    widgetFreeGridEnabled = com.armutlu.apporganizer.utils.AppPrefs.isWidgetFreeGridEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_GLASS_BORDER_ENABLED ->
                     folderGlassBorderEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderGlassBorderEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_TYPE ->
@@ -424,6 +428,9 @@ fun HomeScreen(
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
     var dragToIndex   by remember { mutableStateOf<Int?>(null) }
     var draggingFolders by remember { mutableStateOf<List<AppFolder>?>(null) }
+    // Faz S3 — WidgetFreeGrid kendi serbest sürüklemesi aktifken de kök jestler (pager scroll vb.)
+    // klasör reorder'ıyla aynı şekilde kilitlenmeli (aşağıdaki `reorderActive` hesabına OR'lanır).
+    var widgetDragActive by remember { mutableStateOf(false) }
     // Kümülatif drag offset — change.position tile-local, dragAmount ekran-delta verir
     var dragOffsetX by remember { mutableStateOf(0f) }
     var dragOffsetY by remember { mutableStateOf(0f) }
@@ -1291,7 +1298,7 @@ fun HomeScreen(
             // sadece "bu üçünden biri açıkken pager kilitlenir" kuralı tek çekirdekte yaşar.
             val searchActive = fullScreenSearchOpen ||
                 (homeSearchEnabled && folderSearchQuery.isNotEmpty())
-            val reorderActive = dragFromIndex != null
+            val reorderActive = dragFromIndex != null || widgetDragActive
             val modalOpen = dockEditOpen || homeLongPressOpen || folderContextMenu != null ||
                 contextMenuPkg != null || categoryPickerApp != null
             val pagerScrollEnabled = HomeGestureArbiter.isHorizontalPagerScrollEnabled(
@@ -1344,6 +1351,7 @@ fun HomeScreen(
                                 widgetIds = widgetIds,
                                 widgetAutoResize = widgetAutoResize,
                                 screenHeightDp = LocalConfiguration.current.screenHeightDp,
+                                widgetFreeGridEnabled = widgetFreeGridEnabled,
                             ),
                             insights = DashboardInsightsState(
                                 assistantCardsEnabled = assistantCardsEnabled,
@@ -1428,6 +1436,7 @@ fun HomeScreen(
                             },
                             onRemoveWidget = { id -> viewModel.removeWidgetId(context, id) },
                             onReorderWidgets = { newOrder -> viewModel.reorderWidgets(context, newOrder) },
+                            onWidgetDragActiveChange = { active -> widgetDragActive = active },
                             onInsightCardClick = { card ->
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 when {

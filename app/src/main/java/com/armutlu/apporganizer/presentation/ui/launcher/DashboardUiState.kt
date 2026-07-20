@@ -45,6 +45,9 @@ data class DashboardSecondarySectionsState(
     val widgetIds: List<Int>,
     val widgetAutoResize: Boolean,
     val screenHeightDp: Int,
+    // Faz S3 — deneysel, varsayılan KAPALI (AppPrefs.KEY_WIDGET_FREE_GRID_ENABLED). Açıkken
+    // WidgetArea yerine WidgetFreeGrid (serbest 2D yerleşim) çizilir.
+    val widgetFreeGridEnabled: Boolean = false,
 )
 
 data class DashboardInsightsState(
@@ -110,6 +113,10 @@ data class DashboardActions(
     val onOpenRecentInstalls: () -> Unit,
     val onRemoveWidget: (Int) -> Unit,
     val onReorderWidgets: (List<Int>) -> Unit,
+    // Faz S3 — WidgetFreeGrid aktif sürüklemesini kök jest arbitrajına (HomeScreen.kt
+    // `reorderActive`) yansıtmak için kullanılır; WidgetArea'nın kendi reorder'ı bu callback'i
+    // tetiklemez (yalnızca WidgetFreeGrid kullanır), varsayılan no-op.
+    val onWidgetDragActiveChange: (Boolean) -> Unit = {},
     val onInsightCardClick: (InsightCard) -> Unit,
     val onOpenDashboardShortcut: () -> Unit,
     val onTickerMute: (Long) -> Unit,

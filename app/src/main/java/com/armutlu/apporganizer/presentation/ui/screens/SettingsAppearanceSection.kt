@@ -585,4 +585,21 @@ fun SettingsAppearanceSection(
             }
         )
     }
+
+    // ── Widget Alanında Serbest Yerleşim (Faz S3, deneysel) ─────────────────
+    // FolderFreeGrid (S2) ile aynı desen: Dashboard widget alanı 1D dikey listeden 2D serbest
+    // yerleşime döner. Varsayılan KAPALI (CLAUDE.md "Yeni Özellik = Ayarlar Kuralı").
+    var widgetFreeGridEnabled by remember { mutableStateOf(AppPrefs.isWidgetFreeGridEnabled(context)) }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.Extension,
+            title = "Widget Alanında Serbest Yerleşim (Deneysel)",
+            subtitle = "Ana ekrandaki widget'ları istediğin konuma sürükleyip bırak",
+            checked = widgetFreeGridEnabled,
+            onCheckedChange = {
+                widgetFreeGridEnabled = it
+                AppPrefs.setWidgetFreeGridEnabled(context, it)
+            }
+        )
+    }
 }
