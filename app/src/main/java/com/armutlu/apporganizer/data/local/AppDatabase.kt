@@ -269,19 +269,19 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS ticker_history (
-                        id TEXT NOT NULL PRIMARY KEY,
+                        id TEXT NOT NULL,
                         type TEXT NOT NULL,
                         title TEXT NOT NULL,
                         subtitle TEXT,
                         icon TEXT NOT NULL,
                         createdAt INTEGER NOT NULL,
-                        isRead INTEGER NOT NULL DEFAULT 0,
+                        isRead INTEGER NOT NULL,
                         actionType TEXT NOT NULL,
-                        sensitive INTEGER NOT NULL DEFAULT 0
+                        sensitive INTEGER NOT NULL,
+                        PRIMARY KEY(id)
                     )
                     """
                 )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_ticker_history_createdAt ON ticker_history(createdAt)")
             }
         }
 

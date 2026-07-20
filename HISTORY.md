@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX08 - 2026-07-20 - HOTFIX: MIGRATION_19_20 crash (ticker_history schema mismatch)
+
+**Yapilanlar:** v1.4.9 (132) kullanicida "Failed to load apps: Migration didn't properly handle: ticker_history" crash'i verdi. Kok neden: migration SQL'i elle DEFAULT 0 ve PRIMARY KEY inline yaziyordu, Room'un entity'den uretecegi gercek CREATE TABLE ile (defaultValue='undefined', PRIMARY KEY(id) ayri clause) birebir eslesmedi — Room migration sonrasi şema doğrulamasında bunu hata sayiyor. Ayrica migration'da elle eklenen index_ticker_history_createdAt entity'de tanimli degildi (schemas/20.json indices:[] onayladi), o da kaldirildi. AppDatabase.kt:267-284 MIGRATION_19_20 duzeltildi (schemas/20.json createSql ile birebir), assembleDebug yesil. v1.4.10 (133).
+
+**Bug:** Yukarida — kullanici raporu (ekran goruntusu, "Hata olustu" ekrani).
+
+**Sonraki:** Huseyin cihazinda v1.4.10 kurup migration'in temiz calistigini (v19 DB'den v20'ye) dogrulamali.
+
 ## EX07 - 2026-07-20 - Haber seridi arsivi: okundu/okunmadi liste ekrani + 7 gun otomatik silme
 
 **Yapilanlar:** Ana ekran haber seridi (ticker) her acilista CANLI URETILIYORDU, hicbir kalicilik yoktu — "okundu/okunmadi" ve "7 gun sonra sil" istegi icin once bu bosluk kapatildi. Yeni Room tablosu ticker_history (v19->v20 migration) + TickerHistoryDao (insertAll IGNORE ile dedupe, observeAll, markRead/markAllRead, deleteOlderThan, countUnread). SmartTickerItem->Entity donusumu (TickerHistoryMapper) + TickerAction<->wire-string encode/decode (TickerActionCodec, saf fonksiyon, 12 round-trip testi) — LauncherViewModel yeni ticker item'lari arka planda insertAll ile arsivliyor, CANLI ROTASYON/DISMISS/MUTE DAVRANISI DEGISMEDI. Yeni TickerHistoryScreen (mail kutusu listesi, hassas satirlar mevcut isTickerSensitiveVisible tercihine uyuyor) + ViewModel, Routes.TICKER_HISTORY (hassas degil, kilit guard'i yok). HomeTickerRow menusune "Tum haberler" girisi eklendi. Gunluk TickerHistoryCleanupWorker (7 gun retention, KEEP policy). TR+EN string'ler. Bonus: Routes.fromTickerRoute merkezi fonksiyonu ROUTE_MISSIONS'daki onceden var olan bir esleme bosluguni da kapatti. Tam test + compile yesil. v1.4.9 (132).
