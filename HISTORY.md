@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX09 - 2026-07-20 - Widget deposu dogrulandi + klasor alt navigator sessize alma
+
+**Yapilanlar:** (1) Widget desteği araştirildi: `WidgetHostManager`+`WidgetArea`+sistem `ACTION_APPWIDGET_PICK` seçicisi zaten tam çalışıyor — cihazda kurulu her widget sağlayıcı (Google Arama/Bir Bakışta, hava durumu, saat vb.) uzun basıp "Widget Ekle" ile seçilebiliyor, dikey listede sürükleyerek sıralanabiliyor; Ayarlar > Görünüm'de zaten aç/kapa toggle'ı var — kod değişikliği gerekmedi, kullanıcı onayıyla serbest 2D sürükleme kapsam dışı bırakıldı. (2) Klasör içi alt navigasyon çubuğu (önceki/sonraki klasör cipsi, `FolderIndexNavigator`) artık uzun basılınca menü açıyor: "Sessize Al (1 gün/1 hafta)" (yeni `AppPrefs.KEY_FOLDER_NAVIGATOR_MUTED_UNTIL`, HomeTickerRow ile aynı mute-until-timestamp deseni) veya "Kapat" (mevcut `KEY_FOLDER_CAROUSEL_ENABLED`'i false yapar). Ayarlar > Launcher'daki mevcut aç/kapa+konum toggle'ı değişmedi, bu hızlı erişim ekiydi. FolderScreen.kt: showFolderNavigator hesabına mute kontrolü eklendi, DisposableEffect listener'a yeni key eklendi. Tam test + compile yeşil. v1.4.11 (134).
+
+**Bug:** Yok — özellik isteği.
+
+**Sonraki:** Hüseyin cihazda test etsin: widget ekleme akışı + klasör navigator uzun-bas menü.
+
 ## EX08 - 2026-07-20 - HOTFIX: MIGRATION_19_20 crash (ticker_history schema mismatch)
 
 **Yapilanlar:** v1.4.9 (132) kullanicida "Failed to load apps: Migration didn't properly handle: ticker_history" crash'i verdi. Kok neden: migration SQL'i elle DEFAULT 0 ve PRIMARY KEY inline yaziyordu, Room'un entity'den uretecegi gercek CREATE TABLE ile (defaultValue='undefined', PRIMARY KEY(id) ayri clause) birebir eslesmedi — Room migration sonrasi şema doğrulamasında bunu hata sayiyor. Ayrica migration'da elle eklenen index_ticker_history_createdAt entity'de tanimli degildi (schemas/20.json indices:[] onayladi), o da kaldirildi. AppDatabase.kt:267-284 MIGRATION_19_20 duzeltildi (schemas/20.json createSql ile birebir), assembleDebug yesil. v1.4.10 (133).

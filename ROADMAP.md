@@ -309,6 +309,24 @@ Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, ki
 
 ---
 
+## Faz S — Serbest Sürükle-Bırak Ana Ekran Sistemi (2026-07-20, Hüseyin talebi — KOD YAZILMADI, sadece roadmap)
+
+> Rakip launcher parite talebi: widget/klasör/ikonların ana ekranda serbest (2D) konuma sürüklenip bırakılabilmesi. Mevcut durum: `HomeLayout.kt`'deki `HomeLayoutItem(order: Int)` ve `WidgetArea.kt` sadece **1D dikey sıralama** destekliyor; klasör grid'i (`FolderScreen.kt` `LazyVerticalGrid`) index tabanlı, kalıcı pozisyon alanı (`positionX/Y`, `gridX/Y`) projede hiç yok. `LauncherAccessibilityService.kt` manifest'te "drag&drop için" kayıtlı ama boş stub. Puan: KV=5 U=2 BR=2 EA=5 → Toplam=14 (🟡 Değerlendir bandı, eşiğin altında ama doğrudan kullanıcı talebiyle roadmap'e alındı).
+
+**Neden kademeli:** Bu, `HomeSectionId`/`HomeLayoutItem` 1D modelini kökten değiştiren, yeni Room tablosu + `HomeGestureArbiter`'a yeni karar dalı gerektiren en büyük mimari genişleme — CLAUDE.md zorluk 9-10 kuralı: 3+ kaynak araştırma + Plan aşaması + commit öncesi onay her fazda tekrarlanmalı.
+
+| # | Görev | Zorluk | Not |
+|---|---|---|---|
+| S1 | Veri modeli: `HomeGridItemEntity(itemId, itemType, screenIndex, cellX, cellY, spanX, spanY)` + migration + DAO; saf `GridOccupancyResolver` (boş hücre/çakışma hesabı, unit test edilebilir) | 7 | Mevcut `order: Int` ile geçici birlikte yaşar — büyük patlama migrasyonu yok |
+| S2 | Klasör içi serbest grid: `FolderScreen.kt` `LazyVerticalGrid` → S1 occupancy'e bağlı custom `Layout`. Sürükleme `detectDragGesturesAfterLongPress` (WidgetArea.kt'de zaten kullanılan pattern) | 6 | İzole/düşük riskli yüzeyden başla |
+| S3 | Dashboard/widget alanını serbest yerleşime taşı: `WidgetArea.kt` + `HomeLayoutItem` → S1 modeli; `HomeGestureArbiter`'a "DRAG_REPOSITION" dalı; `RESTRICTED` bölümler (ör. FOLDER_GRID) hariç sadece `MOVABLE` taşınır | 8 | En yüksek riskli yüzey — mevcut pager/gesture sistemine en çok dokunur |
+| S4 | Ekranlar arası taşıma (sayfadan sayfaya sürükleme) + kenara sürüklerken otomatik sayfa kaydırma | 7 | Pager entegrasyonu |
+| S5 | Cihaz doğrulama + performans (frame-drop kontrolü, yoğun ana ekranlar); `LauncherAccessibilityService` stub'ının TalkBack+drag için doldurulup doldurulmayacağına karar (Home Layout Editor'daki TalkBack+drag pattern'i referans) | 5 | 18-döngü tam emülatör test matrisine ek |
+
+**Sıra:** S1→S2→S3→S4→S5, her madde bağımsız test+commit edilebilir. S1 sonrası gerçek karmaşıklık netleşince yeniden puanlanmalı.
+
+---
+
 ## Dis Aksiyon Kayitlari
 
 Detayli engel kaydi icin:

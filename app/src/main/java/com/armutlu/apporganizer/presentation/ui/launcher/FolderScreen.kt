@@ -8,8 +8,11 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -71,6 +74,7 @@ fun FolderScreen(
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
     var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
     var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
+    var folderNavigatorMutedUntil by remember { mutableStateOf(AppPrefs.getFolderNavigatorMutedUntil(context)) }
     // Görev 1: HomeScreen ile aynı kök zemin — klasörden çıkarken duvar kağıdı flaşı olmasın.
     var bgType by remember { mutableStateOf(AppPrefs.getBgType(context)) }
     var bgColorInt by remember { mutableStateOf(AppPrefs.getBgColor(context)) }
@@ -90,6 +94,9 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_FOLDER_TRANSITION_EFFECT) {
                 folderTransitionEffect = AppPrefs.getFolderTransitionEffect(context)
+            }
+            if (key == AppPrefs.KEY_FOLDER_NAVIGATOR_MUTED_UNTIL) {
+                folderNavigatorMutedUntil = AppPrefs.getFolderNavigatorMutedUntil(context)
             }
             if (key == AppPrefs.KEY_BG_TYPE) {
                 bgType = AppPrefs.getBgType(context)
@@ -253,7 +260,8 @@ fun FolderScreen(
             AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM -> folderCarouselPosition
             else -> AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM
         }
-        val showFolderNavigator = previousFolder != null && nextFolder != null
+        val folderNavigatorMuted = folderNavigatorMutedUntil > System.currentTimeMillis()
+        val showFolderNavigator = previousFolder != null && nextFolder != null && !folderNavigatorMuted
 
         val catColor = remember(f.category.colorHex, customColor) {
             val hex = customColor.ifBlank { null } ?: f.category.colorHex
@@ -998,6 +1006,7 @@ internal fun List<AppInfo>.withLiveNotificationState(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FolderIndexNavigator(
     previousFolder: AppFolder,
@@ -1009,29 +1018,66 @@ private fun FolderIndexNavigator(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        FolderTopNavChip(
-            folder = previousFolder,
-            direction = "<",
-            modifier = Modifier.weight(1f),
-            context = context,
-            onSurface = onSurface,
-            accent = accent,
-            onClick = onPrevious,
-        )
-        FolderTopNavChip(
-            folder = nextFolder,
-            direction = ">",
-            modifier = Modifier.weight(1f),
-            context = context,
-            onSurface = onSurface,
-            accent = accent,
-            onClick = onNext,
-        )
+    var menuOpen by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
+
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {},
+                    onLongClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        menuOpen = true
+                    },
+                ),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FolderTopNavChip(
+                folder = previousFolder,
+                direction = "<",
+                modifier = Modifier.weight(1f),
+                context = context,
+                onSurface = onSurface,
+                accent = accent,
+                onClick = onPrevious,
+            )
+            FolderTopNavChip(
+                folder = nextFolder,
+                direction = ">",
+                modifier = Modifier.weight(1f),
+                context = context,
+                onSurface = onSurface,
+                accent = accent,
+                onClick = onNext,
+            )
+        }
+
+        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+            listOf(
+                "Sessize Al (1 gun)" to 24L * 60 * 60 * 1000,
+                "Sessize Al (1 hafta)" to 7L * 24 * 60 * 60 * 1000,
+            ).forEach { (label, duration) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        menuOpen = false
+                        AppPrefs.setFolderNavigatorMutedUntil(context, System.currentTimeMillis() + duration)
+                    }
+                )
+            }
+            DropdownMenuItem(
+                text = { Text("Kapat") },
+                onClick = {
+                    menuOpen = false
+                    AppPrefs.setFolderCarouselEnabled(context, false)
+                }
+            )
+        }
     }
 }
 

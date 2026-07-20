@@ -804,6 +804,12 @@ object AppPrefs {
     /** T05 — Ayarlar ekranındaki "Sessiz saatler" göstergesinden erken kaldırma. */
     fun clearTickerMutedUntil(context: Context) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, 0L).apply()
 
+    // Klasor alt navigator (onceki/sonraki klasor cipsi) sessize alma — HomeTickerRow ile ayni
+    // mute-until-timestamp deseni (basili tut menusu).
+    const val KEY_FOLDER_NAVIGATOR_MUTED_UNTIL = "folder_navigator_muted_until"
+    fun getFolderNavigatorMutedUntil(context: Context) = prefs(context).getLong(KEY_FOLDER_NAVIGATOR_MUTED_UNTIL, 0L)
+    fun setFolderNavigatorMutedUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_FOLDER_NAVIGATOR_MUTED_UNTIL, untilMillis).apply()
+
     // Icerik bazli ticker bastirma (Dongu T04) — "Bu tur bilgileri gosterme" secilince
     // SmartTickerType.name bu sete eklenir; TickerRow'a dokunmadan LauncherViewModel
     // tickerItems akisinda filtrelenir (dismissedTickerKeys ile ayni desen, tur bazli).
