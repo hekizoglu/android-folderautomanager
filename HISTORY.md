@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## PIXEL-LOOK - 2026-07-20 - "Android (Pixel) Gorunumu" tema secenegi (Huseyin talebi)
+
+**Yapilanlar:** Yeni KEY_PIXEL_LOOK_ENABLED toggle'i (varsayilan KAPALI — kendi kimligimiz varsayilan, vizyon karari korundu). Acikken: Material You DYNAMIC palet zorlanir (Theme.kt; Android 12 alti stok fallback); FolderTile stok Android klasoru olur (emoji/ozel renk yok sayilir, squircle ~%28 radius, notr yari saydam zemin, ilk 4 uygulamanin 2x2 mini ikon onizlemesi); AllAppsDrawer blur yerine %95 opasiteli duz yuzey + 5 sutun + hap arama cubugu; tipografi sistem Roboto ~12sp; PulseClockWidget sade dijital moda duser. Tum sabitler tek dosyada: presentation/ui/theme/PixelLookPolicy.kt. TR+EN string'ler. Sonnet uyguladi (bitiste API kesintisi yasadi ama is TAMDI), Fable compile+kod dogruladi. v1.4.5 (128).
+
+**Bug:** Yok. Google asset/font kopyalanmadi (Roboto sistem fontu, Material bilesenleri).
+
+**Sonraki:** Huseyin'in emulator/cihaz gorsel dogrulamasi (istege bagli APK).
+
 ## DENETIM PLANI KAPANDI - 2026-07-20 - 14/14 madde (F1-F7 + S1-S7), final v1.4.4 (127)
 
 **Yapilanlar:** Harici denetim raporunun tum maddeleri koda karsi dogrulanip kapatildi. PAKET F (guvenlik/mantik): DeepSeek anahtari yedek sizintisi, biyometrik route bypass, streak batch hatasi, DATA_UNAVAILABLE durumu, focus gece yarisi, cekmece onClick+telemetri, olu kod/yorum tutarliligi. PAKET S (sadelestirme): tek BUGUN karti, odul yuzeyi+Usta odulu, cekmece tek menu, ayarlar 6-hub, rapor merkezi 5'e, FCM->haftalik worker+gizlilik metni, Wrapped anahtar yonlendirmesi. BONUS: Codex'in classifier compact-eslesme regresyonu (com.app.*->TRAVEL) düzeltildi. 3 APK teslim edildi (v1.4.2/125, v1.4.3/126, final v1.4.4/127 - 27.46MB); tum donguler tam test yesil. Paralel Codex oturumuyla dosya-kapsami ayrimi korundu. DENETIM_FIX_VE_SADELESTIRME_PLANI.md bosaldi ve silindi.

@@ -82,6 +82,7 @@ fun FolderTile(
     unusedInfoEnabled: Boolean = false,
     folderShape: String = com.armutlu.apporganizer.utils.AppPrefs.DEFAULT_FOLDER_SHAPE,
     folderBadgeEnabled: Boolean = false,
+    pixelLookEnabled: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -161,11 +162,17 @@ fun FolderTile(
                 .getOrDefault(Color.White)
         }
         // Klasör adı ikon rengiyle aynı ailede kalır; sabit siyah zeminde renkli fihrist okunur.
-        val effectiveLabelColor = catColor
-        val tileShape = when (folderShape) {
-            "square"   -> RoundedCornerShape(0.dp)
-            "rounded"  -> RoundedCornerShape(16.dp)
-            "triangle" -> GenericShape { size, _ ->
+        // Pixel modunda etiket rengi nötr onSurface'a döner (stok Android hissi).
+        val pixelOnSurface = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+        val effectiveLabelColor = if (pixelLookEnabled) pixelOnSurface else catColor
+        val tileShape = when {
+            // Pixel modu: emoji/özel renk yok sayılır, yumuşak yuvarlatılmış kare (squircle benzeri)
+            pixelLookEnabled -> RoundedCornerShape(
+                percent = (com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_CORNER_RADIUS_PERCENT * 100).toInt()
+            )
+            folderShape == "square"   -> RoundedCornerShape(0.dp)
+            folderShape == "rounded"  -> RoundedCornerShape(16.dp)
+            folderShape == "triangle" -> GenericShape { size, _ ->
                 moveTo(size.width / 2f, 0f)
                 lineTo(size.width, size.height)
                 lineTo(0f, size.height)
@@ -173,21 +180,32 @@ fun FolderTile(
             }
             else -> CircleShape // "circle"
         }
+        val pixelSurface = androidx.compose.material3.MaterialTheme.colorScheme.surface
         Box {
         Box(
             modifier = Modifier
                 .size(circleSize)
                 .clip(tileShape)
-                .background(catColor.copy(alpha = 0.30f)),
+                .background(
+                    if (pixelLookEnabled) {
+                        pixelSurface.copy(alpha = com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_SURFACE_ALPHA)
+                    } else {
+                        catColor.copy(alpha = 0.30f)
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (folder.apps.isEmpty()) {
-                Text(
-                    text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
-                    fontSize = 24.sp
-                )
+                // Pixel modunda özel emoji yok sayılır — jenerik klasör görünümü boş kalır
+                // (stok Android boş klasör önizlemesi gibi), sadece kendi emoji'miz olmayan kimlikte gösterilir.
+                if (!pixelLookEnabled) {
+                    Text(
+                        text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
+                        fontSize = 24.sp
+                    )
+                }
             } else {
-                // 2x2 mini icon grid
+                // 2x2 mini icon grid — pixel modunda da aynı (stok Android klasör önizlemesi zaten budur)
                 MiniIconGrid(
                     apps = previewApps,
                     iconSize = miniIconSize
@@ -233,11 +251,17 @@ fun FolderTile(
 
         // Klasör adı + sayı tek satırda "Ad (N)" — bir satır kazandırır (D226).
         // folderCountVisible — HomeScreen'den reaktif parametre olarak gelir
-        val displayName = customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName
+        // Pixel modunda özel klasör adı da yok sayılır — sadece kategori adı (stok Android hissi)
+        val displayName = if (pixelLookEnabled) {
+            folder.category.categoryName
+        } else {
+            customName?.takeIf { it.isNotEmpty() } ?: folder.category.categoryName
+        }
         Text(
             text = if (folderCountVisible) "$displayName (${folder.apps.size})" else displayName,
             color = effectiveLabelColor.copy(alpha = textAlpha),
-            fontSize = 11.sp,
+            fontSize = if (pixelLookEnabled) com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_LABEL_FONT_SIZE else 11.sp,
+            fontWeight = if (pixelLookEnabled) FontWeight.Normal else null,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,

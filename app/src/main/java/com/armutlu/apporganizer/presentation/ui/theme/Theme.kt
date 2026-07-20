@@ -8,9 +8,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -81,6 +84,56 @@ private fun buildColorScheme(
     }
 }
 
+// Stok Android/Pixel fallback paleti — Android 12 altı (Material You dynamic yok) veya
+// dynamicXColorScheme kullanılamayan cihazlarda Pixel Launcher varsayılan mavi-gri tonları.
+private val PixelFallbackBlue = Color(0xFF8AB4F8)
+private val PixelFallbackBlueLight = Color(0xFF1A73E8)
+
+private fun buildPixelFallbackColorScheme(darkTheme: Boolean): androidx.compose.material3.ColorScheme =
+    if (darkTheme) {
+        darkColorScheme(
+            primary              = PixelFallbackBlue,
+            onPrimary            = Color(0xFF002E69),
+            primaryContainer     = PixelFallbackBlue.copy(alpha = 0.25f),
+            onPrimaryContainer   = PixelFallbackBlue,
+            secondary            = Color(0xFFC4C6D0),
+            onSecondary          = Color(0xFF2E3033),
+            secondaryContainer   = Color(0xFF44464A),
+            onSecondaryContainer = Color(0xFFE0E2EC),
+            background           = Color(0xFF1B1B1F),
+            onBackground         = Color(0xFFE3E2E6),
+            surface              = Color(0xFF1B1B1F),
+            onSurface            = Color(0xFFE3E2E6),
+            surfaceVariant       = Color(0xFF44474E),
+            onSurfaceVariant     = Color(0xFFC4C6CF),
+            outline              = Color(0xFF8E9099),
+            outlineVariant       = Color(0xFF44474E),
+            error                = ErrorColor,
+            onError              = Color.White,
+        )
+    } else {
+        lightColorScheme(
+            primary              = PixelFallbackBlueLight,
+            onPrimary            = Color.White,
+            primaryContainer     = Color(0xFFD3E3FD),
+            onPrimaryContainer   = Color(0xFF041E49),
+            secondary            = Color(0xFF5F6368),
+            onSecondary          = Color.White,
+            secondaryContainer   = Color(0xFFE8EAED),
+            onSecondaryContainer = Color(0xFF1B1B1F),
+            background           = Color(0xFFF8F9FA),
+            onBackground         = Color(0xFF1B1B1F),
+            surface              = Color(0xFFFFFFFF),
+            onSurface            = Color(0xFF1B1B1F),
+            surfaceVariant       = Color(0xFFE8EAED),
+            onSurfaceVariant     = Color(0xFF5F6368),
+            outline              = Color(0xFF74777F),
+            outlineVariant       = Color(0xFFC4C6CF),
+            error                = Color(0xFFB3261E),
+            onError              = Color.White,
+        )
+    }
+
 private fun buildTypography(font: AppFont): Typography {
     val family = when (font) {
         AppFont.ROUNDED -> FontFamily.SansSerif
@@ -118,19 +171,46 @@ fun AppOrganizerTheme(
     val currentTheme by themePrefs.themeFlow.collectAsState(initial = AppTheme.default())
     val currentFont by themePrefs.fontFlow.collectAsState(initial = AppFont.DEFAULT)
 
+    // Android (Pixel) Görünümü — açıkken kullanıcının tema seçimi yerine Material You DYNAMIC
+    // paleti zorlanır (Android 12+); altında ise stok Android fallback paleti (Pixel varsayılan
+    // mavi-gri tonları) kullanılır. Varsayılan kapalı — kendi kimliğimiz değişmez.
+    var pixelLookEnabled by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context))
+    }
+    DisposableEffect(context) {
+        val sharedPrefs = context.getSharedPreferences(
+            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME,
+            android.content.Context.MODE_PRIVATE
+        )
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED) {
+                pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
+            }
+        }
+        sharedPrefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { sharedPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    val effectiveTheme = if (pixelLookEnabled) AppTheme.DYNAMIC else currentTheme
+
     // Material You — Android 12+ dinamik renk şeması, duvar kağıdına uyum sağlar
     val colorScheme = if (
-        currentTheme == AppTheme.DYNAMIC &&
+        effectiveTheme == AppTheme.DYNAMIC &&
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
     ) {
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else if (pixelLookEnabled) {
+        // Android 12 altı / dynamic yok — stok Android fallback paleti (Pixel varsayılan mavi-gri)
+        buildPixelFallbackColorScheme(darkTheme)
     } else {
         buildColorScheme(currentTheme, darkTheme)
     }
 
+    // Pixel modunda tipografi sistem varsayılanına (Roboto/Default) düşer, özel font ağırlığı yok
+    val effectiveFont = if (pixelLookEnabled) AppFont.DEFAULT else currentFont
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography  = buildTypography(currentFont),
+        typography  = buildTypography(effectiveFont),
         content     = content,
     )
 }

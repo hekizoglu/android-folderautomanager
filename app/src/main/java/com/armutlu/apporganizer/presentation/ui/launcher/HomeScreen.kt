@@ -197,6 +197,7 @@ fun HomeScreen(
     var suggestionsIconSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)) }
     var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
+    var pixelLookEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var fullscreenSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFullscreenSearchEnabled(context)) }
@@ -224,6 +225,8 @@ fun HomeScreen(
         )
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED ->
+                    pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_TYPE ->
                     bgType = com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_COLOR ->
@@ -852,6 +855,7 @@ fun HomeScreen(
                     packages = contextualDockPackages,
                     folders = folders,
                     iconPackPkg = suggestionIconPack,
+                    pixelLookEnabled = pixelLookEnabled,
                     onLaunchApp = { pkg ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         viewModel.launchApp(context, pkg)
@@ -1562,6 +1566,7 @@ fun HomeScreen(
                         unusedInfoEnabled = unusedInfoEnabled,
                         folderBadgeEnabled = folderBadgeEnabled,
                         folderShape = folderShape,
+                        pixelLookEnabled = pixelLookEnabled,
                         haptic = haptic,
                         onFolderClick = { onNavigateToFolder(it) },
                         onFolderLongClick = { folderContextMenu = it },

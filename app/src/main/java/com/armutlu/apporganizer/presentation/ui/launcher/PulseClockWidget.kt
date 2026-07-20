@@ -95,17 +95,22 @@ internal fun PulseClockWidget(
 
     var clockStyle by remember { mutableStateOf(AppPrefs.getClockStyle(context)) }
     var insightVisible by remember { mutableStateOf(AppPrefs.isHomeInsightVisible(context)) }
+    // Android (Pixel) Görünümü — açıkken saat sade dijital (Minimal) moda düşer, mevcut
+    // Minimal stili zorlanır (yeni widget yazılmaz).
+    var pixelLookEnabled by remember { mutableStateOf(AppPrefs.isPixelLookEnabled(context)) }
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 AppPrefs.KEY_CLOCK_STYLE -> clockStyle = AppPrefs.getClockStyle(context)
                 AppPrefs.KEY_HOME_INSIGHT_VISIBLE -> insightVisible = AppPrefs.isHomeInsightVisible(context)
+                AppPrefs.KEY_PIXEL_LOOK_ENABLED -> pixelLookEnabled = AppPrefs.isPixelLookEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
+    val effectiveClockStyle = if (pixelLookEnabled) AppPrefs.CLOCK_STYLE_MINIMAL else clockStyle
 
     // Saat/tarih — dakika sınırında güncellenir (skor hesabını TETİKLEMEZ)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
@@ -119,7 +124,7 @@ internal fun PulseClockWidget(
         }
     }
 
-    when (clockStyle) {
+    when (effectiveClockStyle) {
         AppPrefs.CLOCK_STYLE_MINIMAL -> MinimalClockCard(now, timeFormat, dateFormat, compact, onLongPress, modifier, masterGoldAccent)
         else -> PulseCard(
             now = now,

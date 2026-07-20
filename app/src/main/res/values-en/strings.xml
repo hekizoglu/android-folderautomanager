@@ -656,6 +656,8 @@
     <string name="missions_master_reward_banner">🏆 Your Master reward is unlocked: gold clock style + gold folder color — turn it on in Settings</string>
     <string name="settings_master_clock_style_title">Gold clock style (Master reward)</string>
     <string name="settings_master_clock_style_desc">You reached Master level — adds a gold accent to the clock text</string>
+    <string name="settings_pixel_look_title">Android (Pixel) Look</string>
+    <string name="settings_pixel_look_desc">Stock Android look: dynamic colors, plain folders, system typography</string>
     <!-- Cycle G6: Star Economy — level badge + progress + cosmetic unlock -->
     <string name="missions_level_badge">🎖 %1$s</string>
     <string name="missions_level_progress">%1$s · %2$d ⭐ to %3$s</string>

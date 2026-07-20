@@ -660,6 +660,8 @@
     <string name="missions_master_reward_banner">🏆 Usta ödülün açıldı: Altın saat stili + altın klasör rengi — Ayarlar\'dan aç</string>
     <string name="settings_master_clock_style_title">Altın saat stili (Usta ödülü)</string>
     <string name="settings_master_clock_style_desc">Usta seviyesine ulaştın — saat metnine altın tonlu vurgu ekler</string>
+    <string name="settings_pixel_look_title">Android (Pixel) Görünümü</string>
+    <string name="settings_pixel_look_desc">Stok Android görünümü: dinamik renkler, sade klasörler, sistem tipografisi</string>
     <!-- Dongu G6: Yildiz Ekonomisi — seviye rozeti + ilerleme + kozmetik acilim -->
     <string name="missions_level_badge">🎖 %1$s</string>
     <string name="missions_level_progress">%1$s · %2$d ⭐ sonra %3$s</string>

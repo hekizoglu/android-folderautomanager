@@ -7,6 +7,13 @@ object AppPrefs {
     const val KEY_ONBOARDING_DONE = "onboarding_done"
     const val KEY_LAUNCHER_SETUP_SHOWN = "launcher_setup_shown"
 
+    // Android (Pixel) Görünümü — stok Android/Pixel Launcher hissi (renkler, klasör, çekmece,
+    // tipografi). Varsayılan KAPALI: kendi kimliğimiz (turkuaz, frosted dock, Pulse Clock)
+    // varsayılan kalır — 2026-07-14 vizyon kararı.
+    const val KEY_PIXEL_LOOK_ENABLED = "pixel_look_enabled"
+    fun isPixelLookEnabled(context: Context) = prefs(context).getBoolean(KEY_PIXEL_LOOK_ENABLED, false)
+    fun setPixelLookEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_PIXEL_LOOK_ENABLED, v).apply()
+
     // P24/P25 tamamlandı: pager v2 varsayılan AÇIK; safe-mode sorun çıkarsa eski davranışa döndürür.
     const val KEY_HOME_PAGER_V2_ENABLED = "home_pager_v2_enabled"
     const val KEY_HOME_PAGER_V2_SAFE_MODE = "home_pager_v2_safe_mode"

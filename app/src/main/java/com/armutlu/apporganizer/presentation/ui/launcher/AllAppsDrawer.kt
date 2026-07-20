@@ -110,7 +110,8 @@ private fun DrawerSearchBar(
     quickFilterCounts: IntArray,
     sortMode: AllAppsSortMode,
     onSortModeChange: (AllAppsSortMode) -> Unit,
-    context: android.content.Context
+    context: android.content.Context,
+    pixelLookEnabled: Boolean = false,
 ) {
     val primary          = MaterialTheme.colorScheme.primary
     val secondary        = MaterialTheme.colorScheme.secondary
@@ -159,24 +160,30 @@ private fun DrawerSearchBar(
         label = "all_apps_search_focus_glow",
     )
     val focusColor = Color(0xFFB6FF4D)
+    // Pixel modunda tam yuvarlatılmış hap (pill) — stok Android arama kutusu hissi.
+    // Percent(50) her yükseklikte gerçek pill üretir (sabit dp yerine).
+    val searchBoxShape = if (pixelLookEnabled) RoundedCornerShape(percent = 50) else RoundedCornerShape(22.dp)
+    val searchBoxOuterShape = if (pixelLookEnabled) RoundedCornerShape(percent = 50) else RoundedCornerShape(24.dp)
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.weight(1f).height(44.dp)
                 .border(
                     width = 3.dp,
                     color = focusColor.copy(alpha = 0.18f * focusGlowAlpha),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = searchBoxOuterShape,
                 )
                 .padding(2.dp)
                 .border(
                     width = 1.5.dp,
                     color = focusColor.copy(alpha = 0.82f * focusGlowAlpha),
-                    shape = RoundedCornerShape(22.dp),
+                    shape = searchBoxShape,
                 )
-                .clip(RoundedCornerShape(22.dp)).background(
-                    if (searchFocused) searchBg.copy(alpha = 0.18f) else searchBg
+                .clip(searchBoxShape).background(
+                    if (pixelLookEnabled) {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (searchFocused) 0.9f else 0.75f)
+                    } else if (searchFocused) searchBg.copy(alpha = 0.18f) else searchBg
                 )
-                .diamondShine(shineEnabled, RoundedCornerShape(22.dp))
+                .diamondShine(shineEnabled, searchBoxShape)
                 .padding(horizontal = 14.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -1195,6 +1202,8 @@ fun AllAppsDrawer(
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedGreyDays   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
     var iconPackPkg      by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
+    // Android (Pixel) Görünümü — çekmecede blur yerine düz yüksek-opasite yüzey + hap arama kutusu
+    var pixelLookEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)) }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -1204,6 +1213,7 @@ fun AllAppsDrawer(
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED -> notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS -> unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK -> iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED -> pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -1270,7 +1280,20 @@ fun AllAppsDrawer(
             )
         }
     ) {
-        Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(Color.Black.copy(alpha = bgAlpha)))
+        if (pixelLookEnabled) {
+            // Stok Android çekmecesi: blur yerine düz, yüksek opasiteli nötr yüzey
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(
+                            alpha = com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.DRAWER_SURFACE_ALPHA
+                        )
+                    )
+            )
+        } else {
+            Box(modifier = Modifier.fillMaxSize().blur(20.dp).background(Color.Black.copy(alpha = bgAlpha)))
+        }
         Box(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
             Row(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
@@ -1288,7 +1311,8 @@ fun AllAppsDrawer(
                         quickFilterCounts = quickFilterCounts,
                         sortMode = sortMode,
                         onSortModeChange = { sortMode = it },
-                        context = context
+                        context = context,
+                        pixelLookEnabled = pixelLookEnabled
                     )
                     DrawerAppList(
                         state = drawerState,

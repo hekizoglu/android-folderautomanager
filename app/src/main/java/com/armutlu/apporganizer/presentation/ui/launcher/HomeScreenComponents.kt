@@ -295,6 +295,7 @@ internal fun PixelDock(
     onLongPress: () -> Unit = {},
     onAppLongPress: (String) -> Unit = {},
     onFolderLongPress: (AppFolder) -> Unit = {},
+    pixelLookEnabled: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -326,7 +327,11 @@ internal fun PixelDock(
                 .fillMaxWidth()
                 .height(dockHeight)
                 .background(
-                    color = Color.White.copy(alpha = 0.15f),
+                    color = if (pixelLookEnabled) {
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
+                    } else {
+                        Color.White.copy(alpha = 0.15f)
+                    },
                     shape = RoundedCornerShape(50)
                 )
                 .pointerInput(Unit) {
