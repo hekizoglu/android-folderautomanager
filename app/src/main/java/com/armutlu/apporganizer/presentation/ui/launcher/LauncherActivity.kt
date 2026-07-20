@@ -47,9 +47,17 @@ class LauncherActivity : ComponentActivity() {
     // widget'ları result Intent içinde ID döndürmediği için ana ekrana hiç eklenmez.
     private var pendingWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
 
+    // MIUI'de ACTION_APPWIDGET_PICK bazen sessizce hiçbir Activity açmadan "başarılı" döner
+    // (launch() exception fırlatmaz, ama picker ekranı hiç görünmez — bilinen MIUI 12+
+    // platform kısıtlaması, üçüncü parti launcher'larda yaygın bir sorun). Bu zaman damgası,
+    // launchWidgetPicker() çağrıldığı anı tutar; onResume()'da hâlâ set haldeyse (yani Activity
+    // ara bir Activity'ye hiç gitmeden geri döndüyse) picker'ın gerçekte açılmadığı anlaşılır.
+    private var widgetPickerLaunchedAtMs: Long = 0L
+
     val widgetPickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
+        widgetPickerLaunchedAtMs = 0L
         val returnedWidgetId = result.data?.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID,
@@ -127,7 +135,36 @@ class LauncherActivity : ComponentActivity() {
                 "Widget seçici açılamadı. Cihaz bu widget host akışını desteklemiyor olabilir.",
                 Toast.LENGTH_LONG,
             ).show()
+        } else {
+            // launch() exception fırlatmadı ama bazı OEM ROM'larında (özellikle MIUI 12+) picker
+            // Activity'si sessizce hiç açılmayabilir — onResume() bu durumu tespit edecek.
+            widgetPickerLaunchedAtMs = SystemClock.elapsedRealtime()
         }
+    }
+
+    /**
+     * MIUI 12+ ve bazı OEM ROM'larında `ACTION_APPWIDGET_PICK` intent'i sessizce hiçbir Activity
+     * açmadan "başarılı" dönebilir (KISS Launcher #1733 ile aynı bilinen platform kısıtlaması) —
+     * exception yok, picker ekranı da yok. [widgetPickerLaunchedAtMs] hâlâ set haldeyse ve Activity
+     * kesintisiz onResume'a geri döndüyse (yani araya gerçekten başka bir Activity girmediyse)
+     * picker'ın hiç açılmadığı anlaşılır; kullanıcıya MIUI'ye özgü izin yönlendirmesiyle bilgi ver.
+     */
+    private fun checkWidgetPickerSilentFailure() {
+        if (widgetPickerLaunchedAtMs == 0L) return
+        val elapsed = SystemClock.elapsedRealtime() - widgetPickerLaunchedAtMs
+        widgetPickerLaunchedAtMs = 0L
+        if (elapsed >= WIDGET_PICKER_SILENT_FAILURE_MS) return
+        WidgetHostManager.deleteId(this, pendingWidgetId)
+        pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+        val isMiui = Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
+        val message = if (isMiui) {
+            "Widget seçici açılamadı. MIUI, üçüncü parti launcher'larda bunu bazen engelliyor — " +
+                "Ayarlar > Uygulamalar > AppOrganizer > Diğer İzinler'den \"Açılır pencereler\" ve " +
+                "\"Ana ekran kısayolları\" izinlerini açıp tekrar dene."
+        } else {
+            "Widget seçici açılamadı. Cihazın izin ayarlarını kontrol et."
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -260,6 +297,7 @@ class LauncherActivity : ComponentActivity() {
         com.armutlu.apporganizer.utils.CrashReporter.markStartedSuccessfully(this)
         WidgetHostManager.startListening(this)
         applyNavBarVisibility()
+        checkWidgetPickerSilentFailure()
         // Son başlatılan uygulamanın timestamp'ini garantile (startActivity süreci durdurduğunda coroutine tamamlanamayabilir)
         viewModel.refreshLastLaunched()
         // Olay bazli package sync ana akistir; tam reconcile sadece 12 saatlik fallback'te calisir.
@@ -306,6 +344,10 @@ class LauncherActivity : ComponentActivity() {
 
     companion object {
         private const val KEY_PENDING_WIDGET_ID = "pending_widget_id"
+        // onResume() bu sürenin altında tetiklenirse (Activity'nin picker'a hiç gitmeden geri
+        // dönmesi) picker'ın sessizce açılmadığı kabul edilir. 800ms, gerçek bir Activity geçişinin
+        // her zaman aşacağı ama false-positive üretmeyecek kadar kısa bir eşik.
+        private const val WIDGET_PICKER_SILENT_FAILURE_MS = 800L
         private val PACKAGE_FILTER = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_ADDED)
