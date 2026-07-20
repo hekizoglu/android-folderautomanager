@@ -59,6 +59,8 @@
     <string name="home_search_hint_full">Search apps, folders, settings, contacts or files</string>
     <string name="home_search_contacts_enable_title">Search contacts too</string>
     <string name="home_search_contacts_enable_desc">Tap to grant permission for contact results</string>
+    <string name="home_search_files_enable_title">Search files too</string>
+    <string name="home_search_files_enable_desc">Tap to grant permission for file results</string>
 
     <!-- Folder -->
     <string name="folder_rename_hint">Folder name</string>
@@ -476,6 +478,7 @@
     <string name="today_card_risky_mission_subtitle">A task deadline is approaching</string>
     <string name="today_card_folder_review_subtitle">A few apps are waiting for a folder</string>
     <string name="today_card_report_ready_subtitle">Your weekly report is ready</string>
+    <string name="today_card_daily_missions_subtitle">Today\'s missions: %1$d/%2$d done · ⭐%3$d</string>
     <string name="today_card_balance_summary_subtitle">Your balance looks good today</string>
     <string name="settings_today_card_enabled_title">Single \'Today\' card</string>
     <string name="settings_today_card_enabled_desc">Shows one contextual card instead of separate task, digital life and suggestion cards; turning it off brings the separate cards back</string>
@@ -658,6 +661,8 @@
     <string name="settings_master_clock_style_desc">You reached Master level — adds a gold accent to the clock text</string>
     <string name="settings_pixel_look_title">Android (Pixel) Look</string>
     <string name="settings_pixel_look_desc">Stock Android look: dynamic colors, plain folders, system typography</string>
+    <string name="settings_folder_glass_border_title">Folder frame (Glass)</string>
+    <string name="settings_folder_glass_border_desc">Adds a thin, semi-transparent frame to folder tiles, matching the search bar</string>
     <!-- Cycle G6: Star Economy — level badge + progress + cosmetic unlock -->
     <string name="missions_level_badge">🎖 %1$s</string>
     <string name="missions_level_progress">%1$s · %2$d ⭐ to %3$s</string>

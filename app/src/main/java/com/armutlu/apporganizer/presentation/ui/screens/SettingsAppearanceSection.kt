@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Extension
@@ -548,5 +549,40 @@ fun SettingsAppearanceSection(
                 }
             }
         }
+    }
+
+    // ── Klasör Çerçevesi (Glass) ─────────────────────────────────────────
+    // Yeni özellik = ayarlar kuralı: klasör kutucuğuna arama çubuğuyla aynı glassmorphism
+    // çerçeve. Varsayılan AÇIK (kullanıcı isteği). pixelLookEnabled iken FolderTile.kt
+    // içinde uygulanmaz (stok Android klasör görünümü kendi kimliğini korur).
+    var folderGlassBorderEnabled by remember { mutableStateOf(AppPrefs.isFolderGlassBorderEnabled(context)) }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.ColorLens,
+            title = stringResource(R.string.settings_folder_glass_border_title),
+            subtitle = stringResource(R.string.settings_folder_glass_border_desc),
+            checked = folderGlassBorderEnabled,
+            onCheckedChange = {
+                folderGlassBorderEnabled = it
+                AppPrefs.setFolderGlassBorderEnabled(context, it)
+            }
+        )
+    }
+
+    // ── Android (Pixel) Görünümü ──────────────────────────────────────────
+    // D243 taşıma: bu toggle önceden SettingsHomeScreenSection.kt "Ana Sayfa Yapısı" hub'ında
+    // idi — Görünüm hub'ına ait olduğu için buraya taşındı (kullanıcı: yanlış yere koymuşum).
+    var pixelLookEnabled by remember { mutableStateOf(AppPrefs.isPixelLookEnabled(context)) }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.Android,
+            title = stringResource(R.string.settings_pixel_look_title),
+            subtitle = stringResource(R.string.settings_pixel_look_desc),
+            checked = pixelLookEnabled,
+            onCheckedChange = {
+                pixelLookEnabled = it
+                AppPrefs.setPixelLookEnabled(context, it)
+            }
+        )
     }
 }

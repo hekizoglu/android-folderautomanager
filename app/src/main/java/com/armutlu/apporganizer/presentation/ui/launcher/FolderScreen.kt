@@ -71,6 +71,10 @@ fun FolderScreen(
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
     var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
     var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
+    // Görev 1: HomeScreen ile aynı kök zemin — klasörden çıkarken duvar kağıdı flaşı olmasın.
+    var bgType by remember { mutableStateOf(AppPrefs.getBgType(context)) }
+    var bgColorInt by remember { mutableStateOf(AppPrefs.getBgColor(context)) }
+    var bgGradientStyle by remember { mutableStateOf(AppPrefs.getHomeBackgroundStyle(context)) }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -86,6 +90,15 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_FOLDER_TRANSITION_EFFECT) {
                 folderTransitionEffect = AppPrefs.getFolderTransitionEffect(context)
+            }
+            if (key == AppPrefs.KEY_BG_TYPE) {
+                bgType = AppPrefs.getBgType(context)
+            }
+            if (key == AppPrefs.KEY_BG_COLOR) {
+                bgColorInt = AppPrefs.getBgColor(context)
+            }
+            if (key == AppPrefs.KEY_HOME_BACKGROUND_STYLE) {
+                bgGradientStyle = AppPrefs.getHomeBackgroundStyle(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -333,7 +346,14 @@ fun FolderScreen(
                         Modifier
                     }
                 )
-                .background(surface.copy(alpha = 0.95f))
+                .homeRootBackground(bgType, bgColorInt, bgGradientStyle)
+                .then(
+                    // "Duvar Kağıdı" seçiliyken homeRootBackground transparan bırakır; klasör
+                    // içeriğinin okunabilirliği için hafif karartma katmanı eklenir (surface
+                    // rengiyle değil, tema-nötr siyah yarı saydam ile — duvar kağıdı hâlâ sızar).
+                    if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.35f))
+                    else Modifier
+                )
         ) {
             if (showFolderNavigator && folderCarouselEnabled && transitionFrame.direction != 0) {
                 FolderTransitionPreview(

@@ -1082,11 +1082,17 @@ internal fun HomeAppSearchBar(
     // Kişi kaynağı — Settings'ten dönünce güncellensin (Reaktif AppPrefs pattern'i, LEARNINGS)
     var contactsOn by remember { mutableStateOf(AppPrefs.isSearchSourceContactsEnabled(context)) }
     var filesOn by remember { mutableStateOf(AppPrefs.isSearchSourceFilesEnabled(context)) }
-    // Kullanıcı Ayarlar'dan kişi kaynağını BİLİNÇLİ kapattıysa "izin ver" kısayolu da gizlenir
+    // Kullanıcı Ayarlar'dan kişi/dosya kaynağını BİLİNÇLİ kapattıysa "izin ver" kısayolu da gizlenir
     var contactsOptedOut by remember {
         mutableStateOf(
             AppPrefs.hasSearchSourceContactsPreference(context) &&
                 !AppPrefs.isSearchSourceContactsEnabled(context)
+        )
+    }
+    var filesOptedOut by remember {
+        mutableStateOf(
+            AppPrefs.hasSearchSourceFilesPreference(context) &&
+                !AppPrefs.isSearchSourceFilesEnabled(context)
         )
     }
     DisposableEffect(context) {
@@ -1097,7 +1103,10 @@ internal fun HomeAppSearchBar(
                     contactsOn = AppPrefs.isSearchSourceContactsEnabled(context)
                     contactsOptedOut = AppPrefs.hasSearchSourceContactsPreference(context) && !contactsOn
                 }
-                AppPrefs.KEY_SEARCH_SOURCE_FILES -> filesOn = AppPrefs.isSearchSourceFilesEnabled(context)
+                AppPrefs.KEY_SEARCH_SOURCE_FILES -> {
+                    filesOn = AppPrefs.isSearchSourceFilesEnabled(context)
+                    filesOptedOut = AppPrefs.hasSearchSourceFilesPreference(context) && !filesOn
+                }
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -1201,6 +1210,10 @@ internal fun HomeAppSearchBar(
     // (izin isteği zaten SearchSettingsScreen'deki ContextualPermissionDialog akışında var).
     val showFilesPermissionHint = query.isNotBlank() && filesOn && !filesPermDeniedSession &&
         filesIndexState is com.armutlu.apporganizer.domain.models.FileIndexState.PermissionRequired
+    // Görev 2 kök neden: dosya kaynağı hiç açılmadıysa (filesOn=false) hiçbir satır
+    // gösterilmiyordu — kullanıcı kaynağı etkinleştiremiyordu. Kaynak kapalı + bilinçli
+    // kapatılmamışsa (Ayarlar'dan "kapat" seçilmediyse) "Dosyalarda da ara" kısayolu gösterilir.
+    val showFilesEnableHint = query.isNotBlank() && !filesOn && !filesOptedOut && !filesPermDeniedSession
 
     // Web/Play Store fallback — sorgu >= 2 karakter, tüm kaynaklar sıfır sonuç verince gösterilir (Ayarlar > Arama'dan kapatılabilir)
     var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
@@ -1629,6 +1642,53 @@ internal fun HomeAppSearchBar(
                                 Text(stringResource(R.string.home_search_files_permission_required), color = Color.White.copy(alpha = 0.90f),
                                     fontSize = 14.sp)
                                 Text(stringResource(R.string.home_search_files_permission_required_desc),
+                                    color = Color.White.copy(alpha = 0.45f), fontSize = 11.sp)
+                            }
+                        }
+                    }
+
+                    // Görev 2: dosya kaynağı hiç açılmamışsa etkinleştirme kısayolu (contactsOptedOut ile aynı desen)
+                    if (showFilesEnableHint) {
+                        if (appResults.isNotEmpty() || folderResults.isNotEmpty() ||
+                            settingResults.isNotEmpty() || contactResults.isNotEmpty() || showContactsPermissionHint
+                        ) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = Color.White.copy(alpha = 0.10f)
+                            )
+                        }
+                        HomeSearchGroupHeader(label = "Dosyalar", icon = Icons.Default.Description)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        arrayOf(
+                                            android.Manifest.permission.READ_MEDIA_IMAGES,
+                                            android.Manifest.permission.READ_MEDIA_VIDEO,
+                                            android.Manifest.permission.READ_MEDIA_AUDIO,
+                                        )
+                                    } else {
+                                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    }
+                                    filesPermLauncher.launch(permissions)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Description, contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.70f), modifier = Modifier.size(18.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.home_search_files_enable_title), color = Color.White.copy(alpha = 0.90f),
+                                    fontSize = 14.sp)
+                                Text(stringResource(R.string.home_search_files_enable_desc),
                                     color = Color.White.copy(alpha = 0.45f), fontSize = 11.sp)
                             }
                         }
@@ -2286,12 +2346,44 @@ internal fun FullScreenSearchOverlay(
                         }
                     }
                 }
+                // Görev 2 kök neden: dosya kaynağı hiç açılmadıysa (filesOn=false) hiçbir satır
+                // gösterilmiyordu — kullanıcı kaynağı hiç etkinleştiremiyordu.
+                if (!filesOn) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Description, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.home_search_files_enable_title),
+                            subtitle = stringResource(R.string.home_search_files_enable_desc)
+                        ) {
+                            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                arrayOf(
+                                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                                    android.Manifest.permission.READ_MEDIA_VIDEO,
+                                    android.Manifest.permission.READ_MEDIA_AUDIO,
+                                )
+                            } else arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                            filesPermLauncher.launch(permissions)
+                        }
+                    }
+                }
                 if (!contactsPermGranted && contactsOn) {
                     item {
                         SearchSimpleRow(
                             leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
                             title = "Kişi izni gerekli",
                             subtitle = "Dokunup Android kişi izni ver"
+                        ) {
+                            contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
+                        }
+                    }
+                }
+                // Görev 2 kök neden: kişi kaynağı hiç açılmadıysa hiçbir satır gösterilmiyordu.
+                if (!contactsOn) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.home_search_contacts_enable_title),
+                            subtitle = stringResource(R.string.home_search_contacts_enable_desc)
                         ) {
                             contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
                         }
@@ -2699,12 +2791,44 @@ internal fun FullScreenSearchOverlayV2(
                         }
                     }
                 }
+                // Görev 2 kök neden: dosya kaynağı hiç açılmadıysa (filesOn=false) hiçbir satır
+                // gösterilmiyordu — kullanıcı kaynağı hiç etkinleştiremiyordu.
+                if (!filesOn) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Description, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.home_search_files_enable_title),
+                            subtitle = stringResource(R.string.home_search_files_enable_desc)
+                        ) {
+                            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                arrayOf(
+                                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                                    android.Manifest.permission.READ_MEDIA_VIDEO,
+                                    android.Manifest.permission.READ_MEDIA_AUDIO,
+                                )
+                            } else arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                            filesPermLauncher.launch(permissions)
+                        }
+                    }
+                }
                 if (!contactsPermGranted && contactsOn) {
                     item {
                         SearchSimpleRow(
                             leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
                             title = stringResource(R.string.search_contacts_permission_required_title),
                             subtitle = stringResource(R.string.search_contacts_permission_required_desc)
+                        ) {
+                            contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
+                        }
+                    }
+                }
+                // Görev 2 kök neden: kişi kaynağı hiç açılmadıysa hiçbir satır gösterilmiyordu.
+                if (!contactsOn) {
+                    item {
+                        SearchSimpleRow(
+                            leading = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White.copy(alpha = 0.70f)) },
+                            title = stringResource(R.string.home_search_contacts_enable_title),
+                            subtitle = stringResource(R.string.home_search_contacts_enable_desc)
                         ) {
                             contactsPermLauncher.launch(android.Manifest.permission.READ_CONTACTS)
                         }

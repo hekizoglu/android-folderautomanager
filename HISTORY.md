@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX05 - 2026-07-20 - Bildirim turu: arka plan + arama kaynaklari + odul karti + klasor cerceve + Pixel toggle konumu
+
+**Yapilanlar:** (1) HomeScreen kok Box sabit siyahtan gercek arka plan tercihine (wallpaper/solid/gradient) geciti; FolderScreen ayni zemini ciziyor artik — klasorden cikista duvar kagidi flasi/siyah sicramasi gitti. (2) Arama kaynaklari: kisi+dosya kapaliyken (varsayilan) her 3 arama yuzeyinde (kompakt bar + 2 tam ekran overlay) "etkinlestir" davetleri eksikti/simetrisizdi — tamamlandi, izinsiz zorla acma yok. (3) TodayCardSelector'a DAILY_MISSIONS kademesi eklendi (rapor-hazir sonrasi, denge-ozeti oncesi) — odul/gorev artik normal gunde de ana ekranda "Bugunun gorevleri: X/Y . YildizZ" olarak gorunur (12 yeni test). (4) FolderTile'a arama cubuguyla BIREBIR ayni glass cerceve (1dp, White a=0.18f) — KEY_FOLDER_GLASS_BORDER_ENABLED varsayilan ACIK, pixelLook'ta uygulanmaz. (5) Pixel Gorunumu toggle'i Ana Sayfa Yapisi'ndan Gorunum (SettingsAppearanceSection) hub'ina tasindi. Iki dalga Sonnet agent, Fable dogruladi. Tam test: 119 suite / 1164 test / 0 hata. v1.4.7 (130).
+
+**Bug:** Yukaridaki 5 kullanici bildirimi. Yan etki yok — hepsi mevcut tercihe bagli veya toggle'li.
+
+**Sonraki:** Huseyin'in cihaz/emulator gorsel dogrulamasi.
+
 ## EX04 - 2026-07-20 - Arama UX fixleri: cekmece temiz acilis + otomatik klavye (Huseyin bildirimi)
 
 **Yapilanlar:** (1) Cekmece artik TEMIZ acilir — openAllApps/openAllAppsWithSearch _searchQuery'yi sifirlar; ana ekran global aramasi ayni state'i paylastigi icin eski sorgu cekmecede filtre olarak kalabiliyordu (kapanista temizlik vardi ama global aramadan kalan sorguyu yakalamiyordu). (2) Ana ekran arama overlay'lerinde (HomeScreenComponents 2 kopya) focusRequester alana bagliydi ama requestFocus HIC cagrilmiyordu — arama acilinca klavye acilmiyordu; LaunchedEffect(Unit) { requestFocus + keyboard.show } eklendi. compile yesil, v1.4.6 (129) APK gonderildi.

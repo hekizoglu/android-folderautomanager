@@ -83,6 +83,7 @@ fun FolderTile(
     folderShape: String = com.armutlu.apporganizer.utils.AppPrefs.DEFAULT_FOLDER_SHAPE,
     folderBadgeEnabled: Boolean = false,
     pixelLookEnabled: Boolean = false,
+    folderGlassBorderEnabled: Boolean = true,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -192,6 +193,14 @@ fun FolderTile(
                     } else {
                         catColor.copy(alpha = 0.30f)
                     }
+                )
+                .then(
+                    // Arama çubuğuyla aynı glassmorphism dili (FolderSearchBar dinlenme hali,
+                    // HomeScreenComponents.kt): 1dp, Color.White alpha 0.18f. Pixel modunda
+                    // uygulanmaz — stok Android klasör görünümü kendi kimliğini korur.
+                    if (folderGlassBorderEnabled && !pixelLookEnabled) {
+                        Modifier.border(1.dp, Color.White.copy(alpha = 0.18f), tileShape)
+                    } else Modifier
                 ),
             contentAlignment = Alignment.Center
         ) {

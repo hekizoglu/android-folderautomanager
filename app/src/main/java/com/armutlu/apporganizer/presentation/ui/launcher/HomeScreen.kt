@@ -198,6 +198,7 @@ fun HomeScreen(
     var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     var pixelLookEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)) }
+    var folderGlassBorderEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderGlassBorderEnabled(context)) }
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var fullscreenSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFullscreenSearchEnabled(context)) }
@@ -227,6 +228,8 @@ fun HomeScreen(
             when (key) {
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED ->
                     pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_GLASS_BORDER_ENABLED ->
+                    folderGlassBorderEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderGlassBorderEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_TYPE ->
                     bgType = com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_BG_COLOR ->
@@ -682,12 +685,13 @@ fun HomeScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Launcher yüzeyi: klasörler ve dashboard okunabilirliği için sabit siyah zemin.
-    // NOT: .haze() gesture'lardan SONRA — Haze 0.7.3 önce gelince pointer event tüketiyor
+    // Launcher yüzeyi: Ayarlar > Görünüm > Arka Plan seçimine göre boyanır (Görev 1, D26x).
+    // "Duvar Kağıdı" seçiliyken transparan kalır (sistem duvar kağıdı sızar); diğer stillerde
+    // opak boyanır. NOT: .haze() gesture'lardan SONRA — Haze 0.7.3 önce gelince pointer event tüketiyor
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .homeRootBackground(bgType, bgColorInt, bgGradientStyle)
             .nestedScroll(nestedScrollConnection)
             .pointerInput("tap") {
                 detectTapGestures(
@@ -1567,6 +1571,7 @@ fun HomeScreen(
                         folderBadgeEnabled = folderBadgeEnabled,
                         folderShape = folderShape,
                         pixelLookEnabled = pixelLookEnabled,
+                        folderGlassBorderEnabled = folderGlassBorderEnabled,
                         haptic = haptic,
                         onFolderClick = { onNavigateToFolder(it) },
                         onFolderLongClick = { folderContextMenu = it },
@@ -1761,4 +1766,23 @@ private fun homeBackgroundBrush(style: String): Brush = when (style) {
         Brush.verticalGradient(listOf(Color(0xFF1C1C1C), Color(0xFF2E2E2E)))
     else -> // HOME_BG_TURKUAZ + bilinmeyen deger fallback
         Brush.verticalGradient(listOf(Color(0xFF00897B), Color(0xFF26C6DA)))
+}
+
+/**
+ * Ortak kök zemin modifier'ı — HomeScreen ve FolderScreen aynı mantığı paylaşır (Görev 1).
+ * Kök neden: HomeScreen kök Box'ı eskiden sabit Color.Black boyuyordu; Ayarlar > Görünüm >
+ * Arka Plan'da "Duvar Kağıdı" seçili olsa bile siyah zemin sistem duvar kağıdının önüne
+ * geçiyordu (windowShowWallpaper=true zaten aktif — themes.xml). "Duvar Kağıdı" seçiliyken
+ * TRANSPARAN kalınır (sistem duvar kağıdı görünür); diğer stillerde (turkuaz/gece mavisi/
+ * minimal gri/düz renk) OPAK boyanır — duvar kağıdı hiç sızmaz. FolderScreen'den çıkışta
+ * flaş olmaması için klasör ekranı da aynı fonksiyonu kullanır.
+ */
+internal fun Modifier.homeRootBackground(
+    bgType: String,
+    bgColorInt: Int,
+    bgGradientStyle: String,
+): Modifier = when (bgType) {
+    "wallpaper" -> this // transparan — sistem duvar kağıdı sızar
+    "solid", "wallpaper_color" -> this.background(Color(bgColorInt))
+    else -> this.background(homeBackgroundBrush(bgGradientStyle)) // "gradient" + bilinmeyen fallback
 }

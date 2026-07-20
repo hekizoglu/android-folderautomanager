@@ -20,12 +20,16 @@ import com.armutlu.apporganizer.R
  *   `tickerItems.any { it.type == SmartTickerType.WEEKLY_REPORT }` ile türetilir — çağıran taraf
  *   bunu hesaplar, bu obje SmartTickerItem'a bağımlı olmaz (yalnızca Boolean alır).
  *
- * Öncelik sırası (S1 görev tanımı, birebir):
+ * Öncelik sırası (S1 görev tanımı + Görev 3 eklentisi):
  * 1. CRITICAL_PERMISSION — kritik izin/veri eksik (pulse veri-yok/izin-yok sinyali)
  * 2. RISKY_MISSION — riskli görev (mission.urgent, yani birincil görev AT_RISK)
  * 3. FOLDER_REVIEW — klasör/sınıflandırma incelemesi gerekiyor
  * 4. REPORT_READY — haftalık rapor hazır
- * 5. BALANCE_SUMMARY — hiçbiri yoksa, pulse'ın normal denge özeti (veri varsa)
+ * 5. DAILY_MISSIONS — mission != null (görev listesi aktif) ve yukarıdakilerin hiçbiri
+ *    eşleşmediyse "Bugünün görevleri: X/Y tamamlandı" gösterilir (Görev 3, D26x). Normal bir
+ *    günde (acil/riskli görev yok, rapor hazır değil) görev/yıldız ilerlemesi ana ekranda hiç
+ *    görünmüyordu — bu adım BALANCE_SUMMARY'den ÖNCE devreye girer.
+ * 6. BALANCE_SUMMARY — hiçbiri yoksa, pulse'ın normal denge özeti (veri varsa)
  *
  * Hiçbir girdi (mission/pulse) yoksa veya hiçbir öncelik eşleşmezse `null` döner — kart hiç
  * çizilmez (SmartDashboardPage bu durumda eski davranışa döner ya da hiçbir şey göstermez).
@@ -77,7 +81,21 @@ object TodayCardSelector {
             )
         }
 
-        // 5. Denge özeti — pulse verisi var ve yukarıdaki hiçbir öncelik eşleşmedi.
+        // 5. Günlük görevler — mission aktif (liste dolu) ve yukarıdaki hiçbir öncelik
+        // eşleşmedi (acil görev yok, klasör incelemesi yok, rapor hazır değil). Normal günde
+        // görev/yıldız ilerlemesini görünür kılar; BALANCE_SUMMARY'den önce değerlendirilir.
+        if (mission != null && mission.totalCount > 0) {
+            return TodayCardSpec(
+                kind = TodayCardKind.DAILY_MISSIONS,
+                titleRes = R.string.today_card_title,
+                subtitleRes = R.string.today_card_daily_missions_subtitle,
+                missionCompletedCount = mission.completedCount,
+                missionTotalCount = mission.totalCount,
+                missionTotalStars = mission.totalStars,
+            )
+        }
+
+        // 6. Denge özeti — pulse verisi var ve yukarıdaki hiçbir öncelik eşleşmedi.
         if (pulse != null && pulse.freshness != DataFreshness.UNAVAILABLE && !pulse.shouldHideScore) {
             return TodayCardSpec(
                 kind = TodayCardKind.BALANCE_SUMMARY,
@@ -104,6 +122,10 @@ data class TodayCardSpec(
     // BALANCE_SUMMARY için — DigitalLifeCard'daki mevcut alanlarla aynı kaynaktan.
     val pulseScore: Int? = null,
     val pulseStatusBand: PulseStatusBand? = null,
+    // DAILY_MISSIONS için — HomeMissionSummary'nin mevcut alanlarıyla aynı kaynaktan (Görev 3).
+    val missionCompletedCount: Int? = null,
+    val missionTotalCount: Int? = null,
+    val missionTotalStars: Int? = null,
 )
 
 /** Tek "BUGÜN" kartının gösterebileceği bağlamsal içerik türleri — öncelik sırasıyla aynı sırada. */
@@ -112,5 +134,6 @@ enum class TodayCardKind {
     RISKY_MISSION,
     FOLDER_REVIEW,
     REPORT_READY,
+    DAILY_MISSIONS,
     BALANCE_SUMMARY,
 }

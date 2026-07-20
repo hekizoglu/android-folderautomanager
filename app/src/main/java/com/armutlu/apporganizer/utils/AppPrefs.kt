@@ -223,6 +223,13 @@ object AppPrefs {
     fun isFolderBadgeEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_BADGE_ENABLED, false)
     fun setFolderBadgeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_BADGE_ENABLED, v).apply()
 
+    // Klasör kutucuğuna glassmorphism çerçeve — arama çubuğuyla aynı görsel dil (ince yarı
+    // saydam beyaz kenarlık). Varsayılan AÇIK (kullanıcı isteği). pixelLookEnabled iken
+    // uygulanmaz — stok Android klasör görünümü karıştırılmaz.
+    const val KEY_FOLDER_GLASS_BORDER_ENABLED = "folder_glass_border_enabled"
+    fun isFolderGlassBorderEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_GLASS_BORDER_ENABLED, true)
+    fun setFolderGlassBorderEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_GLASS_BORDER_ENABLED, v).apply()
+
     // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
     const val KEY_ICON_PACK = "icon_pack_package"
     fun getIconPack(context: Context): String = prefs(context).getString(KEY_ICON_PACK, "") ?: ""
@@ -1036,6 +1043,7 @@ object AppPrefs {
     fun setSearchSourceContactsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
 
     fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, false)
+    fun hasSearchSourceFilesPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_FILES)
     fun setSearchSourceFilesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_FILES, v).apply()
 
     // P0.3: Dosya indeksi kalıcı durumu — FileIndexState.Ready/Failed için Settings ekranı arasında hayatta kalır

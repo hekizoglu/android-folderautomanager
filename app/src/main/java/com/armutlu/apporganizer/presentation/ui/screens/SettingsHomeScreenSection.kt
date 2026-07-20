@@ -645,9 +645,6 @@ fun SettingsHomeScreenSection(
     var masterClockStyleEnabled by remember {
         mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMasterClockStyleEnabled(context))
     }
-    var pixelLookEnabled by remember {
-        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context))
-    }
     SettingsCard {
         SettingsSwitchRow(
             icon = Icons.Default.Dashboard,
@@ -744,17 +741,6 @@ fun SettingsHomeScreenSection(
                 }
             )
         }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        SettingsSwitchRow(
-            icon = Icons.Default.Android,
-            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_pixel_look_title),
-            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_pixel_look_desc),
-            checked = pixelLookEnabled,
-            onCheckedChange = {
-                pixelLookEnabled = it
-                com.armutlu.apporganizer.utils.AppPrefs.setPixelLookEnabled(context, it)
-            }
-        )
     }
 
     // ── Tüm Uygulamalar Ekranı ────────────────────────────────────────────

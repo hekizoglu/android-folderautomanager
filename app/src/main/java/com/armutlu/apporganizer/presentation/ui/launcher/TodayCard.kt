@@ -46,11 +46,21 @@ internal fun TodayCard(
         TodayCardKind.RISKY_MISSION -> onMissionClick
         TodayCardKind.FOLDER_REVIEW -> onFolderReviewClick
         TodayCardKind.REPORT_READY -> onReportReadyClick
+        TodayCardKind.DAILY_MISSIONS -> onMissionClick
         TodayCardKind.BALANCE_SUMMARY -> onPulseClick
     }
 
     val title = stringResource(spec.titleRes)
-    val subtitle = stringResource(spec.subtitleRes)
+    val subtitle = if (spec.kind == TodayCardKind.DAILY_MISSIONS) {
+        stringResource(
+            spec.subtitleRes,
+            spec.missionCompletedCount ?: 0,
+            spec.missionTotalCount ?: 0,
+            spec.missionTotalStars ?: 0,
+        )
+    } else {
+        stringResource(spec.subtitleRes)
+    }
 
     GlassCard(
         modifier = modifier

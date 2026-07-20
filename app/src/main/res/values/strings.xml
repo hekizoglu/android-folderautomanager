@@ -59,6 +59,8 @@
     <string name="home_search_hint_full">Uygulama, klasör, ayar, kişi veya dosya ara</string>
     <string name="home_search_contacts_enable_title">Kişilerde de ara</string>
     <string name="home_search_contacts_enable_desc">Rehber sonuçları için dokunup izin ver</string>
+    <string name="home_search_files_enable_title">Dosyalarda da ara</string>
+    <string name="home_search_files_enable_desc">Dosya sonuçları için dokunup izin ver</string>
 
     <!-- Folder -->
     <string name="folder_rename_hint">Klasör adı</string>
@@ -481,6 +483,7 @@
     <string name="today_card_risky_mission_subtitle">Bir görevin süresi daralıyor</string>
     <string name="today_card_folder_review_subtitle">Birkaç uygulama klasör bekliyor</string>
     <string name="today_card_report_ready_subtitle">Haftalık raporun hazır</string>
+    <string name="today_card_daily_missions_subtitle">Bugünün görevleri: %1$d/%2$d tamamlandı · ⭐%3$d</string>
     <string name="today_card_balance_summary_subtitle">Bugün dengen gayet iyi görünüyor</string>
     <string name="settings_today_card_enabled_title">Tek \'Bugün\' kartı</string>
     <string name="settings_today_card_enabled_desc">Görev, dijital yaşam ve öneri kartları yerine tek bağlamsal kart gösterilir; kapatınca ayrı kartlar geri gelir</string>
@@ -662,6 +665,8 @@
     <string name="settings_master_clock_style_desc">Usta seviyesine ulaştın — saat metnine altın tonlu vurgu ekler</string>
     <string name="settings_pixel_look_title">Android (Pixel) Görünümü</string>
     <string name="settings_pixel_look_desc">Stok Android görünümü: dinamik renkler, sade klasörler, sistem tipografisi</string>
+    <string name="settings_folder_glass_border_title">Klasör çerçevesi (Glass)</string>
+    <string name="settings_folder_glass_border_desc">Klasör kutucuklarına arama çubuğuyla aynı ince, yarı saydam çerçeve ekler</string>
     <!-- Dongu G6: Yildiz Ekonomisi — seviye rozeti + ilerleme + kozmetik acilim -->
     <string name="missions_level_badge">🎖 %1$s</string>
     <string name="missions_level_progress">%1$s · %2$d ⭐ sonra %3$s</string>

@@ -83,6 +83,7 @@ internal fun FolderGridPage(
     folderBadgeEnabled: Boolean = false,
     folderShape: String,
     pixelLookEnabled: Boolean = false,
+    folderGlassBorderEnabled: Boolean = true,
     haptic: HapticFeedback,
     onFolderClick: (AppFolder) -> Unit,
     onFolderLongClick: (AppFolder) -> Unit,
@@ -190,6 +191,7 @@ internal fun FolderGridPage(
                 folderBadgeEnabled = folderBadgeEnabled,
                 folderShape = folderShape,
                 pixelLookEnabled = pixelLookEnabled,
+                folderGlassBorderEnabled = folderGlassBorderEnabled,
                 modifier = Modifier
                     .then(if (folderGestureMode(editMode) == FolderGestureMode.REORDER) Modifier.pointerInput(index) {
                         detectDragGesturesAfterLongPress(

@@ -10,24 +10,28 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
- * [TodayCardSelector] testleri (Görev S1). Saf Kotlin — Android bağımlılığı yok.
+ * [TodayCardSelector] testleri (Görev S1 + Görev 3). Saf Kotlin — Android bağımlılığı yok.
  * Öncelik sırası: CRITICAL_PERMISSION > RISKY_MISSION > FOLDER_REVIEW > REPORT_READY >
- * BALANCE_SUMMARY > null (hiçbir girdi/öncelik yok).
+ * DAILY_MISSIONS > BALANCE_SUMMARY > null (hiçbir girdi/öncelik yok).
  */
 class TodayCardSelectorTest {
 
     private fun mission(
         urgent: Boolean,
         status: MissionStatus? = if (urgent) MissionStatus.AT_RISK else MissionStatus.IN_PROGRESS,
+        totalCount: Int = 3,
+        completedCount: Int = 1,
+        totalStars: Int = 0,
     ) = HomeMissionSummary(
-        completedCount = 1,
-        totalCount = 3,
+        completedCount = completedCount,
+        totalCount = totalCount,
         primaryMissionId = "m1",
         primaryTitle = "Görev",
         primaryCurrentText = "1/3",
         primaryRemainingText = "2 kaldı",
         primaryStatus = status,
         urgent = urgent,
+        totalStars = totalStars,
     )
 
     private fun pulse(
@@ -94,12 +98,57 @@ class TodayCardSelectorTest {
         assertEquals(TodayCardKind.REPORT_READY, spec?.kind)
     }
 
-    // ── Öncelik 5: BALANCE_SUMMARY ──────────────────────────────────────────
+    // ── Öncelik 5: DAILY_MISSIONS (Görev 3) ──────────────────────────────────
+
+    @Test
+    fun `daily missions shown on a normal day when balance would otherwise win`() {
+        val spec = TodayCardSelector.select(
+            mission = mission(urgent = false, totalCount = 3, completedCount = 1, totalStars = 12),
+            pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
+            weeklyReportReady = false,
+        )
+        assertEquals(TodayCardKind.DAILY_MISSIONS, spec?.kind)
+        assertEquals(1, spec?.missionCompletedCount)
+        assertEquals(3, spec?.missionTotalCount)
+        assertEquals(12, spec?.missionTotalStars)
+    }
+
+    @Test
+    fun `daily missions stays behind urgent mission priority`() {
+        val spec = TodayCardSelector.select(
+            mission = mission(urgent = true, totalCount = 3, completedCount = 1),
+            pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
+            weeklyReportReady = false,
+        )
+        assertEquals(TodayCardKind.RISKY_MISSION, spec?.kind)
+    }
+
+    @Test
+    fun `daily missions stays behind report ready priority`() {
+        val spec = TodayCardSelector.select(
+            mission = mission(urgent = false, totalCount = 3, completedCount = 1),
+            pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
+            weeklyReportReady = true,
+        )
+        assertEquals(TodayCardKind.REPORT_READY, spec?.kind)
+    }
+
+    @Test
+    fun `daily missions not shown when mission list is empty`() {
+        val spec = TodayCardSelector.select(
+            mission = mission(urgent = false, totalCount = 0, completedCount = 0),
+            pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
+            weeklyReportReady = false,
+        )
+        assertEquals(TodayCardKind.BALANCE_SUMMARY, spec?.kind)
+    }
+
+    // ── Öncelik 6: BALANCE_SUMMARY ──────────────────────────────────────────
 
     @Test
     fun `balance summary shown when nothing else applies`() {
         val spec = TodayCardSelector.select(
-            mission = mission(urgent = false),
+            mission = null,
             pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
             weeklyReportReady = false,
         )
@@ -110,7 +159,7 @@ class TodayCardSelectorTest {
     @Test
     fun `balance summary hidden when pulse confidence is low`() {
         val spec = TodayCardSelector.select(
-            mission = mission(urgent = false),
+            mission = null,
             pulse = pulse(confidence = DataConfidence.LOW),
             weeklyReportReady = false,
         )
@@ -126,8 +175,8 @@ class TodayCardSelectorTest {
     }
 
     @Test
-    fun `mission not urgent and no pulse returns null`() {
-        val spec = TodayCardSelector.select(mission = mission(urgent = false), pulse = null, weeklyReportReady = false)
+    fun `mission with empty list and no pulse returns null`() {
+        val spec = TodayCardSelector.select(mission = mission(urgent = false, totalCount = 0, completedCount = 0), pulse = null, weeklyReportReady = false)
         assertNull(spec)
     }
 }
