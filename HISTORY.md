@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX04 - 2026-07-20 - Arama UX fixleri: cekmece temiz acilis + otomatik klavye (Huseyin bildirimi)
+
+**Yapilanlar:** (1) Cekmece artik TEMIZ acilir — openAllApps/openAllAppsWithSearch _searchQuery'yi sifirlar; ana ekran global aramasi ayni state'i paylastigi icin eski sorgu cekmecede filtre olarak kalabiliyordu (kapanista temizlik vardi ama global aramadan kalan sorguyu yakalamiyordu). (2) Ana ekran arama overlay'lerinde (HomeScreenComponents 2 kopya) focusRequester alana bagliydi ama requestFocus HIC cagrilmiyordu — arama acilinca klavye acilmiyordu; LaunchedEffect(Unit) { requestFocus + keyboard.show } eklendi. compile yesil, v1.4.6 (129) APK gonderildi.
+
+**Bug:** Yukaridaki iki UX hatasi. Yan etki yok.
+
+**Sonraki:** Huseyin'in cihaz dogrulamasi (Pixel gorunumu + arama fixleri ayni APK'da).
+
 ## PIXEL-LOOK - 2026-07-20 - "Android (Pixel) Gorunumu" tema secenegi (Huseyin talebi)
 
 **Yapilanlar:** Yeni KEY_PIXEL_LOOK_ENABLED toggle'i (varsayilan KAPALI — kendi kimligimiz varsayilan, vizyon karari korundu). Acikken: Material You DYNAMIC palet zorlanir (Theme.kt; Android 12 alti stok fallback); FolderTile stok Android klasoru olur (emoji/ozel renk yok sayilir, squircle ~%28 radius, notr yari saydam zemin, ilk 4 uygulamanin 2x2 mini ikon onizlemesi); AllAppsDrawer blur yerine %95 opasiteli duz yuzey + 5 sutun + hap arama cubugu; tipografi sistem Roboto ~12sp; PulseClockWidget sade dijital moda duser. Tum sabitler tek dosyada: presentation/ui/theme/PixelLookPolicy.kt. TR+EN string'ler. Sonnet uyguladi (bitiste API kesintisi yasadi ama is TAMDI), Fable compile+kod dogruladi. v1.4.5 (128).

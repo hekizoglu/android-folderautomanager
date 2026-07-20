@@ -1950,6 +1950,13 @@ internal fun FullScreenSearchOverlay(
     var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
     val focusRequester = remember { FocusRequester() }
 
+    // Arama acilir acilmaz alan odaklanir ve klavye gosterilir — requestFocus cagrilmadigi
+    // icin kullanici her seferinde kutuya ayrica dokunmak zorunda kaliyordu (Huseyin bildirimi).
+    LaunchedEffect(Unit) {
+        runCatching { focusRequester.requestFocus() }
+        keyboardController?.show()
+    }
+
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -2342,6 +2349,12 @@ internal fun FullScreenSearchOverlayV2(
     }
 
     BackHandler(enabled = true) { closeOverlay() }
+
+    // Arama acilir acilmaz alan odaklanir ve klavye gosterilir (Huseyin bildirimi — requestFocus eksikti).
+    LaunchedEffect(Unit) {
+        runCatching { focusRequester.requestFocus() }
+        keyboardController?.show()
+    }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)

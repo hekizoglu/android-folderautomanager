@@ -501,11 +501,15 @@ class LauncherViewModel @Inject constructor(
 
     fun openAllApps() {
         _focusSearchOnOpen.value = false
+        // Cekmece TEMIZ acilir — ana ekran global aramasi ayni _searchQuery'yi paylastigi
+        // icin onceki oturumun sorgusu cekmecede filtre olarak kalabiliyordu (Huseyin bildirimi).
+        _searchQuery.value = ""
         _allAppsOpen.value = true
     }
 
     fun openAllAppsWithSearch() {
         _focusSearchOnOpen.value = true
+        _searchQuery.value = ""
         _allAppsOpen.value = true
     }
 
