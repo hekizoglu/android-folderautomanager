@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## DENETIM PLANI KAPANDI - 2026-07-20 - 14/14 madde (F1-F7 + S1-S7), final v1.4.4 (127)
+
+**Yapilanlar:** Harici denetim raporunun tum maddeleri koda karsi dogrulanip kapatildi. PAKET F (guvenlik/mantik): DeepSeek anahtari yedek sizintisi, biyometrik route bypass, streak batch hatasi, DATA_UNAVAILABLE durumu, focus gece yarisi, cekmece onClick+telemetri, olu kod/yorum tutarliligi. PAKET S (sadelestirme): tek BUGUN karti, odul yuzeyi+Usta odulu, cekmece tek menu, ayarlar 6-hub, rapor merkezi 5'e, FCM->haftalik worker+gizlilik metni, Wrapped anahtar yonlendirmesi. BONUS: Codex'in classifier compact-eslesme regresyonu (com.app.*->TRAVEL) düzeltildi. 3 APK teslim edildi (v1.4.2/125, v1.4.3/126, final v1.4.4/127 - 27.46MB); tum donguler tam test yesil. Paralel Codex oturumuyla dosya-kapsami ayrimi korundu. DENETIM_FIX_VE_SADELESTIRME_PLANI.md bosaldi ve silindi.
+
+**Bug:** Oturum boyunca ortam: ~6 build kilidi + KSP cache bozulmasi + fix_encoding.py res-XML tuzagi — hepsi cozuldu, dersler HISTORY'de.
+
+**Sonraki:** ROADMAP/FIKIRLER'den yeni oncelik veya Huseyin'in 4-cihaz karari.
+
 ## S6 - 2026-07-20 - FCM kaldirildi + gizlilik metni durustlestirildi (PAKET S KAPANDI)
 
 **Yapilanlar:** Aktif backend'i olmayan FCM cikartildi: AppFirebaseMessagingService silindi, manifest kaydi + firebase-messaging bagimliligi kaldirildi (Analytics/Crashlytics/Perf durur), AppOrganizerApp'ten token alma + FCM'e ozel bildirim kanali temizlendi. Yerine haftalik CategoryDbUpdateWorker (fetchAndCache, CONNECTED constraint, KEEP policy — BackupWorker deseni). AppPrefs FCM getter/setter'lari kalkti; migrateSensitivePrefsIfNeeded legacy temizligi + device_prefs backup exclusion'lari YERINDE (eski cihaz korumasi). onb_usage_privacy mutlak "hicbir veri disari gonderilmez" iddiasi durustlestirildi (AI kocu acikken uygulama adsiz haftalik ozet DeepSeek'e gider); bildirim/gizlilik-analizi metinleri dogru oldugu icin dokunulmadi. Koc gorunurluk kurallari dogrulamada ZATEN uyumlu cikti (2 cumle, yalniz haftalik rapor). Migration testleri 4/4 yesil.
