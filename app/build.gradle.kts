@@ -41,15 +41,15 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 125
-        versionName = "1.4.2"
+        versionCode = 126
+        versionName = "1.4.3"
         buildConfigField(
             "boolean",
             "FIREBASE_BUILD_ENABLED",
             (!skipGoogleServices).toString(),
         )
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.armutlu.apporganizer.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -141,6 +141,12 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+
+    sourceSets {
+        getByName("androidTest") {
+            assets.srcDir("$projectDir/schemas")
         }
     }
 
@@ -343,6 +349,8 @@ dependencies {
     androidTestImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.52")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     // LeakCanary unit test'te ASM transform ile classpath wiring bozuyor â€” kaldÄ±rÄ±ldÄ±
