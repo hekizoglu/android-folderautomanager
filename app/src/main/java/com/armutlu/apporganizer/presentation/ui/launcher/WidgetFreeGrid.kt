@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,12 +40,15 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.domain.home.EdgeScrollDirection
 import com.armutlu.apporganizer.domain.home.GridBounds
 import com.armutlu.apporganizer.domain.home.GridPosition
+import com.armutlu.apporganizer.domain.home.detectEdgeScroll
 import com.armutlu.apporganizer.domain.home.findFirstFreeCell
 import com.armutlu.apporganizer.domain.home.isValidPlacement
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 /**
  * Faz S3 — Dashboard widget alanının serbest 2D grid yerleşimi. `AppPrefs.KEY_WIDGET_FREE_GRID_ENABLED`
@@ -87,6 +92,9 @@ fun WidgetFreeGrid(
     screenHeightDp: Int = 800,
     modifier: Modifier = Modifier,
     onDragActiveChange: (Boolean) -> Unit = {},
+    // Faz S4 — opsiyonel: verilirse sürükleme sırasında ekran kenarına yaklaşınca sayfa
+    // otomatik kaydırılır. null (varsayılan) = eski davranış, hiçbir şey değişmez.
+    pagerState: PagerState? = null,
     viewModel: WidgetFreeGridViewModel = hiltViewModel(),
 ) {
     if (widgetIds.isEmpty()) return
@@ -95,6 +103,7 @@ fun WidgetFreeGrid(
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
     val positions by viewModel.observePositions(WIDGET_GRID_SCREEN_INDEX).collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     // Her widget'ın minWidth/minHeight (dp) bilgisini AppWidgetManager'dan tek seferlik okur.
     var widgetSizes by remember { mutableStateOf<Map<Int, Pair<Int, Int>>>(emptyMap()) }
@@ -115,6 +124,8 @@ fun WidgetFreeGrid(
         val cellSizeDpInt = 56
         val columns = remember(maxWidth) { computeFreeGridColumns(maxWidth, cellSizeDp) }
         val cellSizePx = with(density) { cellSizeDp.toPx() }
+        // Faz S4 — kenar auto-scroll için composable genişliği px cinsinden.
+        val widthPx = with(density) { maxWidth.toPx() }
 
         val spans = remember(widgetSizes, columns) {
             widgetIds.associateWith { id ->
@@ -157,6 +168,8 @@ fun WidgetFreeGrid(
 
         var draggingItemId by remember { mutableStateOf<String?>(null) }
         var dragOffset by remember { mutableStateOf(Offset.Zero) }
+        // Faz S4 — son kenar-scroll tetiklemesinin zamanı (debounce, 700ms).
+        var lastEdgeScrollAt by remember { mutableStateOf(0L) }
 
         LaunchedEffect(draggingItemId) {
             onDragActiveChange(draggingItemId != null)
@@ -198,6 +211,25 @@ fun WidgetFreeGrid(
                                     onDrag = { change, dragAmount ->
                                         change.consume()
                                         dragOffset += dragAmount
+
+                                        // Faz S4 — parmak ekranın sol/sağ %12 bandına girip 700ms
+                                        // kalırsa pager'ı bir sayfa kaydır (sürükleme devam eder,
+                                        // widget'ın screenIndex'i DEĞİŞMEZ — sadece görünen sayfa).
+                                        if (pagerState != null) {
+                                            val direction = detectEdgeScroll(change.position.x, widthPx)
+                                            val now = System.currentTimeMillis()
+                                            if (direction != EdgeScrollDirection.NONE &&
+                                                now - lastEdgeScrollAt >= 700L
+                                            ) {
+                                                lastEdgeScrollAt = now
+                                                val targetPage = (pagerState.currentPage +
+                                                    if (direction == EdgeScrollDirection.NEXT) 1 else -1)
+                                                    .coerceIn(0, (pagerState.pageCount - 1).coerceAtLeast(0))
+                                                coroutineScope.launch {
+                                                    pagerState.animateScrollToPage(targetPage)
+                                                }
+                                            }
+                                        }
                                     },
                                     onDragEnd = {
                                         val current = position

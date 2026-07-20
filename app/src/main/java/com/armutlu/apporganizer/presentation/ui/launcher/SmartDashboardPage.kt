@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -55,6 +56,9 @@ internal fun SmartDashboardPage(
     state: DashboardUiState,
     actions: DashboardActions,
     modifier: Modifier = Modifier,
+    // Faz S4 — opsiyonel: widget sürüklerken kenara yaklaşınca sayfa otomatik kaydırılsın diye
+    // HomeScreen'deki gerçek pagerState buradan WidgetFreeGrid'e iletilir. null = eski davranış.
+    pagerState: PagerState? = null,
 ) {
     val scrollState = rememberScrollState()
 
@@ -285,6 +289,7 @@ internal fun SmartDashboardPage(
                                         screenHeightDp = state.secondarySections.screenHeightDp,
                                         modifier = Modifier.fillMaxWidth(),
                                         onDragActiveChange = actions.onWidgetDragActiveChange,
+                                        pagerState = pagerState,
                                     )
                                 } else {
                                     WidgetArea(
