@@ -415,6 +415,15 @@ object AppPrefs {
         prefs(context).getBoolean(KEY_FOLDER_CAROUSEL_ENABLED, true)
     fun setFolderCarouselEnabled(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_FOLDER_CAROUSEL_ENABLED, enabled).apply()
+
+    // Faz S2 — Klasör içi serbest 2D grid yerleşimi (deneysel). Varsayılan KAPALI: yeni ve
+    // riskli davranış, opt-in olmalı (CLAUDE.md "Yeni Özellik = Ayarlar Kuralı"). Kapalıyken
+    // FolderScreen mevcut LazyVerticalGrid davranışını birebir korur.
+    const val KEY_FOLDER_FREE_GRID_ENABLED = "folder_free_grid_enabled"
+    fun isFolderFreeGridEnabled(context: Context) =
+        prefs(context).getBoolean(KEY_FOLDER_FREE_GRID_ENABLED, false)
+    fun setFolderFreeGridEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_FREE_GRID_ENABLED, enabled).apply()
     const val KEY_FOLDER_CAROUSEL_POSITION = "folder_carousel_position"
     const val FOLDER_CAROUSEL_POS_TOP = "TOP"
     const val FOLDER_CAROUSEL_POS_MIDDLE = "MIDDLE"

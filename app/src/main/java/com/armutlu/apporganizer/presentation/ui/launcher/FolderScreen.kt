@@ -12,6 +12,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -71,6 +73,8 @@ fun FolderScreen(
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
     var folderCarouselEnabled by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
+    // Faz S2 — deneysel, varsayılan KAPALI. Açıkken klasör grid'i FolderFreeGrid'e döner.
+    var folderFreeGridEnabled by remember { mutableStateOf(AppPrefs.isFolderFreeGridEnabled(context)) }
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
     var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
     var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
@@ -85,6 +89,9 @@ fun FolderScreen(
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == AppPrefs.KEY_FOLDER_CAROUSEL_ENABLED) {
                 folderCarouselEnabled = AppPrefs.isFolderCarouselEnabled(context)
+            }
+            if (key == AppPrefs.KEY_FOLDER_FREE_GRID_ENABLED) {
+                folderFreeGridEnabled = AppPrefs.isFolderFreeGridEnabled(context)
             }
             if (key == AppPrefs.KEY_FOLDER_CAROUSEL_POSITION) {
                 folderCarouselPosition = AppPrefs.getFolderCarouselPosition(context)
@@ -623,6 +630,30 @@ fun FolderScreen(
                             if (searchQuery.isNotEmpty()) "\"$searchQuery\" bulunamadı" else "Bu klasör boş",
                             color = textSecondary,
                             fontSize = 16.sp,
+                        )
+                    }
+                } else if (folderFreeGridEnabled) {
+                    // Faz S2 — deneysel serbest 2D yerleşim (Ayarlar > Launcher'dan opt-in).
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 8.dp, vertical = 16.dp),
+                    ) {
+                        FolderFreeGrid(
+                            apps = displayApps,
+                            categoryId = f.category.categoryId,
+                            onClick = { app ->
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                AppAnalytics.appLaunched("folder_screen")
+                                viewModel.launchApp(context, app.packageName)
+                            },
+                            onLongClick = { app ->
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                contextMenuApp = app
+                            },
+                            iconSize = 56.dp,
                         )
                     }
                 } else {

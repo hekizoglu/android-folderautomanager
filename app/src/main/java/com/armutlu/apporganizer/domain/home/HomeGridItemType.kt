@@ -8,6 +8,8 @@ enum class HomeGridItemType {
     SECTION,
     WIDGET,
     FOLDER,
+    // Faz S2 — klasör içindeki tek bir uygulama kısayolunun serbest grid pozisyonu.
+    APP_SHORTCUT,
 }
 
 /**

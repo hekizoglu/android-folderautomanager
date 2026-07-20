@@ -353,6 +353,27 @@ fun SettingsLauncherScreen(
             }
         }
 
+        // ── Klasör İçi Serbest Yerleşim (Faz S2, deneysel) ─────────────────
+        item {
+            var folderFreeGrid by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOLDER_FREE_GRID_ENABLED,
+                read = { AppPrefs.isFolderFreeGridEnabled(context) }
+            )
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.Folder,
+                    title = "Klasörde Serbest Yerleşim (Deneysel)",
+                    subtitle = "Klasör içindeki uygulama ikonlarını istediğin konuma sürükleyip bırak",
+                    checked = folderFreeGrid,
+                    onCheckedChange = {
+                        folderFreeGrid = it
+                        AppPrefs.setFolderFreeGridEnabled(context, it)
+                    }
+                )
+            }
+        }
+
         // ── Quick Wheel + Focus Mode ──────────────────────────────────────
         // Ana ekran davranış ayarları — mantıksal gruplama (D199)
         item { SettingsSectionTitle("Hızlı Erişim") }
