@@ -11,7 +11,8 @@ object AppPrefs {
     // tipografi). Varsayılan KAPALI: kendi kimliğimiz (turkuaz, frosted dock, Pulse Clock)
     // varsayılan kalır — 2026-07-14 vizyon kararı.
     const val KEY_PIXEL_LOOK_ENABLED = "pixel_look_enabled"
-    fun isPixelLookEnabled(context: Context) = prefs(context).getBoolean(KEY_PIXEL_LOOK_ENABLED, false)
+    // Huseyin karari (2026-07-20): ilk kurulumda varsayilan Pixel Gorunumu ACIK.
+    fun isPixelLookEnabled(context: Context) = prefs(context).getBoolean(KEY_PIXEL_LOOK_ENABLED, true)
     fun setPixelLookEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_PIXEL_LOOK_ENABLED, v).apply()
 
     // P24/P25 tamamlandı: pager v2 varsayılan AÇIK; safe-mode sorun çıkarsa eski davranışa döndürür.

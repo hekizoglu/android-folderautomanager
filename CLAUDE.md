@@ -318,11 +318,11 @@ Uygulama: Zorluk 1-3 → Haiku/lokal · 4-6 → Sonnet agent'a spec'le devret ·
 ## 7. Proje
 
 ### Ne?
-Android launcher — uygulamaları otomatik kategorilere göre klasörlere böler. **Vizyon (2026-07-14, Hüseyin kararı):** Artık Pixel Launcher klonu DEĞİLİZ — kendi kimliği olan, kendi başına harika bir uygulama olmak istiyoruz. Tasarım kararlarında ölçüt "Pixel ne yapıyor?" değil, "kullanıcımız için en iyisi ne?" sorusudur.
+Android launcher — uygulamaları otomatik kategorilere göre klasörlere böler. **Vizyon (2026-07-14, Hüseyin kararı):** Kendi kimliğimiz var, tasarım ölçütü "Pixel ne yapıyor?" değil "kullanıcımız için en iyisi ne?" sorusudur — ama **Pixel Görünümü (2026-07-20 kararı) artık ilk kurulumda VARSAYILAN AÇIK** (`KEY_PIXEL_LOOK_ENABLED` default true): yeni kullanıcı stok Android hissiyle karşılanır, kendi kimliğimiz (turkuaz, frosted dock, Pulse Clock) Ayarlar > Görünüm'den tercihe bağlı olarak açılır. Kod tarafında iki görünüm de birinci sınıf — biri "asıl", diğeri "alternatif" değil.
 
 ### Temel Prensipler
 - Turkuaz tema: primary `#00897B` (Teal 600), secondary `#26C6DA` (Cyan)
-- Kendi görsel kimliğimiz: transparent bg, frosted dock, Pulse Clock — Pixel taklidi değil, özgün deneyim (2026-07-14 vizyon kararı)
+- Kendi görsel kimliğimiz: transparent bg, frosted dock, Pulse Clock — özgün deneyim, Ayarlar > Görünüm'den seçilir (2026-07-14 vizyon kararı). İlk kurulum varsayılanı ise Pixel Görünümü'dür (2026-07-20 kararı, §7 Pixel Görünümü notuna bak).
 - İlk açılışta launcher dialog (RoleManager)
 - Büyük dosyaları böl, tek sorumluluk
 

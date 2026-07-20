@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX06 - 2026-07-20 - Cekmece son-kullanilan/favori/bildirim/yeni-yuklenen satirlarina uzun basma + Pixel varsayilan ACIK
+
+**Yapilanlar:** (1) Cekmecedeki 4 ikon-satiri bolumunde (Son Kullanilanlar, Favoriler, Son Bildirimliler, Bugun Yuklenenler) sadece .clickable vardi, onLongClick HIC yoktu — alfabetik listedeki NiagaraAppRow'da (bilgi menusu) zaten calisiyordu, bu 4 bolum atlanmisti. combinedClickable + haptic ile eklendi, mevcut onAppLongClick callback zincirine baglandi (AppInfo detay/bilgi sheet'i ayni sekilde acilir). (2) Huseyin karari: Pixel Gorunumu artik ilk kurulumda VARSAYILAN ACIK (isPixelLookEnabled default false->true) — CLAUDE.md vizyon notu guncellendi (2026-07-14 karari degil, UZERINE eklendi: kod tarafinda iki gorunum de birinci sinif, varsayilan Pixel). Tam test yesil. v1.4.8 (131).
+
+**Bug:** Cekmece uzun basma eksikligi (yukarida). Yan etki yok.
+
+**Sonraki:** Huseyin'in cihaz gorsel dogrulamasi.
+
 ## EX05 - 2026-07-20 - Bildirim turu: arka plan + arama kaynaklari + odul karti + klasor cerceve + Pixel toggle konumu
 
 **Yapilanlar:** (1) HomeScreen kok Box sabit siyahtan gercek arka plan tercihine (wallpaper/solid/gradient) geciti; FolderScreen ayni zemini ciziyor artik — klasorden cikista duvar kagidi flasi/siyah sicramasi gitti. (2) Arama kaynaklari: kisi+dosya kapaliyken (varsayilan) her 3 arama yuzeyinde (kompakt bar + 2 tam ekran overlay) "etkinlestir" davetleri eksikti/simetrisizdi — tamamlandi, izinsiz zorla acma yok. (3) TodayCardSelector'a DAILY_MISSIONS kademesi eklendi (rapor-hazir sonrasi, denge-ozeti oncesi) — odul/gorev artik normal gunde de ana ekranda "Bugunun gorevleri: X/Y . YildizZ" olarak gorunur (12 yeni test). (4) FolderTile'a arama cubuguyla BIREBIR ayni glass cerceve (1dp, White a=0.18f) — KEY_FOLDER_GLASS_BORDER_ENABLED varsayilan ACIK, pixelLook'ta uygulanmaz. (5) Pixel Gorunumu toggle'i Ana Sayfa Yapisi'ndan Gorunum (SettingsAppearanceSection) hub'ina tasindi. Iki dalga Sonnet agent, Fable dogruladi. Tam test: 119 suite / 1164 test / 0 hata. v1.4.7 (130).
