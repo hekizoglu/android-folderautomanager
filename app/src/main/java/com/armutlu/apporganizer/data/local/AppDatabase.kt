@@ -23,8 +23,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class],
-    version = 19,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class],
+    version = 20,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,6 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun missionHistoryDao(): MissionHistoryDao
     abstract fun taskScoreEventDao(): TaskScoreEventDao
     abstract fun missionInstanceDao(): MissionInstanceDao
+    abstract fun tickerHistoryDao(): TickerHistoryDao
     
     companion object {
         @Volatile
@@ -260,6 +261,30 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v19→v20: ticker_history tablosu — haber şeridi (SmartTickerItem) arşiv ekranı
+        // ("Tüm haberler", mail kutusu okundu/okunmadı + 7 gün otomatik silme). Codex'in
+        // search kodu DEĞİŞMEDİ — bu sadece yeni bir entity/DAO/migration ekler.
+        internal val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS ticker_history (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        type TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        subtitle TEXT,
+                        icon TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        isRead INTEGER NOT NULL DEFAULT 0,
+                        actionType TEXT NOT NULL,
+                        sensitive INTEGER NOT NULL DEFAULT 0
+                    )
+                    """
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_ticker_history_createdAt ON ticker_history(createdAt)")
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -372,7 +397,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_15_16,
                         MIGRATION_16_17,
                         MIGRATION_17_18,
-                        MIGRATION_18_19
+                        MIGRATION_18_19,
+                        MIGRATION_19_20
                     )
                     .build()
 

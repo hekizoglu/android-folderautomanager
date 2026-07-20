@@ -92,6 +92,7 @@ internal fun HomeTickerRow(
     onDismissItem: ((SmartTickerItem) -> Unit)? = null,
     onHideType: ((SmartTickerType) -> Unit)? = null,
     onOpenTickerSettings: (() -> Unit)? = null,
+    onOpenTickerHistory: (() -> Unit)? = null,
     onDisableTicker: (() -> Unit)? = null,
     autoAdvanceEnabled: Boolean = true,
     autoAdvanceIntervalMs: Long = AUTO_ADVANCE_INTERVAL_MS,
@@ -302,7 +303,7 @@ internal fun HomeTickerRow(
             }
 
             // Uzun basma menüsü — sessize alma + içerik bazlı kontrol (roadmap T04).
-            if (onMute != null || onDismissItem != null || onHideType != null || onOpenTickerSettings != null || onDisableTicker != null) {
+            if (onMute != null || onDismissItem != null || onHideType != null || onOpenTickerSettings != null || onOpenTickerHistory != null || onDisableTicker != null) {
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     if (onDismissItem != null) {
                         DropdownMenuItem(
@@ -342,6 +343,15 @@ internal fun HomeTickerRow(
                                 }
                             )
                         }
+                    }
+                    if (onOpenTickerHistory != null) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ticker_history_menu_open)) },
+                            onClick = {
+                                menuOpen = false
+                                onOpenTickerHistory()
+                            }
+                        )
                     }
                     if (onOpenTickerSettings != null) {
                         DropdownMenuItem(

@@ -308,6 +308,7 @@ internal fun SmartDashboardPage(
                             onDismissItem = actions.onTickerDismissItem,
                             onHideType = actions.onTickerHideType,
                             onOpenTickerSettings = actions.onOpenTickerSettings,
+                            onOpenTickerHistory = actions.onOpenTickerHistory,
                             onDisableTicker = actions.onDisableTicker,
                             autoAdvanceEnabled = state.ticker.tickerAutoAdvance,
                             autoAdvanceIntervalMs = state.ticker.tickerIntervalSeconds * 1000L,

@@ -96,6 +96,10 @@ object AppModule {
     fun provideMissionInstanceDao(db: AppDatabase): com.armutlu.apporganizer.data.local.MissionInstanceDao =
         db.missionInstanceDao()
 
+    @Provides
+    fun provideTickerHistoryDao(db: AppDatabase): com.armutlu.apporganizer.data.local.TickerHistoryDao =
+        db.tickerHistoryDao()
+
     // Dongu M02 — MissionMetricSnapshotProvider'in UsageStatsHelper cagrilarini soyutlayan
     // kaynak; uretimde gercek Android API'sine delege eder (bkz. MissionUsageStatsSource.kt).
     @Provides

@@ -155,6 +155,7 @@ class LauncherViewModel @Inject constructor(
     private val packageManagerHelper: PackageManagerHelper,
     private val classifier: com.armutlu.apporganizer.domain.usecase.classify.AppClassifier,
     private val homeIntelligenceCoordinator: HomeIntelligenceCoordinator,
+    private val tickerHistoryDao: com.armutlu.apporganizer.data.local.TickerHistoryDao,
 ) : AndroidViewModel(application) {
 
     private val _toastMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -1005,22 +1006,8 @@ class LauncherViewModel @Inject constructor(
      * olmamak icin); burada TEK yerde gercek Routes sabitine cevrilir (D04 PulseActionRouter
      * ile ayni desen).
      */
-    private fun resolveTickerRoute(routeString: String?): String? = when (routeString) {
-        TickerActionRouter.ROUTE_DASHBOARD -> com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD
-        TickerActionRouter.ROUTE_NOTIFICATION_REPORT -> com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT
-        TickerActionRouter.ROUTE_APP_LIST_UNCERTAIN -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST_UNCERTAIN
-        TickerActionRouter.ROUTE_APP_LIST -> com.armutlu.apporganizer.presentation.navigation.Routes.APP_LIST
-        TickerActionRouter.ROUTE_SETTINGS -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS
-        TickerActionRouter.ROUTE_SETTINGS_LAUNCHER -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_LAUNCHER
-        TickerActionRouter.ROUTE_SETTINGS_NOTIFICATIONS -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_NOTIFICATIONS
-        TickerActionRouter.ROUTE_SETTINGS_APPEARANCE -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_APPEARANCE
-        TickerActionRouter.ROUTE_SETTINGS_STATS -> com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS_STATS
-        TickerActionRouter.ROUTE_SEARCH_SETTINGS -> com.armutlu.apporganizer.presentation.navigation.Routes.SEARCH_SETTINGS
-        TickerActionRouter.ROUTE_REPORTS_CENTER -> com.armutlu.apporganizer.presentation.navigation.Routes.REPORTS_CENTER
-        TickerActionRouter.ROUTE_USAGE_REPORT -> com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT
-        TickerActionRouter.ROUTE_WRAPPED_REPORT -> com.armutlu.apporganizer.presentation.navigation.Routes.WRAPPED_REPORT
-        else -> null
-    }
+    private fun resolveTickerRoute(routeString: String?): String? =
+        com.armutlu.apporganizer.presentation.navigation.Routes.fromTickerRoute(routeString)
 
     /**
      * [SmartTickerItem.action] -> navigasyon hedefi çözümü (Döngü T04, T01 köprüsünün yerini
@@ -1069,6 +1056,17 @@ class LauncherViewModel @Inject constructor(
         )
         // WhileSubscribed: ticker yalnizca HomeScreen gorunurken hesaplanir; initial emptyList
         // HomeTickerRow'da erken-donus ile guvenli — cold start yuku azaltildi (D234).
+    }.onEach { items ->
+        // "Tüm haberler" arşiv ekranı (mail kutusu) için paralel kalıcı kayıt — canlı ticker
+        // rotasyon/dismiss/mute davranışı DEĞİŞMEZ, bu SADECE arka planda ek bir arşiv yazımı.
+        // insertAll IGNORE stratejisiyle çalışır: dedupeKey zaten kayıtlıysa okunma durumu
+        // korunur, yeni satır açılmaz.
+        if (items.isEmpty()) return@onEach
+        runCatching {
+            tickerHistoryDao.insertAll(
+                com.armutlu.apporganizer.domain.home.TickerHistoryMapper.toEntities(items),
+            )
+        }.onFailure { e -> Timber.w(e, "Ticker arşiv kaydı başarısız") }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // Contextual Dock — kullanicinin sectigi TUM slotlar korunur; akilli oneriler

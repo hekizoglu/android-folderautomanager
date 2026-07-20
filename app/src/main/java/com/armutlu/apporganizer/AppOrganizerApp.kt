@@ -12,6 +12,7 @@ import com.armutlu.apporganizer.workers.BackupWorker
 import com.armutlu.apporganizer.workers.CategoryDbUpdateWorker
 import com.armutlu.apporganizer.workers.SmartInsightWorker
 import com.armutlu.apporganizer.workers.SuggestionNotificationWorker
+import com.armutlu.apporganizer.workers.TickerHistoryCleanupWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
 import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
@@ -73,6 +74,8 @@ class AppOrganizerApp : Application() {
                         .scheduleNext()
                 }.onFailure { Timber.w(it, "MissionWorkScheduler baslatilamadi") }
                 CategoryDbUpdateWorker.schedule(this)
+                // Ticker arşivi ("Tüm haberler") günlük temizlik — 7 günden eski kayıtlar silinir.
+                TickerHistoryCleanupWorker.schedule(this)
             }.onFailure { Timber.e(it, "Arka plan init hatasi") }
         }, "app-init-bg").start()
     }

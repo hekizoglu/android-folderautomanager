@@ -507,6 +507,19 @@
     <string name="ticker_type_weekly_report">Weekly report</string>
     <string name="ticker_type_feature_discovery">Tip</string>
 
+    <!-- Ticker Archive — "All updates" screen -->
+    <string name="ticker_history_title">All updates</string>
+    <string name="ticker_history_empty">No updates yet</string>
+    <string name="ticker_history_empty_desc">Updates you see on the home strip collect here</string>
+    <string name="ticker_history_mark_all_read">Mark all as read</string>
+    <string name="ticker_history_menu_open">All updates</string>
+    <string name="ticker_history_unread_badge">%1$d unread</string>
+    <string name="ticker_history_time_just_now">Just now</string>
+    <string name="ticker_history_time_minutes_ago">%1$dm ago</string>
+    <string name="ticker_history_time_hours_ago">%1$dh ago</string>
+    <string name="ticker_history_time_days_ago">%1$dd ago</string>
+    <string name="ticker_history_sensitive_hidden">Sensitive info hidden</string>
+
     <!-- Smart Pulse Strip Settings (Cycle T05) -->
     <string name="smart_ticker_settings_title">Smart Pulse Strip</string>
     <string name="smart_ticker_settings_master_title">Smart Pulse Strip</string>

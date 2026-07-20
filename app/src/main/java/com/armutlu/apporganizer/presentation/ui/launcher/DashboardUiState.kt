@@ -116,6 +116,7 @@ data class DashboardActions(
     val onTickerDismissItem: (SmartTickerItem) -> Unit,
     val onTickerHideType: (SmartTickerType) -> Unit,
     val onOpenTickerSettings: () -> Unit,
+    val onOpenTickerHistory: () -> Unit,
     val onDisableTicker: () -> Unit,
     val onTickerItemClick: (SmartTickerItem) -> Unit,
     val onOpenFolderStats: () -> Unit,

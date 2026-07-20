@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX07 - 2026-07-20 - Haber seridi arsivi: okundu/okunmadi liste ekrani + 7 gun otomatik silme
+
+**Yapilanlar:** Ana ekran haber seridi (ticker) her acilista CANLI URETILIYORDU, hicbir kalicilik yoktu — "okundu/okunmadi" ve "7 gun sonra sil" istegi icin once bu bosluk kapatildi. Yeni Room tablosu ticker_history (v19->v20 migration) + TickerHistoryDao (insertAll IGNORE ile dedupe, observeAll, markRead/markAllRead, deleteOlderThan, countUnread). SmartTickerItem->Entity donusumu (TickerHistoryMapper) + TickerAction<->wire-string encode/decode (TickerActionCodec, saf fonksiyon, 12 round-trip testi) — LauncherViewModel yeni ticker item'lari arka planda insertAll ile arsivliyor, CANLI ROTASYON/DISMISS/MUTE DAVRANISI DEGISMEDI. Yeni TickerHistoryScreen (mail kutusu listesi, hassas satirlar mevcut isTickerSensitiveVisible tercihine uyuyor) + ViewModel, Routes.TICKER_HISTORY (hassas degil, kilit guard'i yok). HomeTickerRow menusune "Tum haberler" girisi eklendi. Gunluk TickerHistoryCleanupWorker (7 gun retention, KEEP policy). TR+EN string'ler. Bonus: Routes.fromTickerRoute merkezi fonksiyonu ROUTE_MISSIONS'daki onceden var olan bir esleme bosluguni da kapatti. Tam test + compile yesil. v1.4.9 (132).
+
+**Bug:** Yok — ozellik istegi. Codex search kodu (AppDao/SearchIndexer/SearchCache/AppClassifier/AppInfo/PackageManagerHelper) dokunulmadi, sadece AppDatabase'e yeni tablo eklendi (istisna).
+
+**Sonraki:** Huseyin'in cihaz gorsel dogrulamasi.
+
 ## EX06 - 2026-07-20 - Cekmece son-kullanilan/favori/bildirim/yeni-yuklenen satirlarina uzun basma + Pixel varsayilan ACIK
 
 **Yapilanlar:** (1) Cekmecedeki 4 ikon-satiri bolumunde (Son Kullanilanlar, Favoriler, Son Bildirimliler, Bugun Yuklenenler) sadece .clickable vardi, onLongClick HIC yoktu — alfabetik listedeki NiagaraAppRow'da (bilgi menusu) zaten calisiyordu, bu 4 bolum atlanmisti. combinedClickable + haptic ile eklendi, mevcut onAppLongClick callback zincirine baglandi (AppInfo detay/bilgi sheet'i ayni sekilde acilir). (2) Huseyin karari: Pixel Gorunumu artik ilk kurulumda VARSAYILAN ACIK (isPixelLookEnabled default false->true) — CLAUDE.md vizyon notu guncellendi (2026-07-14 karari degil, UZERINE eklendi: kod tarafinda iki gorunum de birinci sinif, varsayilan Pixel). Tam test yesil. v1.4.8 (131).

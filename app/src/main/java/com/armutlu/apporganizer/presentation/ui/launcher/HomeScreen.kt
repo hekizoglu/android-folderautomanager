@@ -1475,6 +1475,13 @@ fun HomeScreen(
                                 }
                                 runCatching { context.startActivity(intent) }
                             },
+                            onOpenTickerHistory = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.TICKER_HISTORY)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
                             onDisableTicker = {
                                 com.armutlu.apporganizer.utils.AppPrefs.setTickerEnabled(context, false)
                                 tickerEnabled = false

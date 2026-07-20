@@ -46,6 +46,7 @@ object Routes {
     const val WRAPPED_REPORT = "wrapped_report"
     const val PRIVACY_REPORT = "privacy_report"
     const val MISSIONS = "missions"
+    const val TICKER_HISTORY = "ticker_history"
 
     // U1: Ayarlar alt-ekran hiyerarşisi - her ana kategori kendi route'unda
     const val SETTINGS_APPEARANCE = "settings_appearance"
@@ -71,10 +72,35 @@ object Routes {
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_USAGE_DATA, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
-        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, SETTINGS_SMART_TICKER
+        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, SETTINGS_SMART_TICKER, TICKER_HISTORY
     )
 
     fun isValid(route: String?): Boolean = route != null && route in ALL
+
+    /**
+     * [com.armutlu.apporganizer.domain.home.TickerActionRouter] route stringi -> gerçek [Routes]
+     * sabiti eşlemesi. [LauncherViewModel.resolveTickerTarget] ile AYNI mantık — TEK yerde
+     * tanımlı olsun diye buraya taşındı; ViewModel'in private resolveTickerRoute'u ve
+     * [com.armutlu.apporganizer.presentation.viewmodel.TickerHistoryViewModel] bu fonksiyonu
+     * PAYLAŞIR (D04/T04 "route stringi TEK yerde çözülür" ilkesi — kopyalama yok).
+     */
+    fun fromTickerRoute(routeString: String?): String? = when (routeString) {
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_DASHBOARD -> DASHBOARD
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_NOTIFICATION_REPORT -> NOTIFICATION_REPORT
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_APP_LIST_UNCERTAIN -> APP_LIST_UNCERTAIN
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_APP_LIST -> APP_LIST
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS -> SETTINGS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_LAUNCHER -> SETTINGS_LAUNCHER
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_NOTIFICATIONS -> SETTINGS_NOTIFICATIONS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_APPEARANCE -> SETTINGS_APPEARANCE
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SETTINGS_STATS -> SETTINGS_STATS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_SEARCH_SETTINGS -> SEARCH_SETTINGS
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_REPORTS_CENTER -> REPORTS_CENTER
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_USAGE_REPORT -> USAGE_REPORT
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_WRAPPED_REPORT -> WRAPPED_REPORT
+        com.armutlu.apporganizer.domain.home.TickerActionRouter.ROUTE_MISSIONS -> MISSIONS
+        else -> null
+    }
 }
 
 @Composable
@@ -290,6 +316,14 @@ fun AppNavigation(
         }
         composable(Routes.MISSIONS) {
             com.armutlu.apporganizer.presentation.ui.screens.MissionsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRoute = { route -> navController.navigate(route) }
+            )
+        }
+        // Ticker arşivi ("Tüm haberler") — haberler hassas veri değil, SettingsLockGate'e
+        // SOKULMAZ (görev talimatı: SENSITIVE_ROUTES'a eklenmez).
+        composable(Routes.TICKER_HISTORY) {
+            com.armutlu.apporganizer.presentation.ui.screens.TickerHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToRoute = { route -> navController.navigate(route) }
             )

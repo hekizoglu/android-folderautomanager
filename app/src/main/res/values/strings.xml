@@ -511,6 +511,19 @@
     <string name="ticker_type_weekly_report">Haftalık rapor</string>
     <string name="ticker_type_feature_discovery">İpucu</string>
 
+    <!-- Ticker Arşivi — "Tüm haberler" ekranı -->
+    <string name="ticker_history_title">Tüm haberler</string>
+    <string name="ticker_history_empty">Henüz haber yok</string>
+    <string name="ticker_history_empty_desc">Ana ekran şeridinde gördüğün haberler burada birikir</string>
+    <string name="ticker_history_mark_all_read">Tümünü okundu işaretle</string>
+    <string name="ticker_history_menu_open">Tüm haberler</string>
+    <string name="ticker_history_unread_badge">%1$d okunmadı</string>
+    <string name="ticker_history_time_just_now">Az önce</string>
+    <string name="ticker_history_time_minutes_ago">%1$d dk önce</string>
+    <string name="ticker_history_time_hours_ago">%1$d sa önce</string>
+    <string name="ticker_history_time_days_ago">%1$d gün önce</string>
+    <string name="ticker_history_sensitive_hidden">Hassas bilgi gizli</string>
+
     <!-- Akıllı Nabız Şeridi Ayarları (Döngü T05) -->
     <string name="smart_ticker_settings_title">Akıllı Nabız Şeridi</string>
     <string name="smart_ticker_settings_master_title">Akıllı Nabız Şeridi</string>
