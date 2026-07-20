@@ -107,6 +107,7 @@ fun WrappedReportScreen(
                 previousScore = state.previousScore,
                 aiCoachLoading = state.aiCoachLoading,
                 aiCoachComment = state.aiCoachComment,
+                aiCoachNeedsKey = state.aiCoachNeedsKey,
                 unlockCount = state.unlockCount,
                 previousUnlockCount = state.previousUnlockCount,
                 onRequestPermission = { viewModel.enableUsagePermission() },
@@ -150,6 +151,7 @@ private fun WrappedContent(
     previousScore: Int?,
     aiCoachLoading: Boolean,
     aiCoachComment: String?,
+    aiCoachNeedsKey: Boolean,
     unlockCount: Int?,
     previousUnlockCount: Int?,
     onRequestPermission: () -> Unit,
@@ -173,6 +175,8 @@ private fun WrappedContent(
 
         if (aiCoachLoading || !aiCoachComment.isNullOrBlank()) {
             item { AiCoachCard(aiCoachLoading, aiCoachComment) }
+        } else if (aiCoachNeedsKey) {
+            item { AiCoachNeedsKeyCard() }
         }
 
         item { PersonalityCard(report.personality) }
@@ -256,6 +260,29 @@ private fun AiCoachCard(loading: Boolean, comment: String?) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun AiCoachNeedsKeyCard() {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                stringResource(R.string.wrapped_ai_coach_needs_key_title),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.wrapped_ai_coach_needs_key_desc),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

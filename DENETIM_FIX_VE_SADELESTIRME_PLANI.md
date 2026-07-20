@@ -8,19 +8,13 @@
 
 ## PAKET S — Sadeleştirme
 
-> ✅ **S1 + S2 + S3 + S4 tamamlandı (2026-07-20)** — HISTORY.md'de.
-
-### S5 — Rapor birleştirme
-5 rapor: Haftalık Özet / Uygulama Düzeni / Bildirimler / Gizlilik / Teknik Tanılama (destek aracı olarak ayrık). Genel Bakış+Kullanım+Haftalık tekrar tekilleştirilir.
-Durum: ⏳ Bekliyor
+> ✅ **S1-S5 tamamlandı (2026-07-20)** — HISTORY.md'de.
 
 ### S6 — FCM kararı + koç görünürlük kuralları
 FCM: aktif backend yoksa çıkar → günlük WorkManager DB güncellemesi (zaten açılışta var — haftalık periodic yeterli). Koç: haftalık raporda max 2 öneri, ana ekranda konuşmaz, "tüm veriler cihazda" metni düzeltilir (AI açıkken özet DeepSeek'e gider ibaresi).
 Durum: ⏳ Bekliyor
 
-### S7 — Wrapped/AI koç anahtar akışı
-AI koçu açık + anahtar yok → yönlendirici durum ("Anahtar gerekli → Ayarlar") WrappedViewModel'de; sessiz başarısızlık kalkar.
-Durum: ⏳ Bekliyor
+> ✅ **S7 tamamlandı (2026-07-20)** — HISTORY.md'de (S5 ile aynı döngü).
 
 ## Kırmızı çizgiler
 Onboarding sırası değişmez · her görünür değişiklik toggle'lı · silme yerine arka plana alma (kullanıcı özellikleri kaybolmaz) · uygulama adları telemetriye sızmaz · doğrulamadan düzeltme yok.

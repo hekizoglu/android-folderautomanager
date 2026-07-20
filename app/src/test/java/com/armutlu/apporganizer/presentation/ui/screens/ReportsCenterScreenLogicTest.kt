@@ -23,7 +23,6 @@ class ReportsCenterScreenLogicTest {
         assertEquals(entries.size, entries.map { it.route }.distinct().size)
         assertEquals(
             listOf(
-                "dashboard",
                 "usage_report",
                 "notification_report",
                 "diagnostics_report",

@@ -355,6 +355,11 @@
 
     <!-- Wrapped Report -->
     <string name="wrapped_title">ğŸ Weekly Report</string>
+    <string name="reports_center_entry_usage_title">App Layout</string>
+    <string name="reports_center_entry_usage_desc">%1$d apps, %2$d categories and %3$d hidden apps summarized. Most used, never opened and hide suggestions all on one screen.</string>
+    <string name="reports_center_entry_wrapped_title">Weekly Summary</string>
+    <string name="reports_center_entry_diagnostics_title">Technical Diagnostics</string>
+    <string name="reports_center_entry_diagnostics_title_generating">Technical Diagnostics generating</string>
     <string name="wrapped_back">Back</string>
     <string name="wrapped_empty_title">Not enough data yet</string>
     <string name="wrapped_empty_desc">Your weekly report will appear here after you use a few apps.</string>
@@ -364,6 +369,8 @@
     <string name="wrapped_score_title">Your Digital Life Score</string>
     <string name="wrapped_score_max">/ 100</string>
     <string name="wrapped_score_delta_vs_last_week">%1$s vs. last week</string>
+    <string name="wrapped_ai_coach_needs_key_title">AI coach needs a key</string>
+    <string name="wrapped_ai_coach_needs_key_desc">The AI coach comment requires a DeepSeek key. You can add one under Settings &gt; Privacy &amp; Data.</string>
     <string name="wrapped_personality_title">Your Digital Personality</string>
     <string name="wrapped_personality_dominant_pct">%1$d%% dominant usage</string>
     <string name="wrapped_stats_title">Interesting Stats</string>

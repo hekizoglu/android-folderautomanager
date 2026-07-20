@@ -34,6 +34,7 @@ data class WrappedUiState(
     val previousScore: Int? = null,
     val aiCoachLoading: Boolean = false,
     val aiCoachComment: String? = null,
+    val aiCoachNeedsKey: Boolean = false,
     val unlockCount: Int? = null,
     val previousUnlockCount: Int? = null,
 )
@@ -96,6 +97,9 @@ class WrappedViewModel @Inject constructor(
                 charts = result?.charts ?: WrappedChartData(),
                 previousScore = previousScore,
                 aiCoachLoading = shouldLoadAiCoach(result?.report),
+                aiCoachNeedsKey = result?.report != null &&
+                    AppPrefs.isWrappedAiCoachEnabled(context) &&
+                    AppPrefs.getDeepSeekApiKey(context).isBlank(),
                 unlockCount = unlockCount,
                 previousUnlockCount = previousUnlockCount,
             )

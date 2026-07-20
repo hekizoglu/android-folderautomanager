@@ -355,6 +355,13 @@
     <string name="recent_notifications_row_count">%1$d bildirim</string>
     <string name="recent_notifications_row_signal">Son 24 saat, içerik yok</string>
 
+    <!-- Reports Center (ReportsCenterScreen) -->
+    <string name="reports_center_entry_usage_title">Uygulama Düzeni</string>
+    <string name="reports_center_entry_usage_desc">%1$d uygulama, %2$d kategori ve %3$d gizli uygulama özetlenir. En çok kullanılanlar, hiç açılmayanlar ve gizleme önerileri tek ekranda.</string>
+    <string name="reports_center_entry_wrapped_title">Haftalık Özet</string>
+    <string name="reports_center_entry_diagnostics_title">Teknik Tanılama</string>
+    <string name="reports_center_entry_diagnostics_title_generating">Teknik Tanılama hazırlanıyor</string>
+
     <!-- Wrapped Report (Haftalık Rapor) -->
     <string name="wrapped_title">🎁 Haftalık Rapor</string>
     <string name="wrapped_back">Geri</string>
@@ -366,6 +373,8 @@
     <string name="wrapped_score_title">Dijital Yaşam Skorun</string>
     <string name="wrapped_score_max">/ 100</string>
     <string name="wrapped_score_delta_vs_last_week">%1$s geçen haftaya göre</string>
+    <string name="wrapped_ai_coach_needs_key_title">AI koçu için anahtar gerekli</string>
+    <string name="wrapped_ai_coach_needs_key_desc">AI koç yorumu için DeepSeek anahtarı gerekli. Ayarlar &gt; Gizlilik &amp; Veri bölümünden ekleyebilirsin.</string>
     <string name="wrapped_personality_title">Dijital Kişiliğin</string>
     <string name="wrapped_personality_dominant_pct">%%%1$d baskın kullanım</string>
     <string name="wrapped_stats_title">İlginç İstatistikler</string>

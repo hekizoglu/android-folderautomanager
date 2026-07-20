@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## S5+S7 - 2026-07-20 - Rapor merkezi 5 rapora indi + Wrapped anahtar yonlendirmesi
+
+**Yapilanlar:** S5: Rapor Merkezi 6 giristen 5'e indi — "Genel Bakis" listeden cikti (Dashboard rotasi/kodu duruyor, Ayarlar'dan erisilir); "Kullanim Raporu" -> "Uygulama Duzeni" (eski genel bakis katalog ozeti description'a katildi); "Haftalik Rapor" -> "Haftalik Ozet"; "Saglik Raporu" -> "Teknik Tanilama". Yeni basliklar string resource (TR+EN); ReportsCenterScreenLogicTest guncellendi. S7: WrappedUiState.aiCoachNeedsKey eklendi — AI kocu acik + anahtar bos ise haftalik raporda "DeepSeek anahtari gerekli -> Ayarlar > Gizlilik & Veri" karti gosterilir (sessiz basarisizlik kalkti). Sonnet uyguladi, Fable dogruladi; compile + test yesil.
+
+**Bug:** Yok.
+
+**Sonraki:** S6 FCM kaldirma + gizlilik metni durustlestirme (son madde).
+
 ## S4 - 2026-07-20 - Ayarlar 6-hub yeniden yapisi
 
 **Yapilanlar:** Ayarlar ana ekrani 3 bolumden 6 hub'a gruplandi: Ana Ekran / Arama-Cekmece / Otomatik Duzenleme / Dijital Yasam / Gizlilik-Veri / Gelismis-Destek (rotalar+F2 guard'i degismedi, basliklar string resource oldu). DeepSeek anahtari SettingsAppsSection'dan SettingsSecurityScreen'e (Gizlilik-Veri) tasindi — artik KOSULSUZ erisilebilir (eskiden "Diger" klasoru bos degilse gorunuyordu; maskeli gosterim korundu). Firebase baglanti testi + saglik karti UsageData'dan cikip FirebaseHealthCheckSection olarak About'a (Gelismis-Destek) tasindi; UsageData'da yonlendirme notu. TR+EN string'ler. Sonnet uyguladi, Fable dogruladi.

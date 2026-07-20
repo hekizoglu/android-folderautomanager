@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -44,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
@@ -82,26 +84,38 @@ internal fun buildReportsCenterEntries(
     privacyReportEnabled: Boolean,
     diagnosticsGenerating: Boolean,
     nowMs: Long,
+    context: Context? = null,
 ): List<ReportsCenterEntry> {
     val appCount = apps.size
     val categoryCount = categories.size
     val hiddenCount = apps.count { it.isHidden }
-    val latestCatalogUpdate = apps.maxOfOrNull { maxOf(it.lastUpdatedTime, it.lastUpdated) }
     val latestUsage = apps.maxOfOrNull { it.lastUsedTimestamp }
     val notificationTrackedApps = apps.count { it.notificationCount > 0 }
 
+    val usageTitle = context?.getString(R.string.reports_center_entry_usage_title)
+        ?: "Uygulama Duzeni"
+    val usageDesc = context?.getString(
+        R.string.reports_center_entry_usage_desc,
+        appCount,
+        categoryCount,
+        hiddenCount,
+    ) ?: "$appCount uygulama, $categoryCount kategori ve $hiddenCount gizli uygulama ozetlenir. " +
+        "En cok kullanilanlar, hic acilmayanlar ve gizleme onerileri tek ekranda."
+    val wrappedTitle = context?.getString(R.string.reports_center_entry_wrapped_title)
+        ?: "Haftalik Ozet"
+    val diagnosticsTitle = if (diagnosticsGenerating) {
+        context?.getString(R.string.reports_center_entry_diagnostics_title_generating)
+            ?: "Teknik Tanilama hazirlaniyor"
+    } else {
+        context?.getString(R.string.reports_center_entry_diagnostics_title)
+            ?: "Teknik Tanilama"
+    }
+
     return listOf(
         ReportsCenterEntry(
-            route = REPORT_ROUTE_DASHBOARD,
-            title = "Genel Bakis",
-            description = "$appCount uygulama, $categoryCount kategori ve $hiddenCount gizli uygulama ozetlenir.",
-            dataPeriod = "Veri donemi: tum katalog",
-            lastUpdated = "Son guncelleme: ${formatReportTimestamp(latestCatalogUpdate, nowMs)}",
-        ),
-        ReportsCenterEntry(
             route = REPORT_ROUTE_USAGE,
-            title = "Kullanim Raporu",
-            description = "En cok kullanilanlar, hic acilmayanlar ve gizleme onerileri tek ekranda.",
+            title = usageTitle,
+            description = usageDesc,
             dataPeriod = "Veri donemi: son 30 gun",
             lastUpdated = "Son kullanim: ${formatReportTimestamp(latestUsage, nowMs)}",
         ),
@@ -118,7 +132,7 @@ internal fun buildReportsCenterEntries(
         ),
         ReportsCenterEntry(
             route = REPORT_ROUTE_DIAGNOSTICS,
-            title = if (diagnosticsGenerating) "Saglik Raporu hazirlaniyor" else "Saglik Raporu",
+            title = diagnosticsTitle,
             description = "Paylasilabilir, kisisel veriden arindirilmis TXT tanilama raporu uretir.",
             dataPeriod = "Veri donemi: o anki cihaz ve uygulama durumu",
             lastUpdated = if (diagnosticsGenerating) {
@@ -129,7 +143,7 @@ internal fun buildReportsCenterEntries(
         ),
         ReportsCenterEntry(
             route = REPORT_ROUTE_WRAPPED,
-            title = "Haftalik Rapor",
+            title = wrappedTitle,
             description = "Dijital yasam skoru, kisilik tipi ve rozetlerin haftalik ozeti.",
             dataPeriod = "Veri donemi: son 7 gun",
             lastUpdated = if (wrappedEnabled) {
@@ -205,6 +219,7 @@ fun ReportsCenterScreen(
         privacyReportEnabled = privacyReportEnabled,
         diagnosticsGenerating = diagnosticsState.isGenerating,
         nowMs = nowMs,
+        context = context,
     )
 
     LaunchedEffect(diagnosticsState.shareIntent) {
