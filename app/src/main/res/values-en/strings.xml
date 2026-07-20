@@ -718,6 +718,11 @@
     <string name="recent_installs_home_chip_subtitle_other">%1$d new apps</string>
     <string name="dashboard_empty_hint">Smart Home is ready â€” turn on cards and widgets in Settings to customize this page</string>
     <string name="recent_installs_drawer_section_title">Installed Today</string>
+    <string name="drawer_chip_rows_settings_toggle_title">Filter and sort chips</string>
+    <string name="drawer_chip_rows_settings_toggle_subtitle">When off, the app drawer uses a single menu button instead</string>
+    <string name="drawer_sort_filter_menu_content_description">Sort and filter menu</string>
+    <string name="drawer_sort_menu_section_title">Sort</string>
+    <string name="drawer_filter_menu_section_title">Filter</string>
     <string name="missions_home_chip_title">Missions</string>
     <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
     <string name="home_page_indicator_dashboard_selected">Smart Home, selected</string>

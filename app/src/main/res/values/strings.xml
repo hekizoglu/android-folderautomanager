@@ -725,6 +725,11 @@
     <string name="recent_installs_home_chip_subtitle_other">%1$d yeni uygulama</string>
     <string name="dashboard_empty_hint">Akıllı Ana Ekran hazır — Ayarlar\'dan kartları ve widget\'ları açarak burayı özelleştirebilirsin</string>
     <string name="recent_installs_drawer_section_title">Bugün Yüklenenler</string>
+    <string name="drawer_chip_rows_settings_toggle_title">Filtre ve sıralama çipleri</string>
+    <string name="drawer_chip_rows_settings_toggle_subtitle">Kapalıyken uygulama çekmecesinde tek menü butonu kullanılır</string>
+    <string name="drawer_sort_filter_menu_content_description">Sıralama ve filtre menüsü</string>
+    <string name="drawer_sort_menu_section_title">Sıralama</string>
+    <string name="drawer_filter_menu_section_title">Filtre</string>
     <string name="missions_home_chip_title">Görevler</string>
     <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
     <string name="home_page_indicator_dashboard_selected">Akıllı Ana Ekran, seçili</string>

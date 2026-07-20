@@ -17,9 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.launcher.HomePageTelemetryPolicy
 import com.armutlu.apporganizer.utils.AppAnalytics
 import kotlinx.coroutines.launch
@@ -108,6 +110,19 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 folderSearchEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderSearchEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        // S3 — çekmece sadeleştirme: varsayılan kapalı, kapalıyken çekmecede tek menü butonu kullanılır
+        var drawerChipRowsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDrawerChipRowsEnabled(context)) }
+        SettingsSwitchRow(
+            icon = Icons.Default.Tune,
+            title = stringResource(R.string.drawer_chip_rows_settings_toggle_title),
+            subtitle = stringResource(R.string.drawer_chip_rows_settings_toggle_subtitle),
+            checked = drawerChipRowsEnabled,
+            onCheckedChange = {
+                drawerChipRowsEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setDrawerChipRowsEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

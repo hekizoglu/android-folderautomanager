@@ -30,10 +30,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -116,6 +121,13 @@ private fun DrawerSearchBar(
 
     val quickFilterLabels = listOf("Tümü", "Kullanıcı", "Sistem", "Son 7 gün")
 
+    // S3 — çekmece sadeleştirme: varsayılan kapalı (sade mod), açıkken eski iki chip satırı korunur.
+    val chipRowsEnabled by rememberBooleanPreferenceState(
+        context = context,
+        key = AppPrefs.KEY_DRAWER_CHIP_ROWS_ENABLED,
+        read = { AppPrefs.isDrawerChipRowsEnabled(context) }
+    )
+
     // Drag handle
     Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
         Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(dragHandle))
@@ -189,6 +201,74 @@ private fun DrawerSearchBar(
                 }
             }
         }
+        if (!chipRowsEnabled) {
+            // S3 — sade mod: iki chip satırı yerine tek kompakt menü butonu (sıralama + filtre)
+            var sortFilterMenuOpen by remember { mutableStateOf(false) }
+            Box {
+                IconButton(
+                    onClick = { sortFilterMenuOpen = true },
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Tune,
+                        stringResource(R.string.drawer_sort_filter_menu_content_description),
+                        tint = textSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                DropdownMenu(expanded = sortFilterMenuOpen, onDismissRequest = { sortFilterMenuOpen = false }) {
+                    Text(
+                        stringResource(R.string.drawer_sort_menu_section_title),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = textSecondary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                    val baseSortChipsMenu = listOf(
+                        AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE,
+                        AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE
+                    )
+                    baseSortChipsMenu.forEach { baseMode ->
+                        val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
+                        val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
+                        DropdownMenuItem(
+                            text = { Text(displayLabel, fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal) },
+                            leadingIcon = if (isActive) {
+                                { Icon(Icons.Default.Check, null, tint = primary, modifier = Modifier.size(18.dp)) }
+                            } else null,
+                            onClick = {
+                                val newMode = if (isActive) sortMode.opposite() else baseMode
+                                onSortModeChange(newMode)
+                                AppPrefs.setAllAppsSortMode(context, newMode.name)
+                                sortFilterMenuOpen = false
+                            }
+                        )
+                    }
+                    HorizontalDivider()
+                    Text(
+                        stringResource(R.string.drawer_filter_menu_section_title),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = textSecondary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                    quickFilterLabels.forEachIndexed { idx, label ->
+                        val active = quickFilter == idx
+                        DropdownMenuItem(
+                            text = { Text(label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal) },
+                            leadingIcon = if (active) {
+                                { Icon(Icons.Default.Check, null, tint = secondary, modifier = Modifier.size(18.dp)) }
+                            } else null,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onQuickFilterChange(idx)
+                                sortFilterMenuOpen = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
         IconButton(
             onClick = { keyboardController?.hide(); onClose() },
             modifier = Modifier.size(40.dp)
@@ -199,57 +279,59 @@ private fun DrawerSearchBar(
 
     Spacer(Modifier.height(8.dp))
 
-    // Hızlı filtre chip'leri
-    androidx.compose.foundation.lazy.LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        itemsIndexed(quickFilterLabels) { idx, label ->
-            val active = quickFilter == idx
-            Box(
-                modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                    .background(if (active) secondary.copy(alpha = 0.8f) else onSurface.copy(alpha = 0.08f))
-                    .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onQuickFilterChange(idx) }
-                    .padding(horizontal = 11.dp, vertical = 5.dp)
-            ) {
-                val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
-                Text(
-                    label + if (active) countLabel else "",
-                    fontSize = 11.sp,
-                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                    color = if (active) MaterialTheme.colorScheme.onSecondary else Color.White.copy(alpha = 0.55f)
-                )
+    if (chipRowsEnabled) {
+        // Hızlı filtre chip'leri
+        androidx.compose.foundation.lazy.LazyRow(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            itemsIndexed(quickFilterLabels) { idx, label ->
+                val active = quickFilter == idx
+                Box(
+                    modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                        .background(if (active) secondary.copy(alpha = 0.8f) else onSurface.copy(alpha = 0.08f))
+                        .clickable { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onQuickFilterChange(idx) }
+                        .padding(horizontal = 11.dp, vertical = 5.dp)
+                ) {
+                    val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
+                    Text(
+                        label + if (active) countLabel else "",
+                        fontSize = 11.sp,
+                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                        color = if (active) MaterialTheme.colorScheme.onSecondary else Color.White.copy(alpha = 0.55f)
+                    )
+                }
             }
         }
-    }
 
-    // Sıralama chip'leri — 4 temel kategori, aynı butona basınca yön değişir
-    val baseSortChips = listOf(
-        AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE,
-        AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE
-    )
-    androidx.compose.foundation.lazy.LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        itemsIndexed(baseSortChips) { _, baseMode ->
-            val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
-            val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
-            Box(
-                modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                    .background(if (isActive) primary else onSurface.copy(alpha = 0.12f))
-                    .clickable {
-                        val newMode = if (isActive) sortMode.opposite() else baseMode
-                        onSortModeChange(newMode)
-                        AppPrefs.setAllAppsSortMode(context, newMode.name)
-                    }
-                    .padding(horizontal = 11.dp, vertical = 5.dp)
-            ) {
-                Text(
-                    displayLabel, fontSize = 11.sp,
-                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isActive) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f)
-                )
+        // Sıralama chip'leri — 4 temel kategori, aynı butona basınca yön değişir
+        val baseSortChips = listOf(
+            AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE,
+            AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE
+        )
+        androidx.compose.foundation.lazy.LazyRow(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            itemsIndexed(baseSortChips) { _, baseMode ->
+                val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
+                val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
+                Box(
+                    modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                        .background(if (isActive) primary else onSurface.copy(alpha = 0.12f))
+                        .clickable {
+                            val newMode = if (isActive) sortMode.opposite() else baseMode
+                            onSortModeChange(newMode)
+                            AppPrefs.setAllAppsSortMode(context, newMode.name)
+                        }
+                        .padding(horizontal = 11.dp, vertical = 5.dp)
+                ) {
+                    Text(
+                        displayLabel, fontSize = 11.sp,
+                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isActive) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f)
+                    )
+                }
             }
         }
     }

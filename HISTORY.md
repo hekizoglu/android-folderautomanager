@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## S3 - 2026-07-20 - Cekmece sadelestirme
+
+**Yapilanlar:** Cekmecedeki iki chip satiri (hizli filtre + siralama) varsayilanda tek Tune-ikonlu DropdownMenu butonuna indi (arama cubugu hizasinda): 4 siralama secenegi (aktif Check'li, tekrar secim yonu cevirir — opposite() korundu) + ayirici + 4 hizli filtre. KEY_DRAWER_CHIP_ROWS_ENABLED (default false=sade); toggle acilinca eski chip satirlari aynen geri gelir (kod silinmedi, if/else). Settings > Arama grubuna toggle. TR+EN 5 string. rememberBooleanPreferenceState ile reaktif. Sonnet uyguladi (java-kill yasagi spec'te — kilit cikmadi), compile yesil.
+
+**Bug:** Yok.
+
+**Sonraki:** S4 ayarlar 6-hub yeniden yapisi.
+
 ## S2 - 2026-07-20 - Odul yuzeyi sadelestirme + Usta odulu
 
 **Yapilanlar:** MissionsScreen basligi sadelesti: yalniz Yildiz + Seviye + Seri; gorev puani/delta, altin seri ve dondurma notu chevron'lu "Ayrintilar" bolumune tasindi (AnimatedVisibility — veri akisi degismedi, taskScore pulse girdisi olarak kaldi). Usta (100 yildiz) GERCEK odul: yeni MasterRewardPolicy (saf, 4 testli) tek karar noktasi; altin saat aksani (PulseClockWidget masterGoldAccent, pref + MASTER kosulu, Settings'te MASTER-gated toggle) + klasor renk paletine yalniz-MASTER "Altin" (#D4AF37) secenegi; MissionsScreen'de MASTER banner'i. TR+EN string'ler. totalStars kaynagi mevcut homeMissionSummary akisi (yeni DI yok). Sonnet uyguladi, Fable dogruladi.

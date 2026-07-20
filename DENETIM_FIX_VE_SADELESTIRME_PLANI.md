@@ -8,11 +8,7 @@
 
 ## PAKET S — Sadeleştirme
 
-> ✅ **S1 + S2 tamamlandı (2026-07-20)** — HISTORY.md'de.
-
-### S3 — Çekmece sadeleştirme
-Varsayılan: arama + liste + alfabetik sidebar. Filtre/sıralama chip satırları → tek overflow/sort butonu. Son yüklenenler/bildirim gelenler çekmecede kalır, ana ekran tekrarı S1 ile zaten kalkar.
-Durum: ⏳ Bekliyor
+> ✅ **S1 + S2 + S3 tamamlandı (2026-07-20)** — HISTORY.md'de.
 
 ### S4 — Ayarlar yeniden yapısı
 Rapordaki 6 hub: Ana Ekran / Arama-Çekmece / Otomatik Düzenleme / Dijital Yaşam / Gizlilik-Veri / Gelişmiş-Destek. DeepSeek anahtarı Gizlilik-Veri'ye taşınır (F1 ile koordineli — AI koçu açıkken anahtar alanı HER ZAMAN erişilebilir). Sağlık raporu + Firebase araçları Gelişmiş'e.

@@ -811,6 +811,12 @@ object AppPrefs {
     fun isSearchWebFallbackEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, true)
     fun setSearchWebFallbackEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, v).apply()
 
+    // S3 — çekmece sadeleştirme: hızlı filtre + sıralama chip satırları varsayılan olarak
+    // kapalı; sade modda tek kompakt menü butonu (Tune ikonu) aynı işlevi görür.
+    const val KEY_DRAWER_CHIP_ROWS_ENABLED = "drawer_chip_rows_enabled"
+    fun isDrawerChipRowsEnabled(context: Context) = prefs(context).getBoolean(KEY_DRAWER_CHIP_ROWS_ENABLED, false)
+    fun setDrawerChipRowsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_DRAWER_CHIP_ROWS_ENABLED, v).apply()
+
     // Bildirim analizi — notification_events tablosuna kayıt (rapor sayfası için)
     const val KEY_NOTIF_ANALYTICS_ENABLED = "notif_analytics_enabled"
     fun isNotifAnalyticsEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIF_ANALYTICS_ENABLED, true)
