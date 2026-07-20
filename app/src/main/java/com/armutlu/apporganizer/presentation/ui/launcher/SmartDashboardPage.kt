@@ -14,7 +14,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -117,11 +119,41 @@ internal fun SmartDashboardPage(
             .verticalScroll(scrollState)
     ) {
         val compactClock = state.clock.compact || density != DashboardDensity.COMFORTABLE
+        // Görev S2 — Usta (100⭐) ödülü: altın saat aksanı yalnızca MASTER seviyesinde VE
+        // kullanıcı Ayarlar'dan açtıysa gösterilir (MasterRewardPolicy tek karar noktası).
+        // Reaktif AppPrefs paterni (LEARNINGS): remember{} tek başına Settings'ten dönüşte
+        // güncellenmez — OnSharedPreferenceChangeListener ile canlı tutulur.
+        val context = androidx.compose.ui.platform.LocalContext.current
+        var masterClockPrefEnabled by remember {
+            androidx.compose.runtime.mutableStateOf(
+                com.armutlu.apporganizer.utils.AppPrefs.isMasterClockStyleEnabled(context)
+            )
+        }
+        androidx.compose.runtime.DisposableEffect(context) {
+            val sharedPrefs = context.getSharedPreferences(
+                com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME,
+                android.content.Context.MODE_PRIVATE,
+            )
+            val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                if (key == com.armutlu.apporganizer.utils.AppPrefs.KEY_MASTER_CLOCK_STYLE_ENABLED) {
+                    masterClockPrefEnabled = com.armutlu.apporganizer.utils.AppPrefs.isMasterClockStyleEnabled(context)
+                }
+            }
+            sharedPrefs.registerOnSharedPreferenceChangeListener(listener)
+            onDispose { sharedPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
+        }
+        val masterGoldAccent = remember(state.intelligence.mission?.totalStars, masterClockPrefEnabled) {
+            com.armutlu.apporganizer.domain.usecase.missions.MasterRewardPolicy.isGoldClockAccentActive(
+                totalStars = state.intelligence.mission?.totalStars ?: 0,
+                prefEnabled = masterClockPrefEnabled,
+            )
+        }
         PulseClockWidget(
             compact = compactClock,
             onOpenWeeklyReport = actions.onOpenWeeklyReport,
             onOpenScoreDetails = actions.onOpenScoreDetails,
             onLongPress = actions.onClockLongPress,
+            masterGoldAccent = masterGoldAccent,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = if (compactClock) 16.dp else clockTopPadding, bottom = 8.dp)

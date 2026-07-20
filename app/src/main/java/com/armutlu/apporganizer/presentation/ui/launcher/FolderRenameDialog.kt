@@ -50,6 +50,12 @@ internal val COLOR_PRESETS = listOf(
     "#303F9F" to "Lacivert",
 )
 
+// Görev S2 — Usta (100⭐) ödülü: yalnızca MASTER seviyesinde palette'e eklenir (COLOR_PRESETS'e
+// KASITLI olarak dahil edilmedi — herkese açık liste bozulmasın). MasterRewardPolicy.isGoldFolderColorVisible
+// ile kilit kontrolü yapılır.
+internal const val GOLD_FOLDER_COLOR_HEX = "#D4AF37"
+private val GOLD_FOLDER_COLOR_PRESET = GOLD_FOLDER_COLOR_HEX to "Altın"
+
 @Composable
 internal fun FolderRenameDialog(
     currentName: String,
@@ -158,8 +164,13 @@ internal fun FolderRenameDialog(
                     )
                 }
                 Text(stringResource(R.string.folder_color_pick), color = onSurface.copy(0.6f), fontSize = 13.sp)
+                val colorPresets = if (StarLevelSystem.levelFor(totalStars) == StarLevelSystem.Level.MASTER) {
+                    COLOR_PRESETS + GOLD_FOLDER_COLOR_PRESET
+                } else {
+                    COLOR_PRESETS
+                }
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    itemsIndexed(COLOR_PRESETS, key = { _, preset -> preset.first }) { _, preset ->
+                    itemsIndexed(colorPresets, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
                         val isSelected = selectedColor == hex
                         val resolvedColor = if (hex.isBlank()) onSurface.copy(0.2f)

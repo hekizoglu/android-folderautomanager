@@ -8,11 +8,7 @@
 
 ## PAKET S — Sadeleştirme
 
-> ✅ **S1 tamamlandı (2026-07-20)** — HISTORY.md'de.
-
-### S2 — Ödül yüzeyi sadeleştirme
-Görevler ekranı başlığında yalnız: Yıldız + Seviye + Seri. Görev puanı/altın seri/dondurma → görev detay/genişletilebilir bölüm. Görev puanı kullanıcı ekonomisi olarak gizlenir (pulse girdisi kalır). Usta (100⭐) seviyesine gerçek ödül: özel saat stili + klasör teması.
-Durum: ⏳ Bekliyor
+> ✅ **S1 + S2 tamamlandı (2026-07-20)** — HISTORY.md'de.
 
 ### S3 — Çekmece sadeleştirme
 Varsayılan: arama + liste + alfabetik sidebar. Filtre/sıralama chip satırları → tek overflow/sort butonu. Son yüklenenler/bildirim gelenler çekmecede kalır, ana ekran tekrarı S1 ile zaten kalkar.

@@ -626,7 +626,14 @@
     <!-- Cycle G4: Streak system -->
     <string name="missions_streak_row">🔥 %1$d days · Best: %2$d</string>
     <string name="missions_streak_golden_suffix"> · Golden streak: %1$d</string>
+    <string name="missions_streak_golden_standalone">🏅 Golden streak: %1$d</string>
     <string name="missions_streak_frozen_yesterday">Streak was frozen yesterday ❄</string>
+    <!-- Task S2 — reward surface simplification: expandable Details section -->
+    <string name="missions_details_toggle">Details</string>
+    <!-- Task S2 — Master (100⭐) reward banner + setting -->
+    <string name="missions_master_reward_banner">🏆 Your Master reward is unlocked: gold clock style + gold folder color — turn it on in Settings</string>
+    <string name="settings_master_clock_style_title">Gold clock style (Master reward)</string>
+    <string name="settings_master_clock_style_desc">You reached Master level — adds a gold accent to the clock text</string>
     <!-- Cycle G6: Star Economy — level badge + progress + cosmetic unlock -->
     <string name="missions_level_badge">🎖 %1$s</string>
     <string name="missions_level_progress">%1$s · %2$d ⭐ to %3$s</string>

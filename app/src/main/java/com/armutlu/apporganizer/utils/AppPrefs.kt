@@ -668,6 +668,14 @@ object AppPrefs {
     fun isSmartTickerHealthVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_HEALTH, true)
     fun setSmartTickerHealthVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_HEALTH, v).apply()
 
+    // Görev S2 — Usta (100⭐) ödülü: opsiyonel altın saat aksanı. Varsayılan KAPALI; yalnızca
+    // StarLevelSystem.Level.MASTER seviyesine ulaşan kullanıcılar için Ayarlar'da görünür ve
+    // etkinleştirilebilir. Seviye şartı UI katmanında (SmartDashboardPage) ayrıca kontrol edilir —
+    // bu pref tek başına altın rengi göstermeye yetmez (kilit açılmadıysa etkisiz kalır).
+    const val KEY_MASTER_CLOCK_STYLE_ENABLED = "master_clock_style_enabled"
+    fun isMasterClockStyleEnabled(context: Context) = prefs(context).getBoolean(KEY_MASTER_CLOCK_STYLE_ENABLED, false)
+    fun setMasterClockStyleEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MASTER_CLOCK_STYLE_ENABLED, v).apply()
+
     /**
      * Belirli bir [SmartTickerType] adının (iç enum ismi) kullanıcı tercihine göre görünür olup
      * olmadığını döndürür — T04'ün `KEY_TICKER_HIDDEN_TYPES` (tekil kapatma menüsü) ile BİRLİKTE

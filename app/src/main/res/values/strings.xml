@@ -628,7 +628,14 @@
     <!-- Dongu G4: Streak (Seri) Sistemi -->
     <string name="missions_streak_row">🔥 %1$d gün · En iyi: %2$d</string>
     <string name="missions_streak_golden_suffix"> · Altın seri: %1$d</string>
+    <string name="missions_streak_golden_standalone">🏅 Altın seri: %1$d</string>
     <string name="missions_streak_frozen_yesterday">Dün seri donduruldu ❄</string>
+    <!-- Gorev S2 — odul yuzeyi sadelestirme: genisletilebilir Ayrintilar bolumu -->
+    <string name="missions_details_toggle">Ayrıntılar</string>
+    <!-- Gorev S2 — Usta (100⭐) odulu banner + ayar -->
+    <string name="missions_master_reward_banner">🏆 Usta ödülün açıldı: Altın saat stili + altın klasör rengi — Ayarlar\'dan aç</string>
+    <string name="settings_master_clock_style_title">Altın saat stili (Usta ödülü)</string>
+    <string name="settings_master_clock_style_desc">Usta seviyesine ulaştın — saat metnine altın tonlu vurgu ekler</string>
     <!-- Dongu G6: Yildiz Ekonomisi — seviye rozeti + ilerleme + kozmetik acilim -->
     <string name="missions_level_badge">🎖 %1$s</string>
     <string name="missions_level_progress">%1$s · %2$d ⭐ sonra %3$s</string>

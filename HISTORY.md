@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## S2 - 2026-07-20 - Odul yuzeyi sadelestirme + Usta odulu
+
+**Yapilanlar:** MissionsScreen basligi sadelesti: yalniz Yildiz + Seviye + Seri; gorev puani/delta, altin seri ve dondurma notu chevron'lu "Ayrintilar" bolumune tasindi (AnimatedVisibility — veri akisi degismedi, taskScore pulse girdisi olarak kaldi). Usta (100 yildiz) GERCEK odul: yeni MasterRewardPolicy (saf, 4 testli) tek karar noktasi; altin saat aksani (PulseClockWidget masterGoldAccent, pref + MASTER kosulu, Settings'te MASTER-gated toggle) + klasor renk paletine yalniz-MASTER "Altin" (#D4AF37) secenegi; MissionsScreen'de MASTER banner'i. TR+EN string'ler. totalStars kaynagi mevcut homeMissionSummary akisi (yeni DI yok). Sonnet uyguladi, Fable dogruladi.
+
+**Bug:** Ortam: 3x build kilidi (agent SOP ile cozdu; UYARI: agent Codex canli testi sirasinda java kill yapti — spec'e yasak yazilmamisti, Fable hatasi; sonraki agent spec'lerine java-kill yasagi eklenecek). Codex'in build.gradle.kts + MainActivityTest.kt degisiklikleri dokunulmadan korundu.
+
+**Sonraki:** S3 cekmece sadelestirme.
+
 ## S1 - 2026-07-20 - Tek "BUGUN" karti (sadelestirme)
 
 **Yapilanlar:** Dashboard'daki 3 bilgi yuzeyi (HomeIntelligenceCardsRow 2 kart + bugun yuklenenler + AssistantInsightRow) tek baglamsal TodayCard'a indi. Yeni: TodayCardSelector (saf domain, oncelik: kritik izin [pulse UNAVAILABLE] > riskli gorev [urgent/AT_RISK] > klasor incelemesi [ORGANIZATION_UNCATEGORIZED] > rapor hazir [ticker WEEKLY_REPORT] > denge ozeti; girdisizse null) + TodayCard composable (GlassCard, kind'a gore dogru aksiyona yonlendirir). KEY_TODAY_CARD_ENABLED varsayilan ACIK; kapatinca eski yuzeyler aynen geri gelir (hicbir composable silinmedi). Settings > Ana Sayfa Yapisi'na toggle. TR+EN string'ler. 8 selector testi + compile yesil. Sonnet uyguladi, Fable dogruladi.

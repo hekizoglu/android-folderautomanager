@@ -72,6 +72,10 @@ import kotlinx.coroutines.delay
  * @param compact Dar ekran / kalabalık grid'de küçülür — klasörler kaybolmasın diye.
  * @param onLongPress Uzun basma → mevcut launcher yönetim ekranı davranışı (BOZULMAZ) —
  *                     tek gesture detector (combinedClickable) ile iç içe çakışma önlenir.
+ * @param masterGoldAccent Görev S2 — Usta (100⭐) ödülü: açıkken saat metni altın tonlu renge
+ *                          döner (abartısız). Kilit kontrolü çağıran tarafta (SmartDashboardPage,
+ *                          [com.armutlu.apporganizer.domain.usecase.missions.MasterRewardPolicy])
+ *                          yapılır — bu composable sadece boolean'ı görsele çevirir.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -81,6 +85,7 @@ internal fun PulseClockWidget(
     onOpenWeeklyReport: () -> Unit = {},
     onOpenScoreDetails: () -> Unit = {},
     onLongPress: () -> Unit = {},
+    masterGoldAccent: Boolean = false,
 ) {
     val context = LocalContext.current
     val viewModel: PulseClockViewModel = hiltViewModel()
@@ -115,7 +120,7 @@ internal fun PulseClockWidget(
     }
 
     when (clockStyle) {
-        AppPrefs.CLOCK_STYLE_MINIMAL -> MinimalClockCard(now, timeFormat, dateFormat, compact, onLongPress, modifier)
+        AppPrefs.CLOCK_STYLE_MINIMAL -> MinimalClockCard(now, timeFormat, dateFormat, compact, onLongPress, modifier, masterGoldAccent)
         else -> PulseCard(
             now = now,
             timeFormat = timeFormat,
@@ -128,9 +133,14 @@ internal fun PulseClockWidget(
             onOpenScoreDetails = onOpenScoreDetails,
             onLongPress = onLongPress,
             modifier = modifier,
+            masterGoldAccent = masterGoldAccent,
         )
     }
 }
+
+// Görev S2 — Usta ödülü altın rengi: abartısız, sıcak altın ton. Tek yerde tanımlı, hem
+// Minimal hem Pulse/Glass stilde aynı renk kullanılır.
+private val MASTER_GOLD_ACCENT = Color(0xFFFFD54F)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -141,6 +151,7 @@ private fun MinimalClockCard(
     compact: Boolean,
     onLongPress: () -> Unit,
     modifier: Modifier,
+    masterGoldAccent: Boolean = false,
 ) {
     Column(
         modifier = modifier.combinedClickable(onClick = {}, onLongClick = onLongPress),
@@ -148,7 +159,7 @@ private fun MinimalClockCard(
     ) {
         Text(
             text = timeFormat.format(now),
-            color = Color.White,
+            color = if (masterGoldAccent) MASTER_GOLD_ACCENT else Color.White,
             fontSize = if (compact) 52.sp else 76.sp,
             fontWeight = FontWeight.Thin,
             letterSpacing = (-2).sp,
@@ -179,6 +190,7 @@ private fun PulseCard(
     onOpenScoreDetails: () -> Unit,
     onLongPress: () -> Unit,
     modifier: Modifier,
+    masterGoldAccent: Boolean = false,
 ) {
     val context = LocalContext.current
     // D03: PulseScoreRing kaldırıldı (skor artık tek yerde — DigitalLifeCard). Ring alanı
@@ -231,7 +243,7 @@ private fun PulseCard(
                 )
                 Text(
                     text = timeFormat.format(now),
-                    color = Color.White,
+                    color = if (masterGoldAccent) MASTER_GOLD_ACCENT else Color.White,
                     fontSize = if (compact) 46.sp else 64.sp,
                     fontWeight = FontWeight.Thin,
                     letterSpacing = 0.sp,

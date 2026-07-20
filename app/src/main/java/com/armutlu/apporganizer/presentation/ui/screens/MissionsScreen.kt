@@ -4,20 +4,29 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.usecase.missions.MasterRewardPolicy
 import com.armutlu.apporganizer.domain.usecase.missions.MissionActionRouter
 import com.armutlu.apporganizer.presentation.viewmodel.MissionsViewModel
 import kotlinx.coroutines.delay
@@ -143,6 +153,12 @@ fun MissionsScreen(
     }
 }
 
+/**
+ * Görev S2 — ödül yüzeyi sadeleştirme: varsayılan görünümde yalnız toplam ⭐ + seviye rozeti/ilerleme
+ * + seri satırı (varsa) gösterilir. Görev puanı, altın seri eki ve dondurma notu genişletilebilir
+ * "Ayrıntılar" bölümüne taşındı — veri akışı DEĞİŞMEDİ, sadece görsel yerleşim. MASTER seviyesinde
+ * ayrıca tek satırlık ödül bilgisi gösterilir (MasterRewardPolicy tek karar noktası).
+ */
 @Composable
 private fun StarsHeader(
     totalStars: Int,
@@ -154,6 +170,9 @@ private fun StarsHeader(
     goldenStreak: Int = 0,
     streakFrozenYesterday: Boolean = false,
 ) {
+    var detailsExpanded by remember { mutableStateOf(false) }
+    val isMaster = MasterRewardPolicy.isMasterUnlocked(totalStars)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -181,46 +200,85 @@ private fun StarsHeader(
             )
             Spacer(Modifier.height(8.dp))
             StarLevelRow(totalStars)
-            Spacer(Modifier.height(14.dp))
-            Text(
-                text = stringResource(R.string.missions_task_score_value, taskScore),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            if (taskScoreDelta != 0 && taskScoreLastEvent.isNotBlank()) {
-                Text(
-                    text = stringResource(
-                        R.string.missions_task_score_delta,
-                        taskScoreLastEvent,
-                        if (taskScoreDelta > 0) "+$taskScoreDelta" else taskScoreDelta.toString(),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
-                )
-            }
             // Dongu G4 — Streak (Seri) Sistemi: sadece anlamli bir seri varsa gosterilir (>=1),
-            // "0 gün" gibi olumsuz bir mesaj asla uretilmez (M08 ceza yok ilkesi).
+            // "0 gün" gibi olumsuz bir mesaj asla uretilmez (M08 ceza yok ilkesi). Altın seri eki
+            // burada ARTIK gösterilmiyor — Ayrıntılar bölümüne taşındı.
             if (currentStreak >= 1) {
                 Spacer(Modifier.height(8.dp))
-                val goldenSuffix = if (goldenStreak >= 1) {
-                    stringResource(R.string.missions_streak_golden_suffix, goldenStreak)
-                } else {
-                    ""
-                }
                 Text(
-                    text = stringResource(R.string.missions_streak_row, currentStreak, bestStreak) + goldenSuffix,
+                    text = stringResource(R.string.missions_streak_row, currentStreak, bestStreak),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
-            if (streakFrozenYesterday) {
+
+            if (isMaster) {
+                Spacer(Modifier.height(10.dp))
                 Text(
-                    text = stringResource(R.string.missions_streak_frozen_yesterday),
+                    text = stringResource(R.string.missions_master_reward_banner),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.clickable { detailsExpanded = !detailsExpanded },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.missions_details_toggle),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
                 )
+                Icon(
+                    imageVector = if (detailsExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                    modifier = Modifier.height(18.dp),
+                )
+            }
+
+            AnimatedVisibility(visible = detailsExpanded) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = stringResource(R.string.missions_task_score_value, taskScore),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    if (taskScoreDelta != 0 && taskScoreLastEvent.isNotBlank()) {
+                        Text(
+                            text = stringResource(
+                                R.string.missions_task_score_delta,
+                                taskScoreLastEvent,
+                                if (taskScoreDelta > 0) "+$taskScoreDelta" else taskScoreDelta.toString(),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                        )
+                    }
+                    if (currentStreak >= 1 && goldenStreak >= 1) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.missions_streak_golden_standalone, goldenStreak),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                    if (streakFrozenYesterday) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.missions_streak_frozen_yesterday),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                        )
+                    }
+                }
             }
         }
     }
