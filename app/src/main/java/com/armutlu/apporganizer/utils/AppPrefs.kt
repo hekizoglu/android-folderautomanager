@@ -956,21 +956,14 @@ object AppPrefs {
         deepSeekPrefs(context).edit().putString(KEY_DEEPSEEK_API_KEY, key.trim()).apply()
     }
 
-    // FCM token — push bildirim için sunucu kaydı. Cihaza ozeldir, yedekten donunce zaten
-    // gecersizdir; ayni F1 denetimiyle ayri "device_prefs" dosyasina tasindi ve haric tutuldu.
+    // FCM kaldirildi (D-S6) — device_prefs dosyasi ve KEY_FCM_TOKEN sabiti yalnizca asagidaki
+    // migrateSensitivePrefsIfNeeded legacy temizligi icin korunuyor: eski cihazlarda
+    // app_organizer_prefs icinde hala fcm_token degeri kalmis olabilir, bu deger sessizce
+    // device_prefs'e tasinip ana dosyadan silinir (F1 denetimiyle uyumlu, veri sizdirmaz).
     private const val DEVICE_PREFS_NAME = "device_prefs"
     const val KEY_FCM_TOKEN = "fcm_token"
     private fun devicePrefs(context: Context) =
         context.getSharedPreferences(DEVICE_PREFS_NAME, Context.MODE_PRIVATE)
-
-    fun getFcmToken(context: Context): String {
-        migrateSensitivePrefsIfNeeded(context)
-        return devicePrefs(context).getString(KEY_FCM_TOKEN, "") ?: ""
-    }
-    fun setFcmToken(context: Context, token: String) {
-        migrateSensitivePrefsIfNeeded(context)
-        devicePrefs(context).edit().putString(KEY_FCM_TOKEN, token).apply()
-    }
 
     // Tek seferlik migration bayragi: eski app_organizer_prefs icindeki deepseek_api_key ve
     // fcm_token degerlerini yeni ayri dosyalara tasir, eskisini siler. Idempotent — bayrak

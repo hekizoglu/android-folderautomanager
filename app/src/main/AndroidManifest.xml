@@ -125,15 +125,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <!-- Firebase Cloud Messaging — push ile veri güncelleme -->
-        <service
-            android:name=".service.AppFirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
         <!-- Broadcast receiver for package change events -->
         <receiver
             android:name=".presentation.receivers.PackageChangeReceiver"

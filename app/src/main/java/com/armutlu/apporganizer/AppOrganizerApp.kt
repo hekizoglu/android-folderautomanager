@@ -2,8 +2,6 @@ package com.armutlu.apporganizer
 
 import android.Manifest
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
@@ -11,12 +9,12 @@ import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.FilesIndexWorkCoordinator
 import com.armutlu.apporganizer.workers.BackupWorker
+import com.armutlu.apporganizer.workers.CategoryDbUpdateWorker
 import com.armutlu.apporganizer.workers.SmartInsightWorker
 import com.armutlu.apporganizer.workers.SuggestionNotificationWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
 import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -51,7 +49,7 @@ class AppOrganizerApp : Application() {
             Timber.w("Firebase devre dışı — google-services.json bulunamadı")
         }
         // Cold start optimizasyonu (D234): asagidaki isler ilk frame yolunda olmak zorunda degil —
-        // WorkManager enqueue disk IO yapar, kanallar binder cagrisi, FCM zaten async.
+        // WorkManager enqueue disk IO yapar, kanallar binder cagrisi.
         // Crash guvenligi icin Timber/CrashReporter/Firebase init yukarida main thread'de kaldi.
         Thread({
             runCatching {
@@ -74,8 +72,7 @@ class AppOrganizerApp : Application() {
                         .missionWorkScheduler()
                         .scheduleNext()
                 }.onFailure { Timber.w(it, "MissionWorkScheduler baslatilamadi") }
-                createNotificationChannels()
-                if (firebaseApp != null) fetchFcmToken()
+                CategoryDbUpdateWorker.schedule(this)
             }.onFailure { Timber.e(it, "Arka plan init hatasi") }
         }, "app-init-bg").start()
     }
@@ -91,33 +88,7 @@ class AppOrganizerApp : Application() {
         }
     }
 
-    /** Bildirim kanallarını oluştur (Android 8+). */
-    private fun createNotificationChannels() {
-        val manager = getSystemService(NotificationManager::class.java) ?: return
-        val channel = NotificationChannel(
-            FCM_CHANNEL_ID,
-            "Güncellemeler",
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            description = "Uygulama veritabanı ve yapılandırma güncellemeleri"
-        }
-        manager.createNotificationChannel(channel)
-    }
-
-    /** Uygulama açılışında FCM token'ı al ve kaydet. */
-    private fun fetchFcmToken() {
-        FirebaseMessaging.getInstance().token
-            .addOnSuccessListener { token ->
-                Timber.d("FCM token alındı: ${token.take(20)}…")
-                AppPrefs.setFcmToken(this, token)
-            }
-            .addOnFailureListener { e ->
-                Timber.w(e, "FCM token alınamadı")
-            }
-    }
-
     companion object {
-        const val FCM_CHANNEL_ID = "app_updates"
         val processStartedAtElapsed: Long = SystemClock.elapsedRealtime()
         private var firstActivity = true
 

@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## S6 - 2026-07-20 - FCM kaldirildi + gizlilik metni durustlestirildi (PAKET S KAPANDI)
+
+**Yapilanlar:** Aktif backend'i olmayan FCM cikartildi: AppFirebaseMessagingService silindi, manifest kaydi + firebase-messaging bagimliligi kaldirildi (Analytics/Crashlytics/Perf durur), AppOrganizerApp'ten token alma + FCM'e ozel bildirim kanali temizlendi. Yerine haftalik CategoryDbUpdateWorker (fetchAndCache, CONNECTED constraint, KEEP policy — BackupWorker deseni). AppPrefs FCM getter/setter'lari kalkti; migrateSensitivePrefsIfNeeded legacy temizligi + device_prefs backup exclusion'lari YERINDE (eski cihaz korumasi). onb_usage_privacy mutlak "hicbir veri disari gonderilmez" iddiasi durustlestirildi (AI kocu acikken uygulama adsiz haftalik ozet DeepSeek'e gider); bildirim/gizlilik-analizi metinleri dogru oldugu icin dokunulmadi. Koc gorunurluk kurallari dogrulamada ZATEN uyumlu cikti (2 cumle, yalniz haftalik rapor). Migration testleri 4/4 yesil.
+
+**Bug:** Yok.
+
+**Sonraki:** Plan dosyasi bosaldi — ayri commit'le silinir + final APK.
+
 ## S5+S7 - 2026-07-20 - Rapor merkezi 5 rapora indi + Wrapped anahtar yonlendirmesi
 
 **Yapilanlar:** S5: Rapor Merkezi 6 giristen 5'e indi — "Genel Bakis" listeden cikti (Dashboard rotasi/kodu duruyor, Ayarlar'dan erisilir); "Kullanim Raporu" -> "Uygulama Duzeni" (eski genel bakis katalog ozeti description'a katildi); "Haftalik Rapor" -> "Haftalik Ozet"; "Saglik Raporu" -> "Teknik Tanilama". Yeni basliklar string resource (TR+EN); ReportsCenterScreenLogicTest guncellendi. S7: WrappedUiState.aiCoachNeedsKey eklendi — AI kocu acik + anahtar bos ise haftalik raporda "DeepSeek anahtari gerekli -> Ayarlar > Gizlilik & Veri" karti gosterilir (sessiz basarisizlik kalkti). Sonnet uyguladi, Fable dogruladi; compile + test yesil.

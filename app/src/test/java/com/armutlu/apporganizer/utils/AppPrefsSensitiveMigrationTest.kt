@@ -10,11 +10,13 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * F1 denetimi (P0): DeepSeek API anahtari ve FCM token artik ayri "deepseek_prefs" /
- * "device_prefs" SharedPreferences dosyalarinda tutuluyor (ana app_organizer_prefs Auto
- * Backup'a dahildi, exclusion kurali yanlis dosya adini hedefliyordu). Bu test migration'in
- * eski degeri tasidigini, eskisini sildigini, ve bayrak set edildikten sonra idempotent
- * calistigini dogrular.
+ * F1 denetimi (P0): DeepSeek API anahtari ve (eski) FCM token ayri "deepseek_prefs" /
+ * "device_prefs" SharedPreferences dosyalarinda tutuluyordu (ana app_organizer_prefs Auto
+ * Backup'a dahildi, exclusion kurali yanlis dosya adini hedefliyordu). FCM kaldirildiktan
+ * sonra (D-S6) getFcmToken/setFcmToken publik fonksiyonlari silindi, ama eski cihazlarda
+ * app_organizer_prefs icinde kalmis olabilecek fcm_token degerini device_prefs'e tasiyip
+ * ana dosyadan silen migrateSensitivePrefsIfNeeded legacy temizligi hala calisir — bu test
+ * o temizligi (dogrudan store map'leri okuyarak) ve idempotent davranisi dogrular.
  *
  * Her dosya adi icin ayri mock SharedPreferences/Editor ciftini, o dosyanin icindeki
  * key->value durumunu bir MutableMap ile simule ederek gercekci get/put davranisi saglar.
@@ -86,8 +88,6 @@ class AppPrefsSensitiveMigrationTest {
         assertEquals("sk-legacy-secret", deepSeekStore["deepseek_api_key"])
         assertTrue(!mainStore.containsKey("deepseek_api_key"))
 
-        val migratedToken = AppPrefs.getFcmToken(context)
-        assertEquals("legacy-fcm-token", migratedToken)
         assertEquals("legacy-fcm-token", deviceStore["fcm_token"])
         assertTrue(!mainStore.containsKey("fcm_token"))
 
@@ -112,10 +112,9 @@ class AppPrefsSensitiveMigrationTest {
     @Test
     fun `fresh install with no legacy values migrates cleanly to empty strings`() {
         val key = AppPrefs.getDeepSeekApiKey(context)
-        val token = AppPrefs.getFcmToken(context)
 
         assertEquals("", key)
-        assertEquals("", token)
+        assertTrue(!deviceStore.containsKey("fcm_token"))
         assertEquals(true, mainStore["sensitive_prefs_migrated_v1"])
     }
 
@@ -127,11 +126,4 @@ class AppPrefsSensitiveMigrationTest {
         assertTrue(!mainStore.containsKey("deepseek_api_key"))
     }
 
-    @Test
-    fun `setFcmToken writes to separate file not main prefs`() {
-        AppPrefs.setFcmToken(context, "new-token")
-
-        assertEquals("new-token", deviceStore["fcm_token"])
-        assertTrue(!mainStore.containsKey("fcm_token"))
-    }
 }

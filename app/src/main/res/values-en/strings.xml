@@ -152,7 +152,7 @@
     <string name="onb_usage_title">Usage Access</string>
     <string name="onb_usage_desc">Required to show smart suggestions and recent apps accurately.</string>
     <string name="onb_usage_why">Android grants this from a separate system screen; without it, suggestions stay incomplete.</string>
-    <string name="onb_usage_privacy">Usage data stays on your device and is never sent out.</string>
+    <string name="onb_usage_privacy">Your usage data is processed on your device. Only if you enable the AI coach, a weekly summary (no app names) is sent to DeepSeek.</string>
     <string name="onb_usage_btn">Open Access</string>
 
     <string name="onb_notif_title">Notification Permission</string>

@@ -10,9 +10,7 @@
 
 > ✅ **S1-S5 tamamlandı (2026-07-20)** — HISTORY.md'de.
 
-### S6 — FCM kararı + koç görünürlük kuralları
-FCM: aktif backend yoksa çıkar → günlük WorkManager DB güncellemesi (zaten açılışta var — haftalık periodic yeterli). Koç: haftalık raporda max 2 öneri, ana ekranda konuşmaz, "tüm veriler cihazda" metni düzeltilir (AI açıkken özet DeepSeek'e gider ibaresi).
-Durum: ⏳ Bekliyor
+> ✅ **S6 tamamlandı (2026-07-20)** — PAKET S kapandı; HISTORY.md'de.
 
 > ✅ **S7 tamamlandı (2026-07-20)** — HISTORY.md'de (S5 ile aynı döngü).
 
