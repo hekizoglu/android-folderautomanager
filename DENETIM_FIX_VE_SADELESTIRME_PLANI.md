@@ -8,11 +8,7 @@
 
 ## PAKET S — Sadeleştirme
 
-> ✅ **S1 + S2 + S3 tamamlandı (2026-07-20)** — HISTORY.md'de.
-
-### S4 — Ayarlar yeniden yapısı
-Rapordaki 6 hub: Ana Ekran / Arama-Çekmece / Otomatik Düzenleme / Dijital Yaşam / Gizlilik-Veri / Gelişmiş-Destek. DeepSeek anahtarı Gizlilik-Veri'ye taşınır (F1 ile koordineli — AI koçu açıkken anahtar alanı HER ZAMAN erişilebilir). Sağlık raporu + Firebase araçları Gelişmiş'e.
-Durum: ⏳ Bekliyor
+> ✅ **S1 + S2 + S3 + S4 tamamlandı (2026-07-20)** — HISTORY.md'de.
 
 ### S5 — Rapor birleştirme
 5 rapor: Haftalık Özet / Uygulama Düzeni / Bildirimler / Gizlilik / Teknik Tanılama (destek aracı olarak ayrık). Genel Bakış+Kullanım+Haftalık tekrar tekilleştirilir.

@@ -73,5 +73,8 @@ fun SettingsAboutScreen(
                 )
             }
         }
+
+        // ── Firebase bağlantı testi + sağlık raporu (S4: Dijital Yaşam'dan taşındı) ──
+        item { FirebaseHealthCheckSection() }
     }
 }

@@ -39,6 +39,16 @@
 
     <!-- Navigation & Screen Titles -->
     <string name="settings_title">Ayarlar</string>
+    <!-- S4: Ayarlar ana ekran hub bölüm başlıkları -->
+    <string name="settings_hub_home_screen_title">Ana Ekran</string>
+    <string name="settings_hub_search_drawer_title">Arama &amp; Çekmece</string>
+    <string name="settings_hub_search_drawer_subtitle">Arama kaynakları, hız, sonuç düzeni ve uygulama çekmecesi</string>
+    <string name="settings_hub_auto_organize_title">Otomatik Düzenleme</string>
+    <string name="settings_hub_auto_organize_subtitle">Uygulamalar &amp; Otomatik Düzenleme</string>
+    <string name="settings_hub_digital_life_title">Dijital Yaşam</string>
+    <string name="settings_hub_privacy_data_title">Gizlilik &amp; Veri</string>
+    <string name="settings_hub_privacy_data_subtitle">Ayarlar kilidi, AI anahtarı ve veri kontrolü</string>
+    <string name="settings_hub_advanced_support_title">Gelişmiş &amp; Destek</string>
     <string name="favorites_title">Favoriler</string>
     <string name="recent_title">Son Kullanılanlar</string>
     <string name="all_apps_title">Tüm Uygulamalar</string>
@@ -320,6 +330,11 @@
     <string name="settings_privacy_report_desc">Hangi uygulamanın kamera, mikrofon, konum gibi izinlere erişebildiğini gör</string>
     <string name="settings_privacy_report_toggle_title">Gizlilik Analizi</string>
     <string name="settings_privacy_report_toggle_desc">Rapor Merkezi\'nde Gizlilik Analizi girişini göster</string>
+    <!-- S4: DeepSeek AI anahtarı — Gizlilik & Veri ekranına taşındı -->
+    <string name="settings_deepseek_key_title">DeepSeek API Anahtarı</string>
+    <string name="settings_deepseek_key_desc">Diğer klasöründeki uygulamaları ve Haftalık Rapor AI koçunu bu anahtarla çalıştırır</string>
+    <string name="settings_deepseek_key_label">DeepSeek API Key</string>
+    <string name="settings_deepseek_key_placeholder">sk-…</string>
 
     <!-- Bildirim Analizi ayarları (SettingsNotificationsScreen) -->
     <string name="settings_notif_analytics_section">Bildirim Analizi</string>
@@ -794,6 +809,7 @@
     <string name="usage_data_not_collected_apps">Paket/uygulama listesi</string>
     <string name="usage_data_not_collected_folders">Özel klasör adları</string>
     <string name="usage_data_connection_title">Bağlantı durumu</string>
+    <string name="usage_data_connection_moved_notice">Firebase bağlantı testi ve sağlık raporu artık Ayarlar &gt; Gelişmiş &amp; Destek &gt; Hakkında &amp; Yedekleme ekranında.</string>
     <string name="usage_data_test_button">Firebase bağlantısını test et</string>
     <string name="usage_data_ci_build_warning_title">Bu APK Firebase\'siz üretildi</string>
     <string name="usage_data_ci_build_warning_description">Bu sürüm yalnızca kod ve CI doğrulaması içindir. Analytics, Crashlytics ve Performance bu APK\'da çalışmaz. Telefonda Firebase testi yapmak için Firebase etkin test APK\'sını kurun.</string>

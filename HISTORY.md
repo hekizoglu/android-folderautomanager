@@ -1,5 +1,13 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## S4 - 2026-07-20 - Ayarlar 6-hub yeniden yapisi
+
+**Yapilanlar:** Ayarlar ana ekrani 3 bolumden 6 hub'a gruplandi: Ana Ekran / Arama-Cekmece / Otomatik Duzenleme / Dijital Yasam / Gizlilik-Veri / Gelismis-Destek (rotalar+F2 guard'i degismedi, basliklar string resource oldu). DeepSeek anahtari SettingsAppsSection'dan SettingsSecurityScreen'e (Gizlilik-Veri) tasindi — artik KOSULSUZ erisilebilir (eskiden "Diger" klasoru bos degilse gorunuyordu; maskeli gosterim korundu). Firebase baglanti testi + saglik karti UsageData'dan cikip FirebaseHealthCheckSection olarak About'a (Gelismis-Destek) tasindi; UsageData'da yonlendirme notu. TR+EN string'ler. Sonnet uyguladi, Fable dogruladi.
+
+**Bug:** Ortam: Kotlin daemon cokmesi + KSP incremental cache bozulmasi (FileAlreadyExistsException) — java kill YAPILMADAN sadece app\build\generated\ksp + kspCaches silinerek cozuldu (yeni hafif SOP; Codex canli testi korundu).
+
+**Sonraki:** S5+S7 (rapor birlestirme + Wrapped anahtar akisi) tek agent'ta.
+
 ## S3 - 2026-07-20 - Cekmece sadelestirme
 
 **Yapilanlar:** Cekmecedeki iki chip satiri (hizli filtre + siralama) varsayilanda tek Tune-ikonlu DropdownMenu butonuna indi (arama cubugu hizasinda): 4 siralama secenegi (aktif Check'li, tekrar secim yonu cevirir — opposite() korundu) + ayirici + 4 hizli filtre. KEY_DRAWER_CHIP_ROWS_ENABLED (default false=sade); toggle acilinca eski chip satirlari aynen geri gelir (kod silinmedi, if/else). Settings > Arama grubuna toggle. TR+EN 5 string. rememberBooleanPreferenceState ile reaktif. Sonnet uyguladi (java-kill yasagi spec'te — kilit cikmadi), compile yesil.

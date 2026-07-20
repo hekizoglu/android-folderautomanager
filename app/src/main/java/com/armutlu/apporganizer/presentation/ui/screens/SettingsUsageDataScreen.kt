@@ -47,7 +47,6 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
         ) as T
     })
     val state by model.uiState.collectAsState()
-    val firebaseBuildEnabled = BuildConfig.FIREBASE_BUILD_ENABLED
 
     SettingsSubScreenScaffold(stringResource(R.string.usage_data_title), onNavigateBack) {
         item { SettingsSectionTitle(stringResource(R.string.usage_data_sharing_section)) }
@@ -75,32 +74,61 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
         }
         item { UsageDataListCard(R.string.usage_data_collected_title, collectedItems()) }
         item { UsageDataListCard(R.string.usage_data_not_collected_title, notCollectedItems()) }
-        item { SettingsSectionTitle(stringResource(R.string.usage_data_connection_title)) }
         item {
             SettingsCard {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (!firebaseBuildEnabled) {
-                        FirebaseDisabledBuildWarning()
-                    }
-                    Text(connectionStatusText(state.connectionStatus))
-                    state.connectionResult?.let { ConnectionTestDetails(it) }
-                    Button(
-                        onClick = model::runConnectionTest,
-                        enabled = firebaseBuildEnabled && state.connectionStatus != ConnectionTestStatus.TESTING,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        if (state.connectionStatus == ConnectionTestStatus.TESTING) {
-                            CircularProgressIndicator(Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
-                        }
-                        Text(stringResource(
-                            if (firebaseBuildEnabled) {
-                                R.string.usage_data_test_button
-                            } else {
-                                R.string.usage_data_ci_build_test_disabled
-                            },
-                        ))
-                    }
+                Text(
+                    stringResource(R.string.usage_data_connection_moved_notice),
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * S4: Firebase bağlantı testi + sağlık raporu UI'ı — "Gelişmiş & Destek" (SettingsAboutScreen)
+ * ekranına taşındı. Bu composable oradan çağrılır; kendi UsageDataViewModel örneğini tutar
+ * (bağlantı testi durumu ekranlar arası paylaşılmaz, stateless bir test çağrısıdır).
+ */
+@Composable
+fun FirebaseHealthCheckSection() {
+    val context = LocalContext.current.applicationContext
+    val model: UsageDataViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T = UsageDataViewModel(
+            initialSharingEnabled = AppPrefs.isTelemetryEnabled(context),
+            persistSharingEnabled = { TelemetryConsentManager.setConsent(context, it) },
+            testConnection = FirebaseConnectionTester(context)::test,
+        ) as T
+    })
+    val state by model.uiState.collectAsState()
+    val firebaseBuildEnabled = BuildConfig.FIREBASE_BUILD_ENABLED
+
+    SettingsSectionTitle(stringResource(R.string.usage_data_connection_title))
+    SettingsCard {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (!firebaseBuildEnabled) {
+                FirebaseDisabledBuildWarning()
+            }
+            Text(connectionStatusText(state.connectionStatus))
+            state.connectionResult?.let { ConnectionTestDetails(it) }
+            Button(
+                onClick = model::runConnectionTest,
+                enabled = firebaseBuildEnabled && state.connectionStatus != ConnectionTestStatus.TESTING,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                if (state.connectionStatus == ConnectionTestStatus.TESTING) {
+                    CircularProgressIndicator(Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
                 }
+                Text(stringResource(
+                    if (firebaseBuildEnabled) {
+                        R.string.usage_data_test_button
+                    } else {
+                        R.string.usage_data_ci_build_test_disabled
+                    },
+                ))
             }
         }
     }

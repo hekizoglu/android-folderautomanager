@@ -87,17 +87,10 @@ fun SettingsScreen(
             // ── Eksik İzinler — sadece eksik izin varsa görünür ──────────
             item { SettingsPermissionsCard() }
 
-            // ── Kişiselleştirme ──────────────────────────────────────────
-            item { SettingsSectionTitle("Kişiselleştirme") }
+            // ── Ana Ekran ──────────────────────────────────────────────
+            item { SettingsSectionTitle(stringResource(R.string.settings_hub_home_screen_title)) }
             item {
                 SettingsCard {
-                    SettingsButtonRow(
-                        icon = Icons.Default.Analytics,
-                        title = stringResource(R.string.usage_data_title),
-                        subtitle = stringResource(R.string.usage_data_hub_subtitle),
-                        onClick = onNavigateToUsageData,
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Palette,
                         title = "Görünüm",
@@ -111,32 +104,51 @@ fun SettingsScreen(
                         subtitle = "Ana ekran davranışı, dock, hareketler ve widget alanı",
                         onClick = onNavigateToLauncher,
                     )
+                }
+            }
+
+            // ── Arama & Çekmece ────────────────────────────────────────
+            item { SettingsSectionTitle(stringResource(R.string.settings_hub_search_drawer_title)) }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Search,
+                        title = stringResource(R.string.settings_hub_search_drawer_title),
+                        subtitle = stringResource(R.string.settings_hub_search_drawer_subtitle),
+                        onClick = onNavigateToSearchSettings,
+                    )
+                }
+            }
+
+            // ── Otomatik Düzenleme ──────────────────────────────────────
+            item { SettingsSectionTitle(stringResource(R.string.settings_hub_auto_organize_title)) }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Apps,
+                        title = stringResource(R.string.settings_hub_auto_organize_subtitle),
+                        subtitle = "Uygulama listesi, gizliler ve diğer klasörü",
+                        onClick = onNavigateToApps,
+                    )
+                }
+            }
+
+            // ── Dijital Yaşam ────────────────────────────────────────────
+            item { SettingsSectionTitle(stringResource(R.string.settings_hub_digital_life_title)) }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Analytics,
+                        title = stringResource(R.string.usage_data_title),
+                        subtitle = stringResource(R.string.usage_data_hub_subtitle),
+                        onClick = onNavigateToUsageData,
+                    )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
                         icon = Icons.Default.Notifications,
                         title = "Bildirimler",
                         subtitle = "Bildirim izni, rozetler ve akıllı bildirimler",
                         onClick = onNavigateToNotifications,
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsButtonRow(
-                        icon = Icons.Default.Search,
-                        title = "Arama",
-                        subtitle = "Arama kaynakları, hız ve sonuç düzeni",
-                        onClick = onNavigateToSearchSettings,
-                    )
-                }
-            }
-
-            // ── Yönetim ──────────────────────────────────────────────────
-            item { SettingsSectionTitle("Yönetim") }
-            item {
-                SettingsCard {
-                    SettingsButtonRow(
-                        icon = Icons.Default.Apps,
-                        title = "Uygulamalar",
-                        subtitle = "Uygulama listesi, gizliler ve diğer klasörü",
-                        onClick = onNavigateToApps,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(
@@ -148,8 +160,21 @@ fun SettingsScreen(
                 }
             }
 
-            // ── Sistem ───────────────────────────────────────────────────
-            item { SettingsSectionTitle("Sistem") }
+            // ── Gizlilik & Veri ──────────────────────────────────────────
+            item { SettingsSectionTitle(stringResource(R.string.settings_hub_privacy_data_title)) }
+            item {
+                SettingsCard {
+                    SettingsButtonRow(
+                        icon = Icons.Default.Fingerprint,
+                        title = stringResource(R.string.settings_hub_privacy_data_title),
+                        subtitle = stringResource(R.string.settings_hub_privacy_data_subtitle),
+                        onClick = onNavigateToSecurity,
+                    )
+                }
+            }
+
+            // ── Gelişmiş & Destek ─────────────────────────────────────────
+            item { SettingsSectionTitle(stringResource(R.string.settings_hub_advanced_support_title)) }
             item {
                 SettingsCard {
                     SettingsButtonRow(
@@ -157,13 +182,6 @@ fun SettingsScreen(
                         title = "Tam Performans / İzinler",
                         subtitle = "Gerekli izinler, neden gerekli ve kapalıyken ne çalışmaz",
                         onClick = onNavigateToPermissionsGuide,
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsButtonRow(
-                        icon = Icons.Default.Fingerprint,
-                        title = "Güvenlik",
-                        subtitle = "Ayarlar ekranını kilitle",
-                        onClick = onNavigateToSecurity,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsButtonRow(

@@ -39,6 +39,16 @@
 
     <!-- Navigation & Screen Titles -->
     <string name="settings_title">Settings</string>
+    <!-- S4: Settings home hub section titles -->
+    <string name="settings_hub_home_screen_title">Home Screen</string>
+    <string name="settings_hub_search_drawer_title">Search &amp; Drawer</string>
+    <string name="settings_hub_search_drawer_subtitle">Search sources, speed, result layout, and the app drawer</string>
+    <string name="settings_hub_auto_organize_title">Auto-Organize</string>
+    <string name="settings_hub_auto_organize_subtitle">Apps &amp; Auto-Organize</string>
+    <string name="settings_hub_digital_life_title">Digital Life</string>
+    <string name="settings_hub_privacy_data_title">Privacy &amp; Data</string>
+    <string name="settings_hub_privacy_data_subtitle">Settings lock, AI key, and data control</string>
+    <string name="settings_hub_advanced_support_title">Advanced &amp; Support</string>
     <string name="favorites_title">Favorites</string>
     <string name="recent_title">Recent</string>
     <string name="all_apps_title">All Apps</string>
@@ -318,6 +328,11 @@
     <string name="settings_privacy_report_desc">See which apps can access camera, microphone, location and more</string>
     <string name="settings_privacy_report_toggle_title">Privacy Analysis</string>
     <string name="settings_privacy_report_toggle_desc">Show the Privacy Analysis entry in the Reports Center</string>
+    <!-- S4: DeepSeek AI key — moved to Privacy & Data screen -->
+    <string name="settings_deepseek_key_title">DeepSeek API Key</string>
+    <string name="settings_deepseek_key_desc">Powers categorization for the Other folder and the Weekly Report AI coach</string>
+    <string name="settings_deepseek_key_label">DeepSeek API Key</string>
+    <string name="settings_deepseek_key_placeholder">sk-…</string>
 
     <!-- Notification Analysis settings (SettingsNotificationsScreen) -->
     <string name="settings_notif_analytics_section">Notification Analysis</string>
@@ -783,6 +798,7 @@
     <string name="usage_data_not_collected_apps">Package/app list</string>
     <string name="usage_data_not_collected_folders">Custom folder names</string>
     <string name="usage_data_connection_title">Connection status</string>
+    <string name="usage_data_connection_moved_notice">The Firebase connection test and health report are now under Settings &gt; Advanced &amp; Support &gt; About &amp; Backup.</string>
     <string name="usage_data_test_button">Test Firebase connection</string>
     <string name="usage_data_ci_build_warning_title">This APK was built without Firebase</string>
     <string name="usage_data_ci_build_warning_description">This build is intended only for code and CI verification. Analytics, Crashlytics, and Performance are unavailable. Install the Firebase-enabled test APK for device testing.</string>

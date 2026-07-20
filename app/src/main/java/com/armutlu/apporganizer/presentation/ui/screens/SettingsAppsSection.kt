@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.Help
@@ -19,11 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
@@ -243,28 +238,11 @@ internal fun LazyListScope.settingsAppsSection(
         item {
             val context = LocalContext.current
             SettingsCard {
-                var apiKeyInput by remember { mutableStateOf(AppPrefs.getDeepSeekApiKey(context)) }
-                var showApiKey  by remember { mutableStateOf(false) }
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    Text("Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. DeepSeek AI ile kategorilendirilebilir.",
+                    Text("Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. DeepSeek AI ile kategorilendirilebilir. DeepSeek API anahtarını Gizlilik & Veri ayarlarından girebilirsin.",
                         fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(12.dp))
-                    OutlinedTextField(
-                        value = apiKeyInput,
-                        onValueChange = { apiKeyInput = it; AppPrefs.setDeepSeekApiKey(context, it) },
-                        label = { Text("DeepSeek API Key", fontSize = 12.sp) },
-                        placeholder = { Text("sk-...", fontSize = 12.sp) },
-                        singleLine = true, modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = if (showApiKey) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        trailingIcon = {
-                            IconButton(onClick = { showApiKey = !showApiKey }) {
-                                Icon(if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility, null, modifier = Modifier.size(18.dp))
-                            }
-                        },
-                        textStyle = TextStyle(fontSize = 13.sp)
-                    )
-                    Spacer(Modifier.height(8.dp))
+                    val apiKeyInput = AppPrefs.getDeepSeekApiKey(context)
                     Button(onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
                         enabled = !llmCategorizing && apiKeyInput.isNotBlank(),
                         modifier = Modifier.fillMaxWidth()) {
