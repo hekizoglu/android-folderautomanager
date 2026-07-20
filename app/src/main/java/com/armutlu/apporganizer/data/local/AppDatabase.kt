@@ -23,8 +23,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class],
-    version = 20,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class],
+    version = 21,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -38,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun taskScoreEventDao(): TaskScoreEventDao
     abstract fun missionInstanceDao(): MissionInstanceDao
     abstract fun tickerHistoryDao(): TickerHistoryDao
+    abstract fun homeGridItemDao(): HomeGridItemDao
     
     companion object {
         @Volatile
@@ -285,6 +286,30 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v20→v21: home_grid_items tablosu — Faz S (Serbest Sürükle-Bırak Ana Ekran Sistemi)
+        // S1 veri modeli. Şu an hiçbir UI/ViewModel bu tabloyu okumuyor/yazmıyor — mevcut
+        // 1D sistemler (HomeLayout.kt, WidgetArea.kt) DEĞİŞMEDİ, bu tamamen paralel altyapı.
+        // NOT: v19→v20 migration'ında bugün yaşanan prod crash dersi gereği DEFAULT clause
+        // KULLANILMADI — schemas JSON'da Room'un ürettiği defaultValue='undefined' ile eşleşir.
+        internal val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS home_grid_items (
+                        itemId TEXT NOT NULL,
+                        itemType TEXT NOT NULL,
+                        screenIndex INTEGER NOT NULL,
+                        cellX INTEGER NOT NULL,
+                        cellY INTEGER NOT NULL,
+                        spanX INTEGER NOT NULL,
+                        spanY INTEGER NOT NULL,
+                        PRIMARY KEY(itemId)
+                    )
+                    """
+                )
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -398,7 +423,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_16_17,
                         MIGRATION_17_18,
                         MIGRATION_18_19,
-                        MIGRATION_19_20
+                        MIGRATION_19_20,
+                        MIGRATION_20_21
                     )
                     .build()
 

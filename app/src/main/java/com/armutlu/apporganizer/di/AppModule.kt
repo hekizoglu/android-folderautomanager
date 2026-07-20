@@ -100,6 +100,11 @@ object AppModule {
     fun provideTickerHistoryDao(db: AppDatabase): com.armutlu.apporganizer.data.local.TickerHistoryDao =
         db.tickerHistoryDao()
 
+    // Faz S — S1 veri modeli. Şu an hiçbir ViewModel bu DAO'yu enjekte etmiyor.
+    @Provides
+    fun provideHomeGridItemDao(db: AppDatabase): com.armutlu.apporganizer.data.local.HomeGridItemDao =
+        db.homeGridItemDao()
+
     // Dongu M02 — MissionMetricSnapshotProvider'in UsageStatsHelper cagrilarini soyutlayan
     // kaynak; uretimde gercek Android API'sine delege eder (bkz. MissionUsageStatsSource.kt).
     @Provides
