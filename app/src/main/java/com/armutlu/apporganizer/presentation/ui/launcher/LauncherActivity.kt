@@ -209,6 +209,7 @@ class LauncherActivity : ComponentActivity() {
         viewModel.syncUsageStats(this) { AppPrefs.markUsageStatsSynced(this) }
         viewModel.syncAppSizes(this)
         viewModel.loadWidgetIds(this)
+        applyOpenFolderIntent(intent)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
                 LauncherNavGraph(
@@ -239,11 +240,31 @@ class LauncherActivity : ComponentActivity() {
     // Launcher zaten ön planda iken HOME → onNewIntent tetiklenir.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
+        applyOpenFolderIntent(intent)
         if (viewModel.allAppsOpen.value) {
             viewModel.closeAllApps()
             return
         }
         viewModel.onHomePressed()
+    }
+
+    /**
+     * Klasör Önerileri ekranında "Kabul Et" gibi dışarıdan gelen isteklerle
+     * doğrudan hedef klasörü açar. MainActivity.applyOpenCategoryIntent() ile
+     * aynı doğrulama deseni: boş veya aşırı uzun (gerçek kategori id'leri kısa
+     * sabit string'lerdir) değerleri yok say.
+     */
+    private fun applyOpenFolderIntent(intent: Intent?) {
+        val categoryId = intent?.getStringExtra(EXTRA_OPEN_FOLDER_CATEGORY_ID) ?: return
+        if (categoryId.isBlank() || categoryId.length > 64) {
+            Timber.w("Gecersiz open_folder_category_id extra yok sayildi (uzunluk=${categoryId.length})")
+            return
+        }
+        // Aynı intent'in Activity recreate/configuration change sonrası tekrar
+        // işlenmesini önle — singleTask launchMode'da intent uzun ömürlü kalabilir.
+        intent.removeExtra(EXTRA_OPEN_FOLDER_CATEGORY_ID)
+        viewModel.openFolderByCategoryId(categoryId)
     }
 
     private val packageReceiver = object : BroadcastReceiver() {
@@ -343,6 +364,7 @@ class LauncherActivity : ComponentActivity() {
     }
 
     companion object {
+        const val EXTRA_OPEN_FOLDER_CATEGORY_ID = "open_folder_category_id"
         private const val KEY_PENDING_WIDGET_ID = "pending_widget_id"
         // onResume() bu sürenin altında tetiklenirse (Activity'nin picker'a hiç gitmeden geri
         // dönmesi) picker'ın sessizce açılmadığı kabul edilir. 800ms, gerçek bir Activity geçişinin

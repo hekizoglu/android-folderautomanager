@@ -327,6 +327,25 @@ Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, ki
 
 ---
 
+## Faz PERF — Performans (Cold Start, Geçişler, Cache, Pil) (2026-07-21, Hüseyin talebi)
+
+> Tetikleyici: HISTORY.md Döngü P23'te (2026-07-19, Samsung SM-X210) %14.11 janky frame ölçülmüş, hiç genişletilmeden askıda kalmış; Döngü 264'te (2026-07-14) "cold-start jank" açık madde olarak bırakılmış. developer.android.com + kod araştırmasına dayalı roadmap.
+
+**Zaten iyi olan (dokunulmuyor):** `AppOrganizerApp.onCreate()` D234'te worker'ları arka plana almış; ikon LRU cache sağlam; `AppClassifier` JSON tek seferlik parse; `HorizontalPager` `graphicsLayer` deferred-read pattern'inde; Compose Compiler Metrics zaten aktif ama hiç okunmamış.
+
+| # | Görev | Zorluk | Durum |
+|---|---|---|---|
+| PERF-1 | Compose Compiler Metrics'i oku (`app/build/compose_compiler/*-composables.csv`), `skippable=false` composable'ları tespit et — kod değişikliği yok, saf ölçüm | 2 | 🚧 Devam ediyor — ilk analiz kısmi build'de 0 sonuç verdi, tam clean build ile tekrarlanmalı |
+| PERF-2 | Hızlı kazançlar: `installSplashScreen()` ekle (LauncherActivity.kt, hiç çağrılmıyor), Room Flow'lara `.distinctUntilChanged()`, domain modellerine `@Immutable`, `onCreate()` senkron zincirini gözden geçir | 3-4 | ⏳ Bekliyor |
+| PERF-3 | Baseline Profile: `:benchmark` modülü + `androidx.profileinstaller` + `MacrobenchmarkRule` — sektör verisi %20-30 cold start kazancı | 6-7 | ⏳ Bekliyor |
+| PERF-4 | Pil ince ayar: `BackupWorker` gibi periyodik worker'lara `setRequiresBatteryNotLow`, `NotificationListenerService` senkron DB yazımı varsa batch'e çevir | 3 | ⏳ Bekliyor |
+
+**Kapsam dışı (gerekçeli):** Paging3 (300+ app ölçeğinde gereksiz karmaşıklık), `beyondViewportPageCount` artırma (mevcut `1` değeri bilinçli crash-fix kararı).
+
+**Sıra:** PERF-1 (ölçüm) → PERF-2 (hızlı kazanç) → PERF-3 (en büyük ama en pahalı) → PERF-4 (ince ayar).
+
+---
+
 ## Dis Aksiyon Kayitlari
 
 Detayli engel kaydi icin:

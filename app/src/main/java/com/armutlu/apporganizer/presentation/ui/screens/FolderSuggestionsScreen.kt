@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,10 +24,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestionType
+import com.armutlu.apporganizer.presentation.ui.launcher.LauncherActivity
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 
 @Composable
@@ -34,6 +37,7 @@ fun FolderSuggestionsScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     val suggestions by viewModel.folderSuggestions.collectAsState()
     val infoDismissed by viewModel.folderSuggestionsInfoDismissed.collectAsState()
     val screenState by viewModel.screenState.collectAsState()
@@ -110,7 +114,21 @@ fun FolderSuggestionsScreen(
                                 )
                                 Spacer(Modifier.height(12.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Button(onClick = { viewModel.acceptFolderSuggestion(suggestion.id) }) {
+                                    Button(onClick = {
+                                        viewModel.acceptFolderSuggestion(suggestion.id)
+                                        // Kabul edilen oneri hedef klasore tasindi — kullaniciyi
+                                        // dogrudan LauncherActivity'deki ilgili klasore yonlendir.
+                                        val intent = Intent(context, LauncherActivity::class.java).apply {
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                                                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                                Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                            putExtra(
+                                                LauncherActivity.EXTRA_OPEN_FOLDER_CATEGORY_ID,
+                                                suggestion.targetCategoryId,
+                                            )
+                                        }
+                                        context.startActivity(intent)
+                                    }) {
                                         Text("Kabul et")
                                     }
                                     OutlinedButton(onClick = { viewModel.snoozeFolderSuggestion(suggestion.id) }) {
