@@ -1,7 +1,8 @@
 # COZULEMEYEN SORUNLAR - AppOrganizer
 
 > Bir madde yerel agent tarafindan tamamlanamiyor ve kullanici/dış sistem/cihaz/izin gerektiriyorsa burada tutulur.
-> Yerelde tamamlananlar HISTORY.md'ye, aktif yapilacaklar ROADMAP.md'ye tasinir.
+> Yerelde tamamlananlar HISTORY.md'ye, aktif yapilacaklar YENI_ROADMAP.md'ye tasinir.
+> Aktif her kayitta tek `Sahip`, ISO `Son tarih`, `Beklenen kanit` ve `Sonraki eskalasyon` bulunur. Tarih henuz planlanamiyorsa neden ve atanacagi kapı acikca yazilir; R8 aktive edilmeden mutlak tarih zorunludur.
 
 ---
 
@@ -11,6 +12,10 @@
 
 **Tarih:** 2026-06-16
 **Durum:** Kismen cozuldu - repo scriptleri duzeltildi, kalici Defender exclusion icin kullanici/admin aksiyonu bekliyor
+**Sahip:** Windows makinesinin yoneticisi
+**Son tarih:** R1 aktive edilirken ISO tarih atanacak; R1 kapanisindan once tamamlanmali
+**Beklenen kanit:** `-CheckOnly` ve yonetici calistirmasi sonucu ile kilitsiz `assembleDebug` raporu
+**Sonraki eskalasyon:** Tarih gecerse R1 `Bloke` olur; izole CI/ikinci build makinesi kullanilir
 
 **Sorun:** Windows Defender veya benzeri dosya tarama sureci Gradle build klasorlerini kilitleyebiliyor. `mergeDebugResources` ve `packaged_res` temizleme/yeniden uretme adimlari bu yuzden takilabiliyor.
 
@@ -44,6 +49,10 @@ Build kilitlenirse gecici workaround:
 
 **Tarih:** 2026-07-09
 **Durum:** Kismen cozuldu - release keystore uretim scripti eklendi; Play Console ve gercek imza aksiyonu kullanici/hesap erisimi gerektiriyor
+**Sahip:** Play Console developer hesabi sahibi
+**Son tarih:** R8 aktive edilmeden once ISO tarih atanacak
+**Beklenen kanit:** Imzali AAB, Console upload readback, tamamlanmis beyanlar ve inceleme sonucu
+**Sonraki eskalasyon:** Tarih gecerse R8 `Bloke` olur; R9 ozellikleri baslatilmaz, yalniz release kapsamindaki hazirlik/duzeltmeler surer
 
 **Sorun:** Kod ve dokuman hazirliklari yerelde konsolide edildi, fakat asagidaki maddeler Play Console veya kullaniciya ait kalici imza/hesap aksiyonu gerektiriyor:
 - Data Safety formu
@@ -55,13 +64,13 @@ Build kilitlenirse gecici workaround:
 
 **Denenen:**
 - Privacy policy, store listing ve manifest uyumu onceki dongulerde kontrol edildi.
-- QUERY_ALL_PACKAGES beyan ozeti ROADMAP.md icine tasindi.
-- Play Store QA pack maddeleri ROADMAP.md ve bu dosyaya konsolide edildi.
+- QUERY_ALL_PACKAGES beyan ozeti YENI_ROADMAP.md icine tasindi.
+- Play Store QA pack maddeleri YENI_ROADMAP.md ve bu dosyaya konsolide edildi.
 - `scripts/create_release_keystore.ps1` eklendi; `release.jks` ve gitignore kapsamindaki `keystore.properties` dosyasini interaktif sifreyle uretir.
 
 **Neden yerelde kapanmiyor:** Play Console oturumu, kullanici hesabi, kalici release key ve geri alinmasi zor kararlar gerekiyor.
 
-**Kullanicidan beklenen:** Release imzasi icin `.\scripts\create_release_keystore.ps1` calistirip olusan hassas dosyalari guvenli saklamak; Play Console'a girip ROADMAP.md "Kritik - Play Store ve Release Kapisi" bolumundeki maddeleri sirayla tamamlamak.
+**Kullanicidan beklenen:** Release imzasi icin `.\scripts\create_release_keystore.ps1` calistirip olusan hassas dosyalari guvenli saklamak; Play Console'a girip YENI_ROADMAP.md R8 maddelerini sirayla tamamlamak.
 
 **Tam adimlar ve kanit listesi:** `docs/PLAY_RELEASE_EVIDENCE_CHECKLIST.md`. Yerel hazirlik tamamlanmis olsa bile Play Console formu, yukleme readback'i ve inceleme sonucu olmadan bu sorun kapatilmaz.
 
@@ -71,6 +80,10 @@ Build kilitlenirse gecici workaround:
 
 **Tarih:** 2026-07-09
 **Durum:** Cozulemedi - fiziksel Android cihaz veya uygun emulator kaniti gerektiriyor
+**Sahip:** Release QA sorumlusu
+**Son tarih:** R7.4 aktive edilirken ISO tarih atanacak; R7.5 beta oncesi tamamlanmali
+**Beklenen kanit:** Commit/build SHA baglantili dort cihaz profili smoke raporu, ekran goruntuleri ve test ciktilari
+**Sonraki eskalasyon:** Tarih gecerse R7.4 ve R8 `Bloke` olur; uygun cihaz laboratuvari veya dis QA saglayicisi planlanir
 
 **Sorun:** Asagidaki maddeler kod okuma ile kismen dogrulandi, fakat Play oncesi "tamamlandi" sayilmasi icin cihaz uzerinde kanit gerekiyor:
 - Android 14 NotificationListener ac/kapa, event yazma, rapor gorunumu
@@ -84,13 +97,13 @@ Build kilitlenirse gecici workaround:
 
 **Denenen:**
 - Kod tarafinda duplicate worker riski, notification event veri modeli, search/settings davranislari ve backup/restore akislari incelendi.
-- 20 gorevlik gecici rapor tamamlandi ve ROADMAP.md'ye konsolide edildi.
+- 20 gorevlik gecici rapor tamamlandi ve YENI_ROADMAP.md'ye konsolide edildi.
 - 2026-07-13: Pixel6_API33 emulatorde `connectedDebugAndroidTest` 15 test / 0 failure gecti; AllApps arama odak + hizli cift dokunma smoke `FATAL EXCEPTION=0` ile kapandi; telefon `LauncherActivity` smoke `FATAL EXCEPTION=0` ile gecti. Simule tablet AllApps/search smoke gecti, fakat simule tablet `LauncherActivity` screenshot denemesi ADB baglantisini dusurdugu icin gorsel tablet Launcher smoke acik kaldi.
 
 **Neden yerelde kapanmiyor:** Bu oturumda fiziksel cihaz/Play Store screenshot ortami yok; tablet Launcher smoke icin stabil tablet AVD veya gercek tablet gerekiyor.
 
-**Kullanicidan beklenen:** ROADMAP.md "Kritik - Gercek Cihaz QA" bolumundeki senaryolari cihazda kosup kanitlari kaydetmek.
+**Kullanicidan beklenen:** YENI_ROADMAP.md R7.1–R7.5 senaryolarini cihazda kosup kanitlari kaydetmek.
 
 ---
 
-*Son guncelleme: 2026-07-13. Aktif liste ROADMAP.md'de, tamamlananlar HISTORY.md'de tutulur.*
+*Son guncelleme: 2026-07-21. Aktif liste YENI_ROADMAP.md'de, tamamlananlar HISTORY.md'de tutulur.*
