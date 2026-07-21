@@ -24,11 +24,19 @@
 - Otomatik/sessiz klasör birleştirme yapılmaz. Split ve cleanup akışları merge refactor’ından etkilenmez.
 - Telemetri yalnız açık rıza ile çalışır; sorgu, kişi, dosya, klasör adı, uygulama adı veya paket adı gönderilmez.
 - Çoklu cihaz senkronizasyonu ilk production yayın sonrasıdır. Önce SAF/Drive yedekle–geri yükle akışı güçlendirilir.
+- İlk production kapsamı Türkçe ve İngilizcedir. Desteklenmeyen locale İngilizce kaynaklara ve deterministik kök sıralamaya düşer; eksik/boş `values-*` klasörü oluşturulmaz.
 - Paging3 ve `beyondViewportPageCount` artırımı mevcut ölçekte kapsam dışıdır.
 
 ## 2. Çalışma protokolü — token ve döngü bütçesi
 
 Her döngü tek bir teslimat sınırına sahip olmalıdır. Bir döngüde en fazla bir domain değişikliği, bir UI dilimi veya bir doğrulama paketi yapılır.
+
+### Planlama varsayımları
+
+- Eforlar tek geliştiricinin aktif çalışma süresidir; cihaz, mağaza incelemesi, beta gözlemi ve hesap erişimi bekleme süresine dahil değildir.
+- `1 puan ≈ 0,5 geliştirici günü` yalnız kaba kapasite planlaması içindir. Faz ilk kez `Devam ediyor` durumuna alınırken kalan iş yeniden tahmin edilir.
+- Hedef bitiş tarihi, faz sahibi ve bağımlılıklar hazır olduğunda ISO `YYYY-MM-DD` biçiminde atanır. Sahibi veya başlangıç tarihi belli olmayan faza sahte kesin tarih yazılmaz.
+- R0–R8 için ilk aktif efor bütçesi toplam `27,5–44,5 geliştirici günü`dür; bu takvim taahhüdü değildir ve paralel çalışma/dış bekleme içermez.
 
 ### Döngü başlangıcı
 
@@ -69,15 +77,17 @@ R0 Kaynak birleştirme
 
 R2–R6
  └─ R7 Birleşik cihaz/erişilebilirlik/telemetri QA
-     └─ R8 İlk production release
-         └─ R9 Release sonrası ürün geliştirmeleri
+     └─ R7.5 Kapalı beta kapısı
+         └─ R8 İlk production release
+             └─ R9 Release sonrası ürün geliştirmeleri
 ```
 
-R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikten sonra paralel ilerleyebilir. R2’nin domain/state/unit-test işleri R1 cihaz ölçümünü beklemez; R2 faz kapanışı ve cihaz smoke kanıtı R1 baseline sonrasında yapılır. R4, R3 bitmeden; R6B, Hero doğrulaması bitmeden; R8, R7 bitmeden başlatılamaz.
+R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikten sonra paralel ilerleyebilir. R2’nin domain/state/unit-test işleri R1 cihaz ölçümünü beklemez; R2 faz kapanışı ve cihaz smoke kanıtı R1 baseline sonrasında yapılır. R4, R3 bitmeden; R6B adayı Hero doğrulaması bitmeden; R7.5, R7.1–R7.4 bitmeden; R8, R7.5 bitmeden başlatılamaz.
 
 ## 4. Faz R0 — Baseline ve belge konsolidasyonu
 
 **Amaç:** Tek gerçek kaynak oluşturmak ve eski kararların yeniden uygulanmasını engellemek.
+**Tahmini kalan efor:** 0,5 gün (1 puan). **Hedef:** Faz aktive edildiğinde atanır.
 
 - [x] Eski roadmap’lerdeki açık/kısmi işleri birleştir.
 - [x] Daha yeni kararları üstün tut; Hero Dashboard’un yerel roadmap silme commit’ini karar iptali olarak yorumlama.
@@ -90,6 +100,7 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 ## 5. Faz H1 — Acil: Hero Dashboard dönüşümünü tamamla
 
 **Neden ilk:** `main` üzerindeki son dönüşüm eski dashboard state/bölümlerinin önemli kısmını kaldırdı; `SmartDashboardPage` ise yeni `HeroDashboardPage` bağlanmadan geçici Pulse Clock + Today/HomeIntelligence içeriğinde kaldı. Bu ara durum yeni özelliklerden önce kapatılmalıdır.
+**Tahmini kalan efor:** 1–2 gün (2–4 puan; dış cihaz doğrulaması hariç). **Hedef:** Faz aktive edildiğinde atanır.
 
 ### H1.0 Baseline ve kırık HEAD kontrolü
 
@@ -141,10 +152,13 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ## 6. Faz R1 — Ölçüm ve mevcut sistem güvenlik kapısı
 
+**Tahmini efor:** 2–3 gün (4–6 puan; cihaz erişimi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
 ### R1.1 Performans ölçümü
 
-- [ ] Baseline Profile sonucunu gerçek telefon/tablette ölç; cold start ve ana ekran geçişini karşılaştır.
-- [ ] Samsung SM-X210 üzerinde kaydedilen `%14,11` janky frame değerini aynı senaryoyla yeniden ölç.
+- [ ] Baseline Profile sonucunu aynı cihaz, build türü ve senaryoda en az 5 ısınma + 10 ölçümle karşılaştır; cold start medyanı ve P95 değerlerini kanıta yaz.
+- [ ] Samsung SM-X210 üzerinde kaydedilen `%14,11` janky frame oranını aynı senaryoda `%7` altına indir. Eşik geçilmezse veya cold start medyanı `%5`ten fazla kötüleşirse R1 kapanmaz; ölçüm ve kök neden blokaj kaydına eklenir.
+- [ ] Donanım/ölçüm varyansı nedeniyle eşik değişecekse yeni tekrarlanabilir baseline, gerekçe ve ürün sahibi onayını `DECISIONS.md` içine yaz; eşiği sessizce gevşetme.
 - [ ] Macrobenchmark çıktısını kanıt dosyasına yaz; ölçüm olmadan yeni performans refactor’ı yapma.
 - [ ] Periyodik worker’larda pil kısıtlarının gerçek schedule davranışını doğrula.
 
@@ -155,16 +169,18 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 - [ ] `LauncherAccessibilityService` için gerçek ihtiyaç yoksa stub’ı büyütme; gerekiyorsa ayrı karar kaydı oluştur.
 - [ ] Ekranlar arası gerçek item taşımasını bu faza ekleme; kullanım kanıtından sonra ayrı değerlendirme yap.
 
-**Çıkış:** Performans regresyonu yoktur veya ölçülmüş bir eşik/iyileştirme hedefi vardır; deneysel grid güvenli biçimde kapatılabilir.
+**Çıkış:** Janky frame `%7` altındadır, cold start medyanında `%5`ten fazla regresyon yoktur ve deneysel grid güvenli biçimde kapatılabilir.
 
 ## 7. Faz R2 — Kontrol Bekleyenler A tasarımı
 
 **Bağımlılık:** Domain/state/UI kodu için H1 temel kapı; faz kapanışı ve cihaz smoke için R1 baseline.
 **Ana dosyalar:** `ClassificationReviewScreen.kt`, `AppListViewModel.kt`, classification review state/bileşen/test dosyaları.
+**Tahmini efor:** 4–6 gün (8–12 puan). **Hedef:** Faz aktive edildiğinde atanır.
 
 ### R2.1 Saf kategori altyapısı
 
 - [ ] `TurkishCategorySorter` oluştur; kullanıcıya gösterilen ad üzerinden Türkçe locale sıralaması yap.
+- [ ] TR için Türkçe `Collator`, EN için İngilizce `Collator`, desteklenmeyen locale için deterministik kök/İngilizce fallback uygula; locale ve aksan testlerini ekle.
 - [ ] `Kategorisiz` seçeneğini dışla; önerilen kategori tekrar etmesin.
 - [ ] Uygulama kategorileri ve marka klasörlerini ayrı section’lara ayır.
 - [ ] Sıralama ve grouping unit testlerini tamamla.
@@ -189,6 +205,7 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 - [ ] Yalnız privacy-safe event’leri ekle; paket adı gönderme.
 - [ ] TR/EN string kaynaklarını tamamla; sabit UI metni bırakma.
+- [ ] Kaynak anahtarı eşitliğini test et; TR/EN dışındaki diller R9 kararı verilene kadar ürün kapsamına alınmaz.
 - [ ] Unit, ViewModel ve Compose UI testlerini; lint, detekt ve debug build’i çalıştır.
 - [ ] Küçük telefon, standart telefon ve tablette smoke test yap.
 
@@ -197,6 +214,7 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 ## 8. Faz R3 — Klasör birleştirme motoru ve inceleme UI
 
 **Bağımlılık:** R2 ile manuel kategori/override kurallarının sabitlenmesi.
+**Tahmini efor:** 5–7 gün (10–14 puan). **Hedef:** Faz aktive edildiğinde atanır.
 
 ### R3.1 Domain ve öneri motoru
 
@@ -229,6 +247,7 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 ## 9. Faz R4 — Atomik merge, işlem geçmişi ve gerçek undo
 
 **Bağımlılık:** R3 review planı ve UI state kararlı olmalı.
+**Tahmini efor:** 5–8 gün (10–16 puan). **Hedef:** Faz aktive edildiğinde atanır.
 
 ### R4.1 Persistence
 
@@ -257,6 +276,8 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ## 10. Faz R5 — Hero Dashboard adaptif düzen ve telemetri doğrulaması
 
+**Tahmini efor:** 2–4 gün (4–8 puan; cihaz/Firebase erişimi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
 ### R5.1 Dört cihaz matrisi
 
 - [ ] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
@@ -276,6 +297,8 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ## 11. Faz R6 — Legacy Hero dashboard temizliği
 
+**Tahmini efor:** 2–4 gün (4–8 puan; beta gözlem süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
 ### R6A — Güvenli dead-code temizliği
 
 **Bağımlılık:** H1 temel composition kapısı. Görünür davranış, migration veya restore sözleşmesi değiştirilemez.
@@ -294,6 +317,9 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 - [ ] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
 - [ ] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
 - [ ] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
+- [ ] Her davranış/migration kaldırmasını ayrı, küçük ve `git revert` ile geri alınabilir committe yap; önce referans taraması + hedefli test, sonra internal/beta build kanıtı al.
+- [ ] Persisted state, restore veya migration davranışını etkileyen kaldırmayı R7.5 beta adayında en az 7 takvim günü gözlemle; kritik regresyon varsa commit’i geri al. Sıfır referanslı salt dead-code için bekleme gerekmez.
+- [ ] Eski runtime feature flag veya ikinci dashboard yolunu güvenlik amacıyla yeniden ekleme; rollback commit/sürüm/backup üzerinden yapılır.
 - [ ] Regression testleri ve dört cihaz kısa smoke testini tekrar çalıştır.
 
 **Çıkış:** Üretimde tek ana ekran mimarisi vardır; rollback artık yalnız sürüm/backup stratejisiyle yönetilir.
@@ -302,23 +328,62 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve evidence paketinde toplar. Alt fazlar aynı test matrisini yeniden yazmaz; yalnız kendi sonuç bağlantısını buraya ekler.
 
-- [ ] Pulse Clock 3 stil, görevler, Dijital Yaşam skoru ve Akıllı Nabız ticker test matrisi.
-- [ ] Günlük/haftalık görev settlement, duplicate ödül, timezone ve process-death testleri.
+**Tahmini aktif efor:** 4–6 gün (8–12 puan; beta bekleme süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R7.1 Veri, izin ve arka plan işleri
+
+**Bağımlılık:** R2–R6A kod kapıları. R7.2 ve R7.3 ile paralel yürüyebilir.
+
 - [ ] Android 14 NotificationListener izin aç/kapa, reboot ve event/rapor testi.
 - [ ] SAF export/import, Drive klasör seçimi, missing packages ve restore sonrası ayar sürekliliği.
 - [ ] SmartInsightWorker, BackupWorker ve diğer periyodik worker schedule/pil testleri.
 - [ ] Android 13+ POST_NOTIFICATIONS reddinde sessiz/güvenli davranış.
-- [ ] API 26 blur fallback; Samsung/Xiaomi/Google OEM kategori smoke.
-- [ ] Serbest grid, Kontrol Bekleyenler, merge/undo, Dashboard pager ve global arama regresyonu.
-- [ ] TalkBack, animasyonlar kapalı, font %200, açık/koyu tema ve farklı duvar kâğıtları.
-- [ ] `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug`, uygun cihazda `connectedDebugAndroidTest`.
-- [ ] Sağlık raporu ve Firebase kanıtlarını tek release evidence paketinde topla.
+- [ ] Rıza kapalı/açık Firebase davranışını ve hassas veri gönderilmediğini doğrula.
 
-**Çıkış:** Kritik hata yoktur; telefon ve tablet smoke geçmiştir; kanıt bağlantıları kayıtlıdır.
+### R7.2 UI ve erişilebilirlik
+
+**Bağımlılık:** R2–R6A UI kapıları. R7.1 ve R7.3 ile paralel yürüyebilir.
+
+- [ ] Pulse Clock 3 stil, görevler, Dijital Yaşam skoru ve Akıllı Nabız ticker görsel matrisi.
+- [ ] Serbest grid, Kontrol Bekleyenler, merge/undo, Dashboard pager ve global arama regresyonu.
+- [ ] TalkBack, animasyonlar kapalı, font `%200`, açık/koyu tema, farklı duvar kâğıtları ve rotasyon.
+- [ ] API 26 blur fallback ve Samsung/Xiaomi/Google OEM kategori davranışı.
+
+### R7.3 Süreç dayanıklılığı
+
+**Bağımlılık:** R4 transaction/undo ve ilgili worker akışları tamamlanmalı. R7.1/R7.2’den bağımsız hata ayıklanır.
+
+- [ ] Günlük/haftalık görev settlement, duplicate ödül ve timezone sınırlarını doğrula.
+- [ ] Process death, reboot, rotasyon+swipe ve background/foreground geçişlerini doğrula.
+- [ ] Merge/undo, restore, semantic page anchor ve görev settlement durumlarının yeniden başlatma sonrası tutarlı kaldığını kanıtla.
+
+### R7.4 Uçtan uca smoke — dört cihaz profili
+
+**Bağımlılık:** R7.1–R7.3 kritik bulgusuz tamamlanmalı.
+
+- [ ] Dört profil kullan: küçük telefon, standart/büyük telefon, 7–8 inç tablet ve 10+ inç tablet. API/OEM çeşitliliğini bu dört profil arasında dağıt.
+- [ ] Her profilde temiz kurulum, yükseltme/restore, izinler kapalı ve temel Hero → arama → klasör → Kontrol Bekleyenler → merge/undo akışını çalıştır.
+- [ ] `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug` ve uygun cihazda `connectedDebugAndroidTest` çalıştır.
+- [ ] Sonuçları cihaz/build/commit SHA ile tek release evidence paketinde birleştir.
+
+### R7.5 Kapalı beta kapısı
+
+**Bağımlılık:** R7.1–R7.4 ve R6B release-candidate değişiklikleri tamamlanmalı.
+
+- [ ] Hero Dashboard, Kontrol Bekleyenler ve merge/undo akışlarını içeren imzalı adayı kapalı/dahili test kanalına dağıt.
+- [ ] Hedef 50 gerçek kullanıcıdır. Bu erişilemiyorsa en az 10 farklı testçi ve temsilî dört cihaz profiliyle gerekçeli iç test yapılır; daha küçük örnek yalnız ürün sahibinin `DECISIONS.md` istisnasıyla kabul edilir.
+- [ ] En az 7 takvim günü geri bildirim, Crash/ANR, veri kaybı, restore ve privacy sinyallerini izle. Bilinen kritik hata, veri kaybı veya güvenlik/gizlilik ihlali varken R8’e geçme.
+- [ ] Yeterli telemetry örneği varsa crash-free session oranı en az `%99,5` olmalı; örnek yetersizse bunu başarı gibi yorumlama ve manuel smoke kanıtını kaydet.
+- [ ] Release bloklayan bulguları ilgili faza geri aç; iyileştirme önerilerini kanıt bağlantısıyla R9’a ekle.
+
+**Çıkış:** R7.1–R7.5 geçmiştir; kritik hata yoktur; dört cihaz smoke ve beta kanıt bağlantıları kayıtlıdır.
 
 ## 13. Faz R8 — İlk production yayın kapısı
 
-**Bağımlılık:** R7 tamamlanmalı. Hesap/cihaz gerektiren maddeler `COZULEMEYEN_SORUNLAR.md` ile birlikte yürütülür.
+**Bağımlılık:** R7.1–R7.5 tamamlanmalı. Hesap/cihaz gerektiren maddeler `COZULEMEYEN_SORUNLAR.md` ile birlikte yürütülür.
+**Tahmini aktif efor:** 2–4 gün (4–8 puan; mağaza inceleme süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
+**Dış bağımlılık yönetimi:** R8 aktive edilmeden önce her Play Console/hesap/cihaz engeline `COZULEMEYEN_SORUNLAR.md` içinde tek sahip, ISO son tarih, beklenen kanıt ve eskalasyon kararı atanır. Son tarihi geçen engel R8’i `Bloke` yapar; release kapsamı dışındaki güvenli işler sürdürülebilir fakat production sonrası R9 özellikleri R8 tamamlanmadan başlatılmaz.
 
 - [ ] QUERY_ALL_PACKAGES beyanını launcher temel işlevi gerekçesiyle doldur.
 - [ ] Data Safety formunu gerçek Firebase, opsiyonel kişi/dosya, NotificationListener, backup ve AI davranışıyla eşleştir.
@@ -333,6 +398,10 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 
 ## 14. Faz R9 — Production yayın sonrası backlog
 
+**Tahmini efor:** Backlog maddesi sprint’e alınırken ayrı tahmin edilir. **Hedef:** R8 sonrası stabilizasyon kapısında atanır.
+
+**Başlangıç koşulu:** R8 tamamlandıktan sonra 2 haftalık ilk stabilizasyon sprintinde yalnız production izleme ve kritik düzeltmeler yapılır. R9 özellik geliştirmesi bu sprintin sonunda, açık kritik hata/Crash/ANR/veri kaybı yoksa başlar; kritik hata varsa bütün R9 maddeleri en az bir sprint ertelenir.
+
 Bu sıra release’den önce değiştirilmez:
 
 1. [ ] Wrapped Phase 2 UsageEvents oturum altyapısını API 28/29+, split-screen, kilit/aç, reboot ve izin grant/revoke ile OEM cihazlarda doğrula.
@@ -342,23 +411,26 @@ Bu sıra release’den önce değiştirilmez:
 5. [ ] Kendi kategori sunucu API’si.
 6. [ ] Wear OS companion.
 7. [ ] Launcher dışı widget ekran genişletmesi.
+8. [ ] TR/EN dışındaki diller için locale bazlı sıralama, çoğul kuralları, çeviri QA ve fallback politikasını tasarla; dil eklenmeden test matrisi ve kaynak anahtarı eşitliği kapısını tanımla.
 
 ## 15. Durum tablosu
 
 | Faz | Durum | Başlama kapısı | Tamamlanma kanıtı |
 |---|---|---|---|
-| R0 Konsolidasyon | Hedefli doğrulama bekliyor | — | Tek aktif roadmap + bağlayıcı Hero şartnamesi |
-| H1 Hero Dashboard | Kod tamam; dış doğrulama R5/R7’de | R0 | Gerçek Hero composition + yazılmış test/CI kapısı |
-| R1 Baseline/performance | Cihaz ölçümü bekliyor; paralel | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
-| R2 Kontrol Bekleyenler | Kod çalışması başlatılabilir | H1; faz kapanışı için R1 | Testler + telefon/tablet smoke |
+| R0 Konsolidasyon | Devam ediyor | — | Tek aktif roadmap + bağlayıcı Hero şartnamesi |
+| H1 Hero Dashboard | Kısmen tamamlandı | R0 | Gerçek Hero composition + yazılmış test/CI kapısı |
+| R1 Baseline/performance | Bekliyor | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
+| R2 Kontrol Bekleyenler | Bekliyor | H1; faz kapanışı için R1 | Testler + telefon/tablet smoke |
 | R3 Merge motoru/UI | Bekliyor | R2 | Engine/ViewModel/UI testleri |
 | R4 Transaction/undo | Bekliyor | R3 | Migration/rollback/restart kanıtı |
-| R5 Hero doğrulama | Kod yolu tamam; cihaz/Firebase bekliyor | H1 | 4/4 cihaz + Firebase doğrulaması |
-| R6A Güvenli legacy temizlik | Devam edebilir | H1 | Davranışsız dead-code/test temizliği |
+| R5 Hero doğrulama | Kısmen tamamlandı | H1 | 4/4 cihaz + Firebase doğrulaması |
+| R6A Güvenli legacy temizlik | Kısmen tamamlandı | H1 | Davranışsız dead-code/test temizliği |
 | R6B Kalıcı legacy kaldırma | Bloke | R5 | Migration kararı + regresyon paketi |
-| R7 Birleşik QA | Bekliyor | R2–R6 | Tek release evidence paketi |
-| R8 İlk production yayın | Dış aksiyon bekliyor | R7 | İmzalı AAB + Console readback |
+| R7 Birleşik QA + beta | Bekliyor | R2–R6A; beta için R6B adayı | R7.1–R7.5 evidence paketi |
+| R8 İlk production yayın | Bloke | R7.5 | İmzalı AAB + Console readback |
 | R9 Production sonrası | Ertelendi | R8 | Ayrı ürün kararı |
+
+**Tablo bakım kuralı:** Aktif geliştirmede her çalışma döngüsü/stand-up sonunda durum, kalan efor, sahip ve kanıt bağlantısı güncellenir. Bir faz `Devam ediyor` durumunda 3 iş günü boyunca yeni kanıt veya durum değişimi üretmezse kök neden incelenir; gerçek dış bağımlılık varsa `COZULEMEYEN_SORUNLAR.md` kaydına sahip ve son tarihle taşınır, normal planlı çalışma otomatik olarak blokaj sayılmaz.
 
 ## 16. Roadmap bakım kuralları
 
@@ -368,4 +440,5 @@ Bu sıra release’den önce değiştirilmez:
 - Durum yalnız `Bekliyor`, `Devam ediyor`, `Kısmen tamamlandı`, `Bloke`, `Tamamlandı`, `Ertelendi` olabilir.
 - Her aktif iş tek faz ve tek döngü kimliği taşır; aynı iş iki yerde izlenmez.
 - Dış aksiyon backlog değildir; `COZULEMEYEN_SORUNLAR.md` içinde sahip ve beklenen kanıtla tutulur.
+- Aktif dış engel kaydı `Sahip`, `Son tarih (YYYY-MM-DD)`, `Beklenen kanıt` ve `Sonraki eskalasyon` alanları olmadan R8 planına alınmaz.
 - Yeni özellik release kapısını riske atıyorsa R9’a taşınır.
