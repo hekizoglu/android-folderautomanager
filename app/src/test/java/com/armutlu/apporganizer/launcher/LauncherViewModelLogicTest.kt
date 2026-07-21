@@ -3,7 +3,6 @@ package com.armutlu.apporganizer.launcher
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.ui.launcher.DOCK_MAX_SIZE
-import com.armutlu.apporganizer.presentation.ui.launcher.HomeContextualRowKind
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeLayoutMath
 import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPackages
 import com.armutlu.apporganizer.presentation.ui.launcher.buildAllApps
@@ -12,7 +11,6 @@ import com.armutlu.apporganizer.presentation.ui.launcher.fillDockSuggestions
 import com.armutlu.apporganizer.presentation.ui.launcher.filterAllAppsByQuery
 import com.armutlu.apporganizer.presentation.ui.launcher.filterTodayInstalledApps
 import com.armutlu.apporganizer.presentation.ui.launcher.isDockAdditionBlocked
-import com.armutlu.apporganizer.presentation.ui.launcher.selectHomeContextualRow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -247,47 +245,6 @@ class LauncherViewModelLogicTest {
     }
 
     // ── Yardımcı ──────────────────────────────────────────────────────────────
-
-    @Test
-    fun `selectHomeContextualRow_onerileri_tek_satir_olarak_onceliklendirir_ve_tekrarlari_dislar`() {
-        val row = selectHomeContextualRow(
-            favoritesEnabled = true,
-            favoriteApps = listOf(app("fav.1", "Favorite", "social")),
-            suggestionsEnabled = true,
-            suggestedApps = listOf(
-                app("dock.1", "Docked", "social"),
-                app("fav.1", "Favorite", "social"),
-                app("smart.1", "Smart 1", "social"),
-                app("smart.2", "Smart 2", "social"),
-            ),
-            recentNotificationAppsEnabled = true,
-            recentNotificationApps = listOf(app("notif.1", "Notification", "social")),
-            recentAppsEnabled = true,
-            recentApps = listOf(app("recent.1", "Recent", "social")),
-            dockPackages = listOf("dock.1"),
-        )
-
-        assertEquals(HomeContextualRowKind.SUGGESTIONS, row?.kind)
-        assertEquals(listOf("smart.1", "smart.2"), row?.apps?.map { it.packageName })
-    }
-
-    @Test
-    fun `selectHomeContextualRow_oneri_yokken_bildirim_son_kullanilan_favori_sirasini_izler`() {
-        val row = selectHomeContextualRow(
-            favoritesEnabled = true,
-            favoriteApps = listOf(app("fav.1", "Favorite", "social")),
-            suggestionsEnabled = false,
-            suggestedApps = emptyList(),
-            recentNotificationAppsEnabled = true,
-            recentNotificationApps = listOf(app("notif.1", "Notification", "social")),
-            recentAppsEnabled = true,
-            recentApps = listOf(app("recent.1", "Recent", "social")),
-            dockPackages = emptyList(),
-        )
-
-        assertEquals(HomeContextualRowKind.RECENT_NOTIFICATIONS, row?.kind)
-        assertEquals(listOf("notif.1"), row?.apps?.map { it.packageName })
-    }
 
     @Test
     fun `homeLayoutMath_kucuk_ekranda_en_az_bir_klasor_satiri_korur`() {

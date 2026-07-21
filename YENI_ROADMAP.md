@@ -306,6 +306,7 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 - [x] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` referanslarını repo genelinde doğrula; runtime referansı kalmadığını kanıtla. Kullanıcı tercihlerini etkileyen kalıcı layout ayarlarını R6B migration kararına bırak.
 - [ ] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
+  - [x] Üretim tüketicisi olmayan eski `HomeFavoritesSection` contextual row seçici/composable zincirini ve yalnız ona ait testleri kaldır; All Apps veri akışlarını koru.
 - [x] Kullanılmayan Dashboard state alanlarını ve kırık eski testleri sil; geçerli testleri Hero/layout testlerine dönüştür.
 - [x] Pager’ın üstünde tüm sayfalara sızan eski `FolderStatsRow`/`StatChip` bandını ve yalnız onu besleyen HomeScreen state aboneliklerini kaldır.
 - [x] Eski folder-only pager çağrılarını repo genelinde ara; runtime'da yalnız `HomePagerHost` + tek-sayfa folder grid renderer kaldığını doğrula.

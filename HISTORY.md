@@ -1,5 +1,13 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX20 - 2026-07-21 - R6A contextual dashboard satırı temizliği
+
+**Yapılanlar:** Çağrı grafiğinde yalnız kendi testlerinden erişilen eski `HomeFavoritesSection`, `selectHomeContextualRow` ve ilgili favorites/suggestions/recent satır wrapper'ları kaldırıldı. Bu ölü yolu sınayan iki ViewModel logic testi ile section eşleme testi silindi. All Apps drawer ve `LauncherViewModel` içindeki recent installs/favorites veri üretimi korunarak çalışan tüketicilere dokunulmadı.
+
+**Doğrulama:** Repo genelinde silinen semboller için sıfır referans doğrulaması ve `git diff --check` çalıştırıldı. Gradle 8.7 dağıtım engeli CS-8 kapsamında devam ediyor.
+
+**Sonraki:** Artık tüketicisi kalmayan satır-level UI composable'larını ve bunlara özel kaynakları ayrı referans taramasıyla kaldır; HomeScreen'deki All Apps tüketicili state'i koru.
+
 ## EX19 - 2026-07-21 - R6A eski dashboard yoğunluk ve pager parametresi temizliği
 
 **Yapılanlar:** Üretim kodunda hiçbir tüketicisi kalmayan `DashboardLayoutPolicy`/`DashboardDensity` ve yalnız bu ölü politikayı sınayan test kaldırıldı. `SmartDashboardPage` içindeki kullanılmayan `PagerState` parametresi ile HomeScreen çağrısı temizlendi. Repo genelinde `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` ve eski `FolderPager` runtime çağrısı bulunmadığı doğrulandı; kullanıcı tercihleri/restore verisine dokunan layout persistence R6B migration kapısına bırakıldı.

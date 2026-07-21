@@ -1334,7 +1334,6 @@ fun HomeScreen(
             } // end inner Column
             } // end BoxWithConstraints
 
-            // P25/F7: eski pager-dışı HomeFavoritesSection kopyası kaldırıldı — tek doğruluk kaynağı SmartDashboardPage/HomePagerHost.
 
             } // end run (tek Hero + klasör pager yolu)
             // Döngü P03: BOTTOM arama çubuğu, drag pill, PixelDock ve tüm overlay'ler

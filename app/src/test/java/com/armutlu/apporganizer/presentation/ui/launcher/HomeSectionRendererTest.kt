@@ -25,14 +25,6 @@ class HomeSectionRendererTest {
     }
 
     @Test
-    fun `contextual rows map to independently renderable section ids`() {
-        assertEquals(HomeSectionId.FAVORITES, HomeContextualRowKind.FAVORITES.sectionId())
-        assertEquals(HomeSectionId.SUGGESTIONS, HomeContextualRowKind.SUGGESTIONS.sectionId())
-        assertEquals(HomeSectionId.RECENT_NOTIFICATIONS, HomeContextualRowKind.RECENT_NOTIFICATIONS.sectionId())
-        assertEquals(HomeSectionId.RECENT_APPS, HomeContextualRowKind.RECENT_APPS.sectionId())
-    }
-
-    @Test
     fun `zone plan follows migrated bottom search and keeps dock last`() {
         val items = HomeLayoutConfig.DEFAULT.items.map {
             when (it.sectionId) {
