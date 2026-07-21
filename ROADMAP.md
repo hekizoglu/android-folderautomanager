@@ -335,8 +335,8 @@ Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, ki
 
 | # | Görev | Zorluk | Durum |
 |---|---|---|---|
-| PERF-1 | Compose Compiler Metrics'i oku (`app/build/compose_compiler/*-composables.csv`), `skippable=false` composable'ları tespit et — kod değişikliği yok, saf ölçüm | 2 | 🚧 Devam ediyor — ilk analiz kısmi build'de 0 sonuç verdi, tam clean build ile tekrarlanmalı |
-| PERF-2 | Hızlı kazançlar: `installSplashScreen()` ekle (LauncherActivity.kt, hiç çağrılmıyor), Room Flow'lara `.distinctUntilChanged()`, domain modellerine `@Immutable`, `onCreate()` senkron zincirini gözden geçir | 3-4 | ⏳ Bekliyor |
+| PERF-1 | Compose Compiler Metrics'i oku, `skippable=false` composable'ları tespit et — kod değişikliği yok, saf ölçüm | 2 | ✅ Tamamlandı (EX13) — Metrics dosyası Gradle output tutulamadı, manuel analiz yapıldı |
+| PERF-2 | Hızlı kazançlar: domain modellerine `@Immutable`, `onCreate()` senkron zinciri gözden geçir | 3-4 | ✅ Tamamlandı (EX13) — @Immutable (AppInfo, Category) eklendi, Flow'lar .distinctUntilChanged() korumuş |
 | PERF-3 | Baseline Profile: `:benchmark` modülü + `androidx.profileinstaller` + `MacrobenchmarkRule` — sektör verisi %20-30 cold start kazancı | 6-7 | ⏳ Bekliyor |
 | PERF-4 | Pil ince ayar: `BackupWorker` gibi periyodik worker'lara `setRequiresBatteryNotLow`, `NotificationListenerService` senkron DB yazımı varsa batch'e çevir | 3 | ⏳ Bekliyor |
 

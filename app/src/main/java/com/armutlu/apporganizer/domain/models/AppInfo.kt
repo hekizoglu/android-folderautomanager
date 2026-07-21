@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.domain.models
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -9,6 +10,7 @@ import java.io.Serializable
  * Data model representing an installed application on the device.
  * This model is saved in Room database for persistence.
  */
+@Immutable
 @Entity(
     tableName = "apps",
     indices = [

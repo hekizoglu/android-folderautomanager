@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.domain.models
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.io.Serializable
@@ -7,6 +8,7 @@ import java.io.Serializable
 /**
  * Data model representing a category for organizing apps.
  */
+@Immutable
 @Entity(tableName = "categories")
 data class Category(
     @PrimaryKey
