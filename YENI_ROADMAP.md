@@ -2,7 +2,7 @@
 
 > **Tek aktif yol haritası**  
 > **Birleştirme tarihi:** 2026-07-21  
-> **Kaynak önceliği:** Daha yeni commit/dosya kararı, eski kararı geçersiz kılar. `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` yerel kopyası kaldırılmış olsa da 21 Temmuz 2026 tarihli kesin ürün kararı ve onu izleyen kod değişikliği geçerlidir.  
+> **Kaynak önceliği:** Daha yeni commit/dosya kararı, eski kararı geçersiz kılar. `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` geçmişte silinmiş olsa da daha sonra geri getirilmiştir; 21 Temmuz 2026 tarihli kesin ürün kararı ve onu izleyen kod değişikliği geçerlidir.
 > **Arşiv kuralı:** Tamamlanan işler `HISTORY.md`, dış sistem/cihaz gerektiren engeller `COZULEMEYEN_SORUNLAR.md`, kalıcı ürün kararları `DECISIONS.md` içine taşınır. Bu dosyada yalnız aktif veya kısmen tamamlanmış iş kalır.
 
 > **Hero tasarım şartnamesi:** `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` silinmeyecek ve bu birleşik roadmap’in H1 fazı için bağlayıcı teknik/görsel referans olarak kullanılacaktır. Dosya ayrı bir rakip backlog değil; kesin ürün kararının ayrıntılı uygulama sözleşmesidir.
@@ -23,7 +23,7 @@
 - Birleştirme atomik Room transaction olmalı ve uygulama yeniden başladıktan sonra geri alınabilmelidir.
 - Otomatik/sessiz klasör birleştirme yapılmaz. Split ve cleanup akışları merge refactor’ından etkilenmez.
 - Telemetri yalnız açık rıza ile çalışır; sorgu, kişi, dosya, klasör adı, uygulama adı veya paket adı gönderilmez.
-- Çoklu cihaz senkronizasyonu v1.0 sonrasıdır. Önce SAF/Drive yedekle–geri yükle akışı güçlendirilir.
+- Çoklu cihaz senkronizasyonu ilk production yayın sonrasıdır. Önce SAF/Drive yedekle–geri yükle akışı güçlendirilir.
 - Paging3 ve `beyondViewportPageCount` artırımı mevcut ölçekte kapsam dışıdır.
 
 ## 2. Çalışma protokolü — token ve döngü bütçesi
@@ -60,17 +60,20 @@ Her döngü tek bir teslimat sınırına sahip olmalıdır. Bir döngüde en faz
 R0 Kaynak birleştirme
  └─ H1 Yarım kalan Hero Dashboard'u tamamla
      ├─ R1 Mevcut ana ekran/performance güvenlik kapısı
-     │   └─ R2 Kontrol Bekleyenler A tasarımı
-     │       └─ R3 Klasör birleştirme domain + inceleme UI
-     │           └─ R4 Atomik merge + kalıcı undo
+     ├─ R2 Kontrol Bekleyenler A tasarımı (kod H1 sonrası; cihaz kapısı R1 sonrası)
+     │   └─ R3 Klasör birleştirme domain + inceleme UI
+     │       └─ R4 Atomik merge + kalıcı undo
      ├─ R5 Hero Dashboard cihaz/telemetri doğrulaması
-     │   └─ R6 Legacy dashboard temizliği
-     └─ R7 Birleşik cihaz/erişilebilirlik/telemetri QA
-     └─ R8 Play Store release
-         └─ R9 V1 sonrası ürün geliştirmeleri
+     ├─ R6A Güvenli legacy/dead-code temizliği
+     └─ R6B Doğrulama sonrası kalıcı legacy kaldırma
+
+R2–R6
+ └─ R7 Birleşik cihaz/erişilebilirlik/telemetri QA
+     └─ R8 İlk production release
+         └─ R9 Release sonrası ürün geliştirmeleri
 ```
 
-R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebilir. R2, R1 baseline olmadan; R4, R3 bitmeden; R6, Hero doğrulaması bitmeden; R8, R7 bitmeden başlatılamaz.
+R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikten sonra paralel ilerleyebilir. R2’nin domain/state/unit-test işleri R1 cihaz ölçümünü beklemez; R2 faz kapanışı ve cihaz smoke kanıtı R1 baseline sonrasında yapılır. R4, R3 bitmeden; R6B, Hero doğrulaması bitmeden; R8, R7 bitmeden başlatılamaz.
 
 ## 4. Faz R0 — Baseline ve belge konsolidasyonu
 
@@ -90,11 +93,11 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 
 ### H1.0 Baseline ve kırık HEAD kontrolü
 
-- [ ] Temiz checkout’ta compile, hedefli unit test ve debug build al; geçici işlev kaybını ekran görüntüsü/smoke ile kaydet.
+- [x] Hero kaynak/state/test sözleşmesini temiz çalışma ağacında statik olarak doğrula; gerçek compile/build/smoke kanıtını R5/R7 ortak doğrulama paketinde tamamla.
 - [x] `SmartDashboardPage` ve `DashboardUiState` Hero sözleşmesine indirildi; artık bulunmayan assembler/section yardımcılarını kullanan kırık testler temizlendi.
-- [ ] Commit mesajına dayanarak kategori roadmap’ini başlamış/tamamlanmış sayma; son commit kategori kodunu değiştirmedi.
+- [x] Kategori roadmap durumunu commit mesajından değil kod/test kanıtından belirle; Hero commitlerini kategori ilerlemesi sayma.
 
-### H1.1 Hero tasarım altyapısı — kod tamam, derleme kanıtı bekliyor
+### H1.1 Hero tasarım altyapısı — kod tamam; dış doğrulama R5/R7’de
 
 - [x] `hero/` altında tek kaynak `HomeHeroTokens` ve adaptif `HomeHeroProfile`/`HomeHeroLayoutPolicy` oluştur.
 - [x] Hero’ya özel, API 26 uyumlu `PremiumGlassSurface` oluştur.
@@ -102,7 +105,6 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 - [x] Ham px kullanma; 320×568–412×915, tablet, landscape ve fontScale 1.5 kararlarını policy ile yönet.
 - [x] Mevcut global `GlassCard` bileşenini değiştirmeden bırak.
 - [x] Policy için 320×568, 360×640, 412×915, tablet, landscape, fontScale 1.5 ve geçersiz ölçü unit testlerini yaz.
-- [ ] Gradle 8.7 dağıtımı erişilebilir ortamda hedefli unit test ve `compileDebugKotlin` kanıtını tamamla.
 
 ### H1.2 Hero kartları
 
@@ -131,7 +133,7 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 - [x] Saat → Dijital Yaşam → Arama → Akıllı Erişim → gösterge → dock sırasını uygula.
 - [x] 320×568, 360×640, 412×915, tablet ve landscape layout policy testlerini yaz.
 - [x] Ranker, coordinator, dedupe, dock migration ve Hero Compose interaction testlerini ekle.
-- [ ] CI artık compile, unit test, lint, debug build ve instrumentation-test compilation kapılarını çalıştırır; sonucu geçir ve en az bir telefon/tablet smoke yap.
+- [x] CI workflow’una compile, unit test, lint, debug build ve instrumentation-test compilation kapılarını ekle; gerçek çalıştırma ve cihaz smoke kanıtını R5/R7’ye bırak.
 
 **Bu fazda yapılmayacak:** Eski ve yeni dashboard’u feature flag ile paralel tutmak, veri motorlarını yeniden yazmak, global cam temasını değiştirmek, legacy temizliğini doğrulama tamamlanmadan körlemesine bitirmek.
 
@@ -157,7 +159,7 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 
 ## 7. Faz R2 — Kontrol Bekleyenler A tasarımı
 
-**Bağımlılık:** R1 baseline.  
+**Bağımlılık:** Domain/state/UI kodu için H1 temel kapı; faz kapanışı ve cihaz smoke için R1 baseline.
 **Ana dosyalar:** `ClassificationReviewScreen.kt`, `AppListViewModel.kt`, classification review state/bileşen/test dosyaları.
 
 ### R2.1 Saf kategori altyapısı
@@ -259,8 +261,8 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 
 - [ ] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
 - [ ] Temiz kurulum telefonu ve izinleri kapatılmış ayrı cihaz/konfigürasyon ile matrisi 4/4 tamamla.
-- [ ] Portrait/landscape, rotasyon+swipe, arama, dock, Dashboard, klasör grid ve All Apps’i doğrula.
-- [ ] Küçük/standart/büyük telefon ile 7–8 ve 10+ inç tablet kırılımlarında taşma olmadığını doğrula.
+- [ ] Ortak R7 senaryosunu kullanarak portrait/landscape, rotasyon+swipe, arama, dock, Dashboard, klasör grid ve All Apps’i doğrula; aynı matrisi ikinci kez üretme.
+- [ ] Küçük/standart/büyük telefon ile 7–8 ve 10+ inç tablet kırılımlarında taşma olmadığını tek evidence paketine yaz.
 
 ### R5.2 Tek ürün yolu ve privacy-safe telemetry
 
@@ -274,23 +276,31 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 
 ## 11. Faz R6 — Legacy Hero dashboard temizliği
 
-**Bağımlılık:** R5 tamamlanmadan başlamaz.
+### R6A — Güvenli dead-code temizliği
+
+**Bağımlılık:** H1 temel composition kapısı. Görünür davranış, migration veya restore sözleşmesi değiştirilemez.
 
 - [ ] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` ve section-order ayarlarını repo genelinde ara ve kaldır.
 - [ ] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
-- [ ] Kullanılmayan Dashboard state alanlarını, string’leri ve testleri sil veya Hero testlerine dönüştür.
+- [x] Kullanılmayan Dashboard state alanlarını ve kırık eski testleri sil; geçerli testleri Hero/layout testlerine dönüştür.
 - [ ] Eski folder-only pager çağrılarını repo genelinde ara.
-- [ ] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
 - [ ] Kullanılmayan eski pager branch’lerini, duplicate search lambda’larını ve eski test fixture’larını kaldır.
-- [ ] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
 - [ ] `HomeScreen.kt` dosyasını orchestration seviyesine indir; davranış değişikliği yapma.
+
+### R6B — Doğrulama sonrası kalıcı kaldırma
+
+**Bağımlılık:** R5 cihaz/telemetri doğrulaması tamamlanmalı.
+
+- [ ] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
+- [ ] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
+- [ ] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
 - [ ] Regression testleri ve dört cihaz kısa smoke testini tekrar çalıştır.
 
 **Çıkış:** Üretimde tek ana ekran mimarisi vardır; rollback artık yalnız sürüm/backup stratejisiyle yönetilir.
 
 ## 12. Faz R7 — Birleşik yayın öncesi QA
 
-Bu faz, önceki roadmap’lerde tekrar eden cihaz matrislerini tek pakette toplar.
+Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve evidence paketinde toplar. Alt fazlar aynı test matrisini yeniden yazmaz; yalnız kendi sonuç bağlantısını buraya ekler.
 
 - [ ] Pulse Clock 3 stil, görevler, Dijital Yaşam skoru ve Akıllı Nabız ticker test matrisi.
 - [ ] Günlük/haftalık görev settlement, duplicate ödül, timezone ve process-death testleri.
@@ -306,7 +316,7 @@ Bu faz, önceki roadmap’lerde tekrar eden cihaz matrislerini tek pakette topla
 
 **Çıkış:** Kritik hata yoktur; telefon ve tablet smoke geçmiştir; kanıt bağlantıları kayıtlıdır.
 
-## 13. Faz R8 — Play Store v1.0 yayın kapısı
+## 13. Faz R8 — İlk production yayın kapısı
 
 **Bağımlılık:** R7 tamamlanmalı. Hesap/cihaz gerektiren maddeler `COZULEMEYEN_SORUNLAR.md` ile birlikte yürütülür.
 
@@ -319,9 +329,9 @@ Bu faz, önceki roadmap’lerde tekrar eden cihaz matrislerini tek pakette topla
 - [ ] `cycle.ps1` uçtan uca gerçek turunu temiz dalda çalıştır; commit/push/bildirim kanıtını kaydet.
 - [ ] Play Console yükleme readback ve inceleme sonucunu kanıt dosyasına işle.
 
-**Çıkış:** Production AAB ve bütün Play beyanları birbirleriyle tutarlıdır; v1.0 yayınlanabilir.
+**Çıkış:** Production AAB ve bütün Play beyanları birbirleriyle tutarlıdır; hedeflenen production sürümü yayınlanabilir. Sürüm numarası `app/build.gradle.kts` ile aynı olmalıdır.
 
-## 14. Faz R9 — v1.0 sonrası backlog
+## 14. Faz R9 — Production yayın sonrası backlog
 
 Bu sıra release’den önce değiştirilmez:
 
@@ -337,17 +347,18 @@ Bu sıra release’den önce değiştirilmez:
 
 | Faz | Durum | Başlama kapısı | Tamamlanma kanıtı |
 |---|---|---|---|
-| R0 Konsolidasyon | Devam ediyor | — | Tek roadmap + eski roadmap silme commit’i |
-| H1 Hero Dashboard | Acil/devam ediyor | R0 | Gerçek Hero composition + test/build/smoke |
-| R1 Baseline/performance | Bekliyor | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
-| R2 Kontrol Bekleyenler | Bekliyor | R1 | Testler + telefon/tablet smoke |
+| R0 Konsolidasyon | Hedefli doğrulama bekliyor | — | Tek aktif roadmap + bağlayıcı Hero şartnamesi |
+| H1 Hero Dashboard | Kod tamam; dış doğrulama R5/R7’de | R0 | Gerçek Hero composition + yazılmış test/CI kapısı |
+| R1 Baseline/performance | Cihaz ölçümü bekliyor; paralel | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
+| R2 Kontrol Bekleyenler | Kod çalışması başlatılabilir | H1; faz kapanışı için R1 | Testler + telefon/tablet smoke |
 | R3 Merge motoru/UI | Bekliyor | R2 | Engine/ViewModel/UI testleri |
 | R4 Transaction/undo | Bekliyor | R3 | Migration/rollback/restart kanıtı |
-| R5 Hero doğrulama | Bekliyor | H1 | 4/4 cihaz + Firebase doğrulaması |
-| R6 Legacy temizlik | Bloke | R5 | Tek runtime yol + regresyon paketi |
-| R7 Birleşik QA | Kısmen tamamlandı | R2–R5 | Release evidence paketi |
-| R8 Play Store | Dış aksiyon bekliyor | R7 | İmzalı AAB + Console readback |
-| R9 V1 sonrası | Ertelendi | R8 | Ayrı ürün kararı |
+| R5 Hero doğrulama | Kod yolu tamam; cihaz/Firebase bekliyor | H1 | 4/4 cihaz + Firebase doğrulaması |
+| R6A Güvenli legacy temizlik | Devam edebilir | H1 | Davranışsız dead-code/test temizliği |
+| R6B Kalıcı legacy kaldırma | Bloke | R5 | Migration kararı + regresyon paketi |
+| R7 Birleşik QA | Bekliyor | R2–R6 | Tek release evidence paketi |
+| R8 İlk production yayın | Dış aksiyon bekliyor | R7 | İmzalı AAB + Console readback |
+| R9 Production sonrası | Ertelendi | R8 | Ayrı ürün kararı |
 
 ## 16. Roadmap bakım kuralları
 
