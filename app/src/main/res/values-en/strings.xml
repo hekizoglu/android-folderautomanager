@@ -701,6 +701,11 @@
     <string name="missions_all_completed_today">You collected today ⭐⭐⭐</string>
     <string name="missions_settings_celebrations_title">Celebration and micro-interaction</string>
     <string name="missions_settings_celebrations_subtitle">Mission completion animation, 3/3 day glow, and morning summary</string>
+    <!-- Time Window Mission -->
+    <string name="missions_settings_time_window_title">Time-restricted mission</string>
+    <string name="missions_settings_time_window_subtitle">A mission to avoid screen use during the hours you choose</string>
+    <string name="missions_settings_time_window_start_label">Start</string>
+    <string name="missions_settings_time_window_end_label">End</string>
     <string name="ticker_morning_summary_with_streak">You completed %1$d/%2$d yesterday · %3$d day streak</string>
     <string name="ticker_morning_summary_no_streak">You completed %1$d/%2$d yesterday</string>
     <!-- Cycle M05: mission row action button labels -->

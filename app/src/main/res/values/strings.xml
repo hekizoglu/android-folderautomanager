@@ -705,6 +705,11 @@
     <string name="missions_all_completed_today">Bugünü topladın ⭐⭐⭐</string>
     <string name="missions_settings_celebrations_title">Kutlama ve mikro-etkileşim</string>
     <string name="missions_settings_celebrations_subtitle">Görev tamamlanma animasyonu, 3/3 günü parıltısı ve sabah özeti</string>
+    <!-- Zaman-Kisitli Gorev -->
+    <string name="missions_settings_time_window_title">Zaman kısıtlı görev</string>
+    <string name="missions_settings_time_window_subtitle">Belirlediğin saat aralığında ekranı kullanmama görevi</string>
+    <string name="missions_settings_time_window_start_label">Başlangıç</string>
+    <string name="missions_settings_time_window_end_label">Bitiş</string>
     <string name="ticker_morning_summary_with_streak">Dün %1$d/%2$d tamamladın · Serin %3$d günde</string>
     <string name="ticker_morning_summary_no_streak">Dün %1$d/%2$d tamamladın</string>
     <!-- Dongu M05: gorev satirindaki eylem butonu etiketleri -->

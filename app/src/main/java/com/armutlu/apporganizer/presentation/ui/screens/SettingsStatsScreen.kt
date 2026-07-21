@@ -1,11 +1,21 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -14,10 +24,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
@@ -211,6 +224,107 @@ fun SettingsStatsScreen(
                             AppPrefs.setMissionCelebrationsEnabled(context, it)
                         },
                     )
+
+                    // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT'in kullanici-tanimli saat
+                    // araligina genellenmis hali. Kapaliyken TYPE_NO_USAGE_IN_TIME_WINDOW gorev
+                    // havuzuna girmez (MissionEngine.isEligible()).
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    var timeWindowMissionEnabled by rememberBooleanPreferenceState(
+                        context = context,
+                        key = AppPrefs.KEY_TIME_WINDOW_MISSION_ENABLED,
+                        read = { AppPrefs.isTimeWindowMissionEnabled(context) }
+                    )
+                    SettingsSwitchRow(
+                        icon = Icons.Default.NightsStay,
+                        title = stringResource(R.string.missions_settings_time_window_title),
+                        subtitle = stringResource(R.string.missions_settings_time_window_subtitle),
+                        checked = timeWindowMissionEnabled,
+                        onCheckedChange = {
+                            timeWindowMissionEnabled = it
+                            AppPrefs.setTimeWindowMissionEnabled(context, it)
+                        },
+                    )
+                    if (timeWindowMissionEnabled) {
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        var timeWindowStartHour by remember { mutableIntStateOf(AppPrefs.getTimeWindowStartHour(context)) }
+                        var timeWindowEndHour by remember { mutableIntStateOf(AppPrefs.getTimeWindowEndHour(context)) }
+                        var startHourMenuExpanded by remember { mutableStateOf(false) }
+                        var endHourMenuExpanded by remember { mutableStateOf(false) }
+                        val hourOptions = (0..23).toList()
+
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { startHourMenuExpanded = true }
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            stringResource(R.string.missions_settings_time_window_start_label),
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 15.sp,
+                                        )
+                                        Text(
+                                            "%02d:00".format(timeWindowStartHour),
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    Icon(Icons.Default.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                }
+                                DropdownMenu(expanded = startHourMenuExpanded, onDismissRequest = { startHourMenuExpanded = false }) {
+                                    hourOptions.forEach { hour ->
+                                        DropdownMenuItem(
+                                            text = { Text("%02d:00".format(hour)) },
+                                            onClick = {
+                                                timeWindowStartHour = hour
+                                                AppPrefs.setTimeWindowStartHour(context, hour)
+                                                startHourMenuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            Box(modifier = Modifier.weight(1f)) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { endHourMenuExpanded = true }
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            stringResource(R.string.missions_settings_time_window_end_label),
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 15.sp,
+                                        )
+                                        Text(
+                                            "%02d:00".format(timeWindowEndHour),
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    Icon(Icons.Default.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                }
+                                DropdownMenu(expanded = endHourMenuExpanded, onDismissRequest = { endHourMenuExpanded = false }) {
+                                    hourOptions.forEach { hour ->
+                                        DropdownMenuItem(
+                                            text = { Text("%02d:00".format(hour)) },
+                                            onClick = {
+                                                timeWindowEndHour = hour
+                                                AppPrefs.setTimeWindowEndHour(context, hour)
+                                                endHourMenuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
