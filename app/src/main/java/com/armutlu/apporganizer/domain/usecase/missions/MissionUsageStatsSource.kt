@@ -40,6 +40,17 @@ interface MissionUsageStatsSource {
         days: Int,
         nowMillis: Long = System.currentTimeMillis(),
     ): Map<Long, Int>?
+
+    /**
+     * Zaman-Kisitli Gorev — [startHour]:00-[endHour]:00 araliginda (gece yarisini gecebilir)
+     * [date] gununde ekran acilma olayi var mi. Izin yoksa veya event verisi yoksa null doner.
+     */
+    fun getScreenOnEventsInWindow(
+        context: Context,
+        startHour: Int,
+        endHour: Int,
+        date: java.time.LocalDate,
+    ): Boolean?
 }
 
 /** Uretimde kullanilan varsayilan implementasyon — dogrudan [UsageStatsHelper]'a delege eder. */
@@ -53,4 +64,11 @@ class DefaultMissionUsageStatsSource : MissionUsageStatsSource {
 
     override fun getUnlockCountPerDay(context: Context, days: Int, nowMillis: Long): Map<Long, Int>? =
         UsageStatsHelper.getUnlockCountPerDay(context, days = days, nowMillis = nowMillis)
+
+    override fun getScreenOnEventsInWindow(
+        context: Context,
+        startHour: Int,
+        endHour: Int,
+        date: java.time.LocalDate,
+    ): Boolean? = UsageStatsHelper.getScreenOnEventsInWindow(context, startHour, endHour, date)
 }

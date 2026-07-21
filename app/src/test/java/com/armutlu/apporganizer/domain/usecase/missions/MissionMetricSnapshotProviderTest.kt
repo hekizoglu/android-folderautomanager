@@ -102,6 +102,13 @@ class MissionMetricSnapshotProviderTest {
         override fun getUnlockCount(context: Context, days: Int, nowMillis: Long): Int? = unlockCount
 
         override fun getUnlockCountPerDay(context: Context, days: Int, nowMillis: Long): Map<Long, Int>? = unlockCountPerDay
+
+        override fun getScreenOnEventsInWindow(
+            context: Context,
+            startHour: Int,
+            endHour: Int,
+            date: java.time.LocalDate,
+        ): Boolean? = null
     }
 
     /** Dongu G3a — DAILY_MORNING_CALM icin sahte kategori->paket eslesmesi. */

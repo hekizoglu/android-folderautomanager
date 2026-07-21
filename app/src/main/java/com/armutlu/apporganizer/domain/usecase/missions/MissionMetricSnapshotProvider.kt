@@ -179,6 +179,22 @@ class MissionMetricSnapshotProvider @Inject constructor(
         } else {
             emptyList()
         }
+        // 8d. Zaman-Kisitli Gorev — sadece ozellik ACIKKEN hesaplanir (kapaliyken gereksiz
+        // queryEvents cagrisi atlanir). UsageStatsHelper kendi izin kontrolunu yapar (null doner).
+        val timeWindowMissionEnabled = AppPrefs.isTimeWindowMissionEnabled(context)
+        val timeWindowStartHour = AppPrefs.getTimeWindowStartHour(context)
+        val timeWindowEndHour = AppPrefs.getTimeWindowEndHour(context)
+        val usedDuringTimeWindowToday = if (timeWindowMissionEnabled) {
+            usageStatsSource.getScreenOnEventsInWindow(
+                context = context,
+                startHour = timeWindowStartHour,
+                endHour = timeWindowEndHour,
+                date = today,
+            )
+        } else {
+            null
+        }
+
         val pinnedAppLimitPackage = AppPrefs.getAppLimitTargetPackage(context, epochDay)
         val appLimitUsageMinutesToday = if (pinnedAppLimitPackage != null && minutesByDay != null) {
             todayEntries
@@ -210,6 +226,10 @@ class MissionMetricSnapshotProvider @Inject constructor(
             focusModeMinutesToday = focusModeMinutesToday,
             appLimitCandidates = appLimitCandidates,
             appLimitUsageMinutesToday = appLimitUsageMinutesToday,
+            usedDuringTimeWindowToday = usedDuringTimeWindowToday,
+            timeWindowStartHour = timeWindowStartHour,
+            timeWindowEndHour = timeWindowEndHour,
+            timeWindowMissionEnabled = timeWindowMissionEnabled,
         )
     }
 
@@ -292,4 +312,8 @@ fun MissionMetricSnapshot.toMissionCheckInput(): MissionEngine.MissionCheckInput
         // (AppLimitCandidateSelector + AppPrefs pin) yaptiktan SONRA .copy() ile ekler (bkz.
         // personalScreenTarget/personalUnlockTarget ile AYNI desen).
         appLimitUsageMinutesToday = appLimitUsageMinutesToday,
+        usedDuringTimeWindowToday = usedDuringTimeWindowToday,
+        timeWindowStartHour = timeWindowStartHour,
+        timeWindowEndHour = timeWindowEndHour,
+        timeWindowMissionEnabled = timeWindowMissionEnabled,
     )

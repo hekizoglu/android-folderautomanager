@@ -57,4 +57,14 @@ data class MissionMetricSnapshot(
     val appLimitCandidates: List<AppLimitCandidateSelector.PackageUsageCandidate> = emptyList(),
     /** AppPrefs'te sabitlenmis hedef paketin BUGUNKU kullanim dakikasi (varsa). */
     val appLimitUsageMinutesToday: Long? = null,
+    // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT'in kullanici-tanimli saat araligina genellenmis
+    // hali. usedDuringTimeWindowToday null = veri yok (izin yok VEYA ozellik kapali).
+    /** Kullanici-tanimli saat araliginda (AppPrefs.getTimeWindow*) bugun ekran acilma oldu mu. */
+    val usedDuringTimeWindowToday: Boolean? = null,
+    /** AppPrefs.getTimeWindowStartHour() — evaluator'a AYNEN aktarilir. */
+    val timeWindowStartHour: Int = 23,
+    /** AppPrefs.getTimeWindowEndHour() — evaluator'a AYNEN aktarilir. */
+    val timeWindowEndHour: Int = 6,
+    /** AppPrefs.isTimeWindowMissionEnabled() — kapaliyken gorev havuza girmez. */
+    val timeWindowMissionEnabled: Boolean = false,
 )

@@ -244,6 +244,13 @@ class SettleMissionInstancesUseCaseTest {
             if (!dataAvailable) return null
             return unlockCountByEpochDay.ifEmpty { null }
         }
+
+        override fun getScreenOnEventsInWindow(
+            context: Context,
+            startHour: Int,
+            endHour: Int,
+            date: java.time.LocalDate,
+        ): Boolean? = null
     }
 
     private fun buildUseCase(
