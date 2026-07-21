@@ -14,7 +14,7 @@ internal fun SmartDashboardPage(
     @Suppress("UNUSED_PARAMETER") pagerState: PagerState? = null,
 ) {
     HeroDashboardPage(
-        pulse = state.intelligence.pulse,
+        pulse = state.pulse,
         smartAccess = state.smartAccess,
         onOpenWeeklyReport = actions.onOpenWeeklyReport,
         onClockLongPress = actions.onClockLongPress,

@@ -91,7 +91,7 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 ### H1.0 Baseline ve kırık HEAD kontrolü
 
 - [ ] Temiz checkout’ta compile, hedefli unit test ve debug build al; geçici işlev kaybını ekran görüntüsü/smoke ile kaydet.
-- [ ] `SmartDashboardPage`, `DashboardUiState`, `DashboardStateAssembler` ve ilgili testlerde son commit etkisini doğrula.
+- [x] `SmartDashboardPage` ve `DashboardUiState` Hero sözleşmesine indirildi; artık bulunmayan assembler/section yardımcılarını kullanan kırık testler temizlendi.
 - [ ] Commit mesajına dayanarak kategori roadmap’ini başlamış/tamamlanmış sayma; son commit kategori kodunu değiştirmedi.
 
 ### H1.1 Hero tasarım altyapısı — kod tamam, derleme kanıtı bekliyor

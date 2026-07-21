@@ -56,11 +56,6 @@ object DashboardLayoutPolicy {
         }
     }
 
-    // Hero Dashboard migration Commit 1 — applyFocusMode() (Döngü P18 Focus Mode preset'i)
-    // kaldırıldı: DashboardUiState artık insights/ticker/favorites/secondarySections alanlarını
-    // taşımıyor (bkz. DashboardUiState.kt). Prod kodda hiçbir yerden çağrılmıyordu (yalnızca
-    // DashboardLayoutPolicyTest.kt test ediyordu). Focus Mode, Hero tasarımı netleştiğinde
-    // yeniden değerlendirilecek.
 }
 
 /**

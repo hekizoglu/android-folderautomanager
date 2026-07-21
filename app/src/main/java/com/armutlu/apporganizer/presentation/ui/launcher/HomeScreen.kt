@@ -95,7 +95,6 @@ import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.DockPrefs
-import com.armutlu.apporganizer.domain.home.PulseActionRouter
 import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
@@ -144,18 +143,10 @@ fun HomeScreen(
     // T05 (Akıllı Nabız ayarları) — otomatik geçiş aç/kapat + geçiş süresi Ayarlar'dan gelir.
     var tickerAutoAdvance by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerAutoAdvanceEnabled(context)) }
     var tickerIntervalSeconds by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerIntervalSeconds(context)) }
-    var missionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)) }
-    // D03: skor artık tek yerde — DigitalLifeCard. isDigitalLifeCardVisible() eski
-    // KEY_HOME_SCORE_VISIBLE tercihini ilk çağrıda bir kez migrate eder.
-    var digitalLifeCardVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDigitalLifeCardVisible(context)) }
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
-    // Görev S1 — tek "BUGÜN" kartı ayarı; açıkken SmartDashboardPage intelligence/recentInstalls/
-    // insight bölümlerini TodayCard ile değiştirir.
-    var todayCardEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTodayCardEnabled(context)) }
     val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
     val tickerItems by viewModel.tickerItems.collectAsState()
     val homePulseSummary by viewModel.homePulseSummary.collectAsState()
-    val homeMissionSummary by viewModel.homeMissionSummary.collectAsState()
     val insightCards by viewModel.insightCards.collectAsState()
     val suggestedApps by viewModel.suggestedApps.collectAsState()
     val recentNotificationCounts by viewModel.recentNotificationCounts.collectAsState()
@@ -313,16 +304,10 @@ fun HomeScreen(
                     tickerAutoAdvance = com.armutlu.apporganizer.utils.AppPrefs.isTickerAutoAdvanceEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_INTERVAL_SECONDS ->
                     tickerIntervalSeconds = com.armutlu.apporganizer.utils.AppPrefs.getTickerIntervalSeconds(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_MISSIONS_ENABLED ->
-                    missionsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isMissionsEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_DIGITAL_LIFE_CARD_VISIBLE ->
-                    digitalLifeCardVisible = com.armutlu.apporganizer.utils.AppPrefs.isDigitalLifeCardVisible(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_INSTALLS_ENABLED -> {
                     recentInstallsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)
                     viewModel.refreshTodayInstalled()
                 }
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_TODAY_CARD_ENABLED ->
-                    todayCardEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTodayCardEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
                     gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_LONG_PRESS ->
@@ -764,15 +749,6 @@ fun HomeScreen(
                 )
         }
 
-        // Döngü P06 — compactClock ve tickerMutedUntilState `pager` slotunun HEM eski (klasör
-        // sayfası üstü) konumundaki kod HEM de dashboardContent lambda'sındaki SmartDashboardPage
-        // tarafından okunur/yazılır — tek doğruluk kaynağı olsun diye pager slotundan önce,
-        // burada tanımlanır (bkz. görev raporu "koşullu ikili yerleşim" kararı).
-        // Döngü P18 — Focus Mode (Search-first / Odak Modu) artık ayrı bir paralel ana ekran
-        // değil, bu pager slotunun sade bir preset'idir (roadmap Döngü P18, "Önerilen karar: A").
-        // Saat kompaklaştırma kuralı DashboardLayoutPolicy.applyFocusMode ile aynı politikayı
-        // paylaşır (clock.compact = true) — tek doğruluk kaynağı politika fonksiyonundadır.
-        val compactClock = pageFolderCount > 8 || configuration.screenHeightDp < 700 || focusModeEnabled
         var tickerMutedUntilState by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
         val hideSecondaryRowsForIme = homeAppSearchEnabled && imeVisible
 
@@ -1275,27 +1251,7 @@ fun HomeScreen(
                     // Sayfa 0 tek ürün yolu: gerçek Hero Dashboard composition.
                     SmartDashboardPage(
                         state = DashboardUiState(
-                            clock = DashboardClockState(compact = compactClock),
-                            intelligence = DashboardIntelligenceState(
-                                missionsEnabled = missionsEnabled,
-                                mission = homeMissionSummary,
-                                digitalLifeCardVisible = digitalLifeCardVisible,
-                                pulse = homePulseSummary,
-                                todayCardEnabled = todayCardEnabled,
-                                todayCardSpec = remember(todayCardEnabled, homeMissionSummary, homePulseSummary, tickerItems) {
-                                    if (!todayCardEnabled) {
-                                        null
-                                    } else {
-                                        com.armutlu.apporganizer.domain.home.TodayCardSelector.select(
-                                            mission = homeMissionSummary,
-                                            pulse = homePulseSummary,
-                                            weeklyReportReady = tickerItems.any {
-                                                it.type == com.armutlu.apporganizer.domain.home.SmartTickerType.WEEKLY_REPORT
-                                            },
-                                        )
-                                    }
-                                },
-                            ),
+                            pulse = homePulseSummary,
                             smartAccess = smartAccessState,
                         ),
                         actions = DashboardActions(
@@ -1306,41 +1262,10 @@ fun HomeScreen(
                                 }
                                 runCatching { context.startActivity(intent) }
                             },
-                            onOpenScoreDetails = {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }
-                            },
                             onClockLongPress = { viewModel.openManager(context) },
-                            onMissionClick = {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }
-                            },
                             onPulseClick = {
                                 val intent = Intent(context, MainActivity::class.java).apply {
                                     putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }
-                            },
-                            onPulseReasonAction = { action ->
-                                val target = PulseActionRouter.resolve(action)
-                                if (target is PulseActionRouter.RouteTarget.Screen) {
-                                    val intent = Intent(context, MainActivity::class.java).apply {
-                                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, target.route)
-                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    }
-                                    runCatching { context.startActivity(intent) }
-                                }
-                            },
-                            onOpenFolderStats = {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.REPORTS_CENTER)
                                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 runCatching { context.startActivity(intent) }
