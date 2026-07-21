@@ -97,40 +97,40 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 ### H1.1 Hero tasarım altyapısı — kod tamam, derleme kanıtı bekliyor
 
 - [x] `hero/` altında tek kaynak `HomeHeroTokens` ve adaptif `HomeHeroProfile`/`HomeHeroLayoutPolicy` oluştur.
-- [ ] `PremiumGlassSurface` oluştur — bir sonraki H1.2 görsel döngüsü.
+- [x] Hero’ya özel, API 26 uyumlu `PremiumGlassSurface` oluştur.
 - [x] Referans düzeni 360×640dp esas al: saat 252×114, ana kartlar 304dp genişlik, Dijital Yaşam 96dp, arama 74dp, Akıllı Erişim 162dp, dock 340×64dp.
 - [x] Ham px kullanma; 320×568–412×915, tablet, landscape ve fontScale 1.5 kararlarını policy ile yönet.
-- [ ] Mevcut global `GlassCard` bileşenini Hero uğruna değiştirme.
+- [x] Mevcut global `GlassCard` bileşenini değiştirmeden bırak.
 - [x] Policy için 320×568, 360×640, 412×915, tablet, landscape, fontScale 1.5 ve geçersiz ölçü unit testlerini yaz.
 - [ ] Gradle 8.7 dağıtımı erişilebilir ortamda hedefli unit test ve `compileDebugKotlin` kanıtını tamamla.
 
 ### H1.2 Hero kartları
 
-- [ ] Mevcut Pulse Clock verisini `HeroClockCard` içine bağla; saat/tarih sunumunu değiştir, motoru yeniden yazma.
-- [ ] `DigitalPulseEngine`/`HomePulseSummary` verisini `HeroDigitalLifeCard` içine tek skor kaynağı olarak bağla.
-- [ ] Search overlay’i yeniden yazmadan ayrı `HeroSearchCard` launch surface oluştur ve `FullScreenSearchOverlayV2` akışını aç.
+- [x] Mevcut Pulse Clock davranışını `HeroClockCard` içine bağla; saat/tarih sunumunu değiştir, motoru yeniden yazma.
+- [x] `DigitalPulseEngine`/`HomePulseSummary` verisini `HeroDigitalLifeCard` içine tek skor kaynağı olarak bağla.
+- [x] Search overlay’i yeniden yazmadan ayrı `HeroSearchCard` launch surface oluştur ve `FullScreenSearchOverlayV2` akışını aç.
 
 ### H1.3 Akıllı Erişim
 
-- [ ] `SmartAccessModels`, `SmartAccessCoordinator`, deterministik `SmartAccessRanker` ve dedupe policy oluştur.
-- [ ] `Şimdi`, `Son Açılanlar`, `Bildirimler` sekmelerini aynı beş slotlu UI’a bağla.
-- [ ] Şimdi: zaman bağlamı + kullanım sinyali; Son Açılanlar: gerçek timestamp; Bildirimler: son bildirim zamanı kullanmalı.
-- [ ] Kaldırılmış/gizli/kilitli-geçersiz uygulamaları dışla; sekmeler arasında gereksiz tekrar üretme.
-- [ ] Usage/Notification izni yoksa yanıltıcı boş veri yerine açıklama ve doğru ayar yönlendirmesi göster.
-- [ ] Uygulama/paket/kişi/dosya adını telemetriye gönderme.
+- [ ] `SmartAccessCoordinator` ile Şimdi ağırlıklarını tek yerde topla; modeller, deterministik ranker ve dedupe policy hazır.
+- [x] `Şimdi`, `Son Açılanlar`, `Bildirimler` sekmelerini aynı beş slotlu UI’a bağla.
+- [x] Şimdi: mevcut zaman dilimi + kullanım sinyali; Son Açılanlar: gerçek timestamp; Bildirimler: son bildirim zamanı kullanır.
+- [x] Kaldırılmış/gizli/geçersiz uygulamaları dışla ve sonuçları tekilleştir.
+- [x] Usage/Notification izni yoksa açıklama ve doğru ayar yönlendirmesi göster.
+- [x] Yeni Hero akışında uygulama/paket/kişi/dosya adını telemetriye gönderme.
 
 ### H1.4 Sabit uygulama dock’u ve klasör migration’ı
 
-- [ ] Hero dock’u beş sabit uygulama slotu olarak uygula; klasör ve dinamik öneri kabul etme.
-- [ ] Mevcut kullanıcı dock uygulamalarını veri kaybetmeden migrate et; klasör dock öğelerini silme, yalnız Hero dock’ta gösterme.
-- [ ] Klasörleri Sayfa 0’dan çıkar; Sayfa 1+ pager ve semantic anchor düzenini koru.
+- [x] Hero dock’u beş sabit uygulama slotu olarak uygula; klasör ve dinamik öneri kabul etme.
+- [x] Mevcut dock’u bir kez yedekleyerek uygulamaları migrate et; klasör öğelerini Hero görünümünden çıkar.
+- [x] Klasörleri Sayfa 0’dan çıkar; Sayfa 1+ pager ve semantic anchor düzenini koru.
 
 ### H1.5 Composition ve ilk kapı
 
-- [ ] `SmartDashboardPage` içeriğini `HeroDashboardPage` composition’ına dönüştür.
-- [ ] Saat → Dijital Yaşam → Arama → Akıllı Erişim → gösterge → dock sırasını uygula.
-- [ ] 320×568, 360×640, 412×915, tablet ve landscape layout policy testlerini yaz.
-- [ ] Ranker/dedupe unit testleri ile bounds/interaction testlerini ekle.
+- [x] `SmartDashboardPage` içeriğini `HeroDashboardPage` composition’ına dönüştür.
+- [x] Saat → Dijital Yaşam → Arama → Akıllı Erişim → gösterge → dock sırasını uygula.
+- [x] 320×568, 360×640, 412×915, tablet ve landscape layout policy testlerini yaz.
+- [ ] Ranker ve dock migration unit testleri hazır; dedupe ve Compose interaction testlerini ekle.
 - [ ] Compile, unit test, lint ve debug build kapısını geçir; en az bir telefon/tablet smoke yap.
 
 **Bu fazda yapılmayacak:** Eski ve yeni dashboard’u feature flag ile paralel tutmak, veri motorlarını yeniden yazmak, global cam temasını değiştirmek, legacy temizliğini doğrulama tamamlanmadan körlemesine bitirmek.

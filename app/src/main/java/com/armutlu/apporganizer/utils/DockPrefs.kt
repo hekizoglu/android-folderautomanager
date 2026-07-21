@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.edit
-import com.armutlu.apporganizer.domain.models.Category
 
 object DockPrefs {
     const val MAX_SLOTS = 5
@@ -86,15 +85,6 @@ object DockPrefs {
 
     fun folderId(item: String): String? =
         item.takeIf { isFolderItem(it) }?.removePrefix(FOLDER_PREFIX)?.takeIf { it.isNotBlank() }
-
-    fun addSocialFolderIfRoom(context: Context): Boolean {
-        val item = folderItem(Category.CAT_SOCIAL)
-        val current = getDockPackages(context).toMutableList()
-        if (item in current || current.size >= MAX_SLOTS) return false
-        current.add(item)
-        saveDockPackages(context, current)
-        return true
-    }
 
     private fun resolveDefaults(context: Context): List<String> {
         val pm = context.packageManager

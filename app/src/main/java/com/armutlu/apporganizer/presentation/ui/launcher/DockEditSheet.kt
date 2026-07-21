@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -59,7 +58,6 @@ private fun rememberIcon(packageName: String): ImageBitmap? {
 @Composable
 fun DockEditSheet(
     allApps: List<AppInfo>,
-    folders: List<AppFolder> = emptyList(),
     dockPackages: List<String>,
     onAdd: (String) -> Unit,
     onRemove: (String) -> Unit,
@@ -67,20 +65,11 @@ fun DockEditSheet(
     maxDock: Int = DockPrefs.MAX_SLOTS
 ) {
     var query by remember { mutableStateOf("") }
-    var showFolders by remember { mutableStateOf(false) }
     val filtered = remember(allApps, query) {
         if (query.isBlank()) allApps
         else {
             val q = query.lowercase(java.util.Locale("tr"))
             allApps.filter { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
-        }
-    }
-    val filteredFolders = remember(folders, query) {
-        val active = folders.filter { it.apps.isNotEmpty() }
-        if (query.isBlank()) active
-        else {
-            val q = query.lowercase(java.util.Locale("tr"))
-            active.filter { it.category.categoryName.lowercase(java.util.Locale("tr")).contains(q) }
         }
     }
 
@@ -117,25 +106,9 @@ fun DockEditSheet(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     dockPackages.forEach { item ->
-                        val folder = DockPrefs.folderId(item)?.let { folderId ->
-                            folders.firstOrNull { it.category.categoryId == folderId }
-                        }
-                        val icon = if (folder == null) rememberIcon(item) else null
+                        val icon = rememberIcon(item)
                         Box(contentAlignment = Alignment.TopEnd) {
-                            if (folder != null) {
-                                Box(
-                                    Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
-                                        .background(MaterialTheme.colorScheme.primary.copy(0.25f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Folder, null, tint = Color.White.copy(0.85f), modifier = Modifier.size(26.dp))
-                                    Text(
-                                        folder.category.iconEmoji,
-                                        fontSize = 14.sp,
-                                        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 3.dp, bottom = 1.dp)
-                                    )
-                                }
-                            } else if (icon != null) {
+                            if (icon != null) {
                                 Image(
                                     bitmap = icon,
                                     contentDescription = null,
@@ -160,21 +133,6 @@ fun DockEditSheet(
                 Spacer(Modifier.height(10.dp))
             }
 
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = !showFolders,
-                    onClick = { showFolders = false },
-                    label = { Text("Uygulamalar") }
-                )
-                // Hero ürün kararı: dock yalnız uygulama içerir. Klasör verisi silinmez;
-                // klasörler ana ekranın Sayfa 1+ bölümünde düzenlenmeye devam eder.
-            }
-
-            Spacer(Modifier.height(8.dp))
-
             // Arama
             Box(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
@@ -198,58 +156,9 @@ fun DockEditSheet(
 
             Spacer(Modifier.height(8.dp))
 
-            // Uygulama / klasor listesi
+            // Hero dock yalnız uygulama içerir; klasörler Sayfa 1+ içinde kalır.
             LazyColumn(modifier = Modifier.heightIn(max = 420.dp), contentPadding = PaddingValues(bottom = 16.dp)) {
-                if (showFolders) {
-                    items(items = filteredFolders, key = { it.category.categoryId }) { folder ->
-                        val dockItem = DockPrefs.folderItem(folder.category.categoryId)
-                        val inDock = dockItem in dockPackages
-                        val full = isDockAdditionBlocked(dockPackages.size, inDock, maxDock)
-
-                        Row(
-                            Modifier.fillMaxWidth().height(52.dp)
-                                .clickable {
-                                    if (inDock) onRemove(dockItem)
-                                    else if (!full) onAdd(dockItem)
-                                }
-                                .background(if (inDock) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
-                                .padding(horizontal = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primary.copy(if (full && !inDock) 0.10f else 0.24f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Default.Folder, null, tint = Color.White.copy(if (full && !inDock) 0.45f else 0.85f), modifier = Modifier.size(22.dp))
-                                Text(
-                                    folder.category.iconEmoji,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.align(Alignment.BottomEnd)
-                                )
-                            }
-                            Spacer(Modifier.width(14.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    folder.category.categoryName, fontSize = 15.sp,
-                                    color = if (full && !inDock) TextSecondary else TextPrimary,
-                                    maxLines = 1, overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    "${folder.apps.size} uygulama",
-                                    fontSize = 10.sp,
-                                    color = if (full && !inDock) Color(0xFFE57373) else TextSecondary
-                                )
-                            }
-                            when {
-                                inDock -> Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                !full  -> Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
-                                else   -> Icon(Icons.Default.Add, null, tint = Color(0xFFE57373).copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
-                            }
-                        }
-                    }
-                } else {
-                    items(items = filtered, key = { it.packageName }) { app ->
+                items(items = filtered, key = { it.packageName }) { app ->
                         val inDock = app.packageName in dockPackages
                         val full = isDockAdditionBlocked(dockPackages.size, inDock, maxDock)
                         val icon = rememberIcon(app.packageName)
@@ -291,7 +200,6 @@ fun DockEditSheet(
                                 else   -> Icon(Icons.Default.Add, null, tint = Color(0xFFE57373).copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
                             }
                         }
-                    }
                 }
             }
         }

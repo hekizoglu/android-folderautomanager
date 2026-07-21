@@ -666,11 +666,6 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun addFolderToDock(context: Context, categoryId: String) {
-        _toastMessage.tryEmit("Hero Dock yalnız uygulama kabul eder; klasörler ana sayfalarda korunur")
-    }
-
     fun removeFromDock(context: Context, packageName: String) {
         val removed = DockPrefs.removeFromDock(context, packageName)
         if (removed) {

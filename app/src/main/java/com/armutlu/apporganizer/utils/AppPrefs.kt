@@ -15,7 +15,8 @@ object AppPrefs {
     fun isPixelLookEnabled(context: Context) = prefs(context).getBoolean(KEY_PIXEL_LOOK_ENABLED, true)
     fun setPixelLookEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_PIXEL_LOOK_ENABLED, v).apply()
 
-    // P24/P25 tamamlandı: pager v2 varsayılan AÇIK; safe-mode sorun çıkarsa eski davranışa döndürür.
+    // Eski pager anahtarları yalnız tanılama/yedek geriye uyumluluğu için tutulur.
+    // Hero ana sayfa artık koşulsuzdur; uygulama akışında bu değerler okunmaz.
     const val KEY_HOME_PAGER_V2_ENABLED = "home_pager_v2_enabled"
     const val KEY_HOME_PAGER_V2_SAFE_MODE = "home_pager_v2_safe_mode"
 

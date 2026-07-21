@@ -141,7 +141,6 @@ internal fun HomeScreenOverlays(
     if (dockEditOpen) {
         DockEditSheet(
             allApps = allApps,
-            folders = folders,
             dockPackages = dockPackages,
             onAdd = onDockAdd,
             onRemove = onDockRemove,

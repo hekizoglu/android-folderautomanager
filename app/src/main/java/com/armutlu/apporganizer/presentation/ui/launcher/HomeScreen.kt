@@ -848,7 +848,7 @@ fun HomeScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                        .padding(horizontal = 10.dp, vertical = 12.dp)
                         .onGloballyPositioned { coords ->
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 val pos = coords.positionInWindow()
@@ -1515,11 +1515,7 @@ fun HomeScreen(
         onCategoryPickerDismiss = { categoryPickerApp = null },
         onHomeLongPressDismiss = { homeLongPressOpen = false },
         onFolderContextMenuDismiss = { folderContextMenu = null },
-        onDockAdd = { item ->
-            val folderId = DockPrefs.folderId(item)
-            if (folderId != null) viewModel.addFolderToDock(context, folderId)
-            else viewModel.addToDock(context, item)
-        },
+        onDockAdd = { item -> viewModel.addToDock(context, item) },
         onDockRemove = { viewModel.removeFromDock(context, it) },
         onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
         onAddToDock = { pkg -> viewModel.addToDock(context, pkg) },
