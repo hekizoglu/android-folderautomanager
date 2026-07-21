@@ -94,12 +94,15 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 - [ ] `SmartDashboardPage`, `DashboardUiState`, `DashboardStateAssembler` ve ilgili testlerde son commit etkisini doğrula.
 - [ ] Commit mesajına dayanarak kategori roadmap’ini başlamış/tamamlanmış sayma; son commit kategori kodunu değiştirmedi.
 
-### H1.1 Hero tasarım altyapısı
+### H1.1 Hero tasarım altyapısı — kod tamam, derleme kanıtı bekliyor
 
-- [ ] `hero/` altında tek kaynak `HomeHeroTokens`, adaptif `HomeHeroProfile`/`HomeHeroLayoutPolicy` ve `PremiumGlassSurface` oluştur.
-- [ ] Referans düzeni 360×640dp esas al: saat 252×114, ana kartlar 304dp genişlik, Dijital Yaşam 96dp, arama 74dp, Akıllı Erişim 162dp, dock 340×64dp.
-- [ ] Ham px kullanma; sistem bar/cutout ve 320×568–412×915 aralığını policy ile yönet.
+- [x] `hero/` altında tek kaynak `HomeHeroTokens` ve adaptif `HomeHeroProfile`/`HomeHeroLayoutPolicy` oluştur.
+- [ ] `PremiumGlassSurface` oluştur — bir sonraki H1.2 görsel döngüsü.
+- [x] Referans düzeni 360×640dp esas al: saat 252×114, ana kartlar 304dp genişlik, Dijital Yaşam 96dp, arama 74dp, Akıllı Erişim 162dp, dock 340×64dp.
+- [x] Ham px kullanma; 320×568–412×915, tablet, landscape ve fontScale 1.5 kararlarını policy ile yönet.
 - [ ] Mevcut global `GlassCard` bileşenini Hero uğruna değiştirme.
+- [x] Policy için 320×568, 360×640, 412×915, tablet, landscape, fontScale 1.5 ve geçersiz ölçü unit testlerini yaz.
+- [ ] Gradle 8.7 dağıtımı erişilebilir ortamda hedefli unit test ve `compileDebugKotlin` kanıtını tamamla.
 
 ### H1.2 Hero kartları
 
