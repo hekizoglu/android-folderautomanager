@@ -165,6 +165,51 @@ object UsageStatsHelper {
         }
     }
 
+    /**
+     * Zaman-Kisitli Gorev — [date] gununde [startHour]:00 ile [endHour]:00 arasinda (endHour <
+     * startHour ise gece yarisini gecen pencere, orn. 23-6) ekran acilma (SCREEN_INTERACTIVE)
+     * olayi var mi. DAILY_NO_LATE_NIGHT'in sabit 23:00-06:00 mantiginin genellenmis hali —
+     * queryEvents + SCREEN_INTERACTIVE filtreleme kullanir (ayni desen: getUnlockCount vb.).
+     * Izin yoksa veya event verisi alinamazsa null doner (veri-yok ile "kullanim yok" ayrimi
+     * MissionEngine.evaluateNoUsageInWindow'da korunur).
+     */
+    fun getScreenOnEventsInWindow(
+        context: Context,
+        startHour: Int,
+        endHour: Int,
+        date: java.time.LocalDate,
+        zoneId: ZoneId = ZoneId.systemDefault(),
+    ): Boolean? {
+        if (!hasPermission(context)) return null
+        return try {
+            val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val windowStartMillis = date.atTime(startHour, 0).atZone(zoneId).toInstant().toEpochMilli()
+            val windowEndMillis = if (endHour <= startHour) {
+                date.plusDays(1).atTime(endHour, 0).atZone(zoneId).toInstant().toEpochMilli()
+            } else {
+                date.atTime(endHour, 0).atZone(zoneId).toInstant().toEpochMilli()
+            }
+            val nowMillis = System.currentTimeMillis()
+            if (windowStartMillis > nowMillis) return false
+            val queryEnd = windowEndMillis.coerceAtMost(nowMillis)
+            val events = manager.queryEvents(windowStartMillis, queryEnd) ?: return null
+            val event = UsageEvents.Event()
+            var found = false
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (event.eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
+                    found = true
+                    break
+                }
+            }
+            found
+        } catch (_: SecurityException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun getLastUsedTimes(context: Context, days: Int = 90): Map<String, Long> {
         return try {
             val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
