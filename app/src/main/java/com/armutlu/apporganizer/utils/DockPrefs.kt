@@ -11,6 +11,8 @@ object DockPrefs {
 
     private const val PREFS_NAME = "dock_prefs"
     private const val KEY_DOCK_PACKAGES = "dock_packages"
+    private const val KEY_PRE_HERO_DOCK_BACKUP = "pre_hero_dock_backup"
+    private const val KEY_HERO_DOCK_MIGRATED = "hero_dock_migrated_v1"
     private const val FOLDER_PREFIX = "folder:"
 
     private val DEFAULT_SLOTS = listOf(
@@ -35,6 +37,29 @@ object DockPrefs {
             putString(KEY_DOCK_PACKAGES, packages.take(MAX_SLOTS).joinToString(","))
         }
     }
+
+    fun migrateToHeroDock(context: Context, fallbackPackages: List<String>): List<String> {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val current = getDockPackages(context)
+        if (!prefs.getBoolean(KEY_HERO_DOCK_MIGRATED, false)) {
+            prefs.edit {
+                putString(KEY_PRE_HERO_DOCK_BACKUP, current.joinToString(","))
+                putBoolean(KEY_HERO_DOCK_MIGRATED, true)
+            }
+        }
+        val candidates = buildHeroDockItems(current, fallbackPackages)
+        val installed = candidates.filter { context.packageManager.getLaunchIntentForPackage(it) != null }
+        saveDockPackages(context, installed)
+        return installed
+    }
+
+    internal fun buildHeroDockItems(
+        current: List<String>,
+        fallbackPackages: List<String>,
+    ): List<String> = (current.filterNot(::isFolderItem) + fallbackPackages)
+        .filter(String::isNotBlank)
+        .distinct()
+        .take(MAX_SLOTS)
 
     fun addToDock(context: Context, packageName: String): Boolean {
         val current = getDockPackages(context).toMutableList()

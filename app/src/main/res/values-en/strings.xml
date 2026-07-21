@@ -616,6 +616,17 @@
     <string name="search_settings_history_clear_title">Clear Search History</string>
     <string name="search_settings_history_clear_subtitle">Removes the last 3 searches shown on the empty query screen</string>
     <string name="search_overlay_title">Search Everything</string>
+    <string name="hero_search_placeholder">Search apps, people, files, settings</string>
+    <string name="hero_search_sources">Edit search sources</string>
+    <string name="hero_digital_life_permission_detail">Enable usage access to see your score</string>
+    <string name="hero_smart_access_title">Smart Access</string>
+    <string name="hero_smart_access_settings">Smart Access settings</string>
+    <string name="hero_smart_access_now">Now</string>
+    <string name="hero_smart_access_recent">Recently Opened</string>
+    <string name="hero_smart_access_notifications">Notifications</string>
+    <string name="hero_smart_access_usage_permission">Enable usage access for suggestions</string>
+    <string name="hero_smart_access_notification_permission">Enable notification access for recent notifications</string>
+    <string name="hero_smart_access_empty">No apps to show yet</string>
     <string name="search_overlay_close">Close full-screen search</string>
     <string name="search_overlay_clear_query">Clear search query</string>
     <string name="search_overlay_field_content_desc">Full-screen search field</string>

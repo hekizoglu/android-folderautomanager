@@ -15,6 +15,10 @@ import com.armutlu.apporganizer.domain.home.RefreshReason
 import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
 import com.armutlu.apporganizer.domain.home.TickerActionRouter
+import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessDedupePolicy
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessRanker
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
@@ -27,6 +31,7 @@ import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.PackageManagerHelper
+import com.armutlu.apporganizer.utils.NotificationAccessUtils
 import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
 import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
@@ -170,7 +175,6 @@ class LauncherViewModel @Inject constructor(
     // Klasör sırası ilk yüklemede okunur. Dock ise Settings/restore gibi ViewModel dışı
     // yazımları da yakalamak için her onResume'da DockPrefs ile uzlaştırılır.
     @Volatile private var dockLoaded = false
-    @Volatile private var socialFolderDockChecked = false
 
     // Eş zamanlı çift loadAppsIfEmpty engelleyici — compareAndSet atomik check-then-set sağlar
     private val isLoadingApps = AtomicBoolean(false)
@@ -610,7 +614,13 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun loadDockPackages(context: Context) {
-        val persistedPackages = DockPrefs.getDockPackages(context)
+        val fallbackPackages = allApps.value
+            .asSequence()
+            .filter { it.isInstalled && !it.isHidden }
+            .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+            .map { it.packageName }
+            .toList()
+        val persistedPackages = DockPrefs.migrateToHeroDock(context, fallbackPackages)
         if (persistedPackages != _dockPackages.value) {
             _dockPackages.value = persistedPackages
         }
@@ -627,7 +637,6 @@ class LauncherViewModel @Inject constructor(
                 }
             }
         }
-        ensureSocialFolderInDock(context)
     }
 
     fun reorderFolders(context: Context, newOrder: List<AppFolder>) {
@@ -657,19 +666,9 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun addFolderToDock(context: Context, categoryId: String) {
-        val item = DockPrefs.folderItem(categoryId)
-        val current = _dockPackages.value
-        when {
-            current.contains(item) -> _toastMessage.tryEmit("Klasor zaten Dock'ta")
-            current.size >= DOCK_MAX_SIZE -> _toastMessage.tryEmit("Dock dolu (max $DOCK_MAX_SIZE) - once bir oge cikar")
-            else -> {
-                val updated = current + item
-                DockPrefs.saveDockPackages(context, updated)
-                _dockPackages.value = updated
-                _toastMessage.tryEmit("Klasor Dock'a eklendi")
-            }
-        }
+        _toastMessage.tryEmit("Hero Dock yalnız uygulama kabul eder; klasörler ana sayfalarda korunur")
     }
 
     fun removeFromDock(context: Context, packageName: String) {
@@ -679,19 +678,6 @@ class LauncherViewModel @Inject constructor(
             _toastMessage.tryEmit("Dock'tan kaldirildi")
         } else {
             _toastMessage.tryEmit("Dock'ta bu uygulama bulunamadi")
-        }
-    }
-
-    private fun ensureSocialFolderInDock(context: Context) {
-        if (socialFolderDockChecked) return
-        val hasSocialFolder = folders.value.any { folder ->
-            folder.category.categoryId == Category.CAT_SOCIAL && folder.apps.isNotEmpty()
-        }
-        if (!hasSocialFolder) return
-
-        socialFolderDockChecked = true
-        if (DockPrefs.addSocialFolderIfRoom(context)) {
-            _dockPackages.value = DockPrefs.getDockPackages(context)
         }
     }
 
@@ -1069,30 +1055,61 @@ class LauncherViewModel @Inject constructor(
         }.onFailure { e -> Timber.w(e, "Ticker arşiv kaydı başarısız") }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
-    // Contextual Dock — kullanicinin sectigi TUM slotlar korunur; akilli oneriler
-    // (saat/gun/kullanim) SADECE bos kalan slotlari doldurur (dock kapasitesi kadar).
-    // Eski davranis (ilk 2 sabit + son 2 akilli) kullanicinin sectigi dock'u sessizce
-    // eziyordu — "sectigim dock'ta kamera var ama ekranda WhatsApp cikiyor" bug'i (D257).
-    val contextualDockPackages: StateFlow<List<String>> = combine(
-        dockPackages,
-        suggestedApps
-    ) { fixed, suggested ->
-        val ctx = getApplication<Application>()
-        buildContextualDockPackages(
-            fixed = fixed,
-            suggested = suggested.map { it.packageName },
-            contextualEnabled = AppPrefs.isContextualDockEnabled(ctx),
-        )
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    // Son kullanilan 4 uygulama — RecentAppsRow icin, lastUsedTimestamp sirasinda
+    // Son kullanılan 5 uygulama — Hero Akıllı Erişim ile ortak gerçek timestamp sırası.
     val recentApps: StateFlow<List<AppInfo>> = allAppsSource
         .map { apps ->
             apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
                 .sortedByDescending { it.lastUsedTimestamp }
-                .take(4)
+                .take(SmartAccessRanker.MAX_ITEMS)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val latestNotificationSummaries = notificationEventDao
+        .observeLatestSummaries(
+            since = System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS,
+            limit = SmartAccessRanker.MAX_ITEMS,
+        )
+
+    private val _smartAccessPermissionTick = MutableStateFlow(0)
+
+    /** Hero Akıllı Erişim için tek state; varsayılan sekme her ViewModel oturumunda Şimdi'dir. */
+    val smartAccessState: StateFlow<SmartAccessUiState> = combine(
+        allAppsSource,
+        suggestedApps,
+        recentApps,
+        latestNotificationSummaries,
+        _smartAccessPermissionTick,
+    ) { apps, suggested, recent, notificationSummaries, _ ->
+        val context = getApplication<Application>()
+        val byPackage = apps.associateBy { it.packageName }
+        val favorites = _favoritePkgs.value.mapNotNull(byPackage::get)
+        val nowApps = SmartAccessDedupePolicy.visibleUnique(
+            apps = suggested + recent + favorites,
+            ownPackageName = context.packageName,
+        ).take(SmartAccessRanker.MAX_ITEMS)
+        val rankedRecentApps = SmartAccessRanker.recent(
+            apps = apps,
+            ownPackageName = context.packageName,
+        )
+        val notificationApps = notificationSummaries.mapNotNull { summary ->
+            byPackage[summary.packageName]
+                ?.takeIf { it.isInstalled && !it.isHidden && it.packageName != context.packageName }
+                ?.let { NotificationAccessItem(it, summary.count, summary.lastPostedAt) }
+        }
+        SmartAccessUiState(
+            nowApps = nowApps,
+            recentApps = rankedRecentApps,
+            notificationApps = notificationApps,
+            notificationTotal = notificationApps.sumOf { it.count },
+            usagePermissionGranted = UsageStatsHelper.hasPermission(context),
+            notificationPermissionGranted = NotificationAccessUtils.isNotificationListenerEnabled(context),
+            loading = !initialLoadDone.value,
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, SmartAccessUiState())
+
+    fun refreshSmartAccessPermissions() {
+        _smartAccessPermissionTick.update { it + 1 }
+    }
 
     // EX01 — "Bugun Yuklenenler": bugun (yerel gun siniri, PeriodBoundaryResolver) yuklenen
     // uygulamalar. Ana ekran kompakt giris + cekmece bolumu bu akistan beslenir.
