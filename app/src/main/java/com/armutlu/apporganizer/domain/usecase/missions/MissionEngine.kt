@@ -52,6 +52,19 @@ object MissionEngine {
         // yok) gorev isEligible() tarafindan havuza alinmaz.
         val appLimitUsageMinutesToday: Long? = null,
         val appLimitTargetMinutes: Long? = null,
+        // Zaman-Kisitli Gorev — kullanici-tanimli saat araliginda (AppPrefs.getTimeWindow*)
+        // bugun ekran acilma oldu mu. usedAfter23Today ile AYNI patern (null = veri yok).
+        val usedDuringTimeWindowToday: Boolean? = null,
+        // Pencere sinirlari (AppPrefs.getTimeWindowStartHour/EndHour) — MissionEngine saf kalmasi
+        // icin caller tarafindan enjekte edilir (Android/AppPrefs bagimliligi ALINMAZ). Varsayilan
+        // 23-6, AppPrefs varsayilaniyla AYNI (caller enjekte etmezse eski DAILY_NO_LATE_NIGHT
+        // davranisiyla tutarli kalir).
+        val timeWindowStartHour: Int = 23,
+        val timeWindowEndHour: Int = 6,
+        // AppPrefs.isTimeWindowMissionEnabled() — kapaliyken TYPE_NO_USAGE_IN_TIME_WINDOW havuza
+        // GIRMEZ (isEligible() bu bayragi kontrol eder). Varsayilan false: AppPrefs varsayilaniyla
+        // TUTARLI, caller enjekte etmezse gorev sessizce devre disi kalir (yanlisliqla acilmaz).
+        val timeWindowMissionEnabled: Boolean = false,
     )
 
     data class TaskEventInput(
@@ -96,6 +109,10 @@ object MissionEngine {
     // DB semasi DEGISMEZ. Bkz. AppLimitCandidateSelector (aday secimi + hedef hesabi).
     const val DAILY_APP_LIMIT = "daily_app_limit"
 
+    // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT'in kullanici-tanimli saat araligina genellenmis
+    // hali. AppPrefs.isTimeWindowMissionEnabled() acikken havuza girer (bkz. isEligible()).
+    const val TYPE_NO_USAGE_IN_TIME_WINDOW = "no_usage_in_time_window"
+
     const val DAILY_STAR = 1
     const val WEEKLY_STAR = 2
     const val DAILY_MISSION_COUNT = 3
@@ -125,11 +142,14 @@ object MissionEngine {
         Mission(DAILY_FOCUS_SESSION, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
         // Dongu G3b — havuz 12 -> 13. Aday yoksa isEligible() bunu ele alir (havuza girmez).
         Mission(DAILY_APP_LIMIT, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
+        // Zaman-Kisitli Gorev — sadece AppPrefs.isTimeWindowMissionEnabled() acikken isEligible()
+        // tarafindan havuza alinir (kapaliyken aday yok, DAILY_NO_LATE_NIGHT ile CAKISMAZ).
+        Mission(TYPE_NO_USAGE_IN_TIME_WINDOW, MissionType.DAILY, DAILY_STAR, autoCheckable = true),
     )
 
     // Gorev id -> "kacinma" (pasif, AVOID_* kind) mi "eylem" (aninda tamamlanabilir) mi.
     // generateDaily kuralinda kullanilir: her gun en az 1 kacinma + 1 eylem gorevi.
-    private val AVOIDANCE_MISSION_IDS = setOf(DAILY_NO_LATE_NIGHT, DAILY_MORNING_CALM)
+    private val AVOIDANCE_MISSION_IDS = setOf(DAILY_NO_LATE_NIGHT, DAILY_MORNING_CALM, TYPE_NO_USAGE_IN_TIME_WINDOW)
     private val ACTION_MISSION_IDS = setOf(
         DAILY_CLASSIFICATION_CLEANUP,
         DAILY_VIEW_NOTIF_REPORT,
@@ -151,6 +171,8 @@ object MissionEngine {
         DAILY_FOCUS_SESSION to WeakAreaCategory.BALANCE,
         // Dongu G3b — plan G3 satiri: "BALANCE zayif alaninda 2x" agirlik.
         DAILY_APP_LIMIT to WeakAreaCategory.BALANCE,
+        // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT ile ayni zayif alan (ATTENTION).
+        TYPE_NO_USAGE_IN_TIME_WINDOW to WeakAreaCategory.ATTENTION,
     )
     private const val WEAK_AREA_WEIGHT = 2
 
@@ -237,6 +259,8 @@ object MissionEngine {
         DISCOVER_WEEKLY -> MissionProgressKind.BOOLEAN_ACTION
         // Dongu G3b — DAILY_SCREEN_UNDER_3H/DAILY_UNLOCK_UNDER_30 ile ayni gorsel dil (ust sinir).
         DAILY_APP_LIMIT -> MissionProgressKind.UPPER_LIMIT
+        // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT ile ayni gorsel dil (kacinma esigi).
+        TYPE_NO_USAGE_IN_TIME_WINDOW -> MissionProgressKind.AVOID_AFTER_TIME
         else -> MissionProgressKind.ACTION_COUNT
     }
 
@@ -319,6 +343,9 @@ object MissionEngine {
         // Dongu G3b — uygulama-spesifik ust sinir. Hedef/kullanim ikisi de veri gerektirir
         // (isEligible zaten aday yoksa havuza almaz, ama evaluate savunmaci kalir).
         DAILY_APP_LIMIT -> evaluateAppLimit(input.appLimitUsageMinutesToday, input.appLimitTargetMinutes, dayEnded)
+        // Zaman-Kisitli Gorev — kullanici-tanimli saat araligi (sabit 23:00 yerine now/dayEnded
+        // ile ayni "gece" degerlendirme mantigi, sadece pencere parametrik).
+        TYPE_NO_USAGE_IN_TIME_WINDOW -> evaluateNoUsageInWindow(input, now, dayEnded)
         else -> MissionEvaluation(
             status = MissionStatus.DATA_UNAVAILABLE,
             currentValue = null,
@@ -411,6 +438,49 @@ object MissionEngine {
                 targetValue = 0L,
                 remainingValue = 0L,
                 failureReasonCode = "LATE_NIGHT_USAGE_DETECTED",
+            )
+        }
+        val status = if (dayEnded) MissionStatus.COMPLETED else MissionStatus.SAFE
+        return MissionEvaluation(status, 0L, 0L, 0L)
+    }
+
+    /**
+     * Zaman-Kisitli Gorev — [evaluateNoLateNight]'in kullanici-tanimli saat araligina genellenmis
+     * hali. Pencere gece yarisini gecebilir (orn. 23-6): bu durumda "pencere basladi mi" kontrolu
+     * `now >= startHour` VEYA `now < endHour` (gece yarisi sonrasi hala pencere icinde) ile yapilir.
+     * Pencere gece yarisini GECMEZ ise (orn. 1-5) sadece `startHour <= now < endHour` araligi
+     * "pencere aktif" sayilir - bu araligin disinda NOT_STARTED (henuz gelmedi) doner, gun
+     * bittiyse (dayEnded) veri degerlendirilir. [usedDuringWindow] degeri caller tarafindan
+     * (UsageStatsHelper.getScreenOnEventsInWindow) onceden hesaplanip gecirilir.
+     */
+    private fun evaluateNoUsageInWindow(
+        input: MissionCheckInput,
+        now: LocalTime,
+        dayEnded: Boolean,
+    ): MissionEvaluation {
+        val startHour = input.timeWindowStartHour.coerceIn(0, 23)
+        val endHour = input.timeWindowEndHour.coerceIn(0, 23)
+        val windowStart = LocalTime.of(startHour, 0)
+        val crossesMidnight = endHour <= startHour
+        val windowStarted = if (crossesMidnight) {
+            !now.isBefore(windowStart) || now.isBefore(LocalTime.of(endHour, 0))
+        } else {
+            !now.isBefore(windowStart)
+        }
+        if (!windowStarted && !dayEnded) {
+            return MissionEvaluation(MissionStatus.NOT_STARTED, null, null, null)
+        }
+        val usedDuringWindow = input.usedDuringTimeWindowToday
+        if (usedDuringWindow == null) {
+            return MissionEvaluation(MissionStatus.DATA_UNAVAILABLE, null, null, null)
+        }
+        if (usedDuringWindow) {
+            return MissionEvaluation(
+                status = MissionStatus.FAILED,
+                currentValue = 1L,
+                targetValue = 0L,
+                remainingValue = 0L,
+                failureReasonCode = "TIME_WINDOW_USAGE_DETECTED",
             )
         }
         val status = if (dayEnded) MissionStatus.COMPLETED else MissionStatus.SAFE
@@ -513,6 +583,8 @@ object MissionEngine {
         // caller appLimitTargetMinutes'i null birakir) gorev havuza HIC girmez ("aday yoksa
         // gorev havuza girmez" plan kurali).
         DAILY_APP_LIMIT -> input.appLimitTargetMinutes != null
+        // Zaman-Kisitli Gorev — kapaliyken (varsayilan) havuza HIC girmez.
+        TYPE_NO_USAGE_IN_TIME_WINDOW -> input.timeWindowMissionEnabled && input.usedDuringTimeWindowToday != null
         else -> false
     }
 

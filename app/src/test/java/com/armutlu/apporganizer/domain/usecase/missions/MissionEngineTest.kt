@@ -197,6 +197,131 @@ class MissionEngineTest {
         )
     }
 
+    // ── Zaman-Kisitli Gorev (TYPE_NO_USAGE_IN_TIME_WINDOW) ──────────────────────
+
+    @Test
+    fun `time window mission not eligible when feature disabled`() {
+        val input = MissionEngine.MissionCheckInput(
+            usedDuringTimeWindowToday = false,
+            timeWindowMissionEnabled = false,
+        )
+        val daily = MissionEngine.generateDaily(
+            epochDay = 1L,
+            selection = MissionEngine.MissionSelectionInput(checkInput = input),
+        )
+        assertFalse(daily.any { it.id == MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW })
+    }
+
+    @Test
+    fun `time window mission not started before window begins`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val result = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(
+                usedDuringTimeWindowToday = false,
+                timeWindowMissionEnabled = true,
+                timeWindowStartHour = 22,
+                timeWindowEndHour = 5,
+            ),
+            now = LocalTime.of(20, 0),
+        )
+        assertEquals(MissionStatus.NOT_STARTED, result.status)
+    }
+
+    @Test
+    fun `time window mission safe then completed with no usage in custom window`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val input = MissionEngine.MissionCheckInput(
+            usedDuringTimeWindowToday = false,
+            timeWindowMissionEnabled = true,
+            timeWindowStartHour = 22,
+            timeWindowEndHour = 5,
+        )
+        val midWindow = MissionEngine.evaluate(mission, input, now = LocalTime.of(23, 0), dayEnded = false)
+        assertEquals(MissionStatus.SAFE, midWindow.status)
+
+        val settled = MissionEngine.evaluate(mission, input, now = LocalTime.of(23, 59), dayEnded = true)
+        assertEquals(MissionStatus.COMPLETED, settled.status)
+    }
+
+    @Test
+    fun `time window mission fails when usage detected inside custom window`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val result = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(
+                usedDuringTimeWindowToday = true,
+                timeWindowMissionEnabled = true,
+                timeWindowStartHour = 22,
+                timeWindowEndHour = 5,
+            ),
+            now = LocalTime.of(23, 0),
+            dayEnded = false,
+        )
+        assertEquals(MissionStatus.FAILED, result.status)
+        assertEquals("TIME_WINDOW_USAGE_DETECTED", result.failureReasonCode)
+    }
+
+    @Test
+    fun `time window mission data unavailable when usage signal missing after window start`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val result = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(
+                usedDuringTimeWindowToday = null,
+                timeWindowMissionEnabled = true,
+                timeWindowStartHour = 22,
+                timeWindowEndHour = 5,
+            ),
+            now = LocalTime.of(23, 0),
+        )
+        assertEquals(MissionStatus.DATA_UNAVAILABLE, result.status)
+    }
+
+    @Test
+    fun `time window mission handles non-midnight-crossing window`() {
+        // Ornek: 1-5 araligi (gece yarisini gecmez). 3'te (pencere icinde) kontrol.
+        val mission = MissionEngine.Mission(
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR, autoCheckable = true,
+        )
+        val beforeWindow = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(
+                usedDuringTimeWindowToday = false,
+                timeWindowMissionEnabled = true,
+                timeWindowStartHour = 1,
+                timeWindowEndHour = 5,
+            ),
+            now = LocalTime.of(0, 30),
+        )
+        assertEquals(MissionStatus.NOT_STARTED, beforeWindow.status)
+
+        val insideWindow = MissionEngine.evaluate(
+            mission,
+            MissionEngine.MissionCheckInput(
+                usedDuringTimeWindowToday = false,
+                timeWindowMissionEnabled = true,
+                timeWindowStartHour = 1,
+                timeWindowEndHour = 5,
+            ),
+            now = LocalTime.of(3, 0),
+        )
+        assertEquals(MissionStatus.SAFE, insideWindow.status)
+    }
+
     @Test
     @Suppress("DEPRECATION")
     fun `weekly positive actions needs three real positive events`() {
