@@ -1,5 +1,17 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX14 - 2026-07-21 - Zaman-Kısıtlı Görev (Time Window Mission) — ROADMAP [23] tamamlandı
+
+**Yapılanlar:** `DAILY_NO_LATE_NIGHT` (sabit 23:00-06:00) görevi kullanıcı-tanımlı saat aralığına genellendi, 6 sıralı commit: (1) `AppPrefs.kt` — `KEY_TIME_WINDOW_MISSION_ENABLED` (varsayılan false), `KEY_TIME_WINDOW_START_HOUR`/`KEY_TIME_WINDOW_END_HOUR` (varsayılan 23/6) + getter/setter. (2) `UsageStatsHelper.kt` — `getScreenOnEventsInWindow(context, startHour, endHour, date)`: `queryEvents()` + `SCREEN_INTERACTIVE` filtreleme, gece yarısını geçen pencereleri (örn. 23-6) destekler. `MissionUsageStatsSource` arayüzüne de eklendi (test edilebilirlik). (3-4) `MissionEngine.kt` — `MissionCheckInput`'a `usedDuringTimeWindowToday`/`timeWindowStartHour`/`timeWindowEndHour`/`timeWindowMissionEnabled` eklendi (motor saf Kotlin kalır, AppPrefs bağımlılığı ALINMADI — caller enjekte eder); yeni görev türü `TYPE_NO_USAGE_IN_TIME_WINDOW` + `evaluateNoUsageInWindow()` (`evaluateNoLateNight`'ın parametrik kopyası). `isEligible()` sadece özellik açıkken havuza alır — `DAILY_NO_LATE_NIGHT` ile ÇAKIŞMAZ, ayrı/opsiyonel görev. (5) `MissionMetricSnapshotProvider.kt` — AppPrefs'ten okur, sadece özellik açıkken `getScreenOnEventsInWindow()` çağırır (kapalıyken gereksiz `queryEvents` atlanır); `toMissionCheckInput()` köprüsü güncellendi. (6) `SettingsStatsScreen.kt` — Görevler bölümüne toggle + başlangıç/bitiş saat seçici (iki `DropdownMenu`, `SettingsNotificationsScreen`'deki mevcut saat-seçici deseniyle AYNI). TR/EN string kaynakları eklendi.
+
+**Test:** 8 yeni unit test (`UsageStatsHelperTest` 1, `MissionEngineTest` 6, mevcut fake'lerin interface güncellemesi). Tüm paket yeşil: 1232 test, 0 hata.
+
+**Ortam sorunu:** Windows build kilidi (`mergeDebugResources` — `app\build` dizini silinemedi) 2 kez tekrarladı; `Get-Process java | Stop-Process -Force` + `Remove-Item -Recurse -Force app\build` ile çözüldü (LEARNINGS.md'de zaten belgeli kalıcı kural, tekrar sayısı 3+).
+
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi (yeni tuzak yok, bilinen build-kilidi kuralı tekrar uygulandı).
+
+**Sonraki:** ROADMAP.md'deki bir sonraki öncelikli madde.
+
 ## EX13 - 2026-07-21 - Performans Faz PERF-1 ve PERF-2 calismasi, Windows build ortami kalici fix
 
 **Yapılanlar:** (1) **Windows build ortamı kalıcı fix:** Windows sayfalama dosyası (paging file) 93GB kapasitesinin %99'unu kullanmaya başlamış, JVM native memory allocation başarısız oluyordu. Çözüm: gradle.properties'de -Xmx4096m → -Xmx2560m (Gradle), -Xmx2048m → -Xmx1536m (Kotlin daemon), org.gradle.parallel true → false (paralel worker'lar bellek birikiyor). Kalıcı çözüm: Admin PowerShell'de sayfalama dosyası 16GB-32GB'a. Build şimdi stabil 5m20s'de bitişiyor. (2) **PERF-1 (Compose Compiler Metrics):** Metrics dosyası ulaşılamadı (Gradle output tutunamadı), manuel kod taraması yapıldı. Bulgu: AppInfo.kt ve Category.kt domain modelleri @Immutable işaretli değildi. (3) **PERF-2 (Hızlı kazançlar — Stability Annotations):** AppInfo.kt ve Category.kt'ye @Immutable eklendi (androidx.compose.runtime). Room Flow'ları (getAllAppsFlow, getAllCategoriesFlow) zaten .distinctUntilChanged() ile korunmuş. Compile + testDebugUnitTest yeşil. v1.4.15 (138).
