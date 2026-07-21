@@ -8,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("io.gitlab.arturbosch.detekt")
+    id("androidx.baselineprofile")
 }
 
 val skipGoogleServices = project.hasProperty("skipGoogleServices")
@@ -172,6 +173,14 @@ android {
 
 }
 
+// PERF-3: Baseline Profile — :benchmark modülü tarafından üretilen profil release
+// varyantına gömülür (app/src/release/generated/baselineProfiles/baseline-prof.txt).
+// Üretim: .\gradlew :benchmark:connectedAndroidTest (emülatör/cihaz bağlı olmalı).
+baselineProfile {
+    // Debug build'e dahil etme — sadece release/bundleRelease etkilenir.
+    automaticGenerationDuringBuild = false
+}
+
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
@@ -267,6 +276,10 @@ afterEvaluate {
 }
 
 dependencies {
+    // PERF-3: Baseline Profile — release build'de AOT/kısmi derleme için ART'a ipucu verir
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    baselineProfile(project(":benchmark"))
+
     // Color picker
     implementation("com.github.skydoves:colorpicker-compose:1.1.2")
 

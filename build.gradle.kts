@@ -9,6 +9,8 @@ plugins {
     id("com.google.firebase.crashlytics") version "3.0.2" apply false
     id("com.google.firebase.firebase-perf") version "2.0.2" apply false
     id("io.gitlab.arturbosch.detekt") version "1.23.8" apply false
+    id("com.android.test") version "8.6.1" apply false
+    id("androidx.baselineprofile") version "1.2.4" apply false
 }
 
 tasks.register("clean", Delete::class) {

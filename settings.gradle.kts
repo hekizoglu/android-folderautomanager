@@ -7,7 +7,7 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             when (requested.id.id) {
-                "com.android.application", "com.android.library" ->
+                "com.android.application", "com.android.library", "com.android.test" ->
                     useModule("com.android.tools.build:gradle:${requested.version}")
             }
         }
@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AppOrganizer"
 include(":app")
+include(":benchmark")
