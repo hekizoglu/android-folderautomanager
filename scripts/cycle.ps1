@@ -41,6 +41,7 @@ param(
     [switch]$Build,
     [switch]$NoPush,
     [int]$BuildEvery = 6,
+    [switch]$SkipIfNoCode,
     [string]$Classifier = "app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/AppClassifier.kt"
 )
 
@@ -56,6 +57,17 @@ function Step($n, $t) { Write-Host "`n[$n] $t" -ForegroundColor Yellow }
 
 # Build gerekli mi?
 $doBuild = $Build -or ($CycleNum -gt 0 -and $BuildEvery -gt 0 -and ($CycleNum % $BuildEvery -eq 0))
+
+# -SkipIfNoCode: hafif cron modu (D2026-07-21 token optimizasyonu).
+# Ritim build'i tetiklese bile .kt/.kts/.xml/.gradle degisikligi yoksa
+# gercek kod derlemesi yapmadan gec — sadece dokuman/roadmap degisti demektir.
+if ($doBuild -and $SkipIfNoCode) {
+    & "$scriptDir\cron_lightweight_check.ps1" | Out-Host
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "⏭ -SkipIfNoCode: derlenebilir dosya degismedi, build bu döngüde de atlanıyor." -ForegroundColor DarkYellow
+        $doBuild = $false
+    }
+}
 
 Write-Host "═══════════════════════════════════════════" -ForegroundColor DarkCyan
 Write-Host " DÖNGÜ $CycleNum — cycle.ps1" -ForegroundColor Cyan

@@ -1,5 +1,17 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX17 - 2026-07-21 - Build timeout fix + cron token optimizasyonu
+
+**Yapılanlar:** `gradle.properties`: `org.gradle.jvmargs`'a `-XX:+UseG1GC -XX:MaxGCPauseMillis=200` eklendi, `kotlin.daemon.jvm.options`'a aynı GC ayarları eklendi, `org.gradle.build.cache.debug=false` eklendi. `org.gradle.parallel` bilinçli olarak `false` bırakıldı (32GB RAM + 17GB boş doğrulandı ama LEARNINGS.md'deki mmap tuzağı riski göze alınmadı — dosyaya rollback notu eklendi). Yeni `scripts/cron_lightweight_check.ps1`: git status'ta sadece .kt/.kts/.xml/.gradle değişmişse ve `compileDebugKotlin --dry-run` gerçekten çalışacak task gösteriyorsa exit 2 (AĞIR gerekli), aksi halde exit 0 (HAFİF yeterli, build atla). `scripts/cycle.ps1`'e `-SkipIfNoCode` parametresi eklendi — ritim build tetiklese bile kod değişmemişse gerçek derlemeyi atlar. 30 dakikalık CronCreate görevi silinip (`941051bb`) yeni prompt ile yeniden oluşturuldu (`31b9db64`, `7,37 * * * *`) — önce lightweight check, sadece kod değiştiyse tam build.
+
+**Ölçüm:** `clean` sonrası build dizini Windows dosya kilidi + `CodexSandboxUsers` ACL uyuşmazlığı yüzünden AccessDenied verdi (sandbox shell farklı Windows kullanıcısı) — PowerShell'de (proje sahibi kullanıcı `beyin\hekizoglu`) `Get-Process java | Stop-Process -Force` + `app\build` silme ile çözüldü. Ardından tam `compileDebugKotlin`: **4dk 1sn** (soğuk/temiz). Aynı build tekrar (incremental, sadece 1 dosya touch): **3.5sn**. Sonuç: mevcut sorun clean/cold build'e özgü; incremental compilation zaten sağlıklı çalışıyor — asıl kazanım cron'un gereksiz cold-build denemelerini atlaması.
+
+**Hata/Düzeltme:** `cron_lightweight_check.ps1` ilk yazımda em-dash (`—`) `$(...)` string interpolation içinde PS5.1 parse hatası verdi (bilinen "curly quote/em dash" tuzağı, LEARNINGS.md'de zaten belgeli) — `scripts/fix_encoding.py` ile otomatik düzeltildi.
+
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi (mevcut "Build Cache Kilidi" ve "Encoding" kuralları zaten bu senaryoları kapsıyor, promote edilecek yeni kalıcı kural yok).
+
+**Sonraki:** Cron bir sonraki tetiklemesinde `cron_lightweight_check.ps1` kararını doğrula (HAFİF/AĞIR ayrımı beklendiği gibi çalışıyor mu).
+
 ## EX16 - 2026-07-21 - PERF-4: Pil ince ayar — periyodik worker'lara setRequiresBatteryNotLow
 
 **Yapılanlar:** 5 periyodik worker'ın `schedule()` fonksiyonuna `Constraints.Builder().setRequiresBatteryNotLow(true)` eklendi: `TickerHistoryCleanupWorker.kt` (24 saatte bir arşiv temizliği), `WeeklyDigestWorker.kt` (haftalık özet), `SuggestionNotificationWorker.kt` (günlük öneri bildirimi), `SmartInsightWorker.kt` (günlük akıllı içgörü), `CategoryDbUpdateWorker.kt` (mevcut `Constraints.Builder()`'a satır eklendi, `setRequiredNetworkType` zaten vardı). `BackupWorker.kt` zaten bu constraint'e sahipti (kontrol edildi, değişiklik gerekmedi). Amaç: pil düşükken bu düşük öncelikli arka plan işlerinin ertelenmesi.
