@@ -18,6 +18,7 @@ import com.armutlu.apporganizer.domain.home.TickerActionRouter
 import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessCoordinator
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessDedupePolicy
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessNotificationPolicy
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessRanker
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.models.AppInfo
@@ -1056,20 +1057,32 @@ class LauncherViewModel @Inject constructor(
 
     private val latestNotificationSummaries = notificationEventDao
         .observeLatestSummaries(
-            since = System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS,
+            // Zaman penceresi ViewModel oluşturulurken dondurulmaz. DAO en yeni paketleri
+            // izler; hareketli 24 saat filtresi her Hero refresh'inde aşağıda uygulanır.
+            since = 0L,
             limit = SmartAccessRanker.MAX_ITEMS,
         )
 
     private val _smartAccessPermissionTick = MutableStateFlow(0)
+
+    // Loading ve izin refresh sinyalleri doğrudan ana combine girdisidir. `.value` okuyarak
+    // emisyon kaçırılmaz; Room ilk yükü tamamlandığında Hero her durumda yeniden hesaplanır.
+    private val smartAccessRefreshContext = combine(
+        latestNotificationSummaries,
+        _smartAccessPermissionTick,
+        initialLoadDone,
+    ) { notificationSummaries, _, loaded ->
+        notificationSummaries to loaded
+    }
 
     /** Hero Akıllı Erişim için tek state; varsayılan sekme her ViewModel oturumunda Şimdi'dir. */
     val smartAccessState: StateFlow<SmartAccessUiState> = combine(
         allAppsSource,
         suggestedApps,
         recentApps,
-        latestNotificationSummaries,
-        _smartAccessPermissionTick,
-    ) { apps, suggested, recent, notificationSummaries, _ ->
+        smartAccessRefreshContext,
+    ) { apps, suggested, recent, refreshContext ->
+        val (notificationSummaries, loaded) = refreshContext
         val context = getApplication<Application>()
         val byPackage = apps.associateBy { it.packageName }
         val favorites = _favoritePkgs.value.mapNotNull(byPackage::get)
@@ -1081,11 +1094,20 @@ class LauncherViewModel @Inject constructor(
             apps = apps,
             ownPackageName = context.packageName,
         )
-        val notificationApps = notificationSummaries.mapNotNull { summary ->
+        val notificationNow = System.currentTimeMillis()
+        val notificationApps = notificationSummaries
+            .filter {
+                SmartAccessNotificationPolicy.isWithinWindow(
+                    lastPostedAt = it.lastPostedAt,
+                    nowMillis = notificationNow,
+                    windowMillis = RECENT_NOTIFICATIONS_WINDOW_MS,
+                )
+            }
+            .mapNotNull { summary ->
             byPackage[summary.packageName]
                 ?.takeIf { it.isInstalled && !it.isHidden && it.packageName != context.packageName }
                 ?.let { NotificationAccessItem(it, summary.count, summary.lastPostedAt) }
-        }
+            }
         SmartAccessUiState(
             nowApps = nowApps,
             recentApps = rankedRecentApps,
@@ -1093,7 +1115,7 @@ class LauncherViewModel @Inject constructor(
             notificationTotal = notificationApps.sumOf { it.count },
             usagePermissionGranted = UsageStatsHelper.hasPermission(context),
             notificationPermissionGranted = NotificationAccessUtils.isNotificationListenerEnabled(context),
-            loading = !initialLoadDone.value,
+            loading = !loaded,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, SmartAccessUiState())
 
