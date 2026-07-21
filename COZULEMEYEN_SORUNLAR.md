@@ -8,6 +8,24 @@
 
 ## Aktif Sorunlar
 
+### [CS-8] İzole ortamda Gradle 8.7 dağıtımı yok
+
+**Tarih:** 2026-07-21
+**Durum:** Kod/statik kontroller tamam; hedefli unit test ve AndroidTest compile başlamadan ağ engeline takıldı
+**Sahip:** CI/build ortamı yöneticisi
+**Son tarih:** R7 compile kapısı aktive edilirken ISO tarih atanacak; R7.4 öncesi tamamlanmalı
+**Beklenen kanıt:** Gradle 8.7 erişimli ortamda `HomeHeroLayoutPolicyTest`, `compileDebugAndroidTestKotlin`, `testDebugUnitTest` ve `assembleDebug` başarı çıktısı
+**Sonraki eskalasyon:** Tarih geçerse R7/R8 `Bloke` kalır; bağlı Windows build makinesi veya erişilebilir CI runner kullanılır
+
+**Sorun:** Bu izole Linux çalışma alanındaki wrapper cache yalnız sıfır baytlık `.part` dosyası içeriyor. `services.gradle.org` bağlantısı ağ politikasıyla reddedildiği için Gradle hiçbir task çalıştırmadan duruyor.
+
+**Denenen:**
+- `GRADLE_USER_HOME=.gradle-user-home ./gradlew testDebugUnitTest --tests 'com.armutlu.apporganizer.presentation.ui.launcher.hero.HomeHeroLayoutPolicyTest' compileDebugAndroidTestKotlin --stacktrace`
+- Workspace, `/tmp` ve `/root/.gradle` altında tamamlanmış Gradle 8.7 dağıtımı arandı; yalnız boş `.part` dosyaları bulundu.
+- `git diff --check`, kaynak referans taraması ve TR/EN kaynak anahtarı kontrolleri yerelde tamamlandı.
+
+---
+
 ### [CS-3] Gradle `merged_res` / `packaged_res` kilidi
 
 **Tarih:** 2026-06-16

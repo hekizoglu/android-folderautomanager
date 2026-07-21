@@ -15,7 +15,6 @@ internal data class HomeHeroLayoutSpec(
     val profile: HomeHeroProfile,
     val contentMaxWidthDp: Int,
     val horizontalPaddingDp: Int,
-    val clockWidthDp: Int,
     val clockHeightDp: Int,
     val digitalLifeHeightDp: Int,
     val searchHeightDp: Int,

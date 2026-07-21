@@ -46,9 +46,12 @@ internal fun HeroDashboardPage(
     val scrollState = rememberScrollState()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        val contentWidth = (maxWidth - (spec.horizontalPaddingDp * 2).dp)
+            .coerceAtMost(spec.contentMaxWidthDp.dp)
+            .coerceAtLeast(0.dp)
         Column(
             modifier = Modifier
-                .width(spec.contentMaxWidthDp.dp)
+                .width(contentWidth)
                 .then(if (spec.scrollEnabled) Modifier.verticalScroll(scrollState) else Modifier)
                 .padding(top = if (spec.profile == HomeHeroProfile.COMPACT_PHONE) 8.dp else 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

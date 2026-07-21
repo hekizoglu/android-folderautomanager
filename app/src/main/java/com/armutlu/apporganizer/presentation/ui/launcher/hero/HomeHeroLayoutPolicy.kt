@@ -36,7 +36,6 @@ internal object HomeHeroLayoutPolicy {
                 profile = profile,
                 contentMaxWidthDp = minOf(304, screenWidthDp - 32),
                 horizontalPaddingDp = 16,
-                clockWidthDp = minOf(228, screenWidthDp - 48),
                 clockHeightDp = 96,
                 digitalLifeHeightDp = 84,
                 searchHeightDp = 64,
@@ -48,17 +47,14 @@ internal object HomeHeroLayoutPolicy {
             HomeHeroProfile.PHONE -> referencePhone(profile)
             HomeHeroProfile.LARGE_PHONE -> referencePhone(profile).copy(
                 contentMaxWidthDp = 328,
-                clockWidthDp = 268,
             )
             HomeHeroProfile.TABLET -> referencePhone(profile).copy(
                 contentMaxWidthDp = 420,
-                clockWidthDp = 300,
             )
             HomeHeroProfile.LANDSCAPE -> HomeHeroLayoutSpec(
                 profile = profile,
                 contentMaxWidthDp = minOf(720, screenWidthDp - 48),
                 horizontalPaddingDp = 24,
-                clockWidthDp = 252,
                 clockHeightDp = 104,
                 digitalLifeHeightDp = 88,
                 searchHeightDp = 68,
@@ -85,7 +81,6 @@ internal object HomeHeroLayoutPolicy {
         profile = profile,
         contentMaxWidthDp = 304,
         horizontalPaddingDp = 28,
-        clockWidthDp = 252,
         clockHeightDp = 114,
         digitalLifeHeightDp = 96,
         searchHeightDp = 74,

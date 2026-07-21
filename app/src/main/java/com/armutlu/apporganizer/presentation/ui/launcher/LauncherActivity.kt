@@ -47,17 +47,12 @@ class LauncherActivity : ComponentActivity() {
     // widget'ları result Intent içinde ID döndürmediği için ana ekrana hiç eklenmez.
     private var pendingWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
 
-    // MIUI'de ACTION_APPWIDGET_PICK bazen sessizce hiçbir Activity açmadan "başarılı" döner
-    // (launch() exception fırlatmaz, ama picker ekranı hiç görünmez — bilinen MIUI 12+
-    // platform kısıtlaması, üçüncü parti launcher'larda yaygın bir sorun). Bu zaman damgası,
-    // launchWidgetPicker() çağrıldığı anı tutar; onResume()'da hâlâ set haldeyse (yani Activity
-    // ara bir Activity'ye hiç gitmeden geri döndüyse) picker'ın gerçekte açılmadığı anlaşılır.
-    private var widgetPickerLaunchedAtMs: Long = 0L
+    private var widgetProviders by androidx.compose.runtime.mutableStateOf<List<AppWidgetProviderInfo>>(emptyList())
+    private var widgetPickerOpen by androidx.compose.runtime.mutableStateOf(false)
 
-    val widgetPickerLauncher = registerForActivityResult(
+    private val widgetBindLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
-        widgetPickerLaunchedAtMs = 0L
         val returnedWidgetId = result.data?.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID,
@@ -66,29 +61,8 @@ class LauncherActivity : ComponentActivity() {
             ?: pendingWidgetId
 
         if (result.resultCode == Activity.RESULT_OK && widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            // Widget bind başarılı: konfigürasyon aktivitesi varsa başlat.
-            pendingWidgetId = widgetId
-            val manager = AppWidgetManager.getInstance(this)
-            val info = manager.getAppWidgetInfo(widgetId)
-            if (info?.configure != null) {
-                val configIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).apply {
-                    component = info.configure
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-                }
-                // Bazı widget'ların configure aktivitesi dışarıya export edilmemiş olabilir
-                // (ör. Google arama araçları) — SecurityException tüm launcher'ı çökertmesin.
-                val launched = runCatching { widgetConfigureLauncher.launch(configIntent) }.isSuccess
-                if (!launched) {
-                    viewModel.addWidgetId(this, widgetId)
-                    pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-                }
-                // Başarıyla açıldıysa pendingWidgetId yapılandırma sonucu gelene kadar korunur.
-            } else {
-                viewModel.addWidgetId(this, widgetId)
-                pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-            }
+            completeWidgetBinding(widgetId)
         } else {
-            // İptal — picker'ın döndürdüğü veya daha önce tahsis edilen ID'yi serbest bırak.
             if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 WidgetHostManager.deleteId(this, widgetId)
             }
@@ -118,53 +92,79 @@ class LauncherActivity : ComponentActivity() {
 
     /** HomeScreen'den çağrılır — kullanıcıya widget seçtirme akışını başlatır. */
     fun launchWidgetPicker() {
-        // Önceki yarım kalmış seçimden kalan host ID varsa sızıntı bırakma.
         if (pendingWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             WidgetHostManager.deleteId(this, pendingWidgetId)
-        }
-        pendingWidgetId = WidgetHostManager.allocateId(this)
-        val intent = createWidgetPickIntent(pendingWidgetId)
-        val launched = runCatching { widgetPickerLauncher.launch(intent) }
-            .onFailure { Timber.e(it, "Widget picker baslatilamadi") }
-            .isSuccess
-        if (!launched) {
-            WidgetHostManager.deleteId(this, pendingWidgetId)
             pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+        }
+        val providers = runCatching {
+            AppWidgetManager.getInstance(this).installedProviders
+                .filter { provider ->
+                    provider.widgetCategory == 0 ||
+                        provider.widgetCategory and AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN != 0
+                }
+                .distinctBy { it.provider.flattenToString() }
+                .sortedBy { it.loadLabel(packageManager).toString().lowercase(java.util.Locale.getDefault()) }
+        }.onFailure { Timber.e(it, "Widget saglayicilari okunamadi") }.getOrDefault(emptyList())
+        if (providers.isEmpty()) {
             Toast.makeText(
                 this,
-                "Widget seçici açılamadı. Cihaz bu widget host akışını desteklemiyor olabilir.",
+                getString(com.armutlu.apporganizer.R.string.widget_picker_empty),
                 Toast.LENGTH_LONG,
             ).show()
+            return
+        }
+        widgetProviders = providers
+        widgetPickerOpen = true
+    }
+
+    private fun onWidgetProviderSelected(providerInfo: AppWidgetProviderInfo) {
+        widgetPickerOpen = false
+        val widgetId = WidgetHostManager.allocateId(this)
+        pendingWidgetId = widgetId
+        val manager = AppWidgetManager.getInstance(this)
+        val bound = runCatching {
+            manager.bindAppWidgetIdIfAllowed(widgetId, providerInfo.profile, providerInfo.provider, null)
+        }.onFailure { Timber.e(it, "Widget dogrudan baglanamadi") }.getOrDefault(false)
+        if (bound) {
+            completeWidgetBinding(widgetId)
         } else {
-            // launch() exception fırlatmadı ama bazı OEM ROM'larında (özellikle MIUI 12+) picker
-            // Activity'si sessizce hiç açılmayabilir — onResume() bu durumu tespit edecek.
-            widgetPickerLaunchedAtMs = SystemClock.elapsedRealtime()
+            val bindIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_BIND).apply {
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, providerInfo.provider)
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, providerInfo.profile)
+            }
+            val launched = runCatching { widgetBindLauncher.launch(bindIntent) }
+                .onFailure { Timber.e(it, "Widget bind izni acilamadi") }
+                .isSuccess
+            if (!launched) {
+                WidgetHostManager.deleteId(this, widgetId)
+                pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+                Toast.makeText(this, getString(com.armutlu.apporganizer.R.string.widget_bind_failed), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
-    /**
-     * MIUI 12+ ve bazı OEM ROM'larında `ACTION_APPWIDGET_PICK` intent'i sessizce hiçbir Activity
-     * açmadan "başarılı" dönebilir (KISS Launcher #1733 ile aynı bilinen platform kısıtlaması) —
-     * exception yok, picker ekranı da yok. [widgetPickerLaunchedAtMs] hâlâ set haldeyse ve Activity
-     * kesintisiz onResume'a geri döndüyse (yani araya gerçekten başka bir Activity girmediyse)
-     * picker'ın hiç açılmadığı anlaşılır; kullanıcıya MIUI'ye özgü izin yönlendirmesiyle bilgi ver.
-     */
-    private fun checkWidgetPickerSilentFailure() {
-        if (widgetPickerLaunchedAtMs == 0L) return
-        val elapsed = SystemClock.elapsedRealtime() - widgetPickerLaunchedAtMs
-        widgetPickerLaunchedAtMs = 0L
-        if (elapsed >= WIDGET_PICKER_SILENT_FAILURE_MS) return
-        WidgetHostManager.deleteId(this, pendingWidgetId)
-        pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-        val isMiui = Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
-        val message = if (isMiui) {
-            "Widget seçici açılamadı. MIUI, üçüncü parti launcher'larda bunu bazen engelliyor — " +
-                "Ayarlar > Uygulamalar > AppOrganizer > Diğer İzinler'den \"Açılır pencereler\" ve " +
-                "\"Ana ekran kısayolları\" izinlerini açıp tekrar dene."
-        } else {
-            "Widget seçici açılamadı. Cihazın izin ayarlarını kontrol et."
+    private fun completeWidgetBinding(widgetId: Int) {
+        pendingWidgetId = widgetId
+        val info = AppWidgetManager.getInstance(this).getAppWidgetInfo(widgetId)
+        if (info == null) {
+            WidgetHostManager.deleteId(this, widgetId)
+            pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+            Toast.makeText(this, getString(com.armutlu.apporganizer.R.string.widget_bind_failed), Toast.LENGTH_LONG).show()
+            return
         }
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        if (info.configure != null) {
+            val configIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).apply {
+                component = info.configure
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            }
+            val launched = runCatching { widgetConfigureLauncher.launch(configIntent) }
+                .onFailure { Timber.e(it, "Widget yapilandirmasi acilamadi") }
+                .isSuccess
+            if (launched) return
+        }
+        viewModel.addWidgetId(this, widgetId)
+        pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -216,6 +216,13 @@ class LauncherActivity : ComponentActivity() {
                     viewModel = viewModel,
                     onLaunchWidgetPicker = { launchWidgetPicker() },
                 )
+                if (widgetPickerOpen) {
+                    WidgetProviderPickerDialog(
+                        providers = widgetProviders,
+                        onSelect = ::onWidgetProviderSelected,
+                        onDismiss = { widgetPickerOpen = false },
+                    )
+                }
             }
         }
         window.decorView.doOnPreDraw {
@@ -318,7 +325,6 @@ class LauncherActivity : ComponentActivity() {
         com.armutlu.apporganizer.utils.CrashReporter.markStartedSuccessfully(this)
         WidgetHostManager.startListening(this)
         applyNavBarVisibility()
-        checkWidgetPickerSilentFailure()
         // Son başlatılan uygulamanın timestamp'ini garantile (startActivity süreci durdurduğunda coroutine tamamlanamayabilir)
         viewModel.refreshLastLaunched()
         // Olay bazli package sync ana akistir; tam reconcile sadece 12 saatlik fallback'te calisir.
@@ -366,10 +372,6 @@ class LauncherActivity : ComponentActivity() {
     companion object {
         const val EXTRA_OPEN_FOLDER_CATEGORY_ID = "open_folder_category_id"
         private const val KEY_PENDING_WIDGET_ID = "pending_widget_id"
-        // onResume() bu sürenin altında tetiklenirse (Activity'nin picker'a hiç gitmeden geri
-        // dönmesi) picker'ın sessizce açılmadığı kabul edilir. 800ms, gerçek bir Activity geçişinin
-        // her zaman aşacağı ama false-positive üretmeyecek kadar kısa bir eşik.
-        private const val WIDGET_PICKER_SILENT_FAILURE_MS = 800L
         private val PACKAGE_FILTER = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_ADDED)
@@ -396,17 +398,4 @@ internal fun homePressDecision(lastHomePressMs: Long, nowMs: Long): HomePressDec
         HomePressDecision.OpenAllApps(nextLastHomePressMs = 0L)
     } else {
         HomePressDecision.RecordPress(nextLastHomePressMs = nowMs)
-    }
-
-internal fun createWidgetPickIntent(appWidgetId: Int): Intent =
-    Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {
-        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        putParcelableArrayListExtra(
-            AppWidgetManager.EXTRA_CUSTOM_INFO,
-            ArrayList<AppWidgetProviderInfo>(),
-        )
-        putParcelableArrayListExtra(
-            AppWidgetManager.EXTRA_CUSTOM_EXTRAS,
-            ArrayList<Bundle>(),
-        )
     }

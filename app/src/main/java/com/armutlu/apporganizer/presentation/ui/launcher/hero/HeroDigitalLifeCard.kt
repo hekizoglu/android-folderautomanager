@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,6 +43,7 @@ internal fun HeroDigitalLifeCard(
 ) {
     PremiumGlassSurface(
         modifier = modifier
+            .testTag("hero_digital_life_card")
             .fillMaxWidth()
             .height(spec.digitalLifeHeightDp.dp)
             .clickable(enabled = summary?.isActionable == true, onClick = onClick),

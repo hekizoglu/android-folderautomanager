@@ -167,7 +167,7 @@ Kod doğrudan piksel kullanmayacaktır. Tüm ölçüler dp/sp token'larından ü
 
 | Bileşen | X | Y | Genişlik | Yükseklik |
 |---|---:|---:|---:|---:|
-| Saat kartı | 54 | 20 | 252 | 114 |
+| Saat kartı | 28 | 20 | 304 | 114 |
 | Dijital Yaşam | 28 | 152 | 304 | 96 |
 | Her Şeyi Ara | 28 | 256 | 304 | 74 |
 | Akıllı Erişim | 28 | 338 | 304 | 162 |
@@ -189,8 +189,7 @@ Noktalar → Dock: 8 dp
 ## 3.4 Yatay boşluklar
 
 ```text
-Ana kartlar: 28 dp sağ/sol
-Saat kartı: ortalanmış 252 dp
+Hero kartları: aynı adaptif genişlik; referansta 28 dp sağ/sol ve 304 dp
 Dock: 10 dp sağ/sol
 Kart iç padding: 14–16 dp
 ```
@@ -252,7 +251,6 @@ internal object HomeHeroTokens {
 
     val ContentHorizontalPadding = 28.dp
 
-    val ClockWidth = 252.dp
     val ClockHeight = 114.dp
     val ClockCorner = 32.dp
 
@@ -343,7 +341,7 @@ API 26 uyumluluğu nedeniyle gerçek arka plan blur'u zorunlu olmayacaktır. API
 ## Ölçü
 
 ```text
-252 × 114 dp
+304 × 114 dp (referans); diğer Hero kartlarıyla aynı adaptif genişlik
 Köşe: 32 dp
 ```
 
@@ -720,9 +718,8 @@ Sayfa 3: Klasörler 17–24
 
 Kontrol edilmesi gereken kritik nokta:
 
-- Ticker kapalıyken pager seviyesinde çizilen `FolderStatsRow`, Dashboard sayfasında görünmemelidir.
-- Bu satır yalnız `HomePageSpec.FolderPage` aktifken render edilmelidir.
-- Tercihen `FolderStatsRow` doğrudan klasör sayfası composable'ına taşınmalıdır.
+- Pager seviyesindeki eski `FolderStatsRow` hiçbir sayfada render edilmemelidir; uygulama/klasör/dashboard/kullanım bandı kaldırılmıştır.
+- İstatistiklere erişim ilgili rapor ekranları ve gerçek etkileşimli giriş noktaları üzerinden sağlanır; görünmez veya pager üstüne binen alternatif katman bırakılmaz.
 
 ---
 
@@ -805,29 +802,29 @@ Telefon model adına göre özel kod yazılmayacaktır. Karar yalnız gerçek ku
 
 ## Profil ölçüleri
 
-| Profil | Saat | Dijital Yaşam | Arama | Akıllı Erişim | Dock |
-|---|---|---|---|---|---|
-| Compact | 222×92 | h84 | h66 | h146 | h58 |
-| Reference | 252×114 | h96 | h74 | h162 | h64 |
-| Tall | 252×114 | h96 | h74 | h162 | h64 |
-| Large phone | 280×124 | h100 | h78 | h170 | h68 |
-| Compact tablet | 296×132 | h104 | h80 | h176 | h68 |
-| Expanded tablet | 304×136 | h108 | h82 | h180 | h72 |
+| Profil | Ortak Hero genişliği | Saat | Dijital Yaşam | Arama | Akıllı Erişim | Dock |
+|---|---|---|---|---|---|---|
+| Compact | min(304, pencere−32) | h96 | h84 | h64 | h162 | h58 |
+| Reference | 304 | h114 | h96 | h74 | h162 | h64 |
+| Large phone | 328 | h114 | h96 | h74 | h162 | h64 |
+| Tablet | 420 | h114 | h96 | h74 | h162 | h64 |
+| Landscape | min(720, pencere−48) | h104 | h88 | h68 | h162 | h60 |
+| Accessible | min(420, pencere−32) | h126 | h116 | h82 | h196 | h76 |
 
 Tabletlerde dashboard tam ekran genişliğine yayılmayacaktır:
 
 ```text
 Compact tablet içerik max: 420 dp
-Expanded tablet içerik max: 440 dp
+Expanded tablet içerik max: 420 dp
 Expanded tablet dock max: 520 dp
 ```
 
-Landscape telefonda iki kolon kullanılacaktır:
+Landscape telefonda bütün Hero kartları aynı genişlikte tek kolonda kalır ve dikey kaydırma kullanılır:
 
 ```text
-Sol: Saat + Dijital Yaşam
-Sağ: Arama + Akıllı Erişim
-Alt: Sabit dock
+Ortak içerik max: min(720 dp, pencere genişliği − 48 dp)
+Saat = Dijital Yaşam = Arama = Akıllı Erişim genişliği
+İçerik yüksekliği aşarsa dikey scroll
 ```
 
 ---
@@ -1003,7 +1000,7 @@ hero_dock
 360×640 referans kabul sınırları:
 
 ```text
-Saat: 252×114 dp ±1
+Saat: 304×114 dp ±1
 Dijital Yaşam: 304×96 dp ±1
 Arama: 304×74 dp ±1
 Akıllı Erişim: 304×162 dp ±1
@@ -1151,7 +1148,7 @@ Yeni dashboard testleri geçtikten sonra:
 - [ ] Dashboard section-order ayarları silindi
 - [ ] Dashboard içindeki widget dalları silindi
 - [ ] Dashboard içindeki ticker dalları silindi
-- [ ] Dashboard içindeki FolderStatsRow silindi
+- [x] Dashboard/pager içindeki FolderStatsRow ve StatChip bandı silindi
 - [ ] Dashboard içindeki favorites/suggestions satırı silindi
 - [ ] Eski dashboard density yalnız başka yerde kullanılmıyorsa silindi
 - [ ] Eski Dashboard state alanları silindi

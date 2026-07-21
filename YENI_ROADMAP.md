@@ -112,10 +112,11 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 - [x] `hero/` altında tek kaynak `HomeHeroTokens` ve adaptif `HomeHeroProfile`/`HomeHeroLayoutPolicy` oluştur.
 - [x] Hero’ya özel, API 26 uyumlu `PremiumGlassSurface` oluştur.
-- [x] Referans düzeni 360×640dp esas al: saat 252×114, ana kartlar 304dp genişlik, Dijital Yaşam 96dp, arama 74dp, Akıllı Erişim 162dp, dock 340×64dp.
+- [x] Referans düzeni 360×640dp esas al: saat, Dijital Yaşam, Her Şeyi Ara ve Akıllı Erişim aynı adaptif 304dp genişliği paylaşır; yükseklikler sırasıyla 114/96/74/162dp, dock 340×64dp olur.
 - [x] Ham px kullanma; 320×568–412×915, tablet, landscape ve fontScale 1.5 kararlarını policy ile yönet.
 - [x] Mevcut global `GlassCard` bileşenini değiştirmeden bırak.
 - [x] Policy için 320×568, 360×640, 412×915, tablet, landscape, fontScale 1.5 ve geçersiz ölçü unit testlerini yaz.
+- [x] Hero kartlarını gerçek parent constraint’inden hesaplanan tek içerik genişliğine bağla; küçük pencere/telefonlarda yatay padding sonrası küçült, tablet/landscape’de profil tavanını aşma.
 
 ### H1.2 Hero kartları
 
@@ -306,6 +307,7 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 - [ ] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` ve section-order ayarlarını repo genelinde ara ve kaldır.
 - [ ] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
 - [x] Kullanılmayan Dashboard state alanlarını ve kırık eski testleri sil; geçerli testleri Hero/layout testlerine dönüştür.
+- [x] Pager’ın üstünde tüm sayfalara sızan eski `FolderStatsRow`/`StatChip` bandını ve yalnız onu besleyen HomeScreen state aboneliklerini kaldır.
 - [ ] Eski folder-only pager çağrılarını repo genelinde ara.
 - [ ] Kullanılmayan eski pager branch’lerini, duplicate search lambda’larını ve eski test fixture’larını kaldır.
 - [ ] `HomeScreen.kt` dosyasını orchestration seviyesine indir; davranış değişikliği yapma.
@@ -339,6 +341,8 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 - [ ] SmartInsightWorker, BackupWorker ve diğer periyodik worker schedule/pil testleri.
 - [ ] Android 13+ POST_NOTIFICATIONS reddinde sessiz/güvenli davranış.
 - [ ] Rıza kapalı/açık Firebase davranışını ve hassas veri gönderilmediğini doğrula.
+- [x] Widget sağlayıcı seçimini ROM `Settings.ActivityPicker` bağımlılığından çıkar; uygulama içi liste + `bindAppWidgetIdIfAllowed` + `ACTION_APPWIDGET_BIND` izin fallback’i kullan.
+- [ ] Widget seçme, bind izni red/onay, yapılandırmalı/yapılandırmasız sağlayıcı ve iptal durumlarını gerçek cihazda doğrula; ayrılan widget ID’nin hata/iptalde silindiğini kanıtla.
 
 ### R7.2 UI ve erişilebilirlik
 

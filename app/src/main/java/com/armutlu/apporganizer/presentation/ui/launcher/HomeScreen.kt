@@ -138,17 +138,9 @@ fun HomeScreen(
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
     var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
-    var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
-    var tickerEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)) }
-    // T05 (Akıllı Nabız ayarları) — otomatik geçiş aç/kapat + geçiş süresi Ayarlar'dan gelir.
-    var tickerAutoAdvance by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTickerAutoAdvanceEnabled(context)) }
-    var tickerIntervalSeconds by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerIntervalSeconds(context)) }
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
     val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
-    val tickerItems by viewModel.tickerItems.collectAsState()
     val homePulseSummary by viewModel.homePulseSummary.collectAsState()
-    val insightCards by viewModel.insightCards.collectAsState()
-    val suggestedApps by viewModel.suggestedApps.collectAsState()
     val recentNotificationCounts by viewModel.recentNotificationCounts.collectAsState()
     val recentNotificationApps by viewModel.recentNotificationApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
@@ -205,7 +197,6 @@ fun HomeScreen(
         )
     }
     var quickWheelEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)) }
-    var focusModeEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)) }
     var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
     var gestureLongPress by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)) }
     var gestureSwipeUp   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)) }
@@ -293,18 +284,8 @@ fun HomeScreen(
                     widgetAutoResize = com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_QUICK_WHEEL ->
                     quickWheelEnabled = com.armutlu.apporganizer.utils.AppPrefs.isQuickWheelEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOCUS_MODE ->
-                    focusModeEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFocusModeEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_DOUBLE_TAP_SEARCH ->
                     doubleTapSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_ASSISTANT_CARDS ->
-                    assistantCardsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_SMART_TICKER_ENABLED ->
-                    tickerEnabled = com.armutlu.apporganizer.utils.AppPrefs.isTickerEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_AUTO_ADVANCE ->
-                    tickerAutoAdvance = com.armutlu.apporganizer.utils.AppPrefs.isTickerAutoAdvanceEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_TICKER_INTERVAL_SECONDS ->
-                    tickerIntervalSeconds = com.armutlu.apporganizer.utils.AppPrefs.getTickerIntervalSeconds(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_INSTALLS_ENABLED -> {
                     recentInstallsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)
                     viewModel.refreshTodayInstalled()
@@ -750,7 +731,6 @@ fun HomeScreen(
                 )
         }
 
-        var tickerMutedUntilState by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTickerMutedUntil(context)) }
         val hideSecondaryRowsForIme = homeAppSearchEnabled && imeVisible
 
         // Döngü P03 — global shell: search/dock/indicator artık HomeShell'de toplanıyor,
@@ -977,67 +957,8 @@ fun HomeScreen(
             // yalnız HomePagerHost.dashboardContent içinde; klasörler yalnız folderPageContent
             // içinde çizilir. Böylece ikinci ve sonraki sayfalar Dashboard'u tekrar etmez.
             // P25/F7: eski pager-dışı Dashboard kopyası kaldırıldı — tek doğruluk kaynağı SmartDashboardPage/HomePagerHost.
-            // P18 — Odak Modu artık paralel bir ana ekran (placeholder metni) DEĞİL, bu pager
-            // slotunun kendisidir: klasör sayfaları ve global arama HER ZAMAN erişilebilir kalır
-            // (roadmap kabul kriteri: "yeni page mimarisini bypass eden paralel bir ana ekran
-            // oluşturmaz"). Haber şeridi (ticker) odak modunda kapatılır (dikkat dağıtan içerik
-            // minimum, roadmap madde 1) — kapandığında zaten aşağıdaki `else if (!tickerVisibleNow)`
-            // dalı klasör/uygulama istatistik bandını (FolderStatsRow) gösterir, bu korunur.
+            // P18 — Odak Modu paralel bir ana ekran değildir; Hero + klasör pager yolu korunur.
             run {
-            // Haber şeridi — "Alışveriş klasöründe 5 uygulama var" tarzı akan bilgiler.
-            // Dokunma → hedef açılır; kaydırma → önceki/sonraki haber; basılı tut → sessize al (8s/1g/7g).
-            // Kapalıysa eski istatistik bandı döner. Sessizdeyken hiçbir şey gösterilmez, süre dolunca geri gelir.
-            // P06: tickerMutedUntilState artık yukarıda (Column'dan önce) tek yerde tanımlı —
-            // dashboardContent lambda'sındaki SmartDashboardPage ile aynı state paylaşılır.
-            // P18 — Odak Modu ticker'ı kapatır (dikkat dağıtan içerik minimum); kullanıcının kendi
-            // tickerEnabled tercihine DOKUNMAZ (Ayarlar'daki gerçek değer korunur, sadece bu
-            // pager'da geçici olarak bastırılır) — bu yüzden ayrı bir isimle tutulur.
-            val tickerVisibleNow = tickerEnabled && !focusModeEnabled
-            val tickerMuted = tickerMutedUntilState > System.currentTimeMillis()
-            if (tickerMuted) {
-                // Süre dolduğunda ana ekran açıkken bile şerit kendiliğinden geri gelsin
-                LaunchedEffect(tickerMutedUntilState) {
-                    kotlinx.coroutines.delay((tickerMutedUntilState - System.currentTimeMillis()).coerceAtLeast(0L))
-                    tickerMutedUntilState = 0L
-                }
-            }
-            // SmartDashboardPage aynı ticker'ı dashboard slotunda tek kez çizer.
-            // P25/F7: eski pager-dışı HomeTickerRow kopyası kaldırıldı — tek doğruluk kaynağı SmartDashboardPage/HomePagerHost.
-            if (!tickerVisibleNow)
-            // İstatistik bandı — toplam klasör ve uygulama sayısı (sessize alınmışsa hiçbiri gösterilmez).
-            // Odak Modunda ticker her zaman bastırıldığı için bu dal devreye girer (istatistik bandı korunur).
-            FolderStatsRow(
-                folders = folders,
-                onOpenFolderStats = {
-                    val intent = Intent(context, MainActivity::class.java).apply {
-                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.REPORTS_CENTER)
-                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    runCatching { context.startActivity(intent) }
-                },
-                onOpenAppStats = {
-                    val intent = Intent(context, MainActivity::class.java).apply {
-                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.APP_LIST)
-                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    runCatching { context.startActivity(intent) }
-                },
-                onOpenDashboard = {
-                    val intent = Intent(context, MainActivity::class.java).apply {
-                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.DASHBOARD)
-                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    runCatching { context.startActivity(intent) }
-                },
-                onOpenUsageReport = {
-                    val intent = Intent(context, MainActivity::class.java).apply {
-                        putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.USAGE_REPORT)
-                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    runCatching { context.startActivity(intent) }
-                },
-            )
-
             // Folder grid — sayfa başına klasör sayısı: kullanıcı tercihi veya ekran yüksekliğine göre adaptif
             val screenHeightDp = LocalConfiguration.current.screenHeightDp
             // Aktif özellik sayısı — fazla içerik varsa daha az klasör göster
@@ -1340,7 +1261,7 @@ fun HomeScreen(
                         onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
                         onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
                         // EX02 — "N okunmamış bildirim" alt bilgi satırı Bildirim Raporu ekranını açar
-                        // (FolderStatsRow.onOpenDashboard ile aynı MainActivity.EXTRA_OPEN_ROUTE deseni).
+                        // MainActivity route deseniyle haftalık raporu açar.
                         onNotificationSummaryTap = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             val intent = Intent(context, MainActivity::class.java).apply {
@@ -1417,7 +1338,7 @@ fun HomeScreen(
 
             // P25/F7: eski pager-dışı HomeFavoritesSection kopyası kaldırıldı — tek doğruluk kaynağı SmartDashboardPage/HomePagerHost.
 
-            } // end run (P18: eski "else !focusModeEnabled" bloğu artık koşulsuz)
+            } // end run (tek Hero + klasör pager yolu)
             // Döngü P03: BOTTOM arama çubuğu, drag pill, PixelDock ve tüm overlay'ler
             // (FullScreenSearchOverlayV2/AllAppsDrawer/SnackbarHost/QuickWheelOverlay) artık
             // HomeShell'in bottomSearch/dock/overlays slotlarında — burada tekrar render edilmez.
@@ -1509,7 +1430,6 @@ fun HomeScreen(
     )
 }
 
-// FolderStatsRow, HomeScreenOverlays → HomeScreenOverlays.kt dosyasına taşındı.
 // PixelClockWidget, GoogleSearchBar, PixelDock, DockIcon, SwipeHint → HomeScreenComponents.kt
 
 

@@ -919,6 +919,10 @@
     <string name="home_section_recent_notifications">Son bildirimler</string>
     <string name="home_section_recent_apps">Son kullanılanlar</string>
     <string name="home_section_widgets">Widget’lar</string>
+    <string name="widget_picker_title">Widget seç</string>
+    <string name="widget_picker_cancel">İptal</string>
+    <string name="widget_picker_empty">Bu cihazda kullanılabilir ana ekran widget’ı bulunamadı.</string>
+    <string name="widget_bind_failed">Widget bağlanamadı. Cihazın widget izni veya sağlayıcısı uyumsuz olabilir.</string>
     <string name="home_section_assistant">Asistan içgörüleri</string>
     <string name="home_section_ticker">Bilgi akışı ve istatistikler</string>
     <string name="home_section_folders">Klasörler</string>

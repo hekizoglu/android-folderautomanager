@@ -47,6 +47,7 @@ internal fun SmartAccessCard(
 ) {
     PremiumGlassSurface(
         modifier = modifier
+            .testTag("hero_smart_access_card")
             .fillMaxWidth()
             .height(spec.smartAccessHeightDp.dp),
     ) {

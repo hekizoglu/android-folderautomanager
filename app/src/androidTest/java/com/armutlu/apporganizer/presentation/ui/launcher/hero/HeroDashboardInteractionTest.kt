@@ -1,5 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher.hero
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
@@ -8,10 +10,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -19,6 +23,34 @@ class HeroDashboardInteractionTest {
     @get:Rule val compose = createComposeRule()
 
     private val spec = HomeHeroLayoutPolicy.resolve(360, 640, 1f)
+
+    @Test fun hero_cards_share_one_adaptive_width() {
+        compose.setContent {
+            Box(Modifier.size(width = 360.dp, height = 640.dp)) {
+                HeroDashboardPage(
+                    pulse = null,
+                    smartAccess = SmartAccessUiState(),
+                    onOpenWeeklyReport = {},
+                    onClockLongPress = {},
+                    onOpenPulse = {},
+                    onOpenSearch = {},
+                    onOpenSearchSettings = {},
+                    onOpenUsageAccessSettings = {},
+                    onOpenNotificationAccessSettings = {},
+                    onLaunchApp = {},
+                    onAppLongClick = {},
+                )
+            }
+        }
+        val widths = listOf(
+            "hero_clock_card",
+            "hero_digital_life_card",
+            "hero_search_card",
+            "hero_smart_access_card",
+        ).map { tag -> compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.width }
+        assertTrue(widths.first() > 0f)
+        widths.drop(1).forEach { width -> assertEquals(widths.first(), width, 0.5f) }
+    }
 
     @Test fun search_card_routes_primary_and_source_actions() {
         var searchClicks = 0

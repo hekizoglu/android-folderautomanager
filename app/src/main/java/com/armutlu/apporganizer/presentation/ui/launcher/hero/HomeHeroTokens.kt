@@ -9,7 +9,6 @@ internal object HomeHeroTokens {
     val ReferenceHeight = 640.dp
 
     val ContentHorizontalPadding = 28.dp
-    val ClockWidth = 252.dp
     val ClockHeight = 114.dp
     val ClockCorner = 32.dp
     val DigitalLifeHeight = 96.dp

@@ -906,6 +906,10 @@
     <string name="home_section_recent_notifications">Recent notifications</string>
     <string name="home_section_recent_apps">Recent apps</string>
     <string name="home_section_widgets">Widgets</string>
+    <string name="widget_picker_title">Choose a widget</string>
+    <string name="widget_picker_cancel">Cancel</string>
+    <string name="widget_picker_empty">No home screen widgets are available on this device.</string>
+    <string name="widget_bind_failed">The widget could not be bound. The device permission or provider may be incompatible.</string>
     <string name="home_section_assistant">Assistant insights</string>
     <string name="home_section_ticker">Ticker and stats</string>
     <string name="home_section_folders">Folders</string>

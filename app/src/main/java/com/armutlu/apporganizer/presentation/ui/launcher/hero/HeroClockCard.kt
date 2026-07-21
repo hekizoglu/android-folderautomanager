@@ -5,8 +5,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,7 +60,8 @@ internal fun HeroClockCard(
     PremiumGlassSurface(
         modifier = modifier
             .testTag("hero_clock_card")
-            .size(spec.clockWidthDp.dp, spec.clockHeightDp.dp)
+            .fillMaxWidth()
+            .height(spec.clockHeightDp.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .semantics { contentDescription = context.getString(R.string.pulse_clock_open_weekly_report) },
         cornerRadius = HomeHeroTokens.ClockCorner,

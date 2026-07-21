@@ -9,7 +9,6 @@ class HomeHeroLayoutPolicyTest {
         val spec = HomeHeroLayoutPolicy.resolve(360, 640, 1f)
         assertEquals(HomeHeroProfile.PHONE, spec.profile)
         assertEquals(304, spec.contentMaxWidthDp)
-        assertEquals(252, spec.clockWidthDp)
         assertEquals(114, spec.clockHeightDp)
         assertEquals(5, spec.appSlots)
     }
@@ -18,7 +17,6 @@ class HomeHeroLayoutPolicyTest {
         val spec = HomeHeroLayoutPolicy.resolve(320, 568, 1f)
         assertEquals(HomeHeroProfile.COMPACT_PHONE, spec.profile)
         assertTrue(spec.contentMaxWidthDp <= 288)
-        assertTrue(spec.clockWidthDp < 252)
         assertTrue(spec.scrollEnabled)
     }
 
@@ -61,6 +59,7 @@ class HomeHeroLayoutPolicyTest {
         )
         dimensions.forEach { (width, height, fontScale) ->
             val spec = HomeHeroLayoutPolicy.resolve(width, height, fontScale)
+            assertTrue("${spec.profile} içerik ekranı aşmamalı", spec.contentMaxWidthDp <= width)
             assertTrue("${spec.profile} smart access yüksekliği", spec.smartAccessHeightDp >= 162)
         }
     }
