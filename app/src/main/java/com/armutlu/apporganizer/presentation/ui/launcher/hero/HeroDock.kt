@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +35,6 @@ internal fun HeroDock(
     PremiumGlassSurface(
         modifier = modifier
             .testTag("hero_dock")
-            .widthIn(max = HomeHeroTokens.DockWidth)
             .fillMaxWidth()
             .height(HomeHeroTokens.DockHeight)
             .combinedClickable(onClick = onEditDock, onLongClick = onEditDock),

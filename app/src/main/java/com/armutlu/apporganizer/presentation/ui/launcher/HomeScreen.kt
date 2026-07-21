@@ -262,6 +262,7 @@ fun HomeScreen(
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    Unit
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SWIPE_HINT_ENABLED ->
                     swipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NEW_BADGE_ENABLED ->
