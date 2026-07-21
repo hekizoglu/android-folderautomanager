@@ -31,10 +31,18 @@ object DockPrefs {
         }
     }
 
+    /** Backup/restore uyumluluk yolu; legacy folder öğelerini migration öncesinde korur. */
     fun saveDockPackages(context: Context, packages: List<String>) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
             putString(KEY_DOCK_PACKAGES, packages.take(MAX_SLOTS).joinToString(","))
         }
+    }
+
+    /** Kullanıcıya açık Hero düzenleme yolu; persist sınırında yalnız uygulama kabul eder. */
+    fun saveHeroDockPackages(context: Context, packages: List<String>): List<String> {
+        val sanitized = sanitizeHeroDockItems(packages)
+        saveDockPackages(context, sanitized)
+        return sanitized
     }
 
     fun migrateToHeroDock(context: Context, fallbackPackages: List<String>): List<String> {
@@ -51,7 +59,7 @@ object DockPrefs {
             fallbackPackages = fallbackPackages,
             isEligible = { context.packageManager.getLaunchIntentForPackage(it) != null },
         )
-        saveDockPackages(context, installed)
+        saveHeroDockPackages(context, installed)
         return installed
     }
 
@@ -65,11 +73,18 @@ object DockPrefs {
         .distinct()
         .take(MAX_SLOTS)
 
+    internal fun sanitizeHeroDockItems(items: List<String>): List<String> = items
+        .filter(String::isNotBlank)
+        .filterNot(::isFolderItem)
+        .distinct()
+        .take(MAX_SLOTS)
+
     fun addToDock(context: Context, packageName: String): Boolean {
-        val current = getDockPackages(context).toMutableList()
+        if (packageName.isBlank() || isFolderItem(packageName)) return false
+        val current = sanitizeHeroDockItems(getDockPackages(context)).toMutableList()
         if (current.contains(packageName) || current.size >= MAX_SLOTS) return false
         current.add(packageName)
-        saveDockPackages(context, current)
+        saveHeroDockPackages(context, current)
         return true
     }
 
@@ -77,7 +92,7 @@ object DockPrefs {
         val current = getDockPackages(context).toMutableList()
         val removed = current.remove(packageName)
         if (!removed) return false
-        saveDockPackages(context, current)
+        saveHeroDockPackages(context, current)
         return true
     }
 

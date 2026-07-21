@@ -652,20 +652,20 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun saveDockPackages(context: Context, packages: List<String>) {
-        DockPrefs.saveDockPackages(context, packages)
-        _dockPackages.value = packages
+        _dockPackages.value = DockPrefs.saveHeroDockPackages(context, packages)
     }
 
     fun addToDock(context: Context, packageName: String) {
         // SharedPrefs okumak yerine bellekteki listeyi kullan — dockLoaded sonrasi her zaman güncel
         val current = _dockPackages.value
         when {
+            packageName.isBlank() || DockPrefs.isFolderItem(packageName) ->
+                _toastMessage.tryEmit("Hero Dock yalnız uygulama kabul eder")
             current.contains(packageName) -> _toastMessage.tryEmit("Uygulama zaten Dock'ta")
             current.size >= DOCK_MAX_SIZE -> _toastMessage.tryEmit("Dock dolu (max $DOCK_MAX_SIZE) — önce bir uygulama çıkar")
             else -> {
                 val updated = current + packageName
-                DockPrefs.saveDockPackages(context, updated)
-                _dockPackages.value = updated
+                _dockPackages.value = DockPrefs.saveHeroDockPackages(context, updated)
                 _toastMessage.tryEmit("Dock'a eklendi")
             }
         }
