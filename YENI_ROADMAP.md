@@ -112,7 +112,7 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 
 ### H1.3 Akıllı Erişim
 
-- [ ] `SmartAccessCoordinator` ile Şimdi ağırlıklarını tek yerde topla; modeller, deterministik ranker ve dedupe policy hazır.
+- [x] `SmartAccessCoordinator` ile Şimdi ağırlıklarını tek yerde topla; modeller, deterministik ranker ve dedupe policy hazır.
 - [x] `Şimdi`, `Son Açılanlar`, `Bildirimler` sekmelerini aynı beş slotlu UI’a bağla.
 - [x] Şimdi: mevcut zaman dilimi + kullanım sinyali; Son Açılanlar: gerçek timestamp; Bildirimler: son bildirim zamanı kullanır.
 - [x] Kaldırılmış/gizli/geçersiz uygulamaları dışla ve sonuçları tekilleştir.
@@ -130,7 +130,7 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 - [x] `SmartDashboardPage` içeriğini `HeroDashboardPage` composition’ına dönüştür.
 - [x] Saat → Dijital Yaşam → Arama → Akıllı Erişim → gösterge → dock sırasını uygula.
 - [x] 320×568, 360×640, 412×915, tablet ve landscape layout policy testlerini yaz.
-- [ ] Ranker ve dock migration unit testleri hazır; dedupe ve Compose interaction testlerini ekle.
+- [ ] Ranker, coordinator, dedupe ve dock migration unit testleri hazır; Compose interaction testlerini ekle.
 - [ ] Compile, unit test, lint ve debug build kapısını geçir; en az bir telefon/tablet smoke yap.
 
 **Bu fazda yapılmayacak:** Eski ve yeni dashboard’u feature flag ile paralel tutmak, veri motorlarını yeniden yazmak, global cam temasını değiştirmek, legacy temizliğini doğrulama tamamlanmadan körlemesine bitirmek.

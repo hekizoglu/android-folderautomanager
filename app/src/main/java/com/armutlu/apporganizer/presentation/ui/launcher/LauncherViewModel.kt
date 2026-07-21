@@ -16,6 +16,7 @@ import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
 import com.armutlu.apporganizer.domain.home.TickerActionRouter
 import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessCoordinator
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessDedupePolicy
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessRanker
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
@@ -849,10 +850,7 @@ class LauncherViewModel @Inject constructor(
                 cachedSlotApps = it
                 cachedSlotHour = currentHour
             }
-            val visibleByPkg = visible.associateBy { it.packageName }
-            val slotPicks = slotApps.mapNotNull { visibleByPkg[it] }
-
-            // 4'ü doldurmak için ağırlıklı skorla tamamla (saat verisi yetersizse)
+            // Eksik zaman-dilimi verisini normalize edilmiş kullanım sinyalleri tamamlar.
             val baseScores = cachedScores.takeIf { it != null && now - cacheTimestamp <= CACHE_DURATION_MS }
                 ?: UsageStatsHelper.getWeightedScores(ctx, days = 28).also {
                     cachedScores = it
@@ -866,19 +864,16 @@ class LauncherViewModel @Inject constructor(
                 if (dockPkgs.contains(pkg) || favPkgs.contains(pkg)) s += 0.15f
                 s
             }
-            val slotPkgs = slotPicks.map { it.packageName }.toSet()
-            val fill = visible
-                .filter { boosted.containsKey(it.packageName) && it.packageName !in slotPkgs }
-                .sortedByDescending { boosted[it.packageName] ?: 0f }
-            fillDockSuggestions(
-                slotApps = slotPicks,
-                fallbackApps = fill,
+            SmartAccessCoordinator.rankNow(
+                apps = visible,
+                slotPackages = slotApps,
+                frequencyScores = boosted,
+                weekdayScores = emptyMap(),
+                ownPackageName = ctx.packageName,
+                nowMillis = now,
+                favoritesFallback = visible.filter { it.packageName in favPkgs },
+                recentFallback = visible.sortedByDescending { it.lastUsedTimestamp },
             )
-                .ifEmpty {
-                    visible.filter { it.usageCount > 0 }
-                        .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
-                        .take(DOCK_MAX_SIZE)
-                }
         } else {
             visible.filter { it.usageCount > 0 }
                 .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
