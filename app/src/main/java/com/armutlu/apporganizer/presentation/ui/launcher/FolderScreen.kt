@@ -794,13 +794,8 @@ fun FolderScreen(
                         viewModel.removeFromDock(context, app.packageName)
                         contextMenuApp = null
                     },
-                    onChangeCategory = {
-                        // Önce picker state'ine yaz, SONRA menüyü kapat (D268 sıralama —
-                        // AppContextMenu.kt'de onClick = { onChangeCategory(); onDismiss() }
-                        // olduğu için burası zaten app'i categoryPickerApp'e atayıp
-                        // contextMenuApp'i null'lıyor; ancak categoryPickerApp artık ekran
-                        // kökünde olduğu için contextMenuApp null olsa da picker render kalır).
-                        categoryPickerApp = app
+                    onChangeCategory = { selectedApp ->
+                        categoryPickerApp = selectedApp
                         contextMenuApp = null
                     },
                     onHideApp = { hidden ->

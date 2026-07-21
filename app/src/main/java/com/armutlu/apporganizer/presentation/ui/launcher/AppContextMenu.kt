@@ -64,7 +64,7 @@ fun AppContextMenu(
     onLaunch: () -> Unit,
     onAddToDock: () -> Unit,
     onRemoveFromDock: () -> Unit,
-    onChangeCategory: () -> Unit,
+    onChangeCategory: (AppInfo) -> Unit,
     onHideApp: ((Boolean) -> Unit)? = null,
     onSaveNote: ((String) -> Unit)? = null,
     onToggleFavorite: ((isFavNow: Boolean) -> Unit)? = null,
@@ -219,7 +219,7 @@ fun AppContextMenu(
             ContextAction(
                 icon = Icons.Default.Category,
                 label = "Kategori Değiştir",
-                onClick = { onChangeCategory(); onDismiss() }
+                onClick = { onChangeCategory(app); onDismiss() }
             )
 
             HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
