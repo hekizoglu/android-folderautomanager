@@ -627,6 +627,7 @@
     <string name="hero_smart_access_usage_permission">Enable usage access for suggestions</string>
     <string name="hero_smart_access_notification_permission">Enable notification access for recent notifications</string>
     <string name="hero_smart_access_empty">No apps to show yet</string>
+    <string name="hero_smart_access_loading">Preparing smart access…</string>
     <string name="search_overlay_close">Close full-screen search</string>
     <string name="search_overlay_clear_query">Clear search query</string>
     <string name="search_overlay_field_content_desc">Full-screen search field</string>

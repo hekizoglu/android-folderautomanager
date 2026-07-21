@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher.hero
 
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -88,5 +89,21 @@ class HeroDashboardInteractionTest {
             assertEquals(0, usageClicks)
             assertEquals(1, notificationClicks)
         }
+    }
+
+    @Test fun loading_state_does_not_expose_a_permission_action() {
+        compose.setContent {
+            SmartAccessCard(
+                state = SmartAccessUiState(loading = true),
+                spec = spec,
+                selectedTab = SmartAccessTab.NOW,
+                onTabSelected = {},
+                onOpenUsageSettings = {},
+                onOpenNotificationSettings = {},
+                onLaunchApp = {},
+                onAppLongClick = {},
+            )
+        }
+        compose.onNodeWithTag("hero_smart_access_empty_action").assertHasNoClickAction()
     }
 }

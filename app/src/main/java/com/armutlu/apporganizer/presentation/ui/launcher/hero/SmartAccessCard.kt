@@ -144,6 +144,7 @@ private fun SmartAccessContent(
     }
     if (apps.isEmpty()) {
         val permissionAction = when {
+            state.loading -> null
             selectedTab == SmartAccessTab.NOTIFICATIONS && !state.notificationPermissionGranted ->
                 onOpenNotificationSettings
             selectedTab != SmartAccessTab.NOTIFICATIONS && !state.usagePermissionGranted ->
@@ -187,6 +188,7 @@ private fun SmartAccessTab.labelRes(): Int = when (this) {
 }
 
 private fun emptyMessageRes(state: SmartAccessUiState, tab: SmartAccessTab): Int = when {
+    state.loading -> R.string.hero_smart_access_loading
     tab != SmartAccessTab.NOTIFICATIONS && !state.usagePermissionGranted ->
         R.string.hero_smart_access_usage_permission
     tab == SmartAccessTab.NOTIFICATIONS && !state.notificationPermissionGranted ->

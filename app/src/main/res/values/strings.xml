@@ -631,6 +631,7 @@
     <string name="hero_smart_access_usage_permission">Öneriler için kullanım erişimini aç</string>
     <string name="hero_smart_access_notification_permission">Son bildirimler için bildirim erişimini aç</string>
     <string name="hero_smart_access_empty">Henüz gösterilecek uygulama yok</string>
+    <string name="hero_smart_access_loading">Akıllı erişim hazırlanıyor…</string>
     <string name="search_overlay_close">Tam ekran aramayı kapat</string>
     <string name="search_overlay_clear_query">Arama sorgusunu temizle</string>
     <string name="search_overlay_field_content_desc">Tam ekran arama alanı</string>
