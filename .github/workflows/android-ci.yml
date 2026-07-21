@@ -15,10 +15,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -33,9 +32,15 @@ jobs:
 
       - name: Make Gradle executable
         run: chmod +x gradlew
-
-      - name: CI verification APK - no Firebase - do not use for device testing
-        run: ./gradlew assembleDebug testDebugUnitTest -PskipGoogleServices=true --console=plain
+      - name: Compile, unit test, lint and compile instrumented tests
+        run: >-
+          ./gradlew --no-daemon
+          :app:testDebugUnitTest
+          :app:lintDebug
+          :app:assembleDebug
+          :app:assembleDebugAndroidTest
+          -PskipGoogleServices=true
+          --console=plain
 
       - name: Upload test reports on failure
         if: failure()

@@ -21,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -80,6 +83,8 @@ internal fun SmartAccessCard(
                     val selected = selectedTab == tab
                     PremiumGlassSurface(
                         modifier = Modifier
+                            .testTag("hero_smart_tab_${tab.name.lowercase()}")
+                            .semantics { this.selected = selected }
                             .weight(1f)
                             .height(36.dp)
                             .clip(RoundedCornerShape(16.dp))

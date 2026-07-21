@@ -130,8 +130,8 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 - [x] `SmartDashboardPage` içeriğini `HeroDashboardPage` composition’ına dönüştür.
 - [x] Saat → Dijital Yaşam → Arama → Akıllı Erişim → gösterge → dock sırasını uygula.
 - [x] 320×568, 360×640, 412×915, tablet ve landscape layout policy testlerini yaz.
-- [ ] Ranker, coordinator, dedupe ve dock migration unit testleri hazır; Compose interaction testlerini ekle.
-- [ ] Compile, unit test, lint ve debug build kapısını geçir; en az bir telefon/tablet smoke yap.
+- [x] Ranker, coordinator, dedupe, dock migration ve Hero Compose interaction testlerini ekle.
+- [ ] CI artık compile, unit test, lint, debug build ve instrumentation-test compilation kapılarını çalıştırır; sonucu geçir ve en az bir telefon/tablet smoke yap.
 
 **Bu fazda yapılmayacak:** Eski ve yeni dashboard’u feature flag ile paralel tutmak, veri motorlarını yeniden yazmak, global cam temasını değiştirmek, legacy temizliğini doğrulama tamamlanmadan körlemesine bitirmek.
 

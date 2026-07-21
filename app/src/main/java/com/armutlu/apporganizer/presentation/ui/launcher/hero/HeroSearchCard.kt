@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,6 +38,7 @@ internal fun HeroSearchCard(
 ) {
     PremiumGlassSurface(
         modifier = modifier
+            .testTag("hero_search_card")
             .fillMaxWidth()
             .height(spec.searchHeightDp.dp)
             .clickable(onClick = onOpenSearch)
@@ -74,6 +76,7 @@ internal fun HeroSearchCard(
                     contentDescription = stringResource(R.string.hero_search_sources),
                     tint = Color.White.copy(alpha = .78f),
                     modifier = Modifier
+                        .testTag("hero_search_sources")
                         .size(48.dp)
                         .clickable(onClick = onOpenSources)
                         .padding(13.dp),

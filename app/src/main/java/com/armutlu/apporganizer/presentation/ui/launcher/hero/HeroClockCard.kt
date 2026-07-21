@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.material3.Text
@@ -57,6 +58,7 @@ internal fun HeroClockCard(
 
     PremiumGlassSurface(
         modifier = modifier
+            .testTag("hero_clock_card")
             .size(spec.clockWidthDp.dp, spec.clockHeightDp.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .semantics { contentDescription = context.getString(R.string.pulse_clock_open_weekly_report) },
