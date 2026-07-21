@@ -42,8 +42,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 140
-        versionName = "1.4.17"
+        versionCode = 141
+        versionName = "1.4.18"
         buildConfigField(
             "boolean",
             "FIREBASE_BUILD_ENABLED",
@@ -174,8 +174,10 @@ android {
 }
 
 // PERF-3: Baseline Profile — :benchmark modülü tarafından üretilen profil release
-// varyantına gömülür (app/src/release/generated/baselineProfiles/baseline-prof.txt).
-// Üretim: .\gradlew :benchmark:connectedAndroidTest (emülatör/cihaz bağlı olmalı).
+// varyantına gömülür (app/src/release/generated/baselineProfiles/baseline-prof.txt +
+// startup-prof.txt). Üretim: .\gradlew :app:generateReleaseBaselineProfile
+// -PallowDebugReleaseSigning=true (emülatör/cihaz bağlı olmalı; release keystore yoksa
+// bu proje güvenlik guard'ı tetiklenir, bkz. yukarıdaki hasReleaseKeystore bloğu).
 baselineProfile {
     // Debug build'e dahil etme — sadece release/bundleRelease etkilenir.
     automaticGenerationDuringBuild = false

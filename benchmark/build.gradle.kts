@@ -15,14 +15,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        // Benchmarklar release-benzeri (R8/minify) hedef APK'ya karşı çalışmalı.
-        create("benchmarkRelease") {
-            isDebuggable = true
-            signingConfig = signingConfigs.getByName("debug")
-            matchingFallbacks += listOf("release")
-        }
-    }
+    // NOT: "benchmarkRelease" build type'ı burada elle tanımlanmaz — androidx.baselineprofile
+    // eklentisi bunu :app modülündeki release build type'ından otomatik türetir (matchingFallbacks
+    // dahil). Elle create("benchmarkRelease") eklemek AGP 8.6.1 varyant eşleşmesini bozuyor
+    // (":app:mergeReleaseBaselineProfile" -> "No matching variant of project :benchmark" hatası).
 
     targetProjectPath = ":app"
     experimentalProperties["android.experimental.self-instrumenting"] = true
@@ -37,16 +33,9 @@ android {
     }
 }
 
-// Sadece benchmarkRelease build type'ı için varyant üret — debug varyantı gereksiz.
-androidComponents {
-    beforeVariants(selector().all()) { variant ->
-        variant.enable = variant.buildType == "benchmarkRelease"
-    }
-}
-
 baselineProfile {
-    // Yerel makinede otomatik çalıştırma; APK üretiminden ayrı, elle tetiklenir
-    // (bkz. CLAUDE.md görev talimatı Adım 4 — connectedAndroidTest).
+    // Yerel makinede otomatik çalıştırma; APK üretiminden ayrı, elle tetiklenir:
+    // .\gradlew :app:generateReleaseBaselineProfile -PallowDebugReleaseSigning=true
     useConnectedDevices = true
 }
 

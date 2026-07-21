@@ -22,6 +22,7 @@
 
 | Tarih | Başlangıç | Bitiş | Süre | Kategori | İşlem | Not |
 |-------|-----------|-------|------|----------|-------|-----|
+| 2026-07-21 | 13:45 | 14:29 | ~44dk | KOD+BUILD | EX15 — PERF-3 Baseline Profile (`:benchmark` modülü + profil üretimi + bundleRelease doğrulama) | assembleDebug 27.6MB, bundleRelease (AAB) 25.1MB, baseline.prof 21.8KB gömülü |
 | 2026-06-16 | 00:15 | 00:25 | ~10dk | KOD | Döngü 68 — 5 bug fix (AllApps) | LauncherViewModel, AllAppsDrawer, LauncherActivity, AppRepository |
 | 2026-06-16 | 00:25 | 00:30 | ~5dk | BUILD | assembleDebug #1 — FAIL | Conflicting overload (duplicate updateLastUsedTimestamp) |
 | 2026-06-16 | 00:30 | 00:32 | ~2dk | HATA_GİDER | Duplicate metot kaldırıldı AppRepository | Zaten satır 296'da vardı, 257'ye de ekledim |
