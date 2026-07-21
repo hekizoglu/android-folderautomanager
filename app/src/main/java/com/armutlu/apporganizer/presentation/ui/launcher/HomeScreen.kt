@@ -162,9 +162,9 @@ fun HomeScreen(
     val recentNotificationApps by viewModel.recentNotificationApps.collectAsState()
     val favoriteApps by viewModel.favoriteApps.collectAsState()
     val recentApps by viewModel.recentApps.collectAsState()
+    val smartAccessState by viewModel.smartAccessState.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val suggestedContacts by viewModel.suggestedContacts.collectAsState()
-    var suggestionIconPack by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
@@ -271,7 +271,6 @@ fun HomeScreen(
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_LABEL_COLOR ->
                     labelColorHex = com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
-                    suggestionIconPack = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SWIPE_HINT_ENABLED ->
                     swipeHintEnabled = com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_NEW_BADGE_ENABLED ->
@@ -338,47 +337,9 @@ fun HomeScreen(
 
     // P24 — Dashboard tercihi ve pager rollout/safe-mode bayrakları reaktif okunur; ayarlardan
     // yapılan değişiklikler yeni sayfa planına yeniden bağlanır.
-    var smartDashboardPrefEnabled by remember {
-        mutableStateOf(HomePagePrefs.isSmartDashboardEnabled(context))
-    }
-    var homePagerV2Enabled by remember {
-        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2Enabled(context))
-    }
-    var homePagerV2SafeMode by remember {
-        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2SafeMode(context))
-    }
-    DisposableEffect(context) {
-        val homePagePrefs = context.getSharedPreferences(
-            HomePagePrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
-        )
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == HomePagePrefs.KEY_SMART_DASHBOARD_ENABLED) {
-                smartDashboardPrefEnabled = HomePagePrefs.isSmartDashboardEnabled(context)
-            }
-        }
-        homePagePrefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { homePagePrefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-    DisposableEffect(context) {
-        val appPrefs = context.getSharedPreferences(
-            com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
-        )
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            when (key) {
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_PAGER_V2_ENABLED ->
-                    homePagerV2Enabled = com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2Enabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_HOME_PAGER_V2_SAFE_MODE ->
-                    homePagerV2SafeMode = com.armutlu.apporganizer.utils.AppPrefs.isHomePagerV2SafeMode(context)
-            }
-        }
-        appPrefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { appPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
     val dockPackages by viewModel.dockPackages.collectAsState()
-    val contextualDockPackages by viewModel.contextualDockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
@@ -683,6 +644,8 @@ fun HomeScreen(
                 Lifecycle.Event.ON_RESUME -> {
                     homeResumeTrigger++
                     homeTickerVisible = true
+                    viewModel.refreshSmartAccessPermissions()
+                    viewModel.refreshLastLaunched()
                 }
                 Lifecycle.Event.ON_PAUSE -> homeTickerVisible = false
                 else -> Unit
@@ -822,10 +785,16 @@ fun HomeScreen(
         // (genel `overlays` slotu) altında render edilir. Konumlandırma/davranış DEĞİŞMEDİ,
         // sadece hangi slotta render edildiği (bkz. HomeShell.kt doc-comment).
         HomeShell(
-            topSearch = if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP) {
+            topSearch = if (
+                homePagerState?.currentPage?.let { it != 0 } == true &&
+                searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP
+            ) {
                 { searchBarSection() }
             } else null,
-            bottomSearch = if (searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM) {
+            bottomSearch = if (
+                homePagerState?.currentPage?.let { it != 0 } == true &&
+                searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM
+            ) {
                 { searchBarSection() }
             } else null,
             indicator = {
@@ -861,31 +830,21 @@ fun HomeScreen(
                     )
                 }
 
-                // Bottom dock — frosted pill (uzun bas → düzenle)
-                PixelDock(
-                    packages = contextualDockPackages,
-                    folders = folders,
-                    iconPackPkg = suggestionIconPack,
-                    pixelLookEnabled = pixelLookEnabled,
+                // Hero dock: yalnız sabit uygulamalar; klasör/dinamik öneri içermez.
+                com.armutlu.apporganizer.presentation.ui.launcher.hero.HeroDock(
+                    packages = dockPackages,
+                    appsByPackage = remember(allApps) { allApps.associateBy { it.packageName } },
                     onLaunchApp = { pkg ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         viewModel.launchApp(context, pkg)
                     },
-                    onOpenFolder = { folder ->
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onNavigateToFolder(folder)
-                    },
-                    onLongPress = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        dockEditOpen = true
-                    },
-                    onAppLongPress = { pkg ->
+                    onAppLongClick = { pkg ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         contextMenuPkg = pkg
                     },
-                    onFolderLongPress = { folder ->
+                    onEditDock = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        folderContextMenu = folder
+                        dockEditOpen = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1161,13 +1120,8 @@ fun HomeScreen(
                     )
                 }
             }
-            // P24 rollout: yeni pager ancak flag açık, safe-mode kapalı ve Dashboard tercihi
-            // açıkken kullanılır. Safe-mode böylece kullanıcı verisini silmeden eski yolu açar.
-            val dashboardEnabledForPager = HomePagerRolloutPolicy.dashboardEnabled(
-                flagEnabled = homePagerV2Enabled,
-                safeMode = homePagerV2SafeMode,
-                dashboardPreferenceEnabled = smartDashboardPrefEnabled,
-            )
+            // Hero kesin ürün kararı: Sayfa 0 daima Hero Dashboard, paralel eski yol yok.
+            val dashboardEnabledForPager = true
 
             val pages = remember(displayFolders, pageSize, dashboardEnabledForPager) {
                 com.armutlu.apporganizer.telemetry.TelemetryManager.trace(
@@ -1318,10 +1272,7 @@ fun HomeScreen(
                 dashboardContent = {
                     // P06/P24 — gerçek SmartDashboardPage; rollout ve kullanıcı tercihi açıkken
                     // HomePagerHost'un Dashboard sayfasında compose edilir.
-                    // Hero Dashboard migration Commit 1 — DashboardUiState/DashboardActions
-                    // sadeleştirildi (yalnızca saat + BUGÜN kartı). Kaldırılan alanlara bağlı
-                    // callback'ler (recentInstalls/widget/insights/ticker/favoriler) Hero tasarımı
-                    // netleşene kadar (TODO: HeroDashboardPage) burada YOK.
+                    // Sayfa 0 tek ürün yolu: gerçek Hero Dashboard composition.
                     SmartDashboardPage(
                         state = DashboardUiState(
                             clock = DashboardClockState(compact = compactClock),
@@ -1345,6 +1296,7 @@ fun HomeScreen(
                                     }
                                 },
                             ),
+                            smartAccess = smartAccessState,
                         ),
                         actions = DashboardActions(
                             onOpenWeeklyReport = {
@@ -1393,6 +1345,23 @@ fun HomeScreen(
                                 }
                                 runCatching { context.startActivity(intent) }
                             },
+                            onOpenSearch = { fullScreenSearchOpen = true },
+                            onOpenSearchSettings = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SEARCH_SETTINGS)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onOpenSmartAccessSettings = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS_USAGE_DATA)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                            onAppLongClick = { pkg -> contextMenuPkg = pkg },
                         ),
                         modifier = Modifier.fillMaxSize(),
                         // Faz S4 — widget sürüklerken kenar auto-scroll için gerçek pagerState.

@@ -620,6 +620,17 @@
     <string name="search_settings_history_clear_title">Arama Geçmişini Temizle</string>
     <string name="search_settings_history_clear_subtitle">Boş sorguda gösterilen son 3 arama kaldırılır</string>
     <string name="search_overlay_title">Her Şeyi Ara</string>
+    <string name="hero_search_placeholder">Uygulama, kişi, dosya, ayar ara</string>
+    <string name="hero_search_sources">Arama kaynaklarını düzenle</string>
+    <string name="hero_digital_life_permission_detail">Skorunu görmek için kullanım erişimini aç</string>
+    <string name="hero_smart_access_title">Akıllı Erişim</string>
+    <string name="hero_smart_access_settings">Akıllı Erişim ayarları</string>
+    <string name="hero_smart_access_now">Şimdi</string>
+    <string name="hero_smart_access_recent">Son Açılanlar</string>
+    <string name="hero_smart_access_notifications">Bildirimler</string>
+    <string name="hero_smart_access_usage_permission">Öneriler için kullanım erişimini aç</string>
+    <string name="hero_smart_access_notification_permission">Son bildirimler için bildirim erişimini aç</string>
+    <string name="hero_smart_access_empty">Henüz gösterilecek uygulama yok</string>
     <string name="search_overlay_close">Tam ekran aramayı kapat</string>
     <string name="search_overlay_clear_query">Arama sorgusunu temizle</string>
     <string name="search_overlay_field_content_desc">Tam ekran arama alanı</string>

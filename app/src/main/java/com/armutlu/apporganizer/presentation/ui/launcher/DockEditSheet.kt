@@ -169,11 +169,8 @@ fun DockEditSheet(
                     onClick = { showFolders = false },
                     label = { Text("Uygulamalar") }
                 )
-                FilterChip(
-                    selected = showFolders,
-                    onClick = { showFolders = true },
-                    label = { Text("Klasorler") }
-                )
+                // Hero ürün kararı: dock yalnız uygulama içerir. Klasör verisi silinmez;
+                // klasörler ana ekranın Sayfa 1+ bölümünde düzenlenmeye devam eder.
             }
 
             Spacer(Modifier.height(8.dp))
@@ -189,7 +186,7 @@ fun DockEditSheet(
                     Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
                     Box(Modifier.weight(1f)) {
-                        if (query.isEmpty()) Text(if (showFolders) "Klasor ara..." else "Uygulama ara...", color = TextSecondary, fontSize = 13.sp)
+                        if (query.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 13.sp)
                         BasicTextField(
                             value = query, onValueChange = { query = it },
                             singleLine = true, cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),

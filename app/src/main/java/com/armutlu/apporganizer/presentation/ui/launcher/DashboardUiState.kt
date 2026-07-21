@@ -4,16 +4,13 @@ import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.PulseAction
 import com.armutlu.apporganizer.domain.home.TodayCardSpec
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 
 /**
  * Hero Dashboard migration — Commit 1 (bkz. YENI_HERO_DASHBOARD roadmap).
  *
- * Eski `SmartDashboardPage` onlarca alt-state taşıyordu (recentInstalls/insights/ticker/
- * secondarySections/favorites/contentOrder). Bu commit ile Dashboard, Hero tasarımına geçiş
- * için sadeleştirildi: yalnızca saat + "BUGÜN" bağlamsal kart state'i kalır. Kaldırılan
- * state'ler (`DashboardRecentInstallsState`, `DashboardInsightsState`, `DashboardTickerState`,
- * `DashboardSecondarySectionsState`, `DashboardFavoritesState`, `contentOrder`) Hero tasarımı
- * netleştikçe (TODO: HeroDashboardPage) yeniden eklenecek — bilinçli geçici kayıp.
+ * Eski section tabanlı dashboard state'i kaldırılmıştır. Hero yalnız saat, tek Dijital Yaşam
+ * özeti ve Akıllı Erişim state'ini taşır; widget/ticker/favori satırları Sayfa 0'a dönmez.
  *
  * Compose/Android bağımlılığı yoktur (yalnızca domain tipleri) — saf veri taşıyıcıdır.
  */
@@ -33,13 +30,12 @@ data class DashboardIntelligenceState(
 )
 
 /**
- * `SmartDashboardPage`'e verilen state — Hero migration Commit 1 sonrası yalnızca saat ve
- * bağlamsal kart bilgisini taşır. Diğer bölümler (arama/widget/ticker/favoriler) Hero tasarımı
- * netleşene kadar geçici olarak kaldırıldı.
+ * `SmartDashboardPage` için tamamlanmış Hero state sözleşmesi.
  */
 data class DashboardUiState(
     val clock: DashboardClockState,
     val intelligence: DashboardIntelligenceState,
+    val smartAccess: SmartAccessUiState,
 )
 
 /** `SmartDashboardPage` içindeki tıklama/eylem callback'leri — tek yerde toplanır. */
@@ -51,4 +47,9 @@ data class DashboardActions(
     val onPulseClick: () -> Unit,
     val onPulseReasonAction: (PulseAction) -> Unit,
     val onOpenFolderStats: () -> Unit,
+    val onOpenSearch: () -> Unit,
+    val onOpenSearchSettings: () -> Unit,
+    val onOpenSmartAccessSettings: () -> Unit,
+    val onLaunchApp: (String) -> Unit,
+    val onAppLongClick: (String) -> Unit,
 )

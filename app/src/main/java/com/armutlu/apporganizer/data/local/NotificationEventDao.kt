@@ -12,6 +12,13 @@ data class PackageNotifCount(
     val count: Int,
 )
 
+/** Hero Bildirimler sekmesi için içeriksiz, paket bazlı son bildirim özeti. */
+data class PackageNotificationSummary(
+    val packageName: String,
+    val count: Int,
+    val lastPostedAt: Long,
+)
+
 @Dao
 interface NotificationEventDao {
 
@@ -29,6 +36,19 @@ interface NotificationEventDao {
         WHERE postedAt >= :since GROUP BY packageName ORDER BY count DESC
     """)
     fun observeCountsSince(since: Long): Flow<List<PackageNotifCount>>
+
+    @Query("""
+        SELECT packageName, COUNT(*) AS count, MAX(postedAt) AS lastPostedAt
+        FROM notification_events
+        WHERE postedAt >= :since
+        GROUP BY packageName
+        ORDER BY lastPostedAt DESC
+        LIMIT :limit
+    """)
+    fun observeLatestSummaries(
+        since: Long,
+        limit: Int = 5,
+    ): Flow<List<PackageNotificationSummary>>
 
     @Query("SELECT * FROM notification_events WHERE postedAt >= :since")
     suspend fun eventsSince(since: Long): List<NotificationEvent>
