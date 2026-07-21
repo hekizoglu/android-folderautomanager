@@ -1,5 +1,13 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX21 - 2026-07-21 - Akıllı Erişim bildirim badge ve eski ikon düzeltmesi
+
+**Yapılanlar:** Bildirimler sekmesinde `AppIconView` içindeki eski `AppInfo.notificationCount` badge'i ile Smart Access'in güncel özet badge'inin aynı anda çizilmesi engellendi; bu yüzey artık yalnız `NotificationAccessItem.count` değerini gösteriyor. Smart Access satırına tab+package kararlı Compose key eklendi. `AppIconView` ikon cache anahtarına `lastUpdatedTime` katıldı ve ikon `produceState`'i `key(cacheKey)` sınırında yeniden oluşturulacak şekilde düzeltildi; böylece Son Açılanlar'da doğru adın yanında önceki paketin bitmap'i kalmıyor. Interaction state de package bazında yenileniyor.
+
+**Doğrulama:** Smart Access'te dış badge'in var, iç AppIcon badge'inin yok olduğunu kanıtlayan Compose testi eklendi. Kaynak referans ve diff kontrolleri çalıştırıldı; Gradle 8.7 ağ engeli CS-8 kapsamında devam ediyor.
+
+**Sonraki:** Gerçek cihazda Bildirimler sayacı 1→N→0 ve Son Açılanlar A→B paket geçişini görsel smoke ile doğrula; ardından R6A satır-level ölü composable temizliğine dön.
+
 ## EX20 - 2026-07-21 - R6A contextual dashboard satırı temizliği
 
 **Yapılanlar:** Çağrı grafiğinde yalnız kendi testlerinden erişilen eski `HomeFavoritesSection`, `selectHomeContextualRow` ve ilgili favorites/suggestions/recent satır wrapper'ları kaldırıldı. Bu ölü yolu sınayan iki ViewModel logic testi ile section eşleme testi silindi. All Apps drawer ve `LauncherViewModel` içindeki recent installs/favorites veri üretimi korunarak çalışan tüketicilere dokunulmadı.

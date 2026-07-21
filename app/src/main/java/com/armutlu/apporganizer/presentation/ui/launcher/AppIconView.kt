@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,34 +96,44 @@ fun AppIconView(
     showLabel: Boolean = true,
     iconSize: Dp = 56.dp,
     newBadgeEnabled: Boolean = true,
+    notificationBadgeEnabled: Boolean = true,
 ) {
     val context = LocalContext.current
     val userIconScale = com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context)
     val effectiveIconSize = iconSize * userIconScale
     val px = (effectiveIconSize.value * context.resources.displayMetrics.density).toInt()
     val iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
-    val cacheKey = if (iconPackPkg.isEmpty()) "${app.packageName}_$px" else "${app.packageName}_${px}_$iconPackPkg"
+    val cacheKey = buildString {
+        append(app.packageName)
+        append('_').append(px)
+        append('_').append(app.lastUpdatedTime)
+        if (iconPackPkg.isNotEmpty()) append('_').append(iconPackPkg)
+    }
 
-    val icon: ImageBitmap? by produceState<ImageBitmap?>(
-        initialValue = iconCache[cacheKey],
-        key1 = cacheKey
-    ) {
-        if (value == null) {
-            val loaded = withContext(Dispatchers.IO) {
-                runCatching {
-                    val packBitmap = if (iconPackPkg.isNotEmpty())
-                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
-                    else null
-                    packBitmap?.asImageBitmap()
-                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
-                }.getOrNull()
+    val icon: ImageBitmap? by key(cacheKey) {
+        produceState<ImageBitmap?>(
+            initialValue = iconCache[cacheKey],
+            key1 = cacheKey,
+        ) {
+            // key(cacheKey) yeni paket için State'i senkron olarak yeniden oluşturur; producer
+            // ayrıca cache miss durumunda doğru paketin bitmap'ini yükler.
+            if (value == null) {
+                val loaded = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val packBitmap = if (iconPackPkg.isNotEmpty())
+                            com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
+                        else null
+                        packBitmap?.asImageBitmap()
+                            ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
+                    }.getOrNull()
+                }
+                if (loaded != null) iconCache.put(cacheKey, loaded)
+                value = loaded
             }
-            if (loaded != null) iconCache.put(cacheKey, loaded)
-            value = loaded
         }
     }
 
-    val interactionSource = remember { MutableInteractionSource() }
+    val interactionSource = remember(app.packageName) { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.85f else 1f,
@@ -211,7 +223,7 @@ fun AppIconView(
                 }
             }
             // Bildirim badge
-            if (app.notificationCount > 0) {
+            if (notificationBadgeEnabled && app.notificationCount > 0) {
                 val badgeText = if (app.notificationCount > 99) "99+" else app.notificationCount.toString()
                 val badgeWidth = if (app.notificationCount > 9) 20.dp else 16.dp
                 val badgeIntelligence = com.armutlu.apporganizer.utils.AppPrefs.isBadgeIntelligenceEnabled(context)
@@ -221,6 +233,7 @@ fun AppIconView(
                     BadgeColorEngine.Red
                 Box(
                     modifier = Modifier
+                        .testTag("app_notification_badge_${app.packageName}")
                         .size(badgeWidth, 16.dp)
                         .align(Alignment.TopEnd)
                         // FolderTile badge'i ile tutarlı gölge — görsel bütünlük (D199)

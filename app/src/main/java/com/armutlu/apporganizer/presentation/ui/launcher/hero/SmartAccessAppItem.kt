@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.AppIconView
@@ -21,11 +22,20 @@ internal fun SmartAccessAppItem(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.size(width = 52.dp, height = 66.dp), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier
+            .testTag("smart_access_item_${app.packageName}")
+            .size(width = 52.dp, height = 66.dp),
+        contentAlignment = Alignment.Center,
+    ) {
         BadgedBox(
             badge = {
                 if (notificationCount != null && notificationCount > 0) {
-                    Badge(containerColor = Color(0xFFFF3B30), contentColor = Color.White) {
+                    Badge(
+                        modifier = Modifier.testTag("smart_access_notification_badge_${app.packageName}"),
+                        containerColor = Color(0xFFFF3B30),
+                        contentColor = Color.White,
+                    ) {
                         Text(if (notificationCount > 99) "99+" else notificationCount.toString())
                     }
                 }
@@ -38,6 +48,7 @@ internal fun SmartAccessAppItem(
                 showLabel = true,
                 iconSize = 48.dp,
                 newBadgeEnabled = false,
+                notificationBadgeEnabled = false,
             )
         }
     }

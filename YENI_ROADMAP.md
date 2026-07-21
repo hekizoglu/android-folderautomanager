@@ -353,6 +353,7 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 - [ ] Serbest grid, Kontrol Bekleyenler, merge/undo, Dashboard pager ve global arama regresyonu.
 - [ ] TalkBack, animasyonlar kapalı, font `%200`, açık/koyu tema, farklı duvar kâğıtları ve rotasyon.
 - [ ] API 26 blur fallback ve Samsung/Xiaomi/Google OEM kategori davranışı.
+- [x] Akıllı Erişim Bildirimler sekmesinde tek otoritatif sayaç çiz; Son Açılanlar/paket değişiminde eski ikon state'ini temizle ve kararlı package key kullan.
 
 ### R7.3 Süreç dayanıklılığı
 

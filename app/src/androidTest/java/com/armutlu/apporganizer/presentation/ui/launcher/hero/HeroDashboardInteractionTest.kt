@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
+import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -13,7 +15,9 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
+import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
+import com.armutlu.apporganizer.domain.models.AppInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -140,6 +144,33 @@ class HeroDashboardInteractionTest {
             )
         }
         compose.onNodeWithTag("hero_smart_access_empty_action").assertHasNoClickAction()
+    }
+
+    @Test fun notification_tab_draws_only_the_authoritative_smart_access_badge() {
+        val app = AppInfo(
+            packageName = "com.example.notifications",
+            appName = "Notifications",
+            notificationCount = 3,
+        )
+        compose.setContent {
+            SmartAccessCard(
+                state = SmartAccessUiState(
+                    notificationApps = listOf(NotificationAccessItem(app, count = 7, lastPostedAt = 1L)),
+                    notificationPermissionGranted = true,
+                    loading = false,
+                ),
+                spec = spec,
+                selectedTab = SmartAccessTab.NOTIFICATIONS,
+                onTabSelected = {},
+                onOpenUsageSettings = {},
+                onOpenNotificationSettings = {},
+                onLaunchApp = {},
+                onAppLongClick = {},
+            )
+        }
+
+        compose.onNodeWithTag("smart_access_notification_badge_${app.packageName}").assertExists()
+        compose.onNodeWithTag("app_notification_badge_${app.packageName}").assertDoesNotExist()
     }
 
     @Test fun empty_dock_click_opens_editor_instead_of_being_a_no_op() {

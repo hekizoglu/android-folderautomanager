@@ -17,6 +17,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -175,12 +176,14 @@ private fun SmartAccessContent(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         apps.take(5).forEach { (app, count) ->
-            SmartAccessAppItem(
-                app = app,
-                notificationCount = count,
-                onClick = { onLaunchApp(app.packageName) },
-                onLongClick = { onAppLongClick(app.packageName) },
-            )
+            key(selectedTab, app.packageName) {
+                SmartAccessAppItem(
+                    app = app,
+                    notificationCount = count,
+                    onClick = { onLaunchApp(app.packageName) },
+                    onLongClick = { onAppLongClick(app.packageName) },
+                )
+            }
         }
     }
 }
