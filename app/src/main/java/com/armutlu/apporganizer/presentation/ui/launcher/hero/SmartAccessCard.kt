@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,7 +76,7 @@ internal fun SmartAccessCard(
                     tint = Color.White.copy(alpha = .7f),
                     modifier = Modifier
                         .testTag("hero_smart_access_settings")
-                        .size(32.dp)
+                        .size(48.dp)
                         .clickable(
                             onClick = if (selectedTab == SmartAccessTab.NOTIFICATIONS) {
                                 onOpenNotificationSettings
@@ -83,7 +84,7 @@ internal fun SmartAccessCard(
                                 onOpenUsageSettings
                             }
                         )
-                        .padding(5.dp),
+                        .padding(13.dp),
                 )
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -94,7 +95,7 @@ internal fun SmartAccessCard(
                             .testTag("hero_smart_tab_${tab.name.lowercase()}")
                             .semantics { this.selected = selected }
                             .weight(1f)
-                            .height(36.dp)
+                            .height(32.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .clickable { onTabSelected(tab) },
                         cornerRadius = 16.dp,
@@ -161,6 +162,8 @@ private fun SmartAccessContent(
                     if (permissionAction == null) Modifier
                     else Modifier.clickable(onClick = permissionAction)
                 )
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .padding(horizontal = 4.dp, vertical = 10.dp),
         )
         return

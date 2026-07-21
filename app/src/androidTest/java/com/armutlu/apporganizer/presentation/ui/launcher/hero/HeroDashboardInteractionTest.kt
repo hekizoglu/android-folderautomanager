@@ -2,11 +2,13 @@ package com.armutlu.apporganizer.presentation.ui.launcher.hero
 
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertHasNoClickAction
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import org.junit.Assert.assertEquals
@@ -64,6 +66,7 @@ class HeroDashboardInteractionTest {
             )
         }
         compose.onNodeWithTag("hero_smart_tab_recent").assertIsSelected()
+        compose.onNodeWithTag("hero_smart_access_settings").assertHeightIsAtLeast(48.dp)
     }
 
     @Test fun notification_permission_empty_state_opens_notification_settings() {
