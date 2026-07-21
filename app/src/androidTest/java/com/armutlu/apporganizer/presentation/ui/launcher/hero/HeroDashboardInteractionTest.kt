@@ -56,11 +56,37 @@ class HeroDashboardInteractionTest {
                 spec = spec,
                 selectedTab = SmartAccessTab.RECENT,
                 onTabSelected = {},
-                onOpenSettings = {},
+                onOpenUsageSettings = {},
+                onOpenNotificationSettings = {},
                 onLaunchApp = {},
                 onAppLongClick = {},
             )
         }
         compose.onNodeWithTag("hero_smart_tab_recent").assertIsSelected()
+    }
+
+    @Test fun notification_permission_empty_state_opens_notification_settings() {
+        var usageClicks = 0
+        var notificationClicks = 0
+        compose.setContent {
+            SmartAccessCard(
+                state = SmartAccessUiState(
+                    usagePermissionGranted = true,
+                    notificationPermissionGranted = false,
+                ),
+                spec = spec,
+                selectedTab = SmartAccessTab.NOTIFICATIONS,
+                onTabSelected = {},
+                onOpenUsageSettings = { usageClicks++ },
+                onOpenNotificationSettings = { notificationClicks++ },
+                onLaunchApp = {},
+                onAppLongClick = {},
+            )
+        }
+        compose.onNodeWithTag("hero_smart_access_empty_action").performClick()
+        compose.runOnIdle {
+            assertEquals(0, usageClicks)
+            assertEquals(1, notificationClicks)
+        }
     }
 }

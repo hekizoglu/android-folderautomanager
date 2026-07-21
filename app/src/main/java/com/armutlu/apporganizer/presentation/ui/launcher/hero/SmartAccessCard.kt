@@ -38,7 +38,8 @@ internal fun SmartAccessCard(
     spec: HomeHeroLayoutSpec,
     selectedTab: SmartAccessTab,
     onTabSelected: (SmartAccessTab) -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenUsageSettings: () -> Unit,
+    onOpenNotificationSettings: () -> Unit,
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -73,8 +74,15 @@ internal fun SmartAccessCard(
                     contentDescription = stringResource(R.string.hero_smart_access_settings),
                     tint = Color.White.copy(alpha = .7f),
                     modifier = Modifier
+                        .testTag("hero_smart_access_settings")
                         .size(32.dp)
-                        .clickable(onClick = onOpenSettings)
+                        .clickable(
+                            onClick = if (selectedTab == SmartAccessTab.NOTIFICATIONS) {
+                                onOpenNotificationSettings
+                            } else {
+                                onOpenUsageSettings
+                            }
+                        )
                         .padding(5.dp),
                 )
             }
@@ -111,6 +119,8 @@ internal fun SmartAccessCard(
             SmartAccessContent(
                 state = state,
                 selectedTab = selectedTab,
+                onOpenUsageSettings = onOpenUsageSettings,
+                onOpenNotificationSettings = onOpenNotificationSettings,
                 onLaunchApp = onLaunchApp,
                 onAppLongClick = onAppLongClick,
             )
@@ -122,6 +132,8 @@ internal fun SmartAccessCard(
 private fun SmartAccessContent(
     state: SmartAccessUiState,
     selectedTab: SmartAccessTab,
+    onOpenUsageSettings: () -> Unit,
+    onOpenNotificationSettings: () -> Unit,
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
 ) {
@@ -131,11 +143,24 @@ private fun SmartAccessContent(
         SmartAccessTab.NOTIFICATIONS -> state.notificationApps.map { it.app to it.count }
     }
     if (apps.isEmpty()) {
+        val permissionAction = when {
+            selectedTab == SmartAccessTab.NOTIFICATIONS && !state.notificationPermissionGranted ->
+                onOpenNotificationSettings
+            selectedTab != SmartAccessTab.NOTIFICATIONS && !state.usagePermissionGranted ->
+                onOpenUsageSettings
+            else -> null
+        }
         Text(
             text = stringResource(emptyMessageRes(state, selectedTab)),
             color = Color.White.copy(alpha = .58f),
             fontSize = HomeHeroTokens.BodyTextSize,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
+            modifier = Modifier
+                .testTag("hero_smart_access_empty_action")
+                .then(
+                    if (permissionAction == null) Modifier
+                    else Modifier.clickable(onClick = permissionAction)
+                )
+                .padding(horizontal = 4.dp, vertical = 10.dp),
         )
         return
     }

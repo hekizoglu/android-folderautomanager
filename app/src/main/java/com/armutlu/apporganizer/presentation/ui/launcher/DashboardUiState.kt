@@ -26,7 +26,8 @@ data class DashboardActions(
     val onPulseClick: () -> Unit,
     val onOpenSearch: () -> Unit,
     val onOpenSearchSettings: () -> Unit,
-    val onOpenSmartAccessSettings: () -> Unit,
+    val onOpenUsageAccessSettings: () -> Unit,
+    val onOpenNotificationAccessSettings: () -> Unit,
     val onLaunchApp: (String) -> Unit,
     val onAppLongClick: (String) -> Unit,
 )

@@ -1278,12 +1278,17 @@ fun HomeScreen(
                                 }
                                 runCatching { context.startActivity(intent) }
                             },
-                            onOpenSmartAccessSettings = {
+                            onOpenUsageAccessSettings = {
                                 val intent = Intent(context, MainActivity::class.java).apply {
                                     putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS_USAGE_DATA)
                                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 runCatching { context.startActivity(intent) }
+                            },
+                            onOpenNotificationAccessSettings = {
+                                runCatching {
+                                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                                }
                             },
                             onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
                             onAppLongClick = { pkg -> contextMenuPkg = pkg },
