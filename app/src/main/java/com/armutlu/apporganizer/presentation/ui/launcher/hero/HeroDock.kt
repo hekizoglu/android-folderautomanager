@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.AppIconView
@@ -34,10 +35,11 @@ internal fun HeroDock(
         .toList()
     PremiumGlassSurface(
         modifier = modifier
+            .testTag("hero_dock")
             .widthIn(max = HomeHeroTokens.DockWidth)
             .fillMaxWidth()
             .height(HomeHeroTokens.DockHeight)
-            .combinedClickable(onClick = {}, onLongClick = onEditDock),
+            .combinedClickable(onClick = onEditDock, onLongClick = onEditDock),
         cornerRadius = HomeHeroTokens.DockCorner,
     ) {
         Row(

@@ -50,6 +50,21 @@ class HomeHeroLayoutPolicyTest {
         assertTrue(spec.scrollEnabled)
     }
 
+    @Test fun `tum profiller akilli erisim icerigini kirpmaz`() {
+        val dimensions = listOf(
+            Triple(320, 568, 1f),
+            Triple(360, 640, 1f),
+            Triple(412, 915, 1f),
+            Triple(800, 1280, 1f),
+            Triple(915, 412, 1f),
+            Triple(360, 640, 1.5f),
+        )
+        dimensions.forEach { (width, height, fontScale) ->
+            val spec = HomeHeroLayoutPolicy.resolve(width, height, fontScale)
+            assertTrue("${spec.profile} smart access yüksekliği", spec.smartAccessHeightDp >= 162)
+        }
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun `gecersiz ekran olcusu reddedilir`() {
         HomeHeroLayoutPolicy.resolve(0, 640, 1f)

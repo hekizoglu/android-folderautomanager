@@ -11,7 +11,6 @@ data class NotificationAccessItem(
 )
 
 data class SmartAccessUiState(
-    val selectedTab: SmartAccessTab = SmartAccessTab.NOW,
     val nowApps: List<AppInfo> = emptyList(),
     val recentApps: List<AppInfo> = emptyList(),
     val notificationApps: List<NotificationAccessItem> = emptyList(),

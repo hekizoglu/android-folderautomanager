@@ -109,4 +109,19 @@ class HeroDashboardInteractionTest {
         }
         compose.onNodeWithTag("hero_smart_access_empty_action").assertHasNoClickAction()
     }
+
+    @Test fun empty_dock_click_opens_editor_instead_of_being_a_no_op() {
+        var editClicks = 0
+        compose.setContent {
+            HeroDock(
+                packages = emptyList(),
+                appsByPackage = emptyMap(),
+                onLaunchApp = {},
+                onAppLongClick = {},
+                onEditDock = { editClicks++ },
+            )
+        }
+        compose.onNodeWithTag("hero_dock").performClick()
+        compose.runOnIdle { assertEquals(1, editClicks) }
+    }
 }
