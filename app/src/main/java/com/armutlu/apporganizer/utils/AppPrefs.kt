@@ -762,6 +762,28 @@ object AppPrefs {
     fun isMissionsEnabled(context: Context) = prefs(context).getBoolean(KEY_MISSIONS_ENABLED, true)
     fun setMissionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MISSIONS_ENABLED, v).apply()
 
+    // Zaman-Kisitli Gorev (Time Window Mission) - DAILY_NO_LATE_NIGHT'in kullanici-tanimli saat
+    // araligina genellenmis hali. Kapaliyken gorev havuzuna girmez (DAILY_NO_LATE_NIGHT sabit
+    // 23:00-06:00 ile calismaya devam eder, bu ayri/opsiyonel bir gorevdir).
+    const val KEY_TIME_WINDOW_MISSION_ENABLED = "time_window_mission_enabled"
+    fun isTimeWindowMissionEnabled(context: Context) = prefs(context).getBoolean(KEY_TIME_WINDOW_MISSION_ENABLED, false)
+    fun setTimeWindowMissionEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TIME_WINDOW_MISSION_ENABLED, v).apply()
+
+    const val KEY_TIME_WINDOW_START_HOUR = "time_window_start_hour"
+    const val KEY_TIME_WINDOW_END_HOUR = "time_window_end_hour"
+    private const val DEFAULT_TIME_WINDOW_START_HOUR = 23
+    private const val DEFAULT_TIME_WINDOW_END_HOUR = 6
+
+    fun getTimeWindowStartHour(context: Context): Int =
+        prefs(context).getInt(KEY_TIME_WINDOW_START_HOUR, DEFAULT_TIME_WINDOW_START_HOUR).coerceIn(0, 23)
+    fun setTimeWindowStartHour(context: Context, hour: Int) =
+        prefs(context).edit().putInt(KEY_TIME_WINDOW_START_HOUR, hour.coerceIn(0, 23)).apply()
+
+    fun getTimeWindowEndHour(context: Context): Int =
+        prefs(context).getInt(KEY_TIME_WINDOW_END_HOUR, DEFAULT_TIME_WINDOW_END_HOUR).coerceIn(0, 23)
+    fun setTimeWindowEndHour(context: Context, hour: Int) =
+        prefs(context).edit().putInt(KEY_TIME_WINDOW_END_HOUR, hour.coerceIn(0, 23)).apply()
+
     // Görev S1 — Dashboard'da tek bağlamsal "BUGÜN" kartı. Açıkken HomeMissionCard/DigitalLifeCard/
     // AssistantInsightRow/bugün yüklenenler satırı yerine TodayCard çizilir; kapalıyken mevcut
     // bireysel kart toggle'ları (missions_enabled, digital_life_card_visible, ...) AYNEN çalışır.
