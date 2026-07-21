@@ -1,5 +1,13 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX19 - 2026-07-21 - R6A eski dashboard yoğunluk ve pager parametresi temizliği
+
+**Yapılanlar:** Üretim kodunda hiçbir tüketicisi kalmayan `DashboardLayoutPolicy`/`DashboardDensity` ve yalnız bu ölü politikayı sınayan test kaldırıldı. `SmartDashboardPage` içindeki kullanılmayan `PagerState` parametresi ile HomeScreen çağrısı temizlendi. Repo genelinde `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` ve eski `FolderPager` runtime çağrısı bulunmadığı doğrulandı; kullanıcı tercihleri/restore verisine dokunan layout persistence R6B migration kapısına bırakıldı.
+
+**Doğrulama:** Resmî Compose state-hoisting rehberindeki “state'i tüketildiği en yakın sahipte tut” ilkesiyle kapsam doğrulandı. Silinen semboller için referans taraması ve `git diff --check` çalıştırıldı. Gradle 8.7 dağıtım engeli CS-8 kapsamında devam ediyor.
+
+**Sonraki:** R6A'da Hero tarafından tüketilmeyen contextual dashboard dallarının gerçek çağrı grafiğini daralt; All Apps tarafından kullanılan recent/favorites yollarını koru.
+
 ## EX18 - 2026-07-21 - Hero ortak adaptif genişlik + pager üst bandı kaldırma + güvenli widget seçici
 
 **Yapılanlar:** (1) Hero Dashboard’daki Saat, Dijital Yaşam, Her Şeyi Ara ve Akıllı Erişim kartları tek parent-constraint genişliğine bağlandı. Saatin ayrı `clockWidthDp`/`ClockWidth` yolu kaldırıldı; gerçek pencere genişliği, profil yatay padding’i ve tablet/landscape tavanı birlikte uygulanıyor. Compose testi dört kartın aynı gerçek bounds genişliğini doğruluyor. (2) Pager’ın üstünde tüm sayfalara sızan ve kullanıcı tarafından basılamayan `Uygulama / Klasör / Dashboard / Kullanım` bandının `FolderStatsRow`/`StatChip` composition’ı tamamen kaldırıldı; onu besleyen kullanılmayan ticker/focus/assistant state abonelikleri temizlendi. (3) `com.android.settings.ActivityPicker` içindeki ROM tema `InflateException` uygulama temasıyla düzeltilemeyeceği için `ACTION_APPWIDGET_PICK` kaldırıldı. Widget sağlayıcıları artık AppOrganizer içindeki Compose dialog’da listeleniyor; seçim `bindAppWidgetIdIfAllowed`, gerekirse `ACTION_APPWIDGET_BIND`, ardından configure akışıyla tamamlanıyor. İptal/hata/null provider durumunda ayrılmış widget ID siliniyor. TR/EN metinleri eklendi.

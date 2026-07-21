@@ -47,7 +47,7 @@ import kotlin.math.roundToInt
  * gövde `pointerInput("drag")`/`nestedScroll` swipe-up algılamasından DOĞAL olarak hariç kalır:
  * `AndroidView` widget View'ı kendi `onTouchEvent`'ini tüketir, tükettiği dokunuşlar Compose
  * gesture zincirine `available` olarak yansımaz. Ayrıca ek bir "gesture bölgesi" tanımına gerek
- * yoktur (bkz. `DashboardLayoutPolicy.kt` dosya başı notu, `SmartDashboardPage.kt`).
+ * yoktur.
  */
 @Composable
 fun WidgetArea(

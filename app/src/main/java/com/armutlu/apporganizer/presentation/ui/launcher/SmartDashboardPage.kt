@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.armutlu.apporganizer.presentation.ui.launcher.hero.HeroDashboardPage
@@ -11,7 +10,6 @@ internal fun SmartDashboardPage(
     state: DashboardUiState,
     actions: DashboardActions,
     modifier: Modifier = Modifier,
-    @Suppress("UNUSED_PARAMETER") pagerState: PagerState? = null,
 ) {
     HeroDashboardPage(
         pulse = state.pulse,

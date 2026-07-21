@@ -1213,8 +1213,6 @@ fun HomeScreen(
                             onAppLongClick = { pkg -> contextMenuPkg = pkg },
                         ),
                         modifier = Modifier.fillMaxSize(),
-                        // Faz S4 — widget sürüklerken kenar auto-scroll için gerçek pagerState.
-                        pagerState = pagerState,
                     )
                 },
                 folderPageContent = { spec ->

@@ -304,11 +304,11 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 **Bağımlılık:** H1 temel composition kapısı. Görünür davranış, migration veya restore sözleşmesi değiştirilemez.
 
-- [ ] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` ve section-order ayarlarını repo genelinde ara ve kaldır.
+- [x] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` referanslarını repo genelinde doğrula; runtime referansı kalmadığını kanıtla. Kullanıcı tercihlerini etkileyen kalıcı layout ayarlarını R6B migration kararına bırak.
 - [ ] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
 - [x] Kullanılmayan Dashboard state alanlarını ve kırık eski testleri sil; geçerli testleri Hero/layout testlerine dönüştür.
 - [x] Pager’ın üstünde tüm sayfalara sızan eski `FolderStatsRow`/`StatChip` bandını ve yalnız onu besleyen HomeScreen state aboneliklerini kaldır.
-- [ ] Eski folder-only pager çağrılarını repo genelinde ara.
+- [x] Eski folder-only pager çağrılarını repo genelinde ara; runtime'da yalnız `HomePagerHost` + tek-sayfa folder grid renderer kaldığını doğrula.
 - [ ] Kullanılmayan eski pager branch’lerini, duplicate search lambda’larını ve eski test fixture’larını kaldır.
 - [ ] `HomeScreen.kt` dosyasını orchestration seviyesine indir; davranış değişikliği yapma.
 

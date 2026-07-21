@@ -77,8 +77,8 @@ internal fun dashboardContentOrder(config: HomeLayoutConfig): List<HomeSectionId
 
 /**
  * P16 madde 10 — küçük cihazlarda (kısa ekran yüksekliği) tüm görünür Dashboard bölümlerinin
- * elle kaydırmadan sığmayacağını bildiren basit kapasite uyarısı. Eşik `DashboardLayoutPolicy`
- * ile aynı ULTRA_COMPACT sınırını kullanır; saf fonksiyon, editor testinde doğrudan çağrılır.
+ * elle kaydırmadan sığmayacağını bildiren eski editör kapasite uyarısı. Saf fonksiyon, editor
+ * testinde doğrudan çağrılır.
  */
 internal fun isSmallDeviceForDashboard(screenHeightDp: Int, visibleContentSectionCount: Int): Boolean =
     screenHeightDp in 1 until 640 && visibleContentSectionCount >= 6

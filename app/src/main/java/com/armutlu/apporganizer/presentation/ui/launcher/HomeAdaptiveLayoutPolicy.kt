@@ -6,7 +6,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
  * panel sabit 380dp) — bu politika onları TEK bir `HomeDeviceClass` sınıflandırmasından türetir.
  *
  * Compose/Android bağımlılığı yoktur (JVM birim testinden doğrudan çağrılabilir) — mevcut
- * `DashboardLayoutPolicy`/`HomeLayoutMath` pattern'iyle aynı. `material3-window-size-class`
+ * `HomeLayoutMath` pattern'iyle aynı. `material3-window-size-class`
  * bağımlılığı YOK — proje zaten `LocalConfiguration.screenWidthDp` okuyor, bu politika o değeri
  * girdi olarak alır (roadmap P20 "Nasıl yapılmalı" madde 1: mevcut `screenWidthDp` yaklaşımı tek
  * helper'a alınır, yeni bağımlılık eklenmez).
@@ -83,8 +83,7 @@ object HomeAdaptiveLayoutPolicy {
 }
 
 /**
- * Döngü P20 — telefon/küçük tablet/büyük tablet sınıflandırması. Dashboard density (yükseklik
- * bazlı `DashboardLayoutPolicy`) ile ORTOGONAL bir eksendir: biri yükseklik/section-yoğunluğu,
- * diğeri genişlik/cihaz sınıfı kararı verir — ikisi birlikte kullanılır, birbirinin yerine geçmez.
+ * Döngü P20 — telefon/küçük tablet/büyük tablet sınıflandırması. Hero yüksekliği kendi adaptif
+ * profilinden, bu sınıf ise genişlik/cihaz kararlarından sorumludur.
  */
 enum class HomeDeviceClass { PHONE, COMPACT_TABLET, EXPANDED_TABLET }
