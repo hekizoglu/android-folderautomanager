@@ -17,6 +17,16 @@ object HomePagePlanner {
     /** pageSize <= 0 gelirse kullanılacak güvenli minimum (HomeLayoutMath.MIN_VISIBLE_FOLDERS ile tutarlı). */
     private const val SAFE_MIN_PAGE_SIZE = HomeLayoutMath.MIN_VISIBLE_FOLDERS
 
+    /** Üretim Hero yolu: Sayfa 0 koşulsuz Dashboard'dur; çağıran feature flag veremez. */
+    fun buildHeroPages(
+        folders: List<AppFolder>,
+        pageSize: Int,
+    ): List<HomePageSpec> = buildPages(
+        folders = folders,
+        pageSize = pageSize,
+        dashboardEnabled = true,
+    )
+
     /**
      * @param folders Kategoriye göre gruplanmış, boş olmayan klasörler (buildFolders() çıktısı).
      * @param pageSize Bir sayfada gösterilecek maksimum klasör sayısı (ör. HomeLayoutMath.pageSize sonucu).
@@ -31,7 +41,7 @@ object HomePagePlanner {
      * - Sonuç listesinde stableKey her zaman benzersizdir (duplicate categoryId durumunda
      *   pageIndex'e düşülür).
      */
-    fun buildPages(
+    internal fun buildPages(
         folders: List<AppFolder>,
         pageSize: Int,
         dashboardEnabled: Boolean,

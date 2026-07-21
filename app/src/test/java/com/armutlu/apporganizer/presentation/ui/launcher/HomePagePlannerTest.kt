@@ -14,6 +14,14 @@ import org.junit.Test
  */
 class HomePagePlannerTest {
 
+    @Test fun `hero uretim girisi dashboardu her zaman sayfa sifira koyar`() {
+        val emptyPages = HomePagePlanner.buildHeroPages(emptyList(), pageSize = 8)
+        val populatedPages = HomePagePlanner.buildHeroPages(folders(9), pageSize = 8)
+
+        assertEquals(HomePageSpec.Dashboard, emptyPages.first())
+        assertEquals(HomePageSpec.Dashboard, populatedPages.first())
+    }
+
     private fun folder(categoryId: String, order: Int = 0): AppFolder =
         AppFolder(
             category = Category(

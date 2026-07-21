@@ -264,7 +264,8 @@ R1 ve R5, H1’in temel composition kapısı geçtikten sonra paralel ilerleyebi
 
 ### R5.2 Tek ürün yolu ve privacy-safe telemetry
 
-- [ ] Sayfa 0’ın her açılışta yalnız Hero Dashboard olduğunu; eski dashboard/feature flag/safe-mode yolunun kalmadığını doğrula.
+- [x] Üretim pager planlayıcısını boolean/feature-flag kabul etmeyen `buildHeroPages()` girişine bağla; Sayfa 0’ı kod seviyesinde yalnız Hero yap.
+- [ ] Gerçek cihazda her açılış/restore senaryosunda Sayfa 0’ın Hero olduğunu smoke ile doğrula.
 - [ ] Rıza kapalıyken hiçbir home telemetry event’i gönderilmediğini Firebase tarafında doğrula.
 - [ ] Rıza açıkken yalnız izinli enum/bucket parametrelerinin gittiğini DebugView ile doğrula.
 - [ ] Klasör adı, kategori, app/package, arama sorgusu, kişi ve dosya verisinin gönderilmediğini kanıtla.

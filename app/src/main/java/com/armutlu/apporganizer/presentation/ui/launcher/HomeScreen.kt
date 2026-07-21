@@ -1096,17 +1096,14 @@ fun HomeScreen(
                     )
                 }
             }
-            // Hero kesin ürün kararı: Sayfa 0 daima Hero Dashboard, paralel eski yol yok.
-            val dashboardEnabledForPager = true
-
-            val pages = remember(displayFolders, pageSize, dashboardEnabledForPager) {
+            // Hero kesin ürün kararı: boolean/feature-flag kabul etmeyen üretim giriş noktası.
+            val pages = remember(displayFolders, pageSize) {
                 com.armutlu.apporganizer.telemetry.TelemetryManager.trace(
                     com.armutlu.apporganizer.telemetry.PerformanceTraceName.HOME_FOLDER_PAGE_READY
                 ) {
-                    HomePagePlanner.buildPages(
+                    HomePagePlanner.buildHeroPages(
                         folders = displayFolders,
                         pageSize = pageSize,
-                        dashboardEnabled = dashboardEnabledForPager,
                     )
                 }
             }
