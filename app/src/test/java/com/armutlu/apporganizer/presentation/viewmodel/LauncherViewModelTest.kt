@@ -86,6 +86,7 @@ class LauncherViewModelTest {
 
         every { mockRepository.getAllAppsFlow() } returns appsFlow
         every { mockNotificationEventDao.observeCountsSince(any()) } returns flowOf(emptyList())
+        every { mockNotificationEventDao.observeLatestSummaries(any(), any()) } returns flowOf(emptyList())
 
         mockkObject(AppPrefs)
         every { AppPrefs.getFavorites(any()) } returns emptySet()

@@ -42,6 +42,7 @@ import com.armutlu.apporganizer.utils.WidgetPrefs
 import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -56,6 +57,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -1056,15 +1058,20 @@ class LauncherViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    private val latestNotificationSummaries = notificationEventDao
-        .observeLatestSummaries(
-            // Zaman penceresi ViewModel oluşturulurken dondurulmaz. DAO en yeni paketleri
-            // izler; hareketli 24 saat filtresi her Hero refresh'inde aşağıda uygulanır.
-            since = 0L,
+    private val _smartAccessPermissionTick = MutableStateFlow(0)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val latestNotificationSummaries = combine(
+        _suggestionTick,
+        _smartAccessPermissionTick,
+    ) { now, _ ->
+        now - RECENT_NOTIFICATIONS_WINDOW_MS
+    }.flatMapLatest { windowStart ->
+        notificationEventDao.observeLatestSummaries(
+            since = windowStart,
             limit = SmartAccessRanker.MAX_ITEMS,
         )
-
-    private val _smartAccessPermissionTick = MutableStateFlow(0)
+    }
 
     // Loading ve izin refresh sinyalleri doğrudan ana combine girdisidir. `.value` okuyarak
     // emisyon kaçırılmaz; Room ilk yükü tamamlandığında Hero her durumda yeniden hesaplanır.
