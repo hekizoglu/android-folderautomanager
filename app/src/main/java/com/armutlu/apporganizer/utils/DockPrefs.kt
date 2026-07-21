@@ -46,8 +46,11 @@ object DockPrefs {
                 putBoolean(KEY_HERO_DOCK_MIGRATED, true)
             }
         }
-        val candidates = buildHeroDockItems(current, fallbackPackages)
-        val installed = candidates.filter { context.packageManager.getLaunchIntentForPackage(it) != null }
+        val installed = buildHeroDockItems(
+            current = current,
+            fallbackPackages = fallbackPackages,
+            isEligible = { context.packageManager.getLaunchIntentForPackage(it) != null },
+        )
         saveDockPackages(context, installed)
         return installed
     }
@@ -55,8 +58,10 @@ object DockPrefs {
     internal fun buildHeroDockItems(
         current: List<String>,
         fallbackPackages: List<String>,
+        isEligible: (String) -> Boolean = { true },
     ): List<String> = (current.filterNot(::isFolderItem) + fallbackPackages)
         .filter(String::isNotBlank)
+        .filter(isEligible)
         .distinct()
         .take(MAX_SLOTS)
 

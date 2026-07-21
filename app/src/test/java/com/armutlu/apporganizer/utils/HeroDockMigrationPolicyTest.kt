@@ -19,4 +19,14 @@ class HeroDockMigrationPolicyTest {
         )
         assertEquals(listOf("a", "b", "c", "d", "e"), result)
     }
+
+    @Test fun `kurulu olmayan ilk adaylar fallback slotlarini engellemez`() {
+        val unavailable = setOf("gone", "missing")
+        val result = DockPrefs.buildHeroDockItems(
+            current = listOf("gone", "phone", "missing"),
+            fallbackPackages = listOf("camera", "browser", "messages", "maps"),
+            isEligible = { it !in unavailable },
+        )
+        assertEquals(listOf("phone", "camera", "browser", "messages", "maps"), result)
+    }
 }
