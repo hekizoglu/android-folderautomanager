@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -163,8 +164,12 @@ class SuggestionNotificationWorker(
                 WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
                 return
             }
+            val constraints = Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build()
             val request = PeriodicWorkRequestBuilder<SuggestionNotificationWorker>(24, TimeUnit.HOURS)
                 .setInitialDelay(1, TimeUnit.HOURS)
+                .setConstraints(constraints)
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,

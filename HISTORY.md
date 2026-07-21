@@ -1,5 +1,15 @@
 ﻿# HISTORY.md - AppOrganizer Döngü Arşivi
 
+## EX16 - 2026-07-21 - PERF-4: Pil ince ayar — periyodik worker'lara setRequiresBatteryNotLow
+
+**Yapılanlar:** 5 periyodik worker'ın `schedule()` fonksiyonuna `Constraints.Builder().setRequiresBatteryNotLow(true)` eklendi: `TickerHistoryCleanupWorker.kt` (24 saatte bir arşiv temizliği), `WeeklyDigestWorker.kt` (haftalık özet), `SuggestionNotificationWorker.kt` (günlük öneri bildirimi), `SmartInsightWorker.kt` (günlük akıllı içgörü), `CategoryDbUpdateWorker.kt` (mevcut `Constraints.Builder()`'a satır eklendi, `setRequiredNetworkType` zaten vardı). `BackupWorker.kt` zaten bu constraint'e sahipti (kontrol edildi, değişiklik gerekmedi). Amaç: pil düşükken bu düşük öncelikli arka plan işlerinin ertelenmesi.
+
+**Agent:** Yok — mekanik, tek pattern, doğrudan yapıldı.
+
+**CLAUDE.md/LEARNINGS.md:** Güncellenmedi (yeni tuzak yok, mevcut BackupWorker pattern'i tekrarlandı).
+
+**Sonraki:** Faz PERF tamamlandı (PERF-1, PERF-2, PERF-3, PERF-4 hepsi ✅) — ROADMAP.md'den Faz PERF bölümü kaldırılabilir.
+
 ## EX15 - 2026-07-21 - PERF-3: Baseline Profile uygulaması — ROADMAP tamamlandı
 
 **Yapılanlar:** Yeni `:benchmark` Gradle modülü (`com.android.test` + `androidx.baselineprofile` 1.2.4) eklendi. `BaselineProfileGenerator.kt` (`benchmark/src/main/kotlin/...` — `com.android.test` modüllerinde ayrı `androidTest` sourceset YOK, tek sourceset `main`) soğuk başlatma → ilk klasör tıklama (`By.desc(Pattern(".*uygulama.*"))`, FolderTile'ın dinamik contentDescription'ına göre) → geri → AllAppsDrawer'ı `device.swipe()` jestiyle açma (Compose-only UI'da View id yok, buton da yok — swipe zorunlu) → geri akışını kapsıyor. `app/build.gradle.kts`: `androidx.profileinstaller:1.4.1` + `baselineProfile(project(":benchmark"))` + `baselineProfile { automaticGenerationDuringBuild = false }`. `settings.gradle.kts`'e `:benchmark` include + `com.android.test` plugin resolution eklendi. Üretim komutu: `.\gradlew :app:generateReleaseBaselineProfile -PallowDebugReleaseSigning=true` (release keystore yokken projenin kendi güvenlik guard'ını bypass eder — SADECE lokal doğrulama). Emülatör: `Pixel6_AOSP33` (API 33). Sonuç: `app/src/release/generated/baselineProfiles/baseline-prof.txt` + `startup-prof.txt` (49680 satır) üretildi ve commit edildi. `bundleRelease` ile doğrulandı: AAB içinde `BUNDLE-METADATA/com.android.tools.build.profiles/baseline.prof` (21.8KB, beklenen <50KB aralığında) mevcut.

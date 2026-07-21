@@ -330,7 +330,6 @@ Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, ki
 |---|---|---|---|
 | PERF-1 | Compose Compiler Metrics'i oku, `skippable=false` composable'ları tespit et — kod değişikliği yok, saf ölçüm | 2 | ✅ Tamamlandı (EX13) — Metrics dosyası Gradle output tutulamadı, manuel analiz yapıldı |
 | PERF-2 | Hızlı kazançlar: domain modellerine `@Immutable`, `onCreate()` senkron zinciri gözden geçir | 3-4 | ✅ Tamamlandı (EX13) — @Immutable (AppInfo, Category) eklendi, Flow'lar .distinctUntilChanged() korumuş |
-| PERF-4 | Pil ince ayar: `BackupWorker` gibi periyodik worker'lara `setRequiresBatteryNotLow`, `NotificationListenerService` senkron DB yazımı varsa batch'e çevir | 3 | ⏳ Bekliyor |
 
 **Kapsam dışı (gerekçeli):** Paging3 (300+ app ölçeğinde gereksiz karmaşıklık), `beyondViewportPageCount` artırma (mevcut `1` değeri bilinçli crash-fix kararı).
 

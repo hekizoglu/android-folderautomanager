@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.workers
 
 import android.content.Context
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -54,7 +55,12 @@ class TickerHistoryCleanupWorker(
         const val WORK_NAME = "ticker_history_cleanup_daily"
 
         fun schedule(context: Context) {
-            val request = PeriodicWorkRequestBuilder<TickerHistoryCleanupWorker>(24, TimeUnit.HOURS).build()
+            val constraints = Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build()
+            val request = PeriodicWorkRequestBuilder<TickerHistoryCleanupWorker>(24, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.KEEP,

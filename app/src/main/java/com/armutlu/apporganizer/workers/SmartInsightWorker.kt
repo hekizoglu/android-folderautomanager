@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -264,8 +265,12 @@ class SmartInsightWorker(
             }
             val targetHour = AppPrefs.getSmartNotifHour(context)
             val initialDelayMs = calculateInitialDelayMs(targetHour = targetHour)
+            val constraints = Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build()
             val request = PeriodicWorkRequestBuilder<SmartInsightWorker>(24, TimeUnit.HOURS)
                 .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
+                .setConstraints(constraints)
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
