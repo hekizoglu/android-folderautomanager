@@ -211,7 +211,10 @@ class LauncherViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _initialLoadDone = MutableStateFlow(false)
+
     private val allAppsSource: StateFlow<List<AppInfo>> = repository.getAllAppsFlow()
+        .onEach { _initialLoadDone.value = true }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     @OptIn(FlowPreview::class)
@@ -263,9 +266,7 @@ class LauncherViewModel @Inject constructor(
     // Room'dan ilk emisyon geldi mi — cold resume'da yanlis "yukleniyor" flasini onler (Fix 3):
     // process yeniden yaratildiginda folders/allApps baslangicta emptyList() ile basliyor,
     // ilk Room emit'ine kadar HomeScreen "Uygulamalar yukleniyor..." flasi gosteriyordu.
-    val initialLoadDone: StateFlow<Boolean> = allAppsSource
-        .map { true }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    val initialLoadDone: StateFlow<Boolean> = _initialLoadDone.asStateFlow()
 
     val recentNotificationCounts: StateFlow<Map<String, Int>> = notificationEventDao
         .observeCountsSince(System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS)
