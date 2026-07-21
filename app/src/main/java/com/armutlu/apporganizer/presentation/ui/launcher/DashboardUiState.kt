@@ -3,20 +3,19 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.PulseAction
-import com.armutlu.apporganizer.domain.home.SmartTickerItem
-import com.armutlu.apporganizer.domain.home.SmartTickerType
 import com.armutlu.apporganizer.domain.home.TodayCardSpec
-import com.armutlu.apporganizer.domain.models.AppInfo
-import com.armutlu.apporganizer.domain.models.HomeSectionId
-import com.armutlu.apporganizer.utils.InsightCard
-// AppFolder aynı pakette (presentation.ui.launcher) tanımlı — bkz. LauncherViewModel.kt.
 
 /**
- * Döngü P06 — `SmartDashboardPage`'in ihtiyaç duyduğu tüm veriyi tek yerde toplayan saf model.
- * Onlarca ayrı parametre yerine anlamlı alt modeller kullanılır (roadmap P06 madde 1).
- * Compose/Android bağımlılığı yoktur (yalnızca domain tipleri) — saf veri taşıyıcıdır.
+ * Hero Dashboard migration — Commit 1 (bkz. YENI_HERO_DASHBOARD roadmap).
  *
- * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md Döngü P06 (satır 676-756).
+ * Eski `SmartDashboardPage` onlarca alt-state taşıyordu (recentInstalls/insights/ticker/
+ * secondarySections/favorites/contentOrder). Bu commit ile Dashboard, Hero tasarımına geçiş
+ * için sadeleştirildi: yalnızca saat + "BUGÜN" bağlamsal kart state'i kalır. Kaldırılan
+ * state'ler (`DashboardRecentInstallsState`, `DashboardInsightsState`, `DashboardTickerState`,
+ * `DashboardSecondarySectionsState`, `DashboardFavoritesState`, `contentOrder`) Hero tasarımı
+ * netleştikçe (TODO: HeroDashboardPage) yeniden eklenecek — bilinçli geçici kayıp.
+ *
+ * Compose/Android bağımlılığı yoktur (yalnızca domain tipleri) — saf veri taşıyıcıdır.
  */
 data class DashboardClockState(
     val compact: Boolean,
@@ -28,78 +27,19 @@ data class DashboardIntelligenceState(
     val digitalLifeCardVisible: Boolean,
     val pulse: HomePulseSummary?,
     // Görev S1 — açıkken bu bölümün (HomeMissionCard+DigitalLifeCard) yerine tek TodayCard çizilir.
-    // [todayCardSpec] null ise (TodayCardSelector hiçbir önceliği seçemedi) kart hiç gösterilmez —
-    // eski ayrı kartlar da geri GELMEZ (todayCardEnabled açıkken tek doğruluk kaynağı budur).
+    // [todayCardSpec] null ise (TodayCardSelector hiçbir önceliği seçemedi) kart hiç gösterilmez.
     val todayCardEnabled: Boolean = false,
     val todayCardSpec: TodayCardSpec? = null,
 )
 
-data class DashboardRecentInstallsState(
-    val enabled: Boolean,
-    val apps: List<AppInfo>,
-)
-
-data class DashboardSecondarySectionsState(
-    val googleSearchEnabled: Boolean,
-    val widgetAreaEnabled: Boolean,
-    val widgetIds: List<Int>,
-    val widgetAutoResize: Boolean,
-    val screenHeightDp: Int,
-    // Faz S3 — deneysel, varsayılan KAPALI (AppPrefs.KEY_WIDGET_FREE_GRID_ENABLED). Açıkken
-    // WidgetArea yerine WidgetFreeGrid (serbest 2D yerleşim) çizilir.
-    val widgetFreeGridEnabled: Boolean = false,
-)
-
-data class DashboardInsightsState(
-    val assistantCardsEnabled: Boolean,
-    val tickerEnabled: Boolean,
-    val insightCards: List<InsightCard>,
-)
-
-data class DashboardTickerState(
-    val tickerEnabled: Boolean,
-    val tickerMuted: Boolean,
-    val tickerItems: List<SmartTickerItem>,
-    val homeTickerVisible: Boolean,
-    val tickerAutoAdvance: Boolean,
-    val tickerIntervalSeconds: Int,
-    val folders: List<AppFolder>,
-)
-
-data class DashboardFavoritesState(
-    val favoritesEnabled: Boolean,
-    val favoriteApps: List<AppInfo>,
-    val suggestionsEnabled: Boolean,
-    val suggestedApps: List<AppInfo>,
-    val suggestionsIconSizeDp: Int,
-    val recentNotificationAppsEnabled: Boolean,
-    val recentNotificationApps: List<AppInfo>,
-    val recentNotificationCounts: Map<String, Int>,
-    val recentAppsEnabled: Boolean,
-    val recentApps: List<AppInfo>,
-    val dockPackages: List<String>,
-    val iconPackPkg: String,
-    val screenHeightDp: Int,
-)
-
 /**
- * `SmartDashboardPage`'e verilen tüm state tek çatı altında — eylemler (callback) ayrı,
- * `DashboardActions` içinde tutulur.
+ * `SmartDashboardPage`'e verilen state — Hero migration Commit 1 sonrası yalnızca saat ve
+ * bağlamsal kart bilgisini taşır. Diğer bölümler (arama/widget/ticker/favoriler) Hero tasarımı
+ * netleşene kadar geçici olarak kaldırıldı.
  */
 data class DashboardUiState(
     val clock: DashboardClockState,
     val intelligence: DashboardIntelligenceState,
-    val recentInstalls: DashboardRecentInstallsState,
-    val secondarySections: DashboardSecondarySectionsState,
-    val insights: DashboardInsightsState,
-    val ticker: DashboardTickerState,
-    val favorites: DashboardFavoritesState,
-    val hideSecondaryRowsForIme: Boolean,
-    // P16 — Ayarlar > Ana Ekranı Düzenle'den gelen CONTENT zone bölüm sırası (HomeLayoutPrefs
-    // KEY_CONTENT_ORDER). SmartDashboardPage bu sırayla reorderable bölüklerini (GOOGLE_SEARCH,
-    // ANDROID_WIDGETS, ASSISTANT_INSIGHTS/TICKER_OR_STATS, favoriler grubu) dizer. Boş liste ise
-    // (örn. eski test çağrıları) varsayılan sabit sıra korunur — bkz. dashboardContentOrder().
-    val contentOrder: List<HomeSectionId> = emptyList(),
 )
 
 /** `SmartDashboardPage` içindeki tıklama/eylem callback'leri — tek yerde toplanır. */
@@ -110,26 +50,5 @@ data class DashboardActions(
     val onMissionClick: () -> Unit,
     val onPulseClick: () -> Unit,
     val onPulseReasonAction: (PulseAction) -> Unit,
-    val onOpenRecentInstalls: () -> Unit,
-    val onRemoveWidget: (Int) -> Unit,
-    val onReorderWidgets: (List<Int>) -> Unit,
-    // Faz S3 — WidgetFreeGrid aktif sürüklemesini kök jest arbitrajına (HomeScreen.kt
-    // `reorderActive`) yansıtmak için kullanılır; WidgetArea'nın kendi reorder'ı bu callback'i
-    // tetiklemez (yalnızca WidgetFreeGrid kullanır), varsayılan no-op.
-    val onWidgetDragActiveChange: (Boolean) -> Unit = {},
-    val onInsightCardClick: (InsightCard) -> Unit,
-    val onOpenDashboardShortcut: () -> Unit,
-    val onTickerMute: (Long) -> Unit,
-    val onTickerDismissItem: (SmartTickerItem) -> Unit,
-    val onTickerHideType: (SmartTickerType) -> Unit,
-    val onOpenTickerSettings: () -> Unit,
-    val onOpenTickerHistory: () -> Unit,
-    val onDisableTicker: () -> Unit,
-    val onTickerItemClick: (SmartTickerItem) -> Unit,
     val onOpenFolderStats: () -> Unit,
-    val onOpenAppStats: () -> Unit,
-    val onOpenDashboard: () -> Unit,
-    val onOpenUsageReport: () -> Unit,
-    val onLaunchApp: (String) -> Unit,
-    val onAppLongClick: (String) -> Unit,
 )
