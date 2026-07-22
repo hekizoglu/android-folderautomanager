@@ -56,40 +56,9 @@ Process LMK ile öldükten sonra dönüşte StateFlow'lar ilk Room emit'ine kada
 
 ---
 
-## 📋 SOP — Nadiren Tetiklenen Prosedürler (D210'da CLAUDE.md'den taşındı, token tasarrufu)
+## 📋 SOP — Nadiren Tetiklenen Prosedürler (Detaylı → docs/internal/archive_technical_details.md)
 
-### MD Denetim Raporu Kuralı
-Her döngüde proje kökünde `MD_DENETIM_*.md` dosyası varsa:
-1. Openclaw agent (`gh/claude-haiku-4.5`, http://localhost:20128/v1) ile içeriği analiz et
-2. Her maddeyi tek tek ele al: 1-2 madde/döngü
-3. Çözülen maddeyi HISTORY.md'ye `[ÇÖZÜLDÜ]` + kısa açıklama ile taşı; rapordan sil
-4. Çözülemeyen/gerekmeyen maddeyi HISTORY.md'ye `[ÇÖZÜLMEDI — sebep]` ile taşı; rapordan sil
-5. Rapor tamamen boşalınca (0 madde) → dosyayı sil, HISTORY.md'ye "MD Denetim KAPANDI" notu ekle
-- Sıralı döngülerde son döngüde build alınır, aradaki döngülerde build atlanır
-
-### Denetim İyileştirme Kuralı (D191)
-Her 0 sonuçlu denetim döngüsünde 1 yeni tespit yöntemi ekle:
-1. `scripts/audit_improvements.md`'deki "Bekleyen Tespit Yontemleri" kuyruğundan sıradakini al
-2. audit.ps1'a yeni kural olarak ekle (T1/T2/T3 uygun katmanına)
-3. Kuyruktaki maddeyi "Eklendi D[xxx]" olarak işaretle
-4. Kuyruk boşalırsa: agent ile yeni tespit açıları araştır, kuyruğa 3+ yeni madde ekle
-5. Her 10 döngüde bir: agent ile LEARNINGS.md E-katalogundaki hataları tara, kapsanmayanlardan yeni kural türet
-- Regex yetmez — cross-reference, null safety, coroutine scope kontrolü gibi çok katmanlı analiz şart
-- Aynı hatayı iki kez yakalama: bulunan her bug için otomatik kural ekle
-
-### Encoding Otomatik Tespit ve Düzeltme — Detaylı Adımlar
-Bir dosyada Türkçe karakter bozukluğu (`Ã¶`, `Ä±`, `ÅŸ` vb.) tespit edilirse:
-1. `PYTHONIOENCODING=utf-8 python scripts/fix_encoding.py <dosya>` — çalıştır
-2. Bozukluk devam ediyorsa: `python -c "..."` ile TURKISH_DOUBLE_ENCODED tablosunu uygula
-3. 3. denemede de çözülemediyse `COZULEMEYEN_SORUNLAR.md`'ye ekle ve kullanıcıya bildir
-- PowerShell'de `Add-Content` kullanma (double-encode üretir) — her zaman `Out-File -Encoding utf8` veya Python `write_text(encoding='utf-8')`
-- PowerShell heredoc: `@'...'@` — kapatan `'@` mutlaka sıfır indent, `<<'EOF'` bash syntax PS5'te çalışmaz
-
-### Değişiklik Güvenlik Protokolü (her agent görevi sonunda, build öncesi)
-1. Değiştirilen dosyalardaki tüm import'ları doğrula (unresolved referans yok)
-2. Eklenen her yeni sabit/fonksiyon — tüm kullanım noktaları güncellendi mi?
-3. Silinen/yeniden adlandırılan her şey — eski adı kullanan başka dosya var mı? (`grep` ile kontrol)
-4. Her görev sonunda `.\gradlew assembleDebug` — build hataları commit öncesi düzeltilmeli
+Gereksiz teknik detaylar arşivlendi. Kod yazılırken gerekli adımlar CLAUDE.md §3'te aktif.
 
 ---
 
@@ -122,48 +91,11 @@ Migration'da elle `CREATE INDEX` yazarken ad, Room'un entity'den ürettiği adla
 
 ---
 
-## 📊 Metrik Hedefler (Firebase ile İzlenecek)
+## 📊 Metrik Hedefler (Kontrol → docs/PLAY_RELEASE_EVIDENCE_CHECKLIST.md)
 
-| Metrik | Hedef | Nasıl Ölçülür |
-|--------|-------|---------------|
-| Launcher açılış süresi | < 300ms | Firebase Performance |
-| AllApps drawer açılışı | < 150ms | `folder_opened` event latency |
-| Kategori doğruluğu | > %90 | `category_classified` event + kullanıcı düzeltme oranı |
-| Crash-free oturum | > %99 | Crashlytics |
-| Cold start süresi | < 1.5s | Firebase Performance (trace: `cold_start`) |
-| Bellek kullanımı | < 120MB baseline | MemoryStats + Crashlytics OOM |
-| Batarya tüketimi | < %4/saat (aktif kullanım) | Android Battery Historian |
-| APK boyutu | < 30MB | `assembleDebug` çıktısı |
-| Özellik kullanım oranı | — | Her event sayısı |
-
-### İzlenecek Firebase Events
-```kotlin
-// folder_opened     — klasör açılışı (category_id parametreli)
-// app_launched      — uygulama başlatma
-// all_apps_opened   — AllAppsDrawer açılışı
-// category_reclassified — kullanıcı kategori değiştirdi (öğrenme sinyali)
-// shortcut_used     — app shortcuts kullanıldı
-```
+Ürün metrikleri arşivlendi. Firebase event tanımları kod comentlerinde.
 
 ---
-
-## 🔼 Promote Edilmiş Kayıtlar (CLAUDE.md §5'e Taşınanlar)
-
-| # | Öğrenme | CLAUDE.md | Tekrar |
-|---|---------|-----------|--------|
-| P1 | Kotlin smart cast (`by` delegate) | §5 | 5+ |
-| P2 | Bağımlılık uyumluluk matrisi | §5 | 4 |
-| P3 | AppClassifier `mapOf()` duplicate | §5 | 8+ |
-| P4 | KeywordDatabase duplicate kategori | §5 | 2 |
-| P5 | Encoding (curly quote + bozuk UTF-8) | §5 | 4+ |
-| P6 | Türkçe `Locale("tr")` | §5 | 3 |
-| P7 | Flow `SharingStarted.Eagerly` | §5 | 3 |
-| P8 | Async ikon `produceState`+LRU | §5 | 5+ |
-| P9 | Reaktif AppPrefs (DisposableEffect) | §5 | 3 |
-| P10 | `fallbackToDestructiveMigration()` kaldırıldı — production'da veri kaybı riski | §5 | 2 |
-| P11 | `derivedStateOf` pattern — scroll sırasında gereksiz recomposition önler | §5 | 2 |
-| P12 | `installSplashScreen()` sırası: `super.onCreate()` sonrası, `setContentView()` öncesi | §5 | 1 |
-| P13 | Build cache kilidi: Java process'leri öldür + `app\build` sil — tekrarlayan sorun | §5 | 3+ |
 
 ---
 
@@ -223,30 +155,11 @@ Migration'da elle `CREATE INDEX` yazarken ad, Room'un entity'den ürettiği adla
 3. Duplicate varsa `python scripts/dedup_classifier.py` ile temizle
 4. Build + commit + push
 
-### Onboarding Adım Sırası (D201 güncel — 6 adım, 19⭐ radikal kesme)
+### Onboarding Adım Sırası (CLAUDE.md §7'de — 6 adım)
 WELCOME → SET_LAUNCHER → THEME_SELECT → QUICK_SETTINGS → BROWSER_SELECT → DONE
-~~17 adım~~ → 6 adıma indirildi (kullanıcı kaybı %72'den düşürmek için — bkz. FİKİRLER.md 19⭐). CLASSIFY_MODE, RESTORE_BACKUP, QUERY_PACKAGES, NOTIFICATIONS, UNUSED_GREY, AUTO_BACKUP, NOTIF_TEXT, NOTIF_ACCESS, SWIPE_HINT, NEW_BADGE, FOLDER_COUNT, NAV_HIDE adımları kaldırıldı — ilgili izinler/ayarlar artık özellik ilk kullanıldığında contextual olarak soruluyor. BROWSER_SELECT (RoleManager.ROLE_BROWSER) yeni eklendi.
 
-### Room DB Versiyon Geçmişi
-- v1-v5: temel alanlar
-- v6: `customNotes`, `notificationText` alanları eklendi
-- v7: 18 yeni kategori (CAT_COMMUNICATION, CAT_MUSIC, CAT_VIDEO... vs.) — şema değişimi yok, MIGRATION_6_7 boş migration ile eklendi
-- v8: `firstInstalledTime`, `lastUpdatedTime`, `targetSdkVersion`, `versionName` alanları eklendi (MIGRATION_7_8)
-- v9: `search_documents` tablosu + FTS5 sanal tablo (birleşik arama)
-- v10: `search_history` tablosu (arama geçmişi)
-- v11: `apps` tablosuna `idx_apps_appName`, `idx_apps_categoryId`, `idx_apps_appName_categoryId` index'leri (CS13 performans fix'i, D198)
-
-> **UYARI:** `fallbackToDestructiveMigration()` — Döngü#19'da KALDIRILDI. Yeni versiyon eklerken mutlaka `MIGRATION_x_y` oluştur, boş bile olsa.
-
-**Migration Şablonu (v8 için örnek):**
-```kotlin
-val MIGRATION_7_8 = object : Migration(7, 8) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        // Şema değişimi yoksa boş bırak
-        // db.execSQL("ALTER TABLE apps ADD COLUMN newField TEXT")
-    }
-}
-// AppDatabase.kt → addMigrations(MIGRATION_7_8)
+### Room DB Versiyon
+Mevcut v12. Migration şablonları ve geçmiş → docs/internal/archive_technical_details.md
 ```
 **room.schemaLocation** → `app/build.gradle.kts`'e ekle, `schemas/` klasörünü git'e al.
 

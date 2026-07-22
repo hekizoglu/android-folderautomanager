@@ -1,5 +1,24 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## FİKİRLER.md Temizliği — Tamamlanan Fikirlerin Arşivlemesi
+
+**Tamamlanan Fikirlerin Özeti:**
+- Fikir 1 (⭐ Yüksek Puanlı, 17p): Arama çubuğu konumu (v1.3.15, D257)
+- Fikir 2 (16p): İzin ver butonu stuck state (Döngü 268)
+- Fikir 3 (15p): Onboarding auto-restore bug (Döngü 268)
+- Fikir 4 (14p): Güven skoruna göre kategorize (Döngü 280)
+- Fikir 5 (13p): Arama barı IME çakışması (D267)
+- Fikir 6 (15p): Ticker tıklama donma (D265)
+- Fikir 7 (15p): Ticker swipe jet çakışması (D265)
+- Fikir 8 (12p): Pulse Clock insight metni (Döngü 277)
+- Fikir 9 (11p): Türkçe encoding hatası (D269)
+- Fikir 10 (15p): Birleşik arama kapsamı (D266)
+- Fikir 11 (15p): Arama sonuç türü etiketleri (D265)
+
+**İşlem:** FİKİRLER.md'den ✅ işareti alan 11 madde silinmiş, ROADMAP.md'deki ilgili maddeler puanlarıyla güncellenmiştir. Kalan aktif fikirlerin puanlaması ROADMAP.md görevleriyle karşılaştırılarak yeniden doğrulanmıştır.
+
+---
+
 ## EX21 - 2026-07-21 - Akıllı Erişim bildirim badge ve eski ikon düzeltmesi
 
 **Yapılanlar:** Bildirimler sekmesinde `AppIconView` içindeki eski `AppInfo.notificationCount` badge'i ile Smart Access'in güncel özet badge'inin aynı anda çizilmesi engellendi; bu yüzey artık yalnız `NotificationAccessItem.count` değerini gösteriyor. Smart Access satırına tab+package kararlı Compose key eklendi. `AppIconView` ikon cache anahtarına `lastUpdatedTime` katıldı ve ikon `produceState`'i `key(cacheKey)` sınırında yeniden oluşturulacak şekilde düzeltildi; böylece Son Açılanlar'da doğru adın yanında önceki paketin bitmap'i kalmıyor. Interaction state de package bazında yenileniyor.

@@ -1,336 +1,450 @@
-﻿# ROADMAP.md - AppOrganizer Aktif Yol Haritasi
+# AppOrganizer — Birleşik Teknik Roadmap
 
-> Son guncelleme: 2026-07-14.
-> Bu dosya aktif yapilacaklar icin tek kaynak olarak kullanilir.
-> Tamamlanan isler HISTORY.md'ye, yerelde cozulmeyen/dis aksiyon gerektirenler COZULEMEYEN_SORUNLAR.md'ye tasinir.
-> **Vizyon (2026-07-14, Hüseyin):** Pixel Launcher klonu değiliz — kendi kimliği olan harika bir uygulama. Karar ölçütü: kullanıcı için en iyisi.
+> **Tek aktif yol haritası**  
+> **Birleştirme tarihi:** 2026-07-21  
+> **Kaynak önceliği:** Daha yeni commit/dosya kararı, eski kararı geçersiz kılar. `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` geçmişte silinmiş olsa da daha sonra geri getirilmiştir; 21 Temmuz 2026 tarihli kesin ürün kararı ve onu izleyen kod değişikliği geçerlidir.
+> **Arşiv kuralı:** Tamamlanan işler `HISTORY.md`, dış sistem/cihaz gerektiren engeller `COZULEMEYEN_SORUNLAR.md`, kalıcı ürün kararları `DECISIONS.md` içine taşınır. Bu dosyada yalnız aktif veya kısmen tamamlanmış iş kalır.
 
----
+> **Hero tasarım şartnamesi:** `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` silinmeyecek ve bu birleşik roadmap’in H1 fazı için bağlayıcı teknik/görsel referans olarak kullanılacaktır. Dosya ayrı bir rakip backlog değil; kesin ürün kararının ayrıntılı uygulama sözleşmesidir.
 
-## ⭐ Yüksek Puanlı - Pulse Clock / Dijital Nabız (D244 devamı)
+## 1. Sabit ürün kararları
 
-Yerel Pulse/Rapor detayları HISTORY.md'dedir. Aktif kalan tek kapı cihaz/emülatör doğrulamasıdır:
+- AppOrganizer bir Pixel Launcher kopyası değildir; kendi kimliği olan, gizlilik öncelikli akıllı düzenleyicidir.
+- Ana ekran mimarisi: Sayfa 0 yalnız Hero Dashboard, klasörler sayfa 1..N, tek yatay pager.
+- Hero Dashboard sırası: büyük saat/tarih, Dijital Yaşam, Her Şeyi Ara, Akıllı Erişim sekmeleri, sayfa göstergesi, sabit uygulama dock’u.
+- Sayfa 0’da klasör, widget, ticker, AssistantInsight, FolderStats, ayrı favoriler/öneriler/son kullanılanlar/bildirim satırları bulunmaz.
+- Sabit Hero dock yalnız uygulama içerir; klasör ve dinamik öneri içermez.
+- Eski dashboard, feature flag, safe-mode görünümü ve kullanıcıya geri dönüş seçeneği tutulmaz; tek ürün yolu Hero Dashboard’dur.
+- `Her Şeyi Ara` ve dock tüm sayfalarda sabittir; yukarı kaydırma uygulama çekmecesini açar.
+- Home tek basış başlangıç sayfasına, çift basış uygulama çekmecesine gider.
+- Sayfa geri yükleme ham indeksle değil semantic anchor ile yapılır.
+- Kontrol Bekleyenler ekranında A tasarımı uygulanır: aynı anda tek aktif uygulama, kategori seçimi bottom sheet, Türkçe alfabetik sıralama.
+- Klasör birleştirmede A tasarımı uygulanır: kullanıcı kaynak/hedefi ve taşınacak uygulamaları görmeden işlem uygulanmaz.
+- Birleştirme atomik Room transaction olmalı ve uygulama yeniden başladıktan sonra geri alınabilmelidir.
+- Otomatik/sessiz klasör birleştirme yapılmaz. Split ve cleanup akışları merge refactor’ından etkilenmez.
+- Telemetri yalnız açık rıza ile çalışır; sorgu, kişi, dosya, klasör adı, uygulama adı veya paket adı gönderilmez.
+- Çoklu cihaz senkronizasyonu ilk production yayın sonrasıdır. Önce SAF/Drive yedekle–geri yükle akışı güçlendirilir.
+- İlk production kapsamı Türkçe ve İngilizcedir. Desteklenmeyen locale İngilizce kaynaklara ve deterministik kök sıralamaya düşer; eksik/boş `values-*` klasörü oluşturulmaz.
+- Paging3 ve `beyondViewportPageCount` artırımı mevcut ölçekte kapsam dışıdır.
 
-| Puan | Görev | Durum |
-|---|---|---|
-| — | Emülatörde/tablette manuel doğrulama: Pulse Clock 3 stil, skor/içgörü toggle'ları, uzun basma → yönetim ekranı, kompakt ekranda grid kaybolmuyor, klasör fihristi alt konumda grid üstüne binmiyor. 2026-07-13 kanıt: `Pixel6_API33` emülatörde `connectedDebugAndroidTest` 15 test / 0 failure geçti; AllApps/search/double-tap ve telefon `LauncherActivity` smoke crashsiz geçti. Simüle tablet AllApps/search crashsiz geçti; simüle tablet `LauncherActivity` screenshot denemesi ADB bağlantısını düşürdüğü için gerçek tablet/stabil tablet AVD görsel smoke gerekir. | Kısmen tamam - tablet Launcher görsel smoke bekliyor |
+## 2. Çalışma protokolü — token ve döngü bütçesi
 
----
+Her döngü tek bir teslimat sınırına sahip olmalıdır. Bir döngüde en fazla bir domain değişikliği, bir UI dilimi veya bir doğrulama paketi yapılır.
 
-## Hüseyin Geri Bildirim Listesi (2026-07-14, 20 madde)
+### Planlama varsayımları
 
-> Kaynak: Hüseyin'in ham geri bildirim listesi. KOD YAZILMADI — sadece analiz + roadmap kaydı. 🐛 etiketli maddeler gerçek kırık davranış; diğerleri yeni özellik/iyileştirme istekleri. Puanlama: KV=Kullanıcı Değeri, U=Uygulanabilirlik, BR=Bağımlılık Riski, EA=Etki Alanı (her biri 1-5).
+- Eforlar tek geliştiricinin aktif çalışma süresidir; cihaz, mağaza incelemesi, beta gözlemi ve hesap erişimi bekleme süresine dahil değildir.
+- `1 puan ≈ 0,5 geliştirici günü` yalnız kaba kapasite planlaması içindir. Faz ilk kez `Devam ediyor` durumuna alınırken kalan iş yeniden tahmin edilir.
+- Hedef bitiş tarihi, faz sahibi ve bağımlılıklar hazır olduğunda ISO `YYYY-MM-DD` biçiminde atanır. Sahibi veya başlangıç tarihi belli olmayan faza sahte kesin tarih yazılmaz.
+- R0–R8 için ilk aktif efor bütçesi toplam `27,5–44,5 geliştirici günü`dür; bu takvim taahhüdü değildir ve paralel çalışma/dış bekleme içermez.
 
-### ⭐ Yüksek Puanlı (15+)
+### Döngü başlangıcı
 
-### [1] 🐛 İzin iste butonu izin sonrası takılı kalıyor
-**Sorun/İstek:** Kullanıcı sistem izin dialogunda "izin ver" dedikten sonra ekrandaki "İzin Ver" butonu loading/stuck state'te kalıyor, UI güncellenmiyor.
-**Nasıl yapılmalı:** `ContextualPermissionDialog.kt` ve `SettingsPermissionsSection.kt` içindeki `ActivityResultContracts.RequestPermission()` launcher callback'i kontrol edilmeli — callback içinde izin durumunu tutan state (muhtemelen `remember { mutableStateOf(...) }`) `ContextCompat.checkSelfPermission` ile yeniden okunmuyor olabilir. `PermissionsGuideScreen.kt`'de de aynı pattern var mı taranmalı. Çözüm: launcher callback içinde state'i `checkSelfPermission` sonucuna göre zorla güncelle, ayrıca `ON_RESUME` lifecycle event'inde de yeniden kontrol et (kullanıcı ayarlardan izin verip geri dönebilir).
-**Puan:** KV=5 U=4 BR=4 EA=3 → Toplam=16
-**Durum:** Tamamlandı (Döngü 265)
+1. Yalnız bu dosyadaki aktif döngüyü ve doğrudan etkilenen kodu oku.
+2. `HISTORY.md` dosyasını baştan sona okuma; yalnız görev kimliği/dosya adıyla hedefli `rg` kullan.
+3. Aynı konu daha yeni committe tamamlanmışsa kod yazma; doğrula ve roadmap’i güncelle.
+4. Çalışma ağacını ve son ilgili commitleri kontrol et; kullanıcı değişikliklerini koru.
+5. Değişecek dosyaları ve kabul testini döngü başlamadan sabitle.
 
-### [2] 🐛 Silip tekrar kurunca onboarding başlamıyor
-**Sorun/İstek:** APK silinip yeniden kurulduğunda onboarding akışı tekrar başlamıyor, sanki eski kurulumun devamıymış gibi davranıyor.
-**Nasıl yapılmalı:** `AppPrefs.kt`'deki `KEY_ONBOARDING_DONE` okuması `LauncherActivity.kt`/`MainActivity.kt` içinde kontrol edilmeli. Olası kök neden: Android'in otomatik yedekleme (Auto Backup for Apps) SharedPreferences dosyasını (`AppPrefs`) uygulama silinse bile Google hesabına yedekleyip yeni kurulumda geri yüklemesi — `AndroidManifest.xml`'de `android:allowBackup` ve `android:fullBackupContent` ayarı kontrol edilmeli. Çözüm adayı: `AppPrefs` dosyasını backup kapsamı dışına al (`fullBackupContent` XML'inde `<exclude domain="sharedpref" path="..."/>`) ya da onboarding flag'i cihaz-bağımlı bir değerle (ilk kurulum zaman damgası) doğrula.
-**Puan:** KV=5 U=3 BR=4 EA=3 → Toplam=15
-**Durum:** Tamamlandı (Döngü 265)
+### Döngü uygulaması
 
-### 🟡 Orta Puanlı (10-14) — özet FİKİRLER.md'de de kayıtlı
+1. Önce saf model/policy/use-case, sonra state/ViewModel, sonra UI, en son persistence/telemetry sırasını kullan.
+2. Büyük dosyanın tamamını tekrar tekrar okutma; sembol ve satır aralığıyla çalış.
+3. Yeni paralel altyapı kurma; mevcut repository, policy, mapper ve UI bileşenlerini genişlet.
+4. Bir başarısız testte aynı komutu körlemesine en fazla bir kez tekrarla; sonra kök nedeni incele.
+5. Her döngüde yalnız hedefli testleri çalıştır; tam test/lint/build paketi faz kapısında çalışır.
 
-### [3] Ayarlar > Uygulamalar: güven skoruna göre otomatik kategorize toggle'ı
-**Sorun/İstek:** Uzun-bas kategori değiştirme bilgisinin yanına, AppClassifier güven skoruna göre otomatik kategorize ayarı taşınsın; güven skoru düşükse kullanıcıya sorulsun.
-**Nasıl yapılmalı:** `AppClassifier.kt` içindeki confidence/skor hesaplama mantığı (`classificationSource`, `isCategoryLocked` alanları D246'da zaten eklenmiş — `AppInfo.kt`) temel alınabilir. `SettingsAppsSection.kt`'e yeni toggle (`KEY_AUTO_CLASSIFY_LOW_CONFIDENCE`, AppPrefs.kt'ye yeni key), düşük güvenli sınıflandırmalar `ClassificationReviewScreen.kt` akışına (mevcut "Kontrol Bekleyenler" ekranı) yönlendirilebilir — madde 14 ile aynı ekranı paylaşabilir.
-**Puan:** KV=4 U=4 BR=3 EA=3 → Toplam=14
-**Durum:** ✅ Tamamlandı (Döngü 280) — Ayarlar > Uygulamalar > Uygulama Yönetimi altına "Düşük Güvenli Kararları Sor" toggle'ı eklendi. Varsayılan açık: düşük güvenli otomatik kararlar Kontrol Bekleyenler'e düşer. Kapalıyken otomatik sınıflandırma/LLM/reset-reclassify kararları review state'i `NOT_REQUIRED` yazar.
+### Döngü kapanışı
 
-### [4] Arama çubuğu klavye ile hafif çakışıyor — ✅ Tamamlandı (D267)
-Çözüm: `HomeScreen.kt` kök `Column`'a `Modifier.imePadding()` eklendi. Detay → HISTORY.md Döngü 267.
+1. Kod + hedefli test + kabul kriteri birlikte tamamlanmadan işaretleme yapma.
+2. Tamamlanan döngüyü özet olarak `HISTORY.md` içine taşı; ayrıntılı planı burada bırakma.
+3. Bu dosyada yalnız durum, kanıt commit’i ve kalan bağımlılık tutulur.
+4. Dış cihaz/hesap gerektiren işi `COZULEMEYEN_SORUNLAR.md` içine taşı ve geliştirme döngüsünü bloke etme.
+5. Bir faz kapısında `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug`; cihaz varsa `connectedDebugAndroidTest` çalıştır.
 
-### [5] 🐛 Ticker açık item'a tekrar tıklayınca donuyor — ✅ Tamamlandı (D265)
-Çözüm: `HomeTickerRow.kt` tıklamaya 700ms debounce (`lastClickAt`) eklendi. Detay → HISTORY.md Döngü 265.
+## 3. Bağımlılık zinciri
 
-### [6] 🐛 Ticker'da swipe (kaydırma) çalışmıyor — ✅ Tamamlandı (D265)
-Kök neden: ayrı `pointerInput` blokları üst `HorizontalPager` ile nested-scroll çakışıyordu. Çözüm: tap+swipe tek `awaitEachGesture` döngüsünde birleştirilip `down.consume()` ile jest bu bileşene kilitlendi. Detay → HISTORY.md Döngü 265.
+```text
+R0 Kaynak birleştirme
+ └─ H1 Yarım kalan Hero Dashboard'u tamamla
+     ├─ R1 Mevcut ana ekran/performance güvenlik kapısı
+     ├─ R2 Kontrol Bekleyenler A tasarımı (kod H1 sonrası; cihaz kapısı R1 sonrası)
+     │   └─ R3 Klasör birleştirme domain + inceleme UI
+     │       └─ R4 Atomik merge + kalıcı undo
+     ├─ R5 Hero Dashboard cihaz/telemetri doğrulaması
+     ├─ R6A Güvenli legacy/dead-code temizliği
+     └─ R6B Doğrulama sonrası kalıcı legacy kaldırma
 
-### [7] Pulse Clock altındaki insight metni kaldırılsın, saat küçültülsün
-**Sorun/İstek:** Saatin altındaki bilgilendirme metni donuk/işlevsiz görünüyor; kaldırılıp saat biraz küçültülebilir.
-**Nasıl yapılmalı:** Pulse Clock bileşeni ve insight text muhtemelen `HomeScreenComponents.kt` içinde; `KEY_TICKER_ENABLED`/skor-insight toggle'larıyla ilişkili görünürlük mantığı var (D244 Pulse Clock işi, ROADMAP başındaki "Pulse Clock / Dijital Nabız" bölümüyle çakışıyor — aynı bölüme not düşülmeli). Tasarım kararı: insight text kaldır ya da madde 10'daki "Dijital Yaşam Skoru" rozetiyle birleştir, saat boyutu (`fontSize`/`Modifier.size`) düşürülsün. UX kararı olduğu için Fable/kullanıcı onayı önerilir.
-**Puan:** KV=3 U=4 BR=2 EA=3 → Toplam=12
-**Durum:** ✅ Tamamlandı (Döngü 277) — Pulse Clock insight metni yeni/varsayılan kurulumda kapalı hale getirildi; mevcut ayar korunuyor, kullanıcı Ayarlar > Ana Ekran bölümünden tekrar açabilir. Pulse kart yüksekliği ve saat fontu küçültülerek ana ekranda klasör/grid alanı açıldı.
+R2–R6
+ └─ R7 Birleşik cihaz/erişilebilirlik/telemetri QA
+     └─ R7.5 Kapalı beta kapısı
+         └─ R8 İlk production release
+             └─ R9 Release sonrası ürün geliştirmeleri
+```
 
-### [8] Onboarding'de güçlü özellikler öne çıkarılsın
-**Sorun/İstek:** Onboarding ekranları güzel ama AppClassifier 3702 paket, gizlilik-öncelikli bildirim analizi gibi güçlü yanlar yeterince öne çıkmıyor.
-**Nasıl yapılmalı:** `OnboardingScreen.kt`'deki WELCOME/QUICK_SETTINGS adımlarına (onboarding sırası CLAUDE.md kuralı gereği bozulmayacak) somut sayı ve gizlilik vurgusu içeren metin/kart eklenmeli: "3700+ uygulama otomatik tanınır", "Bildirim içerikleri asla okunmaz, sadece sayılır" gibi. Metin İngilizce/Türkçe locale ile tutarlı olmalı (FİKİRLER.md'deki EN string sorunu ile çakışabilir, birlikte ele alınabilir).
-**Puan:** KV=3 U=4 BR=2 EA=2 → Toplam=11
-**Durum:** ✅ Tamamlandı (Döngü 275) — Welcome ekranındaki güçlü yanlar kartı resource tabanlı TR/EN metinlere taşındı; 3700+ uygulama tanıma, tek arama kutusu, Dijital Nabız raporları ve gizlilik vaadi somut anlatıldı. Hızlı ayarlardaki ana ekran araması açıklaması gerçek kapsamla uyumlu hale getirildi.
+R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikten sonra paralel ilerleyebilir. R2’nin domain/state/unit-test işleri R1 cihaz ölçümünü beklemez; R2 faz kapanışı ve cihaz smoke kanıtı R1 baseline sonrasında yapılır. R4, R3 bitmeden; R6B adayı Hero doğrulaması bitmeden; R7.5, R7.1–R7.4 bitmeden; R8, R7.5 bitmeden başlatılamaz.
 
-### [9] "En Çok Kullandıklarım" alanı küçültülüp yanına teknik bilgi eklensin
-**Sorun/İstek:** Bu alan büyük yer kaplıyor; küçültülüp yanına ilginç/teknik bilgi eklenebilir.
-**Nasıl yapılmalı:** `HomeScreenComponents.kt` içindeki ilgili composable boyutu (kart yüksekliği/ikon sayısı) küçültülmeli; yanına `LauncherViewModel.kt`'de zaten hesaplanan istatistiklerden biri (örn. günlük ortalama ekran açma sayısı, en yoğun saat aralığı) eklenebilir — `DashboardStats.compute()` (AppOrganizer Dashboard) ile aynı veri kaynağı kullanılabilir, CLAUDE.md §3 "AppOrganizer Dashboard Kuralı" ile uyumlu.
-**Puan:** KV=3 U=3 BR=2 EA=2 → Toplam=10
-**Durum:** ✅ Tamamlandı (Döngü 278) — Öneri satırı 4 yerine 3 uygulama gösterecek şekilde kompaktlaştırıldı; satırın yanına öneri sayısı ve sinyal kaynağı ("Son 28 gün + bu saat") teknik bilgi pili eklendi. TR/EN metinler resource'a taşındı.
+## 4. Faz R0 — Baseline ve belge konsolidasyonu
 
-### [10] "Dijital Yaşam Skoru" renk kodlu rozet ticker'a eklensin
-**Sorun/İstek:** Ticker'a "Dijital Yaşam Skoru: 70" gibi bir skor eklensin, kötüyse kırmızı iyiyse yeşil.
-**Nasıl yapılmalı:** `LauncherViewModel.kt`'deki `tickerItems` üretim mantığına yeni bir ticker item tipi eklenmeli; skor hesaplama muhtemelen mevcut `InsightEngine`/`UsageStatsHelper` verilerinden (ekran açma sıklığı, bildirim yoğunluğu, uzun kullanım süresi) türetilebilir. Renk: `Color.Red`↔`Color.Green` arası `lerp()` ile skor değerine göre interpolasyon (madde 7'deki insight text kaldırma kararıyla birlikte tasarlanmalı — belki onun yerini alır).
-**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** ✅ Tamamlandı (Döngü 276) — Skor üretimi zaten `TickerComposer.computeDigitalLifeScore()` ile gerçek sinyallerden geliyordu; `HomeTickerRow` artık dijital/skor/denge ticker metnindeki `NN/100` değerini algılayıp "Skor NN" rozetini renk kodlu gösteriyor (80+ koyu yeşil, 60+ yeşil, 40+ sarı, altı kırmızı).
+**Amaç:** Tek gerçek kaynak oluşturmak ve eski kararların yeniden uygulanmasını engellemek.
+**Tahmini kalan efor:** 0,5 gün (1 puan). **Hedef:** Faz aktive edildiğinde atanır.
 
-### [13] Ana ekranda "Görevler" (gamification) giriş noktası
-**Sorun/İstek:** Saatin altına Görevler'e giden bir giriş noktası konsun; mevcut görev sistemi varsa profesyonelleştirilsin.
-**Nasıl yapılmalı:** Önce mevcut bir "Görevler"/task sistemi olup olmadığı doğrulanmalı (bu taramada bulunamadı — muhtemelen yok, sıfırdan tasarım gerekir). Yeni bir `TasksScreen.kt` + `Routes.TASKS` + `HomeScreenComponents.kt`'ye saat altına küçük bir "Görevler (N)" chip/buton eklenmeli. Madde 15'teki puanlama motoruyla birlikte tasarlanmalı (aynı özelliğin iki yüzü) — mimari karar gerektirir, zorluk 7-8 sayılmalı (CLAUDE.md Görev Zorluk Puanı kuralı gereği önce 2+ kaynak araştırma).
-**Puan:** KV=4 U=2 BR=2 EA=3 → Toplam=11
-**Durum:** ✅ Tamamlandı (Döngü 274) — Mevcut `MissionsScreen`/`Routes.MISSIONS` altyapısı kullanıldı; ana ekranda saat kartının altına Görevler chip'i eklendi. Görev sistemi ayardan kapalıysa chip gizleniyor.
+- [x] Eski roadmap’lerdeki açık/kısmi işleri birleştir.
+- [x] Daha yeni kararları üstün tut; Hero Dashboard’un yerel roadmap silme commit’ini karar iptali olarak yorumlama.
+- [x] Tamamlanmış maddeleri yeniden backlog’a alma.
+- [x] `ROADMAP.md`, `ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md`, `ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md`, `KATEGORI_ROADMAP.md` ve `KLASOR_BIRLESTIRME_ROADMAP.md` dosyalarını bu dosya yayınlandıktan sonra kaldır.
+- [ ] Ana dalda hedefli doğrulama: temiz checkout, `git status`, roadmap bağlantısı araması.
 
-### [14] "Direkt Onayla" butonuna açıklama eklensin
-**Sorun/İstek:** Kontrol Bekleyenler bölümünde "Direkt Onayla" butonu ne yaptığını açıklamıyor.
-**Nasıl yapılmalı:** `ClassificationReviewScreen.kt:93` civarındaki "Onayla" butonunun yanına küçük bir açıklama metni veya `IconButton` + tooltip/`Text` eklenmeli: "Bu uygulama önerilen kategoriye taşınır, istersen sonra değiştirebilirsin." CLAUDE.md §6 "Ayarlar Metin ve Kod İnceleme Kuralı" — bilgi satırı ayar gibi davranmamalı, sade ve anlaşılır olmalı.
-**Puan:** KV=3 U=5 BR=1 EA=2 → Toplam=11
-**Durum:** ✅ Tamamlandı (Döngü 268)
+**Çıkış:** Depoda yalnız `YENI_ROADMAP.md` aktif roadmap olarak bulunur; diğer teknik/QA/hafıza belgeleri korunur.
 
-### [15] Görev puanlama motoru — durum bazlı artan/azalan puan sistemi
-**Sorun/İstek:** Klasör önerileri/birleştirme önerileri/kontrol bekleyenler işlem gördüğünde Görevler puanı artmalı; puan sistemi durum bazlı artıp azalabilmeli.
-**Nasıl yapılmalı:** Yeni bir `GamificationEngine`/`TaskScoreManager` gerekir — Room'a yeni tablo (`task_events` veya `user_score`) veya `AppPrefs`'e basit sayaç ile başlanabilir. Puan artışı tetikleyicileri: `ClassificationReviewScreen.kt` onay aksiyonu, klasör birleştirme önerisi kabul (`AppClassifier.findSimilarUnclassifiedApps()` / `SimilarAppsSuggestionDialog.kt` — FİKİRLER.md K2 maddesiyle aynı altyapı). Madde 13 ile birlikte tasarlanmalı; mimari karar gerektirir (Görev Zorluk Puanı 7-8).
-**Puan:** KV=3 U=2 BR=2 EA=3 → Toplam=10
-**Durum:** ✅ Tamamlandı (Döngü 272) — `TaskScoreManager` SharedPreferences tabanlı ilk faz olarak eklendi. Sınıflandırma onayı/düzeltmesi, sınıflandırma erteleme, klasör önerisi kabul/ertele/gizle ve benzer uygulama önerisi kabul aksiyonları durum bazlı puan deltası yazıyor; Görevler ekranı toplam görev puanı ve son işlem deltasını gösteriyor. Build kullanıcı isteğiyle çalıştırılmadı.
+## 5. Faz H1 — Acil: Hero Dashboard dönüşümünü tamamla
 
-### [17] 🐛 Birleşik arama kapsamı eksik — kategori/klasör/dosya adı aranmıyor
-**Durum:** ✅ Tamamlandı (D265, doğrulama) — İnceleme sonucu kök neden analizi GÜNCEL DEĞİLMİŞ: `SearchDocument.kt` zaten `sourceType`/`SourceType` enum'una sahip (APP/CATEGORY/SETTING/CONTACT/FILE), `SearchIndexer.kt` kategori+app'i FTS'e indexliyor (D192 Room FTS5 iskeleti). `HomeAppSearchBar` (`HomeScreenComponents.kt:742-`) ayrıca klasör adını (özel ad dahil, `folderCustomNames`) yerel `folders` listesi üzerinden filtreleyip "Klasörler" grubunda gösteriyor (satır 850-858, 1011-1052) — kategori adı = klasör adı olduğundan kategori araması pratikte klasör grubunda karşılanıyor. Dosya adı arama zaten `FilesIndexer.kt`/`FilesIndexWorker` ile SAF üzerinden mevcut (kapsam dışı bırakılması istenen kısım zaten yapılmıştı). Kod değişikliği gerekmedi, sadece doğrulandı. Dosya adı arama zaten SAF kullanıyor (Android 16 kısıtına uygun).
+**Neden ilk:** `main` üzerindeki son dönüşüm eski dashboard state/bölümlerinin önemli kısmını kaldırdı; `SmartDashboardPage` ise yeni `HeroDashboardPage` bağlanmadan geçici Pulse Clock + Today/HomeIntelligence içeriğinde kaldı. Bu ara durum yeni özelliklerden önce kapatılmalıdır.
+**Tahmini kalan efor:** 1–2 gün (2–4 puan; dış cihaz doğrulaması hariç). **Hedef:** Faz aktive edildiğinde atanır.
 
-### [18] AllAppsDrawer'da uygulama altına bildirim özeti
-**Sorun/İstek:** Tüm Uygulamalar listesinde her uygulamanın altına, o uygulamadan bildirim geldiyse bunu yazalım.
-**Nasıl yapılmalı:** `AllAppsDrawer.kt` (grep'te doğrudan bulunamadı, `AppIconView.kt`/`FolderTile.kt` bildirim badge mantığını zaten kullanıyor — CLAUDE.md §8 madde 10) her satıra `notification_events` tablosundan (paket bazlı) son N saatteki bildirim sayısı/özeti çekip küçük bir alt metin ("3 bildirim") eklenmeli. `AppNotificationListenerService.kt` + `NotificationAnalyzer` mevcut altyapı kullanılabilir, yeni sorgu (`AppDao`/`NotificationEventDao` paket bazlı count) gerekir.
-**Puan:** KV=3 U=3 BR=2 EA=3 → Toplam=11
-**Durum:** ✅ Tamamlandı (Döngü 279) — `notification_events` için reaktif paket bazlı son 24 saat sayımı eklendi. All Apps satırları bildirim metni kapalıyken ve veri varsa uygulama altında "Son 24 saatte N bildirim" gösteriyor; bildirim içeriği okunmuyor/gösterilmiyor.
+### H1.0 Baseline ve kırık HEAD kontrolü
 
-### [21] Son bildirim gelen uygulamalar — "Günlük Öneriler" tarzı isteğe bağlı bölüm + Favoriler gibi çekmece/ana ekran eklenebilirliği
-**Sorun/İstek:** Ana ekranda mevcut "Günlük Öneriler" (AppSuggestionsRow) bölümüne benzer, ama son bildirim alan uygulamaları gösteren, kullanıcının isteğe bağlı açıp kapatabildiği ayrı bir bölüm istendi. Bu bölüm — favoriler mekanizmasına benzer şekilde — hem AllAppsDrawer (çekmece) içinde hem de ana ekranda gösterilebilmeli.
-**Nasıl yapılmalı:** Veri kaynağı madde 18 ile aynı (`notification_events` tablosu, `NotificationEventDao`/`AppDao` paket bazlı son-bildirim sorgusu) — bu iki madde ORTAK ALTYAPI paylaşır, aynı döngüde ele alınmaları maliyeti düşürür. Yeni bir `RecentNotificationAppsRow` composable'ı `HomeScreenComponents.kt`'deki mevcut `AppSuggestionsRow`/`SuggestionAppItem` pattern'i taklit ederek yazılabilir (aynı `iconSizeDp`, `GlassCard` görsel dili). Görünürlük: `AppPrefs.kt`'ye `KEY_RECENT_NOTIFICATIONS_ROW_ENABLED` (varsayılan kapalı — CLAUDE.md "Yeni Özellik = Ayarlar Kuralı" gereği) + `SettingsHomeScreenSection.kt`'e toggle. Favoriler mevcut altyapısı (`AppPrefs`/Room favori flag'i, favori chip/dock ekleme akışı — `DockEditSheet.kt` veya benzeri) incelenip aynı "çekmeceye ekle / ana ekrana ekle" UX pattern'i (muhtemelen uzun-bas context menüsünde "Ana ekrana ekle" seçeneği) bu yeni bölüm için de uygulanmalı — kod tekrarından kaçınmak için favori-ekleme mantığı ortak bir fonksiyona çıkarılabilir. Gizlilik notu: bildirim içeriği hiçbir zaman gösterilmez (CLAUDE.md/Privacy Policy ile tutarlı), sadece "son bildirim alan uygulama" paket+zaman bilgisi kullanılır.
-**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** ✅ Tamamlandı (Döngü 279) — Ayarlar > Ana Ekran > Öneriler ve bildirimler altına varsayılan kapalı "Son Bildirim Alanlar" toggle'ı eklendi. Açıkken ana ekranda son 24 saatte bildirim alan uygulamalar satırı, All Apps çekmecesinde de aynı uygulamalar bölümü görünür. Yalnız sayı/paket zamanı kullanılır; içerik gösterilmez.
+- [x] Hero kaynak/state/test sözleşmesini temiz çalışma ağacında statik olarak doğrula; gerçek compile/build/smoke kanıtını R5/R7 ortak doğrulama paketinde tamamla.
+- [x] `SmartDashboardPage` ve `DashboardUiState` Hero sözleşmesine indirildi; artık bulunmayan assembler/section yardımcılarını kullanan kırık testler temizlendi.
+- [x] Kategori roadmap durumunu commit mesajından değil kod/test kanıtından belirle; Hero commitlerini kategori ilerlemesi sayma.
 
-### [22] 🐛 Uygulama üzerinde basılı tutup "Kategori Değiştir" hiçbir şey yapmıyor
-**Sorun/İstek:** Kullanıcı bir uygulama ikonuna uzun basıp context menüden "Kategori Değiştir" seçtiğinde hiçbir tepki alınmıyor (dialog/ekran açılmıyor, hata da yok).
-**Nasıl yapılmalı:** Uzun-bas context menüsünün tanımlı olduğu yer bulunmalı — `HomeScreen.kt`/`FolderScreen.kt`/`AllAppsDrawer.kt` içindeki uygulama ikonu `onLongClick`/context menü composable'ı (DropdownMenu veya bottom sheet) grep ile aranmalı: `grep -rn "Kategori Değiştir\|kategori.*degistir\|ChangeCategory" app/src/main/java`. Muhtemel kök nedenler: (a) menü öğesinin `onClick` lambda'sı boş/TODO bırakılmış, (b) tıklama bir dialog/ekranı tetikliyor ama navigation route'u yanlış/eksik, (c) `AppClassifier`/`AppRepository`'de kategori güncelleme fonksiyonu çağrılıyor ama sonuç UI'a yansımıyor (state güncellenmiyor), (d) madde 3'teki (Ayarlar > Uygulamalar güven skoru toggle'ı) ile aynı "kategori değiştir" akışının parçası olabilir — ilişkili olup olmadığı doğrulanmalı. Kategori değiştirme özelliğinin projede zaten var olduğu CLAUDE.md §3 ("Yeni Özellik = Ayarlar Kuralı" örnekleri) ve `ClassificationReviewScreen.kt` bağlamından biliniyor, muhtemelen sadece uzun-bas giriş noktası kırık.
-**Puan:** KV=4 U=4 BR=3 EA=2 → Toplam=13
-**Durum:** Bekliyor 🐛
+### H1.1 Hero tasarım altyapısı — kod tamam; dış doğrulama R5/R7’de
 
-### [23] Görevler'e "gece saatinde telefon açma" tarzı zaman-kısıtlı görev tipi
-**Sorun/İstek:** Örn. "23:00'dan sonra telefonu açma" gibi bir görev tanımlanabilsin; kural ihlal edilirse (o saat aralığında ekran açılırsa) görev otomatik "çarpı"/başarısız işaretlensin — bir oyun/challenge gibi.
-**Nasıl yapılmalı:** Mevcut `TaskScoreManager` (Döngü 272) sadece olay-tetiklemeli (sınıflandırma onayı, klasör önerisi kabul vb.) puan işliyor — bu YENİ bir görev TİPİ: zaman-pencereli, kullanıcı tanımlı kısıtlama. Gerekli parçalar: (1) `MissionsScreen.kt`'ye yeni görev oluşturma UI'ı (başlangıç saati, bitiş saati seçici), (2) Room'a yeni tablo (`time_restriction_missions`: başlangıç/bitiş saat, oluşturulma tarihi, günlük durum), (3) ekran açılma olayını yakalayan bir mekanizma — `UsageStatsHelper`/`AppNotificationListenerService` zaten ekran/uygulama açılışını izliyor olabilir, ya da yeni bir `ScreenOnReceiver` (`Intent.ACTION_SCREEN_ON` broadcast receiver) gerekebilir, (4) her gün gece yarısı (veya kısıtlama penceresi bitiminde) `WorkManager` ile o günün görev sonucunu değerlendirip `TaskScoreManager`'a çarpı/tik yazan bir worker. Zorluk: arka planda `ACTION_SCREEN_ON` dinlemek Android 8+'ta manifest-registered receiver ile çalışmaz (implicit broadcast kısıtı), `Service`/`WorkManager` periyodik kontrol ya da mevcut NotificationListener altyapısına eklenti gerekebilir — mimari karar gerektirir (Görev Zorluk Puanı 7-8, CLAUDE.md kuralı gereği önce 2+ kaynak araştırma).
-**Puan:** KV=4 U=2 BR=3 EA=3 → Toplam=12
-**Durum:** Bekliyor
-**⚠️ ÖNEMLİ KISIT (Hüseyin, 2026-07-14):** Görevler sisteminde sistem tarafından DENETLENEMEYEN/doğrulanamayan görevler kullanıcı tarafından "tamamlandı" olarak işaretlenemez — yani bu görev tipi (ve ileride eklenecek her yeni görev tipi) MUTLAKA gerçek bir sinyale (ekran açma olayı, kullanım verisi vb.) dayalı OTOMATİK değerlendirilmeli; kullanıcının kendi kendine "yaptım" diyebileceği, doğrulanamayan, honor-system bir buton/checkbox EKLENMEMELİ. Bu prensip madde 13/15'teki (Görevler giriş noktası + puanlama motoru, D274/D272'de tamamlandı) mevcut/gelecek tüm görev tiplerine de uygulanmalı — tasarım gözden geçirilirken kontrol edilmeli.
+- [x] `hero/` altında tek kaynak `HomeHeroTokens` ve adaptif `HomeHeroProfile`/`HomeHeroLayoutPolicy` oluştur.
+- [x] Hero’ya özel, API 26 uyumlu `PremiumGlassSurface` oluştur.
+- [x] Referans düzeni 360×640dp esas al: saat, Dijital Yaşam, Her Şeyi Ara ve Akıllı Erişim aynı adaptif 304dp genişliği paylaşır; yükseklikler sırasıyla 114/96/74/162dp, dock 340×64dp olur.
+- [x] Ham px kullanma; 320×568–412×915, tablet, landscape ve fontScale 1.5 kararlarını policy ile yönet.
+- [x] Mevcut global `GlassCard` bileşenini değiştirmeden bırak.
+- [x] Policy için 320×568, 360×640, 412×915, tablet, landscape, fontScale 1.5 ve geçersiz ölçü unit testlerini yaz.
+- [x] Hero kartlarını gerçek parent constraint’inden hesaplanan tek içerik genişliğine bağla; küçük pencere/telefonlarda yatay padding sonrası küçült, tablet/landscape’de profil tavanını aşma.
 
-### [24] 🐛 Arama sonuçları arama sırasında kayboluyor
-**Sorun/İstek:** Arama çubuğunda arama yapılırken bulunan sonuç(lar) kayboluyor (tam netleşmedi: yazarken mi, bir tıklamadan sonra mı — agent reprodüksiyon adımıyla netleştirmeli).
-**Nasıl yapılmalı:** `HomeScreenComponents.kt`'deki `HomeAppSearchBar` composable'ı (D266/D269 döngülerinde arama kapsamı üzerinde çalışılmıştı) incelenmeli — arama sorgu state'i (`searchQuery`/sonuç `LazyColumn`) bir `remember`/`derivedStateOf` içinde tutuluyorsa, focus kaybı veya klavye animasyonu (madde 4/D267 `imePadding()` fix'iyle ilişkili olabilir) sırasında recomposition'da state sıfırlanıyor olabilir. `SearchRepository`'nin Flow tabanlı sorgu sonucu debounce/timeout ile boş sonuca düşüyor olması da ihtimal dahilinde.
-**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** ✅ Tamamlandı (Döngü 285) — Kök neden kök `Column` (`HomeScreen.kt`) `fillMaxSize()+imePadding()` ile sınırlı olup kaydırılmıyordu; klavye açılınca ikincil satırlar (favoriler/öneriler/widget) yer kaplamaya devam edip arama sonuç kutusunu (özellikle BOTTOM konumunda) görünür alanın dışına itiyordu. `WindowInsets.isImeVisible` ile klavye açıkken ve birleşik arama etkinken bu satırlar geçici gizleniyor.
+### H1.2 Hero kartları
 
-### [25] 🐛 Haber şeridi (ticker) her zaman en son açılan öğeyi açıyor, tıklanan öğeyi değil
-**Sorun/İstek:** Ana ekrandaki kayan yazı (ticker) hangi habere/bilgiye tıklanırsa tıklansın, hep en son açılmış olan öğe açılıyor — tıklanan öğenin kendi hedefine gitmiyor.
-**Nasıl yapılmalı:** Bu, D265'te düzeltilen ticker donma/swipe bug'ından FARKLI bir sorun — muhtemelen `HomeTickerRow.kt`'deki tıklama handler'ı, o an ekranda görünen/aktif olan `tickerItems[currentIndex]`'i değil, kapanış closure'ında yanlışlıkla sabit/son güncellenen bir referansı (örn. `var currentItem` gibi paylaşılan bir mutable state, veya `LaunchedEffect` içinde yanlış key ile yakalanmış bir closure) kullanıyor. `onClick` lambda'sının hangi `item`'ı yakaladığını (closure capture) ve `LazyRow`/`HorizontalPager` kullanılıyorsa `pagerState.currentPage`'in tıklama anında doğru index'i verip vermediğini incelemek gerekir.
-**Önerilen somut çözüm (2026-07-14):** Kök neden büyük ihtimalle `onClick = { navigateTo(currentItem) }` şeklinde DIŞ scope'taki paylaşılan bir `currentItem`/index değişkenini okuyan bir lambda — Compose'da `LazyRow`/`HorizontalPager` item builder'ı her item için `onClick = { navigateTo(item) }` şeklinde İTEM'İ DOĞRUDAN capture ETMELİ, dışarıdaki bir `var`/state'i değil. Somut adımlar: (1) `items(tickerItems) { item -> ... onClick = { navigateTo(item) } ... }` yapısına geçilmeli — `item` parametresi lambda'nın kendi scope'unda olduğu için her satır kendi doğru hedefini closure'a alır, paylaşılan mutable state'e ihtiyaç kalmaz. (2) Eğer mevcut kod `HorizontalPager` + `pagerState.currentPage` okuyarak "hangi item tıklandı" belirliyorsa bu YANLIŞ pattern'dir çünkü `currentPage` tıklama anında güncel olmayabilir (özellikle swipe animasyonu sürüyorsa) — bunun yerine her sayfanın kendi `onClick`'i kendi index'ini/item'ını sabit şekilde taşımalı. (3) Fix sonrası her ticker item'a ayrı ayrı tıklayarak (ilk, orta, son) doğru hedefe gittiği emülatörde doğrulanmalı.
-**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** ✅ Tamamlandı (Döngü 285) — Kök neden `HomeTickerRow.kt`'deki `pointerInputTicker`'ın `Modifier.pointerInput(Unit)` sabit key ile sadece ilk kompozisyonda başlatılması; `onTap` closure'ı ilk yakaladığı `current`/`onItemClick` referanslarını kalıcı kullanıyordu. `rememberUpdatedState` ile her tıklamada güncel hedef okunacak şekilde düzeltildi (gesture coroutine'i yeniden başlatılmadı, swipe animasyonu bozulmadı).
+- [x] Mevcut Pulse Clock davranışını `HeroClockCard` içine bağla; saat/tarih sunumunu değiştir, motoru yeniden yazma.
+- [x] `DigitalPulseEngine`/`HomePulseSummary` verisini `HeroDigitalLifeCard` içine tek skor kaynağı olarak bağla.
+- [x] Search overlay’i yeniden yazmadan ayrı `HeroSearchCard` launch surface oluştur ve `FullScreenSearchOverlayV2` akışını aç.
 
-### [26] Klasör birleştirme/sınıflandırma önerileri sistem bildirimi olarak da gelsin
-**Durum:** Tamamlandı ✅ (D282) — `SuggestionNotificationWorker.kt` eklendi
+### H1.3 Akıllı Erişim
 
-### [28] ✅ Görevler kartı, Dijital Yaşam Skoru rozetiyle aynı görsel dil + boyutta, skorun soluna yerleştirilsin — Tamamlandı D284
-**Çözüm:** `LauncherViewModel.kt`'ye `digitalLifeScore: StateFlow<Int?>` eklendi; `HomeTickerRow.kt`'de yeni `DigitalScoreCard` composable'ı Görevler chip'iyle birebir aynı `GlassCard` boyutu/stilinde (yıldız ikonu, başlık, alt başlık, ok); `HomeScreen.kt`'de `Row(weight(1f)+weight(1f))` içinde Görevler solda, Skor sağda yan yana.
-**Puan:** KV=3 U=3 BR=2 EA=3 → Toplam=11
-**Durum:** ✅ Tamamlandı (D284)
+- [x] `SmartAccessCoordinator` ile Şimdi ağırlıklarını tek yerde topla; modeller, deterministik ranker ve dedupe policy hazır.
+- [x] `Şimdi`, `Son Açılanlar`, `Bildirimler` sekmelerini aynı beş slotlu UI’a bağla.
+- [x] Şimdi: mevcut zaman dilimi + kullanım sinyali; Son Açılanlar: gerçek timestamp; Bildirimler: son bildirim zamanı kullanır.
+- [x] Kaldırılmış/gizli/geçersiz uygulamaları dışla ve sonuçları tekilleştir.
+- [x] Usage/Notification izni yoksa açıklama ve doğru ayar yönlendirmesi göster.
+- [x] Yeni Hero akışında uygulama/paket/kişi/dosya adını telemetriye gönderme.
 
-### [29] ✅ "Öğleden sonra en çok kullandıkların" önerisi 5 uygulamaya çıkarılsın + başlığın yanına teknik detay — Tamamlandı D284
-**Çözüm:** `HomeScreenComponents.kt`'de `AppSuggestionsRow`'daki `apps.take(3)` → `apps.take(5)`; başlık satırı `Row`'a çevrilip "Son 28 gün + bu saat" teknik detay metni başlığın hemen yanına taşındı.
-**Puan:** KV=3 U=3 BR=1 EA=2 → Toplam=9
-**Durum:** ✅ Tamamlandı (D284)
+### H1.4 Sabit uygulama dock’u ve klasör migration’ı
 
-### [30] Arama çubuğu ayrı bir ekranda tam sayfa: üstte arama çubuğu, altta sonuçlar
-**Sorun/İstek:** Mevcut arama, ana ekran içinde inline bir çekmece/dropdown olarak açılıyor. Bunun yerine ayrı bir tam-sayfa ekranda (üstte arama çubuğu, altta sonuç listesi) sunulması değerlendirildi.
-**Değerlendirme:** Mevcut inline yaklaşımın bilinen sorunları (madde [4] klavye overlap — D267'de düzeltildi, madde [24] arama sonucu kayboluyor) kısmen ekranın sınırlı alanından kaynaklanıyor olabilir; tam sayfa bir arama ekranı bu sınıf sorunları yapısal olarak azaltır (daha fazla dikey alan, klavye ile çakışma riski daha düşük, sonuç listesi kendi scroll alanına sahip olur). Riskler: (a) ek bir navigasyon adımı kullanıcı hızını bir tık azaltır (şu an arama anlık overlay), (b) mevcut `HomeAppSearchBar`/`SearchRepository` entegrasyonunun yeni bir `Route`'a (`Routes.SEARCH`) taşınması gerektirir — geçiş animasyonu (arama ikonuna tıklayınca sayfa açılması) `NavHost` composable transition ile ele alınmalı, (c) favoriler/son aramalar gibi mevcut inline özelliklerin yeni ekranda da çalıştığından emin olunmalı.
-**Nasıl yapılmalı:** Yeni bir `SearchScreen.kt` composable'ı (`Scaffold` ile üstte `TextField`/arama çubuğu, altta `LazyColumn` sonuç listesi) oluşturulmalı; `HomeScreen.kt`'deki mevcut arama tetikleyicisi (arama ikonu/çubuğu tıklaması) inline açılım yerine `navController.navigate(Routes.SEARCH)` çağırmalı. `SearchRepository`/`SearchDao`/mevcut sonuç gruplama mantığı (Uygulamalar/Klasörler/Ayarlar/Kişiler/Dosyalar) olduğu gibi yeni ekrana taşınabilir — iş mantığı değişmiyor, sadece host değişiyor. UX kararı olduğu için mockup/kullanıcı onayı faydalı olur.
-**Puan:** KV=4 U=3 BR=3 EA=3 → Toplam=13
-**Durum:** Bekliyor
+- [x] Hero dock’u beş sabit uygulama slotu olarak uygula; klasör ve dinamik öneri kabul etme.
+- [x] Mevcut dock’u bir kez yedekleyerek uygulamaları migrate et; klasör öğelerini Hero görünümünden çıkar.
+- [x] Klasörleri Sayfa 0’dan çıkar; Sayfa 1+ pager ve semantic anchor düzenini koru.
 
-### [27] ✅ Ayarlar sayfası kilitleniyor — biyometrik kilit lockout (KRİTİK) — Tamamlandı D282
-**Kök neden:** `AppNavigation.kt`'deki route zinciri (SETTINGS→SETTINGS_STATS→REPORTS_CENTER→WRAPPED_REPORT, popBackStack() hepsi doğru) sorunlu değildi. Gerçek kök neden `SettingsScreen.kt` içindeki Biyometrik Ayarlar Kilidi'ydi: `biometricUnlocked` `remember{}` ile tutuluyordu, NavHost her geri dönüşte composable'ı sıfırdan compose ettiğinden state kayboluyor, `LaunchedEffect(Unit)` her seferinde yeniden biyometrik istiyordu. Tek bir eşleşmeme/iptalde `onFailure={onNavigateBack()}` kullanıcıyı Ayarlar'dan tamamen dışlıyor, her yeniden deneme aynı döngüye giriyordu.
-**Çözüm:** `SettingsScreen.kt`'ye composable-dışı `SettingsLockSession` singleton eklendi — process ömrü boyunca tek seferlik unlock; aynı oturumda Ayarlar'a her dönüşte tekrar biyometrik istenmiyor.
-**Durum:** ✅ Tamamlandı (D282), build doğrulandı (`assembleDebug -PskipGoogleServices` başarılı).
+### H1.5 Composition ve ilk kapı
 
-### [19] Genel arama sonuçlarına tür etiketi (uygulama/kişi/dosya/klasör)
-**Durum:** ✅ Tamamlandı (D265, doğrulama) — `HomeAppSearchBar` sonuç listesi zaten türe göre gruplanmış ayrı bölümler halinde: "Uygulamalar" (Search ikon), "Klasörler" (Folder ikon), "Ayarlar" (Search ikon), "Kişiler" (Person ikon), "Dosyalar" (Description ikon) — her grup `HomeSearchGroupHeader(label, icon)` ile başlık+ikon alıyor (satır 969, 1019, 1062, 1102, 1259), çoklu grup olduğunda gösteriliyor. Satır bazlı ikon değil grup başlığı bazlı etiketleme — kullanıcı değerini karşılıyor, ek kod değişikliği gerekmedi.
+- [x] `SmartDashboardPage` içeriğini `HeroDashboardPage` composition’ına dönüştür.
+- [x] Saat → Dijital Yaşam → Arama → Akıllı Erişim → gösterge → dock sırasını uygula.
+- [x] 320×568, 360×640, 412×915, tablet ve landscape layout policy testlerini yaz.
+- [x] Ranker, coordinator, dedupe, dock migration ve Hero Compose interaction testlerini ekle.
+- [x] CI workflow’una compile, unit test, lint, debug build ve instrumentation-test compilation kapılarını ekle; gerçek çalıştırma ve cihaz smoke kanıtını R5/R7’ye bırak.
 
-### [20] Klasörler arası geçiş animasyonu iyileştirilsin (iPhone tarzı)
-**Sorun/İstek:** Mevcut page-turn efekti yetersiz, iPhone'daki gibi akıcı bir geçiş isteniyor.
-**Nasıl yapılmalı:** `HomeScreenFolderPager.kt` + `HomeScreenPageIndicator.kt` içindeki `HorizontalPager` transform mantığı incelenmeli — muhtemelen `graphicsLayer` ile basit alpha/scale efekti var. iOS-tarzı akıcı geçiş için `pagerSnapDistance`, `flingBehavior` ve `graphicsLayer { translationX, scaleX/Y, cameraDistance }` kombinasyonu (Compose "carousel" pattern'i) araştırılmalı — CLAUDE.md Araştırma Önceliği kuralı gereği yeni animasyon pattern'i için WebSearch zorunlu (daha önce yapılmamış işlem). UX/görsel karar olduğundan Fable model ile tasarım onayı önerilir.
-**Puan:** KV=3 U=3 BR=3 EA=3 → Toplam=12
-**Durum:** ✅ Tamamlandı (Döngü 281) — `HorizontalPager` tek sayfalık snap/fling davranışıyla sınırlandı; sayfa offset'ine bağlı alpha/scale/rotationY `graphicsLayer` efekti eklendi. Sayfa göstergesi noktaları da animasyonlu boyuta geçirildi. Görsel tablet smoke hâlâ release QA kapısında ayrıca doğrulanmalı.
+**Bu fazda yapılmayacak:** Eski ve yeni dashboard’u feature flag ile paralel tutmak, veri motorlarını yeniden yazmak, global cam temasını değiştirmek, legacy temizliğini doğrulama tamamlanmadan körlemesine bitirmek.
 
----
+**Çıkış:** Sayfa 0 gerçek Hero Dashboard’dur; temel kartlar ve üç Akıllı Erişim sekmesi gerçek veriye bağlıdır; klasörler ve kullanıcı tercihleri kaybolmaz.
 
-## Hedef
+## 6. Faz R1 — Ölçüm ve mevcut sistem güvenlik kapısı
 
-Play Store yayini icin Production AAB v1.0.0 hazir.
+**Tahmini efor:** 2–3 gün (4–6 puan; cihaz erişimi hariç). **Hedef:** Faz aktive edildiğinde atanır.
 
-Kalan ana kapilar:
-- Play Console formlari ve beyanlari
-- Release imza ve final AAB
-- Magaza gorselleri
-- Gercek cihaz QA
+### R1.1 Performans ölçümü
 
-## Guncel Kalan Is Listesi ve Uygulama Plani (2026-07-13)
+- [ ] Baseline Profile sonucunu aynı cihaz, build türü ve senaryoda en az 5 ısınma + 10 ölçümle karşılaştır; cold start medyanı ve P95 değerlerini kanıta yaz.
+- [ ] Samsung SM-X210 üzerinde kaydedilen `%14,11` janky frame oranını aynı senaryoda `%7` altına indir. Eşik geçilmezse veya cold start medyanı `%5`ten fazla kötüleşirse R1 kapanmaz; ölçüm ve kök neden blokaj kaydına eklenir.
+- [ ] Donanım/ölçüm varyansı nedeniyle eşik değişecekse yeni tekrarlanabilir baseline, gerekçe ve ürün sahibi onayını `DECISIONS.md` içine yaz; eşiği sessizce gevşetme.
+- [ ] Macrobenchmark çıktısını kanıt dosyasına yaz; ölçüm olmadan yeni performans refactor’ı yapma.
+- [ ] Periyodik worker’larda pil kısıtlarının gerçek schedule davranışını doğrula.
 
-| Sira | Is | Plan | Durum |
+### R1.2 Serbest yerleşim doğrulaması
+
+- [ ] `Klasörde Serbest Yerleşim` ve `Widget Alanında Serbest Yerleşim` toggle’larını yoğun veriyle test et.
+- [ ] Frame drop, process death, rotation, TalkBack ve drag davranışını doğrula.
+- [ ] `LauncherAccessibilityService` için gerçek ihtiyaç yoksa stub’ı büyütme; gerekiyorsa ayrı karar kaydı oluştur.
+- [ ] Ekranlar arası gerçek item taşımasını bu faza ekleme; kullanım kanıtından sonra ayrı değerlendirme yap.
+
+**Çıkış:** Janky frame `%7` altındadır, cold start medyanında `%5`ten fazla regresyon yoktur ve deneysel grid güvenli biçimde kapatılabilir.
+
+## 7. Faz R2 — Kontrol Bekleyenler A tasarımı
+
+**Bağımlılık:** Domain/state/UI kodu için H1 temel kapı; faz kapanışı ve cihaz smoke için R1 baseline.
+**Ana dosyalar:** `ClassificationReviewScreen.kt`, `AppListViewModel.kt`, classification review state/bileşen/test dosyaları.
+**Tahmini efor:** 4–6 gün (8–12 puan). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R2.1 Saf kategori altyapısı
+
+- [ ] `TurkishCategorySorter` oluştur; kullanıcıya gösterilen ad üzerinden Türkçe locale sıralaması yap.
+- [ ] TR için Türkçe `Collator`, EN için İngilizce `Collator`, desteklenmeyen locale için deterministik kök/İngilizce fallback uygula; locale ve aksan testlerini ekle.
+- [ ] `Kategorisiz` seçeneğini dışla; önerilen kategori tekrar etmesin.
+- [ ] Uygulama kategorileri ve marka klasörlerini ayrı section’lara ayır.
+- [ ] Sıralama ve grouping unit testlerini tamamla.
+
+### R2.2 State ve ViewModel
+
+- [ ] Tek aktif package, package→seçim map’i, sheet state, arama sorgusu ve processing package içeren immutable UI state oluştur.
+- [ ] Pending liste değişince aktif uygulamayı güvenli uzlaştır.
+- [ ] Onay, düzeltme ve erteleme işlemlerini çift tıklamaya/idempotency sorununa karşı koru.
+- [ ] Repository hatasında processing state’i temizle ve kullanıcıya hata göster.
+- [ ] ViewModel testlerini tamamla.
+
+### R2.3 Bottom sheet ve ekran refactor’ı
+
+- [ ] Arama, section başlıkları, seçili işareti ve boş durum içeren kategori picker sheet oluştur.
+- [ ] Tek aktif uygulama kartında ikon, güven seviyesi, neden, sistem önerisi, seçilen kategori ve eylemleri göster.
+- [ ] Eski yatay kategori `LazyRow`, sabit `560.dp`, nested liste ve UI-local seçim state’ini kaldır.
+- [ ] Özet kartı ve sıradaki uygulamalar kuyruğunu bağla.
+- [ ] Tıklama alanlarını en az 48dp yap; TalkBack, font scale 1.5, açık/koyu ve Pixel görünümünü doğrula.
+
+### R2.4 Telemetri ve faz kapısı
+
+- [ ] Yalnız privacy-safe event’leri ekle; paket adı gönderme.
+- [ ] TR/EN string kaynaklarını tamamla; sabit UI metni bırakma.
+- [ ] Kaynak anahtarı eşitliğini test et; TR/EN dışındaki diller R9 kararı verilene kadar ürün kapsamına alınmaz.
+- [ ] Unit, ViewModel ve Compose UI testlerini; lint, detekt ve debug build’i çalıştır.
+- [ ] Küçük telefon, standart telefon ve tablette smoke test yap.
+
+**Çıkış:** Tek kart + bottom sheet akışı güvenli çalışır; onay/düzeltme/ertele persistence ve sıra ilerlemesi kanıtlanır.
+
+## 8. Faz R3 — Klasör birleştirme motoru ve inceleme UI
+
+**Bağımlılık:** R2 ile manuel kategori/override kurallarının sabitlenmesi.
+**Tahmini efor:** 5–7 gün (10–14 puan). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R3.1 Domain ve öneri motoru
+
+- [ ] `FolderSuggestion` modelini kaynak, önerilen hedef, neden, güven ve sayılarla genişlet.
+- [ ] `FolderSuggestionReason`, `FolderMergePlan` ve `FolderMergeCandidateScorer` oluştur.
+- [ ] Mevcut sabit eşleştirmeleri scorer içine taşı; bilinmeyen hedef üretme.
+- [ ] Manuel kilitli uygulamaları varsayılan seçim dışında bırak.
+- [ ] Güven ve minimum uygulama eşiklerini uygula; deterministik sıralama yap.
+- [ ] Engine unit testlerini tamamla.
+
+### R3.2 UI state ve ViewModel
+
+- [ ] `FolderMergeUiState` oluştur.
+- [ ] Öneriyi açma, hedef değiştirme, uygulama seçme ve review state işlemlerini ekle.
+- [ ] Eski `acceptFolderSuggestion()` davranışını silme; merge türünü review ekranına route et.
+- [ ] `SPLIT_LARGE_FOLDER` ve `CLEAN_UNUSED_APPS` yollarını değiştirme.
+- [ ] ViewModel testlerini tamamla.
+
+### R3.3 A tasarımı inceleme ekranı
+
+- [ ] Öne çıkan öneri kartı ve `FolderMergeReviewScreen` oluştur.
+- [ ] Kaynak/hedef önizleme, uygulama grid’i, hedef picker, uygulama picker ve önce/sonra sayı kartını ekle.
+- [ ] Kilitli uygulamaları açıkça göster; hedef 20+ uygulama olacaksa uyar.
+- [ ] Seçili taşınabilir uygulama yoksa onayı kapat.
+- [ ] Loading/error/empty state, dark mode, büyük font ve TalkBack desteğini tamamla.
+- [ ] Compose UI testlerini tamamla.
+
+**Çıkış:** Kullanıcı kalıcı işlem yapılmadan önce eksiksiz merge planını görür ve düzenler.
+
+## 9. Faz R4 — Atomik merge, işlem geçmişi ve gerçek undo
+
+**Bağımlılık:** R3 review planı ve UI state kararlı olmalı.
+**Tahmini efor:** 5–8 gün (10–16 puan). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R4.1 Persistence
+
+- [ ] Operation ve operation-item entity/DAO modellerini ekle.
+- [ ] Tek bir Room migration yaz; schema JSON’u commit et.
+- [ ] `mergeFolders()` işlemini transaction içinde uygula.
+- [ ] Kısmi başarıya izin verme; hata halinde tamamını rollback et.
+- [ ] Eski kategori/manuel override verisini geri alma için operation item içinde sakla.
+
+### R4.2 Undo ve yan sistem tutarlılığı
+
+- [ ] `undoFolderMerge()` işlemini transaction içinde ve idempotent uygula.
+- [ ] Aynı operation’ın ikinci kez geri alınmasını reddet.
+- [ ] Merge ve undo sonrasında Room, manuel override, launcher klasörleri ve search index’i aynı sonucu göstermeli.
+- [ ] Başarılı öneriyi yeniden gösterme; erteleneni 7 gün gizle.
+- [ ] Boş sistem klasörünü görünür listeden düşür fakat veritabanından silme.
+- [ ] TaskScore bağlantısını yalnız başarıdan sonra tetikle.
+
+### R4.3 Faz kapısı
+
+- [ ] Migration, rollback, process death ve restart sonrası undo testlerini tamamla.
+- [ ] Unit/repository/ViewModel/Compose testleri, lint, detekt ve debug build’i çalıştır.
+- [ ] Telefon/tablet; 20+ hedef; tüm uygulamaları kilitli kaynak; rotation/background senaryolarını test et.
+
+**Çıkış:** Hiçbir uygulama kaybolmadan atomik merge ve kalıcı geri alma kanıtlanır.
+
+## 10. Faz R5 — Hero Dashboard adaptif düzen ve telemetri doğrulaması
+
+**Tahmini efor:** 2–4 gün (4–8 puan; cihaz/Firebase erişimi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R5.1 Dört cihaz matrisi
+
+- [ ] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
+- [ ] Temiz kurulum telefonu ve izinleri kapatılmış ayrı cihaz/konfigürasyon ile matrisi 4/4 tamamla.
+- [ ] Ortak R7 senaryosunu kullanarak portrait/landscape, rotasyon+swipe, arama, dock, Dashboard, klasör grid ve All Apps’i doğrula; aynı matrisi ikinci kez üretme.
+- [ ] Küçük/standart/büyük telefon ile 7–8 ve 10+ inç tablet kırılımlarında taşma olmadığını tek evidence paketine yaz.
+
+### R5.2 Tek ürün yolu ve privacy-safe telemetry
+
+- [x] Üretim pager planlayıcısını boolean/feature-flag kabul etmeyen `buildHeroPages()` girişine bağla; Sayfa 0’ı kod seviyesinde yalnız Hero yap.
+- [ ] Gerçek cihazda her açılış/restore senaryosunda Sayfa 0’ın Hero olduğunu smoke ile doğrula.
+- [ ] Rıza kapalıyken hiçbir home telemetry event’i gönderilmediğini Firebase tarafında doğrula.
+- [ ] Rıza açıkken yalnız izinli enum/bucket parametrelerinin gittiğini DebugView ile doğrula.
+- [ ] Klasör adı, kategori, app/package, arama sorgusu, kişi ve dosya verisinin gönderilmediğini kanıtla.
+
+**Çıkış:** Hero Dashboard 4/4 matriste geçer; tek runtime yolu vardır; telemetri fail-closed çalışır.
+
+## 11. Faz R6 — Legacy Hero dashboard temizliği
+
+**Tahmini efor:** 2–4 gün (4–8 puan; beta gözlem süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R6A — Güvenli dead-code temizliği
+
+**Bağımlılık:** H1 temel composition kapısı. Görünür davranış, migration veya restore sözleşmesi değiştirilemez.
+
+- [x] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` referanslarını repo genelinde doğrula; runtime referansı kalmadığını kanıtla. Kullanıcı tercihlerini etkileyen kalıcı layout ayarlarını R6B migration kararına bırak.
+- [ ] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
+  - [x] Üretim tüketicisi olmayan eski `HomeFavoritesSection` contextual row seçici/composable zincirini ve yalnız ona ait testleri kaldır; All Apps veri akışlarını koru.
+- [x] Kullanılmayan Dashboard state alanlarını ve kırık eski testleri sil; geçerli testleri Hero/layout testlerine dönüştür.
+- [x] Pager’ın üstünde tüm sayfalara sızan eski `FolderStatsRow`/`StatChip` bandını ve yalnız onu besleyen HomeScreen state aboneliklerini kaldır.
+- [x] Eski folder-only pager çağrılarını repo genelinde ara; runtime'da yalnız `HomePagerHost` + tek-sayfa folder grid renderer kaldığını doğrula.
+- [ ] Kullanılmayan eski pager branch’lerini, duplicate search lambda’larını ve eski test fixture’larını kaldır.
+- [ ] `HomeScreen.kt` dosyasını orchestration seviyesine indir; davranış değişikliği yapma.
+
+### R6B — Doğrulama sonrası kalıcı kaldırma
+
+**Bağımlılık:** R5 cihaz/telemetri doğrulaması tamamlanmalı.
+
+- [ ] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
+- [ ] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
+- [ ] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
+- [ ] Her davranış/migration kaldırmasını ayrı, küçük ve `git revert` ile geri alınabilir committe yap; önce referans taraması + hedefli test, sonra internal/beta build kanıtı al.
+- [ ] Persisted state, restore veya migration davranışını etkileyen kaldırmayı R7.5 beta adayında en az 7 takvim günü gözlemle; kritik regresyon varsa commit’i geri al. Sıfır referanslı salt dead-code için bekleme gerekmez.
+- [ ] Eski runtime feature flag veya ikinci dashboard yolunu güvenlik amacıyla yeniden ekleme; rollback commit/sürüm/backup üzerinden yapılır.
+- [ ] Regression testleri ve dört cihaz kısa smoke testini tekrar çalıştır.
+
+**Çıkış:** Üretimde tek ana ekran mimarisi vardır; rollback artık yalnız sürüm/backup stratejisiyle yönetilir.
+
+## 12. Faz R7 — Birleşik yayın öncesi QA
+
+Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve evidence paketinde toplar. Alt fazlar aynı test matrisini yeniden yazmaz; yalnız kendi sonuç bağlantısını buraya ekler.
+
+**Tahmini aktif efor:** 4–6 gün (8–12 puan; beta bekleme süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
+### R7.1 Veri, izin ve arka plan işleri
+
+**Bağımlılık:** R2–R6A kod kapıları. R7.2 ve R7.3 ile paralel yürüyebilir.
+
+- [ ] Android 14 NotificationListener izin aç/kapa, reboot ve event/rapor testi.
+- [ ] SAF export/import, Drive klasör seçimi, missing packages ve restore sonrası ayar sürekliliği.
+- [ ] SmartInsightWorker, BackupWorker ve diğer periyodik worker schedule/pil testleri.
+- [ ] Android 13+ POST_NOTIFICATIONS reddinde sessiz/güvenli davranış.
+- [ ] Rıza kapalı/açık Firebase davranışını ve hassas veri gönderilmediğini doğrula.
+- [x] Widget sağlayıcı seçimini ROM `Settings.ActivityPicker` bağımlılığından çıkar; uygulama içi liste + `bindAppWidgetIdIfAllowed` + `ACTION_APPWIDGET_BIND` izin fallback’i kullan.
+- [ ] Widget seçme, bind izni red/onay, yapılandırmalı/yapılandırmasız sağlayıcı ve iptal durumlarını gerçek cihazda doğrula; ayrılan widget ID’nin hata/iptalde silindiğini kanıtla.
+
+### R7.2 UI ve erişilebilirlik
+
+**Bağımlılık:** R2–R6A UI kapıları. R7.1 ve R7.3 ile paralel yürüyebilir.
+
+- [ ] Pulse Clock 3 stil, görevler, Dijital Yaşam skoru ve Akıllı Nabız ticker görsel matrisi.
+- [ ] Serbest grid, Kontrol Bekleyenler, merge/undo, Dashboard pager ve global arama regresyonu.
+- [ ] TalkBack, animasyonlar kapalı, font `%200`, açık/koyu tema, farklı duvar kâğıtları ve rotasyon.
+- [ ] API 26 blur fallback ve Samsung/Xiaomi/Google OEM kategori davranışı.
+- [x] Akıllı Erişim Bildirimler sekmesinde tek otoritatif sayaç çiz; Son Açılanlar/paket değişiminde eski ikon state'ini temizle ve kararlı package key kullan.
+
+### R7.3 Süreç dayanıklılığı
+
+**Bağımlılık:** R4 transaction/undo ve ilgili worker akışları tamamlanmalı. R7.1/R7.2’den bağımsız hata ayıklanır.
+
+- [ ] Günlük/haftalık görev settlement, duplicate ödül ve timezone sınırlarını doğrula.
+- [ ] Process death, reboot, rotasyon+swipe ve background/foreground geçişlerini doğrula.
+- [ ] Merge/undo, restore, semantic page anchor ve görev settlement durumlarının yeniden başlatma sonrası tutarlı kaldığını kanıtla.
+
+### R7.4 Uçtan uca smoke — dört cihaz profili
+
+**Bağımlılık:** R7.1–R7.3 kritik bulgusuz tamamlanmalı.
+
+- [ ] Dört profil kullan: küçük telefon, standart/büyük telefon, 7–8 inç tablet ve 10+ inç tablet. API/OEM çeşitliliğini bu dört profil arasında dağıt.
+- [ ] Her profilde temiz kurulum, yükseltme/restore, izinler kapalı ve temel Hero → arama → klasör → Kontrol Bekleyenler → merge/undo akışını çalıştır.
+- [ ] `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug` ve uygun cihazda `connectedDebugAndroidTest` çalıştır.
+- [ ] Sonuçları cihaz/build/commit SHA ile tek release evidence paketinde birleştir.
+
+### R7.5 Kapalı beta kapısı
+
+**Bağımlılık:** R7.1–R7.4 ve R6B release-candidate değişiklikleri tamamlanmalı.
+
+- [ ] Hero Dashboard, Kontrol Bekleyenler ve merge/undo akışlarını içeren imzalı adayı kapalı/dahili test kanalına dağıt.
+- [ ] Hedef 50 gerçek kullanıcıdır. Bu erişilemiyorsa en az 10 farklı testçi ve temsilî dört cihaz profiliyle gerekçeli iç test yapılır; daha küçük örnek yalnız ürün sahibinin `DECISIONS.md` istisnasıyla kabul edilir.
+- [ ] En az 7 takvim günü geri bildirim, Crash/ANR, veri kaybı, restore ve privacy sinyallerini izle. Bilinen kritik hata, veri kaybı veya güvenlik/gizlilik ihlali varken R8’e geçme.
+- [ ] Yeterli telemetry örneği varsa crash-free session oranı en az `%99,5` olmalı; örnek yetersizse bunu başarı gibi yorumlama ve manuel smoke kanıtını kaydet.
+- [ ] Release bloklayan bulguları ilgili faza geri aç; iyileştirme önerilerini kanıt bağlantısıyla R9’a ekle.
+
+**Çıkış:** R7.1–R7.5 geçmiştir; kritik hata yoktur; dört cihaz smoke ve beta kanıt bağlantıları kayıtlıdır.
+
+## 13. Faz R8 — İlk production yayın kapısı
+
+**Bağımlılık:** R7.1–R7.5 tamamlanmalı. Hesap/cihaz gerektiren maddeler `COZULEMEYEN_SORUNLAR.md` ile birlikte yürütülür.
+**Tahmini aktif efor:** 2–4 gün (4–8 puan; mağaza inceleme süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
+
+**Dış bağımlılık yönetimi:** R8 aktive edilmeden önce her Play Console/hesap/cihaz engeline `COZULEMEYEN_SORUNLAR.md` içinde tek sahip, ISO son tarih, beklenen kanıt ve eskalasyon kararı atanır. Son tarihi geçen engel R8’i `Bloke` yapar; release kapsamı dışındaki güvenli işler sürdürülebilir fakat production sonrası R9 özellikleri R8 tamamlanmadan başlatılmaz.
+
+- [ ] QUERY_ALL_PACKAGES beyanını launcher temel işlevi gerekçesiyle doldur.
+- [ ] Data Safety formunu gerçek Firebase, opsiyonel kişi/dosya, NotificationListener, backup ve AI davranışıyla eşleştir.
+- [ ] Content rating anketi ve Privacy Policy URL alanını tamamla.
+- [ ] Kalıcı release keystore oluştur ve güvenli/yedekli sakla; hassas dosyaları git’e ekleme.
+- [ ] Temiz committen imzalı production AAB üret.
+- [ ] Kişisel veri içermeyen light/dark mağaza görsellerini tamamla: Home, All Apps, klasör, arama, izinler, dashboard/rapor, özelleştirme, backup/restore, görevler.
+- [ ] `cycle.ps1` uçtan uca gerçek turunu temiz dalda çalıştır; commit/push/bildirim kanıtını kaydet.
+- [ ] Play Console yükleme readback ve inceleme sonucunu kanıt dosyasına işle.
+
+**Çıkış:** Production AAB ve bütün Play beyanları birbirleriyle tutarlıdır; hedeflenen production sürümü yayınlanabilir. Sürüm numarası `app/build.gradle.kts` ile aynı olmalıdır.
+
+## 14. Faz R9 — Production yayın sonrası backlog
+
+**Tahmini efor:** Backlog maddesi sprint’e alınırken ayrı tahmin edilir. **Hedef:** R8 sonrası stabilizasyon kapısında atanır.
+
+**Başlangıç koşulu:** R8 tamamlandıktan sonra 2 haftalık ilk stabilizasyon sprintinde yalnız production izleme ve kritik düzeltmeler yapılır. R9 özellik geliştirmesi bu sprintin sonunda, açık kritik hata/Crash/ANR/veri kaybı yoksa başlar; kritik hata varsa bütün R9 maddeleri en az bir sprint ertelenir.
+
+Bu sıra release’den önce değiştirilmez:
+
+1. [ ] Wrapped Phase 2 UsageEvents oturum altyapısını API 28/29+, split-screen, kilit/aç, reboot ve izin grant/revoke ile OEM cihazlarda doğrula.
+2. [ ] SAF/Drive “yedekle ve ikinci cihazda kur” akışını sadeleştir; usage/notification verisini yedeğe dahil etmeyi açık seçim yap.
+3. [ ] Kullanım verisine göre ekranlar arası gerçek serbest item taşımasını değerlendir.
+4. [ ] Çoklu cihaz senkronizasyonu için önce SharedPreferences→Room/outbox köprüsü kararını ver; Firebase Auth/Firestore/E2EE’ye daha sonra geç.
+5. [ ] Kendi kategori sunucu API’si.
+6. [ ] Wear OS companion.
+7. [ ] Launcher dışı widget ekran genişletmesi.
+8. [ ] TR/EN dışındaki diller için locale bazlı sıralama, çoğul kuralları, çeviri QA ve fallback politikasını tasarla; dil eklenmeden test matrisi ve kaynak anahtarı eşitliği kapısını tanımla.
+
+## 15. Durum tablosu
+
+| Faz | Durum | Başlama kapısı | Tamamlanma kanıtı |
 |---|---|---|---|
-| 1 | Play Console beyanlari | QUERY_ALL_PACKAGES, Data Safety, Content Rating ve Privacy Policy URL alanlari kod gercegine gore doldurulacak. | Bekliyor - kullanici/Play Console |
-| 2 | Release imza | `scripts/create_release_keystore.ps1` ile kalici key uretilecek, `keystore.properties` git disinda saklanacak, final AAB temiz committen alinacak. | Bekliyor - kullanici aksiyonu |
-| 3 | Magaza screenshot seti | Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore ekranlari kisisel veri olmadan cekilecek. D260: 5/9 cekildi (`docs/store_screenshots/` - home, arama, settings, bildirim raporu, onboarding); kalan: klasor detay, arama ayarlari, izinler, dashboard, ozellestirme, yedekleme, gorevler + light/dark varyantlar. | Kismen tamam - 5/9 |
-| 4 | Gercek cihaz QA paketi | NotificationListener, backup/restore, SmartInsightWorker, BackupWorker, blur/API26 ve OEM kategori smoke tek pakette kosulacak. AllApps double-tap Pixel6_API33 emülatörde 2026-07-13 crashsiz geçti; fiziksel cihazda genel QA parçası olarak tekrar edilebilir. | Bekliyor - gercek cihaz |
-| 5 | `cycle.ps1` gercek tur | Temiz dal ve push hazirliginda bir kez uctan uca kosulup Telegram/commit/push kaniti alinacak. | Bekliyor - gercek tur |
-| 6 | Wrapped Phase 2 dis dogrulama | UsageEvents oturum altyapisi API 28/29+, split-screen, kilit/ac, reboot ve grant/revoke olaylariyla cihazda kanitlanacak. | Bekliyor - dis dogrulama |
-| 7 | Uzun vade backlog | Kendi sunucu API'si, Wear OS companion app ve widget ekran genisletme ayri sprintte ele alinacak. | Bekliyor |
+| R0 Konsolidasyon | Devam ediyor | — | Tek aktif roadmap + bağlayıcı Hero şartnamesi |
+| H1 Hero Dashboard | Kısmen tamamlandı | R0 | Gerçek Hero composition + yazılmış test/CI kapısı |
+| R1 Baseline/performance | Bekliyor | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
+| R2 Kontrol Bekleyenler | Bekliyor | H1; faz kapanışı için R1 | Testler + telefon/tablet smoke |
+| R3 Merge motoru/UI | Bekliyor | R2 | Engine/ViewModel/UI testleri |
+| R4 Transaction/undo | Bekliyor | R3 | Migration/rollback/restart kanıtı |
+| R5 Hero doğrulama | Kısmen tamamlandı | H1 | 4/4 cihaz + Firebase doğrulaması |
+| R6A Güvenli legacy temizlik | Kısmen tamamlandı | H1 | Davranışsız dead-code/test temizliği |
+| R6B Kalıcı legacy kaldırma | Bloke | R5 | Migration kararı + regresyon paketi |
+| R7 Birleşik QA + beta | Bekliyor | R2–R6A; beta için R6B adayı | R7.1–R7.5 evidence paketi |
+| R8 İlk production yayın | Bloke | R7.5 | İmzalı AAB + Console readback |
+| R9 Production sonrası | Ertelendi | R8 | Ayrı ürün kararı |
 
----
+**Tablo bakım kuralı:** Aktif geliştirmede her çalışma döngüsü/stand-up sonunda durum, kalan efor, sahip ve kanıt bağlantısı güncellenir. Bir faz `Devam ediyor` durumunda 3 iş günü boyunca yeni kanıt veya durum değişimi üretmezse kök neden incelenir; gerçek dış bağımlılık varsa `COZULEMEYEN_SORUNLAR.md` kaydına sahip ve son tarihle taşınır, normal planlı çalışma otomatik olarak blokaj sayılmaz.
 
-## Kritik - Play Store ve Release Kapisi
+## 16. Roadmap bakım kuralları
 
-| Gorev | Minimum cozum | Durum |
-|---|---|---|
-| QUERY_ALL_PACKAGES Play Store beyani | Launcher core functionality gerekcesiyle Play Console declaration doldurulacak. Metin ozeti: AppOrganizer tum yuklu uygulamalari organize etmek, app drawer/search gostermek ve uygulama baslatmak icin paket gorunurlugune ihtiyac duyar; paket/ad/kategori tercihleri cihazda kalir. | Bekliyor - dis aksiyon |
-| Data Safety formu | Privacy policy, Firebase/Crashlytics/Analytics, optional contacts/files, NotificationListener, backup ve optional AI davranisi Play Console formuna kod gercegiyle uyumlu girilecek. Manifestte Accessibility servisi yok; servis geri eklenmedikce beyan edilmeyecek. | Bekliyor - dis aksiyon |
-| Content rating | Play Console content rating anketi doldurulacak. | Bekliyor - dis aksiyon |
-| Privacy Policy URL | GitHub Pages URL'i Play Console'a girilecek; policy dosyasi ve manifest URL'i ayni hikayeyi anlatmali. | Bekliyor - dis aksiyon |
-| Release keystore | `scripts/create_release_keystore.ps1` hazir. Kullanici scripti calistirip kalici release key'i guvenli saklayacak; final AAB temiz committen imzalanacak. | Bekliyor - kullanici aksiyonu |
-| Screenshot seti | Light/dark phone screenshot seti alinacak: Home, All Apps search, Folder detail, Search settings, Privacy/permissions, Dashboard/report, Customization, Backup/restore. Kisisel veri gorunmeyecek. | Bekliyor - cihaz/emulator |
-
----
-
-## Kritik - Gercek Cihaz QA
-
-| Gorev | Minimum cozum | Durum |
-|---|---|---|
-| Android 14 NotificationListener testi | Notification access ac/kapa, event yazma, rapor gorunumu ve reboot/permission lifecycle gercek cihazda kanitlanacak. | Bekliyor - gercek cihaz |
-| Play oncesi gercek cihaz QA paketi | NotificationListener, backup/restore, SmartInsightWorker, BackupWorker, blur/API26, AllApps double-tap, OEM kategori ve screenshot smoke tek pakette kosulacak. Accessibility servisi manifestte olmadigi icin bu paketten cikarildi. | Bekliyor - gercek cihaz |
-| BLUR-4/API26 testi | Blur/fallback performansi API 26+ temsilci cihazlarda kontrol edilecek. | Bekliyor - gercek cihaz |
-| Backup/restore kaniti | SAF export/import, Drive klasor secimi, missingPackages dialogu ve restore sonrasi ayar devamligi kanitlanacak. | Bekliyor - cihaz/hesap |
-| AllApps double-tap testi | Pixel6_API33 emülatörde arama alanı odak + `app` sorgusu + hızlı çift dokunma koşturuldu; app focus korundu, temiz logcat `FATAL EXCEPTION=0`. | Tamamlandi - emulator |
-| Uretici kategori testi | Samsung/Xiaomi/Google tarzinda farkli OEM app setlerinde kategori eslesmeleri kontrol edilecek. | Bekliyor - cihaz |
-
-## Orta Oncelik - Build, Surec ve Token Maliyeti
-
-| Gorev | Minimum cozum | Durum |
-|---|---|---|
-| `cycle.ps1` uctan uca test | Kod incelemesiyle dogrulandi: encoding tarama -> duplicate kontrol -> ritimli build -> git add+commit+push -> Telegram bildirimi sirasiyla calisan orchestrator. Gercek uctan uca calistirilmadi. | Bekliyor - gercek tur denenecek |
-
----
-
-## Yuksek Puanli - Wrapped Phase 2 (Fable analizi, Dongu 230-232)
-
-| Puan | Gorev | Durum |
-|---|---|---|
-| 15p | UsageEvents oturum altyapisi gercek cihaz/OEM dogrulamasi - API 28/29+, split-screen, kilit/ac, reboot ve grant/revoke olaylari fiziksel cihazda kanitlanacak | Bekliyor - dis dogrulama gerekli |
-
-Diger Phase 2 adaylari (gizlilik analizi 14p, AI kocu 13p, hedef sistemi 13p, kilit sayaci 12p) uzun vadeli backlog olarak izlenecek.
-
----
-
-## Dusuk Oncelik ve Uzun Vade
-
-| Gorev | Alan | Durum |
-|---|---|---|
-| Kendi sunucu API'si | `packageName -> category` endpoint; DeepSeek fallback alternatifi | Bekliyor |
-| Wear OS companion app | Uzun vade companion deneyimi | Bekliyor |
-| Widget ekran genisletme | Launcher disi hizli gorunum | Bekliyor |
-| Coklu cihaz senkronizasyonu (Firebase Auth+Firestore+E2EE, 9 faz) | v1.0 Play Store yayini SONRASI ele alinacak — 11p fizibilite puani, 3-6 ay efor, Blaze plan + Play beyan hikayesi yeniden yazimi gerektiriyor. Detay: asagidaki "Analiz — Coklu Cihaz Senkronizasyonu" bolumu. Kullanici karariyla (2026-07-13) uzun vadeye tasindi; ara adim olarak "Yedekle ve Yedekten Don" (Drive/SAF) guclendirilmesi tercih edildi. | Bekliyor - uzun vade |
-
----
-
-## Analiz — Çoklu Cihaz Senkronizasyonu (Fable fizibilite analizi, Dongu 247)
-
-> Hüseyin'in 9 fazlı "AppOrganizer Sync Cloud" önerisi (Firebase Auth + Firestore + Cloud Functions + E2EE + QR eşleştirme) gerçek kod tabanına karşı doğrulandı. KOD YAZILMADI — sadece analiz.
-
-### Kısa Özet
-
-Öneri mimari olarak sağlam (yıldız topolojisi, outbox pattern, tombstone, HMAC belge ID, field-level merge — hepsi endüstri standardı doğru kararlar). Kod tabanı varsayımlarının çoğu DOĞRU çıktı. Ancak: (a) toplam efor tek geliştirici için 3-6 ay, (b) Cloud Functions için Firebase Blaze (ücretli) plana geçiş ZORUNLU, (c) minSdk 26 ile Keystore ECDH imkânsız (API 31+ gerekir — Android 8-11'de yazılımsal anahtar fallback'i şart, "private key Keystore'dan hiç çıkmaz" garantisi kısmen bozulur), (d) mevcut Play Store konumlandırması ("paket/ad/kategori tercihleri cihazda kalır" — bu metin QUERY_ALL_PACKAGES beyan taslağında bile var) kökten değişir: Data Safety formu, privacy policy ve beyan hikayesi yeniden yazılmalı. E2EE olsa bile Play politikasına göre cihazdan çıkan veri "collected" olarak beyan edilir.
-
-### Doğrulanan / Yanlışlanan Varsayımlar
-
-| Varsayım | Sonuç |
-|---|---|
-| `AppInfo.packageName` primary key | ✅ Doğru (`AppInfo.kt:21-22`) |
-| Kategoriler sabit string ID (`CAT_SOCIAL="social"` vb.) | ✅ Doğru — 32 kategori + 9 üretici kategorisi, sync için stabil anahtar (`Category.kt`) |
-| Backup kullanım/bildirim verisi de taşıyor | ✅ Doğru — BackupManager v4 `usageCount`(ms)/`launchCount`/`lastUsedTimestamp`/`notificationCount` export ediyor; önerinin DEVICE-kapsamı ihlali tespiti isabetli (`BackupManager.kt:41-44`) |
-| Firebase zaten entegre | ✅ Kısmen — `google-services.json` mevcut, BOM 33.7.0, Analytics+Crashlytics+FCM aktif ve null-guard'lı. Ama Auth/Firestore/Functions bağımlılığı YOK; eklemek kolay, işletmek değil |
-| Dock/klasör özelleştirme PROFILE kapsamıyla örtüşür | ✅ Örtüşür AMA kritik uyumsuzluk: bu veriler Room'da değil SharedPreferences'ta (`DockPrefs`, `AppPrefs` map'leri). "Her aksiyon Room transaction içinde outbox'a yazılır" varsayımı bu veriler için ÇALIŞMAZ — ya prefs→Room taşıma ya da atomiklikten feragat gerekir |
-| Room migration kolay | ✅ Şu an v16 (CLAUDE.md'deki v12 bayat), `schemaLocation` + şablon mevcut; 7 yeni sync tablosu additive v16→v17 ile eklenebilir |
-| Kullanım/bildirim verisi zaten bulutta değil | ✅ Doğru — `WrappedSnapshotPrefs` sadece cihaz-yerel agregat; hiçbir kullanım verisi cihaz dışına çıkmıyor (JSON backup hariç) |
-| Keystore ECDH P-256 | ❌ EKSİK — `PURPOSE_AGREE_KEY` API 31+; minSdk 26'da Android 8-11 için yazılımsal ECDH + Keystore AES-wrap fallback tasarlanmalı |
-
-### Faz Puanlama (KV: Kullanıcı Değeri · U: Uygulanabilirlik · BR: Bağımlılık Riski, 5=düşük risk · EA: Etki Alanı)
-
-| Faz | İçerik | KV | U | BR | EA | Toplam | Durum |
-|---|---|---|---|---|---|---|---|
-| F1 | Veri sözleşmesi + sync entity modelleri (Room v17: SyncOutbox/Conflict/Device/Profile/Tombstone/State/EntityMeta) | 1 | 4 | 4 | 2 | **11** | Beklet |
-| F2 | Firebase Auth + Credential Manager + cihaz UUID kaydı (Blaze plan kapısı burada açılır) | 2 | 3 | 2 | 2 | **9** | Beklet |
-| F3 | E2EE (workspace key + key envelope) + QR eşleştirme (Keystore ECDH API 31+ sorunu burada) | 2 | 2 | 2 | 3 | **9** | Beklet |
-| F4 | Tek yönlü ilk sync (upload + read-only preview) | 3 | 3 | 2 | 3 | **11** | Beklet |
-| F5 | Çift yönlü sync (outbox + SyncWorker + mutation + listener) — asıl kullanıcı değeri burada | 4 | 2 | 2 | 4 | **12** | Beklet |
-| F6 | Conflict engine (öncelik zinciri + fieldVersions merge + kullanıcıya sorma UI) | 3 | 2 | 2 | 3 | **10** | Beklet |
-| F7 | Profil sistemi (Ortak/Telefon/Tablet) | 3 | 3 | 3 | 3 | **12** | Beklet |
-| F8 | Güvenlik sertleştirme (App Check, Play Integrity, Security Rules, rate limit) | 2 | 2 | 1 | 2 | **7** | Beklet |
-| F9 | Üretim QA (fiziksel çoklu cihaz + OEM matrisi) — tek geliştiricide cihaz parkı yok | 3 | 1 | 1 | 2 | **7** | Beklet |
-| **Genel** | **Tüm proje** | **4** | **2** | **1** | **4** | **11** | **ERTELE — v1.0 sonrası** |
-
-### Fizibilite Notları
-
-- **Süre:** 9 faz, tek geliştirici + Claude döngüleriyle gerçekçi tahmin 3-6 takvim ayı (Cloud Functions TS toolchain'i, Rules testleri ve çoklu cihaz QA dahil). Play Store v1.0 kapısındaki işlerin (beyanlar, keystore, QA) tamamı bundan kısa.
-- **Maliyet:** Cloud Functions deploy = Blaze plan ZORUNLU (Spark'ta Functions deploy edilemez). Firestore free kotası (50k okuma/20k yazma/gün) erken dönem için yeter; entity-başına-belge + realtime listener modeli kullanıcı başına ilk sync ~500-700 okuma üretir, 5-10k aktif kullanıcıya kadar maliyet önemsiz, sonrası lineer büyür. Asıl maliyet para değil bakım karmaşıklığı.
-- **Kurtarma kodu UX riski:** XXXX-XXXX-XXXX-XXXX kodunu kullanıcıların büyük kısmı kaybeder; "tüm cihazlar kaybedilirse veri gider" destek yükü yaratır. Sync edilen verinin çoğu (kategori kararları, özelleştirme) yeniden üretilebilir olduğundan tam E2EE yerine "Google hesabına bağlı, sunucu tarafı şifreli, kurtarma kodu opsiyonel" modeli düşünülmeli — ya da E2EE kalacaksa veri kaybı kabul edilebilir çünkü felaket senaryosunda kullanıcı sadece özelleştirmelerini kaybeder.
-- **Konumlandırma gerilimi:** YÜKSEK. Mevcut Play beyan taslağı ve privacy policy "cihazda kalır" hikayesi anlatıyor; sync bunu "opsiyonel bulut, E2EE" hikayesine çevirir. Bu değişiklik Play Store İLK yayından önce yapılırsa beyan süreci sıfırdan karmaşıklaşır — yayın SONRASI ayrı release olarak eklenmesi süreç açısından da doğru.
-
-### Tavsiye
-
-**ERTELE + KÜÇÜLT.** v1.0 Play Store yayını tamamlanana kadar başlanmasın. Ara adım olarak çok daha küçük MVP: mevcut BackupManager v4 JSON'unu kullanıcının seçtiği Drive/SAF klasörüne otomatik yükleyen + ikinci cihazda "yedekten kur" akışı sunan "fakir adamın sync'i" (~1-2 döngü, sıfır sunucu, sıfır plan değişikliği, değerin ~%60-70'i). Bu MVP yapılmadan önce backup'taki DEVICE-kapsam sızıntısı (usage/notification alanları) opsiyonel hale getirilmeli — FİKİRLER.md'de zaten 11p kayıtlı ("Yedekte usage verisini dahil etme secenegi"). Tam sync'e ilerideki bir sprintte dönülürse fazlar F1→F4→F5 çekirdeği önce, F3 E2EE en sona alınmalı (ilk sürüm sunucu tarafı şifreleme ile çıkabilir).
-
-### Uyarlanmış Faz Planı (ileride başlanırsa — gerçek dosya haritası)
-
-1. **F0 (ÖN KOŞUL — öneride yok):** SharedPreferences→Room taşıma kararı: `DockPrefs`, `AppPrefs` klasör özelleştirme/gesture/tema map'leri için ya `sync_prefs_mirror` tablosu ya da prefs-listener tabanlı outbox köprüsü. Bu çözülmeden F5 outbox atomikliği kurulamaz.
-2. **F1:** `domain/models/sync/` altına SyncOutboxEntity, SyncTombstoneEntity, SyncEntityMeta, SyncStateEntity, SyncDeviceEntity, SyncProfileEntity, SyncConflictEntity; `AppDatabase` v16→v17 (şablon: MIGRATION_15_16); DAO'lar + `schemas/17.json`.
-3. **F2:** `firebase-auth` + `firebase-firestore` bağımlılıkları (BOM zaten var), Credential Manager sign-in, `SyncIdentityManager` (cihaz UUID, `AppPrefs` değil ayrı `sync_identity_prefs`); SettingsScreen'e "Cihazlar Arası Eşitleme (Deneysel)" toggle (CLAUDE.md Yeni Özellik=Ayarlar kuralı).
-4. **F3:** `SyncCryptoManager` — API 31+ Keystore ECDH, API 26-30 yazılımsal ECDH + Keystore AES-GCM wrap fallback; QR üretim/okuma (`zxing` veya ML Kit — yeni bağımlılık, WebSearch şart); pairing UI.
-5. **F4:** `SyncUploader` — Room→Firestore ilk yükleme (HMAC belge ID), ikinci cihazda read-only önizleme ekranı.
-6. **F5:** `SyncWorker` (WorkManager, mevcut `BackupWorker` pattern'i), outbox draining, Firestore listener→Room applier; Cloud Functions repo'su (`functions/` TS): applySyncMutations, finalizePairing vb.
-7. **F6:** `ConflictResolver` (öncelik zinciri; `classificationSource`/`isCategoryLocked` alanları D246'da eklendi — manuel karar tespiti için hazır altyapı MEVCUT, önerinin lehine) + çakışma soru UI'ı.
-8. **F7:** Profil sistemi — `SyncProfileEntity` + Settings profil seçici; PROFILE kapsam alanları BackupManager v4 settings bloğuyla birebir örtüşüyor (hazır envanter).
-9. **F8-F9:** App Check + Play Integrity + Security Rules emulator testleri; fiziksel cihaz matrisi (dış aksiyon — COZULEMEYEN_SORUNLAR adayı).
-
----
-
-## Faz S — Serbest Sürükle-Bırak Ana Ekran Sistemi (2026-07-20, Hüseyin talebi — KOD YAZILMADI, sadece roadmap)
-
-> Rakip launcher parite talebi: widget/klasör/ikonların ana ekranda serbest (2D) konuma sürüklenip bırakılabilmesi. Mevcut durum: `HomeLayout.kt`'deki `HomeLayoutItem(order: Int)` ve `WidgetArea.kt` sadece **1D dikey sıralama** destekliyor; klasör grid'i (`FolderScreen.kt` `LazyVerticalGrid`) index tabanlı, kalıcı pozisyon alanı (`positionX/Y`, `gridX/Y`) projede hiç yok. `LauncherAccessibilityService.kt` manifest'te "drag&drop için" kayıtlı ama boş stub. Puan: KV=5 U=2 BR=2 EA=5 → Toplam=14 (🟡 Değerlendir bandı, eşiğin altında ama doğrudan kullanıcı talebiyle roadmap'e alındı).
-
-**Neden kademeli:** Bu, `HomeSectionId`/`HomeLayoutItem` 1D modelini kökten değiştiren, yeni Room tablosu + `HomeGestureArbiter`'a yeni karar dalı gerektiren en büyük mimari genişleme — CLAUDE.md zorluk 9-10 kuralı: 3+ kaynak araştırma + Plan aşaması + commit öncesi onay her fazda tekrarlanmalı.
-
-| # | Görev | Zorluk | Not |
-|---|---|---|---|
-| S1 | Veri modeli: `HomeGridItemEntity(itemId, itemType, screenIndex, cellX, cellY, spanX, spanY)` + migration + DAO; saf `GridOccupancyResolver` (boş hücre/çakışma hesabı, unit test edilebilir) | 7 | Mevcut `order: Int` ile geçici birlikte yaşar — büyük patlama migrasyonu yok |
-| S2 | Klasör içi serbest grid: `FolderScreen.kt` `LazyVerticalGrid` → S1 occupancy'e bağlı custom `Layout`. Sürükleme `detectDragGesturesAfterLongPress` (WidgetArea.kt'de zaten kullanılan pattern) | 6 | İzole/düşük riskli yüzeyden başla |
-| S3 | Dashboard/widget alanını serbest yerleşime taşı: `WidgetArea.kt` + `HomeLayoutItem` → S1 modeli; `HomeGestureArbiter`'a "DRAG_REPOSITION" dalı; `RESTRICTED` bölümler (ör. FOLDER_GRID) hariç sadece `MOVABLE` taşınır | 8 | En yüksek riskli yüzey — mevcut pager/gesture sistemine en çok dokunur |
-| S4 | Ekranlar arası taşıma (sayfadan sayfaya sürükleme) + kenara sürüklerken otomatik sayfa kaydırma | 7 | Pager entegrasyonu |
-| S5 | Cihaz doğrulama + performans (frame-drop kontrolü, yoğun ana ekranlar); `LauncherAccessibilityService` stub'ının TalkBack+drag için doldurulup doldurulmayacağına karar (Home Layout Editor'daki TalkBack+drag pattern'i referans) | 5 | 18-döngü tam emülatör test matrisine ek |
-
-**Sıra:** S1→S2→S3→S4→S5, her madde bağımsız test+commit edilebilir. S1 sonrası gerçek karmaşıklık netleşince yeniden puanlanmalı.
-
----
-
-## Dis Aksiyon Kayitlari
-
-Detayli engel kaydi icin:
-- COZULEMEYEN_SORUNLAR.md -> CS-3, CS-5, CS-6, CS-7
-
-Tamamlanan raporlar ve kapanislar:
-- HISTORY.md -> Dongu 220 ve onceki donguler.
+- Yeni iş doğrudan bu dosyaya eklenir; yeni `*_ROADMAP.md` oluşturulmaz. Tek istisna mevcut bağlayıcı Hero tasarım şartnamesidir.
+- Çelişki varsa commit tarihi daha yeni karar kazanır; aynı committe açık ürün kararı önceliklidir.
+- Tamamlanan ayrıntılar burada büyütülmez, `HISTORY.md` içine kısa kanıtla taşınır.
+- Durum yalnız `Bekliyor`, `Devam ediyor`, `Kısmen tamamlandı`, `Bloke`, `Tamamlandı`, `Ertelendi` olabilir.
+- Her aktif iş tek faz ve tek döngü kimliği taşır; aynı iş iki yerde izlenmez.
+- Dış aksiyon backlog değildir; `COZULEMEYEN_SORUNLAR.md` içinde sahip ve beklenen kanıtla tutulur.
+- Aktif dış engel kaydı `Sahip`, `Son tarih (YYYY-MM-DD)`, `Beklenen kanıt` ve `Sonraki eskalasyon` alanları olmadan R8 planına alınmaz.
+- Yeni özellik release kapısını riske atıyorsa R9’a taşınır.
