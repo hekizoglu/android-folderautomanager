@@ -1,0 +1,201 @@
+================================================================================
+  R1 TABLET SMOKE TEST — QUICK START GUIDE
+================================================================================
+
+OVERVIEW:
+  Test AppOrganizer launcher on Pixel6_AOSP33 emulator with landscape rotation.
+  No code changes needed. Infrastructure ready. Emulator + APK only.
+
+REQUIREMENTS:
+  ✓ Android SDK installed: C:\Users\hekizoglu\AppData\Local\Android\Sdk
+  ✓ APK built: app\build\outputs\apk\debug\app-debug.apk
+  ✓ Emulator available: Pixel6_AOSP33 (Android 33, x86_64)
+
+================================================================================
+  OPTION 1: RUN AUTOMATED TEST (Recommended)
+================================================================================
+
+1. Open PowerShell in project directory:
+   cd C:\Users\hekizoglu\Documents\AppOrganizer
+
+2. Run test script:
+   .\run_r1_tablet_test.ps1 -BuildAPK -ReportDir R1_screenshots
+
+3. Script will:
+   • Build APK (if -BuildAPK flag set)
+   • Boot emulator
+   • Monitor logcat for crashes
+   • Install APK
+   • Launch app
+   • Capture WELCOME screenshot
+   • Dump logs
+
+4. When prompted "Keep emulator running? (y/n)" → answer 'y' to continue manual tests
+
+5. Emulator remains open. Continue with OPTION 2 below.
+
+================================================================================
+  OPTION 2: MANUAL TESTING (After Automated Boot or Standalone)
+================================================================================
+
+SCREEN 1: WELCOME (Onboarding)
+  Status: Should see welcome text + "Next" button
+  Action: Tap "Next" to proceed
+  Check: Text readable? Button accessible? No layout overflow?
+
+SCREEN 2: THEME_SELECT
+  Status: Shows Pixel Look & Custom theme thumbnails
+  Action: Select one (either is fine) → "Next"
+  Check: Both thumbnails render? Text visible?
+
+SCREEN 3: QUICK_SETTINGS
+  Status: Shows toggles (e.g., hide system apps, show folder names)
+  Action: Keep defaults → "Next"
+  Check: Toggles responsive? All text visible? No horizontal scroll?
+
+SCREEN 4: SET_LAUNCHER
+  Status: Shows launcher selection dialog
+  Action: Tap "Next"
+  Check: Dialog renders? Button not cut off?
+
+SCREEN 5: DONE
+  Status: Transition to HomeScreen (main app)
+  Action: Should auto-proceed to home
+  Check: Smooth transition? No crash?
+
+HOMESCREEN (Main App)
+  Status: Shows klasör cards (8 klassörü max per page)
+  Action: Swipe left/right to page through
+  Check: Cards layout clean? Pager responsive? Text readable?
+
+TEST ROTATION:
+  Emulator Extended Controls: Ctrl+K → Rotation → Portrait/Landscape
+  OR: emulator menu > Extended Controls > Rotation slider
+
+  After each rotation:
+    • HomeScreen: Do cards reflow? Text readable?
+    • Folder: Open one folder, rotate → does grid adapt?
+    • Settings: Tap Settings icon → rotate → all toggles accessible?
+    • AllAppsDrawer: Swipe left or tap icon → rotate → scroll works?
+
+CHECK FOR CRASHES:
+  If app crashes at any point:
+    • Note which screen
+    • Screenshot if possible
+    • Check logcat: adb logcat > crash.txt (copy from R1_screenshots\logcat_*.txt)
+    • Report to Hüseyin with screenshot + logcat
+
+TAKE SCREENSHOTS:
+  Portrait mode:
+    adb shell screencap -p /sdcard/screen_portrait.png
+    adb pull /sdcard/screen_portrait.png R1_screenshots\screen_portrait.png
+
+  Landscape mode:
+    [Rotate emulator]
+    adb shell screencap -p /sdcard/screen_landscape.png
+    adb pull /sdcard/screen_landscape.png R1_screenshots\screen_landscape.png
+
+================================================================================
+  OPTION 3: MANUAL EMULATOR BOOT (If Script Doesn't Run)
+================================================================================
+
+1. Kill existing emulator:
+   adb devices | find "emulator" → adb -s emulator-5554 emu kill
+
+2. Boot Pixel6_AOSP33:
+   C:\Users\hekizoglu\AppData\Local\Android\Sdk\emulator\emulator.exe -avd Pixel6_AOSP33 -no-snapshot-save
+
+3. Wait ~30s for boot, then:
+   adb devices → should show "device" status
+
+4. Build & install APK:
+   .\gradlew assembleDebug
+   adb install -r app\build\outputs\apk\debug\app-debug.apk
+
+5. Launch app:
+   adb shell am start -n com.armutlu.apporganizer/.presentation.ui.MainActivity
+
+6. Follow manual testing steps (OPTION 2 above)
+
+================================================================================
+  COMMON ISSUES & FIXES
+================================================================================
+
+Emulator won't start:
+  → Check SDK path is correct
+  → Ensure "Pixel6_AOSP33" AVD exists: adb devices -l
+  → Kill lingering java/emulator processes: taskkill /F /IM java.exe
+
+APK install fails:
+  → Clear cache: adb uninstall com.armutlu.apporganizer
+  → Check APK exists: app\build\outputs\apk\debug\app-debug.apk
+  → Check storage: adb shell df /data | grep -i bytes
+
+App crashes on launch:
+  → Check logcat: adb logcat | grep -i "apporganizer\|error"
+  → Dump logs: adb logcat -d > crash.txt
+  → Share logs + screenshot with Hüseyin
+
+Logcat shows too much noise:
+  → Filter by tag: adb logcat | grep "TAG_NAME"
+  → Or use: adb logcat | grep -E "error|crash|exception"
+
+================================================================================
+  TEST COMPLETION CHECKLIST
+================================================================================
+
+Before finishing:
+  ☐ Onboarding completed (all 5 screens)
+  ☐ HomeScreen tested (portrait + landscape)
+  ☐ FolderScreen tested (open folder, rotate)
+  ☐ AllAppsDrawer tested (open, scroll)
+  ☐ SettingsScreen tested (landscape, all toggles visible)
+  ☐ Back navigation works (state preserved)
+  ☐ No crashes in logcat (0 AndroidRuntime:E entries)
+  ☐ Screenshots captured & stored in R1_screenshots/
+  ☐ Logcat dump saved
+  ☐ Test report written (see template in R1_TABLET_SMOKE_TEST_PLAN.md §4)
+
+After finishing:
+  1. Report to Hüseyin via Telegram with:
+     • Summary: PASS / PARTIAL / FAIL
+     • Key findings (3-5 main observations)
+     • Screenshots (portrait + landscape, key screens)
+     • Any issues found
+
+  2. Store results in:
+     C:\Users\hekizoglu\Documents\AppOrganizer\R1_screenshots\
+
+  3. Update HISTORY.md with test results
+
+================================================================================
+  ADDITIONAL REFERENCE
+================================================================================
+
+Full test plan: R1_TABLET_SMOKE_TEST_PLAN.md
+Test readiness report: R1_TEST_READINESS.md
+Automated script: run_r1_tablet_test.ps1
+
+SDK Paths:
+  ADB: C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe
+  EMU: C:\Users\hekizoglu\AppData\Local\Android\Sdk\emulator\emulator.exe
+  APK: C:\Users\hekizoglu\Documents\AppOrganizer\app\build\outputs\apk\debug\app-debug.apk
+
+Package Info:
+  Package name: com.armutlu.apporganizer
+  Activity: com.armutlu.apporganizer/.presentation.ui.MainActivity
+
+================================================================================
+  QUESTIONS?
+================================================================================
+
+Refer to R1_TABLET_SMOKE_TEST_PLAN.md for detailed explanations of:
+  • Expected UI layout per screen
+  • Landscape-specific validations
+  • Reporting template
+  • Future R2+ tablet roadmap
+
+Ready? Start with: .\run_r1_tablet_test.ps1 -BuildAPK
+
+Good luck! 🚀
+================================================================================
