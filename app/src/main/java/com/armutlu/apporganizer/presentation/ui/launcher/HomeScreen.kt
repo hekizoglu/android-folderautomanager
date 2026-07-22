@@ -109,6 +109,12 @@ fun HomeScreen(
     onEditHomeLayout: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    // PERF-2 Faz 1: LauncherViewModel Compose derleyicisi icin unstable tip (Hilt ViewModel,
+    // dis kutuphane sinifi, @Stable/@Immutable eklenemez). by viewModels() zaten Activity
+    // yasam dongusu boyunca ayni referansi verir; remember{} ile bu kimligi acikca "stable"
+    // olarak isaretleyip alt composable'lara sabit referans gecirerek gereksiz recomposition
+    // tetiklemesini onluyoruz (parametre tipi degil, parametre KIMLIGI sabitleniyor).
+    val vm = remember(viewModel) { viewModel }
     // ROADMAP #24 kok neden: kok Column fillMaxSize+imePadding() ile sinirli, kaydirilmiyor.
     // Klavye acildiginda favoriler/oneriler/widget alani gibi ikincil satirlar yer kaplamaya
     // devam edince arama sonuclari (ozellikle BOTTOM konumunda, agirlikli klasor gridinden
@@ -116,15 +122,15 @@ fun HomeScreen(
     // acikken bu ikincil satirlari gecici gizleyerek arama + sonuc alani her zaman gorunur
     // kalir.
     val imeVisible = WindowInsets.isImeVisible
-    val folders by viewModel.folders.collectAsState()
-    val initialLoadDone by viewModel.initialLoadDone.collectAsState()
-    val allAppsOpen by viewModel.allAppsOpen.collectAsState()
-    val focusSearchOnOpen by viewModel.focusSearchOnOpen.collectAsState()
-    val allApps by viewModel.allApps.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val searchResults by viewModel.searchResults.collectAsState()
-    val filesIndexState by viewModel.filesIndexState.collectAsState()
-    val widgetIds by viewModel.widgetIds.collectAsState()
+    val folders by vm.folders.collectAsState()
+    val initialLoadDone by vm.initialLoadDone.collectAsState()
+    val allAppsOpen by vm.allAppsOpen.collectAsState()
+    val focusSearchOnOpen by vm.focusSearchOnOpen.collectAsState()
+    val allApps by vm.allApps.collectAsState()
+    val searchQuery by vm.searchQuery.collectAsState()
+    val searchResults by vm.searchResults.collectAsState()
+    val filesIndexState by vm.filesIndexState.collectAsState()
+    val widgetIds by vm.widgetIds.collectAsState()
     var widgetAreaEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAreaEnabled(context)) }
     var widgetAutoResize by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isWidgetAutoResizeEnabled(context)) }
     var bgType by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgType(context)) }
@@ -139,15 +145,15 @@ fun HomeScreen(
     var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     var doubleTapSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)) }
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
-    val todayInstalledApps by viewModel.todayInstalledApps.collectAsState()
-    val homePulseSummary by viewModel.homePulseSummary.collectAsState()
-    val recentNotificationCounts by viewModel.recentNotificationCounts.collectAsState()
-    val recentNotificationApps by viewModel.recentNotificationApps.collectAsState()
-    val favoriteApps by viewModel.favoriteApps.collectAsState()
-    val recentApps by viewModel.recentApps.collectAsState()
-    val smartAccessState by viewModel.smartAccessState.collectAsState()
-    val categories by viewModel.categories.collectAsState()
-    val suggestedContacts by viewModel.suggestedContacts.collectAsState()
+    val todayInstalledApps by vm.todayInstalledApps.collectAsState()
+    val homePulseSummary by vm.homePulseSummary.collectAsState()
+    val recentNotificationCounts by vm.recentNotificationCounts.collectAsState()
+    val recentNotificationApps by vm.recentNotificationApps.collectAsState()
+    val favoriteApps by vm.favoriteApps.collectAsState()
+    val recentApps by vm.recentApps.collectAsState()
+    val smartAccessState by vm.smartAccessState.collectAsState()
+    val categories by vm.categories.collectAsState()
+    val suggestedContacts by vm.suggestedContacts.collectAsState()
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
@@ -288,7 +294,7 @@ fun HomeScreen(
                     doubleTapSearchEnabled = com.armutlu.apporganizer.utils.AppPrefs.isDoubleTapSearchEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_RECENT_INSTALLS_ENABLED -> {
                     recentInstallsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)
-                    viewModel.refreshTodayInstalled()
+                    vm.refreshTodayInstalled()
                 }
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_DOUBLE_TAP ->
                     gestureDoubleTap = com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)
@@ -306,7 +312,7 @@ fun HomeScreen(
     // yapılan değişiklikler yeni sayfa planına yeniden bağlanır.
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
-    val dockPackages by viewModel.dockPackages.collectAsState()
+    val dockPackages by vm.dockPackages.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
@@ -404,7 +410,7 @@ fun HomeScreen(
                     )
                     if (result.decision == HomeGestureDecision.OPEN_ALL_APPS) {
                         AppAnalytics.allAppsOpened()
-                        viewModel.dispatchGestureAction(context, gestureSwipeUp)
+                        vm.dispatchGestureAction(context, gestureSwipeUp)
                     }
                 }
                 return Velocity.Zero
@@ -420,7 +426,7 @@ fun HomeScreen(
                     )
                     if (result.decision == HomeGestureDecision.OPEN_ALL_APPS) {
                         AppAnalytics.allAppsOpened()
-                        viewModel.openAllApps()
+                        vm.openAllApps()
                         swipeDelta = 0f
                     }
                 }
@@ -434,7 +440,7 @@ fun HomeScreen(
     val isLoading = !initialLoadDone && folders.isEmpty() && allApps.isEmpty()
 
     LaunchedEffect(Unit) {
-        viewModel.toastMessage.collect { msg ->
+        vm.toastMessage.collect { msg ->
             android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
     }
@@ -449,7 +455,7 @@ fun HomeScreen(
     // kapatma önceliği + başlangıç sayfasına anında dönüş + çift-basış All Apps kararı tek
     // noktada (HomeCommandPolicy.resolveHomeCommand) çözülür.
     LaunchedEffect(Unit) {
-        viewModel.homePressed.collect {
+        vm.homePressed.collect {
             val result = resolveHomeCommand(
                 context = HomeCommandContext(
                     searchActive = fullScreenSearchOpen || (homeSearchEnabled && folderSearchQuery.isNotEmpty()),
@@ -505,7 +511,7 @@ fun HomeScreen(
                 }
                 HomeCommand.OpenAllApps -> {
                     AppAnalytics.allAppsOpened()
-                    viewModel.openAllApps()
+                    vm.openAllApps()
                 }
                 HomeCommand.None -> Unit
             }
@@ -592,7 +598,7 @@ fun HomeScreen(
     BackHandler(enabled = true) {
         when {
             fullScreenSearchOpen -> fullScreenSearchOpen = false
-            allAppsOpen -> viewModel.closeAllApps()
+            allAppsOpen -> vm.closeAllApps()
             else -> Unit
         }
         // else: no-op — ana ekranda geri tusu Activity'yi kapatmamali (bkz. yukaridaki not)
@@ -611,8 +617,8 @@ fun HomeScreen(
                 Lifecycle.Event.ON_RESUME -> {
                     homeResumeTrigger++
                     homeTickerVisible = true
-                    viewModel.refreshSmartAccessPermissions()
-                    viewModel.refreshLastLaunched()
+                    vm.refreshSmartAccessPermissions()
+                    vm.refreshLastLaunched()
                 }
                 Lifecycle.Event.ON_PAUSE -> homeTickerVisible = false
                 else -> Unit
@@ -637,7 +643,7 @@ fun HomeScreen(
                             val isSearchAction = gestureDoubleTap == com.armutlu.apporganizer.utils.AppPrefs.GestureAction.OPEN_SEARCH
                             if (!isSearchAction || doubleTapSearchEnabled) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                viewModel.dispatchGestureAction(context, gestureDoubleTap)
+                                vm.dispatchGestureAction(context, gestureDoubleTap)
                             }
                         }
                     },
@@ -651,7 +657,7 @@ fun HomeScreen(
                             } else if (gestureLongPress == com.armutlu.apporganizer.utils.AppPrefs.GestureAction.OPEN_APP_MANAGER) {
                                 homeLongPressOpen = true
                             } else {
-                                viewModel.dispatchGestureAction(context, gestureLongPress)
+                                vm.dispatchGestureAction(context, gestureLongPress)
                             }
                         }
                     }
@@ -684,7 +690,7 @@ fun HomeScreen(
                                     change.consume()
                                     accumulated = 0f
                                     AppAnalytics.allAppsOpened()
-                                    viewModel.dispatchGestureAction(context, gestureSwipeUp)
+                                    vm.dispatchGestureAction(context, gestureSwipeUp)
                                 }
                             }
                         }
@@ -717,11 +723,11 @@ fun HomeScreen(
                     filesIndexState = filesIndexState,
                     homeResumeTrigger = homeResumeTrigger,
                     resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
-                    onAppClick = { pkg -> viewModel.launchApp(context, pkg) },
+                    onAppClick = { pkg -> vm.launchApp(context, pkg) },
                     onNavigateToFolder = onNavigateToFolder,
-                    onQueryChange = viewModel::setSearchQuery,
-                    onEnableContactsSource = viewModel::enableContactsSearchSource,
-                    onEnableFilesSource = viewModel::enableFilesSearchSource,
+                    onQueryChange = vm::setSearchQuery,
+                    onEnableContactsSource = vm::enableContactsSearchSource,
+                    onEnableFilesSource = vm::enableFilesSearchSource,
                     folderSearchQuery = folderSearchQuery,
                     onFolderSearchQueryChange = { folderSearchQuery = it },
                     onFolderSearchClear = { folderSearchQuery = ""; folderSearchCountdown = 30 },
@@ -793,7 +799,7 @@ fun HomeScreen(
                     appsByPackage = remember(allApps) { allApps.associateBy { it.packageName } },
                     onLaunchApp = { pkg ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        viewModel.launchApp(context, pkg)
+                        vm.launchApp(context, pkg)
                     },
                     onAppLongClick = { pkg ->
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -839,16 +845,16 @@ fun HomeScreen(
                         onClose = { fullScreenSearchOpen = false },
                         onAppClick = { pkg ->
                             fullScreenSearchOpen = false
-                            viewModel.launchApp(context, pkg)
+                            vm.launchApp(context, pkg)
                         },
                         onFolderClick = { folder ->
                             fullScreenSearchOpen = false
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onNavigateToFolder(folder)
                         },
-                        onEnableContactsSource = viewModel::enableContactsSearchSource,
-                        onEnableFilesSource = viewModel::enableFilesSearchSource,
-                        onQueryChange = viewModel::setSearchQuery,
+                        onEnableContactsSource = vm::enableContactsSearchSource,
+                        onEnableFilesSource = vm::enableFilesSearchSource,
+                        onQueryChange = vm::setSearchQuery,
                         )
                     }
                 }
@@ -891,43 +897,43 @@ fun HomeScreen(
                     AllAppsDrawer(
                         apps = allApps,
                         searchQuery = searchQuery,
-                        onSearchQueryChange = viewModel::setSearchQuery,
+                        onSearchQueryChange = vm::setSearchQuery,
                         onAppClick = { pkg ->
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.launchApp(context, pkg)
+                            vm.launchApp(context, pkg)
                         },
                         onAppLongClick = { app ->
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             contextMenuPkg = app.packageName
                         },
-                        onClose = viewModel::closeAllApps,
+                        onClose = vm::closeAllApps,
                         favoriteApps = favoriteApps,
                         favoritesEnabled = favoritesEnabledAllApps,
                         onFavoriteAppClick = { pkg ->
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.launchApp(context, pkg)
+                            vm.launchApp(context, pkg)
                         },
                         recentApps = recentApps,
                         recentAppsEnabled = recentAppsEnabledAllApps,
                         onRecentAppClick = { pkg ->
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.launchApp(context, pkg)
+                            vm.launchApp(context, pkg)
                         },
                         recentNotificationAppsEnabled = recentNotificationAppsRowEnabled,
                         recentNotificationApps = recentNotificationApps,
                         todayInstalledAppsEnabled = recentInstallsEnabled,
                         todayInstalledApps = todayInstalledApps,
                         focusSearchOnOpen = focusSearchOnOpen,
-                        onFocusSearchConsumed = viewModel::resetFocusSearchOnOpen,
+                        onFocusSearchConsumed = vm::resetFocusSearchOnOpen,
                         categories = categories,
                         searchResults = searchResults,
                         recentNotificationCounts = recentNotificationCounts,
                         filesIndexState = filesIndexState,
-                        onEnableFilesSource = viewModel::enableFilesSearchSource,
+                        onEnableFilesSource = vm::enableFilesSearchSource,
                         onCategoryClick = { categoryId ->
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.closeAllApps()
-                            viewModel.openFolderByCategoryId(categoryId)
+                            vm.closeAllApps()
+                            vm.openFolderByCategoryId(categoryId)
                         }
                     )
                 }
@@ -947,7 +953,7 @@ fun HomeScreen(
                         pressY = quickWheelY,
                         screenWidthPx = metrics.widthPixels.toFloat(),
                         screenHeightPx = metrics.heightPixels.toFloat(),
-                        onLaunch = { pkg -> viewModel.launchApp(context, pkg) },
+                        onLaunch = { pkg -> vm.launchApp(context, pkg) },
                         onDismiss = { quickWheelVisible = false }
                     )
                 }
@@ -1181,7 +1187,7 @@ fun HomeScreen(
                                 }
                                 runCatching { context.startActivity(intent) }
                             },
-                            onClockLongPress = { viewModel.openManager(context) },
+                            onClockLongPress = { vm.openManager(context) },
                             onPulseClick = {
                                 val intent = Intent(context, MainActivity::class.java).apply {
                                     putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)
@@ -1209,7 +1215,7 @@ fun HomeScreen(
                                     context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                                 }
                             },
-                            onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
+                            onLaunchApp = { pkg -> vm.launchApp(context, pkg) },
                             onAppLongClick = { pkg -> contextMenuPkg = pkg },
                         ),
                         modifier = Modifier.fillMaxSize(),
@@ -1256,8 +1262,8 @@ fun HomeScreen(
                         haptic = haptic,
                         onFolderClick = { onNavigateToFolder(it) },
                         onFolderLongClick = { folderContextMenu = it },
-                        onSwipeUp = { pkg -> viewModel.launchApp(context, pkg) },
-                        onNotificationTap = { pkg -> viewModel.launchApp(context, pkg) },
+                        onSwipeUp = { pkg -> vm.launchApp(context, pkg) },
+                        onNotificationTap = { pkg -> vm.launchApp(context, pkg) },
                         // EX02 — "N okunmamış bildirim" alt bilgi satırı Bildirim Raporu ekranını açar
                         // MainActivity route deseniyle haftalık raporu açar.
                         onNotificationSummaryTap = {
@@ -1305,7 +1311,7 @@ fun HomeScreen(
                             }
                         },
                         onDragEnd = {
-                            draggingFolders?.let { viewModel.reorderFolders(context, it) }
+                            draggingFolders?.let { vm.reorderFolders(context, it) }
                             dragFromIndex = null
                             dragToIndex = null
                             draggingFolders = null
@@ -1361,23 +1367,23 @@ fun HomeScreen(
         onCategoryPickerDismiss = { categoryPickerApp = null },
         onHomeLongPressDismiss = { homeLongPressOpen = false },
         onFolderContextMenuDismiss = { folderContextMenu = null },
-        onDockAdd = { item -> viewModel.addToDock(context, item) },
-        onDockRemove = { viewModel.removeFromDock(context, it) },
-        onLaunchApp = { pkg -> viewModel.launchApp(context, pkg) },
-        onAddToDock = { pkg -> viewModel.addToDock(context, pkg) },
-        onRemoveFromDock = { pkg -> viewModel.removeFromDock(context, pkg) },
+        onDockAdd = { item -> vm.addToDock(context, item) },
+        onDockRemove = { vm.removeFromDock(context, it) },
+        onLaunchApp = { pkg -> vm.launchApp(context, pkg) },
+        onAddToDock = { pkg -> vm.addToDock(context, pkg) },
+        onRemoveFromDock = { pkg -> vm.removeFromDock(context, pkg) },
         onChangeCategory = { app ->
             categoryPickerApp = app
             contextMenuPkg = null
         },
         onHideApp = { app, hidden ->
-            viewModel.setAppHidden(app.packageName, hidden)
+            vm.setAppHidden(app.packageName, hidden)
             contextMenuPkg = null
         },
-        onSaveNote = { app, note -> viewModel.saveAppNote(app.packageName, note) },
-        onToggleFavorite = { app -> viewModel.toggleFavorite(context, app.packageName) },
+        onSaveNote = { app, note -> vm.saveAppNote(app.packageName, note) },
+        onToggleFavorite = { app -> vm.toggleFavorite(context, app.packageName) },
         onCategorySelected = { app, catId ->
-            viewModel.updateAppCategory(app.packageName, catId)
+            vm.updateAppCategory(app.packageName, catId)
         },
         onOpenFolder = { folder ->
             folderContextMenu = null
@@ -1386,7 +1392,7 @@ fun HomeScreen(
         onOpenAllApps = {
             folderContextMenu = null
             AppAnalytics.allAppsOpened()
-            viewModel.openAllApps()
+            vm.openAllApps()
         },
         onMoveFolder = { folder, newIndex ->
             val currentList = folders.toMutableList()
@@ -1394,7 +1400,7 @@ fun HomeScreen(
             if (fromIndex >= 0 && newIndex in currentList.indices) {
                 val item = currentList.removeAt(fromIndex)
                 currentList.add(newIndex, item)
-                viewModel.reorderFolders(context, currentList)
+                vm.reorderFolders(context, currentList)
             }
             folderContextMenu = null
         },
@@ -1414,7 +1420,7 @@ fun HomeScreen(
         },
         onSettings = {
             homeLongPressOpen = false
-            viewModel.openManager(context)
+            vm.openManager(context)
         },
         onDockEdit = {
             homeLongPressOpen = false

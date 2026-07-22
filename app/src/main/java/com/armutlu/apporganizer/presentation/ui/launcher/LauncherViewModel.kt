@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.NotificationEventDao
@@ -76,6 +77,10 @@ private const val RECENT_NOTIFICATIONS_WINDOW_MS = 24L * 60L * 60L * 1000L
 internal val DOCK_MAX_SIZE: Int
     get() = DockPrefs.MAX_SLOTS
 
+// PERF-2 Faz 1: @Immutable — Category zaten @Immutable, AppInfo zaten @Immutable; bu isaret
+// olmadan Compose derleyicisi List<AppInfo> alanini gorunce sinifi guvenli/stabil sayamiyor,
+// AppFolder parametre alan HomeScreen/FolderTile/FolderScreen skippable=false kaliyordu.
+@Immutable
 data class AppFolder(
     val category: Category,
     val apps: List<AppInfo>
