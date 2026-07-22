@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-2 — 2026-07-22 20:34
+**Yapılanlar:** UI Redesign faz 6 görev ROADMAP'a eklendi (R-HOME-LAYOUT, R-HOME-NAV, R-HOME-TICKER, R-FOLDER-SUMMARY, R-ALLAPPS-MODERN, R-SETTINGS-AUDIT), tahmini 12-16 gün / 24-32 puan
+**Durum:** HAFIF KONTROL (doc değişiklik, build skip)
+**Sonraki:** Cycle 6 (60min) full build + APK
+
 ## Döngü CRON-1 — 2026-07-22 20:15
 **Yapılanlar:** PERF-2 Faz 1 (HomeScreen memoize + @Immutable AppFolder), build 35s, APK 27.62 MB → Telegram
 **Agent:** Sonnet — HomeScreen.kt viewModel memoization (57 call-site), AppFolder @Immutable annotation
