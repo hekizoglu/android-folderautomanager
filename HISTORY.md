@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-25 — 2026-07-23 00:10
+**Yapılanlar:** Hafif kontrol (build skip), 5. döngü başlangıcı, Defender fix bekleniyor
+**Durum:** CS-4 çözümü (Admin Defender exclusion) hala pendding, build_counter=1 reset
+**Sonraki:** Cycle 26 (00:17) — cycle 2/6, Defender fix kurulduktan sonra build success
+
 ## Döngü CRON-24 BUILD FINAL — 2026-07-22 23:56
 **Yapılanlar:** FULL BUILD tetiklendi, build cache kilidi FAILED (5. kez), CS-4 Defender exclusion gerekli
 **Build:** ❌ FAILED — compileDebugKotlin cache lock (çöküş beklentiyle tutarlı)
