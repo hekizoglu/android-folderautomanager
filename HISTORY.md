@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-5 — 2026-07-22 21:08
+**Yapılanlar:** Hafif kontrol (build skip), build_counter=5
+**Durum:** HAFIF KONTROL (Sonraki cycle 6 FULL BUILD + APK)
+**Sonraki:** Cycle 6 (21:15) — assembleDebug + 27.6 MB APK bekleniyor
+
 ## Döngü CRON-4 — 2026-07-22 20:59
 **Yapılanlar:** Hafif kontrol (build skip), CRON-6 build öncesi R-HOME-TICKER erteleme kararı
 **Durum:** HAFIF KONTROL (HomeScreen çok büyük dosya + worktree kilitli, risk düşürmek için post-build yapılacak)
