@@ -35,6 +35,18 @@
 **ZORUNLU WebSearch:** Yeni API/kütüphane, versiyon uyumluluğu, derleme hatası, daha önce yapılmamış işlemler.
 **OPSİYONEL:** Mevcut kodda bug fix, pure Kotlin/Compose değişikliği, refactor.
 
+### ⚠️ HALÜSINASYON YASAK — KOD GERÇEKTEN ÇALIŞMALI (D2026-07-23)
+**Orkestra hedefi %75+ ilerleme için ZORUNLU kural:**
+1. **ROADMAP [x] işareti = KOD YAZILDI** — sadece işaret değişmemeli
+2. **Her görev için**: dosya oku → kod yaz → compile (`.\gradlew assembleDebug`) → test çalıştır (unit/lint) → başarı kanıtıyla commit
+3. **Halüsinasyon test:** "Yazıldı" demeden önce:
+   - Dosya fiziksel olarak var mı? (Read tool ile doğrula)
+   - Kod derlenebiliyor mu? (build output check)
+   - Test geçiyor mu? (testDebugUnitTest, lint, detekt sonuç)
+   - Git push başarılı mı? (remote'ta görülüyor mü?)
+4. **Kural ihlali sonuç:** İşaret kaldır, [x] → [ ], revert commit, kaynağı açıkla
+5. **Hüseyin'in talebi:** "tüm görevler için geçerli bu bunu kural olarak yaz" → ZORUNLU ve kalıcı
+
 ### Yeni Özellik = Ayarlar Kuralı
 Her yeni UI özelliği SettingsScreen'den toggle ile kapatılabilir olmalı:
 1. `AppPrefs.kt` → `KEY_xxx` + getter/setter (varsayılan: açık)
