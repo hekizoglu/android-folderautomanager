@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-31 — 2026-07-23 01:09
+**Yapılanlar:** Hafif kontrol (build skip), loop devam, CS-4 blocker bekleniyor
+**Durum:** Defender fix kurulması bekleniyor, build_counter=1 reset (6. döngü başlangıcı)
+**Sonraki:** CRON-32 (01:16) — build retry Defender fix sonrası
+
 ## Döngü CRON-30 BUILD FINAL — 2026-07-23 00:48 — BUILD FAILED (7. kez)
 **Yapılanlar:** FULL BUILD tetiklendi, ClassificationReviewViewModel fix (appName/categoryId), retry = CS-4 workaround loop fail
 **Build:** ❌ FAILED — CS-4 cache kilidi 7. kez, workaround (--stop + force delete) geçersiz
