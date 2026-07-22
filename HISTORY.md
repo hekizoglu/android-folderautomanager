@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-4 — 2026-07-22 20:59
+**Yapılanlar:** Hafif kontrol (build skip), CRON-6 build öncesi R-HOME-TICKER erteleme kararı
+**Durum:** HAFIF KONTROL (HomeScreen çok büyük dosya + worktree kilitli, risk düşürmek için post-build yapılacak)
+**Sonraki:** Cycle 5 (21:06) hafif check, Cycle 6 (21:13) build + APK, Cycle 7+ R-HOME-TICKER başlasın
+
 ## Döngü CRON-3 — 2026-07-22 20:51
 **Yapılanlar:** Hafif kontrol (build skip), R-HOME-TICKER başlatılacak (next cycle)
 **Durum:** HAFIF KONTROL (Sonraki görev: R-HOME-TICKER 1.5 gün, 3 puan)
