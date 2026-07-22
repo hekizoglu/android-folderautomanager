@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-1 — 2026-07-22 20:15
+**Yapılanlar:** PERF-2 Faz 1 (HomeScreen memoize + @Immutable AppFolder), build 35s, APK 27.62 MB → Telegram
+**Agent:** Sonnet — HomeScreen.kt viewModel memoization (57 call-site), AppFolder @Immutable annotation
+**Sonraki:** PERF-2 Faz 2 (ImmutableList + AllAppsDrawer), R1 tablet smoke test
+
 ## FİKİRLER.md Temizliği — Tamamlanan Fikirlerin Arşivlemesi (2026-07-22)
 
 **Tamamlanan Fikirler (19 madde ✅):**

@@ -438,6 +438,90 @@ Bu sıra release’den önce değiştirilmez:
 
 **Tablo bakım kuralı:** Aktif geliştirmede her çalışma döngüsü/stand-up sonunda durum, kalan efor, sahip ve kanıt bağlantısı güncellenir. Bir faz `Devam ediyor` durumunda 3 iş günü boyunca yeni kanıt veya durum değişimi üretmezse kök neden incelenir; gerçek dış bağımlılık varsa `COZULEMEYEN_SORUNLAR.md` kaydına sahip ve son tarihle taşınır, normal planlı çalışma otomatik olarak blokaj sayılmaz.
 
+## 15.5. Paralel Faz — UI Redesign (R-HOME-LAYOUT, R-HOME-NAV, R-HOME-TICKER, R-FOLDER-SUMMARY, R-ALLAPPS-MODERN, R-SETTINGS-AUDIT)
+
+**Bağımlılık:** H1 temel kapı (UI bileşenleri hazır olmalı)  
+**Başlama:** 2026-07-22  
+**Tahmini efor:** 12–16 gün (24–32 puan; cihaz testi hariç)
+
+### Görevler (Uygulama Sırası)
+
+#### R-HOME-LAYOUT: HomeScreen Layout Standardizasyon
+**Durum:** Yapılacak  
+**Tahmini:** 3 gün (6 puan)
+
+- [ ] `StandardLayoutContainer` composable oluştur (responsive padding: telefon 16dp/tablet 24-32dp)
+- [ ] HomeScreen, AllAppsDrawer, FolderScreen, SettingsScreen'e uygula
+- [ ] Responsive grid: 4 sütun (<600dp), 5 sütun (600-800dp), 6 sütun (800+dp)
+- [ ] Telefon/tablet testleri, taşma kontrol
+
+**Dosyalar:** HomeScreen.kt, AllAppsDrawer.kt, FolderScreen.kt, SettingsScreen.kt
+
+#### R-HOME-NAV: Navigation Dots Senkronizasyonu
+**Durum:** Yapılacak  
+**Tahmini:** 2 gün (4 puan)
+
+- [ ] HorizontalPager state'i HomeScreenPageIndicator'e direkt bağla
+- [ ] Gesture debounce: sayfa geçişi sırasında tıklama reddet
+- [ ] Sağ-sol kaydırma + dot tıklama testleri
+
+**Dosyalar:** HomePagerHost.kt, HomeScreenPageIndicator.kt
+
+#### R-HOME-TICKER: Görevler/Haber Şeridi Etkinleştir
+**Durum:** Yapılacak  
+**Tahmini:** 1,5 gün (3 puan)
+
+- [ ] AppPrefs.KEY_TICKER_ENABLED kontrol et (varsayılan: açık)
+- [ ] HomeTickerRow HomeScreen'e entegre et
+- [ ] SettingsScreen > Görünüm > "Haber Şeridi" toggle ekle
+
+**Dosyalar:** HomeScreen.kt, SettingsScreen.kt, AppPrefs.kt
+
+#### R-FOLDER-SUMMARY: Klasör Visual Summary (Sayı Yerine)
+**Durum:** Yapılacak  
+**Tahmini:** 3 gün (6 puan)
+
+- [ ] FolderTile: 3-4 uygulama ikonunu grid içinde preview göster
+- [ ] HomeIntelligenceCardsRow: "Yönetim" kartı ekle (klasör/app istatistikleri)
+- [ ] Dashboard açılış navigasyonu
+
+**Dosyalar:** FolderTile.kt, HomeIntelligenceCardsRow.kt, SmartDashboardCard.kt
+
+#### R-ALLAPPS-MODERN: AllAppsDrawer Modernizasyon
+**Durum:** Yapılacak  
+**Tahmini:** 4 gün (8 puan)
+
+- [ ] Modern search bar + filter UI (dropdown kategoriler)
+- [ ] LazyVerticalGrid layout (responsive sütun)
+- [ ] Section headers (kategori başlıkları)
+- [ ] Performance test (scroll, filter)
+
+**Dosyalar:** AllAppsDrawer.kt, AllAppsDrawerUtils.kt
+
+#### R-SETTINGS-AUDIT: Ayarlar Tam Gözden Geçirme
+**Durum:** Yapılacak  
+**Tahmini:** 5 gün (10 puan)
+
+- [ ] 6 kategoriyi gözden geçir (Görünüm, Launcher, Bildirimler, Arama, Uygulamalar, İstatistikler, Güvenlik, Hakkında)
+- [ ] Gereksiz toggle'ları sil (Quick Wheel, duplicate Recent/Favorites rows)
+- [ ] Search toggle logic: 3 toggle'dan sadece biri aktif olmalı
+- [ ] Widget logic: area + free-grid uyumlu çalışması
+- [ ] Her toggle bağımsız test
+
+**Dosyalar:** SettingsScreen.kt, tüm SettingsXxxScreen.kt'ler, AppPrefs.kt
+
+### Test Protokolü (Her görev sonunda)
+- ✅ Telefon (4.5-6.5")
+- ✅ Tablet (7-10")
+- ✅ Responsive: 80%, 100%, 120% font scale
+- ✅ Portrait + Landscape
+- ✅ Edge-to-Edge padding
+- ✅ Taşma/clipping kontrol
+
+**Çıkış:** Tüm ekranlar tutarlı layout, navigation dots çalışıyor, haber şeridi etkin, klasörlerde visual preview, modern AllApps, temiz ayarlar.
+
+---
+
 ## 16. Roadmap bakım kuralları
 
 - Yeni iş doğrudan bu dosyaya eklenir; yeni `*_ROADMAP.md` oluşturulmaz. Tek istisna mevcut bağlayıcı Hero tasarım şartnamesidir.
