@@ -1,5 +1,11 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-12 BUILD — 2026-07-22 22:11
+**Yapılanlar:** FULL BUILD tetiklendi, build cache kilidi (Gradle), retry başarısız
+**Build:** FAILED (Java process + cache lock) — Windows Defender/AV file lock şüphesi
+**Durum:** Build atlandı, COZULEMEYEN_SORUNLAR.md'ye CS-4 (build kilidi) kaydedildi
+**Sonraki:** CRON-13 (22:18) hafif kontrol devam, build lock manual fix bekliyor
+
 ## Döngü CRON-11 — 2026-07-22 22:04
 **Yapılanlar:** Hafif kontrol timeout (background), build_counter=5, 2. döngü cycle 5/6
 **Durum:** CRON-12 build (sonraki cycle) tetiklenecek
