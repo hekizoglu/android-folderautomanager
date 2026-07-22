@@ -232,16 +232,16 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 - [x] Öneriyi açma, hedef değiştirme, uygulama seçme ve review state işlemlerini ekle.
 - [x] Eski `acceptFolderSuggestion()` davranışını silme; merge türünü review ekranına route et.
 - [x] `SPLIT_LARGE_FOLDER` ve `CLEAN_UNUSED_APPS` yollarını değiştirme.
-- [ ] ViewModel testlerini tamamla.
+- [x] ViewModel testlerini tamamla.
 
 ### R3.3 A tasarımı inceleme ekranı
 
-- [ ] Öne çıkan öneri kartı ve `FolderMergeReviewScreen` oluştur.
-- [ ] Kaynak/hedef önizleme, uygulama grid’i, hedef picker, uygulama picker ve önce/sonra sayı kartını ekle.
-- [ ] Kilitli uygulamaları açıkça göster; hedef 20+ uygulama olacaksa uyar.
-- [ ] Seçili taşınabilir uygulama yoksa onayı kapat.
-- [ ] Loading/error/empty state, dark mode, büyük font ve TalkBack desteğini tamamla.
-- [ ] Compose UI testlerini tamamla.
+- [x] Öne çıkan öneri kartı ve `FolderMergeReviewScreen` oluştur.
+- [x] Kaynak/hedef önizleme, uygulama grid’i, hedef picker, uygulama picker ve önce/sonra sayı kartını ekle.
+- [x] Kilitli uygulamaları açıkça göster; hedef 20+ uygulama olacaksa uyar.
+- [x] Seçili taşınabilir uygulama yoksa onayı kapat.
+- [x] Loading/error/empty state, dark mode, büyük font ve TalkBack desteğini tamamla.
+- [x] Compose UI testlerini tamamla.
 
 **Çıkış:** Kullanıcı kalıcı işlem yapılmadan önce eksiksiz merge planını görür ve düzenler.
 
@@ -252,17 +252,17 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R4.1 Persistence
 
-- [ ] Operation ve operation-item entity/DAO modellerini ekle.
-- [ ] Tek bir Room migration yaz; schema JSON’u commit et.
-- [ ] `mergeFolders()` işlemini transaction içinde uygula.
-- [ ] Kısmi başarıya izin verme; hata halinde tamamını rollback et.
-- [ ] Eski kategori/manuel override verisini geri alma için operation item içinde sakla.
+- [x] Operation ve operation-item entity/DAO modellerini ekle.
+- [x] Tek bir Room migration yaz; schema JSON’u commit et.
+- [x] `mergeFolders()` işlemini transaction içinde uygula.
+- [x] Kısmi başarıya izin verme; hata halinde tamamını rollback et.
+- [x] Eski kategori/manuel override verisini geri alma için operation item içinde sakla.
 
 ### R4.2 Undo ve yan sistem tutarlılığı
 
-- [ ] `undoFolderMerge()` işlemini transaction içinde ve idempotent uygula.
-- [ ] Aynı operation’ın ikinci kez geri alınmasını reddet.
-- [ ] Merge ve undo sonrasında Room, manuel override, launcher klasörleri ve search index’i aynı sonucu göstermeli.
+- [x] `undoFolderMerge()` işlemini transaction içinde ve idempotent uygula.
+- [x] Aynı operation’ın ikinci kez geri alınmasını reddet.
+- [x] Merge ve undo sonrasında Room, manuel override, launcher klasörleri ve search index’i aynı sonucu göstermeli.
 - [ ] Başarılı öneriyi yeniden gösterme; erteleneni 7 gün gizle.
 - [ ] Boş sistem klasörünü görünür listeden düşür fakat veritabanından silme.
 - [ ] TaskScore bağlantısını yalnız başarıdan sonra tetikle.
@@ -281,15 +281,15 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R5.1 Dört cihaz matrisi
 
-- [ ] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
-- [ ] Temiz kurulum telefonu ve izinleri kapatılmış ayrı cihaz/konfigürasyon ile matrisi 4/4 tamamla.
+- [x] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
+- [x] Temiz kurulum telefonu ve izinleri kapatılmış ayrı cihaz/konfigürasyon ile matrisi 4/4 tamamla.
 - [ ] Ortak R7 senaryosunu kullanarak portrait/landscape, rotasyon+swipe, arama, dock, Dashboard, klasör grid ve All Apps’i doğrula; aynı matrisi ikinci kez üretme.
 - [ ] Küçük/standart/büyük telefon ile 7–8 ve 10+ inç tablet kırılımlarında taşma olmadığını tek evidence paketine yaz.
 
 ### R5.2 Tek ürün yolu ve privacy-safe telemetry
 
 - [x] Üretim pager planlayıcısını boolean/feature-flag kabul etmeyen `buildHeroPages()` girişine bağla; Sayfa 0’ı kod seviyesinde yalnız Hero yap.
-- [ ] Gerçek cihazda her açılış/restore senaryosunda Sayfa 0’ın Hero olduğunu smoke ile doğrula.
+- [x] Gerçek cihazda her açılış/restore senaryosunda Sayfa 0’ın Hero olduğunu smoke ile doğrula.
 - [ ] Rıza kapalıyken hiçbir home telemetry event’i gönderilmediğini Firebase tarafında doğrula.
 - [ ] Rıza açıkken yalnız izinli enum/bucket parametrelerinin gittiğini DebugView ile doğrula.
 - [ ] Klasör adı, kategori, app/package, arama sorgusu, kişi ve dosya verisinin gönderilmediğini kanıtla.
@@ -305,20 +305,20 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 **Bağımlılık:** H1 temel composition kapısı. Görünür davranış, migration veya restore sözleşmesi değiştirilemez.
 
 - [x] Eski `DashboardContentGroup`, `dashboardGroupOrder`, `countVisibleSections` referanslarını repo genelinde doğrula; runtime referansı kalmadığını kanıtla. Kullanıcı tercihlerini etkileyen kalıcı layout ayarlarını R6B migration kararına bırak.
-- [ ] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
+- [x] Dashboard widget/ticker/FolderStats/favorites/suggestions/recent-install dallarını yalnız başka ekran tüketmiyorsa kaldır.
   - [x] Üretim tüketicisi olmayan eski `HomeFavoritesSection` contextual row seçici/composable zincirini ve yalnız ona ait testleri kaldır; All Apps veri akışlarını koru.
 - [x] Kullanılmayan Dashboard state alanlarını ve kırık eski testleri sil; geçerli testleri Hero/layout testlerine dönüştür.
 - [x] Pager’ın üstünde tüm sayfalara sızan eski `FolderStatsRow`/`StatChip` bandını ve yalnız onu besleyen HomeScreen state aboneliklerini kaldır.
 - [x] Eski folder-only pager çağrılarını repo genelinde ara; runtime'da yalnız `HomePagerHost` + tek-sayfa folder grid renderer kaldığını doğrula.
-- [ ] Kullanılmayan eski pager branch’lerini, duplicate search lambda’larını ve eski test fixture’larını kaldır.
-- [ ] `HomeScreen.kt` dosyasını orchestration seviyesine indir; davranış değişikliği yapma.
+- [x] Kullanılmayan eski pager branch’lerini, duplicate search lambda’larını ve eski test fixture’larını kaldır.
+- [x] `HomeScreen.kt` dosyasını orchestration seviyesine indir; davranış değişikliği yapma.
 
 ### R6B — Doğrulama sonrası kalıcı kaldırma
 
 **Bağımlılık:** R5 cihaz/telemetri doğrulaması tamamlanmalı.
 
-- [ ] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
-- [ ] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
+- [x] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
+- [x] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
 - [ ] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
 - [ ] Her davranış/migration kaldırmasını ayrı, küçük ve `git revert` ile geri alınabilir committe yap; önce referans taraması + hedefli test, sonra internal/beta build kanıtı al.
 - [ ] Persisted state, restore veya migration davranışını etkileyen kaldırmayı R7.5 beta adayında en az 7 takvim günü gözlemle; kritik regresyon varsa commit’i geri al. Sıfır referanslı salt dead-code için bekleme gerekmez.
@@ -337,9 +337,9 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 
 **Bağımlılık:** R2–R6A kod kapıları. R7.2 ve R7.3 ile paralel yürüyebilir.
 
-- [ ] Android 14 NotificationListener izin aç/kapa, reboot ve event/rapor testi.
-- [ ] SAF export/import, Drive klasör seçimi, missing packages ve restore sonrası ayar sürekliliği.
-- [ ] SmartInsightWorker, BackupWorker ve diğer periyodik worker schedule/pil testleri.
+- [x] Android 14 NotificationListener izin aç/kapa, reboot ve event/rapor testi.
+- [x] SAF export/import, Drive klasör seçimi, missing packages ve restore sonrası ayar sürekliliği.
+- [x] SmartInsightWorker, BackupWorker ve diğer periyodik worker schedule/pil testleri.
 - [ ] Android 13+ POST_NOTIFICATIONS reddinde sessiz/güvenli davranış.
 - [ ] Rıza kapalı/açık Firebase davranışını ve hassas veri gönderilmediğini doğrula.
 - [x] Widget sağlayıcı seçimini ROM `Settings.ActivityPicker` bağımlılığından çıkar; uygulama içi liste + `bindAppWidgetIdIfAllowed` + `ACTION_APPWIDGET_BIND` izin fallback’i kullan.
