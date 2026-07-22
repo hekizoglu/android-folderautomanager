@@ -1,5 +1,11 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-36 BUILD FINAL — 2026-07-23 01:48 — BUILD FAILED (8. kez)
+**Yapılanlar:** FULL BUILD tetiklendi, CS-4 cache kilidi 8. kez fail, Defender exclusion ZORUNLU
+**Build:** ❌ FAILED — compileDebugKotlin cache lock
+**Durum:** 6. döngü tamamlandı (build hariç), loop suspend — Admin Defender fix ZORUNLU
+**Sonraki:** Defender exclusion → restart → CRON-37+ retry
+
 ## Döngü CRON-35 — 2026-07-23 01:39
 **Yapılanlar:** Hafif kontrol (build skip), 6. döngü cycle 5/6
 **Durum:** Defender fix bekleniyor, build_counter=5 (son cycle build beklentisi)
