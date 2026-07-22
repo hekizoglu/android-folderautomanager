@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-14 — 2026-07-22 22:48
+**Yapılanlar:** Hafif kontrol timeout (background), build_counter=2, 3. döngü cycle 2/6
+**Durum:** Hybrid C paralel, build cache kilidi beklemede
+**Sonraki:** Cycle 15 (22:55) — cycle 3/6
+
 ## Döngü CRON-13 — 2026-07-22 22:20
 **Yapılanlar:** 3. döngü başlangıcı, hafif kontrol timeout (background), build_counter reset=1
 **Durum:** CRON-18 build bekleniyor (23:00), Hybrid C paralel + build cache fix beklemede
