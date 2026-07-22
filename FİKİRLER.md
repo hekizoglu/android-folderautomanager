@@ -54,14 +54,14 @@
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 3) | **Güven skoruna göre otomatik kategorize** — düşük confidence'lı sınıflandırmalarda kullanıcıya sor. Detay → ROADMAP.md "Hüseyin Geri Bildirim Listesi" [3]. (KV:4·U:4·BR:3·EA:3) | 14p — ✅ Tamamlandı (Döngü 280) |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 4) | **Arama barı klavye ile hafif çakışıyor** — `WindowInsets.ime` offset artırılmalı. Detay → ROADMAP.md [4]. (KV:3·U:4·BR:4·EA:2) | 13p — ✅ Tamamlandı (D267) |
 | 2026-07-14 | Hüseyin geri bildirim listesi (madde 7) | **Pulse Clock altı insight metni kaldır, saat küçült** — Detay → ROADMAP.md [7]. (KV:3·U:4·BR:2·EA:3) | 12p — ✅ Tamamlandı (Döngü 277) |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 8) | **Onboarding'de güçlü özellikler (3702 paket, gizlilik) öne çıkarılsın** — Detay → ROADMAP.md [8]. (KV:3·U:4·BR:2·EA:2) | 11p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 9) | **"En Çok Kullandıklarım" küçültülüp yanına teknik bilgi eklensin** — Detay → ROADMAP.md [9]. (KV:3·U:3·BR:2·EA:2) | 10p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 10) | **"Dijital Yaşam Skoru" renk kodlu rozet** — ticker'a skor rozeti. Detay → ROADMAP.md [10]. (KV:4·U:3·BR:3·EA:3) | 13p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 13) | **Ana ekranda "Görevler" giriş noktası** — gamification sistemi. Detay → ROADMAP.md [13]. (KV:4·U:2·BR:2·EA:3) | 11p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 14) | **"Direkt Onayla" butonuna açıklama eklensin** — Detay → ROADMAP.md [14]. (KV:3·U:5·BR:1·EA:2) | 11p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 15) | **Görev puanlama motoru (gamification puan sistemi)** — Detay → ROADMAP.md [15]. (KV:3·U:2·BR:2·EA:3) | 10p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 18) | **AllAppsDrawer'da uygulama altına bildirim özeti** — Detay → ROADMAP.md [18]. (KV:3·U:3·BR:2·EA:3) | 11p — Bekliyor |
-| 2026-07-14 | Hüseyin geri bildirim listesi (madde 20) | **Klasörler arası geçiş animasyonu iyileştirilsin (iPhone tarzı)** — Detay → ROADMAP.md [20]. (KV:3·U:3·BR:3·EA:3) | 12p — Bekliyor |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 8) | **Onboarding'de güçlü özellikler (3702 paket, gizlilik) öne çıkarılsın** — Detay → ROADMAP.md [8]. (KV:3·U:4·BR:2·EA:2) | 11p — ✅ Tamamlandı (Döngü 275) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 9) | **"En Çok Kullandıklarım" küçültülüp yanına teknik bilgi eklensin** — Detay → ROADMAP.md [9]. (KV:3·U:3·BR:2·EA:2) | 10p — ✅ Tamamlandı (Döngü 278) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 10) | **"Dijital Yaşam Skoru" renk kodlu rozet** — ticker'a skor rozeti. Detay → ROADMAP.md [10]. (KV:4·U:3·BR:3·EA:3) | 13p — ✅ Tamamlandı (Döngü 276) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 13) | **Ana ekranda "Görevler" giriş noktası** — gamification sistemi. Detay → ROADMAP.md [13]. (KV:4·U:2·BR:2·EA:3) | 11p — ✅ Tamamlandı (Döngü 274) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 14) | **"Direkt Onayla" butonuna açıklama eklensin** — Detay → ROADMAP.md [14]. (KV:3·U:5·BR:1·EA:2) | 11p — ✅ Tamamlandı (Döngü 268) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 15) | **Görev puanlama motoru (gamification puan sistemi)** — Detay → ROADMAP.md [15]. (KV:3·U:2·BR:2·EA:3) | 10p — ✅ Tamamlandı (Döngü 272) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 18) | **AllAppsDrawer'da uygulama altına bildirim özeti** — Detay → ROADMAP.md [18]. (KV:3·U:3·BR:2·EA:3) | 11p — ✅ Tamamlandı (Döngü 279) |
+| 2026-07-14 | Hüseyin geri bildirim listesi (madde 20) | **Klasörler arası geçiş animasyonu iyileştirilsin (iPhone tarzı)** — Detay → ROADMAP.md [20]. (KV:3·U:3·BR:3·EA:3) | 12p — ✅ Tamamlandı (Döngü 281) |
 | 2026-07-13 | Hüseyin (kullanıcı) | **İstatistik sıfırlama sihirbazı** — Kullanım/bildirim/Wrapped istatistiklerini tek dokunuşla sıfırlamak yerine kısa bir soru akışı (örn. "Hangi verileri sıfırlamak istiyorsun: kullanım süresi / bildirim geçmişi / haftalık skor karşılaştırması / hepsi?") üzerinden sıfırlansın — yanlışlıkla tüm geçmişi silme riskini azaltır, hangi verinin ne işe yaradığını da öğretir. Muhtemel dosyalar: `UsageStatsHelper.kt`/Room `apps` tablosu (usageCount/lastUsedTimestamp), `notification_events` tablosu, `WrappedSnapshotPrefs.kt` (haftalık skor geçmişi), yeni bir onay diyalog ekranı (`SettingsAppsSection.kt` veya `SettingsBackupAboutSection.kt` altına). (KV:3 · U:4 · BR:3 · EA:3 = **13p**) | Bekliyor |
 
 ---
