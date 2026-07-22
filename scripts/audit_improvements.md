@@ -22,10 +22,12 @@
 ### L3 - Agent-Based Deep Analysis (10 dongude bir)
 | # | Yontem | Ne Zaman Eklendi | Sonuc |
 |---|--------|-----------------|-------|
-| 1 | Compose stability metrics | D191 | metrics yok (build gerekli) |
-| 2 | Dependency matrix | D191 | BOM/SDK tutarli |
-| 3 | APK size trend | D191 | 24.74 MB OK |
-| 4 | Dead code / eski TODO | D191 | temiz |
+| 1 | Compose stability metrics | D191 | Metrics aktif (build.gradle.kts §131) |
+| 2 | Dependency matrix | D191 | BOM/SDK tutarli (2024.12.01) |
+| 3 | APK size trend | D191+ | 27.62 MB (2026-07-22) |
+| 4 | Dead code / eski TODO | D191 | temiz, legacy cleanup planlandi (R6) |
+| 5 | Room migration idempotence | D206 | addColumnIfNotExists() pattern uygulanmis |
+| 6 | Firebase null-guard | D202 | AppAnalytics `runCatching` wrapper, firebaseApp check |
 
 ---
 
