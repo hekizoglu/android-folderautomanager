@@ -1,5 +1,11 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-30 BUILD FINAL — 2026-07-23 00:48 — BUILD FAILED (7. kez)
+**Yapılanlar:** FULL BUILD tetiklendi, ClassificationReviewViewModel fix (appName/categoryId), retry = CS-4 workaround loop fail
+**Build:** ❌ FAILED — CS-4 cache kilidi 7. kez, workaround (--stop + force delete) geçersiz
+**Durum:** 5. döngü tamamlandı (build hariç), Defender exclusion ZORUNLU (loop durduruldu)
+**Sonraki:** Admin PowerShell: Defender exclusion → restart → CRON-31+ retry
+
 ## Döngü P24 — 2026-07-23 00:45 — ROADMAP İlerleme Araştırması
 **Yapılanlar:** H1 fazı ✅ 17/17 tamamlandı, R2.1–R2.2 (sorter+state/ViewModel) yazılmış, R2.3 pendding
 **ROADMAP Durumu:** H1+R0 = 21/169 (%12.4) + R2.1–R2.2 = +8 madde → %17.2

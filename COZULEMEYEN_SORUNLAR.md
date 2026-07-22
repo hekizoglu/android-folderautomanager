@@ -29,9 +29,9 @@
 ### [CS-4] Gradle Kotlin compile cache kilidi (Windows Defender/AV)
 
 **Tarih:** 2026-07-22 22:11
-**Durum:** Build cache klasörü (`app/build/kotlin/compileDebugKotlin/cacheable`) DeleteDirectory hatası — Java/gradle process kilitli
-**Sahip:** Windows ortam yöneticisi
-**Son tarih:** R8 öncesi çözülmeli (build blocker)
+**Durum:** Build cache klasörü (`app/build/kotlin/compileDebugKotlin/cacheable`) DeleteDirectory hatası — 7+ kez fail, workaround geçersiz
+**Sahip:** Windows ortam yöneticisi (Admin Defender exclusion gerekli)
+**Son tarih:** ZORUNLU (build 7+ kez failed, loop yapan cron durduruldu)
 **Beklenen kanıt:** `.\gradlew assembleDebug` başarı (hiçbir manual cleanup olmadan)
 **Sonraki eskalasyon:** Defender/AV exclusion: `app/build`, `.gradle`, `.android` klasörleri → restart → retry
 **Workaround:** 
