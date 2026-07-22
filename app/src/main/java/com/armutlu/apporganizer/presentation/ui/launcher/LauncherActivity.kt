@@ -47,8 +47,8 @@ class LauncherActivity : ComponentActivity() {
     // widget'ları result Intent içinde ID döndürmediği için ana ekrana hiç eklenmez.
     private var pendingWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
 
-    private var widgetProviders by androidx.compose.runtime.mutableStateOf<List<AppWidgetProviderInfo>>(emptyList())
-    private var widgetPickerOpen by androidx.compose.runtime.mutableStateOf(false)
+    private var widgetProviders: List<AppWidgetProviderInfo> = emptyList()
+    private var widgetPickerOpen: Boolean = false
 
     private val widgetBindLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
