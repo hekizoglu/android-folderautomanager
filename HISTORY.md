@@ -1,5 +1,10 @@
 # HISTORY.md - AppOrganizer Döngü Arşivi
 
+## Döngü CRON-8 — 2026-07-22 21:39
+**Yapılanlar:** Hafif kontrol (build skip), build_counter=2, Hybrid C paralel devam
+**Durum:** Cycle 2/6 (build_counter artıyor), CRON-12'de next build (21:53 bekleniyor)
+**Sonraki:** Cycle 9 (21:46)
+
 ## Döngü CRON-7 — 2026-07-22 21:37
 **Yapılanlar:** Hafif kontrol (build skip), build_counter reset (başlangıç → 6 cycle tekrar), CRON-1~6 tam döngü tamamlandı
 **Durum:** 2. döngü başlıyor (build_counter=1), Hybrid C paralel devam (test + R2 retry)
