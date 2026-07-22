@@ -180,35 +180,35 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R2.1 Saf kategori altyapısı
 
-- [ ] `TurkishCategorySorter` oluştur; kullanıcıya gösterilen ad üzerinden Türkçe locale sıralaması yap.
-- [ ] TR için Türkçe `Collator`, EN için İngilizce `Collator`, desteklenmeyen locale için deterministik kök/İngilizce fallback uygula; locale ve aksan testlerini ekle.
-- [ ] `Kategorisiz` seçeneğini dışla; önerilen kategori tekrar etmesin.
-- [ ] Uygulama kategorileri ve marka klasörlerini ayrı section’lara ayır.
-- [ ] Sıralama ve grouping unit testlerini tamamla.
+- [x] `TurkishCategorySorter` oluştur; kullanıcıya gösterilen ad üzerinden Türkçe locale sıralaması yap.
+- [x] TR için Türkçe `Collator`, EN için İngilizce `Collator`, desteklenmeyen locale için deterministik kök/İngilizce fallback uygula; locale ve aksan testlerini ekle.
+- [x] `Kategorisiz` seçeneğini dışla; önerilen kategori tekrar etmesin.
+- [x] Uygulama kategorileri ve marka klasörlerini ayrı section’lara ayır.
+- [x] Sıralama ve grouping unit testlerini tamamla.
 
 ### R2.2 State ve ViewModel
 
-- [ ] Tek aktif package, package→seçim map’i, sheet state, arama sorgusu ve processing package içeren immutable UI state oluştur.
-- [ ] Pending liste değişince aktif uygulamayı güvenli uzlaştır.
-- [ ] Onay, düzeltme ve erteleme işlemlerini çift tıklamaya/idempotency sorununa karşı koru.
-- [ ] Repository hatasında processing state’i temizle ve kullanıcıya hata göster.
-- [ ] ViewModel testlerini tamamla.
+- [x] Tek aktif package, package→seçim map’i, sheet state, arama sorgusu ve processing package içeren immutable UI state oluştur.
+- [x] Pending liste değişince aktif uygulamayı güvenli uzlaştır.
+- [x] Onay, düzeltme ve erteleme işlemlerini çift tıklamaya/idempotency sorununa karşı koru.
+- [x] Repository hatasında processing state’i temizle ve kullanıcıya hata göster.
+- [x] ViewModel testlerini tamamla.
 
 ### R2.3 Bottom sheet ve ekran refactor’ı
 
-- [ ] Arama, section başlıkları, seçili işareti ve boş durum içeren kategori picker sheet oluştur.
-- [ ] Tek aktif uygulama kartında ikon, güven seviyesi, neden, sistem önerisi, seçilen kategori ve eylemleri göster.
-- [ ] Eski yatay kategori `LazyRow`, sabit `560.dp`, nested liste ve UI-local seçim state’ini kaldır.
-- [ ] Özet kartı ve sıradaki uygulamalar kuyruğunu bağla.
-- [ ] Tıklama alanlarını en az 48dp yap; TalkBack, font scale 1.5, açık/koyu ve Pixel görünümünü doğrula.
+- [x] Arama, section başlıkları, seçili işareti ve boş durum içeren kategori picker sheet oluştur.
+- [x] Tek aktif uygulama kartında ikon, güven seviyesi, neden, sistem önerisi, seçilen kategori ve eylemleri göster.
+- [x] Eski yatay kategori `LazyRow`, sabit `560.dp`, nested liste ve UI-local seçim state’ini kaldır.
+- [x] Özet kartı ve sıradaki uygulamalar kuyruğunu bağla.
+- [x] Tıklama alanlarını en az 48dp yap; TalkBack, font scale 1.5, açık/koyu ve Pixel görünümünü doğrula.
 
 ### R2.4 Telemetri ve faz kapısı
 
-- [ ] Yalnız privacy-safe event’leri ekle; paket adı gönderme.
-- [ ] TR/EN string kaynaklarını tamamla; sabit UI metni bırakma.
-- [ ] Kaynak anahtarı eşitliğini test et; TR/EN dışındaki diller R9 kararı verilene kadar ürün kapsamına alınmaz.
-- [ ] Unit, ViewModel ve Compose UI testlerini; lint, detekt ve debug build’i çalıştır.
-- [ ] Küçük telefon, standart telefon ve tablette smoke test yap.
+- [x] Yalnız privacy-safe event’leri ekle; paket adı gönderme.
+- [x] TR/EN string kaynaklarını tamamla; sabit UI metni bırakma.
+- [x] Kaynak anahtarı eşitliğini test et; TR/EN dışındaki diller R9 kararı verilene kadar ürün kapsamına alınmaz.
+- [x] Unit, ViewModel ve Compose UI testlerini; lint, detekt ve debug build’i çalıştır.
+- [x] Küçük telefon, standart telefon ve tablette smoke test yap.
 
 **Çıkış:** Tek kart + bottom sheet akışı güvenli çalışır; onay/düzeltme/ertele persistence ve sıra ilerlemesi kanıtlanır.
 
@@ -219,19 +219,19 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R3.1 Domain ve öneri motoru
 
-- [ ] `FolderSuggestion` modelini kaynak, önerilen hedef, neden, güven ve sayılarla genişlet.
-- [ ] `FolderSuggestionReason`, `FolderMergePlan` ve `FolderMergeCandidateScorer` oluştur.
-- [ ] Mevcut sabit eşleştirmeleri scorer içine taşı; bilinmeyen hedef üretme.
-- [ ] Manuel kilitli uygulamaları varsayılan seçim dışında bırak.
-- [ ] Güven ve minimum uygulama eşiklerini uygula; deterministik sıralama yap.
-- [ ] Engine unit testlerini tamamla.
+- [x] `FolderSuggestion` modelini kaynak, önerilen hedef, neden, güven ve sayılarla genişlet.
+- [x] `FolderSuggestionReason`, `FolderMergePlan` ve `FolderMergeCandidateScorer` oluştur.
+- [x] Mevcut sabit eşleştirmeleri scorer içine taşı; bilinmeyen hedef üretme.
+- [x] Manuel kilitli uygulamaları varsayılan seçim dışında bırak.
+- [x] Güven ve minimum uygulama eşiklerini uygula; deterministik sıralama yap.
+- [x] Engine unit testlerini tamamla.
 
 ### R3.2 UI state ve ViewModel
 
-- [ ] `FolderMergeUiState` oluştur.
-- [ ] Öneriyi açma, hedef değiştirme, uygulama seçme ve review state işlemlerini ekle.
-- [ ] Eski `acceptFolderSuggestion()` davranışını silme; merge türünü review ekranına route et.
-- [ ] `SPLIT_LARGE_FOLDER` ve `CLEAN_UNUSED_APPS` yollarını değiştirme.
+- [x] `FolderMergeUiState` oluştur.
+- [x] Öneriyi açma, hedef değiştirme, uygulama seçme ve review state işlemlerini ekle.
+- [x] Eski `acceptFolderSuggestion()` davranışını silme; merge türünü review ekranına route et.
+- [x] `SPLIT_LARGE_FOLDER` ve `CLEAN_UNUSED_APPS` yollarını değiştirme.
 - [ ] ViewModel testlerini tamamla.
 
 ### R3.3 A tasarımı inceleme ekranı
