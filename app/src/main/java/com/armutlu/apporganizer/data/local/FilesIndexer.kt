@@ -23,12 +23,12 @@ import javax.inject.Singleton
  * C2: Dosya arama indeksleyici (MediaStore tabanlı).
  *
  * Kullanıcı Ayarlar'da "Dosya Adları" kaynağını açtığında devreye girer.
- * Ek runtime izni gerektirmez — MediaStore'a launcher her zaman erişebilir.
+ * Ek runtime izni gerektirmez - MediaStore'a launcher her zaman erişebilir.
  * Büyük koleksiyonlarda performansı korumak için LIMIT uygulanır.
  *
  * WorkManager ile periyodik reindex: FilesIndexWorker ayrı class'ta.
  *
- * P0.3: İzin yokken indeksleme artık sessizce atlanmıyor — [indexState] StateFlow'u
+ * P0.3: İzin yokken indeksleme artık sessizce atlanmıyor - [indexState] StateFlow'u
  * Disabled/PermissionRequired/Indexing/Ready/Failed durumlarından birini yayınlar,
  * böylece SearchSettingsScreen ve arama sonuç UI'ları "izin yok" ile "0 sonuç"u ayırt edebilir.
  */
@@ -129,7 +129,7 @@ class FilesIndexer(
      * (kullanıcı SAF ile klasör seçtiyse ve o klasör silindi/taşındıysa).
      * MediaStore erişimi bu izinlere bağımlı değildir ama artık kullanılmayan
      * izinler ContentResolver.getPersistedUriPermissions() listesinde birikip
-     * "izin var" izlenimi yaratabilir — spec madde 5.
+     * "izin var" izlenimi yaratabilir - spec madde 5.
      */
     private fun clearStalePersistedUriPermissions() {
         runCatching {
@@ -192,7 +192,7 @@ class FilesIndexer(
                 } ?: break
 
                 cursor.use { c ->
-                    if (c.count == 0) break  // Sayfada veri yok → son sayfa
+                    if (c.count == 0) break  // Sayfada veri yok - son sayfa
 
                     val idIdx = c.getColumnIndex(MediaStore.MediaColumns._ID)
                     val nameIdx = c.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
