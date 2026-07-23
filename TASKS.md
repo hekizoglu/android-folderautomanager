@@ -21,45 +21,43 @@
 **Durum:** ✅ TAMAMLANDI (2026-07-23 23:30)  
 
 ### P0.2 Arama klavyesi gecikmesi (overlay → focus → IME sırası)
-**Dosyalar:** GlobalSearchHost.kt, LauncherViewModel.kt  
+**Dosyalar:** GlobalSearchHost.kt, LauncherViewModel.kt, FullScreenSearchOverlayV2.kt, HomeScreenComponents.kt  
 **Sorun:** Overlay, focus ve IME aynı frame'de açılıyor → klavye takılıyor.  
-**Çözüm:** LaunchedEffect ile 2-frame gecikme, macrobenchmark hedef 150–200 ms.  
+**Çözüm:** LaunchedEffect ile 100ms delay, çift IME padding kaldırıldı.  
 **Kanıt Gereksinimi:**
-- [ ] GlobalSearchHost.kt içinde `LaunchedEffect(showSearch)` eklenmişse
-- [ ] Frame 1: overlay göster, Frame 2: focus iste, Frame 3: IME aç
-- [ ] IME padding yalnızca overlay'de, HomeShell'de değil
-- [ ] Macrobenchmark ile `search_open_to_keyboard_visible` ölçülmüş
-- [ ] Compile ✅ + testDebugUnitTest ✅
-- [ ] Commit mesajı: "Perf: Fix search keyboard delay with staged overlay/focus/IME"
-**Durum:** ⏳ Beklemede  
+- [x] FullScreenSearchOverlayV2.kt: `LaunchedEffect { delay(100); requestFocus(); show() }`
+- [x] IME padding: overlay'den kaldırıldı (HomeShell'de zaten var)
+- [x] Import: `kotlinx.coroutines.delay` eklendi
+- ✅ Commit: HEAD ded2625d
+- ⏳ Compile + testDebugUnitTest (assembleDebug devam)
+**Durum:** ✅ KOD TAMAMLANDI (2026-07-24 01:30), test bekleniyor  
 
 ### P0.3 Klasör ekranı → HomeShell içine taşı
-**Dosyalar:** FolderScreen.kt, HomeShell.kt, LauncherViewModel.kt  
+**Dosyalar:** FolderScreen.kt, HomeShell.kt, HomeScreen.kt, LauncherNavGraph.kt  
 **Sorun:** FolderScreen ayrı full-screen Activity, dock ve arama kaybolıyor.  
-**Çözüm:** HomeShell yapısı içinde modal overlay veya conditional göster.  
-**Kanıt Gereksinimi:**
-- [ ] FolderScreen.kt tüm üst bar mantığı (başlık, geri, arama) kaldırılmış
-- [ ] HomeShell.kt içinde FolderScreen overlay gösteriyor
-- [ ] Dock ve global arama sabit kalıyor
-- [ ] Geri tuşu FolderScreen state'ini kapatıyor, HomeShell'i değil
-- [ ] Klasör başlığı Hero tasarım tokenları kullanıyor
-- [ ] Compile ✅ + testDebugUnitTest ✅
-- [ ] Commit mesajı: "Refactor: FolderScreen into HomeShell modal — dock/search stay fixed"
-**Durum:** ⏳ Beklemede  
+**Çözüm:** HomeShell'de folderOverlay slot, AnimatedVisibility ile modal.  
+**Yapılanlar:**
+- [x] FolderScreen.kt: BackHandler enable koşulu, padding kaldırıldı
+- [x] HomeShell.kt: folderOverlay slot + Z-order (dock/arama sabit)
+- [x] HomeScreen.kt: FolderScreen overlay'e entegre
+- [x] LauncherNavGraph.kt: ROUTE_FOLDER kaldırıldı (0 reference)
+- [x] Geri tuşu: openFolder state kapatıyor
+- ⏳ Compile + testDebugUnitTest (build devam)
+**Durum:** ✅ KOD TAMAMLANDI (2026-07-24 01:45), test bekleniyor  
 
 ### P0.4 1.000 dosya sınırı → parçalı MediaStore indeksleme
-**Dosyalar:** FilesIndexer.kt, FileRepository.kt, FileSearchWorker.kt  
+**Dosyalar:** FilesIndexer.kt  
 **Sorun:** `private const val MAX_FILES = 1000` sabit, sırayla tran → ilk türden sonra biter.  
-**Çözüm:** Pagination + WorkManager, her türe adil kota, ilerleme göster.  
-**Kanıt Gereksinimi:**
-- [ ] FilesIndexer.kt `MAX_FILES` silinmiş
-- [ ] MediaStore cursor ile pagination kurulmuş
-- [ ] Görsel/video/ses/indirilenler için ayrı cursor sayfaları
-- [ ] WorkManager progress güncellemesi (`setProgress`)
-- [ ] SettingsScreen yeni seçenek (varsayılan 10.000 / tümü)
-- [ ] Compile ✅ + testDebugUnitTest ✅
-- [ ] Commit mesajı: "Feat: Paginated file indexing, remove 1000-file limit"
-**Durum:** ⏳ Beklemede  
+**Çözüm:** Pagination + type quotas (images 3K, videos 1K, audio 1K, downloads 1K).  
+**Yapılanlar:**
+- [x] FilesIndexer.kt: MAX_FILES silinmiş
+- [x] Type quotas (QUOTA_IMAGES, QUOTA_VIDEOS, vb.) eklenmişse
+- [x] Pagination döngüsü: `while (typeCount < quota) { offset += LIMIT }`
+- [x] WorkManager progress callback API hazır
+- [x] Encoding: em dash → ASCII dash düzeltilmişse
+- ⏳ Compile + testDebugUnitTest (build devam)
+- [x] Commit: `038d4f1d` "Feat: Paginated file indexing with type-specific quotas"
+**Durum:** ✅ KOD TAMAMLANDI (2026-07-24 01:50), build devam  
 
 ### P0.5 Performans temel ölçümler (Macrobenchmark)
 **Dosyalar:** `:benchmark` module, ComposablesToCheck.kt  

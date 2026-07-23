@@ -325,6 +325,28 @@ Uygulama: Zorluk 1-3 → Haiku/lokal · 4-6 → Sonnet agent'a spec'le devret ·
 | `android-builder` | Haiku 4.5 | assembleDebug + hata raporu |
 | `deepseek-analyst` | Sonnet 4.6 | DeepSeek API analizi |
 
+### Online Research Kuralı (ZORUNLU — tüm agent görevlerinde)
+
+- **Tetikleyen:** Yeni API, versiyon uyumluluk, derleme hatası, daha önce çözülmemiş teknik sorun
+- **Kaynaklar:** Official docs > primary sources (GitHub, developer.android.com) > StackOverflow
+- **Subagent:** Bağımsız araştırma görevleri → `Explore` agent ile paralel dele
+- **Fallback:** Araştırma yapılamazsa açık belirt; koddan önce plan ver
+
+### Parallelization Kuralı
+
+- 2+ araştırma görevleri → aynı anda agent çağrı
+- 1 agent sonucu → sonraki adımın inputu ise sıralı tutmalı
+- Context düşük tutmak için ağır işleri Sonnet agent'a (hafif iterasyon Haiku'da)
+
+### Agent Report Formatı
+
+Her görev bitince:
+- **Dosyalar:** changed + lines (örn: `AppIconView.kt:56-60`)
+- **Tests:** pass/fail, komut
+- **Build:** duration + result
+- **Commit:** hash (local, push yok)
+- **Risk:** Bilinen engeller, sonraki bağımlılık
+
 ---
 
 ## 7. Proje
