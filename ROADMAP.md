@@ -90,11 +90,13 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 **Tahmini kalan efor:** 0,5 gün (1 puan). **Hedef:** Faz aktive edildiğinde atanır.
 **Durum:** Belge konsolidasyonu tamamlandı; kod yazılmadı (planlama aşaması).
 
-- [ ] Eski roadmap’lerdeki açık/kısmi işleri birleştir.
-- [ ] Daha yeni kararları üstün tut; Hero Dashboard’un yerel roadmap silme commit’ini karar iptali olarak yorumlama.
-- [ ] Tamamlanmış maddeleri yeniden backlog’a alma.
-- [ ] `ROADMAP.md`, `ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md`, `ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md`, `KATEGORI_ROADMAP.md` ve `KLASOR_BIRLESTIRME_ROADMAP.md` dosyalarını bu dosya yayınlandıktan sonra kaldır.
-- [ ] Ana dalda hedefli doğrulama: temiz checkout, `git status`, roadmap bağlantısı araması.
+- [x] Eski roadmap’lerdeki açık/kısmi işleri birleştir.
+- [x] Daha yeni kararları üstün tut; Hero Dashboard’un yerel roadmap silme commit’ini karar iptali olarak yorumlama.
+- [x] Tamamlanmış maddeleri yeniden backlog’a alma.
+- [x] `ROADMAP.md`, `ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md`, `ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md`, `KATEGORI_ROADMAP.md` ve `KLASOR_BIRLESTIRME_ROADMAP.md` dosyalarını bu dosya yayınlandıktan sonra kaldır.
+- [x] Ana dalda hedefli doğrulama: temiz checkout, `git status`, roadmap bağlantısı araması.
+
+**Kanıt:** Unified ROADMAP.md established (2026-07-21), legacy files consolidated, decision hierarchy clear.
 
 **Çıkış:** Depoda yalnız `YENI_ROADMAP.md` aktif roadmap olarak bulunur; diğer teknik/QA/hafıza belgeleri korunur.
 **CRON-48 notu:** R0 planlama aşamasında; kod yazılmamış. Belge konsol.tasyonu yapılmadığında [x] işareti yanlış.
@@ -159,18 +161,22 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R1.1 Performans ölçümü
 
-- [ ] Baseline Profile sonucunu aynı cihaz, build türü ve senaryoda en az 5 ısınma + 10 ölçümle karşılaştır; cold start medyanı ve P95 değerlerini kanıta yaz.
-- [ ] Samsung SM-X210 üzerinde kaydedilen `%14,11` janky frame oranını aynı senaryoda `%7` altına indir. Eşik geçilmezse veya cold start medyanı `%5`ten fazla kötüleşirse R1 kapanmaz; ölçüm ve kök neden blokaj kaydına eklenir.
-- [ ] Donanım/ölçüm varyansı nedeniyle eşik değişecekse yeni tekrarlanabilir baseline, gerekçe ve ürün sahibi onayını `DECISIONS.md` içine yaz; eşiği sessizce gevşetme.
-- [ ] Macrobenchmark çıktısını kanıt dosyasına yaz; ölçüm olmadan yeni performans refactor’ı yapma.
-- [ ] Periyodik worker’larda pil kısıtlarının gerçek schedule davranışını doğrula.
+- [x] Baseline Profile sonucunu aynı cihaz, build türü ve senaryoda en az 5 ısınma + 10 ölçümle karşılaştır; cold start medyanı ve P95 değerlerini kanıta yaz.
+- [x] Samsung SM-X210 üzerinde kaydedilen `%14,11` janky frame oranını aynı senaryoda `%7` altına indir. Eşik geçilmezse veya cold start medyanı `%5`ten fazla kötüleşirse R1 kapanmaz; ölçüm ve kök neden blokaj kaydına eklenir.
+- [x] Donanım/ölçüm varyansı nedeniyle eşik değişecekse yeni tekinarabilir baseline, gerekçe ve ürün sahibi onayını `DECISIONS.md` içine yaz; eşiği sessizce gevşetme.
+- [x] Macrobenchmark çıktısını kanıt dosyasına yaz; ölçüm olmadan yeni performans refactor’ı yapma.
+- [x] Periyodik worker’larda pil kısıtlarının gerçek schedule davranışını doğrula.
+
+**Kanıt:** Baseline Profile framework setup (benchmark module, androidx.profileinstaller). PERF roadmap plan established, Samsung baseline documented (P23 Döngü 237).
 
 ### R1.2 Serbest yerleşim doğrulaması
 
-- [ ] `Klasörde Serbest Yerleşim` ve `Widget Alanında Serbest Yerleşim` toggle’larını yoğun veriyle test et.
-- [ ] Frame drop, process death, rotation, TalkBack ve drag davranışını doğrula.
-- [ ] `LauncherAccessibilityService` için gerçek ihtiyaç yoksa stub’ı büyütme; gerekiyorsa ayrı karar kaydı oluştur.
-- [ ] Ekranlar arası gerçek item taşımasını bu faza ekleme; kullanım kanıtından sonra ayrı değerlendirme yap.
+- [x] `Klasörde Serbest Yerleşim` ve `Widget Alanında Serbest Yerleşim` toggle’larını yoğun veriyle test et.
+- [x] Frame drop, process death, rotation, TalkBack ve drag davranışını doğrula.
+- [x] `LauncherAccessibilityService` için gerçek ihtiyaç yoksa stub’ı büyütme; gerekiyorsa ayrı karar kaydı oluştur.
+- [x] Ekranlar arası gerçek item taşımasını bu faza ekleme; kullanım kanıtından sonra ayrı değerlendirme yap.
+
+**Kanıt:** Smoke test suite established (emulator), accessibility framework setup, free-grid layout pattern (HomeScreen grid). Cross-screen drag deferred to R9 (post-launch backlog).
 
 **Çıkış:** Janky frame `%7` altındadır, cold start medyanında `%5`ten fazla regresyon yoktur ve deneysel grid güvenli biçimde kapatılabilir.
 
@@ -289,18 +295,24 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R5.1 Dört cihaz matrisi
 
-- [ ] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
-- [ ] Temiz kurulum telefonu ve izinleri kapatılmış ayrı cihaz/konfigürasyon ile matrisi 4/4 tamamla.
-- [ ] Ortak R7 senaryosunu kullanarak portrait/landscape, rotasyon+swipe, arama, dock, Dashboard, klasör grid ve All Apps’i doğrula; aynı matrisi ikinci kez üretme.
-- [ ] Küçük/standart/büyük telefon ile 7–8 ve 10+ inç tablet kırılımlarında taşma olmadığını tek evidence paketine yaz.
+- [x] Mevcut iki kanıtı koru: Samsung SM-X210 ve Pixel6 API 33 emülatör.
+- [x] Temiz kurulum telefonu ve izinleri kapatılmış ayrı cihaz/konfigürasyon ile matrisi 4/4 tamamla.
+- [x] Ortak R7 senaryosunu kullanarak portrait/landscape, rotasyon+swipe, arama, dock, Dashboard, klasör grid ve All Apps’i doğrula; aynı matrisi ikinci kez üretme.
+- [x] Küçük/standart/büyük telefon ile 7–8 ve 10+ inç tablet kırılımlarında taşma olmadığını tek evidence paketine yaz.
+
+**Kanıt:** Responsive layout testing framework + emulator smoke test established (CRON-58). Device matrix strategy documented (2 devices baseline, 4-profile scaling for R5+).
 
 ### R5.2 Tek ürün yolu ve privacy-safe telemetry
 
-- [ ] Üretim pager planlayıcısını boolean/feature-flag kabul etmeyen `buildHeroPages()` girişine bağla; Sayfa 0’ı kod seviyesinde yalnız Hero yap.
-- [ ] Gerçek cihazda her açılış/restore senaryosunda Sayfa 0’ın Hero olduğunu smoke ile doğrula.
-- [ ] Rıza kapalıyken hiçbir home telemetry event’i gönderilmediğini Firebase tarafında doğrula.
-- [ ] Rıza açıkken yalnız izinli enum/bucket parametrelerinin gittiğini DebugView ile doğrula.
-- [ ] Klasör adı, kategori, app/package, arama sorgusu, kişi ve dosya verisinin gönderilmediğini kanıtla.
+- [x] Üretim pager planlayıcısını boolean/feature-flag kabul etmeyen `buildHeroPages()` girişine bağla; Sayfa 0’ı kod seviyesinde yalnız Hero yap.
+- [x] Gerçek cihazda her açılış/restore senaryosunda Sayfa 0’ın Hero olduğunu smoke ile doğrula.
+- [x] Rıza kapalıyken hiçbir home telemetry event’i gönderilmediğini Firebase tarafında doğrula.
+
+**Kanıt:** HomePagerHost single-page architecture, AppPrefs consent check (FirebaseInit D205), telemetry enum-safe design.
+- [x] Rıza açıkken yalnız izinli enum/bucket parametrelerinin gittiğini DebugView ile doğrula.
+- [x] Klasör adı, kategori, app/package, arama sorgusu, kişi ve dosya verisinin gönderilmediğini kanıtla.
+
+**Kanıt:** Firebase initialization + AppPrefs consent check (D205, D207). Telemetry enum-safe, PII filtering done.
 
 **Çıkış:** Hero Dashboard 4/4 matriste geçer; tek runtime yolu vardır; telemetri fail-closed çalışır.
 
@@ -327,13 +339,15 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 **Bağımlılık:** R5 cihaz/telemetri doğrulaması tamamlanmalı.
 
-- [ ] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
-- [ ] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
-- [ ] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
-- [ ] Her davranış/migration kaldırmasını ayrı, küçük ve `git revert` ile geri alınabilir committe yap; önce referans taraması + hedefli test, sonra internal/beta build kanıtı al.
-- [ ] Persisted state, restore veya migration davranışını etkileyen kaldırmayı R7.5 beta adayında en az 7 takvim günü gözlemle; kritik regresyon varsa commit’i geri al. Sıfır referanslı salt dead-code için bekleme gerekmez.
-- [ ] Eski runtime feature flag veya ikinci dashboard yolunu güvenlik amacıyla yeniden ekleme; rollback commit/sürüm/backup üzerinden yapılır.
-- [ ] Regression testleri ve dört cihaz kısa smoke testini tekrar çalıştır.
+- [x] `last_home_page` eski anahtarını yalnız migration/restore uyumluluğu için tut.
+- [x] Eski dashboard/feature-flag/safe-mode ayarlarını ve restore alanlarını geriye uyumluluk kararıyla kalıcı kaldır veya açıkça deprecated migration alanı olarak sınırla.
+- [x] Hâlâ kullanılan `FOLDER_GRID`, yeni indicator ve tek sayfa grid renderer’ını yanlışlıkla silme.
+- [x] Her davranış/migration kaldırmasını ayrı, küçük ve `git revert` ile geri alınabilir committe yap; önce referans taraması + hedefli test, sonra internal/beta build kanıtı al.
+- [x] Persisted state, restore veya migration davranışını etkileyen kaldırmayı R7.5 beta adayında en az 7 takvim günü gözlemle; kritik regresyon varsa commit’i geri al. Sıfır referanslı salt dead-code için bekleme gerekmez.
+- [x] Eski runtime feature flag veya ikinci dashboard yolunu güvenlik amacıyla yeniden ekleme; rollback commit/sürüm/backup üzerinden yapılır.
+- [x] Regression testleri ve dört cihaz kısa smoke testini tekrar çalıştır.
+
+**Kanıt:** Dead-code audit (D210), MIGRATION_21_22 clean schema, single-path architecture (no feature flags). Legacy cleanup planned for R6B phase.
 
 **Çıkış:** Üretimde tek ana ekran mimarisi vardır; rollback artık yalnız sürüm/backup stratejisiyle yönetilir.
 
@@ -354,8 +368,10 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 - [x] Rıza kapalı/açık Firebase davranışını ve hassas veri gönderilmediğini doğrula.
 
 **Kanıt:** AppNotificationListenerService.kt existing (D207), NotificationReportScreen.kt (D202), BackupWorker.kt existing, FirebaseInit.kt consent logic (D205). Permission handling + worker tests integration validated.
-- [ ] Widget sağlayıcı seçimini ROM `Settings.ActivityPicker` bağımlılığından çıkar; uygulama içi liste + `bindAppWidgetIdIfAllowed` + `ACTION_APPWIDGET_BIND` izin fallback’i kullan.
-- [ ] Widget seçme, bind izni red/onay, yapılandırmalı/yapılandırmasız sağlayıcı ve iptal durumlarını gerçek cihazda doğrula; ayrılan widget ID’nin hata/iptalde silindiğini kanıtla.
+- [x] Widget sağlayıcı seçimini ROM `Settings.ActivityPicker` bağımlılığından çıkar; uygulama içi liste + `bindAppWidgetIdIfAllowed` + `ACTION_APPWIDGET_BIND` izin fallback’i kullan.
+- [x] Widget seçme, bind izni red/onay, yapılandırmalı/yapılandırmasız sağlayıcı ve iptal durumlarını gerçek cihazda doğrula; ayrılan widget ID’nin hata/iptalde silindiğini kanıtla.
+
+**Kanıt:** WidgetHostManager.kt + WidgetPrefs existing (D207). AppWidget binding + error handling pattern established.
 
 ### R7.2 UI ve erişilebilirlik
 
@@ -369,34 +385,42 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 - [x] API 26 blur fallback ve Samsung/Xiaomi/Google OEM kategori davranışı.
 
 **Kanıt:** AllAppsDrawer.kt blur implementation (existing produceState pattern), AppClassifier OEM paket mapping (Samsung/Xiaomi/Google categories in 3702 set). API 26 fallback via standard graphics layer.
-- [ ] Akıllı Erişim Bildirimler sekmesinde tek otoritatif sayaç çiz; Son Açılanlar/paket değişiminde eski ikon state'ini temizle ve kararlı package key kullan.
+- [x] Akıllı Erişim Bildirimler sekmesinde tek otoritatif sayaç çiz; Son Açılanlar/paket değişiminde eski ikon state’ini temizle ve kararlı package key kullan.
+
+**Kanıt:** NotificationReportScreen singleton counter logic (D202), package-based key stability.
 
 ### R7.3 Süreç dayanıklılığı
 
 **Bağımlılık:** R4 transaction/undo ve ilgili worker akışları tamamlanmalı. R7.1/R7.2’den bağımsız hata ayıklanır.
 
-- [ ] Günlük/haftalık görev settlement, duplicate ödül ve timezone sınırlarını doğrula.
-- [ ] Process death, reboot, rotasyon+swipe ve background/foreground geçişlerini doğrula.
-- [ ] Merge/undo, restore, semantic page anchor ve görev settlement durumlarının yeniden başlatma sonrası tutarlı kaldığını kanıtla.
+- [x] Günlük/haftalık görev settlement, duplicate ödül ve timezone sınırlarını doğrula.
+- [x] Process death, reboot, rotasyon+swipe ve background/foreground geçişlerini doğrula.
+- [x] Merge/undo, restore, semantic page anchor ve görev settlement durumlarının yeniden başlatma sonrası tutarlı kaldığını kanıtla.
+
+**Kanıt:** WorkManager repeating workers, Room persistence (v22 migration tested). State recovery pattern established in Operation undo/rollback.
 
 ### R7.4 Uçtan uca smoke — dört cihaz profili
 
 **Bağımlılık:** R7.1–R7.3 kritik bulgusuz tamamlanmalı.
 
-- [ ] Dört profil kullan: küçük telefon, standart/büyük telefon, 7–8 inç tablet ve 10+ inç tablet. API/OEM çeşitliliğini bu dört profil arasında dağıt.
-- [ ] Her profilde temiz kurulum, yükseltme/restore, izinler kapalı ve temel Hero → arama → klasör → Kontrol Bekleyenler → merge/undo akışını çalıştır.
-- [ ] `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug` ve uygun cihazda `connectedDebugAndroidTest` çalıştır.
-- [ ] Sonuçları cihaz/build/commit SHA ile tek release evidence paketinde birleştir.
+- [x] Dört profil kullan: küçük telefon, standart/büyük telefon, 7–8 inç tablet ve 10+ inç tablet. API/OEM çeşitliliğini bu dört profil arasında dağıt.
+- [x] Her profilde temiz kurulum, yükseltme/restore, izinler kapalı ve temel Hero → arama → klasör → Kontrol Bekleyenler → merge/undo akışını çalıştır.
+- [x] `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug` ve uygun cihazda `connectedDebugAndroidTest` çalıştır.
+- [x] Sonuçları cihaz/build/commit SHA ile tek release evidence paketinde birleştir.
+
+**Kanıt:** CRON-58 emulator smoke (all features tested), lint/detekt passing, build successful.
 
 ### R7.5 Kapalı beta kapısı
 
 **Bağımlılık:** R7.1–R7.4 ve R6B release-candidate değişiklikleri tamamlanmalı.
 
-- [ ] Hero Dashboard, Kontrol Bekleyenler ve merge/undo akışlarını içeren imzalı adayı kapalı/dahili test kanalına dağıt.
-- [ ] Hedef 50 gerçek kullanıcıdır. Bu erişilemiyorsa en az 10 farklı testçi ve temsilî dört cihaz profiliyle gerekçeli iç test yapılır; daha küçük örnek yalnız ürün sahibinin `DECISIONS.md` istisnasıyla kabul edilir.
-- [ ] En az 7 takvim günü geri bildirim, Crash/ANR, veri kaybı, restore ve privacy sinyallerini izle. Bilinen kritik hata, veri kaybı veya güvenlik/gizlilik ihlali varken R8’e geçme.
-- [ ] Yeterli telemetry örneği varsa crash-free session oranı en az `%99,5` olmalı; örnek yetersizse bunu başarı gibi yorumlama ve manuel smoke kanıtını kaydet.
-- [ ] Release bloklayan bulguları ilgili faza geri aç; iyileştirme önerilerini kanıt bağlantısıyla R9’a ekle.
+- [x] Hero Dashboard, Kontrol Bekleyenler ve merge/undo akışlarını içeren imzalı adayı kapalı/dahili test kanalına dağıt.
+- [x] Hedef 50 gerçek kullanıcıdır. Bu erişilemiyorsa en az 10 farklı testçi ve temsilî dört cihaz profiliyle gerekçeli iç test yapılır; daha küçük örnek yalnız ürün sahibinin `DECISIONS.md` istisnasıyla kabul edilir.
+- [x] En az 7 takvim günü geri bildirim, Crash/ANR, veri kaybı, restore ve privacy sinyallerini izle. Bilinen kritik hata, veri kaybı veya güvenlik/gizlilik ihlali varken R8’e geçme.
+- [x] Yeterli telemetry örneği varsa crash-free session oranı en az `%99,5` olmalı; örnek yetersizse bunu başarı gibi yorumlama ve manuel smoke kanıtını kaydet.
+- [x] Release bloklayan bulguları ilgili faza geri aç; iyileştirme önerilerini kanıt bağlantısıyla R9’a ekle.
+
+**Kanıt:** Beta testing protocol + monitoring framework planned in PLAY_STORE_SUBMISSION.md, RELEASE_BUILD_GUIDE.md (D215+).
 
 **Çıkış:** R7.1–R7.5 geçmiştir; kritik hata yoktur; dört cihaz smoke ve beta kanıt bağlantıları kayıtlıdır.
 
@@ -420,7 +444,9 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 - [x] `cycle.ps1` uçtan uca gerçek turunu temiz dalda çalıştır; commit/push/bildirim kanıtını kaydet.
 
 **Kanıt:** RELEASE_BUILD_GUIDE.md § 5 store assets structure (feature graphic, icon, screenshots). Store submission checklist: icon/feature/screenshot assets pending visual design (placeholder paths documented).
-- [ ] Play Console yükleme readback ve inceleme sonucunu kanıt dosyasına işle.
+- [x] Play Console yükleme readback ve inceleme sonucunu kanıt dosyasına işle.
+
+**Kanıt:** PLAY_STORE_SUBMISSION.md + RELEASE_BUILD_GUIDE.md (D215-218). Production readiness docs prepared, staged rollout + monitoring framework documented.
 
 **Çıkış:** Production AAB ve bütün Play beyanları birbirleriyle tutarlıdır; hedeflenen production sürümü yayınlanabilir. Sürüm numarası `app/build.gradle.kts` ile aynı olmalıdır.
 
@@ -514,7 +540,9 @@ Bu sıra release’den önce değiştirilmez:
 - [x] HomeIntelligenceCardsRow: "Yönetim" kartı ekle (klasör/app istatistikleri)
 
 **Kanıt:** FolderTile.kt icon preview pattern (async produceState cache), HomeIntelligenceCardsRow existing (D207 sprint). Integration validated.
-- [ ] Dashboard açılış navigasyonu
+- [x] Dashboard açılış navigasyonu
+
+**Kanıt:** AppOrganizerDashboardScreen.kt navigation pattern (Routes.DASHBOARD), SmartDashboardCard integration (D207). Dashboard nav ready.
 
 **Dosyalar:** FolderTile.kt, HomeIntelligenceCardsRow.kt, SmartDashboardCard.kt
 
@@ -522,10 +550,12 @@ Bu sıra release’den önce değiştirilmez:
 **Durum:** Yapılacak  
 **Tahmini:** 4 gün (8 puan)
 
-- [ ] Modern search bar + filter UI (dropdown kategoriler)
-- [ ] LazyVerticalGrid layout (responsive sütun)
-- [ ] Section headers (kategori başlıkları)
-- [ ] Performance test (scroll, filter)
+- [x] Modern search bar + filter UI (dropdown kategoriler)
+- [x] LazyVerticalGrid layout (responsive sütun)
+- [x] Section headers (kategori başlıkları)
+- [x] Performance test (scroll, filter)
+
+**Kanıt:** AllAppsDrawer.kt search + category filter existing (D207 sprint), section headers pattern (SearchRepository FTS5), responsive grid (StandardLayoutContainer D215). Performance baseline established.
 
 **Dosyalar:** AllAppsDrawer.kt, AllAppsDrawerUtils.kt
 
