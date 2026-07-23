@@ -2,7 +2,9 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import com.armutlu.apporganizer.domain.models.FileIndexState
 import com.armutlu.apporganizer.domain.models.SearchDocument
+import com.armutlu.apporganizer.domain.models.SearchScore
 import com.armutlu.apporganizer.domain.models.SourceType
+import com.armutlu.apporganizer.data.repository.SearchRepository
 
 /**
  * Döngü P08 — `GlobalSearchHost` state sözleşmesi (roadmap satır 805-866).
@@ -25,6 +27,7 @@ data class GlobalSearchUiState(
     val fullscreenVisible: Boolean,
     val resultGroups: Map<SourceType, List<SearchDocument>>,
     val filesIndexState: FileIndexState,
+    val bestScore: Int = 0,  // P1.5: En yüksek skor -- < 85 ise "Google'da ara" goster
 ) {
     companion object {
         /** Hiçbir arama etkileşimi olmadığı başlangıç durumu. */
@@ -35,6 +38,7 @@ data class GlobalSearchUiState(
             fullscreenVisible = false,
             resultGroups = emptyMap(),
             filesIndexState = FileIndexState.Disabled,
+            bestScore = 0,
         )
     }
 }
@@ -50,6 +54,7 @@ data class GlobalSearchUiState(
  * - `overlayVisible`: inline sonuç listesi sadece aktifken VE fullscreen mod kapalıyken görünür
  *   (fullscreen açıkken inline liste HomeAppSearchBar içinde zaten render edilmiyordu — mevcut
  *   davranış, bkz. HomeScreenComponents.kt HomeAppSearchBar `fullScreenEnabled` dalı).
+ * - P1.5 `bestScore`: sonuçlar arasında en yüksek puan — < 85 ise "Google'da ara" göster.
  */
 internal fun computeGlobalSearchUiState(
     query: String,
@@ -60,6 +65,18 @@ internal fun computeGlobalSearchUiState(
 ): GlobalSearchUiState {
     val active = query.isNotEmpty()
     val fullscreenVisible = fullscreenOpen && fullscreenEnabled
+
+    // P1.5: Sonuçlardaki en yüksek puanı hesapla
+    val bestScore = if (query.isNotEmpty()) {
+        resultGroups.values
+            .flatten()
+            .maxOfOrNull { doc ->
+                SearchRepository.calculateScore(query, doc.title, doc.subtitle).score
+            } ?: 0
+    } else {
+        0
+    }
+
     return GlobalSearchUiState(
         query = query,
         active = active,
@@ -67,5 +84,6 @@ internal fun computeGlobalSearchUiState(
         fullscreenVisible = fullscreenVisible,
         resultGroups = resultGroups,
         filesIndexState = filesIndexState,
+        bestScore = bestScore,
     )
 }

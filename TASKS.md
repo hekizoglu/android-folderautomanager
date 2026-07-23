@@ -114,15 +114,18 @@ Kart seçildiğinde → ilgili inceleme ekranı.
 **Durum:** ⏳ Beklemede
 
 ### P1.2 Sınıflandırma Onay sayısı → Hero dashboard bağla
-**Dosyalar:** LauncherViewModel.kt, HeroDashboardPage.kt, ClassificationReviewScreen.kt  
-**Sorun:** ClassificationReviewScreen var fakat Hero'da gösterilmiyor.  
-**Kanıt Gereksinimi:**
-- [ ] HeroDashboardPage badge/sayı gösteriyor
-- [ ] Dokunma → ClassificationReviewScreen Navigation
-- [ ] LauncherViewModel pending count emit ediyor
-- [ ] Compile ✅ + testDebugUnitTest ✅
-- [ ] Commit mesajı: "UI: Connect classification approval count to Hero dashboard"
-**Durum:** ⏳ Beklemede
+**Dosyalar:** AppDao.kt, AppRepository.kt, LauncherViewModel.kt, HeroDashboardPage.kt, HomeScreen.kt  
+**Yapılanlar:**
+- [x] AppDao.kt: `observePendingClassificationCount()` Flow
+- [x] AppRepository.kt: wrapper (IO dispatcher)
+- [x] LauncherViewModel.kt: `pendingClassificationsCount` StateFlow
+- [x] HeroDashboardPage.kt: `PendingClassificationBadge` composable (Material 3)
+- [x] HomeScreen.kt: state wiring + navigation
+- [x] Real-time updates (Room Flow + SharingStarted.Eagerly)
+- [x] Conditional render (count > 0)
+- [x] Tap → ClassificationReviewScreen
+- ⏳ Compile + testDebugUnitTest (pending)
+**Durum:** ✅ KOD TAMAMLANDI (2026-07-24 02:50), test bekleniyor
 
 ### P1.3 Klasör birleştirme motoru UI + undo
 **Dosyalar:** FolderMergeCandidateScorer.kt, FolderMergeUiState.kt (yeni), FolderMergeScreen.kt (yeni)  

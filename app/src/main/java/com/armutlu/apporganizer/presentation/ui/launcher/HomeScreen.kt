@@ -764,12 +764,7 @@ fun HomeScreen(
                 { searchBarSection() }
             } else null,
             indicator = {
-                // Döngü P05 — HomeShell'in indicator slotuna hoist edildi (eskiden `pager`
-                // slotu içinde, FolderPager'ın hemen altında render ediliyordu).
-                val state = homePagerState
-                if (state != null) {
-                    HomePageIndicator(pages = homePages, pagerState = state)
-                }
+                // Döngü P2.2 — indicator slotu boş; overlay'e taşındı (aşağıdaki overlays slotuna bak).
             },
             dock = {
                 // Döngü P20 — büyük tablette dock'un tüm ekran genişliğine yayılmaması için
@@ -959,6 +954,25 @@ fun HomeScreen(
                         onLaunch = { pkg -> vm.launchApp(context, pkg) },
                         onDismiss = { quickWheelVisible = false }
                     )
+                }
+
+                // Döngü P2.2 — Sayfa göstergesi overlay (dock üzerine, Z: 1)
+                // Görseller 4-7dp, dokunma hedefi 48dp, dock 8dp üzerinde ortalanmış
+                val state = homePagerState
+                if (state != null && homePages.size > 1) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .padding(bottom = 88.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        HomePageIndicator(
+                            pages = homePages,
+                            pagerState = state,
+                            isOverlay = true
+                        )
+                    }
                 }
             },
             folderOverlay = {

@@ -374,4 +374,33 @@ interface AppDao {
 
     @Query("UPDATE apps SET categoryId = :categoryId WHERE packageName = :packageName")
     suspend fun updateCategoryForPackage(packageName: String, categoryId: String)
+
+    /**
+     * P1.2: Count pending classification reviews for badge display.
+     * Returns a Flow that emits updated count whenever classification states change.
+     */
+    @Query("""
+        SELECT COUNT(*) FROM apps
+        WHERE classificationReviewState = 'PENDING'
+            AND isSystemApp = 0
+            AND (reviewSnoozedUntil = 0 OR reviewSnoozedUntil <= :now)
+    """)
+    fun observePendingClassificationCount(now: Long = System.currentTimeMillis()): Flow<Int>
+
+    /**
+     * P1.3: Atomic batch update for folder merge operation.
+     * Moves multiple apps from source to target category in a single transaction.
+     */
+    @Query("""
+        UPDATE apps
+        SET categoryId = :targetCategoryId,
+            lastUpdated = :timestamp
+        WHERE packageName IN (:packageNames) AND categoryId = :sourceCategoryId
+    """)
+    suspend fun batchUpdateCategoryForMerge(
+        packageNames: List<String>,
+        sourceCategoryId: String,
+        targetCategoryId: String,
+        timestamp: Long = System.currentTimeMillis()
+    )
 }

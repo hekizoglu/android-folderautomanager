@@ -2,6 +2,9 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.UndoMergeDao
+import com.armutlu.apporganizer.data.local.UndoMergeEntity
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.folder.FolderMergeCandidateScorer
@@ -15,15 +18,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Stack
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class FolderMergeViewModel @Inject constructor(
+    private val appDao: AppDao,
+    private val undoMergeDao: UndoMergeDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FolderMergeUiState())
     val uiState: StateFlow<FolderMergeUiState> = _uiState.asStateFlow()
+
+    // Undo stack: most recent merge at top
+    private val _undoStack = MutableStateFlow<Stack<UndoMergeEntity>>(Stack())
+    val undoStack: StateFlow<Stack<UndoMergeEntity>> = _undoStack.asStateFlow()
+
+    // Undo availability state
+    private val _canUndo = MutableStateFlow(false)
+    val canUndo: StateFlow<Boolean> = _canUndo.asStateFlow()
 
     fun loadSuggestions(apps: List<AppInfo>, categories: List<Category>) {
         viewModelScope.launch {
@@ -116,9 +130,80 @@ class FolderMergeViewModel @Inject constructor(
                         targetAppCount = 0
                     )
                     _uiState.update { it.copy(mergePlan = plan) }
+
+                    // Execute merge atomically
+                    executeMerge(plan)
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
+            } finally {
+                _uiState.update { it.copy(isProcessing = false) }
+            }
+        }
+    }
+
+    /**
+     * Atomic merge execution: update DB + record undo history
+     */
+    private suspend fun executeMerge(plan: FolderMergePlan) {
+        try {
+            // 1. Perform atomic category update
+            appDao.batchUpdateCategoryForMerge(
+                packageNames = plan.movablePackageNames,
+                sourceCategoryId = plan.sourceCategoryId,
+                targetCategoryId = plan.targetCategoryId
+            )
+
+            // 2. Record undo history
+            val undoRecord = UndoMergeEntity.create(
+                sourceCategoryId = plan.sourceCategoryId,
+                targetCategoryId = plan.targetCategoryId,
+                affectedPackages = plan.movablePackageNames
+            )
+            undoMergeDao.insertUndoMerge(undoRecord)
+
+            // 3. Update undo stack UI state
+            _undoStack.update { stack ->
+                val newStack = Stack<UndoMergeEntity>()
+                newStack.addAll(stack)
+                newStack.push(undoRecord)
+                newStack
+            }
+            _canUndo.update { true }
+
+        } catch (e: Exception) {
+            _uiState.update { it.copy(error = "Birleştirme başarısız: ${e.message}") }
+        }
+    }
+
+    /**
+     * Undo the most recent merge operation
+     */
+    fun undoLastMerge() {
+        viewModelScope.launch {
+            try {
+                val undoRecord = _undoStack.value.lastOrNull() ?: return@launch
+
+                _uiState.update { it.copy(isProcessing = true, error = null) }
+
+                // Restore packages to source category
+                appDao.batchUpdateCategoryForMerge(
+                    packageNames = undoRecord.getAffectedPackagesList(),
+                    sourceCategoryId = undoRecord.targetCategoryId,
+                    targetCategoryId = undoRecord.sourceCategoryId
+                )
+
+                // Pop from undo stack
+                _undoStack.update { stack ->
+                    val newStack = Stack<UndoMergeEntity>()
+                    newStack.addAll(stack.dropLast(1))
+                    newStack
+                }
+                _canUndo.update { _undoStack.value.isNotEmpty() }
+
+                _uiState.update { it.copy(error = "Geri alındı") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Geri alma başarısız: ${e.message}") }
             } finally {
                 _uiState.update { it.copy(isProcessing = false) }
             }

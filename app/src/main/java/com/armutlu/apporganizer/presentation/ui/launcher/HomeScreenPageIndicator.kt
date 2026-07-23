@@ -49,7 +49,8 @@ import kotlinx.coroutines.launch
 internal fun HomePageIndicator(
     pages: List<HomePageSpec>,
     pagerState: PagerState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isOverlay: Boolean = false
 ) {
     if (pages.size <= 1) return
 
@@ -65,7 +66,10 @@ internal fun HomePageIndicator(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(
+                vertical = if (isOverlay) 8.dp else 4.dp,
+                horizontal = if (isOverlay) 16.dp else 0.dp
+            )
             .semantics {
                 role = Role.Tab
                 contentDescription = "Sayfa ${pagerState.currentPage + 1} / ${pages.size}"

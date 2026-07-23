@@ -13,6 +13,8 @@ import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.domain.models.FileIndexState
 import com.armutlu.apporganizer.domain.models.SearchDocument
+import com.armutlu.apporganizer.domain.models.SearchScore
+import com.armutlu.apporganizer.domain.models.ScoreType
 import com.armutlu.apporganizer.domain.models.SourceType
 import com.armutlu.apporganizer.utils.SystemSettingsCatalog
 import androidx.sqlite.db.SimpleSQLiteQuery
@@ -24,6 +26,7 @@ import timber.log.Timber
 import javax.inject.Singleton
 import com.armutlu.apporganizer.telemetry.PerformanceTraceName
 import com.armutlu.apporganizer.telemetry.TelemetryManager
+import java.util.Locale
 
 @Singleton
 class SearchRepository(
@@ -40,6 +43,72 @@ class SearchRepository(
     internal companion object {
         fun buildLikePattern(rawQuery: String): String =
             "%${rawQuery.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")}%"
+
+        /**
+         * P1.5: SearchDocument'in sorgu ile ne kadar iyi eşleştiğini puanlar.
+         * Türkçe locale-aware (İ↔I, ı↔i), debounce'siz sonuçların sıralanması için.
+         */
+        fun calculateScore(query: String, title: String, subtitle: String = ""): SearchScore {
+            val searchText = "$title $subtitle".lowercase(Locale("tr"))
+            val queryLower = query.lowercase(Locale("tr"))
+
+            return when {
+                // EXACT: tam eşleşme
+                searchText.equals(queryLower) ->
+                    SearchScore(ScoreType.EXACT, 100, "Tam isim eşleşmesi")
+
+                // PREFIX: title başından başlıyor
+                title.lowercase(Locale("tr")).startsWith(queryLower) ->
+                    SearchScore(ScoreType.PREFIX, 95, "Adın başında")
+
+                // CONTAINS: metinde bulunur
+                searchText.contains(queryLower) ->
+                    SearchScore(ScoreType.CONTAINS, 80, "Yazılı metinde bulunur")
+
+                // FUZZY: Levenshtein benzerliği
+                else -> {
+                    val similarity = calculateLevenshteinSimilarity(
+                        queryLower,
+                        title.lowercase(Locale("tr"))
+                    )
+                    when {
+                        similarity > 0.85 ->
+                            SearchScore(ScoreType.FUZZY, 65, "Benzer isim")
+                        similarity > 0.70 ->
+                            SearchScore(ScoreType.FUZZY, 50, "Kısmi benzerlik")
+                        else ->
+                            SearchScore(ScoreType.NONE, 0, "Eşleşme yok")
+                    }
+                }
+            }
+        }
+
+        /**
+         * Levenshtein benzerlik oranı (0.0-1.0).
+         * 1.0 = tamamen aynı, 0.0 = hiç benzer değil.
+         */
+        private fun calculateLevenshteinSimilarity(a: String, b: String): Double {
+            val len1 = a.length
+            val len2 = b.length
+            if (len1 == 0) return if (len2 == 0) 1.0 else 0.0
+            if (len2 == 0) return 0.0
+
+            val d = Array(len1 + 1) { IntArray(len2 + 1) }
+            for (i in 0..len1) d[i][0] = i
+            for (j in 0..len2) d[0][j] = j
+
+            for (i in 1..len1) {
+                for (j in 1..len2) {
+                    d[i][j] = minOf(
+                        d[i - 1][j] + 1,
+                        d[i][j - 1] + 1,
+                        d[i - 1][j - 1] + if (a[i - 1] == b[j - 1]) 0 else 1
+                    )
+                }
+            }
+
+            return 1.0 - (d[len1][len2].toDouble() / maxOf(len1, len2))
+        }
     }
 
     // FTS5 runtime check — bazı AOSP build'lerinde fts5 modülü yoktur
@@ -68,6 +137,61 @@ class SearchRepository(
         }
     }
 
+    /**
+     * P1.6: Anında arama sonuçları — App ve Category, LIKE veya prefix eşleştirmesi ile.
+     * Debounce'siz, yazılan her karakter UI'de gösterilir (< 16ms hedef).
+     */
+    suspend fun instantSearch(rawQuery: String, limit: Int = 24): Map<SourceType, List<SearchDocument>> {
+        val trimmed = rawQuery.trim()
+        if (trimmed.isEmpty()) return emptyMap()
+
+        return withContext(Dispatchers.IO) {
+            val allowedSources = listOf(SourceType.APP.key, SourceType.CATEGORY.key)
+            runCatching {
+                val pattern = buildLikePattern(trimmed)
+                val docs = searchDao.search(buildLikeQuery(pattern, limit, allowedSources))
+                docs.groupBy { SourceType.fromKey(it.sourceType) }
+            }.getOrDefault(emptyMap())
+        }
+    }
+
+    /**
+     * P1.6: Gecikmiş arama sonuçları — Contact, File, Setting kaynakları.
+     * 120-150ms debounce ile çağrılır (Kullanıcı yazması bitene kadar bekle).
+     */
+    suspend fun debouncedSearch(rawQuery: String, limit: Int = 24): Map<SourceType, List<SearchDocument>> {
+        val trimmed = rawQuery.trim()
+        if (trimmed.isEmpty()) return emptyMap()
+
+        return withContext(Dispatchers.IO) {
+            val allowedSources = buildList {
+                if (AppPrefs.isSearchSourceSettingsEnabled(context)) add(SourceType.SETTING.key)
+                if (AppPrefs.isSearchSourceContactsEnabled(context)) add(SourceType.CONTACT.key)
+                if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)
+            }
+            if (allowedSources.isEmpty()) return@withContext emptyMap()
+
+            ensureSettingsIndexedIfNeeded(allowedSources)
+            runCatching {
+                val docs = if (fts5Available) {
+                    val ftsQuery = trimmed.split("\\s+".toRegex())
+                        .filter { it.isNotBlank() }
+                        .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
+                    searchDao.search(buildFts5Query(ftsQuery, limit, allowedSources))
+                } else {
+                    searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                }
+                docs.groupBy { SourceType.fromKey(it.sourceType) }
+            }.getOrElse { e ->
+                Timber.w(e, "debouncedSearch hatası, LIKE fallback deneniyor")
+                runCatching {
+                    val docs = searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
+                    docs.groupBy { SourceType.fromKey(it.sourceType) }
+                }.getOrDefault(emptyMap())
+            }
+        }
+    }
+
     private suspend fun searchMeasured(trimmed: String, limit: Int): Map<SourceType, List<SearchDocument>> {
 
         var result: Map<SourceType, List<SearchDocument>> = emptyMap()
@@ -85,7 +209,19 @@ class SearchRepository(
                     } else {
                         searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
                     }
-                    docs.groupBy { SourceType.fromKey(it.sourceType) }
+
+                    // P1.5: Sonuçlara skor ekle, yüksek puandan başla sırala
+                    val scored = docs
+                        .map { doc ->
+                            val score = calculateScore(trimmed, doc.title, doc.subtitle)
+                            doc to score
+                        }
+                        .filter { (_, score) -> score.score > 0 }  // Eşleşmeyenleri filtrele
+                        .sortedByDescending { (_, score) -> score.score }  // En yüksek puan önce
+                        .take(limit)
+                        .map { (doc, _) -> doc }
+
+                    scored.groupBy { SourceType.fromKey(it.sourceType) }
                 }.getOrElse { e ->
                     Timber.w(e, "search hatası, LIKE fallback deneniyor")
                     runCatching {

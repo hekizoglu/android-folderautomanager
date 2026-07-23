@@ -10,6 +10,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.AppOrganizerDashboardScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
 import com.armutlu.apporganizer.presentation.ui.screens.ClassificationReviewScreen
+import com.armutlu.apporganizer.presentation.ui.screens.FolderMergeScreen
 import com.armutlu.apporganizer.presentation.ui.screens.FolderSuggestionsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PermissionsGuideScreen
 import com.armutlu.apporganizer.presentation.ui.screens.PrivacyPolicyScreen
@@ -60,6 +61,7 @@ object Routes {
     const val PERMISSIONS_GUIDE = "permissions_guide"
     const val CLASSIFICATION_REVIEW = "classification_review"
     const val FOLDER_SUGGESTIONS = "folder_suggestions"
+    const val FOLDER_MERGE = "folder_merge"
     // T05 — Akıllı Nabız Şeridi ayarları (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
     // satır 1848-1905): "Ana Ekran Ayarları" içindeki tek satırdan dedike alt ekrana taşındı,
     // ticker uzun-basma menüsündeki "Akıllı Nabız ayarları" de doğrudan bu ekrana açılır.
@@ -72,7 +74,7 @@ object Routes {
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_USAGE_DATA, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
-        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, SETTINGS_SMART_TICKER, TICKER_HISTORY
+        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, FOLDER_MERGE, SETTINGS_SMART_TICKER, TICKER_HISTORY
     )
 
     fun isValid(route: String?): Boolean = route != null && route in ALL
@@ -220,6 +222,11 @@ fun AppNavigation(
             FolderSuggestionsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.FOLDER_MERGE) {
+            FolderMergeScreen(
+                onClose = { navController.popBackStack() }
             )
         }
         composable(Routes.SETTINGS_STATS) {

@@ -1525,5 +1525,18 @@ object AppPrefs {
     fun setMissionTempo(context: Context, tempo: MissionTempo) =
         prefs(context).edit().putString(KEY_MISSION_TEMPO, tempo.name).apply()
 
+    // ── P2.1: Kompakt Filtre Zorunlu Varsayılan Migrasyonu ──────────────────
+    // Drawer'daki filtre UI'ı: varsayılan sade mod (kompakt Tune butonu),
+    // iki chip satırı (Tümü/Kullanıcı/Sistem/Son 7 gün) opsiyonel.
+    // Eski kaydedilmiş tercihleri özelleme — ilk açılışta varsayılan kapalı (sade).
+    fun migrateToCompactFilterDefaults(context: Context) {
+        val prefs = prefs(context)
+        val hasChipRowsSetting = prefs.contains(KEY_DRAWER_CHIP_ROWS_ENABLED)
+        if (!hasChipRowsSetting) {
+            // İlk kez bu ayarı görüyor — varsayılan: kompakt (kapalı)
+            setDrawerChipRowsEnabled(context, false)
+        }
+    }
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

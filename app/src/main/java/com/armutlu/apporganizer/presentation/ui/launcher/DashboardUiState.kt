@@ -17,6 +17,7 @@ import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 data class DashboardUiState(
     val pulse: HomePulseSummary?,
     val smartAccess: SmartAccessUiState,
+    val pendingClassificationCount: Int = 0,  // P1.2: Badge için beklemede olan sınıflandırma sayısı
 )
 
 /** `SmartDashboardPage` içindeki tıklama/eylem callback'leri — tek yerde toplanır. */
@@ -30,4 +31,5 @@ data class DashboardActions(
     val onOpenNotificationAccessSettings: () -> Unit,
     val onLaunchApp: (String) -> Unit,
     val onAppLongClick: (String) -> Unit,
+    val onOpenClassificationReview: () -> Unit = {},  // P1.2: Sınıflandırma inceleme ekranı
 )

@@ -14,6 +14,7 @@ internal fun SmartDashboardPage(
     HeroDashboardPage(
         pulse = state.pulse,
         smartAccess = state.smartAccess,
+        pendingClassificationCount = state.pendingClassificationCount,
         onOpenWeeklyReport = actions.onOpenWeeklyReport,
         onClockLongPress = actions.onClockLongPress,
         onOpenPulse = actions.onPulseClick,
@@ -21,6 +22,7 @@ internal fun SmartDashboardPage(
         onOpenSearchSettings = actions.onOpenSearchSettings,
         onOpenUsageAccessSettings = actions.onOpenUsageAccessSettings,
         onOpenNotificationAccessSettings = actions.onOpenNotificationAccessSettings,
+        onOpenClassificationReview = actions.onOpenClassificationReview,
         onLaunchApp = actions.onLaunchApp,
         onAppLongClick = actions.onAppLongClick,
         modifier = modifier,

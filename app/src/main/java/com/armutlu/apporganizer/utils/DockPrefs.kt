@@ -19,6 +19,7 @@ object DockPrefs {
         listOf("com.google.android.apps.messaging", "com.android.mms"),
         listOf("com.google.android.GoogleCamera", "com.android.camera2", "com.android.camera"),
         listOf("com.android.chrome", "org.mozilla.firefox", "com.microsoft.emmx")
+        // Slot 5: Resolved dynamically from device's default app (CATEGORY_DEFAULT)
     )
 
     fun getDockPackages(context: Context): List<String> {
@@ -118,8 +119,9 @@ object DockPrefs {
         )
         val camera = DEFAULT_SLOTS[2].firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }
         val browser = resolveDefaultBrowser(context)
+        val slot5 = resolveDefaultCategory(context)
 
-        return listOfNotNull(dialer, sms, camera, browser)
+        return listOfNotNull(dialer, sms, camera, browser, slot5)
             .distinct()
             .take(MAX_SLOTS)
             .ifEmpty {
@@ -133,6 +135,20 @@ object DockPrefs {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://"))
             .addCategory(Intent.CATEGORY_BROWSABLE)
         return resolveDefaultApp(context, intent)
+    }
+
+    /**
+     * Resolves the device's default app from CATEGORY_DEFAULT for the 5th dock slot.
+     * Falls back to null if no default is found or if the app is already in the first 4 slots.
+     */
+    private fun resolveDefaultCategory(context: Context): String? {
+        val intent = Intent(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_DEFAULT)
+        val pkg = context.packageManager
+            .resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+            ?.activityInfo
+            ?.packageName
+        return pkg?.takeIf { context.packageManager.getLaunchIntentForPackage(it) != null }
     }
 
     private fun resolveDefaultApp(context: Context, intent: Intent): String? {

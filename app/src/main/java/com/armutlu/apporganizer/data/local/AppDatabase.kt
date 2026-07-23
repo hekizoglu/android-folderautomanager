@@ -23,8 +23,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class],
-    version = 22,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class],
+    version = 23,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -40,6 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tickerHistoryDao(): TickerHistoryDao
     abstract fun homeGridItemDao(): HomeGridItemDao
     abstract fun operationDao(): OperationDao
+    abstract fun undoMergeDao(): UndoMergeDao
     
     companion object {
         @Volatile
@@ -335,6 +336,24 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v22→v23: UndoMergeEntity tablosu eklendi (FolderMergeScreen geri al işlevi)
+        private val MIGRATION_22_23 = object : Migration(22, 23) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `undo_merges` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `sourceCategoryId` TEXT NOT NULL,
+                        `targetCategoryId` TEXT NOT NULL,
+                        `affectedPackages` TEXT NOT NULL,
+                        `timestamp` INTEGER NOT NULL,
+                        `mergedAt` INTEGER NOT NULL
+                    )
+                """)
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_undo_merges_timestamp` ON `undo_merges`(`timestamp`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_undo_merges_source` ON `undo_merges`(`sourceCategoryId`)")
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -450,7 +469,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_18_19,
                         MIGRATION_19_20,
                         MIGRATION_20_21,
-                        MIGRATION_21_22
+                        MIGRATION_21_22,
+                        MIGRATION_22_23
                     )
                     .build()
 

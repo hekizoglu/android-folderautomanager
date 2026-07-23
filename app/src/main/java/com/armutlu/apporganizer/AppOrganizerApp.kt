@@ -58,6 +58,7 @@ class AppOrganizerApp : Application() {
                 if (AppPrefs.isAutoBackupEnabled(this)) {
                     BackupWorker.schedule(this)
                 }
+                AppPrefs.migrateToCompactFilterDefaults(this)
                 enableGrantedContactSearchByDefault()
                 WeeklyDigestWorker.schedule(this)
                 SmartInsightWorker.schedule(this)

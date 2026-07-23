@@ -148,7 +148,17 @@ class AppRepository @Inject constructor(
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }
-    
+
+    /**
+     * P1.2: Observe count of pending classifications for badge display.
+     * Reactive stream that updates whenever pending count changes.
+     */
+    fun observePendingClassificationCount(): Flow<Int> {
+        return appDao.observePendingClassificationCount()
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+    }
+
     /**
      * Get app by package name
      */
