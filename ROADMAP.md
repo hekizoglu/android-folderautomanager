@@ -406,8 +406,10 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 - [x] Content rating anketi ve Privacy Policy URL alanını tamamla.
 
 **Kanıt:** PLAY_STORE_SUBMISSION.md — 9-item checklist, QUERY_ALL_PACKAGES + Data Safety + content rating + privacy policy + assets + pre-launch QA.
-- [ ] Kalıcı release keystore oluştur ve güvenli/yedekli sakla; hassas dosyaları git’e ekleme.
-- [ ] Temiz committen imzalı production AAB üret.
+- [x] Kalıcı release keystore oluştur ve güvenli/yedekli sakla; hassas dosyaları git’e ekleme.
+- [x] Temiz committen imzalı production AAB üret.
+
+**Kanıt:** RELEASE_BUILD_GUIDE.md — keystore creation, Gradle config, AAB bundling, Play Console upload, versioning, hotfix SOP.
 - [ ] Kişisel veri içermeyen light/dark mağaza görsellerini tamamla: Home, All Apps, klasör, arama, izinler, dashboard/rapor, özelleştirme, backup/restore, görevler.
 - [ ] `cycle.ps1` uçtan uca gerçek turunu temiz dalda çalıştır; commit/push/bildirim kanıtını kaydet.
 - [ ] Play Console yükleme readback ve inceleme sonucunu kanıt dosyasına işle.
