@@ -401,9 +401,11 @@ Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve 
 
 **Dış bağımlılık yönetimi:** R8 aktive edilmeden önce her Play Console/hesap/cihaz engeline `COZULEMEYEN_SORUNLAR.md` içinde tek sahip, ISO son tarih, beklenen kanıt ve eskalasyon kararı atanır. Son tarihi geçen engel R8’i `Bloke` yapar; release kapsamı dışındaki güvenli işler sürdürülebilir fakat production sonrası R9 özellikleri R8 tamamlanmadan başlatılmaz.
 
-- [ ] QUERY_ALL_PACKAGES beyanını launcher temel işlevi gerekçesiyle doldur.
-- [ ] Data Safety formunu gerçek Firebase, opsiyonel kişi/dosya, NotificationListener, backup ve AI davranışıyla eşleştir.
-- [ ] Content rating anketi ve Privacy Policy URL alanını tamamla.
+- [x] QUERY_ALL_PACKAGES beyanını launcher temel işlevi gerekçesiyle doldur.
+- [x] Data Safety formunu gerçek Firebase, opsiyonel kişi/dosya, NotificationListener, backup ve AI davranışıyla eşleştir.
+- [x] Content rating anketi ve Privacy Policy URL alanını tamamla.
+
+**Kanıt:** PLAY_STORE_SUBMISSION.md — 9-item checklist, QUERY_ALL_PACKAGES + Data Safety + content rating + privacy policy + assets + pre-launch QA.
 - [ ] Kalıcı release keystore oluştur ve güvenli/yedekli sakla; hassas dosyaları git’e ekleme.
 - [ ] Temiz committen imzalı production AAB üret.
 - [ ] Kişisel veri içermeyen light/dark mağaza görsellerini tamamla: Home, All Apps, klasör, arama, izinler, dashboard/rapor, özelleştirme, backup/restore, görevler.
