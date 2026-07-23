@@ -1,6 +1,6 @@
 # AppOrganizer — Claude Çalışma Talimatları
 
-> **Meta:** ~390 satır · Son güncelleme: 2026-07-07 (D210 sadeleştirme) · Döngü logları → HISTORY.md · Mimari kararlar/SOP → LEARNINGS.md · Görevler → FİKİRLER.md · Yol haritası → ROADMAP.md (15+ puan)
+> **Meta:** ~390 satır · Son güncelleme: 2026-07-23 (Orkestra Şefi Professional Restructure) · Döngü logları → HISTORY.md · Mimari kararlar/SOP → LEARNINGS.md · Görevler → TASKS.md · Yol haritası → ROADMAP.md · İndeks → INDEX.md
 
 ---
 

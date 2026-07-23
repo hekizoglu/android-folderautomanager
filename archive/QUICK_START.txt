@@ -1,0 +1,145 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                    📱 TABLET TEST — QUICK START                         ║
+║                                                                          ║
+║                AppOrganizer v1.4.21 Tablet Uyumluluğu Test             ║
+║                                                                          ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+
+⚡ 30 SANİYEDE BAŞLA
+────────────────────────────────────────────────────────────────────────
+
+1️⃣  Tablet'i USB'ye takın
+    → Tablet: Settings > Geliştirici Seçenekleri > USB Hata Ayıklamayı AÇ
+    → "USB Hata Ayıklamayı Onayla?" TIK
+
+2️⃣  PowerShell aç
+    Windows Terminal veya PowerShell
+
+3️⃣  Komutu çalıştır
+    cd "C:\Users\hekizoglu\Documents\AppOrganizer"
+    .\run_tablet_test.ps1
+
+4️⃣  Bekle (5 dakika) + Sonuç oku
+    ✅ BAŞARILI / ⚠️ MINOR ISSUE / ❌ BLOCKER
+
+
+📋 NE KONTROL EDİLİYOR?
+────────────────────────────────────────────────────────────────────────
+
+✓ Onboarding akışı (WELCOME→DONE)
+✓ HomeScreen (8 klasör grid)
+✓ AllAppsDrawer (5-6 sütun)
+✓ Landscape rotasyon
+✓ Settings ekranı
+✓ Bildirim şeridi
+✓ Crash/ANR tespiti
+
+
+❌ SORUN VARSA?
+────────────────────────────────────────────────────────────────────────
+
+ADB görünmüyor?
+  → TABLET_TROUBLESHOOTING.md → "ADB Bağlantı Sorunu" bölümü
+
+APK kurulmuyor?
+  → TABLET_TROUBLESHOOTING.md → "APK Kurulum Sorunu" bölümü
+
+Crash/ANR?
+  → TABLET_TROUBLESHOOTING.md → "Uygulama Açılmıyor / Crash" bölümü
+
+Başka sorun?
+  → TABLET_TROUBLESHOOTING.md'de 10 yaygın sorunun çözümü var
+
+
+📊 BEKLENEN SONUÇ
+────────────────────────────────────────────────────────────────────────
+
+✅ BAŞARILI
+
+  Cihaz: [Tablet Model] (Android [Version])
+  Kurulum: ✅ OK
+  HomeScreen: ✅ OK (8 klasör grid)
+  AllAppsDrawer: ✅ OK (5-6 sütun)
+  Rotasyon: ✅ OK (landscape smooth)
+  Settings: ✅ OK (responsive)
+  Crash/ANR: 0
+  Genel: ✅ BAŞARILI — Production Hazır
+
+
+📱 MANUEL TEST (Otomatik çalışmazsa)
+────────────────────────────────────────────────────────────────────────
+
+TABLET_TEST_CHECKLIST.txt aç ve adımları takip et:
+1. ADB komutlarını çalıştır
+2. APK'yı kur
+3. Her test senaryosunu tablet'te yap
+4. Kontrol listesine işaret koy
+5. Sonuç raporu doldur
+
+
+🔗 ÖNEMLİ DOSYALAR
+────────────────────────────────────────────────────────────────────────
+
+TABLET_TEST_README.md          ← BAŞLA BURADAN (genel rehber)
+TABLET_TEST_CHECKLIST.txt      ← Kontrol listesi (yapışkan not)
+TABLET_TEST_GUIDE.md           ← Detaylı 7 senaryo
+TABLET_TROUBLESHOOTING.md      ← Sorun giderme (10 sorun)
+TABLET_TEST_STATUS.txt         ← Durum raporu
+run_tablet_test.ps1            ← Otomasyonu
+
+
+💡 İPUÇLARı
+────────────────────────────────────────────────────────────────────────
+
+• Test sırasında tablet'i çeşitli şekillerde döndür (portrait↔landscape)
+• AllAppsDrawer'ı swipe up yaparak aç
+• Settings toggle'larını test et
+• Klasörlere gir/çık
+• 5-10 dakika kullan (crash tespiti için)
+
+• Sorun çıkarsa Telegram'a logcat gönder:
+  adb logcat -d > tablet_logcat.txt
+
+
+📞 TELEGRAM'A RAPOR GÖNDERMEk
+────────────────────────────────────────────────────────────────────────
+
+Test tamamlandıktan sonra Hüseyin'e (Telegram):
+
+---
+
+✅ TABLET TEST BAŞARILI
+
+Cihaz: [Model] (Android [Version])
+Kurulum: ✅
+HomeScreen: ✅ 8 klasör grid
+AllAppsDrawer: ✅ 5-6 sütun
+Rotasyon: ✅ Smooth
+Settings: ✅
+Crash/ANR: 0
+
+Genel: ✅ Production Hazır
+
+---
+
+
+⏱️  SÜRE
+────────────────────────────────────────────────────────────────────────
+
+Otomatik Test:      ~7 dakika (kurulum 2 dk + test 5 dk)
+Manuel Test:        ~15-20 dakika
+Sorun Giderme:      5-30 dakika (soruna göre)
+
+
+═══════════════════════════════════════════════════════════════════════
+
+                        🚀 BAŞLAMAYA HAZIR!
+
+═══════════════════════════════════════════════════════════════════════
+
+APK Boyutu:  27.69 MB
+Versiyon:    1.4.21
+Tarih:       2026-07-23
+Hazırlayan:  Claude Code

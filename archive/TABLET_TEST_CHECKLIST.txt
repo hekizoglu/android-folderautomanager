@@ -1,0 +1,181 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║         TABLET TEST CHECKLIST — AppOrganizer v1.4.21                    ║
+║                                                                          ║
+║  Tablet bağlıyken PowerShell'de çalıştır:                               ║
+║  PS> cd C:\Users\hekizoglu\Documents\AppOrganizer                       ║
+║  PS> .\run_tablet_test.ps1                                              ║
+║                                                                          ║
+║  VEYA manuel olarak aşağıdaki adımları takip et:                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+KURULUM
+───────────────────────────────────────────────────────────────────────
+
+[ADIM 1] ADB Bağlantısını Kontrol Et
+  □ Tablet USB kablolu bağlı mı?
+  □ Tablet'te "USB Hata Ayıklamayı Onayla" diyalogu var mı?
+
+  PowerShell:
+  $adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+  & $adb devices -l
+
+  Beklenen: emulator-5554 değil, "tablet_id device" satırı görülmeli
+
+[ADIM 2] Tablet Model ve Android Bilgisi Öğren
+  $adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+  & $adb shell getprop ro.product.model
+  & $adb shell getprop ro.build.version.release
+
+  Not: Sonuç raporda yazılacak
+
+[ADIM 3] APK'yı Kur
+  $adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+  & $adb install -r "c:\Users\hekizoglu\Documents\AppOrganizer\app\build\outputs\apk\debug\app-debug.apk"
+
+  Beklenen: "Success"
+
+[ADIM 4] Uygulamayı Başlat
+  $adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+  & $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.MainActivity"
+
+
+MANUAL TEST SENARYOLARI
+───────────────────────────────────────────────────────────────────────
+
+TEST 1: Onboarding (Kurulum Tamamlama)
+────────────────────────────────────────
+Tablet'te:
+  [1] WELCOME ekranı görün
+  [2] THEME_SELECT: Tema seç (Pixel Görünümü ✓ önerilen)
+  [3] QUICK_SETTINGS: Kategorileri seç → BAŞLA
+  [4] SET_LAUNCHER: AppOrganizer'ı default yap → AYARLA
+  [5] DONE: HomeScreen açılır
+
+Kontrol Listesi:
+  □ Crash/ANR yok
+  □ Tüm adımlar sırasıyla ilerliyor
+  □ HomeScreen sonunda açılıyor
+
+
+TEST 2: HomeScreen (Portrait/Normal)
+─────────────────────────────────────
+Tablet'te: HomeScreen'de gezin
+
+Kontrol Listesi:
+  □ 8 klasör grid görünüyor (4×2 layout)
+  □ Dock altta sabit
+  □ Arama çubuğu üstte
+  □ Notification badge var (kırmızı sayı)
+  □ UI overflow yok (ekrana sığıyor)
+  □ Klasörlere dokunca açılıyor
+  □ Scroll smooth
+
+
+TEST 3: AllAppsDrawer
+─────────────────────
+Tablet'te: Ekranın altından yukarı swipe et
+
+Kontrol Listesi:
+  □ Drawer açılıyor (blur efekti görülüyor)
+  □ 5-6 sütun grid (tablet genişliği var)
+  □ Scroll smooth
+  □ Uygulamalar açılıyor
+  □ Arama çalışıyor
+
+
+TEST 4: Rotasyon (ÖNEMLİ!) — Landscape
+───────────────────────────────────────
+Tablet'te: Ekranı yatay döndür
+
+Kontrol Listesi:
+  □ Layout crash yapmıyor
+  □ Elementler reflow ediyor
+  □ Dock görünür
+  □ UI overflow yok
+  □ AllAppsDrawer sütun sayısı değişiyor (6-7 sütun olabilir)
+  □ HomeScreen'e geri dön (portrait)
+  □ Portrait dönüş çökmüyor
+
+
+TEST 5: Settings (Tablet Genişliği)
+────────────────────────────────────
+Tablet'te: HomeScreen → ⋮ Menü → Ayarlar
+
+Kontrol Listesi:
+  □ Settings ekranı açılıyor
+  □ Başlık, gruplar görünüyor
+  □ Toggle'lar düzgün
+  □ Responsive layout (padding/margin var)
+  □ Toggle değişiklikler kayıt ediliyor
+
+
+TEST 6: Bildirim Şeridi
+──────────────────────
+Tablet'te: HomeScreen'de kaydır (yukarıdan aşağıya)
+
+Kontrol Listesi:
+  □ Haber şeridi görünüyor
+  □ Klasör istatistikleri var
+  □ Kaydırılabilir
+  □ Item'lere dokunca hedef açılıyor
+
+
+TEST 7: Performans & Crash
+──────────────────────────
+Tablet'te: 5-10 dakika normal kullanım
+
+Kontrol Listesi:
+  □ Smooth scroll
+  □ Jank yok
+  □ Crash/ANR yok
+  □ Freeze yok
+
+  Logcat (background):
+  $adb = "C:\Users\hekizoglu\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+  & $adb logcat AndroidRuntime:E | Tee-Object tablet_crash.log
+
+  (Ctrl+C ile durdur)
+
+  Hata kontrol:
+  Select-String "FATAL EXCEPTION|ANR" tablet_crash.log
+
+
+SONUÇ RAPORU
+───────────────────────────────────────────────────────────────────────
+
+Tablet Model: ____________________
+Android Sürümü: ____________________
+Ekran Çözünürlüğü: ____________________
+
+Onboarding:         ✅ ⚠️ ❌
+HomeScreen:         ✅ ⚠️ ❌
+AllAppsDrawer:      ✅ ⚠️ ❌
+Rotasyon (Portrait/Landscape): ✅ ⚠️ ❌
+Settings:           ✅ ⚠️ ❌
+Bildirim Şeridi:    ✅ ⚠️ ❌
+Performans:         ✅ ⚠️ ❌
+Crash/ANR Sayısı:   0
+
+Genel Sonuç:
+  ✅ BAŞARILI — Tablet uyumluluğu onaylandı
+  ⚠️ MINOR ISSUES — Bazı ekranlar düzeltmesi gerekiyor
+  ❌ BLOCKER — Kritik hata var, production hazır değil
+
+Notlar:
+_________________________________________________________________
+_________________________________________________________________
+_________________________________________________________________
+
+
+═════════════════════════════════════════════════════════════════════════
+
+💡 HIZLI LINKLER
+────────────────
+
+• Detaylı Test Rehberi: TABLET_TEST_GUIDE.md
+• Otomatik Test Scripti: run_tablet_test.ps1
+• APK Konumu: app\build\outputs\apk\debug\app-debug.apk
+
+═════════════════════════════════════════════════════════════════════════
+
+Son Güncelleme: 2026-07-23
