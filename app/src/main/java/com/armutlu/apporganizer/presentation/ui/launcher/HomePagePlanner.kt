@@ -31,20 +31,22 @@ object HomePagePlanner {
      * @param folders Kategoriye göre gruplanmış, boş olmayan klasörler (buildFolders() çıktısı).
      * @param pageSize Bir sayfada gösterilecek maksimum klasör sayısı (ör. HomeLayoutMath.pageSize sonucu).
      * @param dashboardEnabled Dashboard sayfası gösterilsin mi (P24'te kullanıcı ayarına bağlanacak).
+     * @param widgetPageEnabled Ayrı widget sayfası gösterilsin mi (Döngü P0.6).
      *
      * Kurallar:
      * - Dashboard açıksa ilk eleman daima [HomePageSpec.Dashboard].
+     * - Widget sayfası açıksa Dashboard'dan sonra [HomePageSpec.WidgetPage] eklenir.
      * - Klasör listesi `chunked(pageSize)` ile bölünür, her dilim bir [HomePageSpec.FolderPage] olur.
-     * - Klasör yoksa Dashboard açıkken sadece Dashboard gösterilir; kapalıyken boş bir
-     *   FolderPage(pageIndex=0, folders=emptyList()) fallback'i döner — en az bir sayfa garantisi.
+     * - Klasör yoksa Dashboard açıkken sadece Dashboard (+widget sayfası varsa) gösterilir; kapalıyken
+     *   boş bir FolderPage(pageIndex=0, folders=emptyList()) fallback'i döner — en az bir sayfa garantisi.
      * - Dashboard kapalı klasik modda ilk klasör sayfası pageIndex=0 olur.
-     * - Sonuç listesinde stableKey her zaman benzersizdir (duplicate categoryId durumunda
-     *   pageIndex'e düşülür).
+     * - Sonuç listesinde stableKey her zaman benzersizdir.
      */
     internal fun buildPages(
         folders: List<AppFolder>,
         pageSize: Int,
         dashboardEnabled: Boolean,
+        widgetPageEnabled: Boolean = false,
     ): List<HomePageSpec> {
         val safePageSize = max(SAFE_MIN_PAGE_SIZE, pageSize)
 
@@ -60,14 +62,18 @@ object HomePagePlanner {
             }
         }
 
-        val planned: List<HomePageSpec> = if (dashboardEnabled) {
-            if (folders.isEmpty()) {
-                listOf(HomePageSpec.Dashboard)
-            } else {
-                listOf(HomePageSpec.Dashboard) + folderPages
-            }
-        } else {
-            folderPages
+        val planned: MutableList<HomePageSpec> = mutableListOf()
+
+        if (dashboardEnabled) {
+            planned.add(HomePageSpec.Dashboard)
+        }
+
+        if (widgetPageEnabled) {
+            planned.add(HomePageSpec.WidgetPage)
+        }
+
+        if (folders.isNotEmpty() || !dashboardEnabled) {
+            planned.addAll(folderPages)
         }
 
         return dedupeStableKeys(planned).ifEmpty {

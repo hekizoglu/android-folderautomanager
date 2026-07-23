@@ -45,6 +45,12 @@ import androidx.compose.ui.Modifier
  * - Davranış BİREBİR korunur: `searchOverlay` boşsa (`{}`) hiçbir görsel/gesture farkı oluşmaz —
  *   var olan `overlays` içindeki `FullScreenSearchOverlayV2` çağrısı buraya taşınır, konumlandırma
  *   mantığı (`fillMaxSize` Box) değişmez.
+ *
+ * Döngü P0.3 — `folderOverlay` slotu. FolderScreen artık ayrı Navigation route değil,
+ * HomeShell'de overlay olarak render edilir. Z-order: pager/dock < folderOverlay < searchOverlay < overlays.
+ * FolderScreen AnimatedVisibility ile kendi görünürlüğünü yönetir (ViewModel'deki openFolder state'ine göre).
+ * Geri tuşu: FolderScreen'in BackHandler çağrısı viewModel.closeFolder() tetikler, openFolder = null olur,
+ * AnimatedVisibility fadeOut eder. dock ve global arama HomeShell tarafından sabit tutulur.
  */
 @Composable
 fun HomeShell(
@@ -54,6 +60,7 @@ fun HomeShell(
     indicator: @Composable () -> Unit = {},
     bottomSearch: (@Composable () -> Unit)? = null,
     dock: @Composable () -> Unit,
+    folderOverlay: @Composable BoxScope.() -> Unit = {},
     searchOverlay: @Composable BoxScope.() -> Unit = {},
     overlays: @Composable BoxScope.() -> Unit = {},
 ) {
@@ -78,6 +85,7 @@ fun HomeShell(
             bottomSearch?.invoke()
             dock()
         }
+        folderOverlay()
         searchOverlay()
         overlays()
     }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,9 @@ import kotlin.math.roundToInt
  * `AndroidView` widget View'ı kendi `onTouchEvent`'ini tüketir, tükettiği dokunuşlar Compose
  * gesture zincirine `available` olarak yansımaz. Ayrıca ek bir "gesture bölgesi" tanımına gerek
  * yoktur.
+ *
+ * Döngü P0.6 — adaptive padding: HomeAdaptiveLayoutPolicy ile tutarlı horizontal padding.
+ * Büyük tablet'te content maksimum genişlikle ortalanır (EXPANDED_CONTENT_MAX_WIDTH_DP).
  */
 @Composable
 fun WidgetArea(
@@ -61,6 +66,10 @@ fun WidgetArea(
 ) {
     if (widgetIds.isEmpty()) return
 
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val deviceClass = HomeAdaptiveLayoutPolicy.deviceClass(screenWidthDp)
+    val maxWidthDp = HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp(deviceClass)
+
     var dragFromIndex by remember { mutableStateOf<Int?>(null) }
     var dragOffsetY by remember { mutableFloatStateOf(0f) }
     var draggingIds by remember { mutableStateOf<List<Int>?>(null) }
@@ -69,8 +78,13 @@ fun WidgetArea(
 
     Column(
         // Widget'ler ana ekranın kullanılabilir genişliğini kesintisiz kullanır;
-        // aradaki ekstra boşluk küçük ekranlarda gereksiz kırpılma hissi oluşturuyordu.
-        modifier = modifier.padding(vertical = 2.dp),
+        // Döngü P0.6 — büyük tablet'te HomeAdaptiveLayoutPolicy max-width ortalanması.
+        modifier = modifier
+            .fillMaxWidth()
+            .let { m ->
+                if (maxWidthDp != null) m.widthIn(max = maxWidthDp.dp) else m
+            }
+            .padding(vertical = 2.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         displayIds.forEachIndexed { index, id ->

@@ -11,7 +11,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 private const val ROUTE_HOME = "launcher_home"
-private const val ROUTE_FOLDER = "launcher_folder"
 private const val ROUTE_HOME_LAYOUT_EDITOR = "home_layout_editor"
 
 @Composable
@@ -38,23 +37,12 @@ fun LauncherNavGraph(
                 onEditHomeLayout = { navController.navigate(ROUTE_HOME_LAYOUT_EDITOR) },
                 onNavigateToFolder = { folder ->
                     viewModel.openFolder(folder)
-                    navController.navigate(ROUTE_FOLDER)
                 },
             )
         }
 
         composable(ROUTE_HOME_LAYOUT_EDITOR) {
             HomeLayoutEditorScreen(viewModel = viewModel, onClose = { navController.popBackStack() })
-        }
-
-        composable(ROUTE_FOLDER) {
-            FolderScreen(
-                viewModel = viewModel,
-                onBack = {
-                    viewModel.closeFolder()
-                    navController.popBackStack()
-                },
-            )
         }
     }
 }

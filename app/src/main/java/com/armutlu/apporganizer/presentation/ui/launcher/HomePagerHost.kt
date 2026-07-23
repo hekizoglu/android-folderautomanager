@@ -37,6 +37,7 @@ internal fun anchorForCurrentPage(pages: List<HomePageSpec>, rawPage: Int): Home
     val safePage = rawPage.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
     return when (val spec = pages.getOrNull(safePage)) {
         is HomePageSpec.Dashboard -> HomePageAnchor.Dashboard
+        is HomePageSpec.WidgetPage -> HomePageAnchor.PageIndex(safePage)
         is HomePageSpec.FolderPage -> spec.firstFolderCategoryId
             ?.let { HomePageAnchor.Folder(it) }
             ?: HomePageAnchor.PageIndex(safePage)
@@ -117,12 +118,13 @@ internal fun buildHomePageIndicatorItems(
     var folderCounter = 0
     return pages.mapIndexed { index, spec ->
         val isDashboard = spec is HomePageSpec.Dashboard
-        if (!isDashboard) folderCounter++
+        val isWidget = spec is HomePageSpec.WidgetPage
+        if (!isDashboard && !isWidget) folderCounter++
         HomePageIndicatorItem(
             pageIndex = index,
             isDashboard = isDashboard,
             isSelected = index == safeSelected,
-            folderNumber = if (isDashboard) null else folderCounter,
+            folderNumber = if (isDashboard || isWidget) null else folderCounter,
             folderPageCount = folderPageCount,
         )
     }
@@ -155,15 +157,19 @@ internal fun homePagerCurrentPageDescription(
 }
 
 /**
- * Döngü P05 — tek yatay ana ekran pager'ı. `HomePageSpec` listesindeki sayfaları (Dashboard
- * veya klasör sayfası) tek `HorizontalPager` içinde render eder; iç içe `HorizontalPager` YOKTUR
- * (eskiden `FolderPager`in kendi pager'ı vardı, P05'te söküldü — bkz. HomeScreenFolderPager.kt).
+ * Döngü P05 — tek yatay ana ekran pager'ı. `HomePageSpec` listesindeki sayfaları (Dashboard,
+ * WidgetPage veya klasör sayfası) tek `HorizontalPager` içinde render eder; iç içe
+ * `HorizontalPager` YOKTUR (eskiden `FolderPager`in kendi pager'ı vardı, P05'te söküldü —
+ * bkz. HomeScreenFolderPager.kt).
+ *
+ * Döngü P0.6 — Widget sistem refaktörü: WidgetPage ayrı sayfa olarak entegre edilir. Sayfa sırası:
+ * Dashboard (0) → WidgetPage (1, opsiyonel) → Klasör sayfaları (2+).
  *
  * Roadmap: ANA_EKRAN_DASHBOARD_GLOBAL_ARAMA_KLASOR_SAYFALARI_ROADMAP.md Döngü P05 (satır 611-670).
  *
  * Sayfa geçiş efekti (hafif fade/scale, eskiden `FolderPager` içindeydi) burada tek yerden
- * uygulanır — hem Dashboard hem klasör sayfaları için ortak. "Azaltılmış hareket" sistem
- * ayarı açıkken (`ValueAnimator.areAnimatorsEnabled() == false`, bkz. FolderScreen.kt'deki
+ * uygulanır — hem Dashboard hem widget sayfası hem klasör sayfaları için ortak. "Azaltılmış hareket"
+ * sistem ayarı açıkken (`ValueAnimator.areAnimatorsEnabled() == false`, bkz. FolderScreen.kt'deki
  * aynı desen) efekt kapatılır, sayfa tam opak/ölçek 1f render edilir.
  *
  * `pages` boş olamaz (çağıran taraf `HomePagePlanner.buildPages` üzerinden en az bir sayfa
@@ -181,6 +187,7 @@ internal fun HomePagerHost(
     pagerState: PagerState,
     userScrollEnabled: Boolean,
     dashboardContent: @Composable () -> Unit,
+    widgetPageContent: @Composable () -> Unit = {},
     folderPageContent: @Composable (HomePageSpec.FolderPage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -279,6 +286,7 @@ internal fun HomePagerHost(
         androidx.compose.foundation.layout.Box(modifier = pageModifier) {
             when (val page = pages[pageIndex]) {
                 is HomePageSpec.Dashboard -> dashboardContent()
+                is HomePageSpec.WidgetPage -> widgetPageContent()
                 is HomePageSpec.FolderPage -> folderPageContent(page)
             }
         }

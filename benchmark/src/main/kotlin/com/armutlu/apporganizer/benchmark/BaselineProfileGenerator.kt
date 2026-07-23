@@ -28,6 +28,13 @@ private const val WAIT_TIMEOUT_MS = 5_000L
  *  3. Geri dön
  *  4. AllAppsDrawer açma (blur + tam liste — Compose'un en ağır render yolu)
  *  5. Geri dön
+ *
+ * Çalıştırma (Ön koşul: emülatör/cihaz 15+ dakika idle):
+ *  .\gradlew :app:generateReleaseBaselineProfile -PallowDebugReleaseSigning=true
+ *
+ * Çıktı:
+ *  app/build/outputs/baseline_profile_src/release/baseline-prof.txt
+ *  → app/src/main/res/raw/baseline-prof.txt (manual move) veya kaynağında oluşturulur
  */
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {

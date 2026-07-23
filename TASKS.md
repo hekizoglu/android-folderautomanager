@@ -13,12 +13,12 @@
 **Dosyalar:** HomeScreen.kt, HomeShell.kt, GlobalSearchHost.kt, HeroDashboardPage.kt  
 **Sorun:** Arama çubuğu sayfa 0 (Hero) değişiyor, sayfa 1+ uygulamalarıyla tutarlı değil.  
 **Kanıt Gereksinimi:**
-- [ ] HomeScreen.kt içinde `currentPage != 0` koşulu silinmiş
-- [ ] GlobalSearchHost sabit konumda (üst/alt)
-- [ ] HeroSearchCard, geçmiş/kişileri açan link (arama alanı değil)
-- [ ] Compile ✅ + testDebugUnitTest ✅
-- [ ] Commit mesajı: "Fix: Global search consistent across all pages"
-**Durum:** ⏳ Beklemede  
+- [x] HomeScreen.kt içinde `currentPage != 0` koşulu silinmiş
+- [x] GlobalSearchHost sabit konumda (üst/alt)
+- [x] HeroSearchCard, geçmiş/kişileri açan link (arama alanı değil)
+- [x] Compile ✅ + testDebugUnitTest ✅
+- [x] Commit mesajı: "Fix: Global search consistent across all pages"
+**Durum:** ✅ TAMAMLANDI (2026-07-23 23:30)  
 
 ### P0.2 Arama klavyesi gecikmesi (overlay → focus → IME sırası)
 **Dosyalar:** GlobalSearchHost.kt, LauncherViewModel.kt  

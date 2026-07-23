@@ -957,6 +957,16 @@ fun HomeScreen(
                     )
                 }
             },
+            folderOverlay = {
+                // Döngü P0.3 — FolderScreen overlay entegrasyonu.
+                // FolderScreen'in AnimatedVisibility (folder != null) HomeShell'in Box
+                // ürünü içinde render edilir — dock ve global arama HomeShell'in Column'u
+                // tarafından sabit tutulur. Geri tuşu viewModel.closeFolder() tetikler.
+                FolderScreen(
+                    viewModel = vm,
+                    onBack = vm::closeFolder,
+                )
+            },
             pager = {
             // P25: Dashboard içeriğinin eski, pager-dışı kopyası kaldırıldı. Dashboard artık
             // yalnız HomePagerHost.dashboardContent içinde; klasörler yalnız folderPageContent

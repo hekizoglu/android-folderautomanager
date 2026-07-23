@@ -62,6 +62,17 @@ import com.armutlu.apporganizer.utils.AppPrefs
 import kotlin.math.abs
 import kotlinx.coroutines.launch
 
+/**
+ * Döngü P0.3 — FolderScreen overlay versiyonu.
+ *
+ * Mevcut: LauncherNavGraph'ta ayrı full-screen route (ROUTE_FOLDER).
+ * Yeni: HomeShell içinde overlay olarak render edilir — dock ve global arama
+ * HomeScreen'de kalır, FolderScreen üzerinde/altında belirlenir.
+ *
+ * Davranış aynı: açıldığında AnimatedVisibility fadeIn/fadeOut. Fark: kök
+ * Box (statusBars/navigationBars padding) kaldırıldı — HomeShell bunu yönetir.
+ * Geri tuşu: onBack() çağrısı hâlâ aktif, BackHandler korunur.
+ */
 @Composable
 fun FolderScreen(
     viewModel: LauncherViewModel,
@@ -119,7 +130,7 @@ fun FolderScreen(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    BackHandler { onBack() }
+    BackHandler(enabled = folder != null) { onBack() }
 
     AnimatedVisibility(
         visible = folder != null,
@@ -369,7 +380,7 @@ fun FolderScreen(
                     if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.35f))
                     else Modifier
                 )
-        ) {
+        ) { // NOT: statusBars/navigationBars padding HomeShell'de uygulanır (P0.3)
             if (showFolderNavigator && folderCarouselEnabled && transitionFrame.direction != 0) {
                 FolderTransitionPreview(
                     previousFolder = previousFolder!!,
@@ -384,8 +395,6 @@ fun FolderScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
                     .graphicsLayer {
                         translationX = transitionFrame.translationX
                         alpha = transitionFrame.currentAlpha

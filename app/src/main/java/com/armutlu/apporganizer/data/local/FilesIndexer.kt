@@ -41,7 +41,13 @@ class FilesIndexer(
     companion object {
         private const val SOURCE_FILE = "file"
         private const val GROUP_FILE = "file"
-        private const val MAX_FILES = 1000
+
+        // Dosya türü kotaları (toplam ~9000 dosya)
+        private const val QUOTA_IMAGES = 3000
+        private const val QUOTA_VIDEOS = 1000
+        private const val QUOTA_AUDIO = 1000
+        private const val QUOTA_DOWNLOADS = 1000
+        private const val PAGINATION_LIMIT = 500  // Cursor sayfası boyutu
 
         fun hasMediaStoreReadAccess(context: Context): Boolean {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
@@ -62,6 +68,9 @@ class FilesIndexer(
 
     private val _indexState = MutableStateFlow(currentState(isIndexing = false))
     val indexState: StateFlow<FileIndexState> = _indexState.asStateFlow()
+
+    // WorkManager progress callback (opsiyonel)
+    var progressCallback: ((processedCount: Int, totalCount: Int) -> Unit)? = null
 
     private fun currentState(isIndexing: Boolean): FileIndexState = computeFileIndexState(
         sourceEnabled = AppPrefs.isSearchSourceFilesEnabled(context),
@@ -144,11 +153,14 @@ class FilesIndexer(
 
     private fun loadFiles(): List<SearchDocument> {
         val docs = mutableListOf<SearchDocument>()
+        val totalQuota = QUOTA_IMAGES + QUOTA_VIDEOS + QUOTA_AUDIO + QUOTA_DOWNLOADS
+
+        // Dosya türü başına kota ve URI
         val collections = listOf(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI to "image/*",
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI to "video/*",
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI to "audio/*",
-            getDownloadsUri() to "application/*"
+            Triple(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*", QUOTA_IMAGES),
+            Triple(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video/*", QUOTA_VIDEOS),
+            Triple(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio/*", QUOTA_AUDIO),
+            Triple(getDownloadsUri(), "application/*", QUOTA_DOWNLOADS)
         )
 
         val projection = arrayOf(
@@ -159,54 +171,68 @@ class FilesIndexer(
             MediaStore.MediaColumns.MIME_TYPE
         )
 
-        var total = 0
-        for ((uri, mimeHint) in collections) {
-            if (total >= MAX_FILES) break
-            val cursor = try {
-                context.contentResolver.query(
-                    uri,
-                    projection,
-                    null,
-                    null,
-                    "${MediaStore.MediaColumns.DATE_MODIFIED} DESC"
-                )
-            } catch (e: Exception) {
-                Timber.w(e, "FilesIndexer: MediaStore query skipped: $uri")
-                continue
-            } ?: continue
+        for ((uri, mimeHint, quota) in collections) {
+            var typeCount = 0
+            var offset = 0
 
-            cursor.use { c ->
-                val idIdx = c.getColumnIndex(MediaStore.MediaColumns._ID)
-                val nameIdx = c.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
-                val pathIdx = c.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH)
-                val dateIdx = c.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED)
-                val mimeIdx = c.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
-
-                while (c.moveToNext() && total < MAX_FILES) {
-                    val id = c.getLong(if (idIdx >= 0) idIdx else continue)
-                    val name = c.getString(if (nameIdx >= 0) nameIdx else continue) ?: continue
-                    if (name.isBlank()) continue
-
-                    val path = if (pathIdx >= 0) c.getString(pathIdx) ?: "" else ""
-                    val dateModified = if (dateIdx >= 0) c.getLong(dateIdx) * 1000L else 0L
-                    val mime = if (mimeIdx >= 0) c.getString(mimeIdx) ?: mimeHint else mimeHint
-                    val fileUri = ContentUris.withAppendedId(uri, id).toString()
-
-                    docs.add(
-                        SearchDocument(
-                            sourceType = SOURCE_FILE,
-                            sourceId = fileUri,
-                            title = name,
-                            subtitle = path,
-                            iconKey = "mime:$mime",
-                            sourceGroup = GROUP_FILE,
-                            lastModified = dateModified
-                        )
+            // Pagination döngüsü: offset += PAGINATION_LIMIT
+            while (typeCount < quota) {
+                val cursor = try {
+                    val sortOrder = "${MediaStore.MediaColumns.DATE_MODIFIED} DESC LIMIT $PAGINATION_LIMIT OFFSET $offset"
+                    context.contentResolver.query(
+                        uri,
+                        projection,
+                        null,
+                        null,
+                        sortOrder
                     )
-                    total++
+                } catch (e: Exception) {
+                    Timber.w(e, "FilesIndexer: MediaStore query skipped for $uri at offset $offset")
+                    break
+                } ?: break
+
+                cursor.use { c ->
+                    if (c.count == 0) break  // Sayfada veri yok → son sayfa
+
+                    val idIdx = c.getColumnIndex(MediaStore.MediaColumns._ID)
+                    val nameIdx = c.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+                    val pathIdx = c.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH)
+                    val dateIdx = c.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED)
+                    val mimeIdx = c.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
+
+                    while (c.moveToNext() && typeCount < quota) {
+                        val id = c.getLong(if (idIdx >= 0) idIdx else continue)
+                        val name = c.getString(if (nameIdx >= 0) nameIdx else continue) ?: continue
+                        if (name.isBlank()) continue
+
+                        val path = if (pathIdx >= 0) c.getString(pathIdx) ?: "" else ""
+                        val dateModified = if (dateIdx >= 0) c.getLong(dateIdx) * 1000L else 0L
+                        val mime = if (mimeIdx >= 0) c.getString(mimeIdx) ?: mimeHint else mimeHint
+                        val fileUri = ContentUris.withAppendedId(uri, id).toString()
+
+                        docs.add(
+                            SearchDocument(
+                                sourceType = SOURCE_FILE,
+                                sourceId = fileUri,
+                                title = name,
+                                subtitle = path,
+                                iconKey = "mime:$mime",
+                                sourceGroup = GROUP_FILE,
+                                lastModified = dateModified
+                            )
+                        )
+                        typeCount++
+
+                        // Progress callback
+                        progressCallback?.invoke(docs.size, totalQuota)
+                    }
                 }
+                offset += PAGINATION_LIMIT
             }
+
+            Timber.d("FilesIndexer: $typeCount dosya indekslendi (kaynak: $uri, quota: $quota)")
         }
+
         return docs
     }
 
