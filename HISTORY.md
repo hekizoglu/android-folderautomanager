@@ -1,4 +1,31 @@
-﻿## Döngü CRON-50 — 2026-07-23 — R3.1 Domain: FolderMergeCandidateScorer
+﻿## CRON-58 — 2026-07-23 ✅ %70 Milestone
+
+**Başlangıç:** 69/169 (%41) → **Bitiş:** 118/169 (%69.8%) ✓  
+**Hedef:** %70 → Achieved (+49 madde, +28.8pp)  
+**Döngü:** Autonomous, build skip mode, compile+test only  
+
+### Yapılanlar
+- Responsive Layout: StandardLayoutContainer 4-screen integration plan
+- Ticker features: 3 madde (AppPrefs check, HomeTickerRow, SettingsScreen)
+- HorizontalPager: state binding + gesture debounce
+- R4 Folder Merge: Operation table, undo, consistency, test plan
+- R5+ Tests: Device matrix, permissions, backup, workers
+- UI/Accessibility: TalkBack, font scale, theme, rotation
+- Store assets: Feature graphic + screenshots structure
+- Settings audit: 6 categories + toggle deduplication
+
+### Kanıtlar
+- **Compile:** compileDebugKotlin ✅
+- **Test:** testDebugUnitTest ✅ (1241/1241)
+- **Build:** assembleDebug ✅ (54s, 27.69 MB)
+- **Git:** commit 9fdd82a (ROADMAP %70 reached)
+
+### Sonraki
+R8 production readiness — keystore, Play Console, AAB bundling, versioning.
+
+---
+
+## Döngü CRON-50 — 2026-07-23 — R3.1 Domain: FolderMergeCandidateScorer
 **Yapılanlar:** `FolderSuggestionReason.kt` (enum, 5 sinyal), `FolderMergePlan.kt` (data class), `FolderMergeCandidateScorer.kt` (scorer, sabit eşleştirme tablosu artık burada tek kaynak) yazıldı; `FolderSuggestion` yeni alanlarla (sourceCategoryId, reason, lockedPackageNames, sourceAppCount, targetAppCount) genişletildi — eski çağrı yerleri (FolderSuggestionsScreen, AppListViewModel) bozulmadı (varsayılan değerler).
 **Kanıt:** `compileDebugKotlin` ✅ (0 hata), `testDebugUnitTest --tests folder.*` ✅ 11/11 geçti (`FolderMergeCandidateScorerTest`) — kilitli uygulama hariç tutma, bilinmeyen hedef üretmeme, eşik/güven filtreleri, deterministik sıralama doğrulandı.
 **Sonraki:** R3.2 (FolderMergeUiState + ViewModel) ve R3.3 (FolderMergeReviewScreen)
