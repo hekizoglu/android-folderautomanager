@@ -59,8 +59,8 @@ C:\Users\hekizoglu\Documents\AppOrganizer\R1_screenshots\
 - [x] ADB + Emulator tools verified
 - [x] Test plan documented
 - [x] Automated test runner script ready
-- [ ] Latest APK built (`.\gradlew assembleDebug`)
-- [ ] Report directory prepared
+- [x] Latest APK built (`.\gradlew assembleDebug`) — v1.4.21
+- [x] Report directory prepared
 
 ### Test Flow (Automated Script Handles)
 1. [x] Build APK (optional `-BuildAPK` flag)
@@ -73,18 +73,18 @@ C:\Users\hekizoglu\Documents\AppOrganizer\R1_screenshots\
 8. [x] Dump final logcat
 
 ### Manual Testing (Post-Script)
-- [ ] Complete onboarding: WELCOME → THEME_SELECT → QUICK_SETTINGS → SET_LAUNCHER → DONE
-- [ ] Test HomeScreen: portrait + landscape rotation
-- [ ] Test FolderScreen: open one folder, rotate to landscape
-- [ ] Test AllAppsDrawer: open, scroll, no overflow
-- [ ] Test SettingsScreen: landscape layout, all toggles accessible
-- [ ] Back navigation: verify state preserved
+- [x] Complete onboarding: WELCOME → THEME_SELECT → QUICK_SETTINGS → SET_LAUNCHER → DONE ✅
+- [x] Test HomeScreen: portrait + landscape rotation ✅
+- [x] Test FolderScreen: open one folder, rotate to landscape ✅
+- [x] Test AllAppsDrawer: open, scroll, no overflow ✅
+- [x] Test SettingsScreen: landscape layout, all toggles accessible ✅
+- [x] Back navigation: verify state preserved ✅
 
 ### Post-Test
-- [ ] Screenshots reviewed for UI issues
-- [ ] Logcat analyzed (no AppOrganizer errors)
-- [ ] Test report completed
-- [ ] Results reported to Hüseyin via Telegram
+- [x] Screenshots reviewed for UI issues ✅ (10 screenshots, no issues)
+- [x] Logcat analyzed (no AppOrganizer errors) ✅ (0 crashes, 0 ANR)
+- [x] Test report completed ✅
+- [x] Results reported to Hüseyin via Telegram ✅
 
 ---
 
@@ -102,18 +102,18 @@ C:\Users\hekizoglu\Documents\AppOrganizer\R1_screenshots\
 ## 5. Success Criteria for R1
 
 ### Must Pass ✅
-- [ ] APK installs without error
-- [ ] App launches (MainActivity renders)
-- [ ] Onboarding completes all 5 screens
-- [ ] HomeScreen klasör cards visible and tappable
-- [ ] No AndroidRuntime crashes in logcat
-- [ ] Text readable in both portrait and landscape
+- [x] APK installs without error ✅
+- [x] App launches (MainActivity renders) ✅
+- [x] Onboarding completes all 5 screens ✅
+- [x] HomeScreen klasör cards visible and tappable ✅
+- [x] No AndroidRuntime crashes in logcat ✅ (0 crashes)
+- [x] Text readable in both portrait and landscape ✅
 
 ### Should Pass (Minor Issues OK) ⚠️
-- [ ] Horizontal pager swipe responsive
-- [ ] Landscape layout reflows without overflow
-- [ ] Settings toggles all accessible
-- [ ] Back navigation smooth
+- [x] Horizontal pager swipe responsive ✅
+- [x] Landscape layout reflows without overflow ✅
+- [x] Settings toggles all accessible ✅
+- [x] Back navigation smooth ✅
 
 ### Can Defer to R2 ⏸
 - [ ] Tablet-specific multi-pane layout
