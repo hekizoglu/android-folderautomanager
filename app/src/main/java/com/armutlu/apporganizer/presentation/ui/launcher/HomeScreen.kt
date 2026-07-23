@@ -750,13 +750,11 @@ fun HomeScreen(
         // sadece hangi slotta render edildiği (bkz. HomeShell.kt doc-comment).
         HomeShell(
             topSearch = if (
-                homePagerState?.currentPage?.let { it != 0 } == true &&
                 searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_TOP
             ) {
                 { searchBarSection() }
             } else null,
             bottomSearch = if (
-                homePagerState?.currentPage?.let { it != 0 } == true &&
                 searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM
             ) {
                 { searchBarSection() }
