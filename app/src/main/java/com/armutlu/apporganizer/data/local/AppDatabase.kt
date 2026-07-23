@@ -314,21 +314,24 @@ abstract class AppDatabase : RoomDatabase() {
         // v21→v22: operations tablosu — Folder merge transaction history + undo
         private val MIGRATION_21_22 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {
+                // Drop operations table if exists to ensure clean schema (v22 first deployment)
+                db.execSQL("DROP TABLE IF EXISTS operations")
+
                 db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS operations (
-                        id TEXT NOT NULL PRIMARY KEY,
-                        type TEXT NOT NULL,
-                        timestamp INTEGER NOT NULL,
-                        sourceCategoryId TEXT NOT NULL,
-                        targetCategoryId TEXT,
-                        movedPackageNames TEXT NOT NULL,
-                        oldCategoryMapping TEXT NOT NULL,
-                        rolledBack INTEGER NOT NULL DEFAULT 0,
-                        rolledBackAt INTEGER
+                    CREATE TABLE IF NOT EXISTS `operations` (
+                        `id` TEXT NOT NULL PRIMARY KEY,
+                        `type` TEXT NOT NULL,
+                        `timestamp` INTEGER NOT NULL,
+                        `sourceCategoryId` TEXT NOT NULL,
+                        `targetCategoryId` TEXT,
+                        `movedPackageNames` TEXT NOT NULL,
+                        `oldCategoryMapping` TEXT NOT NULL,
+                        `rolledBack` INTEGER NOT NULL,
+                        `rolledBackAt` INTEGER
                     )
                 """)
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_operations_timestamp ON operations(timestamp)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_operations_type ON operations(type)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_timestamp` ON `operations`(`timestamp`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_type` ON `operations`(`type`)")
             }
         }
 
