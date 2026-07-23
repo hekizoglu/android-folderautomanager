@@ -1,0 +1,108 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                   ORKESTRA ŞEFİ: YENİ YAPILANDIRMA                     ║
+║                  Professional Dokümantasyon Sistemi                     ║
+║                         2026-07-23 23:00 UTC                            ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+📍 DURUM
+├─ AppOrganizer v1.4.21 test başarılı ✅
+├─ Emulator: Pixel6_AOSP33, crash 0, ANR 0
+├─ Repo: 25 commit ahead of origin (push timeout — github.com/api/rate limit)
+└─ Işık: Production Ready, Tablet test yapıldı
+
+═════════════════════════════════════════════════════════════════════════
+
+🎯 YENİ YAPILANDIRMA (ÖĞRENMELI)
+
+1️⃣ MERKEZI GÖREV DOSYASI
+   📄 TASKS.md
+      ├─ P0 (Acil, bu hafta): 6 görev + 2 karar
+      │   └─ Global arama, Keyboard delay, Klasör HomeShell, 1K dosya, Perf, Widget
+      ├─ P1 (Sonraki): 6 görev
+      │   └─ Öneri Merkezi, Merge UI, İzin, Arama skoru, debounce
+      ├─ P2 (İnce ayar): 5 görev
+      │   └─ Filtre varsayılan, Sayfa göstergesi, Klasör swipe, Archive
+      └─ Her görev: dosya ref, sorun, kanıt, commit mesajı şablonu
+
+2️⃣ YÖNETİM HİYERARŞİSİ
+   📊 Sırası:
+      1. TASKS.md ← Görevler ve kanıt
+      2. ROADMAP.md ← Faz zinciri ve bağımlılıklar (referans)
+      3. HISTORY.md ← Tamamlanan + git changes
+      4. LEARNINGS.md ← Mimari tuzaklar (nadiren güncelleme)
+      5. CLAUDE.md ← Kurallar (kalıcı)
+
+3️⃣ HIZLI ERİŞİM
+   INDEX.md
+   ├─ Tüm dosyaların rolü
+   ├─ Güncelleme sırası
+   ├─ "Bu hafta ne yapılıyor?" → TASKS.md
+   ├─ "Bağımlılıklar?" → ROADMAP.md
+   ├─ "Bu tuzak daha önce mi?" → LEARNINGS.md
+   └─ Orkestra Şefi kontrol listesi
+
+═════════════════════════════════════════════════════════════════════════
+
+📂 FİZİKAL YAPISI
+   AppOrganizer/
+   ├─ ✅ INDEX.md (YENİ — merkezi indeks)
+   ├─ ✅ TASKS.md (YENİ — görev merkezesi)
+   ├─ ✅ ROADMAP.md (referans)
+   ├─ ✅ HISTORY.md (tamamlanan)
+   ├─ ✅ LEARNINGS.md (mimari)
+   ├─ ✅ CLAUDE.md (kurallar — güncellenmiş)
+   ├─ 📁 docs/ (YENİ)
+   │  └─ testing/tablet/ ← Tablet test belgeleri
+   ├─ 📁 archive/ (YENİ)
+   │  ├─ QUICK_START.txt
+   │  ├─ TABLET_TEST_*.md
+   │  ├─ run_tablet_test.ps1
+   │  └─ R1_screenshots/
+   └─ 📁 (kod — değişiklik yok)
+
+═════════════════════════════════════════════════════════════════════════
+
+🎯 KİLİT KURAL (§ Halüsinasyon Yasak)
+
+Görev [x] işaretlenirse:
+  ✅ Kod commit'lenmiş
+  ✅ Test geçmiş (compile + unit + lint)
+  ✅ ROADMAP.md güncellenmişse
+  ✅ HISTORY.md yazılmışsa
+  ❌ Sadece "yazıldı" denmemişse
+
+Kanıt: dosya oku → kod yaz → compile → test → commit → push → ROADMAP güncelle
+
+═════════════════════════════════════════════════════════════════════════
+
+📊 MEVCUT DURUM
+
+Görevler:          16 (P0: 6, P1: 6, P2: 5)
+Tamamlanan:        0
+Başlayan:          0
+Beklemede:         16
+Beklenen Kararlar: 2
+   • Widget: A (ayrı sayfa) / B (Hero alt) / C (scope dışı)?
+   • Dock 5. slot: Boş / Galeri / Otomatik?
+
+Engeller:          Hiçbiri
+GitHub Push:       Timeout (hprof 790MB), sonra retry
+
+═════════════════════════════════════════════════════════════════════════
+
+🚀 SONRAKI ADIM
+
+Hüseyin'e sunuş:
+1. TASKS.md'den P0 görevleri oku
+2. Widget + Dock kararlarını ver (A/B seçim)
+3. P0.1 başlatılsın (Global arama tekleştir)
+
+═════════════════════════════════════════════════════════════════════════
+
+📌 ÖNEMLİ
+• INDEX.md bu sistemi açıklıyor — ilk okuş başlangıç
+• TASKS.md görevler + kanıt — her gün kullanılacak
+• Hiçbir görev üst üste atılmıyor (P0 → P1 → P2 sırası)
+• Karar verilse: P0.6 (Widget) hemen açılabilir
+
+═════════════════════════════════════════════════════════════════════════
