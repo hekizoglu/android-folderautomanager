@@ -6,6 +6,8 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.folder.FolderMergeCandidateScorer
 import com.armutlu.apporganizer.domain.usecase.folder.FolderMergePlan
+import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestion
+import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestionType
 import com.armutlu.apporganizer.presentation.ui.screens.FolderMergeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,10 +28,26 @@ class FolderMergeViewModel @Inject constructor(
     fun loadSuggestions(apps: List<AppInfo>, categories: List<Category>) {
         viewModelScope.launch {
             try {
-                val suggestions = FolderMergeCandidateScorer.generateMergePlans(apps, categories)
+                val plans = FolderMergeCandidateScorer.score(apps)
+                val suggestions = plans.map { plan ->
+                    FolderSuggestion(
+                        id = UUID.randomUUID().toString(),
+                        type = FolderSuggestionType.MERGE_SMALL_FOLDER,
+                        title = "${plan.sourceCategoryId} → ${plan.targetCategoryId}",
+                        description = "Taşınabilir: ${plan.movablePackageNames.size}",
+                        packageNames = plan.movablePackageNames,
+                        targetCategoryId = plan.targetCategoryId,
+                        confidence = plan.confidence,
+                        sourceCategoryId = plan.sourceCategoryId,
+                        reason = plan.reason,
+                        lockedPackageNames = plan.lockedPackageNames,
+                        sourceAppCount = plan.sourceAppCount,
+                        targetAppCount = plan.targetAppCount,
+                    )
+                }
                 _uiState.update { state ->
                     state.copy(
-                        suggestions = suggestions.map { it.toSuggestion() },
+                        suggestions = suggestions,
                         error = null
                     )
                 }

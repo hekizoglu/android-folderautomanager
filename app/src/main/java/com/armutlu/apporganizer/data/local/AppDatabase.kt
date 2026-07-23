@@ -23,8 +23,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class],
-    version = 21,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class],
+    version = 22,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,6 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun missionInstanceDao(): MissionInstanceDao
     abstract fun tickerHistoryDao(): TickerHistoryDao
     abstract fun homeGridItemDao(): HomeGridItemDao
+    abstract fun operationDao(): OperationDao
     
     companion object {
         @Volatile
@@ -310,6 +311,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v21→v22: operations tablosu — Folder merge transaction history + undo
+        private val MIGRATION_21_22 = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS operations (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        type TEXT NOT NULL,
+                        timestamp INTEGER NOT NULL,
+                        sourceCategoryId TEXT NOT NULL,
+                        targetCategoryId TEXT,
+                        movedPackageNames TEXT NOT NULL,
+                        oldCategoryMapping TEXT NOT NULL,
+                        rolledBack INTEGER NOT NULL DEFAULT 0,
+                        rolledBackAt INTEGER
+                    )
+                """)
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_operations_timestamp ON operations(timestamp)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_operations_type ON operations(type)")
+            }
+        }
+
         // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -424,7 +446,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_17_18,
                         MIGRATION_18_19,
                         MIGRATION_19_20,
-                        MIGRATION_20_21
+                        MIGRATION_20_21,
+                        MIGRATION_21_22
                     )
                     .build()
 

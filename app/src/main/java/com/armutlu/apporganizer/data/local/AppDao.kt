@@ -88,12 +88,6 @@ interface AppDao {
     suspend fun deleteAllApps()
     
     /**
-     * Get app by package name
-     */
-    @Query("SELECT * FROM apps WHERE packageName = :packageName")
-    suspend fun getAppByPackageName(packageName: String): AppInfo?
-
-    /**
      * Get all apps (one-time)
      * Performans: idx_apps_appName index'i ile karsilanir (Migration 10->11) - LIMIT kullanilmaz,
      * cunku BackupManager/SmartInsightWorker gibi tuketiciler tam listeye ihtiyac duyar (D196'da
@@ -374,4 +368,10 @@ interface AppDao {
 
     @Query("UPDATE apps SET customNotes = :note WHERE packageName = :packageName")
     suspend fun updateCustomNotes(packageName: String, note: String)
+
+    @Query("SELECT * FROM apps WHERE packageName = :packageName LIMIT 1")
+    suspend fun getAppByPackageName(packageName: String): AppInfo?
+
+    @Query("UPDATE apps SET categoryId = :categoryId WHERE packageName = :packageName")
+    suspend fun updateCategoryForPackage(packageName: String, categoryId: String)
 }

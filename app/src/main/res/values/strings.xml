@@ -930,4 +930,16 @@
     <!-- F2: Ayarlar route-guard biyometrik kilit -->
     <string name="settings_lock_waiting_title">Kimlik doğrulaması bekleniyor</string>
     <string name="settings_lock_retry_button">Tekrar dene</string>
+
+    <!-- R3: Klasör Birleştirme (FolderMergeReviewScreen) -->
+    <string name="folder_merge_review_title">Klasör Birleştirmeyi Onayla</string>
+    <string name="folder_merge_preview_title">Birleştirme Özeti</string>
+    <string name="folder_merge_source_target">%1$s → %2$s</string>
+    <string name="folder_merge_before">Şimdi</string>
+    <string name="folder_merge_after">Birleştirme Sonrası</string>
+    <string name="folder_merge_movable_apps">Taşınacak Uygulamalar</string>
+    <string name="folder_merge_locked_apps">Kilitli Uygulamalar (Taşınamaz)</string>
+    <string name="folder_merge_large_transfer_warning">20+ uygulama taşınacak — lütfen kontrol et</string>
+    <string name="folder_merge_cancel">İptal</string>
+    <string name="folder_merge_approve">Onayla</string>
 </resources>

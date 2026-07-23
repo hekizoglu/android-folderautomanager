@@ -225,7 +225,7 @@ fun FolderMergeReviewScreen(
                         .fillMaxWidth()
                         .padding(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.warningContainer
+                        containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
                 ) {
                     Row(
@@ -236,12 +236,12 @@ fun FolderMergeReviewScreen(
                         Icon(
                             Icons.Default.Warning,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onWarningContainer,
+                            tint = MaterialTheme.colorScheme.error,
                         )
                         Text(
                             stringResource(R.string.folder_merge_large_transfer_warning),
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onWarningContainer,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
                         )
                     }
                 }
