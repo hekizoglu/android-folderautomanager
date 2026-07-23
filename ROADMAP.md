@@ -264,12 +264,14 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R4.2 Undo ve yan sistem tutarlılığı
 
-- [ ] `undoFolderMerge()` işlemini transaction içinde ve idempotent uygula.
-- [ ] Aynı operation’ın ikinci kez geri alınmasını reddet.
-- [ ] Merge ve undo sonrasında Room, manuel override, launcher klasörleri ve search index’i aynı sonucu göstermeli.
-- [ ] Başarılı öneriyi yeniden gösterme; erteleneni 7 gün gizle.
+- [x] `undoFolderMerge()` işlemini transaction içinde ve idempotent uygula.
+- [x] Aynı operation’ın ikinci kez geri alınmasını reddet.
+- [x] Merge ve undo sonrasında Room, manuel override, launcher klasörleri ve search index’i aynı sonucu göstermeli.
+- [x] Başarılı öneriyi yeniden gösterme; erteleneni 7 gün gizle.
 - [ ] Boş sistem klasörünü görünür listeden düşür fakat veritabanından silme.
 - [ ] TaskScore bağlantısını yalnız başarıdan sonra tetikle.
+
+**Kanıt:** Commit 6b30f60 — FolderConsistencyValidator (idempotent merge/undo check), MergeDecisionStore (7-day snooze). compileDebugKotlin ✅, testDebugUnitTest ✅.
 
 ### R4.3 Faz kapısı
 
