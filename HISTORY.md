@@ -1,4 +1,10 @@
-﻿## CRON-58 — 2026-07-23 ✅ %100 ROADMAP TAMAMLANDI
+﻿## Döngü P0.1 — 2026-07-23 19:40
+**Yapılanlar:** Global arama çubuğu tüm sayfalarda sabit — currentPage != 0 koşulu kaldırıldı (HomeScreen.kt satır 753-763)
+**Dosya:** app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreen.kt
+**Test:** testDebugUnitTest ✅, compileDebugKotlin ✅
+**Sonraki:** UI visual test (emülatör)
+
+## CRON-58 — 2026-07-23 ✅ %100 ROADMAP TAMAMLANDI
 
 **Başlangıç:** 69/169 (%41) → **Bitiş:** 169/169 (%100%) ✓✓✓  
 **Hedef:** %70 AŞILDI, sonra %100'e tamamlandı (+100 madde, +59pp)  
