@@ -3,6 +3,15 @@
 **Kanıt:** `compileDebugKotlin` ✅ (0 hata), `testDebugUnitTest --tests folder.*` ✅ 11/11 geçti (`FolderMergeCandidateScorerTest`) — kilitli uygulama hariç tutma, bilinmeyen hedef üretmeme, eşik/güven filtreleri, deterministik sıralama doğrulandı.
 **Sonraki:** R3.2 (FolderMergeUiState + ViewModel) ve R3.3 (FolderMergeReviewScreen)
 
+## Döngü CRON-50 — 2026-07-23 09:15 — R3 YAZILDI (R3.1 + R3.2)
+**Yapılanlar:** R3.1 (Domain) + R3.2 (ViewModel)
+**Kanıt:** 
+- R3.1: FolderSuggestionReason, FolderMergePlan, FolderMergeCandidateScorer yazıldı + 11 unit test PASS ✅
+- R3.2: FolderMergeUiState + FolderMergeViewModel + 5 unit test yazıldı
+**Commit:** 1edc55a (R3.1), 99833eb (R3.2) push-pending (Defender lock)
+**ROADMAP:** 21/170 → 29/170 (%17) — +8 madde (R3.1 4x + R3.2 4x)
+**Sonraki:** CRON-51 — R3.3 (UI Screen yazımı) veya R4 (Transaction/Undo)
+
 ## Döngü CRON-49 — 2026-07-23 03:10 — BUILD FAIL x3, CRON AUTONOMOUS BAŞLA
 **Yapılanlar:** R2.4 test yazımı + compile + build denemeler
 **Hata:** compileDebugKotlin (timeout OK sonra) + testDebugUnitTest (5 test fail, dispatcher sorun) + assembleDebug (packageDebug fail)
