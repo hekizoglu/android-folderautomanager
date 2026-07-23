@@ -153,8 +153,12 @@ fun HomeScreen(
     val favoriteApps by vm.favoriteApps.collectAsState()
     val recentApps by vm.recentApps.collectAsState()
     val smartAccessState by vm.smartAccessState.collectAsState()
+    val pendingClassificationsCount by vm.pendingClassificationsCount.collectAsState()
     val categories by vm.categories.collectAsState()
     val suggestedContacts by vm.suggestedContacts.collectAsState()
+    val editingCenterState by vm.editingCenterState.collectAsState()
+    val showNotificationBadgePermCard by vm.showNotificationBadgePermissionCard.collectAsState()
+    var notificationBadgePermCardDismissed by rememberSaveable { mutableStateOf(false) }
     var customFolderNames by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomNames(context)) }
     var customFolderEmojis by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomEmojis(context)) }
     var customFolderColors by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderCustomColors(context)) }
@@ -1174,6 +1178,63 @@ fun HomeScreen(
             )
 
             Column(modifier = Modifier.fillMaxSize()) {
+                // P1.4 — Bildirim rozeti izin kartı (kapalıysa ve dismiss edilmemişse göster)
+                if (showNotificationBadgePermCard && !notificationBadgePermCardDismissed) {
+                    NotificationBadgePermissionCard(
+                        onEnabledClick = {
+                            // Kullanıcı "Ayarlar" butonuna tıkladı — ContextualPermissionDialog aç
+                            val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                            context.startActivity(intent)
+                        },
+                        onDismiss = {
+                            notificationBadgePermCardDismissed = true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
+                // P1.1: Düzenleme/Öneri Merkezi kartı — uyarılar varsa göster
+                EditingCenterCard(
+                    state = editingCenterState,
+                    onNavigateToClassificationReview = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.CLASSIFICATION_REVIEW)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    },
+                    onNavigateToFolderMerge = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.FOLDER_SUGGESTIONS)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    },
+                    onNavigateToAppCorrections = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.APP_LIST_UNCERTAIN)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    },
+                    onNavigateToPermissions = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.PERMISSIONS_GUIDE)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    },
+                    onNavigateToStaleApps = {
+                        val intent = Intent(context, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.APP_LIST)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching { context.startActivity(intent) }
+                    }
+                )
 
             HomePagerHost(
                 pages = pages,
@@ -1187,6 +1248,7 @@ fun HomeScreen(
                         state = DashboardUiState(
                             pulse = homePulseSummary,
                             smartAccess = smartAccessState,
+                            pendingClassificationCount = pendingClassificationsCount,
                         ),
                         actions = DashboardActions(
                             onOpenWeeklyReport = {
@@ -1223,6 +1285,13 @@ fun HomeScreen(
                                 runCatching {
                                     context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                                 }
+                            },
+                            onOpenClassificationReview = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.CLASSIFICATION_REVIEW)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
                             },
                             onLaunchApp = { pkg -> vm.launchApp(context, pkg) },
                             onAppLongClick = { pkg -> contextMenuPkg = pkg },

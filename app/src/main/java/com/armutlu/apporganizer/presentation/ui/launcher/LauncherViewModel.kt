@@ -198,6 +198,14 @@ class LauncherViewModel @Inject constructor(
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
 
+    // P1.4 — Bildirim rozeti izin kartı gösterilmeli mi
+    val showNotificationBadgePermissionCard: StateFlow<Boolean> = flow {
+        while (true) {
+            emit(NotificationListenerPermissionHelper.shouldShowNotificationBadgePermissionCard(application))
+            delay(5000)  // 5 saniyede bir kontrol (ayarlar açılıp izin verildiğinde update olsun)
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, false)
+
     // Döngü P12 — Home tuşu ham sinyali. LauncherActivity.onNewIntent() All Apps zaten açıksa
     // (kapatıp) erken döner ve BU flow'a hiç emit ETMEZ (roadmap madde 1, HomeCommandPolicy.kt
     // dosya başı notu) — dolayısıyla bu flow'u toplayan taraf (HomeScreen) `allAppsOpen==false`
@@ -224,20 +232,50 @@ class LauncherViewModel @Inject constructor(
         .onEach { _initialLoadDone.value = true }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    /**
+     * P1.6: İki kaynak merge — anında (app/folder) + gecikmeli (contact/file/setting).
+     * - instantResults: 0ms — app/category, yazılan her karakter
+     * - debouncedResults: 120ms — contact/file/setting, ilk karakter sonrası
+     * Merge: combine() ve distinctUntilChanged() ile duplikat debounce önlen.
+     */
     @OptIn(FlowPreview::class)
-    val searchResults: StateFlow<Map<SourceType, List<SearchDocument>>> = _searchQuery
-        .debounce(250)
+    private val instantResults: StateFlow<Map<SourceType, List<SearchDocument>>> = _searchQuery
         .map { query ->
             val trimmed = query.trim()
             if (trimmed.length < 2) {
                 emptyMap()
             } else {
-                runCatching { searchRepository.search(trimmed, limit = 24) }
-                    .onFailure { Timber.w(it, "Launcher search results failed") }
+                runCatching { searchRepository.instantSearch(trimmed, limit = 24) }
+                    .onFailure { Timber.w(it, "Launcher instantSearch failed") }
                     .getOrDefault(emptyMap())
             }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    @OptIn(FlowPreview::class)
+    private val debouncedResults: StateFlow<Map<SourceType, List<SearchDocument>>> = _searchQuery
+        .debounce(120)
+        .map { query ->
+            val trimmed = query.trim()
+            if (trimmed.length < 2) {
+                emptyMap()
+            } else {
+                runCatching { searchRepository.debouncedSearch(trimmed, limit = 24) }
+                    .onFailure { Timber.w(it, "Launcher debouncedSearch failed") }
+                    .getOrDefault(emptyMap())
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    val searchResults: StateFlow<Map<SourceType, List<SearchDocument>>> = combine(
+        instantResults,
+        debouncedResults
+    ) { instant, debounced ->
+        // Merge: instant + debounced sonuçlarını birleştir
+        (instant.toMutableMap() + debounced).toMap()
+    }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     val categories: StateFlow<List<Category>> = repository.getAllCategoriesFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, Category.getDefaultCategories())
@@ -291,6 +329,10 @@ class LauncherViewModel @Inject constructor(
             .take(4)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    // P1.2: Count of pending classifications for badge display in HeroDashboardPage
+    val pendingClassificationsCount: StateFlow<Int> = repository.observePendingClassificationCount()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
     // P1.3: Saat bazli kisi onerileri altyapisi. Sadece ViewModel + engine + logging burada -
     // gorunur UI EKLENMEZ (P1.2 bu akisi tuketecek, cakismayi onlemek icin).
     // İzin yoksa veya ayar kapaliysa veya SearchCache'te kisi verisi yoksa BOS liste doner.
@@ -319,6 +361,10 @@ class LauncherViewModel @Inject constructor(
         _searchQuery.debounce(300)
     ) { apps, q -> filterAllAppsByQuery(buildAllApps(apps), q) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // P1.1: Düzenleme/Öneri Merkezi — Ana ekrana kart formatında gösteri
+    private val _editingCenterState = MutableStateFlow(EditingCenterState())
+    val editingCenterState: StateFlow<EditingCenterState> = _editingCenterState.asStateFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
