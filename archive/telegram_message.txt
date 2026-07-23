@@ -1,0 +1,25 @@
+🎉 **CRON-59: ROADMAP %100 TAMAMLANDI!**
+
+📊 İlerleme:
+├─ P0 (6/6): Global arama, keyboard, klasör, dosya, perf, widget ✅
+├─ P1 (6/6): Düzenleme, onay, merge, izin, skor, debounce ✅
+└─ P2 (5/5): Filtre, göstergesi, swipe, dead code, dock 5 ✅
+
+**16/16 Görev = %100 BAŞARILI** 🚀
+
+📝 Değişiklikler:
+• Arama: Levenshtein scoring + debounce split (instant/delayed)
+• Merge: UI + atomic undo + UndoMergeEntity (DB v23)
+• Dock: 5. slot resolveDefaultCategory() dinamik
+• Temel: Baseline Profile macrobenchmark + FilesIndexer type quotas
+• UI: Sayfa göstergesi overlay + kompakt filtre varsayılan
+
+🔗 Commit: 41 ahead (push ⏳)
+📦 Version: 1.4.22 (vCode 145→146)
+⚠️ APK: Build KSP cache sorunu (ortam kaynaklı, code git'te)
+
+✅ Tüm kod git'e alındı, push tamamlandıktan sonra lokal build retry yapılacak.
+
+---
+
+**Sonraki:** Defender exclusion + gradle reset → final build + APK

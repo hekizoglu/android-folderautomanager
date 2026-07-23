@@ -10,20 +10,20 @@
 
 | # | Dosya | Rol | Okuş Sırası | Güncelleme |
 |---|-------|-----|------------|-----------|
-| 1 | **TASKS.md** | Merkezi görev, kanıt, bağımlılık | ÖNCE | 2026-07-23 |
-| 2 | **ROADMAP.md** | Faz, bağımlılık, ilerleme | Sonra | 2026-07-21 |
+| 1 | **MANAGEMENT/TASKS.md** | Merkezi görev, kanıt, bağımlılık | ÖNCE | 2026-07-24 |
+| 2 | **MANAGEMENT/ROADMAP.md** | Faz, bağımlılık, ilerleme | Sonra | 2026-07-24 |
 | 3 | **CLAUDE.md** | Çalışma kuralları, Agent, Telegram | Görevde | 2026-07-23 |
 
 ---
 
-## 📋 Yönetim & Raporlama
+## 📋 Yönetim & Raporlama (MANAGEMENT/ klasörü)
 
 | Dosya | Rol | Güncelleme Sırası |
 |-------|-----|------------------|
-| **HISTORY.md** | Tamamlanan döngüler, kanıtlar, değişik dosyalar | Her P0 görevi sonrası |
-| **ROADMAP.md** | Faz durum, bağımlılıklar, kalan efor | TASKS.md bir satırı güncellendikçe |
-| **LEARNINGS.md** | Tuzak, mimari karar, SOP (rare) | Yeni bulgu = ortak = CLAUDE.md promote |
-| **FİKİRLER.md** | Puanlı fikirler, backlog | Arşiv (P0 bittikçe TASKS → HISTORY → temizle) |
+| **MANAGEMENT/HISTORY.md** | Tamamlanan döngüler, kanıtlar, değişik dosyalar | Her P0 görevi sonrası |
+| **MANAGEMENT/ROADMAP.md** | Faz durum, bağımlılıklar, kalan efor | TASKS.md bir satırı güncellendikçe |
+| **MANAGEMENT/TASKS.md** | Merkezi görev, kanıt, bağımlılık | Her görev tamamlandıkça |
+| **MANAGEMENT/LEARNINGS.md** | Tuzak, mimari karar, SOP (rare) | Yeni bulgu = ortak = CLAUDE.md promote |
 
 ---
 
@@ -47,37 +47,50 @@
 
 ---
 
-## 📁 Dosya Hiyerarşisi (Fiziksel)
+## 📁 Proje Hiyerarşisi (Professional v2, 2026-07-24)
 
 ```
 AppOrganizer/
-├── INDEX.md                          ← Başlangıç (buradan başla)
-├── TASKS.md                          ← Görev merkezesi
-├── ROADMAP.md                        ← Faz/ilerleme
-├── HISTORY.md                        ← Tamamlanan
-├── CLAUDE.md                         ← Kurallar
+├── 📄 README.md                      ← Başlangıç (proje tanıtım)
+├── 📄 INDEX.md                       ← Merkezi indeks (SEÇ BURAYI)
+├── 📄 CLAUDE.md                      ← Çalışma kuralları
 │
-├── LEARNINGS.md                      ← Mimari referans (ender güncellenme)
-├── AGENTS.md                         ← Agent profilleri
-├── FİKİRLER.md                       ← Backlog (arşiv)
+├── 📁 MANAGEMENT/                    ⭐ YÖNETİM BELGELERİ
+│   ├── TASKS.md                      ← Görev merkezesi
+│   ├── ROADMAP.md                    ← Faz/ilerleme
+│   ├── HISTORY.md                    ← Tamamlanan döngüler
+│   ├── LEARNINGS.md                  ← Mimari tuzaklar
+│   └── DECISIONS.md                  ← Ürün kararları
 │
-├── docs/
-│   ├── testing/tablet/               ← Tablet test belgeleri (NEW)
-│   │   ├── R1_TEST_READINESS.md
-│   │   ├── TABLET_TEST_GUIDE.md
-│   │   └── TABLET_TROUBLESHOOTING.md
-│   ├── release/                      ← Release guide (NEW)
-│   │   └── RELEASE_BUILD_GUIDE.md
-│   └── architecture/                 ← Mimari (NEW)
-│       └── RESPONSIVE_LAYOUT_INTEGRATION.md
+├── 📁 docs/                          ⭐ TEKNIK & RELEASE DOCS
+│   ├── setup/                        ← Kurulum rehberi
+│   ├── architecture/                 ← Mimari dokümantasyon
+│   ├── performance/                  ← Performans ölçümleri
+│   ├── release/                      ← Release guide + Checklist
+│   ├── qa/                           ← Test & QA belgeleri
+│   ├── reports/                      ← Final raporlar
+│   └── store_assets/                 ← Play Store görselleri
 │
-├── COZULEMEYEN_SORUNLAR.md          ← Cihaz/hesap blokeli işler
-├── harcananvakit.md                  ← Döngü zaman logu
+├── 📁 scripts/                       ⭐ ARAÇLAR & OTOMASYON
+│   ├── setup/                        ← Initialization scripts
+│   ├── build/                        ← Build tools
+│   ├── test/                         ← Testing scripts
+│   ├── monitor/                      ← Observability & audit
+│   ├── maintenance/                  ← Cleanup & maintenance
+│   └── README.md                     ← Script katalogu
 │
-└── archive/                          ← Eski (temizlik)
-    ├── README.md.bak
-    ├── NOW.md.bak
-    ├── DECISIONS.md.bak
+├── 📁 archive/                       ← Eski dökümanlar
+│   ├── build_logs/                   ← Build history
+│   ├── tablet_tests/                 ← Eski test belgeleri
+│   └── ...
+│
+├── 📄 COZULEMEYEN_SORUNLAR.md       ← Blokeli dış görevler
+│
+├── 📁 app/                           ← KAYNAK KOD (değişiklik yok)
+├── 📁 benchmark/                     ← Baseline Profile tests
+├── 📁 gradle/                        ← Gradle wrapper
+├── 📁 .github/                       ← CI/CD workflows
+└── ...                               (Build dirs, git, vscode, etc)
     └── ...
 ```
 
