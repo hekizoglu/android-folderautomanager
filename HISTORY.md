@@ -1,4 +1,9 @@
-﻿## Döngü CRON-49 — 2026-07-23 03:10 — BUILD FAIL x3, CRON AUTONOMOUS BAŞLA
+﻿## Döngü CRON-50 — 2026-07-23 — R3.1 Domain: FolderMergeCandidateScorer
+**Yapılanlar:** `FolderSuggestionReason.kt` (enum, 5 sinyal), `FolderMergePlan.kt` (data class), `FolderMergeCandidateScorer.kt` (scorer, sabit eşleştirme tablosu artık burada tek kaynak) yazıldı; `FolderSuggestion` yeni alanlarla (sourceCategoryId, reason, lockedPackageNames, sourceAppCount, targetAppCount) genişletildi — eski çağrı yerleri (FolderSuggestionsScreen, AppListViewModel) bozulmadı (varsayılan değerler).
+**Kanıt:** `compileDebugKotlin` ✅ (0 hata), `testDebugUnitTest --tests folder.*` ✅ 11/11 geçti (`FolderMergeCandidateScorerTest`) — kilitli uygulama hariç tutma, bilinmeyen hedef üretmeme, eşik/güven filtreleri, deterministik sıralama doğrulandı.
+**Sonraki:** R3.2 (FolderMergeUiState + ViewModel) ve R3.3 (FolderMergeReviewScreen)
+
+## Döngü CRON-49 — 2026-07-23 03:10 — BUILD FAIL x3, CRON AUTONOMOUS BAŞLA
 **Yapılanlar:** R2.4 test yazımı + compile + build denemeler
 **Hata:** compileDebugKotlin (timeout OK sonra) + testDebugUnitTest (5 test fail, dispatcher sorun) + assembleDebug (packageDebug fail)
 **Kural:** Build 3 deneme fail → devam et (CRON autonomous loop başlasın, compile skip)

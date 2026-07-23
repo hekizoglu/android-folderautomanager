@@ -219,14 +219,14 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 **Bağımlılık:** R2 ile manuel kategori/override kurallarının sabitlenmesi.
 **Tahmini efor:** 5–7 gün (10–14 puan). **Hedef:** Faz aktive edildiğinde atanır.
 
-### R3.1 Domain ve öneri motoru
+### R3.1 Domain ve öneri motoru ✅ (2026-07-23)
 
-- [ ] `FolderSuggestion` modelini kaynak, önerilen hedef, neden, güven ve sayılarla genişlet.
-- [ ] `FolderSuggestionReason`, `FolderMergePlan` ve `FolderMergeCandidateScorer` oluştur.
-- [ ] Mevcut sabit eşleştirmeleri scorer içine taşı; bilinmeyen hedef üretme.
-- [ ] Manuel kilitli uygulamaları varsayılan seçim dışında bırak.
-- [ ] Güven ve minimum uygulama eşiklerini uygula; deterministik sıralama yap.
-- [ ] Engine unit testlerini tamamla.
+- [x] `FolderSuggestion` modelini kaynak, önerilen hedef, neden, güven ve sayılarla genişlet.
+- [x] `FolderSuggestionReason`, `FolderMergePlan` ve `FolderMergeCandidateScorer` oluştur.
+- [x] Mevcut sabit eşleştirmeleri scorer içine taşı; bilinmeyen hedef üretme.
+- [x] Manuel kilitli uygulamaları varsayılan seçim dışında bırak.
+- [x] Güven ve minimum uygulama eşiklerini uygula; deterministik sıralama yap.
+- [x] Engine unit testlerini tamamla (11/11 geçti — `FolderMergeCandidateScorerTest`).
 
 ### R3.2 UI state ve ViewModel
 

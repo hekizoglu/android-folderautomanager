@@ -18,22 +18,36 @@ data class FolderSuggestion(
     val packageNames: List<String>,
     val targetCategoryId: String,
     val confidence: Int,
-)
+    // R3.1 - genisletilmis alanlar (klasor birlestirme inceleme akisi icin).
+    // Eski cagri yerlerini bozmamak icin varsayilan degerler verildi.
+    val sourceCategoryId: String = "",
+    val reason: FolderSuggestionReason = FolderSuggestionReason.STATIC_MAPPING,
+    val lockedPackageNames: List<String> = emptyList(),
+    val sourceAppCount: Int = packageNames.size,
+    val targetAppCount: Int = 0,
+) {
+    /** MERGE_SMALL_FOLDER onerileri icin tam birlestirme planini uretir. */
+    fun toMergePlan(): FolderMergePlan = FolderMergePlan(
+        sourceCategoryId = sourceCategoryId.ifBlank { targetCategoryId },
+        targetCategoryId = targetCategoryId,
+        movablePackageNames = packageNames,
+        lockedPackageNames = lockedPackageNames,
+        reason = reason,
+        confidence = confidence,
+        sourceAppCount = sourceAppCount,
+        targetAppCount = targetAppCount,
+    )
+}
 
 object FolderSuggestionEngine {
     private const val LARGE_FOLDER_THRESHOLD = 18
-    private const val SMALL_FOLDER_THRESHOLD = 2
+    private const val SMALL_FOLDER_THRESHOLD = FolderMergeCandidateScorer.DEFAULT_SMALL_FOLDER_THRESHOLD
     private const val UNUSED_DAYS = 60
-    private val mergeTargets = mapOf(
-        Category.CAT_VIDEO to Category.CAT_ENTERTAINMENT,
-        Category.CAT_MUSIC to Category.CAT_ENTERTAINMENT,
-        Category.CAT_DATING to Category.CAT_SOCIAL,
-        Category.CAT_MAPS to Category.CAT_TRAVEL,
-        Category.CAT_HOUSE to Category.CAT_LIFESTYLE,
-        Category.CAT_BEAUTY to Category.CAT_LIFESTYLE,
-        Category.CAT_EVENTS to Category.CAT_LIFESTYLE,
-        Category.CAT_COMICS to Category.CAT_BOOKS,
-    )
+
+    // R3.1 - sabit kategori eslestirme tablosu artik FolderMergeCandidateScorer icinde tutulur
+    // (tek dogruluk kaynagi). Bu engine geriye donuk uyumluluk icin FolderSuggestion uretmeye
+    // devam eder; asil skorlama/plan mantigi FolderMergeCandidateScorer.score()'a tasindi.
+    private val mergeTargets = FolderMergeCandidateScorer.staticMergeTargets
 
     fun generate(
         apps: List<AppInfo>,
@@ -68,16 +82,24 @@ object FolderSuggestionEngine {
 
             val target = mergeTargets[categoryId]
             if (target != null && folderApps.size in 1..SMALL_FOLDER_THRESHOLD && grouped.containsKey(target)) {
-                val packageNames = folderApps.map { it.packageName }.sorted()
-                suggestions += FolderSuggestion(
-                    id = stableId(FolderSuggestionType.MERGE_SMALL_FOLDER, categoryId, packageNames),
-                    type = FolderSuggestionType.MERGE_SMALL_FOLDER,
-                    title = "${categoryNames[categoryId] ?: categoryId} birlestirilebilir",
-                    description = "${folderApps.size} uygulamayi ${categoryNames[target] ?: target} klasorune tasi.",
-                    packageNames = packageNames,
-                    targetCategoryId = target,
-                    confidence = 76,
-                )
+                val movable = folderApps.filterNot { it.isCategoryLocked }.map { it.packageName }.sorted()
+                val locked = folderApps.filter { it.isCategoryLocked }.map { it.packageName }.sorted()
+                if (movable.isNotEmpty()) {
+                    suggestions += FolderSuggestion(
+                        id = stableId(FolderSuggestionType.MERGE_SMALL_FOLDER, categoryId, movable),
+                        type = FolderSuggestionType.MERGE_SMALL_FOLDER,
+                        title = "${categoryNames[categoryId] ?: categoryId} birlestirilebilir",
+                        description = "${movable.size} uygulamayi ${categoryNames[target] ?: target} klasorune tasi.",
+                        packageNames = movable,
+                        targetCategoryId = target,
+                        confidence = 76,
+                        sourceCategoryId = categoryId,
+                        reason = FolderSuggestionReason.STATIC_MAPPING,
+                        lockedPackageNames = locked,
+                        sourceAppCount = folderApps.size,
+                        targetAppCount = grouped[target]?.size ?: 0,
+                    )
+                }
             }
         }
 
