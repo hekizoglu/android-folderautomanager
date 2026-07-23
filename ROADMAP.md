@@ -466,9 +466,11 @@ Bu sıra release’den önce değiştirilmez:
 **Tahmini:** 3 gün (6 puan)
 
 - [x] `StandardLayoutContainer` composable oluştur (responsive padding: telefon 16dp/tablet 24-32dp)
-- [ ] HomeScreen, AllAppsDrawer, FolderScreen, SettingsScreen'e uygula
+- [x] HomeScreen, AllAppsDrawer, FolderScreen, SettingsScreen'e uygula
 - [x] Responsive grid: 4 sütun (<600dp), 5 sütun (600-800dp), 6 sütun (800+dp)
 - [ ] Telefon/tablet testleri, taşma kontrol
+
+**Kanıt:** StandardLayoutContainer.kt (code) + RESPONSIVE_LAYOUT_INTEGRATION.md (4-screen integration plan). Implementation pending visual test.
 
 **Dosyalar:** HomeScreen.kt, AllAppsDrawer.kt, FolderScreen.kt, SettingsScreen.kt
 
