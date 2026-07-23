@@ -42,7 +42,7 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 145
+        versionCode = 146
         versionName = "1.4.22"
         buildConfigField(
             "boolean",
