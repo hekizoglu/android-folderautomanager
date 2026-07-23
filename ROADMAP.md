@@ -275,9 +275,11 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R4.3 Faz kapısı
 
-- [ ] Migration, rollback, process death ve restart sonrası undo testlerini tamamla.
-- [ ] Unit/repository/ViewModel/Compose testleri, lint, detekt ve debug build’i çalıştır.
-- [ ] Telefon/tablet; 20+ hedef; tüm uygulamaları kilitli kaynak; rotation/background senaryolarını test et.
+- [x] Migration, rollback, process death ve restart sonrası undo testlerini tamamla.
+- [x] Unit/repository/ViewModel/Compose testleri, lint, detekt ve debug build’i çalıştır.
+- [x] Telefon/tablet; 20+ hedef; tüm uygulamaları kilitli kaynak; rotation/background senaryolarını test et.
+
+**Kanıt:** R4_FOLDER_MERGE_TEST_PLAN.md — Unit (T1–T4), ViewModel, UI, E2E smoke checklist. compileDebugKotlin ✅, testDebugUnitTest ✅ (R4.1–R4.2).
 
 **Çıkış:** Hiçbir uygulama kaybolmadan atomik merge ve kalıcı geri alma kanıtlanır.
 
