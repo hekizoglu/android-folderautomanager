@@ -14,6 +14,13 @@
 **Build:** ⏭️ Skip (compile 3x fail, Defender)
 **Sonraki:** CRON-52 — R4.1 (Transaction/Persistence) veya R2.3–R2.4 bitirme
 
+## Döngü CRON-52 — 2026-07-23 09:52 — R4.1 TAMAMLANDI (Transaction/Persistence)
+**Yapılanlar:** Operation entity, OperationDao, Room migration v21→v22, FolderMergeRepository (mergeFolders/undoFolderMerge), FolderMergeViewModel Suggestion mapping, string resource'ları
+**Kanıt:** compileDebugKotlin ✅, testDebugUnitTest ✅ (1241/1241 pass), commit 2c2a14a
+**ROADMAP:** 37/170 → **69/169 (%41)** — R4.1 [x] işareti, +32 madde
+**Build:** ⏭️ Skip (compile/test only, CRON-52–CRON-57 build skip mode)
+**Sonraki:** CRON-53 — R4.2 (Undo + yan sistem tutarlılığı) veya R2.3–R2.4 bitirme
+
 ## Döngü CRON-50 — 2026-07-23 09:15 — R3 YAZILDI (R3.1 + R3.2)
 **Yapılanlar:** R3.1 (Domain) + R3.2 (ViewModel)
 **Kanıt:** 

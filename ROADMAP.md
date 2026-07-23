@@ -254,11 +254,13 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 
 ### R4.1 Persistence
 
-- [ ] Operation ve operation-item entity/DAO modellerini ekle.
-- [ ] Tek bir Room migration yaz; schema JSON’u commit et.
-- [ ] `mergeFolders()` işlemini transaction içinde uygula.
-- [ ] Kısmi başarıya izin verme; hata halinde tamamını rollback et.
-- [ ] Eski kategori/manuel override verisini geri alma için operation item içinde sakla.
+- [x] Operation ve operation-item entity/DAO modellerini ekle.
+- [x] Tek bir Room migration yaz; schema JSON’u commit et.
+- [x] `mergeFolders()` işlemini transaction içinde uygula.
+- [x] Kısmi başarıya izin verme; hata halinde tamamını rollback et.
+- [x] Eski kategori/manuel override verisini geri alma için operation item içinde sakla.
+
+**Kanıt:** Commit 2c2a14a — Operation.kt, OperationDao, MIGRATION_21_22, FolderMergeRepository (mergeFolders/undoFolderMerge). compileDebugKotlin ✅, testDebugUnitTest ✅ (1241/1241).
 
 ### R4.2 Undo ve yan sistem tutarlılığı
 
