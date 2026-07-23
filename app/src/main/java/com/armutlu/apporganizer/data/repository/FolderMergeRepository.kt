@@ -1,8 +1,10 @@
 package com.armutlu.apporganizer.data.repository
 
 import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.MergeDecisionStore
 import com.armutlu.apporganizer.data.local.OperationDao
 import com.armutlu.apporganizer.domain.models.Operation
+import com.armutlu.apporganizer.domain.usecase.folder.FolderConsistencyValidator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -11,7 +13,9 @@ import java.util.UUID
 class FolderMergeRepository(
     private val appDao: AppDao,
     private val operationDao: OperationDao,
+    private val decisionStore: MergeDecisionStore,
 ) {
+    private val validator = FolderConsistencyValidator()
 
     suspend fun mergeFolders(
         sourceCategoryId: String,
@@ -34,6 +38,13 @@ class FolderMergeRepository(
             // Move — tüm paketleri hedef kategoriye taşı
             appDao.updateAppsCategory(packageNames, targetCategoryId)
 
+            // Tutarlılık kontrolü (R4.2)
+            val allApps = appDao.getAllApps()
+            val consistencyCheck = validator.validateMergeConsistency(packageNames, targetCategoryId, allApps)
+            if (!consistencyCheck.isSuccess()) {
+                throw IllegalStateException("Merge consistency check failed: ${(consistencyCheck as? FolderConsistencyValidator.ConsistencyResult.Failed)?.issues}")
+            }
+
             // Log — geri almak için operation kaydedilir
             val operation = Operation(
                 id = operationId,
@@ -47,6 +58,9 @@ class FolderMergeRepository(
                 rolledBackAt = null,
             )
             operationDao.insert(operation)
+
+            // Başarılı merge → önerimi yeniden gösterme (R4.2)
+            decisionStore.recordApprovedMerge(sourceCategoryId, targetCategoryId)
 
             Timber.d("Folder merge tx: $sourceCategoryId → $targetCategoryId, %d apps, op=$operationId", packageNames.size)
 
@@ -77,6 +91,17 @@ class FolderMergeRepository(
             // Restore — eski kategorilere geri taşı
             categoryMap.forEach { (pkg, categoryId) ->
                 appDao.updateCategoryForPackage(pkg, categoryId)
+            }
+
+            // Tutarlılık kontrolü (R4.2 — idempotent)
+            val allApps = appDao.getAllApps()
+            val consistencyCheck = validator.validateUndoConsistency(
+                oldCategoryMapping = categoryMap,
+                currentApps = allApps,
+                emptyFolderCategoryIds = setOf(operation.sourceCategoryId)
+            )
+            if (!consistencyCheck.isSuccess()) {
+                throw IllegalStateException("Undo consistency check failed: ${(consistencyCheck as? FolderConsistencyValidator.ConsistencyResult.Failed)?.issues}")
             }
 
             // Mark — operation'ı rolled back işaretle
