@@ -884,6 +884,16 @@ object AppPrefs {
     fun isNotifAnalyticsEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIF_ANALYTICS_ENABLED, true)
     fun setNotifAnalyticsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIF_ANALYTICS_ENABLED, v).apply()
 
+    // Bildirim rozeti izin akışı (P1.4) — kullanıcı "Hiçbir zaman" seçmişse kartı kalıcı gizle
+    const val KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED = "notification_badge_perm_dismissed"
+    fun isNotificationBadgePermDismissed(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED, false)
+    fun setNotificationBadgePermDismissed(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED, v).apply()
+
+    // Bildirim rozeti izin kartının son gösterilme zamanı — 1 hafta içinde tekrar gösterilmez ("Daha sonra" seçilişinde)
+    const val KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL = "notification_badge_perm_snooze_until"
+    fun getNotificationBadgePermSnoozeUntil(context: Context): Long = prefs(context).getLong(KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL, 0L)
+    fun setNotificationBadgePermSnoozeUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL, untilMillis).apply()
+
     // Uygulama önerileri — en sık kullanılan 4 uygulama ana ekranda gösterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
     fun isSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_SUGGESTIONS_ENABLED, true)
