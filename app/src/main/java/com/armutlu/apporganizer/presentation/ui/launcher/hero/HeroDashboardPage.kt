@@ -172,7 +172,7 @@ private fun PendingClassificationBadge(
                     .background(MaterialTheme.colorScheme.tertiary)
                     .size(32.dp)
                     .padding(8.dp),
-                textAlignment = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onTertiary,

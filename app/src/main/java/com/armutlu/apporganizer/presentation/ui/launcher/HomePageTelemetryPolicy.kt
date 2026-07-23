@@ -9,7 +9,8 @@ object HomePageTelemetryPolicy {
 
     fun pageType(page: HomePageSpec?): TelemetryEvent.HomePageType = when (page) {
         HomePageSpec.Dashboard -> TelemetryEvent.HomePageType.DASHBOARD
-        is HomePageSpec.FolderPage,
+        is HomePageSpec.FolderPage -> TelemetryEvent.HomePageType.FOLDER
+        is HomePageSpec.WidgetPage -> TelemetryEvent.HomePageType.FOLDER
         null -> TelemetryEvent.HomePageType.FOLDER
     }
 
