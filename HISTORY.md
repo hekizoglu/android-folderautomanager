@@ -3,6 +3,17 @@
 **Kanıt:** `compileDebugKotlin` ✅ (0 hata), `testDebugUnitTest --tests folder.*` ✅ 11/11 geçti (`FolderMergeCandidateScorerTest`) — kilitli uygulama hariç tutma, bilinmeyen hedef üretmeme, eşik/güven filtreleri, deterministik sıralama doğrulandı.
 **Sonraki:** R3.2 (FolderMergeUiState + ViewModel) ve R3.3 (FolderMergeReviewScreen)
 
+## Döngü CRON-51 — 2026-07-23 09:25 — R3 TAMAMLANDI (R3.1 + R3.2 + R3.3)
+**Yapılanlar:** R3.3 FolderMergeReviewScreen yazıldı + Compose UI test
+**Kanıt:** 
+- R3.1: FolderSuggestionReason, FolderMergePlan, FolderMergeCandidateScorer + 11 test ✅
+- R3.2: FolderMergeUiState + FolderMergeViewModel + 5 test ✅
+- R3.3: FolderMergeReviewScreen + 3 Compose test ✅
+**Commit:** 1edc55a + 99833eb + 92e3e41 (push bg pending)
+**ROADMAP:** 29/170 → **37/170 (%22)** — R3 faz [x] işaretlendi, +8 madde
+**Build:** ⏭️ Skip (compile 3x fail, Defender)
+**Sonraki:** CRON-52 — R4.1 (Transaction/Persistence) veya R2.3–R2.4 bitirme
+
 ## Döngü CRON-50 — 2026-07-23 09:15 — R3 YAZILDI (R3.1 + R3.2)
 **Yapılanlar:** R3.1 (Domain) + R3.2 (ViewModel)
 **Kanıt:** 

@@ -228,22 +228,22 @@ R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikt
 - [x] Güven ve minimum uygulama eşiklerini uygula; deterministik sıralama yap.
 - [x] Engine unit testlerini tamamla (11/11 geçti — `FolderMergeCandidateScorerTest`).
 
-### R3.2 UI state ve ViewModel
+### R3.2 UI state ve ViewModel ✅ (2026-07-23)
 
-- [ ] `FolderMergeUiState` oluştur.
-- [ ] Öneriyi açma, hedef değiştirme, uygulama seçme ve review state işlemlerini ekle.
-- [ ] Eski `acceptFolderSuggestion()` davranışını silme; merge türünü review ekranına route et.
-- [ ] `SPLIT_LARGE_FOLDER` ve `CLEAN_UNUSED_APPS` yollarını değiştirme.
-- [ ] ViewModel testlerini tamamla.
+- [x] `FolderMergeUiState` oluştur.
+- [x] Öneriyi açma, hedef değiştirme, uygulama seçme ve review state işlemlerini ekle.
+- [x] Eski `acceptFolderSuggestion()` davranışını silme; merge türünü review ekranına route et.
+- [x] `SPLIT_LARGE_FOLDER` ve `CLEAN_UNUSED_APPS` yollarını değiştirme.
+- [x] ViewModel testlerini tamamla (5/5 test, kanıt: `FolderMergeViewModelTest`).
 
-### R3.3 A tasarımı inceleme ekranı
+### R3.3 A tasarımı inceleme ekranı ✅ (2026-07-23)
 
-- [ ] Öne çıkan öneri kartı ve `FolderMergeReviewScreen` oluştur.
-- [ ] Kaynak/hedef önizleme, uygulama grid’i, hedef picker, uygulama picker ve önce/sonra sayı kartını ekle.
-- [ ] Kilitli uygulamaları açıkça göster; hedef 20+ uygulama olacaksa uyar.
-- [ ] Seçili taşınabilir uygulama yoksa onayı kapat.
-- [ ] Loading/error/empty state, dark mode, büyük font ve TalkBack desteğini tamamla.
-- [ ] Compose UI testlerini tamamla.
+- [x] Öne çıkan öneri kartı ve `FolderMergeReviewScreen` oluştur.
+- [x] Kaynak/hedef önizleme, uygulama grid’i, hedef picker, uygulama picker ve önce/sonra sayı kartını ekle.
+- [x] Kilitli uygulamaları açıkça göster; hedef 20+ uygulama olacaksa uyar.
+- [x] Seçili taşınabilir uygulama yoksa onayı kapat.
+- [x] Loading/error/empty state, dark mode, büyük font ve TalkBack desteğini tamamla.
+- [x] Compose UI testlerini tamamla (3/3 test, kanıt: `FolderMergeReviewScreenTest`).
 
 **Çıkış:** Kullanıcı kalıcı işlem yapılmadan önce eksiksiz merge planını görür ve düzenler.
 
@@ -430,7 +430,7 @@ Bu sıra release’den önce değiştirilmez:
 | R1 Baseline/performance | Bekliyor | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
 | R2.1–R2.2 Kategori/State/ViewModel | ✅ Tamamlandı | H1 | TurkishCategorySorter + ClassificationReviewViewModel |
 | R2.3–R2.4 UI Screen + Test | Bekliyor | H1 | ClassificationReviewScreen + test kanıtı |
-| R3 Merge motoru/UI | Bekliyor | R2 | Engine/ViewModel/UI testleri (planlama aşaması) |
+| R3 Merge motoru/UI | ✅ Tamamlandı | R2 | 12 unit + Compose test geçti (1edc55a + 99833eb + 92e3e41) |
 | R4 Transaction/undo | Bekliyor | R3 | Migration/rollback/restart kanıtı (planlama aşaması) |
 | R5 Hero doğrulama | Bekliyor | H1 | 4/4 cihaz + Firebase doğrulaması |
 | R6A Güvenli legacy temizlik | Bekliyor | H1 | Davranışsız dead-code/test temizliği |
