@@ -72,13 +72,13 @@ object DockPrefs {
         .filter(String::isNotBlank)
         .filter(isEligible)
         .distinct()
-        .take(MAX_SLOTS)
+        .take(4)  // İlk 4 slot döndür, 5. slot boş
 
     internal fun sanitizeHeroDockItems(items: List<String>): List<String> = items
         .filter(String::isNotBlank)
         .filterNot(::isFolderItem)
         .distinct()
-        .take(MAX_SLOTS)
+        .take(4)  // İlk 4 slot döndür, 5. slot boş
 
     fun addToDock(context: Context, packageName: String): Boolean {
         if (packageName.isBlank() || isFolderItem(packageName)) return false
@@ -119,13 +119,13 @@ object DockPrefs {
         )
         val camera = DEFAULT_SLOTS[2].firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }
         val browser = resolveDefaultBrowser(context)
-        val slot5 = resolveDefaultCategory(context)
 
-        return listOfNotNull(dialer, sms, camera, browser, slot5)
+        // Slot 5: Boş bırak (kullanıcı seçecek) — slot5 değişkeni kaldırıldı
+        return listOfNotNull(dialer, sms, camera, browser)
             .distinct()
-            .take(MAX_SLOTS)
+            .take(4)  // İlk 4 slot döndür, 5. slot boş
             .ifEmpty {
-                DEFAULT_SLOTS.mapNotNull { candidates ->
+                DEFAULT_SLOTS.take(4).mapNotNull { candidates ->
                     candidates.firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }
                 }
             }
