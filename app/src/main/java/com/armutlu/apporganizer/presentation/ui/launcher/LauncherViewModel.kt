@@ -371,8 +371,12 @@ class LauncherViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // P1.1: Düzenleme/Öneri Merkezi — Ana ekrana kart formatında gösteri
-    private val _editingCenterState = MutableStateFlow(EditingCenterState())
-    val editingCenterState: StateFlow<EditingCenterState> = _editingCenterState.asStateFlow()
+    // pendingClassificationsCount (satır 341, repository.observePendingClassificationCount()) tek
+    // gerçek sinyal kaynağı — klasör birleşimi/yanlış konumlandırma/izin/durgun uygulama için henüz
+    // ayrı bir tespit motoru yok, o alanlar 0 kalır (kart yalnızca gerçek uyarı varken görünür).
+    val editingCenterState: StateFlow<EditingCenterState> = pendingClassificationsCount
+        .map { pendingCount -> EditingCenterState(pendingClassificationCount = pendingCount) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, EditingCenterState())
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -683,14 +687,33 @@ class LauncherViewModel @Inject constructor(
             .map { it.packageName }
             .toList()
         val persistedPackages = DockPrefs.migrateToHeroDock(context, fallbackPackages)
-        if (persistedPackages != _dockPackages.value) {
-            _dockPackages.value = persistedPackages
-        }
 
         // Dock varsayılan kategori yükle
         val defaultCategory = AppPrefs.getDockDefaultCategory(context)
         if (defaultCategory != _dockDefaultCategory.value) {
             _dockDefaultCategory.value = defaultCategory
+        }
+
+        // CRON-37 kopuk halka fix'i: seçilen varsayılan kategori artık dock'u GERÇEKTEN etkiliyor —
+        // boş 5. slot, o kategorinin en çok kullanılan (dock'ta olmayan) uygulamasıyla dolar.
+        // Persist edilmez: kategori değişince slot da dinamik değişir; kullanıcı elle 5. eklerse
+        // persistedPackages zaten 5 olur ve bu blok devreye girmez.
+        val resolvedPackages = if (
+            defaultCategory.isNotBlank() && persistedPackages.size < DockPrefs.MAX_SLOTS
+        ) {
+            val candidate = allApps.value
+                .asSequence()
+                .filter { it.isInstalled && !it.isHidden }
+                .filter { it.categoryId == defaultCategory }
+                .filter { it.packageName !in persistedPackages }
+                .sortedWith(compareByDescending<AppInfo> { it.lastUsedTimestamp }.thenByDescending { it.usageCount })
+                .firstOrNull()?.packageName
+            if (candidate != null) persistedPackages + candidate else persistedPackages
+        } else {
+            persistedPackages
+        }
+        if (resolvedPackages != _dockPackages.value) {
+            _dockPackages.value = resolvedPackages
         }
 
         // Klasör sırası yalnız ilk yüklemede okunur; dock senkronundan bağımsızdır.

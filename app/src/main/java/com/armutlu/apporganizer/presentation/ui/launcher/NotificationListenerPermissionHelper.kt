@@ -15,10 +15,18 @@ object NotificationListenerPermissionHelper {
      * NotificationListenerService izni verilmiş mi kontrol et.
      */
     fun isNotificationListenerEnabled(context: Context): Boolean {
-        val componentName = ComponentName(context, "com.armutlu.apporganizer.domain.usecase.AppNotificationListenerService")
-        val flatString = componentName.flattenToString()
+        // Sınıf referansı kullan — string literal paket taşımasında sessizce kırılıyordu
+        // (eski değer yanlışlıkla domain.usecase paketini gösteriyordu, servis .service'te).
+        val componentName = ComponentName(
+            context,
+            com.armutlu.apporganizer.service.AppNotificationListenerService::class.java
+        )
         val enabledListeners = Settings.Secure.getString(context.contentResolver, NOTIFICATION_LISTENER_SERVICE_ENABLED) ?: ""
-        return enabledListeners.contains(flatString)
+        // Settings değeri kısa ("pkg/.service.X") veya uzun ("pkg/pkg.service.X") formda olabilir —
+        // contains yerine unflatten ile birebir ComponentName karşılaştır.
+        return enabledListeners.split(':').any { entry ->
+            ComponentName.unflattenFromString(entry) == componentName
+        }
     }
 
     /**

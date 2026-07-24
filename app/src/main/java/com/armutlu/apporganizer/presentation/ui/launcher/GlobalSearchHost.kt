@@ -2,9 +2,11 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
@@ -89,6 +91,7 @@ fun GlobalSearchHost(
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
+    val isTablet = LocalConfiguration.current.screenWidthDp >= 600
 
     val uiState = remember(searchQuery, fullScreenSearchOpen, fullscreenSearchEnabled, searchResults, filesIndexState) {
         computeGlobalSearchUiState(
@@ -123,8 +126,9 @@ fun GlobalSearchHost(
             // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
             resultsAbove = resultsAbove,
             modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .fillMaxWidth(0.95f)
+                .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp)
+                .padding(horizontal = 0.dp, vertical = 4.dp)
         )
     } else if (homeSearchEnabled) {
         // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
@@ -134,8 +138,9 @@ fun GlobalSearchHost(
             onClear = onFolderSearchClear,
             countdown = folderSearchCountdown,
             modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .fillMaxWidth(0.95f)
+                .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp)
+                .padding(horizontal = 0.dp, vertical = 4.dp)
         )
     }
 }

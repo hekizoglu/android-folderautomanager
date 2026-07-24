@@ -63,6 +63,7 @@ fun SettingsHomeScreenSection(
     var favoritesEnabledAllApps  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
     var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var assistantCardsEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
+    var editingCenterEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isEditingCenterEnabled(context)) }
 
     // Genişleyebilir kart — 13 ayar tek başlık altında, scroll yorgunluğunu azaltır (D199)
     SettingsExpandableCard(
@@ -246,6 +247,17 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 assistantCardsEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setAssistantCardsEnabled(context, it)
+            }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        SettingsSwitchRow(
+            icon = Icons.Default.Edit,
+            title = "Düzenleme Merkezi",
+            subtitle = "Bekleyen sınıflandırma ve öneri uyarılarını ana ekranda kart olarak gösterir",
+            checked = editingCenterEnabled,
+            onCheckedChange = {
+                editingCenterEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setEditingCenterEnabled(context, it)
             }
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

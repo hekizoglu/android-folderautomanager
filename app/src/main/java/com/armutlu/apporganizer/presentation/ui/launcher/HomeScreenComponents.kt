@@ -84,6 +84,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -943,6 +944,7 @@ internal fun HomeAppSearchBar(
     resultsAbove: Boolean = false
 ) {
     val context = LocalContext.current
+    val isTablet = LocalConfiguration.current.screenWidthDp >= 600
 
     if (fullScreenEnabled) {
         var isDragging by remember { mutableStateOf(false) }
@@ -955,7 +957,13 @@ internal fun HomeAppSearchBar(
             label = "fullscreen_search_bar_scale"
         )
 
-        Column(modifier = modifier) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth(0.95f)
+                .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
             if (showGhostZones) {
                 Box(
                     modifier = Modifier
@@ -1047,6 +1055,7 @@ internal fun HomeAppSearchBar(
                 ) {
                     Text("↓ Alt", color = Color.White.copy(alpha = if (dragOffsetY > 0) 0.80f else 0.30f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
+            }
             }
         }
         return
@@ -1751,8 +1760,14 @@ internal fun HomeAppSearchBar(
         }
     }
 
-    Column(modifier = modifier) {
-        if (resultsAbove) searchResultsSection()
+    Box(
+        modifier = modifier
+            .fillMaxWidth(0.95f)
+            .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            if (resultsAbove) searchResultsSection()
 
         // Ghost zones — TOP / BOTTOM snap hedefleri
         if (showGhostZones) {
@@ -1963,6 +1978,7 @@ internal fun HomeAppSearchBar(
         }
 
         if (!resultsAbove) searchResultsSection()
+        }
     }
 }
 

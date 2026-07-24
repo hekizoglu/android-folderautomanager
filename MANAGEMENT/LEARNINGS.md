@@ -218,3 +218,18 @@ _(3 tekrara ulaşınca 🔼 tablosuna ve CLAUDE.md §5'e taşınır)_
 - Kok neden: Compose 1.7.x (BOM 2024.09.03) framework race — pager sayfayi deactivate ederken bekleyen remeasure sonradan tetikleniyor.
 - COZUM: BOM 2024.12.01 (Kotlin 1.9.25 ile uyumlu, Kotlin 2.x GEREKMEZ). Kod workaround'lari (graphicsLayer icinde deferred state read, beyondViewportPageCount=1) tek basina YETMEZ ama frekansi dusurur — kalici birakildi.
 - Gelecek BOM yukseltmesinde bu repro (rotasyon+swipe 5+ tekrar, gercek cihaz) yeniden kosulmali.
+
+## D240 (2026-07-25) — Halüsinasyon Denetimi: 9 iddiadan 4'ü kopuk çıktı (KALICI KURAL)
+
+Son 24 saatin commit'leri kod-kanıt denetiminden geçirildi; 4 'yapıldı' iddiası hayalet/kopuk bulundu:
+1. **P1.1 EditingCenterCard** — UI render ediliyordu ama MutableStateFlow hiç güncellenmiyordu (kart asla görünmedi).
+2. **P1.4 Bildirim izin kartı** — ComponentName string literal'i yanlış paketi gösteriyordu (`domain.usecase` vs `.service`); izin verilse de kart kaybolmuyordu.
+3. **P2.4/P2.5 Dock 5. slot** — `resolveDefaultCategory()` dead code'du; ayrıca `sanitizeHeroDockItems` `take(4)` kullanıcının eklediği 5. uygulamayı kayıtta SESSİZCE düşürüyordu ("dock'a 5. eklenemiyor" bug'ının kök nedeni).
+4. **CRON-37 Dock varsayılan kategori** — Ayar yazılıyor, ViewModel state'e okunuyor ama state HİÇBİR YERDE tüketilmiyordu ("ayar çalışmıyor" şikayetinin kökü).
+
+### Tekrarını önleyen kurallar (her UI/ayar işi için ZORUNLU):
+- **Zincir testi:** Yeni ayar = yaz -> oku -> TÜKET üç halkası grep ile kanıtlanmadan "bitti" denmez. StateFlow tanımlamak tüketmek değildir; `.value =` / `.update` / `collect` çağıranı yoksa iş bitmemiştir.
+- **String literal ComponentName/sınıf yolu YASAK** — `X::class.java` kullan; paket taşımada derleme hatası verir, string sessizce kırılır.
+- **Limit sabitleri tek kaynaktan:** `take(N)` / `MAX_SLOTS` gibi limitler tek sabite bağlanır; kabul yolu (`addToDock`) ile kayıt yolu (`sanitize`) farklı limit kullanamaz.
+- **Dead code = kırmızı bayrak:** private fun yazıldıysa ve caller'ı yoksa commit mesajında "yapıldı" denemez; caller bağlanana kadar görev açık kalır.
+- **UI "çözüldü" kanıtı:** cihaz/emülatör screenshot'ı olmadan UI düzeltmesi kapatılmaz (CLAUDE.md §3 Halüsinasyon Yasak'ın UI eki).

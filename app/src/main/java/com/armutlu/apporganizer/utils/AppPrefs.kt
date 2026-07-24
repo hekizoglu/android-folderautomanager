@@ -1178,6 +1178,11 @@ object AppPrefs {
     fun isAssistantCardsEnabled(context: Context) = prefs(context).getBoolean(KEY_ASSISTANT_CARDS, true)
     fun setAssistantCardsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_ASSISTANT_CARDS, v).apply()
 
+    // P1.1: Düzenleme/Öneri Merkezi kartı — ana ekranda bekleyen sınıflandırma/öneri uyarılarını gösterir
+    const val KEY_EDITING_CENTER_ENABLED = "editing_center_enabled"
+    fun isEditingCenterEnabled(context: Context) = prefs(context).getBoolean(KEY_EDITING_CENTER_ENABLED, true)
+    fun setEditingCenterEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_EDITING_CENTER_ENABLED, v).apply()
+
     // Klasör Rengi Otomatik — ikonlardan dominant renk hesapla ve ata
     const val KEY_AUTO_FOLDER_COLOR = "auto_folder_color_enabled"
     fun isAutoFolderColorEnabled(context: Context) = prefs(context).getBoolean(KEY_AUTO_FOLDER_COLOR, true)

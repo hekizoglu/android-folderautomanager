@@ -47,8 +47,6 @@ internal fun HeroDashboardPage(
     onOpenWeeklyReport: () -> Unit,
     onClockLongPress: () -> Unit,
     onOpenPulse: () -> Unit,
-    onOpenSearch: () -> Unit,
-    onOpenSearchSettings: () -> Unit,
     onOpenUsageAccessSettings: () -> Unit,
     onOpenNotificationAccessSettings: () -> Unit,
     onOpenClassificationReview: () -> Unit = {},
@@ -86,11 +84,6 @@ internal fun HeroDashboardPage(
                 summary = pulse,
                 spec = spec,
                 onClick = onOpenPulse,
-            )
-            HeroSearchCard(
-                spec = spec,
-                onOpenSearch = onOpenSearch,
-                onOpenSources = onOpenSearchSettings,
             )
 
             // P1.2: Classification review badge — pending count > 0 olduğunda göster

@@ -18,8 +18,6 @@ internal fun SmartDashboardPage(
         onOpenWeeklyReport = actions.onOpenWeeklyReport,
         onClockLongPress = actions.onClockLongPress,
         onOpenPulse = actions.onPulseClick,
-        onOpenSearch = actions.onOpenSearch,
-        onOpenSearchSettings = actions.onOpenSearchSettings,
         onOpenUsageAccessSettings = actions.onOpenUsageAccessSettings,
         onOpenNotificationAccessSettings = actions.onOpenNotificationAccessSettings,
         onOpenClassificationReview = actions.onOpenClassificationReview,

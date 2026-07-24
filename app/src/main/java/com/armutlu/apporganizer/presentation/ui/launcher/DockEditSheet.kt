@@ -68,6 +68,12 @@ fun DockEditSheet(
     // dockDefaultCategory burada kullanılmıyor ama parametreden geçiliyor —
     // future: dock varsayılan kategorisi belirtiliyse onu gösterebiliriz
     var query by remember { mutableStateOf("") }
+    // Silinmiş/gizli uygulamalar slot işgal etmesin — "4 görünüyor ama 5. eklenemiyor" bug'ının
+    // kökü: dockPackages'ta hayalet paket kalırsa sayaç 5/5 gösterip eklemeyi engelliyordu.
+    val validDockCount = remember(dockPackages, allApps) {
+        val installed = allApps.asSequence().map { it.packageName }.toHashSet()
+        dockPackages.count { it in installed }
+    }
     val filtered = remember(allApps, query) {
         if (query.isBlank()) allApps
         else {
@@ -93,7 +99,7 @@ fun DockEditSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Dock Düzenle", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary, modifier = Modifier.weight(1f))
-                Text("${dockPackages.size}/$maxDock", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                Text("$validDockCount/$maxDock", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(12.dp))
                 IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.Default.Close, "Kapat", tint = TextSecondary, modifier = Modifier.size(18.dp))
@@ -163,7 +169,7 @@ fun DockEditSheet(
             LazyColumn(modifier = Modifier.heightIn(max = 420.dp), contentPadding = PaddingValues(bottom = 16.dp)) {
                 items(items = filtered, key = { it.packageName }) { app ->
                         val inDock = app.packageName in dockPackages
-                        val full = isDockAdditionBlocked(dockPackages.size, inDock, maxDock)
+                        val full = isDockAdditionBlocked(validDockCount, inDock, maxDock)
                         val icon = rememberIcon(app.packageName)
 
                         Row(

@@ -8,13 +8,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.AppIconView
+import com.armutlu.apporganizer.presentation.ui.launcher.HomeAdaptiveLayoutPolicy
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -32,10 +36,15 @@ internal fun HeroDock(
         .distinctBy { it.packageName }
         .take(5)
         .toList()
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+    val maxContentWidth = if (isTablet) 720 else null
+
     PremiumGlassSurface(
         modifier = modifier
             .testTag("hero_dock")
-            .fillMaxWidth()
+            .fillMaxWidth(if (maxContentWidth != null) 0.95f else 1f)
+            .widthIn(max = maxContentWidth?.dp ?: Dp.Unspecified)
             .height(HomeHeroTokens.DockHeight)
             .combinedClickable(onClick = onEditDock, onLongClick = onEditDock),
         cornerRadius = HomeHeroTokens.DockCorner,

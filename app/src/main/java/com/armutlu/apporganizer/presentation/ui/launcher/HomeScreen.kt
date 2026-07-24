@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.pager.rememberPagerState
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec
+import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec.FolderPage
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor
 import com.armutlu.apporganizer.utils.HomePagePrefs
 import androidx.activity.compose.BackHandler
@@ -165,6 +166,7 @@ fun HomeScreen(
     var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
     var autoFolderSizeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
     var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
+    val editingCenterEnabled = remember { com.armutlu.apporganizer.utils.AppPrefs.isEditingCenterEnabled(context) }
     val configuration = LocalConfiguration.current
     val isTablet = remember(configuration.screenWidthDp) { configuration.screenWidthDp >= 600 }
     val screenColumns = remember(configuration.screenWidthDp) {
@@ -996,11 +998,15 @@ fun HomeScreen(
                 // Görseller 4-7dp, dokunma hedefi 48dp, dock 8dp üzerinde ortalanmış
                 val state = homePagerState
                 if (state != null && homePages.size > 1) {
+                    // Sabit 88dp yerine dock alanının gerçek token yüksekliği: DockHeight(64) +
+                    // dikey padding(24) + pill alanı(12) + 8dp boşluk — dock ile üst üste binmez.
+                    val indicatorBottomPadding =
+                        com.armutlu.apporganizer.presentation.ui.launcher.hero.HomeHeroTokens.DockHeight + 44.dp
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .fillMaxWidth()
-                            .padding(bottom = 88.dp),
+                            .padding(bottom = indicatorBottomPadding),
                         contentAlignment = Alignment.Center
                     ) {
                         HomePageIndicator(
@@ -1096,6 +1102,7 @@ fun HomeScreen(
                     HomePagePlanner.buildHeroPages(
                         folders = displayFolders,
                         pageSize = pageSize,
+                        widgetPageEnabled = widgetIds.isNotEmpty(),
                     )
                 }
             }
@@ -1247,7 +1254,8 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                 }
 
-                // P1.1: Düzenleme/Öneri Merkezi kartı — uyarılar varsa göster
+                // P1.1: Düzenleme/Öneri Merkezi kartı — Ayarlar'dan kapatılabilir, uyarı varsa göster
+                if (editingCenterEnabled) {
                 EditingCenterCard(
                     state = editingCenterState,
                     onNavigateToClassificationReview = {
@@ -1286,6 +1294,7 @@ fun HomeScreen(
                         runCatching { context.startActivity(intent) }
                     }
                 )
+                }
 
             HomePagerHost(
                 pages = pages,

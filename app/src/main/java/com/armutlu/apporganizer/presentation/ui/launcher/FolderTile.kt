@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -457,7 +458,7 @@ private fun MiniAppIcon(
     val pxSize = with(density) { size.roundToPx() }
     // P1-20 FIX: PackageManager.getPackageInfo() sorgusunu Dispatchers.IO'ya taşı
     // (Main thread'de yapılırsa ANR riski). lastUpdateTime zaten model'de var, tüm sorguyu IO'ya taşı.
-    val cacheKey = "${app.packageName}_${app.lastUpdateTime}_$pxSize"
+    val cacheKey = "${app.packageName}_${app.lastUpdated}_$pxSize"
 
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCache[cacheKey],

@@ -78,7 +78,10 @@ object DockPrefs {
         .filter(String::isNotBlank)
         .filterNot(::isFolderItem)
         .distinct()
-        .take(4)  // İlk 4 slot döndür, 5. slot boş
+        // MAX_SLOTS (5) — buradaki eski take(4), addToDock'un kabul ettiği 5. uygulamayı
+        // kayıt sırasında sessizce düşürüyordu ("dock'a 5. eklenemiyor" bug'ının kök nedeni).
+        // Varsayılan doldurma 4'te kalır (resolveDefaults/buildHeroDockItems), kullanıcı kaydı 5'e kadar.
+        .take(MAX_SLOTS)
 
     fun addToDock(context: Context, packageName: String): Boolean {
         if (packageName.isBlank() || isFolderItem(packageName)) return false
