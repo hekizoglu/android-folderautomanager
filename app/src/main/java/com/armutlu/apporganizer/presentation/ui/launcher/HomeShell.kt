@@ -69,8 +69,7 @@ fun HomeShell(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding()
-                .imePadding(),
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.Top
         ) {
             topSearch?.invoke()

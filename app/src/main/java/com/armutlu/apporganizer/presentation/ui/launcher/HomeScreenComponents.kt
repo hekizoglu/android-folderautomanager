@@ -2443,10 +2443,12 @@ internal fun FullScreenSearchOverlayV2(
     BackHandler(enabled = true) { closeOverlay() }
 
     // Arama acilir acilmaz alan odaklanir ve klavye gosterilir (Huseyin bildirimi — requestFocus eksikti).
-    // P0.2: 100ms delay ile IME padding frame conflict'i çözüldü (overlay açılışta takılma)
+    // D284: Staging optimize — Frame 1: render, 50ms, Frame 2: requestFocus, 50ms, Frame 3: show
+    // IME padding frame conflict çözüldü (HomeShell Column'dan imePadding kaldırıldı)
     LaunchedEffect(Unit) {
-        delay(100)
+        delay(50)
         runCatching { focusRequester.requestFocus() }
+        delay(50)
         keyboardController?.show()
     }
 
@@ -2606,8 +2608,7 @@ internal fun FullScreenSearchOverlayV2(
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.98f))
             .statusBarsPadding()
             .navigationBarsPadding()
-            // P0.2: imePadding kaldırıldı — HomeShell Column zaten imePadding() var,
-            // overlay kendi fillMaxSize Box'tır ve sistem bar padding'i bizzat uygulanıyor
+            .imePadding()
             .semantics { isTraversalGroup = true }
     ) {
         LazyColumn(

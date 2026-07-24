@@ -63,15 +63,18 @@ import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /**
- * Döngü P0.3 — FolderScreen overlay versiyonu.
+ * Döngü P0.3 — FolderScreen overlay versiyonu (standalone composable).
  *
  * Mevcut: LauncherNavGraph'ta ayrı full-screen route (ROUTE_FOLDER).
  * Yeni: HomeShell içinde overlay olarak render edilir — dock ve global arama
  * HomeScreen'de kalır, FolderScreen üzerinde/altında belirlenir.
  *
- * Davranış aynı: açıldığında AnimatedVisibility fadeIn/fadeOut. Fark: kök
- * Box (statusBars/navigationBars padding) kaldırıldı — HomeShell bunu yönetir.
- * Geri tuşu: onBack() çağrısı hâlâ aktif, BackHandler korunur.
+ * Davranış aynı: açıldığında AnimatedVisibility fadeIn/fadeOut.
+ * OLUŞTURULAN DEĞİŞİKLİKLER:
+ * - Kök Box (statusBars/navigationBars padding) kaldırıldı — HomeShell'in Box slotu bunu yönetir.
+ * - Geri tuşu: BackHandler korunur, onBack() çağrısı viewModel.closeFolder() tetikler.
+ * - FolderScreen kendi AnimatedVisibility (folder != null) ile görünürlüğünü yönetir.
+ * - Padding: HomeShell'in Box slotu fillMaxSize, içerik pager slot'u gibi örtüşür.
  */
 @Composable
 fun FolderScreen(
@@ -380,7 +383,7 @@ fun FolderScreen(
                     if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.35f))
                     else Modifier
                 )
-        ) { // NOT: statusBars/navigationBars padding HomeShell'de uygulanır (P0.3)
+        ) { // NOT: statusBars/navigationBars padding HomeShell'in folderOverlay Box slotunda uygulanır (P0.3)
             if (showFolderNavigator && folderCarouselEnabled && transitionFrame.direction != 0) {
                 FolderTransitionPreview(
                     previousFolder = previousFolder!!,
