@@ -74,3 +74,8 @@ Kapsam: `app/src/main/java/com/armutlu/apporganizer/utils/` altındaki 16 `*Pref
 
 **Sonraki modül:** M2 — Ayarlar ekranları (DERİN): SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + yukarıda ertelenen 3 UI-bağlantılı bulgu (telemetry consent UI, HOME_PAGER_V2 toggle sınıflandırması, ticker hidden type geri-aç butonu, manufacturer classify toggle).
 
+### 2026-07-25 — Push krizi çözüldü (Döngü 1 devamı)
+- **Kök neden:** commit `99833eb9` (CRON-50) 790.9 MB `java_pid25404.hprof` dosyasını geçmişe sokmuş — GitHub 100MB limiti nedeniyle `pre-receive hook declined`; önceki tüm push timeout'larının da sebebi buydu (790MB pack yüklemesi).
+- **Çözüm:** `.gitignore`'a `*.hprof` eklendi (önlem) + `git filter-branch --index-filter` ile 57 lokal commit yeniden yazıldı, blob silindi, doğrulama 0 hprof → push BAŞARILI (`1edc55a6..fe619f5f`).
+- **Not:** M1 agent'ı derleme hatası bırakmıştı (`StatsResetService` context parametresi) — şef düzeltti, compileDebugKotlin YEŞİL. D240 kuralı teyit: agent raporu ≠ kanıt, derleme kontrolü şart.
+- M1 commit: `ce03b0b0` (rewrite sonrası hash değişti). Sonraki iterasyon: **M2 (Ayarlar derin denetimi)** — cron her saat :13'te.
