@@ -17,7 +17,9 @@ object HomePagePlanner {
     /** pageSize <= 0 gelirse kullanılacak güvenli minimum (HomeLayoutMath.MIN_VISIBLE_FOLDERS ile tutarlı). */
     private const val SAFE_MIN_PAGE_SIZE = HomeLayoutMath.MIN_VISIBLE_FOLDERS
 
-    /** Üretim Hero yolu: Sayfa 0 koşulsuz Dashboard'dur; çağıran feature flag veremez. */
+    /** Üretim Hero yolu: Sayfa 0 koşulsuz Dashboard'dur; çağıran feature flag veremez.
+     *  Döngü P0.6 — Widget sayfası varsayılan AÇIK; Sayfa sırası: Dashboard (0) → WidgetPage (1) → Klasörler (2+).
+     */
     fun buildHeroPages(
         folders: List<AppFolder>,
         pageSize: Int,
@@ -25,6 +27,7 @@ object HomePagePlanner {
         folders = folders,
         pageSize = pageSize,
         dashboardEnabled = true,
+        widgetPageEnabled = true,
     )
 
     /**

@@ -729,7 +729,11 @@ fun HomeScreen(
                     homeResumeTrigger = homeResumeTrigger,
                     resultsAbove = searchBarPosition == com.armutlu.apporganizer.utils.AppPrefs.SEARCH_BAR_POS_BOTTOM,
                     onAppClick = { pkg -> vm.launchApp(context, pkg) },
-                    onNavigateToFolder = onNavigateToFolder,
+                    // Döngü P0.3 — Global arama: klasör açılışı viewModel üzerinden yapılır
+                    onNavigateToFolder = { folder ->
+                        vm.openFolder(folder)
+                        onNavigateToFolder(folder) // Opsiyonel eski callback
+                    },
                     onQueryChange = vm::setSearchQuery,
                     onEnableContactsSource = vm::enableContactsSearchSource,
                     onEnableFilesSource = vm::enableFilesSearchSource,
@@ -848,7 +852,9 @@ fun HomeScreen(
                         onFolderClick = { folder ->
                             fullScreenSearchOpen = false
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onNavigateToFolder(folder)
+                            // Döngü P0.3 — Fullscreen arama: klasör açılışı viewModel üzerinden yapılır
+                            vm.openFolder(folder)
+                            onNavigateToFolder(folder) // Opsiyonel eski callback
                         },
                         onEnableContactsSource = vm::enableContactsSearchSource,
                         onEnableFilesSource = vm::enableFilesSearchSource,
@@ -980,6 +986,7 @@ fun HomeScreen(
                 // FolderScreen'in AnimatedVisibility (folder != null) HomeShell'in Box
                 // ürünü içinde render edilir — dock ve global arama HomeShell'in Column'u
                 // tarafından sabit tutulur. Geri tuşu viewModel.closeFolder() tetikler.
+                // FolderScreen standalone composable: root Box padding'i kaldırıldı (HomeShell sağlar).
                 FolderScreen(
                     viewModel = vm,
                     onBack = vm::closeFolder,
@@ -1313,6 +1320,16 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                     )
                 },
+                widgetPageContent = {
+                    // Döngü P0.6 — Widget sayfası (Sayfa 1, Dashboard'dan sonra).
+                    // Ayrı, adanmış widget sayfası; serbest grid veya klasik Column — kullanıcı Ayarlar'dan seçer.
+                    WidgetPage(
+                        widgetIds = widgetIds,
+                        widgetFreeGridEnabled = widgetFreeGridEnabled,
+                        onRemoveWidget = { vm.removeWidgetId(context, it) },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                },
                 folderPageContent = { spec ->
                     // Döngü P19 madde 5 — indicator'ın kullandığı AYNI hesaplamadan ("Klasör
                     // sayfası N/M") üretilir; iki yerde de aynı cümle okunur (bkz. HomePagerHost.kt
@@ -1352,7 +1369,11 @@ fun HomeScreen(
                         pixelLookEnabled = pixelLookEnabled,
                         folderGlassBorderEnabled = folderGlassBorderEnabled,
                         haptic = haptic,
-                        onFolderClick = { onNavigateToFolder(it) },
+                        // Döngü P0.3 — FolderScreen overlay entegrasyonu: klasör açılışı viewModel üzerinden yapılır
+                        onFolderClick = { folder ->
+                            vm.openFolder(folder)
+                            onNavigateToFolder(folder) // Opsiyonel eski callback (geriye uyumluluk)
+                        },
                         onFolderLongClick = { folderContextMenu = it },
                         onSwipeUp = { pkg -> vm.launchApp(context, pkg) },
                         onNotificationTap = { pkg -> vm.launchApp(context, pkg) },
@@ -1479,7 +1500,9 @@ fun HomeScreen(
         },
         onOpenFolder = { folder ->
             folderContextMenu = null
-            onNavigateToFolder(folder)
+            // Döngü P0.3 — Klasör context menüsü: klasör açılışı viewModel üzerinden yapılır
+            vm.openFolder(folder)
+            onNavigateToFolder(folder) // Opsiyonel eski callback
         },
         onOpenAllApps = {
             folderContextMenu = null
