@@ -23,7 +23,8 @@ import androidx.compose.ui.unit.dp
  * Layout politikası: Büyük tablette içerik HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp()
  * ile ortalanır (arama çubuğu/dock ile tutarlı); telefon/küçük tablette fillMaxWidth.
  *
- * Klasör grid padding'i (16.dp) ile aynı padding uygulanır — görsel tutarlılık.
+ * Padding: FolderGridPage ile tutarlı — horizontal 16.dp, vertical 4.dp
+ * (widget/folder grid composable'a uygulanır, outer BoxWithConstraints'ten kaldırıldı).
  */
 @Composable
 fun WidgetPage(
@@ -36,11 +37,7 @@ fun WidgetPage(
     val deviceClass = HomeAdaptiveLayoutPolicy.deviceClass(configuration.screenWidthDp)
     val contentMaxWidth = HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp(deviceClass)
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         // Büyük tablette içeriği ortalayıp maksimum genişlik tut
         val contentModifier = if (contentMaxWidth != null) {
             Modifier
@@ -53,21 +50,25 @@ fun WidgetPage(
 
         Box(modifier = contentModifier) {
             if (widgetFreeGridEnabled) {
-                // Serbest 2D grid yerleşimi
+                // Serbest 2D grid yerleşimi — FolderGridPage ile tutarlı padding (16.dp horizontal, 4.dp vertical)
                 WidgetFreeGrid(
                     widgetIds = widgetIds,
                     onRemoveWidget = onRemoveWidget,
                     editMode = false,
                     screenHeightDp = configuration.screenHeightDp,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                 )
             } else {
-                // Klasik dikey Column düzeni
+                // Klasik dikey Column düzeni — FolderGridPage ile tutarlı padding
                 WidgetArea(
                     widgetIds = widgetIds,
                     onRemoveWidget = onRemoveWidget,
                     editMode = false,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                 )
             }
         }
