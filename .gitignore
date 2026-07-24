@@ -70,3 +70,4 @@ app-debug-FIREBASE-ENABLED.apk
 __pycache__/
 *.pyc
 *.pyo
+*.hprof

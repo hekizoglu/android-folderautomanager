@@ -140,20 +140,6 @@ object DockPrefs {
         return resolveDefaultApp(context, intent)
     }
 
-    /**
-     * Resolves the device's default app from CATEGORY_DEFAULT for the 5th dock slot.
-     * Falls back to null if no default is found or if the app is already in the first 4 slots.
-     */
-    private fun resolveDefaultCategory(context: Context): String? {
-        val intent = Intent(Intent.ACTION_MAIN)
-            .addCategory(Intent.CATEGORY_DEFAULT)
-        val pkg = context.packageManager
-            .resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
-            ?.activityInfo
-            ?.packageName
-        return pkg?.takeIf { context.packageManager.getLaunchIntentForPackage(it) != null }
-    }
-
     private fun resolveDefaultApp(context: Context, intent: Intent): String? {
         return context.packageManager
             .resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)

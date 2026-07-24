@@ -4,6 +4,9 @@ import android.content.Context
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.utils.MissionPrefs
+import com.armutlu.apporganizer.utils.MissionStreakPrefs
+import com.armutlu.apporganizer.utils.NotificationReadPrefs
+import com.armutlu.apporganizer.utils.PulseHistoryPrefs
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import timber.log.Timber
@@ -25,8 +28,8 @@ object StatsResetService {
     enum class Scope {
         USAGE_COUNTERS,        // usageCount / launchCount
         LAST_USED_TIMESTAMPS,  // lastUsedTimestamp
-        NOTIFICATION_HISTORY,  // notification_events tablosu + apps.notificationText/notificationCount
-        WRAPPED_SNAPSHOTS,     // WrappedSnapshotPrefs (haftalık/günlük karşılaştırma verisi)
+        NOTIFICATION_HISTORY,  // notification_events tablosu + apps.notificationText/notificationCount + NotificationReadPrefs
+        WRAPPED_SNAPSHOTS,     // WrappedSnapshotPrefs (haftalık/günlük karşılaştırma verisi) — aynı dosyayı paylaşan PulseHistoryPrefs/MissionStreakPrefs (seri/streak) de birlikte silinir
         MISSION_PROGRESS       // MissionPrefs (görev puanı ve geçmişi)
     }
 
@@ -57,7 +60,7 @@ object StatsResetService {
         when (scope) {
             Scope.USAGE_COUNTERS -> resetUsageCounters(repository)
             Scope.LAST_USED_TIMESTAMPS -> resetLastUsedTimestamps(repository)
-            Scope.NOTIFICATION_HISTORY -> resetNotificationHistory(repository)
+            Scope.NOTIFICATION_HISTORY -> resetNotificationHistory(context, repository)
             Scope.WRAPPED_SNAPSHOTS -> resetWrappedSnapshots(context)
             Scope.MISSION_PROGRESS -> resetMissionProgress(context)  // P0.6: suspend oldu, runBlocking yok
         }
@@ -75,13 +78,14 @@ object StatsResetService {
         repository.resetAllLastUsedTimestamps()
     }
 
-    private suspend fun resetNotificationHistory(repository: AppRepository) {
+    private suspend fun resetNotificationHistory(context: Context, repository: AppRepository) {
         // P0.6: getAllApps() exception'ı throw edebilir, ancak diğer scopes'lar yine de çalışmalı
         try {
             repository.clearAllNotificationEvents()
             repository.clearAllNotificationTexts()
             val counts = repository.getAllApps().associate { it.packageName to 0 }
             repository.updateNotificationCounts(counts)
+            NotificationReadPrefs.clearAll(context)
         } catch (e: Exception) {
             Timber.e(e, "StatsResetService: resetNotificationHistory hatası")
             throw e  // P0.6: Caller'a (resetScope) error döndür, sessiz başarısızlık yapma
@@ -89,9 +93,14 @@ object StatsResetService {
     }
 
     private fun resetWrappedSnapshots(context: Context) {
-        // WrappedSnapshotPrefs ve PulseHistoryPrefs AYNI SharedPreferences dosyasını
-        // ("wrapped_prefs") paylaşır — clear() ikisini de temizler (Döngü D01).
+        // WrappedSnapshotPrefs, PulseHistoryPrefs ve MissionStreakPrefs AYNI SharedPreferences
+        // dosyasını ("wrapped_prefs") paylaşır — WrappedSnapshotPrefs.clearAll() zaten hepsini
+        // temizler (Döngü D01). PulseHistoryPrefs.clearAll/MissionStreakPrefs.clearAll yine de
+        // açıkça çağrılır: dosya paylaşımı değişirse (örn. ayrı dosyaya taşınırsa) bu çağrılar
+        // sessizce kırılmak yerine kendi verilerini garanti temizler (Kod Tarama M1).
         WrappedSnapshotPrefs.clearAll(context)
+        PulseHistoryPrefs.clearAll(context)
+        MissionStreakPrefs.clearAll(context)
     }
 
     private suspend fun resetMissionProgress(context: Context) {

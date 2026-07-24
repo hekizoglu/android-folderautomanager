@@ -23,8 +23,6 @@ object WrappedSnapshotPrefs {
     private const val KEY_PREVIOUS_SAVED_DAY = "previous_saved_epoch_day"
     private const val KEY_PREVIOUS_UNLOCK_COUNT = "previous_unlock_count"
 
-    private const val KEY_LAST_SCORE = "last_score"
-
     // Not: eski haftalık/günlük skor rotasyonu anahtarları (pulse_week_*, ticker_score_*) Döngü
     // D01'de kaldırıldı — trend/baseline artık PulseHistoryPrefs'te ISO takvim haftasına göre
     // saklanıyor (bkz. utils/PulseHistoryPrefs.kt). Eski veri varsa PulseHistoryPrefs tek seferlik
@@ -79,20 +77,10 @@ object WrappedSnapshotPrefs {
         }.onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.getPrevious basarisiz") }.getOrNull()
     }
 
-    fun getLastScore(context: Context): Int? {
-        val v = prefs(context).getInt(KEY_LAST_SCORE, -1)
-        return if (v in 0..100) v else null
-    }
-
     fun getPreviousUnlockCount(context: Context): Int? {
         val p = prefs(context)
         if (!p.contains(KEY_PREVIOUS_UNLOCK_COUNT)) return null
         return p.getInt(KEY_PREVIOUS_UNLOCK_COUNT, 0).coerceAtLeast(0)
-    }
-
-    fun setLastScore(context: Context, score: Int) {
-        runCatching { prefs(context).edit().putInt(KEY_LAST_SCORE, score).apply() }
-            .onFailure { e -> Timber.e(e, "WrappedSnapshotPrefs.setLastScore basarisiz") }
     }
 
     /** Motorun en son hesapladığı toplam skoru cache'ler — ticker bunu okur, kendi hesaplamaz. */
