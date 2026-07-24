@@ -318,6 +318,7 @@ fun HomeScreen(
     val haptic = LocalHapticFeedback.current
     val composeView = LocalView.current
     val dockPackages by vm.dockPackages.collectAsState()
+    val dockDefaultCategory by vm.dockDefaultCategory.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
@@ -1466,6 +1467,7 @@ fun HomeScreen(
         allApps = allApps,
         folders = folders,
         dockPackages = dockPackages,
+        dockDefaultCategory = dockDefaultCategory,
         dockEditOpen = dockEditOpen,
         contextMenuApp = contextMenuApp,
         favoritePackages = favoriteApps.mapTo(mutableSetOf()) { it.packageName },

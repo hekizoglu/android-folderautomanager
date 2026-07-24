@@ -1316,6 +1316,14 @@ object AppPrefs {
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)
     fun setContextualDockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTEXTUAL_DOCK, v).apply()
 
+    // Dock varsayılan kategori — kullanıcı tarafından seçilen klasör categoryId'si
+    // Boş string = kategori seçilmemiş (uygulamalar cinsinden dock)
+    const val KEY_DOCK_DEFAULT_CATEGORY = "dock_default_category"
+    fun getDockDefaultCategory(context: Context): String =
+        prefs(context).getString(KEY_DOCK_DEFAULT_CATEGORY, "") ?: ""
+    fun setDockDefaultCategory(context: Context, categoryId: String) =
+        prefs(context).edit().putString(KEY_DOCK_DEFAULT_CATEGORY, categoryId).apply()
+
     const val KEY_RECENT_NOTIFICATION_APPS_ROW = "recent_notification_apps_row_enabled"
     fun isRecentNotificationAppsRowEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_NOTIFICATION_APPS_ROW, false)
     fun setRecentNotificationAppsRowEnabled(context: Context, v: Boolean) =

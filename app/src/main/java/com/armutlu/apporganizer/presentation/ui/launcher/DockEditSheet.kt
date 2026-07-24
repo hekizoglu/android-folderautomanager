@@ -59,11 +59,14 @@ private fun rememberIcon(packageName: String): ImageBitmap? {
 fun DockEditSheet(
     allApps: List<AppInfo>,
     dockPackages: List<String>,
+    dockDefaultCategory: String = "",
     onAdd: (String) -> Unit,
     onRemove: (String) -> Unit,
     onDismiss: () -> Unit,
     maxDock: Int = DockPrefs.MAX_SLOTS
 ) {
+    // dockDefaultCategory burada kullanılmıyor ama parametreden geçiliyor —
+    // future: dock varsayılan kategorisi belirtiliyse onu gösterebiliriz
     var query by remember { mutableStateOf("") }
     val filtered = remember(allApps, query) {
         if (query.isBlank()) allApps

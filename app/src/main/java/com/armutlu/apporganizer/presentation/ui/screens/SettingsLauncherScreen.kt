@@ -227,6 +227,53 @@ fun SettingsLauncherScreen(
             }
         }
 
+        // ── Dock Varsayılan Kategori ─────────────────────────────────────
+        item { SettingsSectionTitle("Dock Varsayilan Klasor") }
+        item {
+            var dockDefaultCategory by rememberStringPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_DOCK_DEFAULT_CATEGORY,
+                read = { AppPrefs.getDockDefaultCategory(context) }
+            )
+            SettingsCard {
+                Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                    Text("Seçili Klasor", fontWeight = FontWeight.Medium, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(8.dp))
+                    val categories = Category.getDefaultCategories()
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        // Seçim yapılmamış (uygulamalar cinsinden dock)
+                        FilterChip(
+                            selected = dockDefaultCategory.isEmpty(),
+                            onClick = {
+                                dockDefaultCategory = ""
+                                AppPrefs.setDockDefaultCategory(context, "")
+                            },
+                            label = { Text("(Dock Uygulamalari Cinsinden)") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            ),
+                        )
+                        // Her kategori için chip
+                        categories.forEach { category ->
+                            FilterChip(
+                                selected = dockDefaultCategory == category.categoryId,
+                                onClick = {
+                                    dockDefaultCategory = category.categoryId
+                                    AppPrefs.setDockDefaultCategory(context, category.categoryId)
+                                },
+                                label = { Text(category.categoryName) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // ── Gesture Aksiyonları ───────────────────────────────────────────
         item { SettingsGestureSection() }
 

@@ -181,6 +181,9 @@ class LauncherViewModel @Inject constructor(
     private val _dockPackages = MutableStateFlow<List<String>>(emptyList())
     val dockPackages: StateFlow<List<String>> = _dockPackages.asStateFlow()
 
+    private val _dockDefaultCategory = MutableStateFlow<String>("")
+    val dockDefaultCategory: StateFlow<String> = _dockDefaultCategory.asStateFlow()
+
     // Klasör sırası ilk yüklemede okunur. Dock ise Settings/restore gibi ViewModel dışı
     // yazımları da yakalamak için her onResume'da DockPrefs ile uzlaştırılır.
     @Volatile private var dockLoaded = false
@@ -679,6 +682,12 @@ class LauncherViewModel @Inject constructor(
         val persistedPackages = DockPrefs.migrateToHeroDock(context, fallbackPackages)
         if (persistedPackages != _dockPackages.value) {
             _dockPackages.value = persistedPackages
+        }
+
+        // Dock varsayılan kategori yükle
+        val defaultCategory = AppPrefs.getDockDefaultCategory(context)
+        if (defaultCategory != _dockDefaultCategory.value) {
+            _dockDefaultCategory.value = defaultCategory
         }
 
         // Klasör sırası yalnız ilk yüklemede okunur; dock senkronundan bağımsızdır.

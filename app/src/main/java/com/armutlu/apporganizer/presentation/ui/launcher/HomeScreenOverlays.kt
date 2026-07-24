@@ -11,6 +11,7 @@ internal fun HomeScreenOverlays(
     allApps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
     folders: List<AppFolder>,
     dockPackages: List<String>,
+    dockDefaultCategory: String,
     dockEditOpen: Boolean,
     contextMenuApp: com.armutlu.apporganizer.domain.models.AppInfo?,
     favoritePackages: Set<String>,
@@ -48,6 +49,7 @@ internal fun HomeScreenOverlays(
         DockEditSheet(
             allApps = allApps,
             dockPackages = dockPackages,
+            dockDefaultCategory = dockDefaultCategory,
             onAdd = onDockAdd,
             onRemove = onDockRemove,
             onDismiss = onDockEditDismiss,
