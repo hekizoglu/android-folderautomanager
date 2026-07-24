@@ -638,25 +638,6 @@ fun SettingsHomeScreenSection(
     var startPageMode by remember {
         mutableStateOf(com.armutlu.apporganizer.utils.HomePagePrefs.getStartPageMode(context))
     }
-    // Görev S1 — tek "BUGÜN" kartı; varsayılan AÇIK (yeni özellik=ayar kuralı).
-    var todayCardEnabled by remember {
-        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isTodayCardEnabled(context))
-    }
-    // Görev S2 — Usta (100⭐) ödülü: toggle yalnızca MASTER seviyesine ulaşıldıysa görünür.
-    // Basit tek seferlik okuma yeterli — Ayarlar ekranı her açılışta yeniden compose olur,
-    // agresif reaktiflik gerektirmez (ekran girişte güncel veriyi gösterir).
-    val totalStarsForMasterReward by androidx.compose.runtime.produceState(initialValue = 0, context) {
-        value = runCatching {
-            com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context)
-                .missionHistoryDao()
-                .getTotalStars()
-        }.getOrDefault(0)
-    }
-    val masterRewardUnlocked = com.armutlu.apporganizer.domain.usecase.missions.MasterRewardPolicy
-        .isMasterUnlocked(totalStarsForMasterReward)
-    var masterClockStyleEnabled by remember {
-        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isMasterClockStyleEnabled(context))
-    }
     SettingsCard {
         SettingsSwitchRow(
             icon = Icons.Default.Dashboard,
@@ -727,31 +708,6 @@ fun SettingsHomeScreenSection(
                     }
                 }
             }
-        }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        SettingsSwitchRow(
-            icon = Icons.Default.Star,
-            title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_today_card_enabled_title),
-            subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_today_card_enabled_desc),
-            checked = todayCardEnabled,
-            onCheckedChange = {
-                todayCardEnabled = it
-                com.armutlu.apporganizer.utils.AppPrefs.setTodayCardEnabled(context, it)
-            }
-        )
-        // Görev S2 — Usta (100⭐) ödülü: yalnızca kilit açıldıysa görünür (MasterRewardPolicy).
-        if (masterRewardUnlocked) {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            SettingsSwitchRow(
-                icon = Icons.Default.Star,
-                title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_master_clock_style_title),
-                subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_master_clock_style_desc),
-                checked = masterClockStyleEnabled,
-                onCheckedChange = {
-                    masterClockStyleEnabled = it
-                    com.armutlu.apporganizer.utils.AppPrefs.setMasterClockStyleEnabled(context, it)
-                }
-            )
         }
     }
 

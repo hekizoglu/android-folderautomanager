@@ -1,5 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +55,45 @@ import com.armutlu.apporganizer.telemetry.TelemetryManager
 import com.armutlu.apporganizer.utils.AppPrefs
 import java.text.DateFormat
 import java.util.Date
+
+/**
+ * T05 — `KEY_TICKER_HIDDEN_TYPES` bir String Set olduğu için mevcut
+ * [rememberBooleanPreferenceState] / [com.armutlu.apporganizer.presentation.ui.common.rememberStringPreferenceState]
+ * kalıpları uymuyor; aynı DisposableEffect + OnSharedPreferenceChangeListener desenini
+ * Set<String> için tekrar eder (Reaktif AppPrefs kuralı — remember donuk okumaz).
+ */
+@Composable
+private fun rememberTickerHiddenTypes(context: Context): Set<String> {
+    var state by remember { mutableStateOf(AppPrefs.getTickerHiddenTypes(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+            if (changedKey == AppPrefs.KEY_TICKER_HIDDEN_TYPES) state = AppPrefs.getTickerHiddenTypes(context)
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        state = AppPrefs.getTickerHiddenTypes(context)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    return state
+}
+
+/**
+ * SmartTickerType iç enum adı -> kullanıcı dilinde başlık kaynağı. CLAUDE.md "iç mantık
+ * sızdırılmaz" kuralı: enum adı hiçbir Text'te doğrudan gösterilmez, yalnızca bu eşleme
+ * üzerinden mevcut smart_ticker_settings_*_title string'leri kullanılır. MISSION_PROGRESS ve
+ * MISSION_ACHIEVEMENT tek "Görev uyarıları ve başarılar" başlığına eşlenir (AppPrefs ile aynı
+ * birleştirme — bkz. isSmartTickerTypeVisible).
+ */
+private fun tickerHiddenTypeTitleRes(typeName: String): Int? = when (typeName) {
+    "ACTION_REQUIRED" -> R.string.smart_ticker_settings_actions_title
+    "MISSION_PROGRESS", "MISSION_ACHIEVEMENT" -> R.string.smart_ticker_settings_missions_title
+    "PULSE_CHANGE" -> R.string.smart_ticker_settings_pulse_title
+    "WEEKLY_REPORT" -> R.string.smart_ticker_settings_reports_title
+    "CONTEXTUAL_SUGGESTION" -> R.string.smart_ticker_settings_contextual_title
+    "FEATURE_DISCOVERY" -> R.string.smart_ticker_settings_discovery_title
+    "CRITICAL_HEALTH" -> R.string.smart_ticker_settings_health_title
+    else -> null
+}
 
 /**
  * Döngü T05 — Akıllı Nabız Şeridi ayarları
@@ -105,6 +148,7 @@ fun SmartTickerSettingsScreen(
         AppPrefs.isTickerSensitiveVisible(context)
     }
     var mutedUntil by remember { mutableStateOf(AppPrefs.getTickerMutedUntil(context)) }
+    val hiddenTypes = rememberTickerHiddenTypes(context)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -345,13 +389,44 @@ fun SmartTickerSettingsScreen(
                 }
             }
 
+            // ── Gizlenen türler — şerit üzerinde "Bu tür bilgileri gösterme" ile
+            // tekil kapatılan türlerin (KEY_TICKER_HIDDEN_TYPES) geri açılabildiği liste.
+            item { SettingsSectionTitle(stringResource(R.string.smart_ticker_settings_hidden_types_section)) }
             item {
-                Column(modifier = Modifier.padding(horizontal = 28.dp, vertical = 14.dp)) {
-                    Text(
-                        stringResource(R.string.smart_ticker_settings_hidden_types_note),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                if (hiddenTypes.isEmpty()) {
+                    SettingsCard {
+                        SettingsInfoRow(
+                            icon = Icons.Default.VisibilityOff,
+                            title = stringResource(R.string.smart_ticker_settings_hidden_types_empty),
+                            subtitle = stringResource(R.string.smart_ticker_settings_hidden_types_note),
+                        )
+                    }
+                } else {
+                    SettingsCard {
+                        hiddenTypes.toList().forEachIndexed { index, typeName ->
+                            val titleRes = tickerHiddenTypeTitleRes(typeName)
+                            if (titleRes != null) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                                ) {
+                                    Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = 12.dp))
+                                    Text(
+                                        stringResource(titleRes),
+                                        modifier = Modifier.weight(1f),
+                                        fontWeight = FontWeight.Medium,
+                                    )
+                                    TextButton(onClick = { AppPrefs.removeTickerHiddenType(context, typeName) }) {
+                                        Text(stringResource(R.string.smart_ticker_settings_hidden_types_reopen_action))
+                                    }
+                                }
+                                if (index != hiddenTypes.size - 1) {
+                                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

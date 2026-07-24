@@ -24,7 +24,7 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | # | Modül | Kapsam | Durum |
 |---|-------|--------|-------|
 | M1 | utils/ prefs katmanı | AppPrefs, DockPrefs, HomePagePrefs, WidgetPrefs — zincir testi hepsi | TAMAM |
-| M2 | Ayarlar ekranları (DERİN) | SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + MANAGEMENT/SETTINGS_AUDIT_REPORT.md maddeleri | BEKLEMEDE |
+| M2 | Ayarlar ekranları (DERİN) | SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + MANAGEMENT/SETTINGS_AUDIT_REPORT.md maddeleri | TAMAM |
 | M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | BEKLEMEDE |
 | M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | BEKLEMEDE |
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | BEKLEMEDE |
@@ -79,3 +79,42 @@ Kapsam: `app/src/main/java/com/armutlu/apporganizer/utils/` altındaki 16 `*Pref
 - **Çözüm:** `.gitignore`'a `*.hprof` eklendi (önlem) + `git filter-branch --index-filter` ile 57 lokal commit yeniden yazıldı, blob silindi, doğrulama 0 hprof → push BAŞARILI (`1edc55a6..fe619f5f`).
 - **Not:** M1 agent'ı derleme hatası bırakmıştı (`StatsResetService` context parametresi) — şef düzeltti, compileDebugKotlin YEŞİL. D240 kuralı teyit: agent raporu ≠ kanıt, derleme kontrolü şart.
 - M1 commit: `ce03b0b0` (rewrite sonrası hash değişti). Sonraki iterasyon: **M2 (Ayarlar derin denetimi)** — cron her saat :13'te.
+
+### 2026-07-25 — M2 (Döngü 2)
+
+Kapsam: 17 Settings*.kt dosyası (SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection, SettingsGestureSection, SettingsComponents, SettingsAppearanceScreen/Section, SettingsAppsScreen/Section, SettingsNotificationsScreen, SearchSettingsScreen, SettingsStatsScreen, SettingsSecurityScreen, SettingsAboutScreen, SettingsUsageDataScreen, SettingsPermissionsSection, SmartTickerSettingsScreen, SettingsBackupAboutSection) 4 paralel Sonnet agent ile D240 zincir testinden (yaz→oku→TÜKET) geçirildi.
+
+**Zorunlu iş tamamlandı — SmartTicker tekil geri-aç butonu (T05):**
+- `AppPrefs.removeTickerHiddenType`/`getTickerHiddenTypes` (AppPrefs.kt:857-864, sadece okundu) artık `SmartTickerSettingsScreen.kt`'de tüketiliyor. Yeni "Gizlenen türler" bölümü: `rememberTickerHiddenTypes()` (Reaktif AppPrefs deseni — `DisposableEffect`+`OnSharedPreferenceChangeListener`, Set&lt;String&gt; için dosya-lokal kopya çünkü mevcut helper'lar Set desteklemiyor) + her gizli tür için "Geri aç" `TextButton` → `removeTickerHiddenType` çağırıyor, state anında güncelleniyor. İç enum adları (`ACTION_REQUIRED` vb.) kullanıcıya sızdırılmadı — mevcut `smart_ticker_settings_*_title` string kaynaklarına eşlendi. 3 yeni string eklendi (`strings.xml:568-570`).
+
+**Kopuk zincirler kaldırıldı (kullanıcıyı kandıran işlevsiz toggle bırakılmadı):**
+- `SettingsBackupAboutSection.kt` (~819-850, eski) — "Ana ekran pager v2 (demo)" + "Ana ekran safe mode" switch'leri (`KEY_HOME_PAGER_V2_ENABLED/SAFE_MODE`) tamamen kaldırıldı. Gerekçe: AppPrefs.kt yorumu zaten "Hero ana sayfa artık koşulsuzdur; uygulama akışında bu değerler okunmaz" diyor; tek tüketici `DiagnosticsReportManager.kt:298-299` (tanılama raporu), switch UI'ına bağımlı değil — kaldırma onu bozmadı. 899→873 satır.
+- `SettingsHomeScreenSection.kt` (~638-733, eski) — "Tek 'Bugün' kartı" (`todayCardEnabled`/`isTodayCardEnabled`) ve "Altın saat stili (Usta ödülü)" (`masterClockStyleEnabled`/`isMasterClockStyleEnabled`) switch'leri kaldırıldı. Grep kanıtı: `TodayCardSelector.select()` ve `PulseClockWidget(` composable'ı kod tabanında hiçbir call site'tan invoke edilmiyor — toggle'lar tamamen entegre edilmemiş alt sistemleri kontrol ediyordu, davranışı hiç etkilemiyordu. İlişkili `masterRewardUnlocked`/`totalStarsForMasterReward` hesaplaması da birlikte temizlendi.
+
+**Kopuk zincirler "yakında"/kilitli satıra çevrildi:**
+- `SearchSettingsScreen.kt` — "Varsayılan Sonuç Profili" (`rankingProfile`/`SearchRankingProfile`): `SearchRepository` hiçbir yerde okumuyor → "Yakında" etiketli disabled buton satırına çevrildi, ölü state silindi.
+- `SearchSettingsScreen.kt` — "Anlık Arama" (`instantEnabled`): hiçbir arama tetikleme mantığı bu bayrağa dallanmıyor (arama zaten her tuşta çalışıyor) → `enabled=false` + "Sabit açık" alt yazılı kilitli satıra çevrildi, ölü state silindi.
+
+**Doğrulanan sağlam zincirler (dokunulmadı, ~125+ satır):** Akıllı Dock, Klasör sayfası insights, Dock listesi, Quick Wheel/Odak Modu, Gesture aksiyonları, tema/font/wallpaper/gradient/textAlpha/folderSize/iconScale/folderShape/iconPack/pixelLook (Appearance), showSystemApps/classificationMode (Apps — `AppClassifier.kt:82-137` gerçekten okuyor doğrulandı), badgeIntelligence/unusedInfo/smartNotif/`KEY_NOTIFICATION_PREVIEW_BLOCKED_PACKAGES` (`AppNotificationListenerService.kt:112`'de tüketiliyor doğrulandı), arama kaynak toggle'ları (apps/categories/settings/contacts/files), fuzzy/phonetic/sortByUsage/maxResults, Otomatik Yedekleme→BackupWorker, Drive klasörü SAF, Yedek Al/Geri Yükle, Haftalık Rapor→WeeklyDigestWorker, Kullanım Verisini Sıfırla sihirbazı→StatsResetService, Crash raporları/Güvenli Mod, biyometrik kilit, telemetry switch→TelemetryConsentManager, izin bilgi kartları.
+- `isSearchSourceAppsEnabled/setSearchSourceAppsEnabled` (parametreyi yok sayıp hep `true` zorluyor) — M1'de "kasıtlı kilitli satır" olarak doğru sınıflandırıldığı tespit edilmişti, M2'de tekrar doğrulandı: dokunulmadı.
+
+**Ertelenen/ROADMAP-FİKİRLER adayları (kod yazılmadı):**
+1. `KEY_MANUFACTURER_CLASSIFY` — SettingsLauncherScreen/SettingsHomeScreenSection'da toggle YOK (grep doğrulandı, sadece AppPrefs.kt+BackupManager.kt kullanıyor). Kullanıcı bu ayarı hiçbir UI'dan değiştiremiyor. ROADMAP adayı: toggle eklenmeli veya setter silinmeli — karar M2'de verilmedi, madde açık kaldı.
+2. `AppPrefs.getAcceptedOverridePatterns` — Ayarlar tarafında (17 dosyanın hiçbirinde) tüketici yok, M6'ya erteleme notu korundu.
+3. Telemetri Onay Geçmişi ekranı fikri — `KEY_TELEMETRY_CONSENT_DECIDED/VERSION/LAST_CHANGED_AT` getter'ları hâlâ hiçbir UI'da okunmuyor. Puanlama: Kullanıcı Değeri 2, Uygulanabilirlik 4, Bağımlılık Riski 4, Etki Alanı 2 → **12/20** → FİKİRLER.md "🟡 Değerlendir" adayı (ROADMAP eşiği 15 altında kaldı).
+4. Gerçek arama "Sonuç Profili" ağırlıklandırması ve "Enter ile ara" modu — SearchRepository/SearchCache'e mimari eklenti gerektiriyor, orta ölçekli özellik, ROADMAP adayı (küçük bağlama kapsamı dışı).
+5. `TodayCardSelector`/`TodayCard` ve `PulseClockWidget` — tamamen entegre edilmemiş iki alt sistem; ileride wiring yapılırsa kaldırılan iki toggle geri eklenebilir (ROADMAP notu).
+6. `SettingsBackupAboutSection.kt:729` "Versiyon: AppOrganizer 1.0.2 — Haziran 2026" hardcoded/bayat metin — üstteki "Hakkında" bölümü doğru şekilde `BuildConfig.VERSION_NAME` kullanıyor; çelişkili ama toggle zinciri değil, küçük bir sonraki-döngü temizlik notu.
+
+**Sayılar (4 agent toplamı):** ~200+ satır sağlam ayar zinciri doğrulandı, 1 zorunlu iş tamamlandı (SmartTicker geri-aç), 2 kopuk zincir kaldırıldı (HOME_PAGER_V2 x2 switch, TodayCard+MasterClockStyle x2 switch — toplam 4 switch), 2 kopuk zincir kilitli/yakında satırına çevrildi (rankingProfile, instantEnabled), 6 ertelenen/ROADMAP-FİKİRLER adayı.
+
+**Build:** `gradlew compileDebugKotlin -PskipGoogleServices --rerun-tasks` → **BUILD SUCCESSFUL in 3m 2s**, 17/17 task executed, 0 hata (sadece önceden var olan ilgisiz uyarılar).
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SmartTickerSettingsScreen.kt` (+87/-11)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsBackupAboutSection.kt` (-30, 899→873 satır)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SettingsHomeScreenSection.kt` (-44)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/screens/SearchSettingsScreen.kt` (-33/+15)
+- `app/src/main/res/values/strings.xml` (+3)
+
+**Sonraki modül:** M3 — launcher/ çekirdek (HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel).

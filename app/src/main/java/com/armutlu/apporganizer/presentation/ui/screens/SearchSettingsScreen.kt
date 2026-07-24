@@ -101,14 +101,12 @@ fun SearchSettingsScreen(
     var contactsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) { AppPrefs.isSearchSourceContactsEnabled(context) }
     var contactSuggestionsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_CONTACT_SUGGESTIONS_ENABLED) { AppPrefs.isContactSuggestionsEnabled(context) }
     var filesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_FILES) { AppPrefs.isSearchSourceFilesEnabled(context) }
-    var rankingProfile by remember { mutableStateOf(AppPrefs.getSearchRankingProfile(context)) }
     var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
     var pendingPermission by remember { mutableStateOf<ContextualPermission?>(null) }
 
     // Gelişmiş arama ayarları
     var fuzzyEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_FUZZY) { AppPrefs.isSearchFuzzyEnabled(context) }
     var phoneticEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_PHONETIC) { AppPrefs.isSearchPhoneticEnabled(context) }
-    var instantEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_INSTANT) { AppPrefs.isSearchInstantEnabled(context) }
     var sortByUsage by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SORT_BY_USAGE) { AppPrefs.isSearchSortByUsage(context) }
     var maxResults        by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
     var showIcons by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SHOW_ICONS) { AppPrefs.isSearchShowIcons(context) }
@@ -378,22 +376,14 @@ fun SearchSettingsScreen(
             item { SettingsSectionTitle("Sonuc Sirasi") }
             item {
                 SettingsCard {
+                    // M2 denetimi: rankingProfile hiçbir sıralama mantığında tüketilmiyor
+                    // (SearchRepository bu değeri okumuyor) — buton "yakında" olarak devre dışı.
                     SettingsButtonRow(
                         icon = Icons.Default.SwapVert,
                         title = "Varsayılan Sonuç Profili",
-                        subtitle = when (rankingProfile) {
-                            AppPrefs.SearchRankingProfile.BALANCED -> "Dengeli"
-                            AppPrefs.SearchRankingProfile.CATEGORIES_FIRST -> "Kategoriler once"
-                            AppPrefs.SearchRankingProfile.APPS_FIRST -> "Uygulamalar once"
-                        },
-                        onClick = {
-                            rankingProfile = when (rankingProfile) {
-                                AppPrefs.SearchRankingProfile.APPS_FIRST -> AppPrefs.SearchRankingProfile.BALANCED
-                                AppPrefs.SearchRankingProfile.BALANCED -> AppPrefs.SearchRankingProfile.CATEGORIES_FIRST
-                                AppPrefs.SearchRankingProfile.CATEGORIES_FIRST -> AppPrefs.SearchRankingProfile.APPS_FIRST
-                            }
-                            AppPrefs.setSearchRankingProfile(context, rankingProfile)
-                        },
+                        subtitle = "Yakında",
+                        onClick = {},
+                        showChevron = false,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     SettingsSwitchRow(
@@ -435,15 +425,16 @@ fun SearchSettingsScreen(
                         }
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    // M2 denetimi: instantEnabled hiçbir arama tetikleme mantığında
+                    // tüketilmiyor (arama zaten her tuşta anlık çalışıyor, Enter-ile-ara
+                    // modu koda yazılmamış) — kilitli/bilgi satırına çevrildi.
                     SettingsSwitchRow(
                         icon = Icons.Default.Search,
                         title = "Anlık Arama",
-                        subtitle = "Her tuşta sonuç yenilenir; kapalıysa Enter ile arar",
-                        checked = instantEnabled,
-                        onCheckedChange = {
-                            instantEnabled = it
-                            AppPrefs.setSearchInstantEnabled(context, it)
-                        }
+                        subtitle = "Sabit açık — her tuşta sonuç yenilenir",
+                        checked = true,
+                        onCheckedChange = {},
+                        enabled = false,
                     )
                 }
             }

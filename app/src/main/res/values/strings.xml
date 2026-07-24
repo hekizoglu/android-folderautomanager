@@ -565,6 +565,9 @@
     <string name="smart_ticker_settings_quiet_inactive">Şerit şu an sessizde değil</string>
     <string name="smart_ticker_settings_quiet_clear_action">Sessizliği kaldır</string>
     <string name="smart_ticker_settings_hidden_types_note">Şerit üzerinde uzun basıp \"Bu tür bilgileri gösterme\" ile kapattığın türler de buradan tekrar açılabilir.</string>
+    <string name="smart_ticker_settings_hidden_types_section">Gizlenen türler</string>
+    <string name="smart_ticker_settings_hidden_types_empty">Gizlenmiş bir tür yok</string>
+    <string name="smart_ticker_settings_hidden_types_reopen_action">Geri aç</string>
 
     <!-- Arama fallback satırları -->
     <string name="search_fallback_google">Google\'da ara: %1$s</string>

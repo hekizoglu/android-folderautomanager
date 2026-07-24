@@ -1,3 +1,8 @@
+## Döngü M2 — 2026-07-25 (Kod Tarama — Ayarlar derin denetimi)
+**Yapılanlar:** 17 Settings*.kt dosyası D240 zincir testinden geçirildi (4 paralel Sonnet agent); SmartTicker "gizlenen türü geri aç" butonu eklendi (T05 zorunlu iş); 4 kopuk/işlevsiz toggle kaldırıldı (HOME_PAGER_V2 x2, TodayCard+MasterClockStyle x2) veya kilitli satıra çevrildi (rankingProfile, instantEnabled arama ayarları).
+**Agent:** 4x Sonnet paralel — Settings hub/Launcher/HomeScreen, Appearance/Apps/Notifications/Search, Stats/Security/About/UsageData/Ticker, SettingsBackupAboutSection — hepsi tamamlandı, derleme YEŞİL (compileDebugKotlin --rerun-tasks, 3m 2s).
+**Sonraki:** M3 — launcher/ çekirdek (HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel).
+
 ﻿## 🎉 CRON-59 — 2026-07-24 00:00 ✅ **16/16 GÖREV = %100 TAMAMLANDI**
 
 **Başlangıç:** 0/16 (%0) → **Bitiş:** 16/16 (%100%) ✓✓✓  
