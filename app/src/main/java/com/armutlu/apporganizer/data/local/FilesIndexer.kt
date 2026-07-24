@@ -13,6 +13,8 @@ import com.armutlu.apporganizer.domain.models.computeFileIndexState
 import com.armutlu.apporganizer.utils.AppPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.OptIn
+import kotlin.ExperimentalStdlibApi
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
@@ -87,6 +89,7 @@ class FilesIndexer(
     }
 
     /** MediaStore'dan dosya adlarını indeksler. */
+    @OptIn(ExperimentalStdlibApi::class)
     suspend fun indexAll() = withContext(Dispatchers.IO) {
         if (!AppPrefs.isSearchSourceFilesEnabled(context)) {
             _indexState.value = currentState(isIndexing = false)
@@ -192,7 +195,7 @@ class FilesIndexer(
                 } ?: break
 
                 cursor.use { c ->
-                    if (c.count == 0) break  // Sayfada veri yok - son sayfa
+                    if (c.count == 0) return@use  // Sayfada veri yok - son sayfa
 
                     val idIdx = c.getColumnIndex(MediaStore.MediaColumns._ID)
                     val nameIdx = c.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)

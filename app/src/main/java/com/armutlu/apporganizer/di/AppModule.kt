@@ -105,6 +105,14 @@ object AppModule {
     fun provideHomeGridItemDao(db: AppDatabase): com.armutlu.apporganizer.data.local.HomeGridItemDao =
         db.homeGridItemDao()
 
+    @Provides
+    fun provideOperationDao(db: AppDatabase): com.armutlu.apporganizer.data.local.OperationDao =
+        db.operationDao()
+
+    @Provides
+    fun provideUndoMergeDao(db: AppDatabase): com.armutlu.apporganizer.data.local.UndoMergeDao =
+        db.undoMergeDao()
+
     // Dongu M02 — MissionMetricSnapshotProvider'in UsageStatsHelper cagrilarini soyutlayan
     // kaynak; uretimde gercek Android API'sine delege eder (bkz. MissionUsageStatsSource.kt).
     @Provides
