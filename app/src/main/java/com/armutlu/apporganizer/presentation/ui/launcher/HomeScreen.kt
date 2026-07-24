@@ -198,7 +198,7 @@ fun HomeScreen(
     var homeSearchEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeSearchEnabled(context)) }
     var homeAppSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isHomeAppSearchEnabled(context)) }
     var fullscreenSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFullscreenSearchEnabled(context)) }
-    val homeLayoutConfig = remember(context) { HomeLayoutPrefs.read(context).config }
+    var homeLayoutConfig by remember { mutableStateOf(HomeLayoutPrefs.read(context).config) }
     val homeZonePlan = remember(homeLayoutConfig) { homeZoneRenderPlan(homeLayoutConfig) }
     var searchBarPosition by remember(homeZonePlan) {
         mutableStateOf(
@@ -211,6 +211,7 @@ fun HomeScreen(
     var gestureDoubleTap by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureDoubleTap(context)) }
     var gestureLongPress by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)) }
     var gestureSwipeUp   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)) }
+    var homeEditMode by remember { mutableStateOf(false) }
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
@@ -307,10 +308,38 @@ fun HomeScreen(
                     gestureLongPress = com.armutlu.apporganizer.utils.AppPrefs.getGestureLongPress(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_GESTURE_SWIPE_UP ->
                     gestureSwipeUp = com.armutlu.apporganizer.utils.AppPrefs.getGestureSwipeUp(context)
+                // Ev düzeni tercihlerini yeniden oku (P15 bölümü — header/footer/content sipariş, gizli bölümler)
+                HomeLayoutPrefs.KEY_HEADER_ORDER,
+                HomeLayoutPrefs.KEY_FOOTER_ORDER,
+                HomeLayoutPrefs.KEY_CONTENT_ORDER,
+                HomeLayoutPrefs.KEY_HIDDEN_SECTIONS,
+                HomeLayoutPrefs.KEY_LAYOUT_VERSION,
+                HomeLayoutPrefs.KEY_CUSTOMIZED -> {
+                    homeLayoutConfig = HomeLayoutPrefs.read(context).config
+                }
             }
         }
+        val layoutPrefs = context.getSharedPreferences(
+            HomeLayoutPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val layoutListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key in setOf(
+                HomeLayoutPrefs.KEY_HEADER_ORDER,
+                HomeLayoutPrefs.KEY_FOOTER_ORDER,
+                HomeLayoutPrefs.KEY_CONTENT_ORDER,
+                HomeLayoutPrefs.KEY_HIDDEN_SECTIONS,
+                HomeLayoutPrefs.KEY_LAYOUT_VERSION,
+                HomeLayoutPrefs.KEY_CUSTOMIZED
+            )) {
+                homeLayoutConfig = HomeLayoutPrefs.read(context).config
+            }
+        }
+        layoutPrefs.registerOnSharedPreferenceChangeListener(layoutListener)
         prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+            layoutPrefs.unregisterOnSharedPreferenceChangeListener(layoutListener)
+        }
     }
 
     // P24 — Dashboard tercihi ve pager rollout/safe-mode bayrakları reaktif okunur; ayarlardan
@@ -500,7 +529,7 @@ fun HomeScreen(
                             com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD ->
                                 HomePageAnchorResolver.resolve(pages, com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor.Dashboard)
                             com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE ->
-                                0
+                                pages.indexOfFirst { it is FolderPage } .coerceAtLeast(0)
                             com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE -> {
                                 val anchor = com.armutlu.apporganizer.utils.HomePagePrefs.getLastHomePageAnchor(context, folders, homePageSize)
                                 HomePageAnchorResolver.resolve(pages, anchor)
@@ -1398,7 +1427,7 @@ fun HomeScreen(
                             val from = dragFromIndex ?: return@FolderGridPage
                             dragOffsetX += dragAmount.x
                             dragOffsetY += dragAmount.y
-                            val colCount = 4
+                            val colCount = screenColumns
                             val screenWidthPx = with(density) { android.content.res.Resources.getSystem().displayMetrics.widthPixels.toFloat() }
                             val tileWidthPx = screenWidthPx / colCount
                             val tileHeightPx = with(density) { 100.dp.toPx() }
@@ -1440,7 +1469,7 @@ fun HomeScreen(
                             dragOffsetY = 0f
                         },
                         onHomeLongPress = { homeLongPressOpen = true },
-                        editMode = false,
+                        editMode = homeEditMode,
                     )
                 },
                 modifier = Modifier.fillMaxSize()

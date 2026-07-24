@@ -27,16 +27,17 @@ Cihaz başlatılır
 - **İzin banner** — eksik izinler varsa uyarı gösterir (kapatılabilir)
 - **Swipe up** — Tüm Uygulamalar çekmecesini açar
 - **Long press (zemin)** — Yönetim ekranını açar
-- **Dock** — Alt kısımda frosted pill, kullanıcı seçimli 4 uygulama
-- **Klasör sürükleme** — Long press ile klasör sırasını değiştir
+- **Dock** — Alt kısımda frosted pill, kullanıcı seçimli 5 uygulama
+- **Klasör sürükleme** — Düzenleme modunda aktif (iyileştirme planlı)
 
 ### Klasörler Nasıl Oluşur?
 
 1. Launcher ilk açıldığında `PackageManagerHelper` cihazda yüklü tüm uygulamaları tarar
 2. Her uygulama `AppClassifier` tarafından kategorize edilir:
-   - ~680 uygulama tam eşleşme haritası (paket adı → kategori)
+   - 3702 uygulama tam eşleşme haritası (paket adı → kategori)
    - Anahtar kelime analizi (sosyal medya, oyun, verimlilik vb.)
-   - Bilinmeyen uygulamalar → "Diğer" klasörü
+   - DeepSeek LLM fallback (bilinmeyen uygulamalar)
+   - Bilinmeyen uygulamalar → "Kategorisiz"
 3. Sonuçlar Room veritabanına kaydedilir
 4. `LauncherViewModel` veritabanındaki uygulamaları klasörlere dönüştürür
 5. Her klasör bir `FolderTile` olarak grid'de gösterilir
@@ -55,11 +56,12 @@ Swipe up veya "Tümü" ile açılır:
 | **Bildirim rozetleri** | Kırmızı (acil) / Yeşil (mesaj) / Sarı (güncelleme) |
 | **Async ikonlar** | UI thread bloke edilmez — `produceState(IO)` + Accompanist |
 
-### FolderSheet (Klasör Detayı)
+### FolderScreen (Klasör Detayı)
 
 Klasöre tıklanınca alt sayfa açılır:
 - Klasördeki tüm uygulamalar grid'de
 - Uygulama ismine tıkla → direkt başlat
+- Kategori adı/emoji/renk özelleştirilebilir
 
 ---
 
@@ -78,11 +80,11 @@ app/
     │       └── classify/   # AppClassifier, KeywordDatabase, AppCategoryRepository
     ├── presentation/
     │   ├── ui/
-    │   │   ├── launcher/   # HomeScreen, AllAppsDrawer, FolderTile, FolderSheet, PermissionsBanner
-    │   │   ├── screens/    # AppListScreen, SettingsScreen, OnboardingScreen
-    │   │   └── theme/      # ThemePreferences (DataStore — 5 tema, 4 font)
+    │   │   ├── launcher/   # HomeScreen, AllAppsDrawer, FolderTile, FolderScreen, HomeScreenPageIndicator, HomeContentWidthTokens
+    │   │   ├── screens/    # AppListScreen, SettingsScreen, OnboardingScreen, CategoryEditorScreen
+    │   │   └── theme/      # Theme.kt (DataStore — Material You + custom temalar)
     │   └── viewmodel/      # LauncherViewModel, AppListViewModel
-    └── utils/              # PackageManagerHelper, UsageStatsHelper, DockPrefs
+    └── utils/              # PackageManagerHelper, UsageStatsHelper, DockPrefs, BadgeColorEngine, IconPackManager
 ```
 
 ### Kullanılan Teknolojiler

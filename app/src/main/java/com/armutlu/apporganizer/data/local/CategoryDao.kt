@@ -155,4 +155,36 @@ interface CategoryDao {
      */
     @Query("SELECT categoryId FROM categories")
     suspend fun getAllCategoryIds(): List<String>
+
+    /**
+     * P0.5: Atomically move all apps from source category to target category.
+     * Used when deleting a category — prevents orphaned app records.
+     */
+    @Query("""
+        UPDATE apps
+        SET categoryId = :targetCategoryId,
+            lastUpdated = :timestamp
+        WHERE categoryId = :sourceCategoryId
+    """)
+    suspend fun moveAppsToCategory(
+        sourceCategoryId: String,
+        targetCategoryId: String,
+        timestamp: Long = System.currentTimeMillis()
+    )
+
+    /**
+     * P0.5: Atomically delete category and move all apps to fallback (CAT_OTHER).
+     * This prevents orphaned app records when category is deleted.
+     * If deletion fails, entire transaction rolls back — no partial state.
+     */
+    @Transaction
+    suspend fun deleteCategoryWithFallback(
+        categoryId: String,
+        fallbackCategoryId: String = "CAT_OTHER"
+    ) {
+        // First, move all apps from this category to fallback
+        moveAppsToCategory(categoryId, fallbackCategoryId)
+        // Then delete the category (only non-system categories)
+        deleteCategoryById(categoryId)
+    }
 }

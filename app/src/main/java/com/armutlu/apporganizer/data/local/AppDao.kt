@@ -335,6 +335,12 @@ interface AppDao {
         }
     }
 
+    @Query("UPDATE apps SET notificationImportance = :importance WHERE packageName = :packageName")
+    suspend fun updateNotificationImportance(packageName: String, importance: Int)
+
+    @Query("UPDATE apps SET lastNotificationPostedAt = :timestamp WHERE packageName = :packageName")
+    suspend fun updateLastNotificationPostedAt(packageName: String, timestamp: Long)
+
     @Query("UPDATE apps SET notificationText = :text WHERE packageName = :packageName")
     suspend fun updateNotificationText(packageName: String, text: String)
 

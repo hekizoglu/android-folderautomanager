@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.service
 
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.armutlu.apporganizer.data.local.NotificationEventDao
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 class AppNotificationListenerService : NotificationListenerService() {
 
     @Inject lateinit var notificationEventDao: NotificationEventDao
+    @Inject lateinit var appDao: com.armutlu.apporganizer.data.local.AppDao
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val knownNotificationKeys = LinkedHashSet<String>()
@@ -36,10 +38,18 @@ class AppNotificationListenerService : NotificationListenerService() {
                 if (AppPrefs.isNotifAnalyticsEnabled(this)) {
                     serviceScope.launch {
                         runCatching {
+                            val importance = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                sbn.notification?.priority ?: 0
+                            } else {
+                                0
+                            }
+                            val timestamp = System.currentTimeMillis()
+                            appDao.updateNotificationImportance(sbn.packageName, importance)
+                            appDao.updateLastNotificationPostedAt(sbn.packageName, timestamp)
                             notificationEventDao.insert(
                                 NotificationEvent(
                                     packageName = sbn.packageName,
-                                    postedAt = System.currentTimeMillis(),
+                                    postedAt = timestamp,
                                 )
                             )
                         }

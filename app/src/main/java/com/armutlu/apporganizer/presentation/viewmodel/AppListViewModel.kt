@@ -98,8 +98,14 @@ class AppListViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // Widget öneri listesi - en çok kullanılan ve widget'ı olan uygulamalar
+    // P1-19 FIX: getSuggestions() suspend fun oldu, flatMapLatest + flow() ile ViewModel scope'ta çalıştır
     val widgetSuggestions: StateFlow<List<WidgetSuggestion>> = repository.getAllAppsFlow()
-        .map { apps -> WidgetSuggestionEngine.getSuggestions(getApplication(), apps) }
+        .flatMapLatest { apps ->
+            kotlinx.coroutines.flow.flow {
+                val suggestions = WidgetSuggestionEngine.getSuggestions(getApplication(), apps)
+                emit(suggestions)
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // LLM kategorize durumu - DeepSeek fallback

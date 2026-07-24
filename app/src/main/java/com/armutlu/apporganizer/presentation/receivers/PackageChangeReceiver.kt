@@ -131,9 +131,24 @@ class PackageChangeReceiver : BroadcastReceiver() {
                     usageCount   = existing.usageCount,
                     launchCount  = existing.launchCount,
                     lastUsedTimestamp = existing.lastUsedTimestamp,
-                    notificationCount = existing.notificationCount
+                    notificationCount = existing.notificationCount,
+                    // P0.2: Güncelleme sırasında mevcut metadata'yı koru (IGNORE stratejisinden kaçınmak için updateApp() kullan)
+                    customNotes  = existing.customNotes,
+                    notificationText = existing.notificationText,
+                    appSizeBytes = existing.appSizeBytes,
+                    classificationSource = existing.classificationSource,
+                    classificationConfidence = existing.classificationConfidence,
+                    classificationReason = existing.classificationReason,
+                    classificationReviewState = existing.classificationReviewState,
+                    isCategoryLocked = existing.isCategoryLocked,
+                    classificationVersion = existing.classificationVersion,
+                    lastClassifiedAt = existing.lastClassifiedAt,
+                    lastReviewedAt = existing.lastReviewedAt,
+                    reviewSnoozedUntil = existing.reviewSnoozedUntil,
+                    notificationImportance = existing.notificationImportance
                 )
-                repo.insertApps(listOf(merged))
+                // P0.2: updateApp() kullan, insertApps() IGNORE stratejisi kullanmaz
+                repo.updateApp(merged)
                 searchRepo.indexApp(merged)
                 Timber.d("App updated (category preserved): $packageName")
             } catch (e: Exception) {

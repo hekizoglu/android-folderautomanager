@@ -74,7 +74,9 @@ class AppRepository @Inject constructor(
 
     suspend fun deleteCategory(categoryId: String) {
         try {
-            categoryDao.deleteCategoryById(categoryId)
+            // P0.5: @Transaction kullan — kategori sil + apps taşı, birisi başarısızsa hepsi revert
+            categoryDao.deleteCategoryWithFallback(categoryId, "CAT_OTHER")
+            Timber.d("Deleted category $categoryId and moved apps to CAT_OTHER")
         } catch (e: Exception) {
             Timber.e(e, "Error deleting category")
             throw e
@@ -199,7 +201,7 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Update app category
+     * Update app category — P0.4: Exception throws, ViewModel'de sonuç doğrulanır
      */
     suspend fun updateAppCategory(packageName: String, categoryId: String) {
         try {
@@ -219,6 +221,7 @@ class AppRepository @Inject constructor(
             Timber.d("Updated category for $packageName to $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating app category")
+            throw e  // P0.4: ViewModel'e hata bildir, sessiz başarısızlık yapma
         }
     }
 

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "7eac06adc299f2f90ca6b8558ee06fe0",
+    "identityHash": "e199be1042b7f7a399a2073821e2cab4",
     "entities": [
       {
         "tableName": "apps",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `appName` TEXT NOT NULL, `appFileName` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `iconUrl` TEXT NOT NULL, `isSystemApp` INTEGER NOT NULL, `isInstalled` INTEGER NOT NULL, `installTime` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL, `customNotes` TEXT NOT NULL, `usageCount` INTEGER NOT NULL, `launchCount` INTEGER NOT NULL, `lastUsedTimestamp` INTEGER NOT NULL, `notificationCount` INTEGER NOT NULL, `notificationImportance` INTEGER NOT NULL, `notificationText` TEXT NOT NULL, `appSizeBytes` INTEGER NOT NULL, `isHidden` INTEGER NOT NULL, `firstInstalledTime` INTEGER NOT NULL, `lastUpdatedTime` INTEGER NOT NULL, `targetSdkVersion` INTEGER NOT NULL, `versionName` TEXT NOT NULL, `classificationSource` TEXT NOT NULL, `classificationConfidence` INTEGER NOT NULL, `classificationReason` TEXT NOT NULL, `classificationReviewState` TEXT NOT NULL, `isCategoryLocked` INTEGER NOT NULL, `classificationVersion` INTEGER NOT NULL, `lastClassifiedAt` INTEGER NOT NULL, `lastReviewedAt` INTEGER NOT NULL, `reviewSnoozedUntil` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `appName` TEXT NOT NULL, `appFileName` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `iconUrl` TEXT NOT NULL, `isSystemApp` INTEGER NOT NULL, `isInstalled` INTEGER NOT NULL, `installTime` INTEGER NOT NULL, `lastUpdated` INTEGER NOT NULL, `customNotes` TEXT NOT NULL, `usageCount` INTEGER NOT NULL, `launchCount` INTEGER NOT NULL, `lastUsedTimestamp` INTEGER NOT NULL, `lastNotificationPostedAt` INTEGER NOT NULL, `notificationCount` INTEGER NOT NULL, `notificationImportance` INTEGER NOT NULL, `notificationText` TEXT NOT NULL, `appSizeBytes` INTEGER NOT NULL, `isHidden` INTEGER NOT NULL, `firstInstalledTime` INTEGER NOT NULL, `lastUpdatedTime` INTEGER NOT NULL, `targetSdkVersion` INTEGER NOT NULL, `versionName` TEXT NOT NULL, `classificationSource` TEXT NOT NULL, `classificationConfidence` INTEGER NOT NULL, `classificationReason` TEXT NOT NULL, `classificationReviewState` TEXT NOT NULL, `isCategoryLocked` INTEGER NOT NULL, `classificationVersion` INTEGER NOT NULL, `lastClassifiedAt` INTEGER NOT NULL, `lastReviewedAt` INTEGER NOT NULL, `reviewSnoozedUntil` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
         "fields": [
           {
             "fieldPath": "packageName",
@@ -83,6 +83,12 @@
           {
             "fieldPath": "lastUsedTimestamp",
             "columnName": "lastUsedTimestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastNotificationPostedAt",
+            "columnName": "lastNotificationPostedAt",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -955,7 +961,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7eac06adc299f2f90ca6b8558ee06fe0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e199be1042b7f7a399a2073821e2cab4')"
     ]
   }
 }

@@ -59,7 +59,7 @@ object StatsResetService {
             Scope.LAST_USED_TIMESTAMPS -> resetLastUsedTimestamps(repository)
             Scope.NOTIFICATION_HISTORY -> resetNotificationHistory(repository)
             Scope.WRAPPED_SNAPSHOTS -> resetWrappedSnapshots(context)
-            Scope.MISSION_PROGRESS -> resetMissionProgress(context)
+            Scope.MISSION_PROGRESS -> resetMissionProgress(context)  // P0.6: suspend oldu, runBlocking yok
         }
         ScopeResult(scope, success = true)
     }.getOrElse { e ->
@@ -76,11 +76,16 @@ object StatsResetService {
     }
 
     private suspend fun resetNotificationHistory(repository: AppRepository) {
-        repository.clearAllNotificationEvents()
-        repository.clearAllNotificationTexts()
-        repository.updateNotificationCounts(
-            repository.getAllApps().associate { it.packageName to 0 }
-        )
+        // P0.6: getAllApps() exception'ı throw edebilir, ancak diğer scopes'lar yine de çalışmalı
+        try {
+            repository.clearAllNotificationEvents()
+            repository.clearAllNotificationTexts()
+            val counts = repository.getAllApps().associate { it.packageName to 0 }
+            repository.updateNotificationCounts(counts)
+        } catch (e: Exception) {
+            Timber.e(e, "StatsResetService: resetNotificationHistory hatası")
+            throw e  // P0.6: Caller'a (resetScope) error döndür, sessiz başarısızlık yapma
+        }
     }
 
     private fun resetWrappedSnapshots(context: Context) {
@@ -89,15 +94,14 @@ object StatsResetService {
         WrappedSnapshotPrefs.clearAll(context)
     }
 
-    private fun resetMissionProgress(context: Context) {
+    private suspend fun resetMissionProgress(context: Context) {
         MissionPrefs.clearAll(context)
         TaskScoreManager.clearLegacyPrefs(context)
+        // P0.6: runBlocking kaldır (IO thread'ini bloke eder). Suspend context'te async kullan.
         runCatching {
             val db = AppDatabase.getInstance(context)
-            kotlinx.coroutines.runBlocking {
-                db.missionHistoryDao().clearAll()
-                db.taskScoreEventDao().clearAll()
-            }
+            db.missionHistoryDao().clearAll()
+            db.taskScoreEventDao().clearAll()
         }.onFailure {
             Timber.w(it, "StatsResetService: mission Room tabloları temizlenemedi, legacy prefs yine de sıfırlandı")
         }

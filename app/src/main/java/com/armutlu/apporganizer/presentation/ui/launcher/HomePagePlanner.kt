@@ -23,11 +23,13 @@ object HomePagePlanner {
     fun buildHeroPages(
         folders: List<AppFolder>,
         pageSize: Int,
+        dashboardEnabled: Boolean = true,
+        widgetPageEnabled: Boolean = true,
     ): List<HomePageSpec> = buildPages(
         folders = folders,
         pageSize = pageSize,
-        dashboardEnabled = true,
-        widgetPageEnabled = true,
+        dashboardEnabled = dashboardEnabled,
+        widgetPageEnabled = widgetPageEnabled,
     )
 
     /**

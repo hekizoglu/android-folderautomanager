@@ -62,6 +62,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -316,8 +317,10 @@ class LauncherViewModel @Inject constructor(
     // ilk Room emit'ine kadar HomeScreen "Uygulamalar yukleniyor..." flasi gosteriyordu.
     val initialLoadDone: StateFlow<Boolean> = _initialLoadDone.asStateFlow()
 
-    val recentNotificationCounts: StateFlow<Map<String, Int>> = notificationEventDao
-        .observeCountsSince(System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS)
+    val recentNotificationCounts: StateFlow<Map<String, Int>> = flow {
+        val windowStart = System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS
+        emitAll(notificationEventDao.observeCountsSince(windowStart))
+    }
         .map { counts -> counts.associate { it.packageName to it.count } }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
@@ -387,12 +390,12 @@ class LauncherViewModel @Inject constructor(
         // sistem bildirimleri silinmemeli), bu yuzden badge'in "okundu" bilgisini ayrica
         // NotificationReadPrefs.lastReadAt (launchApp'ta yazilir) ile hesapliyoruz.
         // Tum bildirimler silindiginde counts bos map gelir — guard olmadan her durumda temizle.
-        combine(
-            AppNotificationListenerService.badgeCounts,
-            AppNotificationListenerService.lastPostedAt,
-        ) { active, posted -> active to posted }
-            .onEach { (active, posted) ->
-                viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            combine(
+                AppNotificationListenerService.badgeCounts,
+                AppNotificationListenerService.lastPostedAt,
+            ) { active, posted -> active to posted }
+                .collectLatest { (active, posted) ->
                     runCatching {
                         val ctx = getApplication<Application>()
                         val lastReadAt = com.armutlu.apporganizer.utils.NotificationReadPrefs.getAll(ctx)
@@ -409,12 +412,11 @@ class LauncherViewModel @Inject constructor(
                         }
                     }.onFailure { Timber.e(it, "badgeCounts observer hatası") }
                 }
-            }
-            .launchIn(viewModelScope)
+        }
 
-        AppNotificationListenerService.latestTexts
-            .onEach { texts ->
-                viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            AppNotificationListenerService.latestTexts
+                .collectLatest { texts ->
                     runCatching {
                         repository.updateNotificationTexts(texts)
                         val knownPkgs = texts.keys
@@ -425,8 +427,7 @@ class LauncherViewModel @Inject constructor(
                         }
                     }.onFailure { Timber.e(it, "latestTexts observer hatası") }
                 }
-            }
-            .launchIn(viewModelScope)
+        }
 
         // Klasör Rengi Otomatik — renk atanmamış klasörler için ikonlardan dominant renk çıkar
         folders
@@ -1269,9 +1270,13 @@ class LauncherViewModel @Inject constructor(
 
     // Widget öneri listesi — en çok kullanılan ve widget'ı olan uygulamalar.
     // WhileSubscribed: sadece widget seçici açıkken hesaplanır — cold start yükü azaltıldı (D234).
+    // P1-19 FIX: getSuggestions() suspend fun oldu, flatMapLatest + flow() ile ViewModel scope'ta çalıştır
     val widgetSuggestions = allAppsSource
-        .map { apps ->
-            WidgetSuggestionEngine.getSuggestions(getApplication(), apps.filter { !it.isHidden })
+        .flatMapLatest { apps ->
+            kotlinx.coroutines.flow.flow {
+                val suggestions = WidgetSuggestionEngine.getSuggestions(getApplication(), apps.filter { !it.isHidden })
+                emit(suggestions)
+            }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
@@ -1289,5 +1294,13 @@ class LauncherViewModel @Inject constructor(
             }
             AppPrefs.GestureAction.DO_NOTHING        -> Unit
         }
+    }
+
+    // P1-21 FIX: SharedPreferences listener cleanup — ViewModel destroy'da listener'ı unregister et
+    override fun onCleared() {
+        super.onCleared()
+        getApplication<Application>()
+            .getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(smartTickerPrefsListener)
     }
 }

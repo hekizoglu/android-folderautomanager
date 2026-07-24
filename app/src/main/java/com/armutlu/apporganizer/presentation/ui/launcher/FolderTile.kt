@@ -118,6 +118,7 @@ fun FolderTile(
     val circleSize = (folderSizeDp * 5 / 6).dp  // 60/72 oranı korunuyor
     val miniIconSize = (folderSizeDp / 3).dp     // 22/72 yaklaşık
 
+    var swipeTriggered by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .width(tileWidth)
@@ -128,15 +129,17 @@ fun FolderTile(
             }
             .pointerInput(folder) {
                 detectVerticalDragGestures(
-                    onDragStart = { swipeDy = 0f },
-                    onDragEnd = { swipeDy = 0f },
-                    onDragCancel = { swipeDy = 0f },
+                    onDragStart = { swipeDy = 0f; swipeTriggered = false },
+                    onDragEnd = { swipeDy = 0f; swipeTriggered = false },
+                    onDragCancel = { swipeDy = 0f; swipeTriggered = false },
                     onVerticalDrag = { change, delta ->
                         if (delta >= 0f) return@detectVerticalDragGestures
+                        if (swipeTriggered) return@detectVerticalDragGestures
                         swipeDy += delta
                         if (swipeDy < -swipeThresholdPx) {
                             if (topApp != null && onSwipeUp != null) {
                                 change.consume()
+                                swipeTriggered = true
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onSwipeUp(topApp.packageName)
                             }
@@ -304,18 +307,18 @@ fun FolderTile(
         }
         // Son bildirim metni — "AppAdi: mesaj" formatinda, tiklaninca uygulama acar
         // notifTextEnabled — HomeScreen'den reaktif parametre olarak gelir
-        // EN YENI/ONEMLI bildirimi sec: AppInfo'da ayri bir "son bildirim zamani" alani yok,
-        // bu yuzden en guncel bildirimi mevcut sinyallerden turetiyoruz:
+        // EN YENI/ONEMLI bildirimi sec: AppInfo'da "lastNotificationPostedAt" alani var,
+        // bu yuzden en guncel bildirimi gercek bildirim zamanina gore turetiyoruz:
         //   1) notificationImportance — IMPORTANCE_HIGH vb. => en dikkat cekici/oncelikli
         //      bildirim (aktif/yeni bildirimler genelde yuksek importance tasir)
-        //   2) esitlikte lastUsedTimestamp — en son etkilesim goren uygulama = en guncel
+        //   2) esitlikte lastNotificationPostedAt — en son gelen bildirim = en guncel
         // Boylece ESKI davranis (notificationCount'a gore "en cok bildirimli") yerine
         // "en yeni ve en onemli" bildirim gosterilir. Once metni olan uygulamalar denenir,
         // yoksa badge > 0 olan uygulamalar arasindan ayni sinyalle secilir.
         val notifRecencyComparator = remember {
             compareBy<com.armutlu.apporganizer.domain.models.AppInfo>(
                 { it.notificationImportance },
-                { it.lastUsedTimestamp }
+                { it.lastNotificationPostedAt }
             )
         }
         val latestNotifApp = remember(folder.apps) {
@@ -452,12 +455,9 @@ private fun MiniAppIcon(
     val context = LocalContext.current
     val density = androidx.compose.ui.platform.LocalDensity.current
     val pxSize = with(density) { size.roundToPx() }
-    // lastUpdateTime key'de (Fix 2b, HomeScreenComponents.DockIcon ile aynı pattern):
-    // uygulama güncellenince eski önizleme ikonu cache'te takılı kalmasın.
-    val lastUpdated = remember(app.packageName) {
-        runCatching { context.packageManager.getPackageInfo(app.packageName, 0).lastUpdateTime }.getOrDefault(0L)
-    }
-    val cacheKey = "${app.packageName}_${lastUpdated}_$pxSize"
+    // P1-20 FIX: PackageManager.getPackageInfo() sorgusunu Dispatchers.IO'ya taşı
+    // (Main thread'de yapılırsa ANR riski). lastUpdateTime zaten model'de var, tüm sorguyu IO'ya taşı.
+    val cacheKey = "${app.packageName}_${app.lastUpdateTime}_$pxSize"
 
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCache[cacheKey],

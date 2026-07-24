@@ -54,6 +54,8 @@ data class AppInfo(
 
     val lastUsedTimestamp: Long = 0L,
 
+    val lastNotificationPostedAt: Long = 0L,
+
     val notificationCount: Int = 0,
 
     val notificationImportance: Int = 0,

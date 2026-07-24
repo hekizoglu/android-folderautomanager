@@ -84,7 +84,7 @@ object BadgeColorEngine {
             in messagingCategories -> Green
             in alertCategories     -> Red
             in updateCategories    -> Yellow
-            else                   -> Red
+            else                   -> Grey
         }
     }
 }

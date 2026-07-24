@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import android.animation.ValueAnimator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -57,7 +57,8 @@ internal fun HomePageIndicator(
     val items = remember(pages, pagerState.currentPage) {
         buildHomePageIndicatorItems(pages, pagerState.currentPage)
     }
-    val reduceMotionEnabled = remember { !ValueAnimator.areAnimatorsEnabled() }
+    val configuration = LocalConfiguration.current
+    val reduceMotionEnabled = configuration.isScreenReaderEnabled || !configuration.animationScale.let { it > 0f && it < 1f || it == 0f }
     val scope = rememberCoroutineScope()
 
     val dashboardSelectedDesc = stringResource(R.string.home_page_indicator_dashboard_selected)

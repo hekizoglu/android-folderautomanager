@@ -26,6 +26,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -52,6 +54,8 @@ fun CategoryEditorScreen(
     val screenState by viewModel.screenState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<Category?>(null) }
+    var deleteConfirmCategory by remember { mutableStateOf<Category?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -68,7 +72,8 @@ fun CategoryEditorScreen(
             FloatingActionButton(onClick = { showAddDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Kategori ekle")
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -82,7 +87,7 @@ fun CategoryEditorScreen(
                     category = category,
                     appCount = screenState.countAppsByCategory(category.categoryId),
                     onEdit = { editingCategory = category },
-                    onDelete = { viewModel.deleteCategory(category) }
+                    onDelete = { deleteConfirmCategory = category }
                 )
             }
         }
@@ -103,7 +108,8 @@ fun CategoryEditorScreen(
     }
 
     LaunchedEffect(screenState.error) {
-        if (screenState.error != null) {
+        screenState.error?.let { error ->
+            snackbarHostState.showSnackbar(error)
             viewModel.clearError()
         }
     }
@@ -118,6 +124,31 @@ fun CategoryEditorScreen(
             onConfirm = { name, emoji ->
                 viewModel.updateCategory(category.copy(categoryName = name, iconEmoji = emoji))
                 editingCategory = null
+            }
+        )
+    }
+
+    deleteConfirmCategory?.let { category ->
+        val appCount = screenState.countAppsByCategory(category.categoryId)
+        AlertDialog(
+            onDismissRequest = { deleteConfirmCategory = null },
+            title = { Text("Kategori Sil") },
+            text = { Text(
+                "\"${category.categoryName}\" kategorisinde $appCount uygulama var. " +
+                "Bu kategorideki uygulamalar \"Kategorisiz\" kategorisine taşınacak. Silmek istediğinize emin misiniz?"
+            )},
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.deleteCategory(category)
+                    deleteConfirmCategory = null
+                }) {
+                    Text("Sil")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteConfirmCategory = null }) {
+                    Text("İptal")
+                }
             }
         )
     }
@@ -158,7 +189,8 @@ private fun CategoryItem(
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        Color(android.graphics.Color.parseColor(category.colorHex)),
+                        runCatching { Color(android.graphics.Color.parseColor(category.colorHex)) }
+                            .getOrDefault(Color.Gray),
                         shape = MaterialTheme.shapes.small
                     )
             )

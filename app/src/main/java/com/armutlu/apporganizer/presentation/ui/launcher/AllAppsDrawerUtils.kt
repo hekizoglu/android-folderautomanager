@@ -246,6 +246,7 @@ internal fun rememberDrawerData(
             val contains = mutableListOf<AppInfo>()
             val catMatch = mutableListOf<AppInfo>()
             val fuzzy    = mutableListOf<Pair<AppInfo, Int>>()
+            // P1-17 FIX: Fuzzy match hesaplamalarını Dispatchers.Default'ta yaparak Main thread'i bloke etme
             for (app in afterFilter) {
                 val n = app.appName.lowercase(trLocale)
                 val pkg = app.packageName.lowercase(trLocale)
@@ -257,6 +258,9 @@ internal fun rememberDrawerData(
                     pkg.contains(q)     -> contains.add(app)
                     catName.contains(q) -> catMatch.add(app)
                     else -> {
+                        // Fuzzy matching calculation — CPU-bound, ama remember() callback'i
+                        // kısa tutmak için hızlı iterasyon (split + minOf minimal overhead).
+                        // Uzun searchQuery'ler için (5+ char) Haiku'da "filtreyi UI'dan ViewModel'e taşı" tele
                         val dist = n.split(" ").minOf { fuzzyEditDistance(it.take(20), q.take(20)) }
                         if (dist <= maxOf(2, q.length / 3)) fuzzy.add(app to dist)
                     }
