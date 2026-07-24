@@ -529,7 +529,7 @@ fun HomeScreen(
                             com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.SMART_DASHBOARD ->
                                 HomePageAnchorResolver.resolve(pages, com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor.Dashboard)
                             com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE ->
-                                pages.indexOfFirst { it is FolderPage } .coerceAtLeast(0)
+                                pages.indexOfFirst { it is FolderPage }.coerceAtLeast(0)
                             com.armutlu.apporganizer.utils.HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE -> {
                                 val anchor = com.armutlu.apporganizer.utils.HomePagePrefs.getLastHomePageAnchor(context, folders, homePageSize)
                                 HomePageAnchorResolver.resolve(pages, anchor)
