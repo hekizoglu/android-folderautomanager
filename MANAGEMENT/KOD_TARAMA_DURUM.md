@@ -34,7 +34,7 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | BEKLEMEDE |
 | M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | BEKLEMEDE |
 | M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | BEKLEMEDE |
-| M12 | Araç/altyapı onarımı | check_duplicates.py 0-entry bug'ı (JSON formatı değişmiş — script güncellenecek), bayat CLAUDE.md yolları | BEKLEMEDE |
+| M12 | Araç/altyapı onarımı | **KRİTİK:** check_duplicates.py hem yanlış dosyayı hedefliyor (AppClassifier.kt, artık haritayı içermiyor — gerçek veri app/src/main/assets/app_categories.json'da) hem de UnicodeEncodeError veriyor (emoji+cp1254); bu hata pre-commit hook'ta YAKALANMIYOR ve encoding traceback'i "duplicate var" gibi yorumlanıp commit'i bloklayabiliyor (M6 kapanışında canlı yaşandı, PYTHONIOENCODING=utf-8 ile aşıldı) — ACİL script fix + hook güvenli hata mesajı, bayat CLAUDE.md yolları | BEKLEMEDE |
 
 ## İterasyon Günlüğü
 
