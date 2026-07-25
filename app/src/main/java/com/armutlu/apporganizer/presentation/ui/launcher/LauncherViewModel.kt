@@ -769,11 +769,18 @@ class LauncherViewModel @Inject constructor(
 
     fun updateAppCategory(packageName: String, categoryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateAppCategory(packageName, categoryId)
-            AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
-            // Room Flow'un emit etmesi için küçük gecikme — stale UI race condition önlemi
-            kotlinx.coroutines.delay(50)
-            _folderOrder.update { it.toList() }
+            try {
+                repository.updateAppCategory(packageName, categoryId)
+                AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
+                // Room Flow'un emit etmesi için küçük gecikme — stale UI race condition önlemi
+                kotlinx.coroutines.delay(50)
+                _folderOrder.update { it.toList() }
+            } catch (e: Exception) {
+                // P0.4: repository.updateAppCategory artik hatayi yutmuyor (rethrow) —
+                // burada yakalanmazsa coroutine crash olur. Sessiz basarisizlik degil, sadece log.
+                Timber.e(e, "Error updating app category")
+                _toastMessage.tryEmit("Kategori guncellenemedi")
+            }
         }
     }
 
