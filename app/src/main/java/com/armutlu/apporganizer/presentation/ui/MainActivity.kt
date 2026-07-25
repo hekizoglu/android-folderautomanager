@@ -126,24 +126,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun openBugReport() {
-        val debugLogs = viewModel.getDebugLogs()
-        val crashLog = CrashReporter.getLastCrashLog(this)?.take(1500) ?: "Crash logu yok"
-
-        val title = Uri.encode("[Bug] Uygulama Hatasi")
-        val body = Uri.encode(
-            "**Cihaz:** ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}\n" +
-            "**Android:** ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})\n\n" +
-            "**Son Crash:**\n```\n$crashLog\n```\n\n" +
-            "**Debug Loglari:**\n```\n$debugLogs\n```\n\n" +
-            "**Nasil Olustu:**\n(Adimlar)"
-        )
-        val url = "https://github.com/hekizoglu/android-folderautomanager/issues/new?title=$title&body=$body"
-        startActivity(
-            Intent.createChooser(
-                Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply { addCategory(Intent.CATEGORY_BROWSABLE) },
-                "Tarayici sec"
-            )
-        )
-    }
 }

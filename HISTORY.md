@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M9 — 2026-07-26
+**Yapılanlar:** Aktiviteler + navigasyon denetimi — MainActivity.kt (openBugReport ölü metodu silindi, installSplashScreen super.onCreate öncesine alındı, intent extra whitelist doğrulaması teyit edildi), LauncherActivity.kt (widget bind/configure akışları, safe mode, home tuşu komut dağıtımı), AppNavigation.kt (Routes whitelist, fromTickerRoute TEK nokta dönüştürücü) ve Onboarding adımları doğrulandı.
+**Bug:** Yok — ölü private metod temizliği sonrası compileDebugKotlin 2m 21s içinde yeşil.
+**Sonraki:** M10 (Global ölü kod süpürmesi: detekt raporu + cross-module unused sembol taraması).
+
 ## Döngü M8 — 2026-07-26
 **Yapılanlar:** service/ + worker + receiver denetimi — AppNotificationListenerService (reaktif badge/preview), PackageChangeReceiver (EX01 backoff fix), BackupWorker (SAF/Drive kopyalama), MissionSettlementWorker (zincirleme döngü) ve 6 diğer Worker incelendi; FCM servisinin önceden temizlendiği doğrulandı; Manifest bildirimleri eksiksiz.
 **Bug:** Yok — tüm servis ve arka plan işçileri aktif tüketim zincirlerine sahip, compileDebugKotlin yeşil.

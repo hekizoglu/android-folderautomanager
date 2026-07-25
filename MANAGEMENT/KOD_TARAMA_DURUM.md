@@ -31,8 +31,8 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | TAMAM |
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | TAMAM |
 | M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | TAMAM |
-| M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | DEVAM |
-| M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | BEKLEMEDE |
+| M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | TAMAM |
+| M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | DEVAM |
 | M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | BEKLEMEDE |
 | M12 | Araç/altyapı onarımı | **KRİTİK:** check_duplicates.py hem yanlış dosyayı hedefliyor (AppClassifier.kt, artık haritayı içermiyor — gerçek veri app/src/main/assets/app_categories.json'da) hem de UnicodeEncodeError veriyor (emoji+cp1254); bu hata pre-commit hook'ta YAKALANMIYOR ve encoding traceback'i "duplicate var" gibi yorumlanıp commit'i bloklayabiliyor (M6 kapanışında canlı yaşandı, PYTHONIOENCODING=utf-8 ile aşıldı) — ACİL script fix + hook güvenli hata mesajı, bayat CLAUDE.md yolları | BEKLEMEDE |
 
@@ -321,3 +321,27 @@ Kapsam: `service/` (`AppNotificationListenerService`, `NotificationPreviewStore`
 **Sayılar:** silinen 0 sembol (tüm servis/worker/receiver bileşenleri aktif ve gerekçeli), bağlanan 0 kopuk halka, 0 ertelenen bulgu.
 
 **Sonraki modül:** M9 — Aktiviteler + navigasyon (MainActivity, LauncherActivity, Routes, onboarding).
+
+
+### 2026-07-26 — M9 (Antigravity)
+
+Kapsam: `MainActivity.kt`, `LauncherActivity.kt`, `presentation/navigation/AppNavigation.kt` (`Routes` nesnesi dahil), `presentation/ui/screens/OnboardingScreen.kt` & `OnboardingModels.kt` & `OnboardingStepContent.kt`. Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından tek oturumda doğrudan Read/Grep/Edit ile işlendi.
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- `MainActivity.openBugReport()` (`MainActivity.kt:129-148`) — hiçbir UI, menü veya event handler tarafından çağrılmayan ölü private metod (0-caller kanıtlandı). ~20 satır silindi.
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- `MainActivity.kt`: `installSplashScreen()` çağrısının `super.onCreate()` öncesinde çağrılması (D234 gri başlık çubuğu fix'i), `Routes.isValid(route)` whitelist güvenlik kontrolü ile dışarıdan Intent yönlendirme koruması, `applyOpenCategoryIntent` ve `scanApps()` reaktif ve güvenli.
+- `LauncherActivity.kt`: Launcher olarak `HOME`+`DEFAULT` intent-filter yapılandırması, `WidgetHostManager` ve `ActivityResultLauncher` ile güvenli widget bağlama akışı (`widgetBindLauncher`, `widgetConfigureLauncher`), `StartupHealthPrefs.markReady` soğuk başlangıç takibi, `checkSafeMode` güvenlik mekanizması.
+- `AppNavigation.kt` & `Routes`: `Routes.ALL` whitelist doğrulama seti, `Routes.fromTickerRoute` TEK nokta route dönüştürücüsü, `AppNavigation` içindeki `LaunchedEffect(externalRoute)` ile güvenli ve reaktif rota yönetimi.
+- `OnboardingScreen`: `OnboardingModels`, `OnboardingStepContent` adımları, `AppPrefs.isOnboardingDone` ve `markOnboardingDone` bayrak yönetimi tam uyumlu ve sağlam.
+
+**Build:**
+- `compileDebugKotlin` doğrulandı: **BUILD SUCCESSFUL in 2m 21s**, 0 hata.
+
+**Sayılar:** silinen 1 ölü private metod (`MainActivity.openBugReport`), bağlanan 0 kopuk halka, 0 ertelenen bulgu.
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/MainActivity.kt` (-20 satır, `openBugReport` silindi)
+
+**Sonraki modül:** M10 — Global ölü kod süpürmesi (detekt raporu + cross-module unused sembol taraması).
