@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M10 — 2026-07-26
+**Yapılanlar:** Global ölü kod süpürmesi — `./gradlew detekt` statik analizi ile tespit edilen tek ölü private metod (`FolderMergePlan.toSuggestion()`, FolderMergeViewModel.kt) 0-caller kanıtlanarak silindi; detekt raporundaki line length / magic number / generic catch uyarıları analiz edildi.
+**Bug:** Yok — ölü metod temizliği sonrası compileDebugKotlin 1m 28s içinde yeşil.
+**Sonraki:** M11 (res/ tutarlılık: strings TR/EN, tema, hardcoded metin/renk avı).
+
 ## Döngü M9 — 2026-07-26
 **Yapılanlar:** Aktiviteler + navigasyon denetimi — MainActivity.kt (openBugReport ölü metodu silindi, installSplashScreen super.onCreate öncesine alındı, intent extra whitelist doğrulaması teyit edildi), LauncherActivity.kt (widget bind/configure akışları, safe mode, home tuşu komut dağıtımı), AppNavigation.kt (Routes whitelist, fromTickerRoute TEK nokta dönüştürücü) ve Onboarding adımları doğrulandı.
 **Bug:** Yok — ölü private metod temizliği sonrası compileDebugKotlin 2m 21s içinde yeşil.

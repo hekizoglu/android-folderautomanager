@@ -32,8 +32,8 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | TAMAM |
 | M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | TAMAM |
 | M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | TAMAM |
-| M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | DEVAM |
-| M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | BEKLEMEDE |
+| M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | TAMAM |
+| M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | DEVAM |
 | M12 | Araç/altyapı onarımı | **KRİTİK:** check_duplicates.py hem yanlış dosyayı hedefliyor (AppClassifier.kt, artık haritayı içermiyor — gerçek veri app/src/main/assets/app_categories.json'da) hem de UnicodeEncodeError veriyor (emoji+cp1254); bu hata pre-commit hook'ta YAKALANMIYOR ve encoding traceback'i "duplicate var" gibi yorumlanıp commit'i bloklayabiliyor (M6 kapanışında canlı yaşandı, PYTHONIOENCODING=utf-8 ile aşıldı) — ACİL script fix + hook güvenli hata mesajı, bayat CLAUDE.md yolları | BEKLEMEDE |
 
 ## İterasyon Günlüğü
@@ -345,3 +345,25 @@ Kapsam: `MainActivity.kt`, `LauncherActivity.kt`, `presentation/navigation/AppNa
 - `app/src/main/java/com/armutlu/apporganizer/presentation/ui/MainActivity.kt` (-20 satır, `openBugReport` silindi)
 
 **Sonraki modül:** M10 — Global ölü kod süpürmesi (detekt raporu + cross-module unused sembol taraması).
+
+
+### 2026-07-26 — M10 (Antigravity)
+
+Kapsam: Detekt statik analiz raporu (`./gradlew detekt`), çapraz modül kullanılmayan sembol taraması. Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından tek oturumda doğrudan Read/Grep/Edit ile işlendi.
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- `FolderMergeViewModel.FolderMergePlan.toSuggestion()` (`FolderMergeViewModel.kt:231-242`) — Detekt XML raporundaki tek `UnusedPrivateMember` kuralı ihlali (line 2622). `grep` ile 0-caller kanıtlandı, silindi.
+
+**Doğrulanan sağlam desenler & Analiz:**
+- `./gradlew detekt` çalıştırıldı: 4661 ağırlıklı uyarı alındı. Analiz edildiğinde %95+ uyarının `MaxLineLength` (kod/test formatlama), `MagicNumber` (UI piksel/dp ve renk değerleri), `TooGenericExceptionCaught` (`runCatching`/`try-catch(Exception)` mimari kalıbı) ve `WildcardImport` olduğu görüldü.
+- Kapsamlı ölü kod (UnusedPrivateMember) avında `FolderMergePlan.toSuggestion()` dışında kalan tüm private metod ve sınıfların (ör. `NoOp*` DI fallback sınıfları, `TodayCardSelectorTest` test helper'ları) geçerli mimari gerekçelere ve test bağımlılıklarına sahip olduğu doğrulandı.
+
+**Build:**
+- `compileDebugKotlin` doğrulandı: **BUILD SUCCESSFUL in 1m 28s**, 0 hata.
+
+**Sayılar:** silinen 1 ölü private extension metodu (`FolderMergePlan.toSuggestion`), bağlanan 0 kopuk halka, 0 ertelenen bulgu.
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/FolderMergeViewModel.kt` (-15 satır, `toSuggestion()` silindi)
+
+**Sonraki modül:** M11 — res/ tutarlılık (strings TR/EN, tema, hardcoded metin/renk avı).

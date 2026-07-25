@@ -227,19 +227,4 @@ class FolderMergeViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
-
-    private fun FolderMergePlan.toSuggestion() = com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestion(
-        id = "$sourceCategoryId:$targetCategoryId:${movablePackageNames.hashCode()}",
-        type = com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestionType.MERGE_SMALL_FOLDER,
-        title = "Klasör birleştirme",
-        description = "${movablePackageNames.size} uygulama taşınacak",
-        packageNames = movablePackageNames,
-        targetCategoryId = targetCategoryId,
-        confidence = confidence,
-        sourceCategoryId = sourceCategoryId,
-        reason = reason,
-        lockedPackageNames = lockedPackageNames,
-        sourceAppCount = sourceAppCount,
-        targetAppCount = targetAppCount
-    )
 }

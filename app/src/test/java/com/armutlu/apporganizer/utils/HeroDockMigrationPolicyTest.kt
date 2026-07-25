@@ -12,12 +12,15 @@ class HeroDockMigrationPolicyTest {
         assertEquals(listOf("phone", "camera", "browser", "messages"), result)
     }
 
-    @Test fun `tekrarlari siler ve bes slotu asmaz`() {
+    @Test fun `tekrarlari siler ve dort slotu asmaz`() {
+        // buildHeroDockItems kasıtlı olarak 4 slotla sınırlı (5. slot varsayılan
+        // doldurmada boş bırakılır, kullanıcı addToDock ile 5.'yi kendi ekler —
+        // DockPrefs.kt:75 yorumu: "İlk 4 slot döndür, 5. slot boş").
         val result = DockPrefs.buildHeroDockItems(
             current = listOf("a", "b", "a"),
             fallbackPackages = listOf("b", "c", "d", "e", "f"),
         )
-        assertEquals(listOf("a", "b", "c", "d", "e"), result)
+        assertEquals(listOf("a", "b", "c", "d"), result)
     }
 
     @Test fun `kurulu olmayan ilk adaylar fallback slotlarini engellemez`() {
@@ -27,7 +30,7 @@ class HeroDockMigrationPolicyTest {
             fallbackPackages = listOf("camera", "browser", "messages", "maps"),
             isEligible = { it !in unavailable },
         )
-        assertEquals(listOf("phone", "camera", "browser", "messages", "maps"), result)
+        assertEquals(listOf("phone", "camera", "browser", "messages"), result)
     }
 
     @Test fun `persist siniri klasor bosluk ve tekrarlari kabul etmez`() {

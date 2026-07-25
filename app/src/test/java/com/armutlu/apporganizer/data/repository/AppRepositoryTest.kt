@@ -197,7 +197,10 @@ class AppRepositoryTest {
     }
 
     @Test
-    fun `updateAppCategory silently handles exception`() = runTest {
+    fun `updateAppCategory rethrows dao exception (P0_4 - no silent failure)`() = runTest {
+        // P0.4: repository artik hatayi yutmuyor, ViewModel'in gorup kullaniciya
+        // bildirebilmesi icin rethrow ediyor (AppRepository.kt:224). Cagiran taraf
+        // (AppListViewModel/LauncherViewModel) kendi try/catch'inde yakalar.
         coEvery {
             mockAppDao.updateAppCategoryWithClassification(
                 any(),
@@ -215,8 +218,15 @@ class AppRepositoryTest {
             )
         } throws RuntimeException("dao error")
 
-        repository.updateAppCategory("com.test.app", "productivity")
-        advanceUntilIdle()
+        var thrown: Throwable? = null
+        try {
+            repository.updateAppCategory("com.test.app", "productivity")
+            advanceUntilIdle()
+        } catch (e: Throwable) {
+            thrown = e
+        }
+
+        assertTrue("updateAppCategory should rethrow the dao exception", thrown is RuntimeException)
     }
 
     // ── updateAppsCategory ────────────────────────────────────────────────────

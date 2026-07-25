@@ -47,24 +47,29 @@ class DockPrefsTest {
     }
 
     @Test
-    fun sanitizeHeroDockItems_returns4Slots_leavesSlot5Empty() {
+    fun sanitizeHeroDockItems_capsAtMaxSlots_keepsUpTo5() {
+        // D240: sanitizeHeroDockItems eskiden take(4) kullanıyordu, kullanıcının eklediği
+        // 5. uygulamayı kayıt sırasında sessizce düşürüyordu ("dock'a 5. eklenemiyor" bug'ı).
+        // Fix sonrası MAX_SLOTS (5) kullanılıyor — bu test artık 5 slotu doğrular.
         val items = listOf(
             "com.google.android.dialer",
             "com.google.android.apps.messaging",
             "com.google.android.GoogleCamera",
             "com.android.chrome",
-            "com.example.extra"  // Should be ignored
+            "com.example.fifth",
+            "com.example.extra"  // 6th — should be dropped
         )
 
         val result = DockPrefs.sanitizeHeroDockItems(items)
 
-        assertEquals(4, result.size)
+        assertEquals(5, result.size)
         assertEquals(
             listOf(
                 "com.google.android.dialer",
                 "com.google.android.apps.messaging",
                 "com.google.android.GoogleCamera",
-                "com.android.chrome"
+                "com.android.chrome",
+                "com.example.fifth"
             ),
             result
         )
