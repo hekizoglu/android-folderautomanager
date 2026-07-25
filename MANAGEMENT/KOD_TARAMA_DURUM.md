@@ -25,7 +25,7 @@ Tüm kod tabanını modül modül tara. Her modülde:
 |---|-------|--------|-------|
 | M1 | utils/ prefs katmanı | AppPrefs, DockPrefs, HomePagePrefs, WidgetPrefs — zincir testi hepsi | TAMAM |
 | M2 | Ayarlar ekranları (DERİN) | SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + MANAGEMENT/SETTINGS_AUDIT_REPORT.md maddeleri | TAMAM |
-| M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | BEKLEMEDE |
+| M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | DEVAM |
 | M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | BEKLEMEDE |
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | BEKLEMEDE |
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | BEKLEMEDE |
