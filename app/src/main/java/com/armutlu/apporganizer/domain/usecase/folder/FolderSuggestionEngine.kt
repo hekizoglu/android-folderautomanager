@@ -25,19 +25,7 @@ data class FolderSuggestion(
     val lockedPackageNames: List<String> = emptyList(),
     val sourceAppCount: Int = packageNames.size,
     val targetAppCount: Int = 0,
-) {
-    /** MERGE_SMALL_FOLDER onerileri icin tam birlestirme planini uretir. */
-    fun toMergePlan(): FolderMergePlan = FolderMergePlan(
-        sourceCategoryId = sourceCategoryId.ifBlank { targetCategoryId },
-        targetCategoryId = targetCategoryId,
-        movablePackageNames = packageNames,
-        lockedPackageNames = lockedPackageNames,
-        reason = reason,
-        confidence = confidence,
-        sourceAppCount = sourceAppCount,
-        targetAppCount = targetAppCount,
-    )
-}
+)
 
 object FolderSuggestionEngine {
     private const val LARGE_FOLDER_THRESHOLD = 18

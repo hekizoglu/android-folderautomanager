@@ -1,5 +1,11 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M6 — 2026-07-26
+**Yapılanlar:** domain/ denetimi — M1'den ertelenen getAcceptedOverridePatterns nihayet AppListViewModel.prepareSimilarCategorySuggestions()'a bağlandı (kabul edilen paket grupları artık tekrar önerilmiyor); 5 ölü sembol silindi (CategoryLLMFallback.classify tekil varyant, AppClassifier.classifyByKeywords, FolderSuggestion.toMergePlan, HomeDataResult.isUsable, 2 kullanılmayan HomeErrorCodes sabiti).
+**Bug:** Agent bir fonksiyonu (KeywordDatabase.addKeywordToCategory) sildikten sonra test çalıştırınca 2 testin ona bağlı olduğunu fark etti, geri ekledi — D240 "0-caller sadece production değil test dizinine de bakılarak kanıtlanmalı" dersi. check_duplicates.py script'i yanlış dosyayı hedefliyor ve JSON'u parse edemiyor (M12'ye not); 8 ilgisiz test M7/M8 kapsamında zaten bilinen kırık.
+**Sonraki:** M7 (data/: AppDao, AppDatabase, repository, migration, FTS).
+
+
 ## Döngü M5 — 2026-07-26
 **Yapılanlar:** launcher/hero/ denetimi — M3'ün ertelediği HeroDock genişlik mantık hatası düzeltildi (600dp hardcoded eşik yerine gerçek HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp() bağlandı, 600-839dp cihazlarda yanlış erken sınırlama gideriliyordu); ölü HeroSearchCard.kt (88 satır) + DashboardActions.onOpenSearch/onOpenSearchSettings kalıntı alanları silindi.
 **Bug:** Windows dosya kilidi 2 kez yaşandı (app\build) — robocopy /MIR ile temizlendi, şef bağımsız compileDebugKotlin ile ayrıca doğruladı.

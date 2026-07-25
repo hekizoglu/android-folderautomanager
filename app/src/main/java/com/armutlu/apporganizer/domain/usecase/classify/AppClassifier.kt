@@ -432,17 +432,6 @@ class AppClassifier @Inject constructor(
         return aCategory != null && aCategory == bCategory
     }
 
-    private fun classifyByKeywords(appName: String, packageName: String): String? {
-        val lowerName = appName.lowercase(java.util.Locale("tr"))
-        val lowerPkg  = packageName.lowercase()
-        KeywordDatabase.getKeywordMap().forEach { (category, keywords) ->
-            keywords.forEach { kw ->
-                if (lowerName.contains(kw) || lowerPkg.contains(kw)) return category
-            }
-        }
-        return null
-    }
-
     private fun hasExactMatch(packageName: String, categoryId: String) =
         exactMatchMap[packageName] == categoryId
 

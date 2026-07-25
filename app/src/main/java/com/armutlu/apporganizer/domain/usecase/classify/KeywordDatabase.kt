@@ -499,6 +499,10 @@ object KeywordDatabase {
 
     fun getTotalKeywords(): Int = keywordMap.values.sumOf { it.size }
 
+    // KeywordDatabaseTest ile test edilir (0 production caller ama public API + test kapsami
+    // var, D240 kurali geregi silinmez). NOT: (keywordMap as MutableMap) unsafe cast'i --
+    // Kotlin'in mapOf() cok-girdili durumda dahili olarak LinkedHashMap dondurdugu icin calisiyor,
+    // ama bu resmi bir sozlesme degil; ileride stdlib degisirse ClassCastException riski tasir.
     fun addKeywordToCategory(categoryId: String, keyword: String) {
         val current = keywordMap[categoryId] ?: emptyList()
         if (!current.contains(keyword)) {

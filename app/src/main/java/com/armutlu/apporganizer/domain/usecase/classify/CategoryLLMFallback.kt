@@ -32,27 +32,6 @@ class CategoryLLMFallback @Inject constructor(
     private val cache = java.util.concurrent.ConcurrentHashMap<String, String>(AppPrefs.getLlmCategoryCache(context))
 
     /**
-     * Tek paket için kategori döndürür.
-     * Her zaman güvenli: exception fırlatmaz, timeout aşılırsa CAT_OTHER.
-     */
-    suspend fun classify(packageName: String, apiKey: String): String {
-        cache[packageName]?.let { return it }
-
-        return try {
-            withTimeout(10_000L) {
-                val result = callDeepSeek(listOf(packageName), apiKey)
-                val category = result[packageName] ?: Category.CAT_OTHER
-                cache[packageName] = category
-                AppPrefs.putLlmCategoryCache(context, packageName, category)
-                category
-            }
-        } catch (e: Exception) {
-            Timber.w(e, "LLM fallback failed for $packageName, defaulting to CAT_OTHER")
-            Category.CAT_OTHER
-        }
-    }
-
-    /**
      * Batch sınıflandırma — birden fazla paketi tek API çağrısında sınıflandırır (max 15).
      */
     suspend fun classifyBatch(packageNames: List<String>, apiKey: String): Map<String, String> {

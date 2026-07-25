@@ -660,13 +660,20 @@ class AppListViewModel @Inject constructor(
             return
         }
         val manualOverrides = AppPrefs.getManualCategoryOverrides(context)
-        val suggestions = classifier.findSimilarUnclassifiedApps(
+        val allSuggestions = classifier.findSimilarUnclassifiedApps(
             changedApp = changedApp,
             oldCategoryId = oldCategoryId,
             newCategoryId = newCategoryId,
             allApps = allApps,
             manualOverrides = manualOverrides
         )
+        // K2 — daha once "Evet, tasi" ile kabul edilmis bir grup paket (ayni hedef kategoriye)
+        // varsa, o paketleri tekrar oneri listesine sokma (kullaniciya ayni oneriyi tekrar sormamak icin).
+        val alreadyAcceptedPackages = AppPrefs.getAcceptedOverridePatterns(context)
+            .filter { it.startsWith("$newCategoryId:") }
+            .flatMap { it.substringAfter(":").split(",") }
+            .toSet()
+        val suggestions = allSuggestions.filterNot { it.packageName in alreadyAcceptedPackages }
         _suggestedSimilarApps.value = suggestions
         _suggestedSimilarCategoryId.value = newCategoryId.takeIf { suggestions.isNotEmpty() }
     }

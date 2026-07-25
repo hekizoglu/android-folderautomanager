@@ -37,14 +37,3 @@ fun <T> HomeDataResult<T>.valueOrNull(): T? = when (this) {
     is HomeDataResult.Missing -> null
     is HomeDataResult.Failed -> null
 }
-
-/**
- * UI'ın bu sonucu gösterip gösteremeyeceğini belirtir — [Ready] ve [Stale] kullanılabilir,
- * [Missing] ve [Failed] gösterilecek veri taşımaz.
- */
-fun <T> HomeDataResult<T>.isUsable(): Boolean = when (this) {
-    is HomeDataResult.Ready -> true
-    is HomeDataResult.Stale -> true
-    is HomeDataResult.Missing -> false
-    is HomeDataResult.Failed -> false
-}

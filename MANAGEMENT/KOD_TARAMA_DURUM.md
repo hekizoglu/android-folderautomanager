@@ -28,7 +28,7 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | TAMAM |
 | M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | TAMAM |
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | TAMAM |
-| M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | BEKLEMEDE |
+| M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | TAMAM |
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | BEKLEMEDE |
 | M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | BEKLEMEDE |
 | M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | BEKLEMEDE |
@@ -227,3 +227,48 @@ Kapsam: `launcher/hero/` klasöründeki 11 dosya (`HeroDashboardPage.kt`, `HeroD
 - `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreen.kt` (-8 satır, ölü dolum bloğu silindi)
 
 **Sonraki modül:** M6 — domain/ (models, usecase/classify — AppClassifier, KeywordDatabase, InsightEngine).
+
+### 2026-07-26 — M6 (Döngü 6)
+
+Kapsam: `domain/models/` (13 dosya), `domain/usecase/classify/` (AppClassifier, KeywordDatabase, AppClassifierAssets, CategoryLLMFallback, CategorySuggestionEngine, ClassificationAttentionPolicy, ClassificationDiagnosticsCalculator), `domain/home/` (30+ dosya), `domain/usecase/folder|missions|pulse|contacts|privacy|notification|usage|wrapped/`, `domain/common/`, `domain/time/`. Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından doğrudan Read/Grep/Edit ile tek oturumda işlendi.
+
+**Zorunlu iş — M1'den ertelenen `getAcceptedOverridePatterns` kararı VERİLDİ (bağlandı):**
+`AppPrefs.getAcceptedOverridePatterns`/`addAcceptedOverridePattern` (AppPrefs.kt:1408-1416) — `addAcceptedOverridePattern` `AppListViewModel.acceptSimilarCategorySuggestions()` (satır 466) içinde aktif yazıyordu ama okuma tarafı hiçbir yerde yoktu (K2 — override'lardan öğrenen öneri katmanı, yazma yapılıp hiç okunmuyordu). Karar: **KOD YAZILDI, silinmedi.** `AppClassifier.findSimilarUnclassifiedApps()` kendi doc-comment'inde "Context/AppPrefs bağımlılığı yok, saf/test edilebilir fonksiyon" diye açıkça belirttiği için AppPrefs okuması pure fonksiyona taşınmadı; bunun yerine gerçek tüketici `AppListViewModel.prepareSimilarCategorySuggestions()` (satır 650-672) içine eklendi: `getAcceptedOverridePatterns(context)` okunuyor, `"categoryId:pkg1,pkg2,..."` formatı parse edilip aynı `newCategoryId` için daha önce kabul edilmiş paketler öneri listesinden filtreleniyor (`filterNot`). Böylece kullanıcı bir öneri grubunu kabul ettikten sonra aynı paketler tekrar önerilmiyor. `AppListViewModel.kt:662-674`.
+
+**Silinen semboller (ölü kod, 0 production caller kanıtlandı):**
+- `CategoryLLMFallback.classify(packageName, apiKey)` (tekil paket varyantı) — sadece `classifyBatch()` kullanılıyor (`AppListViewModel.kt:773`), tekil varyant hiç çağrılmıyordu, test kapsamı da yok. `CategoryLLMFallback.kt`.
+- `AppClassifier.classifyByKeywords(appName, packageName)` — `bestKeywordCategory`/`hasKeywordMatch` tarafından süperset edilmiş eski/basit keyword eşleştirici, 0 caller. `AppClassifier.kt`.
+- `FolderSuggestion.toMergePlan()` — `FolderSuggestionEngine`'den `FolderMergePlan`'a köprü fonksiyonu, ama gerçek merge akışı (`FolderMergeViewModel.kt:45`) doğrudan `FolderMergeCandidateScorer.score()` çağırıp `FolderMergePlan` üretiyor, `FolderSuggestion` üzerinden hiç geçmiyor. 0 caller, 0 test. `FolderSuggestionEngine.kt`.
+- `HomeDataResult<T>.isUsable()` extension — 0 caller (tüketiciler `HomeDataResult`'ı doğrudan `when` ile pattern-match ediyor, bu convenience metodu hiç kullanılmamış), 0 test. `HomeDataResult.kt`.
+- `HomeErrorCodes.USAGE_PERMISSION_MISSING` + `HomeErrorCodes.MISSION_METRIC_STALE` sabitleri — hiçbir `HomeDataResult.Stale.warningCode`/`Failed.errorCode` alanına atanmıyor, 0 caller. `HomeErrorCodes.kt`. (Not: `MissingReason` enum'undaki 3 kullanılmayan değer — `USAGE_PERMISSION_MISSING`/`NOTIFICATION_ACCESS_MISSING`/`FEATURE_DISABLED` — silinMEDİ; enum değerleri, gelecekteki kaynak türleri için ayrılmış kelime dağarcığı, düşük risk/düşük değer nedeniyle dokunulmadı.)
+
+**Geri alınan bir silme (D240 kanıt disiplini):**
+- `KeywordDatabase.addKeywordToCategory()` önce "0 production caller" gerekçesiyle silindi, ANCAK `testDebugUnitTest` çalıştırıldığında `KeywordDatabaseTest.kt:67-82`'de 2 test tarafından kullanıldığı ortaya çıktı (`addKeywordToCategory adds new keyword`, `addKeywordToCategory does not add duplicate`) — derleme hatası verdi, fonksiyon GERİ EKLENDİ. Ders: production-only grep yeterli değil, test dizini de taranmalı (bu döngüde diğer tüm silmeler için test dizini ayrıca kontrol edildi, sadece bu biri kaçmıştı). Fonksiyonun kendisi `(keywordMap as MutableMap)` unsafe cast'i kullanıyor — Kotlin'in `mapOf()` çok-girdili halde dahili `LinkedHashMap` döndürmesine dayanan, resmi olmayan bir varsayım; kod yorumuna bu risk not düşüldü ama davranış değiştirilmedi (test kapsamı korunmalı, büyük refactor kapsamı dışı).
+
+**Kritik altyapı bulgusu (M12'ye kesin kanıt, kod DEĞİŞTİRİLMEDİ):**
+- `scripts/check_duplicates.py` **tamamen kör** — regex'i (`ENTRY_RE`) eski Kotlin `"pkg" to CAT_X` sözdizimini arıyor, ama D115'ten beri katalog `assets/app_categories.json`'da `{"pkg":"category"}` JSON formatında. Script'i JSON'a karşı çalıştırınca "0 entry, 0 duplicate — temiz" raporluyor (gerçekte parse bile edemiyor, entry_re hiç eşleşmiyor). AYRICA `.githooks/pre-commit` hook'u hâlâ `AppClassifier.kt`'yi hedefliyor (`CLASSIFIER="...AppClassifier.kt"`) — o dosyada artık paket haritası YOK (JSON'a taşındı, D115). Yani pre-commit güvenlik ağı hem yanlış dosyayı hedefliyor hem de (doğru dosyaya yönlendirilse bile) format uyuşmazlığından format parse edemiyor — **iki kat kör bir no-op**. Gerçek JSON'da elle Python ile doğrulandı: 3702 unique key, 0 duplicate (veri temiz, sadece güvenlik ağı çalışmıyor). M12 kapsamında ele alınmalı: script'in regex'i JSON key:value formatına güncellenmeli VE hook hedefi `app_categories.json`'a çevrilmeli.
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- `KeywordDatabase.keywordMap` — tek `mapOf()` içinde her `Category.CAT_x` YALNIZ BİR KEZ tanımlı, duplicate key riski YOK (LEARNINGS'teki Loop 77 bug'ı D115 sonrası tekrar etmemiş, doğrulandı).
+- `AppClassifier.classifyAppDecision()` zinciri — userDecision → manualReview → remoteCatalog → bundledCatalog(JSON) → androidCategory → manufacturer → keyword → llmLegacy → fallback sırası, `AppPrefs.ClassificationMode` ile doğru dallanıyor, sağlam.
+- `CategorySuggestionEngine`, `ClassificationAttentionPolicy`, `ClassificationDiagnosticsCalculator` — tam okundu, hepsi gerçek UI tüketicisine bağlı (`ClassificationReviewScreen.kt`), sağlam.
+- `FolderMergeCandidateScorer`/`FolderConsistencyValidator`/`FolderSuggestionEngine` — üç ayrı motor gibi görünse de ikisi de gerçek, farklı ViewModel'lerden (`FolderMergeViewModel`, `AppListViewModel`) tüketiliyor; kod tekrarı değil kasıtlı ayrım (birleştirme-özel vs genel öneri).
+- `StarLevelSystem`, `FolderEmojiSets`, `MissionHistoryEntry.PERIOD_*` sabitleri, `Operation`/`OperationDao` (undo/rollback) — hepsi gerçek UI/repository tüketicisine bağlı, sağlam.
+- `NoOpDigitalPulseSource`/`NoOpMissionRuntimeSource`/`NoOpSmartTickerSource` — Hilt DI grafiğinde `@Binds`/`@Provides` YOK (Real* versiyonları bağlı), ama kendi doc-comment'i "testler/DI fallback için tutulur" diye açıkça gerekçelendiriyor — D240 "dead-code=görev-açık" ilkesi gereği dokunulmadı (gerekçeli, düşük riskli scaffolding).
+- `TodayCardSelector.select()` — M2/M4'te "dead" şüphesi vardı (UI tarafı `PixelClockWidget` silinmişti), ama `TodayCardSelectorTest.kt`'de 10+ test var — test kapsamı silmeyi engelliyor, gelecekteki "BUGÜN" kart wiring'i için doğru şekilde bekletiliyor.
+- Locale("tr") kullanımı `AppClassifier`, `CategorySuggestionEngine`, `FolderMergeCandidateScorer`, `FolderSuggestionEngine` genelinde tutarlı.
+
+**Sayılar:** silinen 5 sembol grubu (CategoryLLMFallback.classify tekil, AppClassifier.classifyByKeywords, FolderSuggestion.toMergePlan, HomeDataResult.isUsable, HomeErrorCodes 2 sabit), 1 sembol silinip test hatası üzerine GERİ EKLENDİ (addKeywordToCategory — net silinen sayısına dahil değil), 1 M1-ertelenen bulgu KOD YAZILARAK bağlandı (getAcceptedOverridePatterns → AppListViewModel filtre), 1 kritik altyapı bulgusu M12'ye kesin kanıtla not düşüldü (check_duplicates.py + pre-commit hook çifte kör), ertelenen/dokunulmayan 3 bulgu (MissingReason 3 enum değeri, NoOp* DI fallback sınıfları, AppInfo.getColorInt — hepsi düşük risk/düşük değer, kod DEĞİŞMEDİ).
+
+**Build:** İlk `compileDebugKotlin` FROM-CACHE yanıltıcı geldi (Windows dosya kilidi sonrası `app\build` temizlenmemişti) → `taskkill /F /IM java.exe` + `robocopy /MIR` boş-dizin temizliği (CLAUDE.md kalıcı kural) → yeniden `compileDebugKotlin -PskipGoogleServices` → **BUILD SUCCESSFUL in 1m 6s**. Hedefli `testDebugUnitTest` (AppInfoTest, FolderMergeCandidateScorerTest, TodayCardSelectorTest, AppClassifier*, KeywordDatabaseTest, AppListViewModelTest, FolderSuggestionEngine*) → **BUILD SUCCESSFUL**, ilk denemede `addKeywordToCategory` derleme hatası yakalandı ve düzeltildi (yukarı bak). Tam `testDebugUnitTest` çalıştırıldı: **1248 test, 8 FAIL, 19 skip** — 8 hata bu modülde değiştirilen HİÇBİR dosyayla örtüşmüyor (`DockPrefsTest`, `HeroDockMigrationPolicyTest`, `SearchScoringTest`, `AppNotificationListenerServiceTest`, `AppRepositoryTest` — hepsi M1/M5/M7/M8 kapsamında, bu döngüde dokunulmadı, muhtemelen önceden var olan/ortam kaynaklı flaky testler). Sonraki modülde (M7 data/) bu 5 test dosyasının kapsamındaki gerçek kod incelenirken bu FAIL'ler de kök nedeniyle birlikte ele alınmalı.
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/CategoryLLMFallback.kt` (-16 satır, tekil `classify()` silindi)
+- `app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/AppClassifier.kt` (-10 satır, `classifyByKeywords` silindi)
+- `app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/KeywordDatabase.kt` (net değişiklik yok — silinip geri eklendi, yorum eklendi)
+- `app/src/main/java/com/armutlu/apporganizer/domain/usecase/folder/FolderSuggestionEngine.kt` (-11 satır, `toMergePlan()` silindi)
+- `app/src/main/java/com/armutlu/apporganizer/domain/common/HomeDataResult.kt` (-10 satır, `isUsable()` silindi)
+- `app/src/main/java/com/armutlu/apporganizer/domain/common/HomeErrorCodes.kt` (-2 satır, 2 ölü sabit silindi)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt` (+8 satır, `getAcceptedOverridePatterns` tüketicisi eklendi, satır 662-674)
+
+**Sonraki modül:** M7 — data/ (AppDao, AppDatabase, repository'ler, migration'lar, FTS). Not: M6'da tespit edilen `DockPrefsTest`/`HeroDockMigrationPolicyTest`/`SearchScoringTest`/`AppNotificationListenerServiceTest`/`AppRepositoryTest` FAIL'leri M7/M8'de kök nedeniyle ele alınmalı; `scripts/check_duplicates.py` + `.githooks/pre-commit` çifte kör bulgusu M12'de düzeltilmeli.
