@@ -99,10 +99,8 @@ object HomePagePlanner {
             } else if (page is HomePageSpec.FolderPage) {
                 val fallbackKey = "folder:${page.pageIndex}"
                 seen.add(fallbackKey)
-                page.copy(firstFolderCategoryId = null).let {
-                    // firstFolderCategoryId=null zorunlu olarak stableKey'i "folder:pageIndex" yapar.
-                    it
-                }
+                // firstFolderCategoryId=null zorunlu olarak stableKey'i "folder:pageIndex" yapar.
+                page.copy(firstFolderCategoryId = null)
             } else {
                 page
             }

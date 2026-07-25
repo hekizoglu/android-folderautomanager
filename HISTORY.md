@@ -1,5 +1,11 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M3 — 2026-07-26
+**Yapılanlar:** launcher/ çekirdek denetimi (HomeScreen, HomePagePlanner, LauncherViewModel, LauncherActivity) — ölü `homePagerPageCount` state'i silindi, HomePagePlanner no-op temizlendi, derleme yeşil.
+**Bug:** Önceki tur agent'ı haftalık API limitine takılıp 0 iz bırakmadan çökmüştü — bu turda sıfırdan işlendi; alt-agent'lar bekleme döngüsüne girdi, şef sonuçları topladı.
+**Sonraki:** M4 (launcher/ bileşenler: FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet).
+
+
 ## Döngü D240+M1 — 2026-07-25 02:15
 **Yapılanlar:** D240 halüsinasyon denetimi (4 kopuk halka: dock 5. slot take(4), CRON-37 tüketilmeyen ayar, yanlış ComponentName, hayalet EditingCenter) + M1 prefs zincir testi + 790MB hprof geçmiş temizliği → push başarılı.
 **Bug:** GitHub pre-receive reddi (hprof) — filter-branch ile çözüldü; M1 agent derleme hatası bıraktı — şef düzeltti.

@@ -388,7 +388,6 @@ fun HomeScreen(
     // doğrudan iletilemez. `pager` slotu her zaman `indicator` slotundan ÖNCE compose edildiği
     // için (HomeShell.kt: pager() -> indicator() -> ...) bu `remember` holder'a yazıp
     // `indicator` slotunda okumak güvenlidir (aynı frame, tek composition geçişi).
-    var homePagerPageCount by remember { mutableStateOf(1) }
     var homePagerState by remember { mutableStateOf<androidx.compose.foundation.pager.PagerState?>(null) }
     // Döngü P12 — GoToStartPage komutu StartPageMode'a göre doğru index'i hesaplayabilsin diye
     // güncel `pages` listesi de aynı hoisting deseniyle (yukarıdaki yorum) dışarı taşınır.
@@ -1210,9 +1209,8 @@ fun HomeScreen(
                 previousPageIndexForReconcile = pagerState.currentPage
             }
 
-            // İndicator hoisting (HomeShell slotuna) — bkz. yukarıdaki homePagerState/homePagerPageCount.
+            // İndicator hoisting (HomeShell slotuna) — bkz. yukarıdaki homePagerState.
             homePagerState = pagerState
-            homePagerPageCount = pageCount
             homePages = pages
             homePageSize = pageSize
 
@@ -1485,7 +1483,7 @@ fun HomeScreen(
             )
 
             // Sayfa noktaciklari artık HomeShell'in indicator slotunda render ediliyor
-            // (bkz. homePagerState/homePagerPageCount yukarıda) — burada tekrar çizilmez.
+            // (bkz. homePagerState yukarıda) — burada tekrar çizilmez.
 
             // Swipe-up ipucu — ilk 5 acilista goster
             SwipeHint(context = context, visible = !allAppsOpen && swipeHintEnabled)

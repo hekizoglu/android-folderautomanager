@@ -25,8 +25,8 @@ Tüm kod tabanını modül modül tara. Her modülde:
 |---|-------|--------|-------|
 | M1 | utils/ prefs katmanı | AppPrefs, DockPrefs, HomePagePrefs, WidgetPrefs — zincir testi hepsi | TAMAM |
 | M2 | Ayarlar ekranları (DERİN) | SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + MANAGEMENT/SETTINGS_AUDIT_REPORT.md maddeleri | TAMAM |
-| M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | DEVAM |
-| M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | BEKLEMEDE |
+| M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | TAMAM |
+| M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | DEVAM |
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | BEKLEMEDE |
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | BEKLEMEDE |
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | BEKLEMEDE |
@@ -118,3 +118,43 @@ Kapsam: 17 Settings*.kt dosyası (SettingsScreen, SettingsLauncherScreen, Settin
 - `app/src/main/res/values/strings.xml` (+3)
 
 **Sonraki modül:** M3 — launcher/ çekirdek (HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel).
+
+### 2026-07-26 — M3 (Döngü 3)
+
+Kapsam: `HomeScreen.kt`, `HomeShell.kt`, `HomePagerHost.kt`, `HomePagePlanner.kt`, `HomeAdaptiveLayoutPolicy.kt`, `HomeContentWidthTokens.kt`, `LauncherViewModel.kt`, `LauncherActivity.kt` — bu modül bir önceki turda agent haftalık API limitine takılıp 0 değişiklikle çökmüştü, bu turda sıfırdan işlendi (kısmi agent çıktısı + şef tarafından tamamlandı).
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- `HomeScreen.kt:391` — `var homePagerPageCount by remember { mutableStateOf(1) }` — tek yazma noktası vardı, hiçbir okuyucu yoktu (indicator koşulu zaten `homePages.size > 1` kullanıyordu). 3 nokta temizlendi: tanım (391), yazma (1212-1213), yorum referansları (1213, 1488).
+
+**Küçük düzeltme uygulandı:**
+- `HomePagePlanner.kt:100-103` — `dedupeStableKeys()` içindeki gereksiz `.let { it }` no-op bloğu kaldırıldı, yorum netleştirildi. Davranış değişmedi (kozmetik/okunabilirlik), test kapsamı etkilenmedi.
+
+**Tespit edildi, SİLİNMEDİ (dokümante edilmiş gelecek iş):**
+- `LauncherViewModel.refreshHomeIntelligence(reason)` (satır 665) — 0 caller (grep doğrulandı) ama kendi yorumu zaten "Döngü H02 — HomeScreen onResume'da çağrılabilir (opsiyonel, henüz UI tarafında bağlı değil)" diyor. `homeIntelligenceCoordinator`'ın kendisi ÖLÜ DEĞİL — `APP_START`'ta zaten tetikleniyor (satır 389) ve `state` akışı UI'da tüketiliyor (`homeMissionSummary` vb., satır 985/1003). Bu fonksiyon sadece "onResume'da ek tetikleme" opsiyonel ekini temsil ediyor — silinmedi, ROADMAP'e not: HomeScreen onResume'a bağlanabilir (Kullanıcı Değeri 2, Uygulanabilirlik 4, Bağımlılık Riski 3, Etki Alanı 2 → 11/20 → FİKİRLER "Değerlendir").
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- D240/M2'de yapılan taze düzeltmeler (widgetPageEnabled, sayfa göstergesi token padding, EditingCenterCard koşulu, CRON-37 dock kategori bloğu, editingCenterState stateIn zinciri) bozulmadı.
+- `HomePagePlanner.buildPages()` mantığı (Dashboard→WidgetPage→FolderPages sırası, dedupe) doğru ve tutarlı bulundu.
+
+**Ertelenen/ROADMAP-FİKİRLER adayı:**
+- `refreshHomeIntelligence` onResume wiring'i (yukarıda not edildi) — 11/20, FİKİRLER "🟡 Değerlendir".
+- **`fillDockSuggestions`/`buildContextualDockPackages`** (`LauncherViewModel.kt:141-164`) — production kodda (`loadDockPackages`) hiç çağrılmıyor, `resolvedPackages` inline mantıkla hesaplanıyor; bu iki pure function SADECE `LauncherViewModelLogicTest.kt`'de test ediliyor — test edilen mantık ile üretim mantığı ayrışmış. Risk orta (davranış farkı olabilir), dokunulmadı. Puanlama: Kullanıcı Değeri 2, Uygulanabilirlik 3, Bağımlılık Riski 3, Etki Alanı 2 → **10/20** → FİKİRLER "🟡 Değerlendir".
+- `HomeScreen.kt:806-811` (HeroDock slotu) — yorum "`HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp()` ile sınırlanıp ortalanır" diyor ama gerçek `HeroDock` modifier'ında bu fonksiyon da `widthIn(max=...)` de YOK (sadece `fillMaxWidth()`) — D240 tipi yorum/kod uyuşmazlığı, büyük tablette dock hâlâ tam genişlik. Puanlama: 2+3+2+2 → **9/20 → Beklet** (M5/M6'da ekran görüntüsü ile doğrulanmalı).
+- `HomePagePlanner.kt:26,38` — `dashboardEnabled` parametresi üretimde hep `true` (HomeScreen.kt:1102 override etmiyor); yorum zaten "P24'te kullanıcı ayarına bağlanacak" diyor — dürüst future-work notu. Kullanıcı Dashboard'u kapatamıyor. Puanlama: 2+3+3+2 → **10/20 → FİKİRLER Değerlendir**.
+- `HomeScreenFolderPager.kt` dosya adı eski ("FolderPager") ama içindeki `FolderGridPage` composable aktif kullanımda — sadece isimlendirme notu, iş açılmadı.
+
+**PERF notları (kod değiştirilmedi, sadece liste — PERF planına eklenmeli):**
+- `LauncherActivity.onCreate()` satır 207-211 — reconcileIfNeeded/initFavorites/syncUsageStats/syncAppSizes/loadWidgetIds `setContent{}` öncesi senkron tetikleniyor (her biri kendi IO launch'ı var ama 5 çağrının kendisi ilk frame'den önce dispatch overhead'i yaratıyor) — `LaunchedEffect(Unit)`'e taşınması ölçülmeli.
+- `onResume()` içindeki `loadDockPackages` ana thread'de `allApps.value` okuyup filtreliyor/sıralıyor (IO'ya launch etmiyor) — büyük listede resume jank'i riski, ölçüm önerilir.
+
+**Not:** Bu iterasyonda alt-agent'lar (M3-A: HomeScreen+pager, M3-B: LauncherViewModel+LauncherActivity) kendi aralarında/parent'ı beklerken döngüye girdi; şef (ana oturum) sonuçlarını doğrudan topladı, doğruladı ve kapattı. Sonraki iterasyonlarda agent talimatına "alt-agent SPAWN ETME, kendin analiz et" notu eklenmesi düşünülebilir (M4+ için).
+
+**Build:** `gradlew compileDebugKotlin -PskipGoogleServices` → **EXIT 0, BUILD SUCCESSFUL** — şef tarafından doğrulandı.
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomePagePlanner.kt` (-2 net satır, no-op temizliği)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreen.kt` (-2 net satır, ölü `homePagerPageCount` state'i 3 noktadan silindi)
+
+**Sayılar:** silinen 1 sembol (ölü state), düzeltilen 1 no-op kod, bağlanan 0 halka, ertelenen 4 bulgu (2× 10/20 Değerlendir, 1× 9/20 Beklet, 1× sadece isimlendirme notu), 2 PERF notu (kod değişmedi).
+
+**Sonraki modül:** M4 — launcher/ bileşenler (FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet).
