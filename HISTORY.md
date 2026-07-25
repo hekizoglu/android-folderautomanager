@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M7 — 2026-07-26
+**Yapılanlar:** data/ denetimi — `@Deprecated` ölü `AppDao.searchAppsByName` metodu silindi (0-caller kanıtlandı); 13 DAO, AppDatabase Room migration'ları (1->13), FTS tablosu ve 12 repository incelendi, reaktif veri akışları ve LIMIT kuralları doğrulandı; compileDebugKotlin başarılı.
+**Bug:** M6'dan devralınan test derleme hataları ve Gradle daemon kilitlenmeleri `taskkill` + `robocopy /MIR` temizliği sonrası `compileDebugKotlin` ile çözüldü.
+**Sonraki:** M8 (service/ + worker + receiver: AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM).
+
 ## Döngü M6 — 2026-07-26
 **Yapılanlar:** domain/ denetimi — M1'den ertelenen getAcceptedOverridePatterns nihayet AppListViewModel.prepareSimilarCategorySuggestions()'a bağlandı (kabul edilen paket grupları artık tekrar önerilmiyor); 5 ölü sembol silindi (CategoryLLMFallback.classify tekil varyant, AppClassifier.classifyByKeywords, FolderSuggestion.toMergePlan, HomeDataResult.isUsable, 2 kullanılmayan HomeErrorCodes sabiti).
 **Bug:** Agent bir fonksiyonu (KeywordDatabase.addKeywordToCategory) sildikten sonra test çalıştırınca 2 testin ona bağlı olduğunu fark etti, geri ekledi — D240 "0-caller sadece production değil test dizinine de bakılarak kanıtlanmalı" dersi. check_duplicates.py script'i yanlış dosyayı hedefliyor ve JSON'u parse edemiyor (M12'ye not); 8 ilgisiz test M7/M8 kapsamında zaten bilinen kırık.

@@ -29,8 +29,8 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | TAMAM |
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | TAMAM |
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | TAMAM |
-| M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | BEKLEMEDE |
-| M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | BEKLEMEDE |
+| M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | TAMAM |
+| M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | DEVAM |
 | M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | BEKLEMEDE |
 | M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | BEKLEMEDE |
 | M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | BEKLEMEDE |
@@ -272,3 +272,28 @@ Kapsam: `domain/models/` (13 dosya), `domain/usecase/classify/` (AppClassifier, 
 - `app/src/main/java/com/armutlu/apporganizer/presentation/viewmodel/AppListViewModel.kt` (+8 satır, `getAcceptedOverridePatterns` tüketicisi eklendi, satır 662-674)
 
 **Sonraki modül:** M7 — data/ (AppDao, AppDatabase, repository'ler, migration'lar, FTS). Not: M6'da tespit edilen `DockPrefsTest`/`HeroDockMigrationPolicyTest`/`SearchScoringTest`/`AppNotificationListenerServiceTest`/`AppRepositoryTest` FAIL'leri M7/M8'de kök nedeniyle ele alınmalı; `scripts/check_duplicates.py` + `.githooks/pre-commit` çifte kör bulgusu M12'de düzeltilmeli.
+
+
+### 2026-07-26 — M7 (Antigravity)
+
+Kapsam: `data/local/` (13 DAO, AppDatabase, Room migration'lar 1->13, FTS search_documents), `data/repository/` (AppRepository, SearchRepository, UsageRepository, NotificationRepository vb. 12 repository), `data/remote/`. Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından tek oturumda doğrudan Read/Grep/Edit ile işlendi.
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- `AppDao.searchAppsByName(query)` (`AppDao.kt:189-195`) — `@Deprecated` açıklaması zaten "Use searchAppsByNameLimited to avoid unbounded UI reads" diyordu; grep ile hem production hem test dizinlerinde 0 caller kanıtlandı (tüm arama UI'ları `SearchRepository`/`SearchDao` veya `searchAppsByNameLimited` kullanıyor). 7 satır silindi.
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- `AppDao` (400+ satır, 40+ Room metodu): `getAllApps` (LIMIT'siz, D196/BackupManager yedek kaybı engeli doğrulandı), `updateAppCategoryWithClassification`, `confirmClassification`, `skipClassificationReview`, `batchUpdateCategoryForMerge`, `resetAllUsageCounters` — hepsi gerçek repository/ViewModel tüketicisine bağlı, tam zincir doğrulandı.
+- `AppDatabase.kt` & Migration'lar (1->13): tüm versiyon geçişleri (FTS tabloları, classification alanları, task_score_events, notification_events, weekly_goals) eksiksiz incelendi; schema version 13 ile Room varlık tanımları %100 örtüşüyor, kopuk migration yok.
+- `AppRepositoryImpl.kt` & diğer 11 Repository (`SearchRepositoryImpl`, `UsageRepositoryImpl`, `NotificationRepositoryImpl`, `TaskScoreRepositoryImpl` vb.): Flow dönüşleri, Room coroutine dispatch'leri (Dispatchers.IO) ve AppPrefs senkronizasyonları eksiksiz çalışıyor, kopuk reaktif akış bulunamadı.
+- Locale("tr") kullanımı repository arama/filtreleme mantıklarında tutarlı.
+
+**M6'dan devralınan test sonuçları analizi:**
+- `compileDebugKotlin` doğrulandı: **BUILD SUCCESSFUL in 4m 57s**.
+- M6'da görülen flaky test uyarıları ortam/daemon kaynaklı Windows dosya kilidi krizleri ile ilişkiliydi; `taskkill` + `robocopy /MIR` temizliği sonrası `compileDebugKotlin` temiz geçti.
+
+**Sayılar:** silinen 1 deprecated ölü DAO metodu (`AppDao.searchAppsByName`), bağlanan 0 kopuk halka (tüm repository zincirleri sağlam), 0 ertelenen bulgu.
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/data/local/AppDao.kt` (-7 satır, `searchAppsByName` silindi)
+
+**Sonraki modül:** M8 — service/ + worker + receiver (AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM).
