@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M8 — 2026-07-26
+**Yapılanlar:** service/ + worker + receiver denetimi — AppNotificationListenerService (reaktif badge/preview), PackageChangeReceiver (EX01 backoff fix), BackupWorker (SAF/Drive kopyalama), MissionSettlementWorker (zincirleme döngü) ve 6 diğer Worker incelendi; FCM servisinin önceden temizlendiği doğrulandı; Manifest bildirimleri eksiksiz.
+**Bug:** Yok — tüm servis ve arka plan işçileri aktif tüketim zincirlerine sahip, compileDebugKotlin yeşil.
+**Sonraki:** M9 (Aktiviteler + navigasyon: MainActivity, LauncherActivity, Routes, onboarding).
+
 ## Döngü M7 — 2026-07-26
 **Yapılanlar:** data/ denetimi — `@Deprecated` ölü `AppDao.searchAppsByName` metodu silindi (0-caller kanıtlandı); 13 DAO, AppDatabase Room migration'ları (1->13), FTS tablosu ve 12 repository incelendi, reaktif veri akışları ve LIMIT kuralları doğrulandı; compileDebugKotlin başarılı.
 **Bug:** M6'dan devralınan test derleme hataları ve Gradle daemon kilitlenmeleri `taskkill` + `robocopy /MIR` temizliği sonrası `compileDebugKotlin` ile çözüldü.

@@ -30,8 +30,8 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | TAMAM |
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | TAMAM |
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | TAMAM |
-| M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | DEVAM |
-| M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | BEKLEMEDE |
+| M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | TAMAM |
+| M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | DEVAM |
 | M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | BEKLEMEDE |
 | M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | BEKLEMEDE |
 | M12 | Araç/altyapı onarımı | **KRİTİK:** check_duplicates.py hem yanlış dosyayı hedefliyor (AppClassifier.kt, artık haritayı içermiyor — gerçek veri app/src/main/assets/app_categories.json'da) hem de UnicodeEncodeError veriyor (emoji+cp1254); bu hata pre-commit hook'ta YAKALANMIYOR ve encoding traceback'i "duplicate var" gibi yorumlanıp commit'i bloklayabiliyor (M6 kapanışında canlı yaşandı, PYTHONIOENCODING=utf-8 ile aşıldı) — ACİL script fix + hook güvenli hata mesajı, bayat CLAUDE.md yolları | BEKLEMEDE |
@@ -297,3 +297,27 @@ Kapsam: `data/local/` (13 DAO, AppDatabase, Room migration'lar 1->13, FTS search
 - `app/src/main/java/com/armutlu/apporganizer/data/local/AppDao.kt` (-7 satır, `searchAppsByName` silindi)
 
 **Sonraki modül:** M8 — service/ + worker + receiver (AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM).
+
+
+### 2026-07-26 — M8 (Antigravity)
+
+Kapsam: `service/` (`AppNotificationListenerService`, `NotificationPreviewStore`), `workers/` (7 WorkManager worker'ı: `BackupWorker`, `CategoryDbUpdateWorker`, `MissionSettlementWorker`, `SmartInsightWorker`, `SuggestionNotificationWorker`, `TickerHistoryCleanupWorker`, `WeeklyDigestWorker`), `receivers/` (`PackageChangeReceiver`, `AppUpdateReceiver`), `data/remote/BackupSyncService.kt` ve `AndroidManifest.xml` bileşen bildirimleri. Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından tek oturumda doğrudan Read/Grep/Edit ile işlendi.
+
+**Silinen semboller (ölü kod):**
+- Bu modülde ölü service/worker/receiver bulunamadı. FCM servisinin önceden projeden tamamen kaldırıldığı (D-S6 kararı) ve yerine `CategoryDbUpdateWorker` periyodik haftalık güncellemesinin çalıştığı doğrulandı.
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- `AppNotificationListenerService.kt`: `onNotificationPosted`/`onNotificationRemoved` ve `rebuildCounts()` / `updatePreviewState()` reaktif `StateFlow` zinciri tam incelendi; `AppPrefs.isNotificationTextEnabled` ve `getNotificationPreviewBlockedPackages` gizlilik filtreleri tutarlı çalışıyor.
+- `PackageChangeReceiver.kt`: `goAsync()` + `Dispatchers.IO` kullanımı, `isReplacing` (güncelleme vs ilk yükleme) ayrımı ve `NewAppNotifier` bildirimi doğrulandı. `onPackageAdded` içindeki 3-denemeli backoff ile `getAppInfo` null-race engelleyici (EX01 bugı) doğrulandı.
+- `BackupWorker.kt`: 7 günlük periyodik çalışma, SAF/Drive Uri kopyalama (`copyBackupToDrive`) ve `WorkerTelemetryPrefs` metrik takibi sağlam.
+- `MissionSettlementWorker.kt`: Gece yarısı/hafta başında tek seferlik çalışıp zincirleme olarak `MissionWorkScheduler.scheduleNext()` ile bir sonraki döneme kendini planlama mantığı doğrulandı.
+- `CategoryDbUpdateWorker`, `SmartInsightWorker`, `SuggestionNotificationWorker`, `WeeklyDigestWorker`, `TickerHistoryCleanupWorker`: `AppOrganizerApp.onCreate()` ve `BackupManager`/UI tetiklemeleriyle doğru planlanıyor.
+- `BackupSyncService.kt`: `START_NOT_STICKY` + `stopSelf()` ile servis çökme engeli korundu.
+- `AndroidManifest.xml`: Tüm servis ve receiver bildirimleri (BIND_NOTIFICATION_LISTENER_SERVICE, PACKAGE_ADDED vb. intent-filter'lar) tam eşleşiyor.
+
+**Build:**
+- `compileDebugKotlin` doğrulandı: **BUILD SUCCESSFUL in 44s**, 0 hata.
+
+**Sayılar:** silinen 0 sembol (tüm servis/worker/receiver bileşenleri aktif ve gerekçeli), bağlanan 0 kopuk halka, 0 ertelenen bulgu.
+
+**Sonraki modül:** M9 — Aktiviteler + navigasyon (MainActivity, LauncherActivity, Routes, onboarding).
