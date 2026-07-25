@@ -27,7 +27,7 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M2 | Ayarlar ekranları (DERİN) | SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + MANAGEMENT/SETTINGS_AUDIT_REPORT.md maddeleri | TAMAM |
 | M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | TAMAM |
 | M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | TAMAM |
-| M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | BEKLEMEDE |
+| M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | TAMAM |
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | BEKLEMEDE |
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | BEKLEMEDE |
 | M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | BEKLEMEDE |
@@ -191,3 +191,39 @@ Kapsam: `FolderTile.kt` (505 satır), `FolderScreen.kt` (1191→1103 satır), `A
 - `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreenComponents.kt` (3187→2035 satır, -1152)
 
 **Sonraki modül:** M5 — launcher/hero/ (HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage). Not: M3'te ertelenen "HeroDock widthIn eksikliği 9/20" bulgusu (HomeScreen.kt:806-811 yorum/kod uyuşmazlığı) M5'te ekran görüntüsüyle doğrulanmalı.
+
+### 2026-07-26 — M5 (Döngü 5)
+
+Kapsam: `launcher/hero/` klasöründeki 11 dosya (`HeroDashboardPage.kt`, `HeroDock.kt`, `HeroClockCard.kt`, `HeroDigitalLifeCard.kt`, `SmartAccessCard.kt`, `SmartAccessAppItem.kt`, `HeroSearchCard.kt`, `PremiumGlassSurface.kt`, `HomeHeroLayoutPolicy.kt`, `HomeHeroProfile.kt`, `HomeHeroTokens.kt`) + `../SmartDashboardPage.kt` wrapper + `../DashboardUiState.kt` (state/actions sözleşmesi) + `../HomeScreen.kt`'deki HeroDock çağrı noktası (806-840). Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından doğrudan Read/Grep/Edit ile tek oturumda işlendi.
+
+**M3'ün ertelediği HeroDock widthIn/HomeAdaptiveLayoutPolicy çelişkisi ÇÖZÜLDÜ (kod yoruma uyduruldu):**
+- Kök neden: `HeroDock.kt` kendi hardcoded eşiğini kullanıyordu (`configuration.screenWidthDp >= 600` → `maxContentWidth=720`), ama `HomeScreen.kt:805-810`'daki yorum `HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp()` sözleşmesini vaat ediyordu — bu fonksiyon SADECE `EXPANDED_TABLET` (≥840dp) sınıfında 720dp tavanı uygular, `COMPACT_TABLET` (600-839dp) için `null` döner (fillMaxWidth korunur). HeroDock'un kendi 600dp eşiği bu ayrımı yapmıyordu — **gerçek bug**: 600-839dp aralığındaki tabletlerde (ör. küçük tablet/katlanabilir) dock, policy'nin izin vermediği halde 720dp'ye erken sınırlanıyordu.
+- Fix: `HeroDock.kt:39-44` — `val deviceClass = HomeAdaptiveLayoutPolicy.deviceClass(configuration.screenWidthDp)` + `val maxContentWidth = HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp(deviceClass)`. Zaten import edilip kullanılmayan (derleyici unused-symbol riski) `HomeAdaptiveLayoutPolicy` importu artık gerçekten tüketiliyor. Yorum HomeScreen.kt:806-811'de zaten doğruydu — koda gerçek zincir eklendi, yorum değiştirilmedi.
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- `HeroSearchCard.kt` (88 satır, tüm dosya silindi) — M2'de `HeroDashboardPage`'den çağrısı kaldırılmıştı (çift arama kutusu fix'i), dosyanın kendisi geride kalmıştı. Grep: `HeroSearchCard(` sadece kendi `fun` tanımında eşleşti, 0 çağıran. `hero_search_placeholder`/`hero_search_sources` string kaynakları (`strings.xml`, `values-en/strings.xml`) artık hiçbir kod tarafından okunmuyor — silinmedi (M11 res/ tutarlılık modülü kapsamı, string temizliği ayrı bir taramaya bırakıldı).
+- `DashboardActions.onOpenSearch` / `onOpenSearchSettings` (`DashboardUiState.kt:28-29`, eski) — HeroSearchCard'ın kalıntısı ölü pass-through: `HomeScreen.kt:1327-1334`'te gerçek Intent/state ile dolduruluyordu ama `SmartDashboardPage.kt` bu iki alanı `HeroDashboardPage`'e hiç iletmiyordu (HeroDashboardPage zaten bu parametreleri almıyor — arama artık `HomeShell`'in `topSearch`/`bottomSearch`/`searchOverlay` slotlarında). Grep ile iki call site doğrulandı, ikisi de silindi: `DashboardActions` data class'ından alan kaldırıldı, `HomeScreen.kt`'deki `onOpenSearch = { fullScreenSearchOpen = true }` + `onOpenSearchSettings = { ... Routes.SEARCH_SETTINGS ... }` dolum bloğu silindi. `fullScreenSearchOpen` state'inin kendisi ayrıca doğrulandı — HomeShell/FullScreenSearchOverlayV2 zincirinde hâlâ 6+ noktada aktif kullanılıyor, ÖLÜ DEĞİL, sadece bu fazladan dolum yolu ölüydü.
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- `HeroClockCard`, `HeroDigitalLifeCard`, `SmartAccessCard`, `SmartAccessAppItem`, `PremiumGlassSurface`, `HomeHeroLayoutPolicy`/`HomeHeroProfile`/`HomeHeroTokens` — tam okundu, hepsinin `HeroDashboardPage` üzerinden gerçek çağıranı var, callback'ler (`onOpenWeeklyReport`, `onClockLongPress`, `onOpenPulse`, `onOpenUsageAccessSettings`, `onOpenNotificationAccessSettings`, `onOpenClassificationReview`, `onLaunchApp`, `onAppLongClick`) hepsi `HomeScreen.kt:1305-1356`'da gerçek Intent/ViewModel çağrılarına bağlı, boş lambda yok.
+- `pendingClassificationCount`/`onOpenClassificationReview` (P1.2 badge) — `HomeScreen.kt:1309` (`pendingClassificationsCount` gerçek state) ve `EditingCenterState`/`LauncherViewModel.kt:378` zincirine kadar izlendi, gerçek veri kaynağına bağlı, sahte değil.
+- `SmartDashboardPage.kt` — kalan tüm parametre eşlemeleri (`pulse`, `smartAccess`, `pendingClassificationCount`, `onOpenWeeklyReport`, `onClockLongPress`, `onOpenPulse`←`onPulseClick`, `onOpenUsageAccessSettings`, `onOpenNotificationAccessSettings`, `onOpenClassificationReview`, `onLaunchApp`, `onAppLongClick`) `DashboardActions`/`DashboardUiState`'in gerçek alanlarına 1:1 karşılık geliyor, ölü pass-through kalmadı (onOpenSearch/onOpenSearchSettings temizliğinden sonra).
+- `HeroDock.kt` içindeki `iconSize=48.dp`/`SmartAccessAppItem.kt` içindeki `48.dp` sihirli sayıları not edildi ama HomeHeroTokens'a taşınmadı — büyük refactor kapsamı dışı, risk düşük (M10 global temizlik adayı).
+
+**Ertelenen/ROADMAP-FİKİRLER adayları (kod yazılmadı):**
+1. `hero_search_placeholder`/`hero_search_sources` string kaynakları artık 0-consumer — M11'de silinmeli (iki dilde, strings.xml + values-en). Puanlama: 1+5+1+1 → **8/20 → Beklet** (kozmetik, risk yok, sadece M11'e not).
+2. `HeroDock.kt`/`SmartAccessAppItem.kt` içindeki `48.dp`/`iconSize` sihirli sayılarının `HomeHeroTokens`'a taşınması — tutarlılık iyileştirmesi, davranış değişmez. Puanlama: 2+4+1+2 → **9/20 → Beklet** (M10 global temizlikte ele alınabilir).
+
+**Sayılar:** 1 kritik mantık hatası düzeltildi (HeroDock widthIn eşiği, M3'ün 9/20 bulgusu artık ÇÖZÜLDÜ — kod HomeAdaptiveLayoutPolicy'ye bağlandı), silinen 1 dosya (HeroSearchCard.kt, 88 satır), silinen 2 ölü pass-through alan (DashboardActions.onOpenSearch/onOpenSearchSettings) + 2 call site, bağlanan 0 yeni kopuk halka (zaten HeroDock/HomeAdaptiveLayoutPolicy bağlantısı "kopuk halka bağlama" kategorisinde sayılabilir), ertelenen 2 bulgu (ikisi de <10/20 Beklet).
+
+**Build:** `gradlew compileDebugKotlin -PskipGoogleServices` → Windows dosya kilidi (AccessDeniedException + mergeDebugResources IOException, 2 kez) → `app\build` dizini `robocopy /MIR` boş-dizin tekniğiyle temizlendi (CLAUDE.md kalıcı kural) → **BUILD SUCCESSFUL in 9s**, 17/17 task (4 executed + 13 FROM-CACHE), 0 hata.
+
+**Ortam sorunu bildirimi:** Bu iterasyonda 2x `app\build` dosya kilidi (generateDebugBuildConfig AccessDenied, mergeDebugResources IOException) — kök neden muhtemelen arkaplanda asılı kalmış bir java/kotlin-daemon process'i; `taskkill /F /IM java.exe` + robocopy /MIR temizliğiyle çözüldü, tekrarı 2. kez olduğu için not düşülüyor (CLAUDE.md §"Ortam Sorunu Bildirim Kuralı" — 2+ tekrar eşiği karşılandı, ama kalıcı Defender exclusion zaten önceki döngülerde önerilmişti, yeni aksiyon gerekmiyor).
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/hero/HeroDock.kt` (widthIn mantığı HomeAdaptiveLayoutPolicy'ye bağlandı, satır 39-44)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/hero/HeroSearchCard.kt` (silindi, -88 satır)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/DashboardUiState.kt` (-2 alan: onOpenSearch, onOpenSearchSettings)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreen.kt` (-8 satır, ölü dolum bloğu silindi)
+
+**Sonraki modül:** M6 — domain/ (models, usecase/classify — AppClassifier, KeywordDatabase, InsightEngine).

@@ -36,9 +36,12 @@ internal fun HeroDock(
         .distinctBy { it.packageName }
         .take(5)
         .toList()
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
-    val maxContentWidth = if (isTablet) 720 else null
+    val configuration = LocalConfiguration.current
+    // Döngü P20 — HomeScreen.kt:805-810 yorumuyla birebir aynı sözleşme: yalnız EXPANDED_TABLET
+    // (840dp+) genişlik tavanına çarpar (HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp()).
+    // Telefon/küçük tablette null döner → fillMaxWidth() davranışı hiç değişmez.
+    val deviceClass = HomeAdaptiveLayoutPolicy.deviceClass(configuration.screenWidthDp)
+    val maxContentWidth = HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp(deviceClass)
 
     PremiumGlassSurface(
         modifier = modifier

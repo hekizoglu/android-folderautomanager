@@ -1,5 +1,11 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M5 — 2026-07-26
+**Yapılanlar:** launcher/hero/ denetimi — M3'ün ertelediği HeroDock genişlik mantık hatası düzeltildi (600dp hardcoded eşik yerine gerçek HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp() bağlandı, 600-839dp cihazlarda yanlış erken sınırlama gideriliyordu); ölü HeroSearchCard.kt (88 satır) + DashboardActions.onOpenSearch/onOpenSearchSettings kalıntı alanları silindi.
+**Bug:** Windows dosya kilidi 2 kez yaşandı (app\build) — robocopy /MIR ile temizlendi, şef bağımsız compileDebugKotlin ile ayrıca doğruladı.
+**Sonraki:** M6 (domain/: models, usecase/classify — AppClassifier, KeywordDatabase, InsightEngine).
+
+
 ## Döngü M4 — 2026-07-26
 **Yapılanlar:** launcher/ bileşenler denetimi (FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet) — ~1230 satır ölü kod silindi (FolderSlideParallaxPeek/FolderPageTurnPeek prototipleri, FullScreenSearchOverlay V1, Pixel Look öncesi eski dock/suggestion UI seti); şef bağımsız derlemeyle doğruladı.
 **Bug:** Yok — agent tek oturumda (alt-agent spawn etmeden) tamamladı, D240 kuralı gereği şef silinen sembolleri grep ile tekrar teyit etti.

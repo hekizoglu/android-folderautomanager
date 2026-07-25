@@ -1324,14 +1324,6 @@ fun HomeScreen(
                                 }
                                 runCatching { context.startActivity(intent) }
                             },
-                            onOpenSearch = { fullScreenSearchOpen = true },
-                            onOpenSearchSettings = {
-                                val intent = Intent(context, MainActivity::class.java).apply {
-                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SEARCH_SETTINGS)
-                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                runCatching { context.startActivity(intent) }
-                            },
                             onOpenUsageAccessSettings = {
                                 val intent = Intent(context, MainActivity::class.java).apply {
                                     putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS_USAGE_DATA)
