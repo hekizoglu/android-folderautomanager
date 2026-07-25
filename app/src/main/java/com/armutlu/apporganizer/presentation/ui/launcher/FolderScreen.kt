@@ -59,7 +59,6 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
-import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 /**
@@ -146,7 +145,6 @@ fun FolderScreen(
         val onSurface = MaterialTheme.colorScheme.onSurface
         val textSecondary = onSurface.copy(alpha = 0.55f)
         val dividerColor = onSurface.copy(alpha = 0.08f)
-        val surface = MaterialTheme.colorScheme.surface
 
         var sortMode by remember {
             val saved = AppPrefs.getFolderSortMode(context)
@@ -720,7 +718,7 @@ fun FolderScreen(
             // Klasör düzenleme dialog'u
             if (showFolderNavigator && carouselPosition == AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE) {
                 // Aktif sürükleme/geçiş animasyonu sırasında (offset sıfırdan uzaklaşınca)
-                // bu navigatör solmalı — FolderPageTurnPeek 3D efektiyle çakışmasın (kullanıcı
+                // bu navigatör solmalı — FolderTransitionPreview 3D efektiyle çakışmasın (kullanıcı
                 // geri bildirimi: ortada beliren istenmeyen "sonraki klasör" butonu).
                 val navAlphaTarget = 1f - transitionFrame.progress
                 val navAlpha by androidx.compose.animation.core.animateFloatAsState(
@@ -841,91 +839,6 @@ fun FolderScreen(
                 )
             }
         }
-    }
-}
-
-// "Kaydırma / Parallax" efekti: gelen komşu klasör düz bir kenar şeridi olarak, sürükleme
-// ilerledikçe ekrana doğru kayarak (translationX) ve hafifçe belirginleşerek (alpha) görünür —
-// 3D döndürme yok, sade bir yatay kaydırma hissi (page_turn'e alternatif, D262).
-@Composable
-private fun FolderSlideParallaxPeek(
-    previousFolder: AppFolder,
-    nextFolder: AppFolder,
-    transitionDirection: Int,
-    offsetValue: Float,
-    offsetMax: Float,
-    context: android.content.Context,
-    onSurface: Color,
-    accent: Color,
-) {
-    val progress = (abs(offsetValue) / offsetMax.coerceAtLeast(1f)).coerceIn(0f, 1f)
-    if (progress <= 0.01f) return
-
-    val showStart = transitionDirection > 0
-    val previewFolder = if (showStart) previousFolder else nextFolder
-    Box(modifier = Modifier.fillMaxSize()) {
-        FolderPageEdgeStrip(
-            folder = previewFolder,
-            startEdge = showStart,
-            context = context,
-            onSurface = onSurface,
-            accent = accent,
-            modifier = Modifier
-                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd)
-                .graphicsLayer {
-                    // Düz kayma: komşu önizleme sabit konumdan sürükleme yönünde hafifçe içeri girer
-                    translationX = if (showStart) (1f - progress) * -24f else (1f - progress) * 24f
-                    alpha = (0.35f + progress * 0.65f).coerceIn(0f, 1f)
-                },
-        )
-    }
-}
-
-// "Defter yaprağı çevirme" efekti: gelen komşu klasör 3D eksende (rotationY + cameraDistance)
-// döndürülerek, hafifçe ölçeklenerek ve kayan kenarında koyulaşan bir gölge gradyanıyla
-// beliriyor — Compose'da tam fiziksel bir page-curl simülasyonu yerine performanslı,
-// GPU hızlandırmalı (graphicsLayer, Canvas değil) inandırıcı bir 3D flip illüzyonu.
-@Composable
-private fun FolderPageTurnPeek(
-    previousFolder: AppFolder,
-    nextFolder: AppFolder,
-    transitionDirection: Int,
-    offsetValue: Float,
-    offsetMax: Float,
-    context: android.content.Context,
-    onSurface: Color,
-    accent: Color,
-) {
-    val progress = (abs(offsetValue) / offsetMax.coerceAtLeast(1f)).coerceIn(0f, 1f)
-    if (progress <= 0.01f) return
-
-    val showStart = transitionDirection > 0
-    val previewFolder = if (showStart) previousFolder else nextFolder
-    val density = LocalDensity.current
-    Box(modifier = Modifier.fillMaxSize()) {
-        FolderPageEdgeStrip(
-            folder = previewFolder,
-            startEdge = showStart,
-            context = context,
-            onSurface = onSurface,
-            accent = accent,
-            modifier = Modifier
-                .align(if (showStart) Alignment.CenterStart else Alignment.CenterEnd)
-                .graphicsLayer {
-                    cameraDistance = 10f * density.density
-                    // Yeni sayfa, menteşesi ekranın dışında kalan taraftan hafifçe döner —
-                    // ilerleme arttıkça düzleşerek tam görünüme gelir (0° = tam düz).
-                    rotationY = if (showStart) (1f - progress) * -22f else (1f - progress) * 22f
-                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
-                        pivotFractionX = if (showStart) 0f else 1f,
-                        pivotFractionY = 0.5f,
-                    )
-                    val scale = 0.92f + progress * 0.08f
-                    scaleX = scale
-                    scaleY = scale
-                    alpha = (0.35f + progress * 0.65f).coerceIn(0f, 1f)
-                },
-        )
     }
 }
 

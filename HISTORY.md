@@ -1,5 +1,11 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M4 — 2026-07-26
+**Yapılanlar:** launcher/ bileşenler denetimi (FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet) — ~1230 satır ölü kod silindi (FolderSlideParallaxPeek/FolderPageTurnPeek prototipleri, FullScreenSearchOverlay V1, Pixel Look öncesi eski dock/suggestion UI seti); şef bağımsız derlemeyle doğruladı.
+**Bug:** Yok — agent tek oturumda (alt-agent spawn etmeden) tamamladı, D240 kuralı gereği şef silinen sembolleri grep ile tekrar teyit etti.
+**Sonraki:** M5 (launcher/hero/: HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage).
+
+
 ## Döngü M3 — 2026-07-26
 **Yapılanlar:** launcher/ çekirdek denetimi (HomeScreen, HomePagePlanner, LauncherViewModel, LauncherActivity) — ölü `homePagerPageCount` state'i silindi, HomePagePlanner no-op temizlendi, derleme yeşil.
 **Bug:** Önceki tur agent'ı haftalık API limitine takılıp 0 iz bırakmadan çökmüştü — bu turda sıfırdan işlendi; alt-agent'lar bekleme döngüsüne girdi, şef sonuçları topladı.

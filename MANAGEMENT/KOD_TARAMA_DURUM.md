@@ -26,7 +26,7 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M1 | utils/ prefs katmanı | AppPrefs, DockPrefs, HomePagePrefs, WidgetPrefs — zincir testi hepsi | TAMAM |
 | M2 | Ayarlar ekranları (DERİN) | SettingsScreen, SettingsLauncherScreen, SettingsHomeScreenSection + MANAGEMENT/SETTINGS_AUDIT_REPORT.md maddeleri | TAMAM |
 | M3 | launcher/ çekirdek | HomeScreen, HomeShell, HomePagerHost, HomePagePlanner, LauncherViewModel | TAMAM |
-| M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | DEVAM |
+| M4 | launcher/ bileşenler | FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet | TAMAM |
 | M5 | launcher/hero/ | HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage | BEKLEMEDE |
 | M6 | domain/ | models, usecase/classify (AppClassifier, KeywordDatabase), InsightEngine | BEKLEMEDE |
 | M7 | data/ | AppDao, AppDatabase, repository'ler, migration'lar, FTS | BEKLEMEDE |
@@ -158,3 +158,36 @@ Kapsam: `HomeScreen.kt`, `HomeShell.kt`, `HomePagerHost.kt`, `HomePagePlanner.kt
 **Sayılar:** silinen 1 sembol (ölü state), düzeltilen 1 no-op kod, bağlanan 0 halka, ertelenen 4 bulgu (2× 10/20 Değerlendir, 1× 9/20 Beklet, 1× sadece isimlendirme notu), 2 PERF notu (kod değişmedi).
 
 **Sonraki modül:** M4 — launcher/ bileşenler (FolderTile, FolderScreen, AllAppsDrawer, HomeScreenComponents, GlobalSearchHost, DockEditSheet).
+
+### 2026-07-26 — M4 (Döngü 4)
+
+Kapsam: `FolderTile.kt` (505 satır), `FolderScreen.kt` (1191→1103 satır), `AllAppsDrawer.kt` (1391 satır, 2 dosyada — `AllAppsDrawerUtils.kt` dahil), `HomeScreenComponents.kt` (3187→2035 satır), `GlobalSearchHost.kt` (146 satır), `DockEditSheet.kt` (222 satır). Bu turda alt-agent SPAWN EDİLMEDİ — talimat gereği tamamı şef (ana oturum) tarafından doğrudan Read/Grep/Edit ile işlendi (M3'teki agent bekleme döngüsü tekrarlanmadı).
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- `FolderScreen.kt:850-930` (eski) — `FolderSlideParallaxPeek` ve `FolderPageTurnPeek` composable'ları: ikisi de D262'de yazılmış "sayfa geçiş efekti" prototipleri, ama gerçek render zaten genelleştirilmiş `FolderTransitionPreview`/`buildFolderTransitionFrame` (FolderTransitionState.kt) üzerinden yapılıyor — grep 0 caller kanıtladı. Birlikte ölü `kotlin.math.abs` importu ve bir yorum referansı (`FolderPageTurnPeek` → `FolderTransitionPreview`) düzeltildi. ~80 satır silindi.
+- `FolderScreen.kt:148` (eski) — `val surface = MaterialTheme.colorScheme.surface` hiç okunmuyordu (derleyici uyarısı: "Variable 'surface' is never used") — silindi.
+- `HomeScreenComponents.kt` — **~1150 satır ölü kod** silindi, iki büyük grup:
+  1. `FullScreenSearchOverlay` (V1, eski ~430 satır, satır 1985-2419 eski numaralandırma): `GlobalSearchHost.kt` doc-comment'i zaten "FullScreenSearchOverlayV2 kullanılıyor" diyordu, grep 0 caller kanıtladı — V2 (satır 2420 eski, hâlâ yaşıyor, 1 caller) üretimde aktif kullanılan sürüm.
+  2. Pixel Look eski nesil dock/saat/öneri seti (satır 159-869 eski numaralandırma, ~710 satır): `PixelClockWidget`, `GoogleSearchBar`, `PixelDock` + yardımcıları `DockFolderIcon`/`DockIcon`/`DockDisplayItem`, ve `AppSuggestionsRow`/`SuggestionSignalPill`/`RecentNotificationAppsRow`/`SuggestionAppItem`/`FavoritesRow`/`RecentAppsRow`. Hepsi `internal fun` — HomeScreen.kt:1589'daki yorum ("PixelClockWidget, GoogleSearchBar, PixelDock, DockIcon, SwipeHint → HomeScreenComponents.kt") bunların "burada tanımlı" olduğunu söylüyordu ama gerçek render zinciri `hero.HeroDock` kullanıyor (grep doğrulandı) — bu 9 composable HeroDock mimarisine geçişte terk edilmiş eski nesil UI. `SwipeHint` aynı yorumda anılıyordu ama o YAŞIYOR (HomeScreen.kt:1489, dokunulmadı).
+  - Birlikte ölü importlar temizlendi: `BoxWithConstraints`, `Icons.Default.Mic`, `SimpleDateFormat`, `Calendar`, `java.util.Date`, `DockPrefs` (hepsi 0 kalan kullanım, grep doğrulandı).
+
+**Doğrulanan sağlam desenler (dokunulmadı):**
+- `FolderTile.kt` — D243/D226 taze düzeltmeleri (`app.lastUpdated`, unusedInfo chip, folder badge) bozulmadı, tam dosya okundu, temiz.
+- `GlobalSearchHost.kt`, `DockEditSheet.kt` — M1-M3'te zaten düzeltilmiş (`validDockCount`, `widthIn` sınırları) tam doğrulandı, ek bulgu yok.
+- `AllAppsDrawer.kt`/`AllAppsDrawerUtils.kt` — çekmece içi arama/filtre/sıralama mantığı (`rememberDrawerData`, fuzzy Levenshtein, `sortedByMode`, `buildSidebarEntries`) baştan sona okundu; GlobalSearchHost'un ayrı bir yüzey (drawer-içi vs global arama) olduğu roadmap doc-comment'inde zaten netleştirilmiş, çift mantık değil kasıtlı ayrım.
+- `HomeAppSearchBar` (~1050 satır) ve `FullScreenSearchOverlayV2` (~450 satır) — izin ipuçları (`showContactsPermissionHint`/`showFilesPermissionHint`/`showFilesEnableHint`), web fallback, arama kaynak reaktif dinleyicileri (`DisposableEffect`+`OnSharedPreferenceChangeListener`) baştan sona doğrulandı, hepsi gerçek tüketici zincirine sahip.
+- Locale("tr") kullanımı arama/sıralama kodunun tamamında (FolderScreen, AllAppsDrawer, AllAppsDrawerUtils, HomeScreenComponents) tutarlı bulundu.
+
+**Ertelenen/ROADMAP-FİKİRLER adayları (kod yazılmadı):**
+1. `DockEditSheet.kt:62,68` — `dockDefaultCategory` parametresi hâlâ kullanılmıyor (yorum: "future: dock varsayılan kategorisi belirtiliyse onu gösterebiliriz"). CRON-37 zaten `LauncherViewModel`'de bağımsız yoldan çözülmüş (M1 notu). Silme riski düşük ama kapsam M4 dışı küçük temizlik — silinmedi. Puanlama: 2+4+2+1 → **9/20 → Beklet**.
+2. `AllAppsDrawerUtils.kt:84-94` vs `AllAppsDrawer.kt:272-282` — `sortedByMode()` extension fonksiyonu ile `rememberDrawerData()` içindeki inline `when(sortMode)` bloğu birebir aynı sıralama mantığını iki yerde tekrarlıyor (DRY ihlali, davranış hatası yok). Puanlama: 2+3+2+2 → **9/20 → Beklet** (M10 global temizlikte birleştirilebilir).
+
+**Sayılar:** silinen ~1230 satır ölü kod (FolderScreen ~80 + HomeScreenComponents ~1150), silinen 1 kullanılmayan değişken (`surface`), silinen 6 ölü import, bağlanan 0 kopuk halka (bu modülde kopuk halka bulunamadı — hepsi ya sağlam ya da tamamen terk edilmiş kod), ertelenen 2 bulgu (ikisi de 9/20 Beklet).
+
+**Build:** `gradlew compileDebugKotlin -PskipGoogleServices --console=plain` → **BUILD SUCCESSFUL in 29s**, 17/17 task, 0 hata, 0 uyarı (ilk derlemede 2 önceden-var-olan uyarı görüldü, biri [`surface`] bu turda düzeltildi, diğeri [`LocalLifecycleOwner` deprecated] mevcut kod tabanında yaygın ve kapsam dışı — ikinci derleme temiz).
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/FolderScreen.kt` (1191→1103 satır, -88)
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/HomeScreenComponents.kt` (3187→2035 satır, -1152)
+
+**Sonraki modül:** M5 — launcher/hero/ (HeroDashboardPage, HeroDock, Hero* kartlar, SmartDashboardPage). Not: M3'te ertelenen "HeroDock widthIn eksikliği 9/20" bulgusu (HomeScreen.kt:806-811 yorum/kod uyuşmazlığı) M5'te ekran görüntüsüyle doğrulanmalı.
