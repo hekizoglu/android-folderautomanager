@@ -7,6 +7,10 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Aktif akıllı bildirimlerin process içi tek durum sahibi.
  * Başlık ve metin kalıcı depolamaya yazılmaz; repository yalnız uygulama belleğinde yaşar.
+ *
+ * [activeNotifications] sistem panelinde hâlâ aktif olan tüm sınıflandırılmış kayıtları taşır.
+ * [actionablePackageCounts] ve [categoryCounts] ise yalnız aktif, bastırılmamış ve kullanıcının
+ * uygulamayı son açışından sonra gelen okunmamış kayıtları içerir.
  */
 interface SmartNotificationRepository {
     val activeNotifications: StateFlow<List<SmartNotification>>
