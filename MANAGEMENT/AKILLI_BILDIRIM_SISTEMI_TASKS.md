@@ -206,6 +206,19 @@ Repository `@Singleton` olmalı; servis ve ViewModel aynı instance'ı Hilt üze
 - Saf promosyon fixture'ları < 40.
 - Normal mesajlar bastırılmaz.
 
+**Güncel uygulama kanıtı — 2026-07-26:**
+
+- Feature branch: `agent/smart-notification-classifier-hardening`
+- Kod commit'i: `c928a032`
+- Test commit'i: `d55db0c9`
+- Kritik OTP/güvenlik olayları için minimum skor: `80`
+- Promosyonlar için maksimum skor: `39`
+- Android priority girdisi `-2..2` aralığına clamp edildi.
+- Düşük değerli içerik için ayrı ceza; mesajlaşma paketleri için güven bonusu tanımlandı.
+- Standalone Kotlin doğrulaması: **36 kategori fixture + 6 skor politikası geçti.**
+- Tam `testDebugUnitTest` ve `assembleDebug`: **BEKLİYOR**
+- Main merge onayı: **BEKLİYOR**
+
 ---
 
 ### [ ] AK-1.4 — Kullanıcı kuralı ve override modeli
@@ -358,165 +371,122 @@ data class NotificationRule(
 - `highPriorityCount`
 - `nightCount`
 - `mostTalkative`
-- `disturbing`
-- `distracting`
+- `mostDistracting`
+- `topPromotionSources`
 
-**Kural:** Analiz yalnız metadata kullanır.
-
-**Kabul kriteri:** Aynı fixture veri setinden deterministik rapor üretilir; kategori toplamları genel toplamla tutarlıdır.
+**Kural:** İçerik rapora taşınmaz; yalnız metadata analizi yapılır.
 
 ---
 
-## Aşama 4 — UI/UX Entegrasyonu
+## Aşama 4 — UI ve UX
 
-### [~] AK-4.1 — Klasör akıllı rozeti
+### [ ] AK-4.1 — Folder smart badge mapper
 
-**Mevcut:** `FolderTile` toplam `AppInfo.notificationCount` kullanıyor; renk `BadgeColorEngine` ile uygulama kategorisi/paket adına göre seçiliyor.
+**Dosyalar:**
 
-**Hedef:**
+- `FolderTile.kt`
+- `NotificationCategoryUiMapper.kt` (yeni)
 
-- Sayı: klasördeki bastırılmamış ve okunmamış akıllı bildirimlerin toplamı.
-- Renk: klasördeki en yüksek önem skorlu bildirimin `NotificationCategory` rengi.
-- Çoklu kategori varsa yanıp sönen/çok renkli rozet yok; tek dominant kategori kullanılır.
+**Yapılacak:**
 
-**Yeni presentation mapper:**
+- Folder rozet sayısı `actionablePackageCounts` üzerinden hesaplanır.
+- Rozet rengi klasördeki en yüksek öncelikli aktif bildirimin kategorisinden gelir.
+- Çok renkli küçük noktalar yerine tek ana kategori rengi + toplam sayı kullanılır.
+- Promosyon varsayılan olarak rozet sayısına girmez.
 
-- `presentation/ui/notification/NotificationCategoryUiMapper.kt`
-
-**Önerilen renk politikası:**
-
-- `MESSAGING` → mavi
-- `DELIVERY` → yeşil
-- `FINANCE` → kırmızı veya amber; kritik güvenlikte kırmızı
-- `REMINDER` → mor
-- `SOCIAL` → pembe
-- `SYSTEM` → sarı
-- `OTHER` → gri
-- `PROMOTION` → bastırılmışsa rozet yok
-
-**Kabul kriteri:** Domain katmanında `Color` import'u bulunmaz; folder badge ekran görüntüsü testi vardır.
-
-**Bağımlılık:** AK-2.2, AK-2.3.
+**Kabul kriteri:** Aynı klasörde finans + mesaj varsa finans öncelikli renk; sayı yalnız bastırılmamış kayıtları içerir.
 
 ---
 
-### [~] AK-4.2 — Smart Access Bildirimler sekmesi
+### [ ] AK-4.2 — Smart Access Bildirimler sekmesi V2
 
-**Mevcut:** Sekme en fazla 5 uygulama ve sayı gösteriyor.
+**Dosyalar:**
 
-**Hedef durum modeli:**
+- `SmartAccessModels.kt`
+- `SmartAccessCard.kt`
+- `LauncherViewModel.kt`
 
-```kotlin
-data class SmartNotificationAccessUiState(
-    val categorySummaries: List<CategorySummaryUi>,
-    val topItems: List<SmartNotificationUi>,
-    val actionableTotal: Int,
-    val suppressedTotal: Int,
-    val permissionGranted: Boolean,
-)
+**Yeni UI:**
+
+```text
+3 Mesaj · 1 Kargo · 1 Finans
+[WhatsApp 3] [Trendyol 1] [Akbank 1]
+2 promosyon filtrelendi
 ```
 
-**UX:**
+**Kabul kriteri:**
 
-- Üst satır: `3 Mesaj · 1 Kargo · 1 Finans`.
-- Alt alan: en fazla 3 önemli bildirim.
-- Hassas içerik kapalıysa `Akbank · Finans bildirimi` veya `WhatsApp · 1 yeni mesaj` gösterilir.
-- Bildirime dokununca ilgili uygulama açılır.
-- “5 promosyon sessize alındı” bilgisi küçük ve nötr gösterilir; kırmızı rozet üretmez.
-
-**Kabul kriteri:** İzin yok/veri yok/yükleniyor durumları ayrı kalır; mevcut Smart Access diğer sekmeleri bozulmaz.
-
-**Bağımlılık:** AK-2.2 ve AK-5.1.
+- Kategori özeti gösterilir.
+- Hassas içerik açıkça gösterilmez.
+- Promosyon filtre sayısı ayrı ve nötr biçimde görünür.
+- İzin yok/veri yok/yükleniyor durumları korunur.
 
 ---
 
-### [~] AK-4.3 — Klasör altı akıllı bildirim satırı
+### [ ] AK-4.3 — Folder smart ticker
 
-**Mevcut:** `FolderTile`, `AppInfo.notificationText`, `notificationImportance` ve `lastNotificationPostedAt` kullanarak metin gösteriyor.
+**Yapılacak:**
 
-**Hedef:**
+- En yüksek skorlu, bastırılmamış, okunmamış aktif bildirim seçilir.
+- Hassas ise içerik yerine `Akbank · Güvenlik bildirimi` gibi maskeli metin gösterilir.
+- Aynı klasörde iki alt satır oluşmaz; kullanılmayan uygulama bilgisi ile ticker aynı anda gösterilmez.
 
-- Kaynak `SmartNotificationRepository`.
-- Klasör içindeki en yüksek skorlu, bastırılmamış ve okunmamış tek bildirim seçilir.
-- Otomatik kayan marquee kullanılmaz; tek/iki satır ellipsis + hafif crossfade tercih edilir. Amaç dikkat azaltmakken sürekli hareket eklenmez.
-- Hassas içerik maskelemesi her durumda uygulanır.
-
-**Kabul kriteri:** Bildirim kaldırılınca veya uygulama okununca satır anında kaybolur; eski ikon/metin kalmaz.
-
-**Bağımlılık:** AK-2.2, AK-2.3, AK-5.1.
+**Kabul kriteri:** Klasör altı alan taşmaz; en fazla 2 satır; dokununca doğru uygulama açılır.
 
 ---
 
-## Aşama 5 — Ayarlar ve Gizlilik
+## Aşama 5 — Ayarlar, Gizlilik ve Rapor
 
-### [~] AK-5.1 — Smart Notification Engine ayarları
+### [ ] AK-5.1 — Smart Notification Engine ayarları
 
-**Mevcut sorun:** `SettingsNotificationsScreen` içindeki “Akıllı Bildirimler” bölümü günlük kullanım/klasör önerisi üreten `SmartInsightWorker` ayarlarıdır. Yeni motor ayarları için aynı key'ler kullanılmamalı.
+**Mimari karar:** Mevcut `SmartInsightWorker` bölümü “Akıllı Özetler” olarak yeniden adlandırılır. Yeni motor ayrı “Bildirim Filtreleme” bölümü olur.
 
-**Yeni AppPrefs anahtarları:**
+**Tercihler:**
 
-- `KEY_SMART_NOTIFICATION_ENGINE_ENABLED`
-- `KEY_SMART_NOTIFICATION_HIDE_SENSITIVE`
-- `KEY_SMART_NOTIFICATION_SUPPRESS_PROMOTIONS`
-- `KEY_SMART_NOTIFICATION_BADGE_STYLE`
-- `KEY_SMART_NOTIFICATION_VISIBLE_CATEGORIES`
-- `KEY_SMART_NOTIFICATION_APP_RULES`
+- Motor açık/kapalı
+- Promosyonları AppOrganizer rozetinden düşür
+- Hassas içeriği gizle
+- Gösterilecek kategoriler
+- Kategori bazlı rozet / klasik uygulama rozeti
 
-**Ayarlar:**
+**Varsayılanlar:**
 
-1. Akıllı kategorileme
-2. Hassas içeriği gizle — varsayılan açık
-3. Promosyonları AppOrganizer rozetinden düş
-4. Rozet stili: kategori / uygulama / monokrom
-5. Gösterilecek kategoriler
-6. Uygulama bazlı kurallar
-7. “Bu ayar Android bildirim panelindeki bildirimi engellemez” açıklaması
+- Motor: açık
+- Promosyon filtresi: açık
+- Hassas içerik gizleme: açık
+- Sistem bildirimini iptal etme: hiçbir zaman
 
-**Migration politikası:**
-
-- İç beta/eski kullanıcı: motor varsayılan kapalı.
-- Yeni kurulum: fiziksel cihaz QA tamamlandıktan sonra varsayılan açık değerlendirilebilir.
-- Hassas içerik gizleme her durumda varsayılan açık.
-
-**Kabul kriteri:** Tüm ayarlar reaktif; uygulama yeniden başlatılmadan UI güncellenir; backup/export gizli metin taşımaz.
+**Uygulama notu:** Büyük `AppPrefs.kt` yerine ayrı `SmartNotificationPrefs.kt` tercih edilir; mevcut backup/import politikasına açıkça eklenir.
 
 ---
 
-### [~] AK-5.2 — Bildirim raporu V2
+### [ ] AK-5.2 — Notification Report V2
 
-**Mevcut:** Rapor ekranı ve “çok konuşan / rahatsız eden / dikkat dağıtan” analizleri çalışacak altyapıya sahip.
+**Eklenecek bölümler:**
 
-**Eklenecek:**
-
-- Gelen / önemli / bastırılan toplamları
+- Bugün / 7 gün toplam bildirim
+- Eyleme değer / filtrelenen oran
 - Kategori dağılımı
-- Günlük ve haftalık trend
+- En çok bölen uygulamalar
 - Gece bildirimleri
-- En fazla promosyon gönderen uygulamalar
-- “Bu hafta X gereksiz rozet gizlendi” fayda metriği
+- Öneri: uygulamayı sessize alma veya uygulama bazlı AppOrganizer filtresi
 
-**UX kuralı:** Rapor suçlayıcı değil, eylem odaklıdır. Uygulama satırında “Sessize al”, “Her zaman göster”, “Kuralı düzenle” eylemleri bulunabilir.
-
-**Kabul kriteri:** Tüm grafik ve toplamlar metadata sorgularından gelir; bildirim metni gösterilmez.
-
-**Bağımlılık:** AK-3.2 ve AK-3.3.
+**Kural:** AppOrganizer Android kanal ayarını kendiliğinden değiştirmez; kullanıcı sistem ayarına yönlendirilir.
 
 ---
 
-## Aşama 6 — QA, Performans ve Güvenlik
+## Aşama 6 — Test ve Doğrulama
 
-### [~] AK-6.1 — Unit test paketi
+### [ ] AK-6.1 — Unit test tamamlama
 
-**Mevcut:** Temel classifier ve preview testleri var.
+**Testler:**
 
-**Tamamlanacak test sınıfları:**
-
-- `NotificationClassifierUseCaseTest`
-- `NotificationPreviewStoreTest`
-- `SmartNotificationRepositoryTest`
-- `NotificationAnalyzerV2Test`
-- `UnreadSmartNotificationModelTest`
-- `NotificationCategoryUiMapperTest`
+- 30+ classifier fixture
+- skor sınırları ve sistem priority etkisi
+- promotion suppression
+- sensitive masking
+- repository replace/remove/clear
+- analyzer category aggregation
 - AppPrefs migration testleri
 
 **Minimum fixture:** 30 sınıflandırma + 10 çakışma + 10 gizlilik/maskeleme senaryosu.
