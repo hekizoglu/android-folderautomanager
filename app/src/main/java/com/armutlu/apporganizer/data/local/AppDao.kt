@@ -341,7 +341,12 @@ interface AppDao {
     @Query("UPDATE apps SET lastNotificationPostedAt = :timestamp WHERE packageName = :packageName")
     suspend fun updateLastNotificationPostedAt(packageName: String, timestamp: Long)
 
-    @Query("UPDATE apps SET notificationText = :text WHERE packageName = :packageName")
+    /**
+     * Gizlilik bariyeri: eski çağrı noktaları metin göndermeye devam etse bile Room'a içerik
+     * yazılmaz. :text yalnız Room parametre doğrulaması için sorguda kullanılır; kolon her zaman
+     * boşaltılır. Canlı bildirim özeti AppNotificationListenerService belleğinden okunur.
+     */
+    @Query("UPDATE apps SET notificationText = '' WHERE packageName = :packageName AND :text IS NOT NULL")
     suspend fun updateNotificationText(packageName: String, text: String)
 
     @Transaction
@@ -351,7 +356,7 @@ interface AppDao {
         }
     }
 
-    // Gizlilik: bildirim metni ayarı kapatılınca tüm kayıtlı metinleri temizler
+    // Gizlilik: eski sürümlerden kalmış tüm kayıtlı metinleri temizler.
     @Query("UPDATE apps SET notificationText = ''")
     suspend fun clearAllNotificationTexts()
 

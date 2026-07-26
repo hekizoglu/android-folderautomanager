@@ -75,6 +75,10 @@ open class AppNotificationListenerService : NotificationListenerService() {
         rebuildActiveSnapshot()
         serviceScope.launch {
             runCatching {
+                // P0 gizlilik migration'ı: eski sürümlerin apps.notificationText alanına yazdığı
+                // içerikleri bağlantı anında temizle. Yeni DAO bariyeri dolu metin yazımını da
+                // engeller; canlı özet yalnız servis belleğindeki latestTexts akışında yaşar.
+                appDao.clearAllNotificationTexts()
                 notificationEventDao.deleteOlderThan(
                     System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
                 )
@@ -211,6 +215,7 @@ open class AppNotificationListenerService : NotificationListenerService() {
         val badgeCounts: StateFlow<Map<String, Int>> =
             SmartNotificationLegacyBadgeBridge.badgeCounts
 
+        /** Yalnız process belleğinde yaşayan UI özeti; Room, backup veya telemetriye yazılmaz. */
         private val _latestTexts = MutableStateFlow<Map<String, String>>(emptyMap())
         val latestTexts: StateFlow<Map<String, String>> = _latestTexts.asStateFlow()
 
