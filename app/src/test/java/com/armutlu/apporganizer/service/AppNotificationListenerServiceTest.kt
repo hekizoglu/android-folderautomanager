@@ -62,8 +62,8 @@ class AppNotificationListenerServiceTest {
 
         val notification = mockk<Notification>(relaxed = true)
         notification.extras = bundle
-        every { notification.priority } returns 0
-        every { notification.`when` } returns 0L
+        notification.priority = 0
+        notification.`when` = 0L
 
         val result = mockk<StatusBarNotification>(relaxed = true)
         every { result.packageName } returns pkg

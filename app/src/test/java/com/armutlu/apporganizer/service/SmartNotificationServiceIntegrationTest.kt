@@ -195,8 +195,8 @@ class SmartNotificationServiceIntegrationTest {
 
         val androidNotification = mockk<Notification>(relaxed = true)
         androidNotification.extras = extras
-        every { androidNotification.priority } returns 0
-        every { androidNotification.`when` } returns 0L
+        androidNotification.priority = 0
+        androidNotification.`when` = 0L
 
         return mockk<StatusBarNotification>(relaxed = true).also { sbn ->
             every { sbn.packageName } returns packageName
