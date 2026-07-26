@@ -1147,7 +1147,7 @@ internal fun HomeAppSearchBar(
                                 contentDescription = searchFieldRoleDescription
                             },
                         decorationBox = { inner ->
-                            Box(Modifier.weight(1f)) {
+                            Box(contentAlignment = Alignment.CenterStart) {
                                 // Spec §5: placeholder kalabalıklaşmasın — kişi/dosya eklenmez
                                 if (query.isEmpty()) Text(
                                     stringResource(searchHintRes),

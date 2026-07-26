@@ -34,7 +34,16 @@
 - **Puanlama:** KD: 5 | UYG: 4 | BR: 4 | EA: 5 = **18 ⭐**
 - **Durum:** 🚀 ROADMAP — Yapılacak (USP Özellik)
 
-### 6. 💾 Dahili JSON Düzen Yedekleme & Geri Yükleme UI (Local Layout Backup/Restore)
+### 6. 🆕 Son Yüklenen Uygulamalar Yönetimi & "YENİ" Rozeti (Newly Installed Apps UX & Badge)
+- **Açıklama:** Kullanıcıların Play Store'dan yükledikten sonra launcher'da bulamadığı uygulamalar için 3 kademeli erişim: 
+  1. **Taze Rozet & Parlama:** Çekmecede ve klasörde son 48 saat içinde yüklenen uygulamanın simgesinde dikkat çekici "YENİ" rozeti / parlama halkası.
+  2. **Çekmece Üst Şeridi (Newly Installed Section):** Tüm Uygulamalar (AllAppsDrawer) açıldığında en üstte "Son Yüklenenler (Son 7 Gün)" yatay hızlı erişim şeridi.
+  3. **Akıllı Bildirim / Toast:** Uygulama kurulur kurulmaz ekranda *"X uygulaması yüklendi — [Klasöre Git] veya [Aç]"* hızlı aksiyon uyarısı.
+- **Kullanıcı Şikayeti Analizi:** "Play Store'dan indiriyorum ama launcher otomatik klasörlediği veya alfabetik sıraya gömdüğü için bulamıyorum" şikayetinin kesin çözümü.
+- **Puanlama:** KD: 5 | UYG: 5 | BR: 4 | EA: 5 = **19 ⭐**
+- **Durum:** 🚀 ROADMAP — Yapılacak (USP Özellik)
+
+### 7. 💾 Dahili JSON Düzen Yedekleme & Geri Yükleme UI (Local Layout Backup/Restore)
 - **Açıklama:** Ayarlar altında kullanıcının mevcut klasör ve uygulama düzenini tek tıkla `.json` olarak kaydedebileceği ve yeni cihaza yükleyebileceği basit arayüz.
 - **Puanlama:** KD: 4 | UYG: 5 | BR: 5 | EA: 4 = **18 ⭐**
 - **Durum:** 🚀 ROADMAP — Yapılacak
