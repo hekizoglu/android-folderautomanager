@@ -8,7 +8,12 @@ data class NotificationPreview(
     val key: String,
     val packageName: String,
     val postedAt: Long,
+    /** Klasör altı eski tek satırlık gösterim için birleştirilmiş metin. */
     val text: String,
+    /** Smart Notification Hub için ayrı başlık/gönderen alanı. */
+    val title: String = "",
+    /** Smart Notification Hub için ayrı içerik özeti. */
+    val body: String = "",
 )
 
 object NotificationPreviewStore {
@@ -17,7 +22,7 @@ object NotificationPreviewStore {
 
     fun extractPreview(sbn: StatusBarNotification): NotificationPreview? {
         val extras = sbn.notification?.extras ?: return null
-        val text = buildPreviewText(extras) ?: return null
+        val content = buildPreviewContent(extras) ?: return null
         val postedAt = when {
             sbn.postTime > 0L -> sbn.postTime
             sbn.notification.`when` > 0L -> sbn.notification.`when`
@@ -27,7 +32,9 @@ object NotificationPreviewStore {
             key = sbn.key,
             packageName = sbn.packageName,
             postedAt = postedAt,
-            text = text,
+            text = content.combined,
+            title = content.title,
+            body = content.body,
         )
     }
 
@@ -55,23 +62,39 @@ object NotificationPreviewStore {
 
     fun countLabel(count: Int): String = if (count == 1) "1 bildirim" else "$count bildirim"
 
-    private fun buildPreviewText(extras: android.os.Bundle): String? {
-        val title = extras.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString().orEmpty().trim()
-        val text = extras.getCharSequence(NotificationCompat.EXTRA_TEXT)?.toString().orEmpty().trim()
-        val bigText = extras.getCharSequence(NotificationCompat.EXTRA_BIG_TEXT)?.toString().orEmpty().trim()
+    private fun buildPreviewContent(extras: android.os.Bundle): PreviewContent? {
+        val rawTitle = extras.getCharSequence(NotificationCompat.EXTRA_TITLE)
+            ?.toString()
+            .orEmpty()
+            .trim()
+        val rawText = extras.getCharSequence(NotificationCompat.EXTRA_TEXT)
+            ?.toString()
+            .orEmpty()
+            .trim()
+        val rawBigText = extras.getCharSequence(NotificationCompat.EXTRA_BIG_TEXT)
+            ?.toString()
+            .orEmpty()
+            .trim()
         val lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
             ?.map { it?.toString().orEmpty().trim() }
             ?.filter { it.isNotBlank() }
             .orEmpty()
-        val body = listOf(bigText, text).firstOrNull { it.isNotBlank() }
+        val rawBody = listOf(rawBigText, rawText).firstOrNull { it.isNotBlank() }
             ?: lines.firstOrNull().orEmpty()
-        val combined = when {
-            title.isNotBlank() && body.isNotBlank() -> "$title: $body"
-            title.isNotBlank() -> title
-            body.isNotBlank() -> body
+        val rawCombined = when {
+            rawTitle.isNotBlank() && rawBody.isNotBlank() -> "$rawTitle: $rawBody"
+            rawTitle.isNotBlank() -> rawTitle
+            rawBody.isNotBlank() -> rawBody
             else -> ""
         }
-        return sanitize(combined).ifBlank { null }
+        val combined = sanitize(rawCombined)
+        if (combined.isBlank()) return null
+
+        return PreviewContent(
+            title = sanitize(rawTitle),
+            body = sanitize(rawBody),
+            combined = combined,
+        )
     }
 
     private fun sanitize(value: String): String {
@@ -83,4 +106,10 @@ object NotificationPreviewStore {
                 else normalized.take(MAX_PREVIEW_LENGTH - 1).trimEnd() + "…"
             }
     }
+
+    private data class PreviewContent(
+        val title: String,
+        val body: String,
+        val combined: String,
+    )
 }
