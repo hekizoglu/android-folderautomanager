@@ -275,7 +275,7 @@ fun FolderTile(
             color = effectiveLabelColor.copy(alpha = textAlpha),
             fontSize = if (pixelLookEnabled) com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_LABEL_FONT_SIZE else 11.sp,
             fontWeight = if (pixelLookEnabled) FontWeight.Normal else null,
-            maxLines = 2,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             lineHeight = 13.sp,

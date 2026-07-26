@@ -154,7 +154,7 @@ fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(issue.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
+                    Text(issue.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.weight(1f))
                     Text("Düzelt →", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }

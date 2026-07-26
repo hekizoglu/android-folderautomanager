@@ -86,14 +86,7 @@ internal fun HeroDashboardPage(
                 onClick = onOpenPulse,
             )
 
-            // P1.2: Classification review badge — pending count > 0 olduğunda göster
-            if (pendingClassificationCount > 0) {
-                PendingClassificationBadge(
-                    count = pendingClassificationCount,
-                    onClick = onOpenClassificationReview,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+
 
             SmartAccessCard(
                 state = smartAccess,

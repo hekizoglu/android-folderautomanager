@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
@@ -110,10 +111,11 @@ internal fun SmartAccessCard(
                             Text(
                                 text = stringResource(tab.labelRes()),
                                 color = Color.White.copy(alpha = if (selected) .96f else .60f),
-                                fontSize = HomeHeroTokens.BodyTextSize,
+                                fontSize = 11.sp,
                                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 2.dp)
                             )
                         }
                     }

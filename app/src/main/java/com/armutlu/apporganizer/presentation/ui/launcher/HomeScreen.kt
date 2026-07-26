@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.ui.launcher
+package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.content.Intent
 import android.net.Uri
@@ -1252,8 +1252,8 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                 }
 
-                // P1.1: Düzenleme/Öneri Merkezi kartı — Ayarlar'dan kapatılabilir, uyarı varsa göster
-                if (editingCenterEnabled) {
+                // P1.1: Düzenleme/Öneri Merkezi kartı — Sadece 1. sayfada (page 0) ve Ayarlar'dan açıksa göster
+                if (editingCenterEnabled && pagerState.currentPage == 0) {
                 EditingCenterCard(
                     state = editingCenterState,
                     onNavigateToClassificationReview = {
