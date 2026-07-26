@@ -223,6 +223,7 @@ private fun ReportContent(
         }
 
         item { SummaryCard(r) }
+        item { NotificationReportV2Overview(r) }
 
         item { SectionTitle(stringResource(R.string.notif_report_section_talkative)) }
         // Aynı paket birden fazla bölümde olabilir — LazyColumn key'leri tüm liste
