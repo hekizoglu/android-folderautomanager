@@ -3,14 +3,12 @@ package com.armutlu.apporganizer.data.repository
 import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.SmartNotification
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-@Singleton
 class InMemorySmartNotificationRepository @Inject constructor() : SmartNotificationRepository {
 
     private val mutationMutex = Mutex()
