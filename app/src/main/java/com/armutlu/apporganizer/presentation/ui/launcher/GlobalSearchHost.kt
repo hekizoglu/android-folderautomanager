@@ -126,8 +126,8 @@ fun GlobalSearchHost(
             // Çubuk alttayken sonuçlar yukarı doğru açılır — sayfa kaymaz (D258)
             resultsAbove = resultsAbove,
             modifier = modifier
-                .fillMaxWidth(0.95f)
-                .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp)
+                .fillMaxWidth(if (isTablet) 0.95f else 1f)
+                .widthIn(max = if (isTablet) 420.dp else HomeContentWidthTokens.maxContentWidthDp)
                 .padding(horizontal = 0.dp)
                 .padding(top = 2.dp, bottom = 6.dp)
         )
@@ -139,8 +139,8 @@ fun GlobalSearchHost(
             onClear = onFolderSearchClear,
             countdown = folderSearchCountdown,
             modifier = modifier
-                .fillMaxWidth(0.95f)
-                .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp)
+                .fillMaxWidth(if (isTablet) 0.95f else 1f)
+                .widthIn(max = if (isTablet) 420.dp else HomeContentWidthTokens.maxContentWidthDp)
                 .padding(horizontal = 0.dp, vertical = 4.dp)
         )
     }
