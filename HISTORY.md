@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M11 — 2026-07-26
+**Yapılanlar:** res/ tutarlılık denetimi — M5'te HeroSearchCard.kt silindikten sonra geride kalan ölü `hero_search_placeholder` ve `hero_search_sources` string kaynakları hem TR (`values/strings.xml`) hem EN (`values-en/strings.xml`) dosyalarından silindi; TR/EN string eşleşmeleri ve tema tanımları doğrulandı.
+**Bug:** Yok — temizlik sonrası compileDebugKotlin 6m 57s içinde yeşil.
+**Sonraki:** M12 (Araç/altyapı onarımı: check_duplicates.py & pre-commit hook fix, bayat CLAUDE.md yolları).
+
 ## Döngü M10 — 2026-07-26
 **Yapılanlar:** Global ölü kod süpürmesi — `./gradlew detekt` statik analizi ile tespit edilen tek ölü private metod (`FolderMergePlan.toSuggestion()`, FolderMergeViewModel.kt) 0-caller kanıtlanarak silindi; detekt raporundaki line length / magic number / generic catch uyarıları analiz edildi.
 **Bug:** Yok — ölü metod temizliği sonrası compileDebugKotlin 1m 28s içinde yeşil.

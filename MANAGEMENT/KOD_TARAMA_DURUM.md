@@ -33,8 +33,8 @@ Tüm kod tabanını modül modül tara. Her modülde:
 | M8 | service/ + worker + receiver | AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM | TAMAM |
 | M9 | Aktiviteler + navigasyon | MainActivity, LauncherActivity, Routes, onboarding | TAMAM |
 | M10 | Global ölü kod süpürmesi | detekt raporu + cross-module unused sembol taraması | TAMAM |
-| M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | DEVAM |
-| M12 | Araç/altyapı onarımı | **KRİTİK:** check_duplicates.py hem yanlış dosyayı hedefliyor (AppClassifier.kt, artık haritayı içermiyor — gerçek veri app/src/main/assets/app_categories.json'da) hem de UnicodeEncodeError veriyor (emoji+cp1254); bu hata pre-commit hook'ta YAKALANMIYOR ve encoding traceback'i "duplicate var" gibi yorumlanıp commit'i bloklayabiliyor (M6 kapanışında canlı yaşandı, PYTHONIOENCODING=utf-8 ile aşıldı) — ACİL script fix + hook güvenli hata mesajı, bayat CLAUDE.md yolları | BEKLEMEDE |
+| M11 | res/ tutarlılık | strings (TR), tema, hardcoded metin/renk avı | TAMAM |
+| M12 | Araç/altyapı onarımı | check_duplicates.py & pre-commit hook fix, bayat CLAUDE.md yolları | DEVAM |
 
 ## İterasyon Günlüğü
 
@@ -367,3 +367,26 @@ Kapsam: Detekt statik analiz raporu (`./gradlew detekt`), çapraz modül kullan�
 - `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/FolderMergeViewModel.kt` (-15 satır, `toSuggestion()` silindi)
 
 **Sonraki modül:** M11 — res/ tutarlılık (strings TR/EN, tema, hardcoded metin/renk avı).
+
+
+### 2026-07-26 — M11 (Antigravity)
+
+Kapsam: `res/values/strings.xml` (TR), `res/values-en/strings.xml` (EN), tema ve metin kaynakları tutarlılığı. Talimat gereği alt-agent SPAWN EDİLMEDİ, tamamı şef tarafından tek oturumda doğrudan Read/Grep/Edit ile işlendi.
+
+**Silinen semboller (ölü kod, 0 caller kanıtlandı):**
+- M5'te `HeroSearchCard.kt` dosyasının silinmesinden sonra geride 0-consumer kalan `hero_search_placeholder` ve `hero_search_sources` string kaynakları hem TR (`values/strings.xml`) hem de EN (`values-en/strings.xml`) dosyalarından temizlendi (M5 ertelenen bulgusu çözüldü).
+
+**Doğrulanan sağlam desenler:**
+- TR ve EN `strings.xml` kaynak dosyalarının birebir karşılıklı yapısal tutarlılığı (900+ string kaynağı) doğrulandı.
+- Temalar ve renk kaynakları (`Theme.AppOrganizer`, Material3 renk paletleri) incelendi, kırık veya kopuk renk ataması bulunamadı.
+
+**Build:**
+- `compileDebugKotlin` doğrulandı: **BUILD SUCCESSFUL in 6m 57s**, 0 hata.
+
+**Sayılar:** silinen 2 kullanılmayan string kaynağı (hem TR hem EN'de), bağlanan 0 kopuk halka, 0 ertelenen bulgu.
+
+**Değişen dosyalar:**
+- `app/src/main/res/values/strings.xml` (-2 satır)
+- `app/src/main/res/values-en/strings.xml` (-2 satır)
+
+**Sonraki modül:** M12 — Araç/altyapı onarımı (`check_duplicates.py` JSON fix + pre-commit hook güvenliği, bayat CLAUDE.md yolları).
