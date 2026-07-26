@@ -1565,6 +1565,7 @@ fun HomeScreen(
             }
         },
         onEditHomeLayout = {
+            homeLongPressOpen = false
             onEditHomeLayout()
         },
         onSettings = {
