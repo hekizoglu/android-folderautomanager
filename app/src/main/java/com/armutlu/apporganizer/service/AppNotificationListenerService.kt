@@ -4,6 +4,7 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.repository.SmartNotificationLegacyBadgeBridge
 import com.armutlu.apporganizer.data.repository.SmartNotificationRepository
 import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.NotificationEvent
@@ -75,12 +76,12 @@ open class AppNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onListenerDisconnected() {
-        _badgeCounts.value = emptyMap()
         _latestTexts.value = emptyMap()
         _previewItems.value = emptyMap()
         _smartNotifications.value = emptyList()
         _smartBadgeCounts.value = emptyMap()
         _categoryCounts.value = emptyMap()
+        SmartNotificationLegacyBadgeBridge.clear()
         if (::smartNotificationRepository.isInitialized) {
             serviceScope.launch { smartNotificationRepository.clearActive() }
         }
@@ -142,7 +143,6 @@ open class AppNotificationListenerService : NotificationListenerService() {
                 .thenByDescending { it.timestamp }
         )
 
-        _badgeCounts.value = counts
         _previewItems.value = previews
         _latestTexts.value = counts.mapValues { (pkg, count) ->
             NotificationPreviewStore.summarize(
@@ -177,8 +177,12 @@ open class AppNotificationListenerService : NotificationListenerService() {
     }
 
     companion object {
-        private val _badgeCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
-        val badgeCounts: StateFlow<Map<String, Int>> = _badgeCounts.asStateFlow()
+        /**
+         * Geçiş API'si: tüketiciler aynı servis alanını kullanır ancak verinin gerçek sahibi
+         * artık [SmartNotificationRepository]'dir. Doğrudan ViewModel enjeksiyonu sonrası kaldırılacak.
+         */
+        val badgeCounts: StateFlow<Map<String, Int>> =
+            SmartNotificationLegacyBadgeBridge.badgeCounts
 
         private val _latestTexts = MutableStateFlow<Map<String, String>>(emptyMap())
         val latestTexts: StateFlow<Map<String, String>> = _latestTexts.asStateFlow()
