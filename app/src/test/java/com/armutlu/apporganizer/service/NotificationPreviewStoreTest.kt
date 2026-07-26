@@ -54,4 +54,22 @@ class NotificationPreviewStoreTest {
             )
         )
     }
+
+    @Test
+    fun `extractPreview preserves title body and combined legacy text`() {
+        val preview = NotificationPreviewStore.extractPreview(
+            TestStatusBarNotificationFactory.create(
+                packageName = "com.whatsapp",
+                key = "n2",
+                title = "Ali",
+                text = "Toplanti tamamlandi",
+                bigText = "",
+            )
+        )
+
+        requireNotNull(preview)
+        assertEquals("Ali", preview.title)
+        assertEquals("Toplanti tamamlandi", preview.body)
+        assertEquals("Ali: Toplanti tamamlandi", preview.text)
+    }
 }
