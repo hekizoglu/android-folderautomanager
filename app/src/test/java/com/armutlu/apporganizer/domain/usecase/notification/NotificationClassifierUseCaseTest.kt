@@ -43,8 +43,8 @@ class NotificationClassifierUseCaseTest {
     @Test
     fun `pure promotions remain below suppression threshold`() {
         listOf(
-            f("Trendyol promotion", "com.trendyol.android", "Sana özel fırsat", "Sepette yüzde 50 indirim", NotificationCategory.PROMOTION),
-            f("Bank promotion", "com.akbank.android.apps.akbank_direkt", "Kampanya", "Sana özel indirim fırsatı", NotificationCategory.PROMOTION),
+            f("Trendyol promotion", "com.trendyol.android", "Sana özel fırsat", "Siparişine özel kupon ve yüzde 50 indirim", NotificationCategory.PROMOTION),
+            f("Bank promotion", "com.akbank.android.apps.akbank_direkt", "Kampanya", "Kartınıza özel yüzde 50 indirim fırsatı", NotificationCategory.PROMOTION),
             f("Instagram promotion", "com.instagram.android", "Special offer", "Limited stock, buy now", NotificationCategory.PROMOTION),
         ).forEachIndexed { index, fixture ->
             val result = classifier.classify("promo-$index", fixture.pkg, fixture.title, fixture.text, index.toLong())
@@ -88,8 +88,8 @@ class NotificationClassifierUseCaseTest {
             f("Delivered package", "com.example.store", "Package", "Your package was delivered", NotificationCategory.DELIVERY),
             f("Courier approaching", "com.example.food", "Order", "Courier is approaching", NotificationCategory.DELIVERY),
             f("Tracking number", "com.example.post", "Shipment", "Tracking number 123", NotificationCategory.DELIVERY),
-            f("Trendyol promotion", "com.trendyol.android", "Sana özel fırsat", "Sepette yüzde 50 indirim", NotificationCategory.PROMOTION),
-            f("Bank promotion", "com.akbank.android.apps.akbank_direkt", "Kampanya", "Sana özel indirim fırsatı", NotificationCategory.PROMOTION),
+            f("Trendyol promotion", "com.trendyol.android", "Sana özel fırsat", "Siparişine özel kupon ve yüzde 50 indirim", NotificationCategory.PROMOTION),
+            f("Bank promotion", "com.akbank.android.apps.akbank_direkt", "Kampanya", "Kartınıza özel yüzde 50 indirim fırsatı", NotificationCategory.PROMOTION),
             f("Instagram promotion", "com.instagram.android", "Special offer", "Limited stock, buy now", NotificationCategory.PROMOTION),
             f("English sale", "com.example.shop", "Weekend sale", "Save now with this coupon", NotificationCategory.PROMOTION),
             f("Turkish coupon", "com.example.shop", "Kupon", "Kupon ile indirim", NotificationCategory.PROMOTION),
