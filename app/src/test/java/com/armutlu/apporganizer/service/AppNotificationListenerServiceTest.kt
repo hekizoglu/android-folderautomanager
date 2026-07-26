@@ -120,6 +120,15 @@ class AppNotificationListenerServiceTest {
     }
 
     @Test
+    fun `onListenerConnected purges legacy notification text`() {
+        service.onListenerConnected()
+
+        coVerify(timeout = 2_000) {
+            mockAppDao.clearAllNotificationTexts()
+        }
+    }
+
+    @Test
     fun `onListenerConnected triggers deleteOlderThan with correct 30-day cutoff`() {
         val before = System.currentTimeMillis()
 
