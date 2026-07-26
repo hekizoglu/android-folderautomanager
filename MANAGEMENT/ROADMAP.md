@@ -439,6 +439,11 @@ Pazar araştırması (Mayıs-Temmuz 2026 rakip kullanıcı şikayetleri), canlı
 - **Açıklama:** Klasörü açmadan içindeki uygulamaları doğrudan açabilen iOS/HarmonyOS stili 3x3 önizleme modu.
 - **Dosyalar:** `FolderTile.kt`, `HomeScreenComponents.kt`, `AppPrefs.kt`
 
+#### R-FEAT-NEWLY-INSTALLED-APPS: Son Yüklenen Uygulamalar Yönetimi & "YENİ" Rozeti (19 ⭐)
+- **Durum:** Yapılacak (Öncelikli — Rakip Şikayet Çözümü)
+- **Açıklama:** Play Store'dan yeni yüklenen uygulamaların kaybolmasını engellemek için 3 kademeli çözüm: Simge üzerinde "YENİ" rozeti, uygulama çekmecesinin (AllAppsDrawer) en üstünde "Son Yüklenenler (Son 7 Gün)" yatay şeridi ve kurulum anında hızlı erişim Toast uyarısı.
+- **Dosyalar:** `AllAppsDrawer.kt`, `AppIcon.kt`, `PackageReplacedReceiver.kt`, `AppEntity.kt`, `AppPrefs.kt`
+
 #### R-FEAT-CATEGORY-PROTECTION: Kategori Kilidi & Kullanıcı Koruması (18 ⭐)
 - **Durum:** Yapılacak (Öncelikli — Rakip 1 Numaralı Şikayet Çözümü)
 - **Açıklama:** Kullanıcının elle taşıdığı uygulamaları `Manual Override` ile kilitleyip güncellemelerde yerlerinin bozulmasını engelleme.
