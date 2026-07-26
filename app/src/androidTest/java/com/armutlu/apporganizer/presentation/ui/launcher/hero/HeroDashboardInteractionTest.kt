@@ -37,8 +37,6 @@ class HeroDashboardInteractionTest {
                     onOpenWeeklyReport = {},
                     onClockLongPress = {},
                     onOpenPulse = {},
-                    onOpenSearch = {},
-                    onOpenSearchSettings = {},
                     onOpenUsageAccessSettings = {},
                     onOpenNotificationAccessSettings = {},
                     onLaunchApp = {},
@@ -46,32 +44,15 @@ class HeroDashboardInteractionTest {
                 )
             }
         }
+        // D240 — HeroSearchCard M5 kod tarama denetiminde silindi (0-caller, çift arama kutusu
+        // fix'i); bu test artık sadece kalan iki sabit kartı + SmartAccessCard'ı doğrular.
         val widths = listOf(
             "hero_clock_card",
             "hero_digital_life_card",
-            "hero_search_card",
             "hero_smart_access_card",
         ).map { tag -> compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.width }
         assertTrue(widths.first() > 0f)
         widths.drop(1).forEach { width -> assertEquals(widths.first(), width, 0.5f) }
-    }
-
-    @Test fun search_card_routes_primary_and_source_actions() {
-        var searchClicks = 0
-        var sourceClicks = 0
-        compose.setContent {
-            HeroSearchCard(
-                spec = spec,
-                onOpenSearch = { searchClicks++ },
-                onOpenSources = { sourceClicks++ },
-            )
-        }
-        compose.onNodeWithTag("hero_search_card").performClick()
-        compose.onNodeWithTag("hero_search_sources").performClick()
-        compose.runOnIdle {
-            assertEquals(1, searchClicks)
-            assertEquals(1, sourceClicks)
-        }
     }
 
     @Test fun clock_supports_click_and_long_click() {

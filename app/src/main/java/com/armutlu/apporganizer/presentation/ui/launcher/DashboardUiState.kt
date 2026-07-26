@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
+import com.armutlu.apporganizer.domain.models.HomeSectionId
 
 /**
  * Hero Dashboard migration — Commit 1 (bkz. YENI_HERO_DASHBOARD roadmap).
@@ -18,6 +19,10 @@ data class DashboardUiState(
     val pulse: HomePulseSummary?,
     val smartAccess: SmartAccessUiState,
     val pendingClassificationCount: Int = 0,  // P1.2: Badge için beklemede olan sınıflandırma sayısı
+    // D240 — Ana Ekranı Düzenle editöründen (HomeLayoutEditorScreen) gelen gerçek CONTENT sırası/
+    // görünürlüğü. HomeSectionRenderer.dashboardContentOrder(config) ile üretilir, HeroDashboardPage
+    // bu listeye göre CLOCK/MISSIONS_AND_SCORE'u sıralar ve SmartAccessCard grubunu gizler/gösterir.
+    val contentOrder: List<HomeSectionId> = HomeSectionId.entries,
 )
 
 /** `SmartDashboardPage` içindeki tıklama/eylem callback'leri — tek yerde toplanır. */

@@ -1307,6 +1307,10 @@ fun HomeScreen(
                             pulse = homePulseSummary,
                             smartAccess = smartAccessState,
                             pendingClassificationCount = pendingClassificationsCount,
+                            // D240 — editördeki (Ana Ekranı Düzenle) gerçek sıralama/görünürlük
+                            // tercihi; homeLayoutConfig zaten reaktif (bkz. üstteki remember/
+                            // DisposableEffect), yeni statik okuma eklenmedi.
+                            contentOrder = dashboardContentOrder(homeLayoutConfig),
                         ),
                         actions = DashboardActions(
                             onOpenWeeklyReport = {

@@ -38,12 +38,58 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
+import com.armutlu.apporganizer.domain.models.HomeSectionId
+
+/**
+ * D240 — SmartAccessCard tek bir sekmeli (NOW/RECENT/NOTIFICATIONS) birim olduğu için editördeki
+ * GOOGLE_SEARCH/FAVORITES/SUGGESTIONS/RECENT_NOTIFICATIONS/RECENT_APPS/ANDROID_WIDGETS/
+ * ASSISTANT_INSIGHTS/TICKER_OR_STATS section'larının hiçbiri Hero'da ayrı bir composable'a karşılık
+ * gelmiyor (grep doğrulandı: hero/ paketinde bu ID'lere referans yok). Bu grup "SmartAccessCard'ın
+ * temsil ettiği section'lar" olarak ele alınır: grubun en az bir üyesi görünürse kart gösterilir ve
+ * kartın sırası, grup içindeki en önde (en küçük order) yer alan görünür üyenin konumuna göre
+ * belirlenir. Küçük/güvenli birleştirme — tam per-tab ayrıştırma büyük refactor gerektirir, bu
+ * turun kapsamı dışında bırakıldı (bkz. rapor).
+ */
+private val SMART_ACCESS_GROUP = setOf(
+    HomeSectionId.GOOGLE_SEARCH,
+    HomeSectionId.FAVORITES,
+    HomeSectionId.SUGGESTIONS,
+    HomeSectionId.RECENT_NOTIFICATIONS,
+    HomeSectionId.RECENT_APPS,
+    HomeSectionId.ANDROID_WIDGETS,
+    HomeSectionId.ASSISTANT_INSIGHTS,
+    HomeSectionId.TICKER_OR_STATS,
+)
+
+/** Hero'nun render edebildiği "sanal" bloklar — contentOrder içindeki gerçek section'lardan türetilir. */
+private enum class HeroBlock { CLOCK, MISSIONS_AND_SCORE, SMART_ACCESS }
+
+/**
+ * Editörün gerçek `contentOrder`'ından (dashboardContentOrder(config)) Hero'nun render edebileceği
+ * blokların sırasını çıkarır. Gizlenen section'lar contentOrder'da hiç yer almaz (bkz.
+ * HomeSectionRenderer.dashboardContentOrder — visible filtresi zaten uygulanmış), bu yüzden burada
+ * sadece "bu blok listede var mı" kontrolü yeterli.
+ */
+private fun heroBlockOrder(contentOrder: List<HomeSectionId>): List<HeroBlock> {
+    val result = mutableListOf<HeroBlock>()
+    for (sectionId in contentOrder) {
+        val block = when {
+            sectionId == HomeSectionId.CLOCK -> HeroBlock.CLOCK
+            sectionId == HomeSectionId.MISSIONS_AND_SCORE -> HeroBlock.MISSIONS_AND_SCORE
+            sectionId in SMART_ACCESS_GROUP -> HeroBlock.SMART_ACCESS
+            else -> null
+        } ?: continue
+        if (block !in result) result += block
+    }
+    return result
+}
 
 @Composable
 internal fun HeroDashboardPage(
     pulse: HomePulseSummary?,
     smartAccess: SmartAccessUiState,
     pendingClassificationCount: Int = 0,
+    contentOrder: List<HomeSectionId> = HomeSectionId.entries,
     onOpenWeeklyReport: () -> Unit,
     onClockLongPress: () -> Unit,
     onOpenPulse: () -> Unit,
@@ -75,29 +121,32 @@ internal fun HeroDashboardPage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(HomeHeroTokens.SectionGap),
         ) {
-            HeroClockCard(
-                spec = spec,
-                onClick = onOpenWeeklyReport,
-                onLongClick = onClockLongPress,
-            )
-            HeroDigitalLifeCard(
-                summary = pulse,
-                spec = spec,
-                onClick = onOpenPulse,
-            )
-
-
-
-            SmartAccessCard(
-                state = smartAccess,
-                spec = spec,
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                onOpenUsageSettings = onOpenUsageAccessSettings,
-                onOpenNotificationSettings = onOpenNotificationAccessSettings,
-                onLaunchApp = onLaunchApp,
-                onAppLongClick = onAppLongClick,
-            )
+            // D240 — statik sıra yerine editör tercihinden (contentOrder) türetilen dinamik blok
+            // sırası; gizlenen bloklar heroBlockOrder'da hiç görünmediği için otomatik atlanır.
+            heroBlockOrder(contentOrder).forEach { block ->
+                when (block) {
+                    HeroBlock.CLOCK -> HeroClockCard(
+                        spec = spec,
+                        onClick = onOpenWeeklyReport,
+                        onLongClick = onClockLongPress,
+                    )
+                    HeroBlock.MISSIONS_AND_SCORE -> HeroDigitalLifeCard(
+                        summary = pulse,
+                        spec = spec,
+                        onClick = onOpenPulse,
+                    )
+                    HeroBlock.SMART_ACCESS -> SmartAccessCard(
+                        state = smartAccess,
+                        spec = spec,
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it },
+                        onOpenUsageSettings = onOpenUsageAccessSettings,
+                        onOpenNotificationSettings = onOpenNotificationAccessSettings,
+                        onLaunchApp = onLaunchApp,
+                        onAppLongClick = onAppLongClick,
+                    )
+                }
+            }
         }
     }
 }

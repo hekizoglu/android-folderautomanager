@@ -15,6 +15,7 @@ internal fun SmartDashboardPage(
         pulse = state.pulse,
         smartAccess = state.smartAccess,
         pendingClassificationCount = state.pendingClassificationCount,
+        contentOrder = state.contentOrder,
         onOpenWeeklyReport = actions.onOpenWeeklyReport,
         onClockLongPress = actions.onClockLongPress,
         onOpenPulse = actions.onPulseClick,
