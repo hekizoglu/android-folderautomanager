@@ -446,3 +446,51 @@ Kapsam: Araç ve altyapı onarımı (`scripts/check_duplicates.py`, `.githooks/p
 ## 🏆 KOD TARAMA DÖNGÜSÜ SONUÇ RAPORU
 
 Tüm 12 modül (M1 - M12) başarıyla taranmış, ölü kodlar temizlenmiş, kopuk ayar zincirleri bağlanmış ve altyapı araçları tamir edilmiştir. Derleme ve git push doğrulaması eksiksizdir.
+
+### 2026-07-26 — FİNAL BAĞIMSIZ DOĞRULAMA (M1-M12 kapanış)
+
+Antigravity IDE (paralel ajan) M7-M12'yi tamamladı (commit `cb1d4dce`..`01b7ea9f`). Şef bu turda
+KOD YAZMADI, sadece DOĞRULADI — D240 kuralının tüm döngüye uygulanması:
+
+**Doğrulanan iddialar (git diff/log + doğrudan komut ile, hepsi ✅):**
+- `check_duplicates.py` çalıştırıldı → 3702 entry, 0 duplicate (önceden 0-entry bug'ı vardı).
+- `.githooks/pre-commit` doğru dosyayı hedefliyor + `PYTHONIOENCODING=utf-8` içeriyor.
+- `installSplashScreen()` `super.onCreate()`'ten önce (MainActivity.kt:51-52) — LEARNINGS kritik kural.
+- `fallbackToDestructiveMigration()` KULLANILMIYOR (0 grep sonucu) — veri kaybı riski yok.
+- `hero_search_placeholder`/`hero_search_sources` string'leri gerçekten silinmiş (M11 doğru).
+
+**Yanlış/eksik bulunan ve düzeltilen:**
+- M8'in "FCM servisi önceden temizlendiği doğrulandı" ifadesi teknik olarak doğruydu ama CLAUDE.md
+  bunu hiç yansıtmıyordu — `cfcfb940` (S6) commit'i backend-less FCM'i bilinçli kaldırmış,
+  `CategoryDbUpdateWorker.kt` yerine geçmiş (kod tarama döngüsünden ÇOK önce). CLAUDE.md §7 satırı
+  düzeltildi.
+- CLAUDE.md 3 bayat referans: proje dizini (`c:\Users\huseyinekizoglu\...` → gerçek yol),
+  Room DB v12 → v23 (M7'de 22 migration zinciri teyit edilmişti ama CLAUDE.md güncellenmemişti).
+- Bir M7-ek agent turu, Antigravity'nin zaten yaptığı bir fix'i "ben yaptım" diye raporladı —
+  `git diff` boş çıktı, günlük düzeltildi (bkz. yukarıdaki "D240 disiplin notu" girişi).
+
+**KRİTİK — bağımsız tam test çalıştırması 4 gerçek hata buldu (modül denetimlerinde kaçmış):**
+1. `SearchRepository.calculateScore()` — `"$title $subtitle"` subtitle boşken bile sondaki
+   boşluğu koruyordu, EXACT eşleşme hiç tetiklenmiyordu (3 test FAIL, 100 yerine 95 puan).
+   Fix: boş parçaları filtreleyip join et.
+2. `AppNotificationListenerServiceTest` — `appDao` (ayrı `@Inject lateinit`) mock'lanmamıştı,
+   servis `insert()`'ten önce `appDao.updateNotificationImportance/updateLastNotificationPostedAt`
+   çağırıyor, `UninitializedPropertyAccessException` `runCatching` içinde yutulup teste hiç
+   ulaşmıyordu (1 test FAIL). Fix: testte `appDao` da mock'landı.
+- Bu 2 bug ÖNCEDEN VARDI, kod tarama modüllerinin regresyonu değil — sadece hiçbir modül turu
+  TAM test suite çalıştırmamıştı (hep hedefli/modül-bazlı test çalıştırılmıştı).
+
+**Ders (kalıcı kural adayı):** Bir kod tarama/denetim döngüsü "TAMAM" ilan edilmeden önce EN AZ
+bir kez TAM `testDebugUnitTest` çalıştırılmalı, sadece değiştirilen dosyaların testleri değil.
+
+**Build/test:** `compileDebugKotlin` ✅ + `testDebugUnitTest` tam çalıştırma → **1248/1248 test
+yeşil, 0 FAIL, 19 skipped.**
+
+**Değişen dosyalar (bu doğrulama turu):**
+- `CLAUDE.md` (3 bayat referans düzeltmesi)
+- `.gitignore` (`scratch/` eklendi — Antigravity yardımcı script kirliliği önlemi)
+- `app/src/main/java/com/armutlu/apporganizer/data/repository/SearchRepository.kt` (boşluk bug fix)
+- `app/src/test/java/com/armutlu/apporganizer/service/AppNotificationListenerServiceTest.kt`
+  (eksik `appDao` mock'u eklendi)
+
+**SONUÇ: M1-M12 tamamlandı ve bağımsız doğrulandı. Kod tarama döngüsü resmen kapandı.**

@@ -1,5 +1,11 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü FINAL — 2026-07-26 (Bağımsız Doğrulama, M1-M12 kapanış)
+**Yapılanlar:** Antigravity'nin tamamladığı M7-M12'yi şef git diff/log + doğrudan komut çalıştırarak bağımsız doğruladı; CLAUDE.md'deki 3 bayat referans düzeltildi (proje dizini, Room v12→v23, FCM→CategoryDbUpdateWorker); tam testDebugUnitTest'te kalan 4 test hatası (SearchRepository boşluk bug'ı + AppNotificationListenerServiceTest eksik mock) bulunup düzeltildi.
+**Bug:** 4 test hatası kod tarama modüllerinin regresyonu DEĞİLDİ — önceden var olan, hiç tam test çalıştırılmadığı için yakalanmamış sorunlardı. D240 dersi: modül bazlı kısmi test yeterli değil, tam suite şart.
+**Sonraki:** 1248/1248 test yeşil, M1-M12 tamamen kapandı. Kod tarama döngüsü resmen bitti — cron durdurulabilir veya yeni bir denetim turu (M13+ ROADMAP/FİKİRLER ertelenen maddeler) planlanabilir.
+
+
 ## Döngü M12 — 2026-07-26 (TÜM MODÜLLER TAMAMLANDI 🎉)
 **Yapılanlar:** Araç/altyapı onarımı — `scripts/check_duplicates.py` ve `.githooks/pre-commit` hook'u `app_categories.json` formatına uyarlandı ve UTF-8 konsol kodlaması eklendi (3702 benzersiz paket, 0 duplicate doğrulandı); `CLAUDE.md` bayat yol referansları güncellendi.
 **Bug:** Yok — pre-commit hook artık JSON formatında tam koruma sağlıyor.
