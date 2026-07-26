@@ -21,13 +21,13 @@ from pathlib import Path
 
 # Projeye göre düzenle — birden fazla aday yol denenir
 DEFAULT_CANDIDATES = [
-    "app/src/main/java/com/armutlu/apporganizer/data/AppClassifier.kt",
-    "app/src/main/java/com/armutlu/apporganizer/domain/AppClassifier.kt",
-    "AppClassifier.kt",
+    "app/src/main/assets/app_categories.json",
+    "assets/app_categories.json",
+    "app_categories.json",
 ]
 
-# "paket.adı" to CAT_X   (boşluk/tab esnek, tek veya çift tırnak)
-ENTRY_RE = re.compile(r'["\']([\w.]+)["\']\s+to\s+(CAT_\w+|\w+)')
+# JSON format: "pkg.name": "CAT_X" veya "pkg.name": "category"
+ENTRY_RE = re.compile(r'["\']([\w.]+)["\']\s*:\s*["\']([^"\']+)["\']')
 
 
 def find_target(arg_path: str | None) -> Path:
@@ -41,8 +41,8 @@ def find_target(arg_path: str | None) -> Path:
         if p.exists():
             return p
     sys.exit(
-        "HATA: AppClassifier.kt bulunamadı. Yol ver:\n"
-        "  python3 scripts/check_duplicates.py app/src/.../AppClassifier.kt"
+        "HATA: app_categories.json bulunamadı. Yol ver:\n"
+        "  python3 scripts/check_duplicates.py app/src/main/assets/app_categories.json"
     )
 
 
@@ -101,4 +101,6 @@ def main():
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     sys.exit(main())

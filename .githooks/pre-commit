@@ -4,11 +4,11 @@
 #   cp .github/hooks/pre-commit .git/hooks/pre-commit
 #   chmod +x .git/hooks/pre-commit
 
-CLASSIFIER="app/src/main/java/com/armutlu/apporganizer/domain/usecase/classify/AppClassifier.kt"
+CLASSIFIER="app/src/main/assets/app_categories.json"
 
-# AppClassifier bu commit'te değişiyor mu?
-if git diff --cached --name-only | grep -q "$CLASSIFIER"; then
-  echo "🔍 AppClassifier değişti — duplicate kontrolü yapılıyor..."
+# app_categories.json veya AppClassifier bu commit'te değişiyor mu?
+if git diff --cached --name-only | grep -E -q "app_categories\.json|AppClassifier\.kt"; then
+  echo "🔍 Kategori kataloğu değişti — duplicate kontrolü yapılıyor..."
 
   # Python bul
   if command -v python3 >/dev/null 2>&1; then
@@ -20,15 +20,15 @@ if git diff --cached --name-only | grep -q "$CLASSIFIER"; then
     exit 0
   fi
 
-  # check_duplicates.py çalıştır
+  # check_duplicates.py çalıştır (PYTHONIOENCODING=utf-8 ile Windows CP1254 sarmalaması önlenir)
   if [ -f "scripts/check_duplicates.py" ]; then
-    $PY scripts/check_duplicates.py "$CLASSIFIER"
+    PYTHONIOENCODING=utf-8 $PY scripts/check_duplicates.py "$CLASSIFIER"
     EXIT=$?
     if [ $EXIT -ne 0 ]; then
       echo ""
-      echo "❌ COMMIT ENGELLENDI: AppClassifier'da duplicate paket var!"
+      echo "❌ COMMIT ENGELLENDI: Kategori kataloğunda duplicate paket var!"
       echo "   Düzeltmek için: python3 scripts/dedup_classifier.py"
-      echo "   Sonra tekrar: git add app/src/.../AppClassifier.kt && git commit"
+      echo "   Sonra tekrar: git add app/src/main/assets/app_categories.json && git commit"
       exit 1
     fi
     echo "✅ Duplicate yok — commit devam ediyor."

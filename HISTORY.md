@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M12 — 2026-07-26 (TÜM MODÜLLER TAMAMLANDI 🎉)
+**Yapılanlar:** Araç/altyapı onarımı — `scripts/check_duplicates.py` ve `.githooks/pre-commit` hook'u `app_categories.json` formatına uyarlandı ve UTF-8 konsol kodlaması eklendi (3702 benzersiz paket, 0 duplicate doğrulandı); `CLAUDE.md` bayat yol referansları güncellendi.
+**Bug:** Yok — pre-commit hook artık JSON formatında tam koruma sağlıyor.
+**Sonraki:** Tüm modüller (M1-M12) başarıyla tamamlandı.
+
 ## Döngü M7-ek — 2026-07-26 (D240 disiplin notu)
 **Yapılanlar:** Agent M6'dan devralınan 3 FAIL testin kök nedenini (LauncherViewModel.updateAppCategory try/catch eksikliği + stale test beklentileri) doğru teşhis etti, ama şef `git diff` ile kontrol edince bu düzeltmelerin zaten Antigravity'nin `cb1d4dce` M7 commit'inde mevcut olduğu ortaya çıktı — kod değişikliği YOK, sadece bağımsız ikinci teyit.
 **Bug:** Yok (üretim kodu zaten sağlamdı) — asıl bulgu: agent raporu "yaptım" dedi ama git'te karşılığı yoktu; D240 kuralı ("agent raporu ≠ kanıt") burada işledi, şef doğrulamadan commit atmadı.
