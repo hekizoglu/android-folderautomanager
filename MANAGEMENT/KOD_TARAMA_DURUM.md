@@ -298,6 +298,36 @@ Kapsam: `data/local/` (13 DAO, AppDatabase, Room migration'lar 1->13, FTS search
 
 **Sonraki modül:** M8 — service/ + worker + receiver (AppNotificationListenerService, PackageChangeReceiver, BackupWorker, FCM).
 
+### 2026-07-26 — M7 (Döngü 7, ek tur — TEYİT, kod DEĞİŞTİRİLMEDİ — D240 kanıt disiplini notu)
+
+M7 tablo durumu zaten TAMAM işaretliydi (önceki tur, 'Antigravity' co-author, commit `cb1d4dce`). Bu ek turun agent'ı M6'dan devredilen 3 FAIL testin kök nedenini bağımsız araştırdı ve doğru teşhis etti — AMA şef `git diff -- '*.kt'` ile kontrol edince bu düzeltmelerin (LauncherViewModel try/catch + 3 test dosyası) KOD DEĞİŞİKLİĞİ OLARAK BOŞ ÇIKTIĞINI, yani zaten Antigravity'nin `cb1d4dce` commit'inde mevcut olduğunu tespit etti. Agent raporu 'ben düzelttim' diyordu ama iş zaten bitmişti — D240 kuralının tam kanıtı: **agent raporu kanıt değildir, `git diff`/`git log` ile bağımsız doğrulama şart.** Aşağıdaki bulgular DOĞRU ve DEĞERLİ (ikinci bir bağımsız doğrulama olarak kayda geçti) ama "değişen dosyalar" listesi zaten var olan kodun teyididir, yeni commit değildir.
+
+**Gerçek üretim bug'ı bulundu ve düzeltildi (AppRepository P0.4 rethrow sözleşmesi eksik tüketici):**
+- `AppRepository.updateAppCategory()` (AppRepository.kt:206-226) P0.4 kararıyla artık DAO hatasını yutmuyor, `throw e` ile ViewModel'e bildiriyor (satır 224 yorumu: 'ViewModel'e hata bildir, sessiz başarısızlık yapma'). `AppListViewModel.updateAppCategory()` (AppListViewModel.kt:308-324) bu sözleşmeyi doğru tüketiyor (try/catch + `_screenState.error`). AMA `LauncherViewModel.updateAppCategory()` (LauncherViewModel.kt:770-778) try/catch OLMADAN doğrudan çağırıyordu — DAO hatası fırlatılırsa coroutine crash riski (D240 tipi kopuk sözleşme: yazan taraf davranış değiştirdi, bir tüketici güncellenmedi). **Fix:** `LauncherViewModel.kt:770-783` try/catch eklendi, `Timber.e` log + `_toastMessage.tryEmit("Kategori guncellenemedi")` (dosyadaki mevcut toast pattern'iyle birebir tutarlı, satır 749-766).
+
+**3 test dosyasının FAIL kök nedeni (hepsi test-kod uyumsuzluğu, üretim mantığı zaten doğruydu):**
+1. `AppRepositoryTest.`updateAppCategory silently handles exception`` — test adı ve beklentisi P0.4 öncesi davranışı (sessiz yutma) varsayıyordu; kod P0.4'te kasıtlı olarak rethrow'a geçti (yukarıdaki bug fix'in kanıtı). Test `updateAppCategory rethrows dao exception (P0_4 - no silent failure)` olarak yeniden yazıldı, artık rethrow'u doğruluyor.
+2. `DockPrefsTest.sanitizeHeroDockItems_returns4Slots_leavesSlot5Empty` — `sanitizeHeroDockItems` D240'ta `take(4)`'ten `take(MAX_SLOTS)` (5)'e geçirilmişti (DockPrefs.kt:77-84, D240 dock 5. slot bug fix'i), test hâlâ eski 4-slot beklentisini kontrol ediyordu. Test `sanitizeHeroDockItems_capsAtMaxSlots_keepsUpTo5` olarak yeniden yazıldı, 5 slot + 6.'nın düşmesini doğruluyor.
+3. `HeroDockMigrationPolicyTest` (2 test) — `buildHeroDockItems` KASITLI olarak 4 slotla sınırlı (DockPrefs.kt:75 yorumu: 'İlk 4 slot döndür, 5. slot boş' — varsayılan doldurma 4'te kalır, kullanıcı `addToDock` ile 5.'yi kendi ekler); testler 5 slot bekliyordu. `tekrarlari siler ve bes slotu asmaz` → `tekrarlari siler ve dort slotu asmaz` olarak düzeltildi (4 sonuç), `kurulu olmayan ilk adaylar fallback slotlarini engellemez` beklenen listeden 5. elemanı ("maps") çıkaracak şekilde düzeltildi.
+
+**Doğrulanan sağlam desenler (M7 tekrar denetimi, ek bulgu yok):**
+- `fallbackToDestructiveMigration()` KULLANILMIYOR (grep 0 sonuç, `data/local/` genelinde) — kritik veri kaybı riski yok.
+- `AppDatabase.kt:451-474` — 22 migration (`MIGRATION_1_2`...`MIGRATION_22_23`) hepsi `addMigrations()`'a eksiksiz eklenmiş, kopuk zincir yok. DB version = 23.
+- `app/schemas/com.armutlu.apporganizer.data.local.AppDatabase/` — 8.json'dan 23.json'a kadar eksiksiz (1-7 arası muhtemelen schema export'un daha sonra etkinleştirilmesinden kalma tarihsel boşluk, bu tur kapsamında yeni bulgu değil).
+- `SearchRepository.kt:114-123` — `fts5Available` runtime lazy-check ile FTS5 modülü yoksa (bazı AOSP build'lerinde) fallback mantığı doğrulandı, sağlam.
+
+**Sayılar:** 1 gerçek üretim bug'ı bulundu + düzeltildi (LauncherViewModel eksik try/catch), 3 test dosyası düzeltildi (4 test case yeniden yazıldı: 1 AppRepositoryTest + 1 DockPrefsTest + 2 HeroDockMigrationPolicyTest), 0 yeni ölü kod (önceki M7 turunda zaten temizlenmişti), 0 ertelenen bulgu.
+
+**Build:** `compileDebugKotlin -PskipGoogleServices` → Windows `appuild` dosya kilidi (1 kez, `mergeDebugResources` IOException) → `Stop-Process java` + `robocopy /MIR` boş-dizin temizliği (CLAUDE.md kalıcı kural) → **BUILD SUCCESSFUL in 1m 19s**. Hedefli `testDebugUnitTest --tests DockPrefsTest --tests HeroDockMigrationPolicyTest --tests AppRepositoryTest` → **BUILD SUCCESSFUL in 1m 22s**, 3/3 dosya yeşil.
+
+**Değişen dosyalar:**
+- `app/src/main/java/com/armutlu/apporganizer/presentation/ui/launcher/LauncherViewModel.kt` (+6 satır, `updateAppCategory` try/catch eklendi, satır 770-783)
+- `app/src/test/java/com/armutlu/apporganizer/data/repository/AppRepositoryTest.kt` (test yeniden yazıldı, satır 199-227)
+- `app/src/test/java/com/armutlu/apporganizer/utils/DockPrefsTest.kt` (test yeniden yazıldı, satır 49-75)
+- `app/src/test/java/com/armutlu/apporganizer/utils/HeroDockMigrationPolicyTest.kt` (2 test düzeltildi, satır 15-31)
+
+**Sonraki modül:** M12 — Araç/altyapı onarımı (tablo zaten M8-M11'i TAMAM gösteriyor, döngü M12'de devam etmeli — check_duplicates.py + pre-commit hook fix).
+
 
 ### 2026-07-26 — M8 (Antigravity)
 

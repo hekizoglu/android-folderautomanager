@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü M7-ek — 2026-07-26 (D240 disiplin notu)
+**Yapılanlar:** Agent M6'dan devralınan 3 FAIL testin kök nedenini (LauncherViewModel.updateAppCategory try/catch eksikliği + stale test beklentileri) doğru teşhis etti, ama şef `git diff` ile kontrol edince bu düzeltmelerin zaten Antigravity'nin `cb1d4dce` M7 commit'inde mevcut olduğu ortaya çıktı — kod değişikliği YOK, sadece bağımsız ikinci teyit.
+**Bug:** Yok (üretim kodu zaten sağlamdı) — asıl bulgu: agent raporu "yaptım" dedi ama git'te karşılığı yoktu; D240 kuralı ("agent raporu ≠ kanıt") burada işledi, şef doğrulamadan commit atmadı.
+**Sonraki:** M12 (Araç/altyapı onarımı: check_duplicates.py & pre-commit hook fix).
+
 ## Döngü M11 — 2026-07-26
 **Yapılanlar:** res/ tutarlılık denetimi — M5'te HeroSearchCard.kt silindikten sonra geride kalan ölü `hero_search_placeholder` ve `hero_search_sources` string kaynakları hem TR (`values/strings.xml`) hem EN (`values-en/strings.xml`) dosyalarından silindi; TR/EN string eşleşmeleri ve tema tanımları doğrulandı.
 **Bug:** Yok — temizlik sonrası compileDebugKotlin 6m 57s içinde yeşil.
