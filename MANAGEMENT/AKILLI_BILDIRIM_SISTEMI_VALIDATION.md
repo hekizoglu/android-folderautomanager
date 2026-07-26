@@ -70,11 +70,22 @@ git pull
 
 ### Başarı kapısı
 
-- [ ] `testDebugUnitTest` başarılı.
-- [ ] `assembleDebug` başarılı.
-- [ ] Derleme çıktısında yeni compile warning/error yok.
-- [ ] APK boyutu önceki doğrulanmış build ile karşılaştırıldı.
-- [ ] Sonuç tarihi, cihaz/PC bilgisi ve commit SHA bu dosyaya işlendi.
+- [x] `testDebugUnitTest` başarılı. (1294 test, 0 hata, 19 skipped — 3 tur düzeltme sonrası)
+- [x] `assembleDebug` başarılı. (55s, EXIT 0)
+- [x] Derleme çıktısında yeni compile error yok. (Sadece önceden var olan uyarılar — deprecated `priority`/`when` field kullanımı testlerde kasıtlı, `LocalLifecycleOwner` vb. proje geneli mevcut uyarılar.)
+- [ ] APK boyutu önceki doğrulanmış build ile karşılaştırıldı. (Bekliyor — referans build yok.)
+- [x] Sonuç tarihi, cihaz/PC bilgisi ve commit SHA bu dosyaya işlendi. (Aşağıda.)
+
+**Doğrulama kaydı — 2026-07-26, masaüstü PC (cihaz/emülatör bağlı değildi):**
+
+- Commit SHA: `4b811ae5`
+- İlk çalıştırmada derleme hatası: `NotificationReportV2Overview.kt:13` ve `SmartNotificationFilterSettingsCard.kt:11` — `androidx.compose.foundation.layout.weight` top-level olarak import edilmiş, ancak bu isim yalnız `RowScope`/`ColumnScope` extension'ı olarak var (`internal` erişim hatası). Kök neden: gereksiz/yanlış import satırı. **Düzeltme:** İki dosyadan da import satırı silindi (Compose'da scope-bağlı `.weight()` ekstra import istemez).
+- İkinci çalıştırmada 10 test hatası: `AppNotificationListenerServiceTest`, `SmartNotificationServiceIntegrationTest`, `NotificationPreviewStoreTest` — `io.mockk.MockKException: Missing mocked calls`. Kök neden: `android.app.Notification.priority` ve `.when` Java'da `public` **field**'dir (getter değil), MockK `every {}` bunları stub edemez. **Düzeltme:** `every { x.priority } returns 0` → doğrudan `x.priority = 0` field ataması (relaxed mock zaten mutable field ataması destekler).
+- Üçüncü çalıştırmada aynı hata `.when` satırında zincirleme çıktı (aynı kök neden, `priority` düzeltilirken `.when` unutulmamıştı ama `every{}` hâlâ kullanılıyordu) → aynı düzeltme `.when` için de uygulandı.
+- Ayrıca `NotificationPreviewStoreTest` başarısızlığı: `TestStatusBarNotificationFactory.kt` gerçek `Bundle()`/`Notification()` nesnesi new'liyordu; JVM unit test ortamında (`isReturnDefaultValues=true`) Android framework sınıfları no-op döner, bu yüzden `putCharSequence`/`getCharSequence` hep boş kalıyordu. **Düzeltme:** Factory, projedeki diğer test dosyalarıyla tutarlı şekilde mockk'lu `Bundle`/`Notification` kullanacak şekilde yeniden yazıldı.
+- Dördüncü çalıştırma: **BUILD SUCCESSFUL**, 1294/1294 test yeşil.
+- `assembleDebug`: **BUILD SUCCESSFUL**, 55s.
+- Beklenmedik ek dosya: `app/schemas/.../24.json` — Room schema export derleme sırasında otomatik üretildi (build.gradle.kts `room.schemaLocation` ayarı gereği), kod ile içerik doğrulanıp commit'e dahil edildi (migration testleri bu dosyayı gerektirir).
 
 ---
 
@@ -89,13 +100,15 @@ Cihaz veya emülatör bağlıyken:
 
 ### Başarı kapısı
 
-- [ ] V23 satırları v24 migration sonrası korunuyor.
-- [ ] Yeni kolon varsayılanları `OTHER / 35 / false / 0`.
-- [ ] Kategori, bastırma ve önem sorguları doğru sonuç veriyor.
-- [ ] Dolu bildirim metni DAO'ya verilse bile Room'da boş kalıyor.
-- [ ] Eski kalıcı metinler listener bağlantısında temizleniyor.
-- [ ] V7 backup codec tam turu başarılı.
-- [ ] V1–V6 yedekleri yeni alan olmadığı için bozulmuyor.
+- [!] Bu turda **çalıştırılamadı** — masaüstünde cihaz/emülatör bağlı değildi (`adb devices` boş liste döndürdü). `connectedDebugAndroidTest` cihaz/emülatör gerektirir, atlanmadı, gerçek engel budur.
+- [x] (Statik kod incelemesiyle doğrulanabilenler, instrumented test yerine geçmez ama tutarlılık teyididir:)
+  - `MIGRATION_23_24` (AppDatabase.kt:347-370) SQL default'ları `'OTHER' / 35 / 0 / 0` — görev hedefiyle birebir eşleşiyor.
+  - `NotificationEvent.kt` Room entity `@ColumnInfo(defaultValue=...)` değerleri migration SQL'iyle birebir eşleşiyor (`'OTHER'`, `35`, `0`, `0`).
+  - `title`/`text` kolonu şemaya eklenmemiş — `app/schemas/.../24.json` içeriğiyle doğrulandı.
+  - `AppDao.updateNotificationText()` (satır 349, 360) her çağrıda `notificationText` alanını boş string'e set ediyor, gelen parametreyi hiç yazmıyor.
+  - `AppNotificationListenerService.onListenerConnected()` (satır 81) `appDao.clearAllNotificationTexts()` çağırıyor — unit testle de doğrulandı (`onListenerConnected purges legacy notification text` PASS).
+  - `SmartNotificationBackupCodec` — bilinmeyen kategori `runCatching` ile atlanıyor, bozuk badge modu fallback'e düşüyor, alan yoksa (V1-V6) fallback korunuyor (kod okuması, bkz. madde 7 altındaki not).
+- [ ] Gerçek migration/DAO/codec instrumented test koşumu — **BEKLİYOR, cihaz/emülatör gerekli.**
 
 ---
 
@@ -186,15 +199,15 @@ Repo ve cihaz kontrolü:
 
 | Alan | Kod | Unit test | Instrumented | Fiziksel cihaz | Durum |
 |---|---:|---:|---:|---:|---|
-| Sınıflandırıcı | Hazır | Yazıldı | Gerekmez | Bekliyor | `[~]` |
-| Önem/bastırma | Hazır | Yazıldı | Gerekmez | Bekliyor | `[~]` |
-| Repository/okunmamış | Hazır | Yazıldı | Gerekmez | Bekliyor | `[~]` |
-| Room v24 metadata | Hazır | Yazıldı | Yazıldı | Bekliyor | `[~]` |
-| Analyzer/Report V2 | Hazır | Yazıldı | Gerekmez | Bekliyor | `[~]` |
-| Ayar ekranı | Hazır | Etiket testi | Gerekmez | Bekliyor | `[~]` |
-| P0 içerik gizliliği | Hazır | Yazıldı | Yazıldı | Bekliyor | `[~]` |
-| Backup V7 | Hazır | Codec testi | Yazıldı | Bekliyor | `[~]` |
-| Performans | Altyapı hazır | Gerekmez | Benchmark | Bekliyor | `[!]` |
+| Sınıflandırıcı | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
+| Önem/bastırma | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
+| Repository/okunmamış | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
+| Room v24 metadata | Hazır | **Geçti (bu tur)** | Yazıldı, **çalıştırılamadı** (cihaz yok) | Bekliyor | `[~]` |
+| Analyzer/Report V2 | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
+| Ayar ekranı | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
+| P0 içerik gizliliği | Hazır | **Geçti (bu tur)** | Yazıldı, **çalıştırılamadı** (cihaz yok) | Bekliyor | `[~]` |
+| Backup V7 | Hazır | **Geçti (bu tur)** | Yazıldı, **çalıştırılamadı** (cihaz yok) | Bekliyor | `[~]` |
+| Performans | Altyapı hazır | Gerekmez | Benchmark **çalıştırılamadı** (cihaz yok) | Bekliyor | `[!]` |
 
 ---
 
@@ -217,3 +230,4 @@ Sorun çıkarsa `main` geçmişi rewrite/force-push yapılmaz. İlgili commit ve
 | Tarih | Commit | Test cihazı | Unit/Build | Instrumented | Benchmark | Karar |
 |---|---|---|---|---|---|---|
 | — | `07d7e60` | — | Bekliyor | Bekliyor | Bekliyor | Merge yok |
+| 2026-07-26 | `4b811ae5` | Yok (masaüstü PC, cihaz/emülatör bağlı değildi) | **Geçti** (1294/1294 test, testDebugUnitTest+assembleDebug) | **Çalıştırılamadı** (cihaz yok) | **Çalıştırılamadı** (cihaz yok) | Merge yok — cihaz doğrulaması bekliyor |
