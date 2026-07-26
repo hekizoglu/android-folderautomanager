@@ -50,6 +50,7 @@ internal object HomeHeroLayoutPolicy {
             )
             HomeHeroProfile.TABLET -> referencePhone(profile).copy(
                 contentMaxWidthDp = 420,
+                scrollEnabled = true,
             )
             HomeHeroProfile.LANDSCAPE -> HomeHeroLayoutSpec(
                 profile = profile,
