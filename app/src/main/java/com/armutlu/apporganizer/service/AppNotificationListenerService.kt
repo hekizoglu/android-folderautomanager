@@ -22,30 +22,25 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AppNotificationListenerService : NotificationListenerService() {
+open class AppNotificationListenerService : NotificationListenerService() {
 
     @Inject lateinit var notificationEventDao: NotificationEventDao
     @Inject lateinit var appDao: com.armutlu.apporganizer.data.local.AppDao
     @Inject lateinit var notificationClassifier: NotificationClassifierUseCase
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val knownNotificationKeys = LinkedHashSet<String>()
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         sbn ?: return
         runCatching {
             if (!sbn.isOngoing) {
-                knownNotificationKeys += sbn.key
-                rebuildCounts()
-                _lastPostedAt.update { current ->
-                    current + (sbn.packageName to System.currentTimeMillis())
-                }
-                updatePreviewState()
+                val timestamp = System.currentTimeMillis()
+                _lastPostedAt.update { current -> current + (sbn.packageName to timestamp) }
+                rebuildActiveSnapshot()
                 if (AppPrefs.isNotifAnalyticsEnabled(this)) {
                     serviceScope.launch {
                         runCatching {
                             val importance = notificationPriority(sbn)
-                            val timestamp = System.currentTimeMillis()
                             appDao.updateNotificationImportance(sbn.packageName, importance)
                             appDao.updateLastNotificationPostedAt(sbn.packageName, timestamp)
                             notificationEventDao.insert(
@@ -62,21 +57,12 @@ class AppNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        runCatching {
-            sbn?.packageName?.let { pkg ->
-                sbn.key?.let { knownNotificationKeys.remove(it) }
-                rebuildCounts()
-                _previewItems.update { current ->
-                    NotificationPreviewStore.removePreview(current, pkg, sbn.key)
-                }
-                updatePreviewState()
-            }
-        }
+        if (sbn == null) return
+        runCatching { rebuildActiveSnapshot() }
     }
 
     override fun onListenerConnected() {
-        rebuildCounts()
-        updatePreviewState()
+        rebuildActiveSnapshot()
         serviceScope.launch {
             runCatching {
                 notificationEventDao.deleteOlderThan(
@@ -87,7 +73,6 @@ class AppNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onListenerDisconnected() {
-        knownNotificationKeys.clear()
         _badgeCounts.value = emptyMap()
         _latestTexts.value = emptyMap()
         _previewItems.value = emptyMap()
@@ -101,85 +86,66 @@ class AppNotificationListenerService : NotificationListenerService() {
         super.onDestroy()
     }
 
-    private fun rebuildCounts() {
-        knownNotificationKeys.clear()
-        val counts = mutableMapOf<String, Int>()
-        runCatching {
-            activeNotifications?.forEach { sbn ->
-                if (!sbn.isOngoing) {
-                    knownNotificationKeys += sbn.key
-                    counts[sbn.packageName] = (counts[sbn.packageName] ?: 0) + 1
-                }
-            }
-        }
-        _badgeCounts.value = counts
-    }
+    /** Tek callback için Android aktif bildirim kaynağını yalnız bir kez okur. */
+    protected open fun currentActiveNotifications(): List<StatusBarNotification> =
+        runCatching { activeNotifications?.toList().orEmpty() }.getOrDefault(emptyList())
 
     /**
-     * Tek aktif bildirim taramasından hem eski önizleme akışını hem yeni akıllı modeli üretir.
-     * Eski [badgeCounts] davranışı korunur; promosyonları dışlayan sayı [smartBadgeCounts] ile
-     * ayrı yayınlanır. UI geçişi tamamlanana kadar geriye dönük uyumluluk bozulmaz.
+     * Eski badge/preview akışlarıyla yeni akıllı akışları aynı aktif bildirim snapshot'ından üretir.
+     * Böylece posted/removed/connected callback'leri iki ayrı tam tarama yapmaz.
      */
-    private fun updatePreviewState() {
-        val counts = _badgeCounts.value
+    private fun rebuildActiveSnapshot() {
+        val active = currentActiveNotifications().filterNot { it.isOngoing }
         val showContent = AppPrefs.isNotificationTextEnabled(this)
         val blockedPackages = AppPrefs.getNotificationPreviewBlockedPackages(this)
-        val rebuilt = linkedMapOf<String, List<NotificationPreview>>()
-        val smartRebuilt = linkedMapOf<String, SmartNotification>()
+        val counts = linkedMapOf<String, Int>()
+        val previewBuckets = linkedMapOf<String, MutableList<NotificationPreview>>()
+        val smartItems = ArrayList<SmartNotification>(active.size)
 
-        runCatching {
-            activeNotifications?.forEach { sbn ->
-                if (!sbn.isOngoing) {
-                    val packageName = sbn.packageName
-                    if ((counts[packageName] ?: 0) <= 0) return@forEach
+        active.forEach { sbn ->
+            val packageName = sbn.packageName
+            counts[packageName] = (counts[packageName] ?: 0) + 1
 
-                    // İçerik sınıflandırma için cihaz içinde okunur; yalnız gösterim tercihi açıksa
-                    // preview StateFlow'una eklenir. Metin DB'ye yazılmaz.
-                    val extractedPreview = NotificationPreviewStore.extractPreview(sbn)
-                    val visiblePreview = extractedPreview?.takeIf {
-                        showContent && packageName !in blockedPackages
-                    }
-
-                    if (visiblePreview != null) {
-                        val current = rebuilt[packageName].orEmpty()
-                        rebuilt[packageName] = (current + visiblePreview)
-                            .sortedByDescending { it.postedAt }
-                            .take(2)
-                    } else if (!rebuilt.containsKey(packageName)) {
-                        rebuilt[packageName] = emptyList()
-                    }
-
-                    val timestamp = extractedPreview?.postedAt
-                        ?: sbn.postTime.takeIf { it > 0L }
-                        ?: System.currentTimeMillis()
-                    val smartText = extractedPreview?.body
-                        ?.takeIf { it.isNotBlank() }
-                        ?: extractedPreview?.text.orEmpty()
-                    smartRebuilt[sbn.key] = notificationClassifier.classify(
-                        key = sbn.key,
-                        packageName = packageName,
-                        title = extractedPreview?.title.orEmpty(),
-                        text = smartText,
-                        timestamp = timestamp,
-                        systemPriority = notificationPriority(sbn),
-                    )
-                }
+            val extractedPreview = NotificationPreviewStore.extractPreview(sbn)
+            if (showContent && packageName !in blockedPackages && extractedPreview != null) {
+                previewBuckets.getOrPut(packageName) { mutableListOf() } += extractedPreview
+            } else {
+                previewBuckets.putIfAbsent(packageName, mutableListOf())
             }
+
+            val timestamp = extractedPreview?.postedAt
+                ?: sbn.postTime.takeIf { it > 0L }
+                ?: System.currentTimeMillis()
+            val smartText = extractedPreview?.body
+                ?.takeIf { it.isNotBlank() }
+                ?: extractedPreview?.text.orEmpty()
+            smartItems += notificationClassifier.classify(
+                key = sbn.key,
+                packageName = packageName,
+                title = extractedPreview?.title.orEmpty(),
+                text = smartText,
+                timestamp = timestamp,
+                systemPriority = notificationPriority(sbn),
+            )
         }
 
-        _previewItems.value = rebuilt
+        val previews = previewBuckets.mapValues { (_, items) ->
+            items.sortedByDescending { it.postedAt }.take(2)
+        }
+        val ranked = smartItems.sortedWith(
+            compareByDescending<SmartNotification> { it.importanceScore }
+                .thenByDescending { it.timestamp }
+        )
+
+        _badgeCounts.value = counts
+        _previewItems.value = previews
         _latestTexts.value = counts.mapValues { (pkg, count) ->
             NotificationPreviewStore.summarize(
-                previews = rebuilt[pkg].orEmpty(),
+                previews = previews[pkg].orEmpty(),
                 count = count,
                 showContent = showContent && pkg !in blockedPackages,
             )
         }.filterValues { it.isNotBlank() }
-
-        val ranked = smartRebuilt.values.sortedWith(
-            compareByDescending<SmartNotification> { it.importanceScore }
-                .thenByDescending { it.timestamp }
-        )
         _smartNotifications.value = ranked
         _smartBadgeCounts.value = ranked
             .asSequence()
