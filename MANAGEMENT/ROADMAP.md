@@ -425,3 +425,41 @@ Bu sıra release’den önce değiştirilmez:
 - Dış aksiyon backlog değildir; `COZULEMEYEN_SORUNLAR.md` içinde sahip ve beklenen kanıtla tutulur.
 - Aktif dış engel kaydı `Sahip`, `Son tarih (YYYY-MM-DD)`, `Beklenen kanıt` ve `Sonraki eskalasyon` alanları olmadan R8 planına alınmaz.
 - Yeni özellik release kapısını riske atıyorsa R9’a taşınır.
+
+---
+
+## 17. ⭐ Yüksek Puanlı Yeni Fikirler ve USP Özellikler (2026-07-26 Pazar Araştırması)
+
+Pazar araştırması (Mayıs-Temmuz 2026 rakip kullanıcı şikayetleri), canlı cihaz testleri ve 15+ puanlama kriteri doğrultusunda önceliklendirilen aktif yol haritası maddeleri:
+
+### 🌟 USP & Öncelikli Özellikler
+
+#### R-FEAT-LARGE-FOLDERS: Büyük Klasör / Dinamik 3x3 Önizleme (19 ⭐)
+- **Durum:** Yapılacak (Öncelikli)
+- **Açıklama:** Klasörü açmadan içindeki uygulamaları doğrudan açabilen iOS/HarmonyOS stili 3x3 önizleme modu.
+- **Dosyalar:** `FolderTile.kt`, `HomeScreenComponents.kt`, `AppPrefs.kt`
+
+#### R-FEAT-CATEGORY-PROTECTION: Kategori Kilidi & Kullanıcı Koruması (18 ⭐)
+- **Durum:** Yapılacak (Öncelikli — Rakip 1 Numaralı Şikayet Çözümü)
+- **Açıklama:** Kullanıcının elle taşıdığı uygulamaları `Manual Override` ile kilitleyip güncellemelerde yerlerinin bozulmasını engelleme.
+- **Dosyalar:** `AppEntity.kt`, `AppDao.kt`, `AppRepository.kt`, `ClassificationReviewViewModel.kt`
+
+#### R-FEAT-SMART-DRAG-UNDO: Akıllı Sürükle-Bırak & Undo Toast (18 ⭐)
+- **Durum:** Yapılacak (Öncelikli)
+- **Açıklama:** Hassas sürükle-bırak hedeflemesi ve yanlış bir klasöre bırakıldığında 4 saniyelik "Geri Al" (Undo) Toast uyarısı.
+- **Dosyalar:** `HomeScreenFolderPager.kt`, `FolderGridPage.kt`, `HomeScreen.kt`
+
+#### R-FEAT-STALE-CLEANER: Kullanılmayan Uygulama Süpürgesi (18 ⭐)
+- **Durum:** Yapılacak (Öncelikli)
+- **Açıklama:** 30+ gündür açılmayan uygulamaları toplu gizleme/silme ekranı.
+- **Dosyalar:** `EditingCenterCard.kt`, `StaleAppsScreen.kt`, `LauncherViewModel.kt`
+
+#### R-FEAT-BATCH-APPROVE: Toplu Kategori Onay Mekanizması (18 ⭐)
+- **Durum:** Yapılacak (Öncelikli)
+- **Açıklama:** 49+ bekleyen uygulama için tek tıkla "Tümünü Onayla" seçeneği.
+- **Dosyalar:** `ClassificationReviewScreen.kt`, `ClassificationReviewViewModel.kt`
+
+#### R-FEAT-JSON-BACKUP: Dahili JSON Düzen Yedekleme/Geri Yükleme UI (18 ⭐)
+- **Durum:** Yapılacak (Öncelikli)
+- **Açıklama:** Ayarlar altında `.json` olarak düzen dışa aktarma ve geri yükleme arayüzü.
+- **Dosyalar:** `SettingsScreen.kt`, `BackupSyncService.kt`, `SettingsPrivacyDataSection.kt`
