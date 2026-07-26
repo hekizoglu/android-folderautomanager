@@ -1,7 +1,9 @@
 package com.armutlu.apporganizer.data.repository
 
+import com.armutlu.apporganizer.domain.models.NotificationBadgeMode
 import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.SmartNotification
+import com.armutlu.apporganizer.domain.models.SmartNotificationSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
@@ -43,9 +45,73 @@ class InMemorySmartNotificationRepositoryTest {
     }
 
     @Test
+    fun `engine disabled preserves classic unread counts including promotions`() = runTest {
+        val settingsSource = FakeSettingsSource(settings(engineEnabled = false))
+        val repository = repository(settingsSource = settingsSource)
+        repository.replaceActive(
+            listOf(
+                smart("msg", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
+                smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true),
+            )
+        )
+
+        assertEquals(mapOf("com.whatsapp" to 1, "com.shop" to 1), repository.actionablePackageCounts.value)
+    }
+
+    @Test
+    fun `enabling engine reactively applies promotion filter`() = runTest {
+        val settingsSource = FakeSettingsSource(settings(engineEnabled = false))
+        val repository = repository(settingsSource = settingsSource)
+        repository.replaceActive(
+            listOf(
+                smart("msg", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
+                smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true),
+            )
+        )
+
+        settingsSource.state.value = settings(engineEnabled = true)
+        awaitCondition { "com.shop" !in repository.actionablePackageCounts.value }
+
+        assertEquals(mapOf("com.whatsapp" to 1), repository.actionablePackageCounts.value)
+    }
+
+    @Test
+    fun `promotion filter can be disabled while engine remains enabled`() = runTest {
+        val settingsSource = FakeSettingsSource(
+            settings(engineEnabled = true, filterPromotions = false)
+        )
+        val repository = repository(settingsSource = settingsSource)
+        repository.replaceActive(
+            listOf(smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true))
+        )
+
+        assertEquals(mapOf("com.shop" to 1), repository.actionablePackageCounts.value)
+    }
+
+    @Test
+    fun `visible categories hide excluded categories from badge counts`() = runTest {
+        val settingsSource = FakeSettingsSource(
+            settings(
+                engineEnabled = true,
+                visibleCategories = setOf(NotificationCategory.FINANCE),
+            )
+        )
+        val repository = repository(settingsSource = settingsSource)
+        repository.replaceActive(
+            listOf(
+                smart("msg", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
+                smart("finance", "com.bank", NotificationCategory.FINANCE, 90, 20L),
+            )
+        )
+
+        assertEquals(mapOf("com.bank" to 1), repository.actionablePackageCounts.value)
+        assertEquals(mapOf(NotificationCategory.FINANCE to 1), repository.categoryCounts.value)
+    }
+
+    @Test
     fun `read timestamp hides only older active notifications and keeps active snapshot`() = runTest {
         val readSource = FakeReadStateSource()
-        val repository = InMemorySmartNotificationRepository(readSource)
+        val repository = repository(readSource = readSource)
         repository.replaceActive(
             listOf(
                 smart("old", "com.whatsapp", NotificationCategory.MESSAGING, 60, 100L),
@@ -72,7 +138,7 @@ class InMemorySmartNotificationRepositoryTest {
     @Test
     fun `new notification after read time becomes actionable again`() = runTest {
         val readSource = FakeReadStateSource(mapOf("com.whatsapp" to 200L))
-        val repository = InMemorySmartNotificationRepository(readSource)
+        val repository = repository(readSource = readSource)
 
         repository.replaceActive(
             listOf(smart("new", "com.whatsapp", NotificationCategory.MESSAGING, 65, 201L))
@@ -98,7 +164,6 @@ class InMemorySmartNotificationRepositoryTest {
 
         assertEquals(listOf("msg-1"), repository.activeNotifications.value.map { it.key })
         assertEquals(mapOf("com.whatsapp" to 1), repository.actionablePackageCounts.value)
-        assertEquals(mapOf("com.whatsapp" to 1), SmartNotificationLegacyBadgeBridge.badgeCounts.value)
         assertEquals(mapOf(NotificationCategory.MESSAGING to 1), repository.categoryCounts.value)
         assertEquals(0, repository.suppressedCount.value)
     }
@@ -133,8 +198,23 @@ class InMemorySmartNotificationRepositoryTest {
         assertEquals("com.first", repository.activeNotifications.value.single().packageName)
     }
 
-    private fun repository(): InMemorySmartNotificationRepository =
-        InMemorySmartNotificationRepository(FakeReadStateSource())
+    private fun repository(
+        readSource: FakeReadStateSource = FakeReadStateSource(),
+        settingsSource: FakeSettingsSource = FakeSettingsSource(settings(engineEnabled = true)),
+    ): InMemorySmartNotificationRepository =
+        InMemorySmartNotificationRepository(readSource, settingsSource)
+
+    private fun settings(
+        engineEnabled: Boolean,
+        filterPromotions: Boolean = true,
+        visibleCategories: Set<NotificationCategory> = NotificationCategory.entries.toSet(),
+    ) = SmartNotificationSettings(
+        engineEnabled = engineEnabled,
+        filterPromotions = filterPromotions,
+        hideSensitiveContent = true,
+        visibleCategories = visibleCategories,
+        badgeMode = NotificationBadgeMode.CLASSIC_APP,
+    )
 
     private fun awaitCondition(condition: () -> Boolean) {
         repeat(100) {
@@ -149,6 +229,13 @@ class InMemorySmartNotificationRepositoryTest {
     ) : NotificationReadStateSource {
         val state = MutableStateFlow(initial)
         override val lastReadAt: StateFlow<Map<String, Long>> = state
+    }
+
+    private class FakeSettingsSource(
+        initial: SmartNotificationSettings,
+    ) : SmartNotificationSettingsSource {
+        val state = MutableStateFlow(initial)
+        override val settings: StateFlow<SmartNotificationSettings> = state
     }
 
     private fun smart(

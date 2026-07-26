@@ -3,7 +3,9 @@ package com.armutlu.apporganizer.di
 import com.armutlu.apporganizer.data.repository.InMemorySmartNotificationRepository
 import com.armutlu.apporganizer.data.repository.NotificationReadStateSource
 import com.armutlu.apporganizer.data.repository.SharedPrefsNotificationReadStateSource
+import com.armutlu.apporganizer.data.repository.SharedPrefsSmartNotificationSettingsSource
 import com.armutlu.apporganizer.data.repository.SmartNotificationRepository
+import com.armutlu.apporganizer.data.repository.SmartNotificationSettingsSource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,4 +27,10 @@ abstract class SmartNotificationModule {
     abstract fun bindNotificationReadStateSource(
         implementation: SharedPrefsNotificationReadStateSource,
     ): NotificationReadStateSource
+
+    @Binds
+    @Singleton
+    abstract fun bindSmartNotificationSettingsSource(
+        implementation: SharedPrefsSmartNotificationSettingsSource,
+    ): SmartNotificationSettingsSource
 }
