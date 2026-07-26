@@ -100,15 +100,20 @@ Cihaz veya emülatör bağlıyken:
 
 ### Başarı kapısı
 
-- [!] Bu turda **çalıştırılamadı** — masaüstünde cihaz/emülatör bağlı değildi (`adb devices` boş liste döndürdü). `connectedDebugAndroidTest` cihaz/emülatör gerektirir, atlanmadı, gerçek engel budur.
-- [x] (Statik kod incelemesiyle doğrulanabilenler, instrumented test yerine geçmez ama tutarlılık teyididir:)
-  - `MIGRATION_23_24` (AppDatabase.kt:347-370) SQL default'ları `'OTHER' / 35 / 0 / 0` — görev hedefiyle birebir eşleşiyor.
-  - `NotificationEvent.kt` Room entity `@ColumnInfo(defaultValue=...)` değerleri migration SQL'iyle birebir eşleşiyor (`'OTHER'`, `35`, `0`, `0`).
-  - `title`/`text` kolonu şemaya eklenmemiş — `app/schemas/.../24.json` içeriğiyle doğrulandı.
-  - `AppDao.updateNotificationText()` (satır 349, 360) her çağrıda `notificationText` alanını boş string'e set ediyor, gelen parametreyi hiç yazmıyor.
-  - `AppNotificationListenerService.onListenerConnected()` (satır 81) `appDao.clearAllNotificationTexts()` çağırıyor — unit testle de doğrulandı (`onListenerConnected purges legacy notification text` PASS).
-  - `SmartNotificationBackupCodec` — bilinmeyen kategori `runCatching` ile atlanıyor, bozuk badge modu fallback'e düşüyor, alan yoksa (V1-V6) fallback korunuyor (kod okuması, bkz. madde 7 altındaki not).
-- [ ] Gerçek migration/DAO/codec instrumented test koşumu — **BEKLİYOR, cihaz/emülatör gerekli.**
+- [x] `NotificationMetadataMigrationTest`, `NotificationMetadataDaoTest`, `NotificationTextPrivacyDaoTest`, `SmartNotificationBackupCodecTest` — **9 test cihazda çalıştı, 9/9 geçti, 0 hata.**
+- [x] V23 satırları v24 migration sonrası korunuyor. (`NotificationMetadataMigrationTest` PASS)
+- [x] Yeni kolon varsayılanları `OTHER / 35 / false / 0`. (`NotificationMetadataMigrationTest`/`NotificationMetadataDaoTest` PASS, statik kod incelemesiyle de teyitli: `MIGRATION_23_24` SQL default'ları ve `NotificationEvent.kt` `@ColumnInfo(defaultValue=...)` birebir eşleşiyor)
+- [x] Kategori, bastırma ve önem sorguları doğru sonuç veriyor. (`NotificationMetadataDaoTest` PASS)
+- [x] Dolu bildirim metni DAO'ya verilse bile Room'da boş kalıyor. (`NotificationTextPrivacyDaoTest` PASS)
+- [x] Eski kalıcı metinler listener bağlantısında temizleniyor. (`NotificationTextPrivacyDaoTest` PASS + unit test `onListenerConnected purges legacy notification text` PASS)
+- [x] V7 backup codec tam turu başarılı. (`SmartNotificationBackupCodecTest` PASS)
+- [x] V1–V6 yedekleri yeni alan olmadığı için bozulmuyor. (`SmartNotificationBackupCodecTest` kapsamında test edildi, PASS)
+
+**Doğrulama kaydı — 2026-07-26, Xiaomi 24116RACCG (Android 16):**
+
+- İlk çalıştırma denemesinde `HeroDashboardInteractionTest.kt` (smart notification kapsamı dışı, aynı androidTest APK'sında derlenen ayrı bir dosya) derleme hatası verdi: `assertDoesNotExist`/`assertExists` için gereksiz/yanlış top-level import — bu iki fonksiyon `SemanticsNodeInteraction` sınıfının member metodu, import gerektirmiyor (jar decompile ile doğrulandı: `AssertionsKt` içinde yok, `SemanticsNodeInteraction.class` içinde `public final ... assertDoesNotExist()`/`assertExists(String)` olarak tanımlı). Bu tek dosyadaki hata tüm `connectedDebugAndroidTest` APK derlemesini bloklamıştı (instrumented testler tek APK'da derlenir). İki import satırı silinerek düzeltildi; düzeltme zaten commit `bf75bf8c`'de mevcuttu (aynı fix paralel olarak push edilmişti).
+- Cihaz bağlantısında iki ayrı ortam sorunu yaşandı: (1) İlk denemede yanlış/farklı cihaz bağlıydı (stok MIUI launcher, AppOrganizer kurulu değildi) — `INSTALL_FAILED_USER_RESTRICTED`. (2) Doğru cihaza geçildikten sonra `adb devices` "unauthorized" gösterdi — telefonda USB hata ayıklama yetkilendirme diyaloğu onaylanarak çözüldü. Üçüncü denemede `device 'X' not found` geçici bağlantı kopması (bir dahaki denemede kendiliğinden düzeldi).
+- Dördüncü deneme: **BUILD SUCCESSFUL, 46s, 9/9 test PASS.**
 
 ---
 
@@ -199,15 +204,17 @@ Repo ve cihaz kontrolü:
 
 | Alan | Kod | Unit test | Instrumented | Fiziksel cihaz | Durum |
 |---|---:|---:|---:|---:|---|
-| Sınıflandırıcı | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
-| Önem/bastırma | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
-| Repository/okunmamış | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
-| Room v24 metadata | Hazır | **Geçti (bu tur)** | Yazıldı, **çalıştırılamadı** (cihaz yok) | Bekliyor | `[~]` |
-| Analyzer/Report V2 | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
-| Ayar ekranı | Hazır | **Geçti (bu tur)** | Gerekmez | Bekliyor | `[~]` |
-| P0 içerik gizliliği | Hazır | **Geçti (bu tur)** | Yazıldı, **çalıştırılamadı** (cihaz yok) | Bekliyor | `[~]` |
-| Backup V7 | Hazır | **Geçti (bu tur)** | Yazıldı, **çalıştırılamadı** (cihaz yok) | Bekliyor | `[~]` |
-| Performans | Altyapı hazır | Gerekmez | Benchmark **çalıştırılamadı** (cihaz yok) | Bekliyor | `[!]` |
+| Sınıflandırıcı | Hazır | **Geçti** | Gerekmez | Bekliyor | `[~]` |
+| Önem/bastırma | Hazır | **Geçti** | Gerekmez | Bekliyor | `[~]` |
+| Repository/okunmamış | Hazır | **Geçti** | Gerekmez | Bekliyor | `[~]` |
+| Room v24 metadata | Hazır | **Geçti** | **Geçti (9/9, Xiaomi 24116RACCG/Android16)** | Bekliyor | `[~]` |
+| Analyzer/Report V2 | Hazır | **Geçti** | Gerekmez | Bekliyor | `[~]` |
+| Ayar ekranı | Hazır | **Geçti** | Gerekmez | Bekliyor | `[~]` |
+| P0 içerik gizliliği | Hazır | **Geçti** | **Geçti (9/9, Xiaomi 24116RACCG/Android16)** | Bekliyor | `[~]` |
+| Backup V7 | Hazır | **Geçti** | **Geçti (9/9, Xiaomi 24116RACCG/Android16)** | Bekliyor | `[~]` |
+| Performans | Altyapı hazır | Gerekmez | Benchmark **çalıştırılamadı** (bu turda koşulmadı) | Bekliyor | `[!]` |
+
+**Not:** "Fiziksel cihaz" sütunu VALIDATION.md madde 5'teki *ürün kabul senaryolarını* (WhatsApp/banka/kargo bildirim davranışı, ayarlar ekranı UX, rapor ekranı, gerçek yedek alma) ifade eder — bunlar instrumented testten farklıdır ve bu turda **koşulmadı**. Tek cihazda instrumented test PASS oldu; VALIDATION.md madde 9'daki "en az iki telefon" kuralı için ikinci cihaz da gerekiyor.
 
 ---
 
@@ -231,3 +238,4 @@ Sorun çıkarsa `main` geçmişi rewrite/force-push yapılmaz. İlgili commit ve
 |---|---|---|---|---|---|---|
 | — | `07d7e60` | — | Bekliyor | Bekliyor | Bekliyor | Merge yok |
 | 2026-07-26 | `4b811ae5` | Yok (masaüstü PC, cihaz/emülatör bağlı değildi) | **Geçti** (1294/1294 test, testDebugUnitTest+assembleDebug) | **Çalıştırılamadı** (cihaz yok) | **Çalıştırılamadı** (cihaz yok) | Merge yok — cihaz doğrulaması bekliyor |
+| 2026-07-26 | `bf75bf8c` | Xiaomi 24116RACCG, Android 16 | **Geçti** (bir önceki satırla aynı) | **Geçti** (9/9: Room v24 migration, DAO, gizlilik, Backup V7 codec) | **Çalıştırılamadı** (bu turda koşulmadı) | Merge yok — ikinci cihaz + ürün kabul senaryoları + benchmark bekliyor |
