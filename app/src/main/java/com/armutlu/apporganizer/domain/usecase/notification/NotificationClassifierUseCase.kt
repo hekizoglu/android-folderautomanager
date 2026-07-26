@@ -9,8 +9,9 @@ import javax.inject.Inject
 /**
  * Ağ veya ağır ML modeli kullanmadan bildirimi cihaz üzerinde sınıflandırır.
  *
- * Kurallar bilinçli olarak saf ve deterministiktir: aynı girdi her cihazda aynı sonucu üretir,
- * servis/UI bağımlılığı yoktur ve birim testte doğrudan çalıştırılabilir.
+ * İçerik kuralları kelime/ifade sınırıyla eşleşir; paket kuralları yalnız tam prefix veya
+ * paket segmenti eşleşmesini kabul eder. Böylece `sale`/`wholesale` ya da
+ * `com.example.whatsappclone`/`com.whatsapp` gibi false-positive'ler engellenir.
  */
 class NotificationClassifierUseCase @Inject constructor() {
 
@@ -22,11 +23,11 @@ class NotificationClassifierUseCase @Inject constructor() {
         timestamp: Long,
         systemPriority: Int = 0,
     ): SmartNotification {
-        val normalizedPackage = normalize(packageName)
-        val normalizedContent = normalize("$title $text")
+        val normalizedPackage = normalizePackage(packageName)
+        val normalizedContent = normalizeText("$title $text")
         val category = detectCategory(normalizedPackage, normalizedContent)
         val sensitive = category == NotificationCategory.FINANCE ||
-            normalizedContent.containsAny(SENSITIVE_TERMS)
+            normalizedContent.containsAny(SENSITIVE_MATCHERS)
         val score = score(
             category = category,
             packageName = normalizedPackage,
@@ -50,25 +51,25 @@ class NotificationClassifierUseCase @Inject constructor() {
 
     private fun detectCategory(packageName: String, content: String): NotificationCategory {
         return when {
-            // Önce gerçek içerik sinyalleri: banka veya alışveriş uygulamasının kampanya bildirimi
-            // sırf paket adına bakılarak finans/kargo diye yanlış sınıflandırılmamalı.
-            content.containsAny(FINANCE_TERMS) -> NotificationCategory.FINANCE
-            content.containsAny(DELIVERY_TERMS) -> NotificationCategory.DELIVERY
-            content.containsAny(PROMOTION_TERMS) -> NotificationCategory.PROMOTION
+            // Güvenlik/OTP sinyali uygulama türünden üstündür. Örn. Instagram giriş kodu veya
+            // alışveriş uygulamasındaki ödeme doğrulama kodu SOCIAL/DELIVERY sayılmaz.
+            content.containsAny(AUTH_CODE_MATCHERS) -> NotificationCategory.FINANCE
+            content.containsAny(FINANCE_MATCHERS) -> NotificationCategory.FINANCE
+            content.containsAny(DELIVERY_MATCHERS) -> NotificationCategory.DELIVERY
+            content.containsAny(PROMOTION_MATCHERS) -> NotificationCategory.PROMOTION
 
-            // Mesajlaşma uygulamasındaki "toplantı tamamlandı" gibi normal konuşmalar hatırlatıcı
-            // sayılmamalı; doğrudan mesajlaşma paketi içerik fallback'lerinden önce gelir.
-            packageName.containsAny(MESSAGING_PACKAGES) -> NotificationCategory.MESSAGING
+            // Mesaj içindeki “toplantı tamamlandı” gibi sıradan konuşmalar reminder olmamalı.
+            matchesPackage(packageName, MESSAGING_PACKAGES) -> NotificationCategory.MESSAGING
 
-            content.containsAny(REMINDER_TERMS) -> NotificationCategory.REMINDER
-            content.containsAny(MESSAGING_TERMS) -> NotificationCategory.MESSAGING
-            packageName.containsAny(FINANCE_PACKAGES) -> NotificationCategory.FINANCE
-            packageName.containsAny(DELIVERY_PACKAGES) -> NotificationCategory.DELIVERY
+            content.containsAny(REMINDER_MATCHERS) -> NotificationCategory.REMINDER
+            content.containsAny(MESSAGING_MATCHERS) -> NotificationCategory.MESSAGING
+            matchesPackage(packageName, FINANCE_PACKAGES) -> NotificationCategory.FINANCE
+            matchesPackage(packageName, DELIVERY_PACKAGES) -> NotificationCategory.DELIVERY
 
-            packageName.containsAny(SOCIAL_PACKAGES) || content.containsAny(SOCIAL_TERMS) ->
+            matchesPackage(packageName, SOCIAL_PACKAGES) || content.containsAny(SOCIAL_MATCHERS) ->
                 NotificationCategory.SOCIAL
 
-            packageName.containsAny(SYSTEM_PACKAGES) || content.containsAny(SYSTEM_TERMS) ->
+            matchesPackage(packageName, SYSTEM_PACKAGES) || content.containsAny(SYSTEM_MATCHERS) ->
                 NotificationCategory.SYSTEM
 
             else -> NotificationCategory.OTHER
@@ -84,93 +85,196 @@ class NotificationClassifierUseCase @Inject constructor() {
         var result = category.defaultImportance
         result += systemPriority.coerceIn(-2, 2) * 6
 
-        if (content.containsAny(URGENT_TERMS)) result += 18
-        if (content.containsAny(SECURITY_TERMS)) result += 12
-        if (packageName.containsAny(MESSAGING_PACKAGES) && category == NotificationCategory.MESSAGING) {
+        if (content.containsAny(URGENT_MATCHERS)) result += 18
+        if (content.containsAny(SECURITY_MATCHERS)) result += 12
+        if (matchesPackage(packageName, MESSAGING_PACKAGES) && category == NotificationCategory.MESSAGING) {
             result += 5
         }
-        if (content.containsAny(PROMOTION_TERMS)) result -= 18
-        if (content.containsAny(LOW_VALUE_TERMS)) result -= 8
+        if (content.containsAny(PROMOTION_MATCHERS)) result -= 18
+        if (content.containsAny(LOW_VALUE_MATCHERS)) result -= 8
 
         return result.coerceIn(0, 100)
     }
 
-    private fun normalize(value: String): String {
-        val decomposed = Normalizer.normalize(value, Normalizer.Form.NFD)
-        return decomposed
-            .replace(COMBINING_MARKS, "")
-            .lowercase(Locale.ROOT)
-            .replace(WHITESPACE, " ")
-            .trim()
+    private fun normalizePackage(value: String): String =
+        value.lowercase(Locale.ROOT).trim()
+
+    private fun normalizeText(value: String): String = normalizeLiteral(value)
+
+    private fun String.containsAny(matchers: List<Regex>): Boolean =
+        matchers.any { matcher -> matcher.containsMatchIn(this) }
+
+    private fun matchesPackage(packageName: String, rules: PackageRules): Boolean {
+        if (rules.prefixes.any { prefix ->
+                packageName == prefix || packageName.startsWith("$prefix.")
+            }
+        ) {
+            return true
+        }
+        val segments = packageName.split(PACKAGE_SEPARATOR).filter { it.isNotBlank() }.toSet()
+        return rules.segments.any(segments::contains)
     }
 
-    private fun String.containsAny(values: Set<String>): Boolean =
-        values.any { token -> contains(token) }
+    private data class PackageRules(
+        val prefixes: Set<String> = emptySet(),
+        val segments: Set<String> = emptySet(),
+    )
 
     private companion object {
         const val SUPPRESSION_SCORE_LIMIT = 40
         val COMBINING_MARKS = Regex("\\p{Mn}+")
         val WHITESPACE = Regex("\\s+")
+        val PACKAGE_SEPARATOR = Regex("[._-]+")
 
-        val FINANCE_PACKAGES = setOf(
-            "akbank", "garanti", "yapikredi", "isbank", "ziraat", "vakifbank",
-            "halkbank", "denizbank", "qnb", "enpara", "papara", "paycell",
+        fun normalizeLiteral(value: String): String {
+            val decomposed = Normalizer.normalize(value, Normalizer.Form.NFD)
+            return decomposed
+                .replace(COMBINING_MARKS, "")
+                .replace('ı', 'i')
+                .replace('ş', 's')
+                .replace('ğ', 'g')
+                .replace('ç', 'c')
+                .replace('ö', 'o')
+                .replace('ü', 'u')
+                .lowercase(Locale.ROOT)
+                .replace(WHITESPACE, " ")
+                .trim()
+        }
+
+        fun matchers(vararg values: String): List<Regex> = values
+            .map(::normalizeLiteral)
+            .distinct()
+            .map { term ->
+                Regex("(?<![\\p{L}\\p{N}])${Regex.escape(term)}(?![\\p{L}\\p{N}])")
+            }
+
+        val FINANCE_PACKAGES = PackageRules(
+            prefixes = setOf(
+                "com.akbank.android.apps.akbank_direkt",
+                "com.garanti.cepsubesi",
+                "com.ykb.android",
+                "com.pozitron.iscep",
+                "com.ziraat.ziraatmobil",
+                "com.vakifbank.mobile",
+                "com.halkbank.mobile",
+                "com.denizbank.mobildeniz",
+                "com.qnbfinansbank.mobile",
+                "com.enpara",
+                "com.papara",
+            ),
+            segments = setOf(
+                "akbank", "garanti", "yapikredi", "ykb", "isbank", "iscep", "ziraat",
+                "vakifbank", "halkbank", "denizbank", "qnb", "enpara", "papara", "paycell",
+            ),
         )
-        val DELIVERY_PACKAGES = setOf(
-            "trendyol", "hepsiburada", "amazon", "getir", "yemeksepeti", "migros",
-            "ptt", "aras", "yurtici", "mng", "surat",
+        val DELIVERY_PACKAGES = PackageRules(
+            prefixes = setOf(
+                "com.trendyol",
+                "com.pozitron.hepsiburada",
+                "com.amazon.mshop",
+                "com.getir",
+                "com.yemeksepeti",
+                "com.migros",
+            ),
+            segments = setOf(
+                "trendyol", "hepsiburada", "amazon", "getir", "yemeksepeti", "migros",
+                "ptt", "aras", "yurtici", "mng", "surat",
+            ),
         )
-        val MESSAGING_PACKAGES = setOf(
-            "whatsapp", "telegram", "messaging", "messages", "facebook.orca", "signal",
+        val MESSAGING_PACKAGES = PackageRules(
+            prefixes = setOf(
+                "com.whatsapp",
+                "org.telegram",
+                "org.thoughtcrime.securesms",
+                "com.facebook.orca",
+                "com.google.android.apps.messaging",
+                "com.samsung.android.messaging",
+                "com.android.mms",
+                "com.discord",
+                "com.slack",
+                "com.microsoft.teams",
+            ),
         )
-        val SOCIAL_PACKAGES = setOf(
-            "instagram", "facebook", "twitter", "tiktok", "snapchat", "linkedin",
+        val SOCIAL_PACKAGES = PackageRules(
+            prefixes = setOf(
+                "com.instagram.android",
+                "com.facebook.katana",
+                "com.twitter.android",
+                "com.zhiliaoapp.musically",
+                "com.snapchat.android",
+                "com.linkedin.android",
+            ),
         )
-        val SYSTEM_PACKAGES = setOf(
-            "android", "systemui", "settings", "securitycenter", "permissioncontroller",
+        val SYSTEM_PACKAGES = PackageRules(
+            prefixes = setOf(
+                "android",
+                "com.android.systemui",
+                "com.android.settings",
+                "com.google.android.permissioncontroller",
+                "com.miui.securitycenter",
+                "com.samsung.android.securitylogagent",
+            ),
         )
 
-        val FINANCE_TERMS = setOf(
-            "bakiye", "hesap", "kartiniz", "kartınız", "harcama", "odeme", "ödeme",
-            "transfer", "havale", "eft", "yatirim", "yatırım", "islem", "işlem",
-            "dogrulama kodu", "doğrulama kodu", "tek kullanimlik", "tek kullanımlık",
+        val AUTH_CODE_MATCHERS = matchers(
+            "dogrulama kodu", "giris kodu", "guvenlik kodu", "tek kullanimlik kod",
+            "verification code", "login code", "security code", "one time code",
+            "one-time code", "one time password", "one-time password", "otp",
         )
-        val DELIVERY_TERMS = setOf(
-            "kargo", "teslimat", "siparis", "sipariş", "kurye", "yola cikti", "yola çıktı",
-            "dagitima cikti", "dağıtıma çıktı", "teslim edildi", "paketiniz",
+        val FINANCE_MATCHERS = matchers(
+            "bakiye", "hesap hareketi", "kartiniz", "harcama", "odeme", "transfer",
+            "havale", "eft", "yatirim", "islem", "para cekme", "fatura",
+            "balance", "account activity", "card transaction", "transaction", "payment",
+            "bank transfer", "wire transfer", "withdrawal", "invoice",
         )
-        val REMINDER_TERMS = setOf(
-            "hatirlatici", "hatırlatıcı", "alarm", "takvim", "toplanti", "toplantı",
-            "randevu", "etkinlik basliyor", "etkinlik başlıyor", "son tarih",
+        val DELIVERY_MATCHERS = matchers(
+            "kargo", "teslimat", "siparisiniz", "siparis", "kurye", "yola cikti",
+            "dagitima cikti", "teslim edildi", "paketiniz", "gonderiniz",
+            "shipped", "shipment", "out for delivery", "delivered", "your order",
+            "order confirmed", "courier", "your package", "tracking number",
         )
-        val PROMOTION_TERMS = setOf(
-            "indirim", "kampanya", "firsat", "fırsat", "kupon", "sepette", "reklam",
-            "sana ozel", "sana özel", "hemen al", "stoklarla sinirli", "stoklarla sınırlı",
+        val REMINDER_MATCHERS = matchers(
+            "hatirlatici", "alarm", "takvim", "toplanti", "randevu", "etkinlik basliyor",
+            "son tarih", "reminder", "meeting", "appointment", "starts in", "due today",
+            "calendar event",
         )
-        val MESSAGING_TERMS = setOf(
-            "yeni mesaj", "mesaj gonderdi", "mesaj gönderdi", "cevapladi", "cevapladı",
-            "sana yazdi", "sana yazdı", "goruntulu arama", "görüntülü arama",
+        val PROMOTION_MATCHERS = matchers(
+            "indirim", "kampanya", "firsat", "kupon", "sepette", "reklam", "sana ozel",
+            "hemen al", "stoklarla sinirli", "discount", "sale", "coupon", "offer", "deal",
+            "special price", "limited stock", "buy now", "save now",
         )
-        val SOCIAL_TERMS = setOf(
-            "begendi", "beğendi", "takip etmeye basladi", "takip etmeye başladı",
-            "yorum yapti", "yorum yaptı", "hikaye", "reels", "gonderini", "gönderini",
+        val MESSAGING_MATCHERS = matchers(
+            "yeni mesaj", "mesaj gonderdi", "cevapladi", "sana yazdi", "goruntulu arama",
+            "new message", "sent you a message", "replied to you", "missed call", "voice call",
+            "video call",
         )
-        val SYSTEM_TERMS = setOf(
-            "sistem", "guncelleme", "güncelleme", "pil", "depolama", "izin", "guvenlik", "güvenlik",
+        val SOCIAL_MATCHERS = matchers(
+            "begendi", "takip etmeye basladi", "yorum yapti", "hikaye", "reels", "gonderini",
+            "liked your", "started following", "commented on", "new follower", "mentioned you",
+            "new story",
         )
-        val URGENT_TERMS = setOf(
-            "acil", "hemen", "simdi", "şimdi", "kritik", "son dakika", "gecikmis", "gecikmiş",
+        val SYSTEM_MATCHERS = matchers(
+            "sistem guncellemesi", "yazilim guncellemesi", "pil az", "depolama alani",
+            "izin gerekli", "software update", "system update", "battery low", "storage space",
+            "permission required", "app update available",
         )
-        val SECURITY_TERMS = setOf(
-            "guvenlik", "güvenlik", "supheli", "şüpheli", "giris", "giriş", "sifre", "şifre",
-            "otp", "kod", "onay", "dogrulama", "doğrulama",
+        val URGENT_MATCHERS = matchers(
+            "acil", "hemen", "simdi", "kritik", "son dakika", "gecikmis",
+            "urgent", "immediately", "now", "critical", "overdue", "action required",
         )
-        val SENSITIVE_TERMS = setOf(
-            "bakiye", "hesap", "kart", "sifre", "şifre", "otp", "kod", "tutar", "₺", " tl",
+        val SECURITY_MATCHERS = matchers(
+            "guvenlik", "supheli", "giris", "sifre", "onay", "dogrulama",
+            "security", "suspicious", "login", "password", "approve", "verification",
+            "authentication", "otp",
         )
-        val LOW_VALUE_TERMS = setOf(
-            "bulten", "bülten", "onerilen", "önerilen", "sizin icin", "sizin için",
-            "trend", "kesfet", "keşfet",
+        val SENSITIVE_MATCHERS = matchers(
+            "bakiye", "hesap", "kart", "sifre", "otp", "tutar", "iban", "tl",
+            "balance", "account", "card", "password", "amount", "verification code",
+            "login code", "security code",
+        )
+        val LOW_VALUE_MATCHERS = matchers(
+            "bulten", "onerilen", "sizin icin", "trend", "kesfet",
+            "newsletter", "recommended", "for you", "trending", "discover",
         )
     }
 }
