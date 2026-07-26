@@ -209,6 +209,7 @@ class LauncherActivity : ComponentActivity() {
         viewModel.syncUsageStats(this) { AppPrefs.markUsageStatsSynced(this) }
         viewModel.syncAppSizes(this)
         viewModel.loadWidgetIds(this)
+        viewModel.warmUpSearchIndex()
         applyOpenFolderIntent(intent)
         setContent {
             AppOrganizerTheme(darkTheme = true) {
@@ -337,6 +338,7 @@ class LauncherActivity : ComponentActivity() {
             AppPrefs.markUsageStatsSynced(this)
         }
         viewModel.loadDockPackages(this)
+        viewModel.warmUpIconCache(this)
     }
 
     override fun onPause() {

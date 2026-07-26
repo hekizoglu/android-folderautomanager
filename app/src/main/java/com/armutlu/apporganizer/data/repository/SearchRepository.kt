@@ -139,6 +139,17 @@ class SearchRepository(
     }
 
     /**
+     * Launcher açılışında bir kez çağrılır — ayarlar arama kataloğunun ilk arama
+     * sorgusuna kadar beklemeden indekslenmesini sağlar (ilk sorgudaki tek seferlik
+     * gecikmeyi öne çeker). IO thread'de çalışır, sonucu beklenmez.
+     */
+    suspend fun warmUpIndex() {
+        withContext(Dispatchers.IO) {
+            runCatching { ensureSettingsIndexedIfNeeded(enabledSources()) }
+        }
+    }
+
+    /**
      * P1.6: Anında arama sonuçları — App ve Category, LIKE veya prefix eşleştirmesi ile.
      * Debounce'siz, yazılan her karakter UI'de gösterilir (< 16ms hedef).
      */

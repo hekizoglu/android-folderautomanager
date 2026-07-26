@@ -631,6 +631,34 @@ class LauncherViewModel @Inject constructor(
     val filesIndexState: StateFlow<com.armutlu.apporganizer.domain.models.FileIndexState> =
         searchRepository.filesIndexState
 
+    /**
+     * Launcher açılışında bir kez çağrılır — ayarlar arama kataloğunu ilk arama
+     * sorgusundan önce IO thread'de indeksler (PERFORMANCE_BENCHMARK_2026.md madde 3,
+     * doğrulanmış kısım: warm-index eksikliği). İlk aramada tek seferlik gecikmeyi öne çeker.
+     */
+    fun warmUpSearchIndex() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { searchRepository.warmUpIndex() }
+                .onFailure { Timber.w(it, "Arama indeksi warm-up başarısız") }
+        }
+    }
+
+    /**
+     * Launcher açılışında bir kez çağrılır — dock uygulamalarının ikonlarını arka planda
+     * önceden decode eder (PERFORMANCE_BENCHMARK_2026.md madde 4, doğrulanmış kısım).
+     * Dock listesi henüz yüklenmediyse (ilk açılış race'i) kısa bir tur bekler.
+     */
+    fun warmUpIconCache(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // loadDockPackages() bu çağrıdan önce tetiklenmiş olmalı (LauncherActivity.onCreate
+            // sırası); dock henüz boşsa pre-warm sessizce atlanır, sonraki normal ikon yüklemesi
+            // zaten mevcut cache-miss yolunu kullanır — davranış bozulmaz, sadece kazanç kaçar.
+            val packages = dockPackages.value
+            runCatching { preWarmIconCache(context, packages) }
+                .onFailure { Timber.w(it, "İkon cache warm-up başarısız") }
+        }
+    }
+
     /** Paketi launcher üzerinden başlatır ve kullanım sayacını artırır. */
     fun launchApp(context: Context, packageName: String) {
         try {

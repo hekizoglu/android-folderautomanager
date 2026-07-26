@@ -58,6 +58,44 @@ import kotlinx.coroutines.withContext
 internal val iconCacheInternal = androidx.collection.LruCache<String, ImageBitmap>(200)
 private val iconCache get() = iconCacheInternal
 
+/**
+ * Launcher açılışında bir kez çağrılır — dock/en sık kullanılan uygulamaların ikonlarını
+ * arka planda decode edip LRU cache'e önceden doldurur (PERFORMANCE_BENCHMARK_2026.md
+ * madde 4, doğrulanmış kısım: pre-warming yoktu). Cache key formatı [AppIconView]'daki
+ * ile birebir aynı olmalı, aksi halde cache miss oluşur ve pre-warm etkisiz kalır.
+ */
+internal suspend fun preWarmIconCache(
+    context: android.content.Context,
+    packageNames: List<String>,
+    iconSizeDp: Int = 48,
+) {
+    if (packageNames.isEmpty()) return
+    withContext(Dispatchers.IO) {
+        val density = context.resources.displayMetrics.density
+        val px = (iconSizeDp * density).toInt()
+        val iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+        val pm = context.packageManager
+        packageNames.distinct().forEach { pkg ->
+            runCatching {
+                val lastUpdated = pm.getPackageInfo(pkg, 0).lastUpdateTime
+                val cacheKey = buildString {
+                    append(pkg)
+                    append('_').append(px)
+                    append('_').append(lastUpdated)
+                    if (iconPackPkg.isNotEmpty()) append('_').append(iconPackPkg)
+                }
+                if (iconCache[cacheKey] != null) return@runCatching
+                val packBitmap = if (iconPackPkg.isNotEmpty())
+                    com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, pkg, px)
+                else null
+                val bitmap = packBitmap?.asImageBitmap()
+                    ?: com.armutlu.apporganizer.utils.loadAppIcon(context, pkg, px)?.asImageBitmap()
+                if (bitmap != null) iconCache.put(cacheKey, bitmap)
+            }
+        }
+    }
+}
+
 // Label altına scrim gradient — her türlü duvar kağıdında okunabilirlik
 private val LabelScrim = Brush.verticalGradient(
     colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
