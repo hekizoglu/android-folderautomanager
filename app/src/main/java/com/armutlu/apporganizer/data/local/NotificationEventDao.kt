@@ -12,6 +12,12 @@ data class PackageNotifCount(
     val count: Int,
 )
 
+/** Kategori başına içeriksiz bildirim sayısı. */
+data class CategoryNotifCount(
+    val category: String,
+    val count: Int,
+)
+
 /** Hero Bildirimler sekmesi için içeriksiz, paket bazlı son bildirim özeti. */
 data class PackageNotificationSummary(
     val packageName: String,
@@ -36,6 +42,41 @@ interface NotificationEventDao {
         WHERE postedAt >= :since GROUP BY packageName ORDER BY count DESC
     """)
     fun observeCountsSince(since: Long): Flow<List<PackageNotifCount>>
+
+    @Query("""
+        SELECT category, COUNT(*) AS count FROM notification_events
+        WHERE postedAt >= :since GROUP BY category ORDER BY count DESC
+    """)
+    suspend fun categoryCountsSince(since: Long): List<CategoryNotifCount>
+
+    @Query("""
+        SELECT COUNT(*) FROM notification_events
+        WHERE postedAt >= :since AND wasSuppressed = 1
+    """)
+    suspend fun suppressedCountSince(since: Long): Int
+
+    @Query("""
+        SELECT COUNT(*) FROM notification_events
+        WHERE postedAt >= :since AND importanceScore BETWEEN :minScore AND :maxScore
+    """)
+    suspend fun importanceCountSince(
+        since: Long,
+        minScore: Int,
+        maxScore: Int,
+    ): Int
+
+    @Query("""
+        SELECT COUNT(*) FROM notification_events
+        WHERE postedAt >= :since AND (
+            CAST(strftime('%H', postedAt / 1000, 'unixepoch', 'localtime') AS INTEGER) >= :nightStartHour
+            OR CAST(strftime('%H', postedAt / 1000, 'unixepoch', 'localtime') AS INTEGER) < :nightEndHour
+        )
+    """)
+    suspend fun nightCountSince(
+        since: Long,
+        nightStartHour: Int = 23,
+        nightEndHour: Int = 7,
+    ): Int
 
     @Query("""
         SELECT packageName, COUNT(*) AS count, MAX(postedAt) AS lastPostedAt
