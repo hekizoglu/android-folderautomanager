@@ -23,9 +23,8 @@ import com.armutlu.apporganizer.utils.AppPrefs
 
 /**
  * U1: Bildirim alt ekranı — bildirim erişimi, akıllı badge rengi,
- * kullanım bilgisi ve akıllı bildirimler.
- * İçerik eski SettingsScreen'den birebir taşındı, fonksiyonellik değişmedi.
- * Reaktif AppPrefs pattern'i (DisposableEffect + listener) korunuyor (LEARNINGS P9).
+ * kullanım bilgisi, bildirim filtreleme ve akıllı özetler.
+ * Reaktif AppPrefs ve SmartNotificationPrefs akışları korunur.
  */
 @Composable
 fun SettingsNotificationsScreen(
@@ -142,7 +141,7 @@ fun SettingsNotificationsScreen(
         }
 
         // Kullanım Bilgisi toggle — klasör altında "X gündür açılmadı" alt yazısı
-        // "Bildirim Metni" (Launcher > Ana Ekran) açıkken aynı alanı kullanıyor ve önceliklidir — çakışmayı görünür kılmak için burada devre dışı gösterilir.
+        // "Bildirim Metni" açıkken aynı alanı kullanır ve önceliklidir.
         item {
             var unusedInfoEnabled by remember { mutableStateOf(AppPrefs.isUnusedInfoEnabled(context)) }
             var notifTextEnabled by remember { mutableStateOf(AppPrefs.isNotificationTextEnabled(context)) }
@@ -193,16 +192,19 @@ fun SettingsNotificationsScreen(
             }
         }
 
+        // ── Smart Notification Engine ──────────────────────────────────────
+        item { SettingsSectionTitle("Bildirim Filtreleme") }
+        item { SmartNotificationFilterSettingsCard() }
 
-        // ── Akıllı Bildirimler ────────────────────────────────────────────
-        item { SettingsSectionTitle("Akıllı Bildirimler") }
+        // ── SmartInsightWorker günlük özetleri ─────────────────────────────
+        item { SettingsSectionTitle("Akıllı Özetler") }
         item {
-            var masterEnabled  by remember { mutableStateOf(AppPrefs.isSmartNotifEnabled(context)) }
-            var expanded       by remember { mutableStateOf(masterEnabled) }
-            var dailyUsage     by remember { mutableStateOf(AppPrefs.isSmartNotifDailyUsage(context)) }
-            var unusedApps     by remember { mutableStateOf(AppPrefs.isSmartNotifUnusedApps(context)) }
-            var catStats       by remember { mutableStateOf(AppPrefs.isSmartNotifCatStats(context)) }
-            var notifHour      by remember { mutableStateOf(AppPrefs.getSmartNotifHour(context)) }
+            var masterEnabled by remember { mutableStateOf(AppPrefs.isSmartNotifEnabled(context)) }
+            var expanded by remember { mutableStateOf(masterEnabled) }
+            var dailyUsage by remember { mutableStateOf(AppPrefs.isSmartNotifDailyUsage(context)) }
+            var unusedApps by remember { mutableStateOf(AppPrefs.isSmartNotifUnusedApps(context)) }
+            var catStats by remember { mutableStateOf(AppPrefs.isSmartNotifCatStats(context)) }
+            var notifHour by remember { mutableStateOf(AppPrefs.getSmartNotifHour(context)) }
             var hourMenuExpanded by remember { mutableStateOf(false) }
             val workerCtx = context
             DisposableEffect(context) {
@@ -230,9 +232,9 @@ fun SettingsNotificationsScreen(
                     Icon(Icons.Default.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("Akıllı Bildirimler", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text("Akıllı Özetler", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                         Text(
-                            if (masterEnabled) "Günlük özetler ve düzen önerileri açık" else "Kapalı",
+                            if (masterEnabled) "Günlük kullanım ve düzen özetleri açık" else "Kapalı",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -329,8 +331,8 @@ fun SettingsNotificationsScreen(
             }
         }
 
-        // ── Oneri Bildirimleri (Kontrol Bekleyenler ozeti) — ROADMAP #26 ────
-        item { SettingsSectionTitle("Oneri Bildirimleri") }
+        // ── Öneri Bildirimleri (Kontrol Bekleyenler özeti) ─────────────────
+        item { SettingsSectionTitle("Öneri Bildirimleri") }
         item {
             var suggestionNotifEnabled by remember { mutableStateOf(AppPrefs.isSuggestionNotificationsEnabled(context)) }
             val suggestionWorkerCtx = context
@@ -347,8 +349,8 @@ fun SettingsNotificationsScreen(
             SettingsCard {
                 SettingsSwitchRow(
                     icon = Icons.Default.FolderOpen,
-                    title = "Klasor/Siniflandirma Onerileri",
-                    subtitle = "Kontrol Bekleyenler'de yeni oneri biriktiginde gunde en fazla 1 ozet bildirim gonderir",
+                    title = "Klasör/Sınıflandırma Önerileri",
+                    subtitle = "Kontrol Bekleyenler'de yeni öneri biriktiğinde günde en fazla 1 özet bildirim gönderir",
                     checked = suggestionNotifEnabled,
                     onCheckedChange = { v ->
                         suggestionNotifEnabled = v
