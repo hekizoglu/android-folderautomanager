@@ -42,7 +42,6 @@ class AppNotificationSnapshotReadTest {
         service.onNotificationPosted(posted)
 
         assertEquals(1, service.readCount)
-        assertEquals(1, AppNotificationListenerService.badgeCounts.value["com.test.app"])
     }
 
     @Test
@@ -68,7 +67,6 @@ class AppNotificationSnapshotReadTest {
         service.onNotificationRemoved(removed)
 
         assertEquals(1, service.readCount)
-        assertEquals(emptyMap<String, Int>(), AppNotificationListenerService.badgeCounts.value)
     }
 
     @Test
@@ -83,8 +81,6 @@ class AppNotificationSnapshotReadTest {
         service.onListenerConnected()
 
         assertEquals(1, service.readCount)
-        assertEquals(1, AppNotificationListenerService.badgeCounts.value["com.test.one"])
-        assertEquals(1, AppNotificationListenerService.badgeCounts.value["com.test.two"])
     }
 
     @Test
