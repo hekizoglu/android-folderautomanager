@@ -50,18 +50,20 @@ class NotificationClassifierUseCase @Inject constructor() {
 
     private fun detectCategory(packageName: String, content: String): NotificationCategory {
         return when {
-            packageName.containsAny(FINANCE_PACKAGES) || content.containsAny(FINANCE_TERMS) ->
-                NotificationCategory.FINANCE
-
-            packageName.containsAny(DELIVERY_PACKAGES) || content.containsAny(DELIVERY_TERMS) ->
-                NotificationCategory.DELIVERY
-
-            content.containsAny(REMINDER_TERMS) -> NotificationCategory.REMINDER
-
+            // Önce gerçek içerik sinyalleri: banka veya alışveriş uygulamasının kampanya bildirimi
+            // sırf paket adına bakılarak finans/kargo diye yanlış sınıflandırılmamalı.
+            content.containsAny(FINANCE_TERMS) -> NotificationCategory.FINANCE
+            content.containsAny(DELIVERY_TERMS) -> NotificationCategory.DELIVERY
             content.containsAny(PROMOTION_TERMS) -> NotificationCategory.PROMOTION
 
-            packageName.containsAny(MESSAGING_PACKAGES) || content.containsAny(MESSAGING_TERMS) ->
-                NotificationCategory.MESSAGING
+            // Mesajlaşma uygulamasındaki "toplantı tamamlandı" gibi normal konuşmalar hatırlatıcı
+            // sayılmamalı; doğrudan mesajlaşma paketi içerik fallback'lerinden önce gelir.
+            packageName.containsAny(MESSAGING_PACKAGES) -> NotificationCategory.MESSAGING
+
+            content.containsAny(REMINDER_TERMS) -> NotificationCategory.REMINDER
+            content.containsAny(MESSAGING_TERMS) -> NotificationCategory.MESSAGING
+            packageName.containsAny(FINANCE_PACKAGES) -> NotificationCategory.FINANCE
+            packageName.containsAny(DELIVERY_PACKAGES) -> NotificationCategory.DELIVERY
 
             packageName.containsAny(SOCIAL_PACKAGES) || content.containsAny(SOCIAL_TERMS) ->
                 NotificationCategory.SOCIAL
@@ -102,7 +104,8 @@ class NotificationClassifierUseCase @Inject constructor() {
             .trim()
     }
 
-    private fun String.containsAny(values: Set<String>): Boolean = values.any(::contains)
+    private fun String.containsAny(values: Set<String>): Boolean =
+        values.any { token -> contains(token) }
 
     private companion object {
         const val SUPPRESSION_SCORE_LIMIT = 40
