@@ -42,13 +42,41 @@ class NotificationClassifierUseCaseTest {
     }
 
     @Test
+    fun `shopping app campaign remains promotion instead of delivery`() {
+        val result = classifier.classify(
+            key = "shopping-promo-1",
+            packageName = "com.trendyol.android",
+            title = "Sana özel fırsat",
+            text = "Sepette yüzde 50 indirim",
+            timestamp = 3L,
+        )
+
+        assertEquals(NotificationCategory.PROMOTION, result.category)
+        assertTrue(result.shouldSuppress)
+    }
+
+    @Test
+    fun `bank campaign remains promotion instead of finance`() {
+        val result = classifier.classify(
+            key = "bank-promo-1",
+            packageName = "com.akbank.android.apps.akbank_direkt",
+            title = "Kampanya",
+            text = "Sana özel indirim fırsatı",
+            timestamp = 4L,
+        )
+
+        assertEquals(NotificationCategory.PROMOTION, result.category)
+        assertTrue(result.shouldSuppress)
+    }
+
+    @Test
     fun `discount campaign is suppressed promotion`() {
         val result = classifier.classify(
             key = "promo-1",
             packageName = "com.example.shopping",
             title = "Sana özel fırsat",
             text = "Sepette yüzde 50 indirim, hemen al",
-            timestamp = 3L,
+            timestamp = 5L,
         )
 
         assertEquals(NotificationCategory.PROMOTION, result.category)
@@ -63,7 +91,7 @@ class NotificationClassifierUseCaseTest {
             packageName = "com.whatsapp",
             title = "Ali",
             text = "Sana yazdı: Toplantı tamamlandı",
-            timestamp = 4L,
+            timestamp = 6L,
         )
 
         assertEquals(NotificationCategory.MESSAGING, result.category)
@@ -78,7 +106,7 @@ class NotificationClassifierUseCaseTest {
             packageName = "com.google.android.calendar",
             title = "Hatırlatıcı",
             text = "Proje toplantısı 10 dakika sonra başlıyor",
-            timestamp = 5L,
+            timestamp = 7L,
         )
 
         assertEquals(NotificationCategory.REMINDER, result.category)
