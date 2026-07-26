@@ -35,12 +35,8 @@ object SmartNotificationPrefs {
             val appContext = context.applicationContext
             val prefs = appContext.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE)
             if (!prefs.getBoolean(KEY_INITIALIZED, false)) {
-                val existingInstall = appContext
-                    .getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
-                    .all
-                    .isNotEmpty()
                 val initial = SmartNotificationSettings.defaults(
-                    engineEnabled = initialEngineEnabled(existingInstall),
+                    engineEnabled = initialEngineEnabled(isUpgradeInstall(appContext)),
                 )
                 writeAll(prefs, initial, synchronous = true)
             }
@@ -97,7 +93,14 @@ object SmartNotificationPrefs {
         }
     }
 
+    /** Yeni kurulumda açık; güncelleme alan mevcut kullanıcıda güvenli biçimde kapalı. */
     internal fun initialEngineEnabled(existingInstall: Boolean): Boolean = !existingInstall
+
+    @Suppress("DEPRECATION")
+    private fun isUpgradeInstall(context: Context): Boolean = runCatching {
+        val info = context.packageManager.getPackageInfo(context.packageName, 0)
+        info.lastUpdateTime > info.firstInstallTime
+    }.getOrDefault(true)
 
     private fun update(
         context: Context,
