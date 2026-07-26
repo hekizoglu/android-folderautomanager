@@ -95,15 +95,13 @@ class AppNotificationSnapshotReadTest {
     ): StatusBarNotification {
         val notification = mockk<Notification>(relaxed = true)
         notification.extras = mockk<Bundle>(relaxed = true)
-        every { notification.priority } returns 0
-
-        return mockk<StatusBarNotification>(relaxed = true) {
-            every { this@mockk.packageName } returns packageName
-            every { this@mockk.key } returns key
-            every { isOngoing } returns ongoing
-            every { postTime } returns 1L
-            every { this@mockk.notification } returns notification
-        }
+        val result = mockk<StatusBarNotification>(relaxed = true)
+        every { result.packageName } returns packageName
+        every { result.key } returns key
+        every { result.isOngoing } returns ongoing
+        every { result.postTime } returns 1L
+        every { result.notification } returns notification
+        return result
     }
 
     private class CountingService(
