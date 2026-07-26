@@ -54,9 +54,11 @@ class NotificationClassifierUseCase @Inject constructor() {
             // Güvenlik/OTP sinyali uygulama türünden üstündür. Örn. Instagram giriş kodu veya
             // alışveriş uygulamasındaki ödeme doğrulama kodu SOCIAL/DELIVERY sayılmaz.
             content.containsAny(AUTH_CODE_MATCHERS) -> NotificationCategory.FINANCE
+            // Açık kampanya/indirim dili, banka veya alışveriş paketindeki genel kategori
+            // sinyalinden üstündür; aksi halde promosyonlar rozetten düşürülemez.
+            content.containsAny(PROMOTION_MATCHERS) -> NotificationCategory.PROMOTION
             content.containsAny(FINANCE_MATCHERS) -> NotificationCategory.FINANCE
             content.containsAny(DELIVERY_MATCHERS) -> NotificationCategory.DELIVERY
-            content.containsAny(PROMOTION_MATCHERS) -> NotificationCategory.PROMOTION
 
             // Mesaj içindeki “toplantı tamamlandı” gibi sıradan konuşmalar reminder olmamalı.
             matchesPackage(packageName, MESSAGING_PACKAGES) -> NotificationCategory.MESSAGING
