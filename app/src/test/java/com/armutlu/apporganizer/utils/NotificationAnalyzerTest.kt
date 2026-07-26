@@ -1,44 +1,70 @@
 package com.armutlu.apporganizer.utils
 
+import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.NotificationEvent
+import java.util.Calendar
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.Calendar
 
-/**
- * NotificationAnalyzer.analyze() senaryo testleri — ROADMAP "Akilli Bildirim Analiz Sistemi" madde 2.
- * Kapsam: cok konusan (mostTalkative), gece/burst rahatsiz eden (disturbing),
- * dikkat dagitan (distracting) ve trend (dailyCounts) senaryolari.
- */
 class NotificationAnalyzerTest {
 
-    private fun eventAtHour(pkg: String, hourOfDay: Int, minuteOffset: Int = 0): NotificationEvent {
+    private fun eventAtHour(
+        pkg: String,
+        hourOfDay: Int,
+        minuteOffset: Int = 0,
+        category: NotificationCategory = NotificationCategory.OTHER,
+        score: Int = category.defaultImportance,
+        suppressed: Boolean = false,
+    ): NotificationEvent {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
         cal.set(Calendar.MINUTE, minuteOffset)
         cal.set(Calendar.SECOND, 0)
         cal.set(Calendar.MILLISECOND, 0)
-        return NotificationEvent(packageName = pkg, postedAt = cal.timeInMillis)
+        return NotificationEvent(
+            packageName = pkg,
+            postedAt = cal.timeInMillis,
+            category = category.name,
+            importanceScore = score,
+            wasSuppressed = suppressed,
+        )
     }
 
-    private fun eventsAtHour(pkg: String, hourOfDay: Int, count: Int): List<NotificationEvent> =
-        (0 until count).map { eventAtHour(pkg, hourOfDay, minuteOffset = it) }
-
-    // ── boş liste ────────────────────────────────────────────────────────────
+    private fun eventsAtHour(
+        pkg: String,
+        hourOfDay: Int,
+        count: Int,
+        category: NotificationCategory = NotificationCategory.OTHER,
+        score: Int = category.defaultImportance,
+        suppressed: Boolean = false,
+    ): List<NotificationEvent> =
+        (0 until count).map { minute ->
+            eventAtHour(
+                pkg = pkg,
+                hourOfDay = hourOfDay,
+                minuteOffset = minute,
+                category = category,
+                score = score,
+                suppressed = suppressed,
+            )
+        }
 
     @Test
     fun `empty events returns empty report`() {
         val report = NotificationAnalyzer.analyze(emptyList(), emptyMap(), emptyMap())
 
         assertEquals(0, report.totalNotifications)
+        assertEquals(0, report.totalReceived)
+        assertEquals(0, report.actionableCount)
+        assertEquals(0, report.suppressedCount)
+        assertTrue(report.categoryDistribution.isEmpty())
         assertTrue(report.appStats.isEmpty())
         assertTrue(report.mostTalkative.isEmpty())
         assertTrue(report.disturbing.isEmpty())
         assertTrue(report.distracting.isEmpty())
+        assertTrue(report.topPromotionSources.isEmpty())
     }
-
-    // ── çok konuşan ──────────────────────────────────────────────────────────
 
     @Test
     fun `mostTalkative sorts apps by total count descending`() {
@@ -55,44 +81,40 @@ class NotificationAnalyzerTest {
 
     @Test
     fun `mostTalkative caps at top 10 apps`() {
-        val events = (1..15).flatMap { i -> eventsAtHour("com.app$i", hourOfDay = 12, count = i) }
+        val events = (1..15).flatMap { index ->
+            eventsAtHour("com.app$index", hourOfDay = 12, count = index)
+        }
 
         val report = NotificationAnalyzer.analyze(events, emptyMap(), emptyMap())
 
         assertEquals(10, report.mostTalkative.size)
-        // en çok bildirim gönderen com.app15 (15 adet) ilk sırada olmalı
         assertEquals("com.app15", report.mostTalkative.first().packageName)
     }
 
-    // ── gece rahatsız eden ───────────────────────────────────────────────────
-
     @Test
     fun `disturbing includes app with high night ratio`() {
-        // 12 gece (23:xx) bildirimi -> total>=10 && nightRatio>0.3
         val events = eventsAtHour("com.nightowl", hourOfDay = 23, count = 12)
 
         val report = NotificationAnalyzer.analyze(events, emptyMap(), emptyMap())
 
         assertTrue(report.disturbing.any { it.packageName == "com.nightowl" })
         assertTrue(report.disturbing.first().nightRatio > 0.3f)
+        assertEquals(12, report.nightCount)
     }
 
     @Test
     fun `disturbing excludes daytime app with low night ratio`() {
-        // 12 gündüz bildirimi, hiç gece yok, burst da yok (farklı dakikalarda aynı saat -> burst sayılır aslında)
-        // burst'ten kaçınmak için farklı saatlere dağıtıyoruz
-        val events = (0 until 12).map { i -> eventAtHour("com.daytime", hourOfDay = 10 + (i % 8)) }
+        val events = (0 until 12).map { index ->
+            eventAtHour("com.daytime", hourOfDay = 10 + (index % 8))
+        }
 
         val report = NotificationAnalyzer.analyze(events, emptyMap(), emptyMap())
 
         assertTrue(report.disturbing.none { it.packageName == "com.daytime" })
     }
 
-    // ── kısa aralıkta tekrar eden (burst) ────────────────────────────────────
-
     @Test
     fun `disturbing includes app with hourly burst even without night activity`() {
-        // aynı saat diliminde 5+ bildirim -> maxBurstPerHour >= 5, gece değil
         val events = eventsAtHour("com.burst", hourOfDay = 14, count = 6)
 
         val report = NotificationAnalyzer.analyze(events, emptyMap(), emptyMap())
@@ -103,12 +125,10 @@ class NotificationAnalyzerTest {
         assertTrue(report.disturbing.any { it.packageName == "com.burst" })
     }
 
-    // ── dikkat dağıtan ───────────────────────────────────────────────────────
-
     @Test
     fun `distracting includes high-notification low-usage app`() {
         val events = eventsAtHour("com.distracting", hourOfDay = 12, count = 20)
-        val usage = mapOf("com.distracting" to 5 * 60_000L) // 5 dakika kullanım
+        val usage = mapOf("com.distracting" to 5 * 60_000L)
 
         val report = NotificationAnalyzer.analyze(events, emptyMap(), usage)
 
@@ -120,14 +140,12 @@ class NotificationAnalyzerTest {
     @Test
     fun `distracting excludes app with sufficient usage time`() {
         val events = eventsAtHour("com.wellused", hourOfDay = 12, count = 20)
-        val usage = mapOf("com.wellused" to 120 * 60_000L) // 2 saat kullanım -> düşük skor
+        val usage = mapOf("com.wellused" to 120 * 60_000L)
 
         val report = NotificationAnalyzer.analyze(events, emptyMap(), usage)
 
         assertTrue(report.distracting.none { it.packageName == "com.wellused" })
     }
-
-    // ── trend (dailyCounts) ──────────────────────────────────────────────────
 
     @Test
     fun `dailyCounts places today's events in the last index`() {
@@ -140,8 +158,6 @@ class NotificationAnalyzerTest {
         assertEquals(4, stats.dailyCounts.last())
         assertEquals(4, stats.dailyCounts.sum())
     }
-
-    // ── görünen isim fallback ────────────────────────────────────────────────
 
     @Test
     fun `appName falls back to package suffix when name unknown`() {
@@ -160,5 +176,79 @@ class NotificationAnalyzerTest {
         val report = NotificationAnalyzer.analyze(events, names, emptyMap())
 
         assertEquals("Instagram", report.appStats.first().appName)
+    }
+
+    @Test
+    fun `metadata summary separates actionable suppressed categories and high priority`() {
+        val events = listOf(
+            eventAtHour(
+                pkg = "com.whatsapp",
+                hourOfDay = 12,
+                category = NotificationCategory.MESSAGING,
+                score = 65,
+            ),
+            eventAtHour(
+                pkg = "com.bank",
+                hourOfDay = 13,
+                category = NotificationCategory.FINANCE,
+                score = 90,
+            ),
+            eventAtHour(
+                pkg = "com.shop",
+                hourOfDay = 14,
+                category = NotificationCategory.PROMOTION,
+                score = 15,
+                suppressed = true,
+            ),
+        )
+
+        val report = NotificationAnalyzer.analyze(events, emptyMap(), emptyMap())
+
+        assertEquals(3, report.totalReceived)
+        assertEquals(2, report.actionableCount)
+        assertEquals(1, report.suppressedCount)
+        assertEquals(1, report.highPriorityCount)
+        assertEquals(1, report.categoryDistribution[NotificationCategory.MESSAGING])
+        assertEquals(1, report.categoryDistribution[NotificationCategory.FINANCE])
+        assertEquals(1, report.categoryDistribution[NotificationCategory.PROMOTION])
+    }
+
+    @Test
+    fun `topPromotionSources sorts by promotion count`() {
+        val events = eventsAtHour(
+            pkg = "com.shop.large",
+            hourOfDay = 12,
+            count = 4,
+            category = NotificationCategory.PROMOTION,
+            score = 15,
+            suppressed = true,
+        ) + eventsAtHour(
+            pkg = "com.shop.small",
+            hourOfDay = 13,
+            count = 2,
+            category = NotificationCategory.PROMOTION,
+            score = 15,
+            suppressed = true,
+        )
+
+        val report = NotificationAnalyzer.analyze(events, emptyMap(), emptyMap())
+
+        assertEquals(listOf("com.shop.large", "com.shop.small"), report.topPromotionSources.map { it.packageName })
+        assertEquals(4, report.topPromotionSources.first().promotionCount)
+    }
+
+    @Test
+    fun `unknown stored category safely falls back to OTHER`() {
+        val event = NotificationEvent(
+            packageName = "com.legacy",
+            postedAt = System.currentTimeMillis(),
+            category = "BROKEN_VALUE",
+            importanceScore = 35,
+        )
+
+        val report = NotificationAnalyzer.analyze(listOf(event), emptyMap(), emptyMap())
+
+        assertEquals(1, report.categoryDistribution[NotificationCategory.OTHER])
+        assertEquals(1, report.appStats.single().categoryCounts[NotificationCategory.OTHER])
     }
 }
