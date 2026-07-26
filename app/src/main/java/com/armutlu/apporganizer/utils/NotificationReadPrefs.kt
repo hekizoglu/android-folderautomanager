@@ -1,38 +1,59 @@
 package com.armutlu.apporganizer.utils
 
 import android.content.Context
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 
 /**
- * P0.5 — Paket bazli "en son okundu (uygulama acildi)" zaman damgasi.
- *
- * Room'a yeni tablo/kolon EKLEMEZ (migration riski sifir) — kendi kucuk SharedPreferences
- * dosyasinda pkg -> epoch ms JSON map olarak saklar. AppPrefs.PREFS_NAME'den ayri dosya
- * kullanilir ki genel ayarlar temizlenirken (orn. reset) bu veri yanlislikla silinmesin/silinsin
- * diye ayri yonetilebilsin.
- *
- * Kullanim: LauncherViewModel.launchApp() paketi baslatinca markRead() cagirir. Badge hesabi
- * UnreadNotificationModel ile bu zaman damgasini son bildirim zamaniyla karsilastirir.
+ * Paket bazlı son okunma zamanını SharedPreferences'ta saklar ve process içinde reaktif yayınlar.
+ * Room geçmişiyle bağımsızdır; yalnız launcher rozetinin okunmuş/okunmamış durumunu etkiler.
  */
 object NotificationReadPrefs {
     private const val FILE_NAME = "notification_read_prefs"
     private const val KEY_LAST_READ_MAP = "last_read_at_map"
+    private val lock = Any()
+
+    private val _lastReadAt = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val lastReadAt: StateFlow<Map<String, Long>> = _lastReadAt.asStateFlow()
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE)
 
-    /** Paketin en son okundu (acildi) zamanini simdiki zamana ayarlar. */
-    fun markRead(context: Context, packageName: String, atMillis: Long = System.currentTimeMillis()) {
-        val map = getAll(context).toMutableMap()
-        map[packageName] = atMillis
-        prefs(context).edit().putString(KEY_LAST_READ_MAP, map.toJson()).apply()
+    /** Persist edilmiş başlangıç değerini yükler ve sonraki markRead değişikliklerini yayınlar. */
+    fun observe(context: Context): StateFlow<Map<String, Long>> {
+        getAll(context)
+        return lastReadAt
     }
 
-    /** Tek bir paketin en son okundu zamanini dondurur, hic okunmadiysa null. */
+    /** Paketin en son okundu (açıldı) zamanını günceller; flow hemen emit eder. */
+    fun markRead(context: Context, packageName: String, atMillis: Long = System.currentTimeMillis()) {
+        if (packageName.isBlank()) return
+        synchronized(lock) {
+            val map = readPersisted(context).toMutableMap()
+            map[packageName] = atMillis
+            prefs(context).edit().putString(KEY_LAST_READ_MAP, map.toJson()).apply()
+            _lastReadAt.value = map.toMap()
+        }
+    }
+
     fun getLastReadAt(context: Context, packageName: String): Long? = getAll(context)[packageName]
 
-    /** Tum paketlerin en son okundu zamanlarini dondurur (pkg -> epoch ms). */
-    fun getAll(context: Context): Map<String, Long> {
+    fun getAll(context: Context): Map<String, Long> = synchronized(lock) {
+        val persisted = readPersisted(context)
+        if (_lastReadAt.value != persisted) _lastReadAt.value = persisted
+        persisted
+    }
+
+    fun clearAll(context: Context) {
+        synchronized(lock) {
+            prefs(context).edit().remove(KEY_LAST_READ_MAP).apply()
+            _lastReadAt.value = emptyMap()
+        }
+    }
+
+    private fun readPersisted(context: Context): Map<String, Long> {
         val raw = prefs(context).getString(KEY_LAST_READ_MAP, null) ?: return emptyMap()
         return runCatching {
             val json = JSONObject(raw)
@@ -40,14 +61,9 @@ object NotificationReadPrefs {
         }.getOrDefault(emptyMap())
     }
 
-    /** Test/temizlik amacli — tum kayitlari siler. */
-    fun clearAll(context: Context) {
-        prefs(context).edit().remove(KEY_LAST_READ_MAP).apply()
-    }
-
     private fun Map<String, Long>.toJson(): String {
         val json = JSONObject()
-        forEach { (k, v) -> json.put(k, v) }
+        forEach { (key, value) -> json.put(key, value) }
         return json.toString()
     }
 }
