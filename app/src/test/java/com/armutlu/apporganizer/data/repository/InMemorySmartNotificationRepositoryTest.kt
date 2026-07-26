@@ -5,11 +5,17 @@ import com.armutlu.apporganizer.domain.models.SmartNotification
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class InMemorySmartNotificationRepositoryTest {
+
+    @After
+    fun tearDown() {
+        SmartNotificationLegacyBadgeBridge.clear()
+    }
 
     @Test
     fun `replaceActive ranks items and derives actionable counts`() = runTest {
@@ -30,6 +36,7 @@ class InMemorySmartNotificationRepositoryTest {
         assertEquals(2, repository.actionablePackageCounts.value["com.whatsapp"])
         assertEquals(1, repository.actionablePackageCounts.value["com.bank"])
         assertTrue("com.shop" !in repository.actionablePackageCounts.value)
+        assertEquals(repository.actionablePackageCounts.value, SmartNotificationLegacyBadgeBridge.badgeCounts.value)
         assertEquals(2, repository.categoryCounts.value[NotificationCategory.MESSAGING])
         assertEquals(1, repository.categoryCounts.value[NotificationCategory.FINANCE])
         assertEquals(1, repository.suppressedCount.value)
@@ -51,6 +58,7 @@ class InMemorySmartNotificationRepositoryTest {
 
         assertEquals(2, repository.activeNotifications.value.size)
         assertEquals(1, repository.actionablePackageCounts.value["com.whatsapp"])
+        assertEquals(1, SmartNotificationLegacyBadgeBridge.badgeCounts.value["com.whatsapp"])
         assertEquals(1, repository.categoryCounts.value[NotificationCategory.MESSAGING])
 
         readSource.state.value = mapOf("com.whatsapp" to 400L)
@@ -58,6 +66,7 @@ class InMemorySmartNotificationRepositoryTest {
 
         assertEquals(2, repository.activeNotifications.value.size)
         assertTrue(repository.actionablePackageCounts.value.isEmpty())
+        assertTrue(SmartNotificationLegacyBadgeBridge.badgeCounts.value.isEmpty())
     }
 
     @Test
@@ -70,6 +79,7 @@ class InMemorySmartNotificationRepositoryTest {
         )
 
         assertEquals(mapOf("com.whatsapp" to 1), repository.actionablePackageCounts.value)
+        assertEquals(mapOf("com.whatsapp" to 1), SmartNotificationLegacyBadgeBridge.badgeCounts.value)
     }
 
     @Test
@@ -88,6 +98,7 @@ class InMemorySmartNotificationRepositoryTest {
 
         assertEquals(listOf("msg-1"), repository.activeNotifications.value.map { it.key })
         assertEquals(mapOf("com.whatsapp" to 1), repository.actionablePackageCounts.value)
+        assertEquals(mapOf("com.whatsapp" to 1), SmartNotificationLegacyBadgeBridge.badgeCounts.value)
         assertEquals(mapOf(NotificationCategory.MESSAGING to 1), repository.categoryCounts.value)
         assertEquals(0, repository.suppressedCount.value)
     }
@@ -103,6 +114,7 @@ class InMemorySmartNotificationRepositoryTest {
 
         assertTrue(repository.activeNotifications.value.isEmpty())
         assertTrue(repository.actionablePackageCounts.value.isEmpty())
+        assertTrue(SmartNotificationLegacyBadgeBridge.badgeCounts.value.isEmpty())
         assertTrue(repository.categoryCounts.value.isEmpty())
         assertEquals(0, repository.suppressedCount.value)
     }
