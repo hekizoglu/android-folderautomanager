@@ -152,11 +152,14 @@ class AppNotificationListenerService : NotificationListenerService() {
                     val timestamp = extractedPreview?.postedAt
                         ?: sbn.postTime.takeIf { it > 0L }
                         ?: System.currentTimeMillis()
+                    val smartText = extractedPreview?.body
+                        ?.takeIf { it.isNotBlank() }
+                        ?: extractedPreview?.text.orEmpty()
                     smartRebuilt[sbn.key] = notificationClassifier.classify(
                         key = sbn.key,
                         packageName = packageName,
-                        title = "",
-                        text = extractedPreview?.text.orEmpty(),
+                        title = extractedPreview?.title.orEmpty(),
+                        text = smartText,
                         timestamp = timestamp,
                         systemPriority = notificationPriority(sbn),
                     )
