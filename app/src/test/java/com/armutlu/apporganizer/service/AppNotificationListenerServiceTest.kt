@@ -23,13 +23,20 @@ import org.junit.Test
 class AppNotificationListenerServiceTest {
 
     private lateinit var mockDao: NotificationEventDao
+    private lateinit var mockAppDao: com.armutlu.apporganizer.data.local.AppDao
     private lateinit var service: AppNotificationListenerService
 
     @Before
     fun setup() {
         mockDao = mockk(relaxed = true)
+        mockAppDao = mockk(relaxed = true)
         service = AppNotificationListenerService()
         service.notificationEventDao = mockDao
+        // appDao da @Inject lateinit — analytics dalı insert()'ten önce
+        // updateNotificationImportance/updateLastNotificationPostedAt çağırıyor (satır 47-48),
+        // set edilmezse UninitializedPropertyAccessException runCatching'de yutulup insert'e
+        // hiç ulaşılmıyordu (kod tarama döngüsü test eksikliği tespiti).
+        service.appDao = mockAppDao
         mockkObject(AppPrefs)
         // D239 gizlilik guard'i: stub'lanmazsa MockK exception firlatir, runCatching yutar
         // ve analiz insert'ine hic ulasilamaz — tum testler icin varsayilan kapali.

@@ -49,7 +49,8 @@ class SearchRepository(
          * Türkçe locale-aware (İ↔I, ı↔i), debounce'siz sonuçların sıralanması için.
          */
         fun calculateScore(query: String, title: String, subtitle: String = ""): SearchScore {
-            val searchText = "$title $subtitle".lowercase(Locale("tr"))
+            val searchText = listOf(title, subtitle).filter { it.isNotEmpty() }
+                .joinToString(" ").lowercase(Locale("tr"))
             val queryLower = query.lowercase(Locale("tr"))
 
             return when {
