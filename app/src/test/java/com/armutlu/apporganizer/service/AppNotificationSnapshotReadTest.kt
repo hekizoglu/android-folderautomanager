@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.service.notification.StatusBarNotification
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.repository.SmartNotificationRepository
 import com.armutlu.apporganizer.domain.usecase.notification.NotificationClassifierUseCase
 import com.armutlu.apporganizer.utils.AppPrefs
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -41,6 +43,21 @@ class AppNotificationSnapshotReadTest {
 
         assertEquals(1, service.readCount)
         assertEquals(1, AppNotificationListenerService.badgeCounts.value["com.test.app"])
+    }
+
+    @Test
+    fun `posted snapshot is published to injected repository`() {
+        val posted = sbn(packageName = "com.test.app", key = "posted-repository")
+        val repository = mockk<SmartNotificationRepository>(relaxed = true)
+        val service = serviceWithSnapshot(listOf(posted), repository)
+
+        service.onNotificationPosted(posted)
+
+        coVerify(timeout = 2_000) {
+            repository.replaceActive(match { items ->
+                items.size == 1 && items.single().packageName == "com.test.app"
+            })
+        }
     }
 
     @Test
@@ -80,11 +97,15 @@ class AppNotificationSnapshotReadTest {
         assertEquals(0, service.readCount)
     }
 
-    private fun serviceWithSnapshot(snapshot: List<StatusBarNotification>): CountingService {
+    private fun serviceWithSnapshot(
+        snapshot: List<StatusBarNotification>,
+        repository: SmartNotificationRepository = mockk(relaxed = true),
+    ): CountingService {
         return CountingService(snapshot).apply {
             notificationEventDao = mockk<NotificationEventDao>(relaxed = true)
             appDao = mockk<AppDao>(relaxed = true)
             notificationClassifier = NotificationClassifierUseCase()
+            smartNotificationRepository = repository
         }
     }
 
