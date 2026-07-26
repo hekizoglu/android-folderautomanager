@@ -135,6 +135,7 @@ fun AppIconView(
     iconSize: Dp = 56.dp,
     newBadgeEnabled: Boolean = true,
     notificationBadgeEnabled: Boolean = true,
+    labelColor: Color = Color.White,
 ) {
     val context = LocalContext.current
     val userIconScale = com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context)
@@ -308,7 +309,7 @@ fun AppIconView(
                 Text(
                     text = app.appName,
                     style = TextStyle(
-                        color = Color.White,
+                        color = labelColor,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center,
                         shadow = androidx.compose.ui.graphics.Shadow(

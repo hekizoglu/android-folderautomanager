@@ -71,6 +71,7 @@ fun FolderFreeGrid(
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit,
     iconSize: Dp = 56.dp,
+    labelColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.White,
     // Faz S4 — opsiyonel: verilirse sürükleme sırasında ekran kenarına yaklaşınca sayfa
     // otomatik kaydırılır. null (varsayılan) = eski davranış, hiçbir şey değişmez.
     pagerState: PagerState? = null,
@@ -200,6 +201,7 @@ fun FolderFreeGrid(
                             onLongClick = { onLongClick(app) },
                             iconSize = iconSize,
                             showLabel = true,
+                            labelColor = labelColor,
                         )
                     }
                 }

@@ -91,6 +91,10 @@ fun FolderScreen(
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
     var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
     var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
+    var labelColorHex by remember { mutableStateOf(AppPrefs.getLabelColor(context)) }
+    val labelColor = remember(labelColorHex) {
+        runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
+    }
     var folderNavigatorMutedUntil by remember { mutableStateOf(AppPrefs.getFolderNavigatorMutedUntil(context)) }
     // Görev 1: HomeScreen ile aynı kök zemin — klasörden çıkarken duvar kağıdı flaşı olmasın.
     var bgType by remember { mutableStateOf(AppPrefs.getBgType(context)) }
@@ -126,6 +130,9 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_HOME_BACKGROUND_STYLE) {
                 bgGradientStyle = AppPrefs.getHomeBackgroundStyle(context)
+            }
+            if (key == AppPrefs.KEY_LABEL_COLOR) {
+                labelColorHex = AppPrefs.getLabelColor(context)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -664,6 +671,7 @@ fun FolderScreen(
                                 contextMenuApp = app
                             },
                             iconSize = 56.dp,
+                            labelColor = labelColor,
                         )
                     }
                 } else {
@@ -688,6 +696,7 @@ fun FolderScreen(
                                 },
                                 iconSize = 56.dp,
                                 showLabel = true,
+                                labelColor = labelColor,
                             )
                         }
                     }

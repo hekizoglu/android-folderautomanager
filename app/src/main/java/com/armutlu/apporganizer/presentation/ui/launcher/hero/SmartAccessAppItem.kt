@@ -6,13 +6,16 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.AppIconView
+import com.armutlu.apporganizer.utils.AppPrefs
 
 @Composable
 internal fun SmartAccessAppItem(
@@ -22,6 +25,11 @@ internal fun SmartAccessAppItem(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val labelColorHex = AppPrefs.getLabelColor(context)
+    val labelColor = remember(labelColorHex) {
+        runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
+    }
     Box(
         modifier = modifier
             .testTag("smart_access_item_${app.packageName}")
@@ -49,6 +57,7 @@ internal fun SmartAccessAppItem(
                 iconSize = 48.dp,
                 newBadgeEnabled = false,
                 notificationBadgeEnabled = false,
+                labelColor = labelColor,
             )
         }
     }
