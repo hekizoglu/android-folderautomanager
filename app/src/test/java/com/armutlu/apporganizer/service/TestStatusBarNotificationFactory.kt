@@ -15,15 +15,16 @@ object TestStatusBarNotificationFactory {
         bigText: String = "",
         postTime: Long = 1L,
     ): StatusBarNotification {
-        val extras = Bundle().apply {
-            putCharSequence(Notification.EXTRA_TITLE, title)
-            putCharSequence(Notification.EXTRA_TEXT, text)
-            putCharSequence(Notification.EXTRA_BIG_TEXT, bigText)
-        }
-        val notification = Notification().apply {
-            this.extras = extras
-            `when` = postTime
-        }
+        val extras = mockk<Bundle>(relaxed = true)
+        every { extras.getCharSequence(Notification.EXTRA_TITLE) } returns title
+        every { extras.getCharSequence(Notification.EXTRA_TEXT) } returns text
+        every { extras.getCharSequence(Notification.EXTRA_BIG_TEXT) } returns bigText
+        every { extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES) } returns null
+
+        val notification = mockk<Notification>(relaxed = true)
+        notification.extras = extras
+        notification.priority = 0
+        notification.`when` = postTime
         return mockk(relaxed = true) {
             every { this@mockk.packageName } returns packageName
             every { this@mockk.key } returns key

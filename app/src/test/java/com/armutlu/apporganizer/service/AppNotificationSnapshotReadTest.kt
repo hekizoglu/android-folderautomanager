@@ -1,0 +1,135 @@
+package com.armutlu.apporganizer.service
+
+import android.app.Notification
+import android.os.Bundle
+import android.service.notification.StatusBarNotification
+import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.repository.SmartNotificationRepository
+import com.armutlu.apporganizer.domain.usecase.notification.NotificationClassifierUseCase
+import com.armutlu.apporganizer.utils.AppPrefs
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+
+class AppNotificationSnapshotReadTest {
+
+    @Before
+    fun setup() {
+        mockkObject(AppPrefs)
+        every { AppPrefs.isNotifAnalyticsEnabled(any()) } returns false
+        every { AppPrefs.isNotificationTextEnabled(any()) } returns false
+        every { AppPrefs.getNotificationPreviewBlockedPackages(any()) } returns emptySet()
+    }
+
+    @After
+    fun tearDown() {
+        AppNotificationListenerService().onListenerDisconnected()
+        unmockkObject(AppPrefs)
+    }
+
+    @Test
+    fun `posted callback reads active notifications exactly once`() {
+        val posted = sbn(packageName = "com.test.app", key = "posted-1")
+        val service = serviceWithSnapshot(listOf(posted))
+
+        service.onNotificationPosted(posted)
+
+        assertEquals(1, service.readCount)
+    }
+
+    @Test
+    fun `posted snapshot is published to injected repository`() {
+        val posted = sbn(packageName = "com.test.app", key = "posted-repository")
+        val repository = mockk<SmartNotificationRepository>(relaxed = true)
+        val service = serviceWithSnapshot(listOf(posted), repository)
+
+        service.onNotificationPosted(posted)
+
+        coVerify(timeout = 2_000) {
+            repository.replaceActive(match { items ->
+                items.size == 1 && items.single().packageName == "com.test.app"
+            })
+        }
+    }
+
+    @Test
+    fun `removed callback reads active notifications exactly once`() {
+        val removed = sbn(packageName = "com.test.app", key = "removed-1")
+        val service = serviceWithSnapshot(emptyList())
+
+        service.onNotificationRemoved(removed)
+
+        assertEquals(1, service.readCount)
+    }
+
+    @Test
+    fun `listener connection reads active notifications exactly once`() {
+        val service = serviceWithSnapshot(
+            listOf(
+                sbn(packageName = "com.test.one", key = "one"),
+                sbn(packageName = "com.test.two", key = "two"),
+            )
+        )
+
+        service.onListenerConnected()
+
+        assertEquals(1, service.readCount)
+    }
+
+    @Test
+    fun `ongoing posted notification does not rebuild snapshot`() {
+        val ongoing = sbn(packageName = "com.test.player", key = "ongoing", ongoing = true)
+        val service = serviceWithSnapshot(listOf(ongoing))
+
+        service.onNotificationPosted(ongoing)
+
+        assertEquals(0, service.readCount)
+    }
+
+    private fun serviceWithSnapshot(
+        snapshot: List<StatusBarNotification>,
+        repository: SmartNotificationRepository = mockk(relaxed = true),
+    ): CountingService {
+        return CountingService(snapshot).apply {
+            notificationEventDao = mockk<NotificationEventDao>(relaxed = true)
+            appDao = mockk<AppDao>(relaxed = true)
+            notificationClassifier = NotificationClassifierUseCase()
+            smartNotificationRepository = repository
+        }
+    }
+
+    private fun sbn(
+        packageName: String,
+        key: String,
+        ongoing: Boolean = false,
+    ): StatusBarNotification {
+        val notification = mockk<Notification>(relaxed = true)
+        notification.extras = mockk<Bundle>(relaxed = true)
+        val result = mockk<StatusBarNotification>(relaxed = true)
+        every { result.packageName } returns packageName
+        every { result.key } returns key
+        every { result.isOngoing } returns ongoing
+        every { result.postTime } returns 1L
+        every { result.notification } returns notification
+        return result
+    }
+
+    private class CountingService(
+        private val snapshot: List<StatusBarNotification>,
+    ) : AppNotificationListenerService() {
+        var readCount: Int = 0
+            private set
+
+        override fun currentActiveNotifications(): List<StatusBarNotification> {
+            readCount += 1
+            return snapshot
+        }
+    }
+}

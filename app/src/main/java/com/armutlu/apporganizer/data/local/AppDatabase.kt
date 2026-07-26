@@ -24,7 +24,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class],
-    version = 23,
+    version = 24,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,54 +41,45 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun homeGridItemDao(): HomeGridItemDao
     abstract fun operationDao(): OperationDao
     abstract fun undoMergeDao(): UndoMergeDao
-    
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-        
-        // v1→v2: notificationCount sütunu eklendi
+
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "notificationCount", "INTEGER NOT NULL DEFAULT 0")
             }
         }
 
-        // v2→v3: isHidden sütunu eklendi
         private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "isHidden", "INTEGER NOT NULL DEFAULT 0")
             }
         }
 
-        // v3→v4: lastUsedTimestamp sütunu eklendi
         private val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "lastUsedTimestamp", "INTEGER NOT NULL DEFAULT 0")
             }
         }
 
-        // v4→v5: notificationText sütunu eklendi
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "notificationText", "TEXT NOT NULL DEFAULT ''")
             }
         }
 
-        // v5→v6: customNotes sütunu eklendi
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "customNotes", "TEXT NOT NULL DEFAULT ''")
             }
         }
 
-        // v6→v7: şema değişimi yok, categories tablosuna yeni kategoriler eklendi (DatabaseCallback ile)
         private val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // Şema değişikliği yok — yeni kategoriler DatabaseCallback.onOpen içinde eklenir
-            }
+            override fun migrate(db: SupportSQLiteDatabase) = Unit
         }
 
-        // v7→v8: AppInfo'ya firstInstalledTime, lastUpdatedTime, targetSdkVersion, versionName eklendi
         private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "firstInstalledTime", "INTEGER NOT NULL DEFAULT 0")
@@ -98,22 +89,40 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v9→v10: SearchHistory tablosu eklendi (arama geçmişi B1)
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS search_documents (
+                        docId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        source_type TEXT NOT NULL,
+                        source_id TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        subtitle TEXT NOT NULL DEFAULT '',
+                        icon_key TEXT NOT NULL DEFAULT '',
+                        source_group TEXT NOT NULL DEFAULT 'app',
+                        last_modified INTEGER NOT NULL DEFAULT 0
+                    )
+                    """
+                )
+                ensureSearchTables(db)
+            }
+        }
+
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS search_history (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         query TEXT NOT NULL,
                         timestamp INTEGER NOT NULL DEFAULT 0
                     )
-                """)
+                    """
+                )
             }
         }
 
-        // v10→v11: apps tablosuna query optimize için index'ler eklendi (CS13: SELECT * ORDER BY appName sınırsız)
-        // NOT: Index adları Room'un entity'den ürettiği adlarla (index_apps_*) birebir aynı olmalı —
-        // aksi halde bir sonraki migration'da şema doğrulaması "Migration didn't properly handle" ile çöker.
         private val MIGRATION_10_11 = object : Migration(10, 11) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName ON apps(appName)")
@@ -122,9 +131,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v11→v12: notification_events tablosu — Bildirim Analiz Raporu veri kaynağı.
-        // Ayrıca eski MIGRATION_10_11'in yanlış adla (idx_apps_*) oluşturduğu index'ler
-        // Room'un beklediği adlarla (index_apps_*) onarılır — v11 cihazlarda upgrade çökmesini önler.
         private val MIGRATION_11_12 = object : Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DROP INDEX IF EXISTS idx_apps_appName")
@@ -133,31 +139,26 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName ON apps(appName)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_categoryId ON apps(categoryId)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_apps_appName_categoryId ON apps(appName, categoryId)")
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS notification_events (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         packageName TEXT NOT NULL,
                         postedAt INTEGER NOT NULL
                     )
-                """)
+                    """
+                )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_packageName ON notification_events(packageName)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_postedAt ON notification_events(postedAt)")
             }
         }
 
-        // v12→v13: search_history tablosu kaldırıldı — UI hiç kullanmıyordu, gerçek arama geçmişi
-        // SearchHistoryPrefs.kt (SharedPreferences, 2sa TTL) üzerinden yönetiliyor (ölü kod temizliği, D210)
         private val MIGRATION_12_13 = object : Migration(12, 13) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DROP TABLE IF EXISTS search_history")
             }
         }
 
-        // v13→v14: launchCount sütunu eklendi — "milyon adet" bug fix.
-        // Önceden usageCount alanına hem +1 adet hem UsageStats ms yazılıyordu; sync ms değeri
-        // adet sayacını eziyordu ve "kez açıldı" metni milyonlarca ms gösteriyordu.
-        // Artık: usageCount = ön plan süresi (ms, gerçek kullanım büyüklüğü, sıralama/skor için),
-        // launchCount = kez açıldı (adet). "Kez açıldı" metinleri launchCount okur.
         private val MIGRATION_13_14 = object : Migration(13, 14) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "launchCount", "INTEGER NOT NULL DEFAULT 0")
@@ -166,7 +167,8 @@ abstract class AppDatabase : RoomDatabase() {
 
         private val MIGRATION_14_15 = object : Migration(14, 15) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS weekly_goals (
                         categoryId TEXT NOT NULL,
                         targetMinutes INTEGER NOT NULL,
@@ -175,12 +177,11 @@ abstract class AppDatabase : RoomDatabase() {
                         achievedAt INTEGER NOT NULL,
                         PRIMARY KEY(categoryId, weekStartEpochDay)
                     )
-                """)
+                    """
+                )
             }
         }
 
-        // v15->v16: classification decision metadata. Existing rows remain pending/unknown
-        // until the next safe classification pass; user decisions are not invented.
         private val MIGRATION_15_16 = object : Migration(15, 16) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.addColumnIfNotExists("apps", "classificationSource", "TEXT NOT NULL DEFAULT 'UNKNOWN'")
@@ -227,9 +228,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v17→v18: mission_instances tablosu — Dongu M01. Gunluk/haftalik gorev ornekleri
-        // (id, hedef, odul) donem boyunca sabitlenir; mission_history (tamamlanma/yildiz
-        // ledger'i) DEGISTIRILMEZ, iki tablo paralel yasar.
         private val MIGRATION_17_18 = object : Migration(17, 18) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -264,9 +262,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v19→v20: ticker_history tablosu — haber şeridi (SmartTickerItem) arşiv ekranı
-        // ("Tüm haberler", mail kutusu okundu/okunmadı + 7 gün otomatik silme). Codex'in
-        // search kodu DEĞİŞMEDİ — bu sadece yeni bir entity/DAO/migration ekler.
         internal val MIGRATION_19_20 = object : Migration(19, 20) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -288,11 +283,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v20→v21: home_grid_items tablosu — Faz S (Serbest Sürükle-Bırak Ana Ekran Sistemi)
-        // S1 veri modeli. Şu an hiçbir UI/ViewModel bu tabloyu okumuyor/yazmıyor — mevcut
-        // 1D sistemler (HomeLayout.kt, WidgetArea.kt) DEĞİŞMEDİ, bu tamamen paralel altyapı.
-        // NOT: v19→v20 migration'ında bugün yaşanan prod crash dersi gereği DEFAULT clause
-        // KULLANILMADI — schemas JSON'da Room'un ürettiği defaultValue='undefined' ile eşleşir.
         internal val MIGRATION_20_21 = object : Migration(20, 21) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -312,13 +302,11 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // v21→v22: operations tablosu — Folder merge transaction history + undo
         private val MIGRATION_21_22 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Drop operations table if exists to ensure clean schema (v22 first deployment)
                 db.execSQL("DROP TABLE IF EXISTS operations")
-
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS `operations` (
                         `id` TEXT NOT NULL PRIMARY KEY,
                         `type` TEXT NOT NULL,
@@ -330,16 +318,17 @@ abstract class AppDatabase : RoomDatabase() {
                         `rolledBack` INTEGER NOT NULL,
                         `rolledBackAt` INTEGER
                     )
-                """)
+                    """
+                )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_timestamp` ON `operations`(`timestamp`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_type` ON `operations`(`type`)")
             }
         }
 
-        // v22→v23: UndoMergeEntity tablosu eklendi (FolderMergeScreen geri al işlevi)
         private val MIGRATION_22_23 = object : Migration(22, 23) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS `undo_merges` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `sourceCategoryId` TEXT NOT NULL,
@@ -348,42 +337,51 @@ abstract class AppDatabase : RoomDatabase() {
                         `timestamp` INTEGER NOT NULL,
                         `mergedAt` INTEGER NOT NULL
                     )
-                """)
+                    """
+                )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_undo_merges_timestamp` ON `undo_merges`(`timestamp`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_undo_merges_source` ON `undo_merges`(`sourceCategoryId`)")
             }
         }
 
-        // v8→v9: SearchDocument tablosu + FTS5 sanal tablo (birleşik arama Sprint 1)
-        private val MIGRATION_8_9 = object : Migration(8, 9) {
+        internal val MIGRATION_23_24 = object : Migration(23, 24) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS search_documents (
-                        docId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        source_type TEXT NOT NULL,
-                        source_id TEXT NOT NULL,
-                        title TEXT NOT NULL,
-                        subtitle TEXT NOT NULL DEFAULT '',
-                        icon_key TEXT NOT NULL DEFAULT '',
-                        source_group TEXT NOT NULL DEFAULT 'app',
-                        last_modified INTEGER NOT NULL DEFAULT 0
-                    )
-                """)
-                ensureSearchTables(db)
+                db.addColumnIfNotExists(
+                    "notification_events",
+                    "category",
+                    "TEXT NOT NULL DEFAULT 'OTHER'",
+                )
+                db.addColumnIfNotExists(
+                    "notification_events",
+                    "importanceScore",
+                    "INTEGER NOT NULL DEFAULT 35",
+                )
+                db.addColumnIfNotExists(
+                    "notification_events",
+                    "wasSuppressed",
+                    "INTEGER NOT NULL DEFAULT 0",
+                )
+                db.addColumnIfNotExists(
+                    "notification_events",
+                    "systemPriority",
+                    "INTEGER NOT NULL DEFAULT 0",
+                )
             }
         }
 
-        /**
-         * SQLite'ta "ALTER TABLE ADD COLUMN IF NOT EXISTS" yok — sütun zaten varsa
-         * "duplicate column name" ile çöker (backup/restore veya versiyon karışıklığında
-         * user_version ile gerçek şema uyuşmayabilir). PRAGMA table_info ile önce kontrol et.
-         */
-        internal fun SupportSQLiteDatabase.addColumnIfNotExists(table: String, column: String, definition: String) {
+        internal fun SupportSQLiteDatabase.addColumnIfNotExists(
+            table: String,
+            column: String,
+            definition: String,
+        ) {
             val exists = query("PRAGMA table_info($table)").use { cursor ->
                 val nameIdx = cursor.getColumnIndex("name")
                 var found = false
                 while (cursor.moveToNext()) {
-                    if (cursor.getString(nameIdx) == column) { found = true; break }
+                    if (cursor.getString(nameIdx) == column) {
+                        found = true
+                        break
+                    }
                 }
                 found
             }
@@ -394,37 +392,44 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // FTS5 bazı AOSP build'lerinde yoktur; try/catch ile graceful degrade
         internal fun ensureSearchTables(db: SupportSQLiteDatabase) {
             try {
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
                         search_text, keywords,
                         content='search_documents',
                         content_rowid='docId',
                         tokenize='unicode61'
                     )
-                """)
-                db.execSQL("""
+                    """
+                )
+                db.execSQL(
+                    """
                     CREATE TRIGGER IF NOT EXISTS search_fts_ai AFTER INSERT ON search_documents BEGIN
                         INSERT INTO search_fts(rowid, search_text, keywords)
                         VALUES (new.docId, new.title || ' ' || new.subtitle, '');
                     END
-                """)
-                db.execSQL("""
+                    """
+                )
+                db.execSQL(
+                    """
                     CREATE TRIGGER IF NOT EXISTS search_fts_ad AFTER DELETE ON search_documents BEGIN
                         INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
                         VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
                     END
-                """)
-                db.execSQL("""
+                    """
+                )
+                db.execSQL(
+                    """
                     CREATE TRIGGER IF NOT EXISTS search_fts_au AFTER UPDATE ON search_documents BEGIN
                         INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
                         VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
                         INSERT INTO search_fts(rowid, search_text, keywords)
                         VALUES (new.docId, new.title || ' ' || new.subtitle, '');
                     END
-                """)
+                    """
+                )
                 Timber.d("FTS5 sanal tablosu ve trigger'lar oluşturuldu")
             } catch (e: Exception) {
                 Timber.w("FTS5 desteklenmiyor, LIKE araması kullanılacak: ${e.message}")
@@ -470,7 +475,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_19_20,
                         MIGRATION_20_21,
                         MIGRATION_21_22,
-                        MIGRATION_22_23
+                        MIGRATION_22_23,
+                        MIGRATION_23_24,
                     )
                     .build()
 
@@ -478,25 +484,20 @@ abstract class AppDatabase : RoomDatabase() {
                 instance
             }
         }
-        
-        /**
-         * Callback to initialize database with default categories
-         */
+
         private class DatabaseCallback : RoomDatabase.Callback() {
-            
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
                 Timber.d("Database created")
-                
-                // Insert default categories
+
                 val defaultCategories = Category.getDefaultCategories()
                 defaultCategories.forEach { category ->
                     val query = """
-                        INSERT INTO categories 
+                        INSERT INTO categories
                         (categoryId, categoryName, description, colorHex, iconEmoji, isSystemCategory, displayOrder, createdAt)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """.trimIndent()
-                    
+
                     db.execSQL(
                         query,
                         arrayOf(
@@ -507,16 +508,15 @@ abstract class AppDatabase : RoomDatabase() {
                             category.iconEmoji,
                             if (category.isSystemCategory) 1 else 0,
                             category.displayOrder,
-                            category.createdAt
+                            category.createdAt,
                         )
                     )
                 }
 
                 ensureSearchTables(db)
-                
                 Timber.d("Default categories inserted: ${defaultCategories.size}")
             }
-            
+
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 ensureSearchTables(db)

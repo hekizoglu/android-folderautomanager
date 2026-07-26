@@ -21,11 +21,12 @@ import java.util.Locale
 object BackupManager {
 
     private val dateFmt = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-    private const val BACKUP_VERSION = 6
+    private const val BACKUP_VERSION = 7
 
     /**
      * Uygulama kategori atamaları, ayarlar ve özelleştirmeleri JSON olarak dışa aktarır.
      * v3: dock, klasör özelleştirme, gesture, manuel override, gizlilik eklendi.
+     * v7: içeriksiz akıllı bildirim motoru tercihleri eklendi.
      */
     suspend fun exportToJson(context: Context, repository: AppRepository): String =
         withContext(Dispatchers.IO) {
@@ -158,6 +159,10 @@ object BackupManager {
                 })
                 put("homeLayout", homeLayoutToJson(HomeLayoutPrefs.read(context)))
                 put("homePagePrefs", homePagePrefsToJson(HomePagePrefs.toBackupFields(context)))
+                put(
+                    SmartNotificationBackupCodec.ROOT_KEY,
+                    SmartNotificationBackupCodec.toJson(SmartNotificationPrefs.toBackupFields(context)),
+                )
             }
             root.toString(2)
         }
@@ -441,6 +446,14 @@ object BackupManager {
 
             root.optJSONObject("homePagePrefs")?.let { pagePrefs ->
                 HomePagePrefs.fromBackupFields(context, homePagePrefsFromJson(pagePrefs))
+            }
+
+            root.optJSONObject(SmartNotificationBackupCodec.ROOT_KEY)?.let { smartSettings ->
+                val fallback = SmartNotificationPrefs.toBackupFields(context)
+                SmartNotificationPrefs.restoreFromBackup(
+                    context,
+                    SmartNotificationBackupCodec.fromJson(smartSettings, fallback),
+                )
             }
 
             ImportResult(success = true, updatedCount = updated, missingPackages = missing, restoredVersion = version)
