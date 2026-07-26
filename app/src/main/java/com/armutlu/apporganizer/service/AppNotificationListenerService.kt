@@ -4,6 +4,7 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.repository.SmartNotificationRepository
 import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.NotificationEvent
 import com.armutlu.apporganizer.domain.models.SmartNotification
@@ -27,6 +28,7 @@ open class AppNotificationListenerService : NotificationListenerService() {
     @Inject lateinit var notificationEventDao: NotificationEventDao
     @Inject lateinit var appDao: com.armutlu.apporganizer.data.local.AppDao
     @Inject lateinit var notificationClassifier: NotificationClassifierUseCase
+    @Inject lateinit var smartNotificationRepository: SmartNotificationRepository
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -79,6 +81,9 @@ open class AppNotificationListenerService : NotificationListenerService() {
         _smartNotifications.value = emptyList()
         _smartBadgeCounts.value = emptyMap()
         _categoryCounts.value = emptyMap()
+        if (::smartNotificationRepository.isInitialized) {
+            serviceScope.launch { smartNotificationRepository.clearActive() }
+        }
     }
 
     override fun onDestroy() {
@@ -157,6 +162,10 @@ open class AppNotificationListenerService : NotificationListenerService() {
             .filterNot { it.shouldSuppress }
             .groupingBy { it.category }
             .eachCount()
+
+        if (::smartNotificationRepository.isInitialized) {
+            serviceScope.launch { smartNotificationRepository.replaceActive(ranked) }
+        }
     }
 
     private fun notificationPriority(sbn: StatusBarNotification): Int {
