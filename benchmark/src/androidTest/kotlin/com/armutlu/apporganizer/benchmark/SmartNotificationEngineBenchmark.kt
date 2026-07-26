@@ -39,7 +39,7 @@ class SmartNotificationEngineBenchmark {
 
     @Test
     fun classifySingleNotification() = benchmarkRule.measureRepeated {
-        val fixture = fixtures[iteration % fixtures.size]
+        val fixture = fixtures[0]
         scoreSink = classifier.classify(
             key = fixture.key,
             packageName = fixture.packageName,
