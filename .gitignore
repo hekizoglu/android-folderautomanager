@@ -71,3 +71,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.hprof
+
+# Kod tarama dongusu tek seferlik yardimci scriptler (Antigravity/Claude)
+scratch/

@@ -168,10 +168,10 @@ Her agent görevi sonunda (build almadan önce): import doğrula, yeni sabit/fon
 ## 4. Araçlar ve Servisler
 
 ### Build Komutları
-> Proje dizini: `c:\Users\huseyinekizoglu\android-folderautomanager`. `local.properties` yoksa `sdk.dir=` ekle.
+> Proje dizini: `c:\Users\hekizoglu\Documents\AppOrganizer`. `local.properties` yoksa `sdk.dir=` ekle.
 > **google-services.json yokken:** `-PskipGoogleServices` flag'i ile build al.
 ```powershell
-cd "c:\Users\huseyinekizoglu\android-folderautomanager"
+cd "c:\Users\hekizoglu\Documents\AppOrganizer"
 .\gradlew assembleDebug        # Debug APK
 .\gradlew bundleRelease        # Play Store AAB (imzalı — keystore.properties gerekli)
 
@@ -371,7 +371,7 @@ app/src/main/java/com/armutlu/apporganizer/
 │   ├── models/      # AppInfo, Category, AppFolder
 │   └── usecase/classify/  # AppClassifier (3702 paket), KeywordDatabase (32 kategori)
 ├── data/
-│   ├── local/       # AppDao, AppDatabase (Room v12)
+│   ├── local/       # AppDao, AppDatabase (Room v23)
 │   ├── remote/      # BackupSyncService
 │   └── repository/  # AppRepository, SearchRepository
 └── utils/           # AppPrefs, IconPackManager, ShortcutHelper, WidgetPrefs, WidgetHostManager
@@ -379,7 +379,7 @@ app/src/main/java/com/armutlu/apporganizer/
 
 ### Önemli Mimari Notlar
 - **AppClassifier:** 3702 benzersiz paket, `assets/app_categories.json` + `KeywordDatabase` (32 kategori). Bilinmeyen → `CAT_OTHER` → DeepSeek LLM fallback (`CategoryLLMFallback.kt`)
-- **Room DB:** v12 (v11→v12: `notification_events` tablosu — Bildirim Analiz Raporu + eski `idx_apps_*` index adları `index_apps_*` olarak onarıldı, D202)
+- **Room DB:** v23 (v11→v12: `notification_events` tablosu — Bildirim Analiz Raporu + eski `idx_apps_*` index adları `index_apps_*` olarak onarıldı, D202; sonraki migration'lar M7 kod tarama denetiminde eksiksiz zincir olarak teyit edildi — `fallbackToDestructiveMigration()` kullanılmıyor)
 - **Bildirim Analizi:** `AppNotificationListenerService` her bildirimi loglar (paket+zaman, içerik YOK) → `NotificationAnalyzer` (çok konuşan/rahatsız eden/dikkat dağıtan) → `NotificationReportScreen` (Routes.NOTIFICATION_REPORT)
 - **Haber Şeridi:** `HomeTickerRow` + `LauncherViewModel.tickerItems` (klasör istatistikleri + içgörüler + bildirim özeti); dokun→hedef açılır, kaydır→sonraki; `KEY_TICKER_ENABLED`
 - **Tema:** Material You `DYNAMIC` Android 12+ default (`AppTheme.default()`); build'e `-PskipGoogleServices` verilirse Firebase null-guard'lı çalışır (çökmez)
@@ -401,7 +401,7 @@ app/src/main/java/com/armutlu/apporganizer/
 | Klasör özelleştirme (ad+emoji+renk) | ✅ |
 | BackupWorker haftalık | ✅ |
 | Firebase Analytics + Crashlytics | ✅ gerçek proje bağlı (D205) |
-| FCM Push (uzaktan DB güncelleme) | ✅ `AppFirebaseMessagingService.kt` (2026-06-18) |
+| DB güncelleme (haftalık worker) | ✅ `CategoryDbUpdateWorker.kt` — backend-less FCM kaldırıldı (S6, `cfcfb940`), M8 kod tarama denetiminde teyit edildi |
 | DeepSeek API | ✅ `.env`'de |
 | Telegram Bot | ✅ yeni token |
 | Play Store AAB | ✅ v1.0.0 hazır |
