@@ -333,6 +333,17 @@ class AppListViewModel @Inject constructor(
         }
     }
 
+    fun approveAllPendingClassifications() {
+        viewModelScope.launch {
+            val pendingList = classificationAttentionApps.value
+            pendingList.forEach { app ->
+                repository.confirmClassification(app.packageName)
+                repository.getAppByPackageName(app.packageName)?.let { searchRepository.indexApp(it) }
+                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            }
+        }
+    }
+
     fun correctPendingClassification(packageName: String, categoryId: String) {
         updateAppCategory(
             packageName = packageName,

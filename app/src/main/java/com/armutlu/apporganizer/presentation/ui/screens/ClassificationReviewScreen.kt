@@ -58,11 +58,27 @@ fun ClassificationReviewScreen(
     ) {
         item {
             SettingsCard {
-                SettingsInfoRow(
-                    icon = Icons.Default.ErrorOutline,
-                    title = stringResource(R.string.classification_review_pending_count, pendingApps.size),
-                    subtitle = stringResource(R.string.classification_review_pending_subtitle),
-                )
+                Column(Modifier.padding(vertical = 4.dp)) {
+                    SettingsInfoRow(
+                        icon = Icons.Default.ErrorOutline,
+                        title = stringResource(R.string.classification_review_pending_count, pendingApps.size),
+                        subtitle = stringResource(R.string.classification_review_pending_subtitle),
+                    )
+                    if (pendingApps.isNotEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel.approveAllPendingClassifications() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.classification_review_approve_all),
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+                }
             }
         }
 
