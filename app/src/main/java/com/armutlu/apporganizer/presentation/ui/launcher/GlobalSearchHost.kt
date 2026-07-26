@@ -128,7 +128,8 @@ fun GlobalSearchHost(
             modifier = modifier
                 .fillMaxWidth(0.95f)
                 .widthIn(max = if (isTablet) HomeContentWidthTokens.tabletMaxContentWidthDp else HomeContentWidthTokens.maxContentWidthDp)
-                .padding(horizontal = 0.dp, vertical = 4.dp)
+                .padding(horizontal = 0.dp)
+                .padding(top = 2.dp, bottom = 6.dp)
         )
     } else if (homeSearchEnabled) {
         // Uygulama araması kapalı ama klasör araması açık — sadece klasör filtresi
