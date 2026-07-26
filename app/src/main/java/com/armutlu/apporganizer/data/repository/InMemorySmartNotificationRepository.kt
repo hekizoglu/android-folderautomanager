@@ -84,14 +84,19 @@ class InMemorySmartNotificationRepository @Inject constructor(
                 )
             }
             .toList()
-
-        _activeNotifications.value = ranked
-        _actionablePackageCounts.value = actionableUnread
+        val actionableCounts = actionableUnread
             .groupingBy { it.packageName }
             .eachCount()
-        _categoryCounts.value = actionableUnread
+        val actionableCategoryCounts = actionableUnread
             .groupingBy { it.category }
             .eachCount()
+
+        _activeNotifications.value = ranked
+        _actionablePackageCounts.value = actionableCounts
+        _categoryCounts.value = actionableCategoryCounts
         _suppressedCount.value = ranked.count { it.shouldSuppress }
+
+        // Eski LauncherViewModel API'sini repository verisiyle besleyen geçiş katmanı.
+        SmartNotificationLegacyBadgeBridge.publish(actionableCounts)
     }
 }
