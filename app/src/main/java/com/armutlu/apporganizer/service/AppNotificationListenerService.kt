@@ -37,19 +37,26 @@ open class AppNotificationListenerService : NotificationListenerService() {
         sbn ?: return
         runCatching {
             if (!sbn.isOngoing) {
-                val timestamp = System.currentTimeMillis()
+                val classified = classifyNotification(sbn)
+                val timestamp = classified.smart.timestamp
                 _lastPostedAt.update { current -> current + (sbn.packageName to timestamp) }
-                rebuildActiveSnapshot()
+                rebuildActiveSnapshot(preclassified = classified)
                 if (AppPrefs.isNotifAnalyticsEnabled(this)) {
                     serviceScope.launch {
                         runCatching {
-                            val importance = notificationPriority(sbn)
-                            appDao.updateNotificationImportance(sbn.packageName, importance)
+                            appDao.updateNotificationImportance(
+                                sbn.packageName,
+                                classified.systemPriority,
+                            )
                             appDao.updateLastNotificationPostedAt(sbn.packageName, timestamp)
                             notificationEventDao.insert(
                                 NotificationEvent(
                                     packageName = sbn.packageName,
                                     postedAt = timestamp,
+                                    category = classified.smart.category.name,
+                                    importanceScore = classified.smart.importanceScore,
+                                    wasSuppressed = classified.smart.shouldSuppress,
+                                    systemPriority = classified.systemPriority,
                                 )
                             )
                         }
@@ -98,9 +105,9 @@ open class AppNotificationListenerService : NotificationListenerService() {
 
     /**
      * Eski badge/preview akışlarıyla yeni akıllı akışları aynı aktif bildirim snapshot'ından üretir.
-     * Böylece posted/removed/connected callback'leri iki ayrı tam tarama yapmaz.
+     * Posted bildirimin sınıflandırması [preclassified] ile tekrar kullanılabilir.
      */
-    private fun rebuildActiveSnapshot() {
+    private fun rebuildActiveSnapshot(preclassified: ClassifiedNotification? = null) {
         val active = currentActiveNotifications().filterNot { it.isOngoing }
         val showContent = AppPrefs.isNotificationTextEnabled(this)
         val blockedPackages = AppPrefs.getNotificationPreviewBlockedPackages(this)
@@ -112,27 +119,17 @@ open class AppNotificationListenerService : NotificationListenerService() {
             val packageName = sbn.packageName
             counts[packageName] = (counts[packageName] ?: 0) + 1
 
-            val extractedPreview = NotificationPreviewStore.extractPreview(sbn)
+            val classified = preclassified
+                ?.takeIf { it.smart.key == sbn.key }
+                ?: classifyNotification(sbn)
+            val extractedPreview = classified.preview
+
             if (showContent && packageName !in blockedPackages && extractedPreview != null) {
                 previewBuckets.getOrPut(packageName) { mutableListOf() } += extractedPreview
             } else {
                 previewBuckets.putIfAbsent(packageName, mutableListOf())
             }
-
-            val timestamp = extractedPreview?.postedAt
-                ?: sbn.postTime.takeIf { it > 0L }
-                ?: System.currentTimeMillis()
-            val smartText = extractedPreview?.body
-                ?.takeIf { it.isNotBlank() }
-                ?: extractedPreview?.text.orEmpty()
-            smartItems += notificationClassifier.classify(
-                key = sbn.key,
-                packageName = packageName,
-                title = extractedPreview?.title.orEmpty(),
-                text = smartText,
-                timestamp = timestamp,
-                systemPriority = notificationPriority(sbn),
-            )
+            smartItems += classified.smart
         }
 
         val previews = previewBuckets.mapValues { (_, items) ->
@@ -168,6 +165,30 @@ open class AppNotificationListenerService : NotificationListenerService() {
         }
     }
 
+    /** İçerik yalnız sınıflandırma ve aktif önizleme için bellekte tutulur. */
+    private fun classifyNotification(sbn: StatusBarNotification): ClassifiedNotification {
+        val preview = NotificationPreviewStore.extractPreview(sbn)
+        val timestamp = preview?.postedAt
+            ?: sbn.postTime.takeIf { it > 0L }
+            ?: System.currentTimeMillis()
+        val smartText = preview?.body
+            ?.takeIf { it.isNotBlank() }
+            ?: preview?.text.orEmpty()
+        val systemPriority = notificationPriority(sbn)
+        return ClassifiedNotification(
+            preview = preview,
+            smart = notificationClassifier.classify(
+                key = sbn.key,
+                packageName = sbn.packageName,
+                title = preview?.title.orEmpty(),
+                text = smartText,
+                timestamp = timestamp,
+                systemPriority = systemPriority,
+            ),
+            systemPriority = systemPriority,
+        )
+    }
+
     private fun notificationPriority(sbn: StatusBarNotification): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             sbn.notification?.priority ?: 0
@@ -175,6 +196,12 @@ open class AppNotificationListenerService : NotificationListenerService() {
             0
         }
     }
+
+    private data class ClassifiedNotification(
+        val preview: NotificationPreview?,
+        val smart: SmartNotification,
+        val systemPriority: Int,
+    )
 
     companion object {
         /**
