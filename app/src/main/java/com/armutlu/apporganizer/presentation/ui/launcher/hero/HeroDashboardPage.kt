@@ -117,12 +117,23 @@ internal fun HeroDashboardPage(
         screenHeightDp = configuration.screenHeightDp,
         fontScale = configuration.fontScale,
     )
+    // Hero kartlarının genişliği artık HeroDock ile AYNI formülü kullanır (roadmap talebi:
+    // "ekrandaki her şey dock genişliğinde olsun"). HeroDock (bkz. HeroDock.kt +
+    // HomeScreen.kt dock slotu) ekran genişliği - 20dp (10dp+10dp dış padding) kullanır ve
+    // sadece EXPANDED_TABLET'te com.armutlu.apporganizer.presentation.ui.launcher.
+    // HomeAdaptiveLayoutPolicy.centeredContentMaxWidthDp() tavanına çarpar — HomeHeroLayoutPolicy'nin
+    // kendi sabit contentMaxWidthDp/horizontalPaddingDp'i (304dp+28dp gibi) ARTIK genişlik için
+    // kullanılmaz, sadece spec'in diğer alanları (yükseklik, font boyutu, scroll) hâlâ kullanılır.
+    val deviceClass = com.armutlu.apporganizer.presentation.ui.launcher.HomeAdaptiveLayoutPolicy
+        .deviceClass(configuration.screenWidthDp)
+    val dockAlignedMaxWidthDp = com.armutlu.apporganizer.presentation.ui.launcher.HomeAdaptiveLayoutPolicy
+        .centeredContentMaxWidthDp(deviceClass)
     var selectedTab by rememberSaveable { mutableStateOf(SmartAccessTab.NOW) }
     val scrollState = rememberScrollState()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        val contentWidth = (maxWidth - (spec.horizontalPaddingDp * 2).dp)
-            .coerceAtMost(spec.contentMaxWidthDp.dp)
+        val contentWidth = (maxWidth - HomeHeroTokens.DockHorizontalPadding * 2)
+            .let { w -> dockAlignedMaxWidthDp?.let { w.coerceAtMost(it.dp) } ?: w }
             .coerceAtLeast(0.dp)
         Column(
             modifier = Modifier

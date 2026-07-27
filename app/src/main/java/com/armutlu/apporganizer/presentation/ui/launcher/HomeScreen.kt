@@ -858,7 +858,10 @@ fun HomeScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = 12.dp)
+                        .padding(
+                            horizontal = com.armutlu.apporganizer.presentation.ui.launcher.hero.HomeHeroTokens.DockHorizontalPadding,
+                            vertical = 12.dp,
+                        )
                         .onGloballyPositioned { coords ->
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 val pos = coords.positionInWindow()

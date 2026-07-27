@@ -383,9 +383,11 @@ fun FolderScreen(
                 .homeRootBackground(bgType, bgColorInt, bgGradientStyle)
                 .then(
                     // "Duvar Kağıdı" seçiliyken homeRootBackground transparan bırakır; klasör
-                    // içeriğinin okunabilirliği için hafif karartma katmanı eklenir (surface
-                    // rengiyle değil, tema-nötr siyah yarı saydam ile — duvar kağıdı hâlâ sızar).
-                    if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.35f))
+                    // içeriğinin okunabilirliği için güçlü karartma katmanı eklenir (surface
+                    // rengiyle değil, tema-nötr siyah yarı saydam ile). Gerçek blur yerine
+                    // yüksek alfa kullanılıyor — duvar kağıdı artık belirgin şekilde bastırılıyor
+                    // (0.35 → 0.78, Hüseyin talebi: "arka planı görüyoruz").
+                    if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.78f))
                     else Modifier
                 )
         ) { // NOT: statusBars/navigationBars padding HomeShell'in folderOverlay Box slotunda uygulanır (P0.3)
