@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
             reportFullyDrawn()
         }
 
-        if (onboardingDone) scanApps()
+        scanApps()
 
         pendingRoute.value = intent?.getStringExtra(EXTRA_OPEN_ROUTE)
         applyOpenCategoryIntent(intent)

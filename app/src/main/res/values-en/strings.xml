@@ -736,6 +736,38 @@
     <string name="mission_daily_focus_session">Spend at least 30 min in Focus Mode today</string>
     <string name="mission_discover_weekly">Check out your weekly report</string>
     <string name="mission_weekly_category_balance">Stay on track with your category goals</string>
+
+    <!-- Onboarding Category Preview Strings -->
+    <string name="onb_preview_header_title">Your phone is ready to organize</string>
+    <string name="onb_preview_header_subtitle">%1$d apps · %2$d folders suggested</string>
+    <string name="onb_preview_header_status">Review your folders</string>
+    <string name="onb_preview_loading_title">Organizing your apps</string>
+    <string name="onb_preview_loading_subtitle">Preparing categories…</string>
+    <string name="onb_preview_empty_title">No launchable apps found</string>
+    <string name="onb_preview_empty_subtitle">Check app access and device settings.</string>
+    <string name="onb_preview_retry">Try Again</string>
+    <string name="onb_preview_attention_title">%1$d apps need your review</string>
+    <string name="onb_preview_attention_desc">Review uncertain apps to make your folders even more accurate.</string>
+    <string name="onb_preview_attention_action">Review now</string>
+    <string name="onb_preview_btn_use_layout">Use this layout</string>
+    <string name="onb_preview_btn_edit_folders">Edit folders</string>
+    <string name="onb_preview_show_all_folders">Show all folders (%1$d)</string>
+
+    <!-- Category Descriptions -->
+    <string name="cat_desc_communication">Messaging &amp; connections</string>
+    <string name="cat_desc_social">Social networks &amp; communities</string>
+    <string name="cat_desc_finance">Banking &amp; payments</string>
+    <string name="cat_desc_entertainment">Music, video &amp; media</string>
+    <string name="cat_desc_productivity">Tools to simplify your work</string>
+    <string name="cat_desc_shopping">Stores &amp; orders</string>
+    <string name="cat_desc_games">Games &amp; entertainment</string>
+    <string name="cat_desc_photography">Camera &amp; photo editing</string>
+    <string name="cat_desc_utilities">Daily utility tools</string>
+    <string name="cat_desc_education">Learning &amp; development</string>
+    <string name="cat_desc_health">Health &amp; fitness</string>
+    <string name="cat_desc_news">News &amp; magazines</string>
+    <string name="cat_desc_travel">Maps &amp; travel</string>
+    <string name="cat_desc_default">Organized space for your apps</string>
     <!-- Cycle G3b: app-specific mission - %1$s app name (resolved from PackageManager), %2$s target duration text -->
     <string name="mission_daily_app_limit">Keep %1$s under %2$s today</string>
     <string name="mission_daily_app_limit_fallback">Limit your most-used app today</string>

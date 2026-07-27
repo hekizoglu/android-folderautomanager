@@ -35,6 +35,8 @@ import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
 import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.NotificationAccessUtils
+import com.armutlu.apporganizer.utils.NotificationReadPrefs
+import com.armutlu.apporganizer.domain.usecase.notification.UnreadNotificationModel
 import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
 import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
@@ -1196,12 +1198,17 @@ class LauncherViewModel @Inject constructor(
 
     // Loading ve izin refresh sinyalleri doğrudan ana combine girdisidir. `.value` okuyarak
     // emisyon kaçırılmaz; Room ilk yükü tamamlandığında Hero her durumda yeniden hesaplanır.
+    // D241: NotificationReadPrefs.observe eklendi — launchApp() içindeki markRead() çağrısı daha
+    // önce yalnızca eski AppIconView rozetini besleyen NotificationReadStateSource'a ulaşıyordu,
+    // Akıllı Erişim kartının kendi notificationApps/notificationTotal'ı bu okundu-durumundan hiç
+    // haberdar değildi (ayrı bir Room sorgusundan besleniyordu) — uygulama açılınca sayaç sıfırlanmıyordu.
     private val smartAccessRefreshContext = combine(
         latestNotificationSummaries,
         _smartAccessPermissionTick,
         initialLoadDone,
-    ) { notificationSummaries, _, loaded ->
-        notificationSummaries to loaded
+        NotificationReadPrefs.observe(getApplication()),
+    ) { notificationSummaries, _, loaded, lastReadAt ->
+        Triple(notificationSummaries, loaded, lastReadAt)
     }
 
     /** Hero Akıllı Erişim için tek state; varsayılan sekme her ViewModel oturumunda Şimdi'dir. */
@@ -1211,7 +1218,7 @@ class LauncherViewModel @Inject constructor(
         recentApps,
         smartAccessRefreshContext,
     ) { apps, suggested, recent, refreshContext ->
-        val (notificationSummaries, loaded) = refreshContext
+        val (notificationSummaries, loaded, lastReadAt) = refreshContext
         val context = getApplication<Application>()
         val byPackage = apps.associateBy { it.packageName }
         val favorites = _favoritePkgs.value.mapNotNull(byPackage::get)
@@ -1230,6 +1237,9 @@ class LauncherViewModel @Inject constructor(
                     lastPostedAt = it.lastPostedAt,
                     nowMillis = notificationNow,
                     windowMillis = RECENT_NOTIFICATIONS_WINDOW_MS,
+                ) && UnreadNotificationModel.isUnread(
+                    postedAt = it.lastPostedAt,
+                    lastReadAt = lastReadAt[it.packageName],
                 )
             }
             .mapNotNull { summary ->

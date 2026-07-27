@@ -748,6 +748,38 @@
     <string name="mission_daily_focus_session">Bugün Odak Modu\'nda en az 30 dk geçir</string>
     <string name="mission_discover_weekly">Haftalık raporunu incele</string>
     <string name="mission_weekly_category_balance">Kategori hedeflerinde planında kal</string>
+
+    <!-- Onboarding Category Preview Strings -->
+    <string name="onb_preview_header_title">Telefonun düzenlenmeye hazır</string>
+    <string name="onb_preview_header_subtitle">%1$d uygulama · %2$d klasör önerildi</string>
+    <string name="onb_preview_header_status">Klasörlerini kontrol et</string>
+    <string name="onb_preview_loading_title">Uygulamaların düzenleniyor</string>
+    <string name="onb_preview_loading_subtitle">Kategoriler hazırlanıyor…</string>
+    <string name="onb_preview_empty_title">Başlatılabilir uygulama bulunamadı</string>
+    <string name="onb_preview_empty_subtitle">Uygulama erişimini ve cihaz ayarlarını kontrol et.</string>
+    <string name="onb_preview_retry">Tekrar Dene</string>
+    <string name="onb_preview_attention_title">%1$d uygulama senden onay bekliyor</string>
+    <string name="onb_preview_attention_desc">Emin olmadığımız uygulamaları kontrol ederek klasörlerini daha doğru hale getirebilirsin.</string>
+    <string name="onb_preview_attention_action">Şimdi kontrol et</string>
+    <string name="onb_preview_btn_use_layout">Bu düzeni kullan</string>
+    <string name="onb_preview_btn_edit_folders">Klasörleri düzenle</string>
+    <string name="onb_preview_show_all_folders">Tüm klasörleri göster (%1$d)</string>
+
+    <!-- Category Descriptions -->
+    <string name="cat_desc_communication">Mesajlaşma ve bağlantı</string>
+    <string name="cat_desc_social">Sosyal ağlar ve topluluklar</string>
+    <string name="cat_desc_finance">Bankacılık ve ödemeler</string>
+    <string name="cat_desc_entertainment">Müzik, video ve içerik</string>
+    <string name="cat_desc_productivity">İşlerini kolaylaştıran araçlar</string>
+    <string name="cat_desc_shopping">Mağazalar ve siparişler</string>
+    <string name="cat_desc_games">Oyunlar ve eğlence</string>
+    <string name="cat_desc_photography">Kamera ve görsel düzenleme</string>
+    <string name="cat_desc_utilities">Günlük yardımcı uygulamalar</string>
+    <string name="cat_desc_education">Öğrenme ve gelişim</string>
+    <string name="cat_desc_health">Sağlık ve spor</string>
+    <string name="cat_desc_news">Haber ve dergiler</string>
+    <string name="cat_desc_travel">Harita ve seyahat</string>
+    <string name="cat_desc_default">Uygulamaların düzenli alanı</string>
     <!-- Dongu G3b: uygulama-spesifik gorev - %1$s uygulama adi (PackageManager'dan cozulur), %2$s hedef sure metni -->
     <string name="mission_daily_app_limit">Bugün %1$s\'ı %2$s altında tut</string>
     <string name="mission_daily_app_limit_fallback">Bugün en çok kullandığın uygulamayı sınırla</string>

@@ -64,7 +64,7 @@ fun OnboardingScreen(
     // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix).
     // D240: varsayilan launcher secimi sistemin gorevi YENIDEN baslatmasina yol acabiliyor;
     // yeni activity kaydinda saveable state korunmaz — adim SharedPrefs'ten geri yuklenir.
-    var stepIndex by rememberSaveable { mutableStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 6)) }
+    var stepIndex by rememberSaveable { mutableIntStateOf(AppPrefs.getOnboardingStep(context).coerceIn(0, 6)) }
     LaunchedEffect(stepIndex) { AppPrefs.setOnboardingStep(context, stepIndex) }
     // Varsayilan launcher sorusu EN SONDA sorulur (kullanici talebi, D233) —
     // tum ayarlar bitmeden kullaniciya kalici karar dayatilmaz.
@@ -166,18 +166,23 @@ fun OnboardingScreen(
         ) {
             Spacer(Modifier.height(56.dp))
 
-            OnboardingStepIcon(steps, stepIndex)
-            Spacer(Modifier.height(32.dp))
-            OnboardingStepDots(steps, stepIndex)
-            Spacer(Modifier.height(28.dp))
-            OnboardingStepHeader(steps, stepIndex)
-            Spacer(Modifier.height(24.dp))
+            if (currentStep != OnboardingStep.ORGANIZATION_PREVIEW) {
+                OnboardingStepIcon(steps, stepIndex)
+                Spacer(Modifier.height(32.dp))
+                OnboardingStepDots(steps, stepIndex)
+                Spacer(Modifier.height(28.dp))
+                OnboardingStepHeader(steps, stepIndex)
+                Spacer(Modifier.height(24.dp))
+            }
+
             if (currentStep == OnboardingStep.WELCOME) {
                 OnboardingStrengthsCard()
                 Spacer(Modifier.height(16.dp))
             }
-            OnboardingWhyBox(currentStep)
-            if (currentStep.whyRes != 0) Spacer(Modifier.height(16.dp))
+            if (currentStep != OnboardingStep.ORGANIZATION_PREVIEW) {
+                OnboardingWhyBox(currentStep)
+                if (currentStep.whyRes != 0) Spacer(Modifier.height(16.dp))
+            }
 
             // SET_LAUNCHER durum göstergesi
             if (currentStep == OnboardingStep.SET_LAUNCHER && launcherSet) {
@@ -249,8 +254,18 @@ fun OnboardingScreen(
             }
 
             if (currentStep == OnboardingStep.ORGANIZATION_PREVIEW) {
-                Spacer(Modifier.height(8.dp))
-                OnboardingOrganizationPreview(viewModel)
+                com.armutlu.apporganizer.presentation.ui.screens.onboarding.OnboardingCategoryPreview(
+                    viewModel = viewModel,
+                    onUseLayout = { stepIndex++ },
+                    onEditFolders = {
+                        // Güvenli klasör düzenleme moduna geçiş veya sonraki adım
+                        stepIndex++
+                    },
+                    onReviewPending = {
+                        // Güvenli sınıflandırma onay alanına yönlendirme
+                        stepIndex++
+                    }
+                )
             }
             if (currentStep == OnboardingStep.RESTORE_BACKUP) {
                 Spacer(Modifier.height(8.dp))
@@ -259,82 +274,84 @@ fun OnboardingScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // ── Ana buton ────────────────────────────────────────────────
-            val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
-                OnboardingTealGradient else OnboardingButtonGradient
+            if (currentStep != OnboardingStep.ORGANIZATION_PREVIEW) {
+                // ── Ana buton ────────────────────────────────────────────────
+                val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
+                    OnboardingTealGradient else OnboardingButtonGradient
 
-            Box(
-                modifier = Modifier.fillMaxWidth().height(56.dp)
-                    .clip(RoundedCornerShape(16.dp)).background(buttonGradient)
-                    .clickable {
-                        when (currentStep) {
-                            OnboardingStep.WELCOME -> stepIndex++
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                        .clip(RoundedCornerShape(16.dp)).background(buttonGradient)
+                        .clickable {
+                            when (currentStep) {
+                                OnboardingStep.WELCOME -> stepIndex++
 
-                            OnboardingStep.SET_LAUNCHER -> {
-                                if (launcherSet) {
+                                OnboardingStep.SET_LAUNCHER -> {
+                                    if (launcherSet) {
+                                        stepIndex++
+                                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        val rm = context.getSystemService(RoleManager::class.java)
+                                        if (rm?.isRoleAvailable(RoleManager.ROLE_HOME) == true)
+                                            roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
+                                        else stepIndex++
+                                    } else {
+                                        context.startActivity(Intent(Intent.ACTION_MAIN)
+                                            .addCategory(Intent.CATEGORY_HOME)
+                                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                    }
+                                }
+
+                                OnboardingStep.THEME_SELECT -> {
+                                    scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }
                                     stepIndex++
-                                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    val rm = context.getSystemService(RoleManager::class.java)
-                                    if (rm?.isRoleAvailable(RoleManager.ROLE_HOME) == true)
-                                        roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
-                                    else stepIndex++
-                                } else {
-                                    context.startActivity(Intent(Intent.ACTION_MAIN)
-                                        .addCategory(Intent.CATEGORY_HOME)
-                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                }
+
+                                OnboardingStep.QUICK_SETTINGS -> stepIndex++
+                                OnboardingStep.ORGANIZATION_PREVIEW -> stepIndex++
+                                OnboardingStep.RESTORE_BACKUP -> {
+                                    if (!restoreLoading) {
+                                        backupFileLauncher.launch(arrayOf("application/json", "text/*", "application/octet-stream"))
+                                    }
+                                }
+
+                                OnboardingStep.DONE -> {
+                                    AppPrefs.markOnboardingDone(context)
+                                    AppPrefs.setOnboardingStep(context, 0) // kalici adim sifirlanir (D240)
+                                    onFinish()
                                 }
                             }
-
-                            OnboardingStep.THEME_SELECT -> {
-                                scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }
-                                stepIndex++
-                            }
-
-                            OnboardingStep.QUICK_SETTINGS -> stepIndex++
-                            OnboardingStep.ORGANIZATION_PREVIEW -> stepIndex++
-                            OnboardingStep.RESTORE_BACKUP -> {
-                                if (!restoreLoading) {
-                                    backupFileLauncher.launch(arrayOf("application/json", "text/*", "application/octet-stream"))
-                                }
-                            }
-
-                            OnboardingStep.DONE -> {
-                                AppPrefs.markOnboardingDone(context)
-                                AppPrefs.setOnboardingStep(context, 0) // kalici adim sifirlanir (D240)
-                                onFinish()
-                            }
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = when {
-                        currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
-                        currentStep == OnboardingStep.RESTORE_BACKUP && restoreLoading -> stringResource(R.string.onb_restore_loading)
-                        else -> stringResource(currentStep.buttonLabelRes)
-                    },
-                    fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
-                )
-            }
-
-            // SET_LAUNCHER için "Şimdi Değil"
-            if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
-                Spacer(Modifier.height(12.dp))
-                Box(
-                    modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
+                        },
                     contentAlignment = Alignment.Center
-                ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
-            }
+                ) {
+                    Text(
+                        text = when {
+                            currentStep == OnboardingStep.SET_LAUNCHER && launcherSet -> stringResource(R.string.onb_continue)
+                            currentStep == OnboardingStep.RESTORE_BACKUP && restoreLoading -> stringResource(R.string.onb_restore_loading)
+                            else -> stringResource(currentStep.buttonLabelRes)
+                        },
+                        fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
+                    )
+                }
 
-            // İsteğe bağlı adımlar için "Atla"
-            if (currentStep.isSkippable) {
-                Spacer(Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
-                    contentAlignment = Alignment.Center
-                ) { Text(stringResource(R.string.onb_skip), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
-            } else {
-                Spacer(Modifier.height(40.dp))
+                // SET_LAUNCHER için "Şimdi Değil"
+                if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
+                    Spacer(Modifier.height(12.dp))
+                    Box(
+                        modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
+                }
+
+                // İsteğe bağlı adımlar için "Atla"
+                if (currentStep.isSkippable) {
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) { Text(stringResource(R.string.onb_skip), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
+                } else {
+                    Spacer(Modifier.height(40.dp))
+                }
             }
         }
     }

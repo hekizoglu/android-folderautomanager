@@ -354,6 +354,7 @@ fun FolderScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .navigationBarsPadding()
                 .then(
                     if (folderCarouselEnabled && folders.size > 1) {
                         Modifier.draggable(
@@ -390,7 +391,9 @@ fun FolderScreen(
                     if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.78f))
                     else Modifier
                 )
-        ) { // NOT: statusBars/navigationBars padding HomeShell'in folderOverlay Box slotunda uygulanır (P0.3)
+        ) { // NOT: navigationBarsPadding kök Box'ta uygulanır (D241) — HomeShell'in folderOverlay slotu
+            // insets uygulamıyor (statusBars da uygulamıyor, sadece HomeShell'in kendi iç Column'u
+            // alıyor), bu yüzden alt navigasyon çubuğu payı burada, doğrudan FolderScreen'de eklendi.
             if (showFolderNavigator && folderCarouselEnabled && transitionFrame.direction != 0) {
                 FolderTransitionPreview(
                     previousFolder = previousFolder!!,
