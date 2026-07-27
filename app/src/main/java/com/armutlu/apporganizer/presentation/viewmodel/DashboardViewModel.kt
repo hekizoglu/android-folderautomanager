@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.domain.advice.CategoryGoalForAdvice
 import com.armutlu.apporganizer.domain.advice.DigitalAdvice
 import com.armutlu.apporganizer.domain.advice.computeDigitalAdvice
 import com.armutlu.apporganizer.domain.models.WeeklyGoal
+import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.domain.models.WeeklyGoalMode
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshotProvider
@@ -46,6 +48,8 @@ class DashboardViewModel @Inject constructor(
     private val periodBoundaryResolver: PeriodBoundaryResolver,
     private val appDao: AppDao,
     private val clock: Clock,
+    private val usageStatsSource: MissionUsageStatsSource,
+    private val notificationEventDao: NotificationEventDao,
 ) : ViewModel() {
 
     data class DashboardGoalsUiState(
@@ -106,7 +110,12 @@ class DashboardViewModel @Inject constructor(
                     isLearningMode = goals.isEmpty() && snapshot.validDataDayCount < 5,
                     isLoading = false,
                 )
-                _advice.value = computeDigitalAdvice(snapshot, goalsUi, appDao, clock)
+                _advice.value = computeDigitalAdvice(
+                    snapshot, goalsUi, appDao, clock,
+                    context = context,
+                    usageStatsSource = usageStatsSource,
+                    notificationEventDao = notificationEventDao,
+                )
             }.onFailure { e ->
                 Timber.w(e, "Category usage snapshot failed on Dashboard refresh")
                 _uiState.value = _uiState.value.copy(isLoading = false)

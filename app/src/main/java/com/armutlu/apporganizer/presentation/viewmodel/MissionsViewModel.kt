@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.domain.advice.CategoryGoalForAdvice
 import com.armutlu.apporganizer.domain.advice.DigitalAdvice
@@ -13,6 +14,7 @@ import com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshotProvid
 import com.armutlu.apporganizer.domain.usecase.missions.MissionAction
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.missions.MissionSummaryUseCase
+import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import java.time.Clock
 import java.time.LocalDate
@@ -42,6 +44,8 @@ class MissionsViewModel @Inject constructor(
     private val periodBoundaryResolver: PeriodBoundaryResolver,
     private val appDao: AppDao,
     private val clock: Clock,
+    private val usageStatsSource: MissionUsageStatsSource,
+    private val notificationEventDao: NotificationEventDao,
 ) : ViewModel() {
 
     data class MissionUi(
@@ -135,7 +139,12 @@ class MissionsViewModel @Inject constructor(
                 currentWeekMinutesSoFar = snapshot.currentWeekMinutes(goal.categoryId),
             )
         }
-        return computeDigitalAdvice(snapshot, goalsUi, appDao, clock)
+        return computeDigitalAdvice(
+            snapshot, goalsUi, appDao, clock,
+            context = context,
+            usageStatsSource = usageStatsSource,
+            notificationEventDao = notificationEventDao,
+        )
     }
 
     fun dismissCelebration() {

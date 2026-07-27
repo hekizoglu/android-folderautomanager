@@ -80,6 +80,7 @@ class RealSmartTickerSource @Inject constructor(
     private val periodBoundaryResolver: PeriodBoundaryResolver,
     private val appDao: AppDao,
     private val clock: Clock,
+    private val missionUsageStatsSource: com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource,
 ) : SmartTickerEngine {
 
     private val _state = MutableStateFlow(TickerSourceState())
@@ -278,7 +279,12 @@ class RealSmartTickerSource @Inject constructor(
                 currentWeekMinutesSoFar = snapshot.currentWeekMinutes(goal.categoryId),
             )
         }
-        val advice = computeDigitalAdvice(snapshot, goalsUi, appDao, clock) ?: return emptyList()
+        val advice = computeDigitalAdvice(
+            snapshot, goalsUi, appDao, clock,
+            context = context,
+            usageStatsSource = missionUsageStatsSource,
+            notificationEventDao = notificationEventDao,
+        ) ?: return emptyList()
         val title = context.getString(advice.titleRes)
         val subtitle = context.getString(advice.messageRes, *advice.messageArgs.toTypedArray())
         return DigitalAdviceTickerFactory.candidate(advice, title, subtitle, nowMillis)
