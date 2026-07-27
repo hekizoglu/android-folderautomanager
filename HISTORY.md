@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-07-27 (Firebase BigQuery telemetri altyapısı + APK teslimi)
+**Yapılanlar:** Kullanıcı Firebase Console'da Crashlytics+Analytics BigQuery export'larını açtı (Spark plan, Daily). Service account key kuruldu, IAM'e BigQuery Data Viewer+Job User rolleri eklendi. İki script yazıldı: `check_bigquery_status.py` (bağlantı/izin tanısı) ve `telemetry_report.py` (crash+kullanım event'lerini sorgulayıp Telegram'a rapor gönderir, veri henüz yoksa hata vermeden "veri yok" der) — uçtan uca test edildi, Telegram'a gerçekten gönderdiğini doğruladım. 8 saatte bir çalışan cron kuruldu (session-only, job `46e01ac7`). Yeni Firebase'li (`google-services.json` dahil) APK build alınıp Telegram'a gönderildi (v1.4.34/158).
+**Bug:** `.gitignore`'daki service-account key kuralları başka bir düzenlemede (muhtemelen paralel bir süreç) kaybolmuştu — commit ATMADAN önce `git check-ignore` ile fark edilip düzeltildi, hiçbir sır repoya gitmedi. D240 disiplini: commit öncesi her zaman `git status`/`check-ignore` ile stage listesi doğrulanmalı.
+**Sonraki:** Analytics BigQuery dataset'i henüz oluşmadı (export yeni açıldı, ilk veri ~24 saat sürebilir) — bir sonraki cron tetiklemesinde (8 saat sonra) veya yarın kontrol edilmeli. Cron session-only olduğu için Claude oturumu kapanırsa durur, kalıcı çözüm için Windows Task Scheduler seçeneği kullanıcıya sunuldu ama henüz tercih edilmedi.
+
 ## Döngü — 2026-07-27 (Build + Telegram APK teslimi)
 **Yapılanlar:** Yeni kod değişikliği yok — mevcut commit `2766f786`'dan `assembleDebug`+`testDebugUnitTest` alındı (bir build kilidi temizlik sonrası çözüldü), APK Telegram'a gönderildi (v1.4.33/157, ~27.8 MB, `"ok":true` doğrulandı).
 **Bug:** Build kilidi (`transformDebugUnitTestClassesWithAsm` klasör silme hatası) — `app\build` tam temizlik ile çözüldü, bilinen ortam sorunu.
