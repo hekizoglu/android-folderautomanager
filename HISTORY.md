@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-07-27 (Görevler kartı Hero'ya bağlandı, klasör birleştirme onarıldı)
+**Yapılanlar:** HomeSectionId.MISSIONS yeni bağımsız bölüm eklendi, HeroDashboardPage artık HomeMissionCard'ı gerçek LauncherViewModel.homeMissionSummary verisiyle render ediyor (önceden hiç bağlı değildi) — tıklanınca Routes.MISSIONS açılıyor. Klasör birleştirme uyarısı: HomeScreen'de yanlış route (FOLDER_SUGGESTIONS→FOLDER_MERGE) düzeltildi, FolderMergeViewModel init'te appDao+categoryDao'dan veri çekip mevcut-ama-hiç-çağrılmayan FolderMergeCandidateScorer'ı besliyor, selectSuggestion'daki döngüsel boş-liste filtreleme bug'ı da giderildi.
+**Bug:** HomeLayoutTest + HomeLayoutPrefsTest yeni MISSIONS section'ını yansıtacak şekilde güncellendi (2 test hatası düzeltildi) — regresyon değil, MISSIONS enum eklenince beklenen liste bayatladı.
+**Sonraki:** assembleDebug+testDebugUnitTest yeşil, commit a78970ee push edildi. Bildirim listesi ekranı (30 gün geriye dönük, klasör filtreli) sıradaki iş.
+
 ## Döngü FINAL — 2026-07-26 (Bağımsız Doğrulama, M1-M12 kapanış)
 **Yapılanlar:** Antigravity'nin tamamladığı M7-M12'yi şef git diff/log + doğrudan komut çalıştırarak bağımsız doğruladı; CLAUDE.md'deki 3 bayat referans düzeltildi (proje dizini, Room v12→v23, FCM→CategoryDbUpdateWorker); tam testDebugUnitTest'te kalan 4 test hatası (SearchRepository boşluk bug'ı + AppNotificationListenerServiceTest eksik mock) bulunup düzeltildi.
 **Bug:** 4 test hatası kod tarama modüllerinin regresyonu DEĞİLDİ — önceden var olan, hiç tam test çalıştırılmadığı için yakalanmamış sorunlardı. D240 dersi: modül bazlı kısmi test yeterli değil, tam suite şart.
